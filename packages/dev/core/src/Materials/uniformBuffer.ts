@@ -20,7 +20,7 @@ import "../Engines/Extensions/engine.uniformBuffer";
  * https://www.khronos.org/opengl/wiki/Uniform_Buffer_Object
  */
 export class UniformBuffer {
-    /** @hidden */
+    /** @internal */
     public static _UpdatedUbosInFrame: { [name: string]: number } = {};
 
     private _engine: ThinEngine;
@@ -511,7 +511,7 @@ export class UniformBuffer {
         this._needSync = true;
     }
 
-    /** @hidden */
+    /** @internal */
     public _rebuild(): void {
         if (this._noUBO || !this._bufferData) {
             return;
@@ -530,12 +530,12 @@ export class UniformBuffer {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public get _numBuffers(): number {
         return this._buffers.length;
     }
 
-    /** @hidden */
+    /** @internal */
     public get _indexBuffer(): number {
         return this._bufferIndex;
     }

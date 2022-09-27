@@ -18,7 +18,7 @@ import type { Color4 } from "core/Maths/math.color";
 
 interface ITransmissionHelperHolder {
     /**
-     * @hidden
+     * @internal
      */
     _transmissionHelper: TransmissionHelper | undefined;
 }
@@ -320,8 +320,7 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
     private _loader: GLTFLoader;
 
     /**
-     * @param loader
-     * @hidden
+     * @internal
      */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
@@ -331,16 +330,13 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public dispose() {
         (this._loader as any) = null;
     }
 
     /**
-     * @param context
-     * @param material
-     * @param babylonMaterial
-     * @hidden
+     * @internal
      */
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IKHRMaterialsTransmission>(context, material, this.name, (extensionContext, extension) => {

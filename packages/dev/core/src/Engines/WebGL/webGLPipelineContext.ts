@@ -22,7 +22,7 @@ const floatNCache: string[] = [
     "DirectColor4",
 ];
 
-/** @hidden */
+/** @internal */
 export class WebGLPipelineContext implements IPipelineContext {
     private _valueCache: { [key: string]: any } = {};
     private _uniforms: { [key: string]: Nullable<WebGLUniformLocation> };
@@ -157,9 +157,7 @@ export class WebGLPipelineContext implements IPipelineContext {
     }
 
     /**
-     * @param uniformName
-     * @param matrix
-     * @hidden
+     * @internal
      */
     public _cacheMatrix(uniformName: string, matrix: IMatrixLike): boolean {
         const cache = this._valueCache[uniformName];
@@ -174,12 +172,7 @@ export class WebGLPipelineContext implements IPipelineContext {
     }
 
     /**
-     * @param _uniformName
-     * @param _x
-     * @param _y
-     * @param _z
-     * @param _w
-     * @hidden
+     * @internal
      */
     public _cacheFloatN(_uniformName: string, _x: number, _y?: number, _z?: number, _w?: number): boolean {
         /**
@@ -204,33 +197,21 @@ export class WebGLPipelineContext implements IPipelineContext {
     }
 
     /**
-     * @param uniformName
-     * @param x
-     * @param y
-     * @hidden
+     * @internal
      */
     public _cacheFloat2(uniformName: string, x: number, y: number): boolean {
         return this._cacheFloatN(uniformName, x, y);
     }
 
     /**
-     * @param uniformName
-     * @param x
-     * @param y
-     * @param z
-     * @hidden
+     * @internal
      */
     public _cacheFloat3(uniformName: string, x: number, y: number, z: number): boolean {
         return this._cacheFloatN(uniformName, x, y, z);
     }
 
     /**
-     * @param uniformName
-     * @param x
-     * @param y
-     * @param z
-     * @param w
-     * @hidden
+     * @internal
      */
     public _cacheFloat4(uniformName: string, x: number, y: number, z: number, w: number): boolean {
         return this._cacheFloatN(uniformName, x, y, z, w);

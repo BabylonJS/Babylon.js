@@ -8,7 +8,7 @@ import type { WebXRRenderTarget } from "../webXRTypes";
 
 /**
  * Wraps XRWebGLLayer's created by Babylon Native.
- * @hidden
+ * @internal
  */
 export class NativeXRLayerWrapper extends WebXRLayerWrapper {
     constructor(public readonly layer: XRWebGLLayer) {
@@ -24,7 +24,7 @@ export class NativeXRLayerWrapper extends WebXRLayerWrapper {
 
 /**
  * Provides render target textures for layers created by Babylon Native.
- * @hidden
+ * @internal
  */
 export class NativeXRLayerRenderTargetTextureProvider extends WebXRLayerRenderTargetTextureProvider {
     private _nativeRTTProvider: WebXRLayerRenderTargetTextureProvider;
@@ -67,7 +67,7 @@ export class NativeXRLayerRenderTargetTextureProvider extends WebXRLayerRenderTa
 
 /**
  * Creates the xr layer that will be used as the xr session's base layer.
- * @hidden
+ * @internal
  */
 export class NativeXRRenderTarget implements WebXRRenderTarget {
     public canvasContext: WebGLRenderingContext;

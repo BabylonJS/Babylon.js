@@ -6,7 +6,7 @@ import { MaterialPluginBase } from "../materialPluginBase";
 import type { PBRBaseMaterial } from "./pbrBaseMaterial";
 
 /**
- * @hidden
+ * @internal
  */
 export class MaterialBRDFDefines extends MaterialDefines {
     BRDF_V_HEIGHT_CORRELATED = false;
@@ -89,10 +89,10 @@ export class PBRBRDFConfiguration extends MaterialPluginBase {
     @expandToProperty("_markAllSubMeshesAsMiscDirty")
     public useSpecularGlossinessInputEnergyConservation = PBRBRDFConfiguration.DEFAULT_USE_SPECULAR_GLOSSINESS_INPUT_ENERGY_CONSERVATION;
 
-    /** @hidden */
+    /** @internal */
     private _internalMarkAllSubMeshesAsMiscDirty: () => void;
 
-    /** @hidden */
+    /** @internal */
     public _markAllSubMeshesAsMiscDirty(): void {
         this._internalMarkAllSubMeshesAsMiscDirty();
     }

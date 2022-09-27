@@ -1,5 +1,5 @@
 /**
  * This is here for backwards compatibility with 4.2
- * @hidden
+ * @internal
  */
 export { VertexBuffer, Buffer } from "../Buffers/buffer";

@@ -21,15 +21,15 @@ import { Logger } from "../Misc/logger";
  * Used to show the physics impostor around the specific mesh
  */
 export class PhysicsViewer {
-    /** @hidden */
+    /** @internal */
     protected _impostors: Array<Nullable<PhysicsImpostor>> = [];
-    /** @hidden */
+    /** @internal */
     protected _meshes: Array<Nullable<AbstractMesh>> = [];
-    /** @hidden */
+    /** @internal */
     protected _scene: Nullable<Scene>;
-    /** @hidden */
+    /** @internal */
     protected _numMeshes = 0;
-    /** @hidden */
+    /** @internal */
     protected _physicsEnginePlugin: Nullable<IPhysicsEnginePlugin>;
     private _renderFunction: () => void;
     private _utilityLayer: Nullable<UtilityLayerRenderer>;
@@ -61,7 +61,7 @@ export class PhysicsViewer {
         this._utilityLayer.utilityLayerScene.autoClearDepthAndStencil = true;
     }
 
-    /** @hidden */
+    /** @internal */
     protected _updateDebugMeshes(): void {
         const plugin = this._physicsEnginePlugin;
 

@@ -33,8 +33,7 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
     private _loader: GLTFLoader;
 
     /**
-     * @param loader
-     * @hidden
+     * @internal
      */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
@@ -45,7 +44,7 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public dispose() {
         if (this.enabled) {
             this._loader._disableInstancedMesh--;
@@ -54,10 +53,7 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
     }
 
     /**
-     * @param context
-     * @param material
-     * @param babylonMaterial
-     * @hidden
+     * @internal
      */
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IKHRMaterialsVolume>(context, material, this.name, (extensionContext, extension) => {

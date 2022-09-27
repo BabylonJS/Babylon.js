@@ -204,9 +204,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
     }
 
     /**
-     * @param forceFullRebuild
-     * @param textureNames
-     * @hidden
+     * @internal
      */
     public _rebuild(forceFullRebuild: boolean = false, textureNames?: string[]): void {
         if (this._count < 1) {

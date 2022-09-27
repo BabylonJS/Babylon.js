@@ -39,7 +39,7 @@ type TextureCache = { texture: RenderTargetWrapper; postProcessChannel: number; 
  * See https://doc.babylonjs.com/how_to/how_to_use_postprocesses
  */
 export class PostProcess {
-    /** @hidden */
+    /** @internal */
     public _parentContainer: Nullable<AbstractScene> = null;
 
     /**
@@ -71,7 +71,7 @@ export class PostProcess {
 
     /**
      * Internal, reference to the location where this postprocess was output to. (Typically the texture on the next postprocess in the chain)
-     * @hidden
+     * @internal
      */
     public _outputTexture: Nullable<RenderTargetWrapper> = null;
     /**
@@ -188,17 +188,17 @@ export class PostProcess {
 
     /**
      * Smart array of input and output textures for the post process.
-     * @hidden
+     * @internal
      */
     public _textures = new SmartArray<RenderTargetWrapper>(2);
     /**
      * Smart array of input and output textures for the post process.
-     * @hidden
+     * @internal
      */
     private _textureCache: TextureCache[] = [];
     /**
      * The index in _textures that corresponds to the output texture.
-     * @hidden
+     * @internal
      */
     public _currentRenderTextureInd = 0;
     private _drawWrapper: DrawWrapper;
@@ -211,12 +211,12 @@ export class PostProcess {
     protected _indexParameters: any;
     private _shareOutputWithPostProcess: Nullable<PostProcess>;
     private _texelSize = Vector2.Zero();
-    /** @hidden */
+    /** @internal */
     public _forcedOutputTexture: Nullable<RenderTargetWrapper>;
 
     /**
      * Prepass configuration in case this post process needs a texture from prepass
-     * @hidden
+     * @internal
      */
     public _prePassEffectConfiguration: PrePassEffectConfiguration;
 
@@ -941,11 +941,7 @@ export class PostProcess {
     }
 
     /**
-     * @param parsedPostProcess
-     * @param targetCamera
-     * @param scene
-     * @param rootUrl
-     * @hidden
+     * @internal
      */
     public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<PostProcess> {
         return SerializationHelper.Parse(

@@ -67,7 +67,7 @@ interface IGLTFSpotLightCommonExtension {
 }
 
 /**
- * @hidden
+ * @internal
  * @deprecated
  */
 export class GLTFMaterialsCommonExtension extends GLTFLoaderExtension {

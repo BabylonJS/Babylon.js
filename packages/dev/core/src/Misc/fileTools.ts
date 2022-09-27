@@ -69,7 +69,7 @@ export class ReadFileError extends RuntimeError {
     }
 }
 /**
- * @hidden
+ * @internal
  */
 export const FileToolsOptions: {
     DefaultRetryStrategy: (url: string, request: WebRequest, retryIndex: number) => number;
@@ -119,8 +119,7 @@ const _CleanUrl = (url: string): string => {
  * Sets the cors behavior on a dom element. This will add the required Tools.CorsBehavior to the element.
  * @param url define the url we are trying
  * @param element define the dom element where to configure the cors policy
- * @param element.crossOrigin
- * @hidden
+ * @internal
  */
 export const SetCorsBehavior = (url: string | string[], element: { crossOrigin: string | null }): void => {
     if (url && url.indexOf("data:") === 0) {
@@ -148,7 +147,7 @@ export const SetCorsBehavior = (url: string | string[], element: { crossOrigin: 
  * @param mimeType optional mime type
  * @param imageBitmapOptions
  * @returns the HTMLImageElement of the loaded image
- * @hidden
+ * @internal
  */
 export const LoadImage = (
     input: string | ArrayBuffer | ArrayBufferView | Blob,
@@ -312,7 +311,7 @@ export const LoadImage = (
  * @param useArrayBuffer defines a boolean indicating that data must be returned as an ArrayBuffer
  * @param onError defines the callback to call when an error occurs
  * @returns a file request object
- * @hidden
+ * @internal
  */
 export const ReadFile = (
     file: File,
@@ -360,7 +359,7 @@ export const ReadFile = (
  * @param onError callback called when the file fails to load
  * @param onOpened
  * @returns a file request object
- * @hidden
+ * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const LoadFile = (
@@ -453,7 +452,7 @@ export const LoadFile = (
  * @param onError callback called when the file fails to load
  * @param onOpened callback called when the web request is opened
  * @returns a file request object
- * @hidden
+ * @internal
  */
 export const RequestFile = (
     url: string,
@@ -663,7 +662,7 @@ export const RequestFile = (
 /**
  * Checks if the loaded document was accessed via `file:`-Protocol.
  * @returns boolean
- * @hidden
+ * @internal
  */
 export const IsFileURL = (): boolean => {
     return typeof location !== "undefined" && location.protocol === "file:";
@@ -673,7 +672,7 @@ export const IsFileURL = (): boolean => {
  * Test if the given uri is a valid base64 data url
  * @param uri The uri to test
  * @returns True if the uri is a base64 data url or false otherwise
- * @hidden
+ * @internal
  */
 export const IsBase64DataUrl = (uri: string): boolean => {
     return Base64DataUrlRegEx.test(uri);
@@ -693,7 +692,7 @@ export const TestBase64DataUrl = (uri: string): { match: boolean; type: string }
  * Decode the given base64 uri.
  * @param uri The uri to decode
  * @returns The decoded base64 data.
- * @hidden
+ * @internal
  */
 export function DecodeBase64UrlToBinary(uri: string): ArrayBuffer {
     return DecodeBase64ToBinary(uri.split(",")[1]);
@@ -703,7 +702,7 @@ export function DecodeBase64UrlToBinary(uri: string): ArrayBuffer {
  * Decode the given base64 uri into a UTF-8 encoded string.
  * @param uri The uri to decode
  * @returns The decoded base64 data.
- * @hidden
+ * @internal
  */
 export const DecodeBase64UrlToString = (uri: string): string => {
     return DecodeBase64ToString(uri.split(",")[1]);
@@ -713,7 +712,7 @@ export const DecodeBase64UrlToString = (uri: string): string => {
  * This will be executed automatically for UMD and es5.
  * If esm dev wants the side effects to execute they will have to run it manually
  * Once we build native modules those need to be exported.
- * @hidden
+ * @internal
  */
 const initSideEffects = () => {
     ThinEngine._FileToolsLoadImage = LoadImage;

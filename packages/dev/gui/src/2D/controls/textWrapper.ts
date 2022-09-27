@@ -1,4 +1,4 @@
-/** @hidden */
+/** @internal */
 export class TextWrapper {
     private _text: string;
     private _characters: string[] | undefined;

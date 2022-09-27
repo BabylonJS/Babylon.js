@@ -165,8 +165,7 @@ export class ColorPicker extends Control {
     }
 
     /**
-     * @param parentMeasure
-     * @hidden
+     * @internal
      */
     protected _preMeasure(parentMeasure: Measure): void {
         if (parentMeasure.width < parentMeasure.height) {
@@ -286,8 +285,7 @@ export class ColorPicker extends Control {
     }
 
     /**
-     * @param context
-     * @hidden
+     * @internal
      */
     public _draw(context: ICanvasRenderingContext): void {
         context.save();

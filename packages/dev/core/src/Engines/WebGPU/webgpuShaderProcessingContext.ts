@@ -18,13 +18,13 @@ const _typeToLocationSize: { [key: string]: number } = {
     mat4x4: 4,
 };
 
-/** @hidden */
+/** @internal */
 export interface WebGPUBindingInfo {
     groupIndex: number;
     bindingIndex: number;
 }
 
-/** @hidden */
+/** @internal */
 export interface WebGPUTextureDescription {
     autoBindSampler?: boolean;
     isTextureArray: boolean;
@@ -33,18 +33,18 @@ export interface WebGPUTextureDescription {
     sampleType?: GPUTextureSampleType; // not used if the texture is a storage texture
 }
 
-/** @hidden */
+/** @internal */
 export interface WebGPUSamplerDescription {
     binding: WebGPUBindingInfo;
     type: GPUSamplerBindingType;
 }
 
-/** @hidden */
+/** @internal */
 export interface WebGPUBufferDescription {
     binding: WebGPUBindingInfo;
 }
 
-/** @hidden */
+/** @internal */
 export interface WebGPUBindGroupLayoutEntryInfo {
     name: string;
     index: number; // index of the entry (GPUBindGroupLayoutEntry) in the bindGroupLayoutEntries[group] array
@@ -52,10 +52,10 @@ export interface WebGPUBindGroupLayoutEntryInfo {
 }
 
 /**
- * @hidden
+ * @internal
  */
 export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
-    /** @hidden */
+    /** @internal */
     public static _SimplifiedKnownBindings = true; // if true, use only group=0,binding=0 as a known group/binding for the Scene ubo and use group=1,binding=X for all other bindings
     // if false, see _KnownUBOs for the known groups/bindings used
 

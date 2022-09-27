@@ -96,6 +96,10 @@
         "react": {
             "pragma": "h",
             "createClass": ""
+        },
+        "jsdoc": {
+            "ignorePrivate": true,
+            "ignoreInternal" : true 
         }
     },
     "rules": {
@@ -223,7 +227,9 @@
         "babylonjs/syntax": "warn",
         "jsdoc/check-param-names": ["warn", { "checkRestProperty": false }],
         "jsdoc/check-property-names": "error",
-        "jsdoc/require-param": ["error", { "checkDestructured": false, "checkRestProperty": false }],
+        "jsdoc/require-param": ["error", { "checkDestructured": false, "checkRestProperty": false, "contexts":[
+            // {"comment":"JsdocBlock:has(JsdocTag[tag=\"hidden\"])"}
+        ]}],
         "jsdoc/require-param-name": "error",
         // "jsdoc/require-returns": "warn",
         // "jsdoc/require-returns-check": "error",

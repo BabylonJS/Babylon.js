@@ -5,7 +5,7 @@ import type { ShaderProcessingContext } from "../Processors/shaderProcessingOpti
 
 declare type ThinEngine = import("../thinEngine").ThinEngine;
 
-/** @hidden */
+/** @internal */
 export class WebGLShaderProcessor implements IShaderProcessor {
     public shaderLanguage = ShaderLanguage.GLSL;
 

@@ -71,30 +71,30 @@ export class NodeMaterialConnectionPoint {
         return false;
     }
 
-    /** @hidden */
+    /** @internal */
     public _ownerBlock: NodeMaterialBlock;
-    /** @hidden */
+    /** @internal */
     public _connectedPoint: Nullable<NodeMaterialConnectionPoint> = null;
 
     private _endpoints = new Array<NodeMaterialConnectionPoint>();
     private _associatedVariableName: string;
     private _direction: NodeMaterialConnectionPointDirection;
 
-    /** @hidden */
+    /** @internal */
     public _typeConnectionSource: Nullable<NodeMaterialConnectionPoint> = null;
 
-    /** @hidden */
+    /** @internal */
     public _defaultConnectionPointType: Nullable<NodeMaterialBlockConnectionPointTypes> = null;
 
-    /** @hidden */
+    /** @internal */
     public _linkedConnectionSource: Nullable<NodeMaterialConnectionPoint> = null;
 
-    /** @hidden */
+    /** @internal */
     public _acceptedConnectionPointType: Nullable<NodeMaterialConnectionPoint> = null;
 
     private _type = NodeMaterialBlockConnectionPointTypes.Float;
 
-    /** @hidden */
+    /** @internal */
     public _enforceAssociatedVariableName = false;
 
     /** Gets the direction of the point */
@@ -213,7 +213,7 @@ export class NodeMaterialConnectionPoint {
      */
     public define: string;
 
-    /** @hidden */
+    /** @internal */
     public _prioritizeVertex = false;
 
     private _target: NodeMaterialBlockTargets = NodeMaterialBlockTargets.VertexAndFragment;

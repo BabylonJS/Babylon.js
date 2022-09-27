@@ -79,7 +79,7 @@ export class BasisTranscodeConfiguration {
 }
 
 /**
- * @hidden
+ * @internal
  * Enum of basis transcoder formats
  */
 enum BASIS_FORMATS {

@@ -3,7 +3,7 @@ import { LiteTranscoder } from "./liteTranscoder";
 import type { KTX2FileReader, IKTX2_ImageDesc } from "../ktx2FileReader";
 
 /**
- * @hidden
+ * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class LiteTranscoder_UASTC_RGBA_SRGB extends LiteTranscoder {

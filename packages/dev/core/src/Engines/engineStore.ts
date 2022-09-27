@@ -11,7 +11,7 @@ export class EngineStore {
     /** Gets the list of created engines */
     public static Instances = new Array<Engine>();
 
-    /** @hidden */
+    /** @internal */
     public static _LastCreatedScene: Nullable<Scene> = null;
 
     /**

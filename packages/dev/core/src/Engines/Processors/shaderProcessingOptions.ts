@@ -6,10 +6,10 @@ import type { Nullable } from "../../types";
  */
 export type ShaderCustomProcessingFunction = (shaderType: string, code: string) => string;
 
-/** @hidden */
+/** @internal */
 export interface ShaderProcessingContext {}
 
-/** @hidden */
+/** @internal */
 export interface ProcessingOptions {
     defines: string[];
     indexParameters: any;

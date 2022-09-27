@@ -5,7 +5,7 @@ import type { INative } from "../Engines/Native/nativeInterfaces";
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare const _native: INative;
 
-/** @hidden */
+/** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 function createXMLHttpRequest(): XMLHttpRequest {
     // If running in Babylon Native, then defer to the native XMLHttpRequest, which has the same public contract
@@ -128,7 +128,7 @@ export class WebRequest implements IWebRequest {
         this._xhr.timeout = value;
     }
 
-    /** @hidden */
+    /** @internal */
     public addEventListener<K extends keyof XMLHttpRequestEventMap>(
         type: K,
         listener: (this: XMLHttpRequest, ev: XMLHttpRequestEventMap[K]) => any,
@@ -138,7 +138,7 @@ export class WebRequest implements IWebRequest {
         this._xhr.addEventListener(type, listener, options);
     }
 
-    /** @hidden */
+    /** @internal */
     public removeEventListener<K extends keyof XMLHttpRequestEventMap>(
         type: K,
         listener: (this: XMLHttpRequest, ev: XMLHttpRequestEventMap[K]) => any,

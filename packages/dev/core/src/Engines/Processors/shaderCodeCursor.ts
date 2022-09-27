@@ -1,4 +1,4 @@
-/** @hidden */
+/** @internal */
 export class ShaderCodeCursor {
     private _lines: string[] = [];
     lineIndex: number;

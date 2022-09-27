@@ -17,7 +17,7 @@ import "../Shaders/gpuUpdateParticles.vertex";
 
 declare type Engine = import("../Engines/engine").Engine;
 
-/** @hidden */
+/** @internal */
 export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
     private _parent: GPUParticleSystem;
     private _engine: ThinEngine;

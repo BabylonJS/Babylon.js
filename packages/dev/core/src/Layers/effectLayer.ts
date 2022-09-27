@@ -171,8 +171,7 @@ export abstract class EffectLayer {
     }
 
     /**
-     * @param _
-     * @hidden
+     * @internal
      */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
         throw _WarnImport("EffectLayerSceneComponent");
@@ -1011,7 +1010,7 @@ export abstract class EffectLayer {
 
     /**
      * Rebuild the required buffers.
-     * @hidden Internal use only.
+     * @internal Internal use only.
      */
     public _rebuild(): void {
         const vb = this._vertexBuffers[VertexBuffer.PositionKind];

@@ -10,33 +10,33 @@ declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
 declare type IAnimatable = import("../Animations/animatable.interface").IAnimatable;
 declare type RenderTargetTexture = import("./Textures/renderTargetTexture").RenderTargetTexture;
 
-/** @hidden */
+/** @internal */
 export type MaterialPluginCreated = {};
 
-/** @hidden */
+/** @internal */
 export type MaterialPluginDisposed = {
     forceDisposeTextures?: boolean;
 };
 
-/** @hidden */
+/** @internal */
 export type MaterialPluginHasTexture = {
     hasTexture: boolean;
     texture: BaseTexture;
 };
 
-/** @hidden */
+/** @internal */
 export type MaterialPluginIsReadyForSubMesh = {
     isReadyForSubMesh: boolean;
     defines: MaterialDefines;
     subMesh: SubMesh;
 };
 
-/** @hidden */
+/** @internal */
 export type MaterialPluginGetDefineNames = {
     defineNames?: { [name: string]: { type: string; default: any } };
 };
 
-/** @hidden */
+/** @internal */
 export type MaterialPluginPrepareEffect = {
     defines: MaterialDefines;
     fallbacks: EffectFallbacks;
@@ -49,49 +49,49 @@ export type MaterialPluginPrepareEffect = {
     mesh: AbstractMesh;
 };
 
-/** @hidden */
+/** @internal */
 export type MaterialPluginPrepareDefines = {
     defines: MaterialDefines;
     mesh: AbstractMesh;
 };
 
-/** @hidden */
+/** @internal */
 export type MaterialPluginPrepareUniformBuffer = {
     ubo: UniformBuffer;
 };
 
-/** @hidden */
+/** @internal */
 export type MaterialPluginBindForSubMesh = {
     subMesh: SubMesh;
 };
 
-/** @hidden */
+/** @internal */
 export type MaterialPluginGetAnimatables = {
     animatables: IAnimatable[];
 };
 
-/** @hidden */
+/** @internal */
 export type MaterialPluginGetActiveTextures = {
     activeTextures: BaseTexture[];
 };
 
-/** @hidden */
+/** @internal */
 export type MaterialPluginFillRenderTargetTextures = {
     renderTargets: SmartArray<RenderTargetTexture>;
 };
 
-/** @hidden */
+/** @internal */
 export type MaterialPluginHasRenderTargetTextures = {
     hasRenderTargetTextures: boolean;
 };
 
-/** @hidden */
+/** @internal */
 export type MaterialPluginHardBindForSubMesh = {
     subMesh: SubMesh;
 };
 
 /**
- * @hidden
+ * @internal
  */
 export enum MaterialPluginEvent {
     Created = 0x0001,

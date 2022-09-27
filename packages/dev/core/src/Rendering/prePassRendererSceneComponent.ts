@@ -14,7 +14,7 @@ import type { PrePassRenderTarget } from "../Materials/Textures/prePassRenderTar
 
 declare module "../abstractScene" {
     export interface AbstractScene {
-        /** @hidden (Backing field) */
+        /** @internal (Backing field) */
         _prePassRenderer: Nullable<PrePassRenderer>;
 
         /**
@@ -37,7 +37,7 @@ declare module "../abstractScene" {
 
 declare module "../Materials/Textures/renderTargetTexture" {
     export interface RenderTargetTexture {
-        /** @hidden */
+        /** @internal */
         _prePassRenderTarget: Nullable<PrePassRenderTarget>;
     }
 }

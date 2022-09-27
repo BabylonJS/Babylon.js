@@ -4,7 +4,7 @@ import type { ShaderProcessingContext } from "./shaderProcessingOptions";
 
 declare type ThinEngine = import("../thinEngine").ThinEngine;
 
-/** @hidden */
+/** @internal */
 export interface IShaderProcessor {
     shaderLanguage: ShaderLanguage;
 

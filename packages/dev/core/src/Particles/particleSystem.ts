@@ -42,6 +42,7 @@ import type { ISize } from "../Maths/math.size";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import { ThinEngine } from "../Engines/thinEngine";
 import { ThinMaterialHelper } from "../Materials/thinMaterialHelper";
+import { MaterialHelper } from "../Materials/materialHelper";
 
 import "../Engines/Extensions/engine.alpha";
 
@@ -92,7 +93,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     public startPositionFunction: (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean) => void;
 
     /**
-     * @hidden
+     * @internal
      */
     public _inheritedVelocityOffset = new Vector3();
     /**
@@ -142,18 +143,18 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     private _scaledUpdateSpeed: number;
     private _vertexBufferSize: number;
 
-    /** @hidden */
+    /** @internal */
     public _currentEmitRateGradient: Nullable<FactorGradient>;
-    /** @hidden */
+    /** @internal */
     public _currentEmitRate1 = 0;
-    /** @hidden */
+    /** @internal */
     public _currentEmitRate2 = 0;
 
-    /** @hidden */
+    /** @internal */
     public _currentStartSizeGradient: Nullable<FactorGradient>;
-    /** @hidden */
+    /** @internal */
     public _currentStartSize1 = 0;
-    /** @hidden */
+    /** @internal */
     public _currentStartSize2 = 0;
 
     private readonly _rawTextureWidth = 256;
@@ -192,7 +193,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     // the subEmitters field above converted to a constant type
     private _subEmitters: Array<Array<SubEmitter>>;
     /**
-     * @hidden
+     * @internal
      * If the particle systems emitter should be disposed when the particle system is disposed
      */
     public _disposeEmitterOnDispose = false;
@@ -266,7 +267,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         }
     }
 
-    /** @hidden */
+    /** @internal */
     private _onBeforeDrawParticlesObservable: Nullable<Observable<Nullable<Effect>>> = null;
 
     /**
@@ -1311,11 +1312,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     }
 
     /**
-     * @param index
-     * @param particle
-     * @param offsetX
-     * @param offsetY
-     * @hidden (for internal use only)
+     * @internal (for internal use only)
      */
     public _appendParticleVertex(index: number, particle: Particle, offsetX: number, offsetY: number): void {
         let offset = index * this._vertexBufferSize;
@@ -1692,10 +1689,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     }
 
     /**
-     * @param isAnimationSheetEnabled
-     * @param isBillboardBased
-     * @param useRampGradients
-     * @hidden
+     * @internal
      */
     public static _GetAttributeNamesOrOptions(isAnimationSheetEnabled = false, isBillboardBased = false, useRampGradients = false): string[] {
         const attributeNamesOrOptions = [VertexBuffer.PositionKind, VertexBuffer.ColorKind, "angle", "offset", "size"];
@@ -1716,10 +1710,9 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     }
 
     /**
-     * @param isAnimationSheetEnabled
-     * @hidden
+     * @internal
      */
-    public static _GetEffectCreationOptions(isAnimationSheetEnabled = false): string[] {
+    public static _GetEffectCreationOptions(isAnimationSheetEnabled = false, useLogarithmicDepth = false): string[] {
         const effectCreationOption = [
             "invView",
             "view",
@@ -1737,6 +1730,9 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         if (isAnimationSheetEnabled) {
             effectCreationOption.push("particlesInfos");
+        }
+        if (useLogarithmicDepth) {
+            effectCreationOption.push("logarithmicDepthConstant");
         }
 
         return effectCreationOption;
@@ -1776,6 +1772,10 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         if (this._isAnimationSheetEnabled) {
             defines.push("#define ANIMATESHEET");
+        }
+
+        if (this.useLogarithmicDepth) {
+            defines.push("#define LOGARITHMICDEPTH");
         }
 
         if (blendMode === ParticleSystem.BLENDMODE_MULTIPLY) {
@@ -1825,7 +1825,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             )
         );
 
-        uniforms.push(...ParticleSystem._GetEffectCreationOptions(this._isAnimationSheetEnabled));
+        uniforms.push(...ParticleSystem._GetEffectCreationOptions(this._isAnimationSheetEnabled, this.useLogarithmicDepth));
 
         samplers.push("diffuseSampler", "rampSampler");
 
@@ -1836,8 +1836,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     }
 
     /**
-     * @param blendMode
-     * @hidden
+     * @internal
      */
     private _getWrapper(blendMode: number): DrawWrapper {
         const customWrapper = this._getCustomDrawWrapper(blendMode);
@@ -2092,6 +2091,11 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
         }
 
+        // Log. depth
+        if (this.useLogarithmicDepth && this._scene) {
+            MaterialHelper.BindLogDepth(defines, effect, this._scene);
+        }
+
         // image processing
         if (this._imageProcessingConfiguration && !this._imageProcessingConfiguration.applyByPostProcess) {
             this._imageProcessingConfiguration.bind(effect);
@@ -2326,10 +2330,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     }
 
     /**
-     * @param serializationObject
-     * @param particleSystem
-     * @param serializeTexture
-     * @hidden
+     * @internal
      */
     public static _Serialize(serializationObject: any, particleSystem: IParticleSystem, serializeTexture: boolean) {
         serializationObject.name = particleSystem.name;
@@ -2410,6 +2411,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         serializationObject.spriteCellHeight = particleSystem.spriteCellHeight;
         serializationObject.spriteRandomStartCell = particleSystem.spriteRandomStartCell;
         serializationObject.isAnimationSheetEnabled = particleSystem.isAnimationSheetEnabled;
+        serializationObject.useLogarithmicDepth = particleSystem.useLogarithmicDepth;
 
         const colorGradients = particleSystem.getColorGradients();
         if (colorGradients) {
@@ -2642,11 +2644,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     }
 
     /**
-     * @param parsedParticleSystem
-     * @param particleSystem
-     * @param sceneOrEngine
-     * @param rootUrl
-     * @hidden
+     * @internal
      */
     public static _Parse(parsedParticleSystem: any, particleSystem: IParticleSystem, sceneOrEngine: Scene | ThinEngine, rootUrl: string) {
         let scene: Nullable<Scene>;
@@ -2695,6 +2693,10 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         if (parsedParticleSystem.billboardMode !== undefined) {
             particleSystem.billboardMode = parsedParticleSystem.billboardMode;
+        }
+
+        if (parsedParticleSystem.useLogarithmicDepth !== undefined) {
+            particleSystem.useLogarithmicDepth = parsedParticleSystem.useLogarithmicDepth;
         }
 
         // Animations

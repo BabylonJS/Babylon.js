@@ -69,15 +69,15 @@ export class SolidParticle {
     public isVisible: boolean = true;
     /**
      * Index of this particle in the global "positions" array (Internal use)
-     * @hidden
+     * @internal
      */
     public _pos: number = 0;
     /**
-     * @hidden Index of this particle in the global "indices" array (Internal use)
+     * @internal Index of this particle in the global "indices" array (Internal use)
      */
     public _ind: number = 0;
     /**
-     * @hidden ModelShape of this particle (Internal use)
+     * @internal ModelShape of this particle (Internal use)
      */
     public _model: ModelShape;
     /**
@@ -89,20 +89,20 @@ export class SolidParticle {
      */
     public idxInShape: number = 0;
     /**
-     * @hidden Reference to the shape model BoundingInfo object (Internal use)
+     * @internal Reference to the shape model BoundingInfo object (Internal use)
      */
     public _modelBoundingInfo: BoundingInfo;
     private _boundingInfo: BoundingInfo;
     /**
-     * @hidden Reference to the SPS what the particle belongs to (Internal use)
+     * @internal Reference to the SPS what the particle belongs to (Internal use)
      */
     public _sps: SolidParticleSystem;
     /**
-     * @hidden Still set as invisible in order to skip useless computations (Internal use)
+     * @internal Still set as invisible in order to skip useless computations (Internal use)
      */
     public _stillInvisible: boolean = false;
     /**
-     * @hidden Last computed particle rotation matrix
+     * @internal Last computed particle rotation matrix
      */
     public _rotationMatrix: number[] = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0];
     /**
@@ -131,7 +131,7 @@ export class SolidParticle {
     public cullingStrategy = AbstractMesh.CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY;
 
     /**
-     * @hidden Internal global position in the SPS.
+     * @internal Internal global position in the SPS.
      */
     public _globalPosition: Vector3 = Vector3.Zero();
 
@@ -284,8 +284,7 @@ export class SolidParticle {
 
     /**
      * get the rotation matrix of the particle
-     * @param m
-     * @hidden
+     * @internal
      */
     public getRotationMatrix(m: Matrix) {
         let quaternion: Quaternion;
@@ -318,68 +317,59 @@ export class ModelShape {
     }
     /**
      * The shape id
-     * @hidden
+     * @internal
      */
     public shapeId: number;
     /**
      * flat array of model positions (internal use)
-     * @hidden
+     * @internal
      */
     public _shape: Vector3[];
     /**
      * flat array of model UVs (internal use)
-     * @hidden
+     * @internal
      */
     public _shapeUV: number[];
     /**
      * color array of the model
-     * @hidden
+     * @internal
      */
     public _shapeColors: number[];
     /**
      * indices array of the model
-     * @hidden
+     * @internal
      */
     public _indices: number[];
     /**
      * normals array of the model
-     * @hidden
+     * @internal
      */
     public _normals: number[];
     /**
      * length of the shape in the model indices array (internal use)
-     * @hidden
+     * @internal
      */
     public _indicesLength: number = 0;
     /**
      * Custom position function (internal use)
-     * @hidden
+     * @internal
      */
     public _positionFunction: Nullable<(particle: SolidParticle, i: number, s: number) => void>;
     /**
      * Custom vertex function (internal use)
-     * @hidden
+     * @internal
      */
     public _vertexFunction: Nullable<(particle: SolidParticle, vertex: Vector3, i: number) => void>;
     /**
      * Model material (internal use)
-     * @hidden
+     * @internal
      */
     public _material: Nullable<Material>;
 
     /**
      * Creates a ModelShape object. This is an internal simplified reference to a mesh used as for a model to replicate particles from by the SPS.
      * SPS internal tool, don't use it manually.
-     * @param id
-     * @param shape
-     * @param indices
-     * @param normals
-     * @param colors
-     * @param shapeUV
-     * @param posFunction
-     * @param vtxFunction
-     * @param material
-     * @hidden
+     * @internal
      */
     constructor(
         id: number,
@@ -407,7 +397,7 @@ export class ModelShape {
 
 /**
  * Represents a Depth Sorted Particle in the solid particle system.
- * @hidden
+ * @internal
  */
 export class DepthSortedParticle {
     /**

@@ -295,7 +295,7 @@ export class Vector2 {
     /**
      * Negate the current Vector2 and stores the result in the given vector "result" coordinates
      * @param result defines the Vector3 object where to store the result
-     * @returns the current Vector2
+     * @returns the result
      */
     public negateToRef(result: Vector2): Vector2 {
         return result.copyFromFloats(this.x * -1, this.y * -1);
@@ -809,16 +809,16 @@ export class Vector3 {
     private static _LeftReadOnly = Vector3.Left() as DeepImmutable<Vector3>;
     private static _ZeroReadOnly = Vector3.Zero() as DeepImmutable<Vector3>;
 
-    /** @hidden */
+    /** @internal */
     public _x: number;
 
-    /** @hidden */
+    /** @internal */
     public _y: number;
 
-    /** @hidden */
+    /** @internal */
     public _z: number;
 
-    /** @hidden */
+    /** @internal */
     public _isDirty = true;
 
     /** Gets or sets the x coordinate */
@@ -983,7 +983,7 @@ export class Vector3 {
      * Example Playground https://playground.babylonjs.com/#R1F8YU#6
      * @param otherVector defines the second operand
      * @param result defines the Vector3 object where to store the result
-     * @returns the current Vector3
+     * @returns the result
      */
     public addToRef(otherVector: DeepImmutable<Vector3>, result: Vector3): Vector3 {
         return result.copyFromFloats(this._x + otherVector._x, this._y + otherVector._y, this._z + otherVector._z);
@@ -1017,7 +1017,7 @@ export class Vector3 {
      * Example Playground https://playground.babylonjs.com/#R1F8YU#63
      * @param otherVector defines the second operand
      * @param result defines the Vector3 object where to store the result
-     * @returns the current Vector3
+     * @returns the result
      */
     public subtractToRef(otherVector: DeepImmutable<Vector3>, result: Vector3): Vector3 {
         return this.subtractFromFloatsToRef(otherVector._x, otherVector._y, otherVector._z, result);
@@ -1042,7 +1042,7 @@ export class Vector3 {
      * @param y defines the y coordinate of the operand
      * @param z defines the z coordinate of the operand
      * @param result defines the Vector3 object where to store the result
-     * @returns the current Vector3
+     * @returns the result
      */
     public subtractFromFloatsToRef(x: number, y: number, z: number, result: Vector3): Vector3 {
         return result.copyFromFloats(this._x - x, this._y - y, this._z - z);
@@ -1073,7 +1073,7 @@ export class Vector3 {
      * Negate the current Vector3 and stores the result in the given vector "result" coordinates
      * Example Playground https://playground.babylonjs.com/#R1F8YU#37
      * @param result defines the Vector3 object where to store the result
-     * @returns the current Vector3
+     * @returns the result
      */
     public negateToRef(result: Vector3): Vector3 {
         return result.copyFromFloats(this._x * -1, this._y * -1, this._z * -1);
@@ -1107,10 +1107,38 @@ export class Vector3 {
      * Example Playground https://playground.babylonjs.com/#R1F8YU#57
      * @param scale defines the multiplier factor
      * @param result defines the Vector3 object where to store the result
-     * @returns the current Vector3
+     * @returns the result
      */
     public scaleToRef(scale: number, result: Vector3): Vector3 {
         return result.copyFromFloats(this._x * scale, this._y * scale, this._z * scale);
+    }
+
+    /**
+     * Creates a vector normal (perpendicular) to the current Vector3 and stores the result in the given vector
+     * @param result defines the Vector3 object where to store the resultant normal
+     * returns the result
+     * @hidden
+     */
+    public _getNormalToRef(result: DeepImmutable<Vector3>): Vector3 {
+        /**
+         * Calculates the spherical coordinates of the current vector
+         * so saves on memory rather than importing whole Spherical Class
+         */
+        const radius: number = this.length();
+        let theta: number = Math.acos(this.y / radius);
+        const phi = Math.atan2(this.z, this.x);
+        //makes angle 90 degs to current vector
+        if (theta > Math.PI / 2) {
+            theta -= Math.PI / 2;
+        } else {
+            theta += Math.PI / 2;
+        }
+        //Calculates resutant normal vector from spherical coordinate of perpendicular vector
+        const x = radius * Math.sin(theta) * Math.cos(phi);
+        const y = radius * Math.cos(theta);
+        const z = radius * Math.sin(theta) * Math.sin(phi);
+        result.set(x, y, z);
+        return result;
     }
 
     /**
@@ -1118,7 +1146,7 @@ export class Vector3 {
      * Example Playground https://playground.babylonjs.com/#R1F8YU#9
      * @param q the unit quaternion representing the rotation
      * @param result the output vector
-     * @returns the current Vector3
+     * @returns the result
      */
     public applyRotationQuaternionToRef(q: Quaternion, result: Vector3): Vector3 {
         const ix = q.w * this.x + q.y * this.z - q.z * this.y;
@@ -1277,7 +1305,7 @@ export class Vector3 {
      * Example Playground https://playground.babylonjs.com/#R1F8YU#33
      * @param otherVector defines the second operand
      * @param result defines the Vector3 object where to store the result
-     * @returns the current Vector3
+     * @returns the result
      */
     public multiplyToRef(otherVector: DeepImmutable<Vector3>, result: Vector3): Vector3 {
         return result.copyFromFloats(this._x * otherVector._x, this._y * otherVector._y, this._z * otherVector._z);
@@ -1310,7 +1338,7 @@ export class Vector3 {
      * Example Playground https://playground.babylonjs.com/#R1F8YU#18
      * @param otherVector defines the second operand
      * @param result defines the Vector3 object where to store the result
-     * @returns the current Vector3
+     * @returns the result
      */
     public divideToRef(otherVector: DeepImmutable<Vector3>, result: Vector3): Vector3 {
         return result.copyFromFloats(this._x / otherVector._x, this._y / otherVector._y, this._z / otherVector._z);
@@ -1714,6 +1742,32 @@ export class Vector3 {
         const angle = Math.atan2(Vector3.Dot(v1, right), Vector3.Dot(v1, forward));
 
         return Scalar.NormalizeRadians(angle);
+    }
+
+    /**
+     * Gets the rotation that aligns the roll axis (Y) to the line joining the start point to the target point and stores it in the ref Vector3
+     * @param start the starting point
+     * @param target the target point
+     * @param ref the vector3 to store the result
+     * @returns ref in the form (pitch, yaw, 0)
+     */
+    public static PitchYawRollToMoveBetweenPointsToRef(start: Vector3, target: Vector3, ref: Vector3): Vector3 {
+        const diff = TmpVectors.Vector3[0];
+        target.subtractToRef(start, diff);
+        ref.y = Math.atan2(diff.x, diff.z) || 0;
+        ref.x = Math.atan2(Math.sqrt(diff.x ** 2 + diff.z ** 2), diff.y) || 0;
+        return ref;
+    }
+
+    /**
+     * Gets the rotation that aligns the roll axis (Y) to the line joining the start point to the target point
+     * @param start the starting point
+     * @param target the target point
+     * @returns the rotation in the form (pitch, yaw, 0)
+     */
+    public static PitchYawRollToMoveBetweenPoints(start: Vector3, target: Vector3): Vector3 {
+        const ref = TmpVectors.Vector3[0];
+        return Vector3.PitchYawRollToMoveBetweenPointsToRef(start, target, ref);
     }
 
     /**
@@ -2355,10 +2409,7 @@ export class Vector3 {
     }
 
     /**
-     * @param source
-     * @param matrix
-     * @param result
-     * @hidden
+     * @internal
      */
     public static _UnprojectFromInvertedMatrixToRef(source: DeepImmutable<Vector3>, matrix: DeepImmutable<Matrix>, result: Vector3) {
         Vector3.TransformCoordinatesToRef(source, matrix, result);
@@ -2963,7 +3014,7 @@ export class Vector4 {
     /**
      * Negate the current Vector4 and stores the result in the given vector "result" coordinates
      * @param result defines the Vector3 object where to store the result
-     * @returns the current Vector4
+     * @returns the result
      */
     public negateToRef(result: Vector4): Vector4 {
         return result.copyFromFloats(this.x * -1, this.y * -1, this.z * -1, this.w * -1);
@@ -3553,19 +3604,19 @@ export class Vector4 {
  * @see https://doc.babylonjs.com/features/position,_rotation,_scaling
  */
 export class Quaternion {
-    /** @hidden */
+    /** @internal */
     public _x: number;
 
-    /** @hidden */
+    /** @internal */
     public _y: number;
 
-    /** @hidden */
+    /** @internal */
     public _z: number;
 
-    /** @hidden */
+    /** @internal */
     public _w: number;
 
-    /** @hidden */
+    /** @internal */
     public _isDirty = true;
 
     /** Gets or sets the x coordinate */
@@ -4111,6 +4162,34 @@ export class Quaternion {
             result.y = (m23 + m32) / s;
             result.z = 0.25 * s;
         }
+    }
+
+    /**
+     * Creates the rotation quaternion needed to rotate from one Vector3 onto another Vector3
+     * @param fromVector the starting vector
+     * @param toVector the ending vector
+     * @returns the rotation quaternion needed
+     */
+    public static RotationQuaternionFromOnto(fromVector: DeepImmutable<Vector3>, toVector: DeepImmutable<Vector3>) {
+        const ref: Quaternion = Quaternion.Zero();
+        return Quaternion.RotationQuaternionFromOntoToRef(fromVector, toVector, ref);
+    }
+
+    /**
+     * Creates the rotation quaternion needed to rotate from one Vector3 onto another Vector3 and stores in a result Quaternion
+     * @param fromVector the starting vector
+     * @param toVector the ending vector
+     * @param result the rotation quaternion needed
+     * @returns the result
+     */
+    public static RotationQuaternionFromOntoToRef(fromVector: DeepImmutable<Vector3>, toVector: DeepImmutable<Vector3>, result: DeepImmutable<Quaternion>) {
+        const normal: Vector3 = TmpVectors.Vector3[0];
+        Vector3.CrossToRef(fromVector, toVector, normal);
+        if (normal.equals(Vector3.ZeroReadOnly)) {
+            fromVector._getNormalToRef(normal);
+        }
+        const angle = Vector3.GetAngleBetweenVectors(fromVector, toVector, normal);
+        return Quaternion.RotationAxisToRef(normal, angle, result);
     }
 
     /**
@@ -6910,7 +6989,7 @@ export class Matrix {
 }
 
 /**
- * @hidden
+ * @internal
  * Same as Tmp but not exported to keep it only for math functions to avoid conflicts
  */
 class MathTmp {
@@ -6920,7 +6999,7 @@ class MathTmp {
 }
 
 /**
- * @hidden
+ * @internal
  */
 export class TmpVectors {
     public static Vector2 = ArrayTools.BuildTuple(3, Vector2.Zero); // 3 temp Vector2 at once should be enough

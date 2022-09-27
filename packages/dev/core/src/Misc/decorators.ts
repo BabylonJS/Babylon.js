@@ -228,34 +228,28 @@ export class SerializationHelper {
     public static AllowLoadingUniqueId = false;
 
     /**
-     * @param sourceProperty
-     * @hidden
+     * @internal
      */
     public static _ImageProcessingConfigurationParser = (sourceProperty: any): ImageProcessingConfiguration => {
         throw _WarnImport("ImageProcessingConfiguration");
     };
 
     /**
-     * @param sourceProperty
-     * @hidden
+     * @internal
      */
     public static _FresnelParametersParser = (sourceProperty: any): FresnelParameters => {
         throw _WarnImport("FresnelParameters");
     };
 
     /**
-     * @param sourceProperty
-     * @hidden
+     * @internal
      */
     public static _ColorCurvesParser = (sourceProperty: any): ColorCurves => {
         throw _WarnImport("ColorCurves");
     };
 
     /**
-     * @param sourceProperty
-     * @param scene
-     * @param rootUrl
-     * @hidden
+     * @internal
      */
     public static _TextureParser = (sourceProperty: any, scene: Scene, rootUrl: string): Nullable<BaseTexture> => {
         throw _WarnImport("Texture");
@@ -454,16 +448,12 @@ export class SerializationHelper {
     }
 }
 
-/** @hidden */
+/** @internal */
 declare const _native: any;
 
 /**
  * Decorator used to redirect a function to a native implementation if available.
- * @param target
- * @param propertyKey
- * @param descriptor
- * @param predicate
- * @hidden
+ * @internal
  */
 export function nativeOverride<T extends (...params: any[]) => boolean>(
     target: any,
@@ -506,7 +496,7 @@ export function nativeOverride<T extends (...params: any[]) => boolean>(
  * @param predicate
  * @example @nativeOverride.filter((...[arg1]: Parameters<typeof someClass.someMethod>) => arg1.length > 20)
  *          public someMethod(arg1: string, arg2: number): string {
- * @hidden
+ * @internal
  */
 nativeOverride.filter = function <T extends (...params: any) => boolean>(predicate: T) {
     return (target: any, propertyKey: string, descriptor: TypedPropertyDescriptor<(...params: Parameters<T>) => unknown>) =>

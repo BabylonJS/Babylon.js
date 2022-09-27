@@ -6,7 +6,7 @@ import type { Nullable } from "../../types";
 import type { ICanvas, IImage } from "../ICanvas";
 import type { NativeData, NativeDataStream } from "./nativeDataStream";
 
-/** @hidden */
+/** @internal */
 export interface INativeEngine {
     dispose(): void;
 
@@ -91,7 +91,7 @@ export interface INativeEngine {
     submitCommands(): void;
 }
 
-/** @hidden */
+/** @internal */
 interface INativeEngineConstructor {
     prototype: INativeEngine;
     new (): INativeEngine;
@@ -230,19 +230,19 @@ interface INativeEngineConstructor {
     readonly COMMAND_SETSTENCIL: NativeData;
 }
 
-/** @hidden */
+/** @internal */
 export interface INativeCamera {
     createVideo(constraints: MediaTrackConstraints): any;
     updateVideoTexture(texture: Nullable<InternalTexture>, video: HTMLVideoElement, invertY: boolean): void;
 }
 
-/** @hidden */
+/** @internal */
 interface INativeCameraConstructor {
     prototype: INativeCamera;
     new (): INativeCamera;
 }
 
-/** @hidden */
+/** @internal */
 interface INativeCanvasConstructor {
     prototype: ICanvas;
     new (): ICanvas;
@@ -250,13 +250,13 @@ interface INativeCanvasConstructor {
     loadTTFAsync(fontName: string, buffer: ArrayBuffer): void;
 }
 
-/** @hidden */
+/** @internal */
 interface INativeImageConstructor {
     prototype: IImage;
     new (): IImage;
 }
 
-/** @hidden */
+/** @internal */
 interface IDeviceInputSystemConstructor {
     prototype: IDeviceInputSystem;
     new (
@@ -266,12 +266,12 @@ interface IDeviceInputSystemConstructor {
     ): IDeviceInputSystem;
 }
 
-/** @hidden */
+/** @internal */
 export interface INativeDataStream {
     writeBuffer(buffer: ArrayBuffer, length: number): void;
 }
 
-/** @hidden */
+/** @internal */
 interface INativeDataStreamConstructor {
     prototype: INativeDataStream;
     new (requestFlushCallback: () => void): INativeDataStream;
@@ -287,7 +287,7 @@ interface INativeDataStreamConstructor {
     readonly VALIDATION_BOOLEAN: number;
 }
 
-/** @hidden */
+/** @internal */
 export interface INative {
     Engine: INativeEngineConstructor;
     Camera: INativeCameraConstructor;

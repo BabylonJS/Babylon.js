@@ -9,7 +9,7 @@ import { Button3D } from "./button3D";
  * Class used to create an interactable object. It's a 3D button using a mesh coming from the current scene
  */
 export class MeshButton3D extends Button3D {
-    /** @hidden */
+    /** @internal */
     protected _currentMesh: Mesh;
 
     /**

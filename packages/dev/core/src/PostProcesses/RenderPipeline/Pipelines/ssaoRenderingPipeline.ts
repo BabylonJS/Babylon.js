@@ -187,9 +187,7 @@ export class SSAORenderingPipeline extends PostProcessRenderPipeline {
     }
 
     /**
-     * @param cameras
-     * @param unique
-     * @hidden
+     * @internal
      */
     public _attachCameras(cameras: any, unique: boolean): void {
         super._attachCameras(cameras, unique);
@@ -273,7 +271,7 @@ export class SSAORenderingPipeline extends PostProcessRenderPipeline {
         });
     }
 
-    /** @hidden */
+    /** @internal */
     public _rebuild() {
         this._firstUpdate = true;
         super._rebuild();

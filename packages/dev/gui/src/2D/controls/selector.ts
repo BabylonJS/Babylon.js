@@ -52,8 +52,7 @@ export class SelectorGroup {
     }
 
     /**
-     * @param text
-     * @hidden
+     * @internal
      */
     private _addGroupHeader(text: string): TextBlock {
         const groupHeading = new TextBlock("groupHead", text);
@@ -69,8 +68,7 @@ export class SelectorGroup {
     }
 
     /**
-     * @param selectorNb
-     * @hidden
+     * @internal
      */
     public _getSelector(selectorNb: number) {
         if (selectorNb < 0 || selectorNb >= this._selectors.length) {
@@ -130,36 +128,28 @@ export class CheckboxGroup extends SelectorGroup {
     }
 
     /**
-     * @param selectorNb
-     * @param label
-     * @hidden
+     * @internal
      */
     public _setSelectorLabel(selectorNb: number, label: string) {
         (<TextBlock>this.selectors[selectorNb].children[1]).text = label;
     }
 
     /**
-     * @param selectorNb
-     * @param color
-     * @hidden
+     * @internal
      */
     public _setSelectorLabelColor(selectorNb: number, color: string) {
         (<TextBlock>this.selectors[selectorNb].children[1]).color = color;
     }
 
     /**
-     * @param selectorNb
-     * @param color
-     * @hidden
+     * @internal
      */
     public _setSelectorButtonColor(selectorNb: number, color: string) {
         this.selectors[selectorNb].children[0].color = color;
     }
 
     /**
-     * @param selectorNb
-     * @param color
-     * @hidden
+     * @internal
      */
     public _setSelectorButtonBackground(selectorNb: number, color: string) {
         (<Checkbox>this.selectors[selectorNb].children[0]).background = color;
@@ -210,36 +200,28 @@ export class RadioGroup extends SelectorGroup {
     }
 
     /**
-     * @param selectorNb
-     * @param label
-     * @hidden
+     * @internal
      */
     public _setSelectorLabel(selectorNb: number, label: string) {
         (<TextBlock>this.selectors[selectorNb].children[1]).text = label;
     }
 
     /**
-     * @param selectorNb
-     * @param color
-     * @hidden
+     * @internal
      */
     public _setSelectorLabelColor(selectorNb: number, color: string) {
         (<TextBlock>this.selectors[selectorNb].children[1]).color = color;
     }
 
     /**
-     * @param selectorNb
-     * @param color
-     * @hidden
+     * @internal
      */
     public _setSelectorButtonColor(selectorNb: number, color: string) {
         this.selectors[selectorNb].children[0].color = color;
     }
 
     /**
-     * @param selectorNb
-     * @param color
-     * @hidden
+     * @internal
      */
     public _setSelectorButtonBackground(selectorNb: number, color: string) {
         (<RadioButton>this.selectors[selectorNb].children[0]).background = color;
@@ -306,9 +288,7 @@ export class SliderGroup extends SelectorGroup {
     }
 
     /**
-     * @param selectorNb
-     * @param label
-     * @hidden
+     * @internal
      */
     public _setSelectorLabel(selectorNb: number, label: string) {
         this.selectors[selectorNb].children[0].name = label;
@@ -317,27 +297,21 @@ export class SliderGroup extends SelectorGroup {
     }
 
     /**
-     * @param selectorNb
-     * @param color
-     * @hidden
+     * @internal
      */
     public _setSelectorLabelColor(selectorNb: number, color: string) {
         (<TextBlock>this.selectors[selectorNb].children[0]).color = color;
     }
 
     /**
-     * @param selectorNb
-     * @param color
-     * @hidden
+     * @internal
      */
     public _setSelectorButtonColor(selectorNb: number, color: string) {
         this.selectors[selectorNb].children[1].color = color;
     }
 
     /**
-     * @param selectorNb
-     * @param color
-     * @hidden
+     * @internal
      */
     public _setSelectorButtonBackground(selectorNb: number, color: string) {
         (<Slider>this.selectors[selectorNb].children[1]).background = color;

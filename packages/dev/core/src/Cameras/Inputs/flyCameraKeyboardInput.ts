@@ -151,7 +151,7 @@ export class FlyCameraKeyboardInput implements ICameraInput<FlyCamera> {
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public _onLostFocus(): void {
         this._keys.length = 0;

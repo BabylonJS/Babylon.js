@@ -92,16 +92,16 @@ declare module "./mesh" {
          */
         thinInstanceRefreshBoundingInfo(forceRefreshParentInfo?: boolean, applySkeleton?: boolean, applyMorph?: boolean): void;
 
-        /** @hidden */
+        /** @internal */
         _thinInstanceInitializeUserStorage(): void;
 
-        /** @hidden */
+        /** @internal */
         _thinInstanceUpdateBufferSize(kind: string, numInstances?: number): void;
 
-        /** @hidden */
+        /** @internal */
         _thinInstanceCreateMatrixBuffer(kind: string, buffer: Nullable<Float32Array>, staticBuffer: boolean): Buffer;
 
-        /** @hidden */
+        /** @internal */
         _userThinInstanceBuffersStorage: {
             data: { [key: string]: Float32Array };
             sizes: { [key: string]: number };

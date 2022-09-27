@@ -26,7 +26,7 @@ export class LensFlare {
      */
     public alphaMode: number = Constants.ALPHA_ONEONE;
 
-    /** @hidden */
+    /** @internal */
     public _drawWrapper: DrawWrapper;
 
     private _system: LensFlareSystem;

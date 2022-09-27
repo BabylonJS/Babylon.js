@@ -109,7 +109,7 @@ export class BakedVertexAnimationManager implements IBakedVertexAnimationManager
         this.animationParameters = new Vector4(0, 0, 0, 30);
     }
 
-    /** @hidden */
+    /** @internal */
     public _markSubMeshesAsAttributesDirty(): void {
         for (const mesh of this._scene.meshes) {
             if ((<any>mesh).bakedVertexAnimationManager === this) {

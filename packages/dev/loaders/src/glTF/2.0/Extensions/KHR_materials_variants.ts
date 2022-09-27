@@ -41,15 +41,14 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
     private _variants?: Array<IKHRMaterialVariants_Variant>;
 
     /**
-     * @param loader
-     * @hidden
+     * @internal
      */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
         this.enabled = this._loader.isExtensionUsed(NAME);
     }
 
-    /** @hidden */
+    /** @internal */
     public dispose() {
         (this._loader as any) = null;
     }
@@ -169,7 +168,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
         return rootMesh?.metadata?.gltf?.[NAME] || null;
     }
 
-    /** @hidden */
+    /** @internal */
     public onLoading(): void {
         const extensions = this._loader.gltf.extensions;
         if (extensions && extensions[this.name]) {
@@ -179,13 +178,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
     }
 
     /**
-     * @param context
-     * @param name
-     * @param node
-     * @param mesh
-     * @param primitive
-     * @param assign
-     * @hidden
+     * @internal
      */
     public _loadMeshPrimitiveAsync(
         context: string,

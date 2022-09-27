@@ -10,7 +10,7 @@ import type { RenderTargetTexture } from "../Materials/Textures/renderTargetText
 
 declare module "../scene" {
     export interface Scene {
-        /** @hidden (Backing field) */
+        /** @internal (Backing field) */
         _depthRenderer: { [id: string]: DepthRenderer };
 
         /**

@@ -91,8 +91,7 @@ export class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<Arc
     }
 
     /**
-     * @param evt
-     * @hidden
+     * @internal
      */
     public _onOrientationEvent(evt: DeviceOrientationEvent): void {
         if (evt.alpha !== null) {

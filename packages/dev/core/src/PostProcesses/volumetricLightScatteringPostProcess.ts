@@ -68,7 +68,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
     public mesh: Mesh;
 
     /**
-     * @hidden
+     * @internal
      * VolumetricLightScatteringPostProcess.useDiffuseColor is no longer used, use the mesh material directly instead
      */
     public get useDiffuseColor(): boolean {

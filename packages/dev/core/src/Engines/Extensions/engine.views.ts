@@ -27,7 +27,7 @@ export class EngineView {
 
 declare module "../../Engines/engine" {
     export interface Engine {
-        /** @hidden */
+        /** @internal */
         _inputElement: Nullable<HTMLElement>;
 
         /**
@@ -37,7 +37,7 @@ declare module "../../Engines/engine" {
 
         /**
          * Observable to handle when a change to inputElement occurs
-         * @hidden
+         * @internal
          */
         _onEngineViewChanged?: () => void;
 

@@ -5,7 +5,7 @@ import type { IInternalTextureLoader } from "../../../Materials/Textures/interna
 
 /**
  * Implementation of the TGA Texture Loader.
- * @hidden
+ * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class _TGATextureLoader implements IInternalTextureLoader {

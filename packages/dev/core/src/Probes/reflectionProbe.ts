@@ -79,7 +79,7 @@ export class ReflectionProbe {
      */
     public metadata: any = null;
 
-    /** @hidden */
+    /** @internal */
     public _parentContainer: Nullable<AbstractScene> = null;
 
     /**

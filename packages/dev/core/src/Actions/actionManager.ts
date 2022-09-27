@@ -345,9 +345,7 @@ export class ActionManager extends AbstractActionManager {
     }
 
     /**
-     * @param target
-     * @param propertyPath
-     * @hidden
+     * @internal
      */
     public _getEffectiveTarget(target: any, propertyPath: string): any {
         const properties = propertyPath.split(".");
@@ -360,8 +358,7 @@ export class ActionManager extends AbstractActionManager {
     }
 
     /**
-     * @param propertyPath
-     * @hidden
+     * @internal
      */
     public _getProperty(propertyPath: string): string {
         const properties = propertyPath.split(".");

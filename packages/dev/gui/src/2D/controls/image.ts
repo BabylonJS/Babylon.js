@@ -314,9 +314,7 @@ export class Image extends Control {
     }
 
     /**
-     * @param n
-     * @param preserveProperties
-     * @hidden
+     * @internal
      */
     public _rotate90(n: number, preserveProperties: boolean = false): Image {
         const width = this._domImage.width;

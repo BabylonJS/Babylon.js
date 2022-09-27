@@ -14,14 +14,14 @@ import type { Scene } from "core/scene";
  * This is a babylon scene loader plugin.
  */
 export class STLFileLoader implements ISceneLoaderPlugin {
-    /** @hidden */
+    /** @internal */
     public solidPattern = /solid (\S*)([\S\s]*?)endsolid[ ]*(\S*)/g;
 
-    /** @hidden */
+    /** @internal */
     public facetsPattern = /facet([\s\S]*?)endfacet/g;
-    /** @hidden */
+    /** @internal */
     public normalPattern = /normal[\s]+([-+]?[0-9]+\.?[0-9]*([eE][-+]?[0-9]+)?)+[\s]+([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)+[\s]+([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)+/g;
-    /** @hidden */
+    /** @internal */
     public vertexPattern = /vertex[\s]+([-+]?[0-9]+\.?[0-9]*([eE][-+]?[0-9]+)?)+[\s]+([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)+[\s]+([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)+/g;
 
     /**

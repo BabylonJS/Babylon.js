@@ -6,7 +6,7 @@ declare type ThinEngine = import("../Engines/thinEngine").ThinEngine;
 declare type Effect = import("./effect").Effect;
 declare type MaterialDefines = import("./materialDefines").MaterialDefines;
 
-/** @hidden */
+/** @internal */
 export class DrawWrapper {
     public effect: Nullable<Effect>;
     public defines: Nullable<string | MaterialDefines>;

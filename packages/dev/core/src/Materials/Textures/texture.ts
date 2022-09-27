@@ -87,33 +87,21 @@ export class Texture extends BaseTexture {
     public static OnTextureLoadErrorObservable = new Observable<BaseTexture>();
 
     /**
-     * @param jsonTexture
-     * @param scene
-     * @param rootUrl
-     * @hidden
+     * @internal
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static _CubeTextureParser = (jsonTexture: any, scene: Scene, rootUrl: string): CubeTexture => {
         throw _WarnImport("CubeTexture");
     };
     /**
-     * @param name
-     * @param renderTargetSize
-     * @param scene
-     * @param generateMipMaps
-     * @hidden
+     * @internal
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static _CreateMirror = (name: string, renderTargetSize: number, scene: Scene, generateMipMaps: boolean): MirrorTexture => {
         throw _WarnImport("MirrorTexture");
     };
     /**
-     * @param name
-     * @param renderTargetSize
-     * @param scene
-     * @param generateMipMaps
-     * @param creationFlags
-     * @hidden
+     * @internal
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static _CreateRenderTargetTexture = (name: string, renderTargetSize: number, scene: Scene, generateMipMaps: boolean, creationFlags?: number): RenderTargetTexture => {
@@ -283,7 +271,7 @@ export class Texture extends BaseTexture {
     public inspectableCustomProperties: Nullable<IInspectable[]> = null;
 
     private _noMipmap: boolean = false;
-    /** @hidden */
+    /** @internal */
     public _invertY: boolean = false;
     private _rowGenerationMatrix: Nullable<Matrix> = null;
     private _cachedTextureMatrix: Nullable<Matrix> = null;
@@ -306,7 +294,7 @@ export class Texture extends BaseTexture {
     private _cachedHomogeneousRotationInUVTransform: boolean = false;
     private _cachedCoordinatesMode: number = -1;
 
-    /** @hidden */
+    /** @internal */
     public _buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null;
     private _deleteBuffer: boolean = false;
     protected _format: Nullable<number> = null;
@@ -558,7 +546,7 @@ export class Texture extends BaseTexture {
 
     /**
      * Finish the loading sequence of a texture flagged as delayed load.
-     * @hidden
+     * @internal
      */
     public delayLoad(): void {
         if (this.delayLoadState !== Constants.DELAYLOADSTATE_NOTLOADED) {

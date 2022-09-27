@@ -405,8 +405,7 @@ export class TextBlock extends Control {
     }
 
     /**
-     * @param context
-     * @hidden
+     * @internal
      */
     public _draw(context: ICanvasRenderingContext): void {
         context.save();

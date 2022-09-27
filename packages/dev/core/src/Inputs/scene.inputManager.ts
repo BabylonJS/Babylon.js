@@ -23,7 +23,7 @@ declare module "../scene" {
 
 declare type Scene = import("../scene").Scene;
 
-/** @hidden */
+/** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 class _ClickInfo {
     private _singleClick = false;
@@ -456,8 +456,8 @@ export class InputManager {
     }
 
     /**
-     * @hidden
-     * @returns Boolean if delta for pointer exceeds drag movement threshold
+     * @internal
+     * @internals Boolean if delta for pointer exceeds drag movement threshold
      */
     public _isPointerSwiping(): boolean {
         return (
@@ -1086,7 +1086,7 @@ export class InputManager {
 
     /**
      * @param mesh - Mesh to invalidate
-     * @hidden
+     * @internal
      */
     public _invalidateMesh(mesh: AbstractMesh) {
         if (this._pointerOverMesh === mesh) {

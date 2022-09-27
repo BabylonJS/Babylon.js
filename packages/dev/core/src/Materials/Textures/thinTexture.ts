@@ -138,7 +138,7 @@ export class ThinTexture {
         return "ThinTexture";
     }
 
-    /** @hidden */
+    /** @internal */
     public _texture: Nullable<InternalTexture> = null;
 
     protected _engine: Nullable<ThinEngine> = null;
@@ -234,7 +234,7 @@ export class ThinTexture {
         return this._cachedBaseSize;
     }
 
-    /** @hidden */
+    /** @internal */
     protected _initialSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
 
     /**

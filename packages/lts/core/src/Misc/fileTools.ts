@@ -23,7 +23,7 @@ declare type RequestFileError = import("core/Misc/fileTools").RequestFileError;
 /**
  * FileTools defined as any.
  * This should not be imported or used in future releases or in any module in the framework
- * @hidden
+ * @internal
  * @deprecated import the needed function from fileTools.ts
  */
 export let FileTools: {
@@ -74,18 +74,7 @@ export let FileTools: {
  * @param DecodeBase64UrlToBinary
  * @param DecodeBase64UrlToString
  * @param FileToolsOptions
- * @param FileToolsOptions.DefaultRetryStrategy
- * @param FileToolsOptions.BaseUrl
- * @param FileToolsOptions.CorsBehavior
- * @param FileToolsOptions.PreprocessUrl
- * @param IsBase64DataUrl
- * @param IsFileURL
- * @param LoadFile
- * @param LoadImage
- * @param ReadFile
- * @param RequestFile
- * @param SetCorsBehavior
- * @hidden
+ * @internal
  */
 export const _injectLTSFileTools = (
     DecodeBase64UrlToBinary: (uri: string) => ArrayBuffer,
@@ -130,7 +119,7 @@ export const _injectLTSFileTools = (
 ) => {
     /**
      * Backwards compatibility.
-     * @hidden
+     * @internal
      * @deprecated
      */
     FileTools = {

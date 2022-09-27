@@ -69,6 +69,9 @@ export interface ISpriteManager extends IDisposable {
     /** Defines the default height of a cell in the spritesheet */
     cellHeight: number;
 
+    /** @internal */
+    _wasDispatched: boolean;
+
     /**
      * Tests the intersection of a sprite with a specific ray.
      * @param ray The ray we are sending to test the collision
@@ -118,6 +121,9 @@ export class SpriteManager implements ISpriteManager {
     public layerMask: number = 0x0fffffff;
     /** Gets or sets a boolean indicating if the sprites are pickable */
     public isPickable = false;
+
+    /** @internal */
+    public _wasDispatched = false;
 
     /**
      * An event triggered when the manager is disposed.

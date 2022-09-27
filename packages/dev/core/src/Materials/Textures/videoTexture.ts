@@ -305,7 +305,7 @@ export class VideoTexture extends Texture {
     };
 
     /**
-     * @hidden Internal method to initiate `update`.
+     * @internal Internal method to initiate `update`.
      */
     public _rebuild(): void {
         this.update();

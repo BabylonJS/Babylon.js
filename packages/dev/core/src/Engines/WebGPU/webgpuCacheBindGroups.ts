@@ -17,7 +17,7 @@ class WebGPUBindGroupCacheNode {
     }
 }
 
-/** @hidden */
+/** @internal */
 export class WebGPUCacheBindGroups {
     public static NumBindGroupsCreatedTotal = 0;
     public static NumBindGroupsCreatedLastFrame = 0;

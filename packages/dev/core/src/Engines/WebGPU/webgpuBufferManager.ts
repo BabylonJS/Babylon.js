@@ -6,7 +6,7 @@ import { Constants } from "../constants";
 import { allocateAndCopyTypedBuffer } from "../Extensions/engine.readTexture";
 import * as WebGPUConstants from "./webgpuConstants";
 
-/** @hidden */
+/** @internal */
 export class WebGPUBufferManager {
     private _device: GPUDevice;
     private _deferredReleaseBuffers: Array<GPUBuffer> = [];

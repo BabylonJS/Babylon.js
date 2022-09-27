@@ -82,7 +82,7 @@ export class Sound {
      */
     public distanceModel: string = "linear";
     /**
-     * @hidden
+     * @internal
      * Back Compat
      **/
     public onended: () => any;
@@ -163,8 +163,7 @@ export class Sound {
     private _offset?: number;
 
     /**
-     * @param _
-     * @hidden
+     * @internal
      */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
         throw _WarnImport("AudioSceneComponent");
@@ -714,7 +713,7 @@ export class Sound {
         this._soundPanner.orientationZ.value = direction.z;
     }
 
-    /** @hidden */
+    /** @internal */
     public updateDistanceFromListener() {
         if (Engine.audioEngine?.canUseWebAudio && this._connectedTransformNode && this.useCustomAttenuation && this._soundGain && this._scene.activeCamera) {
             const distance = this._connectedTransformNode.getDistanceToCamera(this._scene.activeCamera);
