@@ -85,11 +85,17 @@ export async function takeSnapshotsLocal(options: RunOptions = {}): Promise<Brow
                     if (node.pathEdge?.type === "internal" || node.pathEdge?.type === "hidden") {
                         return false;
                     }
-                    if ((!node.name && node.type === "object") || node.name === "Object" || node.type === 'hidden' || node.type.includes("system ") || node.name.includes("system ")) {
+                    if (
+                        (!node.name && node.type === "object") ||
+                        node.name === "Object" ||
+                        node.type === "hidden" ||
+                        node.type.includes("system ") ||
+                        node.name.includes("system ")
+                    ) {
                         return false;
                     }
                     // custom cases
-                    if(node.name === "WebGL2RenderingContext") {
+                    if (node.name === "WebGL2RenderingContext") {
                         return false;
                     }
                     return true;
