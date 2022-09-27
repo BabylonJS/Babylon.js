@@ -1,5 +1,8 @@
 import * as React from "react";
-import { FileButtonLineComponent } from "shared-ui-components/lines/fileButtonLineComponent";
+import { FileButtonLineComponent } from "../../lines/fileButtonLineComponent";
+import { JoinClassNames } from "../classNames";
+
+import style from "./CommandDropdown.modules.scss";
 
 interface ICommandDropdownComponentProps {
     icon?: string;
@@ -31,15 +34,15 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
             <>
                 {this.state.isExpanded && (
                     <div
-                        className="command-dropdown-blocker"
+                        className={style.commandDropdownBlocker}
                         onClick={() => {
                             this.setState({ isExpanded: false });
                         }}
                     ></div>
                 )}
-                <div className="command-dropdown-root">
+                <div className={style.commandDropdownRoot}>
                     <div
-                        className={"command-dropdown" + (this.state.isExpanded ? " activated" : "")}
+                        className={JoinClassNames(style, "commandDropdown", this.state.isExpanded ? "activated" : "")}
                         title={this.props.tooltip}
                         onClick={() => {
                             this.setState({ isExpanded: false });
@@ -54,19 +57,19 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                         }}
                     >
                         {this.props.icon && (
-                            <div className="command-dropdown-icon">
+                            <div className={style.commandDropdownIcon}>
                                 <img src={this.props.icon} />
                             </div>
                         )}
-                        {!this.props.icon && <div className="command-dropdown-active"></div>}
+                        {!this.props.icon && <div className={style.commandDropdownActive}></div>}
                     </div>
                     {this.state.isExpanded && (
-                        <div className={"command-dropdown-content sub1" + (this.props.toRight ? " toRight" : "")}>
+                        <div className={JoinClassNames(style, "commandDropdownContent", this.props.toRight ? "toRight" : "")}>
                             {this.props.items.map((m) => {
                                 if (!m.fileButton) {
                                     return (
                                         <div
-                                            className={"command-dropdown-label" + (m.isActive ? " active" : "")}
+                                            className={JoinClassNames(style, "commandDropdownLabel", m.isActive ? "active" : "")}
                                             key={m.label}
                                             onClick={() => {
                                                 if (!m.onClick) {
@@ -81,16 +84,16 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                                             }}
                                             title={m.label}
                                         >
-                                            {!m.icon && <div className="command-dropdown-label-text">{(m.isActive ? "> " : "") + m.label}</div>}
+                                            {!m.icon && <div className={style.commandDropdownLabelText}>{(m.isActive ? "> " : "") + m.label}</div>}
                                             {m.icon && (
-                                                <div className="command-dropdown-icon">
+                                                <div className={style.commandDropdownIcon}>
                                                     <img src={m.icon} />
                                                 </div>
                                             )}
                                             {m.onCheck && (
                                                 <input
                                                     type="checkBox"
-                                                    className="command-dropdown-label-check"
+                                                    className={style.commandDropdownLabelCheck}
                                                     onChange={(evt) => {
                                                         this.forceUpdate();
                                                         m.onCheck!(evt.target.checked);
@@ -98,20 +101,20 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                                                     checked={false}
                                                 />
                                             )}
-                                            {m.subItems && <div className="command-dropdown-arrow">{">"}</div>}
+                                            {m.subItems && <div className={style.commandDropdownArrow}>{">"}</div>}
                                             {m.subItems && (
-                                                <div className={"sub-items "}>
+                                                <div className={style.subItems}>
                                                     {m.subItems.map((s) => {
                                                         return (
                                                             <div
                                                                 key={s}
-                                                                className={"sub-item"}
+                                                                className={style.subItem}
                                                                 onClick={() => {
                                                                     m.onClick!();
                                                                     this.setState({ isExpanded: false });
                                                                 }}
                                                             >
-                                                                <div className="sub-item-label">{s}</div>
+                                                                <div>{s}</div>
                                                             </div>
                                                         );
                                                     })}
