@@ -156,10 +156,7 @@ export class KhronosTextureContainer2 {
     }
 
     /**
-     * @param data
-     * @param internalTexture
-     * @param options
-     * @hidden
+     * @internal
      */
     public uploadAsync(data: ArrayBufferView, internalTexture: InternalTexture, options?: any): Promise<void> {
         const caps = this._engine.getCaps();

@@ -90,8 +90,7 @@ export class BoundingSphere {
 
     // Methods
     /**
-     * @param worldMatrix
-     * @hidden
+     * @internal
      */
     public _update(worldMatrix: DeepImmutable<Matrix>): void {
         if (!worldMatrix.isIdentity()) {

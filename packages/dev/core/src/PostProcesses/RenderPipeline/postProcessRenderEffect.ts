@@ -19,7 +19,7 @@ export class PostProcessRenderEffect {
 
     /**
      * Name of the effect
-     * @hidden
+     * @internal
      */
     public _name: string;
 
@@ -62,26 +62,26 @@ export class PostProcessRenderEffect {
 
     /**
      * Updates the current state of the effect
-     * @hidden
+     * @internal
      */
     public _update(): void {}
 
     /**
      * Attaches the effect on cameras
      * @param cameras The camera to attach to.
-     * @hidden
+     * @internal
      */
     public _attachCameras(cameras: Camera): void;
     /**
      * Attaches the effect on cameras
      * @param cameras The camera to attach to.
-     * @hidden
+     * @internal
      */
     public _attachCameras(cameras: Camera[]): void;
     /**
      * Attaches the effect on cameras
      * @param cameras The camera to attach to.
-     * @hidden
+     * @internal
      */
     public _attachCameras(cameras: any): void {
         let cameraKey;
@@ -132,19 +132,19 @@ export class PostProcessRenderEffect {
     /**
      * Detaches the effect on cameras
      * @param cameras The camera to detach from.
-     * @hidden
+     * @internal
      */
     public _detachCameras(cameras: Camera): void;
     /**
      * Detaches the effect on cameras
      * @param cameras The camera to detach from.
-     * @hidden
+     * @internal
      */
     public _detachCameras(cameras: Camera[]): void;
     /**
      * Detaches the effect on cameras
      * @param cameras The camera to detach from.
-     * @hidden
+     * @internal
      */
     public _detachCameras(cameras: any): void {
         const cams = Tools.MakeArray(cameras || this._cameras);
@@ -173,19 +173,19 @@ export class PostProcessRenderEffect {
     /**
      * Enables the effect on given cameras
      * @param cameras The camera to enable.
-     * @hidden
+     * @internal
      */
     public _enable(cameras: Camera): void;
     /**
      * Enables the effect on given cameras
      * @param cameras The camera to enable.
-     * @hidden
+     * @internal
      */
     public _enable(cameras: Nullable<Camera[]>): void;
     /**
      * Enables the effect on given cameras
      * @param cameras The camera to enable.
-     * @hidden
+     * @internal
      */
     public _enable(cameras: any): void {
         const cams: Nullable<Array<Camera>> = Tools.MakeArray(cameras || this._cameras);
@@ -211,19 +211,19 @@ export class PostProcessRenderEffect {
     /**
      * Disables the effect on the given cameras
      * @param cameras The camera to disable.
-     * @hidden
+     * @internal
      */
     public _disable(cameras: Camera): void;
     /**
      * Disables the effect on the given cameras
      * @param cameras The camera to disable.
-     * @hidden
+     * @internal
      */
     public _disable(cameras: Nullable<Camera[]>): void;
     /**
      * Disables the effect on the given cameras
      * @param cameras The camera to disable.
-     * @hidden
+     * @internal
      */
     public _disable(cameras: any): void {
         const cams: Nullable<Array<Camera>> = Tools.MakeArray(cameras || this._cameras);

@@ -1,7 +1,7 @@
 import { ShaderCodeNode } from "./shaderCodeNode";
 import type { ShaderDefineExpression } from "./Expressions/shaderDefineExpression";
 
-/** @hidden */
+/** @internal */
 export class ShaderCodeTestNode extends ShaderCodeNode {
     public testExpression: ShaderDefineExpression;
 

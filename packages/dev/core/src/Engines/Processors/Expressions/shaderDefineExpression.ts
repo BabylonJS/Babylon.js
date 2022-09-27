@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-/** @hidden */
+/** @internal */
 export class ShaderDefineExpression {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public isTrue(preprocessors: { [key: string]: string }): boolean {

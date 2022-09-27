@@ -1,4 +1,4 @@
-/** @hidden */
+/** @internal */
 export interface IDrawContext {
     uniqueId: number;
     useInstancing: boolean;

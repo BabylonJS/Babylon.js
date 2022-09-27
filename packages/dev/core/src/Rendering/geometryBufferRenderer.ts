@@ -22,7 +22,7 @@ import "../Shaders/geometry.fragment";
 import "../Shaders/geometry.vertex";
 import { MaterialFlags } from "../Materials/materialFlags";
 
-/** @hidden */
+/** @internal */
 interface ISavedTransformationMatrix {
     world: Matrix;
     viewProjection: Matrix;
@@ -61,13 +61,13 @@ export class GeometryBufferRenderer {
     /**
      * Dictionary used to store the previous transformation matrices of each rendered mesh
      * in order to compute objects velocities when enableVelocity is set to "true"
-     * @hidden
+     * @internal
      */
     public _previousTransformationMatrices: { [index: number]: ISavedTransformationMatrix } = {};
     /**
      * Dictionary used to store the previous bones transformation matrices of each rendered mesh
      * in order to compute objects velocities when enableVelocity is set to "true"
-     * @hidden
+     * @internal
      */
     public _previousBonesTransformationMatrices: { [index: number]: Float32Array } = {};
     /**
@@ -102,8 +102,7 @@ export class GeometryBufferRenderer {
     protected _cachedDefines: string;
 
     /**
-     * @param prePassRenderer
-     * @hidden
+     * @internal
      * Sets up internal structures to share outputs with PrePassRenderer
      * This method should only be called by the PrePassRenderer itself
      */
@@ -121,7 +120,7 @@ export class GeometryBufferRenderer {
     }
 
     /**
-     * @hidden
+     * @internal
      * Separates internal structures from PrePassRenderer so the geometry buffer can now operate by itself.
      * This method should only be called by the PrePassRenderer itself
      */
@@ -131,7 +130,7 @@ export class GeometryBufferRenderer {
     }
 
     /**
-     * @hidden
+     * @internal
      * Resets the geometry buffer layout
      */
     public _resetLayout() {
@@ -142,9 +141,7 @@ export class GeometryBufferRenderer {
     }
 
     /**
-     * @param geometryBufferType
-     * @param index
-     * @hidden
+     * @internal
      * Replaces a texture in the geometry buffer renderer
      * Useful when linking textures of the prepass renderer
      */
@@ -166,8 +163,7 @@ export class GeometryBufferRenderer {
     }
 
     /**
-     * @param attachments
-     * @hidden
+     * @internal
      * Sets texture attachments
      * Useful when linking textures of the prepass renderer
      */
@@ -176,8 +172,7 @@ export class GeometryBufferRenderer {
     }
 
     /**
-     * @param internalTexture
-     * @hidden
+     * @internal
      * Replaces the first texture which is hard coded as a depth texture in the geometry buffer
      * Useful when linking textures of the prepass renderer
      */
@@ -309,8 +304,7 @@ export class GeometryBufferRenderer {
     }
 
     /**
-     * @param _
-     * @hidden
+     * @internal
      */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
         throw _WarnImport("GeometryBufferRendererSceneComponent");

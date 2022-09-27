@@ -13,7 +13,7 @@ declare type Effect = import("../Materials/effect").Effect;
 /**
  * Interface to follow in your material defines to integrate easily the
  * Image processing functions.
- * @hidden
+ * @internal
  */
 export interface IImageProcessingConfigurationDefines {
     IMAGEPROCESSING: boolean;
@@ -35,7 +35,7 @@ export interface IImageProcessingConfigurationDefines {
 }
 
 /**
- * @hidden
+ * @internal
  */
 export class ImageProcessingConfigurationDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
     public IMAGEPROCESSING = false;
@@ -184,7 +184,7 @@ export class ImageProcessingConfiguration {
         this._updateParameters();
     }
 
-    /** @hidden */
+    /** @internal */
     @serialize()
     public _exposure = 1.0;
     /**
@@ -384,7 +384,7 @@ export class ImageProcessingConfiguration {
         this._updateParameters();
     }
 
-    /** @hidden */
+    /** @internal */
     @serialize()
     public _skipFinalColorClamp = false;
     /**
@@ -407,7 +407,7 @@ export class ImageProcessingConfiguration {
         this._updateParameters();
     }
 
-    /** @hidden */
+    /** @internal */
     @serialize()
     public _applyByPostProcess = false;
     /**

@@ -577,7 +577,7 @@ export class ViewerModel implements IDisposable {
     /**
      * Apply a material configuration to a material
      * @param material Material to apply configuration to
-     * @hidden
+     * @internal
      */
     public _applyModelMaterialConfiguration(material: Material) {
         if (!this._modelConfiguration.material) {

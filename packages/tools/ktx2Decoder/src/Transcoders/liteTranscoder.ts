@@ -4,7 +4,7 @@ import { WASMMemoryManager } from "../wasmMemoryManager";
 import type { KTX2FileReader, IKTX2_ImageDesc } from "../ktx2FileReader";
 
 /**
- * @hidden
+ * @internal
  */
 export class LiteTranscoder extends Transcoder {
     private _modulePath: string;

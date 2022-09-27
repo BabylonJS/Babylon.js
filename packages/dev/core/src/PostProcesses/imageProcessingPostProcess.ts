@@ -430,7 +430,7 @@ export class ImageProcessingPostProcess extends PostProcess {
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public _updateParameters(): void {
         this._defines.FROMLINEARSPACE = this._fromLinearSpace;

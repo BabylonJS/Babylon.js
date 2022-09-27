@@ -819,8 +819,7 @@ export class ShadowGenerator implements IShadowGenerator {
     protected _currentSceneUBO: UniformBuffer;
 
     /**
-     * @param _
-     * @hidden
+     * @internal
      */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
         throw _WarnImport("ShadowGeneratorSceneComponent");

@@ -17,7 +17,7 @@ export type ComputeBindingLocation = { group: number; binding: number };
  */
 export type ComputeBindingMapping = { [key: string]: ComputeBindingLocation };
 
-/** @hidden */
+/** @internal */
 export enum ComputeBindingType {
     Texture = 0,
     StorageTexture = 1,
@@ -27,7 +27,7 @@ export enum ComputeBindingType {
     Sampler = 5,
 }
 
-/** @hidden */
+/** @internal */
 export type ComputeBindingList = { [key: string]: { type: ComputeBindingType; object: any; indexInGroupEntries?: number } };
 
 declare module "../../Engines/thinEngine" {
@@ -83,7 +83,7 @@ declare module "../../Engines/thinEngine" {
          */
         releaseComputeEffects(): void;
 
-        /** @hidden */
+        /** @internal */
         _prepareComputePipelineContext(
             pipelineContext: IComputePipelineContext,
             computeSourceCode: string,
@@ -92,16 +92,16 @@ declare module "../../Engines/thinEngine" {
             entryPoint: string
         ): void;
 
-        /** @hidden */
+        /** @internal */
         _rebuildComputeEffects(): void;
 
-        /** @hidden */
+        /** @internal */
         _executeWhenComputeStateIsCompiled(pipelineContext: IComputePipelineContext, action: () => void): void;
 
-        /** @hidden */
+        /** @internal */
         _releaseComputeEffect(effect: ComputeEffect): void;
 
-        /** @hidden */
+        /** @internal */
         _deleteComputePipelineContext(pipelineContext: IComputePipelineContext): void;
     }
 }

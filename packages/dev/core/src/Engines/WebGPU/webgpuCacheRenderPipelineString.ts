@@ -3,7 +3,7 @@ import { WebGPUCacheRenderPipeline } from "./webgpuCacheRenderPipeline";
 
 /**
  * Class not used, WebGPUCacheRenderPipelineTree is faster
- * @hidden
+ * @internal
  */
 export class WebGPUCacheRenderPipelineString extends WebGPUCacheRenderPipeline {
     private static _Cache: { [hash: string]: GPURenderPipeline } = {};

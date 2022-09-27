@@ -104,39 +104,39 @@ export interface VRExperienceHelperOptions extends WebVROptions {
 }
 
 class VRExperienceHelperGazer implements IDisposable {
-    /** @hidden */
+    /** @internal */
     public _gazeTracker: Mesh;
 
-    /** @hidden */
+    /** @internal */
     public _currentMeshSelected: Nullable<AbstractMesh>;
-    /** @hidden */
+    /** @internal */
     public _currentHit: Nullable<PickingInfo>;
 
     public static _IdCounter = 0;
-    /** @hidden */
+    /** @internal */
     public _id: number;
 
-    /** @hidden */
+    /** @internal */
     public _pointerDownOnMeshAsked: boolean = false;
-    /** @hidden */
+    /** @internal */
     public _isActionableMesh: boolean = false;
 
-    /** @hidden */
+    /** @internal */
     public _interactionsEnabled: boolean;
-    /** @hidden */
+    /** @internal */
     public _teleportationEnabled: boolean;
-    /** @hidden */
+    /** @internal */
     public _teleportationRequestInitiated = false;
-    /** @hidden */
+    /** @internal */
     public _teleportationBackRequestInitiated = false;
-    /** @hidden */
+    /** @internal */
     public _rotationRightAsked = false;
-    /** @hidden */
+    /** @internal */
     public _rotationLeftAsked = false;
-    /** @hidden */
+    /** @internal */
     public _dpadPressed = true;
 
-    /** @hidden */
+    /** @internal */
     public _activePointer = false;
 
     constructor(public scene: Scene, gazeTrackerToClone: Nullable<Mesh> = null) {
@@ -168,14 +168,13 @@ class VRExperienceHelperGazer implements IDisposable {
     }
 
     /**
-     * @param length
-     * @hidden
+     * @internal
      */
     public _getForwardRay(length: number): Ray {
         return new Ray(Vector3.Zero(), new Vector3(0, 0, length));
     }
 
-    /** @hidden */
+    /** @internal */
     public _selectionPointerDown() {
         this._pointerDownOnMeshAsked = true;
         if (this._currentHit) {
@@ -183,7 +182,7 @@ class VRExperienceHelperGazer implements IDisposable {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _selectionPointerUp() {
         if (this._currentHit) {
             this.scene.simulatePointerUp(this._currentHit, { pointerId: this._id });
@@ -191,19 +190,18 @@ class VRExperienceHelperGazer implements IDisposable {
         this._pointerDownOnMeshAsked = false;
     }
 
-    /** @hidden */
+    /** @internal */
     public _activatePointer() {
         this._activePointer = true;
     }
 
-    /** @hidden */
+    /** @internal */
     public _deactivatePointer() {
         this._activePointer = false;
     }
 
     /**
-     * @param distance
-     * @hidden
+     * @internal
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public _updatePointerDistance(distance: number = 100) {}
@@ -264,37 +262,34 @@ class VRExperienceHelperControllerGazer extends VRExperienceHelperGazer {
         return this.webVRController.getForwardRay(length);
     }
 
-    /** @hidden */
+    /** @internal */
     public _activatePointer() {
         super._activatePointer();
         this._laserPointer.isVisible = true;
     }
 
-    /** @hidden */
+    /** @internal */
     public _deactivatePointer() {
         super._deactivatePointer();
         this._laserPointer.isVisible = false;
     }
 
     /**
-     * @param color
-     * @hidden
+     * @internal
      */
     public _setLaserPointerColor(color: Color3) {
         (<StandardMaterial>this._laserPointer.material).emissiveColor = color;
     }
 
     /**
-     * @param disabled
-     * @hidden
+     * @internal
      */
     public _setLaserPointerLightingDisabled(disabled: boolean) {
         (<StandardMaterial>this._laserPointer.material).disableLighting = disabled;
     }
 
     /**
-     * @param mesh
-     * @hidden
+     * @internal
      */
     public _setLaserPointerParent(mesh: AbstractMesh) {
         const makeNotPick = (root: AbstractMesh) => {

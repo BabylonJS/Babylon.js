@@ -33,14 +33,14 @@ export enum DepthOfFieldEffectBlurLevel {
 export class DepthOfFieldEffect extends PostProcessRenderEffect {
     private _circleOfConfusion: CircleOfConfusionPostProcess;
     /**
-     * @hidden Internal, blurs from high to low
+     * @internal Internal, blurs from high to low
      */
     public _depthOfFieldBlurX: Array<DepthOfFieldBlurPostProcess>;
     private _depthOfFieldBlurY: Array<DepthOfFieldBlurPostProcess>;
     private _dofMerge: Nullable<DepthOfFieldMergePostProcess>;
 
     /**
-     * @hidden Internal post processes in depth of field effect
+     * @internal Internal post processes in depth of field effect
      */
     public _effects: Array<PostProcess> = [];
 
@@ -232,7 +232,7 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
     }
 
     /**
-     * @hidden Internal
+     * @internal Internal
      */
     public _updateEffects() {
         for (let effectIndex = 0; effectIndex < this._effects.length; effectIndex++) {
@@ -243,7 +243,7 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
     /**
      * Internal
      * @returns if all the contained post processes are ready.
-     * @hidden
+     * @internal
      */
     public _isReady() {
         for (let effectIndex = 0; effectIndex < this._effects.length; effectIndex++) {

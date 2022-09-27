@@ -29,7 +29,7 @@ export class OculusTouchController extends WebVRController {
     public static QUEST_MODEL_BASE_URL: string = "https://controllers.babylonjs.com/oculusQuest/";
 
     /**
-     * @hidden
+     * @internal
      * If the controllers are running on a device that needs the updated Quest controller models
      */
     public static _IsQuest = false;

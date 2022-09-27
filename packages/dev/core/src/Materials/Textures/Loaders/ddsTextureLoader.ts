@@ -8,7 +8,7 @@ import { DDSTools } from "../../../Misc/dds";
 
 /**
  * Implementation of the DDS Texture Loader.
- * @hidden
+ * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class _DDSTextureLoader implements IInternalTextureLoader {

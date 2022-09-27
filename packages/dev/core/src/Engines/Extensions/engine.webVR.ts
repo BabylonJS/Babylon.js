@@ -23,29 +23,29 @@ export interface IVRPresentationAttributes {
 
 declare module "../../Engines/engine" {
     export interface Engine {
-        /** @hidden */
+        /** @internal */
         _vrDisplay: any;
-        /** @hidden */
+        /** @internal */
         _vrSupported: boolean;
-        /** @hidden */
+        /** @internal */
         _oldSize: Size;
-        /** @hidden */
+        /** @internal */
         _oldHardwareScaleFactor: number;
-        /** @hidden */
+        /** @internal */
         _vrExclusivePointerMode: boolean;
-        /** @hidden */
+        /** @internal */
         _webVRInitPromise: Promise<IDisplayChangedEventArgs>;
 
-        /** @hidden */
+        /** @internal */
         _onVRDisplayPointerRestricted: () => void;
-        /** @hidden */
+        /** @internal */
         _onVRDisplayPointerUnrestricted: () => void;
 
-        /** @hidden */
+        /** @internal */
         _onVrDisplayConnect: Nullable<(display: any) => void>;
-        /** @hidden */
+        /** @internal */
         _onVrDisplayDisconnect: Nullable<() => void>;
-        /** @hidden */
+        /** @internal */
         _onVrDisplayPresentChange: Nullable<() => void>;
 
         /**
@@ -86,7 +86,7 @@ declare module "../../Engines/engine" {
          */
         initWebVRAsync(): Promise<IDisplayChangedEventArgs>;
 
-        /** @hidden */
+        /** @internal */
         _getVRDisplaysAsync(): Promise<IDisplayChangedEventArgs>;
 
         /**
@@ -102,7 +102,7 @@ declare module "../../Engines/engine" {
          */
         enableVR(options: WebVROptions): void;
 
-        /** @hidden */
+        /** @internal */
         _onVRFullScreenTriggered(): void;
     }
 }

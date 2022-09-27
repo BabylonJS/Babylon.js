@@ -20,9 +20,9 @@ export class AnisotropyBlock extends NodeMaterialBlock {
      * It's less burden on the user side in the editor part.
      */
 
-    /** @hidden */
+    /** @internal */
     public worldPositionConnectionPoint: NodeMaterialConnectionPoint;
-    /** @hidden */
+    /** @internal */
     public worldNormalConnectionPoint: NodeMaterialConnectionPoint;
 
     /**

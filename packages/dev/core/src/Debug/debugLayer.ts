@@ -128,7 +128,7 @@ export interface IInspectorOptions {
 declare module "../scene" {
     export interface Scene {
         /**
-         * @hidden
+         * @internal
          * Backing field
          */
         _debugLayer: DebugLayer;

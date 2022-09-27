@@ -334,7 +334,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
     }
 
     /**
-     * @hidden
+     * @internal
      */
     @serialize()
     public lodLevelInAlpha = false;
@@ -427,9 +427,9 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         return this._uid;
     }
 
-    /** @hidden */
+    /** @internal */
     public _prefiltered: boolean = false;
-    /** @hidden */
+    /** @internal */
     public _forceSerialize: boolean = false;
 
     /**
@@ -472,7 +472,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
 
     protected _scene: Nullable<Scene> = null;
 
-    /** @hidden */
+    /** @internal */
     private _uid: Nullable<string> = null;
 
     /**
@@ -483,7 +483,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         return true;
     }
 
-    /** @hidden */
+    /** @internal */
     public _parentContainer: Nullable<AbstractScene> = null;
 
     protected _loadingError: boolean = false;
@@ -551,7 +551,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         return this._scene;
     }
 
-    /** @hidden */
+    /** @internal */
     protected _getEngine(): Nullable<ThinEngine> {
         return this._engine;
     }
@@ -604,13 +604,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
     }
 
     /**
-     * @param url
-     * @param noMipmap
-     * @param sampling
-     * @param invertY
-     * @param useSRGBBuffer
-     * @param isCube
-     * @hidden
+     * @internal
      */
     public _getFromCache(url: Nullable<string>, noMipmap: boolean, sampling?: number, invertY?: boolean, useSRGBBuffer?: boolean, isCube?: boolean): Nullable<InternalTexture> {
         const engine = this._getEngine();
@@ -641,7 +635,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         return null;
     }
 
-    /** @hidden */
+    /** @internal */
     public _rebuild(): void {}
 
     /**
@@ -747,12 +741,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
     }
 
     /**
-     * @param faceIndex
-     * @param level
-     * @param buffer
-     * @param flushRenderer
-     * @param noDataConversion
-     * @hidden
+     * @internal
      */
     public _readPixelsSync(faceIndex = 0, level = 0, buffer: Nullable<ArrayBufferView> = null, flushRenderer = true, noDataConversion = false): Nullable<ArrayBufferView> {
         if (!this._texture) {
@@ -787,7 +776,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public get _lodTextureHigh(): Nullable<BaseTexture> {
         if (this._texture) {
             return this._texture._lodTextureHigh;
@@ -795,7 +784,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         return null;
     }
 
-    /** @hidden */
+    /** @internal */
     public get _lodTextureMid(): Nullable<BaseTexture> {
         if (this._texture) {
             return this._texture._lodTextureMid;
@@ -803,7 +792,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         return null;
     }
 
-    /** @hidden */
+    /** @internal */
     public get _lodTextureLow(): Nullable<BaseTexture> {
         if (this._texture) {
             return this._texture._lodTextureLow;

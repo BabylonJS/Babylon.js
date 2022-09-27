@@ -241,7 +241,7 @@ export class EffectWrapper {
         this._drawWrapper.effect = effect;
     }
 
-    /** @hidden */
+    /** @internal */
     public _drawWrapper: DrawWrapper;
 
     private _onContextRestoredObserver: Nullable<Observer<ThinEngine>>;

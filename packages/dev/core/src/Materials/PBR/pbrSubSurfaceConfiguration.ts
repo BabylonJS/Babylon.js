@@ -23,7 +23,7 @@ declare type Scene = import("../../scene").Scene;
 declare type PBRBaseMaterial = import("./pbrBaseMaterial").PBRBaseMaterial;
 
 /**
- * @hidden
+ * @internal
  */
 export class MaterialSubSurfaceDefines extends MaterialDefines {
     public SUBSURFACE = false;
@@ -163,7 +163,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public refractionTexture: Nullable<BaseTexture> = null;
 
-    /** @hidden */
+    /** @internal */
     public _indexOfRefraction = 1.5;
     /**
      * Index of refraction of the material base layer.
@@ -210,7 +210,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public invertRefractionY = false;
 
-    /** @hidden */
+    /** @internal */
     public _linkRefractionWithTransparency = false;
     /**
      * This parameters will make the material used its opacity to control how much it is refracting against not.
@@ -301,16 +301,16 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public useGltfStyleTextures: boolean = false;
 
-    /** @hidden */
+    /** @internal */
     private _internalMarkAllSubMeshesAsTexturesDirty: () => void;
     private _internalMarkScenePrePassDirty: () => void;
 
-    /** @hidden */
+    /** @internal */
     public _markAllSubMeshesAsTexturesDirty(): void {
         this._enable(this._isRefractionEnabled || this._isTranslucencyEnabled || this._isScatteringEnabled);
         this._internalMarkAllSubMeshesAsTexturesDirty();
     }
-    /** @hidden */
+    /** @internal */
     public _markScenePrePassDirty(): void {
         this._internalMarkAllSubMeshesAsTexturesDirty();
         this._internalMarkScenePrePassDirty();

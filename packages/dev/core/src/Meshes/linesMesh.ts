@@ -132,14 +132,14 @@ export class LinesMesh extends Mesh {
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public get material(): Material {
         return this._lineMaterial;
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public set material(value: Material) {
         this._lineMaterial = value;
@@ -147,7 +147,7 @@ export class LinesMesh extends Mesh {
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public get checkCollisions(): boolean {
         return false;
@@ -158,7 +158,7 @@ export class LinesMesh extends Mesh {
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public _bind(): Mesh {
         if (!this._geometry) {
@@ -185,10 +185,7 @@ export class LinesMesh extends Mesh {
     }
 
     /**
-     * @param subMesh
-     * @param fillMode
-     * @param instancesCount
-     * @hidden
+     * @internal
      */
     public _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number): Mesh {
         if (!this._geometry || !this._geometry.getVertexBuffers() || (!this._unIndexed && !this._geometry.getIndexBuffer())) {

@@ -15,7 +15,7 @@ import { renderableTextureFormatToIndex, WebGPUTextureHelper } from "./webgpuTex
 import "../../Shaders/clearQuad.vertex";
 import "../../Shaders/clearQuad.fragment";
 
-/** @hidden */
+/** @internal */
 export class WebGPUClearQuad {
     private _device: GPUDevice;
     private _engine: WebGPUEngine;

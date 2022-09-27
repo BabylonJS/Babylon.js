@@ -39,6 +39,7 @@ varying vec4 remapRanges;
 uniform mat4 invView;
 #endif
 #include<clipPlaneVertexDeclaration>
+#include<logDepthDeclaration>
 
 #ifdef BILLBOARD
 	uniform vec3 eyePosition;
@@ -156,7 +157,8 @@ void main(void) {
     vec4 worldPos = vec4(vPositionW, 1.0);
 #endif
 	#include<clipPlaneVertex>
-
+	#include<logDepthVertex>
+	
 #define CUSTOM_VERTEX_MAIN_END
 
 }

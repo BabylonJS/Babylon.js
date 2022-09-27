@@ -348,8 +348,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
     }
 
     /**
-     * @param id
-     * @hidden
+     * @internal
      */
     public _getPointerSelectionDisabledByPointerId(id: number): boolean {
         const keys = Object.keys(this._controllers);
@@ -363,9 +362,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
     }
 
     /**
-     * @param id
-     * @param state
-     * @hidden
+     * @internal
      */
     public _setPointerSelectionDisabledByPointerId(id: number, state: boolean) {
         const keys = Object.keys(this._controllers);
@@ -863,7 +860,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public get lasterPointerDefaultColor(): Color3 {
         // here due to a typo
         return this.laserPointerDefaultColor;

@@ -15,19 +15,19 @@ export interface IPipelineContext {
      */
     isReady: boolean;
 
-    /** @hidden */
+    /** @internal */
     _name?: string;
 
-    /** @hidden */
+    /** @internal */
     _getVertexShaderCode(): string | null;
 
-    /** @hidden */
+    /** @internal */
     _getFragmentShaderCode(): string | null;
 
-    /** @hidden */
+    /** @internal */
     _handlesSpectorRebuildCallback(onCompiled: (compiledObject: any) => void): void;
 
-    /** @hidden */
+    /** @internal */
     _fillEffectInformation(
         effect: Effect,
         uniformBuffersNames: { [key: string]: number },

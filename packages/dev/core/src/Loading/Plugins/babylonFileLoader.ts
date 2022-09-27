@@ -31,7 +31,7 @@ import { GetClass } from "../../Misc/typeStore";
 import { Tools } from "../../Misc/tools";
 import { PostProcess } from "../../PostProcesses/postProcess";
 
-/** @hidden */
+/** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention, no-var
 export var _BabylonLoaderRegistered = true;
 

@@ -7,7 +7,7 @@ import type { Observer } from "../../Misc/observable";
 import type { Behavior } from "../../Behaviors/behavior";
 
 /**
- * @hidden
+ * @internal
  */
 class FaceDirectionInfo {
     constructor(public direction: Vector3, public rotatedDirection = new Vector3(), public diff = 0, public ignore = false) {}

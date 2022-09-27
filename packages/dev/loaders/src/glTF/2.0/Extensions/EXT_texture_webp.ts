@@ -21,24 +21,20 @@ export class EXT_texture_webp implements IGLTFLoaderExtension {
     private _loader: GLTFLoader;
 
     /**
-     * @param loader
-     * @hidden
+     * @internal
      */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
         this.enabled = loader.isExtensionUsed(NAME);
     }
 
-    /** @hidden */
+    /** @internal */
     public dispose() {
         (this._loader as any) = null;
     }
 
     /**
-     * @param context
-     * @param texture
-     * @param assign
-     * @hidden
+     * @internal
      */
     public _loadTextureAsync(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>> {
         return GLTFLoader.LoadExtensionAsync<IEXTTextureWebP, BaseTexture>(context, texture, this.name, (extensionContext, extension) => {

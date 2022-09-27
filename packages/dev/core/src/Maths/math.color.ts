@@ -1244,7 +1244,7 @@ export class Color4 {
 }
 
 /**
- * @hidden
+ * @internal
  */
 export class TmpColors {
     public static Color3: Color3[] = ArrayTools.BuildArray(3, Color3.Black);

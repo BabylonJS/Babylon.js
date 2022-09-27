@@ -79,7 +79,7 @@ export class TouchCamera extends FreeCamera {
         return "TouchCamera";
     }
 
-    /** @hidden */
+    /** @internal */
     public _setupInputs() {
         const touch = <FreeCameraTouchInput>this.inputs.attached["touch"];
         const mouse = <FreeCameraMouseInput>this.inputs.attached["mouse"];

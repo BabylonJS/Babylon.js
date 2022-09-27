@@ -28,11 +28,11 @@ export class GUI3DManager implements IDisposable {
     private _pointerObserver: Nullable<Observer<PointerInfo>>;
     private _pointerOutObserver: Nullable<Observer<number>>;
     private _customControlScaling = 1.0;
-    /** @hidden */
+    /** @internal */
     public _lastPickedControl: Control3D;
-    /** @hidden */
+    /** @internal */
     public _lastControlOver: { [pointerId: number]: Control3D } = {};
-    /** @hidden */
+    /** @internal */
     public _lastControlDown: { [pointerId: number]: Control3D } = {};
 
     protected static MRTK_REALISTIC_SCALING: number = 0.032;
@@ -48,10 +48,10 @@ export class GUI3DManager implements IDisposable {
     public onPickingObservable = new Observable<Nullable<AbstractMesh>>();
 
     // Shared resources
-    /** @hidden */
+    /** @internal */
     public _sharedMaterials: { [key: string]: Material } = {};
 
-    /** @hidden */
+    /** @internal */
     public _touchSharedMaterials: { [key: string]: Material } = {};
 
     /** Gets the hosting scene */

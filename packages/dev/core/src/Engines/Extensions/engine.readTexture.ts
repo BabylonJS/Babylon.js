@@ -5,7 +5,7 @@ import { Constants } from "../constants";
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
-        /** @hidden */
+        /** @internal */
         _readTexturePixels(
             texture: InternalTexture,
             width: number,
@@ -19,7 +19,7 @@ declare module "../../Engines/thinEngine" {
             y?: number
         ): Promise<ArrayBufferView>;
 
-        /** @hidden */
+        /** @internal */
         _readTexturePixelsSync(
             texture: InternalTexture,
             width: number,

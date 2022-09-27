@@ -1,4 +1,4 @@
-/** @hidden */
+/** @internal */
 export interface IComputeContext {
     clear(): void;
 }

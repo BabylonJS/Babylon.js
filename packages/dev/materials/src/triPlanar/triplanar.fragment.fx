@@ -11,7 +11,7 @@ uniform vec4 vSpecularColor;
 // Input
 varying vec3 vPositionW;
 
-#if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR)
+#if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR) && defined(INSTANCES)
 varying vec4 vColor;
 #endif
 
@@ -116,7 +116,7 @@ void main(void) {
 
 #include<depthPrePass>
 
-#if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR)
+#if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR) && defined(INSTANCES)
     baseColor.rgb *= vColor.rgb;
 #endif
 
@@ -135,7 +135,7 @@ void main(void) {
 
 #include<lightFragment>[0..maxSimultaneousLights]
 
-#if defined(VERTEXALPHA) || defined(INSTANCESCOLOR)
+#if defined(VERTEXALPHA) || defined(INSTANCESCOLOR) && defined(INSTANCES)
 	alpha *= vColor.a;
 #endif
 

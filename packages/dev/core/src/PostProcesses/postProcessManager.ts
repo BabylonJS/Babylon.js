@@ -58,7 +58,7 @@ export class PostProcessManager {
 
     /**
      * Rebuilds the vertex buffers of the manager.
-     * @hidden
+     * @internal
      */
     public _rebuild(): void {
         const vb = this._vertexBuffers[VertexBuffer.PositionKind];
@@ -76,7 +76,7 @@ export class PostProcessManager {
      * @param sourceTexture The input texture to the post processes. (default: null)
      * @param postProcesses An array of post processes to be run. (default: null)
      * @returns True if the post processes were able to be run.
-     * @hidden
+     * @internal
      */
     public _prepareFrame(sourceTexture: Nullable<InternalTexture> = null, postProcesses: Nullable<PostProcess[]> = null): boolean {
         const camera = this._scene.activeCamera;
@@ -157,7 +157,7 @@ export class PostProcessManager {
      * @param faceIndex The index of the face to bind the target texture to.
      * @param postProcesses The array of post processes to render.
      * @param forceFullscreenViewport force gl.viewport to be full screen eg. 0,0,textureWidth,textureHeight (default: false)
-     * @hidden
+     * @internal
      */
     public _finalizeFrame(
         doNotPresent?: boolean,

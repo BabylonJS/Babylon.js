@@ -23,45 +23,45 @@ import { EngineStore } from "../../../../Engines/engineStore";
  * Base block used to read a reflection texture from a sampler
  */
 export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
-    /** @hidden */
+    /** @internal */
     public _define3DName: string;
-    /** @hidden */
+    /** @internal */
     public _defineCubicName: string;
-    /** @hidden */
+    /** @internal */
     public _defineExplicitName: string;
-    /** @hidden */
+    /** @internal */
     public _defineProjectionName: string;
-    /** @hidden */
+    /** @internal */
     public _defineLocalCubicName: string;
-    /** @hidden */
+    /** @internal */
     public _defineSphericalName: string;
-    /** @hidden */
+    /** @internal */
     public _definePlanarName: string;
-    /** @hidden */
+    /** @internal */
     public _defineEquirectangularName: string;
-    /** @hidden */
+    /** @internal */
     public _defineMirroredEquirectangularFixedName: string;
-    /** @hidden */
+    /** @internal */
     public _defineEquirectangularFixedName: string;
-    /** @hidden */
+    /** @internal */
     public _defineSkyboxName: string;
-    /** @hidden */
+    /** @internal */
     public _defineOppositeZ: string;
-    /** @hidden */
+    /** @internal */
     public _cubeSamplerName: string;
-    /** @hidden */
+    /** @internal */
     public _2DSamplerName: string;
-    /** @hidden */
+    /** @internal */
     public _reflectionPositionName: string;
-    /** @hidden */
+    /** @internal */
     public _reflectionSizeName: string;
 
     protected _positionUVWName: string;
     protected _directionWName: string;
     protected _reflectionVectorName: string;
-    /** @hidden */
+    /** @internal */
     public _reflectionCoordsName: string;
-    /** @hidden */
+    /** @internal */
     public _reflectionMatrixName: string;
     protected _reflectionColorName: string;
 

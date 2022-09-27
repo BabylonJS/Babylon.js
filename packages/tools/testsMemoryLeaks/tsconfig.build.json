@@ -1,0 +1,14 @@
+{
+    "extends": "../../../tsconfig.build.json",
+
+    "compilerOptions": {
+        "target": "es2017",
+        "module": "CommonJS",
+        "outDir": "./dist",
+        "rootDir": "./src",
+        "resolveJsonModule": true,
+        "allowSyntheticDefaultImports": true,
+    },
+
+    "include": ["./src/**/*"]
+}

@@ -253,7 +253,7 @@ export class DynamicTexture extends Texture {
         return (canvas as HTMLCanvasElement).toDataURL !== undefined;
     }
 
-    /** @hidden */
+    /** @internal */
     public _rebuild(): void {
         this.update();
     }

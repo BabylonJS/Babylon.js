@@ -23,7 +23,7 @@ import { Constants } from "core/Engines/constants";
 import "./shaders/mrdlSliderThumb.fragment";
 import "./shaders/mrdlSliderThumb.vertex";
 
-/** @hidden */
+/** @internal */
 class MRDLSliderThumbMaterialDefines extends MaterialDefines {
     /*
         "SKY_ENABLED", "BLOB_ENABLE_2", "IRIDESCENCE_ENABLED"
@@ -431,52 +431,52 @@ export class MRDLSliderThumbMaterial extends PushMaterial {
     public iridescenceIntensity = 0;
 
     /**
-     * @hidden
+     * @internal
      */
     public useGlobalLeftIndex = 1.0;
 
     /**
-     * @hidden
+     * @internal
      */
     public useGlobalRightIndex = 1.0;
 
     /**
-     * @hidden
+     * @internal
      */
     public globalLeftIndexTipProximity = 0.0;
 
     /**
-     * @hidden
+     * @internal
      */
     public globalRightIndexTipProximity = 0.0;
 
     /**
-     * @hidden
+     * @internal
      */
     public globalLeftIndexTipPosition = new Vector4(0.5, 0.0, -0.55, 1.0);
 
     /**
-     * @hidden
+     * @internal
      */
     public globaRightIndexTipPosition = new Vector4(0.0, 0.0, 0.0, 1.0);
 
     /**
-     * @hidden
+     * @internal
      */
     public globalLeftThumbTipPosition = new Vector4(0.5, 0.0, -0.55, 1.0);
 
     /**
-     * @hidden
+     * @internal
      */
     public globalRightThumbTipPosition = new Vector4(0.0, 0.0, 0.0, 1.0);
 
     /**
-     * @hidden
+     * @internal
      */
     public globalLeftIndexMiddlePosition = new Vector4(0.5, 0.0, -0.55, 1.0);
 
     /**
-     * @hidden
+     * @internal
      */
     public globalRightIndexMiddlePosition = new Vector4(0.0, 0.0, 0.0, 1.0);
 

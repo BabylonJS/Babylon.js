@@ -229,15 +229,7 @@ export class OctreeBlock<T> {
     }
 
     /**
-     * @param worldMin
-     * @param worldMax
-     * @param entries
-     * @param maxBlockCapacity
-     * @param currentDepth
-     * @param maxDepth
-     * @param target
-     * @param creationFunc
-     * @hidden
+     * @internal
      */
     public static _CreateBlocks<T>(
         worldMin: Vector3,

@@ -15,7 +15,7 @@ export class GamepadManager {
     private _babylonGamepads: Array<Gamepad> = [];
     private _oneGamepadConnected: boolean = false;
 
-    /** @hidden */
+    /** @internal */
     public _isMonitoring: boolean = false;
     private _gamepadEventSupported: boolean;
     private _gamepadSupport?: () => Array<any>;
@@ -208,7 +208,7 @@ export class GamepadManager {
 
     private _loggedErrors: number[];
 
-    /** @hidden */
+    /** @internal */
     public _checkGamepadsStatus() {
         // Hack to be compatible Chrome
         this._updateGamepadObjects();

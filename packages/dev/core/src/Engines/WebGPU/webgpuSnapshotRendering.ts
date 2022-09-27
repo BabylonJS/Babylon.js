@@ -4,7 +4,7 @@ import type { WebGPUEngine } from "../webgpuEngine";
 import type { WebGPUBundleList } from "./webgpuBundleList";
 import type { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
 
-/** @hidden */
+/** @internal */
 export class WebGPUSnapshotRendering {
     private _engine: WebGPUEngine;
 

@@ -11,7 +11,7 @@ export type WebXRLayerType = "XRWebGLLayer" | WebXRCompositionLayerType;
 
 /**
  * Wrapper over subclasses of XRLayer.
- * @hidden
+ * @internal
  */
 export class WebXRLayerWrapper {
     /**

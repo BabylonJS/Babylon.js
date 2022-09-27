@@ -110,7 +110,7 @@ declare module "../../Engines/thinEngine" {
             lodOffset: number
         ): InternalTexture;
 
-        /** @hidden */
+        /** @internal */
         createCubeTextureBase(
             rootUrl: string,
             scene: Nullable<Scene>,
@@ -129,7 +129,7 @@ declare module "../../Engines/thinEngine" {
             useSRGBBuffer: boolean
         ): InternalTexture;
 
-        /** @hidden */
+        /** @internal */
         _partialLoadFile(
             url: string,
             index: number,
@@ -138,10 +138,10 @@ declare module "../../Engines/thinEngine" {
             onErrorCallBack: Nullable<(message?: string, exception?: any) => void>
         ): void;
 
-        /** @hidden */
+        /** @internal */
         _cascadeLoadFiles(scene: Nullable<Scene>, onfinish: (images: ArrayBuffer[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void>): void;
 
-        /** @hidden */
+        /** @internal */
         _cascadeLoadImgs(
             scene: Nullable<Scene>,
             texture: InternalTexture,
@@ -151,7 +151,7 @@ declare module "../../Engines/thinEngine" {
             mimeType?: string
         ): void;
 
-        /** @hidden */
+        /** @internal */
         _partialLoadImg(
             url: string,
             index: number,
@@ -164,7 +164,7 @@ declare module "../../Engines/thinEngine" {
         ): void;
 
         /**
-         * @hidden
+         * @internal
          */
         _setCubeMapTextureParams(texture: InternalTexture, loadMipmap: boolean, maxLevel?: number): void;
     }

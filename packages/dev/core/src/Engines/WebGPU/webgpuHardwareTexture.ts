@@ -6,38 +6,38 @@ import * as WebGPUConstants from "./webgpuConstants";
 
 declare type WebGPUBundleList = import("./webgpuBundleList").WebGPUBundleList;
 
-/** @hidden */
+/** @internal */
 export class WebGPUHardwareTexture implements HardwareTextureWrapper {
     /**
      * List of bundles collected in the snapshot rendering mode when the texture is a render target texture
      * The index in this array is the current layer we are rendering into
-     * @hidden
+     * @internal
      */
     public _bundleLists: WebGPUBundleList[];
     /**
      * Current layer we are rendering into when in snapshot rendering mode (if the texture is a render target texture)
-     * @hidden
+     * @internal
      */
     public _currentLayer: number;
 
     /**
      * Cache of RenderPassDescriptor and BindGroup used when generating mipmaps (see WebGPUTextureHelper.generateMipmaps)
-     * @hidden
+     * @internal
      */
     public _mipmapGenRenderPassDescr: GPURenderPassDescriptor[][];
-    /** @hidden */
+    /** @internal */
     public _mipmapGenBindGroup: GPUBindGroup[][];
 
     /**
      * Cache for the invertYPreMultiplyAlpha function (see WebGPUTextureHelper)
-     * @hidden
+     * @internal
      */
     public _copyInvertYTempTexture?: GPUTexture;
-    /** @hidden */
+    /** @internal */
     public _copyInvertYRenderPassDescr: GPURenderPassDescriptor;
-    /** @hidden */
+    /** @internal */
     public _copyInvertYBindGroup: GPUBindGroup;
-    /** @hidden */
+    /** @internal */
     public _copyInvertYBindGroupWithOfst: GPUBindGroup;
 
     private _webgpuTexture: Nullable<GPUTexture>;

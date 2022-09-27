@@ -17,7 +17,7 @@ declare type StandardMaterial = import("./standardMaterial").StandardMaterial;
 declare type PBRBaseMaterial = import("./PBR/pbrBaseMaterial").PBRBaseMaterial;
 
 /**
- * @hidden
+ * @internal
  */
 export class MaterialDetailMapDefines extends MaterialDefines {
     DETAIL = false;
@@ -79,10 +79,10 @@ export class DetailMapConfiguration extends MaterialPluginBase {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public isEnabled = false;
 
-    /** @hidden */
+    /** @internal */
     private _internalMarkAllSubMeshesAsTexturesDirty: () => void;
 
-    /** @hidden */
+    /** @internal */
     public _markAllSubMeshesAsTexturesDirty(): void {
         this._enable(this._isEnabled);
         this._internalMarkAllSubMeshesAsTexturesDirty();

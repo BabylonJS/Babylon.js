@@ -94,7 +94,7 @@ export class RuntimeAnimation {
      */
     private _currentValue: Nullable<any> = null;
 
-    /** @hidden */
+    /** @internal */
     public _animationState: _IAnimationState;
 
     /**
@@ -180,7 +180,7 @@ export class RuntimeAnimation {
         return this._host && this._host.isAdditive;
     }
 
-    /** @hidden */
+    /** @internal */
     public _onLoop: () => void;
 
     /**
@@ -466,8 +466,7 @@ export class RuntimeAnimation {
     }
 
     /**
-     * @param newSpeedRatio
-     * @hidden Internal use only
+     * @internal Internal use only
      */
     public _prepareForSpeedRatioChange(newSpeedRatio: number): void {
         const newRatio = (this._previousDelay * (this._animation.framePerSecond * newSpeedRatio)) / 1000.0;

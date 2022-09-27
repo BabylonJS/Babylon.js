@@ -35,24 +35,23 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
     private _lights: IKHRLightsPunctual;
 
     /**
-     * @param exporter
-     * @hidden
+     * @internal
      */
     constructor(exporter: _Exporter) {
         this._exporter = exporter;
     }
 
-    /** @hidden */
+    /** @internal */
     public dispose() {
         (this._lights as any) = null;
     }
 
-    /** @hidden */
+    /** @internal */
     public get wasUsed() {
         return !!this._lights;
     }
 
-    /** @hidden */
+    /** @internal */
     public onExporting(): void {
         this._exporter!._glTF.extensions![NAME] = this._lights;
     }

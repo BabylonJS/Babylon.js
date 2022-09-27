@@ -592,7 +592,7 @@ export class ScrollViewer extends Rectangle {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     private _updateScroller(): void {
         const windowContentsWidth = this._window._currentMeasure.width;
         const windowContentsHeight = this._window._currentMeasure.height;
@@ -634,11 +634,7 @@ export class ScrollViewer extends Rectangle {
     }
 
     /**
-     * @param barControl
-     * @param barContainer
-     * @param isVertical
-     * @param rotation
-     * @hidden
+     * @internal
      */
     private _addBar(barControl: ScrollBar | ImageScrollBar, barContainer: Rectangle, isVertical: boolean, rotation: number) {
         barControl.paddingLeft = 0;
@@ -660,7 +656,7 @@ export class ScrollViewer extends Rectangle {
         });
     }
 
-    /** @hidden */
+    /** @internal */
     private _attachWheel() {
         if (!this._host || this._onWheelObserver) {
             return;

@@ -17,7 +17,7 @@ export interface PhysicsImpostorJoint {
     joint: PhysicsJoint;
 }
 
-/** @hidden */
+/** @internal */
 export interface IPhysicsEnginePlugin {
     world: any;
     name: string;

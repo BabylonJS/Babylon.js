@@ -38,7 +38,7 @@ export abstract class GizmoHandle {
     private _draggingObserver: Nullable<Observer<any>>;
     private _dragEndObserver: Nullable<Observer<any>>;
     /**
-     * @hidden
+     * @internal
      */
     public _dragBehavior: BaseSixDofDragBehavior;
 

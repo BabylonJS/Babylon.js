@@ -2,7 +2,7 @@ import type { IColor3Like, IColor4Like, IMatrixLike, IVector3Like, IVector4Like 
 import type { Effect } from "./effect";
 import type { UniformBuffer } from "./uniformBuffer";
 
-/** @hidden */
+/** @internal */
 export class UniformBufferEffectCommonAccessor {
     public setMatrix3x3: (name: string, matrix: Float32Array) => void;
 

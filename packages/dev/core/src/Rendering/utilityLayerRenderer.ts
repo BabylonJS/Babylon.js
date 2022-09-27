@@ -20,9 +20,9 @@ import type { IPointerEvent } from "../Events/deviceInputEvents";
 export class UtilityLayerRenderer implements IDisposable {
     private _pointerCaptures: { [pointerId: number]: boolean } = {};
     private _lastPointerEvents: { [pointerId: number]: boolean } = {};
-    /** @hidden */
+    /** @internal */
     public static _DefaultUtilityLayer: Nullable<UtilityLayerRenderer> = null;
-    /** @hidden */
+    /** @internal */
     public static _DefaultKeepDepthUtilityLayer: Nullable<UtilityLayerRenderer> = null;
     private _sharedGizmoLight: Nullable<HemisphericLight> = null;
 
@@ -59,7 +59,7 @@ export class UtilityLayerRenderer implements IDisposable {
     }
 
     /**
-     * @hidden
+     * @internal
      * Light which used by gizmos to get light shading
      */
     public _getSharedGizmoLight(): HemisphericLight {
@@ -89,7 +89,7 @@ export class UtilityLayerRenderer implements IDisposable {
     /**
      * Creates an utility layer, and set it as a default utility layer
      * @param scene associated scene
-     * @hidden
+     * @internal
      */
     public static _CreateDefaultUtilityLayerFromScene(scene: Scene): UtilityLayerRenderer {
         UtilityLayerRenderer._DefaultUtilityLayer = new UtilityLayerRenderer(scene);

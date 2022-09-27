@@ -93,12 +93,12 @@ export class SolidParticleSystem implements IDisposable {
 
     /**
      * If the particle intersection must be computed only with the bounding sphere (no bounding box computation, so faster). (Internal use only)
-     * @hidden
+     * @internal
      */
     public _bSphereOnly: boolean = false;
     /**
      * A number to multiply the bounding sphere radius by in order to reduce it for instance. (Internal use only)
-     * @hidden
+     * @internal
      */
     public _bSphereRadiusFactor: number = 1.0;
 
@@ -475,7 +475,7 @@ export class SolidParticleSystem implements IDisposable {
 
     /**
      * Unrotate the fixed normals in case the mesh was built with pre-rotated particles, ex : use of positionFunction in addShape()
-     * @hidden
+     * @internal
      */
     private _unrotateFixedNormals() {
         let index = 0;
@@ -509,7 +509,7 @@ export class SolidParticleSystem implements IDisposable {
 
     /**
      * Resets the temporary working copy particle
-     * @hidden
+     * @internal
      */
     private _resetCopy() {
         const copy = this._copy;
@@ -543,7 +543,7 @@ export class SolidParticleSystem implements IDisposable {
      * @param options the addShape() method  passed options
      * @param model
      * @model the particle model
-     * @hidden
+     * @internal
      */
     private _meshBuilder(
         p: number,
@@ -685,7 +685,7 @@ export class SolidParticleSystem implements IDisposable {
      * Returns a shape Vector3 array from positions float array
      * @param positions float array
      * @returns a vector3 array
-     * @hidden
+     * @internal
      */
     private _posToShape(positions: number[] | Float32Array): Vector3[] {
         const shape = [];
@@ -699,7 +699,7 @@ export class SolidParticleSystem implements IDisposable {
      * Returns a shapeUV array from a float uvs (array deep copy)
      * @param uvs as a float array
      * @returns a shapeUV array
-     * @hidden
+     * @internal
      */
     private _uvsToShapeUV(uvs: number[] | Float32Array): number[] {
         const shapeUV = [];
@@ -722,7 +722,7 @@ export class SolidParticleSystem implements IDisposable {
      * @param idxInShape index of the particle in the current model
      * @param bInfo model bounding info object
      * @param storage target storage array, if any
-     * @hidden
+     * @internal
      */
     private _addParticle(
         idx: number,
@@ -792,9 +792,7 @@ export class SolidParticleSystem implements IDisposable {
 
     /**
      * Rebuilds a particle back to its just built status : if needed, recomputes the custom positions and vertices
-     * @param particle
-     * @param reset
-     * @hidden
+     * @internal
      */
     private _rebuildParticle(particle: SolidParticle, reset: boolean = false): void {
         this._resetCopy();
@@ -988,7 +986,7 @@ export class SolidParticleSystem implements IDisposable {
      * @param storage target particle storage
      * @param options
      * @options addShape() passed options
-     * @hidden
+     * @internal
      */
     private _insertNewParticle(
         idx: number,
@@ -1662,7 +1660,7 @@ export class SolidParticleSystem implements IDisposable {
      * Updates the indicesByMaterial array.
      * Updates the mesh indices array.
      * @returns the SPS
-     * @hidden
+     * @internal
      */
     private _sortParticlesByMaterial(): SolidParticleSystem {
         const indicesByMaterial = [0];
@@ -1727,7 +1725,7 @@ export class SolidParticleSystem implements IDisposable {
     }
     /**
      * Sets the material indexes by id materialIndexesById[id] = materialIndex
-     * @hidden
+     * @internal
      */
     private _setMaterialIndexesById() {
         this._materialIndexesById = {};
@@ -1739,7 +1737,7 @@ export class SolidParticleSystem implements IDisposable {
     /**
      * Returns an array with unique values of Materials from the passed array
      * @param array the material array to be checked and filtered
-     * @hidden
+     * @internal
      */
     private _filterUniqueMaterialId(array: Material[]): Material[] {
         const filtered = array.filter(function (value, index, self) {
@@ -1749,7 +1747,7 @@ export class SolidParticleSystem implements IDisposable {
     }
     /**
      * Sets a new Standard Material as _defaultMaterial if not already set.
-     * @hidden
+     * @internal
      */
     private _setDefaultMaterial(): Material {
         if (!this._defaultMaterial) {

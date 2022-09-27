@@ -58,7 +58,7 @@ export class InputBlock extends NodeMaterialBlock {
     /** Gets or sets a value used by the Node Material editor to determine how to configure the current value if it is a matrix */
     public matrixMode: number = 0;
 
-    /** @hidden */
+    /** @internal */
     public _systemValue: Nullable<NodeMaterialSystemValues> = null;
 
     /** Gets or sets a boolean indicating that the value of this input will not change after a build */
@@ -454,7 +454,7 @@ export class InputBlock extends NodeMaterialBlock {
         return "";
     }
 
-    /** @hidden */
+    /** @internal */
     public get _noContextSwitch(): boolean {
         return attributeInFragmentOnly[this.name];
     }
@@ -551,11 +551,7 @@ export class InputBlock extends NodeMaterialBlock {
     }
 
     /**
-     * @param effect
-     * @param world
-     * @param worldView
-     * @param worldViewProjection
-     * @hidden
+     * @internal
      */
     public _transmitWorld(effect: Effect, world: Matrix, worldView: Matrix, worldViewProjection: Matrix) {
         if (!this._systemValue) {
@@ -577,10 +573,7 @@ export class InputBlock extends NodeMaterialBlock {
     }
 
     /**
-     * @param effect
-     * @param scene
-     * @param material
-     * @hidden
+     * @internal
      */
     public _transmit(effect: Effect, scene: Scene, material: NodeMaterial) {
         if (this.isAttribute) {

@@ -47,8 +47,7 @@ export class DepthRenderer {
     public useOnlyInActiveCamera: boolean = false;
 
     /**
-     * @param _
-     * @hidden
+     * @internal
      */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
         throw _WarnImport("DepthRendererSceneComponent");

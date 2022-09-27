@@ -44,10 +44,10 @@ declare module "../../Engines/thinEngine" {
          */
         updateRenderTargetTextureSampleCount(rtWrapper: Nullable<RenderTargetWrapper>, samples: number): number;
 
-        /** @hidden */
+        /** @internal */
         _createDepthStencilTexture(size: TextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture;
 
-        /** @hidden */
+        /** @internal */
         _createHardwareRenderTargetWrapper(isMulti: boolean, isCube: boolean, size: TextureSize): RenderTargetWrapper;
     }
 }

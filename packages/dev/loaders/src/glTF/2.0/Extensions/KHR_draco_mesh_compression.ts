@@ -39,25 +39,21 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
     private _loader: GLTFLoader;
 
     /**
-     * @param loader
-     * @hidden
+     * @internal
      */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
         this.enabled = DracoCompression.DecoderAvailable && this._loader.isExtensionUsed(NAME);
     }
 
-    /** @hidden */
+    /** @internal */
     public dispose(): void {
         delete this.dracoCompression;
         (this._loader as any) = null;
     }
 
     /**
-     * @param context
-     * @param primitive
-     * @param babylonMesh
-     * @hidden
+     * @internal
      */
     public _loadVertexDataAsync(context: string, primitive: IMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<Geometry>> {
         return GLTFLoader.LoadExtensionAsync<IKHRDracoMeshCompression, Geometry>(context, primitive, this.name, (extensionContext, extension) => {

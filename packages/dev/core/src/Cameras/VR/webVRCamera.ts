@@ -159,7 +159,7 @@ export interface WebVROptions {
  */
 export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
     /**
-     * @hidden
+     * @internal
      * The vrDisplay tied to the camera. See https://developer.mozilla.org/en-US/docs/Web/API/VRDisplay
      */
     public _vrDevice: any = null;
@@ -177,7 +177,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
 
     // Represents device position and rotation in room space. Should only be used to help calculate babylon space values
     private _deviceRoomPosition = Vector3.Zero();
-    /** @hidden */
+    /** @internal */
     public _deviceRoomRotationQuaternion = Quaternion.Identity();
 
     private _standingMatrix: Nullable<Matrix> = null;
@@ -457,7 +457,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
     }
 
     /**
-     * @hidden
+     * @internal
      * Updates the camera based on device's frame data
      */
     public _checkInputs(): void {
@@ -558,7 +558,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
     }
 
     /**
-     * @hidden
+     * @internal
      * Updates the rig cameras (left and right eye)
      */
     public _updateRigCameras() {
@@ -589,7 +589,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
     }
 
     /**
-     * @hidden
+     * @internal
      * Updates the cached values of the camera
      * @param ignoreParentClass ignores updating the parent class's cache (default: false)
      */
@@ -634,7 +634,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
     }
 
     /**
-     * @hidden
+     * @internal
      * Get current device position in babylon world
      */
     public _computeDevicePosition() {
@@ -659,7 +659,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
     }
 
     /**
-     * @hidden
+     * @internal
      * Gets the view matrix of this camera (Always set to identity as left and right eye cameras contain the actual view matrix)
      * @returns an identity matrix
      */
@@ -671,7 +671,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
     /**
      * This function is called by the two RIG cameras.
      * 'this' is the left or right camera (and NOT (!!!) the WebVRFreeCamera instance)
-     * @hidden
+     * @internal
      */
     public _getWebVRViewMatrix(): Matrix {
         // Update the parent camera prior to using a child camera to avoid desynchronization
@@ -722,7 +722,7 @@ export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
         return this._webvrViewMatrix;
     }
 
-    /** @hidden */
+    /** @internal */
     public _getWebVRProjectionMatrix(): Matrix {
         const parentCamera = <WebVRFreeCamera>this.parent;
 

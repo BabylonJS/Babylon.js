@@ -64,16 +64,16 @@ export class ProceduralTexture extends Texture {
      */
     public nodeMaterialSource: Nullable<NodeMaterial> = null;
 
-    /** @hidden */
+    /** @internal */
     @serialize()
     public _generateMipMaps: boolean;
 
     private _drawWrapper: DrawWrapper;
 
-    /** @hidden */
+    /** @internal */
     public _textures: { [key: string]: Texture } = {};
 
-    /** @hidden */
+    /** @internal */
     protected _fallbackTexture: Nullable<Texture>;
 
     @serialize()
@@ -198,8 +198,7 @@ export class ProceduralTexture extends Texture {
     }
 
     /**
-     * @param effect
-     * @hidden*
+     * @internal*
      */
     public _setEffect(effect: Effect) {
         this._drawWrapper.effect = effect;
@@ -243,7 +242,7 @@ export class ProceduralTexture extends Texture {
         this._indexBuffer = engine.createIndexBuffer(indices);
     }
 
-    /** @hidden */
+    /** @internal */
     public _rebuild(): void {
         const vb = this._vertexBuffers[VertexBuffer.PositionKind];
 
@@ -357,7 +356,7 @@ export class ProceduralTexture extends Texture {
         this.resetRefreshCounter();
     }
 
-    /** @hidden */
+    /** @internal */
     public _shouldRender(): boolean {
         if (!this.isEnabled || !this.isReady() || !this._texture) {
             if (this._texture) {

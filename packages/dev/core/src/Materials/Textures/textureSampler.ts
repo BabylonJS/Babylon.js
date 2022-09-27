@@ -92,19 +92,19 @@ export class TextureSampler {
         this._useMipMaps = value;
     }
 
-    /** @hidden */
+    /** @internal */
     public _cachedWrapU: Nullable<number> = null;
 
-    /** @hidden */
+    /** @internal */
     public _cachedWrapV: Nullable<number> = null;
 
-    /** @hidden */
+    /** @internal */
     public _cachedWrapR: Nullable<number> = null;
 
-    /** @hidden */
+    /** @internal */
     public _cachedAnisotropicFilteringLevel: Nullable<number> = null;
 
-    /** @hidden */
+    /** @internal */
     public _comparisonFunction: number = 0;
 
     /**

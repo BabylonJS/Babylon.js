@@ -167,8 +167,7 @@ declare module "core/scene" {
 }
 
 /**
- * @param id
- * @hidden
+ * @internal
  */
 Scene.prototype.setActiveCameraByID = function (id: string): Nullable<Camera> {
     return this.setActiveCameraById(id);

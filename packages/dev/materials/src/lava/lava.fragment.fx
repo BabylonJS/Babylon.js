@@ -147,7 +147,7 @@ void main(void) {
 
 #endif
 
-#if defined(VERTEXALPHA) || defined(INSTANCESCOLOR)
+#if defined(VERTEXALPHA) || defined(INSTANCESCOLOR) && defined(INSTANCES)
 	alpha *= vColor.a;
 #endif
 

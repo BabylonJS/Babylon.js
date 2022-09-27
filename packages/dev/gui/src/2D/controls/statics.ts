@@ -4,7 +4,7 @@ import { TextBlock } from "./textBlock";
 
 /**
  * Forcing an export so that this code will execute
- * @hidden
+ * @internal
  */
 const name = "Statics";
 

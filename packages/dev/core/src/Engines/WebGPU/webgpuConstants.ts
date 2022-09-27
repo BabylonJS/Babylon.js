@@ -1,17 +1,17 @@
-/** @hidden */
+/** @internal */
 // eslint-disable-next-line import/export
 export enum PredefinedColorSpace {
     SRGB = "srgb",
 }
 
-/** @hidden */
+/** @internal */
 // eslint-disable-next-line import/export
 export enum PowerPreference {
     LowPower = "low-power",
     HighPerformance = "high-performance",
 }
 
-/** @hidden */
+/** @internal */
 export enum FeatureName {
     DepthClipControl = "depth-clip-control",
     Depth24UnormStencil8 = "depth24unorm-stencil8",
@@ -25,7 +25,7 @@ export enum FeatureName {
     BGRA8UnormStorage = "bgra8unorm-storage",
 }
 
-/** @hidden */
+/** @internal */
 export enum BufferUsage {
     MapRead = 1,
     MapWrite = 2,
@@ -39,20 +39,20 @@ export enum BufferUsage {
     QueryResolve = 512,
 }
 
-/** @hidden */
+/** @internal */
 export enum MapMode {
     Read = 1,
     Write = 2,
 }
 
-/** @hidden */
+/** @internal */
 export enum TextureDimension {
     E1d = "1d",
     E2d = "2d",
     E3d = "3d",
 }
 
-/** @hidden */
+/** @internal */
 export enum TextureUsage {
     CopySrc = 1,
     CopyDst = 2,
@@ -61,7 +61,7 @@ export enum TextureUsage {
     RenderAttachment = 16,
 }
 
-/** @hidden */
+/** @internal */
 export enum TextureViewDimension {
     E1d = "1d",
     E2d = "2d",
@@ -71,7 +71,7 @@ export enum TextureViewDimension {
     E3d = "3d",
 }
 
-/** @hidden */
+/** @internal */
 export enum TextureAspect {
     All = "all",
     StencilOnly = "stencil-only",
@@ -80,7 +80,7 @@ export enum TextureAspect {
 
 /**
  * Comments taken from https://github.com/gfx-rs/wgpu/blob/master/wgpu-types/src/lib.rs
- * @hidden
+ * @internal
  */
 export enum TextureFormat {
     // 8-bit formats
@@ -205,20 +205,20 @@ export enum TextureFormat {
     Depth32FloatStencil8 = "depth32float-stencil8",
 }
 
-/** @hidden */
+/** @internal */
 export enum AddressMode {
     ClampToEdge = "clamp-to-edge",
     Repeat = "repeat",
     MirrorRepeat = "mirror-repeat",
 }
 
-/** @hidden */
+/** @internal */
 export enum FilterMode {
     Nearest = "nearest",
     Linear = "linear",
 }
 
-/** @hidden */
+/** @internal */
 export enum CompareFunction {
     Never = "never",
     Less = "less",
@@ -230,28 +230,28 @@ export enum CompareFunction {
     Always = "always",
 }
 
-/** @hidden */
+/** @internal */
 export enum ShaderStage {
     Vertex = 1,
     Fragment = 2,
     Compute = 4,
 }
 
-/** @hidden */
+/** @internal */
 export enum BufferBindingType {
     Uniform = "uniform",
     Storage = "storage",
     ReadOnlyStorage = "read-only-storage",
 }
 
-/** @hidden */
+/** @internal */
 export enum SamplerBindingType {
     Filtering = "filtering",
     NonFiltering = "non-filtering",
     Comparison = "comparison",
 }
 
-/** @hidden */
+/** @internal */
 export enum TextureSampleType {
     Float = "float",
     UnfilterableFloat = "unfilterable-float",
@@ -260,24 +260,24 @@ export enum TextureSampleType {
     Uint = "uint",
 }
 
-/** @hidden */
+/** @internal */
 export enum StorageTextureAccess {
     WriteOnly = "write-only",
 }
 
-/** @hidden */
+/** @internal */
 export enum CompilationMessageType {
     Error = "error",
     Warning = "warning",
     Info = "info",
 }
 
-/** @hidden */
+/** @internal */
 export enum AutoLayoutMode {
     Auto = "auto",
 }
 
-/** @hidden */
+/** @internal */
 export enum PrimitiveTopology {
     PointList = "point-list",
     LineList = "line-list",
@@ -286,20 +286,20 @@ export enum PrimitiveTopology {
     TriangleStrip = "triangle-strip",
 }
 
-/** @hidden */
+/** @internal */
 export enum FrontFace {
     CCW = "ccw",
     CW = "cw",
 }
 
-/** @hidden */
+/** @internal */
 export enum CullMode {
     None = "none",
     Front = "front",
     Back = "back",
 }
 
-/** @hidden */
+/** @internal */
 export enum ColorWriteFlags {
     Red = 1,
     Green = 2,
@@ -308,7 +308,7 @@ export enum ColorWriteFlags {
     All = 15,
 }
 
-/** @hidden */
+/** @internal */
 export enum BlendFactor {
     Zero = "zero",
     One = "one",
@@ -325,7 +325,7 @@ export enum BlendFactor {
     OneMinusConstant = "one-minus-constant",
 }
 
-/** @hidden */
+/** @internal */
 export enum BlendOperation {
     Add = "add",
     Subtract = "subtract",
@@ -334,7 +334,7 @@ export enum BlendOperation {
     Max = "max",
 }
 
-/** @hidden */
+/** @internal */
 export enum StencilOperation {
     Keep = "keep",
     Zero = "zero",
@@ -346,13 +346,13 @@ export enum StencilOperation {
     DecrementWrap = "decrement-wrap",
 }
 
-/** @hidden */
+/** @internal */
 export enum IndexFormat {
     Uint16 = "uint16",
     Uint32 = "uint32",
 }
 
-/** @hidden */
+/** @internal */
 export enum VertexFormat {
     Uint8x2 = "uint8x2",
     Uint8x4 = "uint8x4",
@@ -386,54 +386,54 @@ export enum VertexFormat {
     Sint32x4 = "sint32x4",
 }
 
-/** @hidden */
+/** @internal */
 export enum InputStepMode {
     Vertex = "vertex",
     Instance = "instance",
 }
 
-/** @hidden */
+/** @internal */
 export enum ComputePassTimestampLocation {
     Beginning = "beginning",
     End = "end",
 }
 
-/** @hidden */
+/** @internal */
 export enum RenderPassTimestampLocation {
     Beginning = "beginning",
     End = "end",
 }
 
-/** @hidden */
+/** @internal */
 export enum LoadOp {
     Load = "load",
     Clear = "clear",
 }
 
-/** @hidden */
+/** @internal */
 export enum StoreOp {
     Store = "store",
     Discard = "discard",
 }
 
-/** @hidden */
+/** @internal */
 export enum QueryType {
     Occlusion = "occlusion",
     Timestamp = "timestamp",
 }
 
-/** @hidden */
+/** @internal */
 export enum CanvasAlphaMode {
     Opaque = "opaque",
     Premultiplied = "premultiplied",
 }
 
-/** @hidden */
+/** @internal */
 export enum DeviceLostReason {
     Destroyed = "destroyed",
 }
 
-/** @hidden */
+/** @internal */
 export enum ErrorFilter {
     OutOfMemory = "out-of-memory",
     Validation = "validation",

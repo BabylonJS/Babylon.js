@@ -35,11 +35,11 @@ export class InstancedMesh extends AbstractMesh {
     private _currentLOD: Mesh;
     private _billboardWorldMatrix: Matrix;
 
-    /** @hidden */
+    /** @internal */
     public _indexInSourceMeshInstanceArray = -1;
-    /** @hidden */
+    /** @internal */
     public _distanceToCamera: number = 0;
-    /** @hidden */
+    /** @internal */
     public _previousWorldMatrix: Nullable<Matrix>;
 
     constructor(name: string, source: Mesh) {
@@ -317,7 +317,7 @@ export class InstancedMesh extends AbstractMesh {
         return this;
     }
 
-    /** @hidden */
+    /** @internal */
     public _preActivate(): InstancedMesh {
         if (this._currentLOD) {
             this._currentLOD._preActivate();
@@ -326,9 +326,7 @@ export class InstancedMesh extends AbstractMesh {
     }
 
     /**
-     * @param renderId
-     * @param intermediateRendering
-     * @hidden
+     * @internal
      */
     public _activate(renderId: number, intermediateRendering: boolean): boolean {
         super._activate(renderId, intermediateRendering);
@@ -362,7 +360,7 @@ export class InstancedMesh extends AbstractMesh {
         return false;
     }
 
-    /** @hidden */
+    /** @internal */
     public _postActivate(): void {
         if (this._sourceMesh.edgesShareWithInstances && this._sourceMesh._edgesRenderer && this._sourceMesh._edgesRenderer.isEnabled && this._sourceMesh._renderingGroup) {
             // we are using the edge renderer of the source mesh
@@ -417,14 +415,13 @@ export class InstancedMesh extends AbstractMesh {
     }
 
     /**
-     * @param renderId
-     * @hidden
+     * @internal
      */
     public _preActivateForIntermediateRendering(renderId: number): Mesh {
         return <Mesh>this.sourceMesh._preActivateForIntermediateRendering(renderId);
     }
 
-    /** @hidden */
+    /** @internal */
     public _syncSubMeshes(): InstancedMesh {
         this.releaseSubMeshes();
         if (this._sourceMesh.subMeshes) {
@@ -435,12 +432,12 @@ export class InstancedMesh extends AbstractMesh {
         return this;
     }
 
-    /** @hidden */
+    /** @internal */
     public _generatePointsArray(): boolean {
         return this._sourceMesh._generatePointsArray();
     }
 
-    /** @hidden */
+    /** @internal */
     public _updateBoundingInfo(): AbstractMesh {
         if (this.hasBoundingInfo) {
             this.getBoundingInfo().update(this.worldMatrixFromCache);
@@ -542,8 +539,7 @@ export class InstancedMesh extends AbstractMesh {
     }
 
     /**
-     * @param serializationObject
-     * @hidden
+     * @internal
      */
     public _serializeAsParent(serializationObject: any) {
         super._serializeAsParent(serializationObject);
@@ -602,7 +598,7 @@ declare module "./mesh" {
          */
         edgesShareWithInstances: boolean;
 
-        /** @hidden */
+        /** @internal */
         _userInstancedBuffersStorage: {
             data: { [key: string]: Float32Array };
             sizes: { [key: string]: number };
@@ -663,8 +659,8 @@ Mesh.prototype.registerInstancedBuffer = function (kind: string, stride: number)
     this._markSubMeshesAsAttributesDirty();
 };
 
-Mesh.prototype._processInstancedBuffers = function (visibleInstances: InstancedMesh[], renderSelf: boolean) {
-    const instanceCount = visibleInstances.length;
+Mesh.prototype._processInstancedBuffers = function (visibleInstances: Nullable<InstancedMesh[]>, renderSelf: boolean) {
+    const instanceCount = visibleInstances ? visibleInstances.length : 0;
 
     for (const kind in this.instancedBuffers) {
         let size = this._userInstancedBuffersStorage.sizes[kind];
@@ -705,7 +701,7 @@ Mesh.prototype._processInstancedBuffers = function (visibleInstances: InstancedM
         }
 
         for (let instanceIndex = 0; instanceIndex < instanceCount; instanceIndex++) {
-            const instance = visibleInstances[instanceIndex]!;
+            const instance = visibleInstances![instanceIndex]!;
 
             const value = instance.instancedBuffers[kind];
 

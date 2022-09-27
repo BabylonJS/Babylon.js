@@ -74,7 +74,7 @@ export interface INodeMaterialEditorOptions {
     editorURL?: string;
 }
 
-/** @hidden */
+/** @internal */
 export class NodeMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
     public NORMAL = false;
     public TANGENT = false;
@@ -267,7 +267,7 @@ export class NodeMaterial extends PushMaterial {
 
     /**
      * Specifies the mode of the node material
-     * @hidden
+     * @internal
      */
     @serialize("mode")
     public _mode: NodeMaterialModes = NodeMaterialModes.Material;

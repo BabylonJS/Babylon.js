@@ -2,7 +2,7 @@ import { Constants } from "../Engines/constants";
 import type { IStencilState } from "./IStencilState";
 
 /**
- * @hidden
+ * @internal
  **/
 export class StencilState implements IStencilState {
     /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn */

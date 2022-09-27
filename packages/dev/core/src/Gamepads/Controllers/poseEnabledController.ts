@@ -61,7 +61,7 @@ export interface MutableGamepadButton {
 
 /**
  * Defines the ExtendedGamepadButton interface for a gamepad button which includes state provided by a pose controller
- * @hidden
+ * @internal
  */
 export interface ExtendedGamepadButton extends GamepadButton {
     /**
@@ -78,7 +78,7 @@ export interface ExtendedGamepadButton extends GamepadButton {
     readonly value: number;
 }
 
-/** @hidden */
+/** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export interface _GamePadFactory {
     /**
@@ -100,10 +100,10 @@ export interface _GamePadFactory {
  * Defines the PoseEnabledControllerHelper object that is used initialize a gamepad as the controller type it is specified as (eg. windows mixed reality controller)
  */
 export class PoseEnabledControllerHelper {
-    /** @hidden */
+    /** @internal */
     public static _ControllerFactories: _GamePadFactory[] = [];
 
-    /** @hidden */
+    /** @internal */
     public static _DefaultControllerFactory: Nullable<(gamepadInfo: any) => Gamepad> = null;
 
     /**
@@ -177,8 +177,7 @@ export class PoseEnabledController extends Gamepad implements PoseControlled {
     private _maxRotationDistFromHeadset = Math.PI / 5;
     private _draggedRoomRotation = 0;
     /**
-     * @param fixedPosition
-     * @hidden
+     * @internal
      */
     public _disableTrackPosition(fixedPosition: Vector3) {
         if (this._trackPosition) {
@@ -189,7 +188,7 @@ export class PoseEnabledController extends Gamepad implements PoseControlled {
 
     /**
      * Internal, the mesh attached to the controller
-     * @hidden
+     * @internal
      */
     public _mesh: Nullable<AbstractMesh>; // a node that will be attached to this Gamepad
     private _poseControlledCamera: TargetCamera;
@@ -198,13 +197,13 @@ export class PoseEnabledController extends Gamepad implements PoseControlled {
 
     /**
      * Internal, matrix used to convert room space to babylon space
-     * @hidden
+     * @internal
      */
     public _deviceToWorld = Matrix.Identity();
 
     /**
      * Node to be used when casting a ray from the controller
-     * @hidden
+     * @internal
      */
     public _pointingPoseNode: Nullable<TransformNode> = null;
     /**
@@ -328,7 +327,7 @@ export class PoseEnabledController extends Gamepad implements PoseControlled {
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public _meshAttachedObservable = new Observable<AbstractMesh>();
 

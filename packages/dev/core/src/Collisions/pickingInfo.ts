@@ -12,6 +12,9 @@ declare type Ray = import("../Culling/ray").Ray;
  * @see https://doc.babylonjs.com/divingDeeper/mesh/interactions/picking_collisions
  */
 export class PickingInfo {
+    /** @internal */
+    public _pickingUnavailable = false;
+
     /**
      * If the pick collided with an object
      */

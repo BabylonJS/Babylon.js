@@ -2,7 +2,7 @@
 
 import type { Nullable } from "../types";
 
-/** @hidden */
+/** @internal */
 interface TupleTypes<T> {
     2: [T, T];
     3: [T, T, T];
@@ -51,7 +51,7 @@ export class ArrayTools {
 
 /**
  * Defines the callback type used when an observed array function is triggered.
- * @hidden
+ * @internal
  */
 export type _ObserveCallback = (functionName: string, previousLength: number) => void;
 
@@ -124,7 +124,7 @@ const observedArrayFunctions = ["push", "splice", "pop", "shift", "unshift"];
  * @param array Defines the array to observe
  * @param callback Defines the function to call when the array is modified (in the limit of the observed array functions)
  * @returns A function to call to stop observing the array
- * @hidden
+ * @internal
  */
 export function _ObserveArray<T>(array: T[], callback: _ObserveCallback) {
     // Observes all the required array functions and stores the unhook functions

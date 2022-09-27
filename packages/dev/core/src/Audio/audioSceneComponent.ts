@@ -55,7 +55,7 @@ declare module "../abstractScene" {
 declare module "../scene" {
     export interface Scene {
         /**
-         * @hidden
+         * @internal
          * Backing field
          */
         _mainSoundTrack: SoundTrack;

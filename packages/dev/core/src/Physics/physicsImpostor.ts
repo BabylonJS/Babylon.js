@@ -213,7 +213,7 @@ export class PhysicsImpostor {
      */
     public static IDENTITY_QUATERNION = Quaternion.Identity();
 
-    /** @hidden */
+    /** @internal */
     public _pluginData: any = {};
 
     private _physicsEngine: Nullable<IPhysicsEngine>;
@@ -223,7 +223,7 @@ export class PhysicsImpostor {
 
     private _onBeforePhysicsStepCallbacks = new Array<(impostor: PhysicsImpostor) => void>();
     private _onAfterPhysicsStepCallbacks = new Array<(impostor: PhysicsImpostor) => void>();
-    /** @hidden */
+    /** @internal */
     public _onPhysicsCollideCallbacks: Array<{
         callback: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor, point: Nullable<Vector3>, distance: number, impulse: number, normal: Nullable<Vector3>) => void;
         otherImpostors: Array<PhysicsImpostor>;
@@ -233,7 +233,7 @@ export class PhysicsImpostor {
     private _deltaRotation: Quaternion;
     private _deltaRotationConjugated: Quaternion;
 
-    /** @hidden */
+    /** @internal */
     public _isFromLine: boolean;
 
     //If set, this is this impostor's parent
@@ -415,12 +415,12 @@ export class PhysicsImpostor {
     public uniqueId: number;
 
     /**
-     * @hidden
+     * @internal
      */
     public soft: boolean = false;
 
     /**
-     * @hidden
+     * @internal
      */
     public segments: number = 0;
 
@@ -514,7 +514,7 @@ export class PhysicsImpostor {
      * It will create a new body - but only if this mesh has no parent.
      * If it has, this impostor will not be used other than to define the impostor
      * of the child mesh.
-     * @hidden
+     * @internal
      */
     public _init() {
         if (!this._physicsEngine) {

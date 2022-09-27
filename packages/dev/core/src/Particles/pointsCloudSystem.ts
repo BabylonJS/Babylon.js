@@ -64,7 +64,7 @@ export class PointsCloudSystem implements IDisposable {
      */
     public vars: any = {};
     /**
-     * @hidden
+     * @internal
      */
     public _size: number; //size of each point particle
 
@@ -145,8 +145,7 @@ export class PointsCloudSystem implements IDisposable {
     }
 
     /**
-     * @param material
-     * @hidden
+     * @internal
      */
     private _buildMesh(material?: Material): Promise<Mesh> {
         if (this.nbParticles === 0) {

@@ -1,6 +1,6 @@
 import type { ProcessingOptions } from "./shaderProcessingOptions";
 
-/** @hidden */
+/** @internal */
 export class ShaderCodeNode {
     line: string;
     children: ShaderCodeNode[] = [];

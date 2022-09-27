@@ -12,7 +12,7 @@ const NAME = "KHR_texture_transform";
 import "../shaders/textureTransform.fragment";
 
 /**
- * @hidden
+ * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
@@ -38,7 +38,7 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public get wasUsed() {
         return this._wasUsed;
     }

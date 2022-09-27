@@ -22,16 +22,16 @@ import { Scalar } from "../../../../Maths/math.scalar";
  * Block used to implement the reflection module of the PBR material
  */
 export class ReflectionBlock extends ReflectionTextureBaseBlock {
-    /** @hidden */
+    /** @internal */
     public _defineLODReflectionAlpha: string;
-    /** @hidden */
+    /** @internal */
     public _defineLinearSpecularReflection: string;
     private _vEnvironmentIrradianceName: string;
-    /** @hidden */
+    /** @internal */
     public _vReflectionMicrosurfaceInfosName: string;
-    /** @hidden */
+    /** @internal */
     public _vReflectionInfosName: string;
-    /** @hidden */
+    /** @internal */
     public _vReflectionFilteringInfoName: string;
     private _scene: Scene;
 
@@ -41,13 +41,13 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
      * It's less burden on the user side in the editor part.
      */
 
-    /** @hidden */
+    /** @internal */
     public worldPositionConnectionPoint: NodeMaterialConnectionPoint;
-    /** @hidden */
+    /** @internal */
     public worldNormalConnectionPoint: NodeMaterialConnectionPoint;
-    /** @hidden */
+    /** @internal */
     public cameraPositionConnectionPoint: NodeMaterialConnectionPoint;
-    /** @hidden */
+    /** @internal */
     public viewConnectionPoint: NodeMaterialConnectionPoint;
 
     /**

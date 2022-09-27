@@ -66,8 +66,7 @@ export class MaterialPluginManager {
     }
 
     /**
-     * @param plugin
-     * @hidden
+     * @internal
      */
     public _addPlugin(plugin: MaterialPluginBase): void {
         for (let i = 0; i < this._plugins.length; ++i) {
@@ -108,8 +107,7 @@ export class MaterialPluginManager {
     }
 
     /**
-     * @param plugin
-     * @hidden
+     * @internal
      */
     public _activatePlugin(plugin: MaterialPluginBase): void {
         if (this._activePlugins.indexOf(plugin) === -1) {

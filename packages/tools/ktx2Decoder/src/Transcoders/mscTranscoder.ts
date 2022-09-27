@@ -7,7 +7,7 @@ declare let MSC_TRANSCODER: any;
 declare function importScripts(...urls: string[]): void;
 
 /**
- * @hidden
+ * @internal
  */
 export class MSCTranscoder extends Transcoder {
     /**

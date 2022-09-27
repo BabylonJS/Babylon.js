@@ -17,19 +17,19 @@ import { Constants } from "core/Engines/constants";
  * @see https://doc.babylonjs.com/how_to/gui#containers
  */
 export class Container extends Control {
-    /** @hidden */
+    /** @internal */
     public _children = new Array<Control>();
-    /** @hidden */
+    /** @internal */
     protected _measureForChildren = Measure.Empty();
-    /** @hidden */
+    /** @internal */
     protected _background = "";
-    /** @hidden */
+    /** @internal */
     protected _adaptWidthToChildren = false;
-    /** @hidden */
+    /** @internal */
     protected _adaptHeightToChildren = false;
-    /** @hidden */
+    /** @internal */
     protected _renderToIntermediateTexture: boolean = false;
-    /** @hidden */
+    /** @internal */
     protected _intermediateTexture: Nullable<DynamicTexture> = null;
 
     /** Gets or sets boolean indicating if children should be rendered to an intermediate texture rather than directly to host, useful for alpha blending */
@@ -251,8 +251,7 @@ export class Container extends Control {
     }
 
     /**
-     * @param control
-     * @hidden
+     * @internal
      */
     public _reOrderControl(control: Control): void {
         const linkedMesh = control.linkedMesh;
@@ -282,8 +281,7 @@ export class Container extends Control {
     }
 
     /**
-     * @param offset
-     * @hidden
+     * @internal
      */
     public _offsetLeft(offset: number) {
         super._offsetLeft(offset);
@@ -294,8 +292,7 @@ export class Container extends Control {
     }
 
     /**
-     * @param offset
-     * @hidden
+     * @internal
      */
     public _offsetTop(offset: number) {
         super._offsetTop(offset);
@@ -305,7 +302,7 @@ export class Container extends Control {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _markAllAsDirty(): void {
         super._markAllAsDirty();
 
@@ -315,8 +312,7 @@ export class Container extends Control {
     }
 
     /**
-     * @param context
-     * @hidden
+     * @internal
      */
     protected _localDraw(context: ICanvasRenderingContext): void {
         if (this._background) {
@@ -335,8 +331,7 @@ export class Container extends Control {
     }
 
     /**
-     * @param host
-     * @hidden
+     * @internal
      */
     public _link(host: AdvancedDynamicTexture): void {
         super._link(host);
@@ -346,15 +341,13 @@ export class Container extends Control {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     protected _beforeLayout() {
         // Do nothing
     }
 
     /**
-     * @param parentMeasure
-     * @param context
-     * @hidden
+     * @internal
      */
     protected _processMeasures(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
@@ -384,9 +377,7 @@ export class Container extends Control {
     }
 
     /**
-     * @param parentMeasure
-     * @param context
-     * @hidden
+     * @internal
      */
     public _layout(parentMeasure: Measure, context: ICanvasRenderingContext): boolean {
         if (!this.isDirty && (!this.isVisible || this.notRenderable)) {
@@ -473,9 +464,7 @@ export class Container extends Control {
     }
 
     /**
-     * @param context
-     * @param invalidatedRectangle
-     * @hidden
+     * @internal
      */
     public _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Measure): void {
         const renderToIntermediateTextureThisDraw = this._renderToIntermediateTexture && this._intermediateTexture;
@@ -539,15 +528,7 @@ export class Container extends Control {
     }
 
     /**
-     * @param x
-     * @param y
-     * @param pi
-     * @param type
-     * @param pointerId
-     * @param buttonIndex
-     * @param deltaX
-     * @param deltaY
-     * @hidden
+     * @internal
      */
     public _processPicking(x: number, y: number, pi: Nullable<PointerInfoBase>, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
         if (!this._isEnabled || !this.isVisible || this.notRenderable) {
@@ -585,9 +566,7 @@ export class Container extends Control {
     }
 
     /**
-     * @param parentMeasure
-     * @param context
-     * @hidden
+     * @internal
      */
     protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         super._additionalProcessing(parentMeasure, context);
@@ -625,9 +604,7 @@ export class Container extends Control {
     }
 
     /**
-     * @param serializedObject
-     * @param host
-     * @hidden
+     * @internal
      */
     public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
         super._parseFromContent(serializedObject, host);

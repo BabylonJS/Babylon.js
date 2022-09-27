@@ -60,7 +60,7 @@ export class AnimationGroup implements IDisposable {
     private _loopAnimation = false;
     private _isAdditive = false;
 
-    /** @hidden */
+    /** @internal */
     public _parentContainer: Nullable<AbstractScene> = null;
 
     /**

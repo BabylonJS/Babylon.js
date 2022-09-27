@@ -37,7 +37,7 @@ export interface IWebXRRenderTargetTextureProvider extends IDisposable {
 
 /**
  * Provides render target textures and other important rendering information for a given XRLayer.
- * @hidden
+ * @internal
  */
 export abstract class WebXRLayerRenderTargetTextureProvider implements IWebXRRenderTargetTextureProvider {
     public abstract trySetViewportForView(viewport: Viewport, view: XRView): boolean;

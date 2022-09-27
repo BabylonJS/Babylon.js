@@ -230,16 +230,16 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     protected _size: TextureSize;
     protected _initialSizeParameter: number | { width: number; height: number } | { ratio: number };
     protected _sizeRatio: Nullable<number>;
-    /** @hidden */
+    /** @internal */
     public _generateMipMaps: boolean;
-    /** @hidden */
+    /** @internal */
     public _cleared = false;
     /**
      * Skip the initial clear of the rtt at the beginning of the frame render loop
      */
     public skipInitialClear = false;
     protected _renderingManager: RenderingManager;
-    /** @hidden */
+    /** @internal */
     public _waitingRenderList?: string[];
     protected _doNotChangeAspectRatio: boolean;
     protected _currentRefreshId = -1;
@@ -600,7 +600,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _shouldRender(): boolean {
         if (this._currentRefreshId === -1) {
             // At least render once
@@ -1001,7 +1001,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     }
 
     /**
-     * @hidden
+     * @internal
      * @param faceIndex face index to bind to if this is a cubetexture
      * @param layer defines the index of the texture to bind in the array
      */
@@ -1027,11 +1027,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     }
 
     /**
-     * @param scene
-     * @param faceIndex
-     * @param layer
-     * @param useCameraPostProcess
-     * @hidden
+     * @internal
      */
     public _prepareFrame(scene: Scene, faceIndex?: number, layer?: number, useCameraPostProcess?: boolean) {
         if (this._postProcessManager) {
@@ -1329,7 +1325,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         super.dispose();
     }
 
-    /** @hidden */
+    /** @internal */
     public _rebuild(): void {
         if (this.refreshRate === RenderTargetTexture.REFRESHRATE_RENDER_ONCE) {
             this.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONCE;

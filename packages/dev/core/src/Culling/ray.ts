@@ -634,16 +634,16 @@ export type TrianglePickingPredicate = (p0: Vector3, p1: Vector3, p2: Vector3, r
 
 declare module "../scene" {
     export interface Scene {
-        /** @hidden */
+        /** @internal */
         _tempPickingRay: Nullable<Ray>;
 
-        /** @hidden */
+        /** @internal */
         _cachedRayForTransform: Ray;
 
-        /** @hidden */
+        /** @internal */
         _pickWithRayInverseMatrix: Matrix;
 
-        /** @hidden */
+        /** @internal */
         _internalPick(
             rayFunction: (world: Matrix, enableDistantPicking: boolean) => Ray,
             predicate?: (mesh: AbstractMesh) => boolean,
@@ -652,14 +652,14 @@ declare module "../scene" {
             trianglePredicate?: TrianglePickingPredicate
         ): Nullable<PickingInfo>;
 
-        /** @hidden */
+        /** @internal */
         _internalMultiPick(
             rayFunction: (world: Matrix, enableDistantPicking: boolean) => Ray,
             predicate?: (mesh: AbstractMesh) => boolean,
             trianglePredicate?: TrianglePickingPredicate
         ): Nullable<PickingInfo[]>;
 
-        /** @hidden */
+        /** @internal */
         _internalPickForMesh(
             pickingInfo: Nullable<PickingInfo>,
             rayFunction: (world: Matrix, enableDistantPicking: boolean) => Ray,

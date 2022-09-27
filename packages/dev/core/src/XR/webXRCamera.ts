@@ -43,7 +43,7 @@ export class WebXRCamera extends FreeCamera {
 
     /**
      * The last XRViewerPose from the current XRFrame
-     * @hidden
+     * @internal
      */
     public _lastXRViewerPose?: XRViewerPose;
 
@@ -114,7 +114,7 @@ export class WebXRCamera extends FreeCamera {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _updateForDualEyeDebugging(/*pupilDistance = 0.01*/) {
         // Create initial camera rigs
         this._updateNumberOfRigCameras(2);
