@@ -12,7 +12,6 @@ import { DeviceType, PointerInput } from "../DeviceInput/InputDevices/deviceEnum
 import type { IKeyboardEvent, IMouseEvent, IPointerEvent } from "../Events/deviceInputEvents";
 import { DeviceSourceManager } from "../DeviceInput/InputDevices/deviceSourceManager";
 import { EngineStore } from "../Engines/engineStore";
-import type { Engine } from "../Engines/engine";
 
 declare module "../scene" {
     interface Scene {
@@ -264,17 +263,15 @@ export class InputManager {
             //console.log(this._scene.timeText + "ms");
             this._pickTotal += this._scene.timeText;
             this._pickCt++;
-        }
-        else if (this._pickCt === totalCheck) {
+        } else if (this._pickCt === totalCheck) {
             const endTime = performance.now();
             console.log("Average: " + this._pickTotal / totalCheck + "ms");
-            console.log(`Cache Hits: ${this._cacheHit}/${this._totalCache} = ${this._cacheHit / this._totalCache * 100}%`);
+            console.log(`Cache Hits: ${this._cacheHit}/${this._totalCache} = ${(this._cacheHit / this._totalCache) * 100}%`);
             console.log("Purged", this._purge);
             console.log("Cached", this._cache);
-            console.log("Total Test Time", (endTime - this._startTime));
+            console.log("Total Test Time", endTime - this._startTime);
             this._pickCt++;
-        }
-        else {
+        } else {
             this._scene.timeText = -1;
         }
     }
