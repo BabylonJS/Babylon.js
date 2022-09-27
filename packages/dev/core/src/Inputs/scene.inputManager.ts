@@ -77,6 +77,15 @@ export class InputManager {
      */
     public _numActions: number = 0;
 
+    private _pickCt = 0;
+    private _pickTotal = 0;
+    private _cacheHit = 0;
+    private _cache = 0;
+    private _purge = 0;
+    private _totalCache = 0;
+
+    private _startTime = 0;
+
     /** This is a defensive check to not allow control attachment prior to an already active one. If already attached, previous control is unattached before attaching the new one. */
     private _alreadyAttached = false;
     private _alreadyAttachedTo: Nullable<HTMLElement>;
@@ -121,7 +130,7 @@ export class InputManager {
     private _meshUnderPointerId: { [pointerId: number]: Nullable<AbstractMesh> } = {};
     private _movePointerInfo: Nullable<PointerInfo> = null;
     private _frameAwarePickInfo: Nullable<PickingInfo> = null;
-    private _clearCachedPickInfo: Nullable<Observer<Engine>> = null;
+    private _clearCachedPickInfo: Nullable<Observer<Scene>> = null;
 
     // Keyboard
     private _onKeyDown: (evt: IKeyboardEvent) => void;
@@ -248,6 +257,26 @@ export class InputManager {
             this._setRayOnPointerInfo(pi);
             scene.onPointerObservable.notifyObservers(pi, type);
         }
+
+        const totalCheck = 100;
+        this._scene.timeText = performance.now() - this._scene.timeStart;
+        if (this._pickCt <= totalCheck - 1) {
+            //console.log(this._scene.timeText + "ms");
+            this._pickTotal += this._scene.timeText;
+            this._pickCt++;
+        }
+        else if (this._pickCt === totalCheck) {
+            const endTime = performance.now();
+            console.log("Average: " + this._pickTotal / totalCheck + "ms");
+            console.log(`Cache Hits: ${this._cacheHit}/${this._totalCache} = ${this._cacheHit / this._totalCache * 100}%`);
+            console.log("Purged", this._purge);
+            console.log("Cached", this._cache);
+            console.log("Total Test Time", (endTime - this._startTime));
+            this._pickCt++;
+        }
+        else {
+            this._scene.timeText = -1;
+        }
     }
 
     // Pointers handling
@@ -284,7 +313,9 @@ export class InputManager {
      * @hidden
      */
     public _pickMove(pointerId: number): Nullable<PickingInfo> {
+        this._totalCache++;
         if (this._frameAwarePickInfo) {
+            this._cacheHit++;
             return this._frameAwarePickInfo;
         }
 
@@ -299,6 +330,7 @@ export class InputManager {
         );
 
         this._setCursorAndPointerOverMesh(pickResult, pointerId, scene);
+        this._cache++;
         this._frameAwarePickInfo = pickResult;
         return pickResult;
     }
@@ -564,8 +596,9 @@ export class InputManager {
         this._deviceSourceManager = new DeviceSourceManager(engine);
 
         // Clear cached PickingInfo
-        this._clearCachedPickInfo = engine.onEndFrameObservable.add(() => {
+        this._clearCachedPickInfo = scene.onBeforeRenderObservable.add(() => {
             if (this._frameAwarePickInfo) {
+                this._purge++;
                 this._frameAwarePickInfo = null;
             }
         });
@@ -715,6 +748,10 @@ export class InputManager {
         };
 
         this._onPointerMove = (evt: IMouseEvent) => {
+            this._scene.timeStart = performance.now();
+            if (this._startTime === 0) {
+                this._startTime = this._scene.timeStart;
+            }
             // preserve compatibility with Safari when pointerId is not present
             if ((evt as IPointerEvent).pointerId === undefined) {
                 (evt as IPointerEvent as any).pointerId = 0;
@@ -998,8 +1035,8 @@ export class InputManager {
 
             this._alreadyAttached = false;
             this._alreadyAttachedTo = null;
-            const engine = this._scene.getEngine();
-            engine.onEndFrameObservable.remove(this._clearCachedPickInfo);
+            //const engine = this._scene.getEngine();
+            this._scene.onBeforeRenderObservable.remove(this._clearCachedPickInfo);
             this._clearCachedPickInfo = null;
         }
     }
