@@ -547,7 +547,7 @@ export class Tools {
      */
     public static FileAsURL(content: string): string {
         const fileBlob = new Blob([content]);
-        const url = window.URL || window.webkitURL;
+        const url = window.URL;
         const link: string = url.createObjectURL(fileBlob);
         return link;
     }

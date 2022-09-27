@@ -238,7 +238,7 @@ export class GamepadManager {
     // This function is called only on Chrome, which does not properly support
     // connection/disconnection events and forces you to recopy again the gamepad object
     private _updateGamepadObjects() {
-        const gamepads = navigator.getGamepads ? navigator.getGamepads() : navigator.webkitGetGamepads ? navigator.webkitGetGamepads() : [];
+        const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
         for (let i = 0; i < gamepads.length; i++) {
             const gamepad = gamepads[i];
             if (gamepad) {

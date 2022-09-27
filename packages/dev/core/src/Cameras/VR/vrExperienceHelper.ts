@@ -956,10 +956,6 @@ export class VRExperienceHelper {
 
         hostWindow.addEventListener("resize", this._onResize);
         document.addEventListener("fullscreenchange", this._onFullscreenChange, false);
-        document.addEventListener("mozfullscreenchange", this._onFullscreenChange, false);
-        document.addEventListener("webkitfullscreenchange", this._onFullscreenChange, false);
-        document.addEventListener("msfullscreenchange", this._onFullscreenChange, false);
-        (<any>document).onmsfullscreenchange = this._onFullscreenChange;
 
         // Display vr button when headset is connected
         if (webVROptions.createFallbackVRDeviceOrientationFreeCamera) {
@@ -2381,10 +2377,6 @@ export class VRExperienceHelper {
 
         window.removeEventListener("resize", this._onResize);
         document.removeEventListener("fullscreenchange", this._onFullscreenChange);
-        document.removeEventListener("mozfullscreenchange", this._onFullscreenChange);
-        document.removeEventListener("webkitfullscreenchange", this._onFullscreenChange);
-        document.removeEventListener("msfullscreenchange", this._onFullscreenChange);
-        (<any>document).onmsfullscreenchange = null;
 
         this._scene.getEngine().onVRDisplayChangedObservable.removeCallback(this._onVRDisplayChangedBind);
         this._scene.getEngine().onVRRequestPresentStart.removeCallback(this._onVRRequestPresentStart);
