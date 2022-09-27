@@ -10,20 +10,6 @@ module.exports = {
         // 'PRODUCTION' is used when building the static version of storybook.
 
         // Make whatever fine-grained changes you need
-        config.stats = {
-            errorDetails: true,
-        };
-
-        config.module.rules.push({
-            test: /\.tsx?$/,
-            loader: "ts-loader",
-            exclude: /node_modules/,
-            sideEffects: true,
-            options: {
-                configFile: "tsconfig.build.json",
-            },
-        });
-
         config.module.rules.push({
             test: /\.tsx?$/,
             loader: "ts-loader",
