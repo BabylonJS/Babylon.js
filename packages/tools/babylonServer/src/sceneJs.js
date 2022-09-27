@@ -33,6 +33,15 @@ const runScene = async () => {
         }
     }
 
+    window.addEventListener("resize", resize);
+    window.addEventListener("hashchange", runScene);
+    window.addEventListener("keydown", openInspector);
+    scene.onDisposeObservable.add(() => {
+        window.removeEventListener("resize", resize);
+        window.removeEventListener("hashchange", runScene);
+        window.removeEventListener("keydown", openInspector);
+    });
+
     const runInVisualizationTestMode = (typeof process !== "undefined" && process.env.VIS_TEST_MODE === "true") || false;
     if (runInVisualizationTestMode) {
         let renderCount = 1;
@@ -73,9 +82,5 @@ const runScene = async () => {
 };
 
 runScene();
-
-window.addEventListener("resize", resize);
-window.addEventListener("hashchange", runScene);
-window.addEventListener("keydown", openInspector);
 
 console.log("Open the inspector using Ctrl+Shift+U (or Command+Shift+U on Mac)");
