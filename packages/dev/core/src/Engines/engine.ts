@@ -2028,7 +2028,6 @@ export class Engine extends ThinEngine {
      * Asks the browser to exit pointerlock mode
      */
     static _ExitPointerlock(): void {
-        const anyDoc = document as any;
         if (document.exitPointerLock) {
             document.exitPointerLock();
         }
