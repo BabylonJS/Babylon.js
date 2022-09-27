@@ -1072,18 +1072,7 @@ export class VRExperienceHelper {
     };
 
     private _onFullscreenChange = () => {
-        const anyDoc = document as any;
-        if (anyDoc.fullscreen !== undefined) {
-            this._fullscreenVRpresenting = (<any>document).fullscreen;
-        } else if (anyDoc.mozFullScreen !== undefined) {
-            this._fullscreenVRpresenting = anyDoc.mozFullScreen;
-        } else if (anyDoc.webkitIsFullScreen !== undefined) {
-            this._fullscreenVRpresenting = anyDoc.webkitIsFullScreen;
-        } else if (anyDoc.msIsFullScreen !== undefined) {
-            this._fullscreenVRpresenting = anyDoc.msIsFullScreen;
-        } else if ((<any>document).msFullscreenElement !== undefined) {
-            this._fullscreenVRpresenting = (<any>document).msFullscreenElement;
-        }
+        this._fullscreenVRpresenting = !!document.fullscreenElement;
         if (!this._fullscreenVRpresenting && this._inputElement) {
             this.exitVR();
             if (!this._useCustomVRButton && this._btnVR) {
