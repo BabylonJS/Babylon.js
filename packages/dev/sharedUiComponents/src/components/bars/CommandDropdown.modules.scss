@@ -119,26 +119,6 @@
     top: 0;
     width: 150px;
     display: none;
-
-    &.background-js {
-        background: #bfabff;
-        .sub-item {
-            &:hover {
-                background-color: #333333;
-                color: white;
-            }
-        }
-    }
-
-    &.background-ts {
-        background: #333333;
-        .sub-item {
-            &:hover {
-                background-color: #333333;
-                color: white;
-            }
-        }
-    }
 }
 
 .subItem {
