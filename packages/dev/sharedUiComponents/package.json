@@ -19,8 +19,8 @@
         "watch:assets": "build-tools -c process-assets --package core --watch",
         "watch:source": "tsc -b tsconfig.build.json -w",
         "watch": "build-tools -c dev-watch --packages \"shared-ui-components\" -wa",
-        "storybook": "start-storybook -p 6006",
-        "build-storybook": "build-storybook"
+        "storybook": "sb dev -p 6006",
+        "build-storybook": "sb build"
     },
     "peerDependencies": {
         "@fortawesome/fontawesome-svg-core": "^6.1.0",
@@ -41,11 +41,13 @@
         "@rollup/plugin-image": "^2.1.1",
         "@rollup/plugin-multi-entry": "^4.1.0",
         "@rollup/plugin-typescript": "^8.3.0",
-        "@storybook/addon-actions": "^6.4.22",
-        "@storybook/addon-essentials": "^6.4.22",
-        "@storybook/addon-interactions": "^6.4.22",
-        "@storybook/addon-links": "^6.4.22",
-        "@storybook/react": "^6.4.22",
+        "@storybook/addon-actions": "^7.0.0-alpha.33",
+        "@storybook/addon-essentials": "^7.0.0-alpha.33",
+        "@storybook/addon-interactions": "^7.0.0-alpha.33",
+        "@storybook/addon-links": "^7.0.0-alpha.33",
+        "@storybook/react": "^7.0.0-alpha.33",
+        "@storybook/react-webpack5": "^7.0.0-alpha.33",
+        "@storybook/cli": "^7.0.0-alpha.33",
         "@storybook/testing-library": "^0.0.11",
         "babel-loader": "^8.2.5",
         "node-sass": "^7.0.1",
@@ -55,10 +57,6 @@
         "typescript": "^4.4.4"
     },
     "sideEffects": false,
-    "dependencies": {
-        "@storybook/builder-webpack5": "^6.4.22",
-        "@storybook/manager-webpack5": "^6.4.22"
-    },
     "resolutions": {
         "webpack": "^5.73.0"
     }
