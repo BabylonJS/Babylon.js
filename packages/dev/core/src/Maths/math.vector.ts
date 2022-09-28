@@ -1767,7 +1767,7 @@ export class Vector3 {
      * @returns the rotation in the form (pitch, yaw, 0)
      */
     public static PitchYawRollToMoveBetweenPoints(start: Vector3, target: Vector3): Vector3 {
-        const ref = TmpVectors.Vector3[0];
+        const ref = Vector3.Zero();
         return Vector3.PitchYawRollToMoveBetweenPointsToRef(start, target, ref);
     }
 
