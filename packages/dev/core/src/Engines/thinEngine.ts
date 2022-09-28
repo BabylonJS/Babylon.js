@@ -5862,14 +5862,6 @@ export class ThinEngine {
             return requester.requestPostAnimationFrame(func);
         } else if (requester.requestAnimationFrame) {
             return requester.requestAnimationFrame(func);
-        } else if (requester.msRequestAnimationFrame) {
-            return requester.msRequestAnimationFrame(func);
-        } else if (requester.webkitRequestAnimationFrame) {
-            return requester.webkitRequestAnimationFrame(func);
-        } else if (requester.mozRequestAnimationFrame) {
-            return requester.mozRequestAnimationFrame(func);
-        } else if (requester.oRequestAnimationFrame) {
-            return requester.oRequestAnimationFrame(func);
         } else {
             return window.setTimeout(func, 16);
         }

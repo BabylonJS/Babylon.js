@@ -111,8 +111,7 @@ export class AudioEngine implements IAudioEngine {
         if (!IsWindowObjectExist()) {
             return;
         }
-        if (typeof window.AudioContext !== "undefined" || typeof window.webkitAudioContext !== "undefined") {
-            window.AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (typeof window.AudioContext !== "undefined") {
             this.canUseWebAudio = true;
         }
 
