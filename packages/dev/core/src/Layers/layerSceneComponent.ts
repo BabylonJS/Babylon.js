@@ -52,10 +52,16 @@ export class LayerSceneComponent implements ISceneComponent {
      */
     public register(): void {
         this.scene._beforeCameraDrawStage.registerStep(SceneComponentConstants.STEP_BEFORECAMERADRAW_LAYER, this, this._drawCameraBackground);
-        this.scene._afterCameraDrawStage.registerStep(SceneComponentConstants.STEP_AFTERCAMERADRAW_LAYER, this, this._drawCameraForeground);
+        this.scene._afterCameraDrawStage.registerStep(SceneComponentConstants.STEP_AFTERCAMERADRAW_LAYER, this, this._drawCameraForegroundWithPostProcessing);
+        this.scene._afterCameraPostProcessStage.registerStep(SceneComponentConstants.STEP_AFTERCAMERAPOSTPROCESS_LAYER, this, this._drawCameraForegroundWithoutPostProcessing);
 
         this.scene._beforeRenderTargetDrawStage.registerStep(SceneComponentConstants.STEP_BEFORERENDERTARGETDRAW_LAYER, this, this._drawRenderTargetBackground);
-        this.scene._afterRenderTargetDrawStage.registerStep(SceneComponentConstants.STEP_AFTERRENDERTARGETDRAW_LAYER, this, this._drawRenderTargetForeground);
+        this.scene._afterRenderTargetDrawStage.registerStep(SceneComponentConstants.STEP_AFTERRENDERTARGETDRAW_LAYER, this, this._drawRenderTargetForegroundWithPostProcessing);
+        this.scene._afterRenderTargetPostProcessStage.registerStep(
+            SceneComponentConstants.STEP_AFTERRENDERTARGETPOSTPROCESS_LAYER,
+            this,
+            this._drawRenderTargetForegroundWithoutPostProcessing
+        );
     }
 
     /**
@@ -95,26 +101,38 @@ export class LayerSceneComponent implements ISceneComponent {
         }
     }
 
-    private _drawCameraPredicate(layer: Layer, isBackground: boolean, cameraLayerMask: number): boolean {
-        return !layer.renderOnlyInRenderTargetTextures && layer.isBackground === isBackground && (layer.layerMask & cameraLayerMask) !== 0;
+    private _drawCameraPredicate(layer: Layer, isBackground: boolean, applyPostProcess: boolean, cameraLayerMask: number): boolean {
+        return (
+            !layer.renderOnlyInRenderTargetTextures &&
+            layer.isBackground === isBackground &&
+            layer.applyPostProcess === applyPostProcess &&
+            (layer.layerMask & cameraLayerMask) !== 0
+        );
     }
 
     private _drawCameraBackground(camera: Camera): void {
         this._draw((layer: Layer) => {
-            return this._drawCameraPredicate(layer, true, camera.layerMask);
+            return this._drawCameraPredicate(layer, true, true, camera.layerMask);
         });
     }
 
-    private _drawCameraForeground(camera: Camera): void {
+    private _drawCameraForegroundWithPostProcessing(camera: Camera): void {
         this._draw((layer: Layer) => {
-            return this._drawCameraPredicate(layer, false, camera.layerMask);
+            return this._drawCameraPredicate(layer, false, true, camera.layerMask);
         });
     }
 
-    private _drawRenderTargetPredicate(layer: Layer, isBackground: boolean, cameraLayerMask: number, renderTargetTexture: RenderTargetTexture): boolean {
+    private _drawCameraForegroundWithoutPostProcessing(camera: Camera): void {
+        this._draw((layer: Layer) => {
+            return this._drawCameraPredicate(layer, false, false, camera.layerMask);
+        });
+    }
+
+    private _drawRenderTargetPredicate(layer: Layer, isBackground: boolean, applyPostProcess: boolean, cameraLayerMask: number, renderTargetTexture: RenderTargetTexture): boolean {
         return (
             layer.renderTargetTextures.length > 0 &&
             layer.isBackground === isBackground &&
+            layer.applyPostProcess === applyPostProcess &&
             layer.renderTargetTextures.indexOf(renderTargetTexture) > -1 &&
             (layer.layerMask & cameraLayerMask) !== 0
         );
@@ -122,13 +140,19 @@ export class LayerSceneComponent implements ISceneComponent {
 
     private _drawRenderTargetBackground(renderTarget: RenderTargetTexture): void {
         this._draw((layer: Layer) => {
-            return this._drawRenderTargetPredicate(layer, true, this.scene.activeCamera!.layerMask, renderTarget);
+            return this._drawRenderTargetPredicate(layer, true, true, this.scene.activeCamera!.layerMask, renderTarget);
         });
     }
 
-    private _drawRenderTargetForeground(renderTarget: RenderTargetTexture): void {
+    private _drawRenderTargetForegroundWithPostProcessing(renderTarget: RenderTargetTexture): void {
         this._draw((layer: Layer) => {
-            return this._drawRenderTargetPredicate(layer, false, this.scene.activeCamera!.layerMask, renderTarget);
+            return this._drawRenderTargetPredicate(layer, false, true, this.scene.activeCamera!.layerMask, renderTarget);
+        });
+    }
+
+    private _drawRenderTargetForegroundWithoutPostProcessing(renderTarget: RenderTargetTexture): void {
+        this._draw((layer: Layer) => {
+            return this._drawRenderTargetPredicate(layer, false, false, this.scene.activeCamera!.layerMask, renderTarget);
         });
     }
 

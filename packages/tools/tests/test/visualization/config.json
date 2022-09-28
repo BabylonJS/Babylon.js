@@ -1460,6 +1460,11 @@
             "title": "Serialize scene without materials",
             "playgroundId": "#PH4DEZ#1",
             "referenceImage": "serializeWithoutMaterials.png"
+        },
+        {
+            "title": "UI unaffected by post-process",
+            "playgroundId": "#XJVHWQ",
+            "referenceImage": "uiUnaffected.png"
         }
     ]
 }
