@@ -9,7 +9,7 @@ import { Tools } from "../../Misc/tools";
 import type { IMouseEvent, IPointerEvent, IWheelEvent } from "../../Events/deviceInputEvents";
 import { DeviceType, PointerInput } from "../../DeviceInput/InputDevices/deviceEnums";
 import type { DeviceSourceType } from "../../DeviceInput/internalDeviceSourceManager";
-import { PointerEventTypes } from "../../Events";
+import { PointerEventTypes } from "../../Events/pointerEvents";
 /**
  * Manage the mouse inputs to control the movement of a free camera.
  * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
