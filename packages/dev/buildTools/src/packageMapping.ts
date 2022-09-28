@@ -166,7 +166,7 @@ const packageMapping: {
             // }
             return "babylonjs-gui-editor";
         },
-        "accessibility": "babylonjs-accessibility",
+        accessibility: "babylonjs-accessibility",
         "post-processes": "babylonjs-post-process",
         "procedural-textures": "babylonjs-procedural-textures",
         ktx2decoder: "babylonjs-ktx2decoder",
@@ -183,7 +183,7 @@ const packageMapping: {
         inspector: "@babylonjs/inspector",
         "node-editor": "@babylonjs/node-editor",
         "gui-editor": "@babylonjs/gui-editor",
-        "accessibility": "@babylonjs/accessibility",
+        accessibility: "@babylonjs/accessibility",
         "post-processes": "@babylonjs/post-processes",
         "procedural-textures": "@babylonjs/procedural-textures",
         ktx2decoder: "@babylonjs/ktx2decoder",
@@ -200,7 +200,7 @@ const packageMapping: {
         inspector: "@babylonjs/esm",
         "node-editor": "@babylonjs/esm",
         "gui-editor": "@babylonjs/esm",
-        "accessibility": "@babylonjs/accessibility",
+        accessibility: "@babylonjs/accessibility",
         "post-processes": "@babylonjs/esm",
         "procedural-textures": "@babylonjs/esm",
         ktx2decoder: "@babylonjs/esm",
@@ -279,7 +279,7 @@ const packageMapping: {
             }
             return "BABYLON";
         },
-        "accessibility": "BABYLON.Accessibility",
+        accessibility: "BABYLON.Accessibility",
         "post-processes": "BABYLON",
         "procedural-textures": "BABYLON",
         ktx2decoder: "KTX2DECODER",

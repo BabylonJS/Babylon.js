@@ -146,9 +146,7 @@ export class HTMLTwinHostComponent extends React.Component<IHTMLTwinHostComponen
 
     render() {
         return (
-            <div
-                id={"accessibility-host"}
-            >
+            <div id={"accessibility-host"}>
                 {this.state.a11yTreeItems.map((item) => {
                     return (
                         <HTMLTwinItemComponent
