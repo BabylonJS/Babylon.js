@@ -208,15 +208,6 @@ export function CreateScreenshotUsingRenderTarget(
     engine.setSize(width, height); // we need this call to trigger onResizeObservable with the screenshot width/height on all the subsystems that are observing this event and that needs to (re)create some resources with the right dimensions
 
     const scene = camera.getScene();
-    let previousCamera: Nullable<Camera> = null;
-    const previousCameras = scene.activeCameras;
-
-    scene.activeCameras = null;
-
-    if (scene.activeCamera !== camera) {
-        previousCamera = scene.activeCamera;
-        scene.activeCamera = camera;
-    }
 
     scene.render(); // make sure the scene is ready to be rendered in the RTT with the right list of active meshes (which depends on the camera, that may have been changed above)
 
@@ -240,6 +231,7 @@ export function CreateScreenshotUsingRenderTarget(
     texture.renderList = null;
     texture.samples = samples;
     texture.renderSprites = renderSprites;
+    texture.activeCamera = camera;
 
     const renderToTexture = () => {
         engine.onEndFrameObservable.addOnce(() => {
@@ -258,10 +250,6 @@ export function CreateScreenshotUsingRenderTarget(
         // if the camera used for the RTT rendering stays in effect for the next frame (and if that camera was different from the original camera)
         scene.incrementRenderId();
         scene.resetCachedMaterial();
-        if (previousCamera) {
-            scene.activeCamera = previousCamera;
-        }
-        scene.activeCameras = previousCameras;
         engine.setSize(originalSize.width, originalSize.height);
         camera.getProjectionMatrix(true); // Force cache refresh;
         scene.render();
