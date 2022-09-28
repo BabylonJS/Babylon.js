@@ -154,10 +154,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /** The fog density is following a linear function. */
     public static readonly FOGMODE_LINEAR = 3;
 
-    public timeStart = Date.now();
-
-    public timeText = 0;
-
     /**
      * Gets or sets the minimum deltatime when deterministic lock step is enabled
      * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
