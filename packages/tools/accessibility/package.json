@@ -1,6 +1,6 @@
 {
-    "name": "@tools/html-twin-renderer",
-    "description": "Render accessibility tree (html twins of the scene objects) for 3D content in DOM, thus the 3D content is compatible with screen readers and tab selection",
+    "name": "@tools/accessibility",
+    "description": "This package is for increasing accessibility of 3D content. It contains HTML twin renderer that renders html twins of the scene objects for 3D content in DOM, thus the 3D content is compatible with screen readers and keyboard navigation.",
     "private": true,
     "version": "1.0.0",
     "types": "dist/index",

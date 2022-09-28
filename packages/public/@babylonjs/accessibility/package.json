@@ -1,10 +1,10 @@
 {
-    "name": "@babylonjs/html-twin-renderer",
+    "name": "@babylonjs/accessibility",
     "version": "5.17.1",
-    "main": "dist/babylon.htmlTwinRenderer.max.js",
-    "module": "dist/babylon.htmlTwinRenderer.max.js",
-    "esnext": "dist/babylon.htmlTwinRenderer.max.js",
-    "typings": "dist/babylon.htmlTwinRenderer.module.d.ts",
+    "main": "dist/babylon.accessibility.max.js",
+    "module": "dist/babylon.accessibility.max.js",
+    "esnext": "dist/babylon.accessibility.max.js",
+    "typings": "dist/babylon.accessibility.module.d.ts",
     "files": [
         "dist",
         "readme.md",

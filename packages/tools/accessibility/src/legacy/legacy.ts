@@ -4,10 +4,10 @@ import { HTMLTwinRenderer } from "../index";
 const globalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
 if (typeof globalObject !== "undefined") {
     (<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
-    (<any>globalObject).BABYLON.HtmlTwinRenderer = HTMLTwinRenderer;
-    (<any>globalObject).BABYLON.HTMLTwinRenderer = HTMLTwinRenderer;
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    (<any>globalObject).HTMLTWINRENDERER = { HTMLTwinRenderer };
+    (<any>globalObject).BABYLON.Accessibility = { HTMLTwinRenderer };
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    (<any>globalObject).ACCESSIBILITY = { HTMLTwinRenderer };
 }
 
 export * from "../index";

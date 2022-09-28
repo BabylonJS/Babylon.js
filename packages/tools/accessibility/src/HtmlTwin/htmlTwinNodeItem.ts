@@ -4,23 +4,23 @@ import { Color4 } from "core/Maths/math.color";
 import { Mesh } from "core/Meshes/mesh";
 import type { Node } from "core/node";
 import type { Scene } from "core/scene";
-import { AccessibilityItem } from "./accessibilityItem";
+import { HTMLTwinItem } from "./htmlTwinItem";
 
 /**
- * A abstract layer to store the accessibility tree structure. It is constructed from the BabylonJS scene entities that need to be accessible. It informs the parent-children relationship of accessibility tree, and informs how to render: description, isActionable, onclick/onrightclick/onfocus/onblur.
+ * A abstract layer to store the html twin tree structure. It is constructed from the BabylonJS scene entities that need to be accessible. It informs the parent-children relationship of html twin tree, and informs how to render: description, isActionable, onclick/onrightclick/onfocus/onblur.
  */
-export class AccessibilityNodeItem extends AccessibilityItem {
+export class HTMLTwinNodeItem extends HTMLTwinItem {
     /**
      * The corresponding BabylonJS entity. Can be a Node or a Control.
      */
     public entity: Node;
 
     /**
-     * The children of this item in the accessibility tree.
+     * The children of this item in the html twin tree.
      */
-    public children: AccessibilityItem[];
+    public children: HTMLTwinItem[];
 
-    constructor(entity: Node, scene: Scene, children: AccessibilityItem[]) {
+    constructor(entity: Node, scene: Scene, children: HTMLTwinItem[]) {
         super(entity, scene, children);
     }
 

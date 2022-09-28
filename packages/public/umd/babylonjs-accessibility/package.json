@@ -1,8 +1,8 @@
 {
-    "name": "babylonjs-html-twin-renderer",
+    "name": "babylonjs-accessibility",
     "version": "5.17.1",
-    "main": "babylon.htmlTwinRenderer.max.js",
-    "types": "babylon.htmlTwinRenderer.module.d.ts",
+    "main": "babylon.accessibility.max.js",
+    "types": "babylon.accessibility.module.d.ts",
     "files": [
         "*"
     ],
@@ -20,7 +20,7 @@
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
         "@dev/shared-ui-components": "1.0.0",
-        "@tools/html-twin-renderer": "1.0.0",
+        "@tools/accessibility": "1.0.0",
         "@types/react": "^17.0.30",
         "@types/react-dom": "^17.0.10",
         "css-loader": "^6.4.0",

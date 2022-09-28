@@ -1,6 +1,0 @@
-{
-    "declarationLibs": ["@tools/html-twin-renderer"],
-    "devPackageName": "htmlTwinRenderer",
-    "filename": "babylon.htmlTwinRenderer.module.d.ts",
-    "buildType": "es6"
-}

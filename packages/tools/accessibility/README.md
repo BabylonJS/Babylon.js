@@ -1,4 +1,4 @@
-This package renders accessibility tree (html twins of the scene objects) for 3D content in DOM, thus the 3D content is compatible with screen readers and keyboard navigation.
+This package is for increasing accessibility of 3D content. It contains HTML twin renderer that renders html twins of the scene objects for 3D content in DOM, thus the 3D content is compatible with screen readers and keyboard navigation.
 
 ## What is Screen Reader?
 
@@ -8,7 +8,7 @@ There are different screen reader applications that a user can choose, including
 
 Nowadays 2D pages on web generally have good accessibility support to screen reader users, because it can understand different HTML elements. But 3D applications like webGL applications is not. This is because objects in webGL applications are rendered in a <canvas> element. When screen reader read the page, it will only read: "*Image*", but can't interpret any objects inside the scene. If we do not deal with it correctly, users who are blind or low vision will have difficulty using the application.
 
-The **Accessibility Package** provides a way to create the accessibility tree, which consists of HTML Twins for objects in the scene that should be accessible. Here's an example of a simple scene of three boxes using the Accessibility Package. If you turn on a screen reader to read the page, it will say "A big box in the middle of the scene. A small box on the left of the big box. A small box on the right of the big box".
+The **Accessibility Package** provides a way to create html twin elements for objects in the scene that should be accessible. Here's an example of a simple scene of three boxes using the Accessibility Package. If you turn on a screen reader to read the page, it will say "A big box in the middle of the scene. A small box on the left of the big box. A small box on the right of the big box".
 
 Example:
 https://playground.babylonjs.com/?snapshot=refs/pull/12074/merge#C9GZTF#1
@@ -28,17 +28,17 @@ egg.accessibilityTag = {
 
 Not all content in the scene should be accessible. For example, the decorative trees or background image on a UI panel. Only add IAccessibilityTag to the contents that's important to the user experience.
 
-By default, all Controls (GUI) are considered "important" for accessibility, and will be rendered in accessibility tree with its own information (like text to show on a button), even you hasn't assigned the IAccessibility tag. But if you define the IAccessibilityTag, it can override default metadata (like assigning the IAccessibilityTag.description will override the text to show on a button). By default, Node type object are not considered "important", unless you assign a IAccessibilityTag to it.
+By default, all Controls (GUI) are considered "important" for accessibility, and will have their html twins with its own information (like the text to show on a button), even you hasn't assigned the IAccessibility tag. But if you define the IAccessibilityTag, it can override default metadata (like assigning the IAccessibilityTag.description will override the text to show on a button). By default, Node type object are not considered "important", unless you assign a IAccessibilityTag to it.
 
-### RenderAccessibilityTree()
+### HTMLTwinRenderer.Render()
 
 The accessibility package basically generates HTML elements for your scene, based on the metadata (IAccessibilityTag) you added to your scene content. The screen reader then can read the HTML elements. To generate it for your scene:
 
 ```javascript
-ACCESSIBILITY.AccessibilityRenderer.RenderAccessibilityTree(scene);
+ACCESSIBILITY.HTMLTwinRenderer.Render(scene);
 ```
 
-This will generate a `<div id="accessibility-tree">` HTML element right after the babylonJS scene's canvas element. Inside this div element, the renderer generate an HTML twin for each of your accessible contents in the scene. These HTML twin elements are internally connected with BabylonJS objects, so the screen reader user can also interact with the BabylonJS objects through their HTML twin.
+This will generate a `<div id="accessibility-host">` HTML element right after the babylonJS scene's canvas element. Inside this div element, the renderer generate HTML twin elementss for each of your accessible contents in the scene. These HTML twin elements are internally connected with BabylonJS objects, so the screen reader user can also interact with the BabylonJS objects through their HTML twin.
 
 ### Interaction
 
@@ -58,8 +58,8 @@ egg.accessibilityTag = {
 Example:
 https://playground.babylonjs.com/?snapshot=refs/pull/12074/merge#C9GZTF#6
 
-### When is AccessibilityTree Updated
-Your scene might be not static, and you may want to update the accessibility tree when your scene is changed. The accessibility tree will automatically update when:
+### When is HTML twins Updated
+Your scene might be not static, and you may want to update html twins when your scene is changed. The html twins will automatically update when:
 
 - A Node (Mesh or TransformNode) is added/removed in a scene;
 - A Node (Mesh or TransformNode)'s enabled status is changed;

@@ -5,23 +5,23 @@ import type { Control } from "gui/2D/controls/control";
 import { Image } from "gui/2D/controls/image";
 import { TextBlock } from "gui/2D/controls/textBlock";
 import { Vector2WithInfo } from "gui/2D/math2D";
-import { AccessibilityItem } from "./accessibilityItem";
+import { HTMLTwinItem } from "./htmlTwinItem";
 
 /**
- * A abstract layer to store the accessibility tree structure. It is constructed from the BabylonJS scene entities that need to be accessible. It informs the parent-children relationship of accessibility tree, and informs how to render: description, isActionable, onclick/onrightclick/onfocus/onblur.
+ * A abstract layer to store the html twin tree structure. It is constructed from the BabylonJS scene entities that need to be accessible. It informs the parent-children relationship of html twin tree, and informs how to render: description, isActionable, onclick/onrightclick/onfocus/onblur.
  */
-export class AccessibilityGUIItem extends AccessibilityItem {
+export class HTMLTwinGUIItem extends HTMLTwinItem {
     /**
      * The corresponding BabylonJS entity. Can be a Node or a Control.
      */
     public entity: Control;
 
     /**
-     * The children of this item in the accessibility tree.
+     * The children of this item in the html twin tree.
      */
-    public children: AccessibilityGUIItem[];
+    public children: HTMLTwinGUIItem[];
 
-    constructor(entity: Control, scene: Scene, children: AccessibilityGUIItem[]) {
+    constructor(entity: Control, scene: Scene, children: HTMLTwinGUIItem[]) {
         super(entity, scene, children);
     }
 

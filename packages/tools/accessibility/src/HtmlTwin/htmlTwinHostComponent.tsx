@@ -1,8 +1,8 @@
 import * as React from "react";
-import { AccessibilityTreeItemComponent } from "./accessibilityTreeItemComponent";
-import type { AccessibilityItem } from "./accessibilityItem";
-import { AccessibilityGUIItem } from "./accessibilityGUIItem";
-import { AccessibilityNodeItem } from "./accessibilityNodeItem";
+import { HTMLTwinItemComponent } from "./htmlTwinTreeComponent";
+import type { HTMLTwinItem } from "./htmlTwinItem";
+import { HTMLTwinGUIItem } from "./htmlTwinGUIItem";
+import { HTMLTwinNodeItem } from "./htmlTwinNodeItem";
 import type { Scene } from "core/scene";
 import type { Observable, Observer } from "core/Misc/observable";
 import type { Nullable } from "core/types";
@@ -13,19 +13,19 @@ import { Container } from "gui/2D/controls/container";
 import type { Control } from "gui/2D/controls/control";
 import type { Node } from "core/node";
 
-interface IAccessibilityTreeComponentProps {
+interface IHTMLTwinHostComponentProps {
     scene: Scene;
 }
-interface IAccessibilityTreeComponentState {
-    a11yTreeItems: AccessibilityItem[];
+interface IHTMLTwinHostComponentState {
+    a11yTreeItems: HTMLTwinItem[];
 }
 
-export class AccessibilityTreeComponent extends React.Component<IAccessibilityTreeComponentProps, IAccessibilityTreeComponentState> {
+export class HTMLTwinHostComponent extends React.Component<IHTMLTwinHostComponentProps, IHTMLTwinHostComponentState> {
     private _observersMap = new Map<Observable<any>, Nullable<Observer<any>>>();
 
-    constructor(props: IAccessibilityTreeComponentProps) {
+    constructor(props: IHTMLTwinHostComponentProps) {
         super(props);
-        const a11yTreeItems = this._updateAccessibilityTreeItems();
+        const a11yTreeItems = this._updateHTMLTwinItems();
         this.state = {
             a11yTreeItems: a11yTreeItems,
         };
@@ -36,7 +36,7 @@ export class AccessibilityTreeComponent extends React.Component<IAccessibilityTr
 
         // Find all a11y entities in the scene, assemble the a11y forest (a11yTreeItems), and update React state to let React update DOM.
         const updateA11yTree: () => void = () => {
-            const a11yTreeItems = this._updateAccessibilityTreeItems();
+            const a11yTreeItems = this._updateHTMLTwinItems();
             this.setState({
                 a11yTreeItems: a11yTreeItems,
             });
@@ -146,10 +146,12 @@ export class AccessibilityTreeComponent extends React.Component<IAccessibilityTr
 
     render() {
         return (
-            <div className="accessibility-tree">
+            <div
+                id={"accessibility-host"}
+            >
                 {this.state.a11yTreeItems.map((item) => {
                     return (
-                        <AccessibilityTreeItemComponent
+                        <HTMLTwinItemComponent
                             a11yItem={item}
                             level={1}
                             key={item.entity.uniqueId !== undefined && item.entity.uniqueId !== null ? item.entity.uniqueId : item.entity.name}
@@ -160,8 +162,8 @@ export class AccessibilityTreeComponent extends React.Component<IAccessibilityTr
         );
     }
 
-    private _updateAccessibilityTreeItems(): AccessibilityItem[] {
-        // Get accessibility tree's root nodes
+    private _updateHTMLTwinItems(): HTMLTwinItem[] {
+        // Get html twin tree's root nodes
         const rootNodes = this.props.scene.rootNodes.slice(0);
         for (const mesh of this.props.scene.meshes) {
             // Adding nodes that are parented to a bone
@@ -170,16 +172,16 @@ export class AccessibilityTreeComponent extends React.Component<IAccessibilityTr
             }
         }
 
-        const a11yTreeItems = this._getAccessibilityTreeItemsFromNodes(rootNodes);
+        const a11yTreeItems = this._getHTMLTwinItemsFromNodes(rootNodes);
         return a11yTreeItems;
     }
 
-    private _getAccessibilityTreeItemsFromNodes(rootItems: Node[]): AccessibilityItem[] {
+    private _getHTMLTwinItemsFromNodes(rootItems: Node[]): HTMLTwinItem[] {
         if (!rootItems || rootItems.length === 0) {
             return [];
         }
 
-        const result: AccessibilityItem[] = [];
+        const result: HTMLTwinItem[] = [];
         const queue: Node[] = [...rootItems];
         for (let i: number = 0; i < queue.length; i++) {
             const curNode = queue[i];
@@ -192,9 +194,9 @@ export class AccessibilityTreeComponent extends React.Component<IAccessibilityTr
                 const curMesh = curNode as AbstractMesh;
                 const adt = curMesh.material?.getActiveTextures()[0] as AdvancedDynamicTexture;
                 const guiRoot = adt.getChildren();
-                result.push(new AccessibilityNodeItem(curNode, this.props.scene, this._getAccessibilityTreeItemsFromGUI(guiRoot)));
+                result.push(new HTMLTwinNodeItem(curNode, this.props.scene, this._getHTMLTwinItemsFromGUI(guiRoot)));
             } else if (curNode.accessibilityTag) {
-                result.push(new AccessibilityNodeItem(curNode, this.props.scene, this._getAccessibilityTreeItemsFromNodes(curNode.getChildren())));
+                result.push(new HTMLTwinNodeItem(curNode, this.props.scene, this._getHTMLTwinItemsFromNodes(curNode.getChildren())));
             } else {
                 queue.push(...curNode.getChildren());
             }
@@ -203,11 +205,11 @@ export class AccessibilityTreeComponent extends React.Component<IAccessibilityTr
         return result;
     }
 
-    private _getAccessibilityTreeItemsFromGUI(rootItems: Control[]): AccessibilityGUIItem[] {
+    private _getHTMLTwinItemsFromGUI(rootItems: Control[]): HTMLTwinGUIItem[] {
         if (!rootItems || rootItems.length === 0) {
             return [];
         }
-        const result: AccessibilityGUIItem[] = [];
+        const result: HTMLTwinGUIItem[] = [];
         const queue: Control[] = [...rootItems];
         for (let i: number = 0; i < queue.length; i++) {
             const curNode = queue[i];
@@ -216,9 +218,9 @@ export class AccessibilityTreeComponent extends React.Component<IAccessibilityTr
             }
             if (curNode instanceof Container && curNode.children.length !== 0 && !(curNode instanceof Button)) {
                 const curContainer = curNode as Container;
-                result.push(new AccessibilityGUIItem(curContainer, this.props.scene, this._getAccessibilityTreeItemsFromGUI(curContainer.children)));
+                result.push(new HTMLTwinGUIItem(curContainer, this.props.scene, this._getHTMLTwinItemsFromGUI(curContainer.children)));
             } else {
-                result.push(new AccessibilityGUIItem(curNode, this.props.scene, []));
+                result.push(new HTMLTwinGUIItem(curNode, this.props.scene, []));
             }
         }
 

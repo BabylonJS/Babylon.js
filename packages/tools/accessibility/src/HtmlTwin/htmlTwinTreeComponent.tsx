@@ -1,13 +1,13 @@
 import * as React from "react";
-import type { AccessibilityItem } from "./accessibilityItem";
+import type { HTMLTwinItem } from "./htmlTwinItem";
 
-interface IAccessibilityTreeItemComponentProps {
-    a11yItem: AccessibilityItem;
+interface IHTMLTwinItemComponentProps {
+    a11yItem: HTMLTwinItem;
     level: number;
 }
 
-export class AccessibilityTreeItemComponent extends React.Component<IAccessibilityTreeItemComponentProps> {
-    constructor(props: IAccessibilityTreeItemComponentProps) {
+export class HTMLTwinItemComponent extends React.Component<IHTMLTwinItemComponentProps> {
+    constructor(props: IHTMLTwinItemComponentProps) {
         super(props);
     }
 
@@ -21,7 +21,7 @@ export class AccessibilityTreeItemComponent extends React.Component<IAccessibili
         }
     }
 
-    private _renderLeafNode(a11yItem: AccessibilityItem): JSX.Element {
+    private _renderLeafNode(a11yItem: HTMLTwinItem): JSX.Element {
         if (a11yItem.isActionable) {
             return (
                 <button
@@ -63,7 +63,7 @@ export class AccessibilityTreeItemComponent extends React.Component<IAccessibili
         }
     }
 
-    private _renderParentNode(a11yItem: AccessibilityItem, level: number): JSX.Element {
+    private _renderParentNode(a11yItem: HTMLTwinItem, level: number): JSX.Element {
         return (
             <div>
                 {!!a11yItem.description && (
@@ -87,10 +87,10 @@ export class AccessibilityTreeItemComponent extends React.Component<IAccessibili
         );
     }
 
-    private _renderChildren(children: AccessibilityItem[], level: number): JSX.Element[] {
+    private _renderChildren(children: HTMLTwinItem[], level: number): JSX.Element[] {
         return children.map((child) => {
             return (
-                <AccessibilityTreeItemComponent
+                <HTMLTwinItemComponent
                     a11yItem={child}
                     level={level}
                     key={child.entity.uniqueId !== undefined && child.entity.uniqueId !== null ? child.entity.uniqueId : child.entity.name}

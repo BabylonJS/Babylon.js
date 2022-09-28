@@ -15,7 +15,7 @@ export type DevPackageName =
     | "procedural-textures"
     | "node-editor"
     | "gui-editor"
-    | "html-twin-renderer"
+    | "accessibility"
     | "viewer"
     | "ktx2decoder"
     | "shared-ui-components"
@@ -30,7 +30,7 @@ export type UMDPackageName =
     | "babylonjs-inspector"
     | "babylonjs-node-editor"
     | "babylonjs-gui-editor"
-    | "babylonjs-html-twin-renderer"
+    | "babylonjs-accessibility"
     | "babylonjs-viewer"
     | "babylonjs-post-process"
     | "babylonjs-ktx2decoder"
@@ -46,7 +46,7 @@ export type NamespacePackageName =
     | "BABYLON.Debug"
     | "BABYLON.NodeEditor"
     | "BABYLON.GuiEditor"
-    | "BABYLON.A11y.HtmlTwinRenderer"
+    | "BABYLON.Accessibility"
     | "INSPECTOR"
     | "BabylonViewer"
     | "KTX2DECODER"
@@ -64,7 +64,7 @@ export type ES6PackageName =
     | "@babylonjs/inspector"
     | "@babylonjs/node-editor"
     | "@babylonjs/gui-editor"
-    | "@babylonjs/html-twin-renderer"
+    | "@babylonjs/accessibility"
     | "@babylonjs/post-processes"
     | "@babylonjs/viewer"
     | "@babylonjs/ktx2decoder"
@@ -109,9 +109,9 @@ export const umdPackageMapping: { [key in UMDPackageName]: { baseDir: string; ba
         baseDir: "guiEditor",
         baseFilename: "babylon.guiEditor",
     },
-    "babylonjs-html-twin-renderer": {
-        baseDir: "htmlTwinRenderer",
-        baseFilename: "babylon.htmlTwinRenderer",
+    "babylonjs-accessibility": {
+        baseDir: "accessibility",
+        baseFilename: "babylon.accessibility",
     },
     "babylonjs-post-process": {
         baseDir: "postProcessesLibrary",
@@ -166,7 +166,7 @@ const packageMapping: {
             // }
             return "babylonjs-gui-editor";
         },
-        "html-twin-renderer": "babylonjs-html-twin-renderer",
+        "accessibility": "babylonjs-accessibility",
         "post-processes": "babylonjs-post-process",
         "procedural-textures": "babylonjs-procedural-textures",
         ktx2decoder: "babylonjs-ktx2decoder",
@@ -183,7 +183,7 @@ const packageMapping: {
         inspector: "@babylonjs/inspector",
         "node-editor": "@babylonjs/node-editor",
         "gui-editor": "@babylonjs/gui-editor",
-        "html-twin-renderer": "@babylonjs/html-twin-renderer",
+        "accessibility": "@babylonjs/accessibility",
         "post-processes": "@babylonjs/post-processes",
         "procedural-textures": "@babylonjs/procedural-textures",
         ktx2decoder: "@babylonjs/ktx2decoder",
@@ -200,7 +200,7 @@ const packageMapping: {
         inspector: "@babylonjs/esm",
         "node-editor": "@babylonjs/esm",
         "gui-editor": "@babylonjs/esm",
-        "html-twin-renderer": "@babylonjs/html-twin-renderer",
+        "accessibility": "@babylonjs/accessibility",
         "post-processes": "@babylonjs/esm",
         "procedural-textures": "@babylonjs/esm",
         ktx2decoder: "@babylonjs/esm",
@@ -279,7 +279,7 @@ const packageMapping: {
             }
             return "BABYLON";
         },
-        "html-twin-renderer": "BABYLON.A11y.HtmlTwinRenderer",
+        "accessibility": "BABYLON.Accessibility",
         "post-processes": "BABYLON",
         "procedural-textures": "BABYLON",
         ktx2decoder: "KTX2DECODER",
