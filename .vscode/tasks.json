@@ -386,7 +386,7 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": ["run", "serve", "-w", "@tools/vsm"],
+            "args": ["run", "serve", "-w", "@tools/visual-state-manager"],
             "isBackground": true,
             "presentation": {
                 "group": "serve"
@@ -404,7 +404,7 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": ["run", "serve", "-w", "@tools/vsm"],
+            "args": ["run", "serve", "-w", "@tools/visual-state-manager"],
             "isBackground": true,
             "presentation": {
                 "group": "serve"

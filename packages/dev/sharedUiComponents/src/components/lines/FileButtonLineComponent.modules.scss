@@ -1,0 +1,38 @@
+.buttonLine {
+    color: white;
+    padding: 5px;
+    padding-left: 7px;
+    height: 35px;
+    font-size: 18px;
+    display: grid;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    grid-template-columns: 1fr 20px;
+    grid-template-rows: 100%;
+    position: relative;
+    font-size: 12px;
+    grid-column: 1;
+    grid-row: 1;
+    input[type="file"] {
+        display: none;
+    }
+
+    &.active {
+        font-weight: bold;
+        font-size: 20px;
+        cursor: pointer;
+    }
+
+    &:hover {
+        background: var(--selectionGrey);
+        .sub-items {
+            display: block;
+        }
+        cursor: pointer;
+    }
+}
+
+.fileUpload {
+    cursor: pointer;
+}
