@@ -39,7 +39,7 @@ export class Layer {
     /**
      * If scene post processes should affect this Layer.
      * Is always true if the layer is a background
-     * layer (this.isBackground === false), as in the case
+     * layer (this.isBackground === true), as in the case
      * it will always be drawn before post processes.
      */
     public set applyPostProcess(value: boolean) {
