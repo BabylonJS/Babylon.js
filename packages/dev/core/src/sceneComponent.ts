@@ -81,6 +81,10 @@ export class SceneComponentConstants {
     public static readonly STEP_AFTERCAMERADRAW_EFFECTLAYER_DRAW = 3;
     public static readonly STEP_AFTERCAMERADRAW_LAYER = 4;
 
+    public static readonly STEP_AFTERCAMERAPOSTPROCESS_LAYER = 0;
+
+    public static readonly STEP_AFTERRENDERTARGETPOSTPROCESS_LAYER = 0;
+
     public static readonly STEP_AFTERRENDER_AUDIO = 0;
 
     public static readonly STEP_GATHERRENDERTARGETS_DEPTHRENDERER = 0;
