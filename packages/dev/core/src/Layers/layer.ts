@@ -38,7 +38,7 @@ export class Layer {
     private _applyPostProcess: boolean = true;
     /**
      * If scene post processes should affect this Layer.
-     * Is always true if the layer is a foreground
+     * Is always true if the layer is a background
      * layer (this.isBackground === false), as in the case
      * it will always be drawn before post processes.
      */
