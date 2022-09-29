@@ -962,11 +962,11 @@ SceneLoader.RegisterPlugin({
             //Physics
             if (parsedData.physicsEnabled) {
                 let physicsPlugin;
-                if (parsedData.physicsEngine === "cannon") {
+                if (parsedData.physicsEngine === "cannon" || parsedData.physicsEngine === CannonJSPlugin.name) {
                     physicsPlugin = new CannonJSPlugin(undefined, undefined, BabylonFileLoaderConfiguration.LoaderInjectedPhysicsEngine);
-                } else if (parsedData.physicsEngine === "oimo") {
+                } else if (parsedData.physicsEngine === "oimo" || parsedData.physicsEngine === OimoJSPlugin.name) {
                     physicsPlugin = new OimoJSPlugin(undefined, BabylonFileLoaderConfiguration.LoaderInjectedPhysicsEngine);
-                } else if (parsedData.physicsEngine === "ammo") {
+                } else if (parsedData.physicsEngine === "ammo" || parsedData.physicsEngine === AmmoJSPlugin.name) {
                     physicsPlugin = new AmmoJSPlugin(undefined, BabylonFileLoaderConfiguration.LoaderInjectedPhysicsEngine, undefined);
                 }
                 log = "\tPhysics engine " + (parsedData.physicsEngine ? parsedData.physicsEngine : "oimo") + " enabled\n";
