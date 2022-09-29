@@ -200,14 +200,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.25.0";
+        return "babylonjs@5.26.1";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.25.0";
+        return "5.26.1";
     }
 
     /**
@@ -5862,14 +5862,6 @@ export class ThinEngine {
             return requester.requestPostAnimationFrame(func);
         } else if (requester.requestAnimationFrame) {
             return requester.requestAnimationFrame(func);
-        } else if (requester.msRequestAnimationFrame) {
-            return requester.msRequestAnimationFrame(func);
-        } else if (requester.webkitRequestAnimationFrame) {
-            return requester.webkitRequestAnimationFrame(func);
-        } else if (requester.mozRequestAnimationFrame) {
-            return requester.mozRequestAnimationFrame(func);
-        } else if (requester.oRequestAnimationFrame) {
-            return requester.oRequestAnimationFrame(func);
         } else {
             return window.setTimeout(func, 16);
         }

@@ -599,19 +599,9 @@ export class Engine extends ThinEngine {
             this._sharedInit(canvas, !!options.doNotHandleTouchAction, options.audioEngine!);
 
             if (IsWindowObjectExist()) {
-                const anyDoc = document as any;
-
                 // Fullscreen
                 this._onFullscreenChange = () => {
-                    if (anyDoc.fullscreen !== undefined) {
-                        this.isFullscreen = anyDoc.fullscreen;
-                    } else if (anyDoc.mozFullScreen !== undefined) {
-                        this.isFullscreen = anyDoc.mozFullScreen;
-                    } else if (anyDoc.webkitIsFullScreen !== undefined) {
-                        this.isFullscreen = anyDoc.webkitIsFullScreen;
-                    } else if (anyDoc.msIsFullScreen !== undefined) {
-                        this.isFullscreen = anyDoc.msIsFullScreen;
-                    }
+                    this.isFullscreen = !!document.fullscreenElement;
 
                     // Pointer lock
                     if (this.isFullscreen && this._pointerLockRequested && canvas) {
@@ -620,22 +610,14 @@ export class Engine extends ThinEngine {
                 };
 
                 document.addEventListener("fullscreenchange", this._onFullscreenChange, false);
-                document.addEventListener("mozfullscreenchange", this._onFullscreenChange, false);
                 document.addEventListener("webkitfullscreenchange", this._onFullscreenChange, false);
-                document.addEventListener("msfullscreenchange", this._onFullscreenChange, false);
 
                 // Pointer lock
                 this._onPointerLockChange = () => {
-                    this.isPointerLock =
-                        anyDoc.mozPointerLockElement === canvas ||
-                        anyDoc.webkitPointerLockElement === canvas ||
-                        anyDoc.msPointerLockElement === canvas ||
-                        anyDoc.pointerLockElement === canvas;
+                    this.isPointerLock = document.pointerLockElement === canvas;
                 };
 
                 document.addEventListener("pointerlockchange", this._onPointerLockChange, false);
-                document.addEventListener("mspointerlockchange", this._onPointerLockChange, false);
-                document.addEventListener("mozpointerlockchange", this._onPointerLockChange, false);
                 document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
 
                 // Create Audio Engine if needed.
@@ -1951,7 +1933,6 @@ export class Engine extends ThinEngine {
 
         this._renderingCanvas.setAttribute("touch-action", "none");
         this._renderingCanvas.style.touchAction = "none";
-        (this._renderingCanvas.style as any).msTouchAction = "none";
         (this._renderingCanvas.style as any).webkitTapHighlightColor = "transparent";
     }
 
@@ -2037,8 +2018,6 @@ export class Engine extends ThinEngine {
      * @param element defines the DOM element to promote
      */
     static _RequestPointerlock(element: HTMLElement): void {
-        element.requestPointerLock =
-            element.requestPointerLock || (<any>element).msRequestPointerLock || (<any>element).mozRequestPointerLock || (<any>element).webkitRequestPointerLock;
         if (element.requestPointerLock) {
             element.requestPointerLock();
             element.focus();
@@ -2049,9 +2028,6 @@ export class Engine extends ThinEngine {
      * Asks the browser to exit pointerlock mode
      */
     static _ExitPointerlock(): void {
-        const anyDoc = document as any;
-        document.exitPointerLock = document.exitPointerLock || anyDoc.msExitPointerLock || anyDoc.mozExitPointerLock || anyDoc.webkitExitPointerLock;
-
         if (document.exitPointerLock) {
             document.exitPointerLock();
         }
@@ -2062,7 +2038,7 @@ export class Engine extends ThinEngine {
      * @param element defines the DOM element to promote
      */
     static _RequestFullscreen(element: HTMLElement): void {
-        const requestFunction = element.requestFullscreen || (<any>element).msRequestFullscreen || (<any>element).webkitRequestFullscreen || (<any>element).mozRequestFullScreen;
+        const requestFunction = element.requestFullscreen || (<any>element).webkitRequestFullscreen;
         if (!requestFunction) {
             return;
         }
@@ -2077,12 +2053,8 @@ export class Engine extends ThinEngine {
 
         if (document.exitFullscreen) {
             document.exitFullscreen();
-        } else if (anyDoc.mozCancelFullScreen) {
-            anyDoc.mozCancelFullScreen();
         } else if (anyDoc.webkitCancelFullScreen) {
             anyDoc.webkitCancelFullScreen();
-        } else if (anyDoc.msCancelFullScreen) {
-            anyDoc.msCancelFullScreen();
         }
     }
 
