@@ -227,7 +227,7 @@ export function CreateScreenshotUsingRenderTarget(
         undefined,
         samples
     );
-    texture.renderList = null;
+    texture.renderList = scene.meshes.slice();
     texture.samples = samples;
     texture.renderSprites = renderSprites;
     texture.activeCamera = camera;
