@@ -392,7 +392,7 @@ export function generateCombinedDeclaration(declarationFiles: string[], config: 
     const filterRegex = config.fileFilterRegex ? new RegExp(config.fileFilterRegex) : null;
     declarationFiles.forEach((declarationFile) => {
         // check if filter applies to this file
-        if(filterRegex && filterRegex.test(declarationFile)) {
+        if (filterRegex && filterRegex.test(declarationFile)) {
             return;
         }
         // The lines of the files now come as a Function inside declaration file.
