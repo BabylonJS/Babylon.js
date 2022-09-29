@@ -1,0 +1,135 @@
+* {
+    font-family: "acumin-pro-condensed";
+}
+
+.commandDropdownBlocker {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transform: scale(1);
+    z-index: 1;
+}
+
+.commandDropdownRoot {
+    position: relative;
+    text-transform: uppercase;
+    z-index: 1;
+}
+
+.commandDropdownIcon {
+    height: 100%;
+    width: 100%;
+    display: grid;
+    align-content: center;
+    justify-content: center;
+    color: white;
+}
+
+.commandDropdownActive {
+    height: 100%;
+    width: 100%;
+    display: grid;
+    align-content: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.commandDropdown {
+    cursor: pointer;
+    width: 55px;
+    height: 55px;
+
+    &:hover,
+    &.activated {
+        background-color: #666666;
+        color: black;
+    }
+
+    &:active {
+        transform-origin: center;
+        transform: scale(0.95);
+    }
+}
+
+.commandDropdownContent {
+    background: #333333;
+    position: absolute;
+    top: 55px;
+    width: 55px;
+    transform: scale(1);
+
+    &.toRight {
+        width: 120px;
+    }
+}
+
+.commandDropdownLabel {
+    color: white;
+    padding: 5px;
+    padding-left: 7px;
+    height: 35px;
+    font-size: 18px;
+    display: grid;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    grid-template-columns: 1fr 20px;
+    grid-template-rows: 100%;
+    position: relative;
+
+    &.active {
+        font-weight: bold;
+        font-size: 20px;
+    }
+
+    &:hover {
+        background: var(--selectionGrey);
+        .sub-items {
+            display: block;
+        }
+    }
+}
+
+.commandDropdownLabelText {
+    font-size: 12px;
+    grid-column: 1;
+    grid-row: 1;
+    font-weight: 600;
+}
+
+.commandDropdownLabelCheck {
+    grid-column: 2;
+    grid-row: 1;
+}
+
+.commandDropdownArrow {
+    grid-column: 2;
+    grid-row: 1;
+    font-size: 20px;
+    font-weight: bold;
+    padding-bottom: 10px;
+    padding-left: 4px;
+}
+
+.subItems {
+    position: absolute;
+    left: 200px;
+    top: 0;
+    width: 150px;
+    display: none;
+}
+
+.subItem {
+    color: white;
+    padding: 5px;
+    padding-left: 10px;
+    height: 35px;
+    display: grid;
+
+    &.checked {
+        background: white;
+        color: black;
+    }
+}
