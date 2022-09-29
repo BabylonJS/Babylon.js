@@ -818,7 +818,20 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this._cleanControlAfterRemovalFromList(this._lastControlOver, control);
     }
 
-    private _translateToPicking(scene: Scene, tempViewport: Viewport, pi: Nullable<PointerInfoPre>) {
+    /**
+     * This function will run a pointer event on this ADT and will trigger any pointer events on any controls
+     * This will work on a fullscreen ADT only. For mesh based ADT, simulate pointer events using the scene directly.
+     * @param x pointer X on the canvas for the picking
+     * @param y pointer Y on the canvas for the picking
+     * @param pi optional pointer information
+     */
+    public pick(x: number, y: number, pi: Nullable<PointerInfoPre> = null) {
+        if (this._isFullscreen && this._scene) {
+            this._translateToPicking(this._scene, new Viewport(0, 0, 0, 0), pi, x, y);
+        }
+    }
+
+    private _translateToPicking(scene: Scene, tempViewport: Viewport, pi: Nullable<PointerInfoPre>, x: number = scene.pointerX, y: number = scene.pointerY) {
         const camera = scene.cameraToUseForPointers || scene.activeCamera;
         const engine = scene.getEngine();
         const originalCameraToUseForPointers = scene.cameraToUseForPointers;
@@ -835,10 +848,10 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                 camera.rigCameras.forEach((rigCamera) => {
                     // generate the viewport of this camera
                     rigCamera.viewport.toGlobalToRef(engine.getRenderWidth(), engine.getRenderHeight(), rigViewport);
-                    const x = scene.pointerX / engine.getHardwareScalingLevel() - rigViewport.x;
-                    const y = scene.pointerY / engine.getHardwareScalingLevel() - (engine.getRenderHeight() - rigViewport.y - rigViewport.height);
+                    const transformedX = x / engine.getHardwareScalingLevel() - rigViewport.x;
+                    const transformedY = y / engine.getHardwareScalingLevel() - (engine.getRenderHeight() - rigViewport.y - rigViewport.height);
                     // check if the pointer is in the camera's viewport
-                    if (x < 0 || y < 0 || x > rigViewport.width || y > rigViewport.height) {
+                    if (transformedX < 0 || transformedY < 0 || x > rigViewport.width || y > rigViewport.height) {
                         // out of viewport - don't use this camera
                         return;
                     }
@@ -855,19 +868,19 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             }
         }
 
-        const x = scene.pointerX / engine.getHardwareScalingLevel() - tempViewport.x;
-        const y = scene.pointerY / engine.getHardwareScalingLevel() - (engine.getRenderHeight() - tempViewport.y - tempViewport.height);
+        const transformedX = x / engine.getHardwareScalingLevel() - tempViewport.x;
+        const transformedY = y / engine.getHardwareScalingLevel() - (engine.getRenderHeight() - tempViewport.y - tempViewport.height);
         this._shouldBlockPointer = false;
         // Do picking modifies _shouldBlockPointer
         if (pi) {
             const pointerId = (pi.event as IPointerEvent).pointerId || this._defaultMousePointerId;
-            this._doPicking(x, y, pi, pi.type, pointerId, pi.event.button, (<IWheelEvent>pi.event).deltaX, (<IWheelEvent>pi.event).deltaY);
+            this._doPicking(transformedX, transformedY, pi, pi.type, pointerId, pi.event.button, (<IWheelEvent>pi.event).deltaX, (<IWheelEvent>pi.event).deltaY);
             // Avoid overwriting a true skipOnPointerObservable to false
             if (this._shouldBlockPointer || this._capturingControl[pointerId]) {
                 pi.skipOnPointerObservable = true;
             }
         } else {
-            this._doPicking(x, y, null, PointerEventTypes.POINTERMOVE, this._defaultMousePointerId, 0);
+            this._doPicking(transformedX, transformedY, null, PointerEventTypes.POINTERMOVE, this._defaultMousePointerId, 0);
         }
         // if overridden by a rig camera - reset back to the original value
         scene.cameraToUseForPointers = originalCameraToUseForPointers;

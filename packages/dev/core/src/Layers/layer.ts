@@ -35,6 +35,18 @@ export class Layer {
      */
     public isBackground: boolean;
 
+    private _applyPostProcess: boolean = true;
+    /**
+     * Determines if the layer is drawn before (true) or after (false) post-processing.
+     * If the layer is background, it is always before.
+     */
+    public set applyPostProcess(value: boolean) {
+        this._applyPostProcess = value;
+    }
+    public get applyPostProcess(): boolean {
+        return this.isBackground || this._applyPostProcess;
+    }
+
     /**
      * Define the color of the layer (instead of texture).
      */
