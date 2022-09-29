@@ -3,8 +3,7 @@ import { NodeMaterialBlockTargets } from "./Enums/nodeMaterialBlockTargets";
 import type { Nullable } from "../../types";
 import type { InputBlock } from "./Blocks/Input/inputBlock";
 import { Observable } from "../../Misc/observable";
-
-declare type NodeMaterialBlock = import("./nodeMaterialBlock").NodeMaterialBlock;
+import type { NodeMaterialBlock } from "./nodeMaterialBlock";
 
 /**
  * Enum used to define the compatibility state between two connection points

@@ -547,7 +547,7 @@ export class Tools {
      */
     public static FileAsURL(content: string): string {
         const fileBlob = new Blob([content]);
-        const url = window.URL || window.webkitURL;
+        const url = window.URL;
         const link: string = url.createObjectURL(fileBlob);
         return link;
     }
@@ -882,11 +882,6 @@ export class Tools {
      * @param fileName defines the name of the downloaded file
      */
     public static Download(blob: Blob, fileName: string): void {
-        if (navigator && (navigator as any).msSaveBlob) {
-            (navigator as any).msSaveBlob(blob, fileName);
-            return;
-        }
-
         if (typeof URL === "undefined") {
             return;
         }

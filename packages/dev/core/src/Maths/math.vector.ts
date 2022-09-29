@@ -1756,6 +1756,7 @@ export class Vector3 {
         target.subtractToRef(start, diff);
         ref.y = Math.atan2(diff.x, diff.z) || 0;
         ref.x = Math.atan2(Math.sqrt(diff.x ** 2 + diff.z ** 2), diff.y) || 0;
+        ref.z = 0;
         return ref;
     }
 
@@ -1766,7 +1767,7 @@ export class Vector3 {
      * @returns the rotation in the form (pitch, yaw, 0)
      */
     public static PitchYawRollToMoveBetweenPoints(start: Vector3, target: Vector3): Vector3 {
-        const ref = TmpVectors.Vector3[0];
+        const ref = Vector3.Zero();
         return Vector3.PitchYawRollToMoveBetweenPointsToRef(start, target, ref);
     }
 

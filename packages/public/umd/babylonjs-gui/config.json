@@ -4,5 +4,6 @@
     "filename": "babylon.gui.module.d.ts",
     "outputDirectory": "./",
     "namedExportPathsToExclude": "3D/materials/fluent/fluentMaterial",
-    "addToDocumentation": true
+    "addToDocumentation": true,
+    "fileFilterRegex": "stories"
 }
