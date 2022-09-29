@@ -12,6 +12,7 @@ export interface IColorPickerComponentProps {
     iconLabel?: string;
     shouldPopRight?: boolean;
     lockObject?: LockObject;
+    backgroundColor?: string;
 }
 
 interface IColorPickerComponentState {
@@ -102,6 +103,7 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
                         >
                             <div className={style.colorPickerFloat} ref={this._floatRef}>
                                 <ColorPicker
+                                    backgroundColor={this.props.backgroundColor}
                                     lockObject={this.props.lockObject || ({} as any)}
                                     color={this.state.color}
                                     linearhint={this.props.linearHint}

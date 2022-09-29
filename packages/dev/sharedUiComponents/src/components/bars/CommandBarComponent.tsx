@@ -1,10 +1,7 @@
-import { FC, useState } from "react";
-import { useEffect, useRef } from "react";
-import { Observable } from "core/Misc/observable";
+import type { FC } from "react";
 import { JoinClassNames } from "../classNames";
 import { CommandButtonComponent } from "./CommandButtonComponent";
 import { CommandDropdownComponent } from "./CommandDropdownComponent";
-import { ColorLineComponent } from "../lines/ColorLineComponent";
 
 import hamburgerIcon from "../../imgs/hamburgerIcon.svg";
 import pointerIcon from "../../imgs/pointerIcon.svg";
@@ -15,9 +12,7 @@ import canvasFitIcon from "../../imgs/canvasFitIcon.svg";
 import betaFlag from "../../imgs/betaFlag.svg";
 
 import style from "./CommandBar.modules.scss";
-import type { PropertyChangedEvent } from "../../propertyChangedEvent";
-import type { Nullable } from "core/types";
-import { Color3, Color4 } from "core/Maths/math.color";
+import { Color3 } from "core/Maths/math.color";
 import { ColorPickerLineComponent } from "../lines/ColorPickerLineComponent";
 
 export interface ICommandBarComponentProps {
@@ -31,6 +26,8 @@ export interface ICommandBarComponentProps {
     onZoomButtonClicked?: () => void;
     onFitButtonClicked?: () => void;
     onArtboardColorChanged?: (newColor: string) => void;
+    artboardColor?: string;
+    artboardColorPickerColor?: string;
 }
 
 export const CommandBarComponent: FC<ICommandBarComponentProps> = (props) => {
@@ -124,7 +121,8 @@ export const CommandBarComponent: FC<ICommandBarComponentProps> = (props) => {
                     <div style={{ paddingRight: "5px" }}>Artboard:</div>
                     {props.onArtboardColorChanged && (
                         <ColorPickerLineComponent
-                            value={new Color3(0, 0, 0)}
+                            backgroundColor={props.artboardColorPickerColor || "#888888"}
+                            value={props.artboardColor ? Color3.FromHexString(props.artboardColor) : new Color3(0, 0, 0)}
                             onColorChanged={(newColor) => {
                                 if (props.onArtboardColorChanged) {
                                     props.onArtboardColorChanged(newColor);
