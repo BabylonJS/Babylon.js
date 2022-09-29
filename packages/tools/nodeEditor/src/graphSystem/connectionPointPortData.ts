@@ -1,4 +1,5 @@
 import type { FragmentOutputBlock } from "core/Materials/Node/Blocks/Fragment/fragmentOutputBlock";
+import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import type { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
 import { NodeMaterialConnectionPointCompatibilityStates, NodeMaterialConnectionPointDirection } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
 import type { Nullable } from "core/types";
@@ -79,7 +80,7 @@ export class ConnectionPointPortData implements IPortData {
         }
     }
 
-    public get ownerData() {
+    public get ownerData(): NodeMaterialBlock {
         return this.data.ownerBlock;
     }
 
