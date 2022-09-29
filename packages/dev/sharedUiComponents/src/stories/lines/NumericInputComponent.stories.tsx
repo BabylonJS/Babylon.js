@@ -2,4 +2,6 @@ import { NumericInputComponent } from "../../components/lines/NumericInputCompon
 
 export default { component: NumericInputComponent };
 
-export const Default = { args: { label: "test", value: 1 } };
+export const Default = {
+    args: { label: "test", value: 1 },
+};

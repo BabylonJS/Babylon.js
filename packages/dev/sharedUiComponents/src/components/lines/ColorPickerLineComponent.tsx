@@ -1,6 +1,6 @@
 import * as React from "react";
 import type { Color4, Color3 } from "core/Maths/math.color";
-import { ColorPicker } from "../../colorPicker/colorPicker";
+import { ColorPicker } from "../colorPicker/ColorPicker";
 import type { LockObject } from "../../tabs/propertyGrids/lockObject";
 import style from "./ColorPickerLineComponent.modules.scss";
 
