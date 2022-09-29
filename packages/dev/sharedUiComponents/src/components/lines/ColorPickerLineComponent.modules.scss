@@ -1,0 +1,38 @@
+.colorPicker {
+    height: 26px;
+    width: 26px;
+}
+
+.colorRectBackground {
+    width: calc(100% - 2px);
+    height: calc(100% - 2px);
+    border: 1px solid white;
+    cursor: pointer;
+    background: repeating-conic-gradient(#e2e2e2 0% 25%, white 0% 50%) 50% / 100% 100%;
+}
+
+.colorRect {
+    height: 100%;
+}
+
+.colorPickerCover {
+    position: fixed;
+    top: 0px;
+    right: 0px;
+    bottom: 0px;
+    left: 0px;
+    z-index: 2;
+}
+
+.colorPickerFloat {
+    position: absolute;
+    outline: 1px solid black;
+}
+
+.colorPickerContainer {
+    background-color: #e2e2e2;
+}
+
+input:focus {
+    outline-color: black;
+}
