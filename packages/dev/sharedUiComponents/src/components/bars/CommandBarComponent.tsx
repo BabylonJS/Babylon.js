@@ -123,7 +123,7 @@ export const CommandBarComponent: FC<ICommandBarComponentProps> = (props) => {
                         <ColorPickerLineComponent
                             backgroundColor={props.artboardColorPickerColor || "#888888"}
                             value={props.artboardColor ? Color3.FromHexString(props.artboardColor) : new Color3(0, 0, 0)}
-                            onColorChanged={(newColor) => {
+                            onColorChanged={(newColor: string) => {
                                 if (props.onArtboardColorChanged) {
                                     props.onArtboardColorChanged(newColor);
                                 }
