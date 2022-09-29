@@ -1,6 +1,510 @@
 {
-    "fromTag": "5.24.0",
+    "fromTag": "5.25.0",
     "changelog": {
+        "5.26.0": [
+            {
+                "pr": "13036",
+                "title": "Add applyPostProcess flag on ADV to optionally draw it after the post…",
+                "description": "… processes have been applied.\r\n\r\nThanks Seb for the guidance :D \r\n\r\nSome Playground examples:\r\n#FBH4J7#144\r\n#J9H084#392 (has renderTarget)",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Layers/layer.ts",
+                    "packages/dev/core/src/Layers/layerSceneComponent.ts",
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts",
+                    "packages/dev/core/src/scene.ts",
+                    "packages/dev/core/src/sceneComponent.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/uiUnaffected.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "enhancement"
+                ]
+            },
+            {
+                "pr": "13035",
+                "title": "Remove unneeded prefixes and unused code",
+                "description": "Those were found while working on thinEngine/Engine optimizations as part of the ESM work.\r\n\r\nEach function was inspected for backwards compatibility. If a prefix is needed (as the case in some webkit-functionalities) it stayed, otherwise it was removed. ",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Audio/audioEngine.ts",
+                    "packages/dev/core/src/Cameras/VR/vrExperienceHelper.ts",
+                    "packages/dev/core/src/DeviceInput/webDeviceInputSystem.ts",
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Gamepads/gamepadManager.ts",
+                    "packages/dev/core/src/Materials/Textures/videoTexture.ts",
+                    "packages/dev/core/src/Misc/tools.ts",
+                    "packages/dev/core/src/Misc/virtualJoystick.ts",
+                    "packages/tools/testTools/src/utils.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13034",
+                "title": "Initial VSM Design",
+                "description": "Just adding a basic menu (with a class extracted from the GE menu, hopefully can be reused back there later).",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    ".vscode/tasks.json",
+                    "packages/dev/sharedUiComponents/src/components/bars/CommandBar.modules.scss",
+                    "packages/dev/sharedUiComponents/src/components/bars/CommandBarComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/bars/CommandButton.modules.scss",
+                    "packages/dev/sharedUiComponents/src/components/bars/CommandButtonComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/bars/CommandDropdown.modules.scss",
+                    "packages/dev/sharedUiComponents/src/components/bars/CommandDropdownComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/classNames.ts",
+                    "packages/dev/sharedUiComponents/src/components/lines/FileButtonLineComponent.modules.scss",
+                    "packages/dev/sharedUiComponents/src/components/lines/FileButtonLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/imgs/betaFlag.svg",
+                    "packages/dev/sharedUiComponents/src/imgs/canvasFitIcon.svg",
+                    "packages/dev/sharedUiComponents/src/imgs/hamburger.svg",
+                    "packages/dev/sharedUiComponents/src/stories/bars/CommandBarComponent.stories.tsx",
+                    "packages/dev/sharedUiComponents/src/stories/bars/CommandButtonComponent.stories.tsx",
+                    "packages/dev/sharedUiComponents/src/stories/lines/FileButtonLineComponent.stories.tsx",
+                    "packages/tools/vsm/src/customDeclarations.d.ts",
+                    "packages/tools/vsm/src/workbench.modules.scss",
+                    "packages/tools/vsm/src/workbench.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13038",
+                "title": "Fix creation of cube textures from URL",
+                "description": "This PR should fix the issue mentioned in this [forum post](https://forum.babylonjs.com/t/cubetexture-createfromprefiltereddata-does-not-work-with-url-that-contains-uri-params/34097) by cropping the URL params before parsing the file extension.",
+                "author": {
+                    "name": "HoferMarkus",
+                    "url": "https://github.com/HoferMarkus"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.cubeTexture.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13039",
+                "title": "add picking for fullscreen ADTs",
+                "description": "See https://forum.babylonjs.com/t/how-to-handle-gui-interactions-pointer-events-in-offscreen-canvas/34221",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13031",
+                "title": "correction",
+                "description": "I did not check https://playground.babylonjs.com/?snapshot=refs/pull/13012/merge#S7HDGQ#5 before merge, the green axis should be tangential to the line and it was not. Should be OK after this PR\r\n\r\nReason for correction\r\n\r\nPitchYawRollToMoveBetweenPointsToRef(start: Vector3, target: Vector3, ref: Vector3)\r\n\r\nCannot guarentee ref with be a zero vector and so need to make ref.z explicitly 0\r\n",
+                "author": {
+                    "name": "BabylonJSGuide",
+                    "url": "https://github.com/BabylonJSGuide"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13033",
+                "title": "Update Storybook to 7",
+                "description": null,
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/sharedUiComponents/.storybook/main.js",
+                    "packages/dev/sharedUiComponents/package.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13029",
+                "title": "Improve heap-testing memory leak results",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/babylonServer/src/sceneJs.js",
+                    "packages/tools/testsMemoryLeaks/src/index.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13032",
+                "title": "Fix fallback value",
+                "description": null,
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/lines/optionsLineComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13012",
+                "title": "Add function to get angles between two vectors (Vector3.GetAnglesBetweenVectorsForDirectionChange)",
+                "description": "Also add prettier settings to workspace settings.\r\n\r\nSee [this](https://github.com/BabylonJS/Babylon.js/pull/12942) PR for more details.\r\n\r\nDemo PGs: \r\nhttps://playground.babylonjs.com/#QYA3JC#25\r\nhttps://playground.babylonjs.com/#QYA3JC#26\r\n(Press space to start)\r\n\r\n@BabylonJSGuide \r\nI have the opportunity to talk with a physicist almost every day of the week, so I asked him about the problem and worked out the same equations used. After researching how `Math.atan2` works though, and found an issue with the equations: for the phi calculation, the `diff.y` should have been the second parameter of `Math.atan2`, not the first.",
+                "author": {
+                    "name": "dr-vortex",
+                    "url": "https://github.com/dr-vortex"
+                },
+                "files": [
+                    ".vscode/settings.json",
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13019",
+                "title": "Restore wasDispatched to false when MaintainStateBetweenFrames is set to false",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/renderingManager.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13006",
+                "title": "Add smoothing for freeCameraDeviceOrientationInputs",
+                "description": "Add a simple low-pass filter on alpha/beta/gamma to limit objects \"shaking\"",
+                "author": {
+                    "name": "ilrico",
+                    "url": "https://github.com/ilrico"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/Inputs/freeCameraDeviceOrientationInput.ts",
+                    "packages/dev/core/src/Misc/tools.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13028",
+                "title": "Fix default initialization.",
+                "description": null,
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/lines/optionsLineComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13026",
+                "title": "Some fixes to OptionLineComponent related to wrong parent info showin…",
+                "description": "…g up on Inspector.\r\n\r\nRelated forum issue: https://forum.babylonjs.com/t/bug-display-of-parent-in-the-inspector-shows-parenting-that-has-not-been-set/34256",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/lines/optionsLineComponent.tsx",
+                    "packages/tools/guiEditor/src/components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent.tsx"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "13022",
+                "title": "Test babylon octree scene component active meshes",
+                "description": null,
+                "author": {
+                    "name": "Dok11",
+                    "url": "https://github.com/Dok11"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/Octrees/octreeSceneComponent.ts",
+                    "packages/dev/core/test/unit/Culling/babylon.octreeSceneComponent.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13004",
+                "title": "Add rotation from one vector3 to another",
+                "description": "First commit wherever a result was returned this is now reflected in comments. Only comments changed, if current vector was returned then this was kept and and comment not changed. Ref https://forum.babylonjs.com/t/comments-refer-to-wrong-vectors-returned-by-method-using-toref/34093/3?u=johnk\r\n\r\nAn alternative way of managing an animation along a curve by calculating the rotation needed from a set rotation to a tangent. Example PGs to follow.",
+                "author": {
+                    "name": "BabylonJSGuide",
+                    "url": "https://github.com/BabylonJSGuide"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13021",
+                "title": "Fix instance buffer",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/thinRenderTargetTexture.ts",
+                    "packages/dev/core/src/Materials/materialHelper.ts",
+                    "packages/dev/core/src/Meshes/instancedMesh.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockAlbedoOpacity.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrFragmentExtraDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/vertexColorMixing.fx",
+                    "packages/dev/core/src/Shaders/color.fragment.fx",
+                    "packages/dev/core/src/Shaders/color.vertex.fx",
+                    "packages/dev/core/src/Shaders/default.fragment.fx",
+                    "packages/dev/core/src/Shaders/default.vertex.fx",
+                    "packages/dev/core/src/Shaders/pbr.vertex.fx",
+                    "packages/dev/materials/src/cell/cell.fragment.fx",
+                    "packages/dev/materials/src/fire/fire.fragment.fx",
+                    "packages/dev/materials/src/fur/fur.fragment.fx",
+                    "packages/dev/materials/src/gradient/gradient.fragment.fx",
+                    "packages/dev/materials/src/lava/lava.fragment.fx",
+                    "packages/dev/materials/src/mix/mix.fragment.fx",
+                    "packages/dev/materials/src/simple/simple.fragment.fx",
+                    "packages/dev/materials/src/simple/simple.vertex.fx",
+                    "packages/dev/materials/src/sky/sky.fragment.fx",
+                    "packages/dev/materials/src/terrain/terrain.fragment.fx",
+                    "packages/dev/materials/src/terrain/terrain.vertex.fx",
+                    "packages/dev/materials/src/triPlanar/triplanar.fragment.fx",
+                    "packages/dev/materials/src/triPlanar/triplanar.vertex.fx",
+                    "packages/dev/materials/src/water/water.fragment.fx",
+                    "packages/dev/materials/src/water/water.vertex.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13023",
+                "title": "Fix SSAO2 sample generation",
+                "description": "See https://forum.babylonjs.com/t/ssao-2-has-different-results-each-time-i-add-it-to-the-scene-video-showing-it/33967/8",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/prepass-ssao-b-and-w.png"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine",
+                    "breaking change"
+                ]
+            },
+            {
+                "pr": "13016",
+                "title": "Adding memory leak tests using heap snapshots",
+                "description": "This adds heap based memory leak tests during integration tests. Using memlab under the hood.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/core/src/Loading/loadingScreen.ts",
+                    "packages/tools/babylonServer/public/test.html",
+                    "packages/tools/testsMemoryLeaks/package.json",
+                    "packages/tools/testsMemoryLeaks/src/index.ts",
+                    "packages/tools/testsMemoryLeaks/tsconfig.build.json",
+                    "packages/tools/testsMemoryLeaks/tsconfig.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13018",
+                "title": "Fix particle system support for logarithmic depth",
+                "description": "See https://forum.babylonjs.com/t/z-fighting-on-multiple-objects/34067/16",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/materialHelper.ts",
+                    "packages/dev/core/src/Particles/gpuParticleSystem.ts",
+                    "packages/dev/core/src/Particles/particleSystem.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13017",
+                "title": "Nit",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/renderingManager.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13014",
+                "title": "More features for the aggressive performance mode",
+                "description": "Some tiny perf changes + a major one: Now in aggressive mode, the renderingGroups are not reset between frames.",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/Meshes/subMesh.ts",
+                    "packages/dev/core/src/Particles/IParticleSystem.ts",
+                    "packages/dev/core/src/Particles/baseParticleSystem.ts",
+                    "packages/dev/core/src/Rendering/renderingManager.ts",
+                    "packages/dev/core/src/Sprites/spriteManager.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13015",
+                "title": "Fix fast",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13011",
+                "title": "Tiny perf fix",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13013",
+                "title": "Fix some more lint warnings",
+                "description": "And add back comment that I forgot to add back in previous PR.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_animation_pointer.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoaderInterfaces.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13000",
+                "title": "Clean up implementation of KHR_animation_pointer",
+                "description": "This is the result of trying to fix an issue reported here: https://forum.babylonjs.com/t/breaking-changes-in-gltf-loader/32807. I ended up refactoring/simplifying most of the KHR_animation_pointer code, but the overall idea is still the same.\r\n\r\n- Fix the code such that it will call animation loading extension functions again. This is the main thing that was broken.\r\n- Update the contract for loading animations to support custom extensions to be more flexible without override arguments (e.g., `animationTargetOverride`).\r\n- Break up the animation pointer map into core and extensions to avoid core loader depending on code from an extension.\r\n- Greatly simplify parsing of animation pointers.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_animation_pointer.data.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_animation_pointer.map.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_animation_pointer.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_lights_punctual.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoaderAnimation.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoaderExtension.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoaderInterfaces.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFUtilities.ts",
+                    "packages/public/glTF2Interface/babylon.glTF2Interface.d.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13010",
+                "title": "Add Logarithmic Depth Support on ParticleSystem",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/IParticleSystem.ts",
+                    "packages/dev/core/src/Particles/baseParticleSystem.ts",
+                    "packages/dev/core/src/Particles/gpuParticleSystem.ts",
+                    "packages/dev/core/src/Particles/particleSystem.ts",
+                    "packages/dev/core/src/Shaders/gpuRenderParticles.fragment.fx",
+                    "packages/dev/core/src/Shaders/gpuRenderParticles.vertex.fx",
+                    "packages/dev/core/src/Shaders/particles.fragment.fx",
+                    "packages/dev/core/src/Shaders/particles.vertex.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13009",
+                "title": "Bump scss-tokenizer from 0.3.0 to 0.4.3",
+                "description": "Bumps [scss-tokenizer](https://github.com/sasstools/scss-tokenizer) from 0.3.0 to 0.4.3.\n<details>\n<summary>Release notes</summary>\n<p><em>Sourced from <a href=\"https://github.com/sasstools/scss-tokenizer/releases\">scss-tokenizer's releases</a>.</em></p>\n<blockquote>\n<h2>v0.4.3</h2>\n<h2>What's Changed</h2>\n<ul>\n<li>Bump acorn from 5.7.3 to 5.7.4 by <a href=\"https://github.com/dependabot\"><code>@​dependabot</code></a> in <a href=\"https://github-redirect.dependabot.com/sasstools/scss-tokenizer/pull/33\">sasstools/scss-tokenizer#33</a></li>\n<li>Fixed ReDoS in &quot;loadAnnotation&quot; function of &quot;previous-map.js&quot; by <a href=\"https://github.com/sushantmittal\"><code>@​sushantmittal</code></a> in <a href=\"https://github-redirect.dependabot.com/sasstools/scss-tokenizer/pull/49\">sasstools/scss-tokenizer#49</a></li>\n</ul>\n<h2>New Contributors</h2>\n<ul>\n<li><a href=\"https://github.com/dependabot\"><code>@​dependabot</code></a> made their first contribution in <a href=\"https://github-redirect.dependabot.com/sasstools/scss-tokenizer/pull/33\">sasstools/scss-tokenizer#33</a></li>\n<li><a href=\"https://github.com/sushantmittal\"><code>@​sushantmittal</code></a> made their first contribution in <a href=\"https://github-redirect.dependabot.com/sasstools/scss-tokenizer/pull/49\">sasstools/scss-tokenizer#49</a></li>\n</ul>\n<p><strong>Full Changelog</strong>: <a href=\"https://github.com/sasstools/scss-tokenizer/compare/v0.4.2...v0.4.3\">https://github.com/sasstools/scss-tokenizer/compare/v0.4.2...v0.4.3</a></p>\n<h2>v0.4.2</h2>\n<h2>Misc</h2>\n<ul>\n<li>Restore <code>prepublishOnly</code> npm script (<a href=\"https://github.com/xzyfer\"><code>@​xzyfer</code></a>, ae79d74)</li>\n</ul>\n<h2>v0.4.1</h2>\n<h2>Fixes</h2>\n<ul>\n<li>Error handling utf-8 encoded sourcemap urls (<a href=\"https://github-redirect.dependabot.com/sasstools/scss-tokenizer/issues/13\">#13</a>, <a href=\"https://github.com/xzyfer\"><code>@​xzyfer</code></a>)</li>\n</ul>\n<h2>v0.4.0</h2>\n<h2>Fixes</h2>\n<ul>\n<li>Fix <code>endInterpolant</code> not being captured (<a href=\"https://github.com/xzyfer\"><code>@​xzyfer</code></a>, <a href=\"https://github-redirect.dependabot.com/sasstools/scss-tokenizer/issues/20\">#20</a>)</li>\n<li>Fix tracking of token position (<a href=\"https://github.com/xzyfer\"><code>@​xzyfer</code></a>, <a href=\"https://github-redirect.dependabot.com/sasstools/scss-tokenizer/issues/22\">#22</a>)</li>\n</ul>\n<h2>Tests</h2>\n<ul>\n<li>Add basic test coverage to interpolant tokenization (<a href=\"https://github.com/xzyfer\"><code>@​xzyfer</code></a>, <a href=\"https://github-redirect.dependabot.com/sasstools/scss-tokenizer/issues/20\">#20</a>)</li>\n</ul>\n<h2>Dependencies</h2>\n<ul>\n<li>Replace babel-preset-es2015 with babel-preset-env (<a href=\"https://github.com/xzyfer\"><code>@​xzyfer</code></a>, <a href=\"https://github-redirect.dependabot.com/sasstools/scss-tokenizer/issues/23\">#23</a>)</li>\n<li>sass-spec@2.5.1 (<a href=\"https://github.com/xzyfer\"><code>@​xzyfer</code></a>, <a href=\"https://github-redirect.dependabot.com/sasstools/scss-tokenizer/issues/23\">#23</a>)</li>\n<li>babel-core@^6.26.3 (<a href=\"https://github.com/xzyfer\"><code>@​xzyfer</code></a>, <a href=\"https://github-redirect.dependabot.com/sasstools/scss-tokenizer/issues/23\">#23</a>)</li>\n<li>babel-jest@^23.6.0 (<a href=\"https://github.com/xzyfer\"><code>@​xzyfer</code></a>, <a href=\"https://github-redirect.dependabot.com/sasstools/scss-tokenizer/issues/23\">#23</a>)</li>\n<li>glob@^7.1.3 (<a href=\"https://github.com/xzyfer\"><code>@​xzyfer</code></a>, <a href=\"https://github-redirect.dependabot.com/sasstools/scss-tokenizer/issues/23\">#23</a>)</li>\n<li>jest@^23.6.0 (<a href=\"https://github.com/xzyfer\"><code>@​xzyfer</code></a>, <a href=\"https://github-redirect.dependabot.com/sasstools/scss-tokenizer/issues/23\">#23</a>)</li>\n<li>js-base64@^2.4.9 (<a href=\"https://github.com/xzyfer\"><code>@​xzyfer</code></a>, <a href=\"https://github-redirect.dependabot.com/sasstools/scss-tokenizer/issues/23\">#23</a>)</li>\n<li>source-map@^0.7.3 (<a href=\"https://github.com/xzyfer\"><code>@​xzyfer</code></a>, <a href=\"https://github-redirect.dependabot.com/sasstools/scss-tokenizer/issues/23\">#23</a>)</li>\n</ul>\n<h2>Misc</h2>\n<ul>\n<li>TravisCI now tests all supported Node versions</li>\n<li>Commit <code>package-lock.json</code></li>\n</ul>\n</blockquote>\n</details>\n<details>\n<summary>Commits</summary>\n<ul>\n<li><a href=\"https://github.com/sasstools/scss-tokenizer/commit/3e518d908cea22d0ca1bdf927ef752b7539f0533\"><code>3e518d9</code></a> 0.4.3</li>\n<li><a href=\"https://github.com/sasstools/scss-tokenizer/commit/ff8e9945bcf991d30e009e2f0ef4088d2830c92d\"><code>ff8e994</code></a> Update changelog</li>\n<li><a href=\"https://github.com/sasstools/scss-tokenizer/commit/a53b6f233e648cc01acbdd89c58786cf8ba56e35\"><code>a53b6f2</code></a> Fixed ReDoS in 'loadAnnotation' function of previous-map.js.</li>\n<li><a href=\"https://github.com/sasstools/scss-tokenizer/commit/b55257baa54197e7dae8085184cad7948fea0796\"><code>b55257b</code></a> Bump acorn from 5.7.3 to 5.7.4</li>\n<li><a href=\"https://github.com/sasstools/scss-tokenizer/commit/db9b196df81b399fa104928e8361c5c6f3efde10\"><code>db9b196</code></a> 0.4.2</li>\n<li><a href=\"https://github.com/sasstools/scss-tokenizer/commit/ae79d74ad591e2f8a5e61ed68be2595b4bfd37af\"><code>ae79d74</code></a> Restore prepublishOnly npm script</li>\n<li><a href=\"https://github.com/sasstools/scss-tokenizer/commit/32a65d8d8d757f2e0cca0b2e71ec69840466dded\"><code>32a65d8</code></a> 0.4.1</li>\n<li><a href=\"https://github.com/sasstools/scss-tokenizer/commit/cef5140251617c6d15cf639a4ffda246b7704344\"><code>cef5140</code></a> Add support for utf8 name in input source map encoding</li>\n<li><a href=\"https://github.com/sasstools/scss-tokenizer/commit/07c191732c621047a302c68b6718fd6bf0bd90d4\"><code>07c1917</code></a> 0.4.0</li>\n<li><a href=\"https://github.com/sasstools/scss-tokenizer/commit/d74f8038a00673adcb7a3b2fee91eebb7d6153e3\"><code>d74f803</code></a> Commit package-lock.json</li>\n<li>Additional commits viewable in <a href=\"https://github.com/sasstools/scss-tokenizer/compare/v0.3.0...v0.4.3\">compare view</a></li>\n</ul>\n</details>\n<br />\n\n\n[![Dependabot compatibility score](https://dependabot-badges.githubapp.com/badges/compatibility_score?dependency-name=scss-tokenizer&package-manager=npm_and_yarn&previous-version=0.3.0&new-version=0.4.3)](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-compatibility-scores)\n\nDependabot will resolve any conflicts with this PR as long as you don't alter it yourself. You can also trigger a rebase manually by commenting `@dependabot rebase`.\n\n[//]: # (dependabot-automerge-start)\n[//]: # (dependabot-automerge-end)\n\n---\n\n<details>\n<summary>Dependabot commands and options</summary>\n<br />\n\nYou can trigger Dependabot actions by commenting on this PR:\n- `@dependabot rebase` will rebase this PR\n- `@dependabot recreate` will recreate this PR, overwriting any edits that have been made to it\n- `@dependabot merge` will merge this PR after your CI passes on it\n- `@dependabot squash and merge` will squash and merge this PR after your CI passes on it\n- `@dependabot cancel merge` will cancel a previously requested merge and block automerging\n- `@dependabot reopen` will reopen this PR if it is closed\n- `@dependabot close` will close this PR and stop Dependabot recreating it. You can achieve the same result by closing it manually\n- `@dependabot ignore this major version` will close this PR and stop Dependabot creating any more for this major version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this minor version` will close this PR and stop Dependabot creating any more for this minor version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this dependency` will close this PR and stop Dependabot creating any more for this dependency (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot use these labels` will set the current labels as the default for future PRs for this repo and language\n- `@dependabot use these reviewers` will set the current reviewers as the default for future PRs for this repo and language\n- `@dependabot use these assignees` will set the current assignees as the default for future PRs for this repo and language\n- `@dependabot use this milestone` will set the current milestone as the default for future PRs for this repo and language\n\nYou can disable automated security fix PRs for this repo from the [Security Alerts page](https://github.com/BabylonJS/Babylon.js/network/alerts).\n\n</details>",
+                "author": {
+                    "name": "dependabot[bot]",
+                    "url": "https://github.com/apps/dependabot"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": [
+                    "dependencies"
+                ]
+            }
+        ],
         "5.25.0": [
             {
                 "pr": "13008",
