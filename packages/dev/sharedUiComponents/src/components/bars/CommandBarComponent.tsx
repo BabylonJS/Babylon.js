@@ -1,8 +1,10 @@
-import * as React from "react";
+import { FC, useState } from "react";
+import { useEffect, useRef } from "react";
+import { Observable } from "core/Misc/observable";
 import { JoinClassNames } from "../classNames";
 import { CommandButtonComponent } from "./CommandButtonComponent";
 import { CommandDropdownComponent } from "./CommandDropdownComponent";
-// import { ColorLineComponent } from "shared-ui-components/lines/colorLineComponent";
+import { ColorLineComponent } from "../lines/ColorLineComponent";
 
 import hamburgerIcon from "../../imgs/hamburgerIcon.svg";
 import pointerIcon from "../../imgs/pointerIcon.svg";
@@ -13,6 +15,10 @@ import canvasFitIcon from "../../imgs/canvasFitIcon.svg";
 import betaFlag from "../../imgs/betaFlag.svg";
 
 import style from "./CommandBar.modules.scss";
+import type { PropertyChangedEvent } from "../../propertyChangedEvent";
+import type { Nullable } from "core/types";
+import { Color3, Color4 } from "core/Maths/math.color";
+import { ColorPickerLineComponent } from "../lines/ColorPickerLineComponent";
 
 export interface ICommandBarComponentProps {
     onSaveButtonClicked?: () => void;
@@ -24,9 +30,10 @@ export interface ICommandBarComponentProps {
     onPanButtonClicked?: () => void;
     onZoomButtonClicked?: () => void;
     onFitButtonClicked?: () => void;
+    onArtboardColorChanged?: (newColor: string) => void;
 }
 
-export const CommandBarComponent: React.FC<ICommandBarComponentProps> = (props) => {
+export const CommandBarComponent: FC<ICommandBarComponentProps> = (props) => {
     return (
         <div className={style.commandBar}>
             <div className={style.commandsLeft}>
@@ -114,7 +121,17 @@ export const CommandBarComponent: React.FC<ICommandBarComponentProps> = (props) 
                     />
                 </div>
                 <div className={JoinClassNames(style, "divider", "padded")}>
-                    {/* <ColorLineComponent lockObject={{ lock: false }} label={"Artboard:"} target={{}} propertyName="backgroundColor" disableAlpha={true} /> */}
+                    <div style={{ paddingRight: "5px" }}>Artboard:</div>
+                    {props.onArtboardColorChanged && (
+                        <ColorPickerLineComponent
+                            value={new Color3(0, 0, 0)}
+                            onColorChanged={(newColor) => {
+                                if (props.onArtboardColorChanged) {
+                                    props.onArtboardColorChanged(newColor);
+                                }
+                            }}
+                        />
+                    )}
                 </div>
             </div>
             <div className={style.commandsRight}>

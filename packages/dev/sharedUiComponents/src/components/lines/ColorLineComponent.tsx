@@ -1,22 +1,24 @@
 import * as React from "react";
 import type { Observable } from "core/Misc/observable";
 import { Color3, Color4 } from "core/Maths/math.color";
-import { NumericInputComponent } from "./numericInputComponent";
+import { NumericInputComponent } from "./NumericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import type { PropertyChangedEvent } from "../../propertyChangedEvent";
 import { ColorPickerLineComponent } from "./ColorPickerLineComponent";
 import type { LockObject } from "../../tabs/propertyGrids/lockObject";
 // import { conflictingValuesPlaceholder } from "../../targetsProxy";
+import style from "./ColorLineComponent.modules.scss";
 
-import copyIcon from "./copy.svg";
+import copyIcon from "../../imgs/copy.svg";
+import { JoinClassNames } from "../classNames";
 const emptyColor = new Color4(0, 0, 0, 0);
 
 export interface IColorLineComponentProps {
     label: string;
-    target?: any;
+    target: any;
     propertyName: string;
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    onPropertyChangedObservable: Observable<PropertyChangedEvent>;
     onChange?: () => void;
     isLinear?: boolean;
     icon?: string;
@@ -184,13 +186,13 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
         const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />;
 
         return (
-            <div className="color3Line">
-                <div className="firstLine">
+            <div className={style.color3Line}>
+                <div className={style.firstLine}>
                     {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" />}
-                    <div className="label" title={this.props.label}>
+                    <div className={style.label} title={this.props.label}>
                         {this.props.label}
                     </div>
-                    <div className="color3">
+                    <div className={style.color3}>
                         <ColorPickerLineComponent
                             lockObject={this.props.lockObject}
                             linearHint={this.props.isLinear}
@@ -200,15 +202,15 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
                             }}
                         />
                     </div>
-                    <div className="copy hoverIcon" onClick={() => this.copyToClipboard()} title="Copy to clipboard">
+                    <div className={JoinClassNames(style, "copy", "hoverIcon")} onClick={() => this.copyToClipboard()} title="Copy to clipboard">
                         <img src={copyIcon} alt="Copy" />
                     </div>
-                    <div className="expand hoverIcon" onClick={() => this.switchExpandState()} title="Expand">
+                    <div className={JoinClassNames("expand", "hoverIcon")} onClick={() => this.switchExpandState()} title="Expand">
                         {chevron}
                     </div>
                 </div>
                 {this.state.isExpanded && (
-                    <div className="secondLine">
+                    <div className={style.secondLine}>
                         <NumericInputComponent lockObject={this.props.lockObject} label="r" value={this.state.color.r} onChange={(value) => this.updateStateR(value)} />
                         <NumericInputComponent lockObject={this.props.lockObject} label="g" value={this.state.color.g} onChange={(value) => this.updateStateG(value)} />
                         <NumericInputComponent lockObject={this.props.lockObject} label="b" value={this.state.color.b} onChange={(value) => this.updateStateB(value)} />
