@@ -4,7 +4,6 @@ import { ColorComponentEntry } from "./ColorComponentEntry";
 import { HexColor } from "./HexColor";
 import type { LockObject } from "../../tabs/propertyGrids/lockObject";
 
-// import "./colorPicker.scss";
 import style from "./ColorPicker.modules.scss";
 import { ClassNames } from "../classNames";
 
@@ -257,9 +256,6 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
                         />
                     </div>
                 </div>
-                {/* <div className="color-picker-hex">
-                    <div className="color-picker-hex-label">Hex</div>
-                    <div className="color-picker-hex-value"> */}
                 <HexColor
                     lockObject={this.props.lockObject}
                     expectedLength={hasAlpha ? 8 : 6}
@@ -273,8 +269,6 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
                         }
                     }}
                 />
-                {/* </div> */}
-                {/* </div> */}
                 {this.props.linearhint && (
                     <div className={style.colorPickerWarning}>
                         (Note: color is stored in linear mode and was converted to gamma to be displayed here (toGammaSpace() / toLinearSpace()))
