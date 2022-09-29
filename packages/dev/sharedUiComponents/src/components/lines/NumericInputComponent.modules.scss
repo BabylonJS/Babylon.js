@@ -1,0 +1,27 @@
+* {
+    --spacingHeight: 30px;
+}
+
+.numeric {
+    height: var(--spacingHeight);
+    display: grid;
+    grid-template-columns: 1fr 120px auto;
+}
+
+.numericLabel {
+    grid-column: 1;
+    display: flex;
+    align-items: center;
+}
+
+.number {
+    display: flex;
+    align-items: center;
+    grid-column: 2;
+    height: 10px;
+}
+
+.numericInput {
+    width: calc(100% - 5px);
+    height: 10px;
+}

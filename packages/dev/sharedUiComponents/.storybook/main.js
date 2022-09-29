@@ -9,6 +9,11 @@ module.exports = {
         // You can change the configuration based on that.
         // 'PRODUCTION' is used when building the static version of storybook.
 
+        // (config.resolve.extensions = [".js", ".ts", ".tsx", ".scss", "*.svg"]),
+        config.resolve.alias = {
+            ...config.resolve.alias,
+            core: path.resolve("../core/dist"),
+        };
         // Make whatever fine-grained changes you need
         config.module.rules.push({
             test: /\.tsx?$/,
@@ -16,7 +21,7 @@ module.exports = {
             exclude: /node_modules/,
             sideEffects: true,
             options: {
-                configFile: "tsconfig.build.json",
+                configFile: __dirname + "/../tsconfig.build.json",
             },
         });
 
