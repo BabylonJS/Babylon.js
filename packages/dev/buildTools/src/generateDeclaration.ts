@@ -18,6 +18,7 @@ export interface IGenerateDeclarationConfig {
     buildType?: BuildType;
     addToDocumentation?: boolean;
     initDocumentation?: boolean;
+    fileFilterRegex?: string;
 }
 
 function getModuleDeclaration(
@@ -388,7 +389,12 @@ declare module ${defaultModuleName} {
 export function generateCombinedDeclaration(declarationFiles: string[], config: IGenerateDeclarationConfig, looseDeclarations: string[] = [], buildType: BuildType = "umd") {
     let declarations = "";
     let moduleDeclaration = "";
+    const filterRegex = config.fileFilterRegex ? new RegExp(config.fileFilterRegex) : null;
     declarationFiles.forEach((declarationFile) => {
+        // check if filter applies to this file
+        if(filterRegex && filterRegex.test(declarationFile)) {
+            return;
+        }
         // The lines of the files now come as a Function inside declaration file.
         const data = fs.readFileSync(declarationFile, "utf8");
         const classMap = getClassesMap(data, config.devPackageName, declarationFile);
