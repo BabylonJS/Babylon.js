@@ -55,6 +55,7 @@ import type { IInspectableOptions } from "core/Misc/iInspectable";
 
 import { WorkbenchComponent } from "../../../../diagram/workbench";
 import type { GlobalState } from "../../../../globalState";
+import { MessageDialog } from "shared-ui-components/components/MessageDialog";
 
 interface ICommonControlPropertyGridComponentProps {
     controls: Control[];
@@ -68,6 +69,7 @@ interface ICommonControlPropertyGridComponentState {
     fontFamilyOptions: IInspectableOptions[];
     value: number;
     invalidFonts: string[];
+    invalidFontAlertName?: string;
 }
 
 type ControlProperty = keyof Control | "_paddingLeft" | "_paddingRight" | "_paddingTop" | "_paddingBottom" | "_fontSize" | "_linkOffsetX" | "_linkOffsetY";
@@ -95,6 +97,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                   ],
             value: 0,
             invalidFonts: JSON.parse(String(window.sessionStorage.getItem("invalidFonts"))) ? JSON.parse(String(window.sessionStorage.getItem("invalidFonts"))) : [],
+            invalidFontAlertName: undefined,
         };
 
         const controls = this.props.controls;
@@ -146,7 +149,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         const correctLabels = correctFonts.map((element) => element.label.trim().toLowerCase());
 
         const moreFonts = WorkbenchComponent.addedFonts;
-
+        let invalidFontAlertName = undefined;
         const invalidFontsArray = this.state.invalidFonts.slice();
         for (let i = 0; i < moreFonts.length; i++) {
             const fontName = moreFonts[i].trim().toLowerCase();
@@ -154,14 +157,14 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 correctFonts.push({ label: fontName, value: correctFonts.length + 1 });
                 correctLabels.push(fontName);
             } else if (invalidFontsArray.indexOf(fontName) === -1 && !document.fonts.check(`12px "${fontName}"`)) {
-                alert("The font " + fontName + " is unable to load");
+                invalidFontAlertName = moreFonts[i];
                 invalidFontsArray.push(fontName);
             }
         }
-
         this.setState({
             fontFamilyOptions: correctFonts,
             invalidFonts: invalidFontsArray,
+            invalidFontAlertName,
         });
         window.sessionStorage.setItem("fonts", JSON.stringify(correctFonts));
         window.sessionStorage.setItem("invalidFonts", JSON.stringify(invalidFontsArray));
@@ -408,9 +411,17 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 widthUnitsLocked = true;
             }
         }
-
         return (
             <div>
+                {this.state.invalidFontAlertName && (
+                    <MessageDialog
+                        message={"The font " + this.state.invalidFontAlertName + " is unable to load"}
+                        isError={true}
+                        onClose={() => {
+                            this.setState({ invalidFontAlertName: undefined });
+                        }}
+                    />
+                )}
                 {!this.props.hideDimensions && (
                     <>
                         <div className="ge-divider alignment-bar">
