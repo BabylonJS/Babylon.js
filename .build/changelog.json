@@ -1,6 +1,26 @@
 {
-    "fromTag": "5.25.0",
+    "fromTag": "5.26.0",
     "changelog": {
+        "5.26.1": [
+            {
+                "pr": "13041",
+                "title": "fix declaration generation",
+                "description": "The problem was the storybook declarations that were included in the final declaration of the inspector, the gui editor and the node editor",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/generateDeclaration.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBlockConnectionPoint.ts",
+                    "packages/public/umd/babylonjs-gui/config.json",
+                    "packages/public/umd/babylonjs-inspector/config.json",
+                    "packages/public/umd/babylonjs-node-editor/config.json",
+                    "packages/tools/nodeEditor/src/graphSystem/connectionPointPortData.ts"
+                ],
+                "tags": []
+            }
+        ],
         "5.26.0": [
             {
                 "pr": "13036",
