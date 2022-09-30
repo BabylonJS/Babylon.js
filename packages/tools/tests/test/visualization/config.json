@@ -1465,6 +1465,11 @@
             "title": "UI unaffected by post-process",
             "playgroundId": "#XJVHWQ",
             "referenceImage": "uiUnaffected.png"
+        },
+        {
+            "title": "Billboard with scaled parent",
+            "playgroundId": "#1ZMALK",
+            "referenceImage": "billboardParentScale.png"
         }
     ]
 }
