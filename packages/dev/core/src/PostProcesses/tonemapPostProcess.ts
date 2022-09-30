@@ -4,7 +4,7 @@ import { PostProcess } from "./postProcess";
 import { Constants } from "../Engines/constants";
 
 import "../Shaders/tonemap.fragment";
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 
 declare type Engine = import("../Engines/engine").Engine;
 

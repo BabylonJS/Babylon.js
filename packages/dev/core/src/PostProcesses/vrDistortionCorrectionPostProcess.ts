@@ -6,7 +6,7 @@ import { Texture } from "../Materials/Textures/texture";
 import { PostProcess } from "./postProcess";
 
 import "../Shaders/vrDistortionCorrection.fragment";
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 
 /**
  * VRDistortionCorrectionPostProcess used for mobile VR

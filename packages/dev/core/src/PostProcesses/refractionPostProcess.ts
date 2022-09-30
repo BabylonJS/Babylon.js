@@ -9,7 +9,7 @@ import type { Engine } from "../Engines/engine";
 import "../Shaders/refraction.fragment";
 import { RegisterClass } from "../Misc/typeStore";
 import { SerializationHelper, serialize } from "../Misc/decorators";
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 
 declare type Scene = import("../scene").Scene;
 
