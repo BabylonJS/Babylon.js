@@ -222,17 +222,7 @@ export class AsciiArtPostProcess extends PostProcess {
      * @param options can either be the font name or an option object following the IAsciiArtPostProcessOptions format
      */
     constructor(name: string, camera: Nullable<Camera>, options?: string | IAsciiArtPostProcessOptions) {
-        super(
-            name,
-            "asciiart",
-            ["asciiArtFontInfos", "asciiArtOptions"],
-            ["asciiArtFont"],
-            1,
-            camera,
-            Texture.TRILINEAR_SAMPLINGMODE,
-            undefined,
-            true
-        );
+        super(name, "asciiart", ["asciiArtFontInfos", "asciiArtOptions"], ["asciiArtFont"], 1, camera, Texture.TRILINEAR_SAMPLINGMODE, undefined, true);
 
         // Default values.
         let font = "40px Monospace";
@@ -250,7 +240,6 @@ export class AsciiArtPostProcess extends PostProcess {
             }
         }
 
-        
         const scene = camera?.getScene() || this._scene;
         this._asciiArtFontTexture = new AsciiArtFontTexture(name, font, characterSet, scene);
         const textureSize = this._asciiArtFontTexture.getSize();

@@ -29,7 +29,7 @@ export class VRMultiviewToSingleviewPostProcess extends PostProcess {
     constructor(name: string, camera: Nullable<Camera>, scaleFactor: number) {
         super(name, "vrMultiviewToSingleview", ["imageIndex"], ["multiviewSampler"], scaleFactor, camera, Texture.BILINEAR_SAMPLINGMODE);
 
-        const cam = camera ??  this.getCamera();
+        const cam = camera ?? this.getCamera();
         this.onSizeChangedObservable.add(() => {});
         this.onApplyObservable.add((effect: Effect) => {
             if (cam._scene.activeCamera && cam._scene.activeCamera.isLeftCamera) {
