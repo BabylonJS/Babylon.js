@@ -1803,6 +1803,7 @@ export class Vector3 {
 
     /**
      * Gets the rotation that aligns the roll axis (Y) to the line joining the start point to the target point and stores it in the ref Vector3
+     * Example PG https://playground.babylonjs.com/#R1F8YU#189
      * @param start the starting point
      * @param target the target point
      * @param ref the vector3 to store the result
@@ -1819,6 +1820,7 @@ export class Vector3 {
 
     /**
      * Gets the rotation that aligns the roll axis (Y) to the line joining the start point to the target point
+     * Example PG https://playground.babylonjs.com/#R1F8YU#188
      * @param start the starting point
      * @param target the target point
      * @returns the rotation in the form (pitch, yaw, 0)
@@ -4224,6 +4226,7 @@ export class Quaternion {
 
     /**
      * Creates the rotation quaternion needed to rotate from one Vector3 onto another Vector3
+     * Example PG https://playground.babylonjs.com/#L49EJ7#2
      * @param fromVector the starting vector
      * @param toVector the ending vector
      * @returns the rotation quaternion needed
@@ -4235,6 +4238,7 @@ export class Quaternion {
 
     /**
      * Creates the rotation quaternion needed to rotate from one Vector3 onto another Vector3 and stores in a result Quaternion
+     * Example PG https://playground.babylonjs.com/#L49EJ7#3
      * @param fromVector the starting vector
      * @param toVector the ending vector
      * @param result the rotation quaternion needed
