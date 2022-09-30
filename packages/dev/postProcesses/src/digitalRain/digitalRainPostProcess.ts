@@ -249,7 +249,8 @@ export class DigitalRainPostProcess extends PostProcess {
             }
         }
 
-        this._digitalRainFontTexture = new DigitalRainFontTexture(name, font, characterSet, camera.getScene());
+        const scene = camera?.getScene() || null;
+        this._digitalRainFontTexture = new DigitalRainFontTexture(name, font, characterSet, scene);
         const textureSize = this._digitalRainFontTexture.getSize();
 
         let alpha = 0.0;

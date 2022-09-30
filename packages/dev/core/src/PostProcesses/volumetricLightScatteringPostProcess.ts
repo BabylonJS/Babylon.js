@@ -26,7 +26,7 @@ import "../Shaders/volumetricLightScatteringPass.fragment";
 import { Color4, Color3 } from "../Maths/math.color";
 import { Viewport } from "../Maths/math.viewport";
 import { RegisterClass } from "../Misc/typeStore";
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 
 declare type Engine = import("../Engines/engine").Engine;
 

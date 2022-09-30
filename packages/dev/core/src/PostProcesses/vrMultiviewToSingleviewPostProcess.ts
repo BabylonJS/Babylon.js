@@ -5,7 +5,7 @@ import { PostProcess } from "./postProcess";
 
 import "../Shaders/vrMultiviewToSingleview.fragment";
 import "../Engines/Extensions/engine.multiview";
-import { Nullable } from "../types";
+import type { Nullable } from "../types";
 
 /**
  * VRMultiviewToSingleview used to convert multiview texture arrays to standard textures for scenarios such as webVR
