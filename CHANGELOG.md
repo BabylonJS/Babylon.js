@@ -1,5 +1,15 @@
 # Changelog
 
+## 5.26.1
+
+### Core
+
+- fix declaration generation - by [RaananW](https://github.com/RaananW) ([#13041](https://github.com/BabylonJS/Babylon.js/pull/13041))
+
+### Node Editor
+
+- fix declaration generation - by [RaananW](https://github.com/RaananW) ([#13041](https://github.com/BabylonJS/Babylon.js/pull/13041))
+
 ## 5.26.0
 
 ### Core
