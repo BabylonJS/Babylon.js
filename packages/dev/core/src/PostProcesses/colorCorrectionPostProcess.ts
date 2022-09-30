@@ -44,10 +44,11 @@ export class ColorCorrectionPostProcess extends PostProcess {
         return "ColorCorrectionPostProcess";
     }
 
-    constructor(name: string, colorTableUrl: string, options: number | PostProcessOptions, camera: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean) {
+    constructor(name: string, colorTableUrl: string, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean) {
         super(name, "colorCorrection", null, ["colorTable"], options, camera, samplingMode, engine, reusable);
 
-        this._colorTableTexture = new Texture(colorTableUrl, camera.getScene(), true, false, Texture.TRILINEAR_SAMPLINGMODE);
+        const scene = camera?.getScene() || null;
+        this._colorTableTexture = new Texture(colorTableUrl, scene, true, false, Texture.TRILINEAR_SAMPLINGMODE);
         this._colorTableTexture.anisotropicFilteringLevel = 1;
         this._colorTableTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
         this._colorTableTexture.wrapV = Texture.CLAMP_ADDRESSMODE;

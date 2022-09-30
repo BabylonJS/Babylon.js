@@ -221,19 +221,16 @@ export class AsciiArtPostProcess extends PostProcess {
      * @param camera
      * @param options can either be the font name or an option object following the IAsciiArtPostProcessOptions format
      */
-    constructor(name: string, camera: Camera, options?: string | IAsciiArtPostProcessOptions) {
+    constructor(name: string, camera: Nullable<Camera>, options?: string | IAsciiArtPostProcessOptions) {
         super(
             name,
             "asciiart",
             ["asciiArtFontInfos", "asciiArtOptions"],
             ["asciiArtFont"],
-            {
-                width: camera.getEngine().getRenderWidth(),
-                height: camera.getEngine().getRenderHeight(),
-            },
+            1,
             camera,
             Texture.TRILINEAR_SAMPLINGMODE,
-            camera.getEngine(),
+            undefined,
             true
         );
 
@@ -253,7 +250,9 @@ export class AsciiArtPostProcess extends PostProcess {
             }
         }
 
-        this._asciiArtFontTexture = new AsciiArtFontTexture(name, font, characterSet, camera.getScene());
+        
+        const scene = camera?.getScene() || this._scene;
+        this._asciiArtFontTexture = new AsciiArtFontTexture(name, font, characterSet, scene);
         const textureSize = this._asciiArtFontTexture.getSize();
 
         this.onApply = (effect: Effect) => {
