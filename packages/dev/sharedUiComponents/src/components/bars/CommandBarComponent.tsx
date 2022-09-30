@@ -1,8 +1,7 @@
-import * as React from "react";
+import type { FC } from "react";
 import { JoinClassNames } from "../classNames";
 import { CommandButtonComponent } from "./CommandButtonComponent";
 import { CommandDropdownComponent } from "./CommandDropdownComponent";
-// import { ColorLineComponent } from "shared-ui-components/lines/colorLineComponent";
 
 import hamburgerIcon from "../../imgs/hamburgerIcon.svg";
 import pointerIcon from "../../imgs/pointerIcon.svg";
@@ -13,6 +12,8 @@ import canvasFitIcon from "../../imgs/canvasFitIcon.svg";
 import betaFlag from "../../imgs/betaFlag.svg";
 
 import style from "./CommandBar.modules.scss";
+import { Color3 } from "core/Maths/math.color";
+import { ColorPickerLineComponent } from "../lines/ColorPickerLineComponent";
 
 export interface ICommandBarComponentProps {
     onSaveButtonClicked?: () => void;
@@ -24,9 +25,12 @@ export interface ICommandBarComponentProps {
     onPanButtonClicked?: () => void;
     onZoomButtonClicked?: () => void;
     onFitButtonClicked?: () => void;
+    onArtboardColorChanged?: (newColor: string) => void;
+    artboardColor?: string;
+    artboardColorPickerColor?: string;
 }
 
-export const CommandBarComponent: React.FC<ICommandBarComponentProps> = (props) => {
+export const CommandBarComponent: FC<ICommandBarComponentProps> = (props) => {
     return (
         <div className={style.commandBar}>
             <div className={style.commandsLeft}>
@@ -114,7 +118,18 @@ export const CommandBarComponent: React.FC<ICommandBarComponentProps> = (props) 
                     />
                 </div>
                 <div className={JoinClassNames(style, "divider", "padded")}>
-                    {/* <ColorLineComponent lockObject={{ lock: false }} label={"Artboard:"} target={{}} propertyName="backgroundColor" disableAlpha={true} /> */}
+                    <div style={{ paddingRight: "5px" }}>Artboard:</div>
+                    {props.onArtboardColorChanged && (
+                        <ColorPickerLineComponent
+                            backgroundColor={props.artboardColorPickerColor || "#888888"}
+                            value={props.artboardColor ? Color3.FromHexString(props.artboardColor) : new Color3(0, 0, 0)}
+                            onColorChanged={(newColor: string) => {
+                                if (props.onArtboardColorChanged) {
+                                    props.onArtboardColorChanged(newColor);
+                                }
+                            }}
+                        />
+                    )}
                 </div>
             </div>
             <div className={style.commandsRight}>
