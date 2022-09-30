@@ -67,6 +67,7 @@ interface ICommonControlPropertyGridComponentProps {
 interface ICommonControlPropertyGridComponentState {
     fontFamilyOptions: IInspectableOptions[];
     value: number;
+    invalidFonts: string[];
 }
 
 type ControlProperty = keyof Control | "_paddingLeft" | "_paddingRight" | "_paddingTop" | "_paddingBottom" | "_fontSize" | "_linkOffsetX" | "_linkOffsetY";
@@ -93,6 +94,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                       { label: "Brush Script MT", value: 9 },
                   ],
             value: 0,
+            invalidFonts: JSON.parse(String(window.sessionStorage.getItem("invalidFonts"))) ? JSON.parse(String(window.sessionStorage.getItem("invalidFonts"))) : [],
         };
 
         const controls = this.props.controls;
@@ -141,23 +143,28 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 correctFonts.push(font);
             }
         }
-        const correctLabels = correctFonts.map((element) => element.label);
+        const correctLabels = correctFonts.map((element) => element.label.trim().toLowerCase());
 
         const moreFonts = WorkbenchComponent.addedFonts;
 
+        const invalidFontsArray = this.state.invalidFonts.slice();
         for (let i = 0; i < moreFonts.length; i++) {
-            if (!correctLabels.includes(moreFonts[i]) && document.fonts.check(`12px "${moreFonts[i]}"`)) {
-                correctFonts.push({ label: moreFonts[i], value: correctFonts.length + 1 });
-                correctLabels.push(moreFonts[i]);
-            } else if (!document.fonts.check(`12px "${moreFonts[i]}"`)) {
-                alert("The font " + moreFonts[i] + " is unable to load");
+            const fontName = moreFonts[i].trim().toLowerCase();
+            if (!correctLabels.includes(fontName) && document.fonts.check(`12px "${fontName}"`)) {
+                correctFonts.push({ label: fontName, value: correctFonts.length + 1 });
+                correctLabels.push(fontName);
+            } else if (invalidFontsArray.indexOf(fontName) === -1 && !document.fonts.check(`12px "${fontName}"`)) {
+                alert("The font " + fontName + " is unable to load");
+                invalidFontsArray.push(fontName);
             }
         }
 
         this.setState({
             fontFamilyOptions: correctFonts,
+            invalidFonts: invalidFontsArray,
         });
         window.sessionStorage.setItem("fonts", JSON.stringify(correctFonts));
+        window.sessionStorage.setItem("invalidFonts", JSON.stringify(invalidFontsArray));
     }
 
     private _getTransformedReferenceCoordinate(control: Control) {
@@ -743,8 +750,12 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                     proxy.fontFamily = fontFamily[0];
                                 }}
                                 extractValue={() => {
-                                    if (this.state.fontFamilyOptions.filter(({ label }) => label === proxy.fontFamily)[0].label) {
-                                        return this.state.fontFamilyOptions.filter(({ label }) => label === proxy.fontFamily)[0].value;
+                                    if (this.state.invalidFonts.indexOf(proxy.fontFamily)) {
+                                        return 1;
+                                    }
+                                    const matchingFonts = this.state.fontFamilyOptions.filter(({ label }) => label.trim().toLowerCase() === proxy.fontFamily.trim().toLowerCase());
+                                    if (matchingFonts.length > 0 && matchingFonts[0].label) {
+                                        return matchingFonts[0].value;
                                     } else {
                                         return -1;
                                     }
