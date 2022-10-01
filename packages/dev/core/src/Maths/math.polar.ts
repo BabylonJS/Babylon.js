@@ -682,7 +682,7 @@ export class Spherical {
 
     /**
      * Gets a Vector3 from the current spherical coordinates
-     * @returns the Vector3
+     * @returns the (x, y,z) form of the current Spherical
      */
     public toVector3(): Vector3 {
         const ref = new Vector3(0, 0, 0);
