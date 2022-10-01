@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { DeepImmutable } from "../types";
-import type { Vector2, Vector3 } from "./math.vector";
+import { Vector2, Vector3 } from "./math.vector";
 import { TmpVectors } from "./math.vector";
 
 /**
@@ -316,7 +316,7 @@ export class Polar {
      * @returns the rectangular coordinates
      */
     public toVector2(): Vector2 {
-        const ref = TmpVectors.Vector2[0];
+        const ref = new Vector2(0, 0);
         return this.toVector2ToRef(ref);
     }
 
@@ -685,7 +685,7 @@ export class Spherical {
      * @returns the Vector3
      */
     public toVector3(): Vector3 {
-        const ref = TmpVectors.Vector3[0];
+        const ref = new Vector3(0, 0, 0);
         return this.toVector3ToRef(ref);
     }
 
