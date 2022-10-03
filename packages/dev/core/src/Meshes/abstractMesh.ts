@@ -108,6 +108,7 @@ class _InternalAbstractMeshDataInfo {
     public _material: Nullable<Material> = null;
     public _materialForRenderPass: Array<Material | undefined>; // map a render pass id (index in the array) to a Material
     public _positions: Nullable<Vector3[]> = null;
+    public _pointerOverDisableMeshTesting: boolean = false;
     // Collisions
     public _meshCollisionData = new _MeshCollisionData();
     public _enableDistantPicking = false;
@@ -437,6 +438,19 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * Gets or sets a boolean indicating that pointer move events must be supported on this mesh (false by default)
      */
     public enablePointerMoveEvents = false;
+
+    /**
+     * Gets or sets the property which disables the test that is checking that the mesh under the pointer is the same than the previous time we tested for it (default: false).
+     * Set this property to true if you want thin instances picking to be reported accurately when moving over the mesh.
+     * Note that setting this property to true will incur some performance penalties when dealing with pointer events for this mesh so use it sparingly.
+     */
+     public get pointerOverDisableMeshTesting() {
+        return this._internalAbstractMeshDataInfo._pointerOverDisableMeshTesting;
+    }
+
+    public set pointerOverDisableMeshTesting(disable: boolean) {
+        this._internalAbstractMeshDataInfo._pointerOverDisableMeshTesting = disable;
+    }
 
     /**
      * Specifies the rendering group id for this mesh (0 by default)

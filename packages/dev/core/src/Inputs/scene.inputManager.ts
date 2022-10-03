@@ -173,12 +173,6 @@ export class InputManager {
         this._pointerY = value;
     }
 
-    /**
-     * Disables the test that is checking that the mesh under the pointer is the same than the previous time we tested for it (default: false).
-     * Note that setting this property to true will incur some performance penalties so use it sparingly.
-     */
-    public pointerOverDisableMeshTesting: boolean = false;
-
     private _updatePointerPosition(evt: IPointerEvent): void {
         const canvasRect = this._scene.getEngine().getInputElementClientRect();
 
@@ -957,7 +951,7 @@ export class InputManager {
      * @param pickResult - optional pickingInfo data used to find mesh
      */
     public setPointerOverMesh(mesh: Nullable<AbstractMesh>, pointerId: number = 0, pickResult?: Nullable<PickingInfo>): void {
-        if (this._meshUnderPointerId[pointerId] === mesh && !this.pointerOverDisableMeshTesting) {
+        if (this._meshUnderPointerId[pointerId] === mesh && (!mesh || !mesh._internalAbstractMeshDataInfo._pointerOverDisableMeshTesting)) {
             return;
         }
 
