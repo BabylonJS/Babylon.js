@@ -2189,7 +2189,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         const renderingMesh = subMesh.getRenderingMesh();
-        const hardwareInstancedRendering = batch.hardwareInstancedRendering[subMesh._id] || renderingMesh.hasThinInstances || (!!this._userInstancedBuffersStorage && !subMesh.getMesh()._internalAbstractMeshDataInfo._actAsRegularMesh);
+        const hardwareInstancedRendering =
+            batch.hardwareInstancedRendering[subMesh._id] ||
+            renderingMesh.hasThinInstances ||
+            (!!this._userInstancedBuffersStorage && !subMesh.getMesh()._internalAbstractMeshDataInfo._actAsRegularMesh);
         const instanceDataStorage = this._instanceDataStorage;
 
         const material = subMesh.getMaterial();
