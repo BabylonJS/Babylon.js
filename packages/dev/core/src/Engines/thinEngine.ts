@@ -2704,11 +2704,10 @@ export class ThinEngine {
     public _releaseEffect(effect: Effect): void {
         if (this._compiledEffects[effect._key]) {
             delete this._compiledEffects[effect._key];
-
-            const pipelineContext = effect.getPipelineContext();
-            if (pipelineContext) {
-                this._deletePipelineContext(pipelineContext);
-            }
+        }
+        const pipelineContext = effect.getPipelineContext();
+        if (pipelineContext) {
+            this._deletePipelineContext(pipelineContext);
         }
     }
 
