@@ -220,19 +220,16 @@ export class DigitalRainPostProcess extends PostProcess {
      * @param camera
      * @param options can either be the font name or an option object following the IDigitalRainPostProcessOptions format
      */
-    constructor(name: string, camera: Camera, options?: string | IDigitalRainPostProcessOptions) {
+    constructor(name: string, camera: Nullable<Camera>, options?: string | IDigitalRainPostProcessOptions) {
         super(
             name,
             "digitalrain",
             ["digitalRainFontInfos", "digitalRainOptions", "cosTimeZeroOne", "matrixSpeed"],
             ["digitalRainFont"],
-            {
-                width: camera.getEngine().getRenderWidth(),
-                height: camera.getEngine().getRenderHeight(),
-            },
+            1.0,
             camera,
             Texture.TRILINEAR_SAMPLINGMODE,
-            camera.getEngine(),
+            undefined,
             true
         );
 
@@ -252,7 +249,8 @@ export class DigitalRainPostProcess extends PostProcess {
             }
         }
 
-        this._digitalRainFontTexture = new DigitalRainFontTexture(name, font, characterSet, camera.getScene());
+        const scene = camera?.getScene() || null;
+        this._digitalRainFontTexture = new DigitalRainFontTexture(name, font, characterSet, scene);
         const textureSize = this._digitalRainFontTexture.getSize();
 
         let alpha = 0.0;
