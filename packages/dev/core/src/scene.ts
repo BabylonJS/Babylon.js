@@ -5047,6 +5047,19 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return this._inputManager.getPointerOverMesh();
     }
 
+    /**
+     * Gets or sets the property which disables the test that is checking that the mesh under the pointer is the same than the previous time we tested for it (default: false).
+     * Set this property to true if you want thin instances picking to be reported accurately when moving over a mesh.
+     * Note that setting this property to true will incur some performance penalties so use it sparingly.
+     */
+    public get pointerOverDisableMeshTesting() {
+        return this._inputManager.pointerOverDisableMeshTesting;
+    }
+
+    public set pointerOverDisableMeshTesting(disable: boolean) {
+        this._inputManager.pointerOverDisableMeshTesting = disable;
+    }
+
     // Misc.
     /** @internal */
     public _rebuildGeometries(): void {
