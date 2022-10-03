@@ -260,6 +260,25 @@ export class Tools {
     }
 
     /**
+     * Smooth angle changes (kind of low-pass filter), in particular for device orientation "shaking"
+     * Use trigonometric functions to avoid discontinuity (0/360, -180/180)
+     * @param previousAngle defines last angle value, in degrees
+     * @param newAngle defines new angle value, in degrees
+     * @param smoothFactor defines smoothing sensitivity; min 0: no smoothing, max 1: new data ignored
+     * @returns the angle in degrees
+     */
+    public static SmoothAngleChange(previousAngle: number, newAngle: number, smoothFactor = 0.9): number {
+        const previousAngleRad = this.ToRadians(previousAngle);
+        const newAngleRad = this.ToRadians(newAngle);
+        return this.ToDegrees(
+            Math.atan2(
+                (1 - smoothFactor) * Math.sin(newAngleRad) + smoothFactor * Math.sin(previousAngleRad),
+                (1 - smoothFactor) * Math.cos(newAngleRad) + smoothFactor * Math.cos(previousAngleRad)
+            )
+        );
+    }
+
+    /**
      * Returns an array if obj is not an array
      * @param obj defines the object to evaluate as an array
      * @param allowsNullUndefined defines a boolean indicating if obj is allowed to be null or undefined
@@ -528,7 +547,7 @@ export class Tools {
      */
     public static FileAsURL(content: string): string {
         const fileBlob = new Blob([content]);
-        const url = window.URL || window.webkitURL;
+        const url = window.URL;
         const link: string = url.createObjectURL(fileBlob);
         return link;
     }
@@ -863,11 +882,6 @@ export class Tools {
      * @param fileName defines the name of the downloaded file
      */
     public static Download(blob: Blob, fileName: string): void {
-        if (navigator && (navigator as any).msSaveBlob) {
-            (navigator as any).msSaveBlob(blob, fileName);
-            return;
-        }
-
         if (typeof URL === "undefined") {
             return;
         }

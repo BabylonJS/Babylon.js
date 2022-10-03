@@ -357,8 +357,9 @@ ThinEngine.prototype.createCubeTextureBase = function (
         rootUrl = this._transformTextureUrl(rootUrl);
     }
 
-    const lastDot = rootUrl.lastIndexOf(".");
-    const extension = forcedExtension ? forcedExtension : lastDot > -1 ? rootUrl.substring(lastDot).toLowerCase() : "";
+    const rootUrlWithoutUriParams = rootUrl.split("?")[0];
+    const lastDot = rootUrlWithoutUriParams.lastIndexOf(".");
+    const extension = forcedExtension ? forcedExtension : lastDot > -1 ? rootUrlWithoutUriParams.substring(lastDot).toLowerCase() : "";
 
     let loader: Nullable<IInternalTextureLoader> = null;
     for (const availableLoader of ThinEngine._TextureLoaders) {

@@ -6,6 +6,8 @@ import type { IInspectableOptions } from "core/Misc/iInspectable";
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const Null_Value = Number.MAX_SAFE_INTEGER;
 
+const DEFAULT_FALLBACK_VALUE = -1;
+
 export interface IOptionsLineComponentProps {
     label: string;
     target: any;
@@ -26,6 +28,7 @@ export interface IOptionsLineComponentProps {
     defaultIfNull?: number;
     fromFontDropdown?: boolean;
     valueProp?: number;
+    fallbackValue?: number;
 }
 
 export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, { value: number | string; addCustom: boolean }> {
@@ -46,6 +49,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
     }
 
     constructor(props: IOptionsLineComponentProps) {
+        // Initialize default props
         super(props);
 
         this.state = { value: this._remapValueIn(this._getValue(props)), addCustom: false };
@@ -144,6 +148,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
     }
 
     render() {
+        const fallback = this.props.fallbackValue !== undefined ? this.props.fallbackValue : DEFAULT_FALLBACK_VALUE;
         return (
             <div className={`listLine ${this.props.className ?? ""}`}>
                 {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} color="black" className="icon" />}
@@ -173,7 +178,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
                     ) : (
                         <select
                             onChange={(evt) => this.updateValue(evt.target.value)}
-                            value={this.state.value === -1 || this.state.value === null || this.state.value === undefined ? 1 : this.state.value}
+                            value={this.state.value === null || this.state.value === undefined ? fallback : this.state.value}
                         >
                             {this.props.options.map((option, i) => {
                                 return (

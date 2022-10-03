@@ -19,6 +19,7 @@ const _ExtractAsInt = (value: number) => {
 
 /**
  * Class representing a vector containing 2 coordinates
+ * Example Playground - Overview -  https://playground.babylonjs.com/#QYBWV4#9
  */
 export class Vector2 {
     private static _ZeroReadOnly = Vector2.Zero() as DeepImmutable<Vector2>;
@@ -67,6 +68,7 @@ export class Vector2 {
 
     /**
      * Sets the Vector2 coordinates in the given array or Float32Array from the given index.
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#15
      * @param array defines the source array
      * @param index defines the offset in source array
      * @returns the current Vector2
@@ -79,6 +81,7 @@ export class Vector2 {
 
     /**
      * Update the current vector from an array
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#39
      * @param array defines the destination array
      * @param index defines the offset in the destination array
      * @returns the current Vector3
@@ -90,6 +93,7 @@ export class Vector2 {
 
     /**
      * Copy the current vector to an array
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#40
      * @returns a new array with 2 elements: the Vector2 coordinates.
      */
     public asArray(): number[] {
@@ -100,6 +104,7 @@ export class Vector2 {
 
     /**
      * Sets the Vector2 coordinates with the given Vector2 coordinates
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#24
      * @param source defines the source Vector2
      * @returns the current updated Vector2
      */
@@ -111,6 +116,7 @@ export class Vector2 {
 
     /**
      * Sets the Vector2 coordinates with the given floats
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#25
      * @param x defines the first coordinate
      * @param y defines the second coordinate
      * @returns the current updated Vector2
@@ -123,6 +129,7 @@ export class Vector2 {
 
     /**
      * Sets the Vector2 coordinates with the given floats
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#62
      * @param x defines the first coordinate
      * @param y defines the second coordinate
      * @returns the current updated Vector2
@@ -132,6 +139,7 @@ export class Vector2 {
     }
     /**
      * Add another vector with the current one
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#11
      * @param otherVector defines the other vector
      * @returns a new Vector2 set with the addition of the current Vector2 and the given one coordinates
      */
@@ -141,6 +149,7 @@ export class Vector2 {
 
     /**
      * Sets the "result" coordinates with the addition of the current Vector2 and the given one coordinates
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#12
      * @param otherVector defines the other vector
      * @param result defines the target vector
      * @returns the unmodified current Vector2
@@ -153,6 +162,7 @@ export class Vector2 {
 
     /**
      * Set the Vector2 coordinates by adding the given Vector2 coordinates
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#13
      * @param otherVector defines the other vector
      * @returns the current updated Vector2
      */
@@ -164,6 +174,7 @@ export class Vector2 {
 
     /**
      * Gets a new Vector2 by adding the current Vector2 coordinates to the given Vector3 x, y coordinates
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#14
      * @param otherVector defines the other vector
      * @returns a new Vector2
      */
@@ -173,6 +184,7 @@ export class Vector2 {
 
     /**
      * Gets a new Vector2 set with the subtracted coordinates of the given one from the current Vector2
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#61
      * @param otherVector defines the other vector
      * @returns a new Vector2
      */
@@ -182,6 +194,7 @@ export class Vector2 {
 
     /**
      * Sets the "result" coordinates with the subtraction of the given one from the current Vector2 coordinates.
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#63
      * @param otherVector defines the other vector
      * @param result defines the target vector
      * @returns the unmodified current Vector2
@@ -193,6 +206,7 @@ export class Vector2 {
     }
     /**
      * Sets the current Vector2 coordinates by subtracting from it the given one coordinates
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#88
      * @param otherVector defines the other vector
      * @returns the current updated Vector2
      */
@@ -204,6 +218,7 @@ export class Vector2 {
 
     /**
      * Multiplies in place the current Vector2 coordinates by the given ones
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#43
      * @param otherVector defines the other vector
      * @returns the current updated Vector2
      */
@@ -215,6 +230,7 @@ export class Vector2 {
 
     /**
      * Returns a new Vector2 set with the multiplication of the current Vector2 and the given one coordinates
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#42
      * @param otherVector defines the other vector
      * @returns a new Vector2
      */
@@ -224,6 +240,7 @@ export class Vector2 {
 
     /**
      * Sets "result" coordinates with the multiplication of the current Vector2 and the given one coordinates
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#44
      * @param otherVector defines the other vector
      * @param result defines the target vector
      * @returns the unmodified current Vector2
@@ -236,6 +253,7 @@ export class Vector2 {
 
     /**
      * Gets a new Vector2 set with the Vector2 coordinates multiplied by the given floats
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#89
      * @param x defines the first coordinate
      * @param y defines the second coordinate
      * @returns a new Vector2
@@ -246,6 +264,7 @@ export class Vector2 {
 
     /**
      * Returns a new Vector2 set with the Vector2 coordinates divided by the given one coordinates
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#27
      * @param otherVector defines the other vector
      * @returns a new Vector2
      */
@@ -255,6 +274,7 @@ export class Vector2 {
 
     /**
      * Sets the "result" coordinates with the Vector2 divided by the given one coordinates
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#30
      * @param otherVector defines the other vector
      * @param result defines the target vector
      * @returns the unmodified current Vector2
@@ -267,6 +287,7 @@ export class Vector2 {
 
     /**
      * Divides the current Vector2 coordinates by the given ones
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#28
      * @param otherVector defines the other vector
      * @returns the current updated Vector2
      */
@@ -276,6 +297,7 @@ export class Vector2 {
 
     /**
      * Gets a new Vector2 with current Vector2 negated coordinates
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#22
      * @returns a new Vector2
      */
     public negate(): Vector2 {
@@ -284,6 +306,7 @@ export class Vector2 {
 
     /**
      * Negate this vector in place
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#23
      * @returns this
      */
     public negateInPlace(): Vector2 {
@@ -294,15 +317,17 @@ export class Vector2 {
 
     /**
      * Negate the current Vector2 and stores the result in the given vector "result" coordinates
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#41
      * @param result defines the Vector3 object where to store the result
-     * @returns the current Vector2
+     * @returns the result
      */
     public negateToRef(result: Vector2): Vector2 {
         return result.copyFromFloats(this.x * -1, this.y * -1);
     }
 
     /**
-     * Multiply the Vector2 coordinates by scale
+     * Multiply the Vector2 coordinates by
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#59
      * @param scale defines the scaling factor
      * @returns the current updated Vector2
      */
@@ -314,6 +339,7 @@ export class Vector2 {
 
     /**
      * Returns a new Vector2 scaled by "scale" from the current Vector2
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#52
      * @param scale defines the scaling factor
      * @returns a new Vector2
      */
@@ -325,6 +351,7 @@ export class Vector2 {
 
     /**
      * Scale the current Vector2 values by a factor to a given Vector2
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#57
      * @param scale defines the scale factor
      * @param result defines the Vector2 object where to store the result
      * @returns the unmodified current Vector2
@@ -337,6 +364,7 @@ export class Vector2 {
 
     /**
      * Scale the current Vector2 values by a factor and add the result to a given Vector2
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#58
      * @param scale defines the scale factor
      * @param result defines the Vector2 object where to store the result
      * @returns the unmodified current Vector2
@@ -349,6 +377,7 @@ export class Vector2 {
 
     /**
      * Gets a boolean if two vectors are equals
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#31
      * @param otherVector defines the other vector
      * @returns true if the given vector coordinates strictly equal the current Vector2 ones
      */
@@ -358,6 +387,7 @@ export class Vector2 {
 
     /**
      * Gets a boolean if two vectors are equals (using an epsilon value)
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#32
      * @param otherVector defines the other vector
      * @param epsilon defines the minimal distance to consider equality
      * @returns true if the given vector coordinates are close to the current ones by a distance of epsilon.
@@ -368,6 +398,7 @@ export class Vector2 {
 
     /**
      * Gets a new Vector2 from current Vector2 floored values
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#35
      * eg (1.2, 2.31) returns (1, 2)
      * @returns a new Vector2
      */
@@ -377,6 +408,7 @@ export class Vector2 {
 
     /**
      * Gets a new Vector2 from current Vector2 fractional values
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#34
      * eg (1.2, 2.31) returns (0.2, 0.31)
      * @returns a new Vector2
      */
@@ -386,6 +418,7 @@ export class Vector2 {
 
     /**
      * Rotate the current vector into a given result vector
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#49
      * @param angle defines the rotation angle
      * @param result defines the result vector where to store the rotated vector
      * @returns the current vector
@@ -421,6 +454,7 @@ export class Vector2 {
 
     /**
      * Normalize the vector
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#48
      * @returns the current updated Vector2
      */
     public normalize(): Vector2 {
@@ -430,6 +464,7 @@ export class Vector2 {
 
     /**
      * Gets a new Vector2 copied from the Vector2
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#20
      * @returns a new Vector2
      */
     public clone(): Vector2 {
@@ -463,6 +498,7 @@ export class Vector2 {
 
     /**
      * Gets a new Vector2 set from the given index element of the given array
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#79
      * @param array defines the data source
      * @param offset defines the offset in the data source
      * @returns a new Vector2
@@ -473,6 +509,7 @@ export class Vector2 {
 
     /**
      * Sets "result" from the given index element of the given array
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#80
      * @param array defines the data source
      * @param offset defines the offset in the data source
      * @param result defines the target vector
@@ -484,6 +521,7 @@ export class Vector2 {
 
     /**
      * Gets a new Vector2 located for "amount" (float) on the CatmullRom spline defined by the given four Vector2
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#65
      * @param value1 defines 1st point of control
      * @param value2 defines 2nd point of control
      * @param value3 defines 3rd point of control
@@ -522,6 +560,7 @@ export class Vector2 {
      * Returns a new Vector2 set with same the coordinates than "value" ones if the vector "value" is in the square defined by "min" and "max".
      * If a coordinate of "value" is lower than "min" coordinates, the returned Vector2 is given this "min" coordinate.
      * If a coordinate of "value" is greater than "max" coordinates, the returned Vector2 is given this "max" coordinate
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#76
      * @param value defines the value to clamp
      * @param min defines the lower limit
      * @param max defines the upper limit
@@ -541,6 +580,7 @@ export class Vector2 {
 
     /**
      * Returns a new Vector2 located for "amount" (float) on the Hermite spline defined by the vectors "value1", "value2", "tangent1", "tangent2"
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#81
      * @param value1 defines the 1st control point
      * @param tangent1 defines the outgoing tangent
      * @param value2 defines the 2nd control point
@@ -570,6 +610,7 @@ export class Vector2 {
 
     /**
      * Returns a new Vector2 which is the 1st derivative of the Hermite spline defined by the vectors "value1", "value2", "tangent1", "tangent2".
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#82
      * @param value1 defines the first control point
      * @param tangent1 defines the first tangent
      * @param value2 defines the second control point
@@ -593,6 +634,7 @@ export class Vector2 {
 
     /**
      * Returns a new Vector2 which is the 1st derivative of the Hermite spline defined by the vectors "value1", "value2", "tangent1", "tangent2".
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#83
      * @param value1 defines the first control point
      * @param tangent1 defines the first tangent
      * @param value2 defines the second control point
@@ -616,6 +658,7 @@ export class Vector2 {
 
     /**
      * Returns a new Vector2 located for "amount" (float) on the linear interpolation between the vector "start" adn the vector "end".
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#84
      * @param start defines the start vector
      * @param end defines the end vector
      * @param amount defines the interpolation factor
@@ -629,6 +672,7 @@ export class Vector2 {
 
     /**
      * Gets the dot product of the vector "left" and the vector "right"
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#90
      * @param left defines first vector
      * @param right defines second vector
      * @returns the dot product (float)
@@ -639,6 +683,7 @@ export class Vector2 {
 
     /**
      * Returns a new Vector2 equal to the normalized given vector
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#46
      * @param vector defines the vector to normalize
      * @returns a new Vector2
      */
@@ -650,6 +695,7 @@ export class Vector2 {
 
     /**
      * Normalize a given vector into a second one
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#50
      * @param vector defines the vector to normalize
      * @param result defines the vector where to store the result
      */
@@ -666,6 +712,7 @@ export class Vector2 {
 
     /**
      * Gets a new Vector2 set with the minimal coordinate values from the "left" and "right" vectors
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#86
      * @param left defines 1st vector
      * @param right defines 2nd vector
      * @returns a new Vector2
@@ -678,6 +725,7 @@ export class Vector2 {
 
     /**
      * Gets a new Vector2 set with the maximal coordinate values from the "left" and "right" vectors
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#86
      * @param left defines 1st vector
      * @param right defines 2nd vector
      * @returns a new Vector2
@@ -690,6 +738,7 @@ export class Vector2 {
 
     /**
      * Gets a new Vector2 set with the transformed coordinates of the given vector by the given transformation matrix
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#17
      * @param vector defines the vector to transform
      * @param transformation defines the matrix to apply
      * @returns a new Vector2
@@ -702,6 +751,7 @@ export class Vector2 {
 
     /**
      * Transforms the given vector coordinates by the given transformation matrix and stores the result in the vector "result" coordinates
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#19
      * @param vector defines the vector to transform
      * @param transformation defines the matrix to apply
      * @param result defines the target vector
@@ -716,6 +766,7 @@ export class Vector2 {
 
     /**
      * Determines if a given vector is included in a triangle
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#87
      * @param p defines the vector to test
      * @param p0 defines 1st triangle point
      * @param p1 defines 2nd triangle point
@@ -733,6 +784,7 @@ export class Vector2 {
 
     /**
      * Gets the distance between the vectors "value1" and "value2"
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#71
      * @param value1 defines first vector
      * @param value2 defines second vector
      * @returns the distance between vectors
@@ -743,6 +795,7 @@ export class Vector2 {
 
     /**
      * Returns the squared distance between the vectors "value1" and "value2"
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#72
      * @param value1 defines first vector
      * @param value2 defines second vector
      * @returns the squared distance between vectors
@@ -755,6 +808,8 @@ export class Vector2 {
 
     /**
      * Gets a new Vector2 located at the center of the vectors "value1" and "value2"
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#86
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#66
      * @param value1 defines first vector
      * @param value2 defines second vector
      * @returns a new Vector2
@@ -765,6 +820,7 @@ export class Vector2 {
 
     /**
      * Gets the center of the vectors "value1" and "value2" and stores the result in the vector "ref"
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#66
      * @param value1 defines first vector
      * @param value2 defines second vector
      * @param ref defines third vector
@@ -776,6 +832,7 @@ export class Vector2 {
 
     /**
      * Gets the shortest distance (float) between the point "p" and the segment defined by the two points "segA" and "segB".
+     * Example Playground https://playground.babylonjs.com/#QYBWV4#77
      * @param p defines the middle point
      * @param segA defines one point of the segment
      * @param segB defines the other point of the segment
@@ -983,7 +1040,7 @@ export class Vector3 {
      * Example Playground https://playground.babylonjs.com/#R1F8YU#6
      * @param otherVector defines the second operand
      * @param result defines the Vector3 object where to store the result
-     * @returns the current Vector3
+     * @returns the result
      */
     public addToRef(otherVector: DeepImmutable<Vector3>, result: Vector3): Vector3 {
         return result.copyFromFloats(this._x + otherVector._x, this._y + otherVector._y, this._z + otherVector._z);
@@ -1017,7 +1074,7 @@ export class Vector3 {
      * Example Playground https://playground.babylonjs.com/#R1F8YU#63
      * @param otherVector defines the second operand
      * @param result defines the Vector3 object where to store the result
-     * @returns the current Vector3
+     * @returns the result
      */
     public subtractToRef(otherVector: DeepImmutable<Vector3>, result: Vector3): Vector3 {
         return this.subtractFromFloatsToRef(otherVector._x, otherVector._y, otherVector._z, result);
@@ -1042,7 +1099,7 @@ export class Vector3 {
      * @param y defines the y coordinate of the operand
      * @param z defines the z coordinate of the operand
      * @param result defines the Vector3 object where to store the result
-     * @returns the current Vector3
+     * @returns the result
      */
     public subtractFromFloatsToRef(x: number, y: number, z: number, result: Vector3): Vector3 {
         return result.copyFromFloats(this._x - x, this._y - y, this._z - z);
@@ -1073,7 +1130,7 @@ export class Vector3 {
      * Negate the current Vector3 and stores the result in the given vector "result" coordinates
      * Example Playground https://playground.babylonjs.com/#R1F8YU#37
      * @param result defines the Vector3 object where to store the result
-     * @returns the current Vector3
+     * @returns the result
      */
     public negateToRef(result: Vector3): Vector3 {
         return result.copyFromFloats(this._x * -1, this._y * -1, this._z * -1);
@@ -1107,10 +1164,38 @@ export class Vector3 {
      * Example Playground https://playground.babylonjs.com/#R1F8YU#57
      * @param scale defines the multiplier factor
      * @param result defines the Vector3 object where to store the result
-     * @returns the current Vector3
+     * @returns the result
      */
     public scaleToRef(scale: number, result: Vector3): Vector3 {
         return result.copyFromFloats(this._x * scale, this._y * scale, this._z * scale);
+    }
+
+    /**
+     * Creates a vector normal (perpendicular) to the current Vector3 and stores the result in the given vector
+     * @param result defines the Vector3 object where to store the resultant normal
+     * returns the result
+     * @hidden
+     */
+    public _getNormalToRef(result: DeepImmutable<Vector3>): Vector3 {
+        /**
+         * Calculates the spherical coordinates of the current vector
+         * so saves on memory rather than importing whole Spherical Class
+         */
+        const radius: number = this.length();
+        let theta: number = Math.acos(this.y / radius);
+        const phi = Math.atan2(this.z, this.x);
+        //makes angle 90 degs to current vector
+        if (theta > Math.PI / 2) {
+            theta -= Math.PI / 2;
+        } else {
+            theta += Math.PI / 2;
+        }
+        //Calculates resutant normal vector from spherical coordinate of perpendicular vector
+        const x = radius * Math.sin(theta) * Math.cos(phi);
+        const y = radius * Math.cos(theta);
+        const z = radius * Math.sin(theta) * Math.sin(phi);
+        result.set(x, y, z);
+        return result;
     }
 
     /**
@@ -1118,7 +1203,7 @@ export class Vector3 {
      * Example Playground https://playground.babylonjs.com/#R1F8YU#9
      * @param q the unit quaternion representing the rotation
      * @param result the output vector
-     * @returns the current Vector3
+     * @returns the result
      */
     public applyRotationQuaternionToRef(q: Quaternion, result: Vector3): Vector3 {
         const ix = q.w * this.x + q.y * this.z - q.z * this.y;
@@ -1277,7 +1362,7 @@ export class Vector3 {
      * Example Playground https://playground.babylonjs.com/#R1F8YU#33
      * @param otherVector defines the second operand
      * @param result defines the Vector3 object where to store the result
-     * @returns the current Vector3
+     * @returns the result
      */
     public multiplyToRef(otherVector: DeepImmutable<Vector3>, result: Vector3): Vector3 {
         return result.copyFromFloats(this._x * otherVector._x, this._y * otherVector._y, this._z * otherVector._z);
@@ -1310,7 +1395,7 @@ export class Vector3 {
      * Example Playground https://playground.babylonjs.com/#R1F8YU#18
      * @param otherVector defines the second operand
      * @param result defines the Vector3 object where to store the result
-     * @returns the current Vector3
+     * @returns the result
      */
     public divideToRef(otherVector: DeepImmutable<Vector3>, result: Vector3): Vector3 {
         return result.copyFromFloats(this._x / otherVector._x, this._y / otherVector._y, this._z / otherVector._z);
@@ -1714,6 +1799,35 @@ export class Vector3 {
         const angle = Math.atan2(Vector3.Dot(v1, right), Vector3.Dot(v1, forward));
 
         return Scalar.NormalizeRadians(angle);
+    }
+
+    /**
+     * Gets the rotation that aligns the roll axis (Y) to the line joining the start point to the target point and stores it in the ref Vector3
+     * Example PG https://playground.babylonjs.com/#R1F8YU#189
+     * @param start the starting point
+     * @param target the target point
+     * @param ref the vector3 to store the result
+     * @returns ref in the form (pitch, yaw, 0)
+     */
+    public static PitchYawRollToMoveBetweenPointsToRef(start: Vector3, target: Vector3, ref: Vector3): Vector3 {
+        const diff = TmpVectors.Vector3[0];
+        target.subtractToRef(start, diff);
+        ref.y = Math.atan2(diff.x, diff.z) || 0;
+        ref.x = Math.atan2(Math.sqrt(diff.x ** 2 + diff.z ** 2), diff.y) || 0;
+        ref.z = 0;
+        return ref;
+    }
+
+    /**
+     * Gets the rotation that aligns the roll axis (Y) to the line joining the start point to the target point
+     * Example PG https://playground.babylonjs.com/#R1F8YU#188
+     * @param start the starting point
+     * @param target the target point
+     * @returns the rotation in the form (pitch, yaw, 0)
+     */
+    public static PitchYawRollToMoveBetweenPoints(start: Vector3, target: Vector3): Vector3 {
+        const ref = Vector3.Zero();
+        return Vector3.PitchYawRollToMoveBetweenPointsToRef(start, target, ref);
     }
 
     /**
@@ -2960,7 +3074,7 @@ export class Vector4 {
     /**
      * Negate the current Vector4 and stores the result in the given vector "result" coordinates
      * @param result defines the Vector3 object where to store the result
-     * @returns the current Vector4
+     * @returns the result
      */
     public negateToRef(result: Vector4): Vector4 {
         return result.copyFromFloats(this.x * -1, this.y * -1, this.z * -1, this.w * -1);
@@ -4108,6 +4222,36 @@ export class Quaternion {
             result.y = (m23 + m32) / s;
             result.z = 0.25 * s;
         }
+    }
+
+    /**
+     * Creates the rotation quaternion needed to rotate from one Vector3 onto another Vector3
+     * Example PG https://playground.babylonjs.com/#L49EJ7#2
+     * @param fromVector the starting vector
+     * @param toVector the ending vector
+     * @returns the rotation quaternion needed
+     */
+    public static RotationQuaternionFromOnto(fromVector: DeepImmutable<Vector3>, toVector: DeepImmutable<Vector3>) {
+        const ref: Quaternion = Quaternion.Zero();
+        return Quaternion.RotationQuaternionFromOntoToRef(fromVector, toVector, ref);
+    }
+
+    /**
+     * Creates the rotation quaternion needed to rotate from one Vector3 onto another Vector3 and stores in a result Quaternion
+     * Example PG https://playground.babylonjs.com/#L49EJ7#3
+     * @param fromVector the starting vector
+     * @param toVector the ending vector
+     * @param result the rotation quaternion needed
+     * @returns the result
+     */
+    public static RotationQuaternionFromOntoToRef(fromVector: DeepImmutable<Vector3>, toVector: DeepImmutable<Vector3>, result: DeepImmutable<Quaternion>) {
+        const normal: Vector3 = TmpVectors.Vector3[0];
+        Vector3.CrossToRef(fromVector, toVector, normal);
+        if (normal.equals(Vector3.ZeroReadOnly)) {
+            fromVector._getNormalToRef(normal);
+        }
+        const angle = Vector3.GetAngleBetweenVectors(fromVector, toVector, normal);
+        return Quaternion.RotationAxisToRef(normal, angle, result);
     }
 
     /**

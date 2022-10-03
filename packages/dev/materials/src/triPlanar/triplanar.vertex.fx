@@ -42,7 +42,7 @@ varying vec3 vPositionW;
 varying mat3 tangentSpace;
 #endif
 
-#if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR)
+#if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR) && defined(INSTANCES)
 varying vec4 vColor;
 #endif
 

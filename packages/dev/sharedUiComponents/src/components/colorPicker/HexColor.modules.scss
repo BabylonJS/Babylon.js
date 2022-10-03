@@ -1,0 +1,29 @@
+.colorPickerHex {
+    grid-row: 4;
+    grid-column: 1;
+    display: grid;
+    grid-template-columns: 20% 80%;
+    grid-template-rows: 100%;
+}
+
+.colorPickerHexLabel {
+    justify-self: center;
+    align-self: center;
+    grid-row: 1;
+    grid-column: 1;
+    margin-left: 10px;
+    color: black;
+}
+
+.colorPickerHexValue {
+    justify-self: left;
+    align-self: center;
+    grid-row: 1;
+    grid-column: 2;
+    margin-left: 10px;
+    margin-right: 10px;
+
+    input {
+        width: 70px;
+    }
+}

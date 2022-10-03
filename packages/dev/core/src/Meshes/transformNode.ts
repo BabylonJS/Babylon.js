@@ -1105,12 +1105,13 @@ export class TransformNode extends Node {
                 // Extract scaling and translation from parent
                 const translation = TmpVectors.Vector3[5];
                 const scale = TmpVectors.Vector3[6];
-                TmpVectors.Matrix[7].decompose(scale, undefined, translation);
+                const orientation = TmpVectors.Quaternion[0];
+                TmpVectors.Matrix[7].decompose(scale, orientation, translation);
                 Matrix.ScalingToRef(scale.x, scale.y, scale.z, TmpVectors.Matrix[7]);
                 TmpVectors.Matrix[7].setTranslation(translation);
 
-                // set localMatrix translation to be transformed against parent's world matrix.
-                Vector3.TransformNormalToRef(this._position, parent.getWorldMatrix(), translation);
+                // set localMatrix translation to be transformed against parent's orientation.
+                this._position.applyRotationQuaternionToRef(orientation, translation);
                 this._localMatrix.setTranslation(translation);
 
                 this._localMatrix.multiplyToRef(TmpVectors.Matrix[7], this._worldMatrix);
