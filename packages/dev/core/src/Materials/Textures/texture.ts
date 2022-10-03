@@ -292,7 +292,6 @@ export class Texture extends BaseTexture {
     private _cachedVRotationCenter: number = -1;
     private _cachedWRotationCenter: number = -1;
     private _cachedHomogeneousRotationInUVTransform: boolean = false;
-    private _cachedCoordinatesMode: number = -1;
 
     private _cachedReflectionTextureMatrix: Nullable<Matrix> = null;
     private _cachedReflectionUOffset = -1;
