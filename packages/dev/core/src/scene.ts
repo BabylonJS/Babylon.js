@@ -1526,9 +1526,18 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public _afterCameraDrawStage = Stage.Create<CameraStageAction>();
     /**
      * @internal
+     * Defines the actions happening just after the post processing
+     */
+    public _afterCameraPostProcessStage = Stage.Create<CameraStageAction>();
+    /**
+     * @internal
      * Defines the actions happening just after a render target has been drawn.
      */
     public _afterRenderTargetDrawStage = Stage.Create<RenderTargetStageAction>();
+    /**
+     * Defines the actions happening just after the post processing on a render target
+     */
+    public _afterRenderTargetPostProcessStage = Stage.Create<RenderTargetStageAction>();
     /**
      * @internal
      * Defines the actions happening just after rendering all cameras and computing intersections.
@@ -4222,6 +4231,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             // if the camera has an output render target, render the post process to the render target
             const texture = camera.outputRenderTarget ? camera.outputRenderTarget.renderTarget! : undefined;
             this.postProcessManager._finalizeFrame(camera.isIntermediate, texture);
+        }
+
+        // After post process
+        for (const step of this._afterCameraPostProcessStage) {
+            step.action(this.activeCamera);
         }
 
         // Reset some special arrays

@@ -1833,15 +1833,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      */
     public _renderWithInstances(subMesh: SubMesh, fillMode: number, batch: _InstancesBatch, effect: Effect, engine: Engine): Mesh {
         const visibleInstances = batch.visibleInstances[subMesh._id];
-        if (!visibleInstances) {
-            return this;
-        }
+        const visibleInstanceCount = visibleInstances ? visibleInstances.length : 0;
 
         const instanceStorage = this._instanceDataStorage;
         const currentInstancesBufferSize = instanceStorage.instancesBufferSize;
         let instancesBuffer = instanceStorage.instancesBuffer;
         let instancesPreviousBuffer = instanceStorage.instancesPreviousBuffer;
-        const matricesCount = visibleInstances.length + 1;
+        const matricesCount = visibleInstanceCount + 1;
         const bufferSize = matricesCount * 16 * 4;
 
         while (instanceStorage.instancesBufferSize < bufferSize) {
@@ -1913,7 +1911,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 }
             }
         } else {
-            instancesCount = (renderSelf ? 1 : 0) + visibleInstances.length;
+            instancesCount = (renderSelf ? 1 : 0) + visibleInstanceCount;
         }
 
         if (needUpdateBuffer) {
@@ -2024,7 +2022,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @internal
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public _processInstancedBuffers(visibleInstances: InstancedMesh[], renderSelf: boolean) {
+    public _processInstancedBuffers(visibleInstances: Nullable<InstancedMesh[]>, renderSelf: boolean) {
         // Do nothing
     }
 
@@ -2190,7 +2188,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this._internalMeshDataInfo._onBeforeRenderObservable.notifyObservers(this);
         }
 
-        const hardwareInstancedRendering = batch.hardwareInstancedRendering[subMesh._id] || subMesh.getRenderingMesh().hasThinInstances;
+        const hardwareInstancedRendering = batch.hardwareInstancedRendering[subMesh._id] || subMesh.getRenderingMesh().hasThinInstances || !!this._userInstancedBuffersStorage;
         const instanceDataStorage = this._instanceDataStorage;
 
         const material = subMesh.getMaterial();

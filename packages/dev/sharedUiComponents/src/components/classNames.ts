@@ -7,3 +7,13 @@ export function ClassNames(names: any, styleObject: any) {
     }
     return string;
 }
+
+export function JoinClassNames(styleObject: any, ...names: string[]) {
+    let string = "";
+    for (const name of names) {
+        if (name && styleObject[name]) {
+            string += styleObject[name] + " ";
+        }
+    }
+    return string;
+}

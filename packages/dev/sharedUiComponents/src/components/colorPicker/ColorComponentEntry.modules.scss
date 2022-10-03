@@ -1,0 +1,26 @@
+.colorPickerComponent {
+    display: grid;
+    margin: 5px;
+    grid-template-columns: 100%;
+    grid-template-rows: 50% 50%;
+}
+
+.colorPickerComponentValue {
+    justify-self: center;
+    align-self: center;
+    grid-row: 1;
+    grid-column: 1;
+    margin-bottom: 4px;
+
+    input {
+        width: 50px;
+    }
+}
+
+.colorPickerComponentLabel {
+    justify-self: center;
+    align-self: center;
+    grid-row: 2;
+    grid-column: 1;
+    color: black;
+}
