@@ -1,36 +1,39 @@
-import { FC, ReactElement,useState } from "react";
+import { FC, ReactElement } from "react";
 import { ClassNames } from "../classNames";
+import { DRAGCLASS } from "./FlexibleGridLayout";
 import style from "./FlexibleTabsContainer.modules.scss";
+
+import dragIcon from "../../imgs/cellIDIcon.svg";
 
 export interface IFlexibleTabsContainerProps {
     tabs: ReactElement[];
+    selectedTab?: number;
 }
 
 export const FlexibleTabsContainer: FC<IFlexibleTabsContainerProps> = (props) => {
-    const [selectedTab, setSelectedTab] = useState(0);
-    const {tabs} = props;
+    const { tabs, selectedTab = 0 } = props;
 
-    const selectTab = (index: number) => {
-        console.log(`selectTab(${index})`);
-        setSelectedTab(index);
-    };
-    
     return (
         <div className={style.rootContainer}>
-            <div className={style.tabsContainer}>
-                {tabs.map((tab, index) => {
-                    let tabTitle;
-                    if (tab.props.title) {
-                        tabTitle = tab.props.title;
-                    } else {
-                        tabTitle = "Test Tab";
-                    }
-                    return <div key={tabTitle} className={ClassNames({tab: true, selectedTab: index === selectedTab}, style)} onClick={() => selectTab(index)}>{tabTitle}</div>
-                })}
+            <div draggable={false} className={style.tabsLineContainer}>
+                <div className={style.tabsContiner}>
+                    {tabs.map((tab, index) => {
+                        let tabTitle;
+                        if (tab.props.title) {
+                            tabTitle = tab.props.title;
+                        } else {
+                            tabTitle = "Test Tab";
+                        }
+                        return (
+                            <div key={tabTitle} className={ClassNames({ tab: true, selectedTab: index === selectedTab }, style)}>
+                                <div className={style.noSelect + " " + DRAGCLASS}>{tabTitle}</div>
+                            </div>
+                        );
+                    })}
+                </div>
+                <img draggable={false} className={style.dragIcon + " " + style.noSelect + " " + DRAGCLASS} src={dragIcon} />
             </div>
-            <div className={style.contentContainer}>
-                {tabs[selectedTab]}
-            </div>
+            <div className={style.contentContainer}>{tabs[selectedTab]}</div>
         </div>
-    )
-}
+    );
+};

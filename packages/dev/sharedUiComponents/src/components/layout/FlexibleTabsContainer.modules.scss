@@ -5,13 +5,25 @@
     grid-template-rows: 20px 1fr;
 }
 
-.tabsContainer {
+.tabsLineContainer {
     display: flex;
     flex-direction: row;
     overflow-x: auto;
     overflow-y: hidden;
     border-bottom: 1px solid #e0e0e0;
     grid-row: 1;
+    justify-content: space-between;
+}
+
+.tabsContainer {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.dragIcon {
+    cursor: pointer;
 }
 
 .tab {
@@ -21,6 +33,15 @@
     background-color: darkorchid;
     color: white;
     border: 1px solid white;
+    cursor: pointer;
+}
+
+.noSelect {
+    user-select: none;
+}
+
+.tab:active {
+    cursor: dragging;
 }
 
 .selectedTab {
