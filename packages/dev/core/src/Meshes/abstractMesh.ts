@@ -444,7 +444,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * Set this property to true if you want thin instances picking to be reported accurately when moving over the mesh.
      * Note that setting this property to true will incur some performance penalties when dealing with pointer events for this mesh so use it sparingly.
      */
-     public get pointerOverDisableMeshTesting() {
+    public get pointerOverDisableMeshTesting() {
         return this._internalAbstractMeshDataInfo._pointerOverDisableMeshTesting;
     }
 
