@@ -39,7 +39,7 @@ export class BlackAndWhitePostProcess extends PostProcess {
      * @param engine The engine which the post process will be applied. (default: current engine)
      * @param reusable If the post process can be reused on the same frame. (default: false)
      */
-    constructor(name: string, options: number | PostProcessOptions, camera: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean) {
+    constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean) {
         super(name, "blackAndWhite", ["degree"], null, options, camera, samplingMode, engine, reusable);
 
         this.onApplyObservable.add((effect: Effect) => {
