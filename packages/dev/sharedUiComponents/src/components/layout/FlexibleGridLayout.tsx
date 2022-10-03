@@ -8,7 +8,7 @@ export interface IFlexibleGridLayoutProps {
 }
 
 export const FlexibleGridLayout: FC<IFlexibleGridLayoutProps> = (props) => {
-    const [layout, setLayout] = useState(props.layoutDefinition);
+    const [layout] = useState(props.layoutDefinition);
 
     const columns = layout.columns.map((column: any) => {
         return (
