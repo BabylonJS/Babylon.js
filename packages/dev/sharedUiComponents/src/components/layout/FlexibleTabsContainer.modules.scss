@@ -1,0 +1,34 @@
+.rootContainer {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-rows: 20px 1fr;
+}
+
+.tabsContainer {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    border-bottom: 1px solid #e0e0e0;
+    grid-row: 1;
+}
+
+.tab {
+    width: 75px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    background-color: darkorchid;
+    color: white;
+    border: 1px solid white;
+}
+
+.selectedTab {
+    background-color: rgb(77, 77, 77);
+}
+
+.contentContainer {
+    width: 100%;
+    height: 100%;
+    grid-row: 2;
+}

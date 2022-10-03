@@ -2,6 +2,7 @@ import type { FC } from "react";
 import { useState } from "react";
 import { CommandBarComponent } from "shared-ui-components/components/bars/CommandBarComponent";
 import { FlexibleGridLayout } from "shared-ui-components/components/layout/FlexibleGridLayout";
+import {FlexibleTabsContainer } from "shared-ui-components/components/layout/FlexibleTabsContainer";
 import { TestComponent } from "./testComponent";
 import style from "./workbench.modules.scss";
 
@@ -26,7 +27,8 @@ export const Workbench: FC<WorkbenchProps> = () => {
                             {
                                 width: "25%",
                                 rows: [
-                                    { height: "50%", component: <TestComponent name="c1" color="#ff00ff" /> },
+                                    { height: "30%", component: <TestComponent name="c1" color="#ff00ff" /> },
+                                    { height: "20%", component: <FlexibleTabsContainer tabs={[<TestComponent name="c4" title="tab c4" color="#00ff00"/>, <TestComponent name="c5" color="#ff0000"/>]}/> },
                                     { height: "50%", component: <TestComponent name="c2" color="#ffff00" /> },
                                 ],
                             },
