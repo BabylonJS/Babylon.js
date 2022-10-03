@@ -287,12 +287,19 @@ export class Texture extends BaseTexture {
     private _cachedUAng: number = -1;
     private _cachedVAng: number = -1;
     private _cachedWAng: number = -1;
-    private _cachedProjectionMatrixId: number = -1;
+    private _cachedReflectionProjectionMatrixId: number = -1;
     private _cachedURotationCenter: number = -1;
     private _cachedVRotationCenter: number = -1;
     private _cachedWRotationCenter: number = -1;
     private _cachedHomogeneousRotationInUVTransform: boolean = false;
     private _cachedCoordinatesMode: number = -1;
+
+    private _cachedReflectionTextureMatrix: Nullable<Matrix> = null;
+    private _cachedReflectionUOffset = -1;
+    private _cachedReflectionVOffset = -1;
+    private _cachedReflectionUScale = 0;
+    private _cachedReflectionVScale = 0;
+    private _cachedReflectionCoordinatesMode = -1;
 
     /** @internal */
     public _buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null;
@@ -742,60 +749,60 @@ export class Texture extends BaseTexture {
         const scene = this.getScene();
 
         if (!scene) {
-            return this._cachedTextureMatrix!;
+            return this._cachedReflectionTextureMatrix!;
         }
 
         if (
-            this.uOffset === this._cachedUOffset &&
-            this.vOffset === this._cachedVOffset &&
-            this.uScale === this._cachedUScale &&
-            this.vScale === this._cachedVScale &&
-            this.coordinatesMode === this._cachedCoordinatesMode
+            this.uOffset === this._cachedReflectionUOffset &&
+            this.vOffset === this._cachedReflectionVOffset &&
+            this.uScale === this._cachedReflectionUScale &&
+            this.vScale === this._cachedReflectionVScale &&
+            this.coordinatesMode === this._cachedReflectionCoordinatesMode
         ) {
             if (this.coordinatesMode === Texture.PROJECTION_MODE) {
-                if (this._cachedProjectionMatrixId === scene.getProjectionMatrix().updateFlag) {
-                    return this._cachedTextureMatrix!;
+                if (this._cachedReflectionProjectionMatrixId === scene.getProjectionMatrix().updateFlag) {
+                    return this._cachedReflectionTextureMatrix!;
                 }
             } else {
-                return this._cachedTextureMatrix!;
+                return this._cachedReflectionTextureMatrix!;
             }
         }
 
-        if (!this._cachedTextureMatrix) {
-            this._cachedTextureMatrix = Matrix.Zero();
+        if (!this._cachedReflectionTextureMatrix) {
+            this._cachedReflectionTextureMatrix = Matrix.Zero();
         }
 
         if (!this._projectionModeMatrix) {
             this._projectionModeMatrix = Matrix.Zero();
         }
 
-        const flagMaterialsAsTextureDirty = this._cachedCoordinatesMode !== this.coordinatesMode;
+        const flagMaterialsAsTextureDirty = this._cachedReflectionCoordinatesMode !== this.coordinatesMode;
 
-        this._cachedUOffset = this.uOffset;
-        this._cachedVOffset = this.vOffset;
-        this._cachedUScale = this.uScale;
-        this._cachedVScale = this.vScale;
-        this._cachedCoordinatesMode = this.coordinatesMode;
+        this._cachedReflectionUOffset = this.uOffset;
+        this._cachedReflectionVOffset = this.vOffset;
+        this._cachedReflectionUScale = this.uScale;
+        this._cachedReflectionVScale = this.vScale;
+        this._cachedReflectionCoordinatesMode = this.coordinatesMode;
 
         switch (this.coordinatesMode) {
             case Texture.PLANAR_MODE: {
-                Matrix.IdentityToRef(this._cachedTextureMatrix);
-                (<any>this._cachedTextureMatrix)[0] = this.uScale;
-                (<any>this._cachedTextureMatrix)[5] = this.vScale;
-                (<any>this._cachedTextureMatrix)[12] = this.uOffset;
-                (<any>this._cachedTextureMatrix)[13] = this.vOffset;
+                Matrix.IdentityToRef(this._cachedReflectionTextureMatrix);
+                (<any>this._cachedReflectionTextureMatrix)[0] = this.uScale;
+                (<any>this._cachedReflectionTextureMatrix)[5] = this.vScale;
+                (<any>this._cachedReflectionTextureMatrix)[12] = this.uOffset;
+                (<any>this._cachedReflectionTextureMatrix)[13] = this.vOffset;
                 break;
             }
             case Texture.PROJECTION_MODE: {
                 Matrix.FromValuesToRef(0.5, 0.0, 0.0, 0.0, 0.0, -0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 1.0, 1.0, this._projectionModeMatrix);
 
                 const projectionMatrix = scene.getProjectionMatrix();
-                this._cachedProjectionMatrixId = projectionMatrix.updateFlag;
-                projectionMatrix.multiplyToRef(this._projectionModeMatrix, this._cachedTextureMatrix);
+                this._cachedReflectionProjectionMatrixId = projectionMatrix.updateFlag;
+                projectionMatrix.multiplyToRef(this._projectionModeMatrix, this._cachedReflectionTextureMatrix);
                 break;
             }
             default:
-                Matrix.IdentityToRef(this._cachedTextureMatrix);
+                Matrix.IdentityToRef(this._cachedReflectionTextureMatrix);
                 break;
         }
 
@@ -807,7 +814,7 @@ export class Texture extends BaseTexture {
             });
         }
 
-        return this._cachedTextureMatrix;
+        return this._cachedReflectionTextureMatrix;
     }
 
     /**
