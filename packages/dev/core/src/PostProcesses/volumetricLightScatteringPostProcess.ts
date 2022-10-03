@@ -26,6 +26,7 @@ import "../Shaders/volumetricLightScatteringPass.fragment";
 import { Color4, Color3 } from "../Maths/math.color";
 import { Viewport } from "../Maths/math.viewport";
 import { RegisterClass } from "../Misc/typeStore";
+import type { Nullable } from "../types";
 
 declare type Engine = import("../Engines/engine").Engine;
 
@@ -125,7 +126,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
     constructor(
         name: string,
         ratio: any,
-        camera: Camera,
+        camera: Nullable<Camera>,
         mesh?: Mesh,
         samples: number = 100,
         samplingMode: number = Texture.BILINEAR_SAMPLINGMODE,
@@ -145,7 +146,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
             reusable,
             "#define NUM_SAMPLES " + samples
         );
-        scene = camera?.getScene() ?? scene; // parameter "scene" can be null.
+        scene = camera?.getScene() ?? scene ?? this._scene; // parameter "scene" can be null.
 
         engine = scene.getEngine();
         this._viewPort = new Viewport(0, 0, 1, 1).toGlobal(engine.getRenderWidth(), engine.getRenderHeight());

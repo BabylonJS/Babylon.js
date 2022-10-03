@@ -5,6 +5,7 @@ import { PostProcess } from "./postProcess";
 
 import "../Shaders/vrMultiviewToSingleview.fragment";
 import "../Engines/Extensions/engine.multiview";
+import type { Nullable } from "../types";
 
 /**
  * VRMultiviewToSingleview used to convert multiview texture arrays to standard textures for scenarios such as webVR
@@ -25,17 +26,18 @@ export class VRMultiviewToSingleviewPostProcess extends PostProcess {
      * @param camera camera to be applied to
      * @param scaleFactor scaling factor to the size of the output texture
      */
-    constructor(name: string, camera: Camera, scaleFactor: number) {
+    constructor(name: string, camera: Nullable<Camera>, scaleFactor: number) {
         super(name, "vrMultiviewToSingleview", ["imageIndex"], ["multiviewSampler"], scaleFactor, camera, Texture.BILINEAR_SAMPLINGMODE);
 
+        const cam = camera ?? this.getCamera();
         this.onSizeChangedObservable.add(() => {});
         this.onApplyObservable.add((effect: Effect) => {
-            if (camera._scene.activeCamera && camera._scene.activeCamera.isLeftCamera) {
+            if (cam._scene.activeCamera && cam._scene.activeCamera.isLeftCamera) {
                 effect.setInt("imageIndex", 0);
             } else {
                 effect.setInt("imageIndex", 1);
             }
-            effect.setTexture("multiviewSampler", camera._multiviewTexture);
+            effect.setTexture("multiviewSampler", cam._multiviewTexture);
         });
     }
 }
