@@ -1,6 +1,6 @@
-import { FC, ReactElement } from "react";
+import type { FC, ReactElement } from "react";
 import { ClassNames } from "../classNames";
-import { DRAGCLASS } from "./FlexibleGridLayout";
+import { DRAGCLASS } from "./constants";
 import style from "./FlexibleTabsContainer.modules.scss";
 
 import dragIcon from "../../imgs/cellIDIcon.svg";

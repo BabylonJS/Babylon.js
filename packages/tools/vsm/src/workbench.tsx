@@ -35,7 +35,20 @@ export const Workbench: FC<WorkbenchProps> = () => {
                                     { height: "50%", tabs: [<TestComponent name="c2" color="#ffff00" />] },
                                 ],
                             },
-                            { width: "75%", rows: [{ height: "100%", tabs: [<TestComponent name="c3" color="#0000ff" />] }] },
+                            {
+                                width: "50%",
+                                rows: [
+                                    { height: "70%", tabs: [<TestComponent name="c3" color="#0000ff" />] },
+                                    { height: "30%", tabs: [<TestComponent name="c7" color="#0000ff" />] },
+                                ],
+                            },
+                            {
+                                width: "25%",
+                                rows: [
+                                    { height: "50%", tabs: [<TestComponent name="c6" color="#0000ff" />] },
+                                    { height: "50%", tabs: [<TestComponent name="c8" color="#0000ff" />] },
+                                ],
+                            },
                         ],
                     }}
                 />
