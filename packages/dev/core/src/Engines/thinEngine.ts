@@ -3924,7 +3924,7 @@ export class ThinEngine {
             this._internalTexturesCache.push(texture);
         }
 
-        const onInternalError = (message?: string, exception?: any) => {
+        const onInternalError = (message?: string, exception?: any, loadFallback: boolean = true) => {
             if (scene) {
                 scene.removePendingData(texture);
             }
@@ -3934,7 +3934,7 @@ export class ThinEngine {
                     texture.onLoadedObservable.remove(onLoadObserver);
                 }
 
-                if (EngineStore.UseFallbackTexture) {
+                if (EngineStore.UseFallbackTexture && loadFallback) {
                     this._createTextureBase(
                         EngineStore.FallbackTexture,
                         noMipmap,

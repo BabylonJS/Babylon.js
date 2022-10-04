@@ -152,7 +152,7 @@ export const SetCorsBehavior = (url: string | string[], element: { crossOrigin: 
 export const LoadImage = (
     input: string | ArrayBuffer | ArrayBufferView | Blob,
     onLoad: (img: HTMLImageElement | ImageBitmap) => void,
-    onError: (message?: string, exception?: any) => void,
+    onError: (message?: string, exception?: any, ...extra: any[]) => void,
     offlineProvider: Nullable<IOfflineProvider>,
     mimeType: string = "",
     imageBitmapOptions?: ImageBitmapOptions
@@ -177,10 +177,14 @@ export const LoadImage = (
 
     const engine = EngineStore.LastCreatedEngine;
 
-    const onErrorHandler = (exception: any) => {
+    const onErrorHandler = (exception: any, loadFallback: boolean = true) => {
         if (onError) {
             const inputText = url || input.toString();
-            onError(`Error while trying to load image: ${inputText.indexOf("http") === 0 || inputText.length <= 128 ? inputText : inputText.slice(0, 128) + "..."}`, exception);
+            onError(
+                `Error while trying to load image: ${inputText.indexOf("http") === 0 || inputText.length <= 128 ? inputText : inputText.slice(0, 128) + "..."}`,
+                exception,
+                loadFallback
+            );
         }
     };
 
@@ -216,9 +220,22 @@ export const LoadImage = (
     const img = new Image();
     SetCorsBehavior(url, img);
 
+    const handlersList: { target: any; name: string; handler: any }[] = [];
+
+    const loadHandlersList = () => {
+        handlersList.forEach((handler) => {
+            handler.target.addEventListener(handler.name, handler.handler);
+        });
+    };
+
+    const unloadHandlersList = () => {
+        handlersList.forEach((handler) => {
+            handler.target.removeEventListener(handler.name, handler.handler);
+        });
+    };
+
     const loadHandler = () => {
-        img.removeEventListener("load", loadHandler);
-        img.removeEventListener("error", errorHandler);
+        unloadHandlersList();
 
         onLoad(img);
 
@@ -230,8 +247,7 @@ export const LoadImage = (
     };
 
     const errorHandler = (err: any) => {
-        img.removeEventListener("load", loadHandler);
-        img.removeEventListener("error", errorHandler);
+        unloadHandlersList();
 
         onErrorHandler(err);
 
@@ -240,8 +256,22 @@ export const LoadImage = (
         }
     };
 
-    img.addEventListener("load", loadHandler);
-    img.addEventListener("error", errorHandler);
+    const cspHandler = (err: any) => {
+        unloadHandlersList();
+        const cspException = new Error(`CSP violation of policy ${err.effectiveDirective} ${err.blockedURI}. Current policy is ${err.originalPolicy}`);
+
+        onErrorHandler(cspException, false);
+        if (usingObjectURL && img.src) {
+            URL.revokeObjectURL(img.src);
+        }
+        img.src = "";
+    };
+
+    handlersList.push({ target: img, name: "load", handler: loadHandler });
+    handlersList.push({ target: img, name: "error", handler: errorHandler });
+    handlersList.push({ target: document, name: "securitypolicyviolation", handler: cspHandler });
+
+    loadHandlersList();
 
     const fromBlob = url.substring(0, 5) === "blob:";
     const fromData = url.substring(0, 5) === "data:";
