@@ -121,6 +121,7 @@ export class GlowLayer extends EffectLayer {
      * Sets the kernel size of the blur.
      */
     public set blurKernelSize(value: number) {
+        this._options.blurKernelSize = value * 2;
         this._horizontalBlurPostprocess1.kernel = value;
         this._verticalBlurPostprocess1.kernel = value;
         this._horizontalBlurPostprocess2.kernel = value;
