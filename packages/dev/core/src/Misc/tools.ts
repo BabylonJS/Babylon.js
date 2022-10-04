@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import type { Nullable, float } from "../types";
+import type { Nullable } from "../types";
 import { Observable } from "./observable";
 import { GetDOMTextContent, IsNavigatorAvailable, IsWindowObjectExist } from "./domManagement";
 import { Logger } from "./logger";
@@ -26,13 +26,9 @@ import { RandomGUID } from "./guid";
 import type { IScreenshotSize } from "./interfaces/screenshotSize";
 import type { Engine } from "../Engines/engine";
 import type { Camera } from "../Cameras/camera";
+import type { IColor4Like } from "../Maths/math.like";
 
-interface IColor4Like {
-    r: float;
-    g: float;
-    b: float;
-    a: float;
-}
+declare function importScripts(...urls: string[]): void;
 
 /**
  * Class containing a set of static utilities functions
@@ -435,9 +431,9 @@ export class Tools {
      * @param scriptId defines the id of the script element
      */
     public static LoadScript(scriptUrl: string, onSuccess: () => void, onError?: (message?: string, exception?: any) => void, scriptId?: string) {
-        if (typeof (self as unknown as WorkerSelf).importScripts === "function") {
+        if (typeof importScripts === "function") {
             try {
-                (self as unknown as WorkerSelf).importScripts(scriptUrl);
+                importScripts(scriptUrl);
                 onSuccess();
             } catch (e) {
                 onError?.(`Unable to load script '${scriptUrl}' in worker`, e);
