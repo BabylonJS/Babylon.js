@@ -1142,6 +1142,9 @@ export class _GLTFMaterialExporter {
                         case "image/png":
                             mimeType = ImageMimeType.PNG;
                             break;
+                        case "image/webp":
+                            mimeType = ImageMimeType.WEBP;
+                            break;
                     }
                 }
 
@@ -1209,7 +1212,7 @@ export class _GLTFMaterialExporter {
         }
 
         imageData[textureName] = imageValues;
-        if (mimeType === ImageMimeType.JPEG || mimeType === ImageMimeType.PNG) {
+        if (mimeType === ImageMimeType.JPEG || mimeType === ImageMimeType.PNG || mimeType === ImageMimeType.WEBP) {
             const glTFImage: IImage = {
                 name: baseTextureName,
                 uri: textureName,
