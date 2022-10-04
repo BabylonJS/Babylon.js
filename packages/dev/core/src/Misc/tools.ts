@@ -435,7 +435,7 @@ export class Tools {
      * @param scriptId defines the id of the script element
      */
     public static LoadScript(scriptUrl: string, onSuccess: () => void, onError?: (message?: string, exception?: any) => void, scriptId?: string) {
-        if (typeof (self as unknown as WorkerSelf).importScripts === "function") {
+        if (typeof self !== "undefined" && typeof (self as unknown as WorkerSelf).importScripts === "function") {
             try {
                 (self as unknown as WorkerSelf).importScripts(scriptUrl);
                 onSuccess();
