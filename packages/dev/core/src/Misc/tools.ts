@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import type { Nullable, float } from "../types";
+import type { Nullable } from "../types";
 import { Observable } from "./observable";
 import { GetDOMTextContent, IsNavigatorAvailable, IsWindowObjectExist } from "./domManagement";
 import { Logger } from "./logger";
