@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import { DRAGCLASS } from "./FlexibleGridLayout";
+import { DRAGCLASS, DRAGTYPES } from "./constants";
 import style from "./FlexibleDropZone.modules.scss";
 
 export interface IFlexibleDropZoneProps {
@@ -18,11 +18,18 @@ export const FlexibleDropZone: FC<IFlexibleDropZoneProps> = (props) => {
             {props.children}
             <div
                 draggable={false}
-                id="bottomDragHandler"
-                className={style.bottomDragHandler + " " + DRAGCLASS}
+                className={style.rowDragHandler + " " + DRAGCLASS}
+                data-drag-type={DRAGTYPES.ROW}
                 data-row-number={props.rowNumber}
                 data-column-number={props.columnNumber}
-            ></div>
+            />
+            <div
+                draggable={false}
+                className={style.columnDragHandler + " " + DRAGCLASS}
+                data-drag-type={DRAGTYPES.COLUMN}
+                data-row-number={props.rowNumber}
+                data-column-number={props.columnNumber}
+            />
         </div>
     );
 };

@@ -5,13 +5,13 @@ import style from "./FlexibleGridLayout.modules.scss";
 import { FlexibleTabsContainer } from "./FlexibleTabsContainer";
 import { Vector2 } from "core/Maths/math";
 import { FlexibleDropZone } from "./FlexibleDropZone";
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
+import { DRAGCLASS } from "./constants";
+import { addPercentages } from "./unitTools";
 
 export interface IFlexibleGridLayoutProps {
     layoutDefinition: any;
 }
-
-export const DRAGCLASS = "draggable";
 
 export const FlexibleGridLayout: FC<IFlexibleGridLayoutProps> = (props) => {
     const [layout, setLayout] = useState(props.layoutDefinition);
@@ -23,33 +23,32 @@ export const FlexibleGridLayout: FC<IFlexibleGridLayoutProps> = (props) => {
     const hasClicked = useRef(false);
     const isDragging = useRef(false);
 
-    /*const onDragStart = (pos: Vector2) => {
-        console.log(`onDragStart(${pos})`);
-    };*/
+    const getPosInLayout = (row: number, column: number) => {
+        const columnLayout = layout.columns[column];
+        if (!columnLayout) {
+            throw new Error("Attempted to get an invalid layout column");
+        }
+        return columnLayout.rows[row];
+    };
 
     const onDragMove = (pos: Vector2) => {
-        console.log(`onDragMove(${pos})`);
         // Vertical drag
         if (startDragRow.current !== null && startDragColumn.current != null) {
             // Check y axis difference
             const yDiff = pos.y - initialPointerPos.current.y;
 
-            // Get layout column
-            const layoutColumn = layout.columns[startDragColumn.current];
-            console.log("layout column", layoutColumn);
-
             // Get layout rows
-            const layoutRow0 = layoutColumn.rows[startDragColumn.current];
-            const layoutRow1 = layoutColumn.rows[startDragColumn.current + 1];
+            const layoutRow0 = getPosInLayout(startDragRow.current, startDragColumn.current);
+            const layoutRow1 = getPosInLayout(startDragRow.current + 1, startDragColumn.current);
+            console.log("layout row 0", layoutRow0, "layout row 1", layoutRow1);
 
             if (layoutRow0 && layoutRow1 && containerDiv.current) {
                 // Convert y diff to percentage values
                 const totalHeight = containerDiv.current.clientHeight;
                 const percHeight = (yDiff / totalHeight) * 100;
-                console.log("perc height increase is", percHeight);
-                layoutRow0.height = Number.parseInt(layoutRow0.height.replace("%", "")) - percHeight + "%";
-                layoutRow1.height = Number.parseInt(layoutRow1.height.replace("%", "")) + percHeight + "%";
-                console.log("new heights", layoutRow0.height, layoutRow1.height);
+
+                layoutRow0.height = addPercentages(layoutRow0.height, percHeight + "%");
+                layoutRow1.height = addPercentages(layoutRow1.height, -percHeight + "%");
 
                 setLayout({ ...layout });
             }
@@ -57,10 +56,6 @@ export const FlexibleGridLayout: FC<IFlexibleGridLayoutProps> = (props) => {
 
         initialPointerPos.current = pos;
     };
-
-    /*const onDragEnd = (pos: Vector2) => {
-        console.log(`onDragEnd(${pos})`);
-    };*/
 
     const columns = layout.columns.map((column: any, columnIdx: number) => {
         return (
@@ -81,7 +76,6 @@ export const FlexibleGridLayout: FC<IFlexibleGridLayoutProps> = (props) => {
     const pointerDownHandler = (event: React.PointerEvent<HTMLDivElement>) => {
         const target = event.target;
         if (target instanceof HTMLElement && target.classList.contains(DRAGCLASS)) {
-            console.log("target", target, "has row number", target.getAttribute("data-row-number"), "and column number", target.getAttribute("data-column-number"));
             hasClicked.current = true;
             // Store initial pointer pos
             initialPointerPos.current.x = event.clientX;
@@ -91,8 +85,7 @@ export const FlexibleGridLayout: FC<IFlexibleGridLayoutProps> = (props) => {
             startDragRow.current = rowNumber ? parseInt(rowNumber) : null;
             const columnNumber = target.getAttribute("data-column-number");
             startDragColumn.current = columnNumber ? parseInt(columnNumber) : null;
-
-            console.log("pt down handler, pointerpos", initialPointerPos.current);
+            console.log("clicked on divider of row number", rowNumber, "and column number", columnNumber);
         }
     };
 
@@ -101,24 +94,18 @@ export const FlexibleGridLayout: FC<IFlexibleGridLayoutProps> = (props) => {
         const newPos = new Vector2(event.clientX, event.clientY);
         if (hasClicked.current && !isDragging.current) {
             const distance = newPos.subtract(initialPointerPos.current).length();
-            console.log(newPos, newPos, "distance", distance);
             // If distance greater than a threshold, start drag
             if (distance > 3) {
-                console.log("start dragging");
-                // console.log("target", event.target, (event.target as HTMLElement).getAttribute("data-row-number"));
                 isDragging.current = true;
                 onDragMove(newPos);
             }
         } else if (hasClicked.current) {
-            console.log("continue dragging");
             onDragMove(newPos);
         }
-        //initialPointerPos.current = newPos;
     };
 
     const pointerUpHandler = (event: React.PointerEvent<HTMLDivElement>, clickFn: () => void) => {
         // If pointer was dragging, stop drag. If not, consider it a click
-        console.log("pt up handler");
         if (isDragging.current) {
             isDragging.current = false;
         } else {
