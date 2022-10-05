@@ -81,6 +81,7 @@ export const FlexibleGridLayout: FC<IFlexibleGridLayoutProps> = (props) => {
 
     const onDragMove = (pos: Vector2) => {
         // Vertical drag
+        console.log("operationinformation", operationInformation.current);
         if (operationInformation.current.purpose === OperationTypes.RESIZE_ROW) {
             processResizeRow(pos, operationInformation.current.args);
         } else if (operationInformation.current.purpose === OperationTypes.RESIZE_COLUMN) {
@@ -190,6 +191,7 @@ export const FlexibleGridLayout: FC<IFlexibleGridLayoutProps> = (props) => {
             // Perform click function
             onClick();
         }
+        operationInformation.current = { purpose: OperationTypes.NONE };
         isPointerDown.current = false;
     };
 

@@ -12,4 +12,5 @@ export enum OperationTypes {
     RESIZE_ROW = "0",
     RESIZE_COLUMN = "1",
     CLICK_TAB = "2",
+    NONE = "3",
 }
