@@ -220,7 +220,7 @@ export const LoadImage = (
     const img = new Image();
     SetCorsBehavior(url, img);
 
-    const handlersList: { target: any; name: string; handler: any }[] = [];
+    let handlersList: { target: any; name: string; handler: any }[] = [];
 
     const loadHandlersList = () => {
         handlersList.forEach((handler) => {
@@ -232,6 +232,7 @@ export const LoadImage = (
         handlersList.forEach((handler) => {
             handler.target.removeEventListener(handler.name, handler.handler);
         });
+        handlersList = [];
     };
 
     const loadHandler = () => {
