@@ -7,11 +7,16 @@ import { Vector2 } from "core/Maths/math";
 import { FlexibleDropZone } from "./FlexibleDropZone";
 import type { Nullable } from "core/types";
 import { DRAGCLASS, DragOperationTypes } from "./constants";
-import { addPercentages } from "./unitTools";
+import { addPercentageStringToNumber } from "./unitTools";
 
 export interface IFlexibleGridLayoutProps {
     layoutDefinition: any;
 }
+
+const MinColumnWidth = 5;
+const MinColumnHeight = 5;
+
+type Axis2 = "x" | "y";
 
 export const FlexibleGridLayout: FC<IFlexibleGridLayoutProps> = (props) => {
     const [layout, setLayout] = useState(props.layoutDefinition);
@@ -22,39 +27,65 @@ export const FlexibleGridLayout: FC<IFlexibleGridLayoutProps> = (props) => {
     const isDragging = useRef(false);
     const operationInformation = useRef<{ purpose?: string; args?: any }>({});
 
-    const getPosInLayout = (row: number, column: number) => {
+    const getPosInLayout = (column: number, row?: number) => {
         const columnLayout = layout.columns[column];
         if (!columnLayout) {
             throw new Error("Attempted to get an invalid layout column");
         }
+        if (row === undefined) {
+            return columnLayout;
+        }
         return columnLayout.rows[row];
     };
 
-    const processResizeRow = (pos: Vector2, args: { row: number; column: number }) => {
-        // Check y axis difference
-        const yDiff = pos.y - pointerPos.current.y;
+    const processResize = (
+        pos: Vector2,
+        row0: number | undefined,
+        column0: number,
+        row1: number | undefined,
+        column1: number,
+        axis: Axis2,
+        maxAxisValue: number,
+        property: string,
+        minFinalValue: number
+    ) => {
+        // Check axis difference
+        const axisDiff = pos[axis] - pointerPos.current[axis];
 
         // Get layout rows
-        const layoutRow0 = getPosInLayout(args.row, args.column);
-        const layoutRow1 = getPosInLayout(args.row + 1, args.column);
-        console.log("layout row 0", layoutRow0, "layout row 1", layoutRow1);
+        const layoutElement0 = getPosInLayout(column0, row0);
+        const layoutElement1 = getPosInLayout(column1, row1);
+        console.log("layout row 0", layoutElement0, "layout row 1", layoutElement1);
 
-        if (layoutRow0 && layoutRow1 && containerDiv.current) {
-            // Convert y diff to percentage values
-            const totalHeight = containerDiv.current.clientHeight;
-            const percHeight = (yDiff / totalHeight) * 100;
+        if (layoutElement0 && layoutElement1 && containerDiv.current) {
+            const percDiff = (axisDiff / maxAxisValue) * 100;
 
-            layoutRow0.height = addPercentages(layoutRow0.height, percHeight + "%");
-            layoutRow1.height = addPercentages(layoutRow1.height, -percHeight + "%");
+            const newValue0 = addPercentageStringToNumber(layoutElement0[property], percDiff);
+            const newValue1 = addPercentageStringToNumber(layoutElement1[property], -percDiff);
+
+            if (newValue0 >= minFinalValue && newValue1 >= minFinalValue) {
+                layoutElement0[property] = newValue0.toFixed(2) + "%";
+                layoutElement1[property] = newValue1.toFixed(2) + "%";
+            }
 
             setLayout({ ...layout });
         }
+    };
+
+    const processResizeRow = (pos: Vector2, args: { row: number; column: number }) => {
+        processResize(pos, args.row, args.column, args.row + 1, args.column, "y", containerDiv.current!.clientHeight, "height", MinColumnHeight);
+    };
+
+    const processResizeColumn = (pos: Vector2, args: { row: number; column: number }) => {
+        processResize(pos, undefined, args.column, undefined, args.column + 1, "x", containerDiv.current!.clientWidth, "width", MinColumnWidth);
     };
 
     const onDragMove = (pos: Vector2) => {
         // Vertical drag
         if (operationInformation.current.purpose === DragOperationTypes.RESIZE_ROW) {
             processResizeRow(pos, operationInformation.current.args);
+        } else if (operationInformation.current.purpose === DragOperationTypes.RESIZE_COLUMN) {
+            processResizeColumn(pos, operationInformation.current.args);
         }
 
         pointerPos.current = pos;
