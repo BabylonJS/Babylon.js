@@ -121,10 +121,17 @@ export class GlowLayer extends EffectLayer {
      * Sets the kernel size of the blur.
      */
     public set blurKernelSize(value: number) {
-        this._horizontalBlurPostprocess1.kernel = value;
-        this._verticalBlurPostprocess1.kernel = value;
-        this._horizontalBlurPostprocess2.kernel = value;
-        this._verticalBlurPostprocess2.kernel = value;
+        if (value === this._options.blurKernelSize) {
+            return;
+        }
+
+        this._options.blurKernelSize = value;
+
+        const effectiveKernel = this._getEffectiveBlurKernelSize();
+        this._horizontalBlurPostprocess1.kernel = effectiveKernel;
+        this._verticalBlurPostprocess1.kernel = effectiveKernel;
+        this._horizontalBlurPostprocess2.kernel = effectiveKernel;
+        this._verticalBlurPostprocess2.kernel = effectiveKernel;
     }
 
     /**
@@ -286,10 +293,11 @@ export class GlowLayer extends EffectLayer {
 
         this._textures = [this._blurTexture1, this._blurTexture2];
 
+        const effectiveKernel = this._getEffectiveBlurKernelSize();
         this._horizontalBlurPostprocess1 = new BlurPostProcess(
             "GlowLayerHBP1",
             new Vector2(1.0, 0),
-            this._options.blurKernelSize / 2,
+            effectiveKernel,
             {
                 width: blurTextureWidth,
                 height: blurTextureHeight,
@@ -310,7 +318,7 @@ export class GlowLayer extends EffectLayer {
         this._verticalBlurPostprocess1 = new BlurPostProcess(
             "GlowLayerVBP1",
             new Vector2(0, 1.0),
-            this._options.blurKernelSize / 2,
+            effectiveKernel,
             {
                 width: blurTextureWidth,
                 height: blurTextureHeight,
@@ -325,7 +333,7 @@ export class GlowLayer extends EffectLayer {
         this._horizontalBlurPostprocess2 = new BlurPostProcess(
             "GlowLayerHBP2",
             new Vector2(1.0, 0),
-            this._options.blurKernelSize / 2,
+            effectiveKernel,
             {
                 width: blurTextureWidth2,
                 height: blurTextureHeight2,
@@ -346,7 +354,7 @@ export class GlowLayer extends EffectLayer {
         this._verticalBlurPostprocess2 = new BlurPostProcess(
             "GlowLayerVBP2",
             new Vector2(0, 1.0),
-            this._options.blurKernelSize / 2,
+            effectiveKernel,
             {
                 width: blurTextureWidth2,
                 height: blurTextureHeight2,
@@ -380,6 +388,14 @@ export class GlowLayer extends EffectLayer {
         this._postProcesses.map((pp) => {
             pp.autoClear = false;
         });
+    }
+
+    /**
+     * @returns The blur kernel size used by the glow.
+     * Note: The value passed in the options is divided by 2 for back compatibility.
+     */
+    private _getEffectiveBlurKernelSize() {
+        return this._options.blurKernelSize / 2;
     }
 
     /**
