@@ -357,6 +357,28 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
             defines.SS_TRANSLUCENCY = false;
             defines.SS_SCATTERING = false;
             defines.SS_REFRACTION = false;
+            defines.SS_REFRACTION_USE_INTENSITY_FROM_TEXTURE = false;
+            defines.SS_TRANSLUCENCY_USE_INTENSITY_FROM_TEXTURE = false;
+            defines.SS_THICKNESSANDMASK_TEXTURE = false;
+            defines.SS_THICKNESSANDMASK_TEXTUREDIRECTUV = 0;
+            defines.SS_HAS_THICKNESS = false;
+            defines.SS_REFRACTIONINTENSITY_TEXTURE = false;
+            defines.SS_REFRACTIONINTENSITY_TEXTUREDIRECTUV = 0;
+            defines.SS_TRANSLUCENCYINTENSITY_TEXTURE = false;
+            defines.SS_TRANSLUCENCYINTENSITY_TEXTUREDIRECTUV = 0;
+            defines.SS_REFRACTIONMAP_3D = false;
+            defines.SS_REFRACTIONMAP_OPPOSITEZ = false;
+            defines.SS_LODINREFRACTIONALPHA = false;
+            defines.SS_GAMMAREFRACTION = false;
+            defines.SS_RGBDREFRACTION = false;
+            defines.SS_LINEARSPECULARREFRACTION = false;
+            defines.SS_LINKREFRACTIONTOTRANSPARENCY = false;
+            defines.SS_ALBEDOFORREFRACTIONTINT = false;
+            defines.SS_ALBEDOFORTRANSLUCENCYTINT = false;
+            defines.SS_USE_LOCAL_REFRACTIONMAP_CUBIC = false;
+            defines.SS_USE_THICKNESS_AS_DEPTH = false;
+            defines.SS_MASK_FROM_THICKNESS_TEXTURE = false;
+            defines.SS_USE_GLTF_TEXTURES = false;
             return;
         }
 
