@@ -37,7 +37,7 @@ export class TouchHolographicButton extends TouchButton3D {
     /**
      * Base Url for the frontplate model.
      */
-    public static FRONTPLATE_MODEL_BASE_URL = "https://raw.githubusercontent.com/chinezenwosu-ms/TempAssets/main/GLB/";
+    public static MRTK_ASSET_BASE_URL = "https://assets.babylonjs.com/meshes/MRTK/";
 
     /**
      * File name for the frontplate model.
@@ -45,29 +45,14 @@ export class TouchHolographicButton extends TouchButton3D {
     public static FRONTPLATE_MODEL_FILENAME = "mrtk-fluent-frontplate.glb";
 
     /**
-     * Base Url for the backplate model.
-     */
-    public static BACKPLATE_MODEL_BASE_URL = "https://assets.babylonjs.com/meshes/MRTK/";
-
-    /**
      * File name for the backplate model.
      */
     public static BACKPLATE_MODEL_FILENAME = "mrtk-fluent-backplate.glb";
 
     /**
-     * Base Url for the backglow model.
-     */
-    public static BACKGLOW_MODEL_BASE_URL = "https://assets.babylonjs.com/meshes/MRTK/";
-
-    /**
      * File name for the backglow model.
      */
     public static BACKGLOW_MODEL_FILENAME = "mrtk-fluent-button.glb";
-
-    /**
-     * Base Url for the innerquad model.
-     */
-    public static INNERQUAD_MODEL_BASE_URL = "https://raw.githubusercontent.com/chinezenwosu-ms/TempAssets/main/GLB/";
 
     /**
      * File name for the innerquad model.
@@ -101,6 +86,60 @@ export class TouchHolographicButton extends TouchButton3D {
      */
     public imageSizeInPixels = 40;
 
+    /**
+     * Gets or sets the color of the button plate.
+     */
+     public plateMaterialColor = new Color3(0.4, 0.4, 0.4);
+
+    // Shared variables for meshes
+    /**
+     * Gets or sets the depth of the button's front plate. 
+     * This variable determines the z scaling and z position for some of the button's meshes.
+     */
+    public frontPlateDepth = 0.2;
+
+    /**
+     * Gets or sets the depth of the button's back plate.
+     * This variable determines the z scaling and z position for some of the button's meshes.
+     */
+    public backPlateDepth = 0.04;
+
+    /**
+     * Gets or sets the offset value for button's back glow.
+     * This variable determines the x, y scaling of the button's meshes.
+     */
+    public backGlowOffset = 0.1;
+    
+    /**
+     * Gets or sets the value that determines the z scaling and z position for the innerQuad and BackGlow meshes.
+     */
+    public flatPlaneDepth = 0.001;
+
+    /**
+     * Gets or sets the radius for FrontMaterial and innerQuadMaterial.
+     */
+    public innerQuadRadius = this.radius - 0.04;
+
+    /**
+     * Gets or sets the color for innerQuadMaterial.
+     */
+    public innerQuadColor = new Color4(0, 0, 0, 0);
+
+    /**
+     * Gets or sets the color for innerQuadMaterial for when it is toggled.
+     */
+    public innerQuadToggledColor = new Color4(0.5197843, 0.6485234, 0.9607843, 0.6);
+
+    /**
+     * Gets or sets the color for innerQuadMaterial for when it is hovered.
+     */
+    public innerQuadHoverColor = new Color4(1, 1, 1, 0.05);
+
+    /**
+     * Gets or sets the color for innerQuadMaterial for when it is toggled and hovered.
+     */
+    public innerQuadToggledHoverColor = new Color4(0.5197843, 0.6485234, 0.9607843, 1);
+
     // Meshes
     private _backPlate: AbstractMesh;
     private _textPlate: Mesh;
@@ -130,17 +169,6 @@ export class TouchHolographicButton extends TouchButton3D {
     private _pointerEnterObserver: Nullable<Observer<Control3D>>;
     private _pointerOutObserver: Nullable<Observer<Control3D>>;
     private _toggleObserver: Nullable<Observer<boolean>>;
-
-    // Shared variables for meshes
-    private _frontPlateDepth = 0.2;
-    private _backPlateDepth = 0.04;
-    private _backGlowOffset = 0.1;
-    private _flatPlaneDepth = 0.001;
-    private _innerQuadRadius = this.radius - 0.04;
-    private _innerQuadColor = new Color4(0, 0, 0, 0);
-    private _innerQuadToggledColor = new Color4(0.5197843, 0.6485234, 0.9607843, 0.6);
-    private _innerQuadHoverColor = new Color4(1, 1, 1, 0.05);
-    private _innerQuadToggledHoverColor = new Color4(0.5197843, 0.6485234, 0.9607843, 1);
 
     // Tooltip
     private _tooltipFade: Nullable<FadeInOutBehavior>;
@@ -369,9 +397,9 @@ export class TouchHolographicButton extends TouchButton3D {
 
             if (this.isToggleButton && this._innerQuadMaterial) {
                 if (this.isToggled) {
-                    this._innerQuadMaterial.color = this._innerQuadToggledHoverColor;
+                    this._innerQuadMaterial.color = this.innerQuadToggledHoverColor;
                 } else {
-                    this._innerQuadMaterial.color = this._innerQuadHoverColor;
+                    this._innerQuadMaterial.color = this.innerQuadHoverColor;
                 }
             }
         };
@@ -414,9 +442,9 @@ export class TouchHolographicButton extends TouchButton3D {
 
         this._toggleObserver = this.onToggleObservable.add((isToggled) => {
             if (isToggled) {
-                this._innerQuadMaterial.color = this._innerQuadToggledColor;
+                this._innerQuadMaterial.color = this.innerQuadToggledColor;
             } else {
-                this._innerQuadMaterial.color = this._innerQuadColor;
+                this._innerQuadMaterial.color = this.innerQuadColor;
             }
         });
     }
@@ -562,7 +590,7 @@ export class TouchHolographicButton extends TouchButton3D {
         this._textPlate.parent = collisionMesh;
 
         this._backPlate = backPlateMesh;
-        this._backPlate.position = Vector3.Forward(scene.useRightHandedSystem).scale(this._backPlateDepth / 2);
+        this._backPlate.position = Vector3.Forward(scene.useRightHandedSystem).scale(this.backPlateDepth / 2);
         this._backPlate.isPickable = false;
 
         this._backPlate.addChild(collisionMesh);
@@ -587,7 +615,7 @@ export class TouchHolographicButton extends TouchButton3D {
         backPlateMesh.visibility = 0;
         backPlateMesh.scaling.z = 0.2;
 
-        SceneLoader.ImportMeshAsync(undefined, TouchHolographicButton.BACKPLATE_MODEL_BASE_URL, TouchHolographicButton.BACKPLATE_MODEL_FILENAME, scene).then((result) => {
+        SceneLoader.ImportMeshAsync(undefined, TouchHolographicButton.MRTK_ASSET_BASE_URL, TouchHolographicButton.BACKPLATE_MODEL_FILENAME, scene).then((result) => {
             const backPlateModel = result.meshes[1];
             backPlateModel.visibility = 0;
 
@@ -616,16 +644,16 @@ export class TouchHolographicButton extends TouchButton3D {
             {
                 width: this.width,
                 height: this.height,
-                depth: this._frontPlateDepth,
+                depth: this.frontPlateDepth,
             },
             scene
         );
         collisionMesh.isPickable = true;
         collisionMesh.isNearPickable = true;
         collisionMesh.visibility = 0;
-        collisionMesh.position = Vector3.Forward(scene.useRightHandedSystem).scale((this._backPlateDepth - this._frontPlateDepth) / 2);
+        collisionMesh.position = Vector3.Forward(scene.useRightHandedSystem).scale((this.backPlateDepth - this.frontPlateDepth) / 2);
 
-        SceneLoader.ImportMeshAsync(undefined, TouchHolographicButton.FRONTPLATE_MODEL_BASE_URL, TouchHolographicButton.FRONTPLATE_MODEL_FILENAME, scene).then((result) => {
+        SceneLoader.ImportMeshAsync(undefined, TouchHolographicButton.MRTK_ASSET_BASE_URL, TouchHolographicButton.FRONTPLATE_MODEL_FILENAME, scene).then((result) => {
             const collisionPlate = CreateBox(
                 `${this.name}_collisionPlate`,
                 {
@@ -635,7 +663,7 @@ export class TouchHolographicButton extends TouchButton3D {
                 scene
             );
             collisionPlate.isPickable = false;
-            collisionPlate.scaling.z = this._frontPlateDepth;
+            collisionPlate.scaling.z = this.frontPlateDepth;
             collisionPlate.visibility = 0;
             collisionPlate.parent = collisionMesh;
             this._collisionPlate = collisionPlate;
@@ -643,8 +671,8 @@ export class TouchHolographicButton extends TouchButton3D {
             const frontPlateModel = result.meshes[1];
             frontPlateModel.name = `${this.name}_frontPlate`;
             frontPlateModel.isPickable = false;
-            frontPlateModel.scaling.x = this.width - this._backGlowOffset;
-            frontPlateModel.scaling.y = this.height - this._backGlowOffset;
+            frontPlateModel.scaling.x = this.width - this.backGlowOffset;
+            frontPlateModel.scaling.y = this.height - this.backGlowOffset;
             frontPlateModel.position = Vector3.Forward(scene.useRightHandedSystem).scale(-0.5);
             frontPlateModel.parent = collisionPlate;
 
@@ -668,15 +696,15 @@ export class TouchHolographicButton extends TouchButton3D {
         const innerQuadMesh = CreateBox(`${this.name}_innerQuad`, {}, scene);
         innerQuadMesh.isPickable = false;
         innerQuadMesh.visibility = 0;
-        innerQuadMesh.scaling.z = this._flatPlaneDepth;
-        innerQuadMesh.position.z += this._backPlateDepth / 2 - this._flatPlaneDepth;
+        innerQuadMesh.scaling.z = this.flatPlaneDepth;
+        innerQuadMesh.position.z += this.backPlateDepth / 2 - this.flatPlaneDepth;
 
-        SceneLoader.ImportMeshAsync(undefined, TouchHolographicButton.INNERQUAD_MODEL_BASE_URL, TouchHolographicButton.INNERQUAD_MODEL_FILENAME, scene).then((result) => {
+        SceneLoader.ImportMeshAsync(undefined, TouchHolographicButton.MRTK_ASSET_BASE_URL, TouchHolographicButton.INNERQUAD_MODEL_FILENAME, scene).then((result) => {
             const innerQuadModel = result.meshes[1];
             innerQuadModel.name = `${this.name}_innerQuad`;
             innerQuadModel.isPickable = false;
-            innerQuadModel.scaling.x = this.width - this._backGlowOffset;
-            innerQuadModel.scaling.y = this.height - this._backGlowOffset;
+            innerQuadModel.scaling.x = this.width - this.backGlowOffset;
+            innerQuadModel.scaling.y = this.height - this.backGlowOffset;
             innerQuadModel.parent = innerQuadMesh;
 
             if (this._innerQuadMaterial) {
@@ -697,15 +725,15 @@ export class TouchHolographicButton extends TouchButton3D {
         const backGlowMesh = CreateBox(`${this.name}_backGlow`, {}, scene);
         backGlowMesh.isPickable = false;
         backGlowMesh.visibility = 0;
-        backGlowMesh.scaling.z = this._flatPlaneDepth;
-        backGlowMesh.position.z += this._backPlateDepth / 2 - this._flatPlaneDepth * 2;
+        backGlowMesh.scaling.z = this.flatPlaneDepth;
+        backGlowMesh.position.z += this.backPlateDepth / 2 - this.flatPlaneDepth * 2;
 
-        SceneLoader.ImportMeshAsync(undefined, TouchHolographicButton.BACKGLOW_MODEL_BASE_URL, TouchHolographicButton.BACKGLOW_MODEL_FILENAME, scene).then((result) => {
+        SceneLoader.ImportMeshAsync(undefined, TouchHolographicButton.MRTK_ASSET_BASE_URL, TouchHolographicButton.BACKGLOW_MODEL_FILENAME, scene).then((result) => {
             const backGlowModel = result.meshes[1];
             backGlowModel.name = `${this.name}_backGlow`;
             backGlowModel.isPickable = false;
-            backGlowModel.scaling.x = this.width - this._backGlowOffset;
-            backGlowModel.scaling.y = this.height - this._backGlowOffset;
+            backGlowModel.scaling.x = this.width - this.backGlowOffset;
+            backGlowModel.scaling.y = this.height - this.backGlowOffset;
             backGlowModel.parent = backGlowMesh;
 
             if (this._backGlowMaterial) {
@@ -721,7 +749,7 @@ export class TouchHolographicButton extends TouchButton3D {
     protected _applyFacade(facadeTexture: AdvancedDynamicTexture) {
         this._plateMaterial.emissiveTexture = facadeTexture;
         this._plateMaterial.opacityTexture = facadeTexture;
-        this._plateMaterial.diffuseColor = new Color3(0.4, 0.4, 0.4);
+        this._plateMaterial.diffuseColor = this.plateMaterialColor;
     }
 
     private _performClickAnimation() {
@@ -763,7 +791,7 @@ export class TouchHolographicButton extends TouchButton3D {
                     },
                     {
                         frame: 20,
-                        values: [Vector3.Forward(this._collisionPlate._scene.useRightHandedSystem).scale(this._frontPlateDepth / 2).z, 0.0, 0.0],
+                        values: [Vector3.Forward(this._collisionPlate._scene.useRightHandedSystem).scale(this.frontPlateDepth / 2).z, 0.0, 0.0],
                     },
                     {
                         frame: 40,
@@ -782,19 +810,19 @@ export class TouchHolographicButton extends TouchButton3D {
                 keys: [
                     {
                         frame: 0,
-                        values: [this._frontPlateDepth, 0.0, 0.0],
+                        values: [this.frontPlateDepth, 0.0, 0.0],
                     },
                     {
                         frame: 20,
-                        values: [this._backPlateDepth, 0.0, 0.0],
+                        values: [this.backPlateDepth, 0.0, 0.0],
                     },
                     {
                         frame: 40,
-                        values: [this._frontPlateDepth, 0.0054],
+                        values: [this.frontPlateDepth, 0.0054],
                     },
                     {
                         frame: 45,
-                        values: [this._frontPlateDepth],
+                        values: [this.frontPlateDepth],
                     },
                 ],
             },
@@ -904,7 +932,7 @@ export class TouchHolographicButton extends TouchButton3D {
 
     private _createFrontMaterial(mesh: Mesh) {
         this._frontMaterial = this._frontMaterial ?? new MRDLFrontplateMaterial(this.name + "Front Material", mesh.getScene());
-        this.frontMaterial.radius = this._innerQuadRadius;
+        this.frontMaterial.radius = this.innerQuadRadius;
         this.frontMaterial.fadeOut = 0.0;
     }
 
@@ -918,10 +946,10 @@ export class TouchHolographicButton extends TouchButton3D {
 
     private _createInnerQuadMaterial(mesh: Mesh) {
         this._innerQuadMaterial = this._innerQuadMaterial ?? new MRDLInnerquadMaterial("inner_quad", mesh.getScene());
-        this._innerQuadMaterial.radius = this._innerQuadRadius;
+        this._innerQuadMaterial.radius = this.innerQuadRadius;
 
         if (this.isToggleButton) {
-            this._innerQuadMaterial.color = this._innerQuadColor;
+            this._innerQuadMaterial.color = this.innerQuadColor;
         }
     }
 

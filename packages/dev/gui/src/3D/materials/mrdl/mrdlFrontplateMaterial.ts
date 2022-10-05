@@ -53,7 +53,7 @@ export class MRDLFrontplateMaterial extends PushMaterial {
     public lineWidth = 0.01;
 
     /**
-     * TODO Gets or sets whether the line width of the frontplate.
+     * Gets or sets whether the scale is relative to the frontplate height.
      */
     @serialize()
     public relativeToHeight = false;
