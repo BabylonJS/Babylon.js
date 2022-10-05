@@ -718,7 +718,6 @@ export class InputText extends Control implements IFocusableControl {
             this._currentKey = key;
             this.onBeforeKeyAddObservable.notifyObservers(this);
             key = this._currentKey;
-            console.log(key);
             if (this._addKey && !this._deadKey) {
                 if (this._isTextHighlightOn) {
                     this._textWrapper.removePart(this._startHighlightIndex, this._endHighlightIndex, key);
@@ -728,7 +727,6 @@ export class InputText extends Control implements IFocusableControl {
                     this._blinkIsEven = false;
                     this._markAsDirty();
                 } else if (this._cursorOffset === 0) {
-                    console.log("add to end");
                     this.text += this._deadKey && evt?.key ? evt.key : key;
                 } else {
                     const insertPosition = this._textWrapper.length - this._cursorOffset;
