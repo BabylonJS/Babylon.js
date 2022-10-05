@@ -89,11 +89,11 @@ export class TouchHolographicButton extends TouchButton3D {
     /**
      * Gets or sets the color of the button plate.
      */
-     public plateMaterialColor = new Color3(0.4, 0.4, 0.4);
+    public plateMaterialColor = new Color3(0.4, 0.4, 0.4);
 
     // Shared variables for meshes
     /**
-     * Gets or sets the depth of the button's front plate. 
+     * Gets or sets the depth of the button's front plate.
      * This variable determines the z scaling and z position for some of the button's meshes.
      */
     public frontPlateDepth = 0.2;
@@ -109,7 +109,7 @@ export class TouchHolographicButton extends TouchButton3D {
      * This variable determines the x, y scaling of the button's meshes.
      */
     public backGlowOffset = 0.1;
-    
+
     /**
      * Gets or sets the value that determines the z scaling and z position for the innerQuad and BackGlow meshes.
      */
