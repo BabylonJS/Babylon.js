@@ -167,7 +167,7 @@ export class Node implements IBehaviorAware<Node> {
     /** @internal */
     public _waitingParsedUniqueId: Nullable<number> = null;
     /** @internal */
-    public _scene: Scene;
+    public _scene: Nullable<Scene> = null;
     /** @internal */
     public _cache: any = {};
 
@@ -245,21 +245,21 @@ export class Node implements IBehaviorAware<Node> {
     }
 
     /** @internal */
-    public _addToSceneRootNodes() {
+    public _addToSceneRootNodes(scene: Scene = <Scene>this._scene) {
         if (this._nodeDataStorage._sceneRootNodesIndex === -1) {
-            this._nodeDataStorage._sceneRootNodesIndex = this._scene.rootNodes.length;
-            this._scene.rootNodes.push(this);
+            this._nodeDataStorage._sceneRootNodesIndex = scene.rootNodes.length;
+            scene.rootNodes.push(this);
         }
     }
 
     /** @internal */
-    public _removeFromSceneRootNodes() {
+    public _removeFromSceneRootNodes(scene: Scene = <Scene>this._scene) {
         if (this._nodeDataStorage._sceneRootNodesIndex !== -1) {
-            const rootNodes = this._scene.rootNodes;
+            const rootNodes = scene.rootNodes;
             const lastIdx = rootNodes.length - 1;
             rootNodes[this._nodeDataStorage._sceneRootNodesIndex] = rootNodes[lastIdx];
             rootNodes[this._nodeDataStorage._sceneRootNodesIndex]._nodeDataStorage._sceneRootNodesIndex = this._nodeDataStorage._sceneRootNodesIndex;
-            this._scene.rootNodes.pop();
+            scene.rootNodes.pop();
             this._nodeDataStorage._sceneRootNodesIndex = -1;
         }
     }
@@ -270,7 +270,7 @@ export class Node implements IBehaviorAware<Node> {
      * Gets or sets the animation properties override
      */
     public get animationPropertiesOverride(): Nullable<AnimationPropertiesOverride> {
-        if (!this._animationPropertiesOverride) {
+        if (!this._animationPropertiesOverride && this._scene) {
             return this._scene.animationPropertiesOverride;
         }
         return this._animationPropertiesOverride;
@@ -324,13 +324,12 @@ export class Node implements IBehaviorAware<Node> {
     /**
      * Creates a new Node
      * @param name the name and id to be given to this node
-     * @param scene the scene this node will be added to
+     * @param scene the scene this node will be added to (optional)
      */
-    constructor(name: string, scene: Nullable<Scene> = null) {
+    constructor(name: string, scene: Nullable<Scene> = EngineStore.LastCreatedScene) {
         this.name = name;
         this.id = name;
-        this._scene = <Scene>(scene || EngineStore.LastCreatedScene);
-        this.uniqueId = this._scene.getUniqueId();
+        
         this._initCache();
     }
 
@@ -338,7 +337,7 @@ export class Node implements IBehaviorAware<Node> {
      * Gets the scene of the node
      * @returns a scene
      */
-    public getScene(): Scene {
+    public getScene(): Nullable<Scene> {
         return this._scene;
     }
 
@@ -346,9 +345,20 @@ export class Node implements IBehaviorAware<Node> {
      * Gets the engine of the node
      * @returns a Engine
      */
-    public getEngine(): Engine {
-        return this._scene.getEngine();
+    public getEngine(): Nullable<Engine> {
+        return this._scene ? this._scene.getEngine() : null;
     }
+
+	/**
+	 * Sets the scene of the current node
+	 * @param scene the scene to add the current node to
+	 * @returns the current node
+	 */
+	public setScene(scene: Nullable<Scene> = null): Node {
+		this._scene = <Scene>(scene || EngineStore.LastCreatedScene);
+        this.uniqueId = this._scene.getUniqueId();
+		return this;
+	}
 
     // Behaviors
     private _behaviors = new Array<Behavior<Node>>();
@@ -368,7 +378,7 @@ export class Node implements IBehaviorAware<Node> {
         }
 
         behavior.init();
-        if (this._scene.isLoading && !attachImmediately) {
+        if (this._scene && this._scene.isLoading && !attachImmediately) {
             // We defer the attach when the scene will be loaded
             this._scene.onDataLoadedObservable.addOnce(() => {
                 behavior.attach(this);
@@ -428,8 +438,8 @@ export class Node implements IBehaviorAware<Node> {
      * Returns the latest update of the World matrix
      * @returns a Matrix
      */
-    public getWorldMatrix(): Matrix {
-        if (this._currentRenderId !== this._scene.getRenderId()) {
+    public getWorldMatrix(): Nullable<Matrix> {
+        if (this._scene && this._currentRenderId !== this._scene.getRenderId()) {
             this.computeWorldMatrix();
         }
         return this._worldMatrix;
@@ -817,14 +827,18 @@ export class Node implements IBehaviorAware<Node> {
      * @param onAnimationEnd defines a function to be executed when the animation ended (undefined by default)
      * @returns the object created for this animation. If range does not exist, it will return null
      */
-    public beginAnimation(name: string, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): Nullable<Animatable> {
+    public beginAnimation(name: string, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, scene: Nullable<Scene> = this._scene): Nullable<Animatable> {
         const range = this.getAnimationRange(name);
 
         if (!range) {
             return null;
         }
 
-        return this._scene.beginAnimation(this, range.from, range.to, loop, speedRatio, onAnimationEnd);
+		if(!scene) {
+			return null;
+		}
+
+        return scene.beginAnimation(this, range.from, range.to, loop, speedRatio, onAnimationEnd);
     }
 
     /**
@@ -917,11 +931,17 @@ export class Node implements IBehaviorAware<Node> {
      * @param predicate defines a callback function that can be customize to filter what meshes should be included in the list used to compute the bounding vectors
      * @returns the new bounding vectors
      */
-    public getHierarchyBoundingVectors(includeDescendants = true, predicate: Nullable<(abstractMesh: AbstractMesh) => boolean> = null): { min: Vector3; max: Vector3 } {
+    public getHierarchyBoundingVectors(includeDescendants = true, predicate: Nullable<(abstractMesh: AbstractMesh) => boolean> = null): { min: Nullable<Vector3>; max: Nullable<Vector3> } {
         // Ensures that all world matrix will be recomputed.
-        this.getScene().incrementRenderId();
-
-        this.computeWorldMatrix(true);
+        if(!this._scene){
+			return {
+				min: null, max: null
+			}
+		}
+		
+		this._scene.incrementRenderId();
+        
+		this.computeWorldMatrix(true);
 
         let min: Vector3;
         let max: Vector3;
@@ -966,8 +986,8 @@ export class Node implements IBehaviorAware<Node> {
         }
 
         return {
-            min: min,
-            max: max,
+            min,
+            max,
         };
     }
 }
