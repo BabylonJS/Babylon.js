@@ -232,7 +232,7 @@ export const LoadImage = (
         handlersList.forEach((handler) => {
             handler.target.removeEventListener(handler.name, handler.handler);
         });
-        handlersList = [];
+        handlersList.length = 0;
     };
 
     const loadHandler = () => {
