@@ -195,8 +195,23 @@ export const FlexibleGridLayout: FC<IFlexibleGridLayoutProps> = (props) => {
         isPointerDown.current = false;
     };
 
+    const onPointerLeave = (event: React.PointerEvent<HTMLDivElement>) => {
+        // Treat pointer out as if releasing drag
+        if (isDragging.current) {
+            isDragging.current = false;
+        }
+        operationInformation.current = { purpose: OperationTypes.NONE };
+    };
+
     return (
-        <div ref={containerDiv} onPointerDown={pointerDownHandler} onPointerMove={pointerMoveHandler} onPointerUp={pointerUpHandler} className={style.flexibleGrid}>
+        <div
+            ref={containerDiv}
+            onPointerDown={pointerDownHandler}
+            onPointerMove={pointerMoveHandler}
+            onPointerUp={pointerUpHandler}
+            onPointerLeave={onPointerLeave}
+            className={style.flexibleGrid}
+        >
             {columns}
         </div>
     );
