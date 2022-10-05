@@ -115,6 +115,8 @@ export class PBRAnisotropicConfiguration extends MaterialPluginBase {
         } else {
             defines.ANISOTROPIC = false;
             defines.ANISOTROPIC_TEXTURE = false;
+            defines.ANISOTROPIC_TEXTUREDIRECTUV = 0;
+            defines.MAINUV1 = false;
         }
     }
 
