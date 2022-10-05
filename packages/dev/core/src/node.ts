@@ -329,7 +329,7 @@ export class Node implements IBehaviorAware<Node> {
     constructor(name: string, scene: Nullable<Scene> = EngineStore.LastCreatedScene) {
         this.name = name;
         this.id = name;
-        
+
         this._initCache();
     }
 
@@ -349,16 +349,16 @@ export class Node implements IBehaviorAware<Node> {
         return this._scene ? this._scene.getEngine() : null;
     }
 
-	/**
-	 * Sets the scene of the current node
-	 * @param scene the scene to add the current node to
-	 * @returns the current node
-	 */
-	public setScene(scene: Nullable<Scene> = null): Node {
-		this._scene = <Scene>(scene || EngineStore.LastCreatedScene);
+    /**
+     * Sets the scene of the current node
+     * @param scene the scene to add the current node to
+     * @returns the current node
+     */
+    public setScene(scene: Nullable<Scene> = null): Node {
+        this._scene = <Scene>(scene || EngineStore.LastCreatedScene);
         this.uniqueId = this._scene.getUniqueId();
-		return this;
-	}
+        return this;
+    }
 
     // Behaviors
     private _behaviors = new Array<Behavior<Node>>();
@@ -834,9 +834,9 @@ export class Node implements IBehaviorAware<Node> {
             return null;
         }
 
-		if(!scene) {
-			return null;
-		}
+        if (!scene) {
+            return null;
+        }
 
         return scene.beginAnimation(this, range.from, range.to, loop, speedRatio, onAnimationEnd);
     }
@@ -931,17 +931,21 @@ export class Node implements IBehaviorAware<Node> {
      * @param predicate defines a callback function that can be customize to filter what meshes should be included in the list used to compute the bounding vectors
      * @returns the new bounding vectors
      */
-    public getHierarchyBoundingVectors(includeDescendants = true, predicate: Nullable<(abstractMesh: AbstractMesh) => boolean> = null): { min: Nullable<Vector3>; max: Nullable<Vector3> } {
+    public getHierarchyBoundingVectors(
+        includeDescendants = true,
+        predicate: Nullable<(abstractMesh: AbstractMesh) => boolean> = null
+    ): { min: Nullable<Vector3>; max: Nullable<Vector3> } {
         // Ensures that all world matrix will be recomputed.
-        if(!this._scene){
-			return {
-				min: null, max: null
-			}
-		}
-		
-		this._scene.incrementRenderId();
-        
-		this.computeWorldMatrix(true);
+        if (!this._scene) {
+            return {
+                min: null,
+                max: null,
+            };
+        }
+
+        this._scene.incrementRenderId();
+
+        this.computeWorldMatrix(true);
 
         let min: Vector3;
         let max: Vector3;
