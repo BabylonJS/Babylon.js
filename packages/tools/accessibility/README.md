@@ -2,7 +2,7 @@ This package is for increasing accessibility of 3D content. It contains HTML twi
 
 ## What is Screen Reader?
 
-[Screen reader](https://en.wikipedia.org/wiki/Screen_reader) is an assistive technology for blind or low vision people to interact with digital content. For users with blindness or low vision, they can't rely 100% on visual interface. Depending on the degree of visual disabilities, some of them don't even use a monitor display or mouse when they use computers. So, for this kind of user, they use screen reader, a software, to read what are displayed visually on the screen, through speech, or through braille output. They use keyboard to tell the screen reader what to read and interact with the computer. Here's an example video of how a user uses screen reader: [Screen Reader Demo - YouTube](https://www.youtube.com/watch?v=q_ATY9gimOM&ab_channel=SLCCUniversalAccess).
+[Screen reader](https://en.wikipedia.org/wiki/Screen_reader) is an assistive technology for blind or low vision people to interact with digital content. For users with blindness or low vision, they can't rely 100% on visual interface. Depending on the degree of visual disabilities, some of them don't even use a monitor display or mouse when they use computers. This user would use screen reading software to translate what is displayed on screen into speech or braille output. They use keyboard to tell the screen reader what to read and interact with the computer. Here's an example video of how a user uses screen reader: [Screen Reader Demo - YouTube](https://www.youtube.com/watch?v=q_ATY9gimOM&ab_channel=SLCCUniversalAccess).
 
 There are different screen reader applications that a user can choose, including OS built-in screen readers like Windows's "Narrator", MacOS and iOS's "VoiceOver", and third party screen readers like JAWS, NVDA.
 
@@ -38,7 +38,7 @@ The accessibility package basically generates HTML elements for your scene, base
 ACCESSIBILITY.HTMLTwinRenderer.Render(scene);
 ```
 
-This will generate a `<div id="accessibility-host">` HTML element right after the Babylon.js scene's canvas element. Inside this div element, the renderer generate HTML twin elementss for each of your accessible contents in the scene. These HTML twin elements are internally connected with Babylon.js objects, so the screen reader user can also interact with the Babylon.js objects through their HTML twin.
+This will generate a `<div id="accessibility-host">` HTML element right after the Babylon.js scene's canvas element. Inside this div element, the renderer generates HTML twin elementss for each of your accessible contents in the scene. These HTML twin elements are internally connected with Babylon.js objects, so the screen reader user can also interact with the Babylon.js objects through their HTML twin.
 
 ### Interaction
 
