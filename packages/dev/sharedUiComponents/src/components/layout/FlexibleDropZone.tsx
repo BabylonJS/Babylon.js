@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import { DRAGCLASS, DragOperationTypes } from "./constants";
+import { DRAGCLASS, OPERATIONCLASS, ROWCLASS, OperationTypes, COLCLASS } from "./constants";
 import style from "./FlexibleDropZone.modules.scss";
 
 export interface IFlexibleDropZoneProps {
@@ -19,16 +19,12 @@ export const FlexibleDropZone: FC<IFlexibleDropZoneProps> = (props) => {
             <div
                 draggable={false}
                 className={style.rowDragHandler + " " + DRAGCLASS}
-                data-drag-type={DragOperationTypes.RESIZE_ROW}
-                data-row-number={props.rowNumber}
-                data-column-number={props.columnNumber}
+                {...{ [OPERATIONCLASS]: OperationTypes.RESIZE_ROW, [ROWCLASS]: props.rowNumber, [COLCLASS]: props.columnNumber }}
             />
             <div
                 draggable={false}
                 className={style.columnDragHandler + " " + DRAGCLASS}
-                data-drag-type={DragOperationTypes.RESIZE_COLUMN}
-                data-row-number={props.rowNumber}
-                data-column-number={props.columnNumber}
+                {...{ [OPERATIONCLASS]: OperationTypes.RESIZE_COLUMN, [ROWCLASS]: props.rowNumber, [COLCLASS]: props.columnNumber }}
             />
         </div>
     );

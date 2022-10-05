@@ -30,8 +30,8 @@
     width: 75px;
     overflow: hidden;
     text-overflow: ellipsis;
-    background-color: darkorchid;
     color: white;
+    background-color: rgb(77, 77, 77);
     border: 1px solid white;
     cursor: pointer;
 }
@@ -45,7 +45,7 @@
 }
 
 .selectedTab {
-    background-color: rgb(77, 77, 77);
+    background-color: darkorchid;
 }
 
 .contentContainer {

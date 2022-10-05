@@ -6,7 +6,7 @@ import { FlexibleTabsContainer } from "./FlexibleTabsContainer";
 import { Vector2 } from "core/Maths/math";
 import { FlexibleDropZone } from "./FlexibleDropZone";
 import type { Nullable } from "core/types";
-import { DRAGCLASS, DragOperationTypes } from "./constants";
+import { COLCLASS, DRAGCLASS, OPERATIONCLASS, OperationTypes, ROWCLASS } from "./constants";
 import { addPercentageStringToNumber } from "./unitTools";
 
 export interface IFlexibleGridLayoutProps {
@@ -55,7 +55,6 @@ export const FlexibleGridLayout: FC<IFlexibleGridLayoutProps> = (props) => {
         // Get layout rows
         const layoutElement0 = getPosInLayout(column0, row0);
         const layoutElement1 = getPosInLayout(column1, row1);
-        console.log("layout row 0", layoutElement0, "layout row 1", layoutElement1);
 
         if (layoutElement0 && layoutElement1 && containerDiv.current) {
             const percDiff = (axisDiff / maxAxisValue) * 100;
@@ -82,9 +81,9 @@ export const FlexibleGridLayout: FC<IFlexibleGridLayoutProps> = (props) => {
 
     const onDragMove = (pos: Vector2) => {
         // Vertical drag
-        if (operationInformation.current.purpose === DragOperationTypes.RESIZE_ROW) {
+        if (operationInformation.current.purpose === OperationTypes.RESIZE_ROW) {
             processResizeRow(pos, operationInformation.current.args);
-        } else if (operationInformation.current.purpose === DragOperationTypes.RESIZE_COLUMN) {
+        } else if (operationInformation.current.purpose === OperationTypes.RESIZE_COLUMN) {
             processResizeColumn(pos, operationInformation.current.args);
         }
 
@@ -93,12 +92,12 @@ export const FlexibleGridLayout: FC<IFlexibleGridLayoutProps> = (props) => {
 
     const columns = layout.columns.map((column: any, columnIdx: number) => {
         return (
-            <FlexibleColumn width={column.width}>
+            <FlexibleColumn key={column.id} width={column.width}>
                 {column.rows.map((row: any, rowIdx: number) => {
                     return (
-                        <div style={{ height: row.height }}>
+                        <div style={{ height: row.height }} key={row.id}>
                             <FlexibleDropZone rowNumber={rowIdx} columnNumber={columnIdx}>
-                                <FlexibleTabsContainer tabs={row.tabs} selectedTab={row.selectedTab} />
+                                <FlexibleTabsContainer tabs={row.tabs} selectedTab={row.selectedTab} rowIndex={rowIdx} columnIndex={columnIdx} />
                             </FlexibleDropZone>
                         </div>
                     );
@@ -107,8 +106,17 @@ export const FlexibleGridLayout: FC<IFlexibleGridLayoutProps> = (props) => {
         );
     });
 
+    const getRowAndColumnNumberFromElement = (target: HTMLElement) => {
+        const rowNumber = target.getAttribute(ROWCLASS);
+        const row = rowNumber ? parseInt(rowNumber) : undefined;
+        const columnNumber = target.getAttribute(COLCLASS);
+        const column = columnNumber ? parseInt(columnNumber) : undefined;
+        return { row, column };
+    };
+
     const pointerDownHandler = (event: React.PointerEvent<HTMLDivElement>) => {
         const target = event.target;
+
         // Check if we're clicking on an element that can be dragged
         if (target instanceof HTMLElement && target.classList.contains(DRAGCLASS)) {
             isPointerDown.current = true;
@@ -117,20 +125,29 @@ export const FlexibleGridLayout: FC<IFlexibleGridLayoutProps> = (props) => {
             pointerPos.current.y = event.clientY;
 
             // Figure out the purpose of the element through its "data-drag-type" attribute
-            const purpose = target.getAttribute("data-drag-type");
-            if (purpose === DragOperationTypes.RESIZE_ROW || purpose === DragOperationTypes.RESIZE_COLUMN) {
-                const rowNumber = target.getAttribute("data-row-number");
-                // Store possible row of where drag happened
-                const row = rowNumber ? parseInt(rowNumber) : undefined;
-                const columnNumber = target.getAttribute("data-column-number");
-                const column = columnNumber ? parseInt(columnNumber) : undefined;
-                console.log("clicked on divider of row number", rowNumber, "and column number", columnNumber);
+            const purpose = target.getAttribute(OPERATIONCLASS);
+            const { row, column } = getRowAndColumnNumberFromElement(target);
+
+            if (purpose === OperationTypes.RESIZE_ROW || purpose === OperationTypes.RESIZE_COLUMN) {
                 if (row !== undefined && column !== undefined) {
                     operationInformation.current = {
                         purpose,
                         args: {
                             column,
                             row,
+                        },
+                    };
+                }
+            } else if (purpose === OperationTypes.CLICK_TAB) {
+                const tabIndex = target.getAttribute("data-tab-index");
+
+                if (tabIndex !== undefined && row !== undefined && column !== undefined) {
+                    operationInformation.current = {
+                        purpose,
+                        args: {
+                            tabIndex,
+                            row,
+                            column,
                         },
                     };
                 }
@@ -153,24 +170,31 @@ export const FlexibleGridLayout: FC<IFlexibleGridLayoutProps> = (props) => {
         }
     };
 
-    const pointerUpHandler = (event: React.PointerEvent<HTMLDivElement>, clickFn: () => void) => {
+    const onClick = () => {
+        if (operationInformation.current.purpose === OperationTypes.CLICK_TAB) {
+            const tabIndex = operationInformation.current.args.tabIndex;
+            const layoutElement = getPosInLayout(operationInformation.current.args.column, operationInformation.current.args.row);
+            if (layoutElement) {
+                layoutElement.selectedTab = tabIndex;
+
+                setLayout({ ...layout });
+            }
+        }
+    };
+
+    const pointerUpHandler = (event: React.PointerEvent<HTMLDivElement>) => {
         // If pointer was dragging, stop drag. If not, consider it a click
         if (isDragging.current) {
             isDragging.current = false;
         } else {
-            clickFn();
+            // Perform click function
+            onClick();
         }
         isPointerDown.current = false;
     };
 
     return (
-        <div
-            ref={containerDiv}
-            onPointerDown={pointerDownHandler}
-            onPointerMove={pointerMoveHandler}
-            onPointerUp={(event) => pointerUpHandler(event, () => console.log("click"))}
-            className={style.flexibleGrid}
-        >
+        <div ref={containerDiv} onPointerDown={pointerDownHandler} onPointerMove={pointerMoveHandler} onPointerUp={pointerUpHandler} className={style.flexibleGrid}>
             {columns}
         </div>
     );
