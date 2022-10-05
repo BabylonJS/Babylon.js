@@ -26,9 +26,9 @@ import "./shaders/mrdlFrontplate.vertex";
 
 /** @hidden */
 class MRDLFrontplateMaterialDefines extends MaterialDefines {
-    /*
-		"SMOOTH_EDGES"
-	*/
+    /**
+     * Sets default value for "SMOOTH_EDGES"
+     */
     public SMOOTH_EDGES = true;
 
     constructor() {
