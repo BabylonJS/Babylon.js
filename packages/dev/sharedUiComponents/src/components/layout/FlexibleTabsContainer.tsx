@@ -3,7 +3,7 @@ import { ClassNames } from "../classNames";
 import { DRAGCLASS, OPERATIONCLASS, OperationTypes, ROWCLASS, COLCLASS } from "./constants";
 import style from "./FlexibleTabsContainer.modules.scss";
 
-import dragIcon from "../../imgs/cellIDIcon.svg";
+import dragIcon from "../../imgs/dragDotsIcon_white.svg";
 
 export interface IFlexibleTabsContainerProps {
     tabs: { component: ReactElement; id: string }[];
@@ -22,7 +22,7 @@ export const FlexibleTabsContainer: FC<IFlexibleTabsContainerProps> = (props) =>
         <div className={style.rootContainer}>
             <div draggable={false} className={style.tabsLineContainer}>
                 <div className={style.tabsContainer}>
-                    {tabs.map((tab, index) => {
+                    {tabs.map((tab) => {
                         return (
                             <div key={tab.id} className={ClassNames({ tab: true, selectedTab: tab.id === selectedTabId }, style)}>
                                 <div
