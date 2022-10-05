@@ -24,29 +24,37 @@ export const Workbench: FC<WorkbenchProps> = () => {
                     layoutDefinition={{
                         columns: [
                             {
+                                id: "column1",
                                 width: "25%",
                                 rows: [
-                                    { height: "30%", tabs: [<TestComponent name="c1" color="#ff00ff" />] },
+                                    { id: "row1", height: "30%", tabs: [{ id: "c1", component: <TestComponent name="c1" /> }] },
                                     {
+                                        id: "row2",
                                         height: "20%",
-                                        selectedTab: 1,
-                                        tabs: [<TestComponent name="c4" title="tab c4" color="#00ff00" />, <TestComponent name="c5" color="#ff0000" />],
+                                        selectedTab: "c3",
+                                        tabs: [
+                                            { id: "c2", component: <TestComponent name="c2" /> },
+                                            { id: "c3", component: <TestComponent name="c3" /> },
+                                            { id: "c4", component: <TestComponent name="c4" /> },
+                                        ],
                                     },
-                                    { height: "50%", tabs: [<TestComponent name="c2" color="#ffff00" />] },
+                                    { id: "row3", height: "50%", tabs: [{ id: "c5", component: <TestComponent name="c5" /> }] },
                                 ],
                             },
                             {
+                                id: "column2",
                                 width: "50%",
                                 rows: [
-                                    { height: "70%", tabs: [<TestComponent name="c3" color="#0000ff" />] },
-                                    { height: "30%", tabs: [<TestComponent name="c7" color="#0000ff" />] },
+                                    { id: "row4", height: "70%", tabs: [{ id: "c6", component: <TestComponent name="c6" /> }] },
+                                    { id: "row5", height: "30%", tabs: [{ id: "c7", component: <TestComponent name="c7" /> }] },
                                 ],
                             },
                             {
+                                id: "column3",
                                 width: "25%",
                                 rows: [
-                                    { height: "50%", tabs: [<TestComponent name="c6" color="#0000ff" />] },
-                                    { height: "50%", tabs: [<TestComponent name="c8" color="#0000ff" />] },
+                                    { id: "row6", height: "50%", tabs: [{ id: "c8", component: <TestComponent name="c8" /> }] },
+                                    { id: "row7", height: "50%", tabs: [{ id: "c9", component: <TestComponent name="c9" /> }] },
                                 ],
                             },
                         ],
