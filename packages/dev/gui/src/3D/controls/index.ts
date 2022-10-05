@@ -3,9 +3,10 @@ export * from "./button3D";
 export * from "./container3D";
 export * from "./control3D";
 export * from "./cylinderPanel";
+export * from "./handMenu";
+export * from "./holographicBackplate";
 export * from "./holographicButton";
 export * from "./holographicSlate";
-export * from "./handMenu";
 export * from "./meshButton3D";
 export * from "./nearMenu";
 export * from "./planePanel";
@@ -18,4 +19,7 @@ export * from "./touchMeshButton3D";
 export * from "./touchHolographicButton";
 export * from "./touchHolographicMenu";
 export * from "./volumeBasedPanel";
-export * from "./holographicBackplate";
+
+// MRTK3 Controls
+import { TouchHolographicButton } from "./MRTK3/touchHolographicButton";
+export { TouchHolographicButton as TouchHolographicButtonV3 };
