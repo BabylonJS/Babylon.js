@@ -9,3 +9,24 @@ export const addPercentageStringToNumber = (p1: string, p2: number): number => {
     const nr = np1 + np2;
     return nr;
 };
+
+/**
+ * Get the percentage of a position relative to a bounding rect
+ * @param x
+ * @param y
+ * @param rect
+ * @returns
+ */
+export const getPercentageInsideRect = (x: number, y: number, rect: DOMRect): { xPercentage: number; yPercentage: number } => {
+    const xPercentage = (x - rect.left) / rect.width;
+    const yPercentage = (y - rect.top) / rect.height;
+    return { xPercentage, yPercentage };
+};
+
+/**
+ * Parses a percentage string into a number
+ * @param p the percentage string
+ */
+export const parsePercentage = (p: string): number => {
+    return Number.parseFloat(p.replace("%", ""));
+};
