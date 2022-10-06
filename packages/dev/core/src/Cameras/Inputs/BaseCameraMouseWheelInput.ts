@@ -10,7 +10,7 @@ import { Tools } from "../../Misc/tools";
 import type { DeviceSourceType } from "../../DeviceInput/internalDeviceSourceManager";
 import { DeviceType } from "../../DeviceInput/InputDevices/deviceEnums";
 import { GestureRecognizer } from "../../DeviceInput/gestureRecognizer";
-import { PointerEventTypes } from "../../Events";
+import { PointerEventTypes } from "../../Events/pointerEvents";
 import { Logger } from "../../Misc/logger";
 
 /**
