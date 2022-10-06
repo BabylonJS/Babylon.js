@@ -964,10 +964,12 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
                 this._log(`Binary version: ${version}`);
             }
 
-            const length = dataReader.readUint32();
-            if (dataReader.buffer.byteLength !== 0 && length !== dataReader.buffer.byteLength) {
-                throw new Error(`Length in header does not match actual data length: ${length} != ${dataReader.buffer.byteLength}`);
+            const headerLength = dataReader.readUint32();
+            if (dataReader.buffer.byteLength !== 0 && headerLength !== dataReader.buffer.byteLength) {
+                Logger.Warn(`Header length does not match actual data length: ${headerLength} != ${dataReader.buffer.byteLength}`);
             }
+
+            const length = Math.min(headerLength, dataReader.buffer.byteLength);
 
             let unpacked: Promise<IGLTFLoaderData>;
             switch (version) {
