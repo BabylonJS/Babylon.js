@@ -75,10 +75,9 @@ export class VideoDome extends TextureDome<VideoTexture> {
                 if (deviceSource.deviceType === DeviceType.Mouse) {
                     this._mouseObserver = deviceSource.onInputChangedObservable.add((eventData) => {
                         if (
-                            !("deltaY" in eventData) &&
-                            (eventData.inputIndex === PointerInput.LeftClick ||
-                                eventData.inputIndex === PointerInput.MiddleClick ||
-                                eventData.inputIndex === PointerInput.RightClick)
+                            eventData.inputIndex === PointerInput.LeftClick ||
+                            eventData.inputIndex === PointerInput.MiddleClick ||
+                            eventData.inputIndex === PointerInput.RightClick
                         ) {
                             if (deviceSource.getInput(eventData.inputIndex) === 1) {
                                 this._texture.video.play();

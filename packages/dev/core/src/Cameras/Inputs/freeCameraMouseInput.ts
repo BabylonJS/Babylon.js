@@ -7,9 +7,11 @@ import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import type { FreeCamera } from "../../Cameras/freeCamera";
 import { Tools } from "../../Misc/tools";
 import type { IMouseEvent, IPointerEvent, IWheelEvent } from "../../Events/deviceInputEvents";
-import { DeviceType, PointerInput } from "../../DeviceInput/InputDevices/deviceEnums";
+import { DeviceType } from "../../DeviceInput/InputDevices/deviceEnums";
 import type { DeviceSourceType } from "../../DeviceInput/internalDeviceSourceManager";
 import { PointerEventTypes } from "../../Events/pointerEvents";
+import { Logger } from "../../Misc/logger";
+import { GestureRecognizer } from "../../DeviceInput/gestureRecognizer";
 /**
  * Manage the mouse inputs to control the movement of a free camera.
  * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -73,38 +75,52 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
     public attachControl(noPreventDefault?: boolean): void {
+        const deviceSourceManager = this.camera._deviceSourceManager;
+        // If the user tries to attach this control without having general camera controls active, warn and return.
+        if (!deviceSourceManager) {
+            Logger.Warn("Cannot attach control to camera.  Camera controls not present");
+            return;
+        }
+
         // eslint-disable-next-line prefer-rest-params
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         const engine = this.camera.getEngine();
         const element = engine.getInputElement();
 
-        this._connectedObserver = this.camera._deviceSourceManager!.onDeviceConnectedObservable.add((deviceSource) => {
+        this._connectedObserver = deviceSourceManager.onDeviceConnectedObservable.add((deviceSource) => {
             if (deviceSource.deviceType === DeviceType.Mouse) {
                 this._mouseObserver = deviceSource.onInputChangedObservable.add((eventData) => {
-                    if (!("deltaY" in eventData)) {
-                        let type = PointerEventTypes.POINTERMOVE;
+                    const type = GestureRecognizer.DeterminePointerEventType(deviceSource, eventData);
+                    const pointerEventData = eventData as IPointerEvent;
 
-                        if (eventData.inputIndex !== PointerInput.Move) {
-                            type = deviceSource.getInput(eventData.inputIndex) === 1 ? PointerEventTypes.POINTERDOWN : PointerEventTypes.POINTERUP;
-                        }
-
-                        this._pointerInput(eventData, type);
+                    if ((type & PointerEventTypes.POINTERMOVE) !== 0) {
+                        this._pointerInput(pointerEventData, PointerEventTypes.POINTERMOVE);
+                    }
+                    if ((type & PointerEventTypes.POINTERDOWN) !== 0) {
+                        this._pointerInput(pointerEventData, PointerEventTypes.POINTERDOWN);
+                    }
+                    if ((type & PointerEventTypes.POINTERUP) !== 0) {
+                        this._pointerInput(pointerEventData, PointerEventTypes.POINTERUP);
                     }
                 });
             } else if (deviceSource.deviceType === DeviceType.Touch) {
                 this._touchObservers[deviceSource.deviceSlot] = deviceSource.onInputChangedObservable.add((eventData) => {
-                    let type = PointerEventTypes.POINTERMOVE;
+                    const type = GestureRecognizer.DeterminePointerEventType(deviceSource, eventData);
 
-                    if (eventData.inputIndex !== PointerInput.Move) {
-                        type = deviceSource.getInput(eventData.inputIndex) === 1 ? PointerEventTypes.POINTERDOWN : PointerEventTypes.POINTERUP;
+                    if ((type & PointerEventTypes.POINTERMOVE) !== 0) {
+                        this._pointerInput(eventData, PointerEventTypes.POINTERMOVE);
                     }
-
-                    this._pointerInput(eventData, type);
+                    if ((type & PointerEventTypes.POINTERDOWN) !== 0) {
+                        this._pointerInput(eventData, PointerEventTypes.POINTERDOWN);
+                    }
+                    if ((type & PointerEventTypes.POINTERUP) !== 0) {
+                        this._pointerInput(eventData, PointerEventTypes.POINTERUP);
+                    }
                 });
             }
         });
 
-        this._disconnectedObserver = this.camera._deviceSourceManager!.onDeviceDisconnectedObservable.add((deviceSource) => {
+        this._disconnectedObserver = deviceSourceManager.onDeviceDisconnectedObservable.add((deviceSource) => {
             if (deviceSource.deviceType === DeviceType.Mouse) {
                 deviceSource.onInputChangedObservable.remove(this._mouseObserver);
                 this._mouseObserver = null;
@@ -250,15 +266,18 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
      */
     public detachControl(): void {
         if (this._connectedObserver || this._disconnectedObserver) {
-            this.camera._deviceSourceManager?.onDeviceConnectedObservable.remove(this._connectedObserver);
-            this.camera._deviceSourceManager?.onDeviceDisconnectedObservable.remove(this._disconnectedObserver);
-            const mouse = this.camera._deviceSourceManager?.getDeviceSource(DeviceType.Mouse);
-            const touches = this.camera._deviceSourceManager?.getDeviceSources(DeviceType.Touch);
+            const deviceSourceManager = this.camera._deviceSourceManager;
+            if (deviceSourceManager) {
+                deviceSourceManager.onDeviceConnectedObservable.remove(this._connectedObserver);
+                deviceSourceManager.onDeviceDisconnectedObservable.remove(this._disconnectedObserver);
+                const mouse = deviceSourceManager.getDeviceSource(DeviceType.Mouse);
+                const touches = deviceSourceManager.getDeviceSources(DeviceType.Touch);
 
-            mouse?.onInputChangedObservable.remove(this._mouseObserver);
-            touches?.forEach((touch) => {
-                touch.onInputChangedObservable.remove(this._touchObservers[touch.deviceSlot]);
-            });
+                mouse?.onInputChangedObservable.remove(this._mouseObserver);
+                touches?.forEach((touch) => {
+                    touch.onInputChangedObservable.remove(this._touchObservers[touch.deviceSlot]);
+                });
+            }
 
             if (this._contextMenuBind) {
                 const engine = this.camera.getEngine();

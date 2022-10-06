@@ -863,7 +863,7 @@ export class ArcRotateCamera extends TargetCamera {
      * @param panningMouseButton Defines whether panning is allowed through mouse click button
      */
     public attachControl(ignored: any, noPreventDefault?: boolean, useCtrlForPanning: boolean | number = true, panningMouseButton: number = 2): void {
-        this._deviceSourceManager = new DeviceSourceManager(this.getEngine());
+        this._deviceSourceManager = this._deviceSourceManager || new DeviceSourceManager(this.getEngine());
         // eslint-disable-next-line prefer-rest-params
         const args = arguments;
 

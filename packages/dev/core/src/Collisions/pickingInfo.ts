@@ -13,7 +13,7 @@ declare type Ray = import("../Culling/ray").Ray;
  */
 export class PickingInfo {
     /** @internal */
-    public _pickingUnavailable = false;
+    public _pickingAvailable = true;
 
     /**
      * If the pick collided with an object
