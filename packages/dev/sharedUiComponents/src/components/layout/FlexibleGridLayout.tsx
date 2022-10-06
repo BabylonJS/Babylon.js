@@ -6,8 +6,8 @@ import { FlexibleTabsContainer } from "./FlexibleTabsContainer";
 import { Vector2 } from "core/Maths/math";
 import { FlexibleDropZone } from "./FlexibleDropZone";
 import type { Nullable } from "core/types";
-import { COLCLASS, DRAGCLASS, OPERATIONCLASS, OperationTypes, ROWCLASS } from "./constants";
-import { addPercentageStringToNumber } from "./unitTools";
+import { COLCLASS, DRAGCLASS, ELEMENTCLASS, ElementTypes, ROWCLASS } from "./constants";
+import { addPercentageStringToNumber, getPercentageInsideRect, parsePercentage } from "./unitTools";
 
 export interface IFlexibleGridLayoutProps {
     layoutDefinition: any;
@@ -79,16 +79,44 @@ export const FlexibleGridLayout: FC<IFlexibleGridLayoutProps> = (props) => {
         processResize(pos, undefined, args.column, undefined, args.column + 1, "x", containerDiv.current!.clientWidth, "width", MinColumnWidth);
     };
 
+    const processDragTab = (pos: Vector2, args: { target: HTMLDivElement }) => {
+        if (!args.target.classList.contains(style.dragging)) {
+            args.target.classList.add(style.dragging);
+        }
+        // Check which element is being dragged over. For that, we need to get the position as a percentage of the container
+        const containerRect = containerDiv.current!.getBoundingClientRect();
+        const { xPercentage, yPercentage } = getPercentageInsideRect(pos.x, pos.y, containerRect);
+        const { row } = getColumnAndRowByPercentage(xPercentage, yPercentage);
+
+        layout.draggedOverRowId = row?.id;
+        console.log("set dragged over row id to", layout.draggedOverRowId);
+        setLayout({ ...layout });
+    };
+
+    const processReleaseTab = (args: { target: HTMLDivElement }) => {
+        if (args.target.classList.contains(style.dragging)) {
+            args.target.classList.remove(style.dragging);
+        }
+    };
+
     const onDragMove = (pos: Vector2) => {
-        // Vertical drag
         console.log("operationinformation", operationInformation.current);
-        if (operationInformation.current.purpose === OperationTypes.RESIZE_ROW) {
+        if (operationInformation.current.purpose === ElementTypes.RESIZE_ROW) {
             processResizeRow(pos, operationInformation.current.args);
-        } else if (operationInformation.current.purpose === OperationTypes.RESIZE_COLUMN) {
+        } else if (operationInformation.current.purpose === ElementTypes.RESIZE_COLUMN) {
             processResizeColumn(pos, operationInformation.current.args);
+        } else if (operationInformation.current.purpose === ElementTypes.TAB) {
+            processDragTab(pos, operationInformation.current.args);
         }
 
         pointerPos.current = pos;
+    };
+
+    const onDragRelease = () => {
+        isDragging.current = false;
+        if (operationInformation.current.purpose === ElementTypes.TAB) {
+            processReleaseTab(operationInformation.current.args);
+        }
     };
 
     const columns = layout.columns.map((column: any, columnIdx: number) => {
@@ -98,7 +126,13 @@ export const FlexibleGridLayout: FC<IFlexibleGridLayoutProps> = (props) => {
                     return (
                         <div style={{ height: row.height }} key={row.id}>
                             <FlexibleDropZone rowNumber={rowIdx} columnNumber={columnIdx}>
-                                <FlexibleTabsContainer tabs={row.tabs} selectedTab={row.selectedTab} rowIndex={rowIdx} columnIndex={columnIdx} />
+                                <FlexibleTabsContainer
+                                    tabs={row.tabs}
+                                    selectedTab={row.selectedTab}
+                                    rowIndex={rowIdx}
+                                    columnIndex={columnIdx}
+                                    draggedOver={row.id === layout.draggedOverRowId}
+                                />
                             </FlexibleDropZone>
                         </div>
                     );
@@ -115,6 +149,42 @@ export const FlexibleGridLayout: FC<IFlexibleGridLayoutProps> = (props) => {
         return { row, column };
     };
 
+    const getRowByPercentage = (yPercentage: number, column: any) => {
+        let ySum = 0;
+
+        for (let r = 0; r < column.rows.length; r++) {
+            const row = column.rows[r];
+            ySum += parsePercentage(row.height);
+
+            if (ySum >= yPercentage) {
+                return row;
+            }
+        }
+
+        return undefined;
+    };
+
+    // According to the position ocupied by the element, get the row and column to which it belongs
+    const getColumnAndRowByPercentage = (xPercentage: number, yPercentage: number) => {
+        let xSum = 0;
+
+        let c = 0;
+        for (; c < layout.columns.length; c++) {
+            const column = layout.columns[c];
+            xSum += parsePercentage(column.width);
+
+            // Found the column in which the element belongs
+            if (xSum >= xPercentage) {
+                break;
+            }
+        }
+
+        const column = layout.columns[c];
+        const row = getRowByPercentage(yPercentage, column);
+
+        return { column, row };
+    };
+
     const pointerDownHandler = (event: React.PointerEvent<HTMLDivElement>) => {
         const target = event.target;
 
@@ -126,10 +196,10 @@ export const FlexibleGridLayout: FC<IFlexibleGridLayoutProps> = (props) => {
             pointerPos.current.y = event.clientY;
 
             // Figure out the purpose of the element through its "data-drag-type" attribute
-            const purpose = target.getAttribute(OPERATIONCLASS);
+            const purpose = target.getAttribute(ELEMENTCLASS);
             const { row, column } = getRowAndColumnNumberFromElement(target);
 
-            if (purpose === OperationTypes.RESIZE_ROW || purpose === OperationTypes.RESIZE_COLUMN) {
+            if (purpose === ElementTypes.RESIZE_ROW || purpose === ElementTypes.RESIZE_COLUMN) {
                 if (row !== undefined && column !== undefined) {
                     operationInformation.current = {
                         purpose,
@@ -139,13 +209,14 @@ export const FlexibleGridLayout: FC<IFlexibleGridLayoutProps> = (props) => {
                         },
                     };
                 }
-            } else if (purpose === OperationTypes.CLICK_TAB) {
+            } else if (purpose === ElementTypes.TAB) {
                 const tabIndex = target.getAttribute("data-tab-index");
 
                 if (tabIndex !== undefined && row !== undefined && column !== undefined) {
                     operationInformation.current = {
                         purpose,
                         args: {
+                            target,
                             tabIndex,
                             row,
                             column,
@@ -172,7 +243,7 @@ export const FlexibleGridLayout: FC<IFlexibleGridLayoutProps> = (props) => {
     };
 
     const onClick = () => {
-        if (operationInformation.current.purpose === OperationTypes.CLICK_TAB) {
+        if (operationInformation.current.purpose === ElementTypes.TAB) {
             const tabIndex = operationInformation.current.args.tabIndex;
             const layoutElement = getPosInLayout(operationInformation.current.args.column, operationInformation.current.args.row);
             if (layoutElement) {
@@ -186,12 +257,12 @@ export const FlexibleGridLayout: FC<IFlexibleGridLayoutProps> = (props) => {
     const pointerUpHandler = (event: React.PointerEvent<HTMLDivElement>) => {
         // If pointer was dragging, stop drag. If not, consider it a click
         if (isDragging.current) {
-            isDragging.current = false;
+            onDragRelease();
         } else {
             // Perform click function
             onClick();
         }
-        operationInformation.current = { purpose: OperationTypes.NONE };
+        operationInformation.current = { purpose: ElementTypes.NONE };
         isPointerDown.current = false;
     };
 
@@ -200,7 +271,7 @@ export const FlexibleGridLayout: FC<IFlexibleGridLayoutProps> = (props) => {
         if (isDragging.current) {
             isDragging.current = false;
         }
-        operationInformation.current = { purpose: OperationTypes.NONE };
+        operationInformation.current = { purpose: ElementTypes.NONE };
     };
 
     return (
