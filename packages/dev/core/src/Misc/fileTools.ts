@@ -152,7 +152,7 @@ export const SetCorsBehavior = (url: string | string[], element: { crossOrigin: 
 export const LoadImage = (
     input: string | ArrayBuffer | ArrayBufferView | Blob,
     onLoad: (img: HTMLImageElement | ImageBitmap) => void,
-    onError: (message?: string, exception?: any, ...extra: any[]) => void,
+    onError: (message?: string, exception?: any) => void,
     offlineProvider: Nullable<IOfflineProvider>,
     mimeType: string = "",
     imageBitmapOptions?: ImageBitmapOptions
@@ -177,14 +177,10 @@ export const LoadImage = (
 
     const engine = EngineStore.LastCreatedEngine;
 
-    const onErrorHandler = (exception: any, loadFallback: boolean = true) => {
+    const onErrorHandler = (exception: any) => {
         if (onError) {
             const inputText = url || input.toString();
-            onError(
-                `Error while trying to load image: ${inputText.indexOf("http") === 0 || inputText.length <= 128 ? inputText : inputText.slice(0, 128) + "..."}`,
-                exception,
-                loadFallback
-            );
+            onError(`Error while trying to load image: ${inputText.indexOf("http") === 0 || inputText.length <= 128 ? inputText : inputText.slice(0, 128) + "..."}`, exception);
         }
     };
 
@@ -261,7 +257,8 @@ export const LoadImage = (
         unloadHandlersList();
         const cspException = new Error(`CSP violation of policy ${err.effectiveDirective} ${err.blockedURI}. Current policy is ${err.originalPolicy}`);
 
-        onErrorHandler(cspException, false);
+        EngineStore.UseFallbackTexture = false;
+        onErrorHandler(cspException);
         if (usingObjectURL && img.src) {
             URL.revokeObjectURL(img.src);
         }
