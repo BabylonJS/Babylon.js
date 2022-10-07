@@ -86,9 +86,6 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
                 effect.setTextureFromPostProcess("textureSampler", imageToBlur);
             }
             effect.setTextureFromPostProcessOutput("circleOfConfusionSampler", circleOfConfusion);
-            if (scene.activeCamera) {
-                effect.setFloat2("cameraMinMaxZ", scene.activeCamera.minZ, scene.activeCamera.maxZ);
-            }
         });
     }
 }
