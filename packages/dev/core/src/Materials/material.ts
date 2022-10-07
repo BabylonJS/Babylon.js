@@ -399,8 +399,11 @@ export class Material implements IAnimatable {
      */
     public atomicMaterialsUpdate(callback: (material: this) => void): void {
         this.blockDirtyMechanism = true;
-        callback(this);
-        this.blockDirtyMechanism = false;
+        try {
+            callback(this);
+        } finally {
+            this.blockDirtyMechanism = false;
+        }
     }
 
     /**
