@@ -397,7 +397,7 @@ export class Material implements IAnimatable {
      * The callback will pass the material as an argument, so you can make your changes to it.
      * @param callback the callback to be executed that will update the material
      */
-    public atomicMaterialPropertiesUpdate(callback: (material: this) => void): void {
+    public atomicMaterialsUpdate(callback: (material: this) => void): void {
         this.blockDirtyMechanism = true;
         callback(this);
         this.blockDirtyMechanism = false;
