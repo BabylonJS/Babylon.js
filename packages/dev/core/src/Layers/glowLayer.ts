@@ -139,7 +139,7 @@ export class GlowLayer extends EffectLayer {
      */
     @serialize()
     public get blurKernelSize(): number {
-        return this._horizontalBlurPostprocess1.kernel;
+        return this._options.blurKernelSize;
     }
 
     /**
