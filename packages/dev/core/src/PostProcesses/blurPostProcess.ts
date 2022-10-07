@@ -113,7 +113,7 @@ export class BlurPostProcess extends PostProcess {
         super(
             name,
             "kernelBlur",
-            ["delta", "direction", "cameraMinMaxZ"],
+            ["delta", "direction"],
             ["circleOfConfusionSampler"],
             options,
             camera,

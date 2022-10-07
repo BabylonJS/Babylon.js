@@ -28,7 +28,7 @@ void main(void)
         vec4 blurred1 = texture2D(blurStep1, vUV);
         gl_FragColor = mix(original, blurred1, coc/0.5);
     }else{
-        vec4 blurred0 = texture2D(blurStep0, vUV);   
+        vec4 blurred0 = texture2D(blurStep0, vUV);
         vec4 blurred1 = texture2D(blurStep1, vUV);
         gl_FragColor = mix(blurred1, blurred0, (coc-0.5)/0.5);
     }
