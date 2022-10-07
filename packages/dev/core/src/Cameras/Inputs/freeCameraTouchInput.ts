@@ -1,17 +1,14 @@
 import { serialize } from "../../Misc/decorators";
-import type { Observer } from "../../Misc/observable";
+import type { Observer, EventState } from "../../Misc/observable";
 import type { Nullable } from "../../types";
 import type { ICameraInput } from "../../Cameras/cameraInputsManager";
 import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import type { FreeCamera } from "../../Cameras/freeCamera";
+import type { PointerInfo } from "../../Events/pointerEvents";
 import { PointerEventTypes } from "../../Events/pointerEvents";
 import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { Tools } from "../../Misc/tools";
-import type { IPointerEvent, IWheelEvent } from "../../Events/deviceInputEvents";
-import type { DeviceSourceType } from "../../DeviceInput/internalDeviceSourceManager";
-import { DeviceType } from "../../DeviceInput/InputDevices/deviceEnums";
-import { Logger } from "../../Misc/logger";
-import { GestureRecognizer } from "../../DeviceInput/gestureRecognizer";
+import type { IPointerEvent } from "../../Events/deviceInputEvents";
 /**
  * Manage the touch inputs to control the movement of a free camera.
  * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -45,12 +42,9 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
     private _offsetY: Nullable<number> = null;
 
     private _pointerPressed = new Array<number>();
-    private _pointerInput: (p: IPointerEvent, type: PointerEventTypes) => void;
-    private _connectedObserver: Nullable<Observer<DeviceSourceType>>;
-    private _disconnectedObserver: Nullable<Observer<DeviceSourceType>>;
+    private _pointerInput?: (p: PointerInfo, s: EventState) => void;
+    private _observer: Nullable<Observer<PointerInfo>>;
     private _onLostFocus: Nullable<(e: FocusEvent) => any>;
-    private _mouseObserver: Nullable<Observer<IPointerEvent | IWheelEvent>>;
-    private _touchObservers: Array<Nullable<Observer<IPointerEvent>>>;
     private _isSafari: boolean;
 
     /**
@@ -72,59 +66,9 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
     public attachControl(noPreventDefault?: boolean): void {
-        const deviceSourceManager = this.camera._deviceSourceManager;
-        // If the user tries to attach this control without having general camera controls active, warn and return.
-        if (!deviceSourceManager) {
-            Logger.Warn("Cannot attach control to camera.  Camera controls not present");
-            return;
-        }
-
         // eslint-disable-next-line prefer-rest-params
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         let previousPosition: Nullable<{ x: number; y: number }> = null;
-
-        this._connectedObserver = deviceSourceManager.onDeviceConnectedObservable.add((deviceSource) => {
-            if (deviceSource.deviceType === DeviceType.Mouse) {
-                this._mouseObserver = deviceSource.onInputChangedObservable.add((eventData) => {
-                    const type = GestureRecognizer.DeterminePointerEventType(deviceSource, eventData);
-                    const pointerEventData = eventData as IPointerEvent;
-
-                    if ((type & PointerEventTypes.POINTERMOVE) !== 0) {
-                        this._pointerInput(pointerEventData, PointerEventTypes.POINTERMOVE);
-                    }
-                    if ((type & PointerEventTypes.POINTERDOWN) !== 0) {
-                        this._pointerInput(pointerEventData, PointerEventTypes.POINTERDOWN);
-                    }
-                    if ((type & PointerEventTypes.POINTERUP) !== 0) {
-                        this._pointerInput(pointerEventData, PointerEventTypes.POINTERUP);
-                    }
-                });
-            } else if (deviceSource.deviceType === DeviceType.Touch) {
-                this._touchObservers[deviceSource.deviceSlot] = deviceSource.onInputChangedObservable.add((eventData) => {
-                    const type = GestureRecognizer.DeterminePointerEventType(deviceSource, eventData);
-
-                    if ((type & PointerEventTypes.POINTERMOVE) !== 0) {
-                        this._pointerInput(eventData, PointerEventTypes.POINTERMOVE);
-                    }
-                    if ((type & PointerEventTypes.POINTERDOWN) !== 0) {
-                        this._pointerInput(eventData, PointerEventTypes.POINTERDOWN);
-                    }
-                    if ((type & PointerEventTypes.POINTERUP) !== 0) {
-                        this._pointerInput(eventData, PointerEventTypes.POINTERUP);
-                    }
-                });
-            }
-        });
-
-        this._disconnectedObserver = deviceSourceManager.onDeviceDisconnectedObservable.add((deviceSource) => {
-            if (deviceSource.deviceType === DeviceType.Mouse) {
-                deviceSource.onInputChangedObservable.remove(this._mouseObserver);
-                this._mouseObserver = null;
-            } else if (deviceSource.deviceType === DeviceType.Touch) {
-                deviceSource.onInputChangedObservable.remove(this._touchObservers[deviceSource.deviceSlot]);
-                this._touchObservers[deviceSource.deviceSlot] = null;
-            }
-        });
 
         if (this._pointerInput === undefined) {
             this._onLostFocus = () => {
@@ -132,8 +76,8 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
                 this._offsetY = null;
             };
 
-            this._pointerInput = (p, t) => {
-                const evt = p;
+            this._pointerInput = (p) => {
+                const evt = <IPointerEvent>p.event;
 
                 const isMouseEvent = evt.pointerType === "mouse" || (this._isSafari && typeof evt.pointerType === "undefined");
 
@@ -141,7 +85,7 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
                     return;
                 }
 
-                if (t === PointerEventTypes.POINTERDOWN) {
+                if (p.type === PointerEventTypes.POINTERDOWN) {
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
@@ -156,7 +100,7 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
                         x: evt.clientX,
                         y: evt.clientY,
                     };
-                } else if (t === PointerEventTypes.POINTERUP) {
+                } else if (p.type === PointerEventTypes.POINTERUP) {
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
@@ -174,7 +118,7 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
                     previousPosition = null;
                     this._offsetX = null;
                     this._offsetY = null;
-                } else if (t === PointerEventTypes.POINTERMOVE) {
+                } else if (p.type === PointerEventTypes.POINTERMOVE) {
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
@@ -195,6 +139,8 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
             };
         }
 
+        this._observer = this.camera._addPointerObserver(this._pointerInput, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);
+
         if (this._onLostFocus) {
             const engine = this.camera.getEngine();
             const element = engine.getInputElement();
@@ -206,18 +152,10 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
      * Detach the current controls from the specified dom element.
      */
     public detachControl(): void {
-        if (this._connectedObserver || this._disconnectedObserver) {
-            const deviceSourceManager = this.camera._deviceSourceManager;
-            if (deviceSourceManager) {
-                deviceSourceManager.onDeviceConnectedObservable.remove(this._connectedObserver);
-                deviceSourceManager.onDeviceDisconnectedObservable.remove(this._disconnectedObserver);
-                const mouse = deviceSourceManager.getDeviceSource(DeviceType.Mouse);
-                const touches = deviceSourceManager.getDeviceSources(DeviceType.Touch);
-
-                mouse?.onInputChangedObservable.remove(this._mouseObserver);
-                touches?.forEach((touch) => {
-                    touch.onInputChangedObservable.remove(this._touchObservers[touch.deviceSlot]);
-                });
+        if (this._pointerInput) {
+            if (this._observer) {
+                this.camera.getScene().onPointerObservable.remove(this._observer);
+                this._observer = null;
             }
 
             if (this._onLostFocus) {

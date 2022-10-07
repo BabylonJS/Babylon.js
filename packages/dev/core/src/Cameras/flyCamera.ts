@@ -10,7 +10,6 @@ import { FlyCameraInputsManager } from "./flyCameraInputsManager";
 import type { FlyCameraMouseInput } from "../Cameras/Inputs/flyCameraMouseInput";
 import type { FlyCameraKeyboardInput } from "../Cameras/Inputs/flyCameraKeyboardInput";
 import { Tools } from "../Misc/tools";
-import { DeviceSourceManager } from "../DeviceInput/InputDevices/deviceSourceManager";
 
 declare type Collider = import("../Collisions/collider").Collider;
 
@@ -285,7 +284,6 @@ export class FlyCamera extends TargetCamera {
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
     public attachControl(ignored: any, noPreventDefault?: boolean): void {
-        this._deviceSourceManager = this._deviceSourceManager || new DeviceSourceManager(this.getEngine());
         // eslint-disable-next-line prefer-rest-params
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         this.inputs.attachElement(noPreventDefault);
@@ -297,9 +295,6 @@ export class FlyCamera extends TargetCamera {
      */
     public detachControl(): void {
         this.inputs.detachElement();
-        this._deviceSourceManager?.dispose();
-        this._deviceSourceManager = null;
-
         this.cameraDirection = new Vector3(0, 0, 0);
     }
 

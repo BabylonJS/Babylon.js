@@ -1,21 +1,18 @@
 import type { Nullable } from "../../types";
 import { serialize } from "../../Misc/decorators";
-import type { Observer } from "../../Misc/observable";
+import type { EventState, Observer } from "../../Misc/observable";
 import type { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import type { ICameraInput } from "../../Cameras/cameraInputsManager";
 import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
+import type { PointerInfo } from "../../Events/pointerEvents";
+import { PointerEventTypes } from "../../Events/pointerEvents";
 import { Plane } from "../../Maths/math.plane";
 import { Vector3, Matrix, TmpVectors } from "../../Maths/math.vector";
 import { Epsilon } from "../../Maths/math.constants";
-import type { IPointerEvent, IWheelEvent } from "../../Events/deviceInputEvents";
+import type { IWheelEvent } from "../../Events/deviceInputEvents";
 import { EventConstants } from "../../Events/deviceInputEvents";
 import { Scalar } from "../../Maths/math.scalar";
 import { Tools } from "../../Misc/tools";
-import type { DeviceSourceType } from "../../DeviceInput/internalDeviceSourceManager";
-import { DeviceType } from "../../DeviceInput/InputDevices/deviceEnums";
-import { Logger } from "../../Misc/logger";
-import { PointerEventTypes } from "../../Events/pointerEvents";
-import { GestureRecognizer } from "../../DeviceInput/gestureRecognizer";
 
 /**
  * Firefox uses a different scheme to report scroll distances to other
@@ -61,10 +58,8 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
      */
     public customComputeDeltaFromMouseWheel: Nullable<(wheelDelta: number, input: ArcRotateCameraMouseWheelInput, event: IWheelEvent) => number> = null;
 
-    private _wheel: (event: IWheelEvent) => void;
-    private _observer: Nullable<Observer<IPointerEvent | IWheelEvent>>;
-    private _connectedObserver: Nullable<Observer<DeviceSourceType>>;
-    private _disconnectedObserver: Nullable<Observer<DeviceSourceType>>;
+    private _wheel: Nullable<(p: PointerInfo, s: EventState) => void>;
+    private _observer: Nullable<Observer<PointerInfo>>;
     private _hitPlane: Nullable<Plane>;
 
     protected _computeDeltaFromMouseWheelLegacyEvent(mouseWheelDelta: number, radius: number) {
@@ -83,34 +78,13 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
     public attachControl(noPreventDefault?: boolean): void {
-        const deviceSourceManager = this.camera._deviceSourceManager;
-        // If the user tries to attach this control without having general camera controls active, warn and return.
-        if (!deviceSourceManager) {
-            Logger.Warn("Cannot attach control to camera.  Camera controls not present");
-            return;
-        }
-
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
-
-        this._connectedObserver = deviceSourceManager.onDeviceConnectedObservable.add((deviceSource) => {
-            if (deviceSource.deviceType === DeviceType.Mouse) {
-                this._observer = deviceSource.onInputChangedObservable.add((eventData) => {
-                    const type = GestureRecognizer.DeterminePointerEventType(deviceSource, eventData);
-                    if (type & PointerEventTypes.POINTERWHEEL) {
-                        this._wheel(eventData as IWheelEvent);
-                    }
-                });
+        this._wheel = (p) => {
+            //sanity check - this should be a PointerWheel event.
+            if (p.type !== PointerEventTypes.POINTERWHEEL) {
+                return;
             }
-        });
-
-        this._disconnectedObserver = deviceSourceManager.onDeviceDisconnectedObservable.add((deviceSource) => {
-            if (deviceSource.deviceType === DeviceType.Mouse) {
-                deviceSource.onInputChangedObservable.remove(this._observer);
-                this._observer = null;
-            }
-        });
-
-        this._wheel = (event) => {
+            const event = <IWheelEvent>p.event;
             let delta = 0;
             const platformScale = event.deltaMode === EventConstants.DOM_DELTA_LINE ? ffMultiplier : 1; // If this happens to be set to DOM_DELTA_LINE, adjust accordingly
 
@@ -154,6 +128,8 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
             }
         };
 
+        this._observer = this.camera._addPointerObserver(this._wheel, PointerEventTypes.POINTERWHEEL);
+
         if (this.zoomToMouseLocation) {
             this._inertialPanning.setAll(0);
         }
@@ -163,13 +139,10 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
      * Detach the current controls from the specified dom element.
      */
     public detachControl(): void {
-        const deviceSourceManager = this.camera._deviceSourceManager;
-        if (deviceSourceManager && this._observer) {
-            deviceSourceManager.onDeviceConnectedObservable.remove(this._connectedObserver);
-            deviceSourceManager.onDeviceDisconnectedObservable.remove(this._disconnectedObserver);
-            const mouse = deviceSourceManager.getDeviceSource(DeviceType.Mouse);
-            mouse?.onInputChangedObservable.remove(this._observer);
+        if (this._observer) {
+            this.camera.getScene().onPointerObservable.remove(this._observer);
             this._observer = null;
+            this._wheel = null;
         }
     }
 

@@ -4,16 +4,13 @@ import type { Observer } from "../../Misc/observable";
 import type { ICameraInput } from "../../Cameras/cameraInputsManager";
 import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import type { FlyCamera } from "../../Cameras/flyCamera";
+import type { PointerInfo } from "../../Events/pointerEvents";
 import { PointerEventTypes } from "../../Events/pointerEvents";
 import type { Scene } from "../../scene";
 import { Quaternion } from "../../Maths/math.vector";
 import { Axis } from "../../Maths/math.axis";
 import { Tools } from "../../Misc/tools";
-import type { IPointerEvent, IWheelEvent } from "../../Events/deviceInputEvents";
-import type { DeviceSourceType } from "../../DeviceInput/internalDeviceSourceManager";
-import { DeviceType } from "../../DeviceInput/InputDevices/deviceEnums";
-import { Logger } from "../../Misc/logger";
-import { GestureRecognizer } from "../../DeviceInput/gestureRecognizer";
+import type { IPointerEvent } from "../../Events/deviceInputEvents";
 /**
  * Listen to mouse events to control the camera.
  * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
@@ -66,11 +63,8 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
     @serialize()
     public angularSensibility = 1000.0;
 
-    private _connectedObserver: Nullable<Observer<DeviceSourceType>>;
-    private _disconnectedObserver: Nullable<Observer<DeviceSourceType>>;
+    private _observer: Nullable<Observer<PointerInfo>>;
     private _rollObserver: Nullable<Observer<Scene>>;
-    private _mouseObserver: Nullable<Observer<IPointerEvent | IWheelEvent>>;
-    private _touchObservers: Array<Nullable<Observer<IPointerEvent>>>;
     private _previousPosition: Nullable<{ x: number; y: number }> = null;
     private _noPreventDefault: boolean | undefined;
     private _element: HTMLElement;
@@ -86,59 +80,13 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
      * @param noPreventDefault Defines whether events caught by the controls should call preventdefault().
      */
     public attachControl(noPreventDefault?: boolean): void {
-        const deviceSourceManager = this.camera._deviceSourceManager;
-        // If the user tries to attach this control without having general camera controls active, warn and return.
-        if (!deviceSourceManager) {
-            Logger.Warn("Cannot attach control to camera.  Camera controls not present");
-            return;
-        }
-
         // eslint-disable-next-line prefer-rest-params
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         this._noPreventDefault = noPreventDefault;
 
-        this._connectedObserver = this.camera._deviceSourceManager!.onDeviceConnectedObservable.add((deviceSource) => {
-            if (deviceSource.deviceType === DeviceType.Mouse) {
-                this._mouseObserver = deviceSource.onInputChangedObservable.add((eventData) => {
-                    const type = GestureRecognizer.DeterminePointerEventType(deviceSource, eventData);
-                    const pointerEventData = eventData as IPointerEvent;
-
-                    if ((type & PointerEventTypes.POINTERMOVE) !== 0) {
-                        this._pointerInput(pointerEventData, PointerEventTypes.POINTERMOVE);
-                    }
-                    if ((type & PointerEventTypes.POINTERDOWN) !== 0) {
-                        this._pointerInput(pointerEventData, PointerEventTypes.POINTERDOWN);
-                    }
-                    if ((type & PointerEventTypes.POINTERUP) !== 0) {
-                        this._pointerInput(pointerEventData, PointerEventTypes.POINTERUP);
-                    }
-                });
-            } else if (deviceSource.deviceType === DeviceType.Touch) {
-                this._touchObservers[deviceSource.deviceSlot] = deviceSource.onInputChangedObservable.add((eventData) => {
-                    const type = GestureRecognizer.DeterminePointerEventType(deviceSource, eventData);
-
-                    if ((type & PointerEventTypes.POINTERMOVE) !== 0) {
-                        this._pointerInput(eventData, PointerEventTypes.POINTERMOVE);
-                    }
-                    if ((type & PointerEventTypes.POINTERDOWN) !== 0) {
-                        this._pointerInput(eventData, PointerEventTypes.POINTERDOWN);
-                    }
-                    if ((type & PointerEventTypes.POINTERUP) !== 0) {
-                        this._pointerInput(eventData, PointerEventTypes.POINTERUP);
-                    }
-                });
-            }
-        });
-
-        this._disconnectedObserver = this.camera._deviceSourceManager!.onDeviceDisconnectedObservable.add((deviceSource) => {
-            if (deviceSource.deviceType === DeviceType.Mouse) {
-                deviceSource.onInputChangedObservable.remove(this._mouseObserver);
-                this._mouseObserver = null;
-            } else if (deviceSource.deviceType === DeviceType.Touch) {
-                deviceSource.onInputChangedObservable.remove(this._touchObservers[deviceSource.deviceSlot]);
-                this._touchObservers[deviceSource.deviceSlot] = null;
-            }
-        });
+        this._observer = this.camera._addPointerObserver((p: any) => {
+            this._pointerInput(p);
+        }, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);
 
         // Correct Roll by rate, if enabled.
         this._rollObserver = this.camera.getScene().onBeforeRenderObservable.add(() => {
@@ -152,22 +100,12 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
      * Detach the current controls from the specified dom element.
      */
     public detachControl(): void {
-        if (this._connectedObserver || this._disconnectedObserver) {
-            const deviceSourceManager = this.camera._deviceSourceManager;
-            if (deviceSourceManager) {
-                deviceSourceManager.onDeviceConnectedObservable.remove(this._connectedObserver);
-                deviceSourceManager.onDeviceDisconnectedObservable.remove(this._disconnectedObserver);
-                const mouse = deviceSourceManager.getDeviceSource(DeviceType.Mouse);
-                const touches = deviceSourceManager.getDeviceSources(DeviceType.Touch);
-
-                mouse?.onInputChangedObservable.remove(this._mouseObserver);
-                touches?.forEach((touch) => {
-                    touch.onInputChangedObservable.remove(this._touchObservers[touch.deviceSlot]);
-                });
-            }
+        if (this._observer) {
+            this.camera.getScene().onPointerObservable.remove(this._observer);
 
             this.camera.getScene().onBeforeRenderObservable.remove(this._rollObserver);
 
+            this._observer = null;
             this._rollObserver = null;
             this._previousPosition = null;
             this._noPreventDefault = undefined;
@@ -191,7 +129,9 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
     }
 
     // Track mouse movement, when the pointer is not locked.
-    private _pointerInput(p: IPointerEvent, t: PointerEventTypes): void {
+    private _pointerInput(p: any): void {
+        const e = <IPointerEvent>p.event;
+
         const camera = this.camera;
         const engine = camera.getEngine();
 
@@ -199,46 +139,46 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
             return;
         }
 
-        if (!this.touchEnabled && p.pointerType === "touch") {
+        if (!this.touchEnabled && e.pointerType === "touch") {
             return;
         }
 
         // Mouse is moved but an unknown mouse button is pressed.
-        if (t !== PointerEventTypes.POINTERMOVE && this.buttons.indexOf(p.button) === -1) {
+        if (p.type !== PointerEventTypes.POINTERMOVE && this.buttons.indexOf(e.button) === -1) {
             return;
         }
 
-        const srcElement = <HTMLElement>p.target;
+        const srcElement = <HTMLElement>e.target;
 
         // Mouse down.
-        if (t === PointerEventTypes.POINTERDOWN) {
+        if (p.type === PointerEventTypes.POINTERDOWN) {
             try {
-                srcElement?.setPointerCapture(p.pointerId);
+                srcElement?.setPointerCapture(e.pointerId);
             } catch (e) {
                 // Nothing to do with the error. Execution continues.
             }
 
             this._previousPosition = {
-                x: p.clientX,
-                y: p.clientY,
+                x: e.clientX,
+                y: e.clientY,
             };
 
-            this.activeButton = p.button;
+            this.activeButton = e.button;
 
             if (!this._noPreventDefault) {
-                p.preventDefault();
+                e.preventDefault();
                 this._element.focus();
             }
 
             // This is required to move while pointer button is down
             if (engine.isPointerLock) {
-                this._onMouseMove(p);
+                this._onMouseMove(p.event);
             }
         }
         // Mouse up.
-        else if (t === PointerEventTypes.POINTERUP) {
+        else if (p.type === PointerEventTypes.POINTERUP) {
             try {
-                srcElement?.releasePointerCapture(p.pointerId);
+                srcElement?.releasePointerCapture(e.pointerId);
             } catch (e) {
                 // Nothing to do with the error. Execution continues.
             }
@@ -247,37 +187,37 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
 
             this._previousPosition = null;
             if (!this._noPreventDefault) {
-                p.preventDefault();
+                e.preventDefault();
             }
         }
         // Mouse move.
-        else if (t === PointerEventTypes.POINTERMOVE) {
+        else if (p.type === PointerEventTypes.POINTERMOVE) {
             if (!this._previousPosition) {
                 if (engine.isPointerLock) {
-                    this._onMouseMove(p);
+                    this._onMouseMove(p.event);
                 }
 
                 return;
             }
 
-            const offsetX = p.clientX - this._previousPosition.x;
-            const offsetY = p.clientY - this._previousPosition.y;
+            const offsetX = e.clientX - this._previousPosition.x;
+            const offsetY = e.clientY - this._previousPosition.y;
 
             this._rotateCamera(offsetX, offsetY);
 
             this._previousPosition = {
-                x: p.clientX,
-                y: p.clientY,
+                x: e.clientX,
+                y: e.clientY,
             };
 
             if (!this._noPreventDefault) {
-                p.preventDefault();
+                e.preventDefault();
             }
         }
     }
 
     // Track mouse movement, when pointer is locked.
-    private _onMouseMove(e: IPointerEvent): void {
+    private _onMouseMove(e: any): void {
         const camera = this.camera;
         const engine = camera.getEngine();
 

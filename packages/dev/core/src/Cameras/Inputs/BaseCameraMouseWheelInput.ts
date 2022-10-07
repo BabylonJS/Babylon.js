@@ -4,14 +4,11 @@ import type { Observer } from "../../Misc/observable";
 import { Observable } from "../../Misc/observable";
 import type { Camera } from "../../Cameras/camera";
 import type { ICameraInput } from "../../Cameras/cameraInputsManager";
-import type { IPointerEvent, IWheelEvent } from "../../Events/deviceInputEvents";
+import type { PointerInfo } from "../../Events/pointerEvents";
+import { PointerEventTypes } from "../../Events/pointerEvents";
+import type { IWheelEvent } from "../../Events/deviceInputEvents";
 import { EventConstants } from "../../Events/deviceInputEvents";
 import { Tools } from "../../Misc/tools";
-import type { DeviceSourceType } from "../../DeviceInput/internalDeviceSourceManager";
-import { DeviceType } from "../../DeviceInput/InputDevices/deviceEnums";
-import { GestureRecognizer } from "../../DeviceInput/gestureRecognizer";
-import { PointerEventTypes } from "../../Events/pointerEvents";
-import { Logger } from "../../Misc/logger";
 
 /**
  * Base class for mouse wheel input..
@@ -50,10 +47,8 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
      */
     public onChangedObservable = new Observable<{ wheelDeltaX: number; wheelDeltaY: number; wheelDeltaZ: number }>();
 
-    private _wheel: (event: IWheelEvent) => void;
-    private _observer: Nullable<Observer<IPointerEvent | IWheelEvent>>;
-    private _connectedObserver: Nullable<Observer<DeviceSourceType>>;
-    private _disconnectedObserver: Nullable<Observer<DeviceSourceType>>;
+    private _wheel: Nullable<(pointer: PointerInfo) => void>;
+    private _observer: Nullable<Observer<PointerInfo>>;
 
     /**
      * Attach the input controls to a specific dom element to get the input from.
@@ -62,34 +57,16 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
      *   (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
     public attachControl(noPreventDefault?: boolean): void {
-        const deviceSourceManager = this.camera._deviceSourceManager;
-        // If the user tries to attach this control without having general camera controls active, warn and return.
-        if (!deviceSourceManager) {
-            Logger.Warn("Cannot attach control to camera.  Camera controls not present");
-            return;
-        }
-
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
 
-        this._connectedObserver = deviceSourceManager.onDeviceConnectedObservable.add((deviceSource) => {
-            if (deviceSource.deviceType === DeviceType.Mouse) {
-                this._observer = deviceSource.onInputChangedObservable.add((eventData) => {
-                    const type = GestureRecognizer.DeterminePointerEventType(deviceSource, eventData);
-                    if (type & PointerEventTypes.POINTERWHEEL) {
-                        this._wheel(eventData as IWheelEvent);
-                    }
-                });
+        this._wheel = (pointer) => {
+            // sanity check - this should be a PointerWheel event.
+            if (pointer.type !== PointerEventTypes.POINTERWHEEL) {
+                return;
             }
-        });
 
-        this._disconnectedObserver = deviceSourceManager.onDeviceDisconnectedObservable.add((deviceSource) => {
-            if (deviceSource.deviceType === DeviceType.Mouse) {
-                deviceSource.onInputChangedObservable.remove(this._observer);
-                this._observer = null;
-            }
-        });
+            const event = <IWheelEvent>pointer.event;
 
-        this._wheel = (event) => {
             const platformScale = event.deltaMode === EventConstants.DOM_DELTA_LINE ? this._ffMultiplier : 1; // If this happens to be set to DOM_DELTA_LINE, adjust accordingly
 
             this._wheelDeltaX += (this.wheelPrecisionX * platformScale * event.deltaX) / this._normalize;
@@ -102,19 +79,18 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
                 }
             }
         };
+
+        this._observer = this.camera._addPointerObserver(this._wheel, PointerEventTypes.POINTERWHEEL);
     }
 
     /**
      * Detach the current controls from the specified dom element.
      */
     public detachControl(): void {
-        const deviceSourceManager = this.camera._deviceSourceManager;
-        if (deviceSourceManager && this._observer) {
-            deviceSourceManager.onDeviceConnectedObservable.remove(this._connectedObserver);
-            deviceSourceManager.onDeviceDisconnectedObservable.remove(this._disconnectedObserver);
-            const mouse = deviceSourceManager.getDeviceSource(DeviceType.Mouse);
-            mouse?.onInputChangedObservable.remove(this._observer);
+        if (this._observer) {
+            this.camera.getScene().onPointerObservable.remove(this._observer);
             this._observer = null;
+            this._wheel = null;
         }
         if (this.onChangedObservable) {
             this.onChangedObservable.clear();

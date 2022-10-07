@@ -17,7 +17,6 @@ import type { ArcRotateCameraMouseWheelInput } from "../Cameras/Inputs/arcRotate
 import { ArcRotateCameraInputsManager } from "../Cameras/arcRotateCameraInputsManager";
 import { Epsilon } from "../Maths/math.constants";
 import { Tools } from "../Misc/tools";
-import { DeviceSourceManager } from "../DeviceInput/InputDevices/deviceSourceManager";
 
 declare type Collider = import("../Collisions/collider").Collider;
 
@@ -863,7 +862,6 @@ export class ArcRotateCamera extends TargetCamera {
      * @param panningMouseButton Defines whether panning is allowed through mouse click button
      */
     public attachControl(ignored: any, noPreventDefault?: boolean, useCtrlForPanning: boolean | number = true, panningMouseButton: number = 2): void {
-        this._deviceSourceManager = this._deviceSourceManager || new DeviceSourceManager(this.getEngine());
         // eslint-disable-next-line prefer-rest-params
         const args = arguments;
 
@@ -896,8 +894,6 @@ export class ArcRotateCamera extends TargetCamera {
      */
     public detachControl(): void {
         this.inputs.detachElement();
-        this._deviceSourceManager?.dispose();
-        this._deviceSourceManager = null;
 
         if (this._reset) {
             this._reset();
