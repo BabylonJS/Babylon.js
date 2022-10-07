@@ -2704,7 +2704,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         this.cameras.push(newCamera);
-        
+
         if (!newCamera.parent) {
             newCamera._addToSceneRootNodes();
         }

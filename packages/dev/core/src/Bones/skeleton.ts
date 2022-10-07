@@ -145,10 +145,9 @@ export class Skeleton implements IAnimatable {
         this._scene = scene || EngineStore.LastCreatedScene;
         this._uniqueId = this._scene.getUniqueId();
 
-        
         //make sure it will recalculate the matrix next time prepare is called.
         this._isDirty = true;
-        
+
         const engineCaps = this._scene.getEngine().getCaps();
         this._canUseTextureForBones = engineCaps.textureFloat && engineCaps.maxVertexTextureImageUnits > 0;
         this._scene.addSkeleton(this);
