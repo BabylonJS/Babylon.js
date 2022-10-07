@@ -49,11 +49,11 @@ export class MultiMaterial extends Material {
     constructor(name: string, scene?: Scene) {
         super(name, scene, true);
 
-        this.getScene().multiMaterials.push(this);
-
+        
         this.subMaterials = new Array<Material>();
-
+        
         this._storeEffectOnSubMeshes = true; // multimaterial is considered like a push material
+        this.getScene().multiMaterials.push(this);
     }
 
     private _hookArray(array: Nullable<Material>[]): void {

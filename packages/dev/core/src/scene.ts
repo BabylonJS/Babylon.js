@@ -2359,13 +2359,12 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             newMesh._addToSceneRootNodes();
         }
 
-        this.onNewMeshAddedObservable.notifyObservers(newMesh);
-
         if (recursive) {
             newMesh.getChildMeshes().forEach((m) => {
                 this.addMesh(m);
             });
         }
+        setTimeout(() => this.onNewMeshAddedObservable.notifyObservers(newMesh));
     }
 
     /**
@@ -2418,7 +2417,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             newTransformNode._addToSceneRootNodes();
         }
 
-        this.onNewTransformNodeAddedObservable.notifyObservers(newTransformNode);
+        setTimeout(() => this.onNewTransformNodeAddedObservable.notifyObservers(newTransformNode));
     }
 
     /**
@@ -2683,7 +2682,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             }
         }
 
-        this.onNewLightAddedObservable.notifyObservers(newLight);
+        setTimeout(() => this.onNewLightAddedObservable.notifyObservers(newLight));
     }
 
     /**
@@ -2705,11 +2704,12 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         this.cameras.push(newCamera);
-        this.onNewCameraAddedObservable.notifyObservers(newCamera);
-
+        
         if (!newCamera.parent) {
             newCamera._addToSceneRootNodes();
         }
+
+        setTimeout(() => this.onNewCameraAddedObservable.notifyObservers(newCamera));
     }
 
     /**
@@ -2785,7 +2785,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         newMaterial._indexInSceneMaterialArray = this.materials.length;
         this.materials.push(newMaterial);
-        this.onNewMaterialAddedObservable.notifyObservers(newMaterial);
+        setTimeout(() => this.onNewMaterialAddedObservable.notifyObservers(newMaterial));
     }
 
     /**
@@ -2833,7 +2833,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             return;
         }
         this.textures.push(newTexture);
-        this.onNewTextureAddedObservable.notifyObservers(newTexture);
+        setTimeout(() => this.onNewTextureAddedObservable.notifyObservers(newTexture));
     }
 
     /**
