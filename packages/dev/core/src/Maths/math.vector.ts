@@ -4014,7 +4014,7 @@ export class Quaternion {
     }
 
     /**
-     * Conjugates in place (1-q) the current quaternion
+     * Conjugates (1-q) the current quaternion
      * @returns a new quaternion
      */
     public conjugate(): Quaternion {
