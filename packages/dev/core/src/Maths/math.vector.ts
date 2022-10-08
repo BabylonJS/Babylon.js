@@ -3993,7 +3993,7 @@ export class Quaternion {
     }
 
     /**
-     * Conjugates (1-q) the current quaternion and stores the result in the given quaternion
+     * Conjugates the current quaternion and stores the result in the given quaternion
      * @param ref defines the target quaternion
      * @returns the current quaternion
      */
@@ -4003,7 +4003,7 @@ export class Quaternion {
     }
 
     /**
-     * Conjugates in place (1-q) the current quaternion
+     * Conjugates in place the current quaternion
      * @returns the current updated quaternion
      */
     public conjugateInPlace(): Quaternion {
