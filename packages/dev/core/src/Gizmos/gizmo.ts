@@ -204,7 +204,7 @@ export class Gizmo implements IGizmo {
     private _tempMatrix1 = new Matrix();
     private _tempMatrix2 = new Matrix();
     private _rightHandtoLeftHandMatrix = Matrix.RotationY(Math.PI);
-    private _back = Vector3.Backward();
+    private _forward = Vector3.Forward();
 
     /**
      * Creates a gizmo
@@ -283,7 +283,7 @@ export class Gizmo implements IGizmo {
                         scale *= orthoHeight;
                     }
                 } else {
-                    const direction = activeCamera.getDirection(this._back);
+                    const direction = activeCamera.getDirection(this._forward);
                     scale *= Vector3.Dot(this._tempVector, direction);
                 }
                 this._rootMesh.scaling.set(scale, scale, scale);
