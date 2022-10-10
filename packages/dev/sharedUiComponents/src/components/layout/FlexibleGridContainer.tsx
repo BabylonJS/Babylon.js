@@ -21,13 +21,7 @@ export const FlexibleGridContainer: FC<IFlexibleGridContainerProps> = (props) =>
                               return (
                                   <div style={{ height: row.height }} key={row.id}>
                                       <FlexibleDropZone rowNumber={rowIdx} columnNumber={columnIdx}>
-                                          <FlexibleTabsContainer
-                                              tabs={row.tabs}
-                                              selectedTab={row.selectedTab}
-                                              rowIndex={rowIdx}
-                                              columnIndex={columnIdx}
-                                              draggedOver={row.id === layout.draggedOverRowId}
-                                          />
+                                          <FlexibleTabsContainer tabs={row.tabs} selectedTab={row.selectedTab} rowIndex={rowIdx} columnIndex={columnIdx} />
                                       </FlexibleDropZone>
                                   </div>
                               );

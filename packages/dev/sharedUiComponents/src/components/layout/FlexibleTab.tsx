@@ -7,6 +7,7 @@ import style from "./FlexibleTab.modules.scss";
 interface IFlexibleTabProps {
     title: string;
     selected: boolean;
+    onClick?: () => void;
 }
 
 export const FlexibleTab: FC<IFlexibleTabProps> = (props) => {
@@ -19,7 +20,7 @@ export const FlexibleTab: FC<IFlexibleTabProps> = (props) => {
         },
     }));
     return (
-        <div ref={drag} className={ClassNames({ tab: true, selected: props.selected }, style)}>
+        <div ref={drag} className={ClassNames({ tab: true, selected: props.selected }, style)} onClick={props.onClick}>
             {props.title}
         </div>
     );
