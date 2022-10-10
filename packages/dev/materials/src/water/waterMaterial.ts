@@ -662,7 +662,7 @@ export class WaterMaterial extends PushMaterial {
             if (!this.disableClipPlane) {
                 clipPlane = scene.clipPlane;
 
-                const positiony = this._mesh ? this._mesh.position.y : 0.0;
+                const positiony = this._mesh ? this._mesh.absolutePosition.y : 0.0;
                 scene.clipPlane = Plane.FromPositionAndNormal(new Vector3(0, positiony + 0.05, 0), new Vector3(0, 1, 0));
             }
         };
@@ -688,7 +688,7 @@ export class WaterMaterial extends PushMaterial {
             if (!this.disableClipPlane) {
                 clipPlane = scene.clipPlane;
 
-                const positiony = this._mesh ? this._mesh.position.y : 0.0;
+                const positiony = this._mesh ? this._mesh.absolutePosition.y : 0.0;
                 scene.clipPlane = Plane.FromPositionAndNormal(new Vector3(0, positiony - 0.05, 0), new Vector3(0, -1, 0));
 
                 Matrix.ReflectionToRef(scene.clipPlane, mirrorMatrix);
