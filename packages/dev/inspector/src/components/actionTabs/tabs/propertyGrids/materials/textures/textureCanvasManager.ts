@@ -170,6 +170,8 @@ export class TextureCanvasManager {
 
         this._camera = new FreeCamera("camera", new Vector3(0, 0, -1), this._scene);
         this._camera.mode = Camera.ORTHOGRAPHIC_CAMERA;
+        this._camera.minZ = 0.5;
+        this._camera.maxZ = 1.5;
         this._cameraPos = new Vector2();
 
         this.setSize(texture.getSize());
