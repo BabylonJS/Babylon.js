@@ -284,6 +284,7 @@
 
 - Faster scalar's WithinEpsilon with Math.abs ([nekochanoide](https://github.com/nekochanoide))
 - Added `decomposeToTransformNode` ([RaananW](https://github.com/RaananW))
+- Normalized types and return values in math.vector.ts ([LostInClams](https://github.com/LostInClams))
 
 ### Serializers
 
