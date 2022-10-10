@@ -4264,16 +4264,17 @@ export class Quaternion {
         return left._x * right._x + left._y * right._y + left._z * right._z + left._w * right._w;
     }
 
-    /**
-     * Checks if the two quaternions are close to each other
+    /** 
+     * Checks if the orientations of two rotation quaternions are close to each other
      * @param quat0 defines the first quaternion to check
      * @param quat1 defines the second quaternion to check
-     * @returns true if the two quaternions are close to each other
+     * @param epsilon defines closeness, 0 same orientation, 1 PI apart, default 0.1
+     * @returns true if the two quaternions are close to each other within epsilon
      */
-    public static AreClose(quat0: DeepImmutable<Quaternion>, quat1: DeepImmutable<Quaternion>): boolean {
+    public static AreClose(quat0: DeepImmutable<Quaternion>, quat1: DeepImmutable<Quaternion>, epsilon: number = 0.1): boolean {
         const dot = Quaternion.Dot(quat0, quat1);
 
-        return dot >= 0;
+        return 1 - dot * dot <= epsilon;
     }
 
     /**
