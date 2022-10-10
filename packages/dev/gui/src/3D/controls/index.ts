@@ -21,5 +21,4 @@ export * from "./touchHolographicMenu";
 export * from "./volumeBasedPanel";
 
 // MRTK3 Controls
-import { TouchHolographicButton } from "./MRTK3/touchHolographicButton";
-export { TouchHolographicButton as TouchHolographicButtonV3 };
+export { TouchHolographicButton as TouchHolographicButtonV3 } from "./MRTK3/touchHolographicButton";
