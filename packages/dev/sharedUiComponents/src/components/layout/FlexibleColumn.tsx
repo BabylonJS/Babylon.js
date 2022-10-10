@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import style from "./FlexibleGridLayout.modules.scss";
+import style from "./FlexibleColumn.modules.scss";
 
 export interface IFlexibleColumnProps {
     width: string;
@@ -7,7 +7,7 @@ export interface IFlexibleColumnProps {
 
 export const FlexibleColumn: FC<IFlexibleColumnProps> = (props) => {
     return (
-        <div className={style.flexibleColumn} style={{ width: props.width }}>
+        <div style={{ width: props.width }} className={style.flexibleColumn}>
             {props.children}
         </div>
     );

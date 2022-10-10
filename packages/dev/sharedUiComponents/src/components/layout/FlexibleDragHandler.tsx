@@ -1,23 +1,22 @@
 import type { FC } from "react";
-import { useRef } from "react";
+import { useContext, useRef } from "react";
 import { Vector2 } from "core/Maths/math";
 import type { Nullable } from "core/types";
 import { useDrop } from "react-dnd";
-import { ElementTypes } from "./constants";
+import { ElementTypes } from "./types";
 import { addPercentageStringToNumber } from "./unitTools";
-import style from "./FlexibleDragHandler.modules.scss";
+import { LayoutContext } from "./LayoutContext";
 
 interface IFlexibleDragHandlerProps {
-    layout: any;
-    updateLayout: (layout: any) => void;
     containerSize: { width: number; height: number };
 }
 
 export const FlexibleDragHandler: FC<IFlexibleDragHandlerProps> = (props) => {
+    const { layout, setLayout } = useContext(LayoutContext);
     // CLICK/DRAG INFORMATION
     const pointerPos = useRef<Nullable<Vector2>>(null);
     const [_, drop] = useDrop(() => ({
-        accept: [ElementTypes.RESIZE_BAR],
+        accept: [ElementTypes.RESIZE_BAR, ElementTypes.TAB],
         hover(item, monitor) {
             const anyitem = item as any;
             console.log("anyitem", anyitem);
@@ -25,8 +24,10 @@ export const FlexibleDragHandler: FC<IFlexibleDragHandlerProps> = (props) => {
             const xy = monitor.getClientOffset();
             const pos = new Vector2(xy!.x, xy!.y);
             if (pointerPos.current) {
-                console.log("call onresize for", anyitem.rowNumber, anyitem.columnNumber, pos, pointerPos.current, anyitem.direction);
-                onResize(anyitem.rowNumber, anyitem.columnNumber, pos, pointerPos.current, anyitem.direction);
+                if (monitor.getItemType() === ElementTypes.RESIZE_BAR) {
+                    console.log("call onresize for", anyitem.rowNumber, anyitem.columnNumber, pos, pointerPos.current, anyitem.direction);
+                    onResize(anyitem.rowNumber, anyitem.columnNumber, pos, pointerPos.current, anyitem.direction);
+                }
             }
             pointerPos.current = pos;
         },
@@ -37,7 +38,7 @@ export const FlexibleDragHandler: FC<IFlexibleDragHandlerProps> = (props) => {
     }));
 
     const getPosInLayout = (column: number, row?: number) => {
-        const columnLayout = props.layout.columns[column];
+        const columnLayout = layout.columns[column];
         if (!columnLayout) {
             throw new Error("Attempted to get an invalid layout column");
         }
@@ -79,7 +80,7 @@ export const FlexibleDragHandler: FC<IFlexibleDragHandlerProps> = (props) => {
 
             // setLayout({ ...layout });
             console.log("call update layout");
-            props.updateLayout({ ...props.layout });
+            setLayout({ ...layout });
         }
     };
 
@@ -103,7 +104,7 @@ export const FlexibleDragHandler: FC<IFlexibleDragHandlerProps> = (props) => {
     };
 
     return (
-        <div ref={drop} className={style.flexibleDragHandler}>
+        <div ref={drop} style={{ width: "100%", height: "100%" }}>
             {props.children}
         </div>
     );

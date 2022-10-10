@@ -1,7 +1,7 @@
 import type { FC } from "react";
 import style from "./FlexibleDropZone.modules.scss";
 import { FlexibleResizeBar } from "./FlexibleResizeBar";
-import { ResizeDirections } from "./constants";
+import { ResizeDirections } from "./types";
 
 export interface IFlexibleDropZoneProps {
     rowNumber: number;

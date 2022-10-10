@@ -1,6 +1,5 @@
 import type { FC, ReactElement } from "react";
-import { ClassNames } from "../classNames";
-import { DRAGCLASS, ELEMENTCLASS, ElementTypes, ROWCLASS, COLCLASS } from "./constants";
+import { FlexibleTab } from "./FlexibleTab";
 import style from "./FlexibleTabsContainer.modules.scss";
 // import commonStyle from "./CommonStyles.modules.scss";
 
@@ -15,32 +14,22 @@ export interface IFlexibleTabsContainerProps {
 }
 
 export const FlexibleTabsContainer: FC<IFlexibleTabsContainerProps> = (props) => {
-    const { tabs, rowIndex, columnIndex, draggedOver = true } = props;
+    const { tabs, draggedOver = true, selectedTab } = props;
     const selectedTabId = props.selectedTab !== undefined ? props.selectedTab : tabs[0].id;
     const selectedTabArray = tabs.filter((tab) => tab.id === selectedTabId);
-    const selectedTab = selectedTabArray.length > 0 ? selectedTabArray[0] : null;
+    const selectedTabObject = selectedTabArray.length > 0 ? selectedTabArray[0] : null;
     console.log(draggedOver);
     return (
         <div className={style.rootContainer}>
             <div draggable={false} className={style.tabsLineContainer}>
                 <div className={style.tabsContainer}>
                     {tabs.map((tab) => {
-                        return (
-                            <div key={tab.id} className={ClassNames({ tab: true, selectedTab: tab.id === selectedTabId }, style)}>
-                                <div
-                                    className={style.noSelect + " " + DRAGCLASS}
-                                    data-tab-index={tab.id}
-                                    {...{ [ELEMENTCLASS]: ElementTypes.TAB, [ROWCLASS]: rowIndex, [COLCLASS]: columnIndex }}
-                                >
-                                    {tab.id}
-                                </div>
-                            </div>
-                        );
+                        return <FlexibleTab key={tab.id} title={tab.id} selected={tab.id === selectedTab} />;
                     })}
                 </div>
-                <img draggable={false} className={style.dragIcon + " " + style.noSelect + " " + DRAGCLASS} src={dragIcon} />
+                <img draggable={false} className={style.dragIcon} src={dragIcon} />
             </div>
-            <div className={style.contentContainer}>{selectedTab?.component}</div>
+            <div className={style.contentContainer}>{selectedTabObject?.component}</div>
         </div>
     );
 };
