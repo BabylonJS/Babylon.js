@@ -6,6 +6,7 @@
         "rootDir": "../../../lts/loaders/generated",
         "declaration": true,
         "importHelpers": true,
+        "target": "ES2018",
         "plugins": [
             { "transform": "../../../dev/buildTools/src/pathTransform.ts", "buildType": "es6", "basePackage": "@babylonjs/loaders", "appendJS": true },
         ],
