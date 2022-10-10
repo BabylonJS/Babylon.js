@@ -1,6 +1,180 @@
 {
-    "fromTag": "5.26.1",
+    "fromTag": "5.27.0",
     "changelog": {
+        "5.27.1": [
+            {
+                "pr": "13086",
+                "title": "Set target to ES2018",
+                "description": "Based on feedback and babylon native needs I am moving the target for our es packages to es2018",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/public/@babylonjs/core/tsconfig.build.json",
+                    "packages/public/@babylonjs/gui/tsconfig.build.json",
+                    "packages/public/@babylonjs/loaders/tsconfig.build.json",
+                    "packages/public/@babylonjs/materials/tsconfig.build.json",
+                    "packages/public/@babylonjs/post-processes/tsconfig.build.json",
+                    "packages/public/@babylonjs/procedural-textures/tsconfig.build.json",
+                    "packages/public/@babylonjs/serializers/tsconfig.build.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13079",
+                "title": "Fixed transform gizmos screen size",
+                "description": "Hi,\r\nI noticed that [gizmos](https://doc.babylonjs.com/features/featuresDeepDive/mesh/gizmo) do not correctly preserve the size on the screen.\r\n\r\nYou can notice that if the aspect ratio of the screen is big enough and you move a gizmo to the edge of the screen. It gets bigger. And this doesn't work at all with ORTHO-cameras.\r\n\r\nI've fixed the math a little bit and added branching depending on whether the camera is PERSP or ORTHO\r\nBefore:\r\nhttps://user-images.githubusercontent.com/2855321/194728765-276ae78a-4906-4c95-9ef9-6a4bae9d5501.mp4\r\nAfter:\r\nhttps://user-images.githubusercontent.com/2855321/194755033-bfe76baf-25d3-40a0-9795-f891941d6d51.mp4\r\n\r\n\r\n\r\n",
+                "author": {
+                    "name": "EvgenyRodygin",
+                    "url": "https://github.com/EvgenyRodygin"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/gizmo.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13085",
+                "title": "Fix declaration generation when \"as\" is used",
+                "description": "After this change, every `export { C as B } from \"path\"` will be supported when exporting the declaration. This will fix the issue with the TouchHolographicButtonV3",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/generateDeclaration.ts",
+                    "packages/dev/gui/src/3D/controls/index.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13083",
+                "title": "Add epsilon to Quaternion.AreClose",
+                "description": "Ref https://forum.babylonjs.com/t/is-this-metric-to-check-how-close-rotation-quaternions-are-useful/34642/7?u=johnk",
+                "author": {
+                    "name": "BabylonJSGuide",
+                    "url": "https://github.com/BabylonJSGuide"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13077",
+                "title": "Update waterMaterial.ts",
+                "description": "Fix the problem of disordered reflection when the water material model is in the sub node",
+                "author": {
+                    "name": "xg-qd",
+                    "url": "https://github.com/xg-qd"
+                },
+                "files": [
+                    "packages/dev/materials/src/water/waterMaterial.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13060",
+                "title": "Handle CSP violation errors when loading images.",
+                "description": "Previously, whenever a texture fetch failed, we would try to load the fallback texture with \"data:\". If the user's page has a CSP rule that prohibits this, this fallback load would fail and prompt another fallback load, leading to an infinite loop. Now, we stop trying to load the fallback if we hit a security violation error (which is where CSP falls).\r\n\r\nThis behavior can be reproduced on the Playground by adding the CSP tag to the document:\r\nhttps://playground.babylonjs.com/#YCY2IL#1105\r\nhttps://playground.babylonjs.com/#8LFTCH#1452",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/fileTools.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "13078",
+                "title": "remove in Place from conjugate comments",
+                "description": "ref https://forum.babylonjs.com/t/quaternion-conjugate-two-inplace/34551/4?u=johnk",
+                "author": {
+                    "name": "BabylonJSGuide",
+                    "url": "https://github.com/BabylonJSGuide"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13080",
+                "title": "change CustomProceduralTexture constructor size type",
+                "description": "The type of param size in CustomProceduralTexture'constructor is now number, I think it is more appropriate to use TextureSize instead.",
+                "author": {
+                    "name": "Hypnosss",
+                    "url": "https://github.com/Hypnosss"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/Procedurals/customProceduralTexture.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13081",
+                "title": "prepass reflectivity channel support unlit materials",
+                "description": "Add support for prepass reflectivity channel with unlit materials.\r\nBefore: https://playground.babylonjs.com/#RPBXIC\r\nAfter: https://playground.babylonjs.com/#RPBXIC#1",
+                "author": {
+                    "name": "Hypnosss",
+                    "url": "https://github.com/Hypnosss"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/pbr.fragment.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13074",
+                "title": "Material block-dirty mechanism",
+                "description": "This PR introduces a block-dirty mechanism on the material level, on top of the scene level.\nIt also adds the ability to run an atomic callback to make changes to the material (dirty-setting-wise)",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/material.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13072",
+                "title": "Fix blur kernel size in glow layer second try",
+                "description": "https://forum.babylonjs.com/t/glowlayers-kernelblursize-is-reset-on-canvas-resize/34495/4",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Layers/glowLayer.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13070",
+                "title": "Depth peeling renderer: Add excluded mesh support",
+                "description": "See https://forum.babylonjs.com/t/depthpeeler-transparent-groundmaterial/34511/3",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/depthPeelingRenderer.ts"
+                ],
+                "tags": [
+                    "rendering engine",
+                    "new feature"
+                ]
+            }
+        ],
         "5.27.0": [
             {
                 "pr": "13062",
