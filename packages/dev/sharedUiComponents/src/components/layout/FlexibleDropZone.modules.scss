@@ -1,5 +1,3 @@
-$drag-border-size: 5px;
-
 .flexibleDropZoneContainer {
     width: 100%;
     height: 100%;
@@ -49,28 +47,4 @@ $drag-border-size: 5px;
     position: absolute;
     left: 10%;
     top: 10%;
-}
-
-.rowDragHandler {
-    cursor: pointer;
-    cursor: grab;
-    cursor: row-resize;
-    width: 100%;
-    height: $drag-border-size;
-    background-color: black;
-    position: absolute;
-    bottom: 0px;
-    left: 0px;
-}
-
-.columnDragHandler {
-    cursor: pointer;
-    cursor: grab;
-    cursor: col-resize;
-    width: $drag-border-size;
-    height: 100%;
-    background-color: black;
-    position: absolute;
-    right: 0px;
-    top: 0px;
 }
