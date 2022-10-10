@@ -4264,7 +4264,7 @@ export class Quaternion {
         return left._x * right._x + left._y * right._y + left._z * right._z + left._w * right._w;
     }
 
-    /** 
+    /**
      * Checks if the orientations of two rotation quaternions are close to each other
      * @param quat0 defines the first quaternion to check
      * @param quat1 defines the second quaternion to check
