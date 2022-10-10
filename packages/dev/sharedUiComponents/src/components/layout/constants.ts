@@ -9,8 +9,12 @@ export const ROWCLASS = "data-row-index";
 export const COLCLASS = "data-column-index";
 
 export enum ElementTypes {
-    RESIZE_ROW = "0",
-    RESIZE_COLUMN = "1",
+    RESIZE_BAR = "0",
     TAB = "2",
     NONE = "3",
+}
+
+export enum ResizeDirections {
+    ROW = "row",
+    COLUMN = "column",
 }
