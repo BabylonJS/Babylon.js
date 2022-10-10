@@ -1,0 +1,18 @@
+.dragging {
+    cursor: dragging;
+}
+
+.selected {
+    background-color: darkorchid !important;
+}
+
+.tab {
+    width: 75px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: white;
+    background-color: rgb(77, 77, 77);
+    border: 1px solid white;
+    cursor: pointer;
+    user-select: none;
+}
