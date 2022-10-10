@@ -4,7 +4,7 @@ import { Vector2 } from "core/Maths/math";
 import type { Nullable } from "core/types";
 import { useDrop } from "react-dnd";
 import { ElementTypes } from "./types";
-import { addPercentageStringToNumber } from "./unitTools";
+import { addPercentageStringToNumber, getPosInLayout } from "./unitTools";
 import { LayoutContext } from "./LayoutContext";
 
 interface IFlexibleDragHandlerProps {
@@ -37,17 +37,6 @@ export const FlexibleDragHandler: FC<IFlexibleDragHandlerProps> = (props) => {
         },
     }));
 
-    const getPosInLayout = (column: number, row?: number) => {
-        const columnLayout = layout.columns[column];
-        if (!columnLayout) {
-            throw new Error("Attempted to get an invalid layout column");
-        }
-        if (row === undefined) {
-            return columnLayout;
-        }
-        return columnLayout.rows[row];
-    };
-
     const processResize = (
         pos: Vector2,
         prevPos: Vector2,
@@ -64,8 +53,8 @@ export const FlexibleDragHandler: FC<IFlexibleDragHandlerProps> = (props) => {
         const axisDiff = pos[axis] - prevPos[axis];
 
         // Get layout rows
-        const layoutElement0 = getPosInLayout(column0, row0);
-        const layoutElement1 = getPosInLayout(column1, row1);
+        const layoutElement0 = getPosInLayout(layout, column0, row0);
+        const layoutElement1 = getPosInLayout(layout, column1, row1);
 
         if (layoutElement0 && layoutElement1) {
             const percDiff = (axisDiff / maxAxisValue) * 100;

@@ -1,3 +1,16 @@
+import type { Layout } from "./types";
+
+export const getPosInLayout = (layout: Layout, column: number, row?: number) => {
+    const columnLayout = layout.columns[column];
+    if (!columnLayout) {
+        throw new Error("Attempted to get an invalid layout column");
+    }
+    if (row === undefined) {
+        return columnLayout;
+    }
+    return columnLayout.rows[row];
+};
+
 /**
  * Add a percentage string to a number
  */
