@@ -11,6 +11,29 @@ export const getPosInLayout = (layout: Layout, column: number, row?: number) => 
     return columnLayout.rows[row];
 };
 
+export const removeLayoutRowAndRedistributePercentages = (layout: Layout, column: number, row: number) => {
+    const columnLayout = layout.columns[column];
+    if (!columnLayout) {
+        throw new Error("Attempted to get an invalid layout column");
+    }
+    const rowLayout = columnLayout.rows[row];
+    if (!rowLayout) {
+        throw new Error("Attempted to get an invalid layout row");
+    }
+    const rowHeight = rowLayout.height;
+    if (rowHeight === undefined) {
+        throw new Error("Attempted to remove a row with no height");
+    }
+    // Remove row from layout
+    columnLayout.rows.splice(row, 1);
+
+    // Redistribute this row's height to the remaining rows
+    const percToAdd = parsePercentage(rowHeight) / columnLayout.rows.length;
+    columnLayout.rows.forEach((row: any) => {
+        row.height = addPercentageStringToNumber(row.height, percToAdd) + "%";
+    });
+};
+
 /**
  * Add a percentage string to a number
  */
