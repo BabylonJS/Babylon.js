@@ -5,6 +5,7 @@ uniform sampler2D depthSampler;
 varying vec2 vUV;
 
 // precomputed uniforms (not effect parameters)
+// cameraMinMaxZ.y => "maxZ - minZ" i.e., the near-to-far distance.
 uniform vec2 cameraMinMaxZ;
 
 // uniforms
