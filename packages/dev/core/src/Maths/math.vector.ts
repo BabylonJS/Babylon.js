@@ -3993,7 +3993,7 @@ export class Quaternion {
     }
 
     /**
-     * Conjugates (1-q) the current quaternion and stores the result in the given quaternion
+     * Conjugates the current quaternion and stores the result in the given quaternion
      * @param ref defines the target quaternion
      * @returns the current quaternion
      */
@@ -4003,7 +4003,7 @@ export class Quaternion {
     }
 
     /**
-     * Conjugates in place (1-q) the current quaternion
+     * Conjugates in place the current quaternion
      * @returns the current updated quaternion
      */
     public conjugateInPlace(): Quaternion {
@@ -4014,7 +4014,7 @@ export class Quaternion {
     }
 
     /**
-     * Conjugates in place (1-q) the current quaternion
+     * Conjugates (1-q) the current quaternion
      * @returns a new quaternion
      */
     public conjugate(): Quaternion {
@@ -4265,15 +4265,16 @@ export class Quaternion {
     }
 
     /**
-     * Checks if the two quaternions are close to each other
+     * Checks if the orientations of two rotation quaternions are close to each other
      * @param quat0 defines the first quaternion to check
      * @param quat1 defines the second quaternion to check
-     * @returns true if the two quaternions are close to each other
+     * @param epsilon defines closeness, 0 same orientation, 1 PI apart, default 0.1
+     * @returns true if the two quaternions are close to each other within epsilon
      */
-    public static AreClose(quat0: DeepImmutable<Quaternion>, quat1: DeepImmutable<Quaternion>): boolean {
+    public static AreClose(quat0: DeepImmutable<Quaternion>, quat1: DeepImmutable<Quaternion>, epsilon: number = 0.1): boolean {
         const dot = Quaternion.Dot(quat0, quat1);
 
-        return dot >= 0;
+        return 1 - dot * dot <= epsilon;
     }
 
     /**
