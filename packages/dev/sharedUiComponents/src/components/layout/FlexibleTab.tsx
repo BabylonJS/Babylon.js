@@ -7,8 +7,9 @@ import style from "./FlexibleTab.modules.scss";
 interface IFlexibleTabProps {
     title: string;
     selected: boolean;
-    onClick?: () => void;
+    onClick: () => void;
     item: any;
+    onTabDroppedAction: (item: any) => void;
 }
 
 export const FlexibleTab: FC<IFlexibleTabProps> = (props) => {
@@ -26,6 +27,7 @@ export const FlexibleTab: FC<IFlexibleTabProps> = (props) => {
         accept: ElementTypes.TAB,
         drop: (item: any, monitor) => {
             console.log("dropped", item, monitor);
+            props.onTabDroppedAction(item);
         },
         collect(monitor) {
             return {
