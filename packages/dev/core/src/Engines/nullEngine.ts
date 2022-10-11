@@ -753,6 +753,54 @@ export class NullEngine extends Engine {
     }
 
     /**
+     * Creates a new render target wrapper
+     * @param size defines the size of the texture
+     * @param options defines the options used to create the texture
+     * @returns a new render target wrapper
+     */
+    public createRenderTargetCubeTexture(size: number, options?: Partial<RenderTargetCreationOptions>): RenderTargetWrapper {
+        const rtWrapper = this._createHardwareRenderTargetWrapper(false, true, size);
+
+        const fullOptions = {
+            generateMipMaps: true,
+            generateDepthBuffer: true,
+            generateStencilBuffer: false,
+            type: Constants.TEXTURETYPE_UNSIGNED_INT,
+            samplingMode: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+            format: Constants.TEXTUREFORMAT_RGBA,
+            ...options,
+        };
+        fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && fullOptions.generateStencilBuffer;
+
+        if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+            // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
+            fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        } else if (fullOptions.type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+            // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
+            fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        }
+
+        rtWrapper._generateDepthBuffer = fullOptions.generateDepthBuffer;
+        rtWrapper._generateStencilBuffer = fullOptions.generateStencilBuffer ? true : false;
+
+        const texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
+        texture.baseWidth = size;
+        texture.baseHeight = size;
+        texture.width = size;
+        texture.height = size;
+        texture.isReady = true;
+        texture.isCube = true;
+        texture.samples = 1;
+        texture.generateMipMaps = fullOptions.generateMipMaps ? true : false;
+        texture.samplingMode = fullOptions.samplingMode;
+        texture.type = fullOptions.type;
+
+        this._internalTexturesCache.push(texture);
+
+        return rtWrapper;
+    }
+
+    /**
      * Update the sampling mode of a given texture
      * @param samplingMode defines the required sampling mode
      * @param texture defines the texture to update

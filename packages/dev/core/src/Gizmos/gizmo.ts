@@ -5,7 +5,7 @@ import type { Scene, IDisposable } from "../scene";
 import { Quaternion, Vector3, Matrix } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
-import type { Camera } from "../Cameras/camera";
+import { Camera } from "../Cameras/camera";
 import type { TargetCamera } from "../Cameras/targetCamera";
 import type { Node } from "../node";
 import type { Bone } from "../Bones/bone";
@@ -275,8 +275,18 @@ export class Gizmo implements IGizmo {
                     cameraPosition = (<WebVRFreeCamera>activeCamera).devicePosition;
                 }
                 this._rootMesh.position.subtractToRef(cameraPosition, this._tempVector);
-                const dist = this._tempVector.length() * this.scaleRatio;
-                this._rootMesh.scaling.set(dist, dist, dist);
+                let scale = this.scaleRatio;
+                if (activeCamera.mode == Camera.ORTHOGRAPHIC_CAMERA) {
+                    if (activeCamera.orthoTop && activeCamera.orthoBottom) {
+                        const orthoHeight = activeCamera.orthoTop - activeCamera.orthoBottom;
+                        scale *= orthoHeight;
+                    }
+                } else {
+                    const camForward = activeCamera.getScene().useRightHandedSystem ? Vector3.RightHandedForwardReadOnly : Vector3.LeftHandedForwardReadOnly;
+                    const direction = activeCamera.getDirection(camForward);
+                    scale *= Vector3.Dot(this._tempVector, direction);
+                }
+                this._rootMesh.scaling.setAll(scale);
 
                 // Account for handedness, similar to Matrix.decompose
                 if (effectiveNode._getWorldMatrixDeterminant() < 0 && !Gizmo.PreserveScaling) {
