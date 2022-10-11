@@ -108,7 +108,7 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
 
         // Use R-only formats if supported.
         const engine = scene.getEngine();
-        const circleOfConfusionTextureFormat = engine.isWebGPU || engine.webGLVersion > 1 ? Constants.TEXTUREFORMAT_R : Constants.TEXTUREFORMAT_RGBA;
+        const circleOfConfusionTextureFormat = engine.isWebGPU || engine.webGLVersion > 1 ? Constants.TEXTUREFORMAT_RED : Constants.TEXTUREFORMAT_RGBA;
 
         // Circle of confusion value for each pixel is used to determine how much to blur that pixel
         this._circleOfConfusion = new CircleOfConfusionPostProcess(
@@ -120,8 +120,7 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
             engine,
             false,
             pipelineTextureType,
-            blockCompilation,
-            circleOfConfusionTextureFormat
+            blockCompilation
         );
 
         // Create a pyramid of blurred images (eg. fullSize 1/4 blur, half size 1/2 blur, quarter size 3/4 blur, eith size 4/4 blur)
@@ -164,7 +163,8 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
                 engine,
                 false,
                 pipelineTextureType,
-                blockCompilation
+                blockCompilation,
+                i == 0 ? circleOfConfusionTextureFormat : Constants.TEXTUREFORMAT_RGBA
             );
             blurY.autoClear = false;
             ratio = 0.75 / Math.pow(2, i);

@@ -66,9 +66,8 @@ export class CircleOfConfusionPostProcess extends PostProcess {
         samplingMode?: number,
         engine?: Engine,
         reusable?: boolean,
-        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
-        blockCompilation = false,
-        textureFormat = Constants.TEXTUREFORMAT_RGBA
+        textureType = Constants.TEXTURETYPE_UNSIGNED_INT,
+        blockCompilation = false
     ) {
         super(
             name,
@@ -84,8 +83,7 @@ export class CircleOfConfusionPostProcess extends PostProcess {
             textureType,
             undefined,
             null,
-            blockCompilation,
-            textureFormat
+            blockCompilation
         );
         this._depthTexture = depthTexture;
         this.onApplyObservable.add((effect: Effect) => {
@@ -102,7 +100,7 @@ export class CircleOfConfusionPostProcess extends PostProcess {
             effect.setFloat("focusDistance", this.focusDistance);
             effect.setFloat("cocPrecalculation", cocPrecalculation);
             const activeCamera = this._depthTexture.activeCamera!;
-            effect.setFloat2("cameraMinMaxZ", activeCamera.minZ, activeCamera.maxZ - activeCamera.minZ);
+            effect.setFloat2("cameraMinMaxZ", activeCamera.minZ, activeCamera.maxZ);
         });
     }
 

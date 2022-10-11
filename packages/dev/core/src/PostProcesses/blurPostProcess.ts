@@ -106,9 +106,10 @@ export class BlurPostProcess extends PostProcess {
         samplingMode: number = Texture.BILINEAR_SAMPLINGMODE,
         engine?: Engine,
         reusable?: boolean,
-        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        textureType = Constants.TEXTURETYPE_UNSIGNED_INT,
         defines = "",
-        private _blockCompilation = false
+        private _blockCompilation = false,
+        textureFormat = Constants.TEXTUREFORMAT_RGBA
     ) {
         super(
             name,
@@ -124,7 +125,8 @@ export class BlurPostProcess extends PostProcess {
             textureType,
             "kernelBlur",
             { varyingCount: 0, depCount: 0 },
-            true
+            true,
+            textureFormat
         );
         this._staticDefines = defines;
         this.direction = direction;

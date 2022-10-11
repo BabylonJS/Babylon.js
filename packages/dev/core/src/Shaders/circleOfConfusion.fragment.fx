@@ -5,7 +5,6 @@ uniform sampler2D depthSampler;
 varying vec2 vUV;
 
 // precomputed uniforms (not effect parameters)
-// cameraMinMaxZ.y => (maxZ - minZ)
 uniform vec2 cameraMinMaxZ;
 
 // uniforms
