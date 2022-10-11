@@ -67,7 +67,8 @@ export class CircleOfConfusionPostProcess extends PostProcess {
         engine?: Engine,
         reusable?: boolean,
         textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
-        blockCompilation = false
+        blockCompilation = false,
+        textureFormat = Constants.TEXTUREFORMAT_RGBA
     ) {
         super(
             name,
@@ -83,7 +84,8 @@ export class CircleOfConfusionPostProcess extends PostProcess {
             textureType,
             undefined,
             null,
-            blockCompilation
+            blockCompilation,
+            textureFormat
         );
         this._depthTexture = depthTexture;
         this.onApplyObservable.add((effect: Effect) => {
