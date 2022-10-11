@@ -22,7 +22,9 @@ export const FlexibleTabsContainer: FC<IFlexibleTabsContainerProps> = (props) =>
     const selectedTabObject = selectedTabArray.length > 0 ? selectedTabArray[0] : null;
 
     const selectTab = (tabId: string) => {
-        const layoutPos = getPosInLayout(layout, props.rowIndex, props.columnIndex);
+        console.log("select tab with tabid", tabId, "rowindex", props.rowIndex, "colidx", props.columnIndex);
+        const layoutPos = getPosInLayout(layout, props.columnIndex, props.rowIndex);
+        console.log("layoutpos", layoutPos);
         layoutPos.selectedTab = tabId;
         setLayout({ ...layout });
     };
