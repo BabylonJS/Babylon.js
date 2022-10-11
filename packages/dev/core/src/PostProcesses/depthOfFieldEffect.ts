@@ -9,6 +9,7 @@ import { CircleOfConfusionPostProcess } from "./circleOfConfusionPostProcess";
 import { DepthOfFieldBlurPostProcess } from "./depthOfFieldBlurPostProcess";
 import { DepthOfFieldMergePostProcess } from "./depthOfFieldMergePostProcess";
 import type { Scene } from "../scene";
+import { Constants } from "../Engines/constants";
 
 /**
  * Specifies the level of max blur that should be applied when using the depth of field effect
@@ -104,6 +105,11 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
             },
             true
         );
+
+        // Use R-only formats if supported.
+        const engine = scene.getEngine();
+        const circleOfConfusionTextureFormat = engine.isWebGPU || engine.webGLVersion > 1 ? Constants.TEXTUREFORMAT_R : Constants.TEXTUREFORMAT_RGBA;
+
         // Circle of confusion value for each pixel is used to determine how much to blur that pixel
         this._circleOfConfusion = new CircleOfConfusionPostProcess(
             "circleOfConfusion",
@@ -111,10 +117,11 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
             1,
             null,
             Texture.BILINEAR_SAMPLINGMODE,
-            scene.getEngine(),
+            engine,
             false,
             pipelineTextureType,
-            blockCompilation
+            blockCompilation,
+            circleOfConfusionTextureFormat
         );
 
         // Create a pyramid of blurred images (eg. fullSize 1/4 blur, half size 1/2 blur, quarter size 3/4 blur, eith size 4/4 blur)
@@ -154,7 +161,7 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
                 this._circleOfConfusion,
                 i == 0 ? this._circleOfConfusion : null,
                 Texture.BILINEAR_SAMPLINGMODE,
-                scene.getEngine(),
+                engine,
                 false,
                 pipelineTextureType,
                 blockCompilation
@@ -171,7 +178,7 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
                 this._circleOfConfusion,
                 null,
                 Texture.BILINEAR_SAMPLINGMODE,
-                scene.getEngine(),
+                engine,
                 false,
                 pipelineTextureType,
                 blockCompilation
@@ -197,7 +204,7 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
             ratio,
             null,
             Texture.BILINEAR_SAMPLINGMODE,
-            scene.getEngine(),
+            engine,
             false,
             pipelineTextureType,
             blockCompilation
