@@ -750,12 +750,14 @@ export class TransformNode extends Node {
      * The node will remain exactly where it is and its position / rotation will be updated accordingly.
      * Note that if the mesh has a pivot matrix / point defined it will be applied after the parent was updated.
      * In that case the node will not remain in the same space as it is, as the pivot will be applied.
+     * To avoid this, you can set updatePivot to true and the pivot will be updated to identity
      * @see https://doc.babylonjs.com/how_to/parenting
      * @param node the node ot set as the parent
      * @param preserveScalingSign if true, keep scaling sign of child. Otherwise, scaling sign might change.
+     * @param updatePivot if true, update the pivot matrix to keep the node in the same space as before
      * @returns this TransformNode.
      */
-    public setParent(node: Nullable<Node>, preserveScalingSign: boolean = false): TransformNode {
+    public setParent(node: Nullable<Node>, preserveScalingSign: boolean = false, updatePivot = false): TransformNode {
         if (!node && !this.parent) {
             return this;
         }
@@ -797,6 +799,11 @@ export class TransformNode extends Node {
         this.position.copyFrom(position);
 
         this.parent = node;
+
+        if (updatePivot) {
+            this.setPivotMatrix(Matrix.Identity());
+        }
+
         return this;
     }
 
