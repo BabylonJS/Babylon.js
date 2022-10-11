@@ -16,7 +16,7 @@ export const FlexibleDragHandler: FC<IFlexibleDragHandlerProps> = (props) => {
     // CLICK/DRAG INFORMATION
     const pointerPos = useRef<Nullable<Vector2>>(null);
     const [_, drop] = useDrop(() => ({
-        accept: [ElementTypes.RESIZE_BAR, ElementTypes.TAB],
+        accept: [ElementTypes.RESIZE_BAR],
         hover(item, monitor) {
             const anyitem = item as any;
             console.log("anyitem", anyitem);

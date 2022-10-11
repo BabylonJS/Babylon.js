@@ -1,8 +1,10 @@
+$tabLineWidth: 25px;
+
 .rootContainer {
     width: 100%;
     height: 100%;
     display: grid;
-    grid-template-rows: 20px 1fr;
+    grid-template-rows: $tabLineWidth 1fr;
 }
 
 .tabsLineContainer {
@@ -18,8 +20,8 @@
 .tabsContainer {
     display: flex;
     flex-direction: row;
-    overflow-x: auto;
-    overflow-y: hidden;
+    overflow: hidden;
+    width: 100%;
 }
 
 .dragIcon {

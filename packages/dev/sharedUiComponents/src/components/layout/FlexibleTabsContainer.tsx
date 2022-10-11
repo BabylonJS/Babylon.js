@@ -6,6 +6,8 @@ import style from "./FlexibleTabsContainer.modules.scss";
 
 import dragIcon from "../../imgs/dragDotsIcon_white.svg";
 import { getPosInLayout } from "./unitTools";
+import { DraggableIcon } from "./DraggableIcon";
+import { ElementTypes } from "./types";
 
 export interface IFlexibleTabsContainerProps {
     tabs: { component: ReactElement; id: string }[];
@@ -34,10 +36,23 @@ export const FlexibleTabsContainer: FC<IFlexibleTabsContainerProps> = (props) =>
             <div draggable={false} className={style.tabsLineContainer}>
                 <div className={style.tabsContainer}>
                     {tabs.map((tab) => {
-                        return <FlexibleTab key={tab.id} title={tab.id} selected={tab.id === selectedTab} onClick={() => selectTab(tab.id)} />;
+                        return (
+                            <FlexibleTab
+                                key={tab.id}
+                                title={tab.id}
+                                selected={tab.id === selectedTab}
+                                onClick={() => selectTab(tab.id)}
+                                item={{ rowNumber: props.rowIndex, columnNumber: props.columnIndex, tabs: [{ id: tab.id }] }}
+                            />
+                        );
                     })}
                 </div>
-                <img draggable={false} className={style.dragIcon} src={dragIcon} />
+                {/* <img className={style.dragIcon} src={dragIcon} /> */}
+                <DraggableIcon
+                    src={dragIcon}
+                    item={{ rowNumber: props.rowIndex, columnNumber: props.columnIndex, tabs: tabs.map((t) => ({ id: t.id })) }}
+                    type={ElementTypes.TAB_GROUP}
+                />
             </div>
             <div className={style.contentContainer}>{selectedTabObject?.component}</div>
         </div>
