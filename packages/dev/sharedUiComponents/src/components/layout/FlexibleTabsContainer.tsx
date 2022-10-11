@@ -31,6 +31,26 @@ export const FlexibleTabsContainer: FC<IFlexibleTabsContainerProps> = (props) =>
         setLayout({ ...layout });
     };
 
+    const addTabAfter = (droppedTabItem: any, dropZoneTabId: string) => {
+        // Get layout element corresponding to dropped tabs
+        const layoutDropped = getPosInLayout(layout, droppedTabItem.columnNumber, droppedTabItem.rowNumber);
+        // Get layout element corresponding to dropzone
+        const layoutDropZone = getPosInLayout(layout, props.columnIndex, props.rowIndex);
+
+        for (const { id } of droppedTabItem.tabs) {
+            const droppedTabIndex = layoutDropped.tabs.findIndex((tab: any) => tab.id === id);
+            const droppedTab = layoutDropped.tabs[droppedTabIndex];
+            // Add dropped tab after dropZoneTabId
+            const dropZoneIndex = layoutDropZone.tabs.findIndex((tab: any) => tab.id === dropZoneTabId);
+            layoutDropZone.tabs.splice(dropZoneIndex + 1, 0, droppedTab);
+            // Remove dropped tab from its original position
+            layoutDropped.tabs.splice(droppedTabIndex, 1);
+        }
+
+        // Update layout
+        setLayout({ ...layout });
+    };
+
     return (
         <div className={style.rootContainer}>
             <div draggable={false} className={style.tabsLineContainer}>
@@ -43,6 +63,7 @@ export const FlexibleTabsContainer: FC<IFlexibleTabsContainerProps> = (props) =>
                                 selected={tab.id === selectedTab}
                                 onClick={() => selectTab(tab.id)}
                                 item={{ rowNumber: props.rowIndex, columnNumber: props.columnIndex, tabs: [{ id: tab.id }] }}
+                                onTabDroppedAction={(item) => addTabAfter(item, tab.id)}
                             />
                         );
                     })}
