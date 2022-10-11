@@ -57,11 +57,12 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
         camera: Nullable<Camera>,
         circleOfConfusion: PostProcess,
         imageToBlur: Nullable<PostProcess> = null,
-        samplingMode: number = Texture.BILINEAR_SAMPLINGMODE,
+        samplingMode = Texture.BILINEAR_SAMPLINGMODE,
         engine?: Engine,
         reusable?: boolean,
-        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
-        blockCompilation = false
+        textureType = Constants.TEXTURETYPE_UNSIGNED_INT,
+        blockCompilation = false,
+        textureFormat = Constants.TEXTUREFORMAT_RGBA
     ) {
         super(
             name,
@@ -75,7 +76,8 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
             reusable,
             textureType,
             `#define DOF 1\r\n`,
-            blockCompilation
+            blockCompilation,
+            textureFormat
         );
 
         this.direction = direction;
