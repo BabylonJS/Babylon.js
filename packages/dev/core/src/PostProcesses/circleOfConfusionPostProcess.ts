@@ -100,7 +100,7 @@ export class CircleOfConfusionPostProcess extends PostProcess {
             effect.setFloat("focusDistance", this.focusDistance);
             effect.setFloat("cocPrecalculation", cocPrecalculation);
             const activeCamera = this._depthTexture.activeCamera!;
-            effect.setFloat2("cameraMinMaxZ", activeCamera.minZ, activeCamera.maxZ);
+            effect.setFloat2("cameraMinMaxZ", activeCamera.minZ, activeCamera.maxZ - activeCamera.minZ);
         });
     }
 
