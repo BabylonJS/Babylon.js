@@ -22,8 +22,8 @@ import { SerializationHelper, serialize } from "core/Misc/decorators";
 import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
 import { EngineStore } from "core/Engines/engineStore";
 import type { IPointerEvent } from "core/Events/deviceInputEvents";
-import { IAnimatable } from "core/Animations/animatable.interface";
-import { Animation } from "core/Animations/animation";
+import type{ IAnimatable } from "core/Animations/animatable.interface";
+import type{ Animation } from "core/Animations/animation";
 
 /**
  * Root class used for all 2D controls
