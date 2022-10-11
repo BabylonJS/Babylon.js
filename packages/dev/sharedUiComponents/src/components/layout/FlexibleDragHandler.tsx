@@ -4,7 +4,7 @@ import { Vector2 } from "core/Maths/math";
 import type { Nullable } from "core/types";
 import { useDrop } from "react-dnd";
 import { ElementTypes } from "./types";
-import { addPercentageStringToNumber, getPosInLayout } from "./unitTools";
+import { addPercentageStringToNumber, getPosInLayout } from "./utils";
 import { LayoutContext } from "./LayoutContext";
 
 interface IFlexibleDragHandlerProps {

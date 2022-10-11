@@ -13,29 +13,36 @@ interface IFlexibleTabProps {
 }
 
 export const FlexibleTab: FC<IFlexibleTabProps> = (props) => {
-    const [{ isDragging }, drag] = useDrag(() => ({
-        type: ElementTypes.TAB,
-        item: props.item,
-        collect(monitor) {
-            return {
-                isDragging: !!monitor.isDragging(),
-            };
-        },
-    }));
+    const [{ isDragging }, drag] = useDrag(
+        () => ({
+            type: ElementTypes.TAB,
+            item: props.item,
+            collect(monitor) {
+                return {
+                    isDragging: !!monitor.isDragging(),
+                };
+            },
+        }),
+        [props.item]
+    );
 
-    const [{ isOver, canDrop }, drop] = useDrop(() => ({
-        accept: ElementTypes.TAB,
-        drop: (item: any, monitor) => {
-            console.log("dropped", item, monitor);
-            props.onTabDroppedAction(item);
-        },
-        collect(monitor) {
-            return {
-                isOver: !!monitor.isOver(),
-                canDrop: !!monitor.canDrop(),
-            };
-        },
-    }));
+    const [{ isOver, canDrop }, drop] = useDrop(
+        () => ({
+            accept: ElementTypes.TAB,
+            drop: (item: any, monitor) => {
+                console.log("dropped", item, monitor);
+                props.onTabDroppedAction(item);
+            },
+            collect(monitor) {
+                return {
+                    isOver: !!monitor.isOver(),
+                    canDrop: !!monitor.canDrop(),
+                };
+            },
+        }),
+        [props.onTabDroppedAction]
+    );
+    console.log("run render for tab", props.title, "with props", props);
     return (
         <div className={ClassNames({ tab: true, tabSelected: props.selected, tabGrabbed: isDragging, tabNormal: !props.selected && !isDragging }, style)}>
             <div ref={drag} className={style.tabText} onClick={props.onClick}>
