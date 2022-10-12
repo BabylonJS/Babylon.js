@@ -2915,13 +2915,13 @@ export class Vector4 {
      */
     constructor(
         /** x value of the vector */
-        public x: number,
+        public x: number = 0,
         /** y value of the vector */
-        public y: number,
+        public y: number = 0,
         /** z value of the vector */
-        public z: number,
+        public z: number = 0,
         /** w value of the vector */
-        public w: number
+        public w: number = 0
     ) {}
 
     /**
