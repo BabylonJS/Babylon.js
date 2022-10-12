@@ -27,7 +27,7 @@ void main(void)
 {
     float computedWeight = 0.0;
 
-    #ifdef PACKEDFLOAT	
+    #ifdef PACKEDFLOAT
         float blend = 0.;
     #else
         vec4 blend = vec4(0.);
