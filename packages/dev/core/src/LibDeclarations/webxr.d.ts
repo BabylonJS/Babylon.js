@@ -1142,8 +1142,6 @@ interface XRLightProbe extends EventTarget {
     onreflectionchange: XREventHandler;
 }
 
-
-
 /**
  * END: WebXR DOM Overlays Module
  * https://immersive-web.github.io/dom-overlays/
