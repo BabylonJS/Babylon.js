@@ -241,8 +241,7 @@ export class InputManager {
         const pi = pickResult ? new PointerInfo(type, evt, pickResult) : new PointerInfo(type, evt, null, this);
         if (!pickResult) {
             this._movePointerInfo = pi;
-        }
-        else {
+        } else {
             this._setRayOnPointerInfo(pi);
         }
         if (scene.onPointerObservable.hasObservers()) {
