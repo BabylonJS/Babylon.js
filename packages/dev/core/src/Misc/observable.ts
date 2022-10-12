@@ -92,11 +92,7 @@ export class Observer<T> {
         /**
          * Defines the current scope used to restore the JS context
          */
-        public scope: any = null,
-        /**
-         * Defines a custom state object to be used with this observer
-         */
-        public customState: any = null
+        public scope: any = null
     ) {}
 }
 
@@ -109,21 +105,14 @@ export class Observer<T> {
  * A given observer can register itself with only Move and Stop (mask = 0x03), then it will only be notified when one of these two occurs and will never be for Turn Left/Right.
  */
 export class Observable<T> {
-    /**
-     * Callback to execute when a new observer is added
-     */
-    public onObserverAdded: Nullable<(observer: Observer<T>) => void>;
-    /**
-     * Callback to execute when an observer is removed
-     */
-    public onObserverRemoved: Nullable<(observer: Observer<T>) => void>;
-
     private _observers = new Array<Observer<T>>();
 
     /**
      * @internal
      */
     public _eventState: EventState;
+
+    private _onObserverAdded: Nullable<(observer: Observer<T>) => void>;
 
     /**
      * Create an observable from a Promise.
@@ -160,15 +149,11 @@ export class Observable<T> {
      * Creates a new observable
      * @param onObserverAdded defines a callback to call when a new observer is added
      */
-    constructor(onObserverAdded: Nullable<(observer: Observer<T>) => void> = null, onObserverRemoved: Nullable<(observer: Observer<T>) => void> = null) {
+    constructor(onObserverAdded?: (observer: Observer<T>) => void) {
         this._eventState = new EventState(0);
 
         if (onObserverAdded) {
-            this.onObserverAdded = onObserverAdded;
-        }
-
-        if (onObserverRemoved) {
-            this.onObserverRemoved = onObserverRemoved;
+            this._onObserverAdded = onObserverAdded;
         }
     }
 
@@ -186,14 +171,13 @@ export class Observable<T> {
         mask: number = -1,
         insertFirst = false,
         scope: any = null,
-        unregisterOnFirstCall = false,
-        customState: any = null
+        unregisterOnFirstCall = false
     ): Nullable<Observer<T>> {
         if (!callback) {
             return null;
         }
 
-        const observer = new Observer(callback, mask, scope, customState);
+        const observer = new Observer(callback, mask, scope);
         observer.unregisterOnNextCall = unregisterOnFirstCall;
 
         if (insertFirst) {
@@ -202,8 +186,8 @@ export class Observable<T> {
             this._observers.push(observer);
         }
 
-        if (this.onObserverAdded) {
-            this.onObserverAdded(observer);
+        if (this._onObserverAdded) {
+            this._onObserverAdded(observer);
         }
 
         return observer;
@@ -281,9 +265,6 @@ export class Observable<T> {
 
         if (index !== -1) {
             this._observers.splice(index, 1);
-            if (this.onObserverRemoved) {
-                this.onObserverRemoved(observer);
-            }
             return true;
         }
 
@@ -389,8 +370,7 @@ export class Observable<T> {
      */
     public clear(): void {
         this._observers = new Array<Observer<T>>();
-        this.onObserverAdded = null;
-        this.onObserverRemoved = null;
+        this._onObserverAdded = null;
     }
 
     /**

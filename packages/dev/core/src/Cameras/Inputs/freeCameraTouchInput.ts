@@ -139,7 +139,9 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
             };
         }
 
-        this._observer = this.camera._addPointerObserver(this._pointerInput, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);
+        this._observer = this.camera
+            .getScene()
+            .onPointerObservable.add(this._pointerInput, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);
 
         if (this._onLostFocus) {
             const engine = this.camera.getEngine();

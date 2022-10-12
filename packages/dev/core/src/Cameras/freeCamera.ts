@@ -287,6 +287,7 @@ export class FreeCamera extends TargetCamera {
      */
     public detachControl(): void {
         this.inputs.detachElement();
+
         this.cameraDirection = new Vector3(0, 0, 0);
         this.cameraRotation = new Vector2(0, 0);
     }

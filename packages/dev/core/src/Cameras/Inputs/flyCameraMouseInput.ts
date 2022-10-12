@@ -84,7 +84,7 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         this._noPreventDefault = noPreventDefault;
 
-        this._observer = this.camera._addPointerObserver((p: any) => {
+        this._observer = this.camera.getScene().onPointerObservable.add((p: any) => {
             this._pointerInput(p);
         }, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);
 

@@ -295,6 +295,7 @@ export class FlyCamera extends TargetCamera {
      */
     public detachControl(): void {
         this.inputs.detachElement();
+
         this.cameraDirection = new Vector3(0, 0, 0);
     }
 

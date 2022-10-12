@@ -1,7 +1,6 @@
 import { serialize, SerializationHelper, serializeAsVector3 } from "../Misc/decorators";
 import { SmartArray } from "../Misc/smartArray";
 import { Tools } from "../Misc/tools";
-import type { Observer } from "../Misc/observable";
 import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
 import type { CameraInputsManager } from "./cameraInputsManager";
@@ -18,17 +17,12 @@ import { Viewport } from "../Maths/math.viewport";
 import { Frustum } from "../Maths/math.frustum";
 import type { Plane } from "../Maths/math.plane";
 import { Constants } from "../Engines/constants";
-import type { PointerInfo } from "../Events/pointerEvents";
 
 declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
 declare type FreeCamera = import("./freeCamera").FreeCamera;
 declare type TargetCamera = import("./targetCamera").TargetCamera;
 declare type Ray = import("../Culling/ray").Ray;
-
-const forCameraState = {
-    forCamera: true,
-};
 
 /**
  * This is the base class of all the camera used in the application.
@@ -636,11 +630,6 @@ export class Camera extends Node {
         }
 
         return check;
-    }
-
-    /** @internal */
-    public _addPointerObserver(callback: any, mask?: number): Nullable<Observer<PointerInfo>> {
-        return this._scene.onPointerObservable.add(callback, mask, false, null, false, forCameraState);
     }
 
     /**

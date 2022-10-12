@@ -214,10 +214,12 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
             }
         };
 
-        this._observer = this.camera._addPointerObserver(
-            this._pointerInput,
-            PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE | PointerEventTypes.POINTERDOUBLETAP
-        );
+        this._observer = this.camera
+            .getScene()
+            .onPointerObservable.add(
+                this._pointerInput,
+                PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE | PointerEventTypes.POINTERDOUBLETAP
+            );
 
         this._onLostFocus = () => {
             this._pointA = this._pointB = null;

@@ -80,7 +80,7 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
             }
         };
 
-        this._observer = this.camera._addPointerObserver(this._wheel, PointerEventTypes.POINTERWHEEL);
+        this._observer = this.camera.getScene().onPointerObservable.add(this._wheel, PointerEventTypes.POINTERWHEEL);
     }
 
     /**
