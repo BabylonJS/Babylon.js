@@ -12,10 +12,10 @@ import { EngineStore } from "../Engines/engineStore";
 
 type TransformNode = import("../Meshes/transformNode").TransformNode;
 
-export type Vector2Constructor<T extends Vector2> = (new (x?: number, y?: number) => T);
-export type Vector3Constructor<T extends Vector3> = (new (x?: number, y?: number, z?: number) => T);
-export type Vector4Constructor<T extends Vector4> = (new (x?: number, y?: number, z?: number, w?: number) => T);
-export type QuaternionConstructor<T extends Quaternion> = (new (x?: number, y?: number, z?: number, w?: number) => T);
+export type Vector2Constructor<T extends Vector2> = new (x?: number, y?: number) => T;
+export type Vector3Constructor<T extends Vector3> = new (x?: number, y?: number, z?: number) => T;
+export type Vector4Constructor<T extends Vector4> = new (x?: number, y?: number, z?: number, w?: number) => T;
+export type QuaternionConstructor<T extends Quaternion> = new (x?: number, y?: number, z?: number, w?: number) => T;
 export type MatrixConstructor<T extends Matrix> = new () => T;
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
