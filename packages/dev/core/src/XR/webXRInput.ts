@@ -125,7 +125,7 @@ export class WebXRInput implements IDisposable {
         this._addAndRemoveControllers(event.added, event.removed);
     };
 
-    private _addAndRemoveControllers(addInputs: Array<XRInputSource>, removeInputs: Array<XRInputSource>) {
+    private _addAndRemoveControllers(addInputs: readonly XRInputSource[], removeInputs: readonly XRInputSource[]) {
         // Add controllers if they don't already exist
         const sources = this.controllers.map((c) => {
             return c.inputSource;

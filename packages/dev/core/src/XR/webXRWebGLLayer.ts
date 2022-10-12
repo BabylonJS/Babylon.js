@@ -47,6 +47,9 @@ export class WebXRWebGLLayerRenderTargetTextureProvider extends WebXRLayerRender
 
     public trySetViewportForView(viewport: Viewport, view: XRView): boolean {
         const xrViewport = this._layer.getViewport(view);
+        if (!xrViewport) {
+            return false;
+        }
         const framebufferWidth = this._framebufferDimensions.framebufferWidth;
         const framebufferHeight = this._framebufferDimensions.framebufferHeight;
         viewport.x = xrViewport.x / framebufferWidth;
