@@ -988,7 +988,6 @@ export class InputManager {
 
             this._alreadyAttached = false;
             this._alreadyAttachedTo = null;
-            //const engine = this._scene.getEngine();
             this._scene.onBeforeRenderObservable.remove(this._clearCachedPickInfo);
             this._clearCachedPickInfo = null;
         }
