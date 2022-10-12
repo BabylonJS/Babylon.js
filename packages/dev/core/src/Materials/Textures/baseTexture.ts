@@ -211,7 +211,8 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
     @serialize()
     public anisotropicFilteringLevel = BaseTexture.DEFAULT_ANISOTROPIC_FILTERING_LEVEL;
 
-    private _isCube = false;
+    /** @internal */
+    public _isCube = false;
     /**
      * Define if the texture is a cube texture or if false a 2d texture.
      */
