@@ -84,7 +84,7 @@ export class ThinTexture {
         return this._texture.isCube;
     }
 
-    public set isCube(value: boolean) {
+    protected set isCube(value: boolean) {
         if (!this._texture) {
             return;
         }
@@ -103,7 +103,7 @@ export class ThinTexture {
         return this._texture.is3D;
     }
 
-    public set is3D(value: boolean) {
+    protected set is3D(value: boolean) {
         if (!this._texture) {
             return;
         }
@@ -122,7 +122,7 @@ export class ThinTexture {
         return this._texture.is2DArray;
     }
 
-    public set is2DArray(value: boolean) {
+    protected set is2DArray(value: boolean) {
         if (!this._texture) {
             return;
         }
