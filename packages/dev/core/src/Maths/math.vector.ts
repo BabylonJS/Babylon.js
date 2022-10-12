@@ -751,9 +751,9 @@ export class Vector2 {
      * @returns a new Vector2
      */
     public static Transform<T extends Vector2>(vector: DeepImmutable<T>, transformation: DeepImmutable<Matrix>): T {
-        const r = (<any>vector.constructor)();
-        Vector2.TransformToRef(vector, transformation, r);
-        return r;
+        const result = new (<any>vector.constructor)();
+        Vector2.TransformToRef(vector, transformation, result);
+        return result;
     }
 
     /**
@@ -824,7 +824,7 @@ export class Vector2 {
      * @returns a new Vector2
      */
     public static Center<T extends Vector2>(value1: DeepImmutable<T>, value2: DeepImmutable<Vector2>): T {
-        const result = (<any>value1.constructor)();
+        const result = new (<any>value1.constructor)();
         return Vector2.CenterToRef(value1, value2, result);
     }
 
@@ -1266,9 +1266,8 @@ export class Vector3 {
      * @param origin defines the origin of the projection ray
      * @returns the projected vector3
      */
-    public projectOnPlane(plane: Plane, origin: Vector3): this {
-        const result = (<any>this.constructor)();
-
+    public projectOnPlane<T extends Vector3>(plane: Plane, origin: Vector3): T {
+        const result = new (<any>this.constructor)();
         this.projectOnPlaneToRef(plane, origin, result);
 
         return result;
@@ -1638,7 +1637,7 @@ export class Vector3 {
      * @returns the cross product
      */
     public cross(other: Vector3): this {
-        const result = (<any>this.constructor)();
+        const result = new (<any>this.constructor)();
         return Vector3.CrossToRef(this, other, result);
     }
 
@@ -2235,9 +2234,9 @@ export class Vector3 {
      * @returns the new Vector3
      */
     public static Clamp<T extends Vector3>(value: DeepImmutable<T>, min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>): T {
-        const v = new (<any>value.constructor)();
-        Vector3.ClampToRef(value, min, max, v);
-        return v;
+        const result = new (<any>value.constructor)();
+        Vector3.ClampToRef(value, min, max, result);
+        return result;
     }
     /**
      * Sets the given vector "result" with the coordinates of "value", if the vector "value" is in the cube defined by the vectors "min" and "max"
@@ -2326,7 +2325,7 @@ export class Vector3 {
         tangent2: DeepImmutable<Vector3>,
         time: number
     ): T {
-        const result = (<any>value1.constructor)();
+        const result = new (<any>value1.constructor)();
 
         this.Hermite1stDerivativeToRef(value1, tangent1, value2, tangent2, time, result);
 
@@ -2410,7 +2409,7 @@ export class Vector3 {
      * @returns the cross product
      */
     public static Cross<T extends Vector3>(left: DeepImmutable<T>, right: DeepImmutable<Vector3>): T {
-        const result = (<any>left.constructor)();
+        const result = new (<any>left.constructor)();
         Vector3.CrossToRef(left, right, result);
         return result;
     }
@@ -2557,7 +2556,7 @@ export class Vector3 {
         view: DeepImmutable<Matrix>,
         projection: DeepImmutable<Matrix>
     ): T {
-        const result = (<any>source.constructor)();
+        const result = new (<any>source.constructor)();
 
         Vector3.UnprojectToRef(source, viewportWidth, viewportHeight, world, view, projection, result);
 
@@ -2640,7 +2639,7 @@ export class Vector3 {
      * @returns the new Vector3
      */
     public static Minimize<T extends Vector3>(left: DeepImmutable<T>, right: DeepImmutable<Vector3>): T {
-        const min = (<any>left.constructor)();
+        const min = new (<any>left.constructor)();
         min.copyFrom(left);
         min.minimizeInPlace(right);
         return min;
@@ -2654,7 +2653,7 @@ export class Vector3 {
      * @returns the new Vector3
      */
     public static Maximize<T extends Vector3>(left: DeepImmutable<T>, right: DeepImmutable<Vector3>): T {
-        const max = (<any>left.constructor)();
+        const max = new (<any>left.constructor)();
         max.copyFrom(left);
         max.maximizeInPlace(right);
         return max;
@@ -2879,7 +2878,7 @@ export class Vector3 {
      * @see https://doc.babylonjs.com/divingDeeper/mesh/transforms/center_origin/target_align
      */
     public static RotationFromAxis<T extends Vector3>(axis1: DeepImmutable<T>, axis2: DeepImmutable<Vector3>, axis3: DeepImmutable<Vector3>): T {
-        const rotation = (<any>axis1.constructor)();
+        const rotation = new (<any>axis1.constructor)();
         Vector3.RotationFromAxisToRef(axis1, axis2, axis3, rotation);
         return rotation;
     }
@@ -3672,7 +3671,7 @@ export class Vector4 {
      * @returns the new vector
      */
     public static TransformNormal<T extends Vector4>(vector: DeepImmutable<T>, transformation: DeepImmutable<Matrix>): T {
-        const result = (<any>vector.constructor)();
+        const result = new (<any>vector.constructor)();
         Vector4.TransformNormalToRef(vector, transformation, result);
         return result;
     }
@@ -4792,7 +4791,7 @@ export class Quaternion {
         tangent2: DeepImmutable<Quaternion>,
         time: number
     ): T {
-        const result = (<any>value1.constructor)();
+        const result = new (<any>value1.constructor)();
 
         this.Hermite1stDerivativeToRef(value1, tangent1, value2, tangent2, time, result);
 
