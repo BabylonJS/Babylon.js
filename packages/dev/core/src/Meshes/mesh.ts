@@ -3516,7 +3516,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Serialize current mesh
      * @param serializationObject defines the object which will receive the serialization data
      */
-    public serialize(serializationObject: any = {}): void {
+    public serialize(serializationObject: any = {}): any {
         serializationObject.name = this.name;
         serializationObject.id = this.id;
         serializationObject.uniqueId = this.uniqueId;
@@ -3724,6 +3724,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (this.actionManager) {
             serializationObject.actions = this.actionManager.serialize(this.name);
         }
+
+        return serializationObject;
     }
 
     /** @internal */
