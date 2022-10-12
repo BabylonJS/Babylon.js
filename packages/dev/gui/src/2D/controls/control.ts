@@ -17,17 +17,19 @@ import { ValueAndUnit } from "../valueAndUnit";
 import { Measure } from "../measure";
 import type { Style } from "../style";
 import { Matrix2D, Vector2WithInfo } from "../math2D";
-import { RegisterClass } from "core/Misc/typeStore";
+import { GetClass, RegisterClass } from "core/Misc/typeStore";
 import { SerializationHelper, serialize } from "core/Misc/decorators";
 import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
 import { EngineStore } from "core/Engines/engineStore";
 import type { IPointerEvent } from "core/Events/deviceInputEvents";
+import type { IAnimatable } from "core/Animations/animatable.interface";
+import type { Animation } from "core/Animations/animation";
 
 /**
  * Root class used for all 2D controls
  * @see https://doc.babylonjs.com/how_to/gui#controls
  */
-export class Control {
+export class Control implements IAnimatable {
     /**
      * Gets or sets a boolean indicating if alpha must be an inherited value (false by default)
      */
@@ -1193,6 +1195,11 @@ export class Control {
     @serialize()
     public overlapDeltaMultiplier?: number;
 
+    /**
+     * Array of animations
+     */
+    animations: Nullable<Animation[]> = null;
+
     // Functions
 
     /**
@@ -2306,6 +2313,9 @@ export class Control {
             serializationObject.fontWeight = this.fontWeight;
             serializationObject.fontStyle = this.fontStyle;
         }
+
+        // Animations
+        SerializationHelper.AppendSerializedAnimations(this, serializationObject);
     }
 
     /**
@@ -2326,6 +2336,30 @@ export class Control {
 
         if (serializedObject.fontStyle) {
             this.fontStyle = serializedObject.fontStyle;
+        }
+
+        // Animations
+        if (serializedObject.animations) {
+            this.animations = [];
+            for (let animationIndex = 0; animationIndex < serializedObject.animations.length; animationIndex++) {
+                const parsedAnimation = serializedObject.animations[animationIndex];
+                const internalClass = GetClass("BABYLON.Animation");
+                if (internalClass) {
+                    this.animations.push(internalClass.Parse(parsedAnimation));
+                }
+            }
+
+            if (serializedObject.autoAnimate && this._host && this._host.getScene()) {
+                this._host
+                    .getScene()!
+                    .beginAnimation(
+                        this,
+                        serializedObject.autoAnimateFrom,
+                        serializedObject.autoAnimateTo,
+                        serializedObject.autoAnimateLoop,
+                        serializedObject.autoAnimateSpeed || 1.0
+                    );
+            }
         }
     }
 
