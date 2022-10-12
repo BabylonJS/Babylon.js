@@ -37,7 +37,6 @@ export class WebXRManagedOutputCanvasOptions {
             depth: true,
             stencil: engine ? engine.isStencilEnable : true,
             alpha: true,
-            multiview: false,
             framebufferScaleFactor: 1,
         };
 

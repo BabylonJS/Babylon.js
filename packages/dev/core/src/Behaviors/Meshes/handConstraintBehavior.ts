@@ -3,7 +3,7 @@ import type { Nullable } from "../../types";
 import { WebXRFeatureName } from "../../XR/webXRFeaturesManager";
 import type { WebXREyeTracking } from "../../XR/features/WebXREyeTracking";
 import type { WebXRHandTracking } from "../../XR/features/WebXRHandTracking";
-import { XRHandJoint } from "../../XR/features/WebXRHandTracking";
+import { WebXRHandJoint } from "../../XR/features/WebXRHandTracking";
 import type { WebXRExperienceHelper } from "../../XR/webXRExperienceHelper";
 import type { Behavior } from "../behavior";
 import type { Observer } from "../../Misc/observable";
@@ -176,9 +176,9 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
         }
 
         if (hand) {
-            const pinkyMetacarpal = hand.getJointMesh(XRHandJoint.PINKY_FINGER_METACARPAL);
-            const middleMetacarpal = hand.getJointMesh(XRHandJoint.MIDDLE_FINGER_METACARPAL);
-            const wrist = hand.getJointMesh(XRHandJoint.WRIST);
+            const pinkyMetacarpal = hand.getJointMesh(WebXRHandJoint.PINKY_FINGER_METACARPAL);
+            const middleMetacarpal = hand.getJointMesh(WebXRHandJoint.MIDDLE_FINGER_METACARPAL);
+            const wrist = hand.getJointMesh(WebXRHandJoint.WRIST);
 
             if (wrist && middleMetacarpal && pinkyMetacarpal) {
                 const handPose: HandPoseInfo = { position: middleMetacarpal.absolutePosition, quaternion: new Quaternion(), id: hand.xrController.uniqueId };
