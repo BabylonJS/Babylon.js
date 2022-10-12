@@ -259,7 +259,7 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
                 if (!this.options.disableCubeMapReflection) {
                     if (!this._reflectionCubeMap) {
                         this._reflectionCubeMap = new BaseTexture(this._xrSessionManager.scene);
-                        this._reflectionCubeMap.isCube = true;
+                        this._reflectionCubeMap._isCube = true;
                         this._reflectionCubeMap.coordinatesMode = Constants.TEXTURE_CUBIC_MODE;
                         if (this.options.setSceneEnvironmentTexture) {
                             this._xrSessionManager.scene.environmentTexture = this._reflectionCubeMap;
