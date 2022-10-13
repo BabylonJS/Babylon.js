@@ -18,8 +18,8 @@ export const Default = {
                     id: "column1",
                     width: "100%",
                     rows: [
-                        { id: "row1", height: "50%", tabs: [{ id: "tab1", component: <div>Test tab 1</div> }] },
-                        { id: "row2", height: "50%", tabs: [{ id: "tab2", component: <div>Test tab 2</div> }] },
+                        { id: "row1", height: "50%", selectedTab: "tab1", tabs: [{ id: "tab1", component: <div>Test tab 1</div> }] },
+                        { id: "row2", height: "50%", selectedTab: "tab2", tabs: [{ id: "tab2", component: <div>Test tab 2</div> }] },
                     ],
                 },
             ],
@@ -36,16 +36,16 @@ export const TwoColumn = {
                     id: "column1",
                     width: "50%",
                     rows: [
-                        { id: "row1", height: "50%", tabs: [{ id: "tab1", component: <div>Test tab 1</div> }] },
-                        { id: "row2", height: "50%", tabs: [{ id: "tab2", component: <div>Test tab 2</div> }] },
+                        { id: "row1", height: "50%", selectedTab: "tab1", tabs: [{ id: "tab1", component: <div>Test tab 1</div> }] },
+                        { id: "row2", height: "50%", selectedTab: "tab2", tabs: [{ id: "tab2", component: <div>Test tab 2</div> }] },
                     ],
                 },
                 {
                     id: "column2",
                     width: "50%",
                     rows: [
-                        { id: "row1", height: "50%", tabs: [{ id: "tab1", component: <div>Test tab 1</div> }] },
-                        { id: "row2", height: "50%", tabs: [{ id: "tab2", component: <div>Test tab 2</div> }] },
+                        { id: "row1", height: "50%", selectedTab: "tab1", tabs: [{ id: "tab1", component: <div>Test tab 1</div> }] },
+                        { id: "row2", height: "50%", selectedTab: "tab2", tabs: [{ id: "tab2", component: <div>Test tab 2</div> }] },
                     ],
                 },
             ],

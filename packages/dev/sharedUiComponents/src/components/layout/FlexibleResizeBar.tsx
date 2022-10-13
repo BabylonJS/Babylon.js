@@ -10,6 +10,12 @@ export interface IFlexibleRowResizerProps {
     direction: ResizeDirections;
 }
 
+export type ResizeItem = {
+    direction: ResizeDirections;
+    rowNumber: number;
+    columnNumber: number;
+};
+
 export const FlexibleResizeBar: FC<IFlexibleRowResizerProps> = (props) => {
     const [_, drag] = useDrag(() => ({
         type: ElementTypes.RESIZE_BAR,

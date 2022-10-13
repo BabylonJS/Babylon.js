@@ -1,5 +1,6 @@
 $tabLineWidth: 25px;
 $tabLineBackgroundColor: rgb(77, 77, 77);
+$tabContentBackgroundColor: rgb(214, 214, 214);
 
 .rootContainer {
     width: 100%;
@@ -29,4 +30,5 @@ $tabLineBackgroundColor: rgb(77, 77, 77);
     width: 100%;
     height: 100%;
     grid-row: 2;
+    background-color: $tabContentBackgroundColor;
 }
