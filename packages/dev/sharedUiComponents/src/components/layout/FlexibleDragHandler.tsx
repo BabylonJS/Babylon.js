@@ -4,9 +4,10 @@ import { Vector2 } from "core/Maths/math";
 import type { Nullable } from "core/types";
 import { useDrop } from "react-dnd";
 import { ElementTypes } from "./types";
-import { LayoutTabsRow, LayoutColumn } from "./types";
+import type { LayoutTabsRow, LayoutColumn } from "./types";
 import { addPercentageStringToNumber, getPosInLayout } from "./utils";
 import { LayoutContext } from "./LayoutContext";
+import type { ResizeItem } from "./FlexibleResizeBar";
 
 interface IFlexibleDragHandlerProps {
     containerSize: { width: number; height: number };
@@ -19,7 +20,7 @@ export const FlexibleDragHandler: FC<IFlexibleDragHandlerProps> = (props) => {
     const [_, drop] = useDrop(() => ({
         accept: [ElementTypes.RESIZE_BAR],
         hover(item, monitor) {
-            const anyitem = item as any;
+            const anyitem = item as ResizeItem;
 
             const xy = monitor.getClientOffset();
             const pos = new Vector2(xy!.x, xy!.y);
@@ -66,22 +67,27 @@ export const FlexibleDragHandler: FC<IFlexibleDragHandlerProps> = (props) => {
         // Check axis difference
         const axisDiff = pos[axis] - prevPos[axis];
 
-        // Get layout rows
-        const layoutElement0 = getPosInLayout(layout, column0, row0);
-        const layoutElement1 = getPosInLayout(layout, column1, row1);
+        try {
+            // Get layout rows
+            const layoutElement0 = getPosInLayout(layout, column0, row0);
+            const layoutElement1 = getPosInLayout(layout, column1, row1);
 
-        if (layoutElement0 && layoutElement1) {
-            const percDiff = (axisDiff / maxAxisValue) * 100;
+            if (layoutElement0 && layoutElement1) {
+                const percDiff = (axisDiff / maxAxisValue) * 100;
 
-            const newValue0 = addPercentageStringToNumber(getLayoutProperty(layoutElement0, property), percDiff);
-            const newValue1 = addPercentageStringToNumber(getLayoutProperty(layoutElement1, property), -percDiff);
+                const newValue0 = addPercentageStringToNumber(getLayoutProperty(layoutElement0, property), percDiff);
+                const newValue1 = addPercentageStringToNumber(getLayoutProperty(layoutElement1, property), -percDiff);
 
-            if (newValue0 >= minFinalValue && newValue1 >= minFinalValue) {
-                setLayoutProperty(layoutElement0, property, newValue0.toFixed(2) + "%");
-                setLayoutProperty(layoutElement1, property, newValue1.toFixed(2) + "%");
+                if (newValue0 >= minFinalValue && newValue1 >= minFinalValue) {
+                    setLayoutProperty(layoutElement0, property, newValue0.toFixed(2) + "%");
+                    setLayoutProperty(layoutElement1, property, newValue1.toFixed(2) + "%");
+                }
+
+                setLayout({ ...layout });
             }
-
-            setLayout({ ...layout });
+        } catch (e) {
+            // If an error occurred, we're trying to resize something invalid, so don't do anything
+            return;
         }
     };
 
