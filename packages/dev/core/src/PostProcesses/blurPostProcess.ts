@@ -96,6 +96,7 @@ export class BlurPostProcess extends PostProcess {
      * @param textureType Type of textures used when performing the post process. (default: 0)
      * @param defines
      * @param _blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
+     * @param textureFormat Format of textures used when performing the post process. (default: TEXTUREFORMAT_RGBA)
      */
     constructor(
         name: string,
@@ -106,14 +107,15 @@ export class BlurPostProcess extends PostProcess {
         samplingMode: number = Texture.BILINEAR_SAMPLINGMODE,
         engine?: Engine,
         reusable?: boolean,
-        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        textureType = Constants.TEXTURETYPE_UNSIGNED_INT,
         defines = "",
-        private _blockCompilation = false
+        private _blockCompilation = false,
+        textureFormat = Constants.TEXTUREFORMAT_RGBA
     ) {
         super(
             name,
             "kernelBlur",
-            ["delta", "direction", "cameraMinMaxZ"],
+            ["delta", "direction"],
             ["circleOfConfusionSampler"],
             options,
             camera,
@@ -124,7 +126,8 @@ export class BlurPostProcess extends PostProcess {
             textureType,
             "kernelBlur",
             { varyingCount: 0, depCount: 0 },
-            true
+            true,
+            textureFormat
         );
         this._staticDefines = defines;
         this.direction = direction;

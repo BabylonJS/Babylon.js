@@ -47,6 +47,7 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
      * @param reusable If the post process can be reused on the same frame. (default: false)
      * @param textureType Type of textures used when performing the post process. (default: 0)
      * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
+     * @param textureFormat Format of textures used when performing the post process. (default: TEXTUREFORMAT_RGBA)
      */
     constructor(
         name: string,
@@ -57,11 +58,12 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
         camera: Nullable<Camera>,
         circleOfConfusion: PostProcess,
         imageToBlur: Nullable<PostProcess> = null,
-        samplingMode: number = Texture.BILINEAR_SAMPLINGMODE,
+        samplingMode = Texture.BILINEAR_SAMPLINGMODE,
         engine?: Engine,
         reusable?: boolean,
-        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
-        blockCompilation = false
+        textureType = Constants.TEXTURETYPE_UNSIGNED_INT,
+        blockCompilation = false,
+        textureFormat = Constants.TEXTUREFORMAT_RGBA
     ) {
         super(
             name,
@@ -75,7 +77,8 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
             reusable,
             textureType,
             `#define DOF 1\r\n`,
-            blockCompilation
+            blockCompilation,
+            textureFormat
         );
 
         this.direction = direction;
@@ -86,9 +89,6 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
                 effect.setTextureFromPostProcess("textureSampler", imageToBlur);
             }
             effect.setTextureFromPostProcessOutput("circleOfConfusionSampler", circleOfConfusion);
-            if (scene.activeCamera) {
-                effect.setFloat2("cameraMinMaxZ", scene.activeCamera.minZ, scene.activeCamera.maxZ);
-            }
         });
     }
 }
