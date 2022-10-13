@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 import type { Nullable } from "core/types";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Texture } from "core/Materials/Textures/texture";
@@ -11,8 +10,9 @@ import type { IKHRTextureTransform } from "babylonjs-gltf2interface";
 const NAME = "KHR_texture_transform";
 
 /**
- * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_texture_transform)
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_texture_transform/README.md)
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_texture_transform implements IGLTFLoaderExtension {
     /**
      * The name of this extension.

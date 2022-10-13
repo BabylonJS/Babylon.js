@@ -11,9 +11,10 @@ import type { IKHRMaterialsVolume } from "babylonjs-gltf2interface";
 const NAME = "KHR_materials_volume";
 
 /**
- * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_volume)
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_volume/README.md)
  * @since 5.0.0
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_materials_volume implements IGLTFLoaderExtension {
     /**
      * The name of this extension.
