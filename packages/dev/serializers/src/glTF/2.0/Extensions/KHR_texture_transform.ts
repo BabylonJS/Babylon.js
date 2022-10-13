@@ -98,7 +98,7 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
             /*
              * The KHR_texture_transform schema only supports rotation around the origin.
              * the texture must be baked to preserve appearance.
-             * see: https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_texture_transform#gltf-schema-updates
+             * see: https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_texture_transform#gltf-schema-updates
              */
             if (
                 (babylonTexture.uAng !== 0 || babylonTexture.wAng !== 0 || babylonTexture.vAng !== 0) &&

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 import type { Nullable } from "core/types";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { Material } from "core/Materials/material";
@@ -14,6 +13,7 @@ const NAME = "KHR_materials_translucency";
  * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1825)
  * !!! Experimental Extension Subject to Changes !!!
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_materials_translucency implements IGLTFLoaderExtension {
     /**
      * The name of this extension.

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 import type { Nullable } from "core/types";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { Material } from "core/Materials/material";
@@ -12,9 +11,10 @@ import type { IKHRMaterialsSheen } from "babylonjs-gltf2interface";
 const NAME = "KHR_materials_sheen";
 
 /**
- * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_materials_sheen/README.md)
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_sheen/README.md)
  * [Playground Sample](https://www.babylonjs-playground.com/frame.html#BNIZX6#4)
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_materials_sheen implements IGLTFLoaderExtension {
     /**
      * The name of this extension.
