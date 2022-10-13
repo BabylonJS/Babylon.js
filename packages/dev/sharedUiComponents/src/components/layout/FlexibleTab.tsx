@@ -30,7 +30,6 @@ export const FlexibleTab: FC<IFlexibleTabProps> = (props) => {
         () => ({
             accept: ElementTypes.TAB,
             drop: (item: any, monitor) => {
-                console.log("dropped", item, monitor);
                 props.onTabDroppedAction(item);
             },
             collect(monitor) {
@@ -42,13 +41,13 @@ export const FlexibleTab: FC<IFlexibleTabProps> = (props) => {
         }),
         [props.onTabDroppedAction]
     );
-    // console.log("run render for tab", props.title, "with props", props);
     return (
         <div className={ClassNames({ tab: true, tabSelected: props.selected, tabGrabbed: isDragging, tabNormal: !props.selected && !isDragging }, style)}>
             <div ref={drag} className={style.tabText} onClick={props.onClick}>
                 {props.title}
             </div>
-            <div className={ClassNames({ dropZone: true, dropZoneOver: isOver, dropZoneCanDrop: canDrop }, style)} ref={drop}></div>
+            <div className={ClassNames({ dropZone: true, dropZoneCanDrop: canDrop }, style)} ref={drop}></div>
+            <div className={ClassNames({ dropBarIndicator: true, dropBarIndicatorOver: isOver }, style)}></div>
         </div>
     );
 };
