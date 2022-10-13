@@ -18,7 +18,6 @@ export const FlexibleGridLayout: FC<IFlexibleGridLayoutProps> = (props) => {
 
     useEffect(() => {
         if (containerDiv.current) {
-            console.log("fill in width and height");
             containerSize.current.width = containerDiv.current.clientWidth;
             containerSize.current.height = containerDiv.current.clientHeight;
         }
