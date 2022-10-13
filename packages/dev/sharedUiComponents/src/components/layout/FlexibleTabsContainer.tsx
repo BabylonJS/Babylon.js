@@ -1,4 +1,4 @@
-import { FC, ReactElement, useEffect } from "react";
+import type { FC, ReactElement } from "react";
 import { useContext } from "react";
 import { FlexibleTab } from "./FlexibleTab";
 import { LayoutContext } from "./LayoutContext";
@@ -31,37 +31,34 @@ export const FlexibleTabsContainer: FC<IFlexibleTabsContainerProps> = (props) =>
         setLayout({ ...layout });
     };
 
-    let addTabAfter: any;
-    useEffect(() => {
-        addTabAfter = (droppedTabItem: any, dropZoneTabId: string) => {
-            console.log("add tab after", droppedTabItem, dropZoneTabId);
-            // Get layout element corresponding to dropped tabs
-            const layoutDropped = getPosInLayout(layout, droppedTabItem.columnNumber, droppedTabItem.rowNumber);
-            // Get layout element corresponding to dropzone
-            const layoutDropZone = getPosInLayout(layout, props.columnIndex, props.rowIndex);
+    const addTabAfter = (droppedTabItem: any, dropZoneTabId: string) => {
+        console.log("add tab after", droppedTabItem, dropZoneTabId);
+        // Get layout element corresponding to dropped tabs
+        const layoutDropped = getPosInLayout(layout, droppedTabItem.columnNumber, droppedTabItem.rowNumber);
+        // Get layout element corresponding to dropzone
+        const layoutDropZone = getPosInLayout(layout, props.columnIndex, props.rowIndex);
 
-            for (const { id } of droppedTabItem.tabs) {
-                const droppedTabIndex = layoutDropped.tabs.findIndex((tab: any) => tab.id === id);
-                const droppedTab = layoutDropped.tabs[droppedTabIndex];
-                // Add dropped tab after dropZoneTabId
-                const dropZoneIndex = layoutDropZone.tabs.findIndex((tab: any) => tab.id === dropZoneTabId);
-                layoutDropZone.tabs.splice(dropZoneIndex + 1, 0, droppedTab);
-                // Remove dropped tab from its original position
-                layoutDropped.tabs.splice(droppedTabIndex, 1);
-            }
+        for (const { id } of droppedTabItem.tabs) {
+            const droppedTabIndex = layoutDropped.tabs.findIndex((tab: any) => tab.id === id);
+            const droppedTab = layoutDropped.tabs[droppedTabIndex];
+            // Add dropped tab after dropZoneTabId
+            const dropZoneIndex = layoutDropZone.tabs.findIndex((tab: any) => tab.id === dropZoneTabId);
+            layoutDropZone.tabs.splice(dropZoneIndex + 1, 0, droppedTab);
+            // Remove dropped tab from its original position
+            layoutDropped.tabs.splice(droppedTabIndex, 1);
+        }
 
+        if (layoutDropped.tabs.length === 0) {
             // Check if the layout that was dropped from is empty now
-            if (layoutDropped.tabs.length === 0) {
-                removeLayoutRowAndRedistributePercentages(layout, droppedTabItem.columnNumber, droppedTabItem.rowNumber);
-            }
+            removeLayoutRowAndRedistributePercentages(layout, droppedTabItem.columnNumber, droppedTabItem.rowNumber);
+        } else if (droppedTabItem.tabs.map((tab: any) => tab.id).includes(layoutDropped.selectedTab)) {
+            //Check if the layout that was dropped from's active tab is still in the layout
+            layoutDropped.selectedTab = layoutDropped.tabs[0].id;
+        }
 
-            // Update layout
-            setLayout({ ...layout });
-        };
-    }, [props.rowIndex, props.columnIndex]);
-    if (addTabAfter === null) {
-        console.error("addtabafter is null", addTabAfter);
-    }
+        // Update layout
+        setLayout({ ...layout });
+    };
 
     return (
         <div className={style.rootContainer}>
