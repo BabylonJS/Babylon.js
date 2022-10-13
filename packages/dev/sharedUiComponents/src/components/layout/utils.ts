@@ -1,5 +1,12 @@
 import type { Layout } from "./types";
 
+/**
+ * Given a column and row number in the layout, return the corresponding column/row
+ * @param layout
+ * @param column
+ * @param row
+ * @returns
+ */
 export const getPosInLayout = (layout: Layout, column: number, row?: number) => {
     if (!layout.columns) {
         throw new Error("Attempted to get position on empty layout");
@@ -14,6 +21,12 @@ export const getPosInLayout = (layout: Layout, column: number, row?: number) => 
     return columnLayout.rows[row];
 };
 
+/**
+ * Remove a row in position row, column from the layout, and redistribute heights of remaining rows
+ * @param layout
+ * @param column
+ * @param row
+ */
 export const removeLayoutRowAndRedistributePercentages = (layout: Layout, column: number, row: number) => {
     if (!layout.columns) {
         throw new Error("Attempted to get position on empty layout");
@@ -50,19 +63,6 @@ export const addPercentageStringToNumber = (p1: string, p2: number): number => {
 
     const nr = np1 + np2;
     return nr;
-};
-
-/**
- * Get the percentage of a position relative to a bounding rect
- * @param x
- * @param y
- * @param rect
- * @returns
- */
-export const getPercentageInsideRect = (x: number, y: number, rect: DOMRect): { xPercentage: number; yPercentage: number } => {
-    const xPercentage = (x - rect.left) / rect.width;
-    const yPercentage = (y - rect.top) / rect.height;
-    return { xPercentage, yPercentage };
 };
 
 /**

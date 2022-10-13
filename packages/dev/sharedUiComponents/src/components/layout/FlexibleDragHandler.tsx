@@ -92,12 +92,10 @@ export const FlexibleDragHandler: FC<IFlexibleDragHandlerProps> = (props) => {
     };
 
     const processResizeRow = (pos: Vector2, prevPos: Vector2, args: { row: number; column: number }) => {
-        // console.log("containerDiv", props.containerDiv);
         processResize(pos, prevPos, args.row, args.column, args.row + 1, args.column, "y", props.containerSize.height, "height", 5);
     };
 
     const processResizeColumn = (pos: Vector2, prevPos: Vector2, args: { row: number; column: number }) => {
-        // console.log("containerDiv", props.containerDiv);
         processResize(pos, prevPos, undefined, args.column, undefined, args.column + 1, "x", props.containerSize.width, "width", 5);
     };
 
