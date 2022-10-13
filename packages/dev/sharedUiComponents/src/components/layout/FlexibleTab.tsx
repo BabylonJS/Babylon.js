@@ -42,7 +42,7 @@ export const FlexibleTab: FC<IFlexibleTabProps> = (props) => {
         }),
         [props.onTabDroppedAction]
     );
-    console.log("run render for tab", props.title, "with props", props);
+    // console.log("run render for tab", props.title, "with props", props);
     return (
         <div className={ClassNames({ tab: true, tabSelected: props.selected, tabGrabbed: isDragging, tabNormal: !props.selected && !isDragging }, style)}>
             <div ref={drag} className={style.tabText} onClick={props.onClick}>
