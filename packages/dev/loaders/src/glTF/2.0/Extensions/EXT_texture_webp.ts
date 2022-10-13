@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
 import type { ITexture } from "../glTFLoaderInterfaces";
@@ -9,8 +8,9 @@ import type { IEXTTextureWebP } from "babylonjs-gltf2interface";
 const NAME = "EXT_texture_webp";
 
 /**
- * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Vendor/EXT_texture_webp/)
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_texture_webp/README.md)
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class EXT_texture_webp implements IGLTFLoaderExtension {
     /** The name of this extension. */
     public readonly name = NAME;

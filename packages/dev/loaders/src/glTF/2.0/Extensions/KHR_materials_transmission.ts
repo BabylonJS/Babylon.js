@@ -153,6 +153,9 @@ class TransmissionHelper {
         }
     }
 
+    /**
+     * Gets the opaque render target texture or null if not available.
+     */
     public getOpaqueTarget(): Nullable<Texture> {
         return this._opaqueRenderTarget;
     }
@@ -298,7 +301,7 @@ class TransmissionHelper {
 const NAME = "KHR_materials_transmission";
 
 /**
- * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_materials_transmission/README.md)
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_transmission/README.md)
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_materials_transmission implements IGLTFLoaderExtension {

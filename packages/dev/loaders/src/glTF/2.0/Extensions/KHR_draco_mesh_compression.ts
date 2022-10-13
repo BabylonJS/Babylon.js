@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 import { DracoCompression } from "core/Meshes/Compression/dracoCompression";
 import type { Nullable } from "core/types";
 import { VertexBuffer } from "core/Buffers/buffer";
@@ -18,8 +17,9 @@ interface IBufferViewDraco extends IBufferView {
 }
 
 /**
- * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression)
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_draco_mesh_compression/README.md)
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
     /**
      * The name of this extension.
