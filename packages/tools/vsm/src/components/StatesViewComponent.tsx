@@ -7,6 +7,7 @@ import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/
 import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
 import { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
 import { PortDataDirection } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
+import style from "./StatesViewComponent.modules.scss";
 
 const connectToFn = (self: IPortData, port: IPortData) => {
     self.isConnected = true;
@@ -174,7 +175,7 @@ export const StatesViewComponent: FC = () => {
     };
 
     return (
-        <div id="vsm-root" ref={rootContainer}>
+        <div className={style.vsmRoot} ref={rootContainer}>
             {stateManager !== null && <GraphCanvasComponent ref={graphCanvasComponentRef} stateManager={stateManager} onEmitNewNode={onEmitNewNode}></GraphCanvasComponent>}
         </div>
     );
