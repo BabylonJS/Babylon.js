@@ -1,5 +1,27 @@
+import type { ComponentType } from "react";
+
 // Define layout typing
-export type Layout = any;
+export type LayoutTab = {
+    id: string;
+    component: ComponentType;
+};
+
+export type LayoutTabsRow = {
+    id: string;
+    height: string;
+    selectedTab: string;
+    tabs: LayoutTab[];
+};
+
+export type LayoutColumn = {
+    id: string;
+    width: string;
+    rows: LayoutTabsRow[];
+};
+
+export type Layout = {
+    columns?: LayoutColumn[];
+};
 
 export enum ElementTypes {
     RESIZE_BAR = "0",

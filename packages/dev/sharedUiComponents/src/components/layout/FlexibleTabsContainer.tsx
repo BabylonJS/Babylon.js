@@ -7,6 +7,7 @@ import style from "./FlexibleTabsContainer.modules.scss";
 import dragIcon from "../../imgs/dragDotsIcon_white.svg";
 import { getPosInLayout, removeLayoutRowAndRedistributePercentages } from "./utils";
 import { DraggableIcon } from "./DraggableIcon";
+import type { LayoutTabsRow } from "./types";
 import { ElementTypes } from "./types";
 
 export interface IFlexibleTabsContainerProps {
@@ -24,16 +25,16 @@ export const FlexibleTabsContainer: FC<IFlexibleTabsContainerProps> = (props) =>
     const selectedTabObject = selectedTabArray.length > 0 ? selectedTabArray[0] : null;
 
     const selectTab = (tabId: string) => {
-        const layoutPos = getPosInLayout(layout, props.columnIndex, props.rowIndex);
+        const layoutPos = getPosInLayout(layout, props.columnIndex, props.rowIndex) as LayoutTabsRow;
         layoutPos.selectedTab = tabId;
         setLayout({ ...layout });
     };
 
     const addTabAfter = (droppedTabItem: any, dropZoneTabId: string) => {
         // Get layout element corresponding to dropped tabs
-        const layoutDropped = getPosInLayout(layout, droppedTabItem.columnNumber, droppedTabItem.rowNumber);
+        const layoutDropped = getPosInLayout(layout, droppedTabItem.columnNumber, droppedTabItem.rowNumber) as LayoutTabsRow;
         // Get layout element corresponding to dropzone
-        const layoutDropZone = getPosInLayout(layout, props.columnIndex, props.rowIndex);
+        const layoutDropZone = getPosInLayout(layout, props.columnIndex, props.rowIndex) as LayoutTabsRow;
 
         for (const { id } of droppedTabItem.tabs) {
             const droppedTabIndex = layoutDropped.tabs.findIndex((tab: any) => tab.id === id);

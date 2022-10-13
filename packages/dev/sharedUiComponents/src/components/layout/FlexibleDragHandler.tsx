@@ -4,6 +4,7 @@ import { Vector2 } from "core/Maths/math";
 import type { Nullable } from "core/types";
 import { useDrop } from "react-dnd";
 import { ElementTypes } from "./types";
+import { LayoutTabsRow, LayoutColumn } from "./types";
 import { addPercentageStringToNumber, getPosInLayout } from "./utils";
 import { LayoutContext } from "./LayoutContext";
 
@@ -19,23 +20,36 @@ export const FlexibleDragHandler: FC<IFlexibleDragHandlerProps> = (props) => {
         accept: [ElementTypes.RESIZE_BAR],
         hover(item, monitor) {
             const anyitem = item as any;
-            console.log("anyitem", anyitem);
 
             const xy = monitor.getClientOffset();
             const pos = new Vector2(xy!.x, xy!.y);
             if (pointerPos.current) {
                 if (monitor.getItemType() === ElementTypes.RESIZE_BAR) {
-                    console.log("call onresize for", anyitem.rowNumber, anyitem.columnNumber, pos, pointerPos.current, anyitem.direction);
                     onResize(anyitem.rowNumber, anyitem.columnNumber, pos, pointerPos.current, anyitem.direction);
                 }
             }
             pointerPos.current = pos;
         },
         drop(item, monitor) {
-            console.log("drop");
             pointerPos.current = null;
         },
     }));
+
+    const getLayoutProperty = (layout: LayoutColumn | LayoutTabsRow, property: "width" | "height") => {
+        if (property === "width") {
+            return (layout as LayoutColumn)[property];
+        } else {
+            return (layout as LayoutTabsRow)[property];
+        }
+    };
+
+    const setLayoutProperty = (layout: LayoutColumn | LayoutTabsRow, property: "width" | "height", value: string) => {
+        if (property === "width") {
+            (layout as LayoutColumn)[property] = value;
+        } else {
+            (layout as LayoutTabsRow)[property] = value;
+        }
+    };
 
     const processResize = (
         pos: Vector2,
@@ -46,7 +60,7 @@ export const FlexibleDragHandler: FC<IFlexibleDragHandlerProps> = (props) => {
         column1: number,
         axis: "x" | "y",
         maxAxisValue: number,
-        property: string,
+        property: "width" | "height",
         minFinalValue: number
     ) => {
         // Check axis difference
@@ -59,16 +73,14 @@ export const FlexibleDragHandler: FC<IFlexibleDragHandlerProps> = (props) => {
         if (layoutElement0 && layoutElement1) {
             const percDiff = (axisDiff / maxAxisValue) * 100;
 
-            const newValue0 = addPercentageStringToNumber(layoutElement0[property], percDiff);
-            const newValue1 = addPercentageStringToNumber(layoutElement1[property], -percDiff);
+            const newValue0 = addPercentageStringToNumber(getLayoutProperty(layoutElement0, property), percDiff);
+            const newValue1 = addPercentageStringToNumber(getLayoutProperty(layoutElement1, property), -percDiff);
 
             if (newValue0 >= minFinalValue && newValue1 >= minFinalValue) {
-                layoutElement0[property] = newValue0.toFixed(2) + "%";
-                layoutElement1[property] = newValue1.toFixed(2) + "%";
+                setLayoutProperty(layoutElement0, property, newValue0.toFixed(2) + "%");
+                setLayoutProperty(layoutElement1, property, newValue1.toFixed(2) + "%");
             }
 
-            // setLayout({ ...layout });
-            console.log("call update layout");
             setLayout({ ...layout });
         }
     };

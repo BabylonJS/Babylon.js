@@ -1,6 +1,9 @@
 import type { Layout } from "./types";
 
 export const getPosInLayout = (layout: Layout, column: number, row?: number) => {
+    if (!layout.columns) {
+        throw new Error("Attempted to get position on empty layout");
+    }
     const columnLayout = layout.columns[column];
     if (!columnLayout) {
         throw new Error("Attempted to get an invalid layout column");
@@ -12,6 +15,9 @@ export const getPosInLayout = (layout: Layout, column: number, row?: number) => 
 };
 
 export const removeLayoutRowAndRedistributePercentages = (layout: Layout, column: number, row: number) => {
+    if (!layout.columns) {
+        throw new Error("Attempted to get position on empty layout");
+    }
     const columnLayout = layout.columns[column];
     if (!columnLayout) {
         throw new Error("Attempted to get an invalid layout column");
