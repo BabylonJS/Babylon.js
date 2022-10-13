@@ -390,7 +390,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
 
         const parent = controls[0].parent;
 
-        //const fonts = this.state.fontFamilyOptions;
+        const fonts = this.state.fontFamilyOptions;
 
         if (parent?.getClassName() === "StackPanel" || parent?.getClassName() === "VirtualKeyboard") {
             if ((parent as StackPanel).isVertical) {
@@ -729,7 +729,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         <div className="ge-divider">
                             <IconComponent icon={fontFamilyIcon} label={"Font Family"} />
 
-                            {/*<OptionsLineComponent
+                            <OptionsLineComponent
                                 label=""
                                 target={proxy}
                                 propertyName="fontFamily"
@@ -749,7 +749,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                         return -1;
                                     }
                                 }}
-                            />*/}
+                            />
                         </div>
                         <div className="ge-divider">
                             <IconComponent icon={fontWeightIcon} label={"Font Weight"} />
@@ -762,7 +762,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                 target={proxy}
                                 propertyName="fontStyle"
                                 options={fontStyleOptions}
-                                //fromFontDropdown={false}
+                                fromFontDropdown={false}
                                 onSelect={(newValue) => {
                                     proxy.fontStyle = ["", "italic", "oblique"][newValue as number];
                                 }}
