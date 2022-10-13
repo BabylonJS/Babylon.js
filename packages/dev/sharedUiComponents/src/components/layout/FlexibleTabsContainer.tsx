@@ -7,7 +7,7 @@ import style from "./FlexibleTabsContainer.modules.scss";
 import dragIcon from "../../imgs/dragDotsIcon_white.svg";
 import { getPosInLayout, removeLayoutRowAndRedistributePercentages } from "./utils";
 import { DraggableIcon } from "./DraggableIcon";
-import type { LayoutTabsRow } from "./types";
+import type { LayoutTabsRow, TabDrag } from "./types";
 import { ElementTypes } from "./types";
 
 export interface IFlexibleTabsContainerProps {
@@ -30,7 +30,7 @@ export const FlexibleTabsContainer: FC<IFlexibleTabsContainerProps> = (props) =>
         setLayout({ ...layout });
     };
 
-    const addTabAfter = (droppedTabItem: any, dropZoneTabId: string) => {
+    const addTabAfter = (droppedTabItem: TabDrag, dropZoneTabId: string) => {
         // Get layout element corresponding to dropped tabs
         const layoutDropped = getPosInLayout(layout, droppedTabItem.columnNumber, droppedTabItem.rowNumber) as LayoutTabsRow;
         // Get layout element corresponding to dropzone

@@ -23,6 +23,12 @@ export type Layout = {
     columns?: LayoutColumn[];
 };
 
+export type TabDrag = {
+    rowNumber: number;
+    columnNumber: number;
+    tabs: { id: string }[];
+};
+
 export enum ElementTypes {
     RESIZE_BAR = "0",
     TAB = "1",
