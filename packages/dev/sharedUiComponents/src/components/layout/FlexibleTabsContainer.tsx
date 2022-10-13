@@ -24,15 +24,12 @@ export const FlexibleTabsContainer: FC<IFlexibleTabsContainerProps> = (props) =>
     const selectedTabObject = selectedTabArray.length > 0 ? selectedTabArray[0] : null;
 
     const selectTab = (tabId: string) => {
-        console.log("select tab with tabid", tabId, "rowindex", props.rowIndex, "colidx", props.columnIndex);
         const layoutPos = getPosInLayout(layout, props.columnIndex, props.rowIndex);
-        console.log("layoutpos", layoutPos);
         layoutPos.selectedTab = tabId;
         setLayout({ ...layout });
     };
 
     const addTabAfter = (droppedTabItem: any, dropZoneTabId: string) => {
-        console.log("add tab after", droppedTabItem, dropZoneTabId);
         // Get layout element corresponding to dropped tabs
         const layoutDropped = getPosInLayout(layout, droppedTabItem.columnNumber, droppedTabItem.rowNumber);
         // Get layout element corresponding to dropzone
@@ -77,7 +74,6 @@ export const FlexibleTabsContainer: FC<IFlexibleTabsContainerProps> = (props) =>
                         );
                     })}
                 </div>
-                {/* <img className={style.dragIcon} src={dragIcon} /> */}
                 <DraggableIcon
                     src={dragIcon}
                     item={{ rowNumber: props.rowIndex, columnNumber: props.columnIndex, tabs: tabs.map((t) => ({ id: t.id })) }}

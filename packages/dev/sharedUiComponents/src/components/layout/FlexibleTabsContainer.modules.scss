@@ -1,4 +1,5 @@
 $tabLineWidth: 25px;
+$tabLineBackgroundColor: rgb(77, 77, 77);
 
 .rootContainer {
     width: 100%;
@@ -12,7 +13,7 @@ $tabLineWidth: 25px;
     flex-direction: row;
     overflow-x: auto;
     overflow-y: hidden;
-    border-bottom: 1px solid #e0e0e0;
+    background-color: $tabLineBackgroundColor;
     grid-row: 1;
     justify-content: space-between;
 }
@@ -22,32 +23,6 @@ $tabLineWidth: 25px;
     flex-direction: row;
     overflow: hidden;
     width: 100%;
-}
-
-.dragIcon {
-    cursor: pointer;
-}
-
-.tab {
-    width: 75px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    color: white;
-    background-color: rgb(77, 77, 77);
-    border: 1px solid white;
-    cursor: pointer;
-}
-
-.noSelect {
-    user-select: none;
-}
-
-.tab:active {
-    cursor: dragging;
-}
-
-.selectedTab {
-    background-color: darkorchid;
 }
 
 .contentContainer {
