@@ -38,6 +38,9 @@ export class RenderTargetWrapper {
     /** @internal */
     public _depthStencilTextureWithStencil: boolean = false;
 
+    /** @internal */
+    public _getSamplesFromFirstTexture: boolean = false;
+
     /**
      * Gets the depth/stencil texture (if created by a createDepthStencilTexture() call)
      */
@@ -119,7 +122,7 @@ export class RenderTargetWrapper {
      * Gets the sample count of the render target
      */
     public get samples(): number {
-        return this._samples;
+        return this._getSamplesFromFirstTexture ? this.texture?.samples || this.samples : this._samples;
     }
 
     /**
