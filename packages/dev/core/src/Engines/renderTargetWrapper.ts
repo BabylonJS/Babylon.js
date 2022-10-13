@@ -24,7 +24,8 @@ export class RenderTargetWrapper {
     private _isCube: boolean;
     private _isMulti: boolean;
     private _textures: Nullable<InternalTexture[]> = null;
-    private _samples = 1;
+    /** @internal */
+    public _samples = 1;
 
     /** @internal */
     public _attachments: Nullable<number[]> = null;
