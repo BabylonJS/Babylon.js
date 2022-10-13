@@ -1,6 +1,7 @@
 import type { FC } from "react";
 import { useDrag, useDrop } from "react-dnd";
 import { ClassNames } from "../classNames";
+import type { TabDrag } from "./types";
 import { ElementTypes } from "./types";
 import style from "./FlexibleTab.modules.scss";
 
@@ -8,8 +9,8 @@ interface IFlexibleTabProps {
     title: string;
     selected: boolean;
     onClick: () => void;
-    item: any;
-    onTabDroppedAction: (item: any) => void;
+    item: TabDrag;
+    onTabDroppedAction: (item: TabDrag) => void;
 }
 
 export const FlexibleTab: FC<IFlexibleTabProps> = (props) => {

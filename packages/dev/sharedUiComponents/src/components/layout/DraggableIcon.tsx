@@ -1,10 +1,11 @@
 import type { FC } from "react";
 import { useDrag } from "react-dnd";
+import type { ElementTypes, TabDrag } from "./types";
 
 export interface IDraggableIconProps {
-    src: any;
-    item: any;
-    type: any;
+    src: string;
+    item: TabDrag;
+    type: ElementTypes;
 }
 
 export const DraggableIcon: FC<IDraggableIconProps> = (props) => {
