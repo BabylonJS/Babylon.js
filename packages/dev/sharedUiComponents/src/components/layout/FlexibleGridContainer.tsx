@@ -11,7 +11,6 @@ export interface IFlexibleGridContainerProps {}
 export const FlexibleGridContainer: FC<IFlexibleGridContainerProps> = (props) => {
     const context = useContext(LayoutContext);
     const { layout } = context;
-    console.log(context, "context layout is", layout);
     const columns =
         layout && layout.columns
             ? layout.columns.map((column: any, columnIdx: number) => {
