@@ -24,7 +24,8 @@ export class RenderTargetWrapper {
     private _isCube: boolean;
     private _isMulti: boolean;
     private _textures: Nullable<InternalTexture[]> = null;
-    private _samples = 1;
+    /** @internal */
+    public _samples = 1;
 
     /** @internal */
     public _attachments: Nullable<number[]> = null;
@@ -37,9 +38,6 @@ export class RenderTargetWrapper {
     public _depthStencilTexture: Nullable<InternalTexture>;
     /** @internal */
     public _depthStencilTextureWithStencil: boolean = false;
-
-    /** @internal */
-    public _getSamplesFromFirstTexture: boolean = false;
 
     /**
      * Gets the depth/stencil texture (if created by a createDepthStencilTexture() call)
@@ -122,7 +120,7 @@ export class RenderTargetWrapper {
      * Gets the sample count of the render target
      */
     public get samples(): number {
-        return this._getSamplesFromFirstTexture ? this.texture?.samples || this.samples : this._samples;
+        return this._samples;
     }
 
     /**
