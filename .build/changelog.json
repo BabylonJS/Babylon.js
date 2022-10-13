@@ -1,6 +1,180 @@
 {
-    "fromTag": "5.27.0",
+    "fromTag": "5.27.1",
     "changelog": {
+        "5.28.0": [
+            {
+                "pr": "13105",
+                "title": "WebGPU fix PCF shadows",
+                "description": "- Fix Uniform analysis for WebGPU\r\n- Update Twgls to latest\r\n- Squeezed in fix for https://forum.babylonjs.com/t/typeerror-using-mesh-serialize/34708/4",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/shadowsFragmentFunctions.fx",
+                    "packages/tools/babylonServer/public/twgsl/twgsl.js",
+                    "packages/tools/babylonServer/public/twgsl/twgsl.wasm"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "13104",
+                "title": "update the webxr typings to match current state",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Behaviors/Meshes/handConstraintBehavior.ts",
+                    "packages/dev/core/src/LibDeclarations/webxr.d.ts",
+                    "packages/dev/core/src/XR/features/WebXRHandTracking.ts",
+                    "packages/dev/core/src/XR/features/WebXRHitTest.ts",
+                    "packages/dev/core/src/XR/webXRInput.ts",
+                    "packages/dev/core/src/XR/webXRManagedOutputCanvas.ts",
+                    "packages/dev/core/src/XR/webXRWebGLLayer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13101",
+                "title": "Texture: Make some setters protected for properties not meant to be changed by end user",
+                "description": "See https://forum.babylonjs.com/t/set-content-of-texture-array-from-canvas/34710/2",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/baseTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/thinTexture.ts",
+                    "packages/dev/core/src/Misc/dds.ts",
+                    "packages/dev/core/src/Misc/environmentTextureTools.ts",
+                    "packages/dev/core/src/XR/features/WebXRLightEstimation.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13099",
+                "title": "Implement IAnimatable on GUI controls",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/control.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13102",
+                "title": "A little fix: links referenced in sceneLoader.ts are not found",
+                "description": "A very little fix.\r\nI found a link in the SceneLoader's error message not found.\r\nSo, I fixed from `https://doc.babylonjs.com/how_to/load_from_any_file_type` to `https://doc.babylonjs.com/features/featuresDeepDive/importers/loadingFileTypes`",
+                "author": {
+                    "name": "drumath2237",
+                    "url": "https://github.com/drumath2237"
+                },
+                "files": [
+                    "packages/dev/core/src/Loading/sceneLoader.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13098",
+                "title": "Adding a parameter for setParent() method that takes into account the pivot change",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/transformNode.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13097",
+                "title": "Add extension support to assetsManager",
+                "description": "Fix #13096",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/assetsManager.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "loaders"
+                ]
+            },
+            {
+                "pr": "13095",
+                "title": "`PostProcessRenderPipeline`: Made `_renderEffects` protected to allow subclassing",
+                "description": "It is not possible to manipulate the render effects in subclasses of `PostProcessRenderPipeline` so making these attributes protected can do the trick.",
+                "author": {
+                    "name": "BarthPaleologue",
+                    "url": "https://github.com/BarthPaleologue"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/postProcessRenderPipeline.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13090",
+                "title": "Texture inspector in Sandbox does not function correctly",
+                "description": "Fixes #13069",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/textures/textureCanvasManager.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "13088",
+                "title": "NullEngine Cannot use a ShadowGenerator",
+                "description": "https://forum.babylonjs.com/t/cannot-create-shadow-map-with-point-light-in-node-on-server/21450/5",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/nullEngine.ts",
+                    "packages/dev/core/test/unit/Lights/Shadows/babylon.shadowGenerator.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13089",
+                "title": "Hide change for billboard hierarchy with a static flag",
+                "description": "Hides changes in these PRs with a flag for better back compat:\r\nhttps://github.com/BabylonJS/Babylon.js/pull/12984\r\nhttps://github.com/BabylonJS/Babylon.js/pull/13042",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/transformNode.ts"
+                ],
+                "tags": [
+                    "enhancement"
+                ]
+            }
+        ],
         "5.27.1": [
             {
                 "pr": "13086",
