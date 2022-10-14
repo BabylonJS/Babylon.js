@@ -3415,7 +3415,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                             }
                             if (currentMatrixIndicesExtra !== null && currentMatrixIndicesExtra !== void 0) {
                                 for (let k = 0; k < 4; k++) {
-                                    matrixIndices.push(currentMatrixIndicesExtra[4 * facet[j] + k]);
+                                    matrixIndicesExtra.push(currentMatrixIndicesExtra[4 * facet[j] + k]);
                                 }
                             }
                             if (currentMatrixWeightsExtra !== null && currentMatrixWeightsExtra !== void 0) {
