@@ -9,6 +9,8 @@ import { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
 import { PortDataDirection } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
 import style from "./StatesViewComponent.modules.scss";
 import { RegisterToDisplayManagers } from "./nodesDisplay/registerToDisplayLedger";
+import { NodeLink } from "shared-ui-components/nodeGraphSystem/nodeLink";
+import { NodePort } from "shared-ui-components/nodeGraphSystem/nodePort";
 
 const connectToFn = (self: IPortData, port: IPortData) => {
     self.isConnected = true;
@@ -107,6 +109,7 @@ export const StatesViewComponent: FC = () => {
     const [stateManager, setStateManager] = useState<Nullable<StateManager>>(null);
     const [graphCanvasComponent, setGraphCanvasComponent] = useState<Nullable<GraphCanvasComponent>>(null);
     const [, setNodes] = useState(new Array<GraphNode>());
+    const [, setLinks] = useState(new Array<NodeLink>());
 
     const rootContainer: React.MutableRefObject<Nullable<HTMLDivElement>> = useRef(null);
     const graphCanvasComponentRef = useCallback((gccRef: Nullable<GraphCanvasComponent>) => {
@@ -138,6 +141,8 @@ export const StatesViewComponent: FC = () => {
     useEffect(() => {
         if (stateManager && graphCanvasComponent) {
             const newNodes = new Array<GraphNode>();
+
+            // Create nodes
             const nodesToAdd = [
                 { name: "Sphere Origin", inputs: "in", output: "out", color: "red" },
                 { name: "Sphere Destination", inputs: "in", output: "out", color: "green" },
@@ -148,10 +153,33 @@ export const StatesViewComponent: FC = () => {
                     newNodes.push(graphNode);
                 }
             }
+            // Position and link nodes
+            const origin = newNodes[0];
+            const dest = newNodes[1];
+
+            origin.x = 300;
+            origin.y = 100;
+
+            dest.x = 300;
+            dest.y = 400;
+
+            const newLinks = new Array<NodeLink>();
+
+            newLinks.push(linkPorts(graphCanvasComponent, origin, origin.outputPorts[0], dest, dest.inputPorts[0]));
+            newLinks.push(linkPorts(graphCanvasComponent, dest, dest.outputPorts[0], origin, origin.inputPorts[0]));
 
             setNodes(newNodes);
+            setLinks(newLinks);
         }
     }, [stateManager, graphCanvasComponent]);
+
+    const linkPorts = (graphCanvasComponent: GraphCanvasComponent, node: GraphNode, port: NodePort, targetNode: GraphNode, targetPort: NodePort) => {
+        port.portData.connectTo(targetPort.portData);
+        const newLink = new NodeLink(graphCanvasComponent, port, node, targetPort, targetNode);
+        node.links.push(newLink);
+        targetNode.links.push(newLink);
+        return newLink;
+    };
 
     // Set up key handling
     useEffect(() => {
