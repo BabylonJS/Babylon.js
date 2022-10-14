@@ -131,6 +131,7 @@ export class InputManager {
      */
     public get meshUnderPointer(): Nullable<AbstractMesh> {
         if (this._movePointerInfo) {
+            // Calling pickInfo will populate this._pointerOverMesh indirectly
             this._movePointerInfo.pickInfo;
             this._movePointerInfo = null;
         }
@@ -227,7 +228,7 @@ export class InputManager {
             pointerInfo = new PointerInfo(type, evt, null, this);
             this._movePointerInfo = pointerInfo;
         }
-        
+
         if (scene.onPointerObservable.hasObservers()) {
             scene.onPointerObservable.notifyObservers(pointerInfo, type);
         }
