@@ -1,4 +1,4 @@
-import type { FC } from "react";
+import { FC, useContext } from "react";
 import { useState, useRef, useCallback, useEffect } from "react";
 import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 import { GraphCanvasComponent } from "shared-ui-components/nodeGraphSystem/graphCanvas";
@@ -11,6 +11,7 @@ import style from "./StatesViewComponent.modules.scss";
 import { RegisterToDisplayManagers } from "./nodesDisplay/registerToDisplayLedger";
 import { NodeLink } from "shared-ui-components/nodeGraphSystem/nodeLink";
 import { NodePort } from "shared-ui-components/nodeGraphSystem/nodePort";
+import { SelectionContext } from "./SelectionContext";
 
 const connectToFn = (self: IPortData, port: IPortData) => {
     self.isConnected = true;
@@ -110,6 +111,7 @@ export const StatesViewComponent: FC = () => {
     const [graphCanvasComponent, setGraphCanvasComponent] = useState<Nullable<GraphCanvasComponent>>(null);
     const [, setNodes] = useState(new Array<GraphNode>());
     const [, setLinks] = useState(new Array<NodeLink>());
+    const { setSelectedNode } = useContext(SelectionContext);
 
     const rootContainer: React.MutableRefObject<Nullable<HTMLDivElement>> = useRef(null);
     const graphCanvasComponentRef = useCallback((gccRef: Nullable<GraphCanvasComponent>) => {
@@ -172,6 +174,23 @@ export const StatesViewComponent: FC = () => {
             setLinks(newLinks);
         }
     }, [stateManager, graphCanvasComponent]);
+
+    // Set up responding for node selection
+    useEffect(() => {
+        if (stateManager) {
+            const selectionObserver = stateManager.onSelectionChangedObservable.add((selection) => {
+                if (selection && selection.selection instanceof GraphNode) {
+                    setSelectedNode(selection.selection);
+                } else {
+                    setSelectedNode(null);
+                }
+            });
+            return () => {
+                stateManager.onSelectionChangedObservable.remove(selectionObserver);
+            };
+        }
+        return () => {};
+    }, [stateManager]);
 
     const linkPorts = (graphCanvasComponent: GraphCanvasComponent, node: GraphNode, port: NodePort, targetNode: GraphNode, targetPort: NodePort) => {
         port.portData.connectTo(targetPort.portData);
