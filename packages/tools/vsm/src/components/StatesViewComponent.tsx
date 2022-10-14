@@ -8,6 +8,7 @@ import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/
 import { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
 import { PortDataDirection } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
 import style from "./StatesViewComponent.modules.scss";
+import { RegisterToDisplayManagers } from "./nodesDisplay/registerToDisplayLedger";
 
 const connectToFn = (self: IPortData, port: IPortData) => {
     self.isConnected = true;
@@ -74,15 +75,15 @@ function createNewPortData(name: string, output: boolean, ownerData: INodeData) 
     return outputData;
 }
 
-function createNewNodeData(name: string, inputs: string[], outputs: string[]) {
+function createNewNodeData(name: string, inputs: string[], outputs: string[], extra: Object = {}) {
     const outputNodeData = {
         name: name,
-        data: {},
+        data: { ...extra },
         uniqueId: Date.now(),
         isInput: true,
         comments: "Test comment",
         prepareHeaderIcon: () => {},
-        getClassName: () => "Test Class",
+        getClassName: () => "ColorBlock",
         dispose: () => {},
         getPortByName: () => {
             return null;
@@ -105,10 +106,15 @@ function createNewNodeData(name: string, inputs: string[], outputs: string[]) {
 export const StatesViewComponent: FC = () => {
     const [stateManager, setStateManager] = useState<Nullable<StateManager>>(null);
     const [graphCanvasComponent, setGraphCanvasComponent] = useState<Nullable<GraphCanvasComponent>>(null);
+    const [, setNodes] = useState(new Array<GraphNode>());
 
     const rootContainer: React.MutableRefObject<Nullable<HTMLDivElement>> = useRef(null);
     const graphCanvasComponentRef = useCallback((gccRef: Nullable<GraphCanvasComponent>) => {
         setGraphCanvasComponent(gccRef);
+    }, []);
+
+    useEffect(() => {
+        RegisterToDisplayManagers();
     }, []);
 
     // Initialize the state manager
@@ -117,7 +123,7 @@ export const StatesViewComponent: FC = () => {
             const newStateManager = new StateManager();
             newStateManager.hostDocument = rootContainer.current.ownerDocument;
             newStateManager.applyNodePortDesign = (data, element, img) => {
-                element.style.background = data.ownerData.type;
+                element.style.background = data.ownerData.color;
                 img.src =
                     "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMSAyMSI+PGRlZnM+PHN0eWxlPi5jbHMtMXtmaWxsOiNmZmY7fTwvc3R5bGU+PC9kZWZzPjx0aXRsZT5WZWN0b3IxPC90aXRsZT48ZyBpZD0iTGF5ZXJfNSIgZGF0YS1uYW1lPSJMYXllciA1Ij48Y2lyY2xlIGNsYXNzPSJjbHMtMSIgY3g9IjEwLjUiIGN5PSIxMC41IiByPSI3LjUiLz48L2c+PC9zdmc+";
             };
@@ -127,6 +133,25 @@ export const StatesViewComponent: FC = () => {
             setStateManager(newStateManager);
         }
     }, [rootContainer]);
+
+    // Initialize the nodes
+    useEffect(() => {
+        if (stateManager && graphCanvasComponent) {
+            const newNodes = new Array<GraphNode>();
+            const nodesToAdd = [
+                { name: "Sphere Origin", inputs: "in", output: "out", color: "red" },
+                { name: "Sphere Destination", inputs: "in", output: "out", color: "green" },
+            ];
+            for (const nodeToAdd of nodesToAdd) {
+                const graphNode = onAddNewNode(nodeToAdd);
+                if (graphNode) {
+                    newNodes.push(graphNode);
+                }
+            }
+
+            setNodes(newNodes);
+        }
+    }, [stateManager, graphCanvasComponent]);
 
     // Set up key handling
     useEffect(() => {
@@ -152,22 +177,24 @@ export const StatesViewComponent: FC = () => {
     }, [graphCanvasComponent]);
 
     // Create a new node and pass the state manager
-    // const onAddNewNode = (props: { name: string; inputs: string; output: string }) => {
-    //     const name = props.name as string;
-    //     const inputs = props.inputs as string;
-    //     const output = props.output as string;
-    //     const type = props.type as string;
-    //     if (graphCanvasComponent !== null) {
-    //         // OUTPUT NODE
-    //         graphCanvasComponent.appendNode(
-    //             createNewNodeData(
-    //                 name,
-    //                 inputs.split(",").filter((v) => v !== ""),
-    //                 output.split(",").filter((v) => v !== "")
-    //             )
-    //         );
-    //     }
-    // };
+    const onAddNewNode = (props: { name: string; inputs: string; output: string; color: string }): Nullable<GraphNode> => {
+        const name = props.name as string;
+        const inputs = props.inputs as string;
+        const output = props.output as string;
+        if (graphCanvasComponent !== null) {
+            // OUTPUT NODE
+            return graphCanvasComponent.appendNode(
+                createNewNodeData(
+                    name,
+                    inputs.split(",").filter((v) => v !== ""),
+                    output.split(",").filter((v) => v !== ""),
+                    { color: props.color }
+                )
+            );
+        } else {
+            return null;
+        }
+    };
 
     const onEmitNewNode = (nodeData: INodeData) => {
         const node = new GraphNode(nodeData, stateManager!);
