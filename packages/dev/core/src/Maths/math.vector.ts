@@ -3354,7 +3354,12 @@ export class Vector4 {
      * @returns a new Vector4
      */
     public fract(): this {
-        return new (this.constructor as Vector4Constructor<this>)(this.x - Math.floor(this.x), this.y - Math.floor(this.y), this.z - Math.floor(this.z), this.w - Math.floor(this.w));
+        return new (this.constructor as Vector4Constructor<this>)(
+            this.x - Math.floor(this.x),
+            this.y - Math.floor(this.y),
+            this.z - Math.floor(this.z),
+            this.w - Math.floor(this.w)
+        );
     }
 
     // Properties
