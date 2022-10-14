@@ -123,8 +123,6 @@ export class InputManager {
         if (!this._scene) {
             return;
         }
-
-        this._scene._registeredActions = 0;
     }
 
     /**
@@ -132,7 +130,8 @@ export class InputManager {
      * @returns Mesh that the pointer is pointer is hovering over
      */
     public get meshUnderPointer(): Nullable<AbstractMesh> {
-        if (this._movePointerInfo && this._movePointerInfo.pickInfo) {
+        if (this._movePointerInfo) {
+            this._movePointerInfo.pickInfo;
             this._movePointerInfo = null;
         }
         return this._pointerOverMesh;
@@ -226,8 +225,9 @@ export class InputManager {
             this._setRayOnPointerInfo(pickResult, evt);
         } else {
             pointerInfo = new PointerInfo(type, evt, null, this);
+            this._movePointerInfo = pointerInfo;
         }
-        this._movePointerInfo = pointerInfo;
+        
         if (scene.onPointerObservable.hasObservers()) {
             scene.onPointerObservable.notifyObservers(pointerInfo, type);
         }
