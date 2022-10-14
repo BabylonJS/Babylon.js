@@ -1,5 +1,5 @@
-import { FC, useContext } from "react";
-import { useState, useRef, useCallback, useEffect } from "react";
+import type { FC } from "react";
+import { useState, useRef, useCallback, useEffect, useContext } from "react";
 import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 import { GraphCanvasComponent } from "shared-ui-components/nodeGraphSystem/graphCanvas";
 import type { Nullable } from "core/types";
@@ -10,8 +10,9 @@ import { PortDataDirection } from "shared-ui-components/nodeGraphSystem/interfac
 import style from "./StatesViewComponent.modules.scss";
 import { RegisterToDisplayManagers } from "./nodesDisplay/registerToDisplayLedger";
 import { NodeLink } from "shared-ui-components/nodeGraphSystem/nodeLink";
-import { NodePort } from "shared-ui-components/nodeGraphSystem/nodePort";
+import type { NodePort } from "shared-ui-components/nodeGraphSystem/nodePort";
 import { SelectionContext } from "./SelectionContext";
+import { Vector3 } from "core/Maths/math";
 
 const connectToFn = (self: IPortData, port: IPortData) => {
     self.isConnected = true;
@@ -146,8 +147,8 @@ export const StatesViewComponent: FC = () => {
 
             // Create nodes
             const nodesToAdd = [
-                { name: "Sphere Origin", inputs: "in", output: "out", color: "red" },
-                { name: "Sphere Destination", inputs: "in", output: "out", color: "green" },
+                { name: "Sphere Origin", inputs: "in", output: "out", color: "red", position: new Vector3(0, 0, 0) },
+                { name: "Sphere Destination", inputs: "in", output: "out", color: "green", position: new Vector3(1, 1, 1) },
             ];
             for (const nodeToAdd of nodesToAdd) {
                 const graphNode = onAddNewNode(nodeToAdd);
@@ -224,7 +225,7 @@ export const StatesViewComponent: FC = () => {
     }, [graphCanvasComponent]);
 
     // Create a new node and pass the state manager
-    const onAddNewNode = (props: { name: string; inputs: string; output: string; color: string }): Nullable<GraphNode> => {
+    const onAddNewNode = (props: { name: string; inputs: string; output: string; color: string; position: Vector3 }): Nullable<GraphNode> => {
         const name = props.name as string;
         const inputs = props.inputs as string;
         const output = props.output as string;
@@ -235,7 +236,7 @@ export const StatesViewComponent: FC = () => {
                     name,
                     inputs.split(",").filter((v) => v !== ""),
                     output.split(",").filter((v) => v !== ""),
-                    { color: props.color }
+                    { color: props.color, position: props.position }
                 )
             );
         } else {
