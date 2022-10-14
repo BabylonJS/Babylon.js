@@ -105,6 +105,7 @@ export class InputManager {
     private _previousStartingPointerTime = 0;
     private _pointerCaptures: { [pointerId: number]: boolean } = {};
     private _meshUnderPointerId: { [pointerId: number]: Nullable<AbstractMesh> } = {};
+    private _movePointerInfo: Nullable<PointerInfo> = null;
 
     // Keyboard
     private _onKeyDown: (evt: IKeyboardEvent) => void;
@@ -131,6 +132,9 @@ export class InputManager {
      * @returns Mesh that the pointer is pointer is hovering over
      */
     public get meshUnderPointer(): Nullable<AbstractMesh> {
+        if (this._movePointerInfo && this._movePointerInfo.pickInfo) {
+            this._movePointerInfo = null;
+        }
         return this._pointerOverMesh;
     }
 
@@ -223,6 +227,7 @@ export class InputManager {
         } else {
             pointerInfo = new PointerInfo(type, evt, null, this);
         }
+        this._movePointerInfo = pointerInfo;
         if (scene.onPointerObservable.hasObservers()) {
             scene.onPointerObservable.notifyObservers(pointerInfo, type);
         }
@@ -1006,7 +1011,7 @@ export class InputManager {
      * @returns a Mesh or null if no mesh is under the pointer
      */
     public getPointerOverMesh(): Nullable<AbstractMesh> {
-        return this._pointerOverMesh;
+        return this.meshUnderPointer;
     }
 
     /**
