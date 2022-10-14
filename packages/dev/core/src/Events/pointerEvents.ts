@@ -118,11 +118,9 @@ export class PointerInfo extends PointerInfoBase {
      */
     public get pickInfo(): Nullable<PickingInfo> {
         if (this._inputManager) {
-            // Store InputManager locally so that we can null out the object ref and avoid circular reference
-            const inputManager = this._inputManager;
+            this._pickInfo = this._inputManager._pickMove((this.event as IPointerEvent).pointerId);
+            this._inputManager._setRayOnPointerInfo(this._pickInfo, this.event);
             this._inputManager = null;
-            this._pickInfo = inputManager._pickMove((this.event as IPointerEvent).pointerId);
-            inputManager._setRayOnPointerInfo(this);
         }
 
         return this._pickInfo;

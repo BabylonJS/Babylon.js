@@ -926,9 +926,7 @@ Scene.prototype.pickWithBoundingInfo = function (
 };
 
 Object.defineProperty(Scene.prototype, "_pickingAvailable", {
-    get: function () {
-        return true;
-    },
+    get: () => true,
     enumerable: false,
     configurable: false,
 });

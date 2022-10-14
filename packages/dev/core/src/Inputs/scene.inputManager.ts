@@ -1,4 +1,4 @@
-import type { Observable, Observer } from "../Misc/observable";
+import type { Observable } from "../Misc/observable";
 import { PointerInfoPre, PointerInfo, PointerEventTypes } from "../Events/pointerEvents";
 import type { Nullable } from "../types";
 import { AbstractActionManager } from "../Actions/abstractActionManager";
@@ -12,13 +12,6 @@ import { DeviceType, PointerInput } from "../DeviceInput/InputDevices/deviceEnum
 import type { IKeyboardEvent, IMouseEvent, IPointerEvent } from "../Events/deviceInputEvents";
 import { DeviceSourceManager } from "../DeviceInput/InputDevices/deviceSourceManager";
 import { EngineStore } from "../Engines/engineStore";
-
-declare module "../scene" {
-    interface Scene {
-        /** @hidden */
-        _registeredActions: number;
-    }
-}
 
 declare type Scene = import("../scene").Scene;
 
@@ -70,12 +63,6 @@ export class InputManager {
     /** If you need to check double click without raising a single click at first click, enable this flag */
     public static ExclusiveDoubleClickMode = false;
 
-    /**
-     * @hidden
-     * This property keeps track of how many actions have been registered.
-     */
-    public _numActions: number = 0;
-
     /** This is a defensive check to not allow control attachment prior to an already active one. If already attached, previous control is unattached before attaching the new one. */
     private _alreadyAttached = false;
     private _alreadyAttachedTo: Nullable<HTMLElement>;
@@ -118,8 +105,6 @@ export class InputManager {
     private _previousStartingPointerTime = 0;
     private _pointerCaptures: { [pointerId: number]: boolean } = {};
     private _meshUnderPointerId: { [pointerId: number]: Nullable<AbstractMesh> } = {};
-    private _movePointerInfo: Nullable<PointerInfo> = null;
-    private _clearCachedPickInfo: Nullable<Observer<Scene>> = null;
 
     // Keyboard
     private _onKeyDown: (evt: IKeyboardEvent) => void;
@@ -146,12 +131,6 @@ export class InputManager {
      * @returns Mesh that the pointer is pointer is hovering over
      */
     public get meshUnderPointer(): Nullable<AbstractMesh> {
-        // If we have saved PointerInfo, checking is associated pickInfo, will trigger a new pick and call setPointerOverMesh implicitly
-        if (this._movePointerInfo && this._movePointerInfo.pickInfo) {
-            this._setRayOnPointerInfo(this._movePointerInfo);
-            this._movePointerInfo = null;
-        }
-
         return this._pointerOverMesh;
     }
 
@@ -237,26 +216,25 @@ export class InputManager {
             scene.onPointerMove(evt, pickResult, type);
         }
 
-        // Always generate a PointerInfo, event if we don't have a pickResult, save pointerInfo to use with getter for meshUnderPointer
-        const pi = pickResult ? new PointerInfo(type, evt, pickResult) : new PointerInfo(type, evt, null, this);
-        if (!pickResult) {
-            this._movePointerInfo = pi;
+        let pointerInfo: PointerInfo;
+        if (pickResult) {
+            pointerInfo = new PointerInfo(type, evt, pickResult);
+            this._setRayOnPointerInfo(pickResult, evt);
         } else {
-            this._setRayOnPointerInfo(pi);
+            pointerInfo = new PointerInfo(type, evt, null, this);
         }
         if (scene.onPointerObservable.hasObservers()) {
-            //this._setRayOnPointerInfo(pi);
-            scene.onPointerObservable.notifyObservers(pi, type);
+            scene.onPointerObservable.notifyObservers(pointerInfo, type);
         }
     }
 
     // Pointers handling
     /** @internal */
-    public _setRayOnPointerInfo(pointerInfo: PointerInfo) {
+    public _setRayOnPointerInfo(pickInfo: Nullable<PickingInfo>, event: IMouseEvent) {
         const scene = this._scene;
-        if (pointerInfo.pickInfo && scene._pickingAvailable) {
-            if (!pointerInfo.pickInfo.ray) {
-                pointerInfo.pickInfo.ray = scene.createPickingRay(pointerInfo.event.offsetX, pointerInfo.event.offsetY, Matrix.Identity(), scene.activeCamera);
+        if (pickInfo && scene._pickingAvailable) {
+            if (!pickInfo.ray) {
+                pickInfo.ray = scene.createPickingRay(event.offsetX, event.offsetY, Matrix.Identity(), scene.activeCamera);
             }
         }
     }
@@ -280,10 +258,7 @@ export class InputManager {
         }
     }
 
-    /**
-     * @param pointerId Pointer Id to use as reference
-     * @hidden
-     */
+    /** @internal */
     public _pickMove(pointerId: number): Nullable<PickingInfo> {
         const scene = this._scene;
         const pickResult = scene.pick(
@@ -414,7 +389,7 @@ export class InputManager {
 
             if (scene.onPointerObservable.hasObservers()) {
                 const pi = new PointerInfo(type, evt, pickResult);
-                this._setRayOnPointerInfo(pi);
+                this._setRayOnPointerInfo(pickResult, evt);
                 scene.onPointerObservable.notifyObservers(pi, type);
             }
         }
@@ -467,7 +442,7 @@ export class InputManager {
                 if (clickInfo.singleClick && !clickInfo.ignore && scene.onPointerObservable.hasObservers()) {
                     const type = PointerEventTypes.POINTERPICK;
                     const pi = new PointerInfo(type, evt, pickResult);
-                    this._setRayOnPointerInfo(pi);
+                    this._setRayOnPointerInfo(pickResult, evt);
                     scene.onPointerObservable.notifyObservers(pi, type);
                 }
             }
@@ -509,7 +484,7 @@ export class InputManager {
                 }
                 if (type) {
                     const pi = new PointerInfo(type, evt, pickResult);
-                    this._setRayOnPointerInfo(pi);
+                    this._setRayOnPointerInfo(pickResult, evt);
                     scene.onPointerObservable.notifyObservers(pi, type);
                 }
             }
@@ -517,7 +492,7 @@ export class InputManager {
             if (!clickInfo.ignore) {
                 type = PointerEventTypes.POINTERUP;
                 const pi = new PointerInfo(type, evt, pickResult);
-                this._setRayOnPointerInfo(pi);
+                this._setRayOnPointerInfo(pickResult, evt);
                 scene.onPointerObservable.notifyObservers(pi, type);
             }
         }
@@ -988,8 +963,6 @@ export class InputManager {
 
             this._alreadyAttached = false;
             this._alreadyAttachedTo = null;
-            this._scene.onBeforeRenderObservable.remove(this._clearCachedPickInfo);
-            this._clearCachedPickInfo = null;
         }
     }
 
