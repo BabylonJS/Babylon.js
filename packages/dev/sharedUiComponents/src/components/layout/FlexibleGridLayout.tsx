@@ -6,11 +6,22 @@ import { TouchBackend } from "react-dnd-touch-backend";
 import { FlexibleDragHandler } from "./FlexibleDragHandler";
 import { LayoutContext } from "./LayoutContext";
 import { FlexibleGridContainer } from "./FlexibleGridContainer";
+import type { Layout } from "./types";
 
+/**
+ * Arguments for the Layout component.
+ */
 export interface IFlexibleGridLayoutProps {
-    layoutDefinition: any;
+    /**
+     * A definition of the layout which can be changed by the user
+     */
+    layoutDefinition: Layout;
 }
 
+/**
+ * This component represents a grid layout that can be resized and rearranged
+ * by the user.
+ */
 export const FlexibleGridLayout: FC<IFlexibleGridLayoutProps> = (props) => {
     const [layout, setLayout] = useState(props.layoutDefinition);
     const containerDiv = useRef<Nullable<HTMLDivElement>>(null);
