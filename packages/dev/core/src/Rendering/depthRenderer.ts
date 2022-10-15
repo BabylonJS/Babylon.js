@@ -141,8 +141,8 @@ export class DepthRenderer {
             engine._debugPopGroup?.(1);
         });
 
-        this._depthMap.customIsReadyFunction = (mesh: AbstractMesh, refreshRate: number) => {
-            if (mesh.subMeshes) {
+        this._depthMap.customIsReadyFunction = (mesh: AbstractMesh, refreshRate: number, preWarm?: boolean) => {
+            if ((preWarm || refreshRate === 0) && mesh.subMeshes) {
                 for (let i = 0; i < mesh.subMeshes.length; ++i) {
                     const subMesh = mesh.subMeshes[i];
                     const renderingMesh = subMesh.getRenderingMesh();
