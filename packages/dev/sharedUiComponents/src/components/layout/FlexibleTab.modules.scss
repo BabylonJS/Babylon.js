@@ -1,0 +1,67 @@
+$defaultTabBackground: rgb(128, 128, 128);
+$defaultTabTextColor: rgb(197, 197, 197);
+
+$selectedTabBackground: rgb(214, 214, 214);
+$selectedTabTextColor: rgb(95, 95, 95);
+
+$grabbedTabBackground: rgb(71, 71, 71);
+$grabbedTabTextColor: rgb(197, 197, 197);
+
+$activeDropBarIndicatorBackground: rgb(87, 253, 253);
+
+.tab {
+    width: 75px;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    display: flex;
+}
+
+.tabNormal {
+    color: $defaultTabTextColor;
+    background-color: $defaultTabBackground;
+}
+
+.tabSelected {
+    color: $selectedTabTextColor;
+    background-color: $selectedTabBackground;
+}
+
+.tabGrabbed {
+    cursor: dragging !important;
+    color: $grabbedTabTextColor;
+    background-color: $grabbedTabBackground;
+}
+
+.tabText {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+}
+
+.dropZone {
+    width: 75px;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: calc(72px / 2);
+    pointer-events: none;
+    z-index: 100;
+}
+
+.dropZoneCanDrop {
+    pointer-events: all !important;
+}
+
+.dropBarIndicator {
+    width: 2px;
+    height: 100%;
+    background-color: $defaultTabBackground;
+}
+
+.dropBarIndicatorOver {
+    background-color: $activeDropBarIndicatorBackground;
+}

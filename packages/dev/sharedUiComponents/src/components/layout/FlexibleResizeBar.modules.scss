@@ -1,0 +1,26 @@
+$drag-border-size: 2px;
+$drag-border-color: rgb(71, 71, 71);
+
+.rowDragHandler {
+    cursor: pointer;
+    cursor: grab;
+    cursor: row-resize;
+    width: 100%;
+    height: $drag-border-size;
+    background-color: $drag-border-color;
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+}
+
+.columnDragHandler {
+    cursor: pointer;
+    cursor: grab;
+    cursor: col-resize;
+    width: $drag-border-size;
+    height: 100%;
+    background-color: $drag-border-color;
+    position: absolute;
+    right: 0px;
+    top: 0px;
+}
