@@ -114,7 +114,7 @@ export class PointerInfo extends PointerInfoBase {
     private _inputManager: Nullable<InputManager>;
 
     /**
-     * Defines the picking info associated to the info (if any)
+     * Defines the picking info associated with this PointerInfo object (if applicable)
      */
     public get pickInfo(): Nullable<PickingInfo> {
         if (!this._pickInfo) {
