@@ -3,6 +3,7 @@ import { SceneRendererComponent } from "./components/SceneRendererComponent";
 import { StatesViewComponent } from "./components/StatesViewComponent";
 import { StateBehaviorViewComponent } from "./components/StateBehaviorViewComponent";
 import type { Layout } from "shared-ui-components/components/layout/types";
+import { EditValueComponent } from "./components/EditValueComponent";
 
 export const initialLayout: Layout = {
     columns: [
@@ -12,12 +13,18 @@ export const initialLayout: Layout = {
             rows: [
                 {
                     id: "scene",
-                    height: "100%",
+                    height: "80%",
                     selectedTab: "sceneTab",
                     tabs: [
                         { id: "sceneTab", title: "Scene", component: <SceneRendererComponent /> },
                         { id: "test", title: "Test", component: <TestComponent name="test" /> },
                     ],
+                },
+                {
+                    id: "edit",
+                    height: "20%",
+                    selectedTab: "editTab",
+                    tabs: [{ id: "editTab", title: "Edit value", component: <EditValueComponent /> }],
                 },
             ],
         },

@@ -47,6 +47,14 @@ export class GraphNode {
     private _isVisible = true;
     private _enclosingFrameId = -1;
 
+    public addClassToVisual(className: string) {
+        this._visual.classList.add(className);
+    }
+
+    public removeClassFromVisual(className: string) {
+        this._visual.classList.remove(className);
+    }
+
     public get isVisible() {
         return this._isVisible;
     }

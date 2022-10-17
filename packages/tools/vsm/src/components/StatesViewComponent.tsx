@@ -13,6 +13,7 @@ import { NodeLink } from "shared-ui-components/nodeGraphSystem/nodeLink";
 import type { NodePort } from "shared-ui-components/nodeGraphSystem/nodePort";
 import { SelectionContext } from "./SelectionContext";
 import { Vector3 } from "core/Maths/math";
+import { SceneContext } from "../SceneContext";
 
 const connectToFn = (self: IPortData, port: IPortData) => {
     self.isConnected = true;
@@ -113,6 +114,7 @@ export const StatesViewComponent: FC = () => {
     const [, setNodes] = useState(new Array<GraphNode>());
     const [, setLinks] = useState(new Array<NodeLink>());
     const { setSelectedNode } = useContext(SelectionContext);
+    const { scene } = useContext(SceneContext);
 
     const rootContainer: React.MutableRefObject<Nullable<HTMLDivElement>> = useRef(null);
     const graphCanvasComponentRef = useCallback((gccRef: Nullable<GraphCanvasComponent>) => {
@@ -142,7 +144,7 @@ export const StatesViewComponent: FC = () => {
 
     // Initialize the nodes
     useEffect(() => {
-        if (stateManager && graphCanvasComponent) {
+        if (stateManager && graphCanvasComponent && scene) {
             const newNodes = new Array<GraphNode>();
 
             // Create nodes
@@ -166,6 +168,22 @@ export const StatesViewComponent: FC = () => {
             dest.x = 300;
             dest.y = 400;
 
+            const node = scene.getMeshByName("sphere");
+            if (node) {
+                node.metadata.onStateChanged.add((props: any) => {
+                    const state = props.state;
+                    console.log("state changed to", state);
+
+                    if (state === "Sphere Origin") {
+                        origin.addClassToVisual(style.highlight);
+                        dest.removeClassFromVisual(style.highlight);
+                    } else {
+                        origin.removeClassFromVisual(style.highlight);
+                        dest.addClassToVisual(style.highlight);
+                    }
+                });
+            }
+
             const newLinks = new Array<NodeLink>();
 
             newLinks.push(linkPorts(graphCanvasComponent, origin, origin.outputPorts[0], dest, dest.inputPorts[0]));
@@ -174,7 +192,7 @@ export const StatesViewComponent: FC = () => {
             setNodes(newNodes);
             setLinks(newLinks);
         }
-    }, [stateManager, graphCanvasComponent]);
+    }, [stateManager, graphCanvasComponent, scene]);
 
     // Set up responding for node selection
     useEffect(() => {
