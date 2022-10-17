@@ -131,8 +131,10 @@ export class InputManager {
      */
     public get meshUnderPointer(): Nullable<AbstractMesh> {
         if (this._movePointerInfo) {
-            // Calling pickInfo will populate this._pointerOverMesh indirectly
-            this._movePointerInfo.pickInfo;
+            // Because _pointerOverMesh is populated as part of _pickMove, we need to force a pick to update it.
+            // Calling _pickMove calls _setCursorAndPointerOverMesh which calls setPointerOverMesh
+            this._movePointerInfo._generatePickInfo();
+            // Once we have what we need, we can clear _movePointerInfo because we don't need it anymore
             this._movePointerInfo = null;
         }
         return this._pointerOverMesh;
@@ -210,7 +212,7 @@ export class InputManager {
         this._setCursorAndPointerOverMesh(pickResult, evt.pointerId, scene);
 
         for (const step of scene._pointerMoveStage) {
-            const isMeshPicked = pickResult && pickResult.hit && pickResult.pickedMesh ? true : false;
+            const isMeshPicked = pickResult?.pickedMesh ? true : false;
             pickResult = step.action(this._unTranslatedPointerX, this._unTranslatedPointerY, pickResult, isMeshPicked, canvas);
         }
 
@@ -285,7 +287,7 @@ export class InputManager {
         const engine = scene.getEngine();
         const canvas = engine.getInputElement();
 
-        if (pickResult && pickResult.hit && pickResult.pickedMesh) {
+        if (pickResult?.pickedMesh) {
             this.setPointerOverMesh(pickResult.pickedMesh, pointerId, pickResult);
 
             if (!scene.doNotHandleCursors && canvas && this._pointerOverMesh) {

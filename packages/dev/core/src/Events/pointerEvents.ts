@@ -117,10 +117,8 @@ export class PointerInfo extends PointerInfoBase {
      * Defines the picking info associated to the info (if any)
      */
     public get pickInfo(): Nullable<PickingInfo> {
-        if (this._inputManager) {
-            this._pickInfo = this._inputManager._pickMove((this.event as IPointerEvent).pointerId);
-            this._inputManager._setRayOnPointerInfo(this._pickInfo, this.event);
-            this._inputManager = null;
+        if (!this._pickInfo) {
+            this._generatePickInfo();
         }
 
         return this._pickInfo;
@@ -136,6 +134,18 @@ export class PointerInfo extends PointerInfoBase {
         super(type, event);
         this._pickInfo = pickInfo;
         this._inputManager = inputManager;
+    }
+
+    /**
+     * Generates the picking info if needed
+     */
+    /** @internal */
+    public _generatePickInfo(): void {
+        if (this._inputManager) {
+            this._pickInfo = this._inputManager._pickMove((this.event as IPointerEvent).pointerId);
+            this._inputManager._setRayOnPointerInfo(this._pickInfo, this.event);
+            this._inputManager = null;
+        }
     }
 }
 
