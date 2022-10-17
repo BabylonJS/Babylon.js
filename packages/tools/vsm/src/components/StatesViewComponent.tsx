@@ -147,8 +147,8 @@ export const StatesViewComponent: FC = () => {
 
             // Create nodes
             const nodesToAdd = [
-                { name: "Sphere Origin", inputs: "in", output: "out", color: "red", position: new Vector3(0, 0, 0) },
-                { name: "Sphere Destination", inputs: "in", output: "out", color: "green", position: new Vector3(1, 1, 1) },
+                { name: "Sphere Origin", inputs: "in", output: "out", color: "#ec6916", position: new Vector3(0, 0, 0) },
+                { name: "Sphere Destination", inputs: "in", output: "out", color: "#2b0b71", position: new Vector3(1, 1, 1) },
             ];
             for (const nodeToAdd of nodesToAdd) {
                 const graphNode = onAddNewNode(nodeToAdd);
