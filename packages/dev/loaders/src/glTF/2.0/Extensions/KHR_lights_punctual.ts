@@ -17,8 +17,9 @@ import { GLTFLoader, ArrayItem } from "../glTFLoader";
 const NAME = "KHR_lights_punctual";
 
 /**
- * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual)
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_lights_punctual/README.md)
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_lights implements IGLTFLoaderExtension {
     /**
      * The name of this extension.

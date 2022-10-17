@@ -168,6 +168,8 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
             defines.IRIDESCENCE_TEXTURE = false;
             defines.IRIDESCENCE_THICKNESS_TEXTURE = false;
             defines.IRIDESCENCE_USE_THICKNESS_FROM_MAINTEXTURE = false;
+            defines.IRIDESCENCE_TEXTUREDIRECTUV = 0;
+            defines.IRIDESCENCE_THICKNESS_TEXTUREDIRECTUV = 0;
         }
     }
 

@@ -6,6 +6,7 @@
         "rootDir": "../../../lts/materials/generated",
         "declaration": true,
         "importHelpers": true,
+        "target": "ES2018",
         "plugins": [{ "transform": "../../../dev/buildTools/src/pathTransform.ts", "buildType": "es6", "basePackage": "@babylonjs/materials", "appendJS": true }],
         "paths": {
             "core/*": ["lts/core/dist/*"],

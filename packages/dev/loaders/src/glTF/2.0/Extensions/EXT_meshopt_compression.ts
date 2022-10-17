@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 import type { Nullable } from "core/types";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { ArrayItem, GLTFLoader } from "../glTFLoader";
@@ -13,11 +12,12 @@ interface IBufferViewMeshopt extends IBufferView {
 }
 
 /**
- * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Vendor/EXT_meshopt_compression)
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_meshopt_compression/README.md)
  *
  * This extension uses a WebAssembly decoder module from https://github.com/zeux/meshoptimizer/tree/master/js
  * @since 5.0.0
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class EXT_meshopt_compression implements IGLTFLoaderExtension {
     /**
      * The name of this extension.

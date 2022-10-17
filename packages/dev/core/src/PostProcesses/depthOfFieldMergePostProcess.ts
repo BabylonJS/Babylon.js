@@ -68,7 +68,7 @@ export class DepthOfFieldMergePostProcess extends PostProcess {
         samplingMode?: number,
         engine?: Engine,
         reusable?: boolean,
-        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        textureType = Constants.TEXTURETYPE_UNSIGNED_INT,
         blockCompilation = false
     ) {
         super(
