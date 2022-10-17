@@ -925,6 +925,12 @@ Scene.prototype.pickWithBoundingInfo = function (
     return result;
 };
 
+Object.defineProperty(Scene.prototype, "_pickingAvailable", {
+    get: () => true,
+    enumerable: false,
+    configurable: false,
+});
+
 Scene.prototype.pick = function (
     x: number,
     y: number,
