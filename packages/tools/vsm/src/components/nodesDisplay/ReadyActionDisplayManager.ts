@@ -1,25 +1,30 @@
 import type { IDisplayManager, VisualContentDescription } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
-import styles from "./ColorBlockDisplayManager.modules.scss";
+import styles from "./CommonStyles.modules.scss";
 
-export class ColorBlockDisplayManager implements IDisplayManager {
+const ReadyActionBackgroundColor = "red";
+
+export class ReadyActionBlockDisplayManager implements IDisplayManager {
     getHeaderClass(data: INodeData): string {
-        return styles.header;
+        return styles.noBorder;
     }
     shouldDisplayPortLabels(data: IPortData): boolean {
         return false;
     }
-    updatePreviewContent(data: INodeData, contentArea: HTMLDivElement): void {}
+    updatePreviewContent(data: INodeData, contentArea: HTMLDivElement): void {
+        contentArea.classList.add(styles.textContent);
+        contentArea.innerHTML = "READY";
+    }
     getBackgroundColor(data: INodeData): string {
-        return data.data.color;
+        return ReadyActionBackgroundColor;
     }
     getHeaderText(data: INodeData): string {
-        return data.name;
+        return "STATE";
     }
     updateFullVisualContent(data: INodeData, visualContent: VisualContentDescription): void {
         const headerContainer = visualContent.headerContainer;
-        headerContainer.style.backgroundColor = data.data.color;
+        headerContainer.style.backgroundColor = ReadyActionBackgroundColor;
         headerContainer.style.filter = "saturate(0.3)";
     }
 }
