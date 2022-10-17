@@ -10,6 +10,7 @@ import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
 import { SelectionContext } from "./components/SelectionContext";
 import { initialLayout } from "./initialLayout";
 import { Vector3 } from "core/Maths/math";
+import { Observable } from "core/Misc/observable";
 
 export type WorkbenchProps = {};
 
@@ -40,7 +41,13 @@ export const Workbench: FC<WorkbenchProps> = () => {
             // Get node
             const node = scene.getMeshByName("sphere");
             if (node) {
+                // Apply initial state
                 let currentState = "Sphere Origin";
+                node.position = stateValues[currentState];
+
+                node.metadata = {};
+                node.metadata.onStateChanged = new Observable<{ state: string }>();
+                node.metadata.onStateChanged.notifyObservers({ state: currentState });
 
                 scene.onPointerPick = (pickedPoint, pickInfo) => {
                     if (pickInfo.pickedMesh !== node) return;
@@ -51,9 +58,10 @@ export const Workbench: FC<WorkbenchProps> = () => {
                     } else {
                         currentState = "Sphere Origin";
                     }
+                    // Execute action
                     node.position = stateValues[currentState];
 
-                    // Execute action
+                    node.metadata.onStateChanged.notifyObservers({ state: currentState });
                 };
             }
         }
