@@ -21,7 +21,7 @@ export const SceneRendererComponent: FC = () => {
         if (canvasRef.current) {
             const engine = new Engine(canvasRef.current, true);
             const scene = new Scene(engine);
-            const camera = new ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 2.5, 2, Vector3.Zero(), scene);
+            const camera = new ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 2.5, 5, Vector3.Zero(), scene);
             camera.attachControl(canvasRef.current, true);
             new HemisphericLight("light1", new Vector3(1, 1, 0), scene);
             const sphere = MeshBuilder.CreateSphere("sphere", { diameter: 2 }, scene);

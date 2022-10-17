@@ -28,13 +28,13 @@ export const initialLayout: Layout = {
                 {
                     id: "row4",
                     selectedTab: "statesView",
-                    height: "70%",
+                    height: "60%",
                     tabs: [{ id: "statesView", title: "States", component: <StatesViewComponent /> }],
                 },
                 {
                     id: "row5",
                     selectedTab: "behaviorView",
-                    height: "30%",
+                    height: "40%",
                     tabs: [{ id: "behaviorView", title: "Behavior", component: <StateBehaviorViewComponent /> }],
                 },
             ],
