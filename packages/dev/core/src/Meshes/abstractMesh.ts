@@ -2027,11 +2027,20 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         }
 
         // Skeleton
-        this._internalAbstractMeshDataInfo._skeleton = null;
+        if (this._internalAbstractMeshDataInfo._skeleton) {
+            this._internalAbstractMeshDataInfo._skeleton.dispose()
+            this._internalAbstractMeshDataInfo._skeleton = null;
+        }
 
         if (this._transformMatrixTexture) {
             this._transformMatrixTexture.dispose();
             this._transformMatrixTexture = null;
+        }
+
+        // Morph target manager
+        if (this._internalAbstractMeshDataInfo._morphTargetManager) {
+            this._internalAbstractMeshDataInfo._morphTargetManager.dispose()
+            this._internalAbstractMeshDataInfo._morphTargetManager = null;
         }
 
         // Intersections in progress

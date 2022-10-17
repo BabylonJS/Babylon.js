@@ -2742,7 +2742,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
      */
     public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void {
-        this.morphTargetManager = null;
 
         if (this._geometry) {
             this._geometry.releaseForMesh(this, true);
