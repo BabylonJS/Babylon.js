@@ -1,0 +1,19 @@
+{
+    "extends": "../../../../tsconfig.build.json",
+
+    "compilerOptions": {
+        "outDir": "./dist",
+        "rootDir": "../../../dev/sharedUiComponents/src",
+        "declaration": true,
+        "target": "ES2018",
+        "importHelpers": true,
+        "plugins": [{ "transform": "../../../dev/buildTools/src/pathTransform.ts", "buildType": "es6", "basePackage": "@babylonjs/shared-ui-components", "appendJS": true }],
+        "paths": {
+            "core/*": ["lts/core/dist/*"],
+            "gui/*": ["lts/gui/dist/*"],
+            "shared-ui-components/*": ["dev/sharedUiComponents/src/*"]
+        }
+    },
+
+    "include": ["../../../dev/sharedUiComponents/src/**/*"]
+}

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 import type { Nullable } from "core/types";
 import { Color3 } from "core/Maths/math.color";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
@@ -11,8 +10,9 @@ import { GLTFLoader } from "../glTFLoader";
 const NAME = "KHR_materials_unlit";
 
 /**
- * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_unlit)
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_unlit/README.md)
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_materials_unlit implements IGLTFLoaderExtension {
     /**
      * The name of this extension.

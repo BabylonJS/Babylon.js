@@ -6,9 +6,15 @@ import { FlexibleDropZone } from "./FlexibleDropZone";
 import { FlexibleTabsContainer } from "./FlexibleTabsContainer";
 import style from "./FlexibleGridContainer.modules.scss";
 
+/**
+ * Arguments for the GridContainer component.
+ */
 export interface IFlexibleGridContainerProps {}
 
-export const FlexibleGridContainer: FC<IFlexibleGridContainerProps> = (props) => {
+/**
+ * Component responsible for mapping the layout to the actual components
+ */
+export const FlexibleGridContainer: FC<IFlexibleGridContainerProps> = () => {
     const context = useContext(LayoutContext);
     const { layout } = context;
     const columns =

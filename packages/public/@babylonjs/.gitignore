@@ -3,6 +3,11 @@ node_modules
 *.js
 *.ts
 *.map
+*.scss
+*.css
+*.svg
+*.png
+*.jpg
 !inspector/**/*.*
 !node-editor/**/*.*
 !gui-editor/**/*.*

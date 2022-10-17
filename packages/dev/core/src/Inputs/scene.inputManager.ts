@@ -951,7 +951,7 @@ export class InputManager {
      * @param pickResult - optional pickingInfo data used to find mesh
      */
     public setPointerOverMesh(mesh: Nullable<AbstractMesh>, pointerId: number = 0, pickResult?: Nullable<PickingInfo>): void {
-        if (this._meshUnderPointerId[pointerId] === mesh) {
+        if (this._meshUnderPointerId[pointerId] === mesh && (!mesh || !mesh._internalAbstractMeshDataInfo._pointerOverDisableMeshTesting)) {
             return;
         }
 

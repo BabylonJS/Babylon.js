@@ -8,6 +8,7 @@ import { MultiRenderTarget } from "../Materials/Textures/multiRenderTarget";
 import type { InternalTextureCreationOptions } from "../Materials/Textures/textureCreationOptions";
 import { Color4 } from "../Maths/math.color";
 import type { SubMesh } from "../Meshes/subMesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { SmartArray } from "../Misc/smartArray";
 import type { Scene } from "../scene";
 import { ThinTexture } from "../Materials/Textures/thinTexture";
@@ -70,6 +71,7 @@ export class DepthPeelingRenderer {
     private _renderPassIds: number[];
     private _candidateSubMeshes: SmartArray<SubMesh> = new SmartArray(10);
     private _excludedSubMeshes: SmartArray<SubMesh> = new SmartArray(10);
+    private _excludedMeshes: number[] = [];
 
     private static _DEPTH_CLEAR_VALUE = -99999.0;
     private static _MIN_DEPTH = 0;
@@ -111,6 +113,27 @@ export class DepthPeelingRenderer {
         }
         this._useRenderPasses = usePasses;
         this._createRenderPassIds();
+    }
+
+    /**
+     * Add a mesh in the exclusion list to prevent it to be handled by the depth peeling renderer
+     * @param mesh The mesh to exclude from the depth peeling renderer
+     */
+    public addExcludedMesh(mesh: AbstractMesh): void {
+        if (this._excludedMeshes.indexOf(mesh.uniqueId) === -1) {
+            this._excludedMeshes.push(mesh.uniqueId);
+        }
+    }
+
+    /**
+     * Remove a mesh from the exclusion list of the depth peeling renderer
+     * @param mesh The mesh to remove
+     */
+    public removeExcludedMesh(mesh: AbstractMesh): void {
+        const index = this._excludedMeshes.indexOf(mesh.uniqueId);
+        if (index !== -1) {
+            this._excludedMeshes.splice(index, 1);
+        }
     }
 
     /**
@@ -400,15 +423,17 @@ export class DepthPeelingRenderer {
         }
 
         for (let i = 0; i < transparentSubMeshes.length; i++) {
-            const material = transparentSubMeshes.data[i].getMaterial();
+            const subMesh = transparentSubMeshes.data[i];
+            const material = subMesh.getMaterial();
 
             if (
                 material &&
-                (material.fillMode === Material.TriangleFanDrawMode || material.fillMode === Material.TriangleFillMode || material.fillMode === Material.TriangleStripDrawMode)
+                (material.fillMode === Material.TriangleFanDrawMode || material.fillMode === Material.TriangleFillMode || material.fillMode === Material.TriangleStripDrawMode) &&
+                this._excludedMeshes.indexOf(subMesh.getMesh().uniqueId) === -1
             ) {
-                this._candidateSubMeshes.push(transparentSubMeshes.data[i]);
+                this._candidateSubMeshes.push(subMesh);
             } else {
-                this._excludedSubMeshes.push(transparentSubMeshes.data[i]);
+                this._excludedSubMeshes.push(subMesh);
             }
         }
 

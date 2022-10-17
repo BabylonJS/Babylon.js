@@ -39,6 +39,10 @@ export class TransformNode extends Node {
      * Object will rotate to face the camera's position instead of orientation
      */
     public static BILLBOARDMODE_USE_POSITION = 128;
+    /**
+     * Child transform with Billboard flags should or should not apply parent rotation (default if off)
+     */
+    public static BillboardUseParentOrientation: boolean = false;
 
     private static _TmpRotation = Quaternion.Zero();
     private static _TmpScaling = Vector3.Zero();
@@ -746,12 +750,14 @@ export class TransformNode extends Node {
      * The node will remain exactly where it is and its position / rotation will be updated accordingly.
      * Note that if the mesh has a pivot matrix / point defined it will be applied after the parent was updated.
      * In that case the node will not remain in the same space as it is, as the pivot will be applied.
+     * To avoid this, you can set updatePivot to true and the pivot will be updated to identity
      * @see https://doc.babylonjs.com/how_to/parenting
      * @param node the node ot set as the parent
      * @param preserveScalingSign if true, keep scaling sign of child. Otherwise, scaling sign might change.
+     * @param updatePivot if true, update the pivot matrix to keep the node in the same space as before
      * @returns this TransformNode.
      */
-    public setParent(node: Nullable<Node>, preserveScalingSign: boolean = false): TransformNode {
+    public setParent(node: Nullable<Node>, preserveScalingSign: boolean = false, updatePivot = false): TransformNode {
         if (!node && !this.parent) {
             return this;
         }
@@ -793,6 +799,11 @@ export class TransformNode extends Node {
         this.position.copyFrom(position);
 
         this.parent = node;
+
+        if (updatePivot) {
+            this.setPivotMatrix(Matrix.Identity());
+        }
+
         return this;
     }
 
@@ -1110,9 +1121,11 @@ export class TransformNode extends Node {
                 Matrix.ScalingToRef(scale.x, scale.y, scale.z, TmpVectors.Matrix[7]);
                 TmpVectors.Matrix[7].setTranslation(translation);
 
-                // set localMatrix translation to be transformed against parent's orientation.
-                this._position.applyRotationQuaternionToRef(orientation, translation);
-                this._localMatrix.setTranslation(translation);
+                if (TransformNode.BillboardUseParentOrientation) {
+                    // set localMatrix translation to be transformed against parent's orientation.
+                    this._position.applyRotationQuaternionToRef(orientation, translation);
+                    this._localMatrix.setTranslation(translation);
+                }
 
                 this._localMatrix.multiplyToRef(TmpVectors.Matrix[7], this._worldMatrix);
             } else {

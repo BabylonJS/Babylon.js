@@ -6,6 +6,7 @@
         "rootDir": "../../../lts/proceduralTextures/generated",
         "declaration": true,
         "importHelpers": true,
+        "target": "ES2018",
         "plugins": [
             { "transform": "../../../dev/buildTools/src/pathTransform.ts", "buildType": "es6", "basePackage": "@babylonjs/procedural-textures", "appendJS": true },
         ]

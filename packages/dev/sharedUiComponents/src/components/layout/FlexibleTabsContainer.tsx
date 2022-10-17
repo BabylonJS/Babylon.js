@@ -1,4 +1,4 @@
-import type { FC, ReactElement } from "react";
+import type { FC } from "react";
 import { useContext } from "react";
 import { FlexibleTab } from "./FlexibleTab";
 import { LayoutContext } from "./LayoutContext";
@@ -7,16 +7,35 @@ import style from "./FlexibleTabsContainer.modules.scss";
 import dragIcon from "../../imgs/dragDotsIcon_white.svg";
 import { getPosInLayout, removeLayoutRowAndRedistributePercentages } from "./utils";
 import { DraggableIcon } from "./DraggableIcon";
-import type { LayoutTabsRow, TabDrag } from "./types";
+import type { LayoutTab, LayoutTabsRow, TabDrag } from "./types";
 import { ElementTypes } from "./types";
 
+/**
+ * Arguments for the TabsContainer component.
+ */
 export interface IFlexibleTabsContainerProps {
-    tabs: { component: ReactElement; id: string }[];
+    /**
+     * The tabs to display
+     */
+    tabs: LayoutTab[];
+    /**
+     * Row index of component in layout
+     */
     rowIndex: number;
+    /**
+     * Column index of component in layout
+     */
     columnIndex: number;
+    /**
+     * Which tab is selected in the layout
+     */
     selectedTab?: string;
 }
 
+/**
+ * This component contains a set of tabs of which only one is visible at a time.
+ * The tabs can also be dragged from and to different containers.
+ */
 export const FlexibleTabsContainer: FC<IFlexibleTabsContainerProps> = (props) => {
     const { layout, setLayout } = useContext(LayoutContext);
     const { tabs, selectedTab } = props;
@@ -66,7 +85,7 @@ export const FlexibleTabsContainer: FC<IFlexibleTabsContainerProps> = (props) =>
                         return (
                             <FlexibleTab
                                 key={tab.id}
-                                title={tab.id}
+                                title={tab.title}
                                 selected={tab.id === selectedTab}
                                 onClick={() => selectTab(tab.id)}
                                 item={{ rowNumber: props.rowIndex, columnNumber: props.columnIndex, tabs: [{ id: tab.id }] }}

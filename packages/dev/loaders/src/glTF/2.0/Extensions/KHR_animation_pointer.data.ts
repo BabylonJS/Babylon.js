@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/naming-convention */
+
 import { Animation } from "core/Animations/animation";
 import type { ICamera, IKHRLightsPunctual_Light, IMaterial } from "../glTFLoaderInterfaces";
 import type { IAnimatable } from "core/Animations/animatable.interface";
@@ -43,12 +45,14 @@ function getTextureTransformTree(textureName: string) {
 }
 
 class CameraAnimationPropertyInfo extends AnimationPropertyInfo {
+    /** @internal */
     public buildAnimations(target: ICamera, name: string, fps: number, keys: any[], callback: (babylonAnimatable: IAnimatable, babylonAnimation: Animation) => void): void {
         callback(target._babylonCamera!, this._buildAnimation(name, fps, keys));
     }
 }
 
 class MaterialAnimationPropertyInfo extends AnimationPropertyInfo {
+    /** @internal */
     public buildAnimations(target: IMaterial, name: string, fps: number, keys: any[], callback: (babylonAnimatable: IAnimatable, babylonAnimation: Animation) => void): void {
         for (const fillMode in target._data!) {
             callback(target._data![fillMode].babylonMaterial, this._buildAnimation(name, fps, keys));
@@ -57,6 +61,7 @@ class MaterialAnimationPropertyInfo extends AnimationPropertyInfo {
 }
 
 class LightAnimationPropertyInfo extends AnimationPropertyInfo {
+    /** @internal */
     public buildAnimations(
         target: IKHRLightsPunctual_Light,
         name: string,
@@ -183,6 +188,7 @@ const extensionsTree = {
     },
 };
 
+/** @internal */
 export const animationPointerTree = {
     nodes: nodesTree,
     materials: materialsTree,

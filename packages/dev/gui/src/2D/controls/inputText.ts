@@ -272,7 +272,7 @@ export class InputText extends Control implements IFocusableControl {
         this._markAsDirty();
     }
 
-    /** Gets or sets the dead key flag */
+    /** Gets or sets the dead key. 0 to disable. */
     @serialize()
     public get deadKey(): boolean {
         return this._deadKey;
@@ -696,28 +696,11 @@ export class InputText extends Control implements IFocusableControl {
                 this._cursorIndex = -1;
                 this._markAsDirty();
                 return;
-            case 222: // Dead
-                if (evt) {
-                    //add support for single and double quotes
-                    if (evt.code == "Quote") {
-                        if (evt.shiftKey) {
-                            keyCode = 34;
-                            key = '"';
-                        } else {
-                            keyCode = 39;
-                            key = "'";
-                        }
-                    } else {
-                        evt.preventDefault();
-                        this._cursorIndex = -1;
-                        this.deadKey = true;
-                    }
-                } else {
-                    this._cursorIndex = -1;
-                    this.deadKey = true;
-                }
-                break;
         }
+        if (keyCode === 32) {
+            key = evt?.key ?? " ";
+        }
+        this._deadKey = key === "Dead";
         // Printable characters
         if (
             key &&
@@ -735,7 +718,7 @@ export class InputText extends Control implements IFocusableControl {
             this._currentKey = key;
             this.onBeforeKeyAddObservable.notifyObservers(this);
             key = this._currentKey;
-            if (this._addKey) {
+            if (this._addKey && !this._deadKey) {
                 if (this._isTextHighlightOn) {
                     this._textWrapper.removePart(this._startHighlightIndex, this._endHighlightIndex, key);
                     this._textHasChanged();
@@ -744,7 +727,7 @@ export class InputText extends Control implements IFocusableControl {
                     this._blinkIsEven = false;
                     this._markAsDirty();
                 } else if (this._cursorOffset === 0) {
-                    this.text += key;
+                    this.text += this._deadKey && evt?.key ? evt.key : key;
                 } else {
                     const insertPosition = this._textWrapper.length - this._cursorOffset;
                     this._textWrapper.removePart(insertPosition, insertPosition, key);

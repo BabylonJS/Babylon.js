@@ -29,6 +29,7 @@ import { WebRequest } from "core/Misc/webRequest";
 import type { IPointerEvent, IWheelEvent } from "core/Events/deviceInputEvents";
 import { RandomGUID } from "core/Misc/guid";
 import { GetClass } from "core/Misc/typeStore";
+import { DecodeBase64ToBinary } from "core/Misc/stringTools";
 
 declare type StandardMaterial = import("core/Materials/standardMaterial").StandardMaterial;
 
@@ -1306,7 +1307,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             request.addEventListener("readystatechange", () => {
                 if (request.readyState == 4) {
                     if (request.status == 200) {
-                        const gui = snippet ? JSON.parse(JSON.parse(request.responseText).jsonPayload).gui : request.responseText;
+                        const payload = JSON.parse(JSON.parse(request.responseText).jsonPayload);
+                        const payloadGui = payload.encodedGui ? new TextDecoder("utf-8").decode(DecodeBase64ToBinary(payload.encodedGui)) : payload.gui;
+                        const gui = snippet ? payloadGui : request.responseText;
                         const serializationObject = JSON.parse(gui);
                         resolve(serializationObject);
                     } else {

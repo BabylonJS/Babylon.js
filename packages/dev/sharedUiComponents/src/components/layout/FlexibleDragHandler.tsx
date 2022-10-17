@@ -9,10 +9,20 @@ import { addPercentageStringToNumber, getPosInLayout } from "./utils";
 import { LayoutContext } from "./LayoutContext";
 import type { ResizeItem } from "./FlexibleResizeBar";
 
-interface IFlexibleDragHandlerProps {
+/**
+ * Arguments for the DragHandler component.
+ */
+export interface IFlexibleDragHandlerProps {
+    /**
+     * The size of the containing element. Used to calculate the percentage of
+     * space occupied by the component
+     */
     containerSize: { width: number; height: number };
 }
 
+/**
+ * This component receives the drop events and updates the layout accordingly
+ */
 export const FlexibleDragHandler: FC<IFlexibleDragHandlerProps> = (props) => {
     const { layout, setLayout } = useContext(LayoutContext);
     // CLICK/DRAG INFORMATION
