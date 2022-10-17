@@ -1,7 +1,9 @@
 import type { FC } from "react";
 import { useState } from "react";
 import { CommandBarComponent } from "shared-ui-components/components/bars/CommandBarComponent";
+import { FlexibleGridLayout } from "shared-ui-components/components/layout/FlexibleGridLayout";
 import style from "./workbench.modules.scss";
+import { initialLayout } from "./initialLayout";
 
 export type WorkbenchProps = {};
 
@@ -17,7 +19,9 @@ export const Workbench: FC<WorkbenchProps> = () => {
                 artboardColorPickerColor={INITIAL_WORKBENCH_COLOR}
                 onArtboardColorChanged={(newColor) => setWorkAreaColor(newColor)}
             />
-            <div className={style.workArea} style={{ backgroundColor: workAreaColor }}></div>
+            <div className={style.workArea} style={{ backgroundColor: workAreaColor }}>
+                <FlexibleGridLayout layoutDefinition={initialLayout} />
+            </div>
         </div>
     );
 };
