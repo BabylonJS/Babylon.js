@@ -221,20 +221,18 @@ export const StatesViewComponent: FC = () => {
 
     // Set up key handling
     useEffect(() => {
-        // if (rootContainer.current && graphCanvasComponentRef.current) {
-        if (graphCanvasComponent) {
-            document.addEventListener("keydown", (evt) => {
+        if (graphCanvasComponent && rootContainer.current) {
+            rootContainer.current.addEventListener("keydown", (evt) => {
                 graphCanvasComponent!.handleKeyDown(
                     evt,
                     (nodeData: INodeData) => {},
                     0,
                     0,
                     (nodeData: INodeData) => {
-                        const name = nodeData.name;
-                        const inputs = nodeData.inputs.map((i) => i.name);
-                        const outputs = nodeData.outputs.map((o) => o.name);
-
-                        return graphCanvasComponent.appendNode(createNewNodeData(name, inputs, outputs));
+                        // const name = nodeData.name;
+                        // const inputs = nodeData.inputs.map((i) => i.name);
+                        // const outputs = nodeData.outputs.map((o) => o.name);
+                        // return graphCanvasComponent.appendNode(createNewNodeData(name, inputs, outputs));
                     },
                     graphCanvasComponent!.canvasContainer
                 );

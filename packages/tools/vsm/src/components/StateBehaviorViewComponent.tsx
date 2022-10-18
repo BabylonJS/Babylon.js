@@ -204,9 +204,8 @@ export const StateBehaviorViewComponent: FC = () => {
 
     // Set up key handling
     useEffect(() => {
-        // if (rootContainer.current && graphCanvasComponentRef.current) {
-        if (graphCanvasComponent) {
-            document.addEventListener("keydown", (evt) => {
+        if (graphCanvasComponent && rootContainer.current) {
+            rootContainer.current.addEventListener("keydown", (evt) => {
                 graphCanvasComponent!.handleKeyDown(
                     evt,
                     (nodeData: INodeData) => {},
