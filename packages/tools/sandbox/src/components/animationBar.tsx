@@ -156,6 +156,7 @@ export class AnimationBar extends React.Component<IAnimationBarProps, { groupInd
                         scene.animationGroups[newIndex].play(true);
                     }}
                     enabled={true}
+                    searchPlaceholder="Search animation"
                 />
             </div>
         );
