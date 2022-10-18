@@ -45,7 +45,7 @@ export class Button extends Rectangle {
 
     private _textBlock: Nullable<TextBlock>;
     /**
-     * Returns the image part of the button (if any)
+     * Returns the TextBlock part of the button (if any)
      */
     public get textBlock(): Nullable<TextBlock> {
         return this._textBlock;
