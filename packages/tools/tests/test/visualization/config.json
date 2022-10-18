@@ -1479,12 +1479,14 @@
         {
             "title": "Load GUI snippet with unicode",
             "playgroundId": "#YS93KY",
-            "referenceImage": "loadGuiSnippetWithUnicode.png"
+            "referenceImage": "loadGuiSnippetWithUnicode.png",
+            "renderCount": 50
         },
         {
             "title": "Parse GUI json with unicode",
             "playgroundId": "#ERVGT5",
-            "referenceImage": "parseGuiJsonWithUnicode.png"
+            "referenceImage": "parseGuiJsonWithUnicode.png",
+            "renderCount": 50
         }
     ]
 }
