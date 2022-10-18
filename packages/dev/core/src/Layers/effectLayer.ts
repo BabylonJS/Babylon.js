@@ -399,12 +399,8 @@ export abstract class EffectLayer {
             this._mainTexture.setMaterialForRendering(mesh, material);
         }
 
-        this._mainTexture.customIsReadyFunction = (mesh: AbstractMesh, refreshRate: number) => {
-            if (!mesh.isReady(false)) {
-                return false;
-            }
-            if (refreshRate === 0 && mesh.subMeshes) {
-                // full check: check that the effects are ready
+        this._mainTexture.customIsReadyFunction = (mesh: AbstractMesh, refreshRate: number, preWarm?: boolean) => {
+            if ((preWarm || refreshRate === 0) && mesh.subMeshes) {
                 for (let i = 0; i < mesh.subMeshes.length; ++i) {
                     const subMesh = mesh.subMeshes[i];
                     const material = subMesh.getMaterial();

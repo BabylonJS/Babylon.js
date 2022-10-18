@@ -1526,9 +1526,18 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public _afterCameraDrawStage = Stage.Create<CameraStageAction>();
     /**
      * @internal
+     * Defines the actions happening just after the post processing
+     */
+    public _afterCameraPostProcessStage = Stage.Create<CameraStageAction>();
+    /**
+     * @internal
      * Defines the actions happening just after a render target has been drawn.
      */
     public _afterRenderTargetDrawStage = Stage.Create<RenderTargetStageAction>();
+    /**
+     * Defines the actions happening just after the post processing on a render target
+     */
+    public _afterRenderTargetPostProcessStage = Stage.Create<RenderTargetStageAction>();
     /**
      * @internal
      * Defines the actions happening just after rendering all cameras and computing intersections.
@@ -3778,6 +3787,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /** @internal */
     public _activeMeshesFrozen = false;
+    /** @internal */
     public _activeMeshesFrozenButKeepClipping = false;
     private _skipEvaluateActiveMeshesCompletely = false;
 
@@ -4222,6 +4232,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             // if the camera has an output render target, render the post process to the render target
             const texture = camera.outputRenderTarget ? camera.outputRenderTarget.renderTarget! : undefined;
             this.postProcessManager._finalizeFrame(camera.isIntermediate, texture);
+        }
+
+        // After post process
+        for (const step of this._afterCameraPostProcessStage) {
+            step.action(this.activeCamera);
         }
 
         // Reset some special arrays
@@ -4956,6 +4971,14 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         throw _WarnImport("Ray");
     }
 
+    /** @internal */
+    public get _pickingAvailable(): boolean {
+        return false;
+    }
+
+    /** @internal */
+    public _registeredActions: number = 0;
+
     /** Launch a ray to try to pick a mesh in the scene
      * @param x position on screen
      * @param y position on screen
@@ -4974,9 +4997,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         trianglePredicate?: TrianglePickingPredicate
     ): Nullable<PickingInfo> {
         // Dummy info if picking as not been imported
-        const pi = new PickingInfo();
-        pi._pickingUnavailable = true;
-        return pi;
+        return new PickingInfo();
     }
 
     /** Launch a ray to try to pick a mesh in the scene using only bounding information of the main mesh (not using submeshes)
@@ -4989,9 +5010,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public pickWithBoundingInfo(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, camera?: Nullable<Camera>): Nullable<PickingInfo> {
         // Dummy info if picking as not been imported
-        const pi = new PickingInfo();
-        pi._pickingUnavailable = true;
-        return pi;
+        return new PickingInfo();
     }
 
     /** Use the given ray to pick a mesh in the scene

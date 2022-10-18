@@ -2,5 +2,6 @@
     "declarationLibs": ["@dev/inspector", "@dev/shared-ui-components"],
     "devPackageName": "inspector",
     "filename": "babylon.inspector.module.d.ts",
-    "outputDirectory": "./"
+    "outputDirectory": "./",
+    "fileFilterRegex": "stories"
 }

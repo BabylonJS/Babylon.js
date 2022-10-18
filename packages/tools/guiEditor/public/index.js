@@ -137,10 +137,25 @@ checkBabylonVersionAsync().then(() => {
                             };
                             xmlHttp.open("POST", snippetUrl + (currentSnippetToken ? "/" + currentSnippetToken : ""), true);
                             xmlHttp.setRequestHeader("Content-Type", "application/json");
+                            // Check if we need to encode it to store the unicode characters (same approach as PR #12391)
+                            const encoder = new TextEncoder();
+                            const buffer = encoder.encode(data);
+
+                            let testData = "";
+
+                            for (let i = 0; i < buffer.length; i++) {
+                                testData += String.fromCharCode(buffer[i]);
+                            }
+
+                            const isUnicode = testData !== data;
+
+                            const objToSend = {
+                                gui: data,
+                                encodedGui: isUnicode ? BABYLON.StringTools.EncodeArrayBufferToBase64(buffer) : undefined,
+                            };
+
                             const dataToSend = {
-                                payload: JSON.stringify({
-                                    gui: data,
-                                }),
+                                payload: JSON.stringify(objToSend),
                                 name: "",
                                 description: "",
                                 tags: "",
@@ -154,7 +169,7 @@ checkBabylonVersionAsync().then(() => {
                     action: (data) => {
                         return new Promise((resolve, reject) => {
                             let baseUrl = location.href.replace(location.hash, "").replace(location.search, "");
-                            let dataHash = data.startsWith('#') ? data : '#' + data;
+                            let dataHash = data.startsWith("#") ? data : "#" + data;
                             let newUrl = baseUrl + dataHash;
                             currentSnippetToken = data;
                             location.href = newUrl;

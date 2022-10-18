@@ -9,6 +9,7 @@ import type { Engine } from "../Engines/engine";
 import "../Shaders/refraction.fragment";
 import { RegisterClass } from "../Misc/typeStore";
 import { SerializationHelper, serialize } from "../Misc/decorators";
+import type { Nullable } from "../types";
 
 declare type Scene = import("../scene").Scene;
 
@@ -82,7 +83,7 @@ export class RefractionPostProcess extends PostProcess {
         depth: number,
         colorLevel: number,
         options: number | PostProcessOptions,
-        camera: Camera,
+        camera: Nullable<Camera>,
         samplingMode?: number,
         engine?: Engine,
         reusable?: boolean

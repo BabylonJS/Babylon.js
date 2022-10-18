@@ -82,7 +82,7 @@ export class ThinRenderTargetTexture extends ThinTexture implements IRenderTarge
         this._renderTarget = null;
 
         if (!disposeOnlyFramebuffers) {
-            this.dispose();
+            super.dispose();
         }
     }
 }

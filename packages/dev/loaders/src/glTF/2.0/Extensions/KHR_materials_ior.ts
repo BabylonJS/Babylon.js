@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 import type { Nullable } from "core/types";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { Material } from "core/Materials/material";
@@ -11,8 +10,9 @@ import type { IKHRMaterialsIor } from "babylonjs-gltf2interface";
 const NAME = "KHR_materials_ior";
 
 /**
- * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_ior)
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_ior/README.md)
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_materials_ior implements IGLTFLoaderExtension {
     /**
      * Default ior Value from the spec.

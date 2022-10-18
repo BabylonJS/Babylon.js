@@ -110,7 +110,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     /**
      * Override the mesh isReady function with your own one.
      */
-    public customIsReadyFunction: (mesh: AbstractMesh, refreshRate: number) => boolean;
+    public customIsReadyFunction: (mesh: AbstractMesh, refreshRate: number, preWarm?: boolean) => boolean;
     /**
      * Override the render function of the texture with your own one.
      */
@@ -877,7 +877,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                     }
 
                     if (this.customIsReadyFunction) {
-                        if (!this.customIsReadyFunction(mesh, this.refreshRate)) {
+                        if (!this.customIsReadyFunction(mesh, this.refreshRate, checkReadiness)) {
                             returnValue = false;
                             break;
                         }
@@ -933,7 +933,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
             if (mesh && !mesh.isBlocked) {
                 if (this.customIsReadyFunction) {
-                    if (!this.customIsReadyFunction(mesh, this.refreshRate)) {
+                    if (!this.customIsReadyFunction(mesh, this.refreshRate, false)) {
                         this.resetRefreshCounter();
                         continue;
                     }
@@ -1129,6 +1129,10 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                 this._postProcessManager._finalizeFrame(false, this._renderTarget ?? undefined, faceIndex, this._postProcesses, this.ignoreCameraViewport);
             } else if (useCameraPostProcess) {
                 scene.postProcessManager._finalizeFrame(false, this._renderTarget ?? undefined, faceIndex);
+            }
+
+            for (const step of scene._afterRenderTargetPostProcessStage) {
+                step.action(this, faceIndex, layer);
             }
 
             if (this._texture) {

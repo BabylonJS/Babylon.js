@@ -36,7 +36,7 @@ export class CommonRenderingPipelinePropertyGridComponent extends React.Componen
                             lockObject={this.props.lockObject}
                             label="Samples"
                             minimum={1}
-                            maximum={8}
+                            maximum={64}
                             step={1}
                             decimalCount={0}
                             target={renderPipeline}

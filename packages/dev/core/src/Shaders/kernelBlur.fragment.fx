@@ -8,22 +8,16 @@ varying vec2 sampleCenter;
 #ifdef DOF
     uniform sampler2D circleOfConfusionSampler;
 
-    uniform vec2 cameraMinMaxZ;
-
-    float sampleDistance(in vec2 offset) {
-        float depth = texture2D(circleOfConfusionSampler, offset).g; // depth value from DepthRenderer: 0 to 1 
-        return cameraMinMaxZ.x + (cameraMinMaxZ.y - cameraMinMaxZ.x)*depth; // actual distance from the lens 
-    }
     float sampleCoC(in vec2 offset) {
-        float coc = texture2D(circleOfConfusionSampler, offset).r; 
-        return coc; // actual distance from the lens 
+        float coc = texture2D(circleOfConfusionSampler, offset).r;
+        return coc; // actual distance from the lens
     }
 #endif
 
 #include<kernelBlurVaryingDeclaration>[0..varyingCount]
 
 #ifdef PACKEDFLOAT
-	#include<packingFunctions>
+    #include<packingFunctions>
 #endif
 
 
@@ -33,7 +27,7 @@ void main(void)
 {
     float computedWeight = 0.0;
 
-    #ifdef PACKEDFLOAT	
+    #ifdef PACKEDFLOAT
         float blend = 0.;
     #else
         vec4 blend = vec4(0.);

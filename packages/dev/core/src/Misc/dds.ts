@@ -833,7 +833,7 @@ ThinEngine.prototype.createPrefilteredCubeTexture = function (
 
             // Wrap in a base texture for easy binding.
             const lodTexture = new BaseTexture(scene);
-            lodTexture.isCube = true;
+            lodTexture._isCube = true;
             lodTexture._texture = glTextureFromLod;
 
             glTextureFromLod.isReady = true;

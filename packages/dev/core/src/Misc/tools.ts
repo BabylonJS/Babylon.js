@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import type { Nullable, float } from "../types";
+import type { Nullable } from "../types";
 import { Observable } from "./observable";
 import { GetDOMTextContent, IsNavigatorAvailable, IsWindowObjectExist } from "./domManagement";
 import { Logger } from "./logger";
@@ -26,13 +26,9 @@ import { RandomGUID } from "./guid";
 import type { IScreenshotSize } from "./interfaces/screenshotSize";
 import type { Engine } from "../Engines/engine";
 import type { Camera } from "../Cameras/camera";
+import type { IColor4Like } from "../Maths/math.like";
 
-interface IColor4Like {
-    r: float;
-    g: float;
-    b: float;
-    a: float;
-}
+declare function importScripts(...urls: string[]): void;
 
 /**
  * Class containing a set of static utilities functions
@@ -260,6 +256,25 @@ export class Tools {
     }
 
     /**
+     * Smooth angle changes (kind of low-pass filter), in particular for device orientation "shaking"
+     * Use trigonometric functions to avoid discontinuity (0/360, -180/180)
+     * @param previousAngle defines last angle value, in degrees
+     * @param newAngle defines new angle value, in degrees
+     * @param smoothFactor defines smoothing sensitivity; min 0: no smoothing, max 1: new data ignored
+     * @returns the angle in degrees
+     */
+    public static SmoothAngleChange(previousAngle: number, newAngle: number, smoothFactor = 0.9): number {
+        const previousAngleRad = this.ToRadians(previousAngle);
+        const newAngleRad = this.ToRadians(newAngle);
+        return this.ToDegrees(
+            Math.atan2(
+                (1 - smoothFactor) * Math.sin(newAngleRad) + smoothFactor * Math.sin(previousAngleRad),
+                (1 - smoothFactor) * Math.cos(newAngleRad) + smoothFactor * Math.cos(previousAngleRad)
+            )
+        );
+    }
+
+    /**
      * Returns an array if obj is not an array
      * @param obj defines the object to evaluate as an array
      * @param allowsNullUndefined defines a boolean indicating if obj is allowed to be null or undefined
@@ -416,9 +431,9 @@ export class Tools {
      * @param scriptId defines the id of the script element
      */
     public static LoadScript(scriptUrl: string, onSuccess: () => void, onError?: (message?: string, exception?: any) => void, scriptId?: string) {
-        if (typeof (self as unknown as WorkerSelf).importScripts === "function") {
+        if (typeof importScripts === "function") {
             try {
-                (self as unknown as WorkerSelf).importScripts(scriptUrl);
+                importScripts(scriptUrl);
                 onSuccess();
             } catch (e) {
                 onError?.(`Unable to load script '${scriptUrl}' in worker`, e);
@@ -528,7 +543,7 @@ export class Tools {
      */
     public static FileAsURL(content: string): string {
         const fileBlob = new Blob([content]);
-        const url = window.URL || window.webkitURL;
+        const url = window.URL;
         const link: string = url.createObjectURL(fileBlob);
         return link;
     }
@@ -863,11 +878,6 @@ export class Tools {
      * @param fileName defines the name of the downloaded file
      */
     public static Download(blob: Blob, fileName: string): void {
-        if (navigator && (navigator as any).msSaveBlob) {
-            (navigator as any).msSaveBlob(blob, fileName);
-            return;
-        }
-
         if (typeof URL === "undefined") {
             return;
         }

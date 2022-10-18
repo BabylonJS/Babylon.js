@@ -1,4 +1,4 @@
-#if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR)
+#if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR) && defined(INSTANCES)
     vColor = vec4(1.0);
     #ifdef VERTEXCOLOR
         #ifdef VERTEXALPHA

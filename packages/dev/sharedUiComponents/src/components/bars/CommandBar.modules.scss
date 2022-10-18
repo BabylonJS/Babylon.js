@@ -1,0 +1,45 @@
+:root {
+    --selectionGrey: #666666;
+}
+
+* {
+    font-family: "acumin-pro-condensed";
+    font-weight: 600;
+    font-size: 12px;
+}
+
+.commandBar {
+    background-color: #333333;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    height: 55px;
+}
+
+.commandsLeft {
+    display: flex;
+    padding-left: 10px;
+}
+
+.divider {
+    display: flex;
+    align-items: center;
+    border-right: 1px solid black;
+    color: white;
+    &:last-of-type {
+        border-right: none;
+    }
+    &.padded {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+}
+
+.commandsRight {
+    display: flex;
+}
+
+.betaFlag {
+    width: 80px;
+    height: 30px;
+}

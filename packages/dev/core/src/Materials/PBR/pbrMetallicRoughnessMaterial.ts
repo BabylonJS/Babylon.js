@@ -10,7 +10,7 @@ import type { Nullable } from "../../types";
  * The PBR material of BJS following the metal roughness convention.
  *
  * This fits to the PBR convention in the GLTF definition:
- * https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness
+ * https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Archived/KHR_materials_pbrSpecularGlossiness/README.md
  */
 export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
     /**
