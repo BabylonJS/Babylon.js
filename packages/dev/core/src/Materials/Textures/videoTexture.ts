@@ -154,7 +154,7 @@ export class VideoTexture extends Texture {
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
         settings: Partial<VideoTextureSettings> = {},
         onError?: Nullable<(message?: string, exception?: any) => void>,
-        format: number = Constants.TEXTUREFORMAT_RGBA,
+        format: number = Constants.TEXTUREFORMAT_RGBA
     ) {
         super(null, scene, !generateMipMaps, invertY);
 
