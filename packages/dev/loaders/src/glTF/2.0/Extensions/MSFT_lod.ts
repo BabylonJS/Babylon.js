@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 import type { Nullable } from "core/types";
 import { Observable } from "core/Misc/observable";
 import { Deferred } from "core/Misc/deferred";
@@ -20,8 +19,9 @@ interface IBufferInfo {
 }
 
 /**
- * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Vendor/MSFT_lod)
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/MSFT_lod/README.md)
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class MSFT_lod implements IGLTFLoaderExtension {
     /**
      * The name of this extension.

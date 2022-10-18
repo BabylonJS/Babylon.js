@@ -343,7 +343,7 @@ interface IFileInfo {
 
 /**
  * Class used to load scene from various file formats using registered plugins
- * @see https://doc.babylonjs.com/how_to/load_from_any_file_type
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/importers/loadingFileTypes
  */
 export class SceneLoader {
     /**
@@ -440,7 +440,7 @@ export class SceneLoader {
         Logger.Warn(
             "Unable to find a plugin to load " +
                 extension +
-                " files. Trying to use .babylon default plugin. To load from a specific filetype (eg. gltf) see: https://doc.babylonjs.com/how_to/load_from_any_file_type"
+                " files. Trying to use .babylon default plugin. To load from a specific filetype (eg. gltf) see: https://doc.babylonjs.com/features/featuresDeepDive/importers/loadingFileTypes"
         );
         return SceneLoader.GetDefaultPlugin();
     }

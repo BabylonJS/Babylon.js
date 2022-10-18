@@ -520,7 +520,7 @@ export class _GLTFMaterialExporter {
     /**
      * Convert Specular Glossiness Textures to Metallic Roughness
      * See link below for info on the material conversions from PBR Metallic/Roughness and Specular/Glossiness
-     * @link https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness/examples/convert-between-workflows-bjs/js/babylon.pbrUtilities.js
+     * @link https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Archived/KHR_materials_pbrSpecularGlossiness/examples/convert-between-workflows-bjs/js/babylon.pbrUtilities.js
      * @param diffuseTexture texture used to store diffuse information
      * @param specularGlossinessTexture texture used to store specular and glossiness information
      * @param factors specular glossiness material factors
@@ -1142,6 +1142,9 @@ export class _GLTFMaterialExporter {
                         case "image/png":
                             mimeType = ImageMimeType.PNG;
                             break;
+                        case "image/webp":
+                            mimeType = ImageMimeType.WEBP;
+                            break;
                     }
                 }
 
@@ -1209,7 +1212,7 @@ export class _GLTFMaterialExporter {
         }
 
         imageData[textureName] = imageValues;
-        if (mimeType === ImageMimeType.JPEG || mimeType === ImageMimeType.PNG) {
+        if (mimeType === ImageMimeType.JPEG || mimeType === ImageMimeType.PNG || mimeType === ImageMimeType.WEBP) {
             const glTFImage: IImage = {
                 name: baseTextureName,
                 uri: textureName,

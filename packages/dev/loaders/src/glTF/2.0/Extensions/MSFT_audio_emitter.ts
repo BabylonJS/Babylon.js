@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 import type { Nullable } from "core/types";
 import { Vector3 } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
@@ -40,8 +39,10 @@ interface ILoaderAnimationEvents {
 }
 
 /**
- * [Specification](https://github.com/najadojo/glTF/tree/MSFT_audio_emitter/extensions/2.0/Vendor/MSFT_audio_emitter)
+ * [Specification](https://github.com/najadojo/glTF/blob/MSFT_audio_emitter/extensions/2.0/Vendor/MSFT_audio_emitter/README.md)
+ * !!! Experimental Extension Subject to Changes !!!
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class MSFT_audio_emitter implements IGLTFLoaderExtension {
     /**
      * The name of this extension.

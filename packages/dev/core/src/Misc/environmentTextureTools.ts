@@ -615,7 +615,7 @@ export function UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBuff
 
                 // Wrap in a base texture for easy binding.
                 const lodTexture = new BaseTexture(null);
-                lodTexture.isCube = true;
+                lodTexture._isCube = true;
                 lodTexture._texture = glTextureFromLod;
                 lodTextures![mipmapIndex] = lodTexture;
 

@@ -1,0 +1,67 @@
+.color3Line {
+    display: grid;
+}
+
+.firstLine {
+    display: flex;
+    align-items: center;
+}
+
+.color3 {
+    display: flex;
+    align-items: center;
+
+    input {
+        margin-right: 5px;
+    }
+}
+
+.label {
+    padding-right: 5px;
+}
+
+.floatLine {
+    .value {
+        padding-left: 2px;
+    }
+}
+
+.hoverIcon:hover {
+    opacity: 0.8;
+}
+
+.copy {
+    display: none;
+}
+
+.expand {
+    display: none;
+}
+
+.secondLine {
+    display: grid;
+    padding-right: 5px;
+    border-left: 1px solid rgb(51, 122, 183);
+}
+
+.numeric {
+    display: grid;
+    grid-template-columns: 1fr auto;
+}
+
+.numeric-label {
+    text-align: right;
+    grid-column: 1;
+    display: flex;
+    align-items: center;
+    justify-self: right;
+    margin-right: 10px;
+}
+
+.numeric-value {
+    width: 120px;
+    grid-column: 2;
+    display: flex;
+    align-items: center;
+    border: 1px solid rgb(51, 122, 183);
+}
