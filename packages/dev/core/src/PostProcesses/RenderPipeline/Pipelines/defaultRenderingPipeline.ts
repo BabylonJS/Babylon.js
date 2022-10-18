@@ -40,25 +40,25 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
     /**
      * ID of the sharpen post process,
      */
-    private readonly SharpenPostProcessId: string = "SharpenPostProcessEffect";
+    private readonly SharpenPostProcessId = "SharpenPostProcessEffect";
     /**
      * @ignore
      * ID of the image processing post process;
      */
-    readonly ImageProcessingPostProcessId: string = "ImageProcessingPostProcessEffect";
+    readonly ImageProcessingPostProcessId = "ImageProcessingPostProcessEffect";
     /**
      * @ignore
      * ID of the Fast Approximate Anti-Aliasing post process;
      */
-    readonly FxaaPostProcessId: string = "FxaaPostProcessEffect";
+    readonly FxaaPostProcessId = "FxaaPostProcessEffect";
     /**
      * ID of the chromatic aberration post process,
      */
-    private readonly ChromaticAberrationPostProcessId: string = "ChromaticAberrationPostProcessEffect";
+    private readonly ChromaticAberrationPostProcessId = "ChromaticAberrationPostProcessEffect";
     /**
      * ID of the grain post process
      */
-    private readonly GrainPostProcessId: string = "GrainPostProcessEffect";
+    private readonly GrainPostProcessId = "GrainPostProcessEffect";
 
     // Post-processes
     /**
@@ -113,6 +113,17 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
     private _grainEnabled: boolean = false;
 
     private _buildAllowed = true;
+
+    /**
+     * Enable or disable automatic building of the pipeline when effects are enabled and disabled.
+     * If false, you will have to manually call prepare() to update the pipeline.
+     */
+    public get automaticBuild() {
+        return this._buildAllowed;
+    }
+    public set automaticBuild(value: boolean) {
+        this._buildAllowed = value;
+    }
 
     /**
      * This is triggered each time the pipeline has been built.
@@ -408,14 +419,14 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
     }
 
     /**
-     * @constructor
-     * @param name - The rendering pipeline name (default: "")
-     * @param hdr - If high dynamic range textures should be used (default: true)
-     * @param scene - The scene linked to this pipeline (default: the last created scene)
-     * @param cameras - The array of cameras that the rendering pipeline will be attached to (default: scene.cameras)
-     * @param automaticBuild - if false, you will have to manually call prepare() to update the pipeline (default: true)
+     * Instantiates a DefaultRenderingPipeline.
+     * @param name The rendering pipeline name (default: "")
+     * @param hdr If high dynamic range textures should be used (default: true)
+     * @param scene The scene linked to this pipeline (default: the last created scene)
+     * @param cameras The array of cameras that the rendering pipeline will be attached to (default: scene.cameras)
+     * @param automaticBuild If false, you will have to manually call prepare() to update the pipeline (default: true)
      */
-    constructor(name: string = "", hdr: boolean = true, scene: Scene = EngineStore.LastCreatedScene!, cameras?: Camera[], automaticBuild = true) {
+    constructor(name = "", hdr = true, scene: Scene = EngineStore.LastCreatedScene!, cameras?: Camera[], automaticBuild = true) {
         super(scene.getEngine(), name);
         this._cameras = cameras || scene.cameras;
         this._cameras = this._cameras.slice();
