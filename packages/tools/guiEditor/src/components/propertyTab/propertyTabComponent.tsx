@@ -49,6 +49,7 @@ import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
 import "./propertyTab.scss";
 import adtIcon from "../../imgs/adtIcon.svg";
 import { ControlTypes } from "../../controlTypes";
+import { EncodeArrayBufferToBase64 } from "core/Misc/stringTools";
 
 interface IPropertyTabComponentProps {
     globalState: GlobalState;
@@ -164,12 +165,27 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 }
             };
 
+            // Check if we need to encode it to store the unicode characters (same approach as PR #12391)
+            const encoder = new TextEncoder();
+            const buffer = encoder.encode(content);
+
+            let testData = "";
+
+            for (let i = 0; i < buffer.length; i++) {
+                testData += String.fromCharCode(buffer[i]);
+            }
+
+            const isUnicode = testData !== content;
+
+            const objToSend = {
+                gui: content,
+                encodedGui: isUnicode ? EncodeArrayBufferToBase64(buffer) : undefined,
+            };
+
             xmlHttp.open("POST", AdvancedDynamicTexture.SnippetUrl + (adt.snippetId ? "/" + adt.snippetId : ""), true);
             xmlHttp.setRequestHeader("Content-Type", "application/json");
             const dataToSend = {
-                payload: JSON.stringify({
-                    gui: content,
-                }),
+                payload: JSON.stringify(objToSend),
                 name: "",
                 description: "",
                 tags: "",

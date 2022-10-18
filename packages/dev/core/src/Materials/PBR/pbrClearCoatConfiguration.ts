@@ -273,6 +273,13 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
             defines.CLEARCOAT_TINT_TEXTURE = false;
             defines.CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE = false;
             defines.CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL = false;
+            defines.CLEARCOAT_DEFAULTIOR = false;
+            defines.CLEARCOAT_TEXTUREDIRECTUV = 0;
+            defines.CLEARCOAT_TEXTURE_ROUGHNESSDIRECTUV = 0;
+            defines.CLEARCOAT_BUMPDIRECTUV = 0;
+            defines.CLEARCOAT_REMAP_F0 = false;
+            defines.CLEARCOAT_TINT_TEXTUREDIRECTUV = 0;
+            defines.CLEARCOAT_TINT_GAMMATEXTURE = false;
         }
     }
 

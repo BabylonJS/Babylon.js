@@ -149,7 +149,7 @@ export enum HandPart {
  * Joints of the hand as defined by the WebXR specification.
  * https://immersive-web.github.io/webxr-hand-input/#skeleton-joints-section
  */
-export enum XRHandJoint {
+export enum WebXRHandJoint {
     /** Wrist */
     WRIST = "wrist",
 
@@ -208,66 +208,66 @@ export enum XRHandJoint {
 }
 
 /** A type encapsulating a dictionary mapping WebXR joints to bone names in a rigged hand mesh.  */
-export type XRHandMeshRigMapping = { [webXRJointName in XRHandJoint]: string };
+export type XRHandMeshRigMapping = { [webXRJointName in WebXRHandJoint]: string };
 
-const handJointReferenceArray: XRHandJoint[] = [
-    XRHandJoint.WRIST,
-    XRHandJoint.THUMB_METACARPAL,
-    XRHandJoint.THUMB_PHALANX_PROXIMAL,
-    XRHandJoint.THUMB_PHALANX_DISTAL,
-    XRHandJoint.THUMB_TIP,
-    XRHandJoint.INDEX_FINGER_METACARPAL,
-    XRHandJoint.INDEX_FINGER_PHALANX_PROXIMAL,
-    XRHandJoint.INDEX_FINGER_PHALANX_INTERMEDIATE,
-    XRHandJoint.INDEX_FINGER_PHALANX_DISTAL,
-    XRHandJoint.INDEX_FINGER_TIP,
-    XRHandJoint.MIDDLE_FINGER_METACARPAL,
-    XRHandJoint.MIDDLE_FINGER_PHALANX_PROXIMAL,
-    XRHandJoint.MIDDLE_FINGER_PHALANX_INTERMEDIATE,
-    XRHandJoint.MIDDLE_FINGER_PHALANX_DISTAL,
-    XRHandJoint.MIDDLE_FINGER_TIP,
-    XRHandJoint.RING_FINGER_METACARPAL,
-    XRHandJoint.RING_FINGER_PHALANX_PROXIMAL,
-    XRHandJoint.RING_FINGER_PHALANX_INTERMEDIATE,
-    XRHandJoint.RING_FINGER_PHALANX_DISTAL,
-    XRHandJoint.RING_FINGER_TIP,
-    XRHandJoint.PINKY_FINGER_METACARPAL,
-    XRHandJoint.PINKY_FINGER_PHALANX_PROXIMAL,
-    XRHandJoint.PINKY_FINGER_PHALANX_INTERMEDIATE,
-    XRHandJoint.PINKY_FINGER_PHALANX_DISTAL,
-    XRHandJoint.PINKY_FINGER_TIP,
+const handJointReferenceArray: WebXRHandJoint[] = [
+    WebXRHandJoint.WRIST,
+    WebXRHandJoint.THUMB_METACARPAL,
+    WebXRHandJoint.THUMB_PHALANX_PROXIMAL,
+    WebXRHandJoint.THUMB_PHALANX_DISTAL,
+    WebXRHandJoint.THUMB_TIP,
+    WebXRHandJoint.INDEX_FINGER_METACARPAL,
+    WebXRHandJoint.INDEX_FINGER_PHALANX_PROXIMAL,
+    WebXRHandJoint.INDEX_FINGER_PHALANX_INTERMEDIATE,
+    WebXRHandJoint.INDEX_FINGER_PHALANX_DISTAL,
+    WebXRHandJoint.INDEX_FINGER_TIP,
+    WebXRHandJoint.MIDDLE_FINGER_METACARPAL,
+    WebXRHandJoint.MIDDLE_FINGER_PHALANX_PROXIMAL,
+    WebXRHandJoint.MIDDLE_FINGER_PHALANX_INTERMEDIATE,
+    WebXRHandJoint.MIDDLE_FINGER_PHALANX_DISTAL,
+    WebXRHandJoint.MIDDLE_FINGER_TIP,
+    WebXRHandJoint.RING_FINGER_METACARPAL,
+    WebXRHandJoint.RING_FINGER_PHALANX_PROXIMAL,
+    WebXRHandJoint.RING_FINGER_PHALANX_INTERMEDIATE,
+    WebXRHandJoint.RING_FINGER_PHALANX_DISTAL,
+    WebXRHandJoint.RING_FINGER_TIP,
+    WebXRHandJoint.PINKY_FINGER_METACARPAL,
+    WebXRHandJoint.PINKY_FINGER_PHALANX_PROXIMAL,
+    WebXRHandJoint.PINKY_FINGER_PHALANX_INTERMEDIATE,
+    WebXRHandJoint.PINKY_FINGER_PHALANX_DISTAL,
+    WebXRHandJoint.PINKY_FINGER_TIP,
 ];
 
-const handPartsDefinition: { [key in HandPart]: XRHandJoint[] } = {
-    [HandPart.WRIST]: [XRHandJoint.WRIST],
-    [HandPart.THUMB]: [XRHandJoint.THUMB_METACARPAL, XRHandJoint.THUMB_PHALANX_PROXIMAL, XRHandJoint.THUMB_PHALANX_DISTAL, XRHandJoint.THUMB_TIP],
+const handPartsDefinition: { [key in HandPart]: WebXRHandJoint[] } = {
+    [HandPart.WRIST]: [WebXRHandJoint.WRIST],
+    [HandPart.THUMB]: [WebXRHandJoint.THUMB_METACARPAL, WebXRHandJoint.THUMB_PHALANX_PROXIMAL, WebXRHandJoint.THUMB_PHALANX_DISTAL, WebXRHandJoint.THUMB_TIP],
     [HandPart.INDEX]: [
-        XRHandJoint.INDEX_FINGER_METACARPAL,
-        XRHandJoint.INDEX_FINGER_PHALANX_PROXIMAL,
-        XRHandJoint.INDEX_FINGER_PHALANX_INTERMEDIATE,
-        XRHandJoint.INDEX_FINGER_PHALANX_DISTAL,
-        XRHandJoint.INDEX_FINGER_TIP,
+        WebXRHandJoint.INDEX_FINGER_METACARPAL,
+        WebXRHandJoint.INDEX_FINGER_PHALANX_PROXIMAL,
+        WebXRHandJoint.INDEX_FINGER_PHALANX_INTERMEDIATE,
+        WebXRHandJoint.INDEX_FINGER_PHALANX_DISTAL,
+        WebXRHandJoint.INDEX_FINGER_TIP,
     ],
     [HandPart.MIDDLE]: [
-        XRHandJoint.MIDDLE_FINGER_METACARPAL,
-        XRHandJoint.MIDDLE_FINGER_PHALANX_PROXIMAL,
-        XRHandJoint.MIDDLE_FINGER_PHALANX_INTERMEDIATE,
-        XRHandJoint.MIDDLE_FINGER_PHALANX_DISTAL,
-        XRHandJoint.MIDDLE_FINGER_TIP,
+        WebXRHandJoint.MIDDLE_FINGER_METACARPAL,
+        WebXRHandJoint.MIDDLE_FINGER_PHALANX_PROXIMAL,
+        WebXRHandJoint.MIDDLE_FINGER_PHALANX_INTERMEDIATE,
+        WebXRHandJoint.MIDDLE_FINGER_PHALANX_DISTAL,
+        WebXRHandJoint.MIDDLE_FINGER_TIP,
     ],
     [HandPart.RING]: [
-        XRHandJoint.RING_FINGER_METACARPAL,
-        XRHandJoint.RING_FINGER_PHALANX_PROXIMAL,
-        XRHandJoint.RING_FINGER_PHALANX_INTERMEDIATE,
-        XRHandJoint.RING_FINGER_PHALANX_DISTAL,
-        XRHandJoint.RING_FINGER_TIP,
+        WebXRHandJoint.RING_FINGER_METACARPAL,
+        WebXRHandJoint.RING_FINGER_PHALANX_PROXIMAL,
+        WebXRHandJoint.RING_FINGER_PHALANX_INTERMEDIATE,
+        WebXRHandJoint.RING_FINGER_PHALANX_DISTAL,
+        WebXRHandJoint.RING_FINGER_TIP,
     ],
     [HandPart.LITTLE]: [
-        XRHandJoint.PINKY_FINGER_METACARPAL,
-        XRHandJoint.PINKY_FINGER_PHALANX_PROXIMAL,
-        XRHandJoint.PINKY_FINGER_PHALANX_INTERMEDIATE,
-        XRHandJoint.PINKY_FINGER_PHALANX_DISTAL,
-        XRHandJoint.PINKY_FINGER_TIP,
+        WebXRHandJoint.PINKY_FINGER_METACARPAL,
+        WebXRHandJoint.PINKY_FINGER_PHALANX_PROXIMAL,
+        WebXRHandJoint.PINKY_FINGER_PHALANX_INTERMEDIATE,
+        WebXRHandJoint.PINKY_FINGER_PHALANX_DISTAL,
+        WebXRHandJoint.PINKY_FINGER_TIP,
     ],
 };
 
@@ -315,7 +315,7 @@ export class WebXRHand implements IDisposable {
      * @param jointName The name of the joint.
      * @returns An AbstractMesh whose position corresponds with the joint position.
      */
-    public getJointMesh(jointName: XRHandJoint): AbstractMesh {
+    public getJointMesh(jointName: WebXRHandJoint): AbstractMesh {
         return this._jointMeshes[handJointReferenceArray.indexOf(jointName)!];
     }
 
@@ -640,31 +640,31 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
     private static _GenerateDefaultHandMeshRigMapping(handedness: XRHandedness): XRHandMeshRigMapping {
         const H = handedness == "right" ? "R" : "L";
         return {
-            [XRHandJoint.WRIST]: `wrist_${H}`,
-            [XRHandJoint.THUMB_METACARPAL]: `thumb_metacarpal_${H}`,
-            [XRHandJoint.THUMB_PHALANX_PROXIMAL]: `thumb_proxPhalanx_${H}`,
-            [XRHandJoint.THUMB_PHALANX_DISTAL]: `thumb_distPhalanx_${H}`,
-            [XRHandJoint.THUMB_TIP]: `thumb_tip_${H}`,
-            [XRHandJoint.INDEX_FINGER_METACARPAL]: `index_metacarpal_${H}`,
-            [XRHandJoint.INDEX_FINGER_PHALANX_PROXIMAL]: `index_proxPhalanx_${H}`,
-            [XRHandJoint.INDEX_FINGER_PHALANX_INTERMEDIATE]: `index_intPhalanx_${H}`,
-            [XRHandJoint.INDEX_FINGER_PHALANX_DISTAL]: `index_distPhalanx_${H}`,
-            [XRHandJoint.INDEX_FINGER_TIP]: `index_tip_${H}`,
-            [XRHandJoint.MIDDLE_FINGER_METACARPAL]: `middle_metacarpal_${H}`,
-            [XRHandJoint.MIDDLE_FINGER_PHALANX_PROXIMAL]: `middle_proxPhalanx_${H}`,
-            [XRHandJoint.MIDDLE_FINGER_PHALANX_INTERMEDIATE]: `middle_intPhalanx_${H}`,
-            [XRHandJoint.MIDDLE_FINGER_PHALANX_DISTAL]: `middle_distPhalanx_${H}`,
-            [XRHandJoint.MIDDLE_FINGER_TIP]: `middle_tip_${H}`,
-            [XRHandJoint.RING_FINGER_METACARPAL]: `ring_metacarpal_${H}`,
-            [XRHandJoint.RING_FINGER_PHALANX_PROXIMAL]: `ring_proxPhalanx_${H}`,
-            [XRHandJoint.RING_FINGER_PHALANX_INTERMEDIATE]: `ring_intPhalanx_${H}`,
-            [XRHandJoint.RING_FINGER_PHALANX_DISTAL]: `ring_distPhalanx_${H}`,
-            [XRHandJoint.RING_FINGER_TIP]: `ring_tip_${H}`,
-            [XRHandJoint.PINKY_FINGER_METACARPAL]: `little_metacarpal_${H}`,
-            [XRHandJoint.PINKY_FINGER_PHALANX_PROXIMAL]: `little_proxPhalanx_${H}`,
-            [XRHandJoint.PINKY_FINGER_PHALANX_INTERMEDIATE]: `little_intPhalanx_${H}`,
-            [XRHandJoint.PINKY_FINGER_PHALANX_DISTAL]: `little_distPhalanx_${H}`,
-            [XRHandJoint.PINKY_FINGER_TIP]: `little_tip_${H}`,
+            [WebXRHandJoint.WRIST]: `wrist_${H}`,
+            [WebXRHandJoint.THUMB_METACARPAL]: `thumb_metacarpal_${H}`,
+            [WebXRHandJoint.THUMB_PHALANX_PROXIMAL]: `thumb_proxPhalanx_${H}`,
+            [WebXRHandJoint.THUMB_PHALANX_DISTAL]: `thumb_distPhalanx_${H}`,
+            [WebXRHandJoint.THUMB_TIP]: `thumb_tip_${H}`,
+            [WebXRHandJoint.INDEX_FINGER_METACARPAL]: `index_metacarpal_${H}`,
+            [WebXRHandJoint.INDEX_FINGER_PHALANX_PROXIMAL]: `index_proxPhalanx_${H}`,
+            [WebXRHandJoint.INDEX_FINGER_PHALANX_INTERMEDIATE]: `index_intPhalanx_${H}`,
+            [WebXRHandJoint.INDEX_FINGER_PHALANX_DISTAL]: `index_distPhalanx_${H}`,
+            [WebXRHandJoint.INDEX_FINGER_TIP]: `index_tip_${H}`,
+            [WebXRHandJoint.MIDDLE_FINGER_METACARPAL]: `middle_metacarpal_${H}`,
+            [WebXRHandJoint.MIDDLE_FINGER_PHALANX_PROXIMAL]: `middle_proxPhalanx_${H}`,
+            [WebXRHandJoint.MIDDLE_FINGER_PHALANX_INTERMEDIATE]: `middle_intPhalanx_${H}`,
+            [WebXRHandJoint.MIDDLE_FINGER_PHALANX_DISTAL]: `middle_distPhalanx_${H}`,
+            [WebXRHandJoint.MIDDLE_FINGER_TIP]: `middle_tip_${H}`,
+            [WebXRHandJoint.RING_FINGER_METACARPAL]: `ring_metacarpal_${H}`,
+            [WebXRHandJoint.RING_FINGER_PHALANX_PROXIMAL]: `ring_proxPhalanx_${H}`,
+            [WebXRHandJoint.RING_FINGER_PHALANX_INTERMEDIATE]: `ring_intPhalanx_${H}`,
+            [WebXRHandJoint.RING_FINGER_PHALANX_DISTAL]: `ring_distPhalanx_${H}`,
+            [WebXRHandJoint.RING_FINGER_TIP]: `ring_tip_${H}`,
+            [WebXRHandJoint.PINKY_FINGER_METACARPAL]: `little_metacarpal_${H}`,
+            [WebXRHandJoint.PINKY_FINGER_PHALANX_PROXIMAL]: `little_proxPhalanx_${H}`,
+            [WebXRHandJoint.PINKY_FINGER_PHALANX_INTERMEDIATE]: `little_intPhalanx_${H}`,
+            [WebXRHandJoint.PINKY_FINGER_PHALANX_DISTAL]: `little_distPhalanx_${H}`,
+            [WebXRHandJoint.PINKY_FINGER_TIP]: `little_tip_${H}`,
         };
     }
 

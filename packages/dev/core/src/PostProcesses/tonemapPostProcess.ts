@@ -4,6 +4,7 @@ import { PostProcess } from "./postProcess";
 import { Constants } from "../Engines/constants";
 
 import "../Shaders/tonemap.fragment";
+import type { Nullable } from "../types";
 
 declare type Engine = import("../Engines/engine").Engine;
 
@@ -47,7 +48,7 @@ export class TonemapPostProcess extends PostProcess {
         private _operator: TonemappingOperator,
         /** Defines the required exposure adjustment */
         public exposureAdjustment: number,
-        camera: Camera,
+        camera: Nullable<Camera>,
         samplingMode: number = Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
         engine?: Engine,
         textureFormat = Constants.TEXTURETYPE_UNSIGNED_INT,

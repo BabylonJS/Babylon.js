@@ -13,8 +13,8 @@ declare type PrePassRenderer = import("../../Rendering/prePassRenderer").PrePass
  * @see https://doc.babylonjs.com/how_to/how_to_use_postprocessrenderpipeline
  */
 export class PostProcessRenderPipeline {
-    private _renderEffects: { [key: string]: PostProcessRenderEffect };
-    private _renderEffectsForIsolatedPass: PostProcessRenderEffect[];
+    protected _renderEffects: { [key: string]: PostProcessRenderEffect };
+    protected _renderEffectsForIsolatedPass: PostProcessRenderEffect[];
 
     /**
      * List of inspectable custom properties (used by the Inspector)

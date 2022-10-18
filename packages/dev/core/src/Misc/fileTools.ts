@@ -216,9 +216,23 @@ export const LoadImage = (
     const img = new Image();
     SetCorsBehavior(url, img);
 
+    const handlersList: { target: any; name: string; handler: any }[] = [];
+
+    const loadHandlersList = () => {
+        handlersList.forEach((handler) => {
+            handler.target.addEventListener(handler.name, handler.handler);
+        });
+    };
+
+    const unloadHandlersList = () => {
+        handlersList.forEach((handler) => {
+            handler.target.removeEventListener(handler.name, handler.handler);
+        });
+        handlersList.length = 0;
+    };
+
     const loadHandler = () => {
-        img.removeEventListener("load", loadHandler);
-        img.removeEventListener("error", errorHandler);
+        unloadHandlersList();
 
         onLoad(img);
 
@@ -230,8 +244,7 @@ export const LoadImage = (
     };
 
     const errorHandler = (err: any) => {
-        img.removeEventListener("load", loadHandler);
-        img.removeEventListener("error", errorHandler);
+        unloadHandlersList();
 
         onErrorHandler(err);
 
@@ -240,8 +253,23 @@ export const LoadImage = (
         }
     };
 
-    img.addEventListener("load", loadHandler);
-    img.addEventListener("error", errorHandler);
+    const cspHandler = (err: any) => {
+        unloadHandlersList();
+        const cspException = new Error(`CSP violation of policy ${err.effectiveDirective} ${err.blockedURI}. Current policy is ${err.originalPolicy}`);
+
+        EngineStore.UseFallbackTexture = false;
+        onErrorHandler(cspException);
+        if (usingObjectURL && img.src) {
+            URL.revokeObjectURL(img.src);
+        }
+        img.src = "";
+    };
+
+    handlersList.push({ target: img, name: "load", handler: loadHandler });
+    handlersList.push({ target: img, name: "error", handler: errorHandler });
+    handlersList.push({ target: document, name: "securitypolicyviolation", handler: cspHandler });
+
+    loadHandlersList();
 
     const fromBlob = url.substring(0, 5) === "blob:";
     const fromData = url.substring(0, 5) === "data:";

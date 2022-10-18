@@ -6,6 +6,7 @@ import { Texture } from "../Materials/Textures/texture";
 import { PostProcess } from "./postProcess";
 
 import "../Shaders/vrDistortionCorrection.fragment";
+import type { Nullable } from "../types";
 
 /**
  * VRDistortionCorrectionPostProcess used for mobile VR
@@ -34,7 +35,7 @@ export class VRDistortionCorrectionPostProcess extends PostProcess {
      * @param isRightEye If this is for the right eye distortion
      * @param vrMetrics All the required metrics for the VR camera
      */
-    constructor(name: string, camera: Camera, isRightEye: boolean, vrMetrics: VRCameraMetrics) {
+    constructor(name: string, camera: Nullable<Camera>, isRightEye: boolean, vrMetrics: VRCameraMetrics) {
         super(name, "vrDistortionCorrection", ["LensCenter", "Scale", "ScaleIn", "HmdWarpParam"], null, vrMetrics.postProcessScaleFactor, camera, Texture.BILINEAR_SAMPLINGMODE);
 
         this._isRightEye = isRightEye;

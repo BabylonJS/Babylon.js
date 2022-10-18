@@ -2,6 +2,12 @@
     --selectionGrey: #666666;
 }
 
+* {
+    font-family: "acumin-pro-condensed";
+    font-weight: 600;
+    font-size: 12px;
+}
+
 .commandBar {
     background-color: #333333;
     display: flex;

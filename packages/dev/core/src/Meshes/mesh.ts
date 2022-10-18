@@ -2188,7 +2188,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this._internalMeshDataInfo._onBeforeRenderObservable.notifyObservers(this);
         }
 
-        const hardwareInstancedRendering = batch.hardwareInstancedRendering[subMesh._id] || subMesh.getRenderingMesh().hasThinInstances || !!this._userInstancedBuffersStorage;
+        const renderingMesh = subMesh.getRenderingMesh();
+        const hardwareInstancedRendering =
+            batch.hardwareInstancedRendering[subMesh._id] ||
+            renderingMesh.hasThinInstances ||
+            (!!this._userInstancedBuffersStorage && !subMesh.getMesh()._internalAbstractMeshDataInfo._actAsRegularMesh);
         const instanceDataStorage = this._instanceDataStorage;
 
         const material = subMesh.getMaterial();
@@ -3338,6 +3342,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         const currentIndices = vertex_data.indices;
         const currentPositions = vertex_data.positions;
         const currentColors = vertex_data.colors;
+        const currentMatrixIndices = vertex_data.matricesIndices;
+        const currentMatrixWeights = vertex_data.matricesWeights;
+        const currentMatrixIndicesExtra = vertex_data.matricesIndicesExtra;
+        const currentMatrixWeightsExtra = vertex_data.matricesWeightsExtra;
 
         if (currentIndices === void 0 || currentPositions === void 0 || currentIndices === null || currentPositions === null) {
             Logger.Warn("VertexData contains empty entries");
@@ -3346,6 +3354,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             const indices: Array<number> = new Array();
             const uvs: Array<number> = new Array();
             const colors: Array<number> = new Array();
+            const matrixIndices: Array<number> = new Array();
+            const matrixWeights: Array<number> = new Array();
+            const matrixIndicesExtra: Array<number> = new Array();
+            const matrixWeightsExtra: Array<number> = new Array();
             let pstring: Array<string> = new Array(); //lists facet vertex positions (a,b,c) as string "a|b|c"
 
             let indexPtr: number = 0; // pointer to next available index value
@@ -3391,6 +3403,26 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                                     uvs.push(currentUVs[2 * facet[j] + k]);
                                 }
                             }
+                            if (currentMatrixIndices !== null && currentMatrixIndices !== void 0) {
+                                for (let k = 0; k < 4; k++) {
+                                    matrixIndices.push(currentMatrixIndices[4 * facet[j] + k]);
+                                }
+                            }
+                            if (currentMatrixWeights !== null && currentMatrixWeights !== void 0) {
+                                for (let k = 0; k < 4; k++) {
+                                    matrixWeights.push(currentMatrixWeights[4 * facet[j] + k]);
+                                }
+                            }
+                            if (currentMatrixIndicesExtra !== null && currentMatrixIndicesExtra !== void 0) {
+                                for (let k = 0; k < 4; k++) {
+                                    matrixIndicesExtra.push(currentMatrixIndicesExtra[4 * facet[j] + k]);
+                                }
+                            }
+                            if (currentMatrixWeightsExtra !== null && currentMatrixWeightsExtra !== void 0) {
+                                for (let k = 0; k < 4; k++) {
+                                    matrixWeightsExtra.push(currentMatrixWeightsExtra[4 * facet[j] + k]);
+                                }
+                            }
                         }
                         // add new index pointer to indices array
                         indices.push(ptr);
@@ -3410,6 +3442,18 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
             if (currentColors !== null && currentColors !== void 0) {
                 vertex_data.colors = colors;
+            }
+            if (currentMatrixIndices !== null && currentMatrixIndices !== void 0) {
+                vertex_data.matricesIndices = matrixIndices;
+            }
+            if (currentMatrixWeights !== null && currentMatrixWeights !== void 0) {
+                vertex_data.matricesWeights = matrixWeights;
+            }
+            if (currentMatrixIndicesExtra !== null && currentMatrixIndicesExtra !== void 0) {
+                vertex_data.matricesIndicesExtra = matrixIndicesExtra;
+            }
+            if (currentMatrixWeights !== null && currentMatrixWeights !== void 0) {
+                vertex_data.matricesWeightsExtra = matrixWeightsExtra;
             }
 
             vertex_data.applyToMesh(this, this.isVertexBufferUpdatable(VertexBuffer.PositionKind));
@@ -3512,7 +3556,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Serialize current mesh
      * @param serializationObject defines the object which will receive the serialization data
      */
-    public serialize(serializationObject: any): void {
+    public serialize(serializationObject: any = {}): any {
         serializationObject.name = this.name;
         serializationObject.id = this.id;
         serializationObject.uniqueId = this.uniqueId;
@@ -3720,6 +3764,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (this.actionManager) {
             serializationObject.actions = this.actionManager.serialize(this.name);
         }
+
+        return serializationObject;
     }
 
     /** @internal */

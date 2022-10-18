@@ -189,6 +189,9 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
             defines.SHEEN_ALBEDOSCALING = false;
             defines.SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE = false;
             defines.SHEEN_TEXTURE_ROUGHNESS_IDENTICAL = false;
+            defines.SHEEN_GAMMATEXTURE = false;
+            defines.SHEEN_TEXTUREDIRECTUV = 0;
+            defines.SHEEN_TEXTURE_ROUGHNESSDIRECTUV = 0;
         }
     }
 

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 import type { Nullable } from "core/types";
 import { Scalar } from "core/Maths/math.scalar";
 import { SphericalHarmonics, SphericalPolynomial } from "core/Maths/sphericalPolynomial";
@@ -15,6 +14,7 @@ const NAME = "EXT_lights_image_based";
 
 declare module "babylonjs-gltf2interface" {
     /** @internal */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     interface IEXTLightsImageBased_LightImageBased {
         _babylonTexture?: BaseTexture;
         _loaded?: Promise<void>;
@@ -22,8 +22,9 @@ declare module "babylonjs-gltf2interface" {
 }
 
 /**
- * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Vendor/EXT_lights_image_based/README.md)
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_lights_image_based/README.md)
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class EXT_lights_image_based implements IGLTFLoaderExtension {
     /**
      * The name of this extension.

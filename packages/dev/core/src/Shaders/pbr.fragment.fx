@@ -670,7 +670,11 @@ void main(void) {
     #endif
 
     #ifdef PREPASS_REFLECTIVITY
-        gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(toGammaSpace(specularEnvironmentR0), microSurface) * writeGeometryInfo;
+        #ifndef UNLIT
+            gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(toGammaSpace(specularEnvironmentR0), microSurface) * writeGeometryInfo;
+        #else
+            gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4( 0.0, 0.0, 0.0, 1.0 ) * writeGeometryInfo;
+        #endif
     #endif
 #endif
 

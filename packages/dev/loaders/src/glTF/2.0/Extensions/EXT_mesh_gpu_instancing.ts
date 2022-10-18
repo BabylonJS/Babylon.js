@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 import { Vector3, Quaternion, Matrix, TmpVectors } from "core/Maths/math.vector";
 import type { Mesh } from "core/Meshes/mesh";
 import type { TransformNode } from "core/Meshes/transformNode";
@@ -14,10 +13,10 @@ import "core/Meshes/thinInstanceMesh";
 const NAME = "EXT_mesh_gpu_instancing";
 
 /**
- * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1691)
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_mesh_gpu_instancing/README.md)
  * [Playground Sample](https://playground.babylonjs.com/#QFIGLW#9)
- * !!! Experimental Extension Subject to Changes !!!
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class EXT_mesh_gpu_instancing implements IGLTFLoaderExtension {
     /**
      * The name of this extension.

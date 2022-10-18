@@ -369,6 +369,43 @@ export class Material implements IAnimatable {
         return this._cullBackFaces;
     }
 
+    private _blockDirtyMechanism = false;
+
+    /**
+     * Block the dirty-mechanism for this specific material
+     * When set to false after being true the material will be marked as dirty.
+     */
+    public get blockDirtyMechanism(): boolean {
+        return this._blockDirtyMechanism;
+    }
+
+    public set blockDirtyMechanism(value: boolean) {
+        if (this._blockDirtyMechanism === value) {
+            return;
+        }
+
+        this._blockDirtyMechanism = value;
+
+        if (!value) {
+            this.markDirty();
+        }
+    }
+
+    /**
+     * This allows you to modify the material without marking it as dirty after every change.
+     * This function should be used if you need to make more than one dirty-enabling change to the material - adding a texture, setting a new fill mode and so on.
+     * The callback will pass the material as an argument, so you can make your changes to it.
+     * @param callback the callback to be executed that will update the material
+     */
+    public atomicMaterialsUpdate(callback: (material: this) => void): void {
+        this.blockDirtyMechanism = true;
+        try {
+            callback(this);
+        } finally {
+            this.blockDirtyMechanism = false;
+        }
+    }
+
     /**
      * Stores the value for side orientation
      */
@@ -1436,7 +1473,7 @@ export class Material implements IAnimatable {
      * @param flag defines a flag used to determine which parts of the material have to be marked as dirty
      */
     public markAsDirty(flag: number): void {
-        if (this.getScene().blockMaterialDirtyMechanism) {
+        if (this.getScene().blockMaterialDirtyMechanism || this._blockDirtyMechanism) {
             return;
         }
 
@@ -1497,7 +1534,7 @@ export class Material implements IAnimatable {
      * @param func defines a function which checks material defines against the submeshes
      */
     protected _markAllSubMeshesAsDirty(func: (defines: MaterialDefines) => void) {
-        if (this.getScene().blockMaterialDirtyMechanism) {
+        if (this.getScene().blockMaterialDirtyMechanism || this._blockDirtyMechanism) {
             return;
         }
 
@@ -1528,7 +1565,7 @@ export class Material implements IAnimatable {
      * Indicates that the scene should check if the rendering now needs a prepass
      */
     protected _markScenePrePassDirty() {
-        if (this.getScene().blockMaterialDirtyMechanism) {
+        if (this.getScene().blockMaterialDirtyMechanism || this._blockDirtyMechanism) {
             return;
         }
 

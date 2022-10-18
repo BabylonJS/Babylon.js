@@ -41,7 +41,7 @@ You can use Gitpod (A free online VS Code like IDE) for contributing online. Wit
 
 - clone the BabylonJS repo.
 - install the dependencies.
-- run `npm run start` in `Tools/Gulp`.
+- run `npm run start`.
 
 so that you can start straight away.
 
@@ -58,9 +58,9 @@ If you intent to only update the doc, this [documentation](https://doc.babylonjs
 
 To validate your PR, please follow these steps:
 
-- Run "gulp" locally and make sure that no error is generated
-- Make sure that all public functions and classes are commented using JSDoc syntax
-- Make sure to add a line about your PR in the [what's new](https://github.com/BabylonJS/Babylon.js/blob/master/what's%20new.md)
+- Run "npm run build:dev" locally and make sure that no error is generated
+- Make sure that all public functions and classes are commented using JSDoc/TSDoc syntax
+- Run `npm run test:unit` for unit tests, and check the buildSystem.md file for information regarding the visualization tests.
 
 ## What should go where
 
