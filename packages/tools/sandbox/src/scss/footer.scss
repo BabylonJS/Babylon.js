@@ -110,6 +110,7 @@
                 text-align: center;
                 color: inherit;
                 outline: none;
+                text-overflow: ellipsis;
 
                 &:focus {
                     border: solid 1px white;
