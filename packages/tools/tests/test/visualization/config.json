@@ -5,7 +5,7 @@
             "title": "Negative scaling with instances",
             "playgroundId": "#Z3YS9T#0",
             "referenceImage": "negative scaling with instances.png"
-        },  
+        },
         {
             "title": "Iridescence",
             "playgroundId": "#2FDQT5#1505",
@@ -1475,6 +1475,18 @@
             "title": "Billboard with scaled parent",
             "playgroundId": "#1ZMALK",
             "referenceImage": "billboardParentScale.png"
+        },
+        {
+            "title": "Load GUI snippet with unicode",
+            "playgroundId": "#YS93KY",
+            "referenceImage": "loadGuiSnippetWithUnicode.png",
+            "renderCount": 50
+        },
+        {
+            "title": "Parse GUI json with unicode",
+            "playgroundId": "#ERVGT5",
+            "referenceImage": "parseGuiJsonWithUnicode.png",
+            "renderCount": 50
         }
     ]
 }
