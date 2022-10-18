@@ -326,7 +326,8 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
             verticalAlignment = (firstControl as TextBlock).textVerticalAlignment;
         }
 
-        const showTextProperties = firstControl instanceof Container || firstControl.typeName === "TextBlock";
+        const showTextProperties =
+            firstControl instanceof Container || firstControl.typeName === "TextBlock" || firstControl.typeName === "InputText" || firstControl.typeName === "InputPassword";
 
         const proxy = makeTargetsProxy(controls, this.props.onPropertyChangedObservable);
         const getValue = (propertyName: ControlProperty) => {
