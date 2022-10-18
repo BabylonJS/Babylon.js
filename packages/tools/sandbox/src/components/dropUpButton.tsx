@@ -57,7 +57,7 @@ export class DropUpButton extends React.Component<IDropUpButtonProps, { isOpen: 
             return null;
         }
 
-        const searchPlaceholder = this.props.searchPlaceholder ? this.props.searchPlaceholder : "Search...";
+        const searchPlaceholder = this.props.searchPlaceholder ?? "Search...";
 
         return (
             <div className="dropup">
