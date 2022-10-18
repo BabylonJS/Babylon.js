@@ -4,6 +4,7 @@ import { Logger } from "../../Misc/logger";
 import type { Nullable } from "../../types";
 import type { Scene } from "../../scene";
 import { Texture } from "../../Materials/Textures/texture";
+import { Constants } from "../../Engines/constants";
 
 import "../../Engines/Extensions/engine.videoTexture";
 import "../../Engines/Extensions/engine.dynamicTexture";
@@ -52,6 +53,11 @@ export interface VideoTextureSettings {
      * Image src displayed during the video loading or until the user interacts with the video.
      */
     poster?: string;
+
+    /**
+     * Defines the associated texture format.
+     */
+    format?: number;
 }
 
 /**
@@ -137,6 +143,7 @@ export class VideoTexture extends Texture {
      * @param samplingMode controls the sampling method and is set to TRILINEAR_SAMPLINGMODE by default
      * @param settings allows finer control over video usage
      * @param onError defines a callback triggered when an error occurred during the loading session
+     * @param format defines the texture format to use (Engine.TEXTUREFORMAT_RGBA by default)
      */
     constructor(
         name: Nullable<string>,
@@ -146,7 +153,8 @@ export class VideoTexture extends Texture {
         invertY = false,
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
         settings: Partial<VideoTextureSettings> = {},
-        onError?: Nullable<(message?: string, exception?: any) => void>
+        onError?: Nullable<(message?: string, exception?: any) => void>,
+        format: number = Constants.TEXTUREFORMAT_RGBA,
     ) {
         super(null, scene, !generateMipMaps, invertY);
 
@@ -190,6 +198,8 @@ export class VideoTexture extends Texture {
         if (this._settings.autoPlay) {
             this._handlePlay();
         }
+
+        this._format = format;
 
         const videoHasEnoughData = this.video.readyState >= this.video.HAVE_CURRENT_DATA;
         if (this._settings.poster && (!this._settings.autoPlay || !videoHasEnoughData)) {
@@ -268,6 +278,7 @@ export class VideoTexture extends Texture {
         }
 
         this._texture = this._getEngine()!.createDynamicTexture(this.video.videoWidth, this.video.videoHeight, this._generateMipMaps, this.samplingMode);
+        this._texture.format = this._format ?? Constants.TEXTUREFORMAT_RGBA;
 
         if (!this.video.autoplay && !this._settings.poster) {
             const oldHandler = this.video.onplaying;
@@ -438,7 +449,7 @@ export class VideoTexture extends Texture {
 
         return new Promise<VideoTexture>((resolve) => {
             const onPlaying = () => {
-                const videoTexture = new VideoTexture("video", video, scene, true, invertY);
+                const videoTexture = new VideoTexture("video", video, scene, true, invertY, undefined, undefined, undefined, Constants.TEXTUREFORMAT_RGB);
                 if (scene.getEngine()._badOS) {
                     videoTexture.onDisposeObservable.addOnce(() => {
                         video.remove();
