@@ -16,6 +16,7 @@ interface IDropUpButtonProps {
     activeEntry: () => string;
     selectedOption?: string;
     onOptionPicked: (option: string, index: number) => void;
+    searchPlaceholder?: string;
 }
 
 export class DropUpButton extends React.Component<IDropUpButtonProps, { isOpen: boolean; searchText: string }> {
@@ -46,10 +47,7 @@ export class DropUpButton extends React.Component<IDropUpButtonProps, { isOpen: 
     }
 
     onChangeSearchText = (evt: React.ChangeEvent<HTMLInputElement>) => {
-        let text = evt.target.value;
-
-        // Perform some basic processing
-        text = text.trim();
+        const text = evt.target.value;
 
         this.setState({ searchText: text });
     };
@@ -58,6 +56,8 @@ export class DropUpButton extends React.Component<IDropUpButtonProps, { isOpen: 
         if (!this.props.enabled) {
             return null;
         }
+
+        const searchPlaceholder = this.props.searchPlaceholder ?? "Search...";
 
         return (
             <div className="dropup">
@@ -77,10 +77,10 @@ export class DropUpButton extends React.Component<IDropUpButtonProps, { isOpen: 
                 )}
                 {this.state.isOpen && (
                     <div className={"dropup-content" + (this.props.selectedOption ? " long-mode" : "")}>
-                        <input type="text" id="anim-search" placeholder="Search animation" value={this.state.searchText} onChange={this.onChangeSearchText} />
+                        <input type="text" placeholder={searchPlaceholder} value={this.state.searchText} onChange={this.onChangeSearchText} />
                         {this.props.options
                             .filter((o) => {
-                                return !this.state.searchText || o.toLowerCase().indexOf(this.state.searchText.toLowerCase()) > -1;
+                                return !this.state.searchText || o.toLowerCase().indexOf(this.state.searchText.toLowerCase().trim()) > -1;
                             })
                             .map((o, i) => {
                                 return (
