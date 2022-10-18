@@ -7,7 +7,6 @@ import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import type { PropertyChangedEvent } from "../../propertyChangedEvent";
 import { ColorPickerLineComponent } from "./ColorPickerLineComponent";
 import type { LockObject } from "../../tabs/propertyGrids/lockObject";
-// import { conflictingValuesPlaceholder } from "../../targetsProxy";
 import style from "./ColorLineComponent.modules.scss";
 
 import copyIcon from "../../imgs/copy.svg";
