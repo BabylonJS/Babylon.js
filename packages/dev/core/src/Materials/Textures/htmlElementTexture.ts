@@ -23,6 +23,10 @@ export interface IHtmlElementTextureOptions {
      */
     samplingMode?: number;
     /**
+     * Defines the associated texture format.
+     */
+    format?: number;
+    /**
      * Defines the engine instance to use the texture with. It is not mandatory if you define a scene.
      */
     engine: Nullable<ThinEngine>;
@@ -55,10 +59,12 @@ export class HtmlElementTexture extends BaseTexture {
     private static readonly _DefaultOptions: IHtmlElementTextureOptions = {
         generateMipMaps: false,
         samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+        format: Constants.TEXTUREFORMAT_RGBA,
         engine: null,
         scene: null,
     };
 
+    private readonly _format: number;
     private _textureMatrix: Matrix;
     private _isVideo: boolean;
     private _generateMipMaps: boolean;
@@ -86,6 +92,7 @@ export class HtmlElementTexture extends BaseTexture {
         this._generateMipMaps = options.generateMipMaps!;
         this._samplingMode = options.samplingMode!;
         this._textureMatrix = Matrix.Identity();
+        this._format = options.format!;
 
         this.name = name;
         this.element = element;
@@ -110,6 +117,7 @@ export class HtmlElementTexture extends BaseTexture {
         const engine = this._getEngine();
         if (engine) {
             this._texture = engine.createDynamicTexture(width, height, this._generateMipMaps, this._samplingMode);
+            this._texture.format = this._format;
         }
 
         this.update();
@@ -142,7 +150,7 @@ export class HtmlElementTexture extends BaseTexture {
             engine.updateVideoTexture(this._texture, videoElement, invertY === null ? true : invertY);
         } else {
             const canvasElement = this.element as HTMLCanvasElement;
-            engine.updateDynamicTexture(this._texture, canvasElement, invertY === null ? true : invertY, false);
+            engine.updateDynamicTexture(this._texture, canvasElement, invertY === null ? true : invertY, false, this._format);
         }
 
         if (!wasReady && this.isReady()) {
