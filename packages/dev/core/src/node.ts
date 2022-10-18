@@ -607,7 +607,6 @@ export class Node implements IBehaviorAware<Node> {
         }
         this._nodeDataStorage._isEnabled = value;
         this._syncParentEnabledState();
-
         this._nodeDataStorage._onEnabledStateChangedObservable.notifyObservers(value);
     }
 
