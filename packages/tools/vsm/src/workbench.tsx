@@ -1,7 +1,7 @@
 import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
-import { createContext, FC } from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, createContext, useRef } from "react";
+import type { FC } from "react";
 import { CommandBarComponent } from "shared-ui-components/components/bars/CommandBarComponent";
 import { FlexibleGridLayout } from "shared-ui-components/components/layout/FlexibleGridLayout";
 import { SceneContext } from "./SceneContext";
@@ -26,7 +26,10 @@ export const Workbench: FC<WorkbenchProps> = () => {
     const [workAreaColor, setWorkAreaColor] = useState(INITIAL_WORKBENCH_COLOR);
     const [scene, setScene] = useState<Nullable<Scene>>(null);
     const [selectedNode, setSelectedNode] = useState<Nullable<GraphNode>>(null);
-    const [stateValues, setStateValues] = useState<Record<string, Vector3>>({});
+    const stateValues = useRef<Record<string, Vector3>>({});
+    const setStateValues = (v: Record<string, Vector3>) => {
+        stateValues.current = v;
+    };
 
     useEffect(() => {
         const stateValues = {
@@ -43,7 +46,7 @@ export const Workbench: FC<WorkbenchProps> = () => {
             if (node) {
                 // Apply initial state
                 let currentState = "Sphere Origin";
-                node.position = stateValues[currentState];
+                node.position = stateValues.current[currentState];
 
                 node.metadata = {};
                 node.metadata.onStateChanged = new Observable<{ state: string }>();
@@ -59,7 +62,7 @@ export const Workbench: FC<WorkbenchProps> = () => {
                         currentState = "Sphere Origin";
                     }
                     // Execute action
-                    node.position = stateValues[currentState];
+                    node.position = stateValues.current[currentState];
 
                     node.metadata.onStateChanged.notifyObservers({ state: currentState });
                 };
@@ -70,7 +73,7 @@ export const Workbench: FC<WorkbenchProps> = () => {
     return (
         <SceneContext.Provider value={{ scene, setScene }}>
             <SelectionContext.Provider value={{ selectedNode, setSelectedNode }}>
-                <stateValuesProvider.Provider value={{ stateValues, setStateValues }}>
+                <stateValuesProvider.Provider value={{ stateValues: stateValues.current, setStateValues }}>
                     <div className={style.workbenchContainer}>
                         <CommandBarComponent
                             artboardColor={workAreaColor}
