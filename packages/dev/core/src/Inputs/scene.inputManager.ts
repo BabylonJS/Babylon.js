@@ -697,10 +697,9 @@ export class InputManager {
 
             // Check if pointer leaves DragMovementThreshold range to determine if swipe is occurring
             if (!this._isSwiping && this._swipeButtonPressed !== -1) {
-                this._isSwiping = (
+                this._isSwiping =
                     Math.abs(this._startingPointerPosition.x - this._pointerX) > InputManager.DragMovementThreshold ||
-                    Math.abs(this._startingPointerPosition.y - this._pointerY) > InputManager.DragMovementThreshold
-                );
+                    Math.abs(this._startingPointerPosition.y - this._pointerY) > InputManager.DragMovementThreshold;
             }
 
             this._processPointerMove(pickResult, evt as IPointerEvent);
