@@ -240,7 +240,7 @@ export class RenderingManager {
      * Resets the sprites information of the group to prepare a new frame
      * @internal
      */
-     public resetSprites(): void {
+    public resetSprites(): void {
         if (this.maintainStateBetweenFrames) {
             return;
         }
