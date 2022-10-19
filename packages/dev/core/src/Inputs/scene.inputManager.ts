@@ -89,6 +89,8 @@ export class InputManager {
     private _previousPickResult: Nullable<PickingInfo> = null;
     private _totalPointersPressed = 0;
     private _doubleClickOccured = false;
+    private _isSwiping: boolean = false;
+    private _swipeButtonPressed: number = -1;
 
     private _pointerOverMesh: Nullable<AbstractMesh>;
 
@@ -408,10 +410,7 @@ export class InputManager {
      * @internals Boolean if delta for pointer exceeds drag movement threshold
      */
     public _isPointerSwiping(): boolean {
-        return (
-            Math.abs(this._startingPointerPosition.x - this._pointerX) > InputManager.DragMovementThreshold ||
-            Math.abs(this._startingPointerPosition.y - this._pointerY) > InputManager.DragMovementThreshold
-        );
+        return this._isSwiping;
     }
 
     /**
@@ -725,6 +724,13 @@ export class InputManager {
                     (!scene.cameraToUseForPointers || (scene.cameraToUseForPointers.layerMask & mesh.layerMask) !== 0);
             }
 
+            // Check if pointer leaves DragMovementThreshold range to determine if swipe is occurring
+            if (!this._isSwiping && this._swipeButtonPressed !== -1) {
+                this._isSwiping =
+                    Math.abs(this._startingPointerPosition.x - this._pointerX) > InputManager.DragMovementThreshold ||
+                    Math.abs(this._startingPointerPosition.y - this._pointerY) > InputManager.DragMovementThreshold;
+            }
+
             const pickResult = scene._registeredActions > 0 ? this._pickMove((evt as IPointerEvent).pointerId) : null;
             this._processPointerMove(pickResult, evt as IPointerEvent);
         };
@@ -740,6 +746,10 @@ export class InputManager {
             }
 
             this._updatePointerPosition(evt);
+
+            if (this._swipeButtonPressed === -1) {
+                this._swipeButtonPressed = evt.button;
+            }
 
             if (scene.preventDefaultOnPointerDown && elementToAttachTo) {
                 evt.preventDefault();
@@ -857,6 +867,11 @@ export class InputManager {
                 this._processPointerUp(pickResult, evt, clickInfo);
 
                 this._previousPickResult = this._currentPickResult;
+
+                if (this._swipeButtonPressed === evt.button) {
+                    this._isSwiping = false;
+                    this._swipeButtonPressed = -1;
+                }
             });
         };
 
