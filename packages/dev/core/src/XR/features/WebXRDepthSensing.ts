@@ -1,6 +1,6 @@
 import { WebXRFeatureName, WebXRFeaturesManager } from "./../webXRFeaturesManager";
 import type { Observable } from "../../Misc/observable";
-import type { WebXRSessionManager } from "core/XR";
+import type { WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { Tools } from "../../Misc/tools";
 

@@ -80,6 +80,10 @@ export class NativeXRFrame implements XRFrame {
     public readonly getImageTrackingResults = (): XRImageTrackingResult[] => {
         return this._nativeImpl._imageTrackingResults ?? [];
     };
+
+    public getDepthInformation(view: XRView): XRCPUDepthInformation | null {
+        return this._nativeImpl.getDepthInformation(view);
+    }
 }
 
 RegisterNativeTypeAsync("NativeXRFrame", NativeXRFrame);
