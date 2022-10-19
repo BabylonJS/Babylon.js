@@ -1147,12 +1147,32 @@ interface XRLightProbe extends EventTarget {
  * https://immersive-web.github.io/dom-overlays/
  */
 
-type UsagePreferenceType = "cpu-optimized" | "gpu-optimized";
-type DataFormatPreferenceType = "luminance-alpha" | "float32";
+/**
+ * BEGIN WebXR Depth Sensing Moudle
+ * https://www.w3.org/TR/webxr-depth-sensing-1/
+ */
+
+type XRDepthUsage = "cpu-optimized" | "gpu-optimized";
+type XRDepthDataFormat = "luminance-alpha" | "float32";
+
+type XRDepthStateInit = {
+    usagePreference: XRDepthUsage[];
+    dataFormatPreference: XRDepthDataFormat[];
+};
 
 interface XRSessionInit {
-    depthSensing?: {
-        usagePreference: UsagePreferenceType[];
-        dataFormatPreference: DataFormatPreferenceType[];
-    };
+    depthSensing?: XRDepthStateInit
 }
+
+interface XRSession {
+    depthUsage: XRDepthUsage,
+    depthDataFormat: XRDepthDataFormat;
+}
+
+interface XRDepthInformation {
+    width: number,
+    height: number,
+
+    normDepthBufferFromNormView: XRRigidTransform
+    rawValueToMeters: number;
+};
