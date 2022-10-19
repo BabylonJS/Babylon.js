@@ -3787,6 +3787,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /** @internal */
     public _activeMeshesFrozen = false;
+    /** @internal */
     public _activeMeshesFrozenButKeepClipping = false;
     private _skipEvaluateActiveMeshesCompletely = false;
 
@@ -3891,6 +3892,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                     this._activeParticleSystems.data[i].animate();
                 }
             }
+
+            this._renderingManager.resetSprites();
 
             return;
         }
@@ -4970,6 +4973,14 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         throw _WarnImport("Ray");
     }
 
+    /** @internal */
+    public get _pickingAvailable(): boolean {
+        return false;
+    }
+
+    /** @internal */
+    public _registeredActions: number = 0;
+
     /** Launch a ray to try to pick a mesh in the scene
      * @param x position on screen
      * @param y position on screen
@@ -4988,9 +4999,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         trianglePredicate?: TrianglePickingPredicate
     ): Nullable<PickingInfo> {
         // Dummy info if picking as not been imported
-        const pi = new PickingInfo();
-        pi._pickingUnavailable = true;
-        return pi;
+        return new PickingInfo();
     }
 
     /** Launch a ray to try to pick a mesh in the scene using only bounding information of the main mesh (not using submeshes)
@@ -5003,9 +5012,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public pickWithBoundingInfo(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, camera?: Nullable<Camera>): Nullable<PickingInfo> {
         // Dummy info if picking as not been imported
-        const pi = new PickingInfo();
-        pi._pickingUnavailable = true;
-        return pi;
+        return new PickingInfo();
     }
 
     /** Use the given ray to pick a mesh in the scene

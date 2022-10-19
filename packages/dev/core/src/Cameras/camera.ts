@@ -876,6 +876,7 @@ export class Camera extends Node {
 
         const engine = this.getEngine();
         const scene = this.getScene();
+        const reverseDepth = engine.useReverseDepthBuffer;
         if (this.mode === Camera.PERSPECTIVE_CAMERA) {
             this._cache.fov = this.fov;
             this._cache.fovMode = this.fovMode;
@@ -886,7 +887,6 @@ export class Camera extends Node {
                 this.minZ = 0.1;
             }
 
-            const reverseDepth = engine.useReverseDepthBuffer;
             let getProjectionMatrix: (
                 fov: number,
                 aspect: number,
@@ -913,7 +913,7 @@ export class Camera extends Node {
                 this.fovMode === Camera.FOVMODE_VERTICAL_FIXED,
                 engine.isNDCHalfZRange,
                 this.projectionPlaneTilt,
-                engine.useReverseDepthBuffer
+                reverseDepth
             );
         } else {
             const halfWidth = engine.getRenderWidth() / 2.0;
@@ -924,8 +924,8 @@ export class Camera extends Node {
                     this.orthoRight ?? halfWidth,
                     this.orthoBottom ?? -halfHeight,
                     this.orthoTop ?? halfHeight,
-                    this.minZ,
-                    this.maxZ,
+                    reverseDepth ? this.maxZ : this.minZ,
+                    reverseDepth ? this.minZ : this.maxZ,
                     this._projectionMatrix,
                     engine.isNDCHalfZRange
                 );
@@ -935,8 +935,8 @@ export class Camera extends Node {
                     this.orthoRight ?? halfWidth,
                     this.orthoBottom ?? -halfHeight,
                     this.orthoTop ?? halfHeight,
-                    this.minZ,
-                    this.maxZ,
+                    reverseDepth ? this.maxZ : this.minZ,
+                    reverseDepth ? this.minZ : this.maxZ,
                     this._projectionMatrix,
                     engine.isNDCHalfZRange
                 );

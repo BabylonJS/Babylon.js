@@ -132,6 +132,7 @@ export class Footer extends React.Component<IFooterProps> {
                         activeEntry={() => EnvironmentTools.GetActiveSkyboxName()}
                         onOptionPicked={(option) => this.props.globalState.onEnvironmentChanged.notifyObservers(option)}
                         enabled={!!this.props.globalState.currentScene}
+                        searchPlaceholder="Search environment"
                     />
                     <FooterButton
                         globalState={this.props.globalState}
@@ -148,6 +149,7 @@ export class Footer extends React.Component<IFooterProps> {
                         activeEntry={() => this.props.globalState.currentScene?.activeCamera?.name || ""}
                         onOptionPicked={(option) => this.switchCamera(option)}
                         enabled={this._cameraNames.length > 1}
+                        searchPlaceholder="Search camera"
                     />
                     <DropUpButton
                         globalState={this.props.globalState}
@@ -157,6 +159,7 @@ export class Footer extends React.Component<IFooterProps> {
                         activeEntry={() => activeEntry()}
                         onOptionPicked={(option, index) => switchVariant(option, index)}
                         enabled={hasVariants}
+                        searchPlaceholder="Search variant"
                     />
                 </div>
             </div>
