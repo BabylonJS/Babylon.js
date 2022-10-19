@@ -1156,8 +1156,8 @@ type XRDepthUsage = "cpu-optimized" | "gpu-optimized";
 type XRDepthDataFormat = "luminance-alpha" | "float32";
 
 type XRDepthStateInit = {
-    usagePreference: XRDepthUsage[];
-    dataFormatPreference: XRDepthDataFormat[];
+    readonly usagePreference: XRDepthUsage[];
+    readonly dataFormatPreference: XRDepthDataFormat[];
 };
 
 interface XRSessionInit {
@@ -1165,14 +1165,32 @@ interface XRSessionInit {
 }
 
 interface XRSession {
-    depthUsage: XRDepthUsage,
-    depthDataFormat: XRDepthDataFormat;
+    readonly depthUsage: XRDepthUsage,
+    readonly depthDataFormat: XRDepthDataFormat;
 }
 
 interface XRDepthInformation {
-    width: number,
-    height: number,
+    readonly width: number,
+    readonly height: number,
 
-    normDepthBufferFromNormView: XRRigidTransform
-    rawValueToMeters: number;
-};
+    readonly normDepthBufferFromNormView: XRRigidTransform
+    readonly rawValueToMeters: number;
+}
+
+interface XRCPUDepthInformation extends XRDepthInformation {
+    readonly data: ArrayBuffer;
+
+    getDepthInMeters(x: number, y: number): number
+}
+
+interface XRFrame {
+    getDepthInformation(view: XRView): XRCPUDepthInformation?
+}
+
+interface XRWebGLDepthInformation extends XRDepthInformation {
+    readonly texture: WebGLTexture;
+}
+
+interface XRWebGLBinding {
+    getDepthInformation(view: XRWebGLDepthInformation?): XRWebGLDepthInformation?;
+}
