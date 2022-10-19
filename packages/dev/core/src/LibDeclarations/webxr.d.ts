@@ -1146,3 +1146,13 @@ interface XRLightProbe extends EventTarget {
  * END: WebXR DOM Overlays Module
  * https://immersive-web.github.io/dom-overlays/
  */
+
+type UsagePreferenceType = "cpu-optimized" | "gpu-optimized";
+type DataFormatPreferenceType = "luminance-alpha" | "float32";
+
+interface XRSessionInit {
+    depthSensing?: {
+        usagePreference: UsagePreferenceType[];
+        dataFormatPreference: DataFormatPreferenceType[];
+    };
+}
