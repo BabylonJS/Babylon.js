@@ -81,22 +81,20 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
     constructor(props: ICommonControlPropertyGridComponentProps) {
         super(props);
         this.state = {
-            fontFamilyOptions: JSON.parse(String(window.sessionStorage.getItem("fonts")))
-                ? JSON.parse(String(window.sessionStorage.getItem("fonts")))
-                : [
-                      { label: "Custom Font", value: 0 },
-                      { label: "Arial", value: 1 },
-                      { label: "Verdana", value: 2 },
-                      { label: "Helvetica", value: 3 },
-                      { label: "Trebuchet MS", value: 4 },
-                      { label: "Times New Roman", value: 5 },
-                      { label: "Georgia", value: 6 },
-                      { label: "Garamond", value: 7 },
-                      { label: "Courier New", value: 8 },
-                      { label: "Brush Script MT", value: 9 },
-                  ],
+            fontFamilyOptions: JSON.parse(String(window.sessionStorage.getItem("fonts"))) ?? [
+                { label: "Custom Font", value: 0 },
+                { label: "Arial", value: 1 },
+                { label: "Verdana", value: 2 },
+                { label: "Helvetica", value: 3 },
+                { label: "Trebuchet MS", value: 4 },
+                { label: "Times New Roman", value: 5 },
+                { label: "Georgia", value: 6 },
+                { label: "Garamond", value: 7 },
+                { label: "Courier New", value: 8 },
+                { label: "Brush Script MT", value: 9 },
+            ],
             value: 0,
-            invalidFonts: JSON.parse(String(window.sessionStorage.getItem("invalidFonts"))) ? JSON.parse(String(window.sessionStorage.getItem("invalidFonts"))) : [],
+            invalidFonts: JSON.parse(String(window.sessionStorage.getItem("invalidFonts"))) ?? [],
             invalidFontAlertName: undefined,
         };
 
