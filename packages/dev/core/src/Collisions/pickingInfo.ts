@@ -68,6 +68,7 @@ export class PickingInfo {
      * @param useWorldCoordinates If the resulting normal should be relative to the world (default: false)
      * @param useVerticesNormals If the vertices normals should be used to calculate the normal instead of the normal map
      * @returns The normal corresponding to the face the pick collided with
+     * @remarks Note that the returned normal will always point towards the picking ray.
      */
     public getNormal(useWorldCoordinates = false, useVerticesNormals = true): Nullable<Vector3> {
         if (!this.pickedMesh || !this.pickedMesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
@@ -105,6 +106,11 @@ export class PickingInfo {
             const p3p2 = vertex3.subtract(vertex2);
 
             result = Vector3.Cross(p1p2, p3p2);
+        }
+
+        // Flip the normal if the picking ray is in the same direction.
+        if (this.ray && Vector3.Dot(result, this.ray.direction) > 0) {
+            result.negateInPlace();
         }
 
         if (useWorldCoordinates) {
