@@ -71,7 +71,7 @@ export class PickingInfo {
      * @remarks Note that the returned normal will always point towards the picking ray.
      */
     public getNormal(useWorldCoordinates = false, useVerticesNormals = true): Nullable<Vector3> {
-        if (!this.pickedMesh || !this.pickedMesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
+        if (!this.pickedMesh || (useVerticesNormals && !this.pickedMesh.isVerticesDataPresent(VertexBuffer.NormalKind))) {
             return null;
         }
 
@@ -126,7 +126,7 @@ export class PickingInfo {
                 wm = TmpVectors.Matrix[1];
             }
 
-            result = Vector3.TransformNormal(result, wm);
+            Vector3.TransformNormalToRef(result, wm, result);
         }
 
         result.normalize();
