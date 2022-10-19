@@ -1192,5 +1192,5 @@ interface XRWebGLDepthInformation extends XRDepthInformation {
 }
 
 interface XRWebGLBinding {
-    getDepthInformation(view: XRWebGLDepthInformation?): XRWebGLDepthInformation?;
+    getDepthInformation(view: XRView): XRWebGLDepthInformation?;
 }
