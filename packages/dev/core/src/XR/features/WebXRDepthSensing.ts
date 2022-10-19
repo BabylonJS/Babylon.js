@@ -1,5 +1,5 @@
 import { WebXRFeatureName, WebXRFeaturesManager } from "./../webXRFeaturesManager";
-import type { Observable } from "../../Misc/observable";
+import { Observable } from "../../Misc/observable";
 import type { WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { Tools } from "../../Misc/tools";
@@ -25,12 +25,12 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
     /**
      *
      */
-    public onCPUDepthInformationObservable: Observable<XRCPUDepthInformation>;
+    public onCPUDepthInformationObservable: Observable<XRCPUDepthInformation> = new Observable();
 
     /**
      *
      */
-    public onWebGLDepthInformationObservable: Observable<XRWebGLDepthInformation>;
+    public onWebGLDepthInformationObservable: Observable<XRWebGLDepthInformation> = new Observable();
 
     private _glBinding?: XRWebGLBinding;
 
