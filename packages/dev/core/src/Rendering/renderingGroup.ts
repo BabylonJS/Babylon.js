@@ -368,9 +368,16 @@ export class RenderingGroup {
         this._alphaTestSubMeshes.reset();
         this._depthOnlySubMeshes.reset();
         this._particleSystems.reset();
-        this._spriteManagers.reset();
+        this.prepareSprites();
         this._edgesRenderers.reset();
         this._empty = true;
+    }
+
+    /**
+     * Resets the different lists of sprites to prepare a new frame.
+     */
+    public prepareSprites(): void {
+        this._spriteManagers.reset();
     }
 
     public dispose(): void {
