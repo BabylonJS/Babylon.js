@@ -3893,6 +3893,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                 }
             }
 
+            this._renderingManager.resetSprites();
+
             return;
         }
 
