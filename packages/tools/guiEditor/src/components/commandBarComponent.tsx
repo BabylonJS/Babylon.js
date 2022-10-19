@@ -185,7 +185,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                     </div>
                     <div className="divider">
                         <CommandButtonComponent
-                            tooltip="Copy Selcted"
+                            tooltip="Copy Selected"
                             shortcut="Ctrl + C"
                             icon={copyyIcon}
                             isActive={false}

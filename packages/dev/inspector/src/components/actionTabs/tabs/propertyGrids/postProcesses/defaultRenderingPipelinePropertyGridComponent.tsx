@@ -65,8 +65,8 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                                 lockObject={this.props.lockObject}
                                 label="Threshold"
                                 minimum={0}
-                                maximum={1}
-                                step={0.05}
+                                maximum={2.0}
+                                step={0.01}
                                 target={renderPipeline}
                                 propertyName="bloomThreshold"
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
