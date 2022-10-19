@@ -1161,30 +1161,30 @@ type XRDepthStateInit = {
 };
 
 interface XRSessionInit {
-    depthSensing?: XRDepthStateInit
+    depthSensing?: XRDepthStateInit;
 }
 
 interface XRSession {
-    readonly depthUsage: XRDepthUsage,
+    readonly depthUsage: XRDepthUsage;
     readonly depthDataFormat: XRDepthDataFormat;
 }
 
 interface XRDepthInformation {
-    readonly width: number,
-    readonly height: number,
+    readonly width: number;
+    readonly height: number;
 
-    readonly normDepthBufferFromNormView: XRRigidTransform
+    readonly normDepthBufferFromNormView: XRRigidTransform;
     readonly rawValueToMeters: number;
 }
 
 interface XRCPUDepthInformation extends XRDepthInformation {
     readonly data: ArrayBuffer;
 
-    getDepthInMeters(x: number, y: number): number
+    getDepthInMeters(x: number, y: number): number;
 }
 
 interface XRFrame {
-    getDepthInformation(view: XRView): XRCPUDepthInformation?
+    getDepthInformation(view: XRView): XRCPUDepthInformation?;
 }
 
 interface XRWebGLDepthInformation extends XRDepthInformation {
