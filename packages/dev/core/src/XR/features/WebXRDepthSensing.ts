@@ -1,3 +1,4 @@
+import { WebXRFeatureName, WebXRFeaturesManager } from "./../webXRFeaturesManager";
 import type { Observable } from "../../Misc/observable";
 import type { WebXRSessionManager } from "core/XR";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
@@ -34,6 +35,18 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
     private _glBinding?: XRWebGLBinding;
 
     /**
+     * The module's name
+     */
+    public static readonly Name = WebXRFeatureName.DEPTH_SENSING;
+
+    /**
+     * The (Babylon) version of this module.
+     * This is an integer representing the implementation version.
+     * This number does not correspond to the WebXR specs version
+     */
+    public static readonly Version = 1;
+
+    /**
      * Creates a new instance of the depth sensing feature
      * @param _xrSessionManager the WebXRSessionManager
      * @param options options for WebXR Depth Sensing Feature
@@ -59,6 +72,14 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         this._glBinding = new XRWebGLBinding(this._xrSessionManager.session, this._xrSessionManager.scene.getEngine()._gl);
 
         return true;
+    }
+
+    /**
+     * Dispose this feature and all of the resources attached
+     */
+    public dispose(): void {
+        this.onCPUDepthInformationObservable.clear();
+        this.onWebGLDepthInformationObservable.clear();
     }
 
     protected _onXRFrame(_xrFrame: XRFrame): void {
@@ -108,4 +129,29 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
 
         this.onWebGLDepthInformationObservable.notifyObservers(webglDepthInfo);
     }
+
+    /**
+     * Extends the session init object if needed
+     * @returns augmentation object for the xr session init object.
+     */
+    public getXRSessionInitExtension(): Promise<Partial<XRSessionInit>> {
+        const isDepthUsageDeclared = this.options.usagePreference != null && this.options.usagePreference.length !== 0;
+        const isDataFormatDeclared = this.options.dataFormatPreference != null && this.options.dataFormatPreference.length !== 0;
+        return new Promise((resolve) => {
+            if (isDepthUsageDeclared && isDataFormatDeclared) {
+                resolve({ depthSensing: this.options });
+            } else {
+                resolve({});
+            }
+        });
+    }
 }
+
+WebXRFeaturesManager.AddWebXRFeature(
+    WebXRDepthSensing.Name,
+    (xrSessionManager, options) => {
+        return () => new WebXRDepthSensing(xrSessionManager, options);
+    },
+    WebXRDepthSensing.Version,
+    false
+);
