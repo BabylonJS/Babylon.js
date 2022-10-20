@@ -525,7 +525,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     loadToEditor() {
         this.props.globalState.guiTexture.rootContainer.getDescendants().forEach((guiElement) => {
-            WorkbenchComponent._addedFonts.push(guiElement.fontFamily);
+            const fontName = guiElement.fontFamily.trim().toLowerCase();
+            if (WorkbenchComponent._addedFonts.indexOf(fontName) === -1) {
+                WorkbenchComponent._addedFonts.push(guiElement.fontFamily);
+            }
             this.addEditorBehavior(guiElement);
         });
 
