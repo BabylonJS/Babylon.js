@@ -219,9 +219,9 @@ export class InputManager {
         const type = evt.inputIndex >= PointerInput.MouseWheelX && evt.inputIndex <= PointerInput.MouseWheelZ ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE;
 
         if (scene.onPointerMove) {
+            // Because of lazy picking, we need to force a pick to update the pickResult
             const pr = pickResult ? pickResult : this._pickMove(evt.pointerId);
-            // We know that _pick will return a PickingInfo because _internalPick always returns a PickingInfo
-            scene.onPointerMove(evt, pr!, type);
+            scene.onPointerMove(evt, pr, type);
         }
 
         let pointerInfo: PointerInfo;
@@ -269,7 +269,7 @@ export class InputManager {
     }
 
     /** @internal */
-    public _pickMove(pointerId: number): Nullable<PickingInfo> {
+    public _pickMove(pointerId: number): PickingInfo {
         const scene = this._scene;
         const pickResult = scene.pick(
             this._unTranslatedPointerX,
