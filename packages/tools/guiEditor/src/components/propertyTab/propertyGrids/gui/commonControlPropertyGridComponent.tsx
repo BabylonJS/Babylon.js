@@ -55,6 +55,7 @@ import type { IInspectableOptions } from "core/Misc/iInspectable";
 
 import { WorkbenchComponent } from "../../../../diagram/workbench";
 import type { GlobalState } from "../../../../globalState";
+import { MessageDialog } from "shared-ui-components/components/MessageDialog";
 
 interface ICommonControlPropertyGridComponentProps {
     controls: Control[];
@@ -67,6 +68,8 @@ interface ICommonControlPropertyGridComponentProps {
 interface ICommonControlPropertyGridComponentState {
     fontFamilyOptions: IInspectableOptions[];
     value: number;
+    invalidFonts: string[];
+    invalidFontAlertName?: string;
 }
 
 type ControlProperty = keyof Control | "_paddingLeft" | "_paddingRight" | "_paddingTop" | "_paddingBottom" | "_fontSize" | "_linkOffsetX" | "_linkOffsetY";
@@ -78,21 +81,21 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
     constructor(props: ICommonControlPropertyGridComponentProps) {
         super(props);
         this.state = {
-            fontFamilyOptions: JSON.parse(String(window.sessionStorage.getItem("fonts")))
-                ? JSON.parse(String(window.sessionStorage.getItem("fonts")))
-                : [
-                      { label: "Custom Font", value: 0 },
-                      { label: "Arial", value: 1 },
-                      { label: "Verdana", value: 2 },
-                      { label: "Helvetica", value: 3 },
-                      { label: "Trebuchet MS", value: 4 },
-                      { label: "Times New Roman", value: 5 },
-                      { label: "Georgia", value: 6 },
-                      { label: "Garamond", value: 7 },
-                      { label: "Courier New", value: 8 },
-                      { label: "Brush Script MT", value: 9 },
-                  ],
+            fontFamilyOptions: JSON.parse(String(window.sessionStorage.getItem("fonts"))) ?? [
+                { label: "Custom Font", value: 0 },
+                { label: "Arial", value: 1 },
+                { label: "Verdana", value: 2 },
+                { label: "Helvetica", value: 3 },
+                { label: "Trebuchet MS", value: 4 },
+                { label: "Times New Roman", value: 5 },
+                { label: "Georgia", value: 6 },
+                { label: "Garamond", value: 7 },
+                { label: "Courier New", value: 8 },
+                { label: "Brush Script MT", value: 9 },
+            ],
             value: 0,
+            invalidFonts: JSON.parse(String(window.sessionStorage.getItem("invalidFonts"))) ?? [],
+            invalidFontAlertName: undefined,
         };
 
         const controls = this.props.controls;
@@ -141,23 +144,28 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 correctFonts.push(font);
             }
         }
-        const correctLabels = correctFonts.map((element) => element.label);
+        const correctLabels = correctFonts.map((element) => element.label.trim().toLowerCase());
 
         const moreFonts = WorkbenchComponent.addedFonts;
-
+        let invalidFontAlertName = undefined;
+        const invalidFontsArray = this.state.invalidFonts.slice();
         for (let i = 0; i < moreFonts.length; i++) {
-            if (!correctLabels.includes(moreFonts[i]) && document.fonts.check(`12px "${moreFonts[i]}"`)) {
-                correctFonts.push({ label: moreFonts[i], value: correctFonts.length + 1 });
-                correctLabels.push(moreFonts[i]);
-            } else if (!document.fonts.check(`12px "${moreFonts[i]}"`)) {
-                alert("The font " + moreFonts[i] + " is unable to load");
+            const fontName = moreFonts[i].trim().toLowerCase();
+            if (!correctLabels.includes(fontName) && document.fonts.check(`12px "${fontName}"`)) {
+                correctFonts.push({ label: fontName, value: correctFonts.length + 1 });
+                correctLabels.push(fontName);
+            } else if (invalidFontsArray.indexOf(fontName) === -1 && !document.fonts.check(`12px "${fontName}"`)) {
+                invalidFontAlertName = moreFonts[i];
+                invalidFontsArray.push(fontName);
             }
         }
-
         this.setState({
             fontFamilyOptions: correctFonts,
+            invalidFonts: invalidFontsArray,
+            invalidFontAlertName,
         });
         window.sessionStorage.setItem("fonts", JSON.stringify(correctFonts));
+        window.sessionStorage.setItem("invalidFonts", JSON.stringify(invalidFontsArray));
     }
 
     private _getTransformedReferenceCoordinate(control: Control) {
@@ -316,7 +324,8 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
             verticalAlignment = (firstControl as TextBlock).textVerticalAlignment;
         }
 
-        const showTextProperties = firstControl instanceof Container || firstControl.typeName === "TextBlock";
+        const showTextProperties =
+            firstControl instanceof Container || firstControl.typeName === "TextBlock" || firstControl.typeName === "InputText" || firstControl.typeName === "InputPassword";
 
         const proxy = makeTargetsProxy(controls, this.props.onPropertyChangedObservable);
         const getValue = (propertyName: ControlProperty) => {
@@ -401,9 +410,17 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 widthUnitsLocked = true;
             }
         }
-
         return (
             <div>
+                {this.state.invalidFontAlertName && (
+                    <MessageDialog
+                        message={"The font " + this.state.invalidFontAlertName + " is unable to load"}
+                        isError={true}
+                        onClose={() => {
+                            this.setState({ invalidFontAlertName: undefined });
+                        }}
+                    />
+                )}
                 {!this.props.hideDimensions && (
                     <>
                         <div className="ge-divider alignment-bar">
@@ -743,8 +760,12 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                     proxy.fontFamily = fontFamily[0];
                                 }}
                                 extractValue={() => {
-                                    if (this.state.fontFamilyOptions.filter(({ label }) => label === proxy.fontFamily)[0].label) {
-                                        return this.state.fontFamilyOptions.filter(({ label }) => label === proxy.fontFamily)[0].value;
+                                    if (this.state.invalidFonts.indexOf(proxy.fontFamily)) {
+                                        return 1;
+                                    }
+                                    const matchingFonts = this.state.fontFamilyOptions.filter(({ label }) => label.trim().toLowerCase() === proxy.fontFamily.trim().toLowerCase());
+                                    if (matchingFonts.length > 0 && matchingFonts[0].label) {
+                                        return matchingFonts[0].value;
                                     } else {
                                         return -1;
                                     }

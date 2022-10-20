@@ -4977,7 +4977,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         fastCheck?: boolean,
         camera?: Nullable<Camera>,
         trianglePredicate?: TrianglePickingPredicate
-    ): Nullable<PickingInfo> {
+    ): PickingInfo {
         // Dummy info if picking as not been imported
         return new PickingInfo();
     }
