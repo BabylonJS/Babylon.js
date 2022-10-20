@@ -281,7 +281,7 @@ export class InputManager {
                 if (pickResult?.pickedMesh) {
                     this._pickedDownMesh = pickResult?.pickedMesh;
                 }
-                return pickResult;
+                break;
             case PointerEventTypes.POINTERMOVE:
                 pickResult = scene.pick(
                     this._unTranslatedPointerX,
@@ -293,7 +293,7 @@ export class InputManager {
                 );
 
                 this._setCursorAndPointerOverMesh(pickResult, pointerId, scene);
-                return pickResult;
+                break;
             default:
                 pickResult = new PickingInfo();
         }
