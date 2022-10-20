@@ -650,7 +650,7 @@ declare module "../scene" {
             fastCheck?: boolean,
             onlyBoundingInfo?: boolean,
             trianglePredicate?: TrianglePickingPredicate
-        ): Nullable<PickingInfo>;
+        ): PickingInfo;
 
         /** @internal */
         _internalMultiPick(
@@ -784,11 +784,7 @@ Scene.prototype._internalPick = function (
     fastCheck?: boolean,
     onlyBoundingInfo?: boolean,
     trianglePredicate?: TrianglePickingPredicate
-): Nullable<PickingInfo> {
-    if (!PickingInfo) {
-        return null;
-    }
-
+): PickingInfo {
     let pickingInfo = null;
 
     for (let meshIndex = 0; meshIndex < this.meshes.length; meshIndex++) {
@@ -939,10 +935,7 @@ Scene.prototype.pick = function (
     camera?: Nullable<Camera>,
     trianglePredicate?: TrianglePickingPredicate,
     _enableDistantPicking = false
-): Nullable<PickingInfo> {
-    if (!PickingInfo) {
-        return null;
-    }
+): PickingInfo {
     const result = this._internalPick(
         (world, enableDistantPicking) => {
             if (!this._tempPickingRay) {
