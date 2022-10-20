@@ -1188,6 +1188,10 @@ export class Vector3 {
 
     /**
      * Creates a vector normal (perpendicular) to the current Vector3 and stores the result in the given vector
+     * Out of the infinite possibilities the normal chosen is the one formed by rotating the current vector
+     * 90 degrees about an axis which lies perpendicular to the current vector
+     * and its projection on the xz plane. In the case of a current vector in the xz plane
+     * the normal is calculated to be along the y axis.
      * @param result defines the Vector3 object where to store the resultant normal
      * returns the result
      */
