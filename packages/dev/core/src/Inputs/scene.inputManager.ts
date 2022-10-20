@@ -267,18 +267,30 @@ export class InputManager {
     }
 
     /** @internal */
-    public _pickMove(pointerId: number): Nullable<PickingInfo> {
+    public _pick(pointerId: number, type: PointerEventTypes): Nullable<PickingInfo> {
         const scene = this._scene;
-        const pickResult = scene.pick(
-            this._unTranslatedPointerX,
-            this._unTranslatedPointerY,
-            scene.pointerMovePredicate,
-            false,
-            scene.cameraToUseForPointers,
-            scene.pointerMoveTrianglePredicate
-        );
+        let pickResult: Nullable<PickingInfo> = null;
 
-        this._setCursorAndPointerOverMesh(pickResult, pointerId, scene);
+        switch (type) {
+            case PointerEventTypes.POINTERDOWN:
+                pickResult = scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerDownPredicate, false, scene.cameraToUseForPointers);
+                if (pickResult?.pickedMesh) {
+                    this._pickedDownMesh = pickResult?.pickedMesh;
+                }
+                break;
+            case PointerEventTypes.POINTERMOVE:
+                pickResult = scene.pick(
+                    this._unTranslatedPointerX,
+                    this._unTranslatedPointerY,
+                    scene.pointerMovePredicate,
+                    false,
+                    scene.cameraToUseForPointers,
+                    scene.pointerMoveTrianglePredicate
+                );
+
+                this._setCursorAndPointerOverMesh(pickResult, pointerId, scene);
+                break;
+        }
 
         return pickResult;
     }
@@ -336,7 +348,7 @@ export class InputManager {
 
     private _processPointerDown(pickResult: Nullable<PickingInfo>, evt: IPointerEvent): void {
         const scene = this._scene;
-        if (pickResult && pickResult.hit && pickResult.pickedMesh) {
+        if (scene._registeredActions > 0 && pickResult?.pickedMesh) {
             this._pickedDownMesh = pickResult.pickedMesh;
             const actionManager = pickResult.pickedMesh._getActionManagerForTrigger();
             if (actionManager) {
@@ -388,18 +400,24 @@ export class InputManager {
             }
         }
 
+        let pointerInfo: PointerInfo;
+        const type = PointerEventTypes.POINTERDOWN;
+
+        if (scene.onPointerDown) {
+            const pr = pickResult ? pickResult : this._pick(evt.pointerId, type);
+            // We know that _pick will return a PickingInfo because _internalPick always returns a PickingInfo
+            scene.onPointerDown(evt, pr!, type);
+        }
+
         if (pickResult) {
-            const type = PointerEventTypes.POINTERDOWN;
+            pointerInfo = new PointerInfo(type, evt, pickResult);
+            this._setRayOnPointerInfo(pickResult, evt);
+        } else {
+            pointerInfo = new PointerInfo(type, evt, null, this);
+        }
 
-            if (scene.onPointerDown) {
-                scene.onPointerDown(evt, pickResult, type);
-            }
-
-            if (scene.onPointerObservable.hasObservers()) {
-                const pi = new PointerInfo(type, evt, pickResult);
-                this._setRayOnPointerInfo(pickResult, evt);
-                scene.onPointerObservable.notifyObservers(pi, type);
-            }
+        if (scene.onPointerObservable.hasObservers()) {
+            scene.onPointerObservable.notifyObservers(pointerInfo, type);
         }
     }
 
@@ -725,7 +743,7 @@ export class InputManager {
                     (!scene.cameraToUseForPointers || (scene.cameraToUseForPointers.layerMask & mesh.layerMask) !== 0);
             }
 
-            const pickResult = scene._registeredActions > 0 ? this._pickMove((evt as IPointerEvent).pointerId) : null;
+            const pickResult = scene._registeredActions > 0 ? this._pick((evt as IPointerEvent).pointerId, PointerEventTypes.POINTERMOVE) : null;
             this._processPointerMove(pickResult, evt as IPointerEvent);
         };
 
@@ -775,11 +793,11 @@ export class InputManager {
 
             // Meshes
             this._pickedDownMesh = null;
-            let pickResult;
-            if (scene.skipPointerDownPicking || (scene._registeredActions === 0 && !scene.onPointerObservable.hasObservers())) {
+            let pickResult = null;
+            if (scene.skipPointerDownPicking) {
                 pickResult = new PickingInfo();
             } else {
-                pickResult = scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerDownPredicate, false, scene.cameraToUseForPointers);
+                pickResult = scene.onPointerPick || scene._registeredActions > 0 ? this._pick((evt as IPointerEvent).pointerId, PointerEventTypes.POINTERDOWN) : null;
             }
 
             this._processPointerDown(pickResult, evt);
