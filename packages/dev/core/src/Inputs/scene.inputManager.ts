@@ -218,8 +218,10 @@ export class InputManager {
 
         const type = evt.inputIndex >= PointerInput.MouseWheelX && evt.inputIndex <= PointerInput.MouseWheelZ ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE;
 
-        if (scene.onPointerMove && pickResult) {
-            scene.onPointerMove(evt, pickResult, type);
+        if (scene.onPointerMove) {
+            const pr = pickResult ? pickResult : this._pickMove(evt.pointerId);
+            // We know that _pick will return a PickingInfo because _internalPick always returns a PickingInfo
+            scene.onPointerMove(evt, pr!, type);
         }
 
         let pointerInfo: PointerInfo;
