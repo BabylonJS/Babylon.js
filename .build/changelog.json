@@ -1,6 +1,448 @@
 {
-    "fromTag": "5.27.1",
+    "fromTag": "5.28.0",
     "changelog": {
+        "5.29.0": [
+            {
+                "pr": "13129",
+                "title": "Fix loading of GUIs with custom fonts and add font controls to InputText and InputPassword",
+                "description": "Fixes #13125",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/guiEditor/src/components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent.tsx",
+                    "packages/tools/guiEditor/src/diagram/workbench.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "gui editor"
+                ]
+            },
+            {
+                "pr": "13136",
+                "title": "InputManager: Fix for POINTERTAP firing when cursor is moved",
+                "description": "This PR contains a fix for the InputManager to not erroneously treat a `pointerup` event as a POINTERTAP if the cursor has moved outside of the drag threshold, even if it returns to the exact same point.\r\n\r\nThis fix should address this bug: https://github.com/BabylonJS/ThePirateCove/issues/168",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Inputs/scene.inputManager.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "inputs"
+                ]
+            },
+            {
+                "pr": "13131",
+                "title": "Fix infinite sprites draw in frozen scenes",
+                "description": "https://forum.babylonjs.com/t/spritemanager-infinite-drawcalls-bug/34948",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/renderingGroup.ts",
+                    "packages/dev/core/src/Rendering/renderingManager.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "sprite"
+                ]
+            },
+            {
+                "pr": "13134",
+                "title": "Fix usage of useReverseDepthBuffer with orthographic cameras",
+                "description": "See https://forum.babylonjs.com/t/usereversedepthbuffer-orthographic-camera-lead-to-z-order-issue/34952/2",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/camera.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13127",
+                "title": "Workaround Firefox Leak",
+                "description": "https://forum.babylonjs.com/t/videotexture-memory-leak-in-firefox/34876",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.videoTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/htmlElementTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/videoTexture.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "13126",
+                "title": "Fix Doc",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/button.ts",
+                    "packages/tools/guiEditor/src/components/commandBarComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13122",
+                "title": "Add correct placeholders to dropup button on sandbox.",
+                "description": "Fixes #13091",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/sandbox/src/components/animationBar.tsx",
+                    "packages/tools/sandbox/src/components/dropUpButton.tsx",
+                    "packages/tools/sandbox/src/components/footer.tsx",
+                    "packages/tools/sandbox/src/scss/footer.scss"
+                ],
+                "tags": [
+                    "bug",
+                    "sandbox"
+                ]
+            },
+            {
+                "pr": "13123",
+                "title": "Increase the maximum bloom threshold value on the inspector slider",
+                "description": "HDR scenes may benefit from having a bloom threshold greater than 1",
+                "author": {
+                    "name": "kircher1",
+                    "url": "https://github.com/kircher1"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/postProcesses/defaultRenderingPipelinePropertyGridComponent.tsx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "13120",
+                "title": "Fix GUI json load.",
+                "description": "Related issue: https://forum.babylonjs.com/t/gui-editor-will-generate-error-if-save-locally/34853/2",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/loadGuiSnippetWithUnicode.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/parseGuiJsonWithUnicode.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13121",
+                "title": "Add API to enable/disable auto-build of the DefaultRenderingPipeline.",
+                "description": "I use this to perform some custom setup after the DefaultRenderingPipeline is constructed; I construct the pipeline with auto-build disabled (to avoid it's ctor creating effects which will need to be recreated), then perform some setup, and finally prepare() and re-enable the pipeline's automaticBuild.\r\n\r\nPrior to this change, I wasn't able to turn the automaticBuild back on so would have either had to track effect changes manually or live with unneeded effect creation in the ctor.\r\n\r\nOther minor cleanup included.",
+                "author": {
+                    "name": "kircher1",
+                    "url": "https://github.com/kircher1"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13044",
+                "title": "Implement Lazy Picking for POINTERMOVE",
+                "description": "This PR changes the code for picking during a move event to only pick when the user (or mechanism like the ActionManager) require it.",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Actions/actionManager.ts",
+                    "packages/dev/core/src/Collisions/pickingInfo.ts",
+                    "packages/dev/core/src/Culling/ray.ts",
+                    "packages/dev/core/src/Events/pointerEvents.ts",
+                    "packages/dev/core/src/Inputs/scene.inputManager.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13118",
+                "title": "update dependencies and an audit-fix",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/public/@babylonjs/shared-ui-components/package.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13076",
+                "title": "Normalized return values and made vector classes use extendable types",
+                "description": "This commit tries to normalize the return type of all math functions so that all ToRef versions return the ref. It also changes so that functions that create new Objects try to do that with an extended type when possible.\r\n\r\nMore information can be found [here](https://forum.babylonjs.com/t/types-in-math-vector-ts/34514/13)",
+                "author": {
+                    "name": "LostInClams",
+                    "url": "https://github.com/LostInClams"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13116",
+                "title": "Fix crash when using a custom material for LineMesh with an effect layer",
+                "description": "See https://forum.babylonjs.com/t/exception-if-material-parameter-set-on-linesmesh/34769/8\r\n\r\nIt's actually a problem of the `isReady` function being called for the wrong material when testing for material readyness in a RTT.\r\n\r\nIt was normally already handled by #11696, but the `mesh.isReady(false)` call I added at the start of the `customIsReadyFunction` implementation can end up calling a `isReady` function for the wrong material if the `Mesh.isReady` function is overriden, which is what `LineMesh` is doing: \r\n\r\n```typescript\r\npublic isReady() {\r\n    if (!this._lineMaterial.isReady(this, !!this._userInstancedBuffersStorage)) {\r\n        return false;\r\n    }\r\n\r\n    return super.isReady();\r\n}\r\n```\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Layers/effectLayer.ts",
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts",
+                    "packages/dev/core/src/PostProcesses/volumetricLightScatteringPostProcess.ts",
+                    "packages/dev/core/src/Rendering/depthRenderer.ts",
+                    "packages/dev/core/src/Rendering/geometryBufferRenderer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13106",
+                "title": "First iteration of flexible grid layout for VSM",
+                "description": "Current capabilities: \r\n* Resize row/column\r\n* Drag and drop single tab",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/sharedUiComponents/package.json",
+                    "packages/dev/sharedUiComponents/src/components/layout/DraggableIcon.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleColumn.modules.scss",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleColumn.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleDragHandler.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleDropZone.modules.scss",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleDropZone.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleGridContainer.modules.scss",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleGridContainer.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleGridLayout.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleResizeBar.modules.scss",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleResizeBar.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleTab.modules.scss",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleTab.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleTabsContainer.modules.scss",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleTabsContainer.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/LayoutContext.ts",
+                    "packages/dev/sharedUiComponents/src/components/layout/types.ts",
+                    "packages/dev/sharedUiComponents/src/components/layout/utils.ts",
+                    "packages/dev/sharedUiComponents/src/imgs/dragDotsIcon_white.svg",
+                    "packages/dev/sharedUiComponents/src/stories/layout/FlexibleGridLayout.stories.tsx",
+                    "packages/tools/vsm/src/initialLayout.tsx",
+                    "packages/tools/vsm/src/testComponent.tsx",
+                    "packages/tools/vsm/src/workbench.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13113",
+                "title": "Publish @babylonjs/shared-ui-components package",
+                "description": "For a start we will release an es6 version of the shared ui components. the package exists on npm already (as the public scope had to be set beforehand):\n\nhttps://www.npmjs.com/package/@babylonjs/shared-ui-components",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package.json",
+                    "packages/dev/buildTools/src/addJSToCompiledFiles.ts",
+                    "packages/dev/buildTools/src/copyAssets.ts",
+                    "packages/dev/sharedUiComponents/src/components/lines/ColorLineComponent.tsx",
+                    "packages/public/@babylonjs/.gitignore",
+                    "packages/public/@babylonjs/inspector/tsconfig.build.json",
+                    "packages/public/@babylonjs/shared-ui-components/license.md",
+                    "packages/public/@babylonjs/shared-ui-components/package.json",
+                    "packages/public/@babylonjs/shared-ui-components/readme.md",
+                    "packages/public/@babylonjs/shared-ui-components/tsconfig.build.json",
+                    "packages/public/@babylonjs/shared-ui-components/tsconfig.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13114",
+                "title": "forceSharedVertices with skinmesh support",
+                "description": "forceSharedVertices didn't support skin mesh infos which results in glitched mesh rendering.\r\nFor example this PG:\r\nhttps://playground.babylonjs.com/#92Y727#293",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "13111",
+                "title": "Decals: Add support for rigged meshes + optimization for speed",
+                "description": "See https://forum.babylonjs.com/t/decals-are-not-supported-for-glb-files/34571/21\r\n\r\nThe doc has also been updated (https://github.com/BabylonJS/Documentation/pull/673).\r\n\r\nI have tried to remove a number of object creations (`Vector3` / `Vector4`) to lower GC pressure, at least in the main paths.\r\n\r\nAlso, to avoid over-complicating the code even more, I handle only the first 4 matrix indices/weights of a rigged mesh when creating new vertices at the clipping stage (vertices that are not clipped retain their full indices/weights). I did not see any artefacts because of that in my testings. This code can be revisited later if necessary.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Builders/decalBuilder.ts"
+                ],
+                "tags": [
+                    "rendering engine",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13110",
+                "title": "Depth of field optimizations and cleanup",
+                "description": "The main change here is to use R-only texture format for the circle of confusion (which only needs to store a single value per pixel) rather than using an RGBA texture. This will save space and should be more bandwidth efficient to sample from during the subsequent blur passes.\r\n\r\nAlso removes `sampleDistance` from the blur shader-- it's not used AFAICT and deleting this code removes the need for passing cameraMinMaxZ uniform.\r\n\r\nOther changes here are just minor cleanup. ",
+                "author": {
+                    "name": "kircher1",
+                    "url": "https://github.com/kircher1"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/blurPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/circleOfConfusionPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/depthOfFieldBlurPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/depthOfFieldEffect.ts",
+                    "packages/dev/core/src/PostProcesses/depthOfFieldMergePostProcess.ts",
+                    "packages/dev/core/src/Shaders/circleOfConfusion.fragment.fx",
+                    "packages/dev/core/src/Shaders/depthOfFieldMerge.fragment.fx",
+                    "packages/dev/core/src/Shaders/kernelBlur.fragment.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13107",
+                "title": "Encode and decode GUI Editor snippet as JSON when needed.",
+                "description": "Forum thread: https://forum.babylonjs.com/t/gui-editor-can-not-input-chinese-character/34759/\r\nI'm taking the same approach as: https://github.com/BabylonJS/Babylon.js/pull/12391 by saving the encoded GUI in a separate field\r\n",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts",
+                    "packages/tools/guiEditor/public/index.js",
+                    "packages/tools/guiEditor/src/components/propertyTab/propertyTabComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "gui editor"
+                ]
+            },
+            {
+                "pr": "13108",
+                "title": "fix the samples returned when using multiview in WebXR",
+                "description": "When using multiview on WebXR I don't want to update the samples using `setSamples` because of the extra work done there (that is not needed).\nThis is one solution. A different one would be to introduce a (hidden) setter to the _samples of the wrapper but this approach makes sure the state of the wrapper doesn't change.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/renderTargetWrapper.ts",
+                    "packages/dev/core/src/XR/webXRRenderTargetTextureProvider.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13109",
+                "title": "Fix glTF extension links and fix lint warnings",
+                "description": "Will fix documentation that shouldn't have been exposed also.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrMetallicRoughnessMaterial.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/EXT_lights_image_based.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/EXT_mesh_gpu_instancing.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/EXT_meshopt_compression.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/EXT_texture_webp.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_animation_pointer.data.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_draco_mesh_compression.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_lights_punctual.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_clearcoat.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_emissive_strength.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_ior.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_iridescence.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_sheen.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_specular.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_translucency.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_transmission.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_unlit.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_variants.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_volume.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_mesh_quantization.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_texture_basisu.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_texture_transform.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_xmp_json_ld.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/MSFT_audio_emitter.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/MSFT_lod.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/MSFT_minecraftMesh.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/MSFT_sRGBFactors.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoaderAnimation.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_texture_transform.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFMaterialExporter.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13071",
+                "title": "GLB header length check from exception to warning",
+                "description": "glTF-Validator accepts some GLBs that we don't. Loosening the check to allow them to go through with a warning in the log.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/glTFFileLoader.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "glTF"
+                ]
+            }
+        ],
         "5.28.0": [
             {
                 "pr": "13105",
