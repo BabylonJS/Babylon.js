@@ -198,13 +198,13 @@ export class StackPanel extends Container {
         let panelWidthChanged = false;
         let panelHeightChanged = false;
 
-        if (!this._manualHeight && this._isVertical) {
+        if ((!this._manualHeight || this.adaptHeightToChildren) && this._isVertical) {
             // do not specify height if strictly defined by user
             const previousHeight = this.height;
             this.height = stackHeight + "px";
             panelHeightChanged = previousHeight !== this.height || !this._height.ignoreAdaptiveScaling;
         }
-        if (!this._manualWidth && !this._isVertical) {
+        if ((!this._manualWidth || this.adaptWidthToChildren) && !this._isVertical) {
             // do not specify width if strictly defined by user
             const previousWidth = this.width;
             this.width = stackWidth + "px";
