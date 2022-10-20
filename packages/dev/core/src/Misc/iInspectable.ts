@@ -45,7 +45,7 @@ export enum InspectableType {
     /**
      * Vector2
      */
-     Vector2 = 10
+    Vector2 = 10,
 }
 
 /**
