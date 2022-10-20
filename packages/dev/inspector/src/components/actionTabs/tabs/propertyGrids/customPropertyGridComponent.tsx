@@ -7,6 +7,7 @@ import type { IInspectable } from "core/Misc/iInspectable";
 import { InspectableType } from "core/Misc/iInspectable";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
+import { Vector2LineComponent } from "shared-ui-components/lines/vector2LineComponent";
 import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
 import { QuaternionLineComponent } from "../../lines/quaternionLineComponent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
@@ -54,6 +55,17 @@ export class CustomPropertyGridComponent extends React.Component<ICustomProperty
                         step={inspectable.step !== undefined ? inspectable.step : 0.1}
                         minimum={inspectable.min !== undefined ? inspectable.min : 0}
                         maximum={inspectable.max !== undefined ? inspectable.max : 1}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            case InspectableType.Vector2:
+                return (
+                    <Vector2LineComponent
+                        lockObject={this.props.lockObject}
+                        key={inspectable.label}
+                        label={inspectable.label}
+                        target={this.props.target}
+                        propertyName={inspectable.propertyName}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 );
