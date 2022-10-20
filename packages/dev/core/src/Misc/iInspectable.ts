@@ -42,6 +42,10 @@ export enum InspectableType {
      * File button
      */
     FileButton = 9,
+    /**
+     * Vector2
+     */
+    Vector2 = 10,
 }
 
 /**
