@@ -110,19 +110,19 @@ export const umdPackageMapping: { [key in UMDPackageName]: { baseDir: string; ba
         baseFilename: "babylonjs.postProcess",
     },
     "babylonjs-ktx2decoder": {
-        baseDir: "",
+        baseDir: "", // keep in root of the cdn
         baseFilename: "babylon.ktx2Decoder",
     },
     "babylonjs-viewer": {
-        baseDir: "",
+        baseDir: "viewer",
         baseFilename: "babylon.viewer",
     },
     "babylonjs-shared-ui-components": {
-        baseDir: "",
+        baseDir: "shared-ui-components",
         baseFilename: "",
     },
     "babylonjs-gltf2interface": {
-        baseDir: "",
+        baseDir: "", // keep in root of the cdn
         baseFilename: "",
     },
 };
