@@ -2,6 +2,8 @@ import { EngineInstrumentation } from "../../Instrumentation/engineInstrumentati
 import type { Scene } from "../../scene";
 import { PrecisionDate } from "../precisionDate";
 import { SceneInstrumentation } from "../../Instrumentation/sceneInstrumentation";
+import { PressureObserverWrapper } from "../pressureObserverWrapper";
+import type { Nullable } from "../../types";
 
 /**
  * Defines the general structure of what is necessary for a collection strategy.
@@ -47,20 +49,64 @@ export class PerfCollectionStrategy {
     }
 
     /**
-     * Gets the initializer for the strategy used for collection of cpu utilization metrics.
-     * Needs the experimental compute pressure API.
-     * @returns the initializer for the cpu utilization strategy
+     * Gets the initializer for the strategy used for collection of thermal utilization metrics.
+     * Needs the experimental pressure API.
+     * @returns the initializer for the thermal utilization strategy
      */
-    public static CpuStrategy(): PerfStrategyInitialization {
-        return (scene) => {
+    public static ThermalStrategy(): PerfStrategyInitialization {
+        return this._PressureStrategy("Thermal utilization", "thermal");
+    }
+
+    /**
+     * Gets the initializer for the strategy used for collection of power supply utilization metrics.
+     * Needs the experimental pressure API.
+     * @returns the initializer for the power supply utilization strategy
+     */
+    public static PowerSupplyStrategy(): PerfStrategyInitialization {
+        return this._PressureStrategy("Power supply utilization", "power-supply");
+    }
+
+    /**
+     * Gets the initializer for the strategy used for collection of pressure metrics.
+     * Needs the experimental pressure API.
+     * @returns the initializer for the pressure strategy
+     */
+    public static PressureStrategy(): PerfStrategyInitialization {
+        return this._PressureStrategy("Pressure");
+    }
+
+    private static _PressureStrategy(name: string, factor: Nullable<PressureFactor> = null): PerfStrategyInitialization {
+        return () => {
             let value = 0;
-            const computePressureObserver = scene.onComputePressureChanged.add((update) => {
-                value = update.cpuUtilization;
+
+            const wrapper = new PressureObserverWrapper();
+            wrapper.observe("cpu");
+
+            wrapper.onPressureChanged.add((update) => {
+                for (const record of update) {
+                    if ((factor && record.factors.includes(factor)) || (!factor && record.factors.length === 0)) {
+                        // Let s consider each step being 25% of the total pressure.
+                        switch (record.state) {
+                            case "nominal":
+                                value = 0;
+                                break;
+                            case "fair":
+                                value = 0.25;
+                                break;
+                            case "serious":
+                                value = 0.5;
+                                break;
+                            case "critical":
+                                value = 1;
+                                break;
+                        }
+                    }
+                }
             });
             return {
-                id: "CPU utilization",
+                id: name,
                 getData: () => value,
-                dispose: () => scene.onComputePressureChanged.remove(computePressureObserver),
+                dispose: () => wrapper.dispose(),
             };
         };
     }
