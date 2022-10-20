@@ -69,8 +69,6 @@ export class HTMLTwinGUIItem extends HTMLTwinItem {
      * If this entity is focusable (can be focused by tab key pressing).
      */
     public override get isFocusable(): boolean {
-        // TODO: change back
-        // return true;
         if (this._isFocusable) {
             return this._isFocusable;
         }
