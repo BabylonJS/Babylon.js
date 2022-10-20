@@ -1307,9 +1307,13 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             request.addEventListener("readystatechange", () => {
                 if (request.readyState == 4) {
                     if (request.status == 200) {
-                        const payload = JSON.parse(JSON.parse(request.responseText).jsonPayload);
-                        const payloadGui = payload.encodedGui ? new TextDecoder("utf-8").decode(DecodeBase64ToBinary(payload.encodedGui)) : payload.gui;
-                        const gui = snippet ? payloadGui : request.responseText;
+                        let gui;
+                        if (snippet) {
+                            const payload = JSON.parse(JSON.parse(request.responseText).jsonPayload);
+                            gui = payload.encodedGui ? new TextDecoder("utf-8").decode(DecodeBase64ToBinary(payload.encodedGui)) : payload.gui;
+                        } else {
+                            gui = request.responseText;
+                        }
                         const serializationObject = JSON.parse(gui);
                         resolve(serializationObject);
                     } else {

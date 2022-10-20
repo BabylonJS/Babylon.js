@@ -237,6 +237,23 @@ export class RenderingManager {
     }
 
     /**
+     * Resets the sprites information of the group to prepare a new frame
+     * @internal
+     */
+    public resetSprites(): void {
+        if (this.maintainStateBetweenFrames) {
+            return;
+        }
+
+        for (let index = RenderingManager.MIN_RENDERINGGROUPS; index < RenderingManager.MAX_RENDERINGGROUPS; index++) {
+            const renderingGroup = this._renderingGroups[index];
+            if (renderingGroup) {
+                renderingGroup.prepareSprites();
+            }
+        }
+    }
+
+    /**
      * Dispose and release the group and its associated resources.
      * @internal
      */
