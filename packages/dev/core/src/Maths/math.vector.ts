@@ -4495,7 +4495,7 @@ export class Quaternion {
 
     /**
      * Updates a quaternion so that it rotates vector vecFrom to vector vecTo
-     * Example Playground - https://playground.babylonjs.com/#L49EJ7#66
+     * Example Playground - https://playground.babylonjs.com/#L49EJ7#70
      * @param vecFrom defines the direction vector from which to rotate
      * @param vecTo defines the direction vector to which to rotate
      * @param result the quaternion to store the result
