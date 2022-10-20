@@ -1190,9 +1190,8 @@ export class Vector3 {
      * Creates a vector normal (perpendicular) to the current Vector3 and stores the result in the given vector
      * @param result defines the Vector3 object where to store the resultant normal
      * returns the result
-     * @hidden
      */
-    public _getNormalToRef(result: DeepImmutable<Vector3>): Vector3 {
+    public getNormalToRef(result: DeepImmutable<Vector3>): Vector3 {
         /**
          * Calculates the spherical coordinates of the current vector
          * so saves on memory rather than importing whole Spherical Class
@@ -4307,36 +4306,6 @@ export class Quaternion {
     }
 
     /**
-     * Creates the rotation quaternion needed to rotate from one Vector3 onto another Vector3
-     * Example PG https://playground.babylonjs.com/#L49EJ7#2
-     * @param fromVector the starting vector
-     * @param toVector the ending vector
-     * @returns the rotation quaternion needed
-     */
-    public static RotationQuaternionFromOnto(fromVector: DeepImmutable<Vector3>, toVector: DeepImmutable<Vector3>) {
-        const ref: Quaternion = Quaternion.Zero();
-        return Quaternion.RotationQuaternionFromOntoToRef(fromVector, toVector, ref);
-    }
-
-    /**
-     * Creates the rotation quaternion needed to rotate from one Vector3 onto another Vector3 and stores in a result Quaternion
-     * Example PG https://playground.babylonjs.com/#L49EJ7#3
-     * @param fromVector the starting vector
-     * @param toVector the ending vector
-     * @param result the rotation quaternion needed
-     * @returns the result
-     */
-    public static RotationQuaternionFromOntoToRef(fromVector: DeepImmutable<Vector3>, toVector: DeepImmutable<Vector3>, result: DeepImmutable<Quaternion>) {
-        const normal: Vector3 = TmpVectors.Vector3[0];
-        Vector3.CrossToRef(fromVector, toVector, normal);
-        if (normal.equals(Vector3.ZeroReadOnly)) {
-            fromVector._getNormalToRef(normal);
-        }
-        const angle = Vector3.GetAngleBetweenVectors(fromVector, toVector, normal);
-        return Quaternion.RotationAxisToRef(normal, angle, result);
-    }
-
-    /**
      * Returns the dot product (float) between the quaternions "left" and "right"
      * @param left defines the left operand
      * @param right defines the right operand
@@ -4526,6 +4495,7 @@ export class Quaternion {
 
     /**
      * Updates a quaternion so that it rotates vector vecFrom to vector vecTo
+     * Example Playground - https://playground.babylonjs.com/#L49EJ7#66
      * @param vecFrom defines the direction vector from which to rotate
      * @param vecTo defines the direction vector to which to rotate
      * @param result the quaternion to store the result
