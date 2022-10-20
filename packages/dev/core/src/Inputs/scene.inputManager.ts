@@ -220,8 +220,10 @@ export class InputManager {
 
         const type = evt.inputIndex >= PointerInput.MouseWheelX && evt.inputIndex <= PointerInput.MouseWheelZ ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE;
 
-        if (scene.onPointerMove && pickResult) {
-            scene.onPointerMove(evt, pickResult, type);
+        if (scene.onPointerMove) {
+            // Because of lazy picking, we need to force a pick to update the pickResult
+            const pr = pickResult ? pickResult : this._pickMove(evt.pointerId);
+            scene.onPointerMove(evt, pr, type);
         }
 
         let pointerInfo: PointerInfo;
@@ -269,7 +271,7 @@ export class InputManager {
     }
 
     /** @internal */
-    public _pickMove(pointerId: number): Nullable<PickingInfo> {
+    public _pickMove(pointerId: number): PickingInfo {
         const scene = this._scene;
         const pickResult = scene.pick(
             this._unTranslatedPointerX,
