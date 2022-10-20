@@ -222,8 +222,8 @@ export class InputManager {
 
         if (scene.onPointerMove) {
             // Because of lazy picking, we need to force a pick to update the pickResult
-            const pr = pickResult ? pickResult : this._pick(evt.pointerId, type);
-            scene.onPointerMove(evt, pr, type);
+            pickResult = pickResult ? pickResult : this._pick(evt.pointerId, type);
+            scene.onPointerMove(evt, pickResult, type);
         }
 
         let pointerInfo: PointerInfo;
@@ -410,9 +410,9 @@ export class InputManager {
         const type = PointerEventTypes.POINTERDOWN;
 
         if (scene.onPointerDown) {
-            const pr = pickResult ? pickResult : this._pick(evt.pointerId, type);
+            pickResult = pickResult ? pickResult : this._pick(evt.pointerId, type);
             // We know that _pick will return a PickingInfo because _internalPick always returns a PickingInfo
-            scene.onPointerDown(evt, pr!, type);
+            scene.onPointerDown(evt, pickResult, type);
         }
 
         if (pickResult) {
