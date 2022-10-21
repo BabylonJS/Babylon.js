@@ -11,3 +11,4 @@ node_modules
 !inspector/**/*.*
 !node-editor/**/*.*
 !gui-editor/**/*.*
+!accessibility/**/*.*
