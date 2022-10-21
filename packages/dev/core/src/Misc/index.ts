@@ -55,7 +55,7 @@ export * from "./timer";
 export * from "./copyTools";
 export * from "./reflector";
 export * from "./domManagement";
-export * from "./computePressure";
+export * from "./pressureObserverWrapper";
 export * from "./PerformanceViewer/index";
 export * from "./coroutine";
 export * from "./guid";
