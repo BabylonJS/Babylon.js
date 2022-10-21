@@ -21,6 +21,8 @@ import type { StorageBuffer } from "../Buffers/storageBuffer";
 import { PushMaterial } from "./pushMaterial";
 import { EngineStore } from "../Engines/engineStore";
 import { Constants } from "../Engines/constants";
+import { InspectableType } from "core/Misc/iInspectable";
+import type { IInspectable } from "../Misc/iInspectable";
 
 declare type ExternalTexture = import("./Textures/externalTexture").ExternalTexture;
 
@@ -1355,6 +1357,69 @@ export class ShaderMaterial extends PushMaterial {
         }
 
         return result;
+    }
+
+    /**
+     * Adds custom inspector properties for the material's uniforms
+     * @param inspectableCustomProperties specifies the settings for the inspectable properties
+     */
+    addUniformsToInspector(inspectableCustomProperties: IInspectable[]) {
+        if (this.inspectableCustomProperties) {
+            this.inspectableCustomProperties.push(...inspectableCustomProperties);
+        } else {
+            this.inspectableCustomProperties = inspectableCustomProperties;
+        }
+
+        const setValue = (property: IInspectable, value: any) => {
+            switch (property.type) {
+                case InspectableType.Vector2:
+                    this.setVector2(property.propertyName, value);
+                    break;
+                case InspectableType.Vector3:
+                    this.setVector3(property.propertyName, value);
+                    break;
+                case InspectableType.Quaternion:
+                    this.setQuaternion(property.propertyName, value);
+                    break;
+                case InspectableType.Color3:
+                    this.setColor3(property.propertyName, value);
+                    break;
+                case InspectableType.Slider:
+                    this.setFloat(property.propertyName, value);
+                    break;
+                case InspectableType.Checkbox:
+                    this.setInt(property.propertyName, value ? 1 : 0);
+                    break;
+            }
+        };
+
+        const getValue = (property: IInspectable) => {
+            switch (property.type) {
+                case InspectableType.Vector2:
+                    return this._vectors2[property.propertyName];
+                case InspectableType.Vector3:
+                    return this._vectors3[property.propertyName];
+                case InspectableType.Quaternion:
+                    return this._quaternions[property.propertyName];
+                case InspectableType.Color3:
+                    return this._colors3[property.propertyName];
+                case InspectableType.Slider:
+                    return this._floats[property.propertyName];
+                case InspectableType.Checkbox:
+                    return this._ints[property.propertyName] === 1;
+                default:
+                    return undefined;
+            }
+        };
+
+        inspectableCustomProperties.forEach((property: IInspectable) => {
+            Object.defineProperty(this, property.propertyName, {
+                set: (value) => setValue(property, value),
+                get: () => getValue(property),
+                enumerable: true,
+                configurable: true,
+            });
+        });
     }
 
     /**
