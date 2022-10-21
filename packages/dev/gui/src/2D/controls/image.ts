@@ -13,6 +13,11 @@ import { EngineStore } from "core/Engines/engineStore";
  * Class used to create 2D images
  */
 export class Image extends Control {
+    /**
+     *  Specifies an alternate text for the image, if the image for some reason cannot be displayed.
+     */
+    public alt?: string;
+
     private _workingCanvas: Nullable<ICanvas> = null;
 
     private _domImage: IImage;

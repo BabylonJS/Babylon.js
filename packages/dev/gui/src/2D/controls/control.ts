@@ -21,6 +21,7 @@ import { GetClass, RegisterClass } from "core/Misc/typeStore";
 import { SerializationHelper, serialize } from "core/Misc/decorators";
 import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
 import { EngineStore } from "core/Engines/engineStore";
+import type { IAccessibilityTag } from "core/IAccessibilityTag";
 import type { IPointerEvent } from "core/Events/deviceInputEvents";
 import type { IAnimatable } from "core/Animations/animatable.interface";
 import type { Animation } from "core/Animations/animation";
@@ -290,6 +291,23 @@ export class Control implements IAnimatable {
     }
 
     /**
+     * Gets or sets the accessibility tag to describe the control for accessibility purpose.
+     * By default, GUI controls already indicate accessibility info, but one can override the info using this tag.
+     */
+    public set accessibilityTag(value: Nullable<IAccessibilityTag>) {
+        this._accessibilityTag = value;
+        this.onAccessibilityTagChangedObservable.notifyObservers(value);
+    }
+
+    public get accessibilityTag() {
+        return this._accessibilityTag;
+    }
+
+    protected _accessibilityTag: Nullable<IAccessibilityTag> = null;
+
+    public onAccessibilityTagChangedObservable = new Observable<Nullable<IAccessibilityTag>>();
+
+    /**
      * An event triggered when pointer wheel is scrolled
      */
     public onWheelObservable = new Observable<Vector2>();
@@ -342,6 +360,11 @@ export class Control implements IAnimatable {
      * An event triggered when the control has been disposed
      */
     public onDisposeObservable = new Observable<Control>();
+
+    /**
+     * An event triggered when the control isVisible is changed
+     */
+    public onIsVisibleChangedObservable = new Observable<boolean>();
 
     /**
      * Get the hosting AdvancedDynamicTexture
@@ -804,6 +827,8 @@ export class Control implements IAnimatable {
 
         this._isVisible = value;
         this._markAsDirty(true);
+
+        this.onIsVisibleChangedObservable.notifyObservers(value);
     }
 
     /** Gets a boolean indicating that the control needs to update its rendering */
