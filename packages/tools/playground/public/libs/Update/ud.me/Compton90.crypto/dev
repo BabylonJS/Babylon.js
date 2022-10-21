@@ -1969,4 +1969,47 @@ declare class CVTOOLS_left_handed implements BABYLON.GLTF2.IGLTFLoaderExtension 
     constructor(loader: BABYLON.GLTF2.GLTFLoader);
     /** @internal */
     dispose(): void;
+} declare class C {❯ docker version
+Client:
+ Version:           20.10.18
+ API version:       1.41
+ Go version:        go1.19.1
+ Git commit:        b40c2f6b5d
+ Built:             Sat Sep 10 11:31:10 2022
+ OS/Arch:           linux/amd64
+ Context:           default
+ Experimental:      true
+Server:
+  Version: 		... 
+
+❯ git version --build-options
+git version 2.38.0
+cpu: x86_64
+no commit associated with this build
+sizeof-long: 8
+sizeof-size_t: 8
+shell-path: /bin/sh
+
+❯ npm version
+{
+  'prettier-playground': '1.0.0',
+  npm: '8.5.0',
+  node: '16.14.2',
+  v8: '9.4.146.24-node.20',
+  uv: '1.43.0',
+  zlib: '1.2.11',
+  brotli: '1.0.9',
+  ares: '1.18.1',
+  modules: '93',
+  nghttp2: '1.45.1',
+  napi: '8',
+  llhttp: '6.0.4',
+  openssl: '1.1.1n+quic',
+  cldr: '40.0',
+  icu: '70.1',
+  tz: '2021a3',
+  unicode: '14.0',
+  ngtcp2: '0.1.0-DEV',
+  nghttp3: '0.1.0-DEV'
 }
+
