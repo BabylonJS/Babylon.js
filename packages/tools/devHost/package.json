@@ -21,6 +21,7 @@
         "@dev/post-processes": "1.0.0",
         "@dev/procedural-textures": "1.0.0",
         "@dev/serializers": "1.0.0",
+        "@tools/accessibility": "1.0.0",
         "html-webpack-plugin": "^5.5.0",
         "rimraf": "^3.0.2",
         "source-map-loader": "^4.0.0",

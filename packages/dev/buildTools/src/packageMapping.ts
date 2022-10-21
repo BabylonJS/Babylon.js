@@ -15,6 +15,7 @@ export type DevPackageName =
     | "procedural-textures"
     | "node-editor"
     | "gui-editor"
+    | "accessibility"
     | "viewer"
     | "ktx2decoder"
     | "shared-ui-components"
@@ -29,6 +30,7 @@ export type UMDPackageName =
     | "babylonjs-inspector"
     | "babylonjs-node-editor"
     | "babylonjs-gui-editor"
+    | "babylonjs-accessibility"
     | "babylonjs-viewer"
     | "babylonjs-post-process"
     | "babylonjs-ktx2decoder"
@@ -44,6 +46,7 @@ export type NamespacePackageName =
     | "BABYLON.Debug"
     | "BABYLON.NodeEditor"
     | "BABYLON.GuiEditor"
+    | "BABYLON.Accessibility"
     | "INSPECTOR"
     | "BabylonViewer"
     | "KTX2DECODER"
@@ -61,6 +64,7 @@ export type ES6PackageName =
     | "@babylonjs/inspector"
     | "@babylonjs/node-editor"
     | "@babylonjs/gui-editor"
+    | "@babylonjs/accessibility"
     | "@babylonjs/post-processes"
     | "@babylonjs/viewer"
     | "@babylonjs/ktx2decoder"
@@ -104,6 +108,10 @@ export const umdPackageMapping: { [key in UMDPackageName]: { baseDir: string; ba
     "babylonjs-gui-editor": {
         baseDir: "guiEditor",
         baseFilename: "babylon.guiEditor",
+    },
+    "babylonjs-accessibility": {
+        baseDir: "accessibility",
+        baseFilename: "babylon.accessibility",
     },
     "babylonjs-post-process": {
         baseDir: "postProcessesLibrary",
@@ -158,6 +166,7 @@ const packageMapping: {
             // }
             return "babylonjs-gui-editor";
         },
+        accessibility: "babylonjs-accessibility",
         "post-processes": "babylonjs-post-process",
         "procedural-textures": "babylonjs-procedural-textures",
         ktx2decoder: "babylonjs-ktx2decoder",
@@ -174,6 +183,7 @@ const packageMapping: {
         inspector: "@babylonjs/inspector",
         "node-editor": "@babylonjs/node-editor",
         "gui-editor": "@babylonjs/gui-editor",
+        accessibility: "@babylonjs/accessibility",
         "post-processes": "@babylonjs/post-processes",
         "procedural-textures": "@babylonjs/procedural-textures",
         ktx2decoder: "@babylonjs/ktx2decoder",
@@ -190,6 +200,7 @@ const packageMapping: {
         inspector: "@babylonjs/esm",
         "node-editor": "@babylonjs/esm",
         "gui-editor": "@babylonjs/esm",
+        accessibility: "@babylonjs/accessibility",
         "post-processes": "@babylonjs/esm",
         "procedural-textures": "@babylonjs/esm",
         ktx2decoder: "@babylonjs/esm",
@@ -268,6 +279,7 @@ const packageMapping: {
             }
             return "BABYLON";
         },
+        accessibility: "BABYLON.Accessibility",
         "post-processes": "BABYLON",
         "procedural-textures": "BABYLON",
         ktx2decoder: "KTX2DECODER",
