@@ -31,6 +31,7 @@
             "shared-ui-components/*": ["dev/sharedUiComponents/dist/*"],
             "node-editor/*": ["tools/nodeEditor/dist/*"],
             "gui-editor/*": ["tools/guiEditor/dist/*"],
+            "accessibility/*": ["tools/accessibility/dist/*"],
             "viewer/*": ["tools/viewer/dist/*"],
             "ktx2decoder/*": ["tools/ktx2Decoder/dist/*"],
             "vsm": ["tools/vsm/dist/*"]
