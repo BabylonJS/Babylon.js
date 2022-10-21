@@ -168,21 +168,21 @@ export const StatesViewComponent: FC = () => {
             dest.x = 300;
             dest.y = 400;
 
-            const node = scene.getMeshByName("sphere");
-            if (node) {
-                node.metadata.onStateChanged.add((props: any) => {
-                    const state = props.state;
-                    console.log("state changed to", state);
+            // const node = scene.getMeshByName("sphere");
+            // if (node) {
+            //     node.metadata.onStateChanged.add((props: any) => {
+            //         const state = props.state;
+            //         console.log("state changed to", state);
 
-                    if (state === "Sphere Origin") {
-                        origin.addClassToVisual(style.highlight);
-                        dest.removeClassFromVisual(style.highlight);
-                    } else {
-                        origin.removeClassFromVisual(style.highlight);
-                        dest.addClassToVisual(style.highlight);
-                    }
-                });
-            }
+            //         if (state === "Sphere Origin") {
+            //             origin.addClassToVisual(style.highlight);
+            //             dest.removeClassFromVisual(style.highlight);
+            //         } else {
+            //             origin.removeClassFromVisual(style.highlight);
+            //             dest.addClassToVisual(style.highlight);
+            //         }
+            //     });
+            // }
 
             const newLinks = new Array<NodeLink>();
 

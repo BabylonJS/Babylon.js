@@ -10,7 +10,9 @@ import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
 import { SelectionContext } from "./components/SelectionContext";
 import { initialLayout } from "./initialLayout";
 import { Vector3 } from "core/Maths/math";
-import { Observable } from "core/Misc/observable";
+import { ActionManager } from "./actions/ActionManager";
+import { ClickTrigger } from "./actions/triggers/ClickTrigger";
+import { LogAction } from "./actions/actions/LogAction";
 
 export type WorkbenchProps = {};
 
@@ -41,31 +43,36 @@ export const Workbench: FC<WorkbenchProps> = () => {
 
     useEffect(() => {
         if (scene) {
-            // Get node
             const node = scene.getMeshByName("sphere");
             if (node) {
-                // Apply initial state
-                let currentState = "Sphere Origin";
-                node.position = stateValues.current[currentState];
+                const actionManager = new ActionManager(scene);
+                const clickTrigger = new ClickTrigger(node);
+                const logAction = new LogAction("You clicked on the sphere!");
+                actionManager.addBehavior(clickTrigger, logAction);
+                actionManager.start();
+                // // Get node
+                //     // Apply initial state
+                //     let currentState = "Sphere Origin";
+                //     node.position = stateValues.current[currentState];
 
-                node.metadata = {};
-                node.metadata.onStateChanged = new Observable<{ state: string }>();
-                node.metadata.onStateChanged.notifyObservers({ state: currentState });
+                //     node.metadata = {};
+                //     node.metadata.onStateChanged = new Observable<{ state: string }>();
+                //     node.metadata.onStateChanged.notifyObservers({ state: currentState });
 
-                scene.onPointerPick = (pickedPoint, pickInfo) => {
-                    if (pickInfo.pickedMesh !== node) return;
+                //     scene.onPointerPick = (pickedPoint, pickInfo) => {
+                //         if (pickInfo.pickedMesh !== node) return;
 
-                    // Change state
-                    if (currentState === "Sphere Origin") {
-                        currentState = "Sphere Destination";
-                    } else {
-                        currentState = "Sphere Origin";
-                    }
-                    // Execute action
-                    node.position = stateValues.current[currentState];
+                //         // Change state
+                //         if (currentState === "Sphere Origin") {
+                //             currentState = "Sphere Destination";
+                //         } else {
+                //             currentState = "Sphere Origin";
+                //         }
+                //         // Execute action
+                //         node.position = stateValues.current[currentState];
 
-                    node.metadata.onStateChanged.notifyObservers({ state: currentState });
-                };
+                //         node.metadata.onStateChanged.notifyObservers({ state: currentState });
+                //     };
             }
         }
     }, [scene]);
