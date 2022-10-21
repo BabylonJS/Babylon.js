@@ -5,6 +5,7 @@ import { BaseTrigger } from "./BaseTrigger";
 
 export class ClickTrigger extends BaseTrigger {
     private _object: AbstractMesh;
+    private _clickDuration = 500;
     private _clicked = false;
 
     constructor(object: AbstractMesh) {
@@ -16,12 +17,16 @@ export class ClickTrigger extends BaseTrigger {
                     this._clicked = true;
                     setTimeout(() => {
                         this._clicked = false;
-                    });
+                    }, this._clickDuration);
                 } else {
                     this._clicked = false;
                 }
             }
         });
+    }
+
+    set clickDuration(duration: number) {
+        this._clickDuration = duration;
     }
 
     public condition(scene: Scene): boolean {

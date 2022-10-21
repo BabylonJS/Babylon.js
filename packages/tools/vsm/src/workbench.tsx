@@ -10,8 +10,9 @@ import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
 import { SelectionContext } from "./components/SelectionContext";
 import { initialLayout } from "./initialLayout";
 import { Vector3 } from "core/Maths/math";
-import { ActionManager } from "./actions/ActionManager";
-import { ClickTrigger } from "./actions/triggers/ClickTrigger";
+import { SetPositionAction } from "./actions/actions/SetPositionAction";
+import { StateMachine } from "./stateMachine/StateMachine";
+// @ts-ignore
 import { LogAction } from "./actions/actions/LogAction";
 
 export type WorkbenchProps = {};
@@ -45,11 +46,35 @@ export const Workbench: FC<WorkbenchProps> = () => {
         if (scene) {
             const node = scene.getMeshByName("sphere");
             if (node) {
-                const actionManager = new ActionManager(scene);
-                const clickTrigger = new ClickTrigger(node);
-                const logAction = new LogAction("You clicked on the sphere!");
-                actionManager.addBehavior(clickTrigger, logAction);
-                actionManager.start();
+                const stateMachine = new StateMachine(scene, node);
+
+                stateMachine.setStartingState("Sphere Origin");
+                stateMachine.addTransition("Sphere Origin", "Sphere Destination");
+                stateMachine.addTransition("Sphere Destination", "Sphere Origin");
+
+                const setPositionOriginAction = new SetPositionAction();
+                setPositionOriginAction.targetNode = node;
+                setPositionOriginAction.targetPosition = stateValues.current["Sphere Origin"];
+                stateMachine.setStateAction("Sphere Origin", setPositionOriginAction);
+                // stateMachine.setStateAction("Sphere Origin", new LogAction("Enter Sphere Origin"));
+
+                const setPositionDestinationAction = new SetPositionAction();
+                setPositionDestinationAction.targetNode = node;
+                setPositionDestinationAction.targetPosition = stateValues.current["Sphere Destination"];
+                stateMachine.setStateAction("Sphere Destination", setPositionDestinationAction);
+                // stateMachine.setStateAction("Sphere Destination", new LogAction("Enter Sphere Destination"));
+
+                stateMachine.start();
+
+                // const actionManager = new ActionManager(scene);
+                // const clickTrigger = new ClickTrigger(node);
+                // const logAction = new LogAction("You clicked on the sphere!");
+                // const setPositionAction = new SetPositionAction();
+                // setPositionAction.targetPosition = new Vector3(1, 1, 1);
+                // setPositionAction.targetNode = node;
+                // actionManager.addBehavior(clickTrigger, logAction);
+                // actionManager.addBehavior(clickTrigger, setPositionAction);
+                // actionManager.start();
                 // // Get node
                 //     // Apply initial state
                 //     let currentState = "Sphere Origin";
