@@ -836,6 +836,11 @@ export class InputManager {
                             }
                         }
                         if (this._checkPrePointerObservable(null, evt, PointerEventTypes.POINTERUP)) {
+                            // If we're skipping the next observable, we need to reset the swipe state before returning
+                            if (this._swipeButtonPressed === evt.button) {
+                                this._isSwiping = false;
+                                this._swipeButtonPressed = -1;
+                            }
                             return;
                         }
                     }
