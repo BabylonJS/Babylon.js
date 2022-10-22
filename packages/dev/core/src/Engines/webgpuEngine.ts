@@ -1724,6 +1724,7 @@ export class WebGPUEngine extends Engine {
             console.log(defines);
             console.log(vertexSourceCode);
             console.log(fragmentSourceCode);
+            console.log("***********************************************");
         }
 
         webGpuContext.sources = {
