@@ -1192,6 +1192,8 @@ export class Vector3 {
      * 90 degrees about an axis which lies perpendicular to the current vector
      * and its projection on the xz plane. In the case of a current vector in the xz plane
      * the normal is calculated to be along the y axis.
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#230
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#231
      * @param result defines the Vector3 object where to store the resultant normal
      * returns the result
      */
@@ -3743,6 +3745,7 @@ export class Vector4 {
 
 /**
  * Class used to store quaternion data
+ * Example Playground - Overview - https://playground.babylonjs.com/#L49EJ7#100
  * @see https://en.wikipedia.org/wiki/Quaternion
  * @see https://doc.babylonjs.com/features/position,_rotation,_scaling
  */
@@ -3850,6 +3853,7 @@ export class Quaternion {
 
     /**
      * Copy the quaternion to an array
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#13
      * @returns a new array populated with 4 elements from the quaternion coordinates
      */
     public asArray(): number[] {
@@ -3858,6 +3862,7 @@ export class Quaternion {
 
     /**
      * Stores from the starting index in the given array the Quaternion successive values
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#59
      * @param array defines the array where to store the x,y,z,w components
      * @param index defines an optional index in the target array to define where to start storing values
      * @returns the current Quaternion object
@@ -3872,6 +3877,7 @@ export class Quaternion {
 
     /**
      * Check if two quaternions are equals
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#38
      * @param otherQuaternion defines the second operand
      * @returns true if the current quaternion and the given one coordinates are strictly equals
      */
@@ -3881,6 +3887,7 @@ export class Quaternion {
 
     /**
      * Gets a boolean if two quaternions are equals (using an epsilon value)
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#37
      * @param otherQuaternion defines the other quaternion
      * @param epsilon defines the minimal distance to consider equality
      * @returns true if the given quaternion coordinates are close to the current ones by a distance of epsilon.
@@ -3897,6 +3904,7 @@ export class Quaternion {
 
     /**
      * Clone the current quaternion
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#12
      * @returns a new quaternion copied from the current one
      */
     public clone(): this {
@@ -3905,6 +3913,7 @@ export class Quaternion {
 
     /**
      * Copy a quaternion to the current one
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#86
      * @param other defines the other quaternion
      * @returns the updated current quaternion
      */
@@ -3918,6 +3927,7 @@ export class Quaternion {
 
     /**
      * Updates the current quaternion with the given float coordinates
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#87
      * @param x defines the x coordinate
      * @param y defines the y coordinate
      * @param z defines the z coordinate
@@ -3934,6 +3944,7 @@ export class Quaternion {
 
     /**
      * Updates the current quaternion from the given float coordinates
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#56
      * @param x defines the x coordinate
      * @param y defines the y coordinate
      * @param z defines the z coordinate
@@ -3946,6 +3957,7 @@ export class Quaternion {
 
     /**
      * Adds two quaternions
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#10
      * @param other defines the second operand
      * @returns a new quaternion as the addition result of the given one and the current quaternion
      */
@@ -3955,6 +3967,7 @@ export class Quaternion {
 
     /**
      * Add a quaternion to the current one
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#11
      * @param other defines the quaternion to add
      * @returns the current quaternion
      */
@@ -3968,6 +3981,7 @@ export class Quaternion {
 
     /**
      * Subtract two quaternions
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#57
      * @param other defines the second operand
      * @returns a new quaternion as the subtraction result of the given one from the current one
      */
@@ -3977,6 +3991,7 @@ export class Quaternion {
 
     /**
      * Subtract a quaternion to the current one
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#58
      * @param other defines the quaternion to subtract
      * @returns the current quaternion
      */
@@ -3990,6 +4005,7 @@ export class Quaternion {
 
     /**
      * Multiplies the current quaternion by a scale factor
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#88
      * @param value defines the scale factor
      * @returns a new quaternion set by multiplying the current quaternion coordinates by the float "scale"
      */
@@ -3999,6 +4015,7 @@ export class Quaternion {
 
     /**
      * Scale the current quaternion values by a factor and stores the result to a given quaternion
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#89
      * @param scale defines the scale factor
      * @param result defines the Quaternion object where to store the result
      * @returns result input
@@ -4013,6 +4030,7 @@ export class Quaternion {
 
     /**
      * Multiplies in place the current quaternion by a scale factor
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#90
      * @param value defines the scale factor
      * @returns the current modified quaternion
      */
@@ -4027,6 +4045,7 @@ export class Quaternion {
 
     /**
      * Scale the current quaternion values by a factor and add the result to a given quaternion
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#91
      * @param scale defines the scale factor
      * @param result defines the Quaternion object where to store the result
      * @returns result input
@@ -4041,6 +4060,7 @@ export class Quaternion {
 
     /**
      * Multiplies two quaternions
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#43
      * @param q1 defines the second operand
      * @returns a new quaternion set as the multiplication result of the current one with the given one "q1"
      */
@@ -4052,6 +4072,7 @@ export class Quaternion {
 
     /**
      * Sets the given "result" as the the multiplication result of the current one with the given one "q1"
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#45
      * @param q1 defines the second operand
      * @param result defines the target quaternion
      * @returns the current quaternion
@@ -4067,6 +4088,7 @@ export class Quaternion {
 
     /**
      * Updates the current quaternion with the multiplication of itself with the given one "q1"
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#46
      * @param q1 defines the second operand
      * @returns the currentupdated quaternion
      */
@@ -4077,6 +4099,7 @@ export class Quaternion {
 
     /**
      * Conjugates the current quaternion and stores the result in the given quaternion
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#81
      * @param ref defines the target quaternion
      * @returns result input
      */
@@ -4087,6 +4110,7 @@ export class Quaternion {
 
     /**
      * Conjugates in place the current quaternion
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#82
      * @returns the current updated quaternion
      */
     public conjugateInPlace(): this {
@@ -4098,6 +4122,7 @@ export class Quaternion {
 
     /**
      * Conjugates (1-q) the current quaternion
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#83
      * @returns a new quaternion
      */
     public conjugate(): this {
@@ -4106,6 +4131,7 @@ export class Quaternion {
 
     /**
      * Returns the inverse of the current quaternion
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#84
      * @returns a new quaternion
      */
     public invert(): this {
@@ -4120,6 +4146,7 @@ export class Quaternion {
 
     /**
      * Invert in place the current quaternion
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#85
      * @returns this quaternion
      */
     public invertInPlace(): this {
@@ -4134,6 +4161,7 @@ export class Quaternion {
 
     /**
      * Gets squared length of current quaternion
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#29
      * @returns the quaternion length (float)
      */
     public lengthSquared(): number {
@@ -4142,6 +4170,7 @@ export class Quaternion {
 
     /**
      * Gets length of current quaternion
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#28
      * @returns the quaternion length (float)
      */
     public length(): number {
@@ -4150,6 +4179,7 @@ export class Quaternion {
 
     /**
      * Normalize in place the current quaternion
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#54
      * @returns the current updated quaternion
      */
     public normalize(): this {
@@ -4165,6 +4195,7 @@ export class Quaternion {
 
     /**
      * Normalize a copy of the current quaternion
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#55
      * @returns the normalized quaternion
      */
     public normalizeToNew(): this {
@@ -4179,6 +4210,7 @@ export class Quaternion {
 
     /**
      * Returns a new Vector3 set with the Euler angles translated from the current quaternion
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#32
      * @returns a new Vector3 containing the Euler angles
      * @see https://doc.babylonjs.com/divingDeeper/mesh/transforms/center_origin/rotation_conventions
      */
@@ -4190,6 +4222,7 @@ export class Quaternion {
 
     /**
      * Sets the given vector3 "result" with the Euler angles translated from the current quaternion
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#31
      * @param result defines the vector which will be filled with the Euler angles
      * @returns result input
      * @see https://doc.babylonjs.com/divingDeeper/mesh/transforms/center_origin/rotation_conventions
@@ -4226,6 +4259,7 @@ export class Quaternion {
 
     /**
      * Updates the given rotation matrix with the current quaternion values
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#67
      * @param result defines the target matrix
      * @returns the current unchanged quaternion
      */
@@ -4236,6 +4270,7 @@ export class Quaternion {
 
     /**
      * Updates the current quaternion from the given rotation matrix values
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#41
      * @param matrix defines the source matrix
      * @returns the current updated quaternion
      */
@@ -4248,6 +4283,7 @@ export class Quaternion {
 
     /**
      * Creates a new quaternion from a rotation matrix
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#101
      * @param matrix defines the source matrix
      * @returns a new quaternion created from the given rotation matrix values
      */
@@ -4259,6 +4295,7 @@ export class Quaternion {
 
     /**
      * Updates the given quaternion with the given rotation matrix values
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#102
      * @param matrix defines the source matrix
      * @param result defines the target quaternion
      * @returns result input
@@ -4311,6 +4348,7 @@ export class Quaternion {
 
     /**
      * Returns the dot product (float) between the quaternions "left" and "right"
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#61
      * @param left defines the left operand
      * @param right defines the right operand
      * @returns the dot product
@@ -4321,6 +4359,7 @@ export class Quaternion {
 
     /**
      * Checks if the orientations of two rotation quaternions are close to each other
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#60
      * @param quat0 defines the first quaternion to check
      * @param quat1 defines the second quaternion to check
      * @param epsilon defines closeness, 0 same orientation, 1 PI apart, default 0.1
@@ -4334,7 +4373,7 @@ export class Quaternion {
 
     /**
      * Smooth interpolation between two quaternions using Slerp
-     *
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#93
      * @param source source quaternion
      * @param goal goal quaternion
      * @param deltaTime current interpolation frame
@@ -4359,6 +4398,7 @@ export class Quaternion {
 
     /**
      * Inverse a given quaternion
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#103
      * @param q defines the source quaternion
      * @returns a new quaternion as the inverted current quaternion
      */
@@ -4368,6 +4408,7 @@ export class Quaternion {
 
     /**
      * Inverse a given quaternion
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#104
      * @param q defines the source quaternion
      * @param result the quaternion the result will be stored in
      * @returns the result quaternion
@@ -4396,6 +4437,7 @@ export class Quaternion {
 
     /**
      * Creates a quaternion from a rotation around an axis
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#72
      * @param axis defines the axis to use
      * @param angle defines the angle to use
      * @returns a new quaternion created from the given axis (Vector3) and angle in radians (float)
@@ -4406,6 +4448,7 @@ export class Quaternion {
 
     /**
      * Creates a rotation around an axis and stores it into the given quaternion
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#73
      * @param axis defines the axis to use
      * @param angle defines the angle to use
      * @param result defines the target quaternion
@@ -4423,6 +4466,7 @@ export class Quaternion {
 
     /**
      * Creates a new quaternion from data stored into an array
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#63
      * @param array defines the data source
      * @param offset defines the offset in the source array where the data starts
      * @returns a new quaternion
@@ -4436,6 +4480,7 @@ export class Quaternion {
 
     /**
      * Updates the given quaternion "result" from the starting index of the given array.
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#64
      * @param array the array to pull values from
      * @param offset the offset into the array to start at
      * @param result the quaternion to store the result in
@@ -4451,6 +4496,7 @@ export class Quaternion {
 
     /**
      * Create a quaternion from Euler rotation angles
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#33
      * @param x Pitch
      * @param y Yaw
      * @param z Roll
@@ -4464,6 +4510,7 @@ export class Quaternion {
 
     /**
      * Updates a quaternion from Euler rotation angles
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#34
      * @param x Pitch
      * @param y Yaw
      * @param z Roll
@@ -4477,6 +4524,7 @@ export class Quaternion {
 
     /**
      * Create a quaternion from Euler rotation vector
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#35
      * @param vec the Euler vector (x Pitch, y Yaw, z Roll)
      * @returns the new Quaternion
      */
@@ -4488,6 +4536,7 @@ export class Quaternion {
 
     /**
      * Updates a quaternion from Euler rotation vector
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#36
      * @param vec the Euler vector (x Pitch, y Yaw, z Roll)
      * @param result the quaternion to store the result
      * @returns the updated quaternion
@@ -4524,6 +4573,7 @@ export class Quaternion {
 
     /**
      * Creates a new quaternion from the given Euler float angles (y, x, z)
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#77
      * @param yaw defines the rotation around Y axis
      * @param pitch defines the rotation around X axis
      * @param roll defines the rotation around Z axis
@@ -4537,6 +4587,7 @@ export class Quaternion {
 
     /**
      * Creates a new rotation from the given Euler float angles (y, x, z) and stores it in the target quaternion
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#78
      * @param yaw defines the rotation around Y axis
      * @param pitch defines the rotation around X axis
      * @param roll defines the rotation around Z axis
@@ -4565,6 +4616,7 @@ export class Quaternion {
 
     /**
      * Creates a new quaternion from the given Euler float angles expressed in z-x-z orientation
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#68
      * @param alpha defines the rotation around first axis
      * @param beta defines the rotation around second axis
      * @param gamma defines the rotation around third axis
@@ -4578,6 +4630,7 @@ export class Quaternion {
 
     /**
      * Creates a new quaternion from the given Euler float angles expressed in z-x-z orientation and stores it in the target quaternion
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#69
      * @param alpha defines the rotation around first axis
      * @param beta defines the rotation around second axis
      * @param gamma defines the rotation around third axis
@@ -4599,6 +4652,7 @@ export class Quaternion {
 
     /**
      * Creates a new quaternion containing the rotation value to reach the target (axis1, axis2, axis3) orientation as a rotated XYZ system (axis1, axis2 and axis3 are normalized during this operation)
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#75
      * @param axis1 defines the first axis
      * @param axis2 defines the second axis
      * @param axis3 defines the third axis
@@ -4612,6 +4666,7 @@ export class Quaternion {
 
     /**
      * Creates a rotation value to reach the target (axis1, axis2, axis3) orientation as a rotated XYZ system (axis1, axis2 and axis3 are normalized during this operation) and stores it in the target quaternion
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#76
      * @param axis1 defines the first axis
      * @param axis2 defines the second axis
      * @param axis3 defines the third axis
@@ -4628,6 +4683,7 @@ export class Quaternion {
     /**
      * Creates a new rotation value to orient an object to look towards the given forward direction, the up direction being oriented like "up".
      * This function works in left handed mode
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#96
      * @param forward defines the forward direction - Must be normalized and orthogonal to up.
      * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
      * @returns A new quaternion oriented toward the specified forward and up.
@@ -4641,6 +4697,7 @@ export class Quaternion {
     /**
      * Creates a new rotation value to orient an object to look towards the given forward direction with the up direction being oriented like "up", and stores it in the target quaternion.
      * This function works in left handed mode
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#97
      * @param forward defines the forward direction - Must be normalized and orthogonal to up.
      * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
      * @param ref defines the target quaternion.
@@ -4656,6 +4713,7 @@ export class Quaternion {
     /**
      * Creates a new rotation value to orient an object to look towards the given forward direction, the up direction being oriented like "up".
      * This function works in right handed mode
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#98
      * @param forward defines the forward direction - Must be normalized and orthogonal to up.
      * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
      * @returns A new quaternion oriented toward the specified forward and up.
@@ -4669,6 +4727,7 @@ export class Quaternion {
     /**
      * Creates a new rotation value to orient an object to look towards the given forward direction with the up direction being oriented like "up", and stores it in the target quaternion.
      * This function works in right handed mode
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#105
      * @param forward defines the forward direction - Must be normalized and orthogonal to up.
      * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
      * @param ref defines the target quaternion.
@@ -4682,6 +4741,7 @@ export class Quaternion {
 
     /**
      * Interpolates between two quaternions
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#79
      * @param left defines first quaternion
      * @param right defines second quaternion
      * @param amount defines the gradient to use
@@ -4697,6 +4757,7 @@ export class Quaternion {
 
     /**
      * Interpolates between two quaternions and stores it into a target quaternion
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#92
      * @param left defines first quaternion
      * @param right defines second quaternion
      * @param amount defines the gradient to use
@@ -4733,6 +4794,8 @@ export class Quaternion {
 
     /**
      * Interpolate between two quaternions using Hermite interpolation
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#47
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/drawCurves#hermite-quaternion-spline
      * @param value1 defines first quaternion
      * @param tangent1 defines the incoming tangent
      * @param value2 defines second quaternion
@@ -4763,6 +4826,7 @@ export class Quaternion {
 
     /**
      * Returns a new Quaternion which is the 1st derivative of the Hermite spline defined by the quaternions "value1", "value2", "tangent1", "tangent2".
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#48
      * @param value1 defines the first control point
      * @param tangent1 defines the first tangent
      * @param value2 defines the second control point
@@ -4786,6 +4850,7 @@ export class Quaternion {
 
     /**
      * Update a Quaternion with the 1st derivative of the Hermite spline defined by the quaternions "value1", "value2", "tangent1", "tangent2".
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#49
      * @param value1 defines the first control point
      * @param tangent1 defines the first tangent
      * @param value2 defines the second control point
