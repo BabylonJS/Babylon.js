@@ -873,6 +873,7 @@ export class WebGPUEngine extends Engine {
 
         if (this._options.antialiasing) {
             const mainTextureDescriptor: GPUTextureDescriptor = {
+                label: "Texture_MainColor_antialiasing",
                 size: this._mainTextureExtends,
                 mipLevelCount: 1,
                 sampleCount: this._mainPassSampleCount,
