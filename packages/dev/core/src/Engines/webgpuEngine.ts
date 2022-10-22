@@ -856,6 +856,8 @@ export class WebGPUEngine extends Engine {
             return;
         }
 
+        this.flushFramebuffer(false);
+
         this._mainTextureExtends = {
             width: this.getRenderWidth(),
             height: this.getRenderHeight(),
@@ -880,7 +882,9 @@ export class WebGPUEngine extends Engine {
                 usage: WebGPUConstants.TextureUsage.RenderAttachment,
             };
 
-            this._mainTexture?.destroy();
+            if (this._mainTexture) {
+                this._textureHelper.releaseTexture(this._mainTexture);
+            }
             this._mainTexture = this._device.createTexture(mainTextureDescriptor);
             mainColorAttachments = [
                 {
@@ -916,7 +920,7 @@ export class WebGPUEngine extends Engine {
         };
 
         if (this._depthTexture) {
-            this._depthTexture.destroy();
+            this._textureHelper.releaseTexture(this._depthTexture);
         }
         this._depthTexture = this._device.createTexture(depthTextureDescriptor);
         const mainDepthAttachment: GPURenderPassDepthStencilAttachment = {
@@ -935,9 +939,6 @@ export class WebGPUEngine extends Engine {
             depthStencilAttachment: mainDepthAttachment,
         };
 
-        if (this._mainRenderPassWrapper.renderPass !== null) {
-            this._endMainRenderPass();
-        }
     }
 
     private _configureContext(): void {
@@ -2840,7 +2841,7 @@ export class WebGPUEngine extends Engine {
 
     private _startMainRenderPass(setClearStates: boolean, clearColor?: Nullable<IColor4Like>, clearDepth?: boolean, clearStencil?: boolean): void {
         if (this._mainRenderPassWrapper.renderPass) {
-            this._endMainRenderPass();
+            this.flushFramebuffer(false);
         }
 
         if (this.useReverseDepthBuffer) {
