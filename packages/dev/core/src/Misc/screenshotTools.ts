@@ -208,8 +208,6 @@ export function CreateScreenshotUsingRenderTarget(
 
     const scene = camera.getScene();
 
-    scene.render(); // make sure the scene is ready to be rendered in the RTT with the right list of active meshes (which depends on the camera, that may have been changed above)
-
     // At this point size can be a number, or an object (according to engine.prototype.createRenderTargetTexture method)
     const texture = new RenderTargetTexture(
         "screenShot",
