@@ -2170,7 +2170,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param checkRenderTargets true to also check that the meshes rendered as part of a render target are ready (default: false)
      */
     public executeWhenReady(func: () => void, checkRenderTargets = false): void {
-        this.onReadyObservable.add(func);
+        this.onReadyObservable.addOnce(func);
 
         if (this._executeWhenReadyTimeoutId !== null) {
             return;
