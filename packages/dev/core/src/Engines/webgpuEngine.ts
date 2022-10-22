@@ -938,7 +938,6 @@ export class WebGPUEngine extends Engine {
             colorAttachments: mainColorAttachments,
             depthStencilAttachment: mainDepthAttachment,
         };
-
     }
 
     private _configureContext(): void {

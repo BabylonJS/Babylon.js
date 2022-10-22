@@ -589,7 +589,7 @@ export class PostProcess {
             samplingMode: this.renderTargetSamplingMode,
             type: this._textureType,
             format: this._textureFormat,
-            samples: this._samples
+            samples: this._samples,
         };
 
         this._textures.push(this._createRenderTargetTexture(textureSize, textureOptions, 0));
