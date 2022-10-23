@@ -135,7 +135,10 @@ export class RenderingManager {
         }
     }
 
-    public getRenderingGroup(id: number) {
+    /**
+     * Gets the rendering group with the specified id.
+     */
+    public getRenderingGroup(id: number): RenderingGroup {
         const renderingGroupId = id || 0;
 
         this._prepareRenderingGroup(renderingGroupId);
