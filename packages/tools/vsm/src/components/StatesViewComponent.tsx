@@ -171,15 +171,15 @@ export const StatesViewComponent: FC = () => {
 
             const newLinks = new Array<NodeLink>();
 
-            // for (const [originState, destState] of stateMachine.getTransitions()) {
-            //     const originNode = newNodes.find((n) => n.name === originState);
-            //     const destNode = newNodes.find((n) => n.name === destState);
+            for (const [originState, destState] of stateMachine.getTransitions()) {
+                const originNode = newNodes.find((n) => n.content.data.state.id === originState);
+                const destNode = newNodes.find((n) => n.content.data.state.id === destState.id);
 
-            //     if (originNode && destNode) {
-            //         const link = linkPorts(graphCanvasComponent, originNode, originNode.outputPorts[0], destNode, destNode.inputPorts[0]);
-            //         newLinks.push(link);
-            //     }
-            // }
+                if (originNode && destNode) {
+                    const link = linkPorts(graphCanvasComponent, originNode, originNode.outputPorts[0], destNode, destNode.inputPorts[0]);
+                    newLinks.push(link);
+                }
+            }
 
             setNodes(newNodes);
             setLinks(newLinks);
