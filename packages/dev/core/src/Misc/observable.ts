@@ -318,14 +318,14 @@ export class Observable<T> {
             }
 
             if (obs.mask & mask) {
+                if (obs.unregisterOnNextCall) {
+                    this._deferUnregister(obs);
+                }
+
                 if (obs.scope) {
                     state.lastReturnValue = obs.callback.apply(obs.scope, [eventData, state]);
                 } else {
                     state.lastReturnValue = obs.callback(eventData, state);
-                }
-
-                if (obs.unregisterOnNextCall) {
-                    this._deferUnregister(obs);
                 }
             }
             if (state.skipNextObservers) {
@@ -350,11 +350,11 @@ export class Observable<T> {
         state.mask = mask;
         state.skipNextObservers = false;
 
-        observer.callback(eventData, state);
-
         if (observer.unregisterOnNextCall) {
             this._deferUnregister(observer);
         }
+
+        observer.callback(eventData, state);
     }
 
     /**
