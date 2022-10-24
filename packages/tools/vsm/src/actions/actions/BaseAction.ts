@@ -9,6 +9,11 @@ export class BaseAction {
         /** Overriden in child classes */
     }
 
+    public actionName(): string {
+        /** Overriden in child classes */
+        return "BaseAction";
+    }
+
     public addObserver(obs: Observer<void>) {
         this._triggerObservers.push(obs);
     }

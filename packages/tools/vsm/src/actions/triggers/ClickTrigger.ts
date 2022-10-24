@@ -12,17 +12,15 @@ export class ClickTrigger extends BaseTrigger {
         super();
         this._object = object;
         this._object.getScene().onPointerObservable.add((pointerInfo) => {
-            if (pointerInfo && pointerInfo.type === PointerEventTypes.POINTERDOWN) {
-                if (pointerInfo.pickInfo?.hit && pointerInfo.pickInfo.pickedMesh === this._object) {
-                    this._clicked = true;
-                    setTimeout(() => {
-                        this._clicked = false;
-                    }, this._clickDuration);
-                } else {
+            if (pointerInfo.pickInfo?.hit && pointerInfo.pickInfo.pickedMesh === this._object) {
+                this._clicked = true;
+                setTimeout(() => {
                     this._clicked = false;
-                }
+                }, this._clickDuration);
+            } else {
+                this._clicked = false;
             }
-        });
+        }, PointerEventTypes.POINTERDOWN);
     }
 
     set clickDuration(duration: number) {

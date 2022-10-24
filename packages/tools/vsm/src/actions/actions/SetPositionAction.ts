@@ -23,4 +23,8 @@ export class SetPositionAction extends BaseAction {
             this._targetNode.position = this._targetPosition;
         }
     }
+
+    public override actionName(): string {
+        return "SetPosition";
+    }
 }
