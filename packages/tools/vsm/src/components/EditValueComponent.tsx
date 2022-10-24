@@ -18,7 +18,7 @@ export const EditValueComponent: FC<IEditValueComponentProps> = (props) => {
     useEffect(() => {
         if (selectedNode) {
             // const selectedState = selectedNode?.name;
-            const selectedStateAction = selectedNode?.content?.data?.stateEnterAction;
+            const selectedStateAction = selectedNode?.content?.data?.state?.stateEnterAction;
             // const selectedStateAction = selectedState && stateMachine?.getStateAction(selectedState);
             // const selectedStateAction = selectedNode?.content?.data;
 
@@ -39,8 +39,7 @@ export const EditValueComponent: FC<IEditValueComponentProps> = (props) => {
             if (isNaN(parsedValue)) return;
             // const selectedState = selectedNode?.name;
             // const selectedStateAction = selectedState && stateMachine?.getStateAction(selectedState);
-            const selectedStateAction = selectedNode?.content?.data?.stateEnterAction;
-
+            const selectedStateAction = selectedNode?.content?.data?.state?.stateEnterAction;
             const selectedStateValue = selectedStateAction && selectedStateAction instanceof SetPositionAction && selectedStateAction.targetPosition;
             if (selectedStateValue) {
                 selectedStateValue[axis] = parsedValue;
