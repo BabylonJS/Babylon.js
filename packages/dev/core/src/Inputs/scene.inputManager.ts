@@ -89,6 +89,8 @@ export class InputManager {
     private _previousPickResult: Nullable<PickingInfo> = null;
     private _totalPointersPressed = 0;
     private _doubleClickOccured = false;
+    private _isSwiping: boolean = false;
+    private _swipeButtonPressed: number = -1;
 
     private _pointerOverMesh: Nullable<AbstractMesh>;
 
@@ -218,8 +220,10 @@ export class InputManager {
 
         const type = evt.inputIndex >= PointerInput.MouseWheelX && evt.inputIndex <= PointerInput.MouseWheelZ ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE;
 
-        if (scene.onPointerMove && pickResult) {
-            scene.onPointerMove(evt, pickResult, type);
+        if (scene.onPointerMove) {
+            // Because of lazy picking, we need to force a pick to update the pickResult
+            const pr = pickResult ? pickResult : this._pickMove(evt.pointerId);
+            scene.onPointerMove(evt, pr, type);
         }
 
         let pointerInfo: PointerInfo;
@@ -267,7 +271,7 @@ export class InputManager {
     }
 
     /** @internal */
-    public _pickMove(pointerId: number): Nullable<PickingInfo> {
+    public _pickMove(pointerId: number): PickingInfo {
         const scene = this._scene;
         const pickResult = scene.pick(
             this._unTranslatedPointerX,
@@ -408,10 +412,7 @@ export class InputManager {
      * @internals Boolean if delta for pointer exceeds drag movement threshold
      */
     public _isPointerSwiping(): boolean {
-        return (
-            Math.abs(this._startingPointerPosition.x - this._pointerX) > InputManager.DragMovementThreshold ||
-            Math.abs(this._startingPointerPosition.y - this._pointerY) > InputManager.DragMovementThreshold
-        );
+        return this._isSwiping;
     }
 
     /**
@@ -725,6 +726,13 @@ export class InputManager {
                     (!scene.cameraToUseForPointers || (scene.cameraToUseForPointers.layerMask & mesh.layerMask) !== 0);
             }
 
+            // Check if pointer leaves DragMovementThreshold range to determine if swipe is occurring
+            if (!this._isSwiping && this._swipeButtonPressed !== -1) {
+                this._isSwiping =
+                    Math.abs(this._startingPointerPosition.x - this._pointerX) > InputManager.DragMovementThreshold ||
+                    Math.abs(this._startingPointerPosition.y - this._pointerY) > InputManager.DragMovementThreshold;
+            }
+
             const pickResult = scene._registeredActions > 0 ? this._pickMove((evt as IPointerEvent).pointerId) : null;
             this._processPointerMove(pickResult, evt as IPointerEvent);
         };
@@ -740,6 +748,10 @@ export class InputManager {
             }
 
             this._updatePointerPosition(evt);
+
+            if (this._swipeButtonPressed === -1) {
+                this._swipeButtonPressed = evt.button;
+            }
 
             if (scene.preventDefaultOnPointerDown && elementToAttachTo) {
                 evt.preventDefault();
@@ -824,6 +836,11 @@ export class InputManager {
                             }
                         }
                         if (this._checkPrePointerObservable(null, evt, PointerEventTypes.POINTERUP)) {
+                            // If we're skipping the next observable, we need to reset the swipe state before returning
+                            if (this._swipeButtonPressed === evt.button) {
+                                this._isSwiping = false;
+                                this._swipeButtonPressed = -1;
+                            }
                             return;
                         }
                     }
@@ -857,6 +874,11 @@ export class InputManager {
                 this._processPointerUp(pickResult, evt, clickInfo);
 
                 this._previousPickResult = this._currentPickResult;
+
+                if (this._swipeButtonPressed === evt.button) {
+                    this._isSwiping = false;
+                    this._swipeButtonPressed = -1;
+                }
             });
         };
 

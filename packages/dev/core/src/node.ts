@@ -12,6 +12,7 @@ import { _WarnImport } from "./Misc/devTools";
 import type { AbstractActionManager } from "./Actions/abstractActionManager";
 import type { IInspectable } from "./Misc/iInspectable";
 import type { AbstractScene } from "./abstractScene";
+import type { IAccessibilityTag } from "./IAccessibilityTag";
 
 declare type Animatable = import("./Animations/animatable").Animatable;
 declare type AnimationPropertiesOverride = import("./Animations/animationPropertiesOverride").AnimationPropertiesOverride;
@@ -120,6 +121,22 @@ export class Node implements IBehaviorAware<Node> {
      * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
      */
     public inspectableCustomProperties: IInspectable[];
+
+    /**
+     * Gets or sets the accessibility tag to describe the node for accessibility purpose.
+     */
+    public set accessibilityTag(value: Nullable<IAccessibilityTag>) {
+        this._accessibilityTag = value;
+        this.onAccessibilityTagChangedObservable.notifyObservers(value);
+    }
+
+    public get accessibilityTag() {
+        return this._accessibilityTag;
+    }
+
+    protected _accessibilityTag: Nullable<IAccessibilityTag> = null;
+
+    public onAccessibilityTagChangedObservable = new Observable<Nullable<IAccessibilityTag>>();
 
     /**
      * Gets or sets a boolean used to define if the node must be serialized
@@ -589,10 +606,8 @@ export class Node implements IBehaviorAware<Node> {
             return;
         }
         this._nodeDataStorage._isEnabled = value;
-
-        this._nodeDataStorage._onEnabledStateChangedObservable.notifyObservers(value);
-
         this._syncParentEnabledState();
+        this._nodeDataStorage._onEnabledStateChangedObservable.notifyObservers(value);
     }
 
     /**

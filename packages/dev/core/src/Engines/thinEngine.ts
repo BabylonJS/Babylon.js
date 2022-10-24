@@ -200,14 +200,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.28.0";
+        return "babylonjs@5.29.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.28.0";
+        return "5.29.0";
     }
 
     /**
@@ -3743,12 +3743,14 @@ export class ThinEngine {
             fullOptions.samplingMode = options.samplingMode === undefined ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
             fullOptions.format = options.format === undefined ? Constants.TEXTUREFORMAT_RGBA : options.format;
             fullOptions.useSRGBBuffer = options.useSRGBBuffer === undefined ? false : options.useSRGBBuffer;
+            fullOptions.samples = options.samples ?? 1;
         } else {
             fullOptions.generateMipMaps = <boolean>options;
             fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
             fullOptions.samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
             fullOptions.format = Constants.TEXTUREFORMAT_RGBA;
             fullOptions.useSRGBBuffer = false;
+            fullOptions.samples = 1;
         }
 
         fullOptions.useSRGBBuffer = fullOptions.useSRGBBuffer && this._caps.supportSRGBBuffers && (this.webGLVersion > 1 || this.isWebGPU);
@@ -3805,7 +3807,7 @@ export class ThinEngine {
         texture.height = height;
         texture.depth = layers;
         texture.isReady = true;
-        texture.samples = 1;
+        texture.samples = fullOptions.samples;
         texture.generateMipMaps = fullOptions.generateMipMaps ? true : false;
         texture.samplingMode = fullOptions.samplingMode;
         texture.type = fullOptions.type;

@@ -60,8 +60,6 @@ import { ReadFile, RequestFile, LoadFile } from "./Misc/fileTools";
 import type { IClipPlanesHolder } from "./Misc/interfaces/iClipPlanesHolder";
 import type { IPointerEvent } from "./Events/deviceInputEvents";
 import { LightConstants } from "./Lights/lightConstants";
-import type { IComputePressureData } from "./Misc/computePressure";
-import { ComputePressureObserverWrapper } from "./Misc/computePressure";
 import { _ObserveArray } from "./Misc/arrayTools";
 
 declare type Ray = import("./Culling/ray").Ray;
@@ -1337,7 +1335,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets the scene's rendering manager
      */
-    public get renderingManager() {
+    public get renderingManager(): RenderingManager {
         return this._renderingManager;
     }
 
@@ -1621,20 +1619,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         if (!options || !options.virtual) {
             this._engine.onNewSceneAddedObservable.notifyObservers(this);
-        }
-
-        if (ComputePressureObserverWrapper.IsAvailable) {
-            this._computePressureObserver = new ComputePressureObserverWrapper(
-                (update) => {
-                    this.onComputePressureChanged.notifyObservers(update);
-                },
-                {
-                    // Thresholds divide the interval [0.0 .. 1.0] into ranges.
-                    cpuUtilizationThresholds: [0.25, 0.5, 0.75, 0.9],
-                    cpuSpeedThresholds: [0.5],
-                }
-            );
-            this._computePressureObserver.observe("cpu");
         }
     }
 
@@ -2170,7 +2154,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param checkRenderTargets true to also check that the meshes rendered as part of a render target are ready (default: false)
      */
     public executeWhenReady(func: () => void, checkRenderTargets = false): void {
-        this.onReadyObservable.add(func);
+        this.onReadyObservable.addOnce(func);
 
         if (this._executeWhenReadyTimeoutId !== null) {
             return;
@@ -4748,10 +4732,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this.onPreKeyboardObservable.clear();
         this.onKeyboardObservable.clear();
         this.onActiveCameraChanged.clear();
-        this.onComputePressureChanged.clear();
-
-        this._computePressureObserver?.unobserve("cpu");
-        this._computePressureObserver = undefined;
 
         this.detachControl();
 
@@ -4997,7 +4977,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         fastCheck?: boolean,
         camera?: Nullable<Camera>,
         trianglePredicate?: TrianglePickingPredicate
-    ): Nullable<PickingInfo> {
+    ): PickingInfo {
         // Dummy info if picking as not been imported
         return new PickingInfo();
     }
@@ -5405,12 +5385,4 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public getPerfCollector(): PerformanceViewerCollector {
         throw _WarnImport("performanceViewerSceneExtension");
     }
-
-    private _computePressureObserver: ComputePressureObserverWrapper | undefined;
-
-    /**
-     * An event triggered when the cpu usage/speed meets certain thresholds.
-     * Note: Compute pressure is an experimental API.
-     */
-    public onComputePressureChanged = new Observable<IComputePressureData>();
 }

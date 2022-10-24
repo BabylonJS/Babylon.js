@@ -1,0 +1,6 @@
+{
+    "declarationLibs": ["@tools/accessibility"],
+    "devPackageName": "accessibility",
+    "filename": "babylon.accessibility.module.d.ts",
+    "outputDirectory": "./"
+}

@@ -98,8 +98,8 @@
         },
         {
             "title": "custom handling of materials for render target pass",
-            "renderCount": 30,
-            "playgroundId": "#FIVL25#17"
+            "renderCount": 60,
+            "playgroundId": "#FIVL25#21"
         },
         {
             "title": "dissolve effect with node material and glow layer",
@@ -114,7 +114,8 @@
         },
         {
             "title": "sprite maps",
-            "playgroundId": "#PIVJ45#4"
+            "playgroundId": "#PIVJ45#4",
+            "renderCount": 5
         },
         {
             "title": "halo particle system",
@@ -153,13 +154,13 @@
         {
             "title": "wgsl in shadermaterial",
             "renderCount": 30,
-            "playgroundId": "#8RU8Q3#117",
+            "playgroundId": "#8RU8Q3#135",
             "excludedEngines": ["webgl1", "webgl2"]
         },
         {
             "title": "terrain erosion",
             "renderCount": 15,
-            "playgroundId": "#C90R62#14",
+            "playgroundId": "#C90R62#17",
             "excludedEngines": ["webgl1", "webgl2"]
         },
         {

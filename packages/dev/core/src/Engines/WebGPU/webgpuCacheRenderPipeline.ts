@@ -1006,6 +1006,7 @@ export abstract class WebGPUCacheRenderPipeline {
         const depthStencilFormatHasStencil = this._webgpuDepthStencilFormat ? WebGPUTextureHelper.HasStencilAspect(this._webgpuDepthStencilFormat) : false;
 
         return this._device.createRenderPipeline({
+            label: `RenderPipeline_${colorStates[0]?.format ?? "nooutput"}_${this._webgpuDepthStencilFormat ?? "nodepth"}_samples${sampleCount}`,
             layout: pipelineLayout,
             vertex: {
                 module: webgpuPipelineContext.stages!.vertexStage.module,
