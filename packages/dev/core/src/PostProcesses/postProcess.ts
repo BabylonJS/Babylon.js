@@ -157,9 +157,7 @@ export class PostProcess {
         this._samples = Math.min(n, this._engine.getCaps().maxMSAASamples);
 
         this._textures.forEach((texture) => {
-            if (texture.samples !== this._samples) {
-                this._engine.updateRenderTargetTextureSampleCount(texture, this._samples);
-            }
+            texture.setSamples(this._samples);
         });
     }
 
@@ -533,7 +531,8 @@ export class PostProcess {
                 this._textureCache[i].texture.width === textureSize.width &&
                 this._textureCache[i].texture.height === textureSize.height &&
                 this._textureCache[i].postProcessChannel === channel &&
-                this._textureCache[i].texture._generateDepthBuffer === textureOptions.generateDepthBuffer
+                this._textureCache[i].texture._generateDepthBuffer === textureOptions.generateDepthBuffer &&
+                this._textureCache[i].texture.samples === textureOptions.samples
             ) {
                 return this._textureCache[i].texture;
             }
@@ -590,6 +589,7 @@ export class PostProcess {
             samplingMode: this.renderTargetSamplingMode,
             type: this._textureType,
             format: this._textureFormat,
+            samples: this._samples,
         };
 
         this._textures.push(this._createRenderTargetTexture(textureSize, textureOptions, 0));
