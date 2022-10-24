@@ -6,20 +6,20 @@
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { Scene } from "core/scene";
 import { ActionManager } from "../actions/ActionManager";
-import type { BaseAction } from "../actions/actions/BaseAction";
 import { ExecuteCodeAction } from "../actions/actions/ExecuteCodeAction";
-import { BaseTrigger } from "../actions/triggers/BaseTrigger";
 import { ClickTrigger } from "../actions/triggers/ClickTrigger";
-import { OnStateEnterTrigger } from "../actions/triggers/OnStateEnterTrigger";
+// import type { BaseAction } from "../actions/actions/BaseAction";
+// import { BaseTrigger } from "../actions/triggers/BaseTrigger";
+// import { OnStateEnterTrigger } from "../actions/triggers/OnStateEnterTrigger";
 import type { State } from "./State";
 
 export class StateMachine {
-    private _transitions: Record<State, State> = {};
+    private _transitions: Record<string, State> = {};
     private _actionManager: ActionManager;
     private _currentState: State;
     private _startingState: State;
     private _states: Set<State> = new Set<State>();
-    private _stateEnterTriggers: Record<State, BaseTrigger> = {};
+    // private _stateEnterTriggers: Record<State, BaseTrigger> = {};
 
     constructor(scene: Scene, mesh: AbstractMesh) {
         this._actionManager = new ActionManager(scene);
@@ -33,7 +33,14 @@ export class StateMachine {
     }
 
     private _transitionStates() {
-        this._currentState = this._transitions[this._currentState];
+        if (this._currentState.canLeaveState()) {
+            const possibleNext = this._transitions[this._currentState.id];
+            if (possibleNext.canEnterState()) {
+                this._currentState.leaveState();
+                possibleNext.enterState();
+                this._currentState = possibleNext;
+            }
+        }
     }
 
     get currentState() {
@@ -51,25 +58,26 @@ export class StateMachine {
     addTransition(from: State, to: State) {
         // Add state to list of states
         this._states.add(from);
-        this._transitions[from] = to;
+        this._transitions[from.id] = to;
     }
 
     setStartingState(state: State) {
         this._startingState = state;
     }
 
-    setStateEnterAction(state: State, action: BaseAction) {
-        const stateEnterTrigger = new OnStateEnterTrigger(this, state);
-        this._actionManager.addBehavior(stateEnterTrigger, action);
-        this._stateEnterTriggers[state] = stateEnterTrigger;
-    }
+    // setStateEnterAction(state: State, action: BaseAction) {
+    // const stateEnterTrigger = new OnStateEnterTrigger(this, state);
+    // this._actionManager.addBehavior(stateEnterTrigger, action);
+    // this._stateEnterTriggers[state] = stateEnterTrigger;
+    // }
 
-    getStateAction(state: State) {
-        return this._actionManager.getActionByTrigger(this._stateEnterTriggers[state]);
-    }
+    // getStateAction(state: State) {
+    //     return this._actionManager.getActionByTrigger(this._stateEnterTriggers[state]);
+    // }
 
     start() {
         this._currentState = this._startingState;
+        this._startingState.enterState();
         this._actionManager.start();
     }
 }

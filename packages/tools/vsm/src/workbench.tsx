@@ -15,6 +15,7 @@ import { StateMachine } from "./stateMachine/StateMachine";
 // @ts-ignore
 import { LogAction } from "./actions/actions/LogAction";
 import { StateMachineContext } from "./StateMachineContext";
+import { State } from "./stateMachine/State";
 
 export type WorkbenchProps = {};
 
@@ -33,19 +34,27 @@ export const Workbench: FC<WorkbenchProps> = () => {
             if (node) {
                 const stateMachine = new StateMachine(scene, node);
 
-                stateMachine.setStartingState("Sphere Origin");
-                stateMachine.addTransition("Sphere Origin", "Sphere Destination");
-                stateMachine.addTransition("Sphere Destination", "Sphere Origin");
+                // stateMachine.setStartingState("Sphere Origin");
+                // stateMachine.addTransition("Sphere Origin", "Sphere Destination");
+                // stateMachine.addTransition("Sphere Destination", "Sphere Origin");
+                // stateMachine.setStateEnterAction("Sphere Origin", setPositionOriginAction);
+                // stateMachine.setStateEnterAction("Sphere Destination", setPositionDestinationAction);
 
                 const setPositionOriginAction = new SetPositionAction();
                 setPositionOriginAction.targetNode = node;
                 setPositionOriginAction.targetPosition = new Vector3(0, 0, 0);
-                stateMachine.setStateEnterAction("Sphere Origin", setPositionOriginAction);
+                const sphereOriginState = new State("Sphere Origin");
+                sphereOriginState.setOnStateEnterAction(setPositionOriginAction);
 
                 const setPositionDestinationAction = new SetPositionAction();
                 setPositionDestinationAction.targetNode = node;
                 setPositionDestinationAction.targetPosition = new Vector3(1, 1, 1);
-                stateMachine.setStateEnterAction("Sphere Destination", setPositionDestinationAction);
+                const sphereDestinationState = new State("Sphere Destination");
+                sphereDestinationState.setOnStateEnterAction(setPositionDestinationAction);
+
+                stateMachine.setStartingState(sphereOriginState);
+                stateMachine.addTransition(sphereOriginState, sphereDestinationState);
+                stateMachine.addTransition(sphereDestinationState, sphereOriginState);
 
                 stateMachine.start();
 
