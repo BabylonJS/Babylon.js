@@ -152,7 +152,7 @@ export const StatesViewComponent: FC = () => {
             const newNodes = new Array<GraphNode>();
 
             for (const state of stateMachine.getStates()) {
-                const nodeToAdd = { name: state, inputs: "in", output: "out", data: { state, color: "#0000ff" } };
+                const nodeToAdd = { name: state.name, inputs: "in", output: "out", data: { state, color: "#0000ff" } };
                 const graphNode = onAddNewNode(nodeToAdd);
                 if (graphNode) {
                     newNodes.push(graphNode);
@@ -171,15 +171,15 @@ export const StatesViewComponent: FC = () => {
 
             const newLinks = new Array<NodeLink>();
 
-            for (const [originState, destState] of stateMachine.getTransitions()) {
-                const originNode = newNodes.find((n) => n.name === originState);
-                const destNode = newNodes.find((n) => n.name === destState);
+            // for (const [originState, destState] of stateMachine.getTransitions()) {
+            //     const originNode = newNodes.find((n) => n.name === originState);
+            //     const destNode = newNodes.find((n) => n.name === destState);
 
-                if (originNode && destNode) {
-                    const link = linkPorts(graphCanvasComponent, originNode, originNode.outputPorts[0], destNode, destNode.inputPorts[0]);
-                    newLinks.push(link);
-                }
-            }
+            //     if (originNode && destNode) {
+            //         const link = linkPorts(graphCanvasComponent, originNode, originNode.outputPorts[0], destNode, destNode.inputPorts[0]);
+            //         newLinks.push(link);
+            //     }
+            // }
 
             setNodes(newNodes);
             setLinks(newLinks);
