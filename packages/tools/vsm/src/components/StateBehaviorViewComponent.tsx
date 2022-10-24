@@ -13,7 +13,6 @@ import { RegisterToDisplayManagers } from "./nodesDisplay/registerToDisplayLedge
 import { NodeLink } from "shared-ui-components/nodeGraphSystem/nodeLink";
 import type { NodePort } from "shared-ui-components/nodeGraphSystem/nodePort";
 import { NodeTypes } from "./types";
-import { stateValuesProvider } from "../workbench";
 
 const connectToFn = (self: IPortData, port: IPortData) => {
     self.isConnected = true;
@@ -110,7 +109,6 @@ function createNewNodeData(name: string, inputs: string[], outputs: string[], ty
 
 export const StateBehaviorViewComponent: FC = () => {
     const { selectedNode } = useContext(SelectionContext);
-    const { stateValues } = useContext(stateValuesProvider);
     const [stateManager, setStateManager] = useState<Nullable<StateManager>>(null);
     const [graphCanvasComponent, setGraphCanvasComponent] = useState<Nullable<GraphCanvasComponent>>(null);
     const [, setNodes] = useState(new Array<GraphNode>());
@@ -155,7 +153,7 @@ export const StateBehaviorViewComponent: FC = () => {
                 { name: "START", output: "out", color: "green", type: NodeTypes.StartActionNode },
                 { name: "READY", inputs: "in", color: "red", type: NodeTypes.ReadyActionNode },
                 { name: "setPosition", inputs: "action,value", output: "action", type: NodeTypes.ActionNode },
-                { name: "vectorValue", output: "value", type: NodeTypes.ValueNode, value: stateValues[selectedNode.name] },
+                { name: "vectorValue", output: "value", type: NodeTypes.ValueNode },
             ];
             for (const nodeToAdd of nodesToAdd) {
                 const graphNode = onAddNewNode(nodeToAdd);

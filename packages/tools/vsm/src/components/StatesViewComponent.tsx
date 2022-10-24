@@ -12,8 +12,10 @@ import { RegisterToDisplayManagers } from "./nodesDisplay/registerToDisplayLedge
 import { NodeLink } from "shared-ui-components/nodeGraphSystem/nodeLink";
 import type { NodePort } from "shared-ui-components/nodeGraphSystem/nodePort";
 import { SelectionContext } from "./SelectionContext";
+// @ts-ignore
 import { Vector3 } from "core/Maths/math";
 import { SceneContext } from "../SceneContext";
+import { StateMachineContext } from "../StateMachineContext";
 
 const connectToFn = (self: IPortData, port: IPortData) => {
     self.isConnected = true;
@@ -112,9 +114,11 @@ export const StatesViewComponent: FC = () => {
     const [stateManager, setStateManager] = useState<Nullable<StateManager>>(null);
     const [graphCanvasComponent, setGraphCanvasComponent] = useState<Nullable<GraphCanvasComponent>>(null);
     const [, setNodes] = useState(new Array<GraphNode>());
+    // @ts-ignore
     const [, setLinks] = useState(new Array<NodeLink>());
     const { setSelectedNode } = useContext(SelectionContext);
     const { scene } = useContext(SceneContext);
+    const { stateMachine } = useContext(StateMachineContext);
 
     const rootContainer: React.MutableRefObject<Nullable<HTMLDivElement>> = useRef(null);
     const graphCanvasComponentRef = useCallback((gccRef: Nullable<GraphCanvasComponent>) => {
@@ -144,20 +148,17 @@ export const StatesViewComponent: FC = () => {
 
     // Initialize the nodes
     useEffect(() => {
-        if (stateManager && graphCanvasComponent && scene) {
+        if (stateManager && graphCanvasComponent && scene && stateMachine) {
             const newNodes = new Array<GraphNode>();
 
-            // Create nodes
-            const nodesToAdd = [
-                { name: "Sphere Origin", inputs: "in", output: "out", color: "#ec6916", position: new Vector3(0, 0, 0) },
-                { name: "Sphere Destination", inputs: "in", output: "out", color: "#2b0b71", position: new Vector3(1, 1, 1) },
-            ];
-            for (const nodeToAdd of nodesToAdd) {
+            for (const state of stateMachine.getStates()) {
+                const nodeToAdd = { name: state, inputs: "in", output: "out", data: { state, color: "#0000ff" } };
                 const graphNode = onAddNewNode(nodeToAdd);
                 if (graphNode) {
                     newNodes.push(graphNode);
                 }
             }
+
             // Position and link nodes
             const origin = newNodes[0];
             const dest = newNodes[1];
@@ -168,31 +169,22 @@ export const StatesViewComponent: FC = () => {
             dest.x = 300;
             dest.y = 400;
 
-            // const node = scene.getMeshByName("sphere");
-            // if (node) {
-            //     node.metadata.onStateChanged.add((props: any) => {
-            //         const state = props.state;
-            //         console.log("state changed to", state);
-
-            //         if (state === "Sphere Origin") {
-            //             origin.addClassToVisual(style.highlight);
-            //             dest.removeClassFromVisual(style.highlight);
-            //         } else {
-            //             origin.removeClassFromVisual(style.highlight);
-            //             dest.addClassToVisual(style.highlight);
-            //         }
-            //     });
-            // }
-
             const newLinks = new Array<NodeLink>();
 
-            newLinks.push(linkPorts(graphCanvasComponent, origin, origin.outputPorts[0], dest, dest.inputPorts[0]));
-            newLinks.push(linkPorts(graphCanvasComponent, dest, dest.outputPorts[0], origin, origin.inputPorts[0]));
+            for (const [originState, destState] of stateMachine.getTransitions()) {
+                const originNode = newNodes.find((n) => n.name === originState);
+                const destNode = newNodes.find((n) => n.name === destState);
+
+                if (originNode && destNode) {
+                    const link = linkPorts(graphCanvasComponent, originNode, originNode.outputPorts[0], destNode, destNode.inputPorts[0]);
+                    newLinks.push(link);
+                }
+            }
 
             setNodes(newNodes);
             setLinks(newLinks);
         }
-    }, [stateManager, graphCanvasComponent, scene]);
+    }, [stateManager, graphCanvasComponent, scene, stateMachine]);
 
     // Set up responding for node selection
     useEffect(() => {
@@ -211,6 +203,7 @@ export const StatesViewComponent: FC = () => {
         return () => {};
     }, [stateManager]);
 
+    // @ts-ignore
     const linkPorts = (graphCanvasComponent: GraphCanvasComponent, node: GraphNode, port: NodePort, targetNode: GraphNode, targetPort: NodePort) => {
         port.portData.connectTo(targetPort.portData);
         const newLink = new NodeLink(graphCanvasComponent, port, node, targetPort, targetNode);
@@ -241,7 +234,7 @@ export const StatesViewComponent: FC = () => {
     }, [graphCanvasComponent]);
 
     // Create a new node and pass the state manager
-    const onAddNewNode = (props: { name: string; inputs: string; output: string; color: string; position: Vector3 }): Nullable<GraphNode> => {
+    const onAddNewNode = (props: { name: string; inputs: string; output: string; data: any }): Nullable<GraphNode> => {
         const name = props.name as string;
         const inputs = props.inputs as string;
         const output = props.output as string;
@@ -252,7 +245,7 @@ export const StatesViewComponent: FC = () => {
                     name,
                     inputs.split(",").filter((v) => v !== ""),
                     output.split(",").filter((v) => v !== ""),
-                    { color: props.color, position: props.position }
+                    props.data
                 )
             );
         } else {
