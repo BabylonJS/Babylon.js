@@ -14,6 +14,14 @@ export class BaseBehavior {
         this._action = action;
     }
 
+    get trigger() {
+        return this._trigger;
+    }
+
+    get action() {
+        return this._action;
+    }
+
     public build() {
         const obs = this._trigger.onTriggeredObservable.add(() => this._action.execute());
         if (obs) {

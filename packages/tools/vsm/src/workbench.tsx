@@ -1,6 +1,6 @@
 import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
-import { useState, useEffect, createContext, useRef } from "react";
+import { useState, useEffect } from "react";
 import type { FC } from "react";
 import { CommandBarComponent } from "shared-ui-components/components/bars/CommandBarComponent";
 import { FlexibleGridLayout } from "shared-ui-components/components/layout/FlexibleGridLayout";
@@ -14,33 +14,18 @@ import { SetPositionAction } from "./actions/actions/SetPositionAction";
 import { StateMachine } from "./stateMachine/StateMachine";
 // @ts-ignore
 import { LogAction } from "./actions/actions/LogAction";
+import { StateMachineContext } from "./StateMachineContext";
 
 export type WorkbenchProps = {};
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const INITIAL_WORKBENCH_COLOR = "#AAAAAA";
 
-export const stateValuesProvider = createContext<{ stateValues: Record<string, Vector3>; setStateValues: (v: Record<string, Vector3>) => void }>({
-    stateValues: {},
-    setStateValues: () => {},
-});
-
 export const Workbench: FC<WorkbenchProps> = () => {
     const [workAreaColor, setWorkAreaColor] = useState(INITIAL_WORKBENCH_COLOR);
     const [scene, setScene] = useState<Nullable<Scene>>(null);
     const [selectedNode, setSelectedNode] = useState<Nullable<GraphNode>>(null);
-    const stateValues = useRef<Record<string, Vector3>>({});
-    const setStateValues = (v: Record<string, Vector3>) => {
-        stateValues.current = v;
-    };
-
-    useEffect(() => {
-        const stateValues = {
-            "Sphere Origin": new Vector3(0, 0, 0),
-            "Sphere Destination": new Vector3(1, 1, 1),
-        };
-        setStateValues(stateValues);
-    }, []);
+    const [stateMachine, setStateMachine] = useState<Nullable<StateMachine>>(null);
 
     useEffect(() => {
         if (scene) {
@@ -54,58 +39,25 @@ export const Workbench: FC<WorkbenchProps> = () => {
 
                 const setPositionOriginAction = new SetPositionAction();
                 setPositionOriginAction.targetNode = node;
-                setPositionOriginAction.targetPosition = stateValues.current["Sphere Origin"];
-                stateMachine.setStateAction("Sphere Origin", setPositionOriginAction);
-                // stateMachine.setStateAction("Sphere Origin", new LogAction("Enter Sphere Origin"));
+                setPositionOriginAction.targetPosition = new Vector3(0, 0, 0);
+                stateMachine.setStateEnterAction("Sphere Origin", setPositionOriginAction);
 
                 const setPositionDestinationAction = new SetPositionAction();
                 setPositionDestinationAction.targetNode = node;
-                setPositionDestinationAction.targetPosition = stateValues.current["Sphere Destination"];
-                stateMachine.setStateAction("Sphere Destination", setPositionDestinationAction);
-                // stateMachine.setStateAction("Sphere Destination", new LogAction("Enter Sphere Destination"));
+                setPositionDestinationAction.targetPosition = new Vector3(1, 1, 1);
+                stateMachine.setStateEnterAction("Sphere Destination", setPositionDestinationAction);
 
                 stateMachine.start();
 
-                // const actionManager = new ActionManager(scene);
-                // const clickTrigger = new ClickTrigger(node);
-                // const logAction = new LogAction("You clicked on the sphere!");
-                // const setPositionAction = new SetPositionAction();
-                // setPositionAction.targetPosition = new Vector3(1, 1, 1);
-                // setPositionAction.targetNode = node;
-                // actionManager.addBehavior(clickTrigger, logAction);
-                // actionManager.addBehavior(clickTrigger, setPositionAction);
-                // actionManager.start();
-                // // Get node
-                //     // Apply initial state
-                //     let currentState = "Sphere Origin";
-                //     node.position = stateValues.current[currentState];
-
-                //     node.metadata = {};
-                //     node.metadata.onStateChanged = new Observable<{ state: string }>();
-                //     node.metadata.onStateChanged.notifyObservers({ state: currentState });
-
-                //     scene.onPointerPick = (pickedPoint, pickInfo) => {
-                //         if (pickInfo.pickedMesh !== node) return;
-
-                //         // Change state
-                //         if (currentState === "Sphere Origin") {
-                //             currentState = "Sphere Destination";
-                //         } else {
-                //             currentState = "Sphere Origin";
-                //         }
-                //         // Execute action
-                //         node.position = stateValues.current[currentState];
-
-                //         node.metadata.onStateChanged.notifyObservers({ state: currentState });
-                //     };
+                setStateMachine(stateMachine);
             }
         }
     }, [scene]);
 
     return (
         <SceneContext.Provider value={{ scene, setScene }}>
-            <SelectionContext.Provider value={{ selectedNode, setSelectedNode }}>
-                <stateValuesProvider.Provider value={{ stateValues: stateValues.current, setStateValues }}>
+            <StateMachineContext.Provider value={{ stateMachine, setStateMachine }}>
+                <SelectionContext.Provider value={{ selectedNode, setSelectedNode }}>
                     <div className={style.workbenchContainer}>
                         <CommandBarComponent
                             artboardColor={workAreaColor}
@@ -116,8 +68,8 @@ export const Workbench: FC<WorkbenchProps> = () => {
                             <FlexibleGridLayout layoutDefinition={initialLayout} />
                         </div>
                     </div>
-                </stateValuesProvider.Provider>
-            </SelectionContext.Provider>
+                </SelectionContext.Provider>
+            </StateMachineContext.Provider>
         </SceneContext.Provider>
     );
 };

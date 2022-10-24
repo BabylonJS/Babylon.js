@@ -10,6 +10,10 @@ export class SetPositionAction extends BaseAction {
         this._targetPosition = value;
     }
 
+    get targetPosition() {
+        return this._targetPosition;
+    }
+
     set targetNode(value: TransformNode) {
         this._targetNode = value;
     }
