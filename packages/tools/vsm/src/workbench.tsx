@@ -14,6 +14,7 @@ import { SetPositionAction } from "./actions/actions/SetPositionAction";
 import { StateMachine } from "./stateMachine/StateMachine";
 // @ts-ignore
 import { LogAction } from "./actions/actions/LogAction";
+import type { IStateMachineWrapper } from "./StateMachineContext";
 import { StateMachineContext } from "./StateMachineContext";
 import { State } from "./stateMachine/State";
 
@@ -26,7 +27,7 @@ export const Workbench: FC<WorkbenchProps> = () => {
     const [workAreaColor, setWorkAreaColor] = useState(INITIAL_WORKBENCH_COLOR);
     const [scene, setScene] = useState<Nullable<Scene>>(null);
     const [selectedNode, setSelectedNode] = useState<Nullable<GraphNode>>(null);
-    const [stateMachine, setStateMachine] = useState<Nullable<StateMachine>>(null);
+    const [stateMachineWrapper, setStateMachineWrapper] = useState<Nullable<IStateMachineWrapper>>(null);
 
     useEffect(() => {
         if (scene) {
@@ -46,26 +47,26 @@ export const Workbench: FC<WorkbenchProps> = () => {
                 const sphereOriginState = new State("Sphere Origin");
                 sphereOriginState.setOnStateEnterAction(setPositionOriginAction);
 
-                const setPositionDestinationAction = new SetPositionAction();
-                setPositionDestinationAction.targetNode = node;
-                setPositionDestinationAction.targetPosition = new Vector3(1, 1, 1);
-                const sphereDestinationState = new State("Sphere Destination");
-                sphereDestinationState.setOnStateEnterAction(setPositionDestinationAction);
+                // const setPositionDestinationAction = new SetPositionAction();
+                // setPositionDestinationAction.targetNode = node;
+                // setPositionDestinationAction.targetPosition = new Vector3(1, 1, 1);
+                // const sphereDestinationState = new State("Sphere Destination");
+                // sphereDestinationState.setOnStateEnterAction(setPositionDestinationAction);
 
                 stateMachine.setStartingState(sphereOriginState);
-                stateMachine.addTransition(sphereOriginState, sphereDestinationState);
-                stateMachine.addTransition(sphereDestinationState, sphereOriginState);
+                // stateMachine.addTransition(sphereOriginState, sphereDestinationState);
+                // stateMachine.addTransition(sphereDestinationState, sphereOriginState);
 
                 stateMachine.start();
 
-                setStateMachine(stateMachine);
+                setStateMachineWrapper({ stateMachine, lastUpdate: Date.now() });
             }
         }
     }, [scene]);
 
     return (
         <SceneContext.Provider value={{ scene, setScene }}>
-            <StateMachineContext.Provider value={{ stateMachine, setStateMachine }}>
+            <StateMachineContext.Provider value={{ stateMachineWrapper, setStateMachineWrapper }}>
                 <SelectionContext.Provider value={{ selectedNode, setSelectedNode }}>
                     <div className={style.workbenchContainer}>
                         <CommandBarComponent

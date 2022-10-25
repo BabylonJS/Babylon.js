@@ -2,9 +2,14 @@ import type { Nullable } from "core/types";
 import { createContext } from "react";
 import type { StateMachine } from "./stateMachine/StateMachine";
 
-export interface IStateMachineContext {
-    stateMachine: Nullable<StateMachine>;
-    setStateMachine?: (stateMachine: Nullable<StateMachine>) => void;
+export interface IStateMachineWrapper {
+    stateMachine: StateMachine;
+    lastUpdate: number;
 }
 
-export const StateMachineContext = createContext<IStateMachineContext>({ stateMachine: null, setStateMachine: () => {} });
+export interface IStateMachineWrapperContext {
+    stateMachineWrapper: Nullable<IStateMachineWrapper>;
+    setStateMachineWrapper?: (stateMachine: Nullable<IStateMachineWrapper>) => void;
+}
+
+export const StateMachineContext = createContext<IStateMachineWrapperContext>({ stateMachineWrapper: null, setStateMachineWrapper: () => {} });

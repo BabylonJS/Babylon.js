@@ -4,6 +4,7 @@ import { StatesViewComponent } from "./components/StatesViewComponent";
 import { StateBehaviorViewComponent } from "./components/StateBehaviorViewComponent";
 import type { Layout } from "shared-ui-components/components/layout/types";
 import { EditValueComponent } from "./components/EditValueComponent";
+import { NodeListComponent } from "./components/NodeListComponent";
 
 export const initialLayout: Layout = {
     columns: [
@@ -24,7 +25,10 @@ export const initialLayout: Layout = {
                     id: "edit",
                     height: "20%",
                     selectedTab: "editTab",
-                    tabs: [{ id: "editTab", title: "Edit value", component: <EditValueComponent /> }],
+                    tabs: [
+                        { id: "editTab", title: "Edit value", component: <EditValueComponent /> },
+                        { id: "addNode", title: "Add node", component: <NodeListComponent /> },
+                    ],
                 },
             ],
         },

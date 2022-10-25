@@ -18,7 +18,8 @@ export class StateMachine {
     private _actionManager: ActionManager;
     private _currentState: State;
     private _startingState: State;
-    private _states: Set<State> = new Set<State>();
+    private _states: State[] = [];
+    // private _states: Set<State> = new Set<State>();
     // private _stateEnterTriggers: Record<State, BaseTrigger> = {};
 
     constructor(scene: Scene, mesh: AbstractMesh) {
@@ -48,16 +49,22 @@ export class StateMachine {
     }
 
     getStates() {
-        return this._states.values();
+        // return this._states.values();
+        return this._states;
     }
 
     getTransitions() {
         return Object.entries(this._transitions);
     }
 
+    addState(state: State) {
+        this._states.push(state);
+        // this._states.add(state);
+    }
+
     addTransition(from: State, to: State) {
         // Add state to list of states
-        this._states.add(from);
+        // this._states.add(from);
         this._transitions[from.id] = to;
     }
 

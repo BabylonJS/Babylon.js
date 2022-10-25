@@ -120,7 +120,7 @@ export const StatesViewComponent: FC = () => {
     const [, setLinks] = useState(new Array<NodeLink>());
     const { setSelectedNode } = useContext(SelectionContext);
     const { scene } = useContext(SceneContext);
-    const { stateMachine } = useContext(StateMachineContext);
+    const { stateMachineWrapper } = useContext(StateMachineContext);
 
     const rootContainer: React.MutableRefObject<Nullable<HTMLDivElement>> = useRef(null);
     const graphCanvasComponentRef = useCallback((gccRef: Nullable<GraphCanvasComponent>) => {
@@ -150,10 +150,10 @@ export const StatesViewComponent: FC = () => {
 
     // Initialize the nodes
     useEffect(() => {
-        if (stateManager && graphCanvasComponent && scene && stateMachine) {
+        if (stateManager && graphCanvasComponent && scene && stateMachineWrapper) {
             const newNodes = new Array<GraphNode>();
 
-            for (const state of stateMachine.getStates()) {
+            for (const state of stateMachineWrapper.stateMachine.getStates()) {
                 const stateDisplay = new StateDisplay(state);
                 const nodeToAdd = { name: state.name, inputs: "in", output: "out", data: stateDisplay };
                 const graphNode = onAddNewNode(nodeToAdd);
@@ -163,18 +163,18 @@ export const StatesViewComponent: FC = () => {
             }
 
             // Position and link nodes
-            const origin = newNodes[0];
-            const dest = newNodes[1];
+            // const origin = newNodes[0];
+            // const dest = newNodes[1];
 
-            origin.x = 300;
-            origin.y = 100;
+            // origin.x = 300;
+            // origin.y = 100;
 
-            dest.x = 300;
-            dest.y = 400;
+            // dest.x = 300;
+            // dest.y = 400;
 
             const newLinks = new Array<NodeLink>();
 
-            for (const [originState, destState] of stateMachine.getTransitions()) {
+            for (const [originState, destState] of stateMachineWrapper.stateMachine.getTransitions()) {
                 const originNode = newNodes.find((n) => n.content.data.state.id === originState);
                 const destNode = newNodes.find((n) => n.content.data.state.id === destState.id);
 
@@ -187,7 +187,7 @@ export const StatesViewComponent: FC = () => {
             setNodes(newNodes);
             setLinks(newLinks);
         }
-    }, [stateManager, graphCanvasComponent, scene, stateMachine]);
+    }, [stateManager, graphCanvasComponent, scene, stateMachineWrapper]);
 
     // Set up responding for node selection
     useEffect(() => {
