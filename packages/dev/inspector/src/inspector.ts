@@ -105,6 +105,7 @@ export class Inspector {
                 enablePopup: options.enablePopup,
                 enableClose: options.enableClose,
                 explorerExtensibility: options.explorerExtensibility,
+                gizmoCamera: options.gizmoCamera,
             };
         }
 
@@ -131,6 +132,7 @@ export class Inspector {
             this._OpenedPane++;
             const sceneExplorerElement = React.createElement(SceneExplorerComponent, {
                 scene,
+                gizmoCamera: options.gizmoCamera,
                 globalState: this._GlobalState,
                 extensibilityGroups: options.explorerExtensibility,
                 noClose: !options.enableClose,
