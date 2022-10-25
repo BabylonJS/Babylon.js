@@ -1,7 +1,8 @@
 {
     "name": "@tools/visual-state-manager",
     "private": true,
-    "version": "1.0.0",
+    "version": "0.0.1",
+    "description": "Babylon.js Visual State Manager Tool. This is a very early alpha version and so is not usable yet.",
     "files": [
         "dist"
     ],
