@@ -55,7 +55,7 @@ export class SceneExplorerFilterComponent extends React.Component<ISceneExplorer
 
 interface ISceneExplorerComponentProps {
     scene: Scene;
-    gizmoCamera?: Camera,
+    gizmoCamera?: Camera;
     noCommands?: boolean;
     noHeader?: boolean;
     noExpand?: boolean;
