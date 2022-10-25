@@ -50,7 +50,7 @@ module.exports = (env) => {
                 watch: false,
             },
             // hot: true,
-            port: process.env.TOOLS_PORT || 1338,
+            port: process.env.NME_PORT || 1340,
             server: env.enableHttps !== undefined || process.env.ENABLE_HTTPS === "true" ? "https" : "http",
             hot: (env.enableHotReload !== undefined || process.env.ENABLE_HOT_RELOAD === "true") && !production ? true : false,
             liveReload: (env.enableLiveReload !== undefined || process.env.ENABLE_LIVE_RELOAD === "true") && !production ? true : false,
