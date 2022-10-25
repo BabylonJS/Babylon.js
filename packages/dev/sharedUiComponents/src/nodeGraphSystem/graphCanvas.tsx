@@ -31,11 +31,17 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     private readonly _minZoom = 0.1;
     private readonly _maxZoom = 4;
 
+    private _hostCanvasRef = React.createRef<HTMLDivElement>();
     private _hostCanvas: HTMLDivElement;
+    private _graphCanvasRef = React.createRef<HTMLDivElement>();
     private _graphCanvas: HTMLDivElement;
+    private _selectionContainerRef = React.createRef<HTMLDivElement>();
     private _selectionContainer: HTMLDivElement;
+    private _frameContainerRef = React.createRef<HTMLDivElement>();
     private _frameContainer: HTMLDivElement;
+    private _svgCanvasRef = React.createRef<SVGSVGElement>();
     private _svgCanvas: HTMLElement;
+    private _rootContainerRef = React.createRef<HTMLDivElement>();
     private _rootContainer: HTMLDivElement;
     private _nodes: GraphNode[] = [];
     private _links: NodeLink[] = [];
@@ -824,12 +830,12 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     }
 
     componentDidMount() {
-        this._hostCanvas = this.props.stateManager.hostDocument.getElementById("graph-canvas") as HTMLDivElement;
-        this._rootContainer = this.props.stateManager.hostDocument.getElementById("graph-container") as HTMLDivElement;
-        this._graphCanvas = this.props.stateManager.hostDocument.getElementById("graph-canvas-container") as HTMLDivElement;
-        this._svgCanvas = this.props.stateManager.hostDocument.getElementById("graph-svg-container") as HTMLElement;
-        this._selectionContainer = this.props.stateManager.hostDocument.getElementById("selection-container") as HTMLDivElement;
-        this._frameContainer = this.props.stateManager.hostDocument.getElementById("frame-container") as HTMLDivElement;
+        this._hostCanvas = this._hostCanvasRef.current!;
+        this._rootContainer = this._rootContainerRef.current!;
+        this._graphCanvas = this._graphCanvasRef.current!;
+        this._svgCanvas = this._svgCanvasRef.current! as unknown as HTMLElement;
+        this._selectionContainer = this._selectionContainerRef.current!;
+        this._frameContainer = this._frameContainerRef.current!;
 
         this.gridSize = DataStorage.ReadNumber("GridSize", 20);
         this.updateTransform();
@@ -1367,6 +1373,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     render() {
         return (
             <div
+                ref={this._hostCanvasRef}
                 id="graph-canvas"
                 className={styles["graph-canvas"]}
                 onWheel={(evt) => this.onWheel(evt)}
@@ -1374,11 +1381,11 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 onPointerDown={(evt) => this.onDown(evt)}
                 onPointerUp={(evt) => this.onUp(evt)}
             >
-                <div id="graph-container" className={styles["graph-container"]}>
-                    <div id="graph-canvas-container" className={styles["graph-canvas-container"]}></div>
-                    <div id="frame-container" className={styles["frame-container"]}></div>
-                    <svg id="graph-svg-container" className={styles["graph-svg-container"]}></svg>
-                    <div id="selection-container" className={styles["selection-container"]}></div>
+                <div id="graph-container" className={styles["graph-container"]} ref={this._rootContainerRef}>
+                    <div id="graph-canvas-container" className={styles["graph-canvas-container"]} ref={this._graphCanvasRef}></div>
+                    <div id="frame-container" className={styles["frame-container"]} ref={this._frameContainerRef}></div>
+                    <svg id="graph-svg-container" className={styles["graph-svg-container"]} ref={this._svgCanvasRef}></svg>
+                    <div id="selection-container" className={styles["selection-container"]} ref={this._selectionContainerRef}></div>
                 </div>
             </div>
         );
