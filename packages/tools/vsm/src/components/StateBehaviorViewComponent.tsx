@@ -13,7 +13,7 @@ import { RegisterToDisplayManagers } from "./nodesDisplay/registerToDisplayLedge
 import { NodeLink } from "shared-ui-components/nodeGraphSystem/nodeLink";
 import type { NodePort } from "shared-ui-components/nodeGraphSystem/nodePort";
 import { NodeTypes } from "./types";
-import { StateMachineContext } from "../StateMachineContext";
+import { useStateMachine } from "./tools/useStateMachine";
 
 const connectToFn = (self: IPortData, port: IPortData) => {
     self.isConnected = true;
@@ -114,7 +114,8 @@ export const StateBehaviorViewComponent: FC = () => {
     const [graphCanvasComponent, setGraphCanvasComponent] = useState<Nullable<GraphCanvasComponent>>(null);
     const [, setNodes] = useState(new Array<GraphNode>());
     const [, setLinks] = useState(new Array<NodeLink>());
-    const { stateMachineWrapper } = useContext(StateMachineContext);
+    // const { stateMachineWrapper } = useContext(StateMachineContext);
+    const { stateMachine } = useStateMachine();
 
     const rootContainer: React.MutableRefObject<Nullable<HTMLDivElement>> = useRef(null);
     const graphCanvasComponentRef = useCallback((gccRef: Nullable<GraphCanvasComponent>) => {
@@ -144,7 +145,7 @@ export const StateBehaviorViewComponent: FC = () => {
 
     // Initialize the nodes
     useEffect(() => {
-        if (stateManager && graphCanvasComponent && selectedNode && stateMachineWrapper) {
+        if (stateManager && graphCanvasComponent && selectedNode && stateMachine) {
             // Have to clear out existing nodes.
             graphCanvasComponent.reset();
 
@@ -156,10 +157,10 @@ export const StateBehaviorViewComponent: FC = () => {
                 { name: "READY", inputs: "in", color: "red", type: NodeTypes.ReadyActionNode },
             ];
             // const stateAction = stateMachine.getStateAction(selectedNode.name);
-            // const stateAction = selectedNode?.content?.data?.state?.stateEnterAction;
-            // if (stateAction) {
-            //     nodesToAdd.push({ name: stateAction.actionName(), inputs: "in", output: "out", color: "blue", type: NodeTypes.ActionNode, data: stateAction });
-            // }
+            const stateAction = selectedNode?.content?.data?.state?.stateEnterAction;
+            if (stateAction) {
+                nodesToAdd.push({ name: stateAction.actionName(), inputs: "in", output: "out", color: "blue", type: NodeTypes.ActionNode, data: stateAction });
+            }
             for (const nodeToAdd of nodesToAdd) {
                 const graphNode = onAddNewNode(nodeToAdd);
                 if (graphNode) {
@@ -167,25 +168,35 @@ export const StateBehaviorViewComponent: FC = () => {
                 }
             }
             // Position and link nodes
-            // const origin = newNodes[0];
-            // const dest = newNodes[1];
-            // const setPos = newNodes[2];
+            const origin = newNodes[0];
+            const dest = newNodes[1];
+            const setPos = newNodes[2];
 
-            // const nodeSpacing = 400;
+            const nodeSpacing = 400;
 
-            // origin.x = 100;
-            // origin.y = 100;
+            if (origin) {
+                origin.x = 100;
+                origin.y = 100;
+            }
 
-            // setPos.x = origin.x + nodeSpacing;
-            // setPos.y = 100;
+            if (setPos) {
+                setPos.x = origin.x + nodeSpacing;
+                setPos.y = 100;
+            }
 
-            // dest.x = setPos.x + nodeSpacing;
-            // dest.y = 100;
+            if (dest) {
+                dest.x = setPos.x + nodeSpacing;
+                dest.y = 100;
+            }
 
             const newLinks = new Array<NodeLink>();
 
-            // newLinks.push(linkPorts(graphCanvasComponent, origin, origin.outputPorts[0], setPos, setPos.inputPorts[0]));
-            // newLinks.push(linkPorts(graphCanvasComponent, setPos, setPos.outputPorts[0], dest, dest.inputPorts[0]));
+            if (origin && setPos) {
+                newLinks.push(linkPorts(graphCanvasComponent, origin, origin.outputPorts[0], setPos, setPos.inputPorts[0]));
+            }
+            if (setPos && dest) {
+                newLinks.push(linkPorts(graphCanvasComponent, setPos, setPos.outputPorts[0], dest, dest.inputPorts[0]));
+            }
 
             setNodes(newNodes);
             setLinks(newLinks);
@@ -200,27 +211,6 @@ export const StateBehaviorViewComponent: FC = () => {
         targetNode.links.push(newLink);
         return newLink;
     };
-
-    // Set up key handling
-    useEffect(() => {
-        if (graphCanvasComponent && rootContainer.current) {
-            rootContainer.current.addEventListener("keydown", (evt) => {
-                graphCanvasComponent!.handleKeyDown(
-                    evt,
-                    (nodeData: INodeData) => {},
-                    0,
-                    0,
-                    (nodeData: INodeData) => {
-                        // const name = nodeData.name;
-                        // const inputs = nodeData.inputs.map((i) => i.name);
-                        // const outputs = nodeData.outputs.map((o) => o.name);
-                        // return graphCanvasComponent.appendNode(createNewNodeData(name, inputs, outputs));
-                    },
-                    graphCanvasComponent!.canvasContainer
-                );
-            });
-        }
-    }, [graphCanvasComponent]);
 
     // Create a new node and pass the state manager
     const onAddNewNode = (props: { name: string; inputs?: string; output?: string; color?: string; type: string; value?: any; data?: any }): Nullable<GraphNode> => {

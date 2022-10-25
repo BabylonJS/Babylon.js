@@ -131,6 +131,7 @@ export const CommandBarComponent: FC<ICommandBarComponentProps> = (props) => {
                         />
                     )}
                 </div>
+                <div className={style.divider}>{props.children}</div>
             </div>
             <div className={style.commandsRight}>
                 <img src={betaFlag} className={style.betaFlag} draggable={false} />

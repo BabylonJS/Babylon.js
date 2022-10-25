@@ -9,14 +9,13 @@ import style from "./workbench.modules.scss";
 import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
 import { SelectionContext } from "./components/SelectionContext";
 import { initialLayout } from "./initialLayout";
-import { Vector3 } from "core/Maths/math";
-import { SetPositionAction } from "./actions/actions/SetPositionAction";
 import { StateMachine } from "./stateMachine/StateMachine";
-// @ts-ignore
-import { LogAction } from "./actions/actions/LogAction";
 import type { IStateMachineWrapper } from "./StateMachineContext";
 import { StateMachineContext } from "./StateMachineContext";
-import { State } from "./stateMachine/State";
+import { CommandButtonComponent } from "shared-ui-components/components/bars/CommandButtonComponent";
+
+import playIcon from "./components/imgs/playIcon.svg";
+import pauseIcon from "./components/imgs/pauseIcon.svg";
 
 export type WorkbenchProps = {};
 
@@ -29,35 +28,23 @@ export const Workbench: FC<WorkbenchProps> = () => {
     const [selectedNode, setSelectedNode] = useState<Nullable<GraphNode>>(null);
     const [stateMachineWrapper, setStateMachineWrapper] = useState<Nullable<IStateMachineWrapper>>(null);
 
+    const startStateMachine = () => {
+        if (stateMachineWrapper) {
+            stateMachineWrapper.stateMachine.start();
+        }
+    };
+
+    const pauseStateMachine = () => {
+        if (stateMachineWrapper) {
+            stateMachineWrapper.stateMachine.pause();
+        }
+    };
+
     useEffect(() => {
         if (scene) {
             const node = scene.getMeshByName("sphere");
             if (node) {
                 const stateMachine = new StateMachine(scene, node);
-
-                // stateMachine.setStartingState("Sphere Origin");
-                // stateMachine.addTransition("Sphere Origin", "Sphere Destination");
-                // stateMachine.addTransition("Sphere Destination", "Sphere Origin");
-                // stateMachine.setStateEnterAction("Sphere Origin", setPositionOriginAction);
-                // stateMachine.setStateEnterAction("Sphere Destination", setPositionDestinationAction);
-
-                const setPositionOriginAction = new SetPositionAction();
-                setPositionOriginAction.targetNode = node;
-                setPositionOriginAction.targetPosition = new Vector3(0, 0, 0);
-                const sphereOriginState = new State("Sphere Origin");
-                sphereOriginState.setOnStateEnterAction(setPositionOriginAction);
-
-                // const setPositionDestinationAction = new SetPositionAction();
-                // setPositionDestinationAction.targetNode = node;
-                // setPositionDestinationAction.targetPosition = new Vector3(1, 1, 1);
-                // const sphereDestinationState = new State("Sphere Destination");
-                // sphereDestinationState.setOnStateEnterAction(setPositionDestinationAction);
-
-                stateMachine.setStartingState(sphereOriginState);
-                // stateMachine.addTransition(sphereOriginState, sphereDestinationState);
-                // stateMachine.addTransition(sphereDestinationState, sphereOriginState);
-
-                stateMachine.start();
 
                 setStateMachineWrapper({ stateMachine, lastUpdate: Date.now() });
             }
@@ -73,7 +60,10 @@ export const Workbench: FC<WorkbenchProps> = () => {
                             artboardColor={workAreaColor}
                             artboardColorPickerColor={INITIAL_WORKBENCH_COLOR}
                             onArtboardColorChanged={(newColor) => setWorkAreaColor(newColor)}
-                        />
+                        >
+                            <CommandButtonComponent tooltip="Start State Machine" icon={playIcon} onClick={startStateMachine} isActive={true}></CommandButtonComponent>
+                            <CommandButtonComponent tooltip="Pause State Machine" icon={pauseIcon} onClick={pauseStateMachine} isActive={true}></CommandButtonComponent>
+                        </CommandBarComponent>
                         <div className={style.workArea} style={{ backgroundColor: workAreaColor }}>
                             <FlexibleGridLayout layoutDefinition={initialLayout} />
                         </div>

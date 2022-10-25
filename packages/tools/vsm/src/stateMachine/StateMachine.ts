@@ -4,13 +4,11 @@
  */
 
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import { Tools } from "core/Misc/tools";
 import type { Scene } from "core/scene";
 import { ActionManager } from "../actions/ActionManager";
 import { ExecuteCodeAction } from "../actions/actions/ExecuteCodeAction";
 import { ClickTrigger } from "../actions/triggers/ClickTrigger";
-// import type { BaseAction } from "../actions/actions/BaseAction";
-// import { BaseTrigger } from "../actions/triggers/BaseTrigger";
-// import { OnStateEnterTrigger } from "../actions/triggers/OnStateEnterTrigger";
 import type { State } from "./State";
 
 export class StateMachine {
@@ -19,8 +17,6 @@ export class StateMachine {
     private _currentState: State;
     private _startingState: State;
     private _states: State[] = [];
-    // private _states: Set<State> = new Set<State>();
-    // private _stateEnterTriggers: Record<State, BaseTrigger> = {};
 
     constructor(scene: Scene, mesh: AbstractMesh) {
         this._actionManager = new ActionManager(scene);
@@ -72,19 +68,19 @@ export class StateMachine {
         this._startingState = state;
     }
 
-    // setStateEnterAction(state: State, action: BaseAction) {
-    // const stateEnterTrigger = new OnStateEnterTrigger(this, state);
-    // this._actionManager.addBehavior(stateEnterTrigger, action);
-    // this._stateEnterTriggers[state] = stateEnterTrigger;
-    // }
-
-    // getStateAction(state: State) {
-    //     return this._actionManager.getActionByTrigger(this._stateEnterTriggers[state]);
-    // }
-
     start() {
+        if (!this._startingState) {
+            Tools.Warn("No starting state set for state machine");
+            return;
+        }
         this._currentState = this._startingState;
         this._startingState.enterState();
         this._actionManager.start();
+    }
+
+    pause() {
+        /**
+         * No op for now
+         */
     }
 }
