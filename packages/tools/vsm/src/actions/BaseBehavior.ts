@@ -1,7 +1,3 @@
-/**
- * Behavior represents a connection between a trigger and an action
- */
-
 import type { BaseAction } from "./actions/BaseAction";
 import type { BaseTrigger } from "./triggers/BaseTrigger";
 

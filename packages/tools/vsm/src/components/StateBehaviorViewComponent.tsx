@@ -114,7 +114,6 @@ export const StateBehaviorViewComponent: FC = () => {
     const [graphCanvasComponent, setGraphCanvasComponent] = useState<Nullable<GraphCanvasComponent>>(null);
     const [, setNodes] = useState(new Array<GraphNode>());
     const [, setLinks] = useState(new Array<NodeLink>());
-    // const { stateMachineWrapper } = useContext(StateMachineContext);
     const { stateMachine } = useStateMachine();
 
     const rootContainer: React.MutableRefObject<Nullable<HTMLDivElement>> = useRef(null);
@@ -156,7 +155,6 @@ export const StateBehaviorViewComponent: FC = () => {
                 { name: "START", output: "out", color: "green", type: NodeTypes.StartActionNode },
                 { name: "READY", inputs: "in", color: "red", type: NodeTypes.ReadyActionNode },
             ];
-            // const stateAction = stateMachine.getStateAction(selectedNode.name);
             const stateAction = selectedNode?.content?.data?.stateEnterAction;
             if (stateAction) {
                 nodesToAdd.push({ name: stateAction.actionName(), inputs: "in", output: "out", color: "blue", type: NodeTypes.ActionNode, data: stateAction });
