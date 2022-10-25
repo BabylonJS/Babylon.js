@@ -5,30 +5,30 @@ import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { Tools } from "../../Misc/tools";
 
 /**
- *
+ * Options for Depth Sensing feature
  */
 export interface IWebXRDepthSensingOptions {
     /**
-     *
+     *  The desired depth sensing usage for the session
      */
     usagePreference: XRDepthUsage[];
     /**
-     *
+     * The desired depth sensing data format for the session
      */
     dataFormatPreference: XRDepthDataFormat[];
 }
 
 /**
- *
+ * WebXR Feature for WebXR Depth Sensing Module
  */
 export class WebXRDepthSensing extends WebXRAbstractFeature {
     /**
-     *
+     * An observable which triggered when the CPU depth information is acquired from XRFrame
      */
     public onCPUDepthInformationObservable: Observable<XRCPUDepthInformation> = new Observable();
 
     /**
-     *
+     *An observable which triggered when the WebGL depth information is acquired from XRFrame
      */
     public onWebGLDepthInformationObservable: Observable<XRWebGLDepthInformation> = new Observable();
 
@@ -56,7 +56,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         this.xrNativeFeatureName = "depth-sensing";
 
         // https://immersive-web.github.io/depth-sensing/
-        Tools.Warn("dom-overlay is an experimental and unstable feature.");
+        Tools.Warn("depth-sensing is an experimental and unstable feature.");
     }
 
     /**
