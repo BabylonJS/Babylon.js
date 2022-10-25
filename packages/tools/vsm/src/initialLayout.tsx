@@ -1,4 +1,3 @@
-import { TestComponent } from "./testComponent";
 import { SceneRendererComponent } from "./components/SceneRendererComponent";
 import { StatesViewComponent } from "./components/StatesViewComponent";
 import { StateBehaviorViewComponent } from "./components/StateBehaviorViewComponent";
@@ -16,15 +15,12 @@ export const initialLayout: Layout = {
                     id: "scene",
                     height: "80%",
                     selectedTab: "sceneTab",
-                    tabs: [
-                        { id: "sceneTab", title: "Scene", component: <SceneRendererComponent /> },
-                        { id: "test", title: "Test", component: <TestComponent name="test" /> },
-                    ],
+                    tabs: [{ id: "sceneTab", title: "Scene", component: <SceneRendererComponent /> }],
                 },
                 {
                     id: "edit",
                     height: "20%",
-                    selectedTab: "editTab",
+                    selectedTab: "addNode",
                     tabs: [
                         { id: "editTab", title: "Edit value", component: <EditValueComponent /> },
                         { id: "addNode", title: "Add node", component: <NodeListComponent /> },
