@@ -1194,3 +1194,8 @@ interface XRWebGLDepthInformation extends XRDepthInformation {
 interface XRWebGLBinding {
     getDepthInformation(view: XRView): XRWebGLDepthInformation?;
 }
+
+/**
+ * BEGIN WebXR Depth Sensing Moudle
+ * https://www.w3.org/TR/webxr-depth-sensing-1/
+ */

@@ -32,6 +32,9 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
      */
     public onWebGLDepthInformationObservable: Observable<XRWebGLDepthInformation> = new Observable();
 
+    /**
+     * XRWebGLBinding which is used for acquiring WebGLDepthInformation
+     */
     private _glBinding?: XRWebGLBinding;
 
     /**
@@ -66,8 +69,14 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
      * @returns true if successful.
      */
     public attach(force?: boolean | undefined): boolean {
-        super.attach(force);
-        // todo
+        if (!super.attach(force)) {
+            return false;
+        }
+
+        const isDepthUsageAndFormatNull = this._xrSessionManager.session.depthDataFormat == null || this._xrSessionManager.session.depthUsage == null;
+        if (isDepthUsageAndFormatNull) {
+            return false;
+        }
 
         this._glBinding = new XRWebGLBinding(this._xrSessionManager.session, this._xrSessionManager.scene.getEngine()._gl);
 
