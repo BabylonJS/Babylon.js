@@ -6,7 +6,7 @@ import type { BaseTrigger } from "./triggers/BaseTrigger";
 /**
  * This class is responsible for checking the execution state of triggers and enabling actions to run
  */
-export class ActionManager {
+export class ActionCoordinator {
     private _scene: Scene;
     private _behaviors: BaseBehavior[] = [];
     private _triggers: BaseTrigger[] = [];

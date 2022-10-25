@@ -1,5 +1,8 @@
 import { BaseAction } from "./BaseAction";
 
+/**
+ * This action executes a function when triggered.
+ */
 export class ExecuteCodeAction extends BaseAction {
     private _code: () => void;
 

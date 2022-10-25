@@ -23,7 +23,7 @@ export const StatesViewComponent: FC = () => {
     const [, setLinks] = useState(new Array<NodeLink>());
     const { setSelectedNode } = useContext(SelectionContext);
     const { scene } = useContext(SceneContext);
-    const { stateMachine } = useStateMachine();
+    const { stateMachine, lastUpdate } = useStateMachine();
 
     const rootContainer: React.MutableRefObject<Nullable<HTMLDivElement>> = useRef(null);
     const graphCanvasComponentRef = useCallback((gccRef: Nullable<GraphCanvasComponent>) => {
@@ -45,7 +45,7 @@ export const StatesViewComponent: FC = () => {
 
         const selfOwnerData = self.ownerData;
         const portOwnerData = port.ownerData;
-        if (selfOwnerData && portOwnerData) {
+        if (stateMachine && selfOwnerData && portOwnerData) {
             const stateOwner = selfOwnerData.state;
             const statePort = portOwnerData.state;
             if (stateOwner && statePort) {
@@ -143,7 +143,7 @@ export const StatesViewComponent: FC = () => {
             const newStateManager = new StateManager();
             newStateManager.hostDocument = rootContainer.current.ownerDocument;
             newStateManager.applyNodePortDesign = (data, element, img) => {
-                element.style.background = data.ownerData.color;
+                element.style.background = "black";
                 img.src =
                     "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMSAyMSI+PGRlZnM+PHN0eWxlPi5jbHMtMXtmaWxsOiNmZmY7fTwvc3R5bGU+PC9kZWZzPjx0aXRsZT5WZWN0b3IxPC90aXRsZT48ZyBpZD0iTGF5ZXJfNSIgZGF0YS1uYW1lPSJMYXllciA1Ij48Y2lyY2xlIGNsYXNzPSJjbHMtMSIgY3g9IjEwLjUiIGN5PSIxMC41IiByPSI3LjUiLz48L2c+PC9zdmc+";
             };
@@ -184,7 +184,7 @@ export const StatesViewComponent: FC = () => {
             setNodes(newNodes);
             setLinks(newLinks);
         }
-    }, [stateManager, graphCanvasComponent, scene, stateMachine]);
+    }, [stateManager, graphCanvasComponent, scene, stateMachine, lastUpdate]);
 
     // Set up responding for node selection
     useEffect(() => {

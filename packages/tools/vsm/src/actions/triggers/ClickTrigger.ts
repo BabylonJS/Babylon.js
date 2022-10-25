@@ -2,6 +2,9 @@ import { PointerEventTypes } from "core/Events/pointerEvents";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { BaseTrigger } from "./BaseTrigger";
 
+/**
+ * This action fires the triggerOn when the defined mesh is clicked.
+ */
 export class ClickTrigger extends BaseTrigger {
     private _object: AbstractMesh;
 

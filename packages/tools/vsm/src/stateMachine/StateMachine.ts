@@ -6,27 +6,31 @@
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { Tools } from "core/Misc/tools";
 import type { Scene } from "core/scene";
-import { ActionManager } from "../actions/ActionManager";
+import { ActionCoordinator } from "../actions/ActionCoordinator";
 import { ExecuteCodeAction } from "../actions/actions/ExecuteCodeAction";
 import { ClickTrigger } from "../actions/triggers/ClickTrigger";
 import type { State } from "./State";
 
+/**
+ * The State Machine is responsible for switching between various states based on
+ * triggers.
+ */
 export class StateMachine {
     private _transitions: Record<string, State> = {};
-    private _actionManager: ActionManager;
+    private _actionCoordinator: ActionCoordinator;
     private _currentState: State;
     private _startingState: State;
     private _states: State[] = [];
 
     constructor(scene: Scene, mesh: AbstractMesh) {
-        this._actionManager = new ActionManager(scene);
+        this._actionCoordinator = new ActionCoordinator(scene);
 
         const pointerTrigger = new ClickTrigger(mesh);
         const stateChangeAction = new ExecuteCodeAction(() => {
             this._transitionStates();
         });
 
-        this._actionManager.addBehavior(pointerTrigger, stateChangeAction);
+        this._actionCoordinator.addBehavior(pointerTrigger, stateChangeAction);
     }
 
     private _transitionStates() {
@@ -45,7 +49,6 @@ export class StateMachine {
     }
 
     getStates() {
-        // return this._states.values();
         return this._states;
     }
 
@@ -55,12 +58,13 @@ export class StateMachine {
 
     addState(state: State) {
         this._states.push(state);
-        // this._states.add(state);
     }
 
     addTransition(from: State, to: State) {
-        // Add state to list of states
-        // this._states.add(from);
+        if (this._states.indexOf(from) === -1 || this._states.indexOf(to) === -1) {
+            Tools.Warn("Trying to add a transition betweens states that don't exist");
+            return;
+        }
         this._transitions[from.id] = to;
     }
 
@@ -75,7 +79,7 @@ export class StateMachine {
         }
         this._currentState = this._startingState;
         this._startingState.enterState();
-        this._actionManager.start();
+        this._actionCoordinator.start();
     }
 
     pause() {

@@ -18,19 +18,21 @@ export const NodeListComponent: FC<INodeListComponentProps> = (props) => {
     const node = useSceneNode("sphere");
 
     const onAddNewState = () => {
-        const state = new State(stateName);
+        if (stateMachine && node) {
+            const state = new State(stateName);
 
-        const stateAction = new SetPositionAction();
-        stateAction.targetNode = node;
-        stateAction.targetPosition = new Vector3(0, 0, 0);
-        state.setOnStateEnterAction(stateAction);
+            const stateAction = new SetPositionAction();
+            stateAction.targetNode = node;
+            stateAction.targetPosition = new Vector3(0, 0, 0);
+            state.setOnStateEnterAction(stateAction);
 
-        stateMachine.addState(state);
-        if (stateMachine.getStates().length === 1) {
-            stateMachine.setStartingState(state);
+            stateMachine.addState(state);
+            if (stateMachine.getStates().length === 1) {
+                stateMachine.setStartingState(state);
+            }
+
+            setStateMachine(stateMachine);
         }
-
-        setStateMachine(stateMachine);
     };
 
     return (

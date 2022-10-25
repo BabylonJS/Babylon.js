@@ -157,7 +157,7 @@ export const StateBehaviorViewComponent: FC = () => {
                 { name: "READY", inputs: "in", color: "red", type: NodeTypes.ReadyActionNode },
             ];
             // const stateAction = stateMachine.getStateAction(selectedNode.name);
-            const stateAction = selectedNode?.content?.data?.state?.stateEnterAction;
+            const stateAction = selectedNode?.content?.data?.stateEnterAction;
             if (stateAction) {
                 nodesToAdd.push({ name: stateAction.actionName(), inputs: "in", output: "out", color: "blue", type: NodeTypes.ActionNode, data: stateAction });
             }
@@ -172,20 +172,18 @@ export const StateBehaviorViewComponent: FC = () => {
             const dest = newNodes[1];
             const setPos = newNodes[2];
 
-            const nodeSpacing = 400;
-
             if (origin) {
                 origin.x = 100;
                 origin.y = 100;
             }
 
             if (setPos) {
-                setPos.x = origin.x + nodeSpacing;
+                setPos.x = 400;
                 setPos.y = 100;
             }
 
             if (dest) {
-                dest.x = setPos.x + nodeSpacing;
+                dest.x = 700;
                 dest.y = 100;
             }
 
