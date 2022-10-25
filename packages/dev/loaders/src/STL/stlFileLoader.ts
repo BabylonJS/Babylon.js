@@ -159,15 +159,16 @@ export class STLFileLoader implements ISceneLoaderPlugin {
             return true;
         }
 
-        // check characters higher than ASCII to confirm binary
-        const fileLength = reader.byteLength;
-        for (let index = 0; index < fileLength; index++) {
-            if (reader.getUint8(index) > 127) {
-                return true;
+        // US-ASCII begin with 's', 'o', 'l', 'i', 'd'
+        const ascll = [ 115, 111, 108, 105, 100 ];
+        for ( let off = 0; off < 5; off ++ ) {
+            if(reader.getUint8(off) != ascll[off]){
+                return true
             }
+            if(off === 4 ) return false
         }
-
-        return false;
+        
+        return true;
     }
 
     private _parseBinary(mesh: Mesh, data: ArrayBuffer, rightHanded: boolean) {
