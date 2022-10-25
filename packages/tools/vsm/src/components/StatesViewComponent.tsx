@@ -16,6 +16,7 @@ import { SelectionContext } from "./SelectionContext";
 import { Vector3 } from "core/Maths/math";
 import { SceneContext } from "../SceneContext";
 import { StateMachineContext } from "../StateMachineContext";
+import { StateDisplay } from "./statesDisplay/stateDisplay";
 
 const connectToFn = (self: IPortData, port: IPortData) => {
     self.isConnected = true;
@@ -85,7 +86,8 @@ function createNewPortData(name: string, output: boolean, ownerData: INodeData) 
 function createNewNodeData(name: string, inputs: string[], outputs: string[], extra: Object = {}) {
     const outputNodeData = {
         name: name,
-        data: { ...extra },
+        // data: { ...extra },
+        data: extra,
         uniqueId: Date.now(),
         isInput: true,
         comments: "Test comment",
@@ -152,7 +154,8 @@ export const StatesViewComponent: FC = () => {
             const newNodes = new Array<GraphNode>();
 
             for (const state of stateMachine.getStates()) {
-                const nodeToAdd = { name: state.name, inputs: "in", output: "out", data: { state, color: "#0000ff" } };
+                const stateDisplay = new StateDisplay(state);
+                const nodeToAdd = { name: state.name, inputs: "in", output: "out", data: stateDisplay };
                 const graphNode = onAddNewNode(nodeToAdd);
                 if (graphNode) {
                     newNodes.push(graphNode);
