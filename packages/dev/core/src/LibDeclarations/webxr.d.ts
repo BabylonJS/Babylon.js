@@ -1184,7 +1184,7 @@ interface XRCPUDepthInformation extends XRDepthInformation {
 }
 
 interface XRFrame {
-    getDepthInformation(view: XRView): XRCPUDepthInformation?;
+    getDepthInformation(view: XRView): ?XRCPUDepthInformation;
 }
 
 interface XRWebGLDepthInformation extends XRDepthInformation {
@@ -1192,7 +1192,7 @@ interface XRWebGLDepthInformation extends XRDepthInformation {
 }
 
 interface XRWebGLBinding {
-    getDepthInformation(view: XRView): XRWebGLDepthInformation?;
+    getDepthInformation(view: XRView): ?XRWebGLDepthInformation;
 }
 
 /**
