@@ -1,5 +1,8 @@
 import { BaseAction } from "./BaseAction";
 
+/**
+ * This actions logs a message when triggered. Useful for debugging.
+ */
 export class LogAction extends BaseAction {
     private _message;
 
