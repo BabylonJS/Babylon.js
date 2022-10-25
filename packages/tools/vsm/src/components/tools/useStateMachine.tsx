@@ -6,7 +6,6 @@ export const useStateMachine = () => {
     const { stateMachineWrapper, setStateMachineWrapper } = useContext(StateMachineContext);
 
     if (!stateMachineWrapper || !setStateMachineWrapper) {
-        // throw new Error("State machine is not defined");
         return {};
     }
 

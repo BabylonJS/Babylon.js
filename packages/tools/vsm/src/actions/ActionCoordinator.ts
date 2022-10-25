@@ -24,11 +24,6 @@ export class ActionCoordinator {
         this._behaviors.push(behavior);
     }
 
-    public getActionByTrigger(trigger: BaseTrigger) {
-        const behavior = this._behaviors.find((behavior) => behavior.trigger === trigger);
-        return behavior?.action;
-    }
-
     public start() {
         this._scene.onBeforeRenderObservable.add(() => {
             this._checkTriggers(this._scene);
