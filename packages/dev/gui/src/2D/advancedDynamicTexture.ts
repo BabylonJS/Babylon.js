@@ -1036,7 +1036,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         if (!scene) {
             return;
         }
-        
+
         if (this._pointerObserver) {
             scene.onPointerObservable.remove(this._pointerObserver);
         }
