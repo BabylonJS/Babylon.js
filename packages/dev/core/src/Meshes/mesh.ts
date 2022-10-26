@@ -7,7 +7,7 @@ import { Tags } from "../Misc/tags";
 import type { Coroutine } from "../Misc/coroutine";
 import { runCoroutineSync, runCoroutineAsync, createYieldingScheduler } from "../Misc/coroutine";
 import type { Nullable, FloatArray, IndicesArray } from "../types";
-import type { Camera } from "../Cameras/camera";
+import { Camera } from "../Cameras/camera";
 import type { Scene } from "../scene";
 import { ScenePerformancePriority } from "../scene";
 import { Quaternion, Matrix, Vector3, Vector2 } from "../Maths/math.vector";
@@ -930,7 +930,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             bSphere = boundingInfo.boundingSphere;
         }
 
-        const distanceToCamera = bSphere.centerWorld.subtract(camera.globalPosition).length();
+        const distanceToCamera = camera.mode === Camera.ORTHOGRAPHIC_CAMERA ? camera.minZ : bSphere.centerWorld.subtract(camera.globalPosition).length();
         const useScreenCoverage = internalDataInfo._useLODScreenCoverage;
         let compareValue = distanceToCamera;
         let compareSign = 1;
