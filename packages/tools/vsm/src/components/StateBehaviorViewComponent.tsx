@@ -151,7 +151,7 @@ export const StateBehaviorViewComponent: FC = () => {
             const newNodes = new Array<GraphNode>();
 
             // Create nodes
-            const nodesToAdd: any[] = [
+            const nodesToAdd = [
                 { name: "START", output: "out", color: "green", type: NodeTypes.StartActionNode },
                 { name: "READY", inputs: "in", color: "red", type: NodeTypes.ReadyActionNode },
             ];
@@ -199,7 +199,6 @@ export const StateBehaviorViewComponent: FC = () => {
         }
     }, [stateManager, graphCanvasComponent, selectedNode]);
 
-    // @ts-ignore
     const linkPorts = (graphCanvasComponent: GraphCanvasComponent, node: GraphNode, port: NodePort, targetNode: GraphNode, targetPort: NodePort) => {
         port.portData.connectTo(targetPort.portData);
         const newLink = new NodeLink(graphCanvasComponent, port, node, targetPort, targetNode);
