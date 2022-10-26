@@ -155,6 +155,8 @@ export class HeightToNormalBlock extends NodeMaterialBlock {
     protected _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode();
         codeString += `${this._codeVariableName}.generateInWorldSpace = ${this.generateInWorldSpace};\r\n`;
+        codeString += `${this._codeVariableName}.automaticNormalizationNormal = ${this.automaticNormalizationNormal};\r\n`;
+        codeString += `${this._codeVariableName}.automaticNormalizationTangent = ${this.automaticNormalizationTangent};\r\n`;
 
         return codeString;
     }
