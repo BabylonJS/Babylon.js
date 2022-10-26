@@ -4,6 +4,7 @@ import { StatesViewComponent } from "./components/StatesViewComponent";
 import { StateBehaviorViewComponent } from "./components/StateBehaviorViewComponent";
 import type { Layout } from "shared-ui-components/components/layout/types";
 import { EditValueComponent } from "./components/EditValueComponent";
+import { TestReactiveNodes } from "./components/TestReactiveNodes";
 
 export const initialLayout: Layout = {
     columns: [
@@ -34,9 +35,12 @@ export const initialLayout: Layout = {
             rows: [
                 {
                     id: "row4",
-                    selectedTab: "statesView",
+                    selectedTab: "reactiveNodes",
                     height: "60%",
-                    tabs: [{ id: "statesView", title: "States", component: <StatesViewComponent /> }],
+                    tabs: [
+                        { id: "statesView", title: "States", component: <StatesViewComponent /> },
+                        { id: "reactiveNodes", title: "Test", component: <TestReactiveNodes /> },
+                    ],
                 },
                 {
                     id: "row5",
