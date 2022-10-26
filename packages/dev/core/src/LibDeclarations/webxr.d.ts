@@ -245,7 +245,7 @@ interface XRInputSource {
     readonly gripSpace?: XRSpace | undefined;
     readonly gamepad?: Gamepad | undefined;
     readonly profiles: string[];
-    readonly hand?: XRHand | undefined;
+    readonly hand?: XRHand;
 }
 
 declare abstract class XRInputSource implements XRInputSource {}
@@ -676,7 +676,7 @@ interface XRJointPose extends XRPose {
 
 declare abstract class XRJointPose implements XRJointPose {}
 
-interface XRHand extends Map<number, XRJointSpace> {
+interface XRHand extends Map<string, XRJointSpace> {
     readonly WRIST: number;
 
     readonly THUMB_METACARPAL: number;
@@ -709,7 +709,7 @@ interface XRHand extends Map<number, XRJointSpace> {
     readonly LITTLE_PHALANX_TIP: number;
 }
 
-declare abstract class XRHand extends Map<number, XRJointSpace> implements XRHand {}
+declare abstract class XRHand extends Map<string, XRJointSpace> implements XRHand {}
 
 // WebXR Layers
 
@@ -1058,7 +1058,7 @@ interface XRSession {
 }
 
 /// BABYLON EDITS
-interface XREyeTrackingSourceEvent extends Event {
+interface XREyeTrackingSourceEvent extends XRSessionEvent {
     readonly gazeSpace: XRSpace;
 }
 
