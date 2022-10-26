@@ -1,5 +1,7 @@
 import type { FC } from "react";
-import { useDrag } from "react-dnd";
+import { useCallback } from "react";
+import type { DropTargetMonitor } from "react-dnd";
+import { useDrag, useDrop } from "react-dnd";
 import style from "./GraphConnectorHandle.modules.scss";
 
 export interface IGraphConnectorHandlerProps {
@@ -17,5 +19,18 @@ export const GraphConnectorHandler: FC<IGraphConnectorHandlerProps> = (props) =>
         }),
         [parentId, parentX, parentY]
     );
-    return <div ref={dragRef} className={style.handle} />;
+    const [{ isOver }, dropRef] = useDrop(() => ({
+        accept: "connector",
+        collect: (monitor: DropTargetMonitor) => ({
+            isOver: monitor.isOver(),
+        }),
+        drop: (item: any) => {
+            // When drop, update the existing graph context?
+        },
+    }));
+    const attachRef = useCallback((ref) => {
+        dragRef(ref);
+        dropRef(ref);
+    }, []);
+    return <div ref={attachRef} className={style.handle} style={{ backgroundColor: isOver ? "yellow" : "gray" }} />;
 };
