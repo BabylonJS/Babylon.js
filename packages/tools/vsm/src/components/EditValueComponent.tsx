@@ -1,7 +1,8 @@
 import { useContext, useState, useEffect } from "react";
 import type { FC } from "react";
 import { SelectionContext } from "./SelectionContext";
-import { stateValuesProvider } from "../workbench";
+import { SetPositionAction } from "../actions/actions/SetPositionAction";
+import type { Nullable } from "core/types";
 
 export interface IEditValueComponentProps {}
 
@@ -9,32 +10,37 @@ const style = { width: "40px", backgroundColor: "rgb(87, 87, 87)", border: "unse
 
 export const EditValueComponent: FC<IEditValueComponentProps> = (props) => {
     const { selectedNode } = useContext(SelectionContext);
-    const { stateValues, setStateValues } = useContext(stateValuesProvider);
 
-    const [text, setText] = useState({ x: "", y: "", z: "" });
-
-    const selectedStateValue = selectedNode ? stateValues[selectedNode.name] : null;
+    const [text, setText] = useState<Nullable<{ x: string; y: string; z: string }>>(null);
 
     useEffect(() => {
-        if (selectedStateValue) {
-            setText({ x: selectedStateValue.x.toString(), y: selectedStateValue.y.toString(), z: selectedStateValue.z.toString() });
+        if (selectedNode) {
+            const selectedStateAction = selectedNode?.content?.data?.state?.stateEnterAction;
+
+            const selectedStateValue = selectedStateAction && selectedStateAction instanceof SetPositionAction && selectedStateAction.targetPosition;
+            if (selectedStateValue) {
+                setText({ x: selectedStateValue.x.toString(), y: selectedStateValue.y.toString(), z: selectedStateValue.z.toString() });
+            } else {
+                setText(null);
+            }
         }
-    }, [selectedStateValue]);
+    }, [selectedNode]);
 
     const onSingleValueChanged = (axis: "x" | "y" | "z", event: React.ChangeEvent<HTMLInputElement>) => {
-        if (!selectedStateValue) return;
         const value = event.target.value;
-        setText({ ...text, [axis]: value });
-        const parsedValue = parseFloat(value);
-        if (isNaN(parsedValue)) return;
-        const newValue = selectedStateValue.clone();
-        newValue[axis] = parsedValue;
-
-        stateValues[selectedNode!.name] = newValue;
-        setStateValues({ ...stateValues });
+        if (text) {
+            setText({ ...text, [axis]: value });
+            const parsedValue = parseFloat(value);
+            if (isNaN(parsedValue)) return;
+            const selectedStateAction = selectedNode?.content?.data?.state?.stateEnterAction;
+            const selectedStateValue = selectedStateAction && selectedStateAction instanceof SetPositionAction && selectedStateAction.targetPosition;
+            if (selectedStateValue) {
+                selectedStateValue[axis] = parsedValue;
+            }
+        }
     };
 
-    return selectedStateValue ? (
+    return text ? (
         <div style={{ display: "flex", gap: "2px" }}>
             <input style={style} value={text.x} onChange={(event) => onSingleValueChanged("x", event)}></input>
             <input style={style} value={text.y} onChange={(event) => onSingleValueChanged("y", event)}></input>

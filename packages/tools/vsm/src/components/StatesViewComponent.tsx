@@ -12,101 +12,9 @@ import { RegisterToDisplayManagers } from "./nodesDisplay/registerToDisplayLedge
 import { NodeLink } from "shared-ui-components/nodeGraphSystem/nodeLink";
 import type { NodePort } from "shared-ui-components/nodeGraphSystem/nodePort";
 import { SelectionContext } from "./SelectionContext";
-import { Vector3 } from "core/Maths/math";
 import { SceneContext } from "../SceneContext";
-
-const connectToFn = (self: IPortData, port: IPortData) => {
-    self.isConnected = true;
-    self.connectedPort = port;
-    self.hasEndpoints = true;
-
-    port.isConnected = true;
-    port.connectedPort = self;
-    port.hasEndpoints = true;
-};
-
-const disconnectFromFn = (self: IPortData, port: IPortData) => {
-    self.isConnected = false;
-    self.connectedPort = null;
-    self.hasEndpoints = false;
-
-    port.isConnected = false;
-    port.connectedPort = null;
-    port.hasEndpoints = false;
-};
-
-// Only ports of different types can connect
-const checkCompatFn = (self: IPortData, port: IPortData) => {
-    return 0;
-};
-
-const getCompatIssueMsgFn = (self: IPortData, issue: number, targetNode: GraphNode, targetPort: IPortData) => {
-    return "";
-};
-
-function createNewPortData(name: string, output: boolean, ownerData: INodeData) {
-    const outputData = {
-        name,
-        data: {},
-        internalName: name,
-        isExposedOnFrame: false,
-        exposedPortPosition: -1,
-        isConnected: false,
-        direction: output ? PortDataDirection.Output : PortDataDirection.Input,
-        ownerData: {},
-        connectedPort: null,
-        needDualDirectionValidation: false,
-        hasEndpoints: false,
-        endpoints: null,
-        updateDisplayName: () => {},
-        canConnectTo: () => true,
-        connectTo: (port: IPortData) => {},
-        disconnectFrom: (port: IPortData) => {},
-        checkCompatibilityState: (port: IPortData) => 0,
-        getCompatibilityIssueMessage: (issue: number, targetNode: GraphNode, targetPort: IPortData) => "",
-    };
-    outputData.connectTo = (port: IPortData) => connectToFn(outputData, port);
-    outputData.disconnectFrom = (port: IPortData) => disconnectFromFn(outputData, port);
-    outputData.checkCompatibilityState = (port: IPortData) => checkCompatFn(outputData, port);
-    outputData.getCompatibilityIssueMessage = (issue: number, targetNode: GraphNode, targetPort: IPortData) => getCompatIssueMsgFn(outputData, issue, targetNode, targetPort);
-    outputData.ownerData = ownerData.data;
-
-    if (output) {
-        ownerData.outputs.push(outputData);
-    } else {
-        ownerData.inputs.push(outputData);
-    }
-
-    return outputData;
-}
-
-function createNewNodeData(name: string, inputs: string[], outputs: string[], extra: Object = {}) {
-    const outputNodeData = {
-        name: name,
-        data: { ...extra },
-        uniqueId: Date.now(),
-        isInput: true,
-        comments: "Test comment",
-        prepareHeaderIcon: () => {},
-        getClassName: () => "ColorBlock",
-        dispose: () => {},
-        getPortByName: () => {
-            return null;
-        },
-        inputs: [],
-        outputs: [],
-    };
-
-    for (let i = 0; i < inputs.length; i++) {
-        createNewPortData(inputs[i], false, outputNodeData);
-    }
-
-    for (let i = 0; i < outputs.length; i++) {
-        createNewPortData(outputs[i], true, outputNodeData);
-    }
-
-    return outputNodeData;
-}
+import { useStateMachine } from "./tools/useStateMachine";
+import { NodeTypes } from "./types";
 
 export const StatesViewComponent: FC = () => {
     const [stateManager, setStateManager] = useState<Nullable<StateManager>>(null);
@@ -115,6 +23,7 @@ export const StatesViewComponent: FC = () => {
     const [, setLinks] = useState(new Array<NodeLink>());
     const { setSelectedNode } = useContext(SelectionContext);
     const { scene } = useContext(SceneContext);
+    const { stateMachine, lastUpdate } = useStateMachine();
 
     const rootContainer: React.MutableRefObject<Nullable<HTMLDivElement>> = useRef(null);
     const graphCanvasComponentRef = useCallback((gccRef: Nullable<GraphCanvasComponent>) => {
@@ -125,13 +34,116 @@ export const StatesViewComponent: FC = () => {
         RegisterToDisplayManagers();
     }, []);
 
+    const connectToFn = (self: IPortData, port: IPortData) => {
+        self.isConnected = true;
+        self.connectedPort = port;
+        self.hasEndpoints = true;
+
+        port.isConnected = true;
+        port.connectedPort = self;
+        port.hasEndpoints = true;
+
+        const selfOwnerData = self.ownerData;
+        const portOwnerData = port.ownerData;
+        if (stateMachine && selfOwnerData && portOwnerData) {
+            const stateOwner = selfOwnerData.state;
+            const statePort = portOwnerData.state;
+            if (stateOwner && statePort) {
+                stateMachine.addTransition(stateOwner, statePort);
+            }
+        }
+    };
+
+    const disconnectFromFn = (self: IPortData, port: IPortData) => {
+        self.isConnected = false;
+        self.connectedPort = null;
+        self.hasEndpoints = false;
+
+        port.isConnected = false;
+        port.connectedPort = null;
+        port.hasEndpoints = false;
+    };
+
+    // Only ports of different types can connect
+    const checkCompatFn = (self: IPortData, port: IPortData) => {
+        return 0;
+    };
+
+    const getCompatIssueMsgFn = (self: IPortData, issue: number, targetNode: GraphNode, targetPort: IPortData) => {
+        return "";
+    };
+
+    function createNewPortData(name: string, output: boolean, ownerData: INodeData) {
+        const outputData = {
+            name,
+            data: {},
+            internalName: name,
+            isExposedOnFrame: false,
+            exposedPortPosition: -1,
+            isConnected: false,
+            direction: output ? PortDataDirection.Output : PortDataDirection.Input,
+            ownerData: {},
+            connectedPort: null,
+            needDualDirectionValidation: false,
+            hasEndpoints: false,
+            endpoints: null,
+            updateDisplayName: () => {},
+            canConnectTo: () => true,
+            connectTo: (port: IPortData) => {},
+            disconnectFrom: (port: IPortData) => {},
+            checkCompatibilityState: (port: IPortData) => 0,
+            getCompatibilityIssueMessage: (issue: number, targetNode: GraphNode, targetPort: IPortData) => "",
+        };
+        outputData.connectTo = (port: IPortData) => connectToFn(outputData, port);
+        outputData.disconnectFrom = (port: IPortData) => disconnectFromFn(outputData, port);
+        outputData.checkCompatibilityState = (port: IPortData) => checkCompatFn(outputData, port);
+        outputData.getCompatibilityIssueMessage = (issue: number, targetNode: GraphNode, targetPort: IPortData) => getCompatIssueMsgFn(outputData, issue, targetNode, targetPort);
+        outputData.ownerData = ownerData.data;
+
+        if (output) {
+            ownerData.outputs.push(outputData);
+        } else {
+            ownerData.inputs.push(outputData);
+        }
+
+        return outputData;
+    }
+
+    function createNewNodeData(name: string, inputs: string[], outputs: string[], extra: Object = {}) {
+        const outputNodeData = {
+            name: name,
+            data: extra,
+            uniqueId: Date.now(),
+            isInput: true,
+            comments: "Test comment",
+            prepareHeaderIcon: () => {},
+            getClassName: () => NodeTypes.StateNode,
+            dispose: () => {},
+            getPortByName: () => {
+                return null;
+            },
+            inputs: [],
+            outputs: [],
+        };
+
+        for (let i = 0; i < inputs.length; i++) {
+            createNewPortData(inputs[i], false, outputNodeData);
+        }
+
+        for (let i = 0; i < outputs.length; i++) {
+            createNewPortData(outputs[i], true, outputNodeData);
+        }
+
+        return outputNodeData;
+    }
+
     // Initialize the state manager
     useEffect(() => {
         if (rootContainer.current) {
             const newStateManager = new StateManager();
             newStateManager.hostDocument = rootContainer.current.ownerDocument;
             newStateManager.applyNodePortDesign = (data, element, img) => {
-                element.style.background = data.ownerData.color;
+                element.style.background = "black";
                 img.src =
                     "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMSAyMSI+PGRlZnM+PHN0eWxlPi5jbHMtMXtmaWxsOiNmZmY7fTwvc3R5bGU+PC9kZWZzPjx0aXRsZT5WZWN0b3IxPC90aXRsZT48ZyBpZD0iTGF5ZXJfNSIgZGF0YS1uYW1lPSJMYXllciA1Ij48Y2lyY2xlIGNsYXNzPSJjbHMtMSIgY3g9IjEwLjUiIGN5PSIxMC41IiByPSI3LjUiLz48L2c+PC9zdmc+";
             };
@@ -144,55 +156,35 @@ export const StatesViewComponent: FC = () => {
 
     // Initialize the nodes
     useEffect(() => {
-        if (stateManager && graphCanvasComponent && scene) {
+        if (stateManager && graphCanvasComponent && scene && stateMachine) {
+            // Have to clear the existing nodes
+            graphCanvasComponent.reset();
             const newNodes = new Array<GraphNode>();
 
-            // Create nodes
-            const nodesToAdd = [
-                { name: "Sphere Origin", inputs: "in", output: "out", color: "#ec6916", position: new Vector3(0, 0, 0) },
-                { name: "Sphere Destination", inputs: "in", output: "out", color: "#2b0b71", position: new Vector3(1, 1, 1) },
-            ];
-            for (const nodeToAdd of nodesToAdd) {
+            for (const state of stateMachine.getStates()) {
+                const nodeToAdd = { name: state.name, inputs: "in", output: "out", data: state };
                 const graphNode = onAddNewNode(nodeToAdd);
                 if (graphNode) {
                     newNodes.push(graphNode);
                 }
             }
-            // Position and link nodes
-            const origin = newNodes[0];
-            const dest = newNodes[1];
-
-            origin.x = 300;
-            origin.y = 100;
-
-            dest.x = 300;
-            dest.y = 400;
-
-            const node = scene.getMeshByName("sphere");
-            if (node) {
-                node.metadata.onStateChanged.add((props: any) => {
-                    const state = props.state;
-                    console.log("state changed to", state);
-
-                    if (state === "Sphere Origin") {
-                        origin.addClassToVisual(style.highlight);
-                        dest.removeClassFromVisual(style.highlight);
-                    } else {
-                        origin.removeClassFromVisual(style.highlight);
-                        dest.addClassToVisual(style.highlight);
-                    }
-                });
-            }
 
             const newLinks = new Array<NodeLink>();
 
-            newLinks.push(linkPorts(graphCanvasComponent, origin, origin.outputPorts[0], dest, dest.inputPorts[0]));
-            newLinks.push(linkPorts(graphCanvasComponent, dest, dest.outputPorts[0], origin, origin.inputPorts[0]));
+            for (const [originState, destState] of stateMachine.getTransitions()) {
+                const originNode = newNodes.find((n) => n.content.data.state.id === originState);
+                const destNode = newNodes.find((n) => n.content.data.state.id === destState.id);
+
+                if (originNode && destNode) {
+                    const link = linkPorts(graphCanvasComponent, originNode, originNode.outputPorts[0], destNode, destNode.inputPorts[0]);
+                    newLinks.push(link);
+                }
+            }
 
             setNodes(newNodes);
             setLinks(newLinks);
         }
-    }, [stateManager, graphCanvasComponent, scene]);
+    }, [stateManager, graphCanvasComponent, scene, stateMachine, lastUpdate]);
 
     // Set up responding for node selection
     useEffect(() => {
@@ -211,6 +203,7 @@ export const StatesViewComponent: FC = () => {
         return () => {};
     }, [stateManager]);
 
+    // @ts-ignore
     const linkPorts = (graphCanvasComponent: GraphCanvasComponent, node: GraphNode, port: NodePort, targetNode: GraphNode, targetPort: NodePort) => {
         port.portData.connectTo(targetPort.portData);
         const newLink = new NodeLink(graphCanvasComponent, port, node, targetPort, targetNode);
@@ -219,29 +212,8 @@ export const StatesViewComponent: FC = () => {
         return newLink;
     };
 
-    // Set up key handling
-    useEffect(() => {
-        if (graphCanvasComponent && rootContainer.current) {
-            rootContainer.current.addEventListener("keydown", (evt) => {
-                graphCanvasComponent!.handleKeyDown(
-                    evt,
-                    (nodeData: INodeData) => {},
-                    0,
-                    0,
-                    (nodeData: INodeData) => {
-                        // const name = nodeData.name;
-                        // const inputs = nodeData.inputs.map((i) => i.name);
-                        // const outputs = nodeData.outputs.map((o) => o.name);
-                        // return graphCanvasComponent.appendNode(createNewNodeData(name, inputs, outputs));
-                    },
-                    graphCanvasComponent!.canvasContainer
-                );
-            });
-        }
-    }, [graphCanvasComponent]);
-
     // Create a new node and pass the state manager
-    const onAddNewNode = (props: { name: string; inputs: string; output: string; color: string; position: Vector3 }): Nullable<GraphNode> => {
+    const onAddNewNode = (props: { name: string; inputs: string; output: string; data: any }): Nullable<GraphNode> => {
         const name = props.name as string;
         const inputs = props.inputs as string;
         const output = props.output as string;
@@ -252,7 +224,7 @@ export const StatesViewComponent: FC = () => {
                     name,
                     inputs.split(",").filter((v) => v !== ""),
                     output.split(",").filter((v) => v !== ""),
-                    { color: props.color, position: props.position }
+                    props.data
                 )
             );
         } else {
