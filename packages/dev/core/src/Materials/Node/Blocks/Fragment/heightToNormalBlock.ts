@@ -21,7 +21,7 @@ export class HeightToNormalBlock extends NodeMaterialBlock {
         this.registerInput("input", NodeMaterialBlockConnectionPointTypes.Float);
         this.registerInput("worldPosition", NodeMaterialBlockConnectionPointTypes.Vector3);
         this.registerInput("worldNormal", NodeMaterialBlockConnectionPointTypes.Vector3);
-        this.registerInput("worldTangent", NodeMaterialBlockConnectionPointTypes.Vector3);
+        this.registerInput("worldTangent", NodeMaterialBlockConnectionPointTypes.Vector3, true);
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Vector4);
         this.registerOutput("xyz", NodeMaterialBlockConnectionPointTypes.Vector3);
 
@@ -34,6 +34,18 @@ export class HeightToNormalBlock extends NodeMaterialBlock {
      */
     @editableInPropertyPage("Generate in world space instead of tangent space", PropertyTypeForEdition.Boolean, "PROPERTIES", { notifiers: { update: true } })
     public generateInWorldSpace: boolean = false;
+
+    /**
+     * Defines that the worldNormal input will be normalized by the HeightToNormal block before being used
+     */
+    @editableInPropertyPage("Force normalization for the worldNormal input", PropertyTypeForEdition.Boolean, "PROPERTIES", { notifiers: { update: true } })
+    public automaticNormalizationNormal: boolean = false;
+
+    /**
+     * Defines that the worldTangent input will be normalized by the HeightToNormal block before being used
+     */
+    @editableInPropertyPage("Force normalization for the worldTangent input", PropertyTypeForEdition.Boolean, "PROPERTIES", { notifiers: { update: true } })
+    public automaticNormalizationTangent: boolean = false;
 
     /**
      * Gets the current class name
@@ -90,6 +102,10 @@ export class HeightToNormalBlock extends NodeMaterialBlock {
 
         const output = this._outputs[0];
 
+        if (!this.generateInWorldSpace && !this.worldTangent.isConnected) {
+            console.error(`You must connect the 'worldTangent' input of the ${this.name} block!`);
+        }
+
         const startCode = this.generateInWorldSpace
             ? ""
             : `
@@ -107,6 +123,8 @@ export class HeightToNormalBlock extends NodeMaterialBlock {
         const heightToNormal = `
             vec4 heightToNormal(in float height, in vec3 position, in vec3 tangent, in vec3 normal) {
                 ${startCode}
+                ${this.automaticNormalizationTangent ? "tangent = normalize(tangent);" : ""}
+                ${this.automaticNormalizationNormal ? "normal = normalize(normal);" : ""}
                 vec3 worlddX = dFdx(position);
                 vec3 worlddY = dFdy(position);
                 vec3 crossX = cross(normal, worlddX);
@@ -123,7 +141,9 @@ export class HeightToNormalBlock extends NodeMaterialBlock {
         state._emitFunction("heightToNormal", heightToNormal, "// heightToNormal");
         state.compilationString +=
             this._declareOutput(output, state) +
-            ` = heightToNormal(${this.input.associatedVariableName}, ${this.worldPosition.associatedVariableName}, ${this.worldTangent.associatedVariableName}.xyz, ${this.worldNormal.associatedVariableName});\r\n`;
+            ` = heightToNormal(${this.input.associatedVariableName}, ${this.worldPosition.associatedVariableName}, ${
+                this.worldTangent.isConnected ? this.worldTangent.associatedVariableName : "vec3(0.)"
+            }.xyz, ${this.worldNormal.associatedVariableName});\r\n`;
 
         if (this.xyz.hasEndpoints) {
             state.compilationString += this._declareOutput(this.xyz, state) + ` = ${this.output.associatedVariableName}.xyz;\r\n`;
@@ -143,6 +163,8 @@ export class HeightToNormalBlock extends NodeMaterialBlock {
         const serializationObject = super.serialize();
 
         serializationObject.generateInWorldSpace = this.generateInWorldSpace;
+        serializationObject.automaticNormalizationNormal = this.automaticNormalizationNormal;
+        serializationObject.automaticNormalizationTangent = this.automaticNormalizationTangent;
 
         return serializationObject;
     }
@@ -151,6 +173,8 @@ export class HeightToNormalBlock extends NodeMaterialBlock {
         super._deserialize(serializationObject, scene, rootUrl);
 
         this.generateInWorldSpace = serializationObject.generateInWorldSpace;
+        this.automaticNormalizationNormal = serializationObject.automaticNormalizationNormal;
+        this.automaticNormalizationTangent = serializationObject.automaticNormalizationTangent;
     }
 }
 
