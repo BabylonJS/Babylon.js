@@ -1,10 +1,11 @@
 import type { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
+import { Engine } from "core/Engines/engine";
 import { Tools } from "core/Misc/tools";
 import { GUIEditor } from "gui-editor/guiEditor";
 
 declare let BABYLON: any;
 
-let editorUrl = `https://cdn.babylonjs.com/guiEditor/babylon.guiEditor.js`;
+let editorUrl = `https://unpkg.com/babylonjs-gui-editor@${Engine.Version}/babylon.guiEditor.js`;
 // eslint-disable-next-line @typescript-eslint/naming-convention
 let guiEditorContainer: { GUIEditor: typeof GUIEditor };
 /** Get the inspector from bundle or global */
