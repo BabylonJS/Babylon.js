@@ -13,7 +13,7 @@ import { RegisterToDisplayManagers } from "./nodesDisplay/registerToDisplayLedge
 import { NodeLink } from "shared-ui-components/nodeGraphSystem/nodeLink";
 import type { NodePort } from "shared-ui-components/nodeGraphSystem/nodePort";
 import { NodeTypes } from "./types";
-import { stateValuesProvider } from "../workbench";
+import { useStateMachine } from "./tools/useStateMachine";
 
 const connectToFn = (self: IPortData, port: IPortData) => {
     self.isConnected = true;
@@ -110,11 +110,11 @@ function createNewNodeData(name: string, inputs: string[], outputs: string[], ty
 
 export const StateBehaviorViewComponent: FC = () => {
     const { selectedNode } = useContext(SelectionContext);
-    const { stateValues } = useContext(stateValuesProvider);
     const [stateManager, setStateManager] = useState<Nullable<StateManager>>(null);
     const [graphCanvasComponent, setGraphCanvasComponent] = useState<Nullable<GraphCanvasComponent>>(null);
     const [, setNodes] = useState(new Array<GraphNode>());
     const [, setLinks] = useState(new Array<NodeLink>());
+    const { stateMachine } = useStateMachine();
 
     const rootContainer: React.MutableRefObject<Nullable<HTMLDivElement>> = useRef(null);
     const graphCanvasComponentRef = useCallback((gccRef: Nullable<GraphCanvasComponent>) => {
@@ -144,7 +144,7 @@ export const StateBehaviorViewComponent: FC = () => {
 
     // Initialize the nodes
     useEffect(() => {
-        if (stateManager && graphCanvasComponent && selectedNode) {
+        if (stateManager && graphCanvasComponent && selectedNode && stateMachine) {
             // Have to clear out existing nodes.
             graphCanvasComponent.reset();
 
@@ -154,9 +154,11 @@ export const StateBehaviorViewComponent: FC = () => {
             const nodesToAdd = [
                 { name: "START", output: "out", color: "green", type: NodeTypes.StartActionNode },
                 { name: "READY", inputs: "in", color: "red", type: NodeTypes.ReadyActionNode },
-                { name: "setPosition", inputs: "action,value", output: "action", type: NodeTypes.ActionNode },
-                { name: "vectorValue", output: "value", type: NodeTypes.ValueNode, value: stateValues[selectedNode.name] },
             ];
+            const stateAction = selectedNode?.content?.data?.stateEnterAction;
+            if (stateAction) {
+                nodesToAdd.push({ name: stateAction.actionName(), inputs: "in", output: "out", color: "blue", type: NodeTypes.ActionNode, data: stateAction });
+            }
             for (const nodeToAdd of nodesToAdd) {
                 const graphNode = onAddNewNode(nodeToAdd);
                 if (graphNode) {
@@ -167,27 +169,30 @@ export const StateBehaviorViewComponent: FC = () => {
             const origin = newNodes[0];
             const dest = newNodes[1];
             const setPos = newNodes[2];
-            const vectorValue = newNodes[3];
 
-            const nodeSpacing = 400;
+            if (origin) {
+                origin.x = 100;
+                origin.y = 100;
+            }
 
-            origin.x = 100;
-            origin.y = 100;
+            if (setPos) {
+                setPos.x = 400;
+                setPos.y = 100;
+            }
 
-            vectorValue.x = origin.x;
-            vectorValue.y = 250;
-
-            setPos.x = origin.x + nodeSpacing;
-            setPos.y = 100;
-
-            dest.x = setPos.x + nodeSpacing;
-            dest.y = 100;
+            if (dest) {
+                dest.x = 700;
+                dest.y = 100;
+            }
 
             const newLinks = new Array<NodeLink>();
 
-            newLinks.push(linkPorts(graphCanvasComponent, origin, origin.outputPorts[0], setPos, setPos.inputPorts[0]));
-            newLinks.push(linkPorts(graphCanvasComponent, setPos, setPos.outputPorts[0], dest, dest.inputPorts[0]));
-            newLinks.push(linkPorts(graphCanvasComponent, vectorValue, vectorValue.outputPorts[0], setPos, setPos.inputPorts[1]));
+            if (origin && setPos) {
+                newLinks.push(linkPorts(graphCanvasComponent, origin, origin.outputPorts[0], setPos, setPos.inputPorts[0]));
+            }
+            if (setPos && dest) {
+                newLinks.push(linkPorts(graphCanvasComponent, setPos, setPos.outputPorts[0], dest, dest.inputPorts[0]));
+            }
 
             setNodes(newNodes);
             setLinks(newLinks);
@@ -202,39 +207,15 @@ export const StateBehaviorViewComponent: FC = () => {
         return newLink;
     };
 
-    // Set up key handling
-    useEffect(() => {
-        if (graphCanvasComponent && rootContainer.current) {
-            rootContainer.current.addEventListener("keydown", (evt) => {
-                graphCanvasComponent!.handleKeyDown(
-                    evt,
-                    (nodeData: INodeData) => {},
-                    0,
-                    0,
-                    (nodeData: INodeData) => {
-                        // const name = nodeData.name;
-                        // const inputs = nodeData.inputs.map((i) => i.name);
-                        // const outputs = nodeData.outputs.map((o) => o.name);
-                        // return graphCanvasComponent.appendNode(createNewNodeData(name, inputs, outputs));
-                    },
-                    graphCanvasComponent!.canvasContainer
-                );
-            });
-        }
-    }, [graphCanvasComponent]);
-
     // Create a new node and pass the state manager
-    const onAddNewNode = (props: { name: string; inputs?: string; output?: string; color?: string; type: string; value?: any }): Nullable<GraphNode> => {
+    const onAddNewNode = (props: { name: string; inputs?: string; output?: string; color?: string; type: string; value?: any; data?: any }): Nullable<GraphNode> => {
         const name = props.name as string;
         const inputs = props.inputs as string;
         const output = props.output as string;
         if (graphCanvasComponent !== null) {
             // OUTPUT NODE
             return graphCanvasComponent.appendNode(
-                createNewNodeData(name, inputs ? inputs.split(",").filter((v) => v !== "") : [], output ? output.split(",").filter((v) => v !== "") : [], props.type, {
-                    color: props.color,
-                    value: props.value,
-                })
+                createNewNodeData(name, inputs ? inputs.split(",").filter((v) => v !== "") : [], output ? output.split(",").filter((v) => v !== "") : [], props.type, props.data)
             );
         } else {
             return null;

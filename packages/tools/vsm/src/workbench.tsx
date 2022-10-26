@@ -1,6 +1,6 @@
 import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
-import { useState, useEffect, createContext, useRef } from "react";
+import { useState, useEffect } from "react";
 import type { FC } from "react";
 import { CommandBarComponent } from "shared-ui-components/components/bars/CommandBarComponent";
 import { FlexibleGridLayout } from "shared-ui-components/components/layout/FlexibleGridLayout";
@@ -9,83 +9,67 @@ import style from "./workbench.modules.scss";
 import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
 import { SelectionContext } from "./components/SelectionContext";
 import { initialLayout } from "./initialLayout";
-import { Vector3 } from "core/Maths/math";
-import { Observable } from "core/Misc/observable";
+import { StateMachine } from "./stateMachine/StateMachine";
+import type { IStateMachineWrapper } from "./StateMachineContext";
+import { StateMachineContext } from "./StateMachineContext";
+import { CommandButtonComponent } from "shared-ui-components/components/bars/CommandButtonComponent";
+
+import playIcon from "./components/imgs/playIcon.svg";
+import pauseIcon from "./components/imgs/pauseIcon.svg";
 
 export type WorkbenchProps = {};
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const INITIAL_WORKBENCH_COLOR = "#AAAAAA";
 
-export const stateValuesProvider = createContext<{ stateValues: Record<string, Vector3>; setStateValues: (v: Record<string, Vector3>) => void }>({
-    stateValues: {},
-    setStateValues: () => {},
-});
-
 export const Workbench: FC<WorkbenchProps> = () => {
     const [workAreaColor, setWorkAreaColor] = useState(INITIAL_WORKBENCH_COLOR);
     const [scene, setScene] = useState<Nullable<Scene>>(null);
     const [selectedNode, setSelectedNode] = useState<Nullable<GraphNode>>(null);
-    const stateValues = useRef<Record<string, Vector3>>({});
-    const setStateValues = (v: Record<string, Vector3>) => {
-        stateValues.current = v;
+    const [stateMachineWrapper, setStateMachineWrapper] = useState<Nullable<IStateMachineWrapper>>(null);
+
+    const startStateMachine = () => {
+        if (stateMachineWrapper) {
+            stateMachineWrapper.stateMachine.start();
+        }
+    };
+
+    const pauseStateMachine = () => {
+        if (stateMachineWrapper) {
+            stateMachineWrapper.stateMachine.pause();
+        }
     };
 
     useEffect(() => {
-        const stateValues = {
-            "Sphere Origin": new Vector3(0, 0, 0),
-            "Sphere Destination": new Vector3(1, 1, 1),
-        };
-        setStateValues(stateValues);
-    }, []);
-
-    useEffect(() => {
         if (scene) {
-            // Get node
             const node = scene.getMeshByName("sphere");
             if (node) {
-                // Apply initial state
-                let currentState = "Sphere Origin";
-                node.position = stateValues.current[currentState];
+                const stateMachine = new StateMachine(scene, node);
 
-                node.metadata = {};
-                node.metadata.onStateChanged = new Observable<{ state: string }>();
-                node.metadata.onStateChanged.notifyObservers({ state: currentState });
-
-                scene.onPointerPick = (pickedPoint, pickInfo) => {
-                    if (pickInfo.pickedMesh !== node) return;
-
-                    // Change state
-                    if (currentState === "Sphere Origin") {
-                        currentState = "Sphere Destination";
-                    } else {
-                        currentState = "Sphere Origin";
-                    }
-                    // Execute action
-                    node.position = stateValues.current[currentState];
-
-                    node.metadata.onStateChanged.notifyObservers({ state: currentState });
-                };
+                setStateMachineWrapper({ stateMachine, lastUpdate: Date.now() });
             }
         }
     }, [scene]);
 
     return (
         <SceneContext.Provider value={{ scene, setScene }}>
-            <SelectionContext.Provider value={{ selectedNode, setSelectedNode }}>
-                <stateValuesProvider.Provider value={{ stateValues: stateValues.current, setStateValues }}>
+            <StateMachineContext.Provider value={{ stateMachineWrapper, setStateMachineWrapper }}>
+                <SelectionContext.Provider value={{ selectedNode, setSelectedNode }}>
                     <div className={style.workbenchContainer}>
                         <CommandBarComponent
                             artboardColor={workAreaColor}
                             artboardColorPickerColor={INITIAL_WORKBENCH_COLOR}
                             onArtboardColorChanged={(newColor) => setWorkAreaColor(newColor)}
-                        />
+                        >
+                            <CommandButtonComponent tooltip="Start State Machine" icon={playIcon} onClick={startStateMachine} isActive={true}></CommandButtonComponent>
+                            <CommandButtonComponent tooltip="Pause State Machine" icon={pauseIcon} onClick={pauseStateMachine} isActive={true}></CommandButtonComponent>
+                        </CommandBarComponent>
                         <div className={style.workArea} style={{ backgroundColor: workAreaColor }}>
                             <FlexibleGridLayout layoutDefinition={initialLayout} />
                         </div>
                     </div>
-                </stateValuesProvider.Provider>
-            </SelectionContext.Provider>
+                </SelectionContext.Provider>
+            </StateMachineContext.Provider>
         </SceneContext.Provider>
     );
 };

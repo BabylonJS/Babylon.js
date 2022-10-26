@@ -1,0 +1,12 @@
+.nodeContainer {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid #f0f0f0;
+    padding: 2px 5px;
+}
+
+.nodeAddButton {
+    width: 40px;
+    border: unset;
+    background-color: #575757;
+}
