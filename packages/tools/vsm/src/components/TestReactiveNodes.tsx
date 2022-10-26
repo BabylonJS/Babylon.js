@@ -2,6 +2,8 @@ import { useState } from "react";
 import { GraphContainer } from "shared-ui-components/components/reactGraphSystem/GraphContainer";
 import { GraphLine } from "shared-ui-components/components/reactGraphSystem/GraphLine";
 import { GraphNode } from "shared-ui-components/components/reactGraphSystem/GraphNode";
+import { GraphNodesContainer } from "shared-ui-components/components/reactGraphSystem/GraphNodesContainer";
+import { GraphLinesContainer } from "shared-ui-components/components/reactGraphSystem/GraphLinesContainer";
 /**
  * Test component to use Reactive Nodes
  */
@@ -18,7 +20,15 @@ export const TestReactiveNodes = () => {
         setPos({ ...pos });
     };
 
-    const nodes = [<GraphNode id="Test" name="Test" x={pos["Test"].x} y={pos["Test"].y} />, <GraphNode id="Test2" name="Test2" x={pos["Test2"].x} y={pos["Test2"].y} />];
-    const edges = [<GraphLine x1={pos["Test"].x} y1={pos["Test"].y} x2={pos["Test2"].x} y2={pos["Test2"].y} selected={false} />];
-    return <GraphContainer onNodeMoved={updatePos} nodes={nodes} edges={edges} />;
+    return (
+        <GraphContainer>
+            <GraphNodesContainer onNodeMoved={updatePos}>
+                <GraphNode id="Test" name="Test" x={pos["Test"].x} y={pos["Test"].y} />
+                <GraphNode id="Test2" name="Test2" x={pos["Test2"].x} y={pos["Test2"].y} />
+            </GraphNodesContainer>
+            <GraphLinesContainer>
+                <GraphLine x1={pos["Test"].x} y1={pos["Test"].y} x2={pos["Test2"].x} y2={pos["Test2"].y} selected={false} />
+            </GraphLinesContainer>
+        </GraphContainer>
+    );
 };
