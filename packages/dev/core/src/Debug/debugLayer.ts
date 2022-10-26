@@ -1,6 +1,7 @@
 import { Tools } from "../Misc/tools";
 import { Observable } from "../Misc/observable";
 import { Scene } from "../scene";
+import { Engine } from "../Engines/engine";
 import { EngineStore } from "../Engines/engineStore";
 import type { IInspectable } from "../Misc/iInspectable";
 import type { Camera } from "../Cameras/camera";
@@ -192,7 +193,7 @@ export class DebugLayer {
      * By default it uses the babylonjs CDN.
      * @ignoreNaming
      */
-    public static InspectorURL = `https://cdn.babylonjs.com/inspector/babylon.inspector.bundle.js`;
+    public static InspectorURL = `https://unpkg.com/babylonjs-inspector@${Engine.Version}/babylon.inspector.bundle.js`;
 
     private _scene: Scene;
 
