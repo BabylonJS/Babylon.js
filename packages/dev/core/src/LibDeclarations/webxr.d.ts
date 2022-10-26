@@ -380,8 +380,8 @@ interface XRSessionEventMap {
     squeeze: XRInputSourceEvent;
     squeezestart: XRInputSourceEvent;
     squeezeend: XRInputSourceEvent;
-    eyetrackingstart: XREyeTrackingEvent;
-    eyetrackingend: XREyeTrackingEvent;
+    eyetrackingstart: XREyeTrackingSourceEvent;
+    eyetrackingend: XREyeTrackingSourceEvent;
 }
 
 /**
@@ -536,7 +536,7 @@ declare abstract class XRAnchor implements XRAnchor {}
 
 interface XRFrame {
     trackedAnchors?: XRAnchorSet | undefined;
-    createAnchor?: (pose: XRRigidTransform, space: XRSpace) => Promise<XRAnchor> | undefined;
+    createAnchor?: (pose: XRRigidTransform, space: XRSpace) => Promise<XRAnchor>;
 }
 
 // AR Hit testing
@@ -709,11 +709,7 @@ interface XRHand extends Map<number, XRJointSpace> {
     readonly LITTLE_PHALANX_TIP: number;
 }
 
-declare abstract class XRHand extends Map implements XRHand {}
-
-interface XRFrame {
-    getJointPose?: (joint: XRJointSpace, baseSpace: XRSpace) => XRJointPose | undefined;
-}
+declare abstract class XRHand extends Map<number, XRJointSpace> implements XRHand {}
 
 // WebXR Layers
 
@@ -1070,7 +1066,6 @@ interface XRFrame {
     fillPoses?(spaces: XRSpace[], baseSpace: XRSpace, transforms: Float32Array): boolean;
     // Anchors
     trackedAnchors?: XRAnchorSet;
-    createAnchor?(pose: XRRigidTransform, space: XRSpace): Promise<XRAnchor>;
     // World geometries. DEPRECATED
     worldInformation?: XRWorldInformation;
     detectedPlanes?: XRPlaneSet;
@@ -1135,6 +1130,10 @@ interface XRLightEstimate {
     readonly sphericalHarmonicsCoefficients: Float32Array;
     readonly primaryLightDirection: DOMPointReadOnly;
     readonly primaryLightIntensity: DOMPointReadOnly;
+}
+
+interface XREventHandler {
+    (evt: Event): any;
 }
 
 interface XRLightProbe extends EventTarget {
