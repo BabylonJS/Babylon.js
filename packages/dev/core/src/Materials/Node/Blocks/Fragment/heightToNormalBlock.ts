@@ -39,13 +39,13 @@ export class HeightToNormalBlock extends NodeMaterialBlock {
      * Defines that the worldNormal input will be normalized by the HeightToNormal block before being used
      */
     @editableInPropertyPage("Force normalization for the worldNormal input", PropertyTypeForEdition.Boolean, "PROPERTIES", { notifiers: { update: true } })
-    public automaticNormalizationNormal: boolean = false;
+    public automaticNormalizationNormal: boolean = true;
 
     /**
      * Defines that the worldTangent input will be normalized by the HeightToNormal block before being used
      */
     @editableInPropertyPage("Force normalization for the worldTangent input", PropertyTypeForEdition.Boolean, "PROPERTIES", { notifiers: { update: true } })
-    public automaticNormalizationTangent: boolean = false;
+    public automaticNormalizationTangent: boolean = true;
 
     /**
      * Gets the current class name
