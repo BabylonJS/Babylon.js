@@ -13,9 +13,9 @@ export const GraphConnectorHandler: FC<IGraphConnectorHandlerProps> = (props) =>
     const [, dragRef] = useDrag(
         () => ({
             type: "connector",
-            item: { parentId, parentX, parentY },
+            item: { parentId, x: parentX, y: parentY },
         }),
-        []
+        [parentId, parentX, parentY]
     );
     return <div ref={dragRef} className={style.handle} />;
 };
