@@ -196,7 +196,9 @@ export class SceneRecorder {
 
         for (const generators of allGenerators) {
             if (generators) {
-                for (const generator of generators.values()) {
+                const iterator = generators.values();
+                for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
+                    const generator = key.value;
                     if (generator && generator.id === id) {
                         return generator;
                     }

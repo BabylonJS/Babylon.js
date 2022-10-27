@@ -1926,7 +1926,9 @@ export class ShadowGenerator implements IShadowGenerator {
 
         if (this._light) {
             if (this._light._shadowGenerators) {
-                for (const [camera, shadowGenerator] of this._light._shadowGenerators) {
+                const iterator = this._light._shadowGenerators.entries();
+                for (let entry = iterator.next(); entry.done !== true; entry = iterator.next()) {
+                    const [camera, shadowGenerator] = entry.value;
                     if (shadowGenerator === this) {
                         this._light._shadowGenerators.delete(camera);
                     }

@@ -71,7 +71,9 @@ export class ShadowGeneratorSceneComponent implements ISceneSerializableComponen
         for (const light of lights) {
             const shadowGenerators = light.getShadowGenerators();
             if (shadowGenerators) {
-                for (const shadowGenerator of shadowGenerators.values()) {
+                const iterator = shadowGenerators.values();
+                for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
+                    const shadowGenerator = key.value;
                     serializationObject.shadowGenerators.push(shadowGenerator.serialize());
                 }
             }
@@ -114,7 +116,9 @@ export class ShadowGeneratorSceneComponent implements ISceneSerializableComponen
                 const shadowGenerators = light.getShadowGenerators();
 
                 if (light.isEnabled() && light.shadowEnabled && shadowGenerators) {
-                    for (const shadowGenerator of shadowGenerators.values()) {
+                    const iterator = shadowGenerators.values();
+                    for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
+                        const shadowGenerator = key.value;
                         const shadowMap = <RenderTargetTexture>shadowGenerator.getShadowMap();
                         if (scene.textures.indexOf(shadowMap) !== -1) {
                             renderTargets.push(shadowMap);

@@ -549,7 +549,9 @@ export abstract class Light extends Node implements ISortableLight {
      */
     public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void {
         if (this._shadowGenerators) {
-            for (const shadowGenerator of this._shadowGenerators.values()) {
+            const iterator = this._shadowGenerators.values();
+            for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
+                const shadowGenerator = key.value;
                 shadowGenerator.dispose();
             }
             this._shadowGenerators = null;
