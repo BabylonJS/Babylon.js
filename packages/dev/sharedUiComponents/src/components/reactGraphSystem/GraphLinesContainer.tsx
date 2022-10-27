@@ -14,11 +14,14 @@ export const GraphLinesContainer: FC = (props) => {
             delta: monitor.getDifferenceFromInitialOffset() as any,
         }),
     }));
+    // console.log("start", start, "delta", delta);
     return (
         <svg width="100%" height="100%" ref={dropRef}>
             {props.children}
             {/* {lineFrom && lineTo && <GraphLine x1={lineFrom.x} y1={lineFrom.y} x2={lineTo.x} y2={lineTo.y} selected={false} />} */}
-            {start && delta && <GraphLine x1={start.x} y1={start.y} x2={start.x + delta.x} y2={start.y + delta.y} selected={false} />}
+            {start && start.x !== undefined && start.y !== undefined && delta && (
+                <GraphLine x1={start.x} y1={start.y} x2={start.x + delta.x} y2={start.y + delta.y} selected={false} />
+            )}
         </svg>
     );
 };

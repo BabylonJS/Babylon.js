@@ -18,6 +18,7 @@ export const GraphConnectorHandler: FC<IGraphConnectorHandlerProps> = (props) =>
         () => ({
             type: "connector",
             item: { parentId, x: parentX, y: parentY },
+            canDrag: () => parentX !== undefined && parentY !== undefined,
         }),
         [parentId, parentX, parentY]
     );
@@ -31,9 +32,13 @@ export const GraphConnectorHandler: FC<IGraphConnectorHandlerProps> = (props) =>
             onNodesConnected && onNodesConnected(item.parentId, parentId);
         },
     }));
-    const attachRef = useCallback((ref) => {
-        dragRef(ref);
-        dropRef(ref);
-    }, []);
+    const attachRef = useCallback(
+        (ref) => {
+            dragRef(ref);
+            dropRef(ref);
+        },
+        [dragRef, dropRef]
+    );
+    console.log("parentX", parentX, "parentY", parentY);
     return <div ref={attachRef} className={style.handle} style={{ backgroundColor: isOver ? "yellow" : "gray" }} />;
 };

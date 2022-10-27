@@ -19,6 +19,7 @@ export const NodeListComponent: FC<INodeListComponentProps> = (props) => {
 
     const onAddNewState = () => {
         if (stateMachine && node) {
+            console.log("adding new state", stateName);
             const state = new State(stateName);
 
             const stateAction = new SetPositionAction();

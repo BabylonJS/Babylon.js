@@ -3,8 +3,9 @@ import { SceneRendererComponent } from "./components/SceneRendererComponent";
 // import { StateBehaviorViewComponent } from "./components/StateBehaviorViewComponent";
 import type { Layout } from "shared-ui-components/components/layout/types";
 import { EditValueComponent } from "./components/EditValueComponent";
-import { TestReactiveNodes } from "./components/TestReactiveNodes";
+// import { TestReactiveNodes } from "./components/TestReactiveNodes";
 import { NodeListComponent } from "./components/NodeListComponent";
+import { StateViewNodeRenderer } from "./components/StateViewNodeRenderer";
 
 export const initialLayout: Layout = {
     columns: [
@@ -39,7 +40,8 @@ export const initialLayout: Layout = {
                     height: "100%",
                     tabs: [
                         // { id: "statesView", title: "States", component: <StatesViewComponent /> },
-                        { id: "reactiveNodes", title: "Test", component: <TestReactiveNodes /> },
+                        // { id: "reactiveNodes", title: "Test", component: <TestReactiveNodes /> },
+                        { id: "reactiveNodes", title: "Test", component: <StateViewNodeRenderer /> },
                     ],
                 },
                 // {
