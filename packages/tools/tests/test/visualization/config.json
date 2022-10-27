@@ -1493,7 +1493,8 @@
             "playgroundId": "#LMQGSX#2",
             "referenceImage": "multiSGPerLight.png",
             "errorRatio": 2,
-            "renderCount": 5
+            "renderCount": 5,
+            "excludedEngines": ["webgl1"]
         }
     ]
 }

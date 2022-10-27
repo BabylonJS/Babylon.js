@@ -746,7 +746,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
      * @param usefulFloatFirst By default the generator will try to use half float textures but if you need precision (for self shadowing for instance), you can use this option to enforce full float texture.
      * @param camera Camera associated with this shadow generator (default: null). If null, takes the scene active camera at the time we need to access it
      */
-    constructor(mapSize: number, light: DirectionalLight, usefulFloatFirst?: boolean, camera: Nullable<Camera> = null) {
+    constructor(mapSize: number, light: DirectionalLight, usefulFloatFirst?: boolean, camera?: Nullable<Camera>) {
         if (!CascadedShadowGenerator.IsSupported) {
             Logger.Error("CascadedShadowMap is not supported by the current engine.");
             return;

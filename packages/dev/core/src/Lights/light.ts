@@ -318,7 +318,7 @@ export abstract class Light extends Node implements ISortableLight {
      * Shadow generators associated to the light.
      * @internal Internal use only.
      */
-    public _shadowGenerators: Nullable<Map<Nullable<Camera>, IShadowGenerator>>;
+    public _shadowGenerators: Nullable<Map<Nullable<Camera>, IShadowGenerator>> = null;
 
     /**
      * @internal Internal use only.
