@@ -1221,19 +1221,25 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Shadows
         const currentRenderPassId = engine.currentRenderPassId;
         for (const light of this.lightSources) {
-            const generator = light.getShadowGenerator();
+            const generators = light.getShadowGenerators();
 
-            if (generator && (!generator.getShadowMap()?.renderList || (generator.getShadowMap()?.renderList && generator.getShadowMap()?.renderList?.indexOf(this) !== -1))) {
-                if (generator.getShadowMap()) {
-                    engine.currentRenderPassId = generator.getShadowMap()!.renderPassId;
-                }
-                for (const subMesh of this.subMeshes) {
-                    if (!generator.isReady(subMesh, hardwareInstancedRendering, subMesh.getMaterial()?.needAlphaBlendingForMesh(this) ?? false)) {
-                        engine.currentRenderPassId = currentRenderPassId;
-                        return false;
+            if (!generators) {
+                continue;
+            }
+
+            for (const generator of generators.values()) {
+                if (generator && (!generator.getShadowMap()?.renderList || (generator.getShadowMap()?.renderList && generator.getShadowMap()?.renderList?.indexOf(this) !== -1))) {
+                    if (generator.getShadowMap()) {
+                        engine.currentRenderPassId = generator.getShadowMap()!.renderPassId;
                     }
+                    for (const subMesh of this.subMeshes) {
+                        if (!generator.isReady(subMesh, hardwareInstancedRendering, subMesh.getMaterial()?.needAlphaBlendingForMesh(this) ?? false)) {
+                            engine.currentRenderPassId = currentRenderPassId;
+                            return false;
+                        }
+                    }
+                    engine.currentRenderPassId = currentRenderPassId;
                 }
-                engine.currentRenderPassId = currentRenderPassId;
             }
         }
 

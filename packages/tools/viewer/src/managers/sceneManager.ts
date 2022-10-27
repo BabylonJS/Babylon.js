@@ -188,12 +188,14 @@ export class SceneManager {
 
             const updateShadows = () => {
                 for (const light of this.scene.lights) {
-                    const generator = light.getShadowGenerator();
-                    if (generator) {
+                    const generators = light.getShadowGenerators();
+                    if (generators) {
                         // Processing shadows if animates
-                        const shadowMap = generator.getShadowMap();
-                        if (shadowMap) {
-                            shadowMap.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONCE;
+                        for (const generator of generators.values()) {
+                            const shadowMap = generator.getShadowMap();
+                            if (shadowMap) {
+                                shadowMap.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONCE;
+                            }
                         }
                     }
                 }
@@ -220,12 +222,14 @@ export class SceneManager {
         if (this._observablesManager) {
             this._observablesManager.onModelLoadedObservable.add((model) => {
                 for (const light of this.scene.lights) {
-                    const generator = light.getShadowGenerator();
-                    if (generator) {
+                    const generators = light.getShadowGenerators();
+                    if (generators) {
                         // Processing shadows if animates
-                        const shadowMap = generator.getShadowMap();
-                        if (shadowMap) {
-                            shadowMap.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONCE;
+                        for (const generator of generators.values()) {
+                            const shadowMap = generator.getShadowMap();
+                            if (shadowMap) {
+                                shadowMap.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONCE;
+                            }
                         }
                     }
                 }
@@ -291,12 +295,14 @@ export class SceneManager {
         const refreshType = process ? RenderTargetTexture.REFRESHRATE_RENDER_ONEVERYFRAME : RenderTargetTexture.REFRESHRATE_RENDER_ONCE;
 
         for (const light of this.scene.lights) {
-            const generator = light.getShadowGenerator();
+            const generators = light.getShadowGenerators();
 
-            if (generator) {
-                const shadowMap = generator.getShadowMap();
-                if (shadowMap) {
-                    shadowMap.refreshRate = refreshType;
+            if (generators) {
+                for (const generator of generators.values()) {
+                    const shadowMap = generator.getShadowMap();
+                    if (shadowMap) {
+                        shadowMap.refreshRate = refreshType;
+                    }
                 }
             }
         }

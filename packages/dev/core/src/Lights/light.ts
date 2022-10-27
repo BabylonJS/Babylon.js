@@ -11,6 +11,7 @@ import type { IShadowGenerator } from "./Shadows/shadowGenerator";
 import { GetClass } from "../Misc/typeStore";
 import type { ISortableLight } from "./lightConstants";
 import { LightConstants } from "./lightConstants";
+import type { Camera } from "../Cameras/camera";
 
 /**
  * Base class of all the lights in Babylon. It groups all the generic information about lights.
@@ -314,10 +315,10 @@ export abstract class Light extends Node implements ISortableLight {
     }
 
     /**
-     * Shadow generator associated to the light.
+     * Shadow generators associated to the light.
      * @internal Internal use only.
      */
-    public _shadowGenerator: Nullable<IShadowGenerator>;
+    public _shadowGenerators: Nullable<Map<Nullable<Camera>, IShadowGenerator>>;
 
     /**
      * @internal Internal use only.
@@ -416,7 +417,7 @@ export abstract class Light extends Node implements ISortableLight {
 
         // Shadows
         if (scene.shadowsEnabled && this.shadowEnabled && receiveShadows) {
-            const shadowGenerator = this.getShadowGenerator();
+            const shadowGenerator = this.getShadowGenerator(scene.activeCamera) ?? this.getShadowGenerator();
             if (shadowGenerator) {
                 shadowGenerator.bindShadowLight(iAsString, effect);
                 needUpdate = true;
@@ -485,10 +486,23 @@ export abstract class Light extends Node implements ISortableLight {
 
     /**
      * Returns the Light associated shadow generator if any.
+     * @param camera Camera for which the shadow generator should be retrieved (default: null). If null, retrieves the default shadow generator
      * @returns the associated shadow generator.
      */
-    public getShadowGenerator(): Nullable<IShadowGenerator> {
-        return this._shadowGenerator;
+    public getShadowGenerator(camera: Nullable<Camera> = null): Nullable<IShadowGenerator> {
+        if (this._shadowGenerators === null) {
+            return null;
+        }
+
+        return this._shadowGenerators.get(camera) ?? null;
+    }
+
+    /**
+     * Returns all the shadow generators associated to this light
+     * @returns
+     */
+    public getShadowGenerators(): Nullable<Map<Nullable<Camera>, IShadowGenerator>> {
+        return this._shadowGenerators;
     }
 
     /**
@@ -534,9 +548,11 @@ export abstract class Light extends Node implements ISortableLight {
      * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
      */
     public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void {
-        if (this._shadowGenerator) {
-            this._shadowGenerator.dispose();
-            this._shadowGenerator = null;
+        if (this._shadowGenerators) {
+            for (const shadowGenerator of this._shadowGenerators.values()) {
+                shadowGenerator.dispose();
+            }
+            this._shadowGenerators = null;
         }
 
         // Animations
