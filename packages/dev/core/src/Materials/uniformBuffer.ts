@@ -690,7 +690,7 @@ export class UniformBuffer {
 
         const location = this._uniformLocations[uniformName];
         if (location === undefined) {
-            Logger.Error("Cannot add an uniform Array dynamically. Please, add it using addUniform.");
+            Logger.Error("Cannot add an uniform Array dynamically. Please, add it using addUniform and make sure that uniform buffers are supported by the current engine.");
             return;
         }
 
