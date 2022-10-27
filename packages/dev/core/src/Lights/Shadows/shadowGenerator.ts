@@ -855,7 +855,7 @@ export class ShadowGenerator implements IShadowGenerator {
      * @param usefullFloatFirst By default the generator will try to use half float textures but if you need precision (for self shadowing for instance), you can use this option to enforce full float texture.
      * @param camera Camera associated with this shadow generator (default: null). If null, takes the scene active camera at the time we need to access it
      */
-    constructor(mapSize: number, light: IShadowLight, usefullFloatFirst?: boolean, camera: Nullable<Camera> = null) {
+    constructor(mapSize: number, light: IShadowLight, usefullFloatFirst?: boolean, camera?: Nullable<Camera>) {
         this._mapSize = mapSize;
         this._light = light;
         this._scene = light.getScene();
@@ -865,7 +865,7 @@ export class ShadowGenerator implements IShadowGenerator {
         if (!shadowGenerators) {
             shadowGenerators = light._shadowGenerators = new Map();
         }
-        shadowGenerators.set(camera, this);
+        shadowGenerators.set(this._camera, this);
         this.id = light.id;
         this._useUBO = this._scene.getEngine().supportsUniformBuffers;
 
