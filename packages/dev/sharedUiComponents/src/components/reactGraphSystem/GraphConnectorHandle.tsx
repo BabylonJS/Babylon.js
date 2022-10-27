@@ -3,6 +3,7 @@ import { useCallback } from "react";
 import type { DropTargetMonitor } from "react-dnd";
 import { useDrag, useDrop } from "react-dnd";
 import style from "./GraphConnectorHandle.modules.scss";
+import { useGraphContext } from "./useGraphContext";
 
 export interface IGraphConnectorHandlerProps {
     parentId: string;
@@ -12,6 +13,7 @@ export interface IGraphConnectorHandlerProps {
 
 export const GraphConnectorHandler: FC<IGraphConnectorHandlerProps> = (props) => {
     const { parentId, parentX, parentY } = props;
+    const { onNodesConnected } = useGraphContext();
     const [, dragRef] = useDrag(
         () => ({
             type: "connector",
@@ -26,6 +28,7 @@ export const GraphConnectorHandler: FC<IGraphConnectorHandlerProps> = (props) =>
         }),
         drop: (item: any) => {
             // When drop, update the existing graph context?
+            onNodesConnected && onNodesConnected(item.parentId, parentId);
         },
     }));
     const attachRef = useCallback((ref) => {

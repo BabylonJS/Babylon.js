@@ -1,9 +1,13 @@
 .node {
     position: absolute;
-    background-color: #cccccc;
+    background-color: #666666;
     width: 120px;
     height: 40px;
-    // text-align: center;
     display: flex;
     justify-content: center;
+    border: 1px solid #000000;
+}
+
+.selected {
+    border: 2px solid #ffffff;
 }

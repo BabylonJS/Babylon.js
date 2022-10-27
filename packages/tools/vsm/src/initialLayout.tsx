@@ -1,6 +1,6 @@
 import { SceneRendererComponent } from "./components/SceneRendererComponent";
-import { StatesViewComponent } from "./components/StatesViewComponent";
-import { StateBehaviorViewComponent } from "./components/StateBehaviorViewComponent";
+// import { StatesViewComponent } from "./components/StatesViewComponent";
+// import { StateBehaviorViewComponent } from "./components/StateBehaviorViewComponent";
 import type { Layout } from "shared-ui-components/components/layout/types";
 import { EditValueComponent } from "./components/EditValueComponent";
 import { TestReactiveNodes } from "./components/TestReactiveNodes";
@@ -36,18 +36,18 @@ export const initialLayout: Layout = {
                 {
                     id: "row4",
                     selectedTab: "reactiveNodes",
-                    height: "60%",
+                    height: "100%",
                     tabs: [
-                        { id: "statesView", title: "States", component: <StatesViewComponent /> },
+                        // { id: "statesView", title: "States", component: <StatesViewComponent /> },
                         { id: "reactiveNodes", title: "Test", component: <TestReactiveNodes /> },
                     ],
                 },
-                {
-                    id: "row5",
-                    selectedTab: "behaviorView",
-                    height: "40%",
-                    tabs: [{ id: "behaviorView", title: "Behavior", component: <StateBehaviorViewComponent /> }],
-                },
+                // {
+                //     id: "row5",
+                //     selectedTab: "behaviorView",
+                //     height: "40%",
+                //     tabs: [{ id: "behaviorView", title: "Behavior", component: <StateBehaviorViewComponent /> }],
+                // },
             ],
         },
     ],

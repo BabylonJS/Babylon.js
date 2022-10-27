@@ -152,8 +152,8 @@ export const StateBehaviorViewComponent: FC = () => {
 
             // Create nodes
             const nodesToAdd = [
-                { name: "START", output: "out", color: "green", type: NodeTypes.StartActionNode },
-                { name: "READY", inputs: "in", color: "red", type: NodeTypes.ReadyActionNode },
+                { name: "START", inputs: "", output: "out", color: "green", type: NodeTypes.StartActionNode, data: {} },
+                { name: "READY", inputs: "in", outputs: "", color: "red", type: NodeTypes.ReadyActionNode, data: {} },
             ];
             const stateAction = selectedNode?.content?.data?.stateEnterAction;
             if (stateAction) {
