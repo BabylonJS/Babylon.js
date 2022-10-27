@@ -14,7 +14,7 @@ export class StateBlockDisplayManager implements IDisplayManager {
         contentArea.classList.add(styles.textContent);
     }
     getBackgroundColor(data: INodeData): string {
-        return data.data.color;
+        return "#4c0078";
     }
     getHeaderText(data: INodeData): string {
         return data.name;
