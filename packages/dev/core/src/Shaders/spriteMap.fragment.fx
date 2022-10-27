@@ -1,4 +1,4 @@
-﻿#if defined(WEBGL2) || defined(WEBGPU)
+﻿#if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
     #define TEXTUREFUNC(s, c, l) texture2DLodEXT(s, c, l)
 #else
     #define TEXTUREFUNC(s, c, b) texture2D(s, c, b)
