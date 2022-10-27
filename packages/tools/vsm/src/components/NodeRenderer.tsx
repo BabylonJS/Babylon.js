@@ -18,17 +18,20 @@ export type IVisualRecordsType = Record<string, { x: number; y: number }>;
 export type IConnectionType = { id: string; sourceId: string; targetId: string };
 
 export interface INodeRendererProps {
-    visualRecords: IVisualRecordsType;
+    // visualRecords: IVisualRecordsType;
     connections: IConnectionType[];
-    updateVisualRecords: (id: string, x: number, y: number) => void;
+    // updateVisualRecords: (id: string, x: number, y: number) => void;
     updateConnections: (sourceId: string, targetId: string) => void;
     deleteLine: (lineId: string) => void;
     deleteNode: (nodeId: string) => void;
+    nodes: { id: string }[];
 }
 
 export const NodeRenderer = (props: INodeRendererProps) => {
-    const { visualRecords, connections, updateVisualRecords, updateConnections } = props;
-    // const [pos, setPos] = useState([]);
+    // const { visualRecords, connections, updateVisualRecords, updateConnections } = props;
+    const { nodes, connections, updateConnections } = props;
+    // Store the nodes positions
+    const [pos, setPos] = useState<IVisualRecordsType>({});
     // const [conn, setConn] = useState(initialConnections);
     const [selectedLine, setSelectedLine] = useState<string | null>(null);
     const [selectedNode, setSelectedNode] = useState<string | null>(null);
@@ -40,7 +43,12 @@ export const NodeRenderer = (props: INodeRendererProps) => {
         // records[id] = { x: records[id].x + x, y: records[id].y + y };
         // return { ...currentPos };
         // updateVisualRecords(records);
-        updateVisualRecords(id, visualRecords[id].x + x, visualRecords[id].y + y);
+        // updateVisualRecords(id, visualRecords[id].x + x, visualRecords[id].y + y);
+        setPos((currentPos) => {
+            const currPos = currentPos[id] || { x: 0, y: 0 };
+            currentPos[id] = { x: currPos.x + x, y: currPos.y + y };
+            return { ...currentPos };
+        });
     };
 
     const onNodesConnected = (sourceId: string, targetId: string) => {
@@ -89,21 +97,15 @@ export const NodeRenderer = (props: INodeRendererProps) => {
             <GraphContextManager.Provider value={graphContext}>
                 <GraphContainer>
                     <GraphNodesContainer onNodeMoved={updatePos}>
-                        {Object.entries(visualRecords).map(([id, { x, y }]) => (
-                            <GraphNode key={id} id={id} name={id} x={x} y={y} selected={id === selectedNode} />
-                        ))}
+                        {/* {Object.entries(visualRecords).map(([id, { x, y }]) => ( */}
+                        {Object.entries(nodes).map(([id]) => {
+                            const posInRecord = pos[id] || { x: 0, y: 0 };
+                            return <GraphNode key={id} id={id} name={id} x={posInRecord.x} y={posInRecord.y} selected={id === selectedNode} />;
+                        })}
                     </GraphNodesContainer>
                     <GraphLinesContainer>
                         {connections.map(({ id, sourceId, targetId }) => (
-                            <GraphLine
-                                key={id}
-                                id={id}
-                                x1={visualRecords[sourceId].x}
-                                y1={visualRecords[sourceId].y}
-                                x2={visualRecords[targetId].x}
-                                y2={visualRecords[targetId].y}
-                                selected={id === selectedLine}
-                            />
+                            <GraphLine key={id} id={id} x1={pos[sourceId].x} y1={pos[sourceId].y} x2={pos[targetId].x} y2={pos[targetId].y} selected={id === selectedLine} />
                         ))}
                     </GraphLinesContainer>
                 </GraphContainer>
