@@ -191,7 +191,9 @@ export class SceneManager {
                     const generators = light.getShadowGenerators();
                     if (generators) {
                         // Processing shadows if animates
-                        for (const generator of generators.values()) {
+                        const iterator = generators.values();
+                        for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
+                            const generator = key.value;
                             const shadowMap = generator.getShadowMap();
                             if (shadowMap) {
                                 shadowMap.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONCE;
@@ -225,7 +227,9 @@ export class SceneManager {
                     const generators = light.getShadowGenerators();
                     if (generators) {
                         // Processing shadows if animates
-                        for (const generator of generators.values()) {
+                        const iterator = generators.values();
+                        for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
+                            const generator = key.value;
                             const shadowMap = generator.getShadowMap();
                             if (shadowMap) {
                                 shadowMap.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONCE;
@@ -298,7 +302,9 @@ export class SceneManager {
             const generators = light.getShadowGenerators();
 
             if (generators) {
-                for (const generator of generators.values()) {
+                const iterator = generators.values();
+                for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
+                    const generator = key.value;
                     const shadowMap = generator.getShadowMap();
                     if (shadowMap) {
                         shadowMap.refreshRate = refreshType;
