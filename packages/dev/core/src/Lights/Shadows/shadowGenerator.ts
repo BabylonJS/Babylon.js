@@ -25,6 +25,7 @@ import { EffectFallbacks } from "../../Materials/effectFallbacks";
 import { RenderingManager } from "../../Rendering/renderingManager";
 import { DrawWrapper } from "../../Materials/drawWrapper";
 import type { UniformBuffer } from "../../Materials/uniformBuffer";
+import type { Camera } from "../../Cameras/camera";
 
 import "../../Shaders/shadowMap.fragment";
 import "../../Shaders/shadowMap.vertex";
@@ -794,6 +795,12 @@ export class ShadowGenerator implements IShadowGenerator {
      */
     public forceBackFacesOnly = false;
 
+    protected _camera: Nullable<Camera>;
+
+    protected _getCamera() {
+        return this._camera ?? this._scene.activeCamera;
+    }
+
     protected _scene: Scene;
     protected _lightDirection = Vector3.Zero();
 
@@ -846,12 +853,19 @@ export class ShadowGenerator implements IShadowGenerator {
      * @param mapSize The size of the texture what stores the shadows. Example : 1024.
      * @param light The light object generating the shadows.
      * @param usefullFloatFirst By default the generator will try to use half float textures but if you need precision (for self shadowing for instance), you can use this option to enforce full float texture.
+     * @param camera Camera associated with this shadow generator (default: null). If null, takes the scene active camera at the time we need to access it
      */
-    constructor(mapSize: number, light: IShadowLight, usefullFloatFirst?: boolean) {
+    constructor(mapSize: number, light: IShadowLight, usefullFloatFirst?: boolean, camera?: Nullable<Camera>) {
         this._mapSize = mapSize;
         this._light = light;
         this._scene = light.getScene();
-        light._shadowGenerator = this;
+        this._camera = camera ?? null;
+
+        let shadowGenerators = light._shadowGenerators;
+        if (!shadowGenerators) {
+            shadowGenerators = light._shadowGenerators = new Map();
+        }
+        shadowGenerators.set(this._camera, this);
         this.id = light.id;
         this._useUBO = this._scene.getEngine().supportsUniformBuffers;
 
@@ -1192,12 +1206,9 @@ export class ShadowGenerator implements IShadowGenerator {
                 effect.setVector3("lightDataSM", this._cachedPosition);
             }
 
-            if (scene.activeCamera) {
-                effect.setFloat2(
-                    "depthValuesSM",
-                    this.getLight().getDepthMinZ(scene.activeCamera),
-                    this.getLight().getDepthMinZ(scene.activeCamera) + this.getLight().getDepthMaxZ(scene.activeCamera)
-                );
+            const camera = this._getCamera();
+            if (camera) {
+                effect.setFloat2("depthValuesSM", this.getLight().getDepthMinZ(camera), this.getLight().getDepthMinZ(camera) + this.getLight().getDepthMaxZ(camera));
             }
 
             if (isTransparent && this.enableSoftTransparentShadow) {
@@ -1732,7 +1743,7 @@ export class ShadowGenerator implements IShadowGenerator {
             return;
         }
 
-        const camera = scene.activeCamera;
+        const camera = this._getCamera();
         if (!camera) {
             return;
         }
@@ -1914,7 +1925,18 @@ export class ShadowGenerator implements IShadowGenerator {
         this._disposeSceneUBOs();
 
         if (this._light) {
-            this._light._shadowGenerator = null;
+            if (this._light._shadowGenerators) {
+                const iterator = this._light._shadowGenerators.entries();
+                for (let entry = iterator.next(); entry.done !== true; entry = iterator.next()) {
+                    const [camera, shadowGenerator] = entry.value;
+                    if (shadowGenerator === this) {
+                        this._light._shadowGenerators.delete(camera);
+                    }
+                }
+                if (this._light._shadowGenerators.size === 0) {
+                    this._light._shadowGenerators = null;
+                }
+            }
             this._light._markMeshesAsLightDirty();
         }
 
@@ -1938,6 +1960,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
         serializationObject.className = this.getClassName();
         serializationObject.lightId = this._light.id;
+        serializationObject.cameraId = this._camera?.id;
         serializationObject.id = this.id;
         serializationObject.mapSize = shadowMap.getRenderSize();
         serializationObject.forceBackFacesOnly = this.forceBackFacesOnly;
@@ -1980,9 +2003,10 @@ export class ShadowGenerator implements IShadowGenerator {
      * @param constr A function that builds a shadow generator or undefined to create an instance of the default shadow generator
      * @returns The parsed shadow generator
      */
-    public static Parse(parsedShadowGenerator: any, scene: Scene, constr?: (mapSize: number, light: IShadowLight) => ShadowGenerator): ShadowGenerator {
+    public static Parse(parsedShadowGenerator: any, scene: Scene, constr?: (mapSize: number, light: IShadowLight, camera: Nullable<Camera>) => ShadowGenerator): ShadowGenerator {
         const light = <IShadowLight>scene.getLightById(parsedShadowGenerator.lightId);
-        const shadowGenerator = constr ? constr(parsedShadowGenerator.mapSize, light) : new ShadowGenerator(parsedShadowGenerator.mapSize, light);
+        const camera: Nullable<Camera> = parsedShadowGenerator.cameraId !== undefined ? scene.getCameraById(parsedShadowGenerator.cameraId) : null;
+        const shadowGenerator = constr ? constr(parsedShadowGenerator.mapSize, light, camera) : new ShadowGenerator(parsedShadowGenerator.mapSize, light, undefined, camera);
         const shadowMap = shadowGenerator.getShadowMap();
 
         for (let meshIndex = 0; meshIndex < parsedShadowGenerator.renderList.length; meshIndex++) {
