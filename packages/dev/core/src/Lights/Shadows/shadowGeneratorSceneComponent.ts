@@ -69,9 +69,11 @@ export class ShadowGeneratorSceneComponent implements ISceneSerializableComponen
         serializationObject.shadowGenerators = [];
         const lights = this.scene.lights;
         for (const light of lights) {
-            const shadowGenerator = light.getShadowGenerator();
-            if (shadowGenerator) {
-                serializationObject.shadowGenerators.push(shadowGenerator.serialize());
+            const shadowGenerators = light.getShadowGenerators();
+            if (shadowGenerators) {
+                for (const shadowGenerator of shadowGenerators.values()) {
+                    serializationObject.shadowGenerators.push(shadowGenerator.serialize());
+                }
             }
         }
     }
@@ -109,12 +111,14 @@ export class ShadowGeneratorSceneComponent implements ISceneSerializableComponen
         if (this.scene.shadowsEnabled) {
             for (let lightIndex = 0; lightIndex < scene.lights.length; lightIndex++) {
                 const light = scene.lights[lightIndex];
-                const shadowGenerator = light.getShadowGenerator();
+                const shadowGenerators = light.getShadowGenerators();
 
-                if (light.isEnabled() && light.shadowEnabled && shadowGenerator) {
-                    const shadowMap = <RenderTargetTexture>shadowGenerator.getShadowMap();
-                    if (scene.textures.indexOf(shadowMap) !== -1) {
-                        renderTargets.push(shadowMap);
+                if (light.isEnabled() && light.shadowEnabled && shadowGenerators) {
+                    for (const shadowGenerator of shadowGenerators.values()) {
+                        const shadowMap = <RenderTargetTexture>shadowGenerator.getShadowMap();
+                        if (scene.textures.indexOf(shadowMap) !== -1) {
+                            renderTargets.push(shadowMap);
+                        }
                     }
                 }
             }
