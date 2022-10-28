@@ -1487,6 +1487,18 @@
             "playgroundId": "#ERVGT5",
             "referenceImage": "parseGuiJsonWithUnicode.png",
             "renderCount": 50
+        },
+        {
+            "title": "InputManager callback test",
+            "playgroundId": "#30ZGX9#1",
+            "referenceImage": "inputManagerCallbackTest.png",
+            "renderCount": 10
+        },
+        {
+            "title": "Lazy Pick Observable Check",
+            "playgroundId": "#UTDB9N",
+            "referenceImage": "lazyPickObservableCheck.png",
+            "renderCount": 10
         }
     ]
 }
