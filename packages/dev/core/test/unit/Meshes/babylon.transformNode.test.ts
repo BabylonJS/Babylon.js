@@ -1,5 +1,6 @@
-import type { Engine} from 'core/Engines';
+import type { Engine } from 'core/Engines';
 import { NullEngine } from 'core/Engines';
+import { Matrix } from 'core/Maths';
 import { AbstractMesh } from 'core/Meshes';
 import { Scene } from 'core/scene';
 
@@ -40,6 +41,34 @@ describe("TransformNode", () => {
             child.setParent(null);
 
             expect(child.parent).toBeFalsy();
+        });
+
+        it('should update pivot when it need', () => {
+            const scene = new Scene(subject);
+            const child = new AbstractMesh("Child", scene);
+            const parent = new AbstractMesh("Parent", scene);
+
+            // set not default pivot
+            child.setPivotMatrix(Matrix.Translation(1, -1, -0.5));
+
+            expect(child.getPivotMatrix().toArray()).not.toEqual(Matrix.Identity().toArray());
+
+            child.setParent(parent, true, true);
+
+            expect(child.getPivotMatrix().toArray()).toEqual(Matrix.Identity().toArray());
+        });
+
+        it('should not update pivot when it no need', () => {
+            const scene = new Scene(subject);
+            const child = new AbstractMesh("Child", scene);
+            const parent = new AbstractMesh("Parent", scene);
+
+            // set not default pivot
+            child.setPivotMatrix(Matrix.Translation(1, -1, -0.5));
+
+            child.setParent(parent, true, false);
+
+            expect(child.getPivotMatrix().toArray()).not.toEqual(Matrix.Identity().toArray());
         });
     });
 });
