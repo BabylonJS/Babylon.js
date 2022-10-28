@@ -1499,6 +1499,14 @@
             "playgroundId": "#UTDB9N",
             "referenceImage": "lazyPickObservableCheck.png",
             "renderCount": 10
+        },
+        {
+            "title": "Multi shadow generators per light",
+            "playgroundId": "#LMQGSX#2",
+            "referenceImage": "multiSGPerLight.png",
+            "errorRatio": 2,
+            "renderCount": 5,
+            "excludedEngines": ["webgl1"]
         }
     ]
 }

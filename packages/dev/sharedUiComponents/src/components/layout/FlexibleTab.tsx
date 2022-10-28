@@ -1,8 +1,8 @@
 import type { FC } from "react";
 import { useDrag, useDrop } from "react-dnd";
 import { ClassNames } from "../classNames";
-import type { TabDrag } from "./types";
 import { ElementTypes } from "./types";
+import type { TabDrag } from "./types";
 import style from "./FlexibleTab.modules.scss";
 
 /**

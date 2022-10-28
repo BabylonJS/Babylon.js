@@ -16,10 +16,12 @@ import { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
 import { PropertyChangedEvent } from "../../../components/propertyChangedEvent";
 import type { LightGizmo } from "core/Gizmos/lightGizmo";
 import type { CameraGizmo } from "core/Gizmos/cameraGizmo";
+import type { Camera } from "core/Cameras/camera";
 import { TmpVectors, Vector3 } from "core/Maths/math";
 
 interface ISceneTreeItemComponentProps {
     scene: Scene;
+    gizmoCamera?: Camera;
     onRefresh: () => void;
     selectedEntity?: any;
     extensibilityGroups?: IExplorerExtensibilityGroup[];
@@ -233,7 +235,10 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
 
         if (!scene.reservedDataStore.gizmoManager) {
             scene.reservedDataStore.gizmoManager = new GizmoManager(scene);
-            scene.reservedDataStore.gizmoManager.utilityLayer.setRenderCamera(scene.activeCamera);
+        }
+
+        if (this.props.gizmoCamera) {
+            scene.reservedDataStore.gizmoManager.utilityLayer.setRenderCamera(this.props.gizmoCamera);
         }
 
         const manager: GizmoManager = scene.reservedDataStore.gizmoManager;

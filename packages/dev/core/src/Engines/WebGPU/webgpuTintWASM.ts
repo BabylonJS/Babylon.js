@@ -29,6 +29,8 @@ export class WebGPUTintWASM {
         wasmPath: "https://preview.babylonjs.com/twgsl/twgsl.wasm",
     };
 
+    public static ShowWGSLShaderCode = false;
+
     private _twgsl: any = null;
 
     public async initTwgsl(twgslOptions?: TwgslOptions): Promise<void> {
@@ -60,6 +62,11 @@ export class WebGPUTintWASM {
     }
 
     public convertSpirV2WGSL(code: Uint32Array): string {
-        return this._twgsl.convertSpirV2WGSL(code);
+        const ccode = this._twgsl.convertSpirV2WGSL(code);
+        if (WebGPUTintWASM.ShowWGSLShaderCode) {
+            console.log(ccode);
+            console.log("***********************************************");
+        }
+        return ccode;
     }
 }

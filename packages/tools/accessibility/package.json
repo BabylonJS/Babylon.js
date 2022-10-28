@@ -1,0 +1,37 @@
+{
+    "name": "@tools/accessibility",
+    "description": "This package is for increasing accessibility of 3D content. It contains HTML twin renderer that renders html twins of the scene objects for 3D content in DOM, thus the 3D content is compatible with screen readers and keyboard navigation.",
+    "private": true,
+    "version": "1.0.0",
+    "types": "dist/index",
+    "main": "dist/index",
+    "module": "dist/index",
+    "files": [
+        "dist",
+        "src"
+    ],
+    "scripts": {
+        "build": "npm run clean && npm run compile",
+        "clean": "rimraf dist && rimraf *.tsbuildinfo",
+        "precompile": "npm run compile:assets",
+        "compile": "npm run compile:source",
+        "compile:source": "tsc -b tsconfig.build.json",
+        "compile:assets": "build-tools -c process-assets --package core",
+        "watch:assets": "build-tools -c process-assets --package core --watch",
+        "watch:source": "tsc -b tsconfig.build.json -w",
+        "watch": "build-tools -c dev-watch --package \"inspector\" -wa"
+    },
+    "devDependencies": {
+        "@dev/core": "^1.0.0",
+        "@dev/gui": "^1.0.0",
+        "@dev/loaders": "^1.0.0",
+        "@types/react": "^17.0.30",
+        "@types/react-dom": "^17.0.10",
+        "node-sass": "^7.0.1",
+        "react": "^17.0.2",
+        "react-dom": "^17.0.2",
+        "rimraf": "^3.0.2",
+        "typescript": "^4.4.4"
+    },
+    "sideEffects": false
+}

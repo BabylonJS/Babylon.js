@@ -1,6 +1,551 @@
 {
-    "fromTag": "5.28.0",
+    "fromTag": "5.29.0",
     "changelog": {
+        "5.30.0": [
+            {
+                "pr": "13175",
+                "title": "ADT: Added check to attachToMesh to prevent potential memory leak",
+                "description": "While investigating an issue with the AdvancedDynamicTexture, I found that if `attachToMesh` is called after it's been called previously, it will not purge the previous observer used for mesh interaction.  This PR adds a check to remove the obsolete observer.",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inputs",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "13172",
+                "title": "Small fix for types in the webxr typing",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/LibDeclarations/webxr.d.ts",
+                    "packages/dev/core/src/XR/features/WebXRControllerPointerSelection.ts",
+                    "packages/dev/core/src/XR/features/WebXRNearInteraction.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13173",
+                "title": "Revert \"Use the latest CDN nightly version and not unpkg\"",
+                "description": "Reverts BabylonJS/Babylon.js#13169\r\n\r\nCC @sebavan \r\n\r\nThis might cause issues with peopole using the inspector with older versions. We will find a cleaner solution",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Debug/debugLayer.ts",
+                    "packages/dev/inspector/src/components/sceneExplorer/entities/gui/guiTools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13171",
+                "title": "NME: Fix and improve the HeightToNormal block",
+                "description": "The `position`/`normal`/`tangent` inputs have been renamed to `worldPosition`/`worldNormal`/`worldTangent` and the old `output` output has been renamed `xyz` (the `output` output is now a vec4).\r\n\r\nI didn't add code to keep back compat as this is a new block in 6.0 and probably few people have used it until now. Feel free to complain about this and I may revise my judgement :)\r\n\r\nNote also that `worldNormal` and `worldTangent` must be normalized! I added two switches to allow for easy normalization for the user.\r\n\r\nThe new \"Generate in world space\" mode allows to generate a normal which is directly usable as the `worldNormal` input of the **PBRMetallicRoughness**/**Light** block without the need for a **PerturbNormal** block.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/heightToNormalBlock.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13170",
+                "title": "fixing screen coverage LOD for ortho camera",
+                "description": null,
+                "author": {
+                    "name": "CraigFeldspar",
+                    "url": "https://github.com/CraigFeldspar"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13168",
+                "title": "WIP VSM Initial definitions of Actions, Triggers and States",
+                "description": null,
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/components/bars/CommandBarComponent.tsx",
+                    "packages/tools/vsm/src/StateMachineContext.ts",
+                    "packages/tools/vsm/src/actions/ActionCoordinator.ts",
+                    "packages/tools/vsm/src/actions/BaseBehavior.ts",
+                    "packages/tools/vsm/src/actions/actions/BaseAction.ts",
+                    "packages/tools/vsm/src/actions/actions/ExecuteCodeAction.ts",
+                    "packages/tools/vsm/src/actions/actions/LogAction.ts",
+                    "packages/tools/vsm/src/actions/actions/SetPositionAction.ts",
+                    "packages/tools/vsm/src/actions/triggers/BaseTrigger.ts",
+                    "packages/tools/vsm/src/actions/triggers/ClickTrigger.ts",
+                    "packages/tools/vsm/src/components/EditValueComponent.tsx",
+                    "packages/tools/vsm/src/components/NodeListComponent.modules.scss",
+                    "packages/tools/vsm/src/components/NodeListComponent.tsx",
+                    "packages/tools/vsm/src/components/StateBehaviorViewComponent.tsx",
+                    "packages/tools/vsm/src/components/StatesViewComponent.tsx",
+                    "packages/tools/vsm/src/components/imgs/pauseIcon.svg",
+                    "packages/tools/vsm/src/components/imgs/playIcon.svg",
+                    "packages/tools/vsm/src/components/nodesDisplay/StateBlockDisplayManager.ts",
+                    "packages/tools/vsm/src/components/nodesDisplay/ValueBlockDisplayManager.ts",
+                    "packages/tools/vsm/src/components/nodesDisplay/registerToDisplayLedger.ts",
+                    "packages/tools/vsm/src/components/tools/useSceneNode.tsx",
+                    "packages/tools/vsm/src/components/tools/useStateMachine.tsx",
+                    "packages/tools/vsm/src/initialLayout.tsx",
+                    "packages/tools/vsm/src/stateMachine/State.ts",
+                    "packages/tools/vsm/src/stateMachine/StateMachine.ts",
+                    "packages/tools/vsm/src/testComponent.tsx",
+                    "packages/tools/vsm/src/workbench.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13169",
+                "title": "Use the latest CDN nightly version and not unpkg",
+                "description": "Prevent issues like this:\n\nhttps://forum.babylonjs.com/t/can-t-launch-inspector-from-code-since-this-morning/35080",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Debug/debugLayer.ts",
+                    "packages/dev/inspector/src/components/sceneExplorer/entities/gui/guiTools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13167",
+                "title": "Update glTF-Validator to 2.0.0-dev.3.9",
+                "description": "See #12380. This still updates the file manually. Updating it correctly using the build is still in progress.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/tools/babylonServer/public/gltf_validator.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13166",
+                "title": "Different ports for our hosted tools",
+                "description": "Every tool in the local dev environment now has a different port. They all depend on the babylon server at port 1337.\nPlayground: 1338\nSandbox: 1339\nNME: 1340\nGUI: 1341\nVSM: 1342\n\nAll can be overwritten by an environment variable, if needed.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    ".vscode/launch.json",
+                    "packages/tools/guiEditor/webpack.config.js",
+                    "packages/tools/nodeEditor/webpack.config.js",
+                    "packages/tools/playground/webpack.config.js",
+                    "packages/tools/sandbox/webpack.config.js",
+                    "packages/tools/vsm/webpack.config.js"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13160",
+                "title": "Support relative urls in KTX2 configuration",
+                "description": "Fixes #13158",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/khronosTextureContainer2.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13165",
+                "title": "(Local only) Fix ktx and loaders local-dev references",
+                "description": "The global namespace of the ktx loader was incorrect (didn't export the entire namespace, only one class).",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/babylonServer/src/ktx2Decoder/index.ts",
+                    "packages/tools/babylonServer/src/loaders/index-dev.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13124",
+                "title": "Vsm state view wip",
+                "description": "This adds basic nodes view and a very very simple state implementation that only responds to click events on a basic scene.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleTab.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/FlexibleTabsContainer.tsx",
+                    "packages/dev/sharedUiComponents/src/components/layout/types.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts",
+                    "packages/tools/vsm/README.md",
+                    "packages/tools/vsm/package.json",
+                    "packages/tools/vsm/src/SceneContext.ts",
+                    "packages/tools/vsm/src/components/EditValueComponent.tsx",
+                    "packages/tools/vsm/src/components/SceneRendererComponent.tsx",
+                    "packages/tools/vsm/src/components/SelectionContext.tsx",
+                    "packages/tools/vsm/src/components/StateBehaviorViewComponent.modules.scss",
+                    "packages/tools/vsm/src/components/StateBehaviorViewComponent.tsx",
+                    "packages/tools/vsm/src/components/StatesViewComponent.modules.scss",
+                    "packages/tools/vsm/src/components/StatesViewComponent.tsx",
+                    "packages/tools/vsm/src/components/nodesDisplay/CommonStyles.modules.scss",
+                    "packages/tools/vsm/src/components/nodesDisplay/ReadyActionDisplayManager.ts",
+                    "packages/tools/vsm/src/components/nodesDisplay/StartActionDisplayManager.ts",
+                    "packages/tools/vsm/src/components/nodesDisplay/StateBlockDisplayManager.ts",
+                    "packages/tools/vsm/src/components/nodesDisplay/ValueBlockDisplayManager.ts",
+                    "packages/tools/vsm/src/components/nodesDisplay/registerToDisplayLedger.ts",
+                    "packages/tools/vsm/src/components/types.ts",
+                    "packages/tools/vsm/src/initialLayout.tsx",
+                    "packages/tools/vsm/src/workbench.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13162",
+                "title": "Fix Camera Order Back Compat",
+                "description": "Following this: https://github.com/BabylonJS/Babylon.js/pull/12779\r\n\r\nSome back compat issues were detected. Reverting in favor of a manual option to chose the gizmo Camera.\r\n\r\nThis playground will be working accordingly: https://www.babylonjs-playground.com/#XQ729G#3\r\n\r\n",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Debug/debugLayer.ts",
+                    "packages/dev/core/src/scene.ts",
+                    "packages/dev/inspector/src/components/sceneExplorer/entities/sceneTreeItemComponent.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/sceneExplorerComponent.tsx",
+                    "packages/dev/inspector/src/inspector.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "gizmos"
+                ]
+            },
+            {
+                "pr": "13157",
+                "title": "Fix loading the gltf loaders and validations twice",
+                "description": "Bug fix when working locally",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/babylonServer/src/loaders/index-dev.ts",
+                    "packages/tools/babylonServer/src/loaders/index-lts.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "13156",
+                "title": "ParticleSystem: Add BILLBOARDMODE_STRETCHED_LOCAL mode",
+                "description": "See https://forum.babylonjs.com/t/stretched-billboard-without-rotating/34847/8",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/constants.ts",
+                    "packages/dev/core/src/Particles/particleSystem.ts",
+                    "packages/dev/core/src/Shaders/particles.vertex.fx"
+                ],
+                "tags": [
+                    "particles",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13154",
+                "title": "WebGPU: Fix PGs errors / warnings",
+                "description": "Fix #13066 ",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.renderTarget.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.renderTarget.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuCacheRenderPipeline.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessor.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureHelper.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTintWASM.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Misc/observable.ts",
+                    "packages/dev/core/src/Misc/screenshotTools.ts",
+                    "packages/dev/core/src/PostProcesses/postProcess.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/shadowsFragmentFunctions.fx",
+                    "packages/dev/core/src/Shaders/fxaa.fragment.fx",
+                    "packages/dev/core/src/Shaders/spriteMap.fragment.fx",
+                    "packages/dev/core/src/scene.ts",
+                    "packages/dev/proceduralTextures/src/starfield/starfieldProceduralTexture.fragment.fx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/webgpu/custom handling of materials for render target pass.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/webgpu/show all procedural textures.png",
+                    "packages/tools/tests/test/visualization/visualization.utils.test.ts",
+                    "packages/tools/tests/test/visualization/visualization.webgl1.test.ts",
+                    "packages/tools/tests/test/visualization/visualization.webgl2.test.ts",
+                    "packages/tools/tests/test/visualization/visualization.webgpu.test.ts",
+                    "packages/tools/tests/test/visualization/webgpu.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13151",
+                "title": "OIT fix : clearing front render target when no transparent mesh are rendered",
+                "description": "Not clearing was causing ghost meshes being composed with the opaque texture when they shouldn't",
+                "author": {
+                    "name": "CraigFeldspar",
+                    "url": "https://github.com/CraigFeldspar"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/depthPeelingRenderer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13152",
+                "title": "quaternion PG examples",
+                "description": "Change in comments only",
+                "author": {
+                    "name": "BabylonJSGuide",
+                    "url": "https://github.com/BabylonJSGuide"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13155",
+                "title": "Attempting to fix missing renderingManager() typescript definition",
+                "description": "I don't see the scene's `get renderingManager()` property in the scene.d.ts after npm installing Babylon.js into my project. Oddly, I'm not sure how to repro it when building Babylon.js locally (on master) as my local build includes the `renderingManager` getter definition. :/\r\n\r\nI doubt adding a return type (ie. this change) will actually fix the missing definition, but it seemed like worthwhile cleanup either way.\r\n\r\nIf there is another change that needs to be made to fix the missing definition, let me know and I can include it here.\r\n\r\n",
+                "author": {
+                    "name": "kircher1",
+                    "url": "https://github.com/kircher1"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/renderingManager.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13146",
+                "title": "Update Pressure Observer to latest version of the WICG spec",
+                "description": "Update to latest Experimental Pressure API https://wicg.github.io/compute-pressure/",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/LibDeclarations/browser.d.ts",
+                    "packages/dev/core/src/Misc/PerformanceViewer/performanceViewerCollectionStrategies.ts",
+                    "packages/dev/core/src/Misc/computePressure.ts",
+                    "packages/dev/core/src/Misc/index.ts",
+                    "packages/dev/core/src/Misc/pressureObserverWrapper.ts",
+                    "packages/dev/core/src/scene.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/performanceViewer/performanceViewerComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "performance viewer"
+                ]
+            },
+            {
+                "pr": "13148",
+                "title": "InputManager: Reset Swipe Status if we skip the next Observable notify",
+                "description": "Recently, there was a bug fix put out that addressed an issue where a POINTERTAP event was occurring if the cursor happened to return to the same position after moving outside of the tap range.  Unfortunately, there was a missed scenario where the swipe state wasn't being properly reset if we skipped the next observable call (like when clicking on a UI element).  This PR adds a check to make sure that we reset the swipe state if we are skipping said call.  \r\n\r\nRelated Forum Post: https://forum.babylonjs.com/t/first-pointerpick-event-is-not-emitted-immediately-after-interacting-with-gui-control-that-is-a-pointerblocker/35008",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Inputs/scene.inputManager.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inputs"
+                ]
+            },
+            {
+                "pr": "12074",
+                "title": "Build Accessibility Tree from scene",
+                "description": "(A draft PR hoping to get early feedback.)\r\n\r\n1) build a DOM tree for: Node that are marked as salient, and GUI Controls. In this way, the screen reader can read the page content.\r\n2) make the DOM elements interactive for actionable nodes. So the user can use \"tab\" key to focus on interactive nodes or controls, and \"enter\" key to trigger the interactive nodes.\r\n3) when the scene content changes (e.g. show/hide new salient mesh), the DOM tree updates too.\r\n\r\n@RaananW @Exolun \r\n\r\n![image](https://user-images.githubusercontent.com/5469750/156278968-16093b39-80ee-40ad-b7e3-04fa72716ad7.png)\r\n![image](https://user-images.githubusercontent.com/5469750/163634913-249af3dc-26f8-419e-8c24-d32229eef502.png)\r\n\r\n\r\nTesting:\r\n\r\nTesting code 1:\r\nGiven a scene that has objects that cover conditions of: \r\n\r\n- some are salient, some are not not-salient \r\n- some objects (spheres) are interactive, and could be left and right clicked\r\n- objects have parent-children hierarchy\r\n\r\n```\r\nlet createScene = function () {\r\n    let scene = new BABYLON.Scene(engine);\r\n    let camera = new BABYLON.ArcRotateCamera(\"Camera\", Math.PI/2, Math.PI/4, 10, new BABYLON.Vector3(0, 0, 0), scene);\r\n    camera.setTarget(BABYLON.Vector3.Zero());\r\n    camera.attachControl(canvas, true);\r\n    let light = new BABYLON.HemisphericLight(\"light\", new BABYLON.Vector3(0, 1, 0), scene);\r\n    light.intensity = 0.7;\r\n\r\n    // add some objects\r\n\r\n    // not salient objects\r\n    const parent = new BABYLON.TransformNode('parent');\r\n    parent.accessibilityTag = {\r\n        isSalient: true,\r\n        description: \"A parent of all, of the root\",\r\n    }\r\n\r\n    const boxDecs = new BABYLON.TransformNode('boxDecs');\r\n    boxDecs.parent = parent;\r\n    boxDecs.accessibilityTag = {\r\n        isSalient: true,\r\n        description: \"A parent without salient children\",\r\n    }\r\n    let boxDec1 = BABYLON.MeshBuilder.CreateBox(\"boxDec1\", {size: 0.3}, scene);\r\n    boxDec1.parent = boxDecs;\r\n    boxDec1.position.x = -3;\r\n    boxDec1.position.z = -4;\r\n    let boxDec2 = BABYLON.MeshBuilder.CreateBox(\"boxDec2\", {size: 0.3}, scene);\r\n    boxDec2.parent = boxDecs;\r\n    boxDec2.position.x = 3;\r\n    boxDec2.position.z = -4;\r\n\r\n    // salient objects, static\r\n    let boxes = new BABYLON.TransformNode(\"boxes\");\r\n    boxes.parent = parent;\r\n    boxes.accessibilityTag = {\r\n        isSalient: true,\r\n        description: \"A group of boxes\",\r\n    }\r\n    let box0 = BABYLON.MeshBuilder.CreateBox(\"box3\", {size: 0.5}, scene);\r\n    box0.parent = boxes;\r\n    box0.position.z = -1;\r\n    box0.position.y = 0.6;\r\n    box0.accessibilityTag = {\r\n        isSalient: true,\r\n        description: \"A small box in the middle of the scene\",\r\n    }\r\n    let box1 = BABYLON.MeshBuilder.CreateBox(\"box1\", {}, scene);\r\n    box1.parent = boxes;\r\n    box1.position.x = 1;\r\n    box1.accessibilityTag = {\r\n        isSalient: true,\r\n        description: \"A big box on the left of the small box\",\r\n    }\r\n    let box2 = BABYLON.MeshBuilder.CreateBox(\"box2\", {}, scene);\r\n    box2.parent = boxes;\r\n    box2.position.x = -1;\r\n    box2.accessibilityTag = {\r\n        isSalient: true,\r\n        description: \"A big box on the right of the small box\",\r\n    }\r\n\r\n    // salient objects, interactive\r\n    let sphereWrapper = new BABYLON.TransformNode('sphereWrapper');\r\n    sphereWrapper.accessibilityTag = {\r\n        isSalient: true,\r\n        description: 'A group of spheres',\r\n    };\r\n    // sphereWrapper.parent = parent;\r\n    let mat = new BABYLON.StandardMaterial(\"Gray\", scene);\r\n    mat.diffuseColor = BABYLON.Color3.Gray();\r\n    let spheresCount = 6;\r\n    let alpha = 0;\r\n    for (let index = 0; index < spheresCount; index++) {\r\n        const sphere = BABYLON.Mesh.CreateSphere(\"Sphere \" + index, 32, 1, scene);\r\n        sphere.parent = sphereWrapper;\r\n        sphere.position.x = 3 * Math.cos(alpha);\r\n        sphere.position.z = 3 * Math.sin(alpha);\r\n        sphere.material = mat;\r\n        const sphereOnClicked = () => {\r\n            alert(`You just clicked ${sphere.name}!`)\r\n        }\r\n        const sphereOnLeftClicked2 = () => {\r\n            alert(`You just LEFT clicked ${sphere.name}!`)\r\n        }\r\n        const sphereOnRightClicked = () => {\r\n            alert(`You just RIGHT clicked ${sphere.name}!`)\r\n        }\r\n        sphere.accessibilityTag = {\r\n            isSalient: true,\r\n            description: sphere.name,\r\n        };\r\n        sphere.actionManager = new BABYLON.ActionManager(scene);\r\n        sphere.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, sphereOnClicked));\r\n        sphere.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnLeftPickTrigger, sphereOnLeftClicked2));\r\n        sphere.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnRightPickTrigger, sphereOnRightClicked));\r\n        alpha += (2 * Math.PI) / spheresCount;\r\n    }\r\n\r\n    console.log('Start the show!');\r\n    AccessibilityRenderer.renderAccessibilityTree(scene);\r\n    return scene;\r\n};\r\n```\r\n\r\nTesting code 2:\r\n\r\n```\r\n/**\r\n * A simple GUI scene. Shows a card GUI for a easter event, with buttons to 'Join' event, and 'close' card.\r\n */\r\nexport let createScene = function ()\r\n{\r\n    let scene = new BABYLON.Scene(engine);\r\n    let camera = new BABYLON.ArcRotateCamera('Camera', -Math.PI/2, Math.PI/2, 5, new BABYLON.Vector3(0, 0, 0), scene);\r\n    camera.setTarget(BABYLON.Vector3.Zero());\r\n    camera.attachControl(canvas, true);\r\n    let light = new BABYLON.HemisphericLight('light', new BABYLON.Vector3(0, 1, 0), scene);\r\n    light.intensity = 0.7;\r\n\r\n    let wrapper = new BABYLON.TransformNode(\"Wrapper\");\r\n    wrapper.setEnabled(true);\r\n\r\n    let egg = BABYLON.MeshBuilder.CreateSphere(\"Egg\", {diameterX: 0.62, diameterY: 0.8, diameterZ: 0.6}, scene);\r\n    egg.parent = wrapper;\r\n    egg.accessibilityTag = {\r\n        isSalient: true,\r\n        description: \"An easter egg\"\r\n    }\r\n    egg.actionManager = new BABYLON.ActionManager(scene);\r\n    egg.actionManager.registerAction(new BABYLON.ExecuteCodeAction(\r\n        BABYLON.ActionManager.OnPickTrigger,\r\n        () => {\r\n            wrapper.setEnabled(false);\r\n            card.setEnabled(true);\r\n        })\r\n    );\r\n\r\n    let box1 = BABYLON.MeshBuilder.CreateBox(\"box1\", {size: 0.3}, scene);\r\n    box1.parent = wrapper;\r\n    box1.position.x = 1;\r\n    box1.position.z = 0.2;\r\n    box1.accessibilityTag = {\r\n        isSalient: true,\r\n        description: \"A small box on the left of the egg\",\r\n        isWholeObject: true,\r\n    }\r\n    let box2 = BABYLON.MeshBuilder.CreateBox(\"box2\", {size: 0.3}, scene);\r\n    box2.parent = wrapper;\r\n    box2.position.x = -1;\r\n    box2.position.z = 0.2;\r\n    box2.accessibilityTag = {\r\n        isSalient: true,\r\n        description: \"A small box on the right of the egg\",\r\n        isWholeObject: true,\r\n    }\r\n\r\n    let box = BABYLON.MeshBuilder.CreateBox(\"box\", {size: 0.5}, scene);\r\n    box.position.y = -0.65;\r\n    box.parent = egg;\r\n\r\n    // GUI\r\n    let card = BABYLON.MeshBuilder.CreatePlane('card', {size: 3});\r\n    card.setEnabled(false);\r\n    card.accessibilityTag = {\r\n        isSalient: true,\r\n        description: \"Easter Event Card\"\r\n    }\r\n    card.position.z = 0.5;\r\n    let adt = GUI.AdvancedDynamicTexture.CreateForMesh(card);\r\n\r\n    let wrapFront = new GUI.Rectangle('TeamsCardUI_wrapFront');\r\n    wrapFront.width = '80%';\r\n    wrapFront.background = 'white';\r\n    adt.addControl(wrapFront);\r\n\r\n    let thumbnailBg = new GUI.Rectangle('TeamsCardUI_ThumbnailBg');\r\n    thumbnailBg.width = '100%';\r\n    thumbnailBg.height = '40%';\r\n    thumbnailBg.background = 'gray';\r\n    thumbnailBg.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;\r\n    thumbnailBg.top = 0;\r\n    wrapFront.addControl(thumbnailBg);\r\n\r\n    let url = 'https://raw.githubusercontent.com/TNyawara/EasterBunnyGroupProject/master/Assets/Easter_UI/Backgrounds/background_10.png';\r\n    let thumbnailCustomized = new GUI.Image('TeamsCardUI_ThumbnailImage', url);\r\n    thumbnailCustomized.alt = 'Background image';\r\n    thumbnailCustomized.width = '100%';\r\n    thumbnailCustomized.height = '100%';\r\n    thumbnailBg.addControl(thumbnailCustomized);\r\n\r\n    const titleFront = new GUI.TextBlock(\r\n    'TeamsCardUIText_Title',\r\n    'Event: Happy Hoppy'\r\n    );\r\n    titleFront.fontSize = 60;\r\n    titleFront.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;\r\n    titleFront.textHorizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;\r\n    titleFront.paddingLeft = '7.5%';\r\n    titleFront.top = '40%';\r\n    titleFront.height = '10%';\r\n    wrapFront.addControl(titleFront);\r\n\r\n    let dateFront = new GUI.TextBlock('TeamsCardUIText_Date', 'Every day');\r\n    wrapFront.addControl(dateFront);\r\n    dateFront.fontSize = 40;\r\n    dateFront.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;\r\n    dateFront.textHorizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;\r\n    dateFront.paddingLeft = '7.5%';\r\n    dateFront.top = '50%';\r\n    dateFront.height = '5%';\r\n    dateFront.isEnabled = false;\r\n\r\n    const timeFront = new GUI.TextBlock('TeamsCardUIText_Time', '00:00 - 23:59');\r\n    wrapFront.addControl(timeFront);\r\n    timeFront.fontSize = 40;\r\n    timeFront.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;\r\n    timeFront.textHorizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;\r\n    timeFront.paddingLeft = '35%';\r\n    timeFront.top = '50%';\r\n    timeFront.height = '5%';\r\n\r\n    const meetingDetail = new GUI.TextBlock(\r\n    'TeamsCardUIText_GroupName',\r\n    \"Help the little bunny rabbits get ready for Easter! Look at all the different colors to decorate Easter eggs with and pick out the shapes you'd like to wear in the parade. \"\r\n    );\r\n    wrapFront.addControl(meetingDetail);\r\n    meetingDetail.fontSize = 40;\r\n    meetingDetail.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;\r\n    meetingDetail.textHorizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;\r\n    meetingDetail.paddingLeft = '7.5%';\r\n    meetingDetail.top = '55%';\r\n    meetingDetail.height = '30%';\r\n    meetingDetail.width = '100%';\r\n    meetingDetail.textWrapping = GUI.TextWrapping.WordWrapEllipsis;\r\n\r\n    let joinButton = GUI.Button.CreateSimpleButton('TeamsCardUIButton_Join', 'Join');\r\n    joinButton.background = 'black';\r\n    joinButton.color = 'white';\r\n    joinButton.fontSize = 40;\r\n    joinButton.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;\r\n    joinButton.textBlock.textHorizontalAlignment = GUI.Control.VERTICAL_ALIGNMENT_CENTER;\r\n    joinButton.top = '85%';\r\n    joinButton.height = '10%';\r\n    joinButton.width = '40%';\r\n    wrapFront.addControl(joinButton);\r\n    joinButton.onPointerClickObservable.add(() => {\r\n        alert('💐🌼Happy Easter! 🐰🥚');\r\n    });\r\n\r\n    let closeButton = GUI.Button.CreateSimpleButton('TeamsCardUIButton_Close', 'X');\r\n    closeButton.background = 'black';\r\n    closeButton.color = 'white';\r\n    closeButton.fontSize = 40;\r\n    closeButton.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;\r\n    closeButton.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;\r\n    closeButton.textBlock.textHorizontalAlignment = GUI.Control.VERTICAL_ALIGNMENT_CENTER;\r\n    closeButton.top = '0';\r\n    closeButton.height = '12%';\r\n    closeButton.width = '15%';\r\n    wrapFront.addControl(closeButton);\r\n    closeButton.onPointerClickObservable.add(() => {\r\n        card.setEnabled(false);\r\n        wrapper.setEnabled(true);\r\n    });\r\n\r\n    console.log('Start the show!');\r\n    AccessibilityRenderer.RenderAccessibilityTree(scene);\r\n    return scene;\r\n}\r\n```",
+                "author": {
+                    "name": "mysunnytime",
+                    "url": "https://github.com/mysunnytime"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/buildTools/src/packageMapping.ts",
+                    "packages/dev/core/src/IAccessibilityTag.ts",
+                    "packages/dev/core/src/node.ts",
+                    "packages/dev/gui/src/2D/controls/container.ts",
+                    "packages/dev/gui/src/2D/controls/control.ts",
+                    "packages/dev/gui/src/2D/controls/image.ts",
+                    "packages/public/@babylonjs/.gitignore",
+                    "packages/public/@babylonjs/accessibility/config.json",
+                    "packages/public/@babylonjs/accessibility/license.md",
+                    "packages/public/@babylonjs/accessibility/package.json",
+                    "packages/public/@babylonjs/accessibility/readme.md",
+                    "packages/public/@babylonjs/accessibility/src/index.ts",
+                    "packages/public/@babylonjs/accessibility/tsconfig.build.json",
+                    "packages/public/@babylonjs/accessibility/tsconfig.json",
+                    "packages/public/@babylonjs/accessibility/webpack.config.js",
+                    "packages/public/umd/babylonjs-accessibility/.npmignore",
+                    "packages/public/umd/babylonjs-accessibility/config.json",
+                    "packages/public/umd/babylonjs-accessibility/license.md",
+                    "packages/public/umd/babylonjs-accessibility/package.json",
+                    "packages/public/umd/babylonjs-accessibility/readme.md",
+                    "packages/public/umd/babylonjs-accessibility/src/index.ts",
+                    "packages/public/umd/babylonjs-accessibility/tsconfig.build.json",
+                    "packages/public/umd/babylonjs-accessibility/tsconfig.json",
+                    "packages/public/umd/babylonjs-accessibility/webpack.config.js",
+                    "packages/tools/accessibility/README.md",
+                    "packages/tools/accessibility/package.json",
+                    "packages/tools/accessibility/src/HtmlTwin/htmlTwinGUIItem.ts",
+                    "packages/tools/accessibility/src/HtmlTwin/htmlTwinHostComponent.tsx",
+                    "packages/tools/accessibility/src/HtmlTwin/htmlTwinItem.ts",
+                    "packages/tools/accessibility/src/HtmlTwin/htmlTwinNodeItem.ts",
+                    "packages/tools/accessibility/src/HtmlTwin/htmlTwinRenderer.ts",
+                    "packages/tools/accessibility/src/HtmlTwin/htmlTwinTreeComponent.tsx",
+                    "packages/tools/accessibility/src/HtmlTwin/index.ts",
+                    "packages/tools/accessibility/src/index.ts",
+                    "packages/tools/accessibility/src/legacy/legacy.ts",
+                    "packages/tools/accessibility/tsconfig.build.json",
+                    "packages/tools/accessibility/tsconfig.json",
+                    "packages/tools/accessibility/tsconfig.nocomposite.json",
+                    "packages/tools/devHost/package.json",
+                    "tsconfig.build.json",
+                    "tsconfig.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13144",
+                "title": "Take into account adaptWidth/HeightToChildren in the StackPanel",
+                "description": "Fixes #13139\r\n\r\nExample Playground where you can test the change: https://playground.babylonjs.com/#PE9NXK#12 (use the vertical parameter to switch between a horizontal and a vertical StackPanel)",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/stackPanel.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "gui"
+                ]
+            },
+            {
+                "pr": "13137",
+                "title": "remove new methods",
+                "description": "The recently added methods that have now been deleted, RotationQuaternionFromOntoToRef and RotationQuaternionFromOnto, turned out to be equivalent to the existing one FromUnitVectorsToRef so are not necessary.\r\n\r\nWill any reference to them in What's New be automatically deleted?",
+                "author": {
+                    "name": "BabylonJSGuide",
+                    "url": "https://github.com/BabylonJSGuide"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13128",
+                "title": "Flip normal if picking ray is in the same direction",
+                "description": "Fixes #13115",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/pickingInfo.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "picking"
+                ]
+            },
+            {
+                "pr": "13143",
+                "title": "InputManager: Fix for onPointerMove",
+                "description": "In the latest release, there was a check that was erroneously checking for pickResult on onPointerMove that would make that callback not function as intended, this PR will fix that by removing the check and forcing a pick before executing the callback.\r\n\r\nNote: Scene.pick has been changed to return `PickingInfo` as opposed to `Nullable<PickingInfo>` because it has been determined that pick will never return null.",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/ray.ts",
+                    "packages/dev/core/src/Inputs/scene.inputManager.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inputs",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13141",
+                "title": "Add Vector2 type to custom inspector properties",
+                "description": "Add Vector2 type to custom inspector properties",
+                "author": {
+                    "name": "BlakeOne",
+                    "url": "https://github.com/BlakeOne"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/iInspectable.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13138",
+                "title": "Move the viewer to the /viewer/ directory",
+                "description": "The viewer was uploaded to the CDN, but to the wrong directory (was in the base directory and not the /viewer/ directory. This fixes the issue.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/packageMapping.ts"
+                ],
+                "tags": []
+            }
+        ],
         "5.29.0": [
             {
                 "pr": "13129",

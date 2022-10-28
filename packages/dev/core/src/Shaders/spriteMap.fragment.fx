@@ -1,4 +1,10 @@
-﻿precision highp float;
+﻿#if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
+    #define TEXTUREFUNC(s, c, l) texture2DLodEXT(s, c, l)
+#else
+    #define TEXTUREFUNC(s, c, b) texture2D(s, c, b)
+#endif
+
+precision highp float;
 
 varying vec3 vPosition;
 varying vec2 vUV;
@@ -49,7 +55,7 @@ void main(){
         float frameID;
         #define LAYER_ID_SWITCH
 
-        vec4 animationData = texture2D(animationMap, vec2((frameID + 0.5) / spriteCount, 0.), 0.);
+        vec4 animationData = TEXTUREFUNC(animationMap, vec2((frameID + 0.5) / spriteCount, 0.), 0.);
 
         if(animationData.y > 0.) {
 
@@ -60,7 +66,7 @@ void main(){
                     break;
                 }
 
-                animationData = texture2D(animationMap, vec2((frameID + 0.5) / spriteCount, aFrameSteps * f), 0.);
+                animationData = TEXTUREFUNC(animationMap, vec2((frameID + 0.5) / spriteCount, aFrameSteps * f), 0.);
             }
         }
 
@@ -75,10 +81,10 @@ void main(){
             tileUV.xy = tileUV.yx;
         }
 
+        vec4 nc = texture2D(spriteSheet, tileUV * frameSize+offset);
         if (i == 0){
-            color = texture2D(spriteSheet, tileUV * frameSize+offset);
+            color = nc;
         } else {
-            vec4 nc = texture2D(spriteSheet, tileUV * frameSize+offset);
             float alpha = min(color.a + nc.a, 1.0);
             vec3 mixed = mix(color.xyz, nc.xyz, nc.a);
             color = vec4(mixed, alpha);

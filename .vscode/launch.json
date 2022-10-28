@@ -132,7 +132,7 @@
             "type": "pwa-msedge",
             "request": "launch",
             "name": "Sandbox development (Edge)",
-            "url": "http://localhost:1338",
+            "url": "http://localhost:1339",
             "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Sandbox Serve (Dev)"
         },
@@ -144,7 +144,7 @@
             "type": "pwa-chrome",
             "request": "launch",
             "name": "Sandbox development (Chrome)",
-            "url": "http://localhost:1338",
+            "url": "http://localhost:1339",
             "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Sandbox Serve (Dev)"
         },
@@ -155,7 +155,7 @@
             "type": "pwa-msedge",
             "request": "launch",
             "name": "Launch Sandbox (Edge)",
-            "url": "http://localhost:1338",
+            "url": "http://localhost:1339",
             "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Sandbox Serve for core (Dev)"
         },
@@ -166,7 +166,7 @@
             "type": "pwa-chrome",
             "request": "launch",
             "name": "Launch Sandbox (Chrome)",
-            "url": "http://localhost:1338",
+            "url": "http://localhost:1339",
             "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Sandbox Serve for core (Dev)"
         },
@@ -174,7 +174,7 @@
             "type": "pwa-msedge",
             "request": "launch",
             "name": "GUI Editor development (Edge)",
-            "url": "http://localhost:1338",
+            "url": "http://localhost:1341",
             "webRoot": "${workspaceFolder}",
             "preLaunchTask": "GUI Editor Serve (Dev)"
         },
@@ -182,7 +182,7 @@
             "type": "pwa-chrome",
             "request": "launch",
             "name": "GUI Editor development (Chrome)",
-            "url": "http://localhost:1338",
+            "url": "http://localhost:1341",
             "webRoot": "${workspaceFolder}",
             "preLaunchTask": "GUI Editor Serve (Dev)"
         },
@@ -193,7 +193,7 @@
             "type": "pwa-msedge",
             "request": "launch",
             "name": "Launch GUI Editor (Edge)",
-            "url": "http://localhost:1338",
+            "url": "http://localhost:1341",
             "webRoot": "${workspaceFolder}",
             "preLaunchTask": "GUI Editor Serve for core (Dev)"
         },
@@ -204,7 +204,7 @@
             "type": "pwa-chrome",
             "request": "launch",
             "name": "Launch GUI Editor (Chrome)",
-            "url": "http://localhost:1338",
+            "url": "http://localhost:1341",
             "webRoot": "${workspaceFolder}",
             "preLaunchTask": "GUI Editor Serve for core (Dev)"
         },
@@ -212,7 +212,7 @@
             "type": "pwa-msedge",
             "request": "launch",
             "name": "Node Editor development (Edge)",
-            "url": "http://localhost:1338",
+            "url": "http://localhost:1340",
             "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Node Editor Serve (Dev)"
         },
@@ -220,7 +220,7 @@
             "type": "pwa-chrome",
             "request": "launch",
             "name": "Node Editor development (Chrome)",
-            "url": "http://localhost:1338",
+            "url": "http://localhost:1340",
             "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Node Editor Serve (Dev)"
         },
@@ -231,7 +231,7 @@
             "type": "pwa-msedge",
             "request": "launch",
             "name": "Launch Node Editor (Edge)",
-            "url": "http://localhost:1338",
+            "url": "http://localhost:1340",
             "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Node Editor Serve for core (Dev)"
         },
@@ -242,7 +242,7 @@
             "type": "pwa-chrome",
             "request": "launch",
             "name": "Launch Node Editor (Chrome)",
-            "url": "http://localhost:1338",
+            "url": "http://localhost:1340",
             "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Node Editor Serve for core (Dev)"
         },
@@ -250,7 +250,7 @@
             "type": "pwa-msedge",
             "request": "launch",
             "name": "VSM development (Edge)",
-            "url": "http://localhost:1338",
+            "url": "http://localhost:1342",
             "webRoot": "${workspaceFolder}",
             "preLaunchTask": "VSM Serve (Dev)"
         },
@@ -258,7 +258,7 @@
             "type": "pwa-chrome",
             "request": "launch",
             "name": "VSM development (Chrome)",
-            "url": "http://localhost:1338",
+            "url": "http://localhost:1342",
             "webRoot": "${workspaceFolder}",
             "preLaunchTask": "VSM Serve (Dev)"
         },
@@ -266,7 +266,7 @@
             "type": "pwa-msedge",
             "request": "launch",
             "name": "Launch VSM (Edge)",
-            "url": "http://localhost:1338",
+            "url": "http://localhost:1342",
             "webRoot": "${workspaceFolder}",
             "preLaunchTask": "VSM Serve for core (Dev)"
         },
@@ -274,7 +274,7 @@
             "type": "pwa-chrome",
             "request": "launch",
             "name": "Launch VSM (Chrome)",
-            "url": "http://localhost:1338",
+            "url": "http://localhost:1342",
             "webRoot": "${workspaceFolder}",
             "preLaunchTask": "VSM Serve for core (Dev)"
         },

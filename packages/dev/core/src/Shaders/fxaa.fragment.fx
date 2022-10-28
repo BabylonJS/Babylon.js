@@ -1,4 +1,10 @@
-﻿uniform sampler2D textureSampler;
+﻿#if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
+	#define TEXTUREFUNC(s, c, l) texture2DLodEXT(s, c, l)
+#else
+	#define TEXTUREFUNC(s, c, b) texture2D(s, c, b)
+#endif
+
+uniform sampler2D textureSampler;
 uniform vec2 texelSize;
 
 varying vec2 vUV;
@@ -24,12 +30,12 @@ void main(){
 	posM.x = vUV.x;
 	posM.y = vUV.y;
 
-	vec4 rgbyM = texture2D(textureSampler, vUV, 0.0);
+	vec4 rgbyM = TEXTUREFUNC(textureSampler, vUV, 0.0);
 	float lumaM = FxaaLuma(rgbyM);
-	float lumaS = FxaaLuma(texture2D(textureSampler, sampleCoordS, 0.0));
-	float lumaE = FxaaLuma(texture2D(textureSampler, sampleCoordE, 0.0));
-	float lumaN = FxaaLuma(texture2D(textureSampler, sampleCoordN, 0.0));
-	float lumaW = FxaaLuma(texture2D(textureSampler, sampleCoordW, 0.0));
+	float lumaS = FxaaLuma(TEXTUREFUNC(textureSampler, sampleCoordS, 0.0));
+	float lumaE = FxaaLuma(TEXTUREFUNC(textureSampler, sampleCoordE, 0.0));
+	float lumaN = FxaaLuma(TEXTUREFUNC(textureSampler, sampleCoordN, 0.0));
+	float lumaW = FxaaLuma(TEXTUREFUNC(textureSampler, sampleCoordW, 0.0));
 	float maxSM = max(lumaS, lumaM);
 	float minSM = min(lumaS, lumaM);
 	float maxESM = max(lumaE, maxSM);
@@ -50,10 +56,10 @@ void main(){
 	}
 #endif
 
-	float lumaNW = FxaaLuma(texture2D(textureSampler, sampleCoordNW, 0.0));
-	float lumaSE = FxaaLuma(texture2D(textureSampler, sampleCoordSE, 0.0));
-	float lumaNE = FxaaLuma(texture2D(textureSampler, sampleCoordNE, 0.0));
-	float lumaSW = FxaaLuma(texture2D(textureSampler, sampleCoordSW, 0.0));
+	float lumaNW = FxaaLuma(TEXTUREFUNC(textureSampler, sampleCoordNW, 0.0));
+	float lumaSE = FxaaLuma(TEXTUREFUNC(textureSampler, sampleCoordSE, 0.0));
+	float lumaNE = FxaaLuma(TEXTUREFUNC(textureSampler, sampleCoordNE, 0.0));
+	float lumaSW = FxaaLuma(TEXTUREFUNC(textureSampler, sampleCoordSW, 0.0));
 	float lumaNS = lumaN + lumaS;
 	float lumaWE = lumaW + lumaE;
 	float subpixRcpRange = 1.0 / range;
@@ -137,9 +143,9 @@ void main(){
 	posP.y = posB.y + offNP.y * 1.5;
 
 	float subpixD = ((-2.0) * subpixC) + 3.0;
-	float lumaEndN = FxaaLuma(texture2D(textureSampler, posN, 0.0));
+	float lumaEndN = FxaaLuma(TEXTUREFUNC(textureSampler, posN, 0.0));
 	float subpixE = subpixC * subpixC;
-	float lumaEndP = FxaaLuma(texture2D(textureSampler, posP, 0.0));
+	float lumaEndP = FxaaLuma(TEXTUREFUNC(textureSampler, posP, 0.0));
 
 	if (!pairN) 
 	{
@@ -181,8 +187,8 @@ void main(){
 
 	if (doneNP)
 	{
-		if (!doneN) lumaEndN = FxaaLuma(texture2D(textureSampler, posN.xy, 0.0));
-		if (!doneP) lumaEndP = FxaaLuma(texture2D(textureSampler, posP.xy, 0.0));
+		if (!doneN) lumaEndN = FxaaLuma(TEXTUREFUNC(textureSampler, posN.xy, 0.0));
+		if (!doneP) lumaEndP = FxaaLuma(TEXTUREFUNC(textureSampler, posP.xy, 0.0));
 		if (!doneN) lumaEndN = lumaEndN - lumaNN * 0.5;
 		if (!doneP) lumaEndP = lumaEndP - lumaNN * 0.5;
 	
@@ -240,9 +246,9 @@ void main(){
 	}
 	else
 	{
-		gl_FragColor = texture2D(textureSampler, posM, 0.0);
+		gl_FragColor = TEXTUREFUNC(textureSampler, posM, 0.0);
 	}
 #else
-	gl_FragColor = texture2D(textureSampler, posM, 0.0);
+	gl_FragColor = TEXTUREFUNC(textureSampler, posM, 0.0);
 #endif
 }
