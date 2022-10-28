@@ -1,6 +1,6 @@
 import { ArcRotateCamera, Camera } from 'core/Cameras';
 import type { Engine } from 'core/Engines';
-import { NullEngine } from 'core/Engines';
+import { Constants, NullEngine } from 'core/Engines';
 import { Vector3 } from 'core/Maths';
 import type { Mesh } from 'core/Meshes';
 import { MeshBuilder } from 'core/Meshes';
@@ -91,5 +91,44 @@ describe('Babylon Mesh Levels of Details', () => {
             scene.render();
             expect(knot0.getLOD(cameraOrthographic)!.name).toEqual('Knot2');
         });
+
+        it('should select loaded mesh while target lod mesh is not loaded yet', () => {
+            // not loaded yet
+            knot1.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
+            knot2.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
+
+            cameraArc.radius = 15;
+            scene.render();
+            expect(knot0.getLOD(cameraArc)!.name).toEqual('Knot0');
+
+            cameraArc.radius = 25;
+            scene.render();
+            expect(knot0.getLOD(cameraArc)!.name).toEqual('Knot0');
+
+            // while loading
+            knot1.delayLoadState = Constants.DELAYLOADSTATE_LOADING;
+            knot2.delayLoadState = Constants.DELAYLOADSTATE_LOADING;
+
+            cameraArc.radius = 15;
+            scene.render();
+            expect(knot0.getLOD(cameraArc)!.name).toEqual('Knot0');
+
+            cameraArc.radius = 25;
+            scene.render();
+            expect(knot0.getLOD(cameraArc)!.name).toEqual('Knot0');
+
+            // after loaded
+            knot1.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
+            knot2.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
+
+            cameraArc.radius = 15;
+            scene.render();
+            expect(knot0.getLOD(cameraArc)!.name).toEqual('Knot1');
+
+            cameraArc.radius = 25;
+            scene.render();
+            expect(knot0.getLOD(cameraArc)!.name).toEqual('Knot2');
+        });
+
     });
 });
