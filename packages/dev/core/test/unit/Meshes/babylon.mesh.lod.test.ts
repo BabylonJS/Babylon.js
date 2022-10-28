@@ -130,5 +130,43 @@ describe('Babylon Mesh Levels of Details', () => {
             expect(knot0.getLOD(cameraArc)!.name).toEqual('Knot2');
         });
 
+        it('should call user function with selected LOD', () => {
+            const onLODLevelSelectionArgs: {
+                distance?: number;
+                meshName?: string;
+                selectedLevel?: string | null;
+            } = {};
+            knot0.onLODLevelSelection = (_distance, _mesh, _selectedLevel) => {
+                onLODLevelSelectionArgs.distance = _distance;
+                onLODLevelSelectionArgs.meshName = _mesh.name;
+                onLODLevelSelectionArgs.selectedLevel = _selectedLevel?.name;
+                return null;
+            };
+
+            const registerSpy = jest.spyOn(knot0, "onLODLevelSelection");
+
+            expect(registerSpy).toBeCalledTimes(0);
+
+            scene.render();
+            expect(registerSpy).toBeCalledTimes(1);
+            expect(onLODLevelSelectionArgs.distance).toBeCloseTo(5.23, 2);
+            expect(onLODLevelSelectionArgs.meshName).toEqual('Knot0');
+            expect(onLODLevelSelectionArgs.selectedLevel).toEqual('Knot0');
+
+            cameraArc.radius = 15;
+            scene.render();
+            expect(registerSpy).toBeCalledTimes(2);
+            expect(onLODLevelSelectionArgs.distance).toBeCloseTo(15.07, 2);
+            expect(onLODLevelSelectionArgs.meshName).toEqual('Knot0');
+            expect(onLODLevelSelectionArgs.selectedLevel).toEqual('Knot1');
+
+            cameraArc.radius = 25;
+            scene.render();
+            expect(registerSpy).toBeCalledTimes(3);
+            expect(onLODLevelSelectionArgs.distance).toBeCloseTo(25.03, 2);
+            expect(onLODLevelSelectionArgs.meshName).toEqual('Knot0');
+            expect(onLODLevelSelectionArgs.selectedLevel).toEqual('Knot2');
+        });
+
     });
 });
