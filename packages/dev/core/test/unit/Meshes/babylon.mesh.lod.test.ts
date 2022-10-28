@@ -1,8 +1,8 @@
-import { ArcRotateCamera } from 'core/Cameras';
-import type { Engine} from 'core/Engines';
+import { ArcRotateCamera, Camera } from 'core/Cameras';
+import type { Engine } from 'core/Engines';
 import { NullEngine } from 'core/Engines';
 import { Vector3 } from 'core/Maths';
-import type { Mesh} from 'core/Meshes';
+import type { Mesh } from 'core/Meshes';
 import { MeshBuilder } from 'core/Meshes';
 import { Scene } from 'core/scene';
 
@@ -23,6 +23,7 @@ describe('Babylon Mesh Levels of Details', () => {
     describe('getLOD method', () => {
         let scene: Scene;
         let cameraArc: ArcRotateCamera;
+        let cameraOrthographic: ArcRotateCamera;
 
         let knot0: Mesh;
         let knot1: Mesh;
@@ -30,7 +31,11 @@ describe('Babylon Mesh Levels of Details', () => {
 
         beforeEach(() => {
             scene = new Scene(subject);
-            cameraArc = new ArcRotateCamera("Camera", 0, 0, 5, new Vector3(0, 0, 0), scene);
+
+            cameraArc = new ArcRotateCamera('Camera', 0, 0, 5, new Vector3(0, 0, 0), scene);
+
+            cameraOrthographic = new ArcRotateCamera('Camera', 0, 0, 5, new Vector3(0, 0, 0), scene);
+            cameraOrthographic.mode = Camera.ORTHOGRAPHIC_CAMERA;
 
             knot0 = MeshBuilder.CreateTorusKnot('Knot0', {
                 radius: 10,
@@ -66,12 +71,25 @@ describe('Babylon Mesh Levels of Details', () => {
             expect(knot0.getLOD(cameraArc)!.name).toEqual('Knot0');
 
             cameraArc.radius = 15;
-            scene.render()
+            scene.render();
             expect(knot0.getLOD(cameraArc)!.name).toEqual('Knot1');
 
             cameraArc.radius = 25;
-            scene.render()
+            scene.render();
             expect(knot0.getLOD(cameraArc)!.name).toEqual('Knot2');
+        });
+
+        it('should select lod with correct distance for orthographic camera', () => {
+            expect(knot0.getLOD(cameraOrthographic)).not.toBeNull();
+            expect(knot0.getLOD(cameraOrthographic)!.name).toEqual('Knot0');
+
+            cameraOrthographic.minZ = 15;
+            scene.render();
+            expect(knot0.getLOD(cameraOrthographic)!.name).toEqual('Knot1');
+
+            cameraOrthographic.minZ = 25;
+            scene.render();
+            expect(knot0.getLOD(cameraOrthographic)!.name).toEqual('Knot2');
         });
     });
 });
