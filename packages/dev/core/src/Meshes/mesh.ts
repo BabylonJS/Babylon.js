@@ -368,7 +368,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * Gets the delay loading state of the mesh (when delay loading is turned on)
-     * @see https://doc.babylonjs.com/how_to/using_the_incremental_loading_system
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/importers/incrementalLoading
      */
     public delayLoadState = Constants.DELAYLOADSTATE_NONE;
 
