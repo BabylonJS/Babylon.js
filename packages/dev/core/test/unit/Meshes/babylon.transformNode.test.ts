@@ -30,5 +30,16 @@ describe("TransformNode", () => {
             expect(child.parent).toBeTruthy();
             expect(child.parent?.name).toEqual("Parent");
         });
+
+        it('should work with nullable node', () => {
+            const scene = new Scene(subject);
+            const child = new AbstractMesh("Child", scene);
+            const parent = new AbstractMesh("Parent", scene);
+
+            child.setParent(parent);
+            child.setParent(null);
+
+            expect(child.parent).toBeFalsy();
+        });
     });
 });
