@@ -909,7 +909,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * Returns the registered LOD mesh distant from the parameter `camera` position if any, else returns the current mesh.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_lod
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/LOD
      * @param camera defines the camera to use to compute distance
      * @param boundingSphere defines a custom bounding sphere to use instead of the one from this mesh
      * @returns This mesh (for chaining)
