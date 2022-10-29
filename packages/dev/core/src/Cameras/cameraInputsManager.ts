@@ -104,7 +104,7 @@ export class CameraInputsManager<TCamera extends Camera> {
 
     /**
      * Add an input method to a camera
-     * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
      * @param input camera input method
      */
     public add(input: ICameraInput<TCamera>): void {
