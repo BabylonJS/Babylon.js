@@ -145,7 +145,7 @@ describe("CameraInputsManager", () => {
             expect(manager.attached[input.getSimpleName()]).toBeUndefined();
         });
 
-        it('should not remove not attached input with same name', () => {
+        it("should not remove not attached input with same name", () => {
             const camera = new FreeCamera("camera", Vector3.Zero(), scene);
             const manager = new CameraInputsManager(camera);
 
