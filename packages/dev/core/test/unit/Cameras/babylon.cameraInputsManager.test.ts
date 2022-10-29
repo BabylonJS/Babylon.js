@@ -120,12 +120,14 @@ describe("CameraInputsManager", () => {
     });
 
     describe("remove", () => {
-        it("should remove attached input", () => {
-            const camera = new FreeCamera("camera", Vector3.Zero(), scene);
-            const manager = new CameraInputsManager(camera);
+        let camera: FreeCamera;
+        let manager: CameraInputsManager<FreeCamera>;
+        let input: ICameraInput<FreeCamera>;
 
-            // add new input
-            const input: ICameraInput<FreeCamera> = {
+        beforeEach(() => {
+            camera = new FreeCamera("camera", Vector3.Zero(), scene);
+            manager = new CameraInputsManager(camera);
+            input = {
                 camera: null,
                 getClassName: () => "CustomInput",
                 getSimpleName: () => "SimpleCustomInput",
@@ -133,6 +135,9 @@ describe("CameraInputsManager", () => {
                 detachControl: () => undefined,
                 checkInputs: () => undefined,
             };
+        });
+
+        it("should remove attached input", () => {
             manager.add(input);
 
             // manager should have attached input
@@ -146,18 +151,6 @@ describe("CameraInputsManager", () => {
         });
 
         it("should not remove not attached input with same name", () => {
-            const camera = new FreeCamera("camera", Vector3.Zero(), scene);
-            const manager = new CameraInputsManager(camera);
-
-            // add input
-            const input: ICameraInput<FreeCamera> = {
-                camera: null,
-                getClassName: () => "CustomInput",
-                getSimpleName: () => "SimpleCustomInput",
-                attachControl: () => undefined,
-                detachControl: () => undefined,
-                checkInputs: () => undefined,
-            };
             manager.add(input);
 
             // now create a new input with same name
@@ -178,20 +171,8 @@ describe("CameraInputsManager", () => {
         });
 
         it("should call rebuild input check after remove the input", () => {
-            const camera = new FreeCamera("camera", Vector3.Zero(), scene);
-            const manager = new CameraInputsManager(camera);
-
             const managerRebuildInputCheckSpy = jest.spyOn(manager, "rebuildInputCheck");
 
-            // add input
-            const input: ICameraInput<FreeCamera> = {
-                camera: null,
-                getClassName: () => "CustomInput",
-                getSimpleName: () => "SimpleCustomInput",
-                attachControl: () => undefined,
-                detachControl: () => undefined,
-                checkInputs: () => undefined,
-            };
             manager.add(input);
 
             // now remove the input
@@ -202,19 +183,8 @@ describe("CameraInputsManager", () => {
         });
 
         it("should detach control from input", () => {
-            const camera = new FreeCamera("camera", Vector3.Zero(), scene);
-            const manager = new CameraInputsManager(camera);
-
-            // add input
-            const input: ICameraInput<FreeCamera> = {
-                camera: null,
-                getClassName: () => "CustomInput",
-                getSimpleName: () => "SimpleCustomInput",
-                attachControl: () => undefined,
-                detachControl: () => undefined,
-                checkInputs: () => undefined,
-            };
             const detachControlSpy = jest.spyOn(input, "detachControl");
+
             manager.add(input);
 
             // now remove the input
@@ -225,18 +195,6 @@ describe("CameraInputsManager", () => {
         });
 
         it("should remove camera from input", () => {
-            const camera = new FreeCamera("camera", Vector3.Zero(), scene);
-            const manager = new CameraInputsManager(camera);
-
-            // add input
-            const input: ICameraInput<FreeCamera> = {
-                camera: null,
-                getClassName: () => "CustomInput",
-                getSimpleName: () => "SimpleCustomInput",
-                attachControl: () => undefined,
-                detachControl: () => undefined,
-                checkInputs: () => undefined,
-            };
             manager.add(input);
 
             expect(input.camera).toEqual(camera);
