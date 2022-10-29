@@ -1,10 +1,9 @@
-import type { ICameraInput } from 'core/Cameras';
-import { CameraInputsManager, FreeCamera } from 'core/Cameras';
-import type { Engine } from 'core/Engines';
-import { NullEngine } from 'core/Engines';
-import { Vector3 } from 'core/Maths';
-import { Scene } from 'core/scene';
-
+import type { ICameraInput } from "core/Cameras";
+import { CameraInputsManager, FreeCamera } from "core/Cameras";
+import type { Engine } from "core/Engines";
+import { NullEngine } from "core/Engines";
+import { Vector3 } from "core/Maths";
+import { Scene } from "core/scene";
 
 describe("CameraInputsManager", () => {
     let subject: Engine;
@@ -32,8 +31,8 @@ describe("CameraInputsManager", () => {
             // after add new input the manager should have the new input attached
             const input: ICameraInput<FreeCamera> = {
                 camera: null,
-                getClassName: () => 'CustomInput',
-                getSimpleName: () => 'SimpleCustomInput',
+                getClassName: () => "CustomInput",
+                getSimpleName: () => "SimpleCustomInput",
                 attachControl: () => undefined,
                 detachControl: () => undefined,
                 checkInputs: () => undefined,
@@ -54,8 +53,8 @@ describe("CameraInputsManager", () => {
             // add new input
             const input: ICameraInput<FreeCamera> = {
                 camera: null,
-                getClassName: () => 'CustomInput',
-                getSimpleName: () => 'SimpleCustomInput',
+                getClassName: () => "CustomInput",
+                getSimpleName: () => "SimpleCustomInput",
                 attachControl: () => undefined,
                 detachControl: () => undefined,
                 checkInputs: () => undefined,
@@ -68,8 +67,8 @@ describe("CameraInputsManager", () => {
             // now add a new input with same type
             const newInput: ICameraInput<FreeCamera> = {
                 camera: null,
-                getClassName: () => 'CustomInput',
-                getSimpleName: () => 'SimpleCustomInput',
+                getClassName: () => "CustomInput",
+                getSimpleName: () => "SimpleCustomInput",
                 attachControl: () => undefined,
                 detachControl: () => undefined,
                 checkInputs: () => undefined,
@@ -80,38 +79,38 @@ describe("CameraInputsManager", () => {
             expect(manager.attached[newInput.getSimpleName()]).not.toEqual(newInput);
         });
 
-        it('should attach control when it required', () => {
+        it("should attach control when it required", () => {
             const camera = new FreeCamera("camera", Vector3.Zero(), scene);
             const manager = new CameraInputsManager(camera);
 
             const input: ICameraInput<FreeCamera> = {
                 camera: null,
-                getClassName: () => 'CustomInput',
-                getSimpleName: () => 'SimpleCustomInput',
+                getClassName: () => "CustomInput",
+                getSimpleName: () => "SimpleCustomInput",
                 attachControl: () => undefined,
                 detachControl: () => undefined,
                 checkInputs: () => undefined,
             };
-            const attachControlSpy = jest.spyOn(input, 'attachControl');
+            const attachControlSpy = jest.spyOn(input, "attachControl");
             manager.attachedToElement = true;
             manager.add(input);
 
             expect(attachControlSpy).toHaveBeenCalledWith(undefined);
         });
 
-        it('should attach control when it required with preventDefault', () => {
+        it("should attach control when it required with preventDefault", () => {
             const camera = new FreeCamera("camera", Vector3.Zero(), scene);
             const manager = new CameraInputsManager(camera);
 
             const input: ICameraInput<FreeCamera> = {
                 camera: null,
-                getClassName: () => 'CustomInput',
-                getSimpleName: () => 'SimpleCustomInput',
+                getClassName: () => "CustomInput",
+                getSimpleName: () => "SimpleCustomInput",
                 attachControl: () => undefined,
                 detachControl: () => undefined,
                 checkInputs: () => undefined,
             };
-            const attachControlSpy = jest.spyOn(input, 'attachControl');
+            const attachControlSpy = jest.spyOn(input, "attachControl");
             manager.attachedToElement = true;
             manager.noPreventDefault = true;
             manager.add(input);
