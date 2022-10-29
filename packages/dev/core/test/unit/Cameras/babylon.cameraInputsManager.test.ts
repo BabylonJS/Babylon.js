@@ -176,5 +176,29 @@ describe("CameraInputsManager", () => {
             // manager should stay have attached initial input
             expect(manager.attached[newInput.getSimpleName()]).toEqual(input);
         });
+
+        it("should call rebuild input check after remove the input", () => {
+            const camera = new FreeCamera("camera", Vector3.Zero(), scene);
+            const manager = new CameraInputsManager(camera);
+
+            const managerRebuildInputCheckSpy = jest.spyOn(manager, "rebuildInputCheck");
+
+            // add input
+            const input: ICameraInput<FreeCamera> = {
+                camera: null,
+                getClassName: () => "CustomInput",
+                getSimpleName: () => "SimpleCustomInput",
+                attachControl: () => undefined,
+                detachControl: () => undefined,
+                checkInputs: () => undefined,
+            };
+            manager.add(input);
+
+            // now remove the input
+            manager.remove(input);
+
+            // manager should call rebuild input check, and only once
+            expect(managerRebuildInputCheckSpy).toHaveBeenCalledTimes(1);
+        });
     });
 });
