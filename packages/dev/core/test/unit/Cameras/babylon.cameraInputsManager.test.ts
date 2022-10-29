@@ -1,3 +1,4 @@
+import type { ICameraInput } from 'core/Cameras';
 import { CameraInputsManager, FreeCamera } from 'core/Cameras';
 import type { Engine } from 'core/Engines';
 import { NullEngine } from 'core/Engines';
@@ -29,7 +30,7 @@ describe("CameraInputsManager", () => {
             expect(manager.attached).toEqual({});
 
             // after add new input the manager should have the new input attached
-            const input = {
+            const input: ICameraInput<FreeCamera> = {
                 camera: null,
                 getClassName: () => 'CustomInput',
                 getSimpleName: () => 'SimpleCustomInput',
@@ -51,7 +52,7 @@ describe("CameraInputsManager", () => {
             const manager = new CameraInputsManager(camera);
 
             // add new input
-            const input = {
+            const input: ICameraInput<FreeCamera> = {
                 camera: null,
                 getClassName: () => 'CustomInput',
                 getSimpleName: () => 'SimpleCustomInput',
@@ -65,7 +66,7 @@ describe("CameraInputsManager", () => {
             expect(manager.attached[input.getSimpleName()]).toEqual(input);
 
             // now add a new input with same type
-            const newInput = {
+            const newInput: ICameraInput<FreeCamera> = {
                 camera: null,
                 getClassName: () => 'CustomInput',
                 getSimpleName: () => 'SimpleCustomInput',
@@ -83,7 +84,7 @@ describe("CameraInputsManager", () => {
             const camera = new FreeCamera("camera", Vector3.Zero(), scene);
             const manager = new CameraInputsManager(camera);
 
-            const input = {
+            const input: ICameraInput<FreeCamera> = {
                 camera: null,
                 getClassName: () => 'CustomInput',
                 getSimpleName: () => 'SimpleCustomInput',
@@ -102,7 +103,7 @@ describe("CameraInputsManager", () => {
             const camera = new FreeCamera("camera", Vector3.Zero(), scene);
             const manager = new CameraInputsManager(camera);
 
-            const input = {
+            const input: ICameraInput<FreeCamera> = {
                 camera: null,
                 getClassName: () => 'CustomInput',
                 getSimpleName: () => 'SimpleCustomInput',
