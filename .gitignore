@@ -23,3 +23,4 @@ junit.xml
 *.pem
 packages/tools/babylonServer/public/localDev
 packages/tools/babylonServer/public/localDevWebGPU
+packages/tools/playground/public/temp
