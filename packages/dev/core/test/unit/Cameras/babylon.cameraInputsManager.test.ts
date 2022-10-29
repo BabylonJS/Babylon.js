@@ -45,5 +45,38 @@ describe("CameraInputsManager", () => {
             // added input should have actual camera attached
             expect(input.camera).toEqual(camera);
         });
+
+        it("should not override existed input with same type", () => {
+            const camera = new FreeCamera("camera", Vector3.Zero(), scene);
+            const manager = new CameraInputsManager(camera);
+
+            // add new input
+            const input = {
+                camera: null,
+                getClassName: () => 'CustomInput',
+                getSimpleName: () => 'SimpleCustomInput',
+                attachControl: () => undefined,
+                detachControl: () => undefined,
+                checkInputs: () => undefined,
+            };
+            manager.add(input);
+
+            // manager should have attached input
+            expect(manager.attached[input.getSimpleName()]).toEqual(input);
+
+            // now add a new input with same type
+            const newInput = {
+                camera: null,
+                getClassName: () => 'CustomInput',
+                getSimpleName: () => 'SimpleCustomInput',
+                attachControl: () => undefined,
+                detachControl: () => undefined,
+                checkInputs: () => undefined,
+            };
+            manager.add(newInput);
+
+            // manager should stay an old input
+            expect(manager.attached[newInput.getSimpleName()]).not.toEqual(newInput);
+        });
     });
 });
