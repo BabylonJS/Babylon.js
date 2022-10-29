@@ -78,5 +78,44 @@ describe("CameraInputsManager", () => {
             // manager should stay an old input
             expect(manager.attached[newInput.getSimpleName()]).not.toEqual(newInput);
         });
+
+        it('should attach control when it required', () => {
+            const camera = new FreeCamera("camera", Vector3.Zero(), scene);
+            const manager = new CameraInputsManager(camera);
+
+            const input = {
+                camera: null,
+                getClassName: () => 'CustomInput',
+                getSimpleName: () => 'SimpleCustomInput',
+                attachControl: () => undefined,
+                detachControl: () => undefined,
+                checkInputs: () => undefined,
+            };
+            const attachControlSpy = jest.spyOn(input, 'attachControl');
+            manager.attachedToElement = true;
+            manager.add(input);
+
+            expect(attachControlSpy).toHaveBeenCalledWith(undefined);
+        });
+
+        it('should attach control when it required with preventDefault', () => {
+            const camera = new FreeCamera("camera", Vector3.Zero(), scene);
+            const manager = new CameraInputsManager(camera);
+
+            const input = {
+                camera: null,
+                getClassName: () => 'CustomInput',
+                getSimpleName: () => 'SimpleCustomInput',
+                attachControl: () => undefined,
+                detachControl: () => undefined,
+                checkInputs: () => undefined,
+            };
+            const attachControlSpy = jest.spyOn(input, 'attachControl');
+            manager.attachedToElement = true;
+            manager.noPreventDefault = true;
+            manager.add(input);
+
+            expect(attachControlSpy).toHaveBeenCalledWith(true);
+        });
     });
 });
