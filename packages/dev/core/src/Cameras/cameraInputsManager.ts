@@ -142,6 +142,8 @@ export class CameraInputsManager<TCamera extends Camera> {
                 input.camera = null;
                 delete this.attached[cam];
                 this.rebuildInputCheck();
+
+                return;
             }
         }
     }
