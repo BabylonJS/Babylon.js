@@ -105,7 +105,7 @@ export class CameraInputsManager<TCamera extends Camera> {
     /**
      * Add an input method to a camera
      * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
-     * @param input camera input method
+     * @param input Camera input method
      */
     public add(input: ICameraInput<TCamera>): void {
         const type = input.getSimpleName();
@@ -118,8 +118,8 @@ export class CameraInputsManager<TCamera extends Camera> {
 
         input.camera = this.camera;
 
-        //for checkInputs, we are dynamically creating a function
-        //the goal is to avoid the performance penalty of looping for inputs in the render loop
+        // for checkInputs, we are dynamically creating a function
+        // the goal is to avoid the performance penalty of looping for inputs in the render loop
         if (input.checkInputs) {
             this.checkInputs = this._addCheckInputs(input.checkInputs.bind(input));
         }
