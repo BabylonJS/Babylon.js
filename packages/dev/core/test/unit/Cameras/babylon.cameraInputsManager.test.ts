@@ -144,5 +144,37 @@ describe("CameraInputsManager", () => {
             // manager should not have attached input
             expect(manager.attached[input.getSimpleName()]).toBeUndefined();
         });
+
+        it('should not remove not attached input with same name', () => {
+            const camera = new FreeCamera("camera", Vector3.Zero(), scene);
+            const manager = new CameraInputsManager(camera);
+
+            // add input
+            const input: ICameraInput<FreeCamera> = {
+                camera: null,
+                getClassName: () => "CustomInput",
+                getSimpleName: () => "SimpleCustomInput",
+                attachControl: () => undefined,
+                detachControl: () => undefined,
+                checkInputs: () => undefined,
+            };
+            manager.add(input);
+
+            // now create a new input with same name
+            const newInput: ICameraInput<FreeCamera> = {
+                camera: null,
+                getClassName: () => "CustomInput",
+                getSimpleName: () => "SimpleCustomInput",
+                attachControl: () => undefined,
+                detachControl: () => undefined,
+                checkInputs: () => undefined,
+            };
+
+            // try to remove the new input with same name
+            manager.remove(newInput);
+
+            // manager should stay have attached initial input
+            expect(manager.attached[newInput.getSimpleName()]).toEqual(input);
+        });
     });
 });
