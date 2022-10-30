@@ -1,0 +1,24 @@
+.noBorder {
+    border: unset;
+}
+
+.textContent {
+    grid-row: 2;
+    font-size: 2em;
+    text-align: center;
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+
+.vectorInputDisplay {
+    display: flex;
+}
+
+.numberInput {
+    width: 40px;
+    background-color: rgb(44, 44, 44);
+    border: unset;
+    color: white;
+    font-size: 1.5rem;
+    margin: 0 2px;
+}

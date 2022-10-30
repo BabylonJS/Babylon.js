@@ -1,6 +1,5 @@
 /* eslint-disable import/export */
 /* eslint-disable import/no-internal-modules */
-export * from "../../../../dev/loaders/src/index";
 // export * from "./legacy-glTF";
 // export * from "./legacy-glTF1";
 // export * from "./legacy-glTF2";
@@ -25,8 +24,7 @@ if (typeof globalObject !== "undefined") {
     }
 }
 
-export * from "../../../../dev/loaders/src/glTF/glTFFileLoader";
-export * from "../../../../dev/loaders/src/glTF/glTFValidation";
+export { FileLoader, Validation };
 
 /* eslint-disable import/no-internal-modules */
 import * as GLTF1 from "../../../../dev/loaders/src/glTF/1.0/index";

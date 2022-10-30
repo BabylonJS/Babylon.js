@@ -322,6 +322,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                             onSelect={(value) => {
                                 texture!.wrapU = value ? Texture.CLAMP_ADDRESSMODE : Texture.WRAP_ADDRESSMODE;
                                 this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
+                                this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
                             }}
                         />
                     )}
@@ -332,6 +333,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                             onSelect={(value) => {
                                 texture!.wrapV = value ? Texture.CLAMP_ADDRESSMODE : Texture.WRAP_ADDRESSMODE;
                                 this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
+                                this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
                             }}
                         />
                     )}

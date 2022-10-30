@@ -30,16 +30,16 @@ void main()
 	mat2 rot2 = mat2(cos(beta), sin(beta), -sin(beta), cos(beta));
 	dir.xz *= rot1;
 	dir.xy *= rot2;
-	vec3 from = vec3(1., .5, 0.5);
-	from += vec3(-2., localTime*2., localTime);
-	from.xz *= rot1;
-	from.xy *= rot2;
+	vec3 from_ = vec3(1., .5, 0.5);
+	from_ += vec3(-2., localTime*2., localTime);
+	from_.xz *= rot1;
+	from_.xy *= rot2;
 
 	//volumetric rendering
 	float s = 0.1, fade = 1.;
 	vec3 v = vec3(0.);
 	for (int r = 0; r < volsteps; r++) {
-		vec3 p = from + s*dir*.5;
+		vec3 p = from_ + s*dir*.5;
 		p = abs(vec3(tile) - mod(p, vec3(tile*2.))); // tiling fold
 		float pa, a = pa = 0.;
 		for (int i = 0; i < iterations; i++) {

@@ -2061,15 +2061,19 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             }
 
             // Shadow generators
-            const generator = light.getShadowGenerator();
-            if (generator) {
-                const shadowMap = generator.getShadowMap();
+            const generators = light.getShadowGenerators();
+            if (generators) {
+                const iterator = generators.values();
+                for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
+                    const generator = key.value;
+                    const shadowMap = generator.getShadowMap();
 
-                if (shadowMap && shadowMap.renderList) {
-                    meshIndex = shadowMap.renderList.indexOf(this);
+                    if (shadowMap && shadowMap.renderList) {
+                        meshIndex = shadowMap.renderList.indexOf(this);
 
-                    if (meshIndex !== -1) {
-                        shadowMap.renderList.splice(meshIndex, 1);
+                        if (meshIndex !== -1) {
+                            shadowMap.renderList.splice(meshIndex, 1);
+                        }
                     }
                 }
             }

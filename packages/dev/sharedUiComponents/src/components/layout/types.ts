@@ -1,4 +1,4 @@
-import type { ComponentType } from "react";
+import type { ReactElement } from "react";
 
 // Define layout typing
 
@@ -10,7 +10,11 @@ export type LayoutTab = {
     /**
      * React component rendered by tab
      */
-    component: ComponentType;
+    component: ReactElement;
+    /**
+     * Tab title
+     */
+    title: string;
 };
 
 export type LayoutTabsRow = {

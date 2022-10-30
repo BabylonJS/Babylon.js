@@ -70,6 +70,10 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      * Special billboard mode where the particle will be biilboard to the camera but rotated to align with direction
      */
     public static readonly BILLBOARDMODE_STRETCHED = Constants.PARTICLES_BILLBOARDMODE_STRETCHED;
+    /**
+     * Special billboard mode where the particle will be billboard to the camera but only around the axis of the direction of particle emission
+     */
+    public static readonly BILLBOARDMODE_STRETCHED_LOCAL = Constants.PARTICLES_BILLBOARDMODE_STRETCHED_LOCAL;
 
     /**
      * This function can be defined to provide custom update for active particles.
@@ -1087,7 +1091,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             this._vertexBufferSize += 1;
         }
 
-        if (!this._isBillboardBased || this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED) {
+        if (!this._isBillboardBased || this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED || this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED_LOCAL) {
             this._vertexBufferSize += 3;
         }
 
@@ -1123,7 +1127,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             dataOffset += 1;
         }
 
-        if (!this._isBillboardBased || this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED) {
+        if (!this._isBillboardBased || this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED || this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED_LOCAL) {
             const directionBuffer = this._vertexBuffer.createVertexBuffer("direction", dataOffset, 3, this._vertexBufferSize, this._useInstancing);
             this._vertexBuffers["direction"] = directionBuffer;
             dataOffset += 3;
@@ -1361,7 +1365,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                 this._vertexData[offset++] = direction.y;
                 this._vertexData[offset++] = direction.z;
             }
-        } else if (this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED) {
+        } else if (this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED || this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED_LOCAL) {
             this._vertexData[offset++] = particle.direction.x;
             this._vertexData[offset++] = particle.direction.y;
             this._vertexData[offset++] = particle.direction.z;
@@ -1794,7 +1798,11 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                     defines.push("#define BILLBOARDY");
                     break;
                 case ParticleSystem.BILLBOARDMODE_STRETCHED:
+                case ParticleSystem.BILLBOARDMODE_STRETCHED_LOCAL:
                     defines.push("#define BILLBOARDSTRETCHED");
+                    if (this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED_LOCAL) {
+                        defines.push("#define BILLBOARDSTRETCHED_LOCAL");
+                    }
                     break;
                 case ParticleSystem.BILLBOARDMODE_ALL:
                     defines.push("#define BILLBOARDMODE_ALL");
@@ -1820,7 +1828,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         attributes.push(
             ...ParticleSystem._GetAttributeNamesOrOptions(
                 this._isAnimationSheetEnabled,
-                this._isBillboardBased && this.billboardMode !== ParticleSystem.BILLBOARDMODE_STRETCHED,
+                this._isBillboardBased && this.billboardMode !== ParticleSystem.BILLBOARDMODE_STRETCHED && this.billboardMode !== ParticleSystem.BILLBOARDMODE_STRETCHED_LOCAL,
                 this._useRampGradients
             )
         );
