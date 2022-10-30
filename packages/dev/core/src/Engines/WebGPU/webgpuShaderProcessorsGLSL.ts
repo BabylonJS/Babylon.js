@@ -13,8 +13,14 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
     protected _missingVaryings: Array<string> = [];
     protected _textureArrayProcessing: Array<string> = [];
     protected _preProcessors: { [key: string]: string };
+    protected _vertexIsGLES3: boolean = false;
+    protected _fragmentIsGLES3: boolean = false;
 
     public shaderLanguage = ShaderLanguage.GLSL;
+    public parseGLES3 = true;
+    public attributeKeywordName: string | undefined;
+    public varyingVertexKeywordName: string | undefined;
+    public varyingFragmentKeywordName: string | undefined;
 
     protected _getArraySize(name: string, type: string, preProcessors: { [key: string]: string }): [string, string, number] {
         let length = 0;
@@ -36,13 +42,26 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
 
         this._missingVaryings.length = 0;
         this._textureArrayProcessing.length = 0;
+        this.attributeKeywordName = undefined;
+        this.varyingVertexKeywordName = undefined;
+        this.varyingFragmentKeywordName = undefined;
     }
 
     public preProcessShaderCode(code: string, isFragment: boolean): string {
         const ubDeclaration = `uniform ${WebGPUShaderProcessor.InternalsUBOName} {\nfloat yFactor_;\nfloat textureOutputHeight_;\n};\n`;
 
         if (isFragment) {
+            this._fragmentIsGLES3 = code.indexOf("#version 3") !== -1;
+            if (this._fragmentIsGLES3) {
+                this.varyingFragmentKeywordName = "in";
+            }
             return ubDeclaration + "##INJECTCODE##\n" + code;
+        }
+
+        this._vertexIsGLES3 = code.indexOf("#version 3") !== -1;
+        if (this._vertexIsGLES3) {
+            this.attributeKeywordName = "in";
+            this.varyingVertexKeywordName = "out";
         }
         return ubDeclaration + code;
     }
@@ -50,9 +69,13 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
     public varyingProcessor(varying: string, isFragment: boolean, preProcessors: { [key: string]: string }) {
         this._preProcessors = preProcessors;
 
+        const outRegex = /\s*out\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s+(\S+)\s*;/gm;
+        const inRegex = /\s*in\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s+(\S+)\s*;/gm;
         const varyingRegex = /\s*varying\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s+(\S+)\s*;/gm;
-        const match = varyingRegex.exec(varying);
-        if (match != null) {
+
+        const regex = isFragment && this._fragmentIsGLES3 ? inRegex : !isFragment && this._vertexIsGLES3 ? outRegex : varyingRegex;
+        const match = regex.exec(varying);
+        if (match !== null) {
             const varyingType = match[1];
             const name = match[2];
             let location: number;
@@ -76,9 +99,12 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
     public attributeProcessor(attribute: string, preProcessors: { [key: string]: string }) {
         this._preProcessors = preProcessors;
 
+        const inRegex = /\s*in\s+(\S+)\s+(\S+)\s*;/gm;
         const attribRegex = /\s*attribute\s+(\S+)\s+(\S+)\s*;/gm;
-        const match = attribRegex.exec(attribute);
-        if (match != null) {
+
+        const regex = this._vertexIsGLES3 ? inRegex : attribRegex;
+        const match = regex.exec(attribute);
+        if (match !== null) {
             const attributeType = match[1];
             const name = match[2];
             const location = this._webgpuProcessingContext.getAttributeNextLocation(attributeType, this._getArraySize(name, attributeType, preProcessors)[2]);
@@ -97,7 +123,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
         const uniformRegex = /\s*uniform\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s+(\S+)\s*;/gm;
 
         const match = uniformRegex.exec(uniform);
-        if (match != null) {
+        if (match !== null) {
             let uniformType = match[1];
             let name = match[2];
 
@@ -198,7 +224,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
         const uboRegex = /uniform\s+(\w+)/gm;
 
         const match = uboRegex.exec(uniformBuffer);
-        if (match != null) {
+        if (match !== null) {
             const name = match[1];
 
             let uniformBufferInfo = this._webgpuProcessingContext.availableBuffers[name];
@@ -250,7 +276,14 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
             code = code.replace(/gl_FragColor/g, "glFragColor");
             code = code.replace(/gl_FragData/g, "glFragData");
             code = code.replace(/gl_FragCoord/g, "glFragCoord_");
-            code = code.replace(/void\s+?main\s*\(/g, (hasDrawBuffersExtension ? "" : "layout(location = 0) out vec4 glFragColor;\n") + "void main(");
+            if (!this._fragmentIsGLES3) {
+                code = code.replace(/void\s+?main\s*\(/g, (hasDrawBuffersExtension ? "" : "layout(location = 0) out vec4 glFragColor;\n") + "void main(");
+            } else {
+                const match = /^\s*out\s+\S+\s+\S+\s*;/gm.exec(code);
+                if (match !== null) {
+                    code = code.substring(0, match.index) + "layout(location = 0) " + code.substring(match.index);
+                }
+            }
             code = code.replace(/dFdy/g, "(-yFactor_)*dFdy"); // will also handle dFdyCoarse and dFdyFine
             code = code.replace("##INJECTCODE##", injectCode);
 
@@ -285,7 +318,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
         const regex = new RegExp(name + "\\s*\\[(.+)?\\]", "gm");
         let match = regex.exec(code);
 
-        while (match != null) {
+        while (match !== null) {
             const index = match[1];
             let iindex = +index;
             if (this._preProcessors && isNaN(iindex)) {

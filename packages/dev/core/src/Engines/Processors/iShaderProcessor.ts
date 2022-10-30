@@ -12,6 +12,11 @@ export interface IShaderProcessor {
     uniformBufferRegexp?: RegExp;
     textureRegexp?: RegExp;
     noPrecision?: boolean;
+    parseGLES3?: boolean;
+
+    attributeKeywordName?: string;
+    varyingVertexKeywordName?: string;
+    varyingFragmentKeywordName?: string;
 
     preProcessShaderCode?: (code: string, isFragment: boolean) => string;
     attributeProcessor?: (attribute: string, preProcessors: { [key: string]: string }, processingContext: Nullable<ShaderProcessingContext>) => string;
