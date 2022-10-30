@@ -4,6 +4,7 @@ import { Scene } from "../scene";
 import { Engine } from "../Engines/engine";
 import { EngineStore } from "../Engines/engineStore";
 import type { IInspectable } from "../Misc/iInspectable";
+import type { Camera } from "../Cameras/camera";
 
 // declare INSPECTOR namespace for compilation issue
 declare let INSPECTOR: any;
@@ -123,6 +124,10 @@ export interface IInspectorOptions {
      * Optional initial tab (default to DebugLayerTab.Properties)
      */
     initialTab?: DebugLayerTab;
+    /**
+     * Optional camera to use to render the gizmos from the inspector (default to the scene.activeCamera or the latest from scene.activeCameras)
+     */
+    gizmoCamera?: Camera;
 }
 
 declare module "../scene" {

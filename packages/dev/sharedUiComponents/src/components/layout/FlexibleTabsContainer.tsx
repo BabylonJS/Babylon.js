@@ -85,7 +85,7 @@ export const FlexibleTabsContainer: FC<IFlexibleTabsContainerProps> = (props) =>
                         return (
                             <FlexibleTab
                                 key={tab.id}
-                                title={tab.id}
+                                title={tab.title}
                                 selected={tab.id === selectedTab}
                                 onClick={() => selectTab(tab.id)}
                                 item={{ rowNumber: props.rowIndex, columnNumber: props.columnIndex, tabs: [{ id: tab.id }] }}

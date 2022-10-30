@@ -755,7 +755,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             Object.keys(controllerData.eventListeners).forEach((eventName: string) => {
                 const func = controllerData.eventListeners && controllerData.eventListeners[eventName as XREventType];
                 if (func) {
-                    this._xrSessionManager.session.removeEventListener(eventName as XREventType, func);
+                    this._xrSessionManager.session.removeEventListener(eventName as XREventType, func as any);
                 }
             });
         }

@@ -1335,7 +1335,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets the scene's rendering manager
      */
-    public get renderingManager() {
+    public get renderingManager(): RenderingManager {
         return this._renderingManager;
     }
 
@@ -2154,7 +2154,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param checkRenderTargets true to also check that the meshes rendered as part of a render target are ready (default: false)
      */
     public executeWhenReady(func: () => void, checkRenderTargets = false): void {
-        this.onReadyObservable.add(func);
+        this.onReadyObservable.addOnce(func);
 
         if (this._executeWhenReadyTimeoutId !== null) {
             return;
@@ -4540,8 +4540,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         // Multi-cameras?
-        // save current active camera, following calls will change it, discarding user settings
-        const activeCamera = this._activeCamera;
         if (this.activeCameras && this.activeCameras.length > 0) {
             for (let cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
                 this._processSubCameras(this.activeCameras[cameraIndex], cameraIndex > 0);
@@ -4553,7 +4551,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
             this._processSubCameras(this.activeCamera, !!this.activeCamera.outputRenderTarget);
         }
-        this._activeCamera = activeCamera;
 
         // Intersection checks
         this._checkIntersections();

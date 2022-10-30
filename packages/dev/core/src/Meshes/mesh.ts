@@ -7,7 +7,7 @@ import { Tags } from "../Misc/tags";
 import type { Coroutine } from "../Misc/coroutine";
 import { runCoroutineSync, runCoroutineAsync, createYieldingScheduler } from "../Misc/coroutine";
 import type { Nullable, FloatArray, IndicesArray } from "../types";
-import type { Camera } from "../Cameras/camera";
+import { Camera } from "../Cameras/camera";
 import type { Scene } from "../scene";
 import { ScenePerformancePriority } from "../scene";
 import { Quaternion, Matrix, Vector3, Vector2 } from "../Maths/math.vector";
@@ -368,7 +368,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * Gets the delay loading state of the mesh (when delay loading is turned on)
-     * @see https://doc.babylonjs.com/how_to/using_the_incremental_loading_system
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/importers/incrementalLoading
      */
     public delayLoadState = Constants.DELAYLOADSTATE_NONE;
 
@@ -909,7 +909,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * Returns the registered LOD mesh distant from the parameter `camera` position if any, else returns the current mesh.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_lod
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/LOD
      * @param camera defines the camera to use to compute distance
      * @param boundingSphere defines a custom bounding sphere to use instead of the one from this mesh
      * @returns This mesh (for chaining)
@@ -930,7 +930,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             bSphere = boundingInfo.boundingSphere;
         }
 
-        const distanceToCamera = bSphere.centerWorld.subtract(camera.globalPosition).length();
+        const distanceToCamera = camera.mode === Camera.ORTHOGRAPHIC_CAMERA ? camera.minZ : bSphere.centerWorld.subtract(camera.globalPosition).length();
         const useScreenCoverage = internalDataInfo._useLODScreenCoverage;
         let compareValue = distanceToCamera;
         let compareSign = 1;
@@ -1221,19 +1221,27 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Shadows
         const currentRenderPassId = engine.currentRenderPassId;
         for (const light of this.lightSources) {
-            const generator = light.getShadowGenerator();
+            const generators = light.getShadowGenerators();
 
-            if (generator && (!generator.getShadowMap()?.renderList || (generator.getShadowMap()?.renderList && generator.getShadowMap()?.renderList?.indexOf(this) !== -1))) {
-                if (generator.getShadowMap()) {
-                    engine.currentRenderPassId = generator.getShadowMap()!.renderPassId;
-                }
-                for (const subMesh of this.subMeshes) {
-                    if (!generator.isReady(subMesh, hardwareInstancedRendering, subMesh.getMaterial()?.needAlphaBlendingForMesh(this) ?? false)) {
-                        engine.currentRenderPassId = currentRenderPassId;
-                        return false;
+            if (!generators) {
+                continue;
+            }
+
+            const iterator = generators.values();
+            for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
+                const generator = key.value;
+                if (generator && (!generator.getShadowMap()?.renderList || (generator.getShadowMap()?.renderList && generator.getShadowMap()?.renderList?.indexOf(this) !== -1))) {
+                    if (generator.getShadowMap()) {
+                        engine.currentRenderPassId = generator.getShadowMap()!.renderPassId;
                     }
+                    for (const subMesh of this.subMeshes) {
+                        if (!generator.isReady(subMesh, hardwareInstancedRendering, subMesh.getMaterial()?.needAlphaBlendingForMesh(this) ?? false)) {
+                            engine.currentRenderPassId = currentRenderPassId;
+                            return false;
+                        }
+                    }
+                    engine.currentRenderPassId = currentRenderPassId;
                 }
-                engine.currentRenderPassId = currentRenderPassId;
             }
         }
 

@@ -438,6 +438,11 @@ export class DepthPeelingRenderer {
         }
 
         if (!this._candidateSubMeshes.length) {
+            this._engine.bindFramebuffer(this._colorMrts[1].renderTarget!);
+            this._engine.bindAttachments(this._layoutCache[1]);
+            this._engine.clear(this._colorCache[2], true, false, false);
+            this._engine.unBindFramebuffer(this._colorMrts[1].renderTarget!);
+
             this._finalCompose(1);
             return this._excludedSubMeshes;
         }

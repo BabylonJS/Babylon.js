@@ -192,11 +192,17 @@ export class SceneRecorder {
     }
 
     private static GetShadowGeneratorById(scene: Scene, id: string) {
-        const generators = scene.lights.map((l) => l.getShadowGenerator());
+        const allGenerators = scene.lights.map((l) => l.getShadowGenerators());
 
-        for (const generator of generators) {
-            if (generator && generator.id === id) {
-                return generator;
+        for (const generators of allGenerators) {
+            if (generators) {
+                const iterator = generators.values();
+                for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
+                    const generator = key.value;
+                    if (generator && generator.id === id) {
+                        return generator;
+                    }
+                }
             }
         }
 
