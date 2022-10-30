@@ -507,7 +507,7 @@ export class MaterialHelper {
         defines["SHADOWMEDIUMQUALITY" + lightIndex] = false;
 
         if (mesh && mesh.receiveShadows && scene.shadowsEnabled && light.shadowEnabled) {
-            const shadowGenerator = light.getShadowGenerator();
+            const shadowGenerator = light.getShadowGenerator(scene.activeCamera) ?? light.getShadowGenerator();
             if (shadowGenerator) {
                 const shadowMap = shadowGenerator.getShadowMap();
                 if (shadowMap) {
