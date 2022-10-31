@@ -2657,22 +2657,23 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         let data = <FloatArray>this.getVerticesData(VertexBuffer.PositionKind);
 
-        let temp = new Array<number>();
+        const temp = Vector3.Zero();
         let index: number;
         for (index = 0; index < data.length; index += 3) {
-            Vector3.TransformCoordinates(Vector3.FromArray(data, index), transform).toArray(temp, index);
+            Vector3.TransformCoordinatesFromFloatsToRef(data[index], data[index + 1], data[index + 2], transform, temp).toArray(data, index);
         }
 
-        this.setVerticesData(VertexBuffer.PositionKind, temp, (<VertexBuffer>this.getVertexBuffer(VertexBuffer.PositionKind)).isUpdatable());
+        this.setVerticesData(VertexBuffer.PositionKind, data, (<VertexBuffer>this.getVertexBuffer(VertexBuffer.PositionKind)).isUpdatable());
 
         // Normals
         if (this.isVerticesDataPresent(VertexBuffer.NormalKind)) {
             data = <FloatArray>this.getVerticesData(VertexBuffer.NormalKind);
-            temp = [];
             for (index = 0; index < data.length; index += 3) {
-                Vector3.TransformNormal(Vector3.FromArray(data, index), transform).normalize().toArray(temp, index);
+                Vector3.TransformNormalFromFloatsToRef(data[index], data[index + 1], data[index + 2], transform, temp)
+                    .normalize()
+                    .toArray(data, index);
             }
-            this.setVerticesData(VertexBuffer.NormalKind, temp, (<VertexBuffer>this.getVertexBuffer(VertexBuffer.NormalKind)).isUpdatable());
+            this.setVerticesData(VertexBuffer.NormalKind, data, (<VertexBuffer>this.getVertexBuffer(VertexBuffer.NormalKind)).isUpdatable());
         }
 
         // flip faces?
