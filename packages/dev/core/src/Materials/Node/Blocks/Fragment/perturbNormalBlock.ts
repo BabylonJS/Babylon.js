@@ -171,13 +171,15 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         defines.setValue("PARALLAXOCCLUSION", this.useParallaxOcclusion, true);
     }
 
-    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh: Mesh) {
+    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         if (nodeMaterial.getScene()._mirroredCameraPosition) {
             effect.setFloat2(this._tangentSpaceParameterName, this.invertX ? 1.0 : -1.0, this.invertY ? 1.0 : -1.0);
         } else {
             effect.setFloat2(this._tangentSpaceParameterName, this.invertX ? -1.0 : 1.0, this.invertY ? -1.0 : 1.0);
         }
-        effect.setFloat(this._tangentCorrectionFactorName, mesh.getWorldMatrix().determinant() < 0 ? -1 : 1);
+        if (mesh) {
+            effect.setFloat(this._tangentCorrectionFactorName, mesh.getWorldMatrix().determinant() < 0 ? -1 : 1);
+        }
     }
 
     public autoConfigure(material: NodeMaterial) {
