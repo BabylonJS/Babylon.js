@@ -206,8 +206,12 @@ export class AnisotropyBlock extends NodeMaterialBlock {
         defines.setValue("ANISOTROPIC_TEXTURE", false, true);
     }
 
-    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh: Mesh) {
-        effect.setFloat(this._tangentCorrectionFactorName, mesh.getWorldMatrix().determinant() < 0 ? -1 : 1);
+    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
+        super.bind(effect, nodeMaterial, mesh);
+
+        if (mesh) {
+            effect.setFloat(this._tangentCorrectionFactorName, mesh.getWorldMatrix().determinant() < 0 ? -1 : 1);
+        }
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
