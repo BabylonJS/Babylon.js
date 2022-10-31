@@ -9,11 +9,15 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { TBNBlock } from "../Fragment/TBNBlock";
+import type { Mesh } from "../../../../Meshes/mesh";
+import type { Effect } from "../../../effect";
 
 /**
  * Block used to implement the anisotropy module of the PBR material
  */
 export class AnisotropyBlock extends NodeMaterialBlock {
+    private _tangentCorrectionFactorName = "";
+
     /**
      * The two properties below are set by the main PBR block prior to calling methods of this class.
      * This is to avoid having to add them as inputs here whereas they are already inputs of the main block, so already known.
@@ -144,7 +148,7 @@ export class AnisotropyBlock extends NodeMaterialBlock {
         } else if (worldTangent.isConnected) {
             code += `vec3 tbnNormal = normalize(${worldNormal.associatedVariableName}.xyz);\r\n`;
             code += `vec3 tbnTangent = normalize(${worldTangent.associatedVariableName}.xyz);\r\n`;
-            code += `vec3 tbnBitangent = cross(tbnNormal, tbnTangent);\r\n`;
+            code += `vec3 tbnBitangent = cross(tbnNormal, tbnTangent) * ${this._tangentCorrectionFactorName};\r\n`;
             code += `mat3 vTBN = mat3(tbnTangent, tbnBitangent, tbnNormal);\r\n`;
         }
 
@@ -202,9 +206,21 @@ export class AnisotropyBlock extends NodeMaterialBlock {
         defines.setValue("ANISOTROPIC_TEXTURE", false, true);
     }
 
+    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
+        super.bind(effect, nodeMaterial, mesh);
+
+        if (mesh) {
+            effect.setFloat(this._tangentCorrectionFactorName, mesh.getWorldMatrix().determinant() < 0 ? -1 : 1);
+        }
+    }
+
     protected _buildBlock(state: NodeMaterialBuildState) {
         if (state.target === NodeMaterialBlockTargets.Fragment) {
             state.sharedData.blocksWithDefines.push(this);
+            state.sharedData.bindableBlocks.push(this);
+
+            this._tangentCorrectionFactorName = state._getFreeDefineName("tangentCorrectionFactor");
+            state._emitUniformFromString(this._tangentCorrectionFactorName, "float");
         }
 
         return this;
