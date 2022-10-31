@@ -4879,6 +4879,20 @@ export class Quaternion {
 
 /**
  * Class used to store matrix data (4x4)
+ * Note on matrix definitions in Babylon.js for setting values directly rather than using one of the methods available.
+ * Matrix size is given by rows x columns.
+ * A Vector3 is a 1 X 3 matrix [x, y, z].
+ * In Babylon.js multiplying a 1 x 3 matrix by a 4 x 4 matrix
+ * is done using BABYLON.Vector4.TransformCoordinates(vector3, matrix)
+ * and extending the passed Vector3 to a Vector4 [x, y, z, w] with w = 1.
+ * The multiplication has this form
+ * [x, y, z, w] |m0,  m1,  m2,  m3 |
+ *              |m4,  m5,  m6,  m7 |
+ *              |m8,  m9,  m10, m11|
+ *              |m12, m13, m14, m15|
+ *
+ * = [xm0 + ym4 + zm8 + wm12, xm1 + ym5 + zm9 + wm13, xm2 + ym6 + zm10 + wm14, xm3 + ym7 + zm11 + wm15]
+ *
  */
 export class Matrix {
     /**
@@ -5332,6 +5346,7 @@ export class Matrix {
 
     /**
      * Multiply two matrices
+     * A.multiply(B) means apply B to A so result is B x A
      * @param other defines the second operand
      * @returns a new matrix set with the multiplication result of the current Matrix and the given one
      */
@@ -5384,6 +5399,7 @@ export class Matrix {
 
     /**
      * Sets the given matrix "result" with the multiplication result of the current Matrix and the given one
+     * A.multiplyToRef(B, R) means apply B to A and store in R and R = B x A
      * @param other defines the second operand
      * @param result defines the matrix where to store the multiplication
      * @returns result input
