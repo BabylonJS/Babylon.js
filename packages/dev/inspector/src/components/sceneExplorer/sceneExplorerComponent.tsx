@@ -26,6 +26,7 @@ import { StandardMaterial } from "core/Materials/standardMaterial";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { SpriteManager } from "core/Sprites/spriteManager";
 import type { TargetCamera } from "core/Cameras/targetCamera";
+import type { Camera } from "core/Cameras/camera";
 
 // side effects
 import "core/Sprites/spriteSceneComponent";
@@ -54,6 +55,7 @@ export class SceneExplorerFilterComponent extends React.Component<ISceneExplorer
 
 interface ISceneExplorerComponentProps {
     scene: Scene;
+    gizmoCamera?: Camera;
     noCommands?: boolean;
     noHeader?: boolean;
     noExpand?: boolean;
@@ -441,6 +443,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 <SceneExplorerFilterComponent onFilter={(filter) => this.filterContent(filter)} />
                 <SceneTreeItemComponent
                     globalState={this.props.globalState}
+                    gizmoCamera={this.props.gizmoCamera}
                     extensibilityGroups={this.props.extensibilityGroups}
                     selectedEntity={this.state.selectedEntity}
                     scene={scene}

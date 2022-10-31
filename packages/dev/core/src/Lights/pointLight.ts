@@ -54,8 +54,12 @@ export class PointLight extends ShadowLight {
     public set direction(value: Vector3) {
         const previousNeedCube = this.needCube();
         this._direction = value;
-        if (this.needCube() !== previousNeedCube && this._shadowGenerator) {
-            this._shadowGenerator.recreateShadowMap();
+        if (this.needCube() !== previousNeedCube && this._shadowGenerators) {
+            const iterator = this._shadowGenerators.values();
+            for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
+                const shadowGenerator = key.value;
+                shadowGenerator.recreateShadowMap();
+            }
         }
     }
 

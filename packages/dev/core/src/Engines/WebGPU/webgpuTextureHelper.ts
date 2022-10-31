@@ -1246,6 +1246,7 @@ export class WebGPUTextureHelper {
         }
 
         const gpuTexture = this._device.createTexture({
+            label: `Texture_${textureSize.width}x${textureSize.height}x${textureSize.depthOrArrayLayers}_${hasMipmaps ? "wmips" : "womips"}_${format}_samples${sampleCount}`,
             size: textureSize,
             dimension: is3D ? WebGPUConstants.TextureDimension.E3d : WebGPUConstants.TextureDimension.E2d,
             format,
@@ -1296,6 +1297,7 @@ export class WebGPUTextureHelper {
         }
 
         const gpuTexture = this._device.createTexture({
+            label: `TextureCube_${width}x${height}x6_${hasMipmaps ? "wmips" : "womips"}_${format}_samples${sampleCount}`,
             size: {
                 width,
                 height,

@@ -1,38 +1,49 @@
-import { TestComponent } from "./testComponent";
-export const initialLayout = {
+import { SceneRendererComponent } from "./components/SceneRendererComponent";
+import { StatesViewComponent } from "./components/StatesViewComponent";
+import { StateBehaviorViewComponent } from "./components/StateBehaviorViewComponent";
+import type { Layout } from "shared-ui-components/components/layout/types";
+import { EditValueComponent } from "./components/EditValueComponent";
+import { NodeListComponent } from "./components/NodeListComponent";
+
+export const initialLayout: Layout = {
     columns: [
         {
             id: "column1",
-            width: "25%",
+            width: "30%",
             rows: [
-                { id: "row1", selectedTab: "c1", height: "30%", tabs: [{ id: "c1", component: <TestComponent name="c1" /> }] },
                 {
-                    id: "row2",
+                    id: "scene",
+                    height: "80%",
+                    selectedTab: "sceneTab",
+                    tabs: [{ id: "sceneTab", title: "Scene", component: <SceneRendererComponent /> }],
+                },
+                {
+                    id: "edit",
                     height: "20%",
-                    selectedTab: "c3",
+                    selectedTab: "addNode",
                     tabs: [
-                        { id: "c2", component: <TestComponent name="c2" /> },
-                        { id: "c3", component: <TestComponent name="c3" /> },
-                        { id: "c4", component: <TestComponent name="c4" /> },
+                        { id: "editTab", title: "Edit value", component: <EditValueComponent /> },
+                        { id: "addNode", title: "Add node", component: <NodeListComponent /> },
                     ],
                 },
-                { id: "row3", selectedTab: "c5", height: "50%", tabs: [{ id: "c5", component: <TestComponent name="c5" /> }] },
             ],
         },
         {
             id: "column2",
-            width: "50%",
+            width: "70%",
             rows: [
-                { id: "row4", selectedTab: "c6", height: "70%", tabs: [{ id: "c6", component: <TestComponent name="c6" /> }] },
-                { id: "row5", selectedTab: "c7", height: "30%", tabs: [{ id: "c7", component: <TestComponent name="c7" /> }] },
-            ],
-        },
-        {
-            id: "column3",
-            width: "25%",
-            rows: [
-                { id: "row6", selectedTab: "c8", height: "50%", tabs: [{ id: "c8", component: <TestComponent name="c8" /> }] },
-                { id: "row7", selectedTab: "c9", height: "50%", tabs: [{ id: "c9", component: <TestComponent name="c9" /> }] },
+                {
+                    id: "row4",
+                    selectedTab: "statesView",
+                    height: "60%",
+                    tabs: [{ id: "statesView", title: "States", component: <StatesViewComponent /> }],
+                },
+                {
+                    id: "row5",
+                    selectedTab: "behaviorView",
+                    height: "40%",
+                    tabs: [{ id: "behaviorView", title: "Behavior", component: <StateBehaviorViewComponent /> }],
+                },
             ],
         },
     ],

@@ -8,6 +8,40 @@ import type { Nullable } from "../types";
 
 declare let KTX2DECODER: any;
 
+function getAbsoluteUrlOrNull(url: Nullable<string>): Nullable<string> {
+    return url ? Tools.GetAbsoluteUrl(url) : null;
+}
+
+function applyConfig(urls: typeof KhronosTextureContainer2.URLConfig): void {
+    if (urls.wasmUASTCToASTC !== null) {
+        KTX2DECODER.LiteTranscoder_UASTC_ASTC.WasmModuleURL = urls.wasmUASTCToASTC;
+    }
+
+    if (urls.wasmUASTCToBC7 !== null) {
+        KTX2DECODER.LiteTranscoder_UASTC_BC7.WasmModuleURL = urls.wasmUASTCToBC7;
+    }
+
+    if (urls.wasmUASTCToRGBA_UNORM !== null) {
+        KTX2DECODER.LiteTranscoder_UASTC_RGBA_UNORM.WasmModuleURL = urls.wasmUASTCToRGBA_UNORM;
+    }
+
+    if (urls.wasmUASTCToRGBA_SRGB !== null) {
+        KTX2DECODER.LiteTranscoder_UASTC_RGBA_SRGB.WasmModuleURL = urls.wasmUASTCToRGBA_SRGB;
+    }
+
+    if (urls.jsMSCTranscoder !== null) {
+        KTX2DECODER.MSCTranscoder.JSModuleURL = urls.jsMSCTranscoder;
+    }
+
+    if (urls.wasmMSCTranscoder !== null) {
+        KTX2DECODER.MSCTranscoder.WasmModuleURL = urls.wasmMSCTranscoder;
+    }
+
+    if (urls.wasmZSTDDecoder !== null) {
+        KTX2DECODER.ZSTDDecoder.WasmModuleURL = urls.wasmZSTDDecoder;
+    }
+}
+
 /**
  * Class for loading KTX2 files
  */
@@ -66,14 +100,25 @@ export class KhronosTextureContainer2 {
 
     private _engine: ThinEngine;
 
-    private static _Initialize(numWorkers: number) {
+    private static _Initialize(numWorkers: number): void {
         if (KhronosTextureContainer2._WorkerPoolPromise || KhronosTextureContainer2._DecoderModulePromise) {
             return;
         }
 
+        const urls = {
+            jsDecoderModule: Tools.GetAbsoluteUrl(this.URLConfig.jsDecoderModule),
+            wasmUASTCToASTC: getAbsoluteUrlOrNull(this.URLConfig.wasmUASTCToASTC),
+            wasmUASTCToBC7: getAbsoluteUrlOrNull(this.URLConfig.wasmUASTCToBC7),
+            wasmUASTCToRGBA_UNORM: getAbsoluteUrlOrNull(this.URLConfig.wasmUASTCToRGBA_UNORM),
+            wasmUASTCToRGBA_SRGB: getAbsoluteUrlOrNull(this.URLConfig.wasmUASTCToRGBA_SRGB),
+            jsMSCTranscoder: getAbsoluteUrlOrNull(this.URLConfig.jsMSCTranscoder),
+            wasmMSCTranscoder: getAbsoluteUrlOrNull(this.URLConfig.wasmMSCTranscoder),
+            wasmZSTDDecoder: getAbsoluteUrlOrNull(this.URLConfig.wasmZSTDDecoder),
+        };
+
         if (numWorkers && typeof Worker === "function" && typeof URL !== "undefined") {
             KhronosTextureContainer2._WorkerPoolPromise = new Promise((resolve) => {
-                const workerContent = `(${workerFunc})()`;
+                const workerContent = `${applyConfig}(${workerFunc})()`;
                 const workerBlobUrl = URL.createObjectURL(new Blob([workerContent], { type: "application/javascript" }));
                 resolve(
                     new AutoReleaseWorkerPool(
@@ -101,40 +146,17 @@ export class KhronosTextureContainer2 {
 
                                 worker.postMessage({
                                     action: "init",
-                                    urls: KhronosTextureContainer2.URLConfig,
+                                    urls: urls,
                                 });
                             })
                     )
                 );
             });
         } else if (typeof KTX2DECODER === "undefined") {
-            KhronosTextureContainer2._DecoderModulePromise = Tools.LoadScriptAsync(KhronosTextureContainer2.URLConfig.jsDecoderModule).then(() => {
+            KhronosTextureContainer2._DecoderModulePromise = Tools.LoadScriptAsync(urls.jsDecoderModule).then(() => {
                 KTX2DECODER.MSCTranscoder.UseFromWorkerThread = false;
                 KTX2DECODER.WASMMemoryManager.LoadBinariesFromCurrentThread = true;
-
-                const urls = KhronosTextureContainer2.URLConfig;
-                if (urls.wasmUASTCToASTC !== null) {
-                    KTX2DECODER.LiteTranscoder_UASTC_ASTC.WasmModuleURL = urls.wasmUASTCToASTC;
-                }
-                if (urls.wasmUASTCToBC7 !== null) {
-                    KTX2DECODER.LiteTranscoder_UASTC_BC7.WasmModuleURL = urls.wasmUASTCToBC7;
-                }
-                if (urls.wasmUASTCToRGBA_UNORM !== null) {
-                    KTX2DECODER.LiteTranscoder_UASTC_RGBA_UNORM.WasmModuleURL = urls.wasmUASTCToRGBA_UNORM;
-                }
-                if (urls.wasmUASTCToRGBA_SRGB !== null) {
-                    KTX2DECODER.LiteTranscoder_UASTC_RGBA_SRGB.WasmModuleURL = urls.wasmUASTCToRGBA_SRGB;
-                }
-                if (urls.jsMSCTranscoder !== null) {
-                    KTX2DECODER.MSCTranscoder.JSModuleURL = urls.jsMSCTranscoder;
-                }
-                if (urls.wasmMSCTranscoder !== null) {
-                    KTX2DECODER.MSCTranscoder.WasmModuleURL = urls.wasmMSCTranscoder;
-                }
-                if (urls.wasmZSTDDecoder !== null) {
-                    KTX2DECODER.ZSTDDecoder.WasmModuleURL = urls.wasmZSTDDecoder;
-                }
-
+                applyConfig(urls);
                 return new KTX2DECODER.KTX2Decoder();
             });
         } else {
@@ -228,7 +250,7 @@ export class KhronosTextureContainer2 {
         throw new Error("KTX2 decoder module is not available");
     }
 
-    protected _createTexture(data: any /* IEncodedData */, internalTexture: InternalTexture, options?: any) {
+    protected _createTexture(data: any /* IEncodedData */, internalTexture: InternalTexture, options?: any): void {
         const oglTexture2D = 3553; // gl.TEXTURE_2D
 
         this._engine._bindTextureDirectly(oglTexture2D, internalTexture);
@@ -326,27 +348,7 @@ function workerFunc(): void {
             case "init": {
                 const urls = event.data.urls;
                 importScripts(urls.jsDecoderModule);
-                if (urls.wasmUASTCToASTC !== null) {
-                    KTX2DECODER.LiteTranscoder_UASTC_ASTC.WasmModuleURL = urls.wasmUASTCToASTC;
-                }
-                if (urls.wasmUASTCToBC7 !== null) {
-                    KTX2DECODER.LiteTranscoder_UASTC_BC7.WasmModuleURL = urls.wasmUASTCToBC7;
-                }
-                if (urls.wasmUASTCToRGBA_UNORM !== null) {
-                    KTX2DECODER.LiteTranscoder_UASTC_RGBA_UNORM.WasmModuleURL = urls.wasmUASTCToRGBA_UNORM;
-                }
-                if (urls.wasmUASTCToRGBA_SRGB !== null) {
-                    KTX2DECODER.LiteTranscoder_UASTC_RGBA_SRGB.WasmModuleURL = urls.wasmUASTCToRGBA_SRGB;
-                }
-                if (urls.jsMSCTranscoder !== null) {
-                    KTX2DECODER.MSCTranscoder.JSModuleURL = urls.jsMSCTranscoder;
-                }
-                if (urls.wasmMSCTranscoder !== null) {
-                    KTX2DECODER.MSCTranscoder.WasmModuleURL = urls.wasmMSCTranscoder;
-                }
-                if (urls.wasmZSTDDecoder !== null) {
-                    KTX2DECODER.ZSTDDecoder.WasmModuleURL = urls.wasmZSTDDecoder;
-                }
+                applyConfig(urls);
                 ktx2Decoder = new KTX2DECODER.KTX2Decoder();
                 postMessage({ action: "init" });
                 break;
