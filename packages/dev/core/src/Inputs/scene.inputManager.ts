@@ -222,7 +222,7 @@ export class InputManager {
 
         if (scene.onPointerMove) {
             // Because of lazy picking, we need to force a pick to update the pickResult
-            pickResult = pickResult ? pickResult : this._pick(evt.pointerId, type);
+            pickResult = pickResult || this._pick(evt.pointerId, type);
             scene.onPointerMove(evt, pickResult, type);
         }
 
@@ -279,7 +279,7 @@ export class InputManager {
             case PointerEventTypes.POINTERDOWN:
                 pickResult = scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerDownPredicate, false, scene.cameraToUseForPointers);
                 if (pickResult?.pickedMesh) {
-                    this._pickedDownMesh = pickResult?.pickedMesh;
+                    this._pickedDownMesh = pickResult.pickedMesh;
                 }
                 break;
             case PointerEventTypes.POINTERMOVE:
@@ -296,6 +296,7 @@ export class InputManager {
                 break;
             default:
                 pickResult = new PickingInfo();
+                break;
         }
 
         return pickResult;
@@ -410,8 +411,7 @@ export class InputManager {
         const type = PointerEventTypes.POINTERDOWN;
 
         if (scene.onPointerDown) {
-            pickResult = pickResult ? pickResult : this._pick(evt.pointerId, type);
-            // We know that _pick will return a PickingInfo because _internalPick always returns a PickingInfo
+            pickResult = pickResult || this._pick(evt.pointerId, type);
             scene.onPointerDown(evt, pickResult, type);
         }
 

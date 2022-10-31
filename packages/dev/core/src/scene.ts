@@ -775,11 +775,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public skipPointerUpPicking = false;
 
     /** Callback called when a pointer move is detected */
-    public onPointerMove: (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;
+    public onPointerMove?: (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;
     /** Callback called when a pointer down is detected  */
-    public onPointerDown: (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;
+    public onPointerDown?: (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;
     /** Callback called when a pointer up is detected  */
-    public onPointerUp: (evt: IPointerEvent, pickInfo: Nullable<PickingInfo>, type: PointerEventTypes) => void;
+    public onPointerUp?: (evt: IPointerEvent, pickInfo: Nullable<PickingInfo>, type: PointerEventTypes) => void;
     /** Callback called when a pointer pick is detected */
     public onPointerPick?: (evt: IPointerEvent, pickInfo: PickingInfo) => void;
 
