@@ -307,7 +307,10 @@ export class ShaderProcessor {
 
         // Already converted
         if (options.processor.shaderLanguage === ShaderLanguage.GLSL && preparedSourceCode.indexOf("#version 3") !== -1) {
-            return preparedSourceCode.replace("#version 300 es", "");
+            preparedSourceCode = preparedSourceCode.replace("#version 300 es", "");
+            if (!options.processor.parseGLES3) {
+                return preparedSourceCode;
+            }
         }
 
         const defines = options.defines;
