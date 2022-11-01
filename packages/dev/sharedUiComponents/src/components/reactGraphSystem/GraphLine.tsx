@@ -7,10 +7,13 @@ export interface IGraphLineProps {
     y1: number;
     y2: number;
     selected?: boolean;
+    directional?: boolean;
 }
 
+export const MarkerArrowId = "arrow";
+
 export const GraphLine: FC<IGraphLineProps> = (props: IGraphLineProps) => {
-    const { id, x1, x2, y1, y2, selected } = props;
+    const { id, x1, x2, y1, y2, selected, directional = true } = props;
     const { onLineSelected } = useGraphContext();
 
     // Line is only selectable when it has an id
@@ -19,5 +22,17 @@ export const GraphLine: FC<IGraphLineProps> = (props: IGraphLineProps) => {
         id && onLineSelected && onLineSelected(id);
     };
 
-    return <line x1={x1} y1={y1} x2={x2} y2={y2} strokeWidth={3} stroke={selected ? "yellow" : "black"} onClick={onClick}></line>;
+    const xm = (x1 + x2) / 2;
+    const ym = (y1 + y2) / 2;
+
+    return (
+        // <line x1={x1} y1={y1} x2={x2} y2={y2} strokeWidth={3} stroke={selected ? "yellow" : "black"} onClick={onClick} markerMid={directional ? `#${MarkerArrowId}` : ""}></line>
+        <path
+            d={`M ${x1} ${y1} L ${xm} ${ym} L ${x2} ${y2}`}
+            strokeWidth={3}
+            stroke={selected ? "yellow" : "black"}
+            onClick={onClick}
+            markerMid={directional ? `url(#${MarkerArrowId})` : ""}
+        />
+    );
 };
