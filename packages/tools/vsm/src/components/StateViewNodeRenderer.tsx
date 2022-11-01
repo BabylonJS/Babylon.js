@@ -10,7 +10,6 @@ import { useStateMachine } from "./tools/useStateMachine";
 export interface IStateViewNodeRendererProps {}
 
 export const StateViewNodeRenderer = (props: IStateViewNodeRendererProps) => {
-    // @ts-ignore
     const { stateMachine, lastUpdate, setStateMachine } = useStateMachine();
     console.log("lastUpdate", lastUpdate);
 
@@ -33,20 +32,14 @@ export const StateViewNodeRenderer = (props: IStateViewNodeRendererProps) => {
         );
     }, [lastUpdate]);
 
-    // const updateConnections = useMemo(
-    //     () => (sourceId: string, targetId: string) => {
     const updateConnections = (sourceId: string, targetId: string) => {
-        // const { stateMachine, setStateMachine } = useStateMachine();
-        //WHY THIS IS NULL!!!!!!!!!!!?????????????
-        const sourceState = stateMachine?.getStateById(sourceId);
-        const destState = stateMachine?.getStateById(targetId);
+        const sourceState = stateMachine!.getStateById(sourceId);
+        const destState = stateMachine!.getStateById(targetId);
         if (stateMachine && sourceState && destState) {
             stateMachine.addTransition(sourceState, destState);
             setStateMachine(stateMachine);
         }
     };
-    //     [lastUpdate]
-    // );
 
     const deleteLine = (lineId: string) => {
         const [sourceId, targetId] = lineId.split("-");
@@ -64,5 +57,9 @@ export const StateViewNodeRenderer = (props: IStateViewNodeRendererProps) => {
         }
     };
 
-    return <NodeRenderer connections={connections} updateConnections={updateConnections} deleteLine={deleteLine} deleteNode={deleteNode} nodes={nodes} />;
+    if (stateMachine) {
+        return <NodeRenderer connections={connections} updateConnections={updateConnections} deleteLine={deleteLine} deleteNode={deleteNode} nodes={nodes} />;
+    } else {
+        return null;
+    }
 };

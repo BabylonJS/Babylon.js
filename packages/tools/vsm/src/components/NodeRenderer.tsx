@@ -28,22 +28,13 @@ export interface INodeRendererProps {
 }
 
 export const NodeRenderer = (props: INodeRendererProps) => {
-    // const { visualRecords, connections, updateVisualRecords, updateConnections } = props;
     const { nodes, connections, updateConnections } = props;
     // Store the nodes positions
     const [pos, setPos] = useState<IVisualRecordsType>({});
-    // const [conn, setConn] = useState(initialConnections);
     const [selectedLine, setSelectedLine] = useState<string | null>(null);
     const [selectedNode, setSelectedNode] = useState<string | null>(null);
 
     const updatePos = (id: string, x: number, y: number) => {
-        console.log("called update pos with", id, "pos", x, y);
-        // console.log("update pos of", id, "by", x, y);
-        // const records = { ...visualRecords };
-        // records[id] = { x: records[id].x + x, y: records[id].y + y };
-        // return { ...currentPos };
-        // updateVisualRecords(records);
-        // updateVisualRecords(id, visualRecords[id].x + x, visualRecords[id].y + y);
         setPos((currentPos) => {
             const currPos = currentPos[id] || { x: 0, y: 0 };
             currentPos[id] = { x: currPos.x + x, y: currPos.y + y };
@@ -53,7 +44,6 @@ export const NodeRenderer = (props: INodeRendererProps) => {
 
     const onNodesConnected = (sourceId: string, targetId: string) => {
         console.log("onNodesConnected", sourceId, targetId);
-        // setConn((currentConnections) => [...currentConnections, { id: `${sourceId}-${targetId}`, sourceId, targetId }]);
         updateConnections(sourceId, targetId);
     };
 
@@ -73,9 +63,6 @@ export const NodeRenderer = (props: INodeRendererProps) => {
         console.log(evt);
         if (evt.key === "Delete") {
             if (selectedLine) {
-                // const newConn = conn.filter((c) => c.id !== selectedLine);
-                // setConn(newConn);
-                // setSelectedLine(null);
                 props.deleteLine(selectedLine);
             } else if (selectedNode) {
                 props.deleteNode(selectedNode);
@@ -91,22 +78,24 @@ export const NodeRenderer = (props: INodeRendererProps) => {
     }, [selectedLine]);
 
     const graphContext = useMemo(() => ({ updatePos, onNodesConnected, onLineSelected, onNodeSelected }), []);
-
+    console.log("nodes", nodes);
+    console.log("connections", connections);
     return (
         <div style={fullscreenStyle}>
             <GraphContextManager.Provider value={graphContext}>
                 <GraphContainer>
                     <GraphNodesContainer onNodeMoved={updatePos}>
-                        {/* {Object.entries(visualRecords).map(([id, { x, y }]) => ( */}
                         {Object.entries(nodes).map(([id]) => {
                             const posInRecord = pos[id] || { x: 0, y: 0 };
                             return <GraphNode key={id} id={id} name={id} x={posInRecord.x} y={posInRecord.y} selected={id === selectedNode} />;
                         })}
                     </GraphNodesContainer>
                     <GraphLinesContainer>
-                        {connections.map(({ id, sourceId, targetId }) => (
-                            <GraphLine key={id} id={id} x1={pos[sourceId].x} y1={pos[sourceId].y} x2={pos[targetId].x} y2={pos[targetId].y} selected={id === selectedLine} />
-                        ))}
+                        {connections.map(({ id, sourceId, targetId }) => {
+                            const sourcePos = pos[sourceId] || { x: 0, y: 0 };
+                            const targetPos = pos[targetId] || { x: 0, y: 0 };
+                            return <GraphLine key={id} id={id} x1={sourcePos.x} y1={sourcePos.y} x2={targetPos.x} y2={targetPos.y} selected={id === selectedLine} />;
+                        })}
                     </GraphLinesContainer>
                 </GraphContainer>
             </GraphContextManager.Provider>

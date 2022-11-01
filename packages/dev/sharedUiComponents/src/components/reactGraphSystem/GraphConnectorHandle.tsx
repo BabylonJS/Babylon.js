@@ -39,6 +39,6 @@ export const GraphConnectorHandler: FC<IGraphConnectorHandlerProps> = (props) =>
         },
         [dragRef, dropRef]
     );
-    console.log("parentX", parentX, "parentY", parentY);
+    // console.log("parentX", parentX, "parentY", parentY);
     return <div ref={attachRef} className={style.handle} style={{ backgroundColor: isOver ? "yellow" : "gray" }} />;
 };
