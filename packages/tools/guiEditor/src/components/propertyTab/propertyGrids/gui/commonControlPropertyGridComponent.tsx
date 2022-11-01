@@ -20,7 +20,7 @@ import { Vector2 } from "core/Maths/math";
 
 import type { Nullable } from "core/types";
 import { IconComponent } from "shared-ui-components/lines/iconComponent";
-import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { OptionsLineComponent } from "shared-ui-components/components/lines/OptionsLineComponent";
 
 import sizeIcon from "shared-ui-components/imgs/sizeIcon.svg";
 import verticalMarginIcon from "shared-ui-components/imgs/verticalMarginIcon.svg";
@@ -55,7 +55,7 @@ import type { IInspectableOptions } from "core/Misc/iInspectable";
 
 import { WorkbenchComponent } from "../../../../diagram/workbench";
 import type { GlobalState } from "../../../../globalState";
-import { MessageDialog } from "shared-ui-components/components/MessageDialog";
+// import { MessageDialog } from "shared-ui-components/components/MessageDialog";
 
 interface ICommonControlPropertyGridComponentProps {
     controls: Control[];
@@ -68,8 +68,8 @@ interface ICommonControlPropertyGridComponentProps {
 interface ICommonControlPropertyGridComponentState {
     fontFamilyOptions: IInspectableOptions[];
     value: number;
-    invalidFonts: string[];
-    invalidFontAlertName?: string;
+    // invalidFonts: string[];
+    // invalidFontAlertName?: string;
 }
 
 type ControlProperty = keyof Control | "_paddingLeft" | "_paddingRight" | "_paddingTop" | "_paddingBottom" | "_fontSize" | "_linkOffsetX" | "_linkOffsetY";
@@ -82,7 +82,6 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         super(props);
         this.state = {
             fontFamilyOptions: JSON.parse(String(window.sessionStorage.getItem("fonts"))) ?? [
-                { label: "Custom Font", value: 0 },
                 { label: "Arial", value: 1 },
                 { label: "Verdana", value: 2 },
                 { label: "Helvetica", value: 3 },
@@ -94,8 +93,6 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 { label: "Brush Script MT", value: 9 },
             ],
             value: 0,
-            invalidFonts: JSON.parse(String(window.sessionStorage.getItem("invalidFonts"))) ?? [],
-            invalidFontAlertName: undefined,
         };
 
         const controls = this.props.controls;
@@ -138,34 +135,33 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
 
     private _checkFontsInLayout() {
         const correctFonts: IInspectableOptions[] = [];
-        correctFonts.push({ label: "Custom Font", value: 0 });
         for (const font of this.state.fontFamilyOptions.values()) {
             if (document.fonts.check(`12px "${font.label}"`) && font.label != "Custom Font") {
                 correctFonts.push(font);
             }
         }
-        const correctLabels = correctFonts.map((element) => element.label.trim().toLowerCase());
 
         const moreFonts = WorkbenchComponent.addedFonts;
-        let invalidFontAlertName = undefined;
-        const invalidFontsArray = this.state.invalidFonts.slice();
         for (let i = 0; i < moreFonts.length; i++) {
-            const fontName = moreFonts[i].trim().toLowerCase();
-            if (!correctLabels.includes(fontName) && document.fonts.check(`12px "${fontName}"`)) {
-                correctFonts.push({ label: fontName, value: correctFonts.length + 1 });
-                correctLabels.push(fontName);
-            } else if (invalidFontsArray.indexOf(fontName) === -1 && !document.fonts.check(`12px "${fontName}"`)) {
-                invalidFontAlertName = moreFonts[i];
-                invalidFontsArray.push(fontName);
-            }
+            const fontName = moreFonts[i].trim();
+            correctFonts.push({ label: fontName, value: fontName });
         }
         this.setState({
             fontFamilyOptions: correctFonts,
-            invalidFonts: invalidFontsArray,
-            invalidFontAlertName,
         });
         window.sessionStorage.setItem("fonts", JSON.stringify(correctFonts));
-        window.sessionStorage.setItem("invalidFonts", JSON.stringify(invalidFontsArray));
+    }
+
+    private _addFont(fontValue: string) {
+        const fontName = fontValue.trim();
+        if (fontName.length > 0) {
+            if (!this.state.fontFamilyOptions.find(({ value }) => value === fontValue)) {
+                this.setState((state) => {
+                    state.fontFamilyOptions.push({ label: fontName, value: fontName });
+                    return state;
+                });
+            }
+        }
     }
 
     private _getTransformedReferenceCoordinate(control: Control) {
@@ -306,6 +302,16 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         }
     }
 
+    _filterFontDuplicates(array: { label: string; value: string }[]) {
+        const seen = new Set();
+        return array.filter((item) => {
+            const val = item.value;
+            const duplicate = seen.has(val);
+            seen.add(val);
+            return !duplicate;
+        });
+    }
+
     render() {
         const controls = this.props.controls;
         const firstControl = controls[0];
@@ -387,9 +393,9 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         };
 
         const fontStyleOptions = [
-            { label: "regular", value: 0 },
-            { label: "italic", value: 1 },
-            { label: "oblique", value: 2 },
+            { label: "regular", value: "regular" },
+            { label: "italic", value: "italic" },
+            { label: "oblique", value: "oblique" },
         ];
 
         let horizontalDisabled = false,
@@ -399,7 +405,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
 
         const parent = controls[0].parent;
 
-        const fonts = this.state.fontFamilyOptions;
+        const fonts = this._filterFontDuplicates(this.state.fontFamilyOptions.filter(({ label }) => label !== "Custom Font").map(({ label }) => ({ label, value: label })));
 
         if (parent?.getClassName() === "StackPanel" || parent?.getClassName() === "VirtualKeyboard") {
             if ((parent as StackPanel).isVertical) {
@@ -412,15 +418,6 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         }
         return (
             <div>
-                {this.state.invalidFontAlertName && (
-                    <MessageDialog
-                        message={"The font " + this.state.invalidFontAlertName + " is unable to load"}
-                        isError={true}
-                        onClose={() => {
-                            this.setState({ invalidFontAlertName: undefined });
-                        }}
-                    />
-                )}
                 {!this.props.hideDimensions && (
                     <>
                         <div className="ge-divider alignment-bar">
@@ -745,30 +742,21 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         <TextLineComponent tooltip="" label="FONT STYLE" value=" " color="grey"></TextLineComponent>
                         <div className="ge-divider">
                             <IconComponent icon={fontFamilyIcon} label={"Font Family"} />
-
                             <OptionsLineComponent
-                                label=""
-                                target={proxy}
-                                propertyName="fontFamily"
-                                valueProp={this.state.value}
                                 options={fonts}
-                                addVal={this.addVal}
-                                fromFontDropdown={true}
-                                fallbackValue={1}
-                                onSelect={(newValue) => {
-                                    const fontFamily = this.state.fontFamilyOptions.filter(({ value }) => value === newValue).map(({ label }) => label);
-                                    proxy.fontFamily = fontFamily[0];
+                                selectedOptionValue={proxy.fontFamily}
+                                onOptionSelected={(selectedFontValue) => {
+                                    proxy.fontFamily = selectedFontValue;
                                 }}
-                                extractValue={() => {
-                                    if (this.state.invalidFonts.indexOf(proxy.fontFamily)) {
-                                        return 1;
+                                onOptionAdded={(newFontValue) => {
+                                    this._addFont(newFontValue.value);
+                                }}
+                                addOptionPlaceholder={"Add new font..."}
+                                validateNewOptionValue={(newFontValue) => {
+                                    if (newFontValue.length > 0) {
+                                        return document.fonts.check(`12px ${newFontValue}`);
                                     }
-                                    const matchingFonts = this.state.fontFamilyOptions.filter(({ label }) => label.trim().toLowerCase() === proxy.fontFamily.trim().toLowerCase());
-                                    if (matchingFonts.length > 0 && matchingFonts[0].label) {
-                                        return matchingFonts[0].value;
-                                    } else {
-                                        return -1;
-                                    }
+                                    return false;
                                 }}
                             />
                         </div>
@@ -779,23 +767,10 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         <div className="ge-divider">
                             <IconComponent icon={fontStyleIcon} label={"Font Style"} />
                             <OptionsLineComponent
-                                label=""
-                                target={proxy}
-                                propertyName="fontStyle"
                                 options={fontStyleOptions}
-                                fromFontDropdown={false}
-                                onSelect={(newValue) => {
-                                    proxy.fontStyle = ["", "italic", "oblique"][newValue as number];
-                                }}
-                                extractValue={() => {
-                                    switch (proxy.fontStyle) {
-                                        case "italic":
-                                            return 1;
-                                        case "oblique":
-                                            return 2;
-                                        default:
-                                            return 0;
-                                    }
+                                selectedOptionValue={proxy.fontStyle}
+                                onOptionSelected={(value) => {
+                                    proxy.fontStyle = value;
                                 }}
                             />
                         </div>

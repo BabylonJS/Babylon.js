@@ -43,12 +43,14 @@ export const TextInputWithSubmit = (props: ITextInputProps) => {
         <div className={ClassNames({ line: true, valid, invalid: !valid }, style)}>
             {props.label && <label>{props.label}</label>}
             <input className={style.input} type="text" placeholder={props.placeholder} value={value} onChange={onChange} />
-            <Button color="light" size="smaller" backgroundColor="inherit" onClick={onClickSubmit} disabled={!valid}>
-                <Icon icon={submitIcon} color="dark"></Icon>
-            </Button>
-            <Button color="light" size="smaller" backgroundColor="inherit" onClick={onClickCancel}>
-                <Icon icon={cancelIcon} color="dark"></Icon>
-            </Button>
+            <div>
+                <Button color="light" size="smaller" backgroundColor="inherit" onClick={onClickSubmit} disabled={!valid}>
+                    <Icon icon={submitIcon} color="dark"></Icon>
+                </Button>
+                <Button color="light" size="smaller" backgroundColor="inherit" onClick={onClickCancel}>
+                    <Icon icon={cancelIcon} color="dark"></Icon>
+                </Button>
+            </div>
         </div>
     );
 };
