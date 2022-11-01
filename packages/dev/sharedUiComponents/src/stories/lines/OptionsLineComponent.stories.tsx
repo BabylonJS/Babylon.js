@@ -24,6 +24,7 @@ const RenderComponent = (args: any) => {
                 selectedOptionValue={selectedOptionValue}
                 onOptionAdded={args.customAdd ? onOptionAdded : undefined}
                 addOptionPlaceholder={args.addOptionPlaceholder} // Placeholder text to display when adding a new option
+                validateNewOptionValue={args.validateNewOptionValue} // Optional function that can be used to validate the value of a new option
             />
             <div>
                 <h3>Selected option value:</h3>
@@ -50,4 +51,9 @@ export const Default: ComponentStory<typeof RenderComponent> = {
 export const WithCustomOptions: ComponentStory<typeof RenderComponent> = {
     render: Default.render,
     args: { ...Default.args, customAdd: true, addOptionPlaceholder: "This is a placeholder" },
+};
+
+export const WithValidation: ComponentStory<typeof RenderComponent> = {
+    render: Default.render,
+    args: { ...Default.args, customAdd: true, addOptionPlaceholder: "Valid: length > 3", validateNewOptionValue: (value: string) => value.length > 3 },
 };

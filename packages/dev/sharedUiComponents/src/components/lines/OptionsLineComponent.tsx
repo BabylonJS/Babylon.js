@@ -18,6 +18,7 @@ export interface IOptionsLineComponentProps {
     onOptionAdded?: (newOption: IOption) => void; // Optional function that can be used to add a new option to the menu
     onOptionSelected: (selectedOptionValue: string) => void;
     selectedOptionValue: string; // The value of the currently selected option
+    validateNewOptionValue?: (newOptionValue: string) => boolean; // Optional function that can be used to validate the value of a new option
 }
 
 /**
@@ -50,9 +51,20 @@ export const OptionsLineComponent = (props: IOptionsLineComponentProps) => {
         setOptionState(OptionStates.Default);
     };
 
+    const onCancelOptionAdd = () => {
+        setOptionState(OptionStates.Default);
+    };
+
     return (
         <div className={style.optionsLine}>
-            {optionState === OptionStates.Adding && <TextInputWithSubmit submitValue={onOptionAdd} placeholder={props.addOptionPlaceholder} />}
+            {optionState === OptionStates.Adding && (
+                <TextInputWithSubmit
+                    submitValue={onOptionAdd}
+                    placeholder={props.addOptionPlaceholder}
+                    validateValue={props.validateNewOptionValue}
+                    cancelSubmit={onCancelOptionAdd}
+                />
+            )}
             {optionState === OptionStates.Default && (
                 <select className={style.optionsSelect} onChange={onOptionChange} value={props.selectedOptionValue}>
                     {props.onOptionAdded && (
