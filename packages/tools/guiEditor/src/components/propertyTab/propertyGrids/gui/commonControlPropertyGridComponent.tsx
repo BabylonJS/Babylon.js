@@ -55,7 +55,6 @@ import type { IInspectableOptions } from "core/Misc/iInspectable";
 
 import { WorkbenchComponent } from "../../../../diagram/workbench";
 import type { GlobalState } from "../../../../globalState";
-// import { MessageDialog } from "shared-ui-components/components/MessageDialog";
 
 interface ICommonControlPropertyGridComponentProps {
     controls: Control[];
@@ -67,9 +66,6 @@ interface ICommonControlPropertyGridComponentProps {
 }
 interface ICommonControlPropertyGridComponentState {
     fontFamilyOptions: IInspectableOptions[];
-    value: number;
-    // invalidFonts: string[];
-    // invalidFontAlertName?: string;
 }
 
 type ControlProperty = keyof Control | "_paddingLeft" | "_paddingRight" | "_paddingTop" | "_paddingBottom" | "_fontSize" | "_linkOffsetX" | "_linkOffsetY";
@@ -92,7 +88,6 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 { label: "Courier New", value: 8 },
                 { label: "Brush Script MT", value: 9 },
             ],
-            value: 0,
         };
 
         const controls = this.props.controls;
@@ -159,7 +154,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 this.setState((state) => {
                     state.fontFamilyOptions.push({ label: fontName, value: fontName });
                     return state;
-                });
+                }, this._checkFontsInLayout);
             }
         }
     }
@@ -225,72 +220,6 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     child._markAsDirty();
                 });
         }
-    }
-
-    public addVal = (newVal: { label: string; value: number }, prevVal: number) => {
-        if (newVal.label === "") {
-            return;
-        }
-        if (this.props.globalState) {
-            this.props.globalState.usePrevSelected = true;
-        }
-
-        (async () => {
-            await document.fonts.ready;
-            let displayVal = false;
-            const fonts = this.state.fontFamilyOptions;
-            if (!(fonts.find((element: IInspectableOptions) => element.label.toLowerCase() === newVal.label.toLowerCase()) === undefined)) {
-                setTimeout(() => {
-                    if (this.props.globalState) {
-                        this.props.globalState.hostWindow.alert("This font is already available");
-                    }
-                }, 100);
-
-                return;
-            } else {
-                if (!document.fonts.check(`12px "${newVal.label}"`)) {
-                    //Settimeout used due to race conditions with other events
-                    setTimeout(() => {
-                        if (this.props.globalState) {
-                            alert("This font is not supported in the browser");
-                        }
-                    }, 100);
-
-                    return;
-                } else {
-                    fonts.push(newVal);
-                    this.setState({
-                        fontFamilyOptions: [...fonts],
-                    });
-                    displayVal = true;
-                }
-            }
-
-            window.sessionStorage.setItem("fonts", JSON.stringify(this.state.fontFamilyOptions));
-
-            if (displayVal) {
-                this.selectCustomVal();
-            } else {
-                this.keepPrevVal(prevVal);
-            }
-        })();
-    };
-
-    selectCustomVal() {
-        const proxy = makeTargetsProxy(this.props.controls, this.props.onPropertyChangedObservable);
-        const fonts = this.state.fontFamilyOptions;
-
-        proxy.fontFamily = fonts.at(fonts.length - 1)?.label ?? "";
-
-        this.setState({ value: fonts.length });
-        window.sessionStorage.setItem("fonts", JSON.stringify(this.state.fontFamilyOptions));
-    }
-    keepPrevVal(prevVal: number) {
-        const proxy = makeTargetsProxy(this.props.controls, this.props.onPropertyChangedObservable);
-
-        proxy.fontFamily = this.state.fontFamilyOptions.filter(({ value }) => value === prevVal).map(({ label }) => label)[0];
-
-        this.setState({ value: prevVal });
     }
 
     componentWillUnmount() {
