@@ -1,6 +1,7 @@
 import type { ChangeEvent } from "react";
 import { useState } from "react";
-import { TextInput } from "../TextInput";
+import { TextInputWithSubmit } from "../TextInputWithSubmit";
+import style from "./OptionsLineComponent.modules.scss";
 
 /**
  * This components represents an options menu with optional
@@ -13,13 +14,9 @@ export interface IOption {
 
 export interface IOptionsLineComponentProps {
     options: IOption[];
-    addOptionText?: string; // Text to display when adding a new option
     addOptionPlaceholder?: string; // Placeholder text to display when adding a new option
     onOptionAdded?: (newOption: IOption) => void; // Optional function that can be used to add a new option to the menu
     onOptionSelected: (selectedOptionValue: string) => void;
-    icon: string;
-    iconLabel: string;
-    label: string;
     selectedOptionValue: string; // The value of the currently selected option
 }
 
@@ -54,10 +51,10 @@ export const OptionsLineComponent = (props: IOptionsLineComponentProps) => {
     };
 
     return (
-        <div>
-            {optionState === OptionStates.Adding && <TextInput submitValue={onOptionAdd} />}
+        <div className={style.optionsLine}>
+            {optionState === OptionStates.Adding && <TextInputWithSubmit submitValue={onOptionAdd} placeholder={props.addOptionPlaceholder} />}
             {optionState === OptionStates.Default && (
-                <select onChange={onOptionChange} value={props.selectedOptionValue}>
+                <select className={style.optionsSelect} onChange={onOptionChange} value={props.selectedOptionValue}>
                     {props.onOptionAdded && (
                         <option key={OptionAddKey} value={OptionAddKey}>
                             Custom

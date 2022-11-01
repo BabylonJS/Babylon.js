@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { OptionsLineComponent } from "../../components/lines/OptionsLineComponent";
+import type { ComponentStory } from "@storybook/react";
 
 export default { component: OptionsLineComponent };
 
@@ -16,16 +17,12 @@ const RenderComponent = (args: any) => {
     };
 
     return (
-        <div>
+        <div style={{ width: "200px" }}>
             <OptionsLineComponent
-                label="Options:"
                 options={options}
-                icon=""
-                iconLabel=""
                 onOptionSelected={onOptionSelected}
                 selectedOptionValue={selectedOptionValue}
                 onOptionAdded={args.customAdd ? onOptionAdded : undefined}
-                addOptionText={args.addOptionText} // Text to display when adding a new option
                 addOptionPlaceholder={args.addOptionPlaceholder} // Placeholder text to display when adding a new option
             />
             <div>
@@ -36,7 +33,7 @@ const RenderComponent = (args: any) => {
     );
 };
 
-export const Default = {
+export const Default: ComponentStory<typeof RenderComponent> = {
     render: (args: any) => {
         return <RenderComponent {...args} />;
     },
@@ -50,7 +47,7 @@ export const Default = {
     },
 };
 
-export const WithCustomOptions = {
+export const WithCustomOptions: ComponentStory<typeof RenderComponent> = {
     render: Default.render,
-    args: { ...Default.args, customAdd: true, addOptionText: "Customizable text shown when adding a new option", addOptionPlaceholder: "This is a placeholder" },
+    args: { ...Default.args, customAdd: true, addOptionPlaceholder: "This is a placeholder" },
 };
