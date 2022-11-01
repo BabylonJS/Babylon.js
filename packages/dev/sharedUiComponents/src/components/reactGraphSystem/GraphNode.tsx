@@ -11,10 +11,13 @@ export interface IGraphNodeProps {
     x: number;
     y: number;
     selected?: boolean;
+    width?: number;
+    height?: number;
+    highlighted?: boolean;
 }
 
 export const GraphNode: FC<IGraphNodeProps> = (props) => {
-    const { id, name, x, y, selected } = props;
+    const { id, name, x, y, selected, width = 100, height = 40, highlighted } = props;
     const { onNodeSelected } = useGraphContext();
 
     const [, dragRef] = useDrag(
@@ -33,9 +36,16 @@ export const GraphNode: FC<IGraphNodeProps> = (props) => {
     };
 
     return (
-        <div ref={dragRef} className={ClassNames({ node: true, selected }, style)} style={{ left: x, top: y }} onClick={onClick}>
-            <h2>{name}</h2>
-            <GraphConnectorHandler parentId={id} parentX={x} parentY={y} />
+        <div
+            ref={dragRef}
+            className={ClassNames({ node: true, selected, highlighted }, style)}
+            style={{ left: x, top: y, width: width + "px", height: height + "px" }}
+            onClick={onClick}
+        >
+            <div className={style.container}>
+                <h2>{name}</h2>
+                <GraphConnectorHandler parentId={id} parentX={x} parentY={y} offsetY={-height / 2} parentWidth={width} parentHeight={height} />
+            </div>
         </div>
     );
 };

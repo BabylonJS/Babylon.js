@@ -24,11 +24,12 @@ export interface INodeRendererProps {
     updateConnections: (sourceId: string, targetId: string) => void;
     deleteLine: (lineId: string) => void;
     deleteNode: (nodeId: string) => void;
-    nodes: { id: string }[];
+    nodes: { id: string; label: string }[];
+    highlightedNode?: string; // id of the node to highlight
 }
 
 export const NodeRenderer = (props: INodeRendererProps) => {
-    const { nodes, connections, updateConnections } = props;
+    const { nodes, connections, updateConnections, highlightedNode } = props;
     // Store the nodes positions
     const [pos, setPos] = useState<IVisualRecordsType>({});
     const [selectedLine, setSelectedLine] = useState<string | null>(null);
@@ -85,9 +86,11 @@ export const NodeRenderer = (props: INodeRendererProps) => {
             <GraphContextManager.Provider value={graphContext}>
                 <GraphContainer>
                     <GraphNodesContainer onNodeMoved={updatePos}>
-                        {Object.entries(nodes).map(([id]) => {
+                        {nodes.map(({ id, label }) => {
                             const posInRecord = pos[id] || { x: 0, y: 0 };
-                            return <GraphNode key={id} id={id} name={id} x={posInRecord.x} y={posInRecord.y} selected={id === selectedNode} />;
+                            return (
+                                <GraphNode key={id} id={id} name={label} x={posInRecord.x} y={posInRecord.y} selected={id === selectedNode} highlighted={id === highlightedNode} />
+                            );
                         })}
                     </GraphNodesContainer>
                     <GraphLinesContainer>

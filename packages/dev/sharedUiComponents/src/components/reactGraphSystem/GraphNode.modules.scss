@@ -1,8 +1,6 @@
 .node {
     position: absolute;
     background-color: #666666;
-    width: 120px;
-    height: 40px;
     display: flex;
     justify-content: center;
     border: 1px solid #000000;
@@ -10,4 +8,15 @@
 
 .selected {
     border: 2px solid #ffffff;
+}
+
+.highlighted {
+    border: 2px solid hsl(64, 100%, 61%);
+}
+
+.container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
 }

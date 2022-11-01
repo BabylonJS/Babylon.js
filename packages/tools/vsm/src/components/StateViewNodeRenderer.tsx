@@ -16,7 +16,7 @@ export const StateViewNodeRenderer = (props: IStateViewNodeRendererProps) => {
     const nodes = useMemo(() => {
         return (
             stateMachine?.getStates().map((state) => {
-                return { id: state.id };
+                return { id: state.id, label: state.name };
             }) || []
         );
     }, [lastUpdate]);
