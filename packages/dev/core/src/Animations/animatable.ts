@@ -96,6 +96,14 @@ export class Animatable {
             animation._prepareForSpeedRatioChange(value);
         }
         this._speedRatio = value;
+
+        // Resync _manualJumpDelay in case goToFrame was called before speedRatio was set.
+        const runtimeAnimations = this._runtimeAnimations;
+        if (runtimeAnimations[0] && this._frameToSyncFromJump !== null) {
+            const fps = runtimeAnimations[0].animation.framePerSecond;
+            const delay = this.speedRatio === 0 ? 0 : (((runtimeAnimations[0].currentFrame - this._frameToSyncFromJump) / fps) * 1000) / this.speedRatio;
+            this._manualJumpDelay = -delay;
+        }
     }
 
     /**
