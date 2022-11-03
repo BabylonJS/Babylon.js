@@ -12,16 +12,11 @@ import type { Nullable } from "core/types";
 
 const fullscreenStyle = { width: "100%", height: "100%" };
 
-// const posRecords: Record<string, { x: number; y: number }> = {};
-
-// const initialConnections: { id: string; sourceId: string; targetId: string }[] = [];
 export type IVisualRecordsType = Record<string, { x: number; y: number }>;
 export type IConnectionType = { id: string; sourceId: string; targetId: string };
 
 export interface INodeRendererProps {
-    // visualRecords: IVisualRecordsType;
     connections: IConnectionType[];
-    // updateVisualRecords: (id: string, x: number, y: number) => void;
     updateConnections: (sourceId: string, targetId: string) => void;
     deleteLine: (lineId: string) => void;
     deleteNode: (nodeId: string) => void;

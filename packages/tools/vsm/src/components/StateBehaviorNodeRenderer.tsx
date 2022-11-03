@@ -1,7 +1,7 @@
 import { useSelectedState } from "./tools/useSelectedState";
 import { NodeRenderer } from "./NodeRenderer";
 import { useSelectedAction } from "./tools/useSelectedAction";
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 
 export interface IStateBehaviorNodeRendererProps {}
 

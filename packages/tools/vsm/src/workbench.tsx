@@ -16,7 +16,7 @@ import type { State } from "./stateMachine/State";
 
 import playIcon from "./components/imgs/playIcon.svg";
 import pauseIcon from "./components/imgs/pauseIcon.svg";
-import { BaseAction } from "./actions/actions/BaseAction";
+import type { BaseAction } from "./actions/actions/BaseAction";
 import { ActionSelectionContext } from "./components/ActionSelectionContext";
 
 export type WorkbenchProps = {};
