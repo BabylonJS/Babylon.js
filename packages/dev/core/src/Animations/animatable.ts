@@ -23,6 +23,7 @@ export class Animatable {
     private _weight = -1.0;
     private _syncRoot: Nullable<Animatable> = null;
     private _frameToSyncFromJump: Nullable<number> = null;
+    private _goToFrame: Nullable<number> = null;
 
     /**
      * Gets or sets a boolean indicating if the animatable must be disposed and removed at the end of the animation.
@@ -98,11 +99,8 @@ export class Animatable {
         this._speedRatio = value;
 
         // Resync _manualJumpDelay in case goToFrame was called before speedRatio was set.
-        const runtimeAnimations = this._runtimeAnimations;
-        if (runtimeAnimations[0] && this._frameToSyncFromJump !== null) {
-            const fps = runtimeAnimations[0].animation.framePerSecond;
-            const delay = this.speedRatio === 0 ? 0 : (((runtimeAnimations[0].currentFrame - this._frameToSyncFromJump) / fps) * 1000) / this.speedRatio;
-            this._manualJumpDelay = -delay;
+        if (this._goToFrame !== null) {
+            this.goToFrame(this._goToFrame);
         }
     }
 
@@ -289,6 +287,8 @@ export class Animatable {
         for (let index = 0; index < runtimeAnimations.length; index++) {
             runtimeAnimations[index].goToFrame(frame);
         }
+
+        this._goToFrame = frame;
     }
 
     /**
@@ -405,6 +405,8 @@ export class Animatable {
             this._manualJumpDelay = null;
             this._frameToSyncFromJump = null;
         }
+
+        this._goToFrame = null;
 
         if (this._weight === 0) {
             // We consider that an animation with a weight === 0 is "actively" paused
