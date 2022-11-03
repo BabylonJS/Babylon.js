@@ -1491,7 +1491,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
                     const alphaCutOff = (material as any).alphaCutOff ?? ShadowGenerator.DEFAULT_ALPHA_CUTOFF;
 
-                    defines.push("#define ALPHATEST");
+                    defines.push("#define ALPHATEXTURE");
                     if (needAlphaTesting) {
                         defines.push(`#define ALPHATESTVALUE ${alphaCutOff}${alphaCutOff % 1 === 0 ? "." : ""}`);
                     }
