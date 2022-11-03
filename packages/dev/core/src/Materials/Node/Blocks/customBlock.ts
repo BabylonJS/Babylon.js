@@ -120,6 +120,7 @@ export class CustomBlock extends NodeMaterialBlock {
         this._code = options.code.join("\r\n") + "\r\n";
         this.name = this.name || options.name;
         this.target = (<any>NodeMaterialBlockTargets)[options.target];
+        (this as any)._isFinalMerger = options.isFinalMerger ?? false;
 
         options.inParameters?.forEach((input: any, index: number) => {
             const type = (<any>NodeMaterialBlockConnectionPointTypes)[input.type];

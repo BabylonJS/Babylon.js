@@ -25,11 +25,13 @@ import "../../../../Shaders/ShadersInclude/lightsFragmentFunctions";
 import "../../../../Shaders/ShadersInclude/shadowsFragmentFunctions";
 import "../../../../Shaders/ShadersInclude/shadowsVertex";
 
+const fragmentOnly = true;
+
 /**
  * Block used to add light in the fragment shader
  */
 export class LightBlock extends NodeMaterialBlock {
-    private _lightId: number;
+    private _lightId: number = 0;
 
     /**
      * Gets or sets the light associated with this block
@@ -41,11 +43,11 @@ export class LightBlock extends NodeMaterialBlock {
      * @param name defines the block name
      */
     public constructor(name: string) {
-        super(name, NodeMaterialBlockTargets.VertexAndFragment);
+        super(name, fragmentOnly ? NodeMaterialBlockTargets.Fragment : NodeMaterialBlockTargets.VertexAndFragment);
 
         this._isUnique = true;
 
-        this.registerInput("worldPosition", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Vertex);
+        this.registerInput("worldPosition", NodeMaterialBlockConnectionPointTypes.Vector4, false, fragmentOnly ? NodeMaterialBlockTargets.Fragment : NodeMaterialBlockTargets.Vertex);
         this.registerInput("worldNormal", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Fragment);
         this.registerInput("cameraPosition", NodeMaterialBlockConnectionPointTypes.Vector3, false, NodeMaterialBlockTargets.Fragment);
         this.registerInput("glossiness", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
@@ -274,21 +276,33 @@ export class LightBlock extends NodeMaterialBlock {
             return;
         }
 
+        if (fragmentOnly) {
+            state.sharedData.dynamicUniformBlocks.push(this);
+        }
+
         // Fragment
         state.sharedData.forcedBindableBlocks.push(this);
         state.sharedData.blocksWithDefines.push(this);
 
         const comments = `//${this.name}`;
         const worldPos = this.worldPosition;
+        const worldPosPrefix = fragmentOnly ? "" : "v_";
+
+        let worldPosVariableName = worldPos.associatedVariableName;
+        if (fragmentOnly) {
+            worldPosVariableName = state._getFreeVariableName("globalWorldPos");
+            state._emitFunction("light_globalworldpos", `vec3 ${worldPosVariableName};\r\n`, comments);
+            state.compilationString += `${worldPosVariableName} = ${worldPos.associatedVariableName}.xyz;\r\n`;
+        }
 
         state._emitFunctionFromInclude("helperFunctions", comments);
 
         state._emitFunctionFromInclude("lightsFragmentFunctions", comments, {
-            replaceStrings: [{ search: /vPositionW/g, replace: "v_" + worldPos.associatedVariableName + ".xyz" }],
+            replaceStrings: [{ search: /vPositionW/g, replace: worldPosPrefix + worldPosVariableName + ".xyz" }],
         });
 
         state._emitFunctionFromInclude("shadowsFragmentFunctions", comments, {
-            replaceStrings: [{ search: /vPositionW/g, replace: "v_" + worldPos.associatedVariableName + ".xyz" }],
+            replaceStrings: [{ search: /vPositionW/g, replace: worldPosPrefix + worldPosVariableName + ".xyz" }],
         });
 
         if (!this.light) {
@@ -310,7 +324,7 @@ export class LightBlock extends NodeMaterialBlock {
         // Code
         if (this._lightId === 0) {
             if (state._registerTempVariable("viewDirectionW")) {
-                state.compilationString += `vec3 viewDirectionW = normalize(${this.cameraPosition.associatedVariableName} - ${"v_" + worldPos.associatedVariableName}.xyz);\r\n`;
+                state.compilationString += `vec3 viewDirectionW = normalize(${this.cameraPosition.associatedVariableName} - ${worldPosPrefix + worldPos.associatedVariableName}.xyz);\r\n`;
             }
             state.compilationString += `lightingInfo info;\r\n`;
             state.compilationString += `float shadow = 1.;\r\n`;
