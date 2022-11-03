@@ -136,7 +136,7 @@ export class MotionBlurPostProcess extends PostProcess {
             name,
             "motionBlur",
             ["motionStrength", "motionScale", "screenSize", "inverseViewProjection", "prevViewProjection"],
-            ["velocitySampler"],
+            ["velocitySampler", "textureSampler", "depthSampler"],
             options,
             camera,
             samplingMode,
