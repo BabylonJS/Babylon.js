@@ -614,7 +614,7 @@ export class AssetContainer extends AbstractScene {
     }
 
     private _moveAssets<T>(sourceAssets: T[], targetAssets: T[], keepAssets: T[]): void {
-        if (!sourceAssets) {
+        if (!sourceAssets || !targetAssets) {
             return;
         }
 
@@ -649,7 +649,7 @@ export class AssetContainer extends AbstractScene {
 
         for (const key in this) {
             if (Object.prototype.hasOwnProperty.call(this, key)) {
-                (<any>this)[key] = (<any>this)[key] || (key === "environmentTexture" ? null : []);
+                (<any>this)[key] = (<any>this)[key] || (key === "_environmentTexture" ? null : []);
                 this._moveAssets((<any>this.scene)[key], (<any>this)[key], (<any>keepAssets)[key]);
             }
         }
