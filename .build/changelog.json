@@ -1,6 +1,257 @@
 {
-    "fromTag": "5.29.0",
+    "fromTag": "5.30.0",
     "changelog": {
+        "5.31.0": [
+            {
+                "pr": "13195",
+                "title": "WebGPU: Update TWGSL package",
+                "description": "This new version revert the UA (Uniform Analysis) errors to warnings.\r\n\r\nSee https://bugs.chromium.org/p/tint/issues/detail?id=1727#c5",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/tools/babylonServer/public/twgsl/twgsl.wasm"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13193",
+                "title": "Reduce memory usage in bakeTransformIntoVertices",
+                "description": "Running `bakeTransformIntoVertices` on large meshes can cause memory overflow. This change modifies the data in-place and uses `ToRef` functions so that we allocate O(1) extra data instead of O(n).",
+                "author": {
+                    "name": "rgerd",
+                    "url": "https://github.com/rgerd"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": [
+                    "rendering engine",
+                    "optimizations"
+                ]
+            },
+            {
+                "pr": "13186",
+                "title": "NME: fix wrong perturbed normals when using pre-existing tangents",
+                "description": "Fix #13182 \r\n\r\nNote that regarding tangents in the bump context we don't take into account the w component of the vector.\r\n\r\nIn the regular bump code, we use this component as a factor to negate the bitangent (the w component is normally either 1 or -1):\r\n\r\nFrom `bumpVertex.fx`:\r\n\r\n```typescript\r\n#if defined(BUMP) || defined(PARALLAX) || defined(CLEARCOAT_BUMP) || defined(ANISOTROPIC)\r\n\t#if defined(TANGENT) && defined(NORMAL)\r\n\t\tvec3 tbnNormal = normalize(normalUpdated);\r\n\t\tvec3 tbnTangent = normalize(tangentUpdated.xyz);\r\n\t\tvec3 tbnBitangent = cross(tbnNormal, tbnTangent) * tangentUpdated.w;\r\n\t\tvTBN = mat3(finalWorld) * mat3(tbnTangent, tbnBitangent, tbnNormal);\r\n\t#endif\r\n#endif\r\n```\r\n\r\nWe don't do it in the NME: should we? If yes, we need to discuss it, I don't see a way to do it without a breaking change...",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/perturbNormalBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/anisotropyBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/clearCoatBlock.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "13192",
+                "title": "Add information to Matrix API",
+                "description": "Ref https://forum.babylonjs.com/t/matrix-multiply-does-premultiplication/15492/3?u=johnk",
+                "author": {
+                    "name": "BabylonJSGuide",
+                    "url": "https://github.com/BabylonJSGuide"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13188",
+                "title": "Test babylon camera inputs manager",
+                "description": "Hi!\r\n\r\nI updated links to the docs.\r\n\r\nAnd in the `remove` method added the `return` statement. Looks like the whole loop is not neccessary when target are found. At least no one added test case not failed here. So it probably a little perfomance improve :D\r\nBut in this case there are not possible to add one CameraInput multiple times one camera. Is it correct?",
+                "author": {
+                    "name": "Dok11",
+                    "url": "https://github.com/Dok11"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/cameraInputsManager.ts",
+                    "packages/dev/core/test/unit/Cameras/babylon.cameraInputsManager.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13191",
+                "title": "WebGPU: Add support for GLES3 to WebGPU GLSL processing",
+                "description": "See https://forum.babylonjs.com/t/webgpuengine-vs-engine-and-webgl-2-0/35124/6\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Processors/iShaderProcessor.ts",
+                    "packages/dev/core/src/Engines/Processors/shaderCodeNode.ts",
+                    "packages/dev/core/src/Engines/Processors/shaderProcessor.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsGLSL.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "13189",
+                "title": "Test babylon octree block",
+                "description": "Test case for octree createInnerBlocks relative to https://github.com/BabylonJS/Babylon.js/pull/12923\r\n\r\nAnd one simple test case for intersectsRay method",
+                "author": {
+                    "name": "Dok11",
+                    "url": "https://github.com/Dok11"
+                },
+                "files": [
+                    "packages/dev/core/test/unit/Culling/babylon.octreeBlock.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13184",
+                "title": "Test babylon mesh lod",
+                "description": null,
+                "author": {
+                    "name": "Dok11",
+                    "url": "https://github.com/Dok11"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/test/unit/Meshes/babylon.mesh.lod.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13183",
+                "title": "NME: fix wrong lighting for some of the preview meshes",
+                "description": "Fix #13161 ",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    ".gitignore",
+                    "packages/tools/nodeEditor/src/components/preview/previewManager.ts"
+                ],
+                "tags": [
+                    "nme",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13187",
+                "title": "NME: Fix preview not updated when changing the clamp settings in the Texture block",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/src/graphSystem/properties/texturePropertyTabComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "13181",
+                "title": "Test babylon transform node",
+                "description": "Hi!\r\nThe url `https://doc.babylonjs.com/how_to/parenting` currently is 404, so I updated it.\r\n\r\nAnd one strange momemnt to me. I tried to write test case like this:\r\n```\r\nconst scene = new Scene(subject);\r\nconst child = new AbstractMesh(\"Child\", scene);\r\nconst parent = new AbstractMesh(\"Parent\", scene);\r\n\r\nchild.rotationQuaternion = new Quaternion(0.1, 0.2, 0.3, 1);\r\nchild.setParent(parent);\r\n```\r\n\r\nAfter `setParent` the `child.rotationQuaternion` equals to `{\"_isDirty\": true, \"_w\": 0.9193215324678584, \"_x\": 0.10613875217731637, \"_y\": 0.21264414489225805, \"_z\": 0.31622577190124856}`\r\nIt happens after call `composedMatrix.decompose()` in the `setParent()` method.\r\nI don't know, is this behaviour correct?",
+                "author": {
+                    "name": "Dok11",
+                    "url": "https://github.com/Dok11"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/transformNode.ts",
+                    "packages/dev/core/test/unit/Meshes/babylon.transformNode.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13177",
+                "title": "Lights: Add support for multiple shadow generators",
+                "description": "Currently a light can only have a single shadow generator associated. The problem is that the cascaded shadow generator (CSG) generates the shadow map depending on a camera position/rotation. So, a CSG is only valid for a light + a camera: if rendering with another camera, the CSG for this light is invalid.\r\n\r\nThis PR adds support for multiple shadow generators per light: an additional `camera` parameter can be passed to the shadow generator constructor. By default, `camera=null` and the code is backward compatible: when you retrieve a shadow generator, you get the one for the null camera.\r\n\r\nFix #12716.\r\n\r\nHere's a fixed PG:\r\n\r\nhttps://playground.babylonjs.com/#11BH6Z#947",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Lights/Shadows/cascadedShadowGenerator.ts",
+                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts",
+                    "packages/dev/core/src/Lights/Shadows/shadowGeneratorSceneComponent.ts",
+                    "packages/dev/core/src/Lights/light.ts",
+                    "packages/dev/core/src/Lights/pointLight.ts",
+                    "packages/dev/core/src/Materials/materialHelper.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/Misc/sceneRecorder.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/multiSGPerLight.png",
+                    "packages/tools/tests/test/visualization/config.json",
+                    "packages/tools/viewer/src/managers/sceneManager.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13179",
+                "title": "Fix bug rendering transparent meshes using their own materials in effect layer",
+                "description": "I believe I found a corner-case bug in effectLayer.ts. I've posted about it on the forum here:\r\n\r\nhttps://forum.babylonjs.com/t/bug-and-proposed-fix-effectlayer-with-meshes-using-their-own-materials-ignores-transparency/35194\r\n\r\nSince (I think) I have found the fix already and it's just a one-liner, here is a PR with the fix. I've run \"npm run test:unit\" and \"npm run build:dev\" in GitPod, both were OK. The one-line change fixed the bug in my local repro.\r\n\r\nDetails of the bug (copied from the forum post):\r\n\r\n1. Add two meshes to a scene, add both to the glow layer, set both to use their own material (referenceMeshToUseItsOwnMaterial).\r\n2. Make the meshes partially transparent.\r\n3. Move the camera so it is looking through transparent parts of one mesh to see the other.\r\n4. The far-away mesh will lose its glow effect when seen through the transparent parts of the close mesh.\r\n\r\nDemo: https://playground.babylonjs.com/#SRZRWV#1139\r\n(Move the camera so that you are looking at parts of one glowing ball through the transparent parts of another ball. Observe that the parts of the far-away ball seen through the close-up ball do not glow.)",
+                "author": {
+                    "name": "djn24",
+                    "url": "https://github.com/djn24"
+                },
+                "files": [
+                    "packages/dev/core/src/Layers/effectLayer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "post-process"
+                ]
+            },
+            {
+                "pr": "13178",
+                "title": "fix nightly for BN",
+                "description": "Fix BN nightly because of changes introduced here : https://github.com/BabylonJS/Babylon.js/pull/13154",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/hdrFilteringFunctions.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/helperFunctions.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/mrtFragmentDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/shadowsFragmentFunctions.fx",
+                    "packages/dev/core/src/Shaders/fxaa.fragment.fx",
+                    "packages/dev/core/src/Shaders/spriteMap.fragment.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "native"
+                ]
+            },
+            {
+                "pr": "13176",
+                "title": "UniformBuffer: Improve error message in updateUniformArray",
+                "description": "See https://forum.babylonjs.com/t/anyone-has-a-working-playground-showing-a-uniformbuffer/35136/5",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/uniformBuffer.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
         "5.30.0": [
             {
                 "pr": "13175",
