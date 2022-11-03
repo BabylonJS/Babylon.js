@@ -16,8 +16,10 @@ void main(void)
 
 #ifdef ALPHATEST
     float alphaFromAlphaTexture = texture2D(diffuseSampler, vUV).a;
-    if (alphaFromAlphaTexture < ALPHATESTVALUE)
-        discard;
+    #ifdef ALPHATESTVALUE
+        if (alphaFromAlphaTexture < ALPHATESTVALUE)
+            discard;
+    #endif
 #endif
 
 #if SM_SOFTTRANSPARENTSHADOW == 1

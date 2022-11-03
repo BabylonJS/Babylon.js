@@ -1231,7 +1231,7 @@ export class ShadowGenerator implements IShadowGenerator {
                         effect.setTexture("diffuseSampler", opacityTexture);
                         effect.setMatrix("diffuseMatrix", opacityTexture.getTextureMatrix() || this._defaultTextureMatrix);
                     }
-                } else if (material && material.needAlphaTesting()) {
+                } else if (material && (material.needAlphaTesting() || material.needAlphaBlending())) {
                     const alphaTexture = material.getAlphaTestTexture();
                     if (alphaTexture) {
                         effect.setTexture("diffuseSampler", alphaTexture);
@@ -1474,7 +1474,10 @@ export class ShadowGenerator implements IShadowGenerator {
             }
 
             // Alpha test
-            if (material && material.needAlphaTesting()) {
+            const needAlphaTesting = material?.needAlphaTesting();
+            const needAlphaBlending = material?.needAlphaBlending();
+
+            if (material && (needAlphaTesting || needAlphaBlending)) {
                 let alphaTexture = null;
                 if (this.useOpacityTextureForTransparentShadow) {
                     alphaTexture = (material as any).opacityTexture;
@@ -1489,7 +1492,9 @@ export class ShadowGenerator implements IShadowGenerator {
                     const alphaCutOff = (material as any).alphaCutOff ?? ShadowGenerator.DEFAULT_ALPHA_CUTOFF;
 
                     defines.push("#define ALPHATEST");
-                    defines.push(`#define ALPHATESTVALUE ${alphaCutOff}${alphaCutOff % 1 === 0 ? "." : ""}`);
+                    if (needAlphaTesting) {
+                        defines.push(`#define ALPHATESTVALUE ${alphaCutOff}${alphaCutOff % 1 === 0 ? "." : ""}`);
+                    }
                     if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
                         attribs.push(VertexBuffer.UVKind);
                         defines.push("#define UV1");
