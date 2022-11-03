@@ -1,6 +1,6 @@
 ﻿#include<shadowMapFragmentExtraDeclaration>
 
-#ifdef ALPHATEST
+#ifdef ALPHATEXTURE
 varying vec2 vUV;
 uniform sampler2D diffuseSampler;
 #endif
@@ -14,14 +14,16 @@ void main(void)
 {
 #include<clipPlaneFragment>
 
-#ifdef ALPHATEST
+#ifdef ALPHATEXTURE
     float alphaFromAlphaTexture = texture2D(diffuseSampler, vUV).a;
-    if (alphaFromAlphaTexture < ALPHATESTVALUE)
-        discard;
+    #ifdef ALPHATESTVALUE
+        if (alphaFromAlphaTexture < ALPHATESTVALUE)
+            discard;
+    #endif
 #endif
 
 #if SM_SOFTTRANSPARENTSHADOW == 1
-    #ifdef ALPHATEST
+    #ifdef ALPHATEXTURE
         if ((bayerDither8(floor(mod(gl_FragCoord.xy, 8.0)))) / 64.0 >= softTransparentShadowSM * alphaFromAlphaTexture) discard;
     #else
         if ((bayerDither8(floor(mod(gl_FragCoord.xy, 8.0)))) / 64.0 >= softTransparentShadowSM) discard;
