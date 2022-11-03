@@ -24,7 +24,7 @@ attribute vec3 position;
 
 #include<__decl__shadowMapVertex>
 
-#ifdef ALPHATEST
+#ifdef ALPHATEXTURE
 varying vec2 vUV;
 uniform mat4 diffuseMatrix;
 #ifdef UV1
@@ -83,7 +83,7 @@ gl_Position = viewProjection * worldPos;
 
 #include<shadowMapVertexMetric>
 
-#ifdef ALPHATEST
+#ifdef ALPHATEXTURE
     #ifdef UV1
         vUV = vec2(diffuseMatrix * vec4(uvUpdated, 1.0, 0.0));
     #endif
