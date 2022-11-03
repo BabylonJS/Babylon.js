@@ -5,6 +5,7 @@ import { GraphNode } from "shared-ui-components/components/reactGraphSystem/Grap
 import { GraphNodesContainer } from "shared-ui-components/components/reactGraphSystem/GraphNodesContainer";
 import { GraphLinesContainer } from "shared-ui-components/components/reactGraphSystem/GraphLinesContainer";
 import { GraphContextManager } from "shared-ui-components/components/reactGraphSystem/GraphContextManager";
+import type { Nullable } from "core/types";
 /**
  * Test component to use Reactive Nodes
  */
@@ -26,6 +27,7 @@ export interface INodeRendererProps {
     deleteNode: (nodeId: string) => void;
     nodes: { id: string; label: string }[];
     highlightedNode?: string; // id of the node to highlight
+    selectNode?: (nodeId: Nullable<string>) => void; // function to be called if a node is selected
 }
 
 export const NodeRenderer = (props: INodeRendererProps) => {
@@ -59,6 +61,10 @@ export const NodeRenderer = (props: INodeRendererProps) => {
         setSelectedNode(nodeId);
         setSelectedLine(null);
     };
+
+    useEffect(() => {
+        props.selectNode && props.selectNode(selectedNode);
+    }, [selectedNode]);
 
     const onKeyDown = (evt: KeyboardEvent) => {
         console.log(evt);

@@ -3,15 +3,20 @@
  * the visual graph system.
  */
 
+import { Nullable } from "core/types";
 import { useMemo } from "react";
 import { NodeRenderer } from "./NodeRenderer";
+import { useSelectedAction } from "./tools/useSelectedAction";
+import { useSelectedState } from "./tools/useSelectedState";
 import { useStateMachine } from "./tools/useStateMachine";
 
 export interface IStateViewNodeRendererProps {}
 
 export const StateViewNodeRenderer = (props: IStateViewNodeRendererProps) => {
     const { stateMachine, lastUpdate, setStateMachine } = useStateMachine();
-    console.log("lastUpdate", lastUpdate);
+    const { selectedState, setSelectedState } = useSelectedState();
+    const { setSelectedAction } = useSelectedAction();
+    // console.log("lastUpdate", lastUpdate);
 
     const nodes = useMemo(() => {
         return (
@@ -57,8 +62,22 @@ export const StateViewNodeRenderer = (props: IStateViewNodeRendererProps) => {
         }
     };
 
+    const selectNode = (nodeId: Nullable<string>) => {
+        if (nodeId === null) {
+            setSelectedState(null);
+        } else if (nodeId !== selectedState?.id) {
+            const node = stateMachine?.getStateById(nodeId);
+            if (node) {
+                setSelectedState(node);
+                setSelectedAction(null);
+            }
+        }
+    };
+
     if (stateMachine) {
-        return <NodeRenderer connections={connections} updateConnections={updateConnections} deleteLine={deleteLine} deleteNode={deleteNode} nodes={nodes} />;
+        return (
+            <NodeRenderer connections={connections} updateConnections={updateConnections} deleteLine={deleteLine} deleteNode={deleteNode} nodes={nodes} selectNode={selectNode} />
+        );
     } else {
         return null;
     }

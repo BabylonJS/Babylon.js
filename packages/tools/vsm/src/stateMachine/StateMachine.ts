@@ -36,7 +36,7 @@ export class StateMachine {
     private _transitionStates() {
         if (this._currentState.canLeaveState()) {
             const possibleNext = this._transitions[this._currentState.id];
-            if (possibleNext.canEnterState()) {
+            if (possibleNext && possibleNext.canEnterState()) {
                 this._currentState.leaveState();
                 possibleNext.enterState();
                 this._currentState = possibleNext;

@@ -6,6 +6,7 @@ import { EditValueComponent } from "./components/EditValueComponent";
 // import { TestReactiveNodes } from "./components/TestReactiveNodes";
 import { NodeListComponent } from "./components/NodeListComponent";
 import { StateViewNodeRenderer } from "./components/StateViewNodeRenderer";
+import { StateBehaviorNodeRenderer } from "./components/StateBehaviorNodeRenderer";
 
 export const initialLayout: Layout = {
     columns: [
@@ -15,18 +16,21 @@ export const initialLayout: Layout = {
             rows: [
                 {
                     id: "scene",
-                    height: "80%",
+                    height: "60%",
                     selectedTab: "sceneTab",
                     tabs: [{ id: "sceneTab", title: "Scene", component: <SceneRendererComponent /> }],
                 },
                 {
                     id: "edit",
                     height: "20%",
+                    selectedTab: "editTab",
+                    tabs: [{ id: "editTab", title: "Edit value", component: <EditValueComponent /> }],
+                },
+                {
+                    id: "add",
+                    height: "20%",
                     selectedTab: "addNode",
-                    tabs: [
-                        { id: "editTab", title: "Edit value", component: <EditValueComponent /> },
-                        { id: "addNode", title: "Add node", component: <NodeListComponent /> },
-                    ],
+                    tabs: [{ id: "addNode", title: "Add node", component: <NodeListComponent /> }],
                 },
             ],
         },
@@ -37,19 +41,21 @@ export const initialLayout: Layout = {
                 {
                     id: "row4",
                     selectedTab: "reactiveNodes",
-                    height: "100%",
+                    height: "60%",
                     tabs: [
                         // { id: "statesView", title: "States", component: <StatesViewComponent /> },
                         // { id: "reactiveNodes", title: "Test", component: <TestReactiveNodes /> },
                         { id: "reactiveNodes", title: "Test", component: <StateViewNodeRenderer /> },
                     ],
                 },
-                // {
-                //     id: "row5",
-                //     selectedTab: "behaviorView",
-                //     height: "40%",
-                //     tabs: [{ id: "behaviorView", title: "Behavior", component: <StateBehaviorViewComponent /> }],
-                // },
+                {
+                    id: "row5",
+                    // selectedTab: "behaviorView",
+                    selectedTab: "reactiveBehavior",
+                    height: "40%",
+                    // tabs: [{ id: "behaviorView", title: "Behavior", component: <StateBehaviorViewComponent /> }],
+                    tabs: [{ id: "reactiveBehavior", title: "Behavior", component: <StateBehaviorNodeRenderer /> }],
+                },
             ],
         },
     ],
