@@ -149,6 +149,20 @@ describe("OctreeBlock", function () {
             expect(selection.data[0].name).toEqual("box_17");
         });
 
+        it("should not set selection array when sphere does not intersect", () => {
+            // Create octree
+            scene.createOrUpdateSelectionOctree(4);
+
+            // Find first octree block with entry
+            const blockWithEntries = scene.selectionOctree.blocks[4];
+
+            // Call intersects with a sphere
+            const selection = new SmartArrayNoDuplicate<AbstractMesh>(128);
+            blockWithEntries.intersects(new Vector3(0, 0, 0), 0.1, selection);
+
+            // Selection should be empty because sphere does not intersect
+            expect(selection.length).toEqual(0);
+        });
     });
 
     describe("createInnerBlocks", () => {
