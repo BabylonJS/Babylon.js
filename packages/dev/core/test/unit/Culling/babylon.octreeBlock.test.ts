@@ -1,6 +1,6 @@
 import { ArcRotateCamera } from "core/Cameras";
 import type { Ray } from "core/Culling";
-import { OctreeSceneComponent } from "core/Culling";
+import "core/Culling/Octrees/octreeSceneComponent";
 import type { Engine } from "core/Engines";
 import { NullEngine } from "core/Engines";
 import { Vector3 } from "core/Maths";
@@ -67,7 +67,6 @@ describe("OctreeBlock", function () {
     describe("intersectsRay", () => {
         it("should set selection with block entries", () => {
             // Create octree
-            const component = new OctreeSceneComponent(scene);
             scene.createOrUpdateSelectionOctree(4);
 
             // Find first octree block with entry
@@ -94,7 +93,6 @@ describe("OctreeBlock", function () {
     describe("createInnerBlocks", () => {
         it("should clean block when after subdivide", () => {
             // Create octree
-            const component = new OctreeSceneComponent(scene);
             scene.createOrUpdateSelectionOctree(4);
 
             // Find first octree block with entries and save it count
