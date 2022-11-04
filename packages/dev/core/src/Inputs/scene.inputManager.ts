@@ -222,7 +222,7 @@ export class InputManager {
 
         if (scene.onPointerMove) {
             // Because of lazy picking, we need to force a pick to update the pickResult
-            pickResult = pickResult || this._pick(evt.pointerId, type);
+            pickResult = pickResult || this._pickMove(evt.pointerId);
             scene.onPointerMove(evt, pickResult, type);
         }
 
@@ -238,6 +238,7 @@ export class InputManager {
         if (scene.onPointerObservable.hasObservers()) {
             scene.onPointerObservable.notifyObservers(pointerInfo, type);
         }
+        scene._onCameraInputObservable.notifyObservers(pointerInfo, type);
     }
 
     // Pointers handling
@@ -271,33 +272,18 @@ export class InputManager {
     }
 
     /** @internal */
-    public _pick(pointerId: number, type: PointerEventTypes): PickingInfo {
+    public _pickMove(pointerId: number): PickingInfo {
         const scene = this._scene;
-        let pickResult: PickingInfo;
+        const pickResult: PickingInfo = scene.pick(
+            this._unTranslatedPointerX,
+            this._unTranslatedPointerY,
+            scene.pointerMovePredicate,
+            false,
+            scene.cameraToUseForPointers,
+            scene.pointerMoveTrianglePredicate
+        );
 
-        switch (type) {
-            case PointerEventTypes.POINTERDOWN:
-                pickResult = scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerDownPredicate, false, scene.cameraToUseForPointers);
-                if (pickResult?.pickedMesh) {
-                    this._pickedDownMesh = pickResult.pickedMesh;
-                }
-                break;
-            case PointerEventTypes.POINTERMOVE:
-                pickResult = scene.pick(
-                    this._unTranslatedPointerX,
-                    this._unTranslatedPointerY,
-                    scene.pointerMovePredicate,
-                    false,
-                    scene.cameraToUseForPointers,
-                    scene.pointerMoveTrianglePredicate
-                );
-
-                this._setCursorAndPointerOverMesh(pickResult, pointerId, scene);
-                break;
-            default:
-                pickResult = new PickingInfo();
-                break;
-        }
+        this._setCursorAndPointerOverMesh(pickResult, pointerId, scene);
 
         return pickResult;
     }
@@ -355,7 +341,7 @@ export class InputManager {
 
     private _processPointerDown(pickResult: Nullable<PickingInfo>, evt: IPointerEvent): void {
         const scene = this._scene;
-        if (scene._registeredActions > 0 && pickResult?.pickedMesh) {
+        if (pickResult?.pickedMesh) {
             this._pickedDownMesh = pickResult.pickedMesh;
             const actionManager = pickResult.pickedMesh._getActionManagerForTrigger();
             if (actionManager) {
@@ -410,12 +396,11 @@ export class InputManager {
         let pointerInfo: PointerInfo;
         const type = PointerEventTypes.POINTERDOWN;
 
-        if (scene.onPointerDown) {
-            pickResult = pickResult || this._pick(evt.pointerId, type);
-            scene.onPointerDown(evt, pickResult, type);
-        }
-
         if (pickResult) {
+            if (scene.onPointerDown) {
+                scene.onPointerDown(evt, pickResult, type);
+            }
+
             pointerInfo = new PointerInfo(type, evt, pickResult);
             this._setRayOnPointerInfo(pickResult, evt);
         } else {
@@ -425,6 +410,7 @@ export class InputManager {
         if (scene.onPointerObservable.hasObservers()) {
             scene.onPointerObservable.notifyObservers(pointerInfo, type);
         }
+        scene._onCameraInputObservable.notifyObservers(pointerInfo, type);
     }
 
     /**
@@ -504,26 +490,29 @@ export class InputManager {
         }
 
         let type = 0;
-        if (scene.onPointerObservable.hasObservers()) {
-            if (!clickInfo.ignore && !clickInfo.hasSwiped) {
-                if (clickInfo.singleClick && scene.onPointerObservable.hasSpecificMask(PointerEventTypes.POINTERTAP)) {
+        if (!clickInfo.ignore) {
+            if (!clickInfo.hasSwiped) {
+                if (clickInfo.singleClick) {
                     type = PointerEventTypes.POINTERTAP;
-                } else if (clickInfo.doubleClick && scene.onPointerObservable.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP)) {
+                } else if (clickInfo.doubleClick) {
                     type = PointerEventTypes.POINTERDOUBLETAP;
                 }
+
                 if (type) {
                     const pi = new PointerInfo(type, evt, pickResult);
                     this._setRayOnPointerInfo(pickResult, evt);
-                    scene.onPointerObservable.notifyObservers(pi, type);
+                    if (scene.onPointerObservable.hasObservers() && scene.onPointerObservable.hasSpecificMask(type)) {
+                        scene.onPointerObservable.notifyObservers(pi, type);
+                    }
+                    scene._onCameraInputObservable.notifyObservers(pi, type);
                 }
             }
 
-            if (!clickInfo.ignore) {
-                type = PointerEventTypes.POINTERUP;
-                const pi = new PointerInfo(type, evt, pickResult);
-                this._setRayOnPointerInfo(pickResult, evt);
-                scene.onPointerObservable.notifyObservers(pi, type);
-            }
+            type = PointerEventTypes.POINTERUP;
+            const pi = new PointerInfo(type, evt, pickResult);
+            this._setRayOnPointerInfo(pickResult, evt);
+            scene.onPointerObservable.notifyObservers(pi, type);
+            scene._onCameraInputObservable.notifyObservers(pi, type);
         }
 
         if (scene.onPointerUp && !clickInfo.ignore) {
@@ -568,7 +557,7 @@ export class InputManager {
         this._initActionManager = (act: Nullable<AbstractActionManager>): Nullable<AbstractActionManager> => {
             if (!this._meshPickProceed) {
                 const pickResult =
-                    scene.skipPointerUpPicking || (scene._registeredActions === 0 && !scene.onPointerObservable.hasObservers())
+                    scene.skipPointerUpPicking || (scene._registeredActions === 0 && !(scene.onPointerObservable.hasObservers() || scene.onPointerPick))
                         ? null
                         : scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerUpPredicate, false, scene.cameraToUseForPointers);
                 this._currentPickResult = pickResult;
@@ -753,7 +742,7 @@ export class InputManager {
                     Math.abs(this._startingPointerPosition.y - this._pointerY) > InputManager.DragMovementThreshold;
             }
 
-            const pickResult = scene._registeredActions > 0 ? this._pick((evt as IPointerEvent).pointerId, PointerEventTypes.POINTERMOVE) : null;
+            const pickResult = scene._registeredActions > 0 ? this._pickMove((evt as IPointerEvent).pointerId) : null;
             this._processPointerMove(pickResult, evt as IPointerEvent);
         };
 
@@ -807,11 +796,11 @@ export class InputManager {
 
             // Meshes
             this._pickedDownMesh = null;
-            let pickResult = null;
-            if (scene.skipPointerDownPicking) {
+            let pickResult;
+            if (scene.skipPointerDownPicking || (scene._registeredActions === 0 && !(scene.onPointerObservable.hasObservers() || scene.onPointerPick))) {
                 pickResult = new PickingInfo();
             } else {
-                pickResult = scene.onPointerPick || scene._registeredActions > 0 ? this._pick((evt as IPointerEvent).pointerId, PointerEventTypes.POINTERDOWN) : null;
+                pickResult = scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerDownPredicate, false, scene.cameraToUseForPointers);
             }
 
             this._processPointerDown(pickResult, evt);
@@ -884,7 +873,7 @@ export class InputManager {
                 }
 
                 // Meshes
-                if (!this._meshPickProceed && ((AbstractActionManager && AbstractActionManager.HasTriggers) || scene.onPointerObservable.hasObservers())) {
+                if (!this._meshPickProceed && ((AbstractActionManager && AbstractActionManager.HasTriggers) || scene.onPointerObservable.hasObservers() || scene.onPointerPick)) {
                     this._initActionManager(null, clickInfo);
                 }
                 if (!pickResult) {

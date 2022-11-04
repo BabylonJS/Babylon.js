@@ -1489,18 +1489,6 @@
             "renderCount": 50
         },
         {
-            "title": "InputManager callback test",
-            "playgroundId": "#30ZGX9#1",
-            "referenceImage": "inputManagerCallbackTest.png",
-            "renderCount": 10
-        },
-        {
-            "title": "Lazy Pick Observable Check",
-            "playgroundId": "#UTDB9N",
-            "referenceImage": "lazyPickObservableCheck.png",
-            "renderCount": 10
-        },
-        {
             "title": "Multi shadow generators per light",
             "playgroundId": "#LMQGSX#2",
             "referenceImage": "multiSGPerLight.png",

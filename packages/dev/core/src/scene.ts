@@ -798,6 +798,12 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public onPointerObservable = new Observable<PointerInfo>();
 
     /**
+     * Observable to handle camera pointer inputs
+     * @internal
+     */
+    public _onCameraInputObservable = new Observable<PointerInfo>();
+
+    /**
      * Gets the pointer coordinates without any translation (ie. straight out of the pointer event)
      */
     public get unTranslatedPointer(): Vector2 {
@@ -4726,6 +4732,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this.onTextureRemovedObservable.clear();
         this.onPrePointerObservable.clear();
         this.onPointerObservable.clear();
+        this._onCameraInputObservable.clear();
         this.onPreKeyboardObservable.clear();
         this.onKeyboardObservable.clear();
         this.onActiveCameraChanged.clear();
