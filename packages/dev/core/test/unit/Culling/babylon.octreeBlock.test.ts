@@ -114,6 +114,22 @@ describe("OctreeBlock", function () {
             expect(selection.length).toEqual(5);
             expect(selection.data.filter(Boolean).map((x) => x.name)).toEqual(["box_27", "box_2", "box_7", "box_12", "box_22"]);
         });
+
+        it("should not set selection when ray does not intersect", () => {
+            // Create octree
+            scene.createOrUpdateSelectionOctree(4);
+
+            // Find first octree block with entry
+            const blockWithEntries = scene.selectionOctree.blocks[4];
+
+            // Call intersectsRay
+            const ray = { intersectsBoxMinMax: (_min, _max) => false } as Ray;
+            const selection = new SmartArrayNoDuplicate<AbstractMesh>(128);
+            blockWithEntries.intersectsRay(ray, selection);
+
+            // Selection should be empty because ray does not intersect
+            expect(selection.length).toEqual(0);
+        });
     });
 
     describe("createInnerBlocks", () => {
