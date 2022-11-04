@@ -135,8 +135,8 @@ export class MotionBlurPostProcess extends PostProcess {
         super(
             name,
             "motionBlur",
-            ["motionStrength", "motionScale", "screenSize", "inverseViewProjection", "prevViewProjection"],
-            ["velocitySampler", "textureSampler", "depthSampler"],
+            ["motionStrength", "motionScale", "screenSize", "inverseViewProjection", "prevViewProjection", "projection"],
+            ["velocitySampler", "depthSampler"],
             options,
             camera,
             samplingMode,
@@ -284,13 +284,15 @@ export class MotionBlurPostProcess extends PostProcess {
      * @param effect
      */
     private _onApplyScreenBased(effect: Effect): void {
-        const viewProjection = this._scene.getProjectionMatrix().multiply(this._scene.getViewMatrix());
+        const viewProjection = this._scene.getTransformMatrix().clone();
 
         viewProjection.invertToRef(this._invViewProjection!);
         effect.setMatrix("inverseViewProjection", this._invViewProjection!);
 
         effect.setMatrix("prevViewProjection", this._previousViewProjection!);
         this._previousViewProjection = viewProjection;
+
+        effect.setMatrix("projection", this._scene.getProjectionMatrix());
 
         effect.setVector2("screenSize", new Vector2(this.width, this.height));
 

@@ -13,6 +13,7 @@ uniform sampler2D depthSampler;
 
 uniform mat4 inverseViewProjection;
 uniform mat4 prevViewProjection;
+uniform mat4 projection;
 #endif
 
 
@@ -49,12 +50,14 @@ void main(void)
         #else
             vec2 texelSize = 1.0 / screenSize;
             float depth = texture2D(depthSampler, vUV).r;
+            depth = projection[2].z + projection[3].z / depth; // convert from view linear z to NDC z
 
             vec4 cpos = vec4(vUV * 2.0 - 1.0, depth, 1.0);
-            cpos = cpos * inverseViewProjection;
+            cpos = inverseViewProjection * cpos;
+            cpos /= cpos.w;
 
-            vec4 ppos = cpos * prevViewProjection;
-            ppos.xyz /= ppos.w;
+            vec4 ppos = prevViewProjection * cpos;
+            ppos /= ppos.w;
             ppos.xy = ppos.xy * 0.5 + 0.5;
 
             vec2 velocity = (ppos.xy - vUV) * motionScale * motionStrength;
