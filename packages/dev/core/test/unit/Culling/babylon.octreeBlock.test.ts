@@ -88,6 +88,32 @@ describe("OctreeBlock", function () {
             expect(selection.length).toEqual(1);
             expect(selection.data[0].name).toEqual("box_17");
         });
+
+        it("should set selection with sub-blocks", () => {
+            // Create octree
+            scene.createOrUpdateSelectionOctree(4);
+
+            // Get first octree block with sub-blocks
+            const blockWithSubBlocks = scene.selectionOctree.blocks[0];
+            expect(blockWithSubBlocks).toBeDefined();
+            expect(blockWithSubBlocks.blocks.length).toEqual(8);
+
+            // When block has sub-blocks, it should not have eny entries
+            expect(blockWithSubBlocks.entries.length).toEqual(0);
+
+            // Call intersectsRay
+            const ray = { intersectsBoxMinMax: (_min, _max) => true } as Ray;
+            const rayIntersectsBoxMinMaxSpy = jest.spyOn(ray, "intersectsBoxMinMax");
+            const selection = new SmartArrayNoDuplicate<AbstractMesh>(128);
+            blockWithSubBlocks!.intersectsRay(ray, selection);
+
+            // Ray intersects should be called once and 8 times in the recursion (for every sub-block)
+            expect(rayIntersectsBoxMinMaxSpy).toHaveBeenCalledTimes(9);
+
+            // Selection should contain the meshes from the sub-blocks
+            expect(selection.length).toEqual(5);
+            expect(selection.data.filter(Boolean).map((x) => x.name)).toEqual(["box_27", "box_2", "box_7", "box_12", "box_22"]);
+        });
     });
 
     describe("createInnerBlocks", () => {
