@@ -132,6 +132,25 @@ describe("OctreeBlock", function () {
         });
     });
 
+    describe("intersects", () => {
+        it("should set selection array", () => {
+            // Create octree
+            scene.createOrUpdateSelectionOctree(4);
+
+            // Find first octree block with entry
+            const blockWithEntries = scene.selectionOctree.blocks[4];
+
+            // Call intersects with a sphere
+            const selection = new SmartArrayNoDuplicate<AbstractMesh>(128);
+            blockWithEntries.intersects(new Vector3(0, 0, 0), 10, selection);
+
+            // Selection should contain the mesh from the block
+            expect(selection.length).toEqual(1);
+            expect(selection.data[0].name).toEqual("box_17");
+        });
+
+    });
+
     describe("createInnerBlocks", () => {
         it("should clean block when after subdivide", () => {
             // Create octree
