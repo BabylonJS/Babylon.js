@@ -165,6 +165,22 @@ describe("OctreeBlock", function () {
             expect(selection.data.filter(Boolean).map((x) => x.name)).toEqual(["box_27", "box_2", "box_7", "box_12", "box_22"]);
         });
 
+        it("should set selection array for block with sub-blocks and allow duplicates", () => {
+            // Create octree
+            scene.createOrUpdateSelectionOctree(4);
+
+            // Find first octree block with entry
+            const blockWithSubBlocks = scene.selectionOctree.blocks[0];
+
+            // Call intersects with a sphere
+            const selection = new SmartArrayNoDuplicate<AbstractMesh>(128);
+            blockWithSubBlocks.intersects(new Vector3(0, 0, 0), 10, selection, true);
+
+            // Selection should contain the mesh from the block
+            expect(selection.length).toEqual(6);
+            expect(selection.data.filter(Boolean).map((x) => x.name)).toEqual(["box_27", "box_27", "box_2", "box_7", "box_12", "box_22"]);
+        });
+
         it("should not set selection array when sphere does not intersect", () => {
             // Create octree
             scene.createOrUpdateSelectionOctree(4);
