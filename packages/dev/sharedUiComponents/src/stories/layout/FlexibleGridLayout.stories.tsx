@@ -1,10 +1,10 @@
 import type { IFlexibleGridLayoutProps } from "../../components/layout/FlexibleGridLayout";
 import { FlexibleGridLayout } from "../../components/layout/FlexibleGridLayout";
-import type { ComponentStory } from "@storybook/react";
+import type { StoryObj } from "@storybook/react";
 
 export default { component: FlexibleGridLayout };
 
-export const Default: ComponentStory<typeof FlexibleGridLayout> = {
+export const Default: StoryObj<typeof FlexibleGridLayout> = {
     render: (props: IFlexibleGridLayoutProps) => {
         return (
             <div style={{ width: "100%", height: "500px" }}>
@@ -28,7 +28,7 @@ export const Default: ComponentStory<typeof FlexibleGridLayout> = {
     },
 };
 
-export const TwoColumn: ComponentStory<typeof FlexibleGridLayout> = {
+export const TwoColumn: StoryObj<typeof FlexibleGridLayout> = {
     render: Default.render,
     args: {
         layoutDefinition: {

@@ -35,7 +35,7 @@ export const TextInputWithSubmit = (props: ITextInputProps) => {
     };
 
     const onClickCancel = () => {
-        props.cancelSubmit && props.cancelSubmit();
+        props?.cancelSubmit?.();
         setValue("");
     };
 

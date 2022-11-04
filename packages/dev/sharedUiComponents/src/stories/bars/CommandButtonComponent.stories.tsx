@@ -1,9 +1,9 @@
 import { CommandButtonComponent } from "../../components/bars/CommandButtonComponent";
-import type { ComponentStory } from "@storybook/react";
+import type { StoryObj } from "@storybook/react";
 
 export default {
     component: CommandButtonComponent,
 };
 
 // Default rendering function
-export const Default: ComponentStory<typeof CommandButtonComponent> = {};
+export const Default: StoryObj<typeof CommandButtonComponent> = {};

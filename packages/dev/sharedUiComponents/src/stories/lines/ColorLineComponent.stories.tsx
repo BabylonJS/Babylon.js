@@ -2,13 +2,13 @@ import { Observable } from "core/Misc/observable";
 import type { PropertyChangedEvent } from "../../propertyChangedEvent";
 import type { IColorLineComponentProps } from "../../components/lines/ColorLineComponent";
 import { ColorLineComponent } from "../../components/lines/ColorLineComponent";
-import type { ComponentStory } from "@storybook/react";
+import type { StoryObj } from "@storybook/react";
 
 export default { component: ColorLineComponent };
 
 const propertyChangedObservable = new Observable<PropertyChangedEvent>();
 
-export const Default: ComponentStory<typeof ColorLineComponent> = {
+export const Default: StoryObj<typeof ColorLineComponent> = {
     render: (args: IColorLineComponentProps) => (
         <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
             <ColorLineComponent {...args} />

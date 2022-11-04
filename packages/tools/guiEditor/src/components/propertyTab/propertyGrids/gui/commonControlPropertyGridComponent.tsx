@@ -682,7 +682,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                 }}
                                 addOptionPlaceholder={"Add new font..."}
                                 validateNewOptionValue={(newFontValue) => {
-                                    if (newFontValue.length > 0) {
+                                    if (newFontValue.length > 0 && !fonts.find((f) => f.label === newFontValue)) {
                                         return document.fonts.check(`12px ${newFontValue}`);
                                     }
                                     return false;

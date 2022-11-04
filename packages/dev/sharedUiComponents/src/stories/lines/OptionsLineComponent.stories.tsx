@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { OptionsLineComponent } from "../../components/lines/OptionsLineComponent";
-import type { ComponentStory } from "@storybook/react";
+import type { StoryObj } from "@storybook/react";
 
 export default { component: OptionsLineComponent };
 
@@ -34,7 +34,7 @@ const RenderComponent = (args: any) => {
     );
 };
 
-export const Default: ComponentStory<typeof RenderComponent> = {
+export const Default: StoryObj<typeof RenderComponent> = {
     render: (args: any) => {
         return <RenderComponent {...args} />;
     },
@@ -48,12 +48,12 @@ export const Default: ComponentStory<typeof RenderComponent> = {
     },
 };
 
-export const WithCustomOptions: ComponentStory<typeof RenderComponent> = {
+export const WithCustomOptions: StoryObj<typeof RenderComponent> = {
     render: Default.render,
     args: { ...Default.args, customAdd: true, addOptionPlaceholder: "This is a placeholder" },
 };
 
-export const WithValidation: ComponentStory<typeof RenderComponent> = {
+export const WithValidation: StoryObj<typeof RenderComponent> = {
     render: Default.render,
     args: { ...Default.args, customAdd: true, addOptionPlaceholder: "Valid: length > 3", validateNewOptionValue: (value: string) => value.length > 3 },
 };
