@@ -130,6 +130,25 @@ describe("OctreeBlock", function () {
             // Selection should be empty because ray does not intersect
             expect(selection.length).toEqual(0);
         });
+
+        it('should save selection content after method call', () => {
+            // Create octree
+            scene.createOrUpdateSelectionOctree(4);
+
+            // Prepare stub of Ray and selection array
+            const ray = { intersectsBoxMinMax: (_min, _max) => true } as Ray;
+            const selection = new SmartArrayNoDuplicate<AbstractMesh>(128);
+
+            // After first call selection should contain only one mesh
+            scene.selectionOctree.blocks[4]!.intersectsRay(ray, selection);
+            expect(selection.length).toEqual(1);
+            expect(selection.data.filter(Boolean).map(x => x.name)).toEqual(["box_17"]);
+
+            // After second call selection should contain the previous selected mesh and more
+            scene.selectionOctree.blocks[5]!.intersectsRay(ray, selection);
+            expect(selection.length).toEqual(3);
+            expect(selection.data.filter(Boolean).map(x => x.name)).toEqual(["box_17", "box_11", "box_29"]);
+        });
     });
 
     describe("intersects", () => {
@@ -194,6 +213,24 @@ describe("OctreeBlock", function () {
 
             // Selection should be empty because sphere does not intersect
             expect(selection.length).toEqual(0);
+        });
+
+        it('should save selection content after method call', () => {
+            // Create octree
+            scene.createOrUpdateSelectionOctree(4);
+
+            // Prepare selection array
+            const selection = new SmartArrayNoDuplicate<AbstractMesh>(128);
+
+            // After first call selection should contain only one mesh
+            scene.selectionOctree.blocks[4].intersects(new Vector3(0, 0, 0), 10, selection);
+            expect(selection.length).toEqual(1);
+            expect(selection.data.filter(Boolean).map(x => x.name)).toEqual(["box_17"]);
+
+            // After second call selection should contain the previous selected mesh and more
+            scene.selectionOctree.blocks[5].intersects(new Vector3(0, 0, 0), 10, selection);
+            expect(selection.length).toEqual(3);
+            expect(selection.data.filter(Boolean).map(x => x.name)).toEqual(["box_17", "box_11", "box_29"]);
         });
     });
 
@@ -404,6 +441,37 @@ describe("OctreeBlock", function () {
             scene.selectionOctree.blocks[7].select(frustumPlanesForAllBoxesInside, selection7, true);
             expect(selection7.length).toEqual(7);
             expect(selection7.data.filter(Boolean).map((x) => x.name)).toEqual(["box_28", "box_28", "box_11", "box_15", "box_14", "box_15", "box_16"]);
+        });
+
+        it('should save selection content after method call', () => {
+            // Create octree
+            scene.createOrUpdateSelectionOctree(4);
+
+            // Prepare selection array and six frustum planes
+            const selection = new SmartArrayNoDuplicate<AbstractMesh>(128);
+            const frustumPlanes: Plane[] = [
+                // Left plane
+                Plane.FromPositionAndNormal(new Vector3(-4.1, 0, 0), new Vector3(1, 0, 0)),
+                // Right plane
+                Plane.FromPositionAndNormal(new Vector3(8.1, 0, 0), new Vector3(-1, 0, 0)),
+                // Top plane
+                Plane.FromPositionAndNormal(new Vector3(0, 8.1, 0), new Vector3(0, -1, 0)),
+                // Bottom plane
+                Plane.FromPositionAndNormal(new Vector3(0, -9.1, 0), new Vector3(0, 1, 0)),
+                // Near plane
+                Plane.FromPositionAndNormal(new Vector3(0, 0, -8.1), new Vector3(0, 0, 1)),
+                // Far plane
+                Plane.FromPositionAndNormal(new Vector3(0, 0, 8.1), new Vector3(0, 0, -1)),
+            ];
+
+            // Selection should contain all presented entries
+            scene.selectionOctree.blocks[0].select(frustumPlanes, selection);
+            expect(selection.length).toEqual(5);
+            expect(selection.data.filter(Boolean).map((x) => x.name)).toEqual(["box_27", "box_2", "box_7", "box_12", "box_22"]);
+
+            scene.selectionOctree.blocks[7].select(frustumPlanes, selection);
+            expect(selection.length).toEqual(10);
+            expect(selection.data.filter(Boolean).map((x) => x.name)).toEqual(["box_27", "box_2", "box_7", "box_12", "box_22", "box_28", "box_11", "box_15", "box_14", "box_16"]);
         });
     });
 
