@@ -194,5 +194,30 @@ describe('Babylon Mesh Levels of Details', () => {
                 expect(knot0.getLOD(cameraArc)).toBeNull();
             });
         });
+
+        describe("useLODScreenCoverage", () => {
+            it('should work correctly when set to true at any time relative to addLODLevel mesh', () => {
+                // Set LOD meshes
+                knot0.addLODLevel(0.5, knot1);
+                knot0.addLODLevel(0.2, knot2);
+                knot0.addLODLevel(0.02, null);
+
+                // Then set useLODScreenCoverage to true
+                knot0.useLODScreenCoverage = true;
+
+                // And it should work correctly
+                cameraArc.radius = 80;
+                scene.render();
+                expect(knot0.getLOD(cameraArc)!.name).toEqual('Knot1');
+
+                cameraArc.radius = 120;
+                scene.render();
+                expect(knot0.getLOD(cameraArc)!.name).toEqual('Knot2');
+
+                cameraArc.radius = 380;
+                scene.render();
+                expect(knot0.getLOD(cameraArc)).toBeNull();
+            });
+        });
     });
 });
