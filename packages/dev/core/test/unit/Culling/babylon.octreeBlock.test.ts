@@ -3,7 +3,7 @@ import type { Ray } from "core/Culling";
 import "core/Culling/Octrees/octreeSceneComponent";
 import type { Engine } from "core/Engines";
 import { NullEngine } from "core/Engines";
-import { Vector3 } from "core/Maths";
+import { Plane, Vector3 } from "core/Maths";
 import type { AbstractMesh } from "core/Meshes";
 import { MeshBuilder } from "core/Meshes";
 import { SmartArrayNoDuplicate } from "core/Misc";
@@ -242,6 +242,168 @@ describe("OctreeBlock", function () {
 
             // Block should not have any entries
             expect(blockWithEntries.entries.length).toEqual(1);
+        });
+    });
+
+    describe("select", () => {
+        it("should select all meshes in frustum planes", () => {
+            // Create octree
+            scene.createOrUpdateSelectionOctree(4);
+
+            // Call select with six frustum planes
+            const frustumPlanesForAllBoxesInside: Plane[] = [
+                // Left plane
+                Plane.FromPositionAndNormal(new Vector3(-4.1, 0, 0), new Vector3(1, 0, 0)),
+                // Right plane
+                Plane.FromPositionAndNormal(new Vector3(8.1, 0, 0), new Vector3(-1, 0, 0)),
+                // Top plane
+                Plane.FromPositionAndNormal(new Vector3(0, 8.1, 0), new Vector3(0, -1, 0)),
+                // Bottom plane
+                Plane.FromPositionAndNormal(new Vector3(0, -9.1, 0), new Vector3(0, 1, 0)),
+                // Near plane
+                Plane.FromPositionAndNormal(new Vector3(0, 0, -8.1), new Vector3(0, 0, 1)),
+                // Far plane
+                Plane.FromPositionAndNormal(new Vector3(0, 0, 8.1), new Vector3(0, 0, -1)),
+            ];
+
+            // Selection should contain all presented entries
+            const selection0 = new SmartArrayNoDuplicate<AbstractMesh>(128);
+            scene.selectionOctree.blocks[0].select(frustumPlanesForAllBoxesInside, selection0);
+            expect(selection0.length).toEqual(5);
+            expect(selection0.data.filter(Boolean).map((x) => x.name)).toEqual(["box_27", "box_2", "box_7", "box_12", "box_22"]);
+
+            const selection7 = new SmartArrayNoDuplicate<AbstractMesh>(128);
+            scene.selectionOctree.blocks[7].select(frustumPlanesForAllBoxesInside, selection7);
+            expect(selection7.length).toEqual(5);
+            expect(selection7.data.filter(Boolean).map((x) => x.name)).toEqual(["box_28", "box_11", "box_15", "box_14", "box_16"]);
+        });
+
+        it("should select only meshes that intersects with partial frustum planes (left side)", () => {
+            // Create octree
+            scene.createOrUpdateSelectionOctree(4);
+
+            // Call select with six frustum planes
+            const frustumPlanesForLeftPartOfBoxes: Plane[] = [
+                // Left plane
+                Plane.FromPositionAndNormal(new Vector3(-4.1, 0, 0), new Vector3(1, 0, 0)),
+                // Right plane (zero because we check only left side)
+                Plane.FromPositionAndNormal(new Vector3(0, 0, 0), new Vector3(-1, 0, 0)),
+                // Top plane
+                Plane.FromPositionAndNormal(new Vector3(0, 8.1, 0), new Vector3(0, -1, 0)),
+                // Bottom plane
+                Plane.FromPositionAndNormal(new Vector3(0, -9.1, 0), new Vector3(0, 1, 0)),
+                // Near plane
+                Plane.FromPositionAndNormal(new Vector3(0, 0, -8.1), new Vector3(0, 0, 1)),
+                // Far plane
+                Plane.FromPositionAndNormal(new Vector3(0, 0, 8.1), new Vector3(0, 0, -1)),
+            ];
+
+            // Selection should contain all presented entries
+            const selection0 = new SmartArrayNoDuplicate<AbstractMesh>(128);
+            scene.selectionOctree.blocks[0].select(frustumPlanesForLeftPartOfBoxes, selection0);
+            expect(selection0.length).toEqual(5);
+            expect(selection0.data.filter(Boolean).map((x) => x.name)).toEqual(["box_27", "box_2", "box_7", "box_12", "box_22"]);
+
+            const selection7 = new SmartArrayNoDuplicate<AbstractMesh>(128);
+            scene.selectionOctree.blocks[7].select(frustumPlanesForLeftPartOfBoxes, selection7);
+            expect(selection7.length).toEqual(0);
+            expect(selection7.data.filter(Boolean).map((x) => x.name)).toEqual([]);
+        });
+
+        it("should select only meshes that intersects with partial frustum planes (top-right side)", () => {
+            // Create octree
+            scene.createOrUpdateSelectionOctree(4);
+
+            // Call select with six frustum planes
+            const frustumPlanesForAllBoxesInside: Plane[] = [
+                // Left plane (zero because we check only top-right side)
+                Plane.FromPositionAndNormal(new Vector3(0, 0, 0), new Vector3(1, 0, 0)),
+                // Right plane
+                Plane.FromPositionAndNormal(new Vector3(8.1, 0, 0), new Vector3(-1, 0, 0)),
+                // Top plane
+                Plane.FromPositionAndNormal(new Vector3(0, 8.1, 0), new Vector3(0, -1, 0)),
+                // Bottom plane (zero because we check only top-right side)
+                Plane.FromPositionAndNormal(new Vector3(0, 0, 0), new Vector3(0, 1, 0)),
+                // Near plane
+                Plane.FromPositionAndNormal(new Vector3(0, 0, -8.1), new Vector3(0, 0, 1)),
+                // Far plane
+                Plane.FromPositionAndNormal(new Vector3(0, 0, 8.1), new Vector3(0, 0, -1)),
+            ];
+
+            // Selection should contain all presented entries
+            const selection0 = new SmartArrayNoDuplicate<AbstractMesh>(128);
+            scene.selectionOctree.blocks[0].select(frustumPlanesForAllBoxesInside, selection0);
+            expect(selection0.length).toEqual(4);
+            expect(selection0.data.filter(Boolean).map((x) => x.name)).toEqual(["box_2", "box_7", "box_12", "box_22"]);
+
+            const selection7 = new SmartArrayNoDuplicate<AbstractMesh>(128);
+            scene.selectionOctree.blocks[7].select(frustumPlanesForAllBoxesInside, selection7);
+            expect(selection7.length).toEqual(5);
+            expect(selection7.data.filter(Boolean).map((x) => x.name)).toEqual(["box_28", "box_11", "box_15", "box_14", "box_16"]);
+        });
+
+        it("should select nothing if frustum planes are outside of octree", () => {
+            // Create octree
+            scene.createOrUpdateSelectionOctree(4);
+
+            // Call select with six frustum planes
+            const frustumPlanesOutOfBoxesScope: Plane[] = [
+                // Left plane (x = 100, to be out of boxes scope)
+                Plane.FromPositionAndNormal(new Vector3(100, 0, 0), new Vector3(1, 0, 0)),
+                // Right plane (x = 101, to be out of boxes scope)
+                Plane.FromPositionAndNormal(new Vector3(101, 0, 0), new Vector3(-1, 0, 0)),
+                // Top plane
+                Plane.FromPositionAndNormal(new Vector3(0, 8.1, 0), new Vector3(0, -1, 0)),
+                // Bottom plane (zero because we check only top-right side)
+                Plane.FromPositionAndNormal(new Vector3(0, 0, 0), new Vector3(0, 1, 0)),
+                // Near plane
+                Plane.FromPositionAndNormal(new Vector3(0, 0, -8.1), new Vector3(0, 0, 1)),
+                // Far plane
+                Plane.FromPositionAndNormal(new Vector3(0, 0, 8.1), new Vector3(0, 0, -1)),
+            ];
+
+            // Selection should contain all presented entries
+            const selection0 = new SmartArrayNoDuplicate<AbstractMesh>(128);
+            scene.selectionOctree.blocks[0].select(frustumPlanesOutOfBoxesScope, selection0);
+            expect(selection0.length).toEqual(0);
+            expect(selection0.data.filter(Boolean).map((x) => x.name)).toEqual([]);
+
+            const selection7 = new SmartArrayNoDuplicate<AbstractMesh>(128);
+            scene.selectionOctree.blocks[7].select(frustumPlanesOutOfBoxesScope, selection7);
+            expect(selection7.length).toEqual(0);
+            expect(selection7.data.filter(Boolean).map((x) => x.name)).toEqual([]);
+        });
+
+        it("should can select meshes with duplicates when it need", () => {
+            // Create octree
+            scene.createOrUpdateSelectionOctree(4);
+
+            // Call select with six frustum planes
+            const frustumPlanesForAllBoxesInside: Plane[] = [
+                // Left plane
+                Plane.FromPositionAndNormal(new Vector3(-4.1, 0, 0), new Vector3(1, 0, 0)),
+                // Right plane
+                Plane.FromPositionAndNormal(new Vector3(8.1, 0, 0), new Vector3(-1, 0, 0)),
+                // Top plane
+                Plane.FromPositionAndNormal(new Vector3(0, 8.1, 0), new Vector3(0, -1, 0)),
+                // Bottom plane
+                Plane.FromPositionAndNormal(new Vector3(0, -9.1, 0), new Vector3(0, 1, 0)),
+                // Near plane
+                Plane.FromPositionAndNormal(new Vector3(0, 0, -8.1), new Vector3(0, 0, 1)),
+                // Far plane
+                Plane.FromPositionAndNormal(new Vector3(0, 0, 8.1), new Vector3(0, 0, -1)),
+            ];
+
+            // Selection should contain all presented entries
+            const selection0 = new SmartArrayNoDuplicate<AbstractMesh>(128);
+            scene.selectionOctree.blocks[0].select(frustumPlanesForAllBoxesInside, selection0, true);
+            expect(selection0.length).toEqual(6);
+            expect(selection0.data.filter(Boolean).map((x) => x.name)).toEqual(["box_27", "box_27", "box_2", "box_7", "box_12", "box_22"]);
+
+            const selection7 = new SmartArrayNoDuplicate<AbstractMesh>(128);
+            scene.selectionOctree.blocks[7].select(frustumPlanesForAllBoxesInside, selection7, true);
+            expect(selection7.length).toEqual(7);
+            expect(selection7.data.filter(Boolean).map((x) => x.name)).toEqual(["box_28", "box_28", "box_11", "box_15", "box_14", "box_15", "box_16"]);
         });
     });
 
