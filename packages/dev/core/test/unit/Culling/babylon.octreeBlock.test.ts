@@ -197,6 +197,54 @@ describe("OctreeBlock", function () {
         });
     });
 
+    describe("removeEntry", () => {
+        it("should remove entry from block", () => {
+            // Create octree
+            scene.createOrUpdateSelectionOctree(4);
+
+            // Find first octree block with entry
+            const blockWithEntries = scene.selectionOctree.blocks[4];
+            expect(blockWithEntries.entries.length).toEqual(1);
+
+            // Call removeEntry
+            blockWithEntries.removeEntry(blockWithEntries.entries[0]);
+
+            // Block should not have any entries
+            expect(blockWithEntries.entries.length).toEqual(0);
+        });
+
+        it("should remove entry from block with sub-blocks", () => {
+            // Create octree
+            scene.createOrUpdateSelectionOctree(4);
+
+            // Find first octree block with sub-blocks
+            const blockWithSubBlocks = scene.selectionOctree.blocks[0];
+            expect(blockWithSubBlocks.entries.length).toEqual(0);
+            expect(blockWithSubBlocks.blocks.length).toBeGreaterThan(1);
+
+            // Call removeEntry
+            blockWithSubBlocks.removeEntry(blockWithSubBlocks.blocks[0].entries[0]);
+
+            // Block should not have any entries
+            expect(blockWithSubBlocks.blocks[0].entries.length).toEqual(0);
+        });
+
+        it("should not remove entry that doesnt exist in the block", () => {
+            // Create octree
+            scene.createOrUpdateSelectionOctree(4);
+
+            // Find first octree block with entry
+            const blockWithEntries = scene.selectionOctree.blocks[4];
+            expect(blockWithEntries.entries.length).toEqual(1);
+
+            // Call removeEntry
+            blockWithEntries.removeEntry({} as any);
+
+            // Block should not have any entries
+            expect(blockWithEntries.entries.length).toEqual(1);
+        });
+    });
+
     describe("createInnerBlocks", () => {
         it("should clean block when after subdivide", () => {
             // Create octree
