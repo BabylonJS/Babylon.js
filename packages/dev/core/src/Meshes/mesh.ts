@@ -848,6 +848,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @see https://doc.babylonjs.com/how_to/how_to_use_lod
      * @param distanceOrScreenCoverage Either distance from the center of the object to show this level or the screen coverage if `useScreenCoverage` is set to `true`.
      * If screen coverage, value is a fraction of the screen's total surface, between 0 and 1.
+     * Example Playground for distance https://playground.babylonjs.com/#QE7KM#197
+     * Example Playground for screen coverage https://playground.babylonjs.com/#QE7KM#196
      * @param mesh The mesh to be added as LOD level (can be null)
      * @returns This mesh (for chaining)
      */
