@@ -250,7 +250,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     private _internalMeshDataInfo = new _InternalMeshDataInfo();
 
     /**
-     * Determines if the LOD levels are intended to be calculated using screen coverage (surface area ratio) instead of distance
+     * Determines if the LOD levels are intended to be calculated using screen coverage (surface area ratio) instead of distance.
+     * Should be set before calling `addLODLevel()`.
      */
     public get useLODScreenCoverage() {
         return this._internalMeshDataInfo._useLODScreenCoverage;
