@@ -14,6 +14,7 @@ import type { Light } from "../../../../Lights/light";
 import type { Nullable } from "../../../../types";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Scene } from "../../../../scene";
+import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
 
 import "../../../../Shaders/ShadersInclude/lightFragmentDeclaration";
 import "../../../../Shaders/ShadersInclude/lightVxFragmentDeclaration";
@@ -24,8 +25,6 @@ import "../../../../Shaders/ShadersInclude/helperFunctions";
 import "../../../../Shaders/ShadersInclude/lightsFragmentFunctions";
 import "../../../../Shaders/ShadersInclude/shadowsFragmentFunctions";
 import "../../../../Shaders/ShadersInclude/shadowsVertex";
-
-const fragmentOnly = true;
 
 /**
  * Block used to add light in the fragment shader
@@ -38,16 +37,40 @@ export class LightBlock extends NodeMaterialBlock {
      */
     public light: Nullable<Light>;
 
+    /** Indicates that no code should be generated in the vertex shader. Can be useful in some specific circumstances (like when doing ray marching for eg) */
+    @editableInPropertyPage("Generate only fragment code", PropertyTypeForEdition.Boolean, "PROPERTIES", { notifiers: { rebuild: true, update: true, onValidation: LightBlock._OnGenerateOnlyFragmentCodeChanged }})
+    public generateOnlyFragmentCode = false;
+
+    private static _OnGenerateOnlyFragmentCodeChanged(block: NodeMaterialBlock, propertyName: string): boolean {
+        const this_ = block as LightBlock;
+
+        if (this_.worldPosition.isConnected) {
+            this_.generateOnlyFragmentCode = !this_.generateOnlyFragmentCode;
+            console.error("The worldPosition input must not be connected to be able to switch!");
+            return false;
+        }
+
+        this_._setTarget();
+
+        return true;
+    }
+
+    /** @internal */
+    public _setTarget(): void {
+        this._setInitialTarget(this.generateOnlyFragmentCode ? NodeMaterialBlockTargets.Fragment : NodeMaterialBlockTargets.VertexAndFragment);
+        this.getInputByName("worldPosition")!.target = this.generateOnlyFragmentCode ? NodeMaterialBlockTargets.Fragment : NodeMaterialBlockTargets.Vertex;
+    }
+
     /**
      * Create a new LightBlock
      * @param name defines the block name
      */
     public constructor(name: string) {
-        super(name, fragmentOnly ? NodeMaterialBlockTargets.Fragment : NodeMaterialBlockTargets.VertexAndFragment);
+        super(name, NodeMaterialBlockTargets.VertexAndFragment);
 
         this._isUnique = true;
 
-        this.registerInput("worldPosition", NodeMaterialBlockConnectionPointTypes.Vector4, false, fragmentOnly ? NodeMaterialBlockTargets.Fragment : NodeMaterialBlockTargets.Vertex);
+        this.registerInput("worldPosition", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Vertex);
         this.registerInput("worldNormal", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Fragment);
         this.registerInput("cameraPosition", NodeMaterialBlockConnectionPointTypes.Vector3, false, NodeMaterialBlockTargets.Fragment);
         this.registerInput("glossiness", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
@@ -276,7 +299,7 @@ export class LightBlock extends NodeMaterialBlock {
             return;
         }
 
-        if (fragmentOnly) {
+        if (this.generateOnlyFragmentCode) {
             state.sharedData.dynamicUniformBlocks.push(this);
         }
 
@@ -286,23 +309,24 @@ export class LightBlock extends NodeMaterialBlock {
 
         const comments = `//${this.name}`;
         const worldPos = this.worldPosition;
-        const worldPosPrefix = fragmentOnly ? "" : "v_";
 
         let worldPosVariableName = worldPos.associatedVariableName;
-        if (fragmentOnly) {
+        if (this.generateOnlyFragmentCode) {
             worldPosVariableName = state._getFreeVariableName("globalWorldPos");
             state._emitFunction("light_globalworldpos", `vec3 ${worldPosVariableName};\r\n`, comments);
             state.compilationString += `${worldPosVariableName} = ${worldPos.associatedVariableName}.xyz;\r\n`;
+        } else {
+            worldPosVariableName = "v_" + worldPosVariableName + ".xyz";
         }
 
         state._emitFunctionFromInclude("helperFunctions", comments);
 
         state._emitFunctionFromInclude("lightsFragmentFunctions", comments, {
-            replaceStrings: [{ search: /vPositionW/g, replace: worldPosPrefix + worldPosVariableName + ".xyz" }],
+            replaceStrings: [{ search: /vPositionW/g, replace: worldPosVariableName }],
         });
 
         state._emitFunctionFromInclude("shadowsFragmentFunctions", comments, {
-            replaceStrings: [{ search: /vPositionW/g, replace: worldPosPrefix + worldPosVariableName + ".xyz" }],
+            replaceStrings: [{ search: /vPositionW/g, replace: worldPosVariableName }],
         });
 
         if (!this.light) {
@@ -324,7 +348,7 @@ export class LightBlock extends NodeMaterialBlock {
         // Code
         if (this._lightId === 0) {
             if (state._registerTempVariable("viewDirectionW")) {
-                state.compilationString += `vec3 viewDirectionW = normalize(${this.cameraPosition.associatedVariableName} - ${worldPosPrefix + worldPos.associatedVariableName}.xyz);\r\n`;
+                state.compilationString += `vec3 viewDirectionW = normalize(${this.cameraPosition.associatedVariableName} - ${worldPosVariableName});\r\n`;
             }
             state.compilationString += `lightingInfo info;\r\n`;
             state.compilationString += `float shadow = 1.;\r\n`;
@@ -366,6 +390,8 @@ export class LightBlock extends NodeMaterialBlock {
     public serialize(): any {
         const serializationObject = super.serialize();
 
+        serializationObject.generateOnlyFragmentCode = this.generateOnlyFragmentCode;
+
         if (this.light) {
             serializationObject.lightId = this.light.id;
         }
@@ -379,6 +405,10 @@ export class LightBlock extends NodeMaterialBlock {
         if (serializationObject.lightId) {
             this.light = scene.getLightById(serializationObject.lightId);
         }
+
+        this.generateOnlyFragmentCode = serializationObject.generateOnlyFragmentCode;
+
+        this._setTarget();
     }
 }
 

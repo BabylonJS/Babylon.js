@@ -6,7 +6,6 @@ import { GradientPropertyTabComponent } from "./properties/gradientNodePropertyC
 import { ImageSourcePropertyTabComponent } from "./properties/imageSourcePropertyTabComponent";
 import { InputPropertyTabComponent } from "./properties/inputNodePropertyComponent";
 import { LightInformationPropertyTabComponent } from "./properties/lightInformationPropertyTabComponent";
-import { LightPropertyTabComponent } from "./properties/lightPropertyTabComponent";
 import { TexturePropertyTabComponent } from "./properties/texturePropertyTabComponent";
 import { TransformPropertyTabComponent } from "./properties/transformNodePropertyComponent";
 import { TrigonometryPropertyTabComponent } from "./properties/trigonometryNodePropertyComponent";
@@ -17,7 +16,6 @@ export const RegisterToPropertyTabManagers = () => {
     PropertyLedger.RegisteredControls["TransformBlock"] = TransformPropertyTabComponent;
     PropertyLedger.RegisteredControls["InputBlock"] = InputPropertyTabComponent;
     PropertyLedger.RegisteredControls["GradientBlock"] = GradientPropertyTabComponent;
-    PropertyLedger.RegisteredControls["LightBlock"] = LightPropertyTabComponent;
     PropertyLedger.RegisteredControls["LightInformationBlock"] = LightInformationPropertyTabComponent;
     PropertyLedger.RegisteredControls["TextureBlock"] = TexturePropertyTabComponent;
     PropertyLedger.RegisteredControls["ReflectionTextureBlock"] = TexturePropertyTabComponent;
