@@ -2693,12 +2693,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * This method returns nothing but really modifies the mesh even if it's originally not set as updatable.
      * Note that, under the hood, this method sets a new VertexBuffer each call.
      * @see https://doc.babylonjs.com/resources/baking_transformations
-     * @param bakeIndependenlyOfChildren indicates whether to preserve all child nodes' World Matrix during baking
+     * @param bakeIndependentlyOfChildren indicates whether to preserve all child nodes' World Matrix during baking
      * @returns the current mesh
      */
-    public bakeCurrentTransformIntoVertices(bakeIndependenlyOfChildren: boolean = true): Mesh {
+    public bakeCurrentTransformIntoVertices(bakeIndependentlyOfChildren: boolean = true): Mesh {
         this.bakeTransformIntoVertices(this.computeWorldMatrix(true));
-        this.resetLocalMatrix(bakeIndependenlyOfChildren);
+        this.resetLocalMatrix(bakeIndependentlyOfChildren);
         return this;
     }
 
