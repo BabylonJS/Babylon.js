@@ -138,7 +138,7 @@ Engine.prototype.registerView = function (canvas: HTMLCanvasElement, camera?: Ca
 };
 
 Engine.prototype.unRegisterView = function (canvas: HTMLCanvasElement): Engine {
-    if (!this.views) {
+    if (!this.views || this.views.length === 0) {
         return this;
     }
 
@@ -157,7 +157,7 @@ Engine.prototype.unRegisterView = function (canvas: HTMLCanvasElement): Engine {
 };
 
 Engine.prototype._renderViews = function () {
-    if (!this.views) {
+    if (!this.views || this.views.length === 0) {
         return false;
     }
 
