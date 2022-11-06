@@ -155,5 +155,19 @@ describe("Mesh Baking", () => {
 
             expect(vPositionsResult).toEqual(expectedBoxVerticesInverted);
         });
+
+        it("should skip transforms when vertices are not exist and return source mesh", () => {
+            // Remove vertices from mesh
+            box.getVertexBuffer(VertexBuffer.PositionKind)?.dispose();
+
+            // And after it the box should not have vertices
+            const vPositionsResult = box.getVerticesData(VertexBuffer.PositionKind);
+            expect(vPositionsResult).toBeFalsy();
+
+            // Bake the box without vertices should return original mesh
+            const inverseTransform = Matrix.Scaling(-1, -1, -1);
+            const modifiedMesh = box.bakeTransformIntoVertices(inverseTransform);
+            expect(modifiedMesh).toBe(box);
+        });
     });
 });
