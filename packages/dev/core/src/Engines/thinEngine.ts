@@ -4618,12 +4618,14 @@ export class ThinEngine {
 
         this._unpackFlipY(texture.invertY);
 
+        let targetForBinding = gl.TEXTURE_2D;
         let target = gl.TEXTURE_2D;
         if (texture.isCube) {
             target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex;
+            targetForBinding = gl.TEXTURE_CUBE_MAP;
         }
 
-        this._bindTextureDirectly(target, texture, true);
+        this._bindTextureDirectly(targetForBinding, texture, true);
 
         gl.texSubImage2D(target, lod, xOffset, yOffset, width, height, format, textureType, imageData);
 
@@ -4631,7 +4633,7 @@ export class ThinEngine {
             this._gl.generateMipmap(target);
         }
 
-        this._bindTextureDirectly(target, null);
+        this._bindTextureDirectly(targetForBinding, null);
     }
 
     /**
