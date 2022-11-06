@@ -1,52 +1,52 @@
 import { VertexBuffer } from "core/Buffers";
 import type { Engine } from "core/Engines";
 import { NullEngine } from "core/Engines";
-import { Matrix } from "core/Maths";
+import { Matrix, Vector3 } from "core/Maths";
 import type { Mesh } from "core/Meshes";
 import { MeshBuilder } from "core/Meshes";
 import { Scene } from "core/scene";
 
 describe("Mesh Baking", () => {
+    // prettier-ignore
+    // Box vertices for box with size 1, centered at origin, it contains 8 vertices [x, y, z].
+    const boxVerticesDefault: ReadonlyArray<number> = [
+        0.5, -0.5, 0.5,
+        -0.5, -0.5, 0.5,
+        -0.5, 0.5, 0.5,
+
+        0.5, 0.5, 0.5,
+        0.5, 0.5, -0.5,
+        -0.5, 0.5, -0.5,
+
+        -0.5, -0.5, -0.5,
+        0.5, -0.5, -0.5,
+        0.5, 0.5, -0.5,
+
+        0.5, -0.5, -0.5,
+        0.5, -0.5, 0.5,
+        0.5, 0.5, 0.5,
+
+        -0.5, 0.5, 0.5,
+        -0.5, -0.5, 0.5,
+        -0.5, -0.5, -0.5,
+
+        -0.5, 0.5, -0.5,
+        -0.5, 0.5, 0.5,
+        -0.5, 0.5, -0.5,
+
+        0.5, 0.5, -0.5,
+        0.5, 0.5, 0.5,
+        0.5, -0.5, 0.5,
+
+        0.5, -0.5, -0.5,
+        -0.5, -0.5, -0.5,
+        -0.5, -0.5, 0.5,
+    ];
+
     describe("bakeTransformIntoVertices", () => {
         let subject: Engine;
         let scene: Scene;
         let box: Mesh;
-
-        // prettier-ignore
-        // Box vertices for box with size 1, centered at origin, it contains 8 vertices [x, y, z].
-        const boxVerticesDefault: ReadonlyArray<number> = [
-            0.5, -0.5, 0.5,
-            -0.5, -0.5, 0.5,
-            -0.5, 0.5, 0.5,
-
-            0.5, 0.5, 0.5,
-            0.5, 0.5, -0.5,
-            -0.5, 0.5, -0.5,
-
-            -0.5, -0.5, -0.5,
-            0.5, -0.5, -0.5,
-            0.5, 0.5, -0.5,
-
-            0.5, -0.5, -0.5,
-            0.5, -0.5, 0.5,
-            0.5, 0.5, 0.5,
-
-            -0.5, 0.5, 0.5,
-            -0.5, -0.5, 0.5,
-            -0.5, -0.5, -0.5,
-
-            -0.5, 0.5, -0.5,
-            -0.5, 0.5, 0.5,
-            -0.5, 0.5, -0.5,
-
-            0.5, 0.5, -0.5,
-            0.5, 0.5, 0.5,
-            0.5, -0.5, 0.5,
-
-            0.5, -0.5, -0.5,
-            -0.5, -0.5, -0.5,
-            -0.5, -0.5, 0.5,
-        ];
 
         beforeEach(() => {
             subject = new NullEngine({
@@ -168,6 +168,41 @@ describe("Mesh Baking", () => {
             const inverseTransform = Matrix.Scaling(-1, -1, -1);
             const modifiedMesh = box.bakeTransformIntoVertices(inverseTransform);
             expect(modifiedMesh).toBe(box);
+        });
+    });
+
+    describe("bakeCurrentTransformIntoVertices", () => {
+        let subject: Engine;
+        let scene: Scene;
+        let box: Mesh;
+
+        beforeEach(() => {
+            subject = new NullEngine({
+                renderHeight: 256,
+                renderWidth: 256,
+                textureSize: 256,
+                deterministicLockstep: false,
+                lockstepMaxSteps: 1,
+            });
+            scene = new Scene(subject);
+            box = MeshBuilder.CreateBox("box", { size: 1 }, scene);
+        });
+
+        it("should bake transform into vertices", () => {
+            box.scaling.z = 2;
+            box.position.y = 5;
+            box.rotation.x = Math.PI / 2;
+
+            box.bakeCurrentTransformIntoVertices();
+
+            // After baking the box vertices should not be equal to default
+            const vPositionsResult = box.getVerticesData(VertexBuffer.PositionKind);
+            expect(vPositionsResult).not.toStrictEqual(boxVerticesDefault);
+
+            // And mesh transformation should be reset
+            expect(box.scaling).toEqual(Vector3.One());
+            expect(box.position).toEqual(Vector3.Zero());
+            expect(box.rotation).toEqual(Vector3.Zero());
         });
     });
 });
