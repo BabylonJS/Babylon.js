@@ -434,6 +434,8 @@ ThinEngine.prototype.createRawCubeTexture = function (
 
     texture.width = width;
     texture.height = height;
+    texture.invertY = invertY;
+    texture._compression = compression;
 
     // Double check on POT to generate Mips.
     const isPot = !this.needPOTTextures || (Tools.IsExponentOfTwo(texture.width) && Tools.IsExponentOfTwo(texture.height));
@@ -444,6 +446,29 @@ ThinEngine.prototype.createRawCubeTexture = function (
     // Upload data if needed. The texture won't be ready until then.
     if (data) {
         this.updateRawCubeTexture(texture, data, format, type, invertY, compression);
+    } else {
+        const internalSizedFomat = this._getRGBABufferInternalSizedFormat(type);
+        const level = 0;
+
+        this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
+
+        for (let faceIndex = 0; faceIndex < 6; faceIndex++) {
+            if (compression) {
+                gl.compressedTexImage2D(
+                    gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex,
+                    level,
+                    (<any>this.getCaps().s3tc)[compression],
+                    texture.width,
+                    texture.height,
+                    0,
+                    undefined as any
+                );
+            } else {
+                gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, level, internalSizedFomat, texture.width, texture.height, 0, internalFormat, textureType, null);
+            }
+        }
+
+        this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
     }
 
     this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, texture, true);
@@ -463,6 +488,7 @@ ThinEngine.prototype.createRawCubeTexture = function (
 
     texture.generateMipMaps = generateMipMaps;
     texture.samplingMode = samplingMode;
+    texture.isReady = true;
 
     return texture;
 };
