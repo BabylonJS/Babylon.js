@@ -2642,7 +2642,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * The mesh normals are modified using the same transformation.
      * Note that, under the hood, this method sets a new VertexBuffer each call.
      * @param transform defines the transform matrix to use
-     * @see https://doc.babylonjs.com/resources/baking_transformations
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/transforms/center_origin/bakingTransforms
      * @returns the current mesh
      */
     public bakeTransformIntoVertices(transform: Matrix): Mesh {
