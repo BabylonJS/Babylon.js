@@ -111,5 +111,49 @@ describe("Mesh Baking", () => {
 
             expect(vPositionsResult).toStrictEqual(expectedBoxVerticesShifted);
         });
+
+        it("should flip faces for inverted transform", () => {
+            // Bake transform into vertices with inverted transform
+            const inverseTransform = Matrix.Scaling(-1, -1, -1);
+            box.bakeTransformIntoVertices(inverseTransform);
+            const vPositionsResult = box.getVerticesData(VertexBuffer.PositionKind);
+
+            // prettier-ignore
+            const expectedBoxVerticesInverted: ReadonlyArray<number> = [
+                -0.5, 0.5, -0.5,
+                0.5, 0.5, -0.5,
+                0.5, -0.5, -0.5,
+
+                -0.5, -0.5, -0.5,
+                -0.5, -0.5, 0.5,
+                0.5, -0.5, 0.5,
+
+                0.5, 0.5, 0.5,
+                -0.5, 0.5, 0.5,
+                -0.5, -0.5, 0.5,
+
+                -0.5, 0.5, 0.5,
+                -0.5, 0.5, -0.5,
+                -0.5, -0.5, -0.5,
+
+                0.5, -0.5, -0.5,
+                0.5, 0.5, -0.5,
+                0.5, 0.5, 0.5,
+
+                0.5, -0.5, 0.5,
+                0.5, -0.5, -0.5,
+                0.5, -0.5, 0.5,
+
+                -0.5, -0.5, 0.5,
+                -0.5, -0.5, -0.5,
+                -0.5, 0.5, -0.5,
+
+                -0.5, 0.5, 0.5,
+                0.5, 0.5, 0.5,
+                0.5, 0.5, -0.5,
+            ];
+
+            expect(vPositionsResult).toEqual(expectedBoxVerticesInverted);
+        });
     });
 });
