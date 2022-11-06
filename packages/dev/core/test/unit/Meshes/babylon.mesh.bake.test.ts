@@ -204,5 +204,38 @@ describe("Mesh Baking", () => {
             expect(box.position).toEqual(Vector3.Zero());
             expect(box.rotation).toEqual(Vector3.Zero());
         });
+
+        it("should set children transforms from their parent", () => {
+            // Set some children of the box
+            const child = MeshBuilder.CreateBox("child", { size: 1 }, scene);
+            const child2 = MeshBuilder.CreateBox("child2", { size: 1 }, scene);
+
+            child.parent = box;
+            child2.parent = box;
+
+            // Set some transform to the box and children
+            box.scaling.z = 2.5;
+            box.position.y = 5;
+            box.rotation.x = Math.PI / 2;
+
+            child.scaling.z = 1.5;
+            child.position.y = -1;
+            child.rotation.x = Math.PI / 4;
+
+            child2.scaling.z = 1.5;
+            child2.position.y = -1;
+            child2.rotation.x = Math.PI / 4;
+
+            box.bakeCurrentTransformIntoVertices();
+
+            // And children transforms should be set by parent
+            expect(child.scaling.z).toEqual(2.5);
+            expect(child.position.y).toEqual(5);
+            expect(child.rotation.x).toEqual(Math.PI / 2);
+
+            expect(child2.scaling.z).toEqual(2.5);
+            expect(child2.position.y).toEqual(5);
+            expect(child2.rotation.x).toEqual(Math.PI / 2);
+        });
     });
 });
