@@ -2638,7 +2638,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * Modifies the mesh geometry according to the passed transformation matrix.
-     * This method returns nothing but it really modifies the mesh even if it's originally not set as updatable.
+     * This method returns nothing, but it really modifies the mesh even if it's originally not set as updatable.
      * The mesh normals are modified using the same transformation.
      * Note that, under the hood, this method sets a new VertexBuffer each call.
      * @param transform defines the transform matrix to use
