@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/shared-ui-components",
-    "version": "5.31.0",
+    "version": "5.31.1",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -8,6 +8,8 @@
         "**/*.js",
         "**/*.d.ts",
         "**/*.map",
+        "**/*.svg",
+        "**/*.scss",
         "readme.md",
         "license.md"
     ],
