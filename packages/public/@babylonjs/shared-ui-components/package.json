@@ -34,7 +34,9 @@
         "react": "^17.0.2",
         "react-dnd": "15.0.1",
         "react-dnd-touch-backend": "15.0.1",
-        "react-dom": "^17.0.2"
+        "react-dom": "^17.0.2",
+        "dagre": "^0.8.5",
+        "@types/dagre": "^0.7.47"
     },
     "keywords": [
         "3D",
@@ -56,3 +58,4 @@
         "url": "https://github.com/BabylonJS/Babylon.js/issues"
     }
 }
+
