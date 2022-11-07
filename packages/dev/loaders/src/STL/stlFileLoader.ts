@@ -160,9 +160,9 @@ export class STLFileLoader implements ISceneLoaderPlugin {
         }
 
         // US-ASCII begin with 's', 'o', 'l', 'i', 'd'
-        const ascll = [ 115, 111, 108, 105, 100 ];
+        const ascii = [ 115, 111, 108, 105, 100 ];
         for ( let off = 0; off < 5; off ++ ) {
-            if( reader.getUint8(off) != ascll[off]){
+            if( reader.getUint8(off) !== ascii[off]){
                 return true;
             }
             if( off === 4 ) return false;
