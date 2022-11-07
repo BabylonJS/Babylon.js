@@ -7,6 +7,7 @@ import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockCon
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
 import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
+import type { Mesh } from "../../../../Meshes/mesh";
 import { InputBlock } from "../Input/inputBlock";
 import type { Effect } from "../../../effect";
 import type { Scene } from "../../../../scene";
@@ -24,6 +25,7 @@ import "../../../../Shaders/ShadersInclude/bumpFragment";
  */
 export class PerturbNormalBlock extends NodeMaterialBlock {
     private _tangentSpaceParameterName = "";
+    private _tangentCorrectionFactorName = "";
 
     /** Gets or sets a boolean indicating that normal should be inverted on X axis */
     @editableInPropertyPage("Invert X axis", PropertyTypeForEdition.Boolean, "PROPERTIES", { notifiers: { update: false } })
@@ -169,11 +171,14 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         defines.setValue("PARALLAXOCCLUSION", this.useParallaxOcclusion, true);
     }
 
-    public bind(effect: Effect, nodeMaterial: NodeMaterial) {
+    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         if (nodeMaterial.getScene()._mirroredCameraPosition) {
             effect.setFloat2(this._tangentSpaceParameterName, this.invertX ? 1.0 : -1.0, this.invertY ? 1.0 : -1.0);
         } else {
             effect.setFloat2(this._tangentSpaceParameterName, this.invertX ? -1.0 : 1.0, this.invertY ? -1.0 : 1.0);
+        }
+        if (mesh) {
+            effect.setFloat(this._tangentCorrectionFactorName, mesh.getWorldMatrix().determinant() < 0 ? -1 : 1);
         }
     }
 
@@ -211,6 +216,10 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
 
         state._emitUniformFromString(this._tangentSpaceParameterName, "vec2");
 
+        this._tangentCorrectionFactorName = state._getFreeDefineName("tangentCorrectionFactor");
+
+        state._emitUniformFromString(this._tangentCorrectionFactorName, "float");
+
         let normalSamplerName = null;
         if (this.normalMapColor.connectedPoint) {
             normalSamplerName = (this.normalMapColor.connectedPoint!._ownerBlock as TextureBlock).samplerName;
@@ -243,7 +252,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         } else if (worldTangent.isConnected) {
             state.compilationString += `vec3 tbnNormal = normalize(${worldNormal.associatedVariableName}.xyz);\r\n`;
             state.compilationString += `vec3 tbnTangent = normalize(${worldTangent.associatedVariableName}.xyz);\r\n`;
-            state.compilationString += `vec3 tbnBitangent = cross(tbnNormal, tbnTangent);\r\n`;
+            state.compilationString += `vec3 tbnBitangent = cross(tbnNormal, tbnTangent) * ${this._tangentCorrectionFactorName};\r\n`;
             state.compilationString += `mat3 vTBN = mat3(tbnTangent, tbnBitangent, tbnNormal);\r\n`;
         }
 

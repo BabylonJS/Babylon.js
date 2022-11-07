@@ -884,7 +884,7 @@ export abstract class EffectLayer {
         this.onBeforeRenderMeshToEffect.notifyObservers(ownerMesh);
 
         if (this._useMeshMaterial(renderingMesh)) {
-            renderingMesh.render(subMesh, hardwareInstancedRendering, replacementMesh || undefined);
+            renderingMesh.render(subMesh, enableAlphaMode, replacementMesh || undefined);
         } else if (this._isReady(subMesh, hardwareInstancedRendering, this._emissiveTextureAndColor.texture)) {
             const renderingMaterial = effectiveMesh._internalAbstractMeshDataInfo._materialForRenderPass?.[engine.currentRenderPassId];
 

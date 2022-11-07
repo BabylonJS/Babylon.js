@@ -1,5 +1,28 @@
 # Changelog
 
+## 5.31.0
+
+### Core
+
+- Reduce memory usage in bakeTransformIntoVertices - by [rgerd](https://github.com/rgerd) ([#13193](https://github.com/BabylonJS/Babylon.js/pull/13193))
+- NME: fix wrong perturbed normals when using pre-existing tangents - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#13186](https://github.com/BabylonJS/Babylon.js/pull/13186))
+- Test babylon camera inputs manager - by [Dok11](https://github.com/Dok11) ([#13188](https://github.com/BabylonJS/Babylon.js/pull/13188))
+- WebGPU: Add support for GLES3 to WebGPU GLSL processing - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#13191](https://github.com/BabylonJS/Babylon.js/pull/13191))
+- Test babylon octree block - by [Dok11](https://github.com/Dok11) ([#13189](https://github.com/BabylonJS/Babylon.js/pull/13189))
+- Test babylon mesh lod - by [Dok11](https://github.com/Dok11) ([#13184](https://github.com/BabylonJS/Babylon.js/pull/13184))
+- Test babylon transform node - by [Dok11](https://github.com/Dok11) ([#13181](https://github.com/BabylonJS/Babylon.js/pull/13181))
+- Lights: Add support for multiple shadow generators - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#13177](https://github.com/BabylonJS/Babylon.js/pull/13177))
+- Fix bug rendering transparent meshes using their own materials in effect layer - [_Bug Fix_] by [djn24](https://github.com/djn24) ([#13179](https://github.com/BabylonJS/Babylon.js/pull/13179))
+- fix nightly for BN - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#13178](https://github.com/BabylonJS/Babylon.js/pull/13178))
+
+### Node Editor
+
+- NME: Fix preview not updated when changing the clamp settings in the Texture block - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#13187](https://github.com/BabylonJS/Babylon.js/pull/13187))
+
+### Viewer
+
+- Lights: Add support for multiple shadow generators - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#13177](https://github.com/BabylonJS/Babylon.js/pull/13177))
+
 ## 5.30.0
 
 ### Core

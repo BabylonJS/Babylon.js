@@ -25,6 +25,7 @@ import { TBNBlock } from "../Fragment/TBNBlock";
  */
 export class ClearCoatBlock extends NodeMaterialBlock {
     private _scene: Scene;
+    private _tangentCorrectionFactorName = "";
 
     /**
      * Create a new ClearCoatBlock
@@ -220,6 +221,10 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         } else {
             effect.setFloat2("vClearCoatTangentSpaceParams", perturbedNormalBlock?.invertX ? -1.0 : 1.0, perturbedNormalBlock?.invertY ? -1.0 : 1.0);
         }
+
+        if (mesh) {
+            effect.setFloat(this._tangentCorrectionFactorName, mesh.getWorldMatrix().determinant() < 0 ? -1 : 1);
+        }
     }
 
     private _generateTBNSpace(state: NodeMaterialBuildState, worldPositionVarName: string, worldNormalVarName: string) {
@@ -242,7 +247,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         } else if (worldTangent.isConnected) {
             code += `vec3 tbnNormal = normalize(${worldNormalVarName}.xyz);\r\n`;
             code += `vec3 tbnTangent = normalize(${worldTangent.associatedVariableName}.xyz);\r\n`;
-            code += `vec3 tbnBitangent = cross(tbnNormal, tbnTangent);\r\n`;
+            code += `vec3 tbnBitangent = cross(tbnNormal, tbnTangent) * ${this._tangentCorrectionFactorName};\r\n`;
             code += `mat3 vTBN = mat3(tbnTangent, tbnBitangent, tbnNormal);\r\n`;
         }
 
@@ -382,6 +387,9 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         if (state.target === NodeMaterialBlockTargets.Fragment) {
             state.sharedData.bindableBlocks.push(this);
             state.sharedData.blocksWithDefines.push(this);
+
+            this._tangentCorrectionFactorName = state._getFreeDefineName("tangentCorrectionFactor");
+            state._emitUniformFromString(this._tangentCorrectionFactorName, "float");
         }
 
         return this;

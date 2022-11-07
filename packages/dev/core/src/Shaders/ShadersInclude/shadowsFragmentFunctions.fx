@@ -1,5 +1,5 @@
 #ifdef SHADOWS
-    #if defined(WEBGL2) || defined(WEBGPU)
+    #if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
         #define TEXTUREFUNC(s, c, l) texture2DLodEXT(s, c, l)
     #else
         #define TEXTUREFUNC(s, c, b) texture2D(s, c, b)
@@ -119,7 +119,7 @@
         return esm;
     }
 
-    #if defined(WEBGL2) || defined(WEBGPU)
+    #if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
         #define inline
         float computeShadowCSM(float layer, vec4 vPositionFromLight, float depthMetric, highp sampler2DArray shadowSampler, float darkness, float frustumEdgeFalloff)
         {
@@ -261,7 +261,7 @@
         #define ZINCLIP uvDepth.z
     #endif
 
-    #if defined(WEBGL2) || defined(WEBGPU)
+    #if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
         #define GREATEST_LESS_THAN_ONE 0.99999994
 
         // Shadow PCF kernel size 1 with a single tap (lowest quality)

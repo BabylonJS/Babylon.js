@@ -1487,6 +1487,14 @@
             "playgroundId": "#ERVGT5",
             "referenceImage": "parseGuiJsonWithUnicode.png",
             "renderCount": 50
+        },
+        {
+            "title": "Multi shadow generators per light",
+            "playgroundId": "#LMQGSX#2",
+            "referenceImage": "multiSGPerLight.png",
+            "errorRatio": 2,
+            "renderCount": 5,
+            "excludedEngines": ["webgl1"]
         }
     ]
 }

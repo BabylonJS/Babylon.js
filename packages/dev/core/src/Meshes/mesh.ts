@@ -368,7 +368,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * Gets the delay loading state of the mesh (when delay loading is turned on)
-     * @see https://doc.babylonjs.com/how_to/using_the_incremental_loading_system
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/importers/incrementalLoading
      */
     public delayLoadState = Constants.DELAYLOADSTATE_NONE;
 
@@ -909,7 +909,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * Returns the registered LOD mesh distant from the parameter `camera` position if any, else returns the current mesh.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_lod
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/LOD
      * @param camera defines the camera to use to compute distance
      * @param boundingSphere defines a custom bounding sphere to use instead of the one from this mesh
      * @returns This mesh (for chaining)
@@ -1221,19 +1221,27 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Shadows
         const currentRenderPassId = engine.currentRenderPassId;
         for (const light of this.lightSources) {
-            const generator = light.getShadowGenerator();
+            const generators = light.getShadowGenerators();
 
-            if (generator && (!generator.getShadowMap()?.renderList || (generator.getShadowMap()?.renderList && generator.getShadowMap()?.renderList?.indexOf(this) !== -1))) {
-                if (generator.getShadowMap()) {
-                    engine.currentRenderPassId = generator.getShadowMap()!.renderPassId;
-                }
-                for (const subMesh of this.subMeshes) {
-                    if (!generator.isReady(subMesh, hardwareInstancedRendering, subMesh.getMaterial()?.needAlphaBlendingForMesh(this) ?? false)) {
-                        engine.currentRenderPassId = currentRenderPassId;
-                        return false;
+            if (!generators) {
+                continue;
+            }
+
+            const iterator = generators.values();
+            for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
+                const generator = key.value;
+                if (generator && (!generator.getShadowMap()?.renderList || (generator.getShadowMap()?.renderList && generator.getShadowMap()?.renderList?.indexOf(this) !== -1))) {
+                    if (generator.getShadowMap()) {
+                        engine.currentRenderPassId = generator.getShadowMap()!.renderPassId;
                     }
+                    for (const subMesh of this.subMeshes) {
+                        if (!generator.isReady(subMesh, hardwareInstancedRendering, subMesh.getMaterial()?.needAlphaBlendingForMesh(this) ?? false)) {
+                            engine.currentRenderPassId = currentRenderPassId;
+                            return false;
+                        }
+                    }
+                    engine.currentRenderPassId = currentRenderPassId;
                 }
-                engine.currentRenderPassId = currentRenderPassId;
             }
         }
 
@@ -2649,22 +2657,23 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         let data = <FloatArray>this.getVerticesData(VertexBuffer.PositionKind);
 
-        let temp = new Array<number>();
+        const temp = Vector3.Zero();
         let index: number;
         for (index = 0; index < data.length; index += 3) {
-            Vector3.TransformCoordinates(Vector3.FromArray(data, index), transform).toArray(temp, index);
+            Vector3.TransformCoordinatesFromFloatsToRef(data[index], data[index + 1], data[index + 2], transform, temp).toArray(data, index);
         }
 
-        this.setVerticesData(VertexBuffer.PositionKind, temp, (<VertexBuffer>this.getVertexBuffer(VertexBuffer.PositionKind)).isUpdatable());
+        this.setVerticesData(VertexBuffer.PositionKind, data, (<VertexBuffer>this.getVertexBuffer(VertexBuffer.PositionKind)).isUpdatable());
 
         // Normals
         if (this.isVerticesDataPresent(VertexBuffer.NormalKind)) {
             data = <FloatArray>this.getVerticesData(VertexBuffer.NormalKind);
-            temp = [];
             for (index = 0; index < data.length; index += 3) {
-                Vector3.TransformNormal(Vector3.FromArray(data, index), transform).normalize().toArray(temp, index);
+                Vector3.TransformNormalFromFloatsToRef(data[index], data[index + 1], data[index + 2], transform, temp)
+                    .normalize()
+                    .toArray(data, index);
             }
-            this.setVerticesData(VertexBuffer.NormalKind, temp, (<VertexBuffer>this.getVertexBuffer(VertexBuffer.NormalKind)).isUpdatable());
+            this.setVerticesData(VertexBuffer.NormalKind, data, (<VertexBuffer>this.getVertexBuffer(VertexBuffer.NormalKind)).isUpdatable());
         }
 
         // flip faces?
