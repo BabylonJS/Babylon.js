@@ -29,20 +29,24 @@
 		float lastSampledHeight = 1.0;
 		float currSampledHeight = 1.0;
 
+		bool keepWorking = true;
 		for (int i = 0; i < iMaxSamples; i++)
 		{
 			currSampledHeight = texture2D(bumpSampler, texCoord + vCurrOffset).w;
 
 			// Test if the view ray has intersected the surface.
-			if (currSampledHeight > currRayHeight)
+			if (!keepWorking)
+			{
+				// do nothing
+			}
+			else if (currSampledHeight > currRayHeight)
 			{
 				float delta1 = currSampledHeight - currRayHeight;
 				float delta2 = (currRayHeight + stepSize) - lastSampledHeight;
 				float ratio = delta1 / (delta1 + delta2);
 				vCurrOffset = (ratio)* vLastOffset + (1.0 - ratio) * vCurrOffset;
 
-				// Force the exit of the loop
-				break;
+				keepWorking = false;
 			}
 			else
 			{
