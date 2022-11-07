@@ -27,8 +27,10 @@ export const StateViewNodeRenderer = (props: IStateViewNodeRendererProps) => {
     }, [lastUpdate]);
 
     const connections = useMemo(() => {
+        console.log("all transitions", stateMachine?.getTransitions());
         return (
             stateMachine?.getTransitions().map((transition) => {
+                console.log("transition", transition);
                 const fromId = transition[0];
                 const toId = transition[1].id;
                 const connId = `${fromId}-${toId}`;
@@ -52,6 +54,7 @@ export const StateViewNodeRenderer = (props: IStateViewNodeRendererProps) => {
         const destState = stateMachine?.getStateById(targetId);
         if (stateMachine && sourceState && destState) {
             stateMachine.removeTransition(sourceState, destState);
+            setStateMachine(stateMachine);
         }
     };
 
@@ -59,6 +62,7 @@ export const StateViewNodeRenderer = (props: IStateViewNodeRendererProps) => {
         const node = stateMachine?.getStateById(nodeId);
         if (stateMachine && node) {
             stateMachine.removeState(node);
+            setStateMachine(stateMachine);
         }
     };
 

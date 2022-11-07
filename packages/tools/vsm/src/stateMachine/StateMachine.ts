@@ -90,6 +90,11 @@ export class StateMachine {
         }
         this._states.splice(this._states.indexOf(state), 1);
         delete this._transitions[state.id];
+        for (const [key, value] of Object.entries(this._transitions)) {
+            if (value === state) {
+                delete this._transitions[key];
+            }
+        }
     }
 
     setStartingState(state: State) {

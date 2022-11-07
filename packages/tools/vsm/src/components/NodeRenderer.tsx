@@ -63,11 +63,13 @@ export const NodeRenderer = (props: INodeRendererProps) => {
     }, [selectedNode]);
 
     const onKeyDown = (evt: KeyboardEvent) => {
-        console.log(evt);
+        console.log("on key down", evt, "selectedLine", selectedLine, "selectedNode", selectedNode);
         if (evt.key === "Delete") {
             if (selectedLine) {
+                console.log("call deleteline", selectedLine);
                 props.deleteLine(selectedLine);
             } else if (selectedNode) {
+                console.log("call delete node", selectedNode);
                 props.deleteNode(selectedNode);
             }
         }
@@ -78,7 +80,7 @@ export const NodeRenderer = (props: INodeRendererProps) => {
         return () => {
             document.removeEventListener("keydown", onKeyDown);
         };
-    }, [selectedLine]);
+    }, [selectedLine, selectedNode]);
 
     const graphContext = useMemo(() => ({ updatePos, onNodesConnected, onLineSelected, onNodeSelected }), []);
     console.log("nodes", nodes);
