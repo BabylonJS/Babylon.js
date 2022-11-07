@@ -158,7 +158,7 @@ describe("Mesh Baking", () => {
 
         it("should skip transforms when vertices are not exist and return source mesh", () => {
             // Remove vertices from mesh
-            box.getVertexBuffer(VertexBuffer.PositionKind)?.dispose();
+            box.removeVerticesData(VertexBuffer.PositionKind);
 
             // And after it the box should not have vertices
             const vPositionsResult = box.getVerticesData(VertexBuffer.PositionKind);
