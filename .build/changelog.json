@@ -1,6 +1,182 @@
 {
-    "fromTag": "5.30.0",
+    "fromTag": "5.31.0",
     "changelog": {
+        "5.31.1": [
+            {
+                "pr": "13208",
+                "title": "include assets when packaging shared ui components",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/public/@babylonjs/shared-ui-components/package.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13201",
+                "title": "Test babylon octree block",
+                "description": "Test cases for all OctreeBlock method with 100% coverage",
+                "author": {
+                    "name": "Dok11",
+                    "url": "https://github.com/Dok11"
+                },
+                "files": [
+                    "packages/dev/core/test/unit/Culling/babylon.octreeBlock.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13202",
+                "title": "Test babylon mesh lod screen coverage",
+                "description": "Hi!\r\nI added a note to `useLODScreenCoverage`. As I found, it's not working after LODs was added, so, useLODScreenCoverage should be set before LODs adding if it neccessary.\r\n\r\nAlso I added two playground links to show how LODs works with distance or screen coverage.\r\n\r\nAnd one test case to check `addLODLevel` and `getLOD` with the screen coverage feature.",
+                "author": {
+                    "name": "Dok11",
+                    "url": "https://github.com/Dok11"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/test/unit/Meshes/babylon.mesh.lod.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13204",
+                "title": "fix: switch back to the main scene using multiple canvases, and rende…",
+                "description": "hi when i was using multiple canvases unregister all sub-canvases, the main scene will not trigger the _renderFrame method. After debugging, it is found that when the sub-canvas registration is canceled and the number of sub-canvases is 0, a logic problem will occur in _renderViews, resulting in the inability to execute _renderFrame\r\n\r\n> packages/dev/core/src/Engines/Extensions/engine.views.ts\r\n```\r\nEngine.prototype._renderViews = function () {\r\n    //  ！！！ this.views is an array and has zero length，will continue to execute the code ！！！\r\n    if (!this.views) {\r\n        return false;\r\n    }\r\n\r\n    const parent = this.getRenderingCanvas();\r\n\r\n    if (!parent) {\r\n        return false;\r\n    }\r\n    // the code inside cannot be executed because the array length is zero\r\n    for (const view of this.views) {\r\n        if (!view.enabled) {\r\n            continue;\r\n        }\r\n        const canvas = view.target;\r\n        const context = canvas.getContext(\"2d\");\r\n        if (!context) {\r\n            continue;\r\n        }\r\n        _onBeforeViewRenderObservable.notifyObservers(view);\r\n        const camera = view.camera;\r\n        let previewCamera: Nullable<Camera> = null;\r\n        let scene: Nullable<Scene> = null;\r\n        if (camera) {\r\n            scene = camera.getScene();\r\n\r\n            if (scene.activeCameras && scene.activeCameras.length) {\r\n                continue;\r\n            }\r\n\r\n            this.activeView = view;\r\n\r\n            previewCamera = scene.activeCamera;\r\n            scene.activeCamera = camera;\r\n        }\r\n\r\n        if (view.customResize) {\r\n            view.customResize(canvas);\r\n        } else {\r\n            // Set sizes\r\n            const width = Math.floor(canvas.clientWidth / this._hardwareScalingLevel);\r\n            const height = Math.floor(canvas.clientHeight / this._hardwareScalingLevel);\r\n\r\n            const dimsChanged = width !== canvas.width || parent.width !== canvas.width || height !== canvas.height || parent.height !== canvas.height;\r\n            if (canvas.clientWidth && canvas.clientHeight && dimsChanged) {\r\n                canvas.width = width;\r\n                canvas.height = height;\r\n                this.setSize(width, height);\r\n            }\r\n        }\r\n\r\n        if (!parent.width || !parent.height) {\r\n            return false;\r\n        }\r\n\r\n        // Render the frame\r\n        this._renderFrame();\r\n\r\n        this.flushFramebuffer();\r\n\r\n        // Copy to target\r\n        if (view.clearBeforeCopy) {\r\n            context.clearRect(0, 0, parent.width, parent.height);\r\n        }\r\n        context.drawImage(parent, 0, 0);\r\n\r\n        // Restore\r\n        if (previewCamera && scene) {\r\n            scene.activeCamera = previewCamera;\r\n        }\r\n        _onAfterViewRenderObservable.notifyObservers(view);\r\n    }\r\n\r\n    this.activeView = null;\r\n\r\n    return true;\r\n};\r\n\r\n```\r\n> packages/dev/core/src/Engines/engine.ts\r\n```\r\n    public _renderLoop(): void {\r\n        if (!this._contextWasLost) {\r\n            let shouldRender = true;\r\n            if (!this.renderEvenInBackground && this._windowIsBackground) {\r\n                shouldRender = false;\r\n            }\r\n\r\n            if (shouldRender) {\r\n                // Start new frame\r\n                this.beginFrame();\r\n\r\n                // Child canvases \r\n               // ！！！When the length of the word canvas array is zero, this._renderViews() cannot return false, resulting in _renderFrame not triggering ！！！\r\n                if (!this._renderViews()) {\r\n                    // Main frame\r\n                    this._renderFrame();\r\n                }\r\n\r\n                // Present\r\n                this.endFrame();\r\n            }\r\n        }\r\n\r\n        if (this._activeRenderLoops.length > 0) {\r\n            // Register new frame\r\n            if (this.customAnimationFrameRequester) {\r\n                this.customAnimationFrameRequester.requestID = this._queueNewFrame(\r\n                    this.customAnimationFrameRequester.renderFunction || this._boundRenderFunction,\r\n                    this.customAnimationFrameRequester\r\n                );\r\n                this._frameHandler = this.customAnimationFrameRequester.requestID;\r\n            } else if (this.isVRPresenting()) {\r\n                this._requestVRFrame();\r\n            } else {\r\n                this._frameHandler = this._queueNewFrame(this._boundRenderFunction, this.getHostWindow());\r\n            }\r\n        } else {\r\n            this._renderingQueueLaunched = false;\r\n        }\r\n    }\r\n```\r\n",
+                "author": {
+                    "name": "MILIFIRE",
+                    "url": "https://github.com/MILIFIRE"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.views.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13205",
+                "title": "Cube textures: Fix updating data with engine.updateTextureData",
+                "description": "See https://forum.babylonjs.com/t/updatetexturedata-does-not-work-correctly-for-cubetextures/35418\r\n\r\nIt also fixes passing null for the `data` parameter of `RawCubeTexture.constructor`. So, if you don't have data at texture creation, you can now avoid creating dummy buffers and simply pass `null`.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.rawTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.rawTexture.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "13190",
+                "title": "Xr camera",
+                "description": "Fix #13185 \r\n\r\nThe layer setup of the XR cameras is not propagated to the rigged cameras.\r\n\r\nThis is a tentative fix that will need @RaananW review when he is back from vacation in a week :-)",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/webXRCamera.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "VR/AR/XR"
+                ]
+            },
+            {
+                "pr": "13200",
+                "title": "Motion blur: Fix motion blur when not in the \"object based\" mode",
+                "description": "See https://forum.babylonjs.com/t/motion-blur-during-camera-flyby-in-skybox/34481/7",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/motionBlurPostProcess.ts",
+                    "packages/dev/core/src/Shaders/motionBlur.fragment.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13199",
+                "title": "AssetContainer: Fix crash when calling moveAllFromScene if environmentTexture is present",
+                "description": "See https://forum.babylonjs.com/t/assetcontainer-fails-with-environmenttexture/35362/2",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/assetContainer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "assets"
+                ]
+            },
+            {
+                "pr": "13198",
+                "title": "Add missing samplers to motion blur post process",
+                "description": null,
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/motionBlurPostProcess.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13196",
+                "title": "Fix animatable loop",
+                "description": "In this playground https://playground.babylonjs.com/#7V0Y1I#2446 we can see the animation triggering a loop on each click before the fix ",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animatable.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "animations"
+                ]
+            },
+            {
+                "pr": "13197",
+                "title": "Shadows: Fix transparent shadows with ALPHABLEND transparency mode",
+                "description": "See https://forum.babylonjs.com/t/transparent-shadow-not-work-for-alphablend-materials/35359",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts",
+                    "packages/dev/core/src/Shaders/shadowMap.fragment.fx",
+                    "packages/dev/core/src/Shaders/shadowMap.vertex.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "shadows"
+                ]
+            }
+        ],
         "5.31.0": [
             {
                 "pr": "13195",
