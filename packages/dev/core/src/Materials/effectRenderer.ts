@@ -42,7 +42,7 @@ export class EffectRenderer {
     /**
      * The engine the effect renderer has been created for.
      */
-    public readonly engine: ThinEngine
+    public readonly engine: ThinEngine;
 
     private _vertexBuffers: { [key: string]: VertexBuffer };
     private _indexBuffer: DataBuffer;
