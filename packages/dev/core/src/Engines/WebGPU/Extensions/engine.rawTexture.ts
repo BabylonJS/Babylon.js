@@ -124,6 +124,8 @@ WebGPUEngine.prototype.createRawCubeTexture = function (
     if (!this._doNotHandleContextLost) {
         texture._bufferViewArray = data;
     }
+    texture.invertY = invertY;
+    texture._compression = compression;
     texture._cachedWrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
     texture._cachedWrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
 
@@ -132,6 +134,8 @@ WebGPUEngine.prototype.createRawCubeTexture = function (
     if (data) {
         this.updateRawCubeTexture(texture, data, format, type, invertY, compression);
     }
+
+    texture.isReady = true;
 
     return texture;
 };
