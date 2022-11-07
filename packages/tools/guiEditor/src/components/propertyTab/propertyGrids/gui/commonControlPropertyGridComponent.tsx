@@ -20,7 +20,7 @@ import { Vector2 } from "core/Maths/math";
 
 import type { Nullable } from "core/types";
 import { IconComponent } from "shared-ui-components/lines/iconComponent";
-import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+// import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 
 import sizeIcon from "shared-ui-components/imgs/sizeIcon.svg";
 import verticalMarginIcon from "shared-ui-components/imgs/verticalMarginIcon.svg";
@@ -386,11 +386,11 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
             }
         };
 
-        const fontStyleOptions = [
-            { label: "regular", value: 0 },
-            { label: "italic", value: 1 },
-            { label: "oblique", value: 2 },
-        ];
+        // const fontStyleOptions = [
+        //     { label: "regular", value: 0 },
+        //     { label: "italic", value: 1 },
+        //     { label: "oblique", value: 2 },
+        // ];
 
         let horizontalDisabled = false,
             verticalDisabled = false,
@@ -399,7 +399,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
 
         const parent = controls[0].parent;
 
-        const fonts = this.state.fontFamilyOptions;
+        // const fonts = this.state.fontFamilyOptions;
 
         if (parent?.getClassName() === "StackPanel" || parent?.getClassName() === "VirtualKeyboard") {
             if ((parent as StackPanel).isVertical) {
@@ -746,7 +746,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         <div className="ge-divider">
                             <IconComponent icon={fontFamilyIcon} label={"Font Family"} />
 
-                            <OptionsLineComponent
+                            {/* <OptionsLineComponent
                                 label=""
                                 target={proxy}
                                 propertyName="fontFamily"
@@ -770,7 +770,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                         return -1;
                                     }
                                 }}
-                            />
+                            /> */}
                         </div>
                         <div className="ge-divider">
                             <IconComponent icon={fontWeightIcon} label={"Font Weight"} />
@@ -778,7 +778,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         </div>
                         <div className="ge-divider">
                             <IconComponent icon={fontStyleIcon} label={"Font Style"} />
-                            <OptionsLineComponent
+                            {/* <OptionsLineComponent
                                 label=""
                                 target={proxy}
                                 propertyName="fontStyle"
@@ -797,7 +797,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                             return 0;
                                     }
                                 }}
-                            />
+                            /> */}
                         </div>
                         <div className="ge-divider double">
                             <IconComponent icon={fontSizeIcon} label={"Font Size"} />

@@ -3,7 +3,7 @@
  * the visual graph system.
  */
 
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { useMemo } from "react";
 import { NodeRenderer } from "./NodeRenderer";
 import { useSelectedAction } from "./tools/useSelectedAction";
@@ -76,7 +76,15 @@ export const StateViewNodeRenderer = (props: IStateViewNodeRendererProps) => {
 
     if (stateMachine) {
         return (
-            <NodeRenderer connections={connections} updateConnections={updateConnections} deleteLine={deleteLine} deleteNode={deleteNode} nodes={nodes} selectNode={selectNode} />
+            <NodeRenderer
+                id="stateView"
+                connections={connections}
+                updateConnections={updateConnections}
+                deleteLine={deleteLine}
+                deleteNode={deleteNode}
+                nodes={nodes}
+                selectNode={selectNode}
+            />
         );
     } else {
         return null;

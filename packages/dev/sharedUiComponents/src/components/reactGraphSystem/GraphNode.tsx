@@ -14,16 +14,17 @@ export interface IGraphNodeProps {
     width?: number;
     height?: number;
     highlighted?: boolean;
+    parentContainerId: string;
 }
 
 export const GraphNode: FC<IGraphNodeProps> = (props) => {
-    const { id, name, x, y, selected, width = 100, height = 40, highlighted } = props;
+    const { id, name, x, y, selected, width = 100, height = 40, highlighted, parentContainerId } = props;
     const { onNodeSelected } = useGraphContext();
 
     const [, dragRef] = useDrag(
         () => ({
             type: "node",
-            item: { id },
+            item: { id, parentContainerId },
             collect: (monitor) => ({
                 isDrag: !!monitor.isDragging(),
             }),
@@ -44,7 +45,15 @@ export const GraphNode: FC<IGraphNodeProps> = (props) => {
         >
             <div className={style.container}>
                 <h2>{name}</h2>
-                <GraphConnectorHandler parentId={id} parentX={x} parentY={y} offsetY={-height / 2} parentWidth={width} parentHeight={height} />
+                <GraphConnectorHandler
+                    parentContainerId={parentContainerId}
+                    parentId={id}
+                    parentX={x}
+                    parentY={y}
+                    offsetY={-height / 2}
+                    parentWidth={width}
+                    parentHeight={height}
+                />
             </div>
         </div>
     );

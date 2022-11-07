@@ -23,6 +23,7 @@ export interface INodeRendererProps {
     nodes: { id: string; label: string }[];
     highlightedNode?: string; // id of the node to highlight
     selectNode?: (nodeId: Nullable<string>) => void; // function to be called if a node is selected
+    id: string; // renderer id
 }
 
 export const NodeRenderer = (props: INodeRendererProps) => {
@@ -86,15 +87,24 @@ export const NodeRenderer = (props: INodeRendererProps) => {
         <div style={fullscreenStyle}>
             <GraphContextManager.Provider value={graphContext}>
                 <GraphContainer>
-                    <GraphNodesContainer onNodeMoved={updatePos}>
+                    <GraphNodesContainer id={props.id} onNodeMoved={updatePos}>
                         {nodes.map(({ id, label }) => {
                             const posInRecord = pos[id] || { x: 0, y: 0 };
                             return (
-                                <GraphNode key={id} id={id} name={label} x={posInRecord.x} y={posInRecord.y} selected={id === selectedNode} highlighted={id === highlightedNode} />
+                                <GraphNode
+                                    parentContainerId={props.id}
+                                    key={id}
+                                    id={id}
+                                    name={label}
+                                    x={posInRecord.x}
+                                    y={posInRecord.y}
+                                    selected={id === selectedNode}
+                                    highlighted={id === highlightedNode}
+                                />
                             );
                         })}
                     </GraphNodesContainer>
-                    <GraphLinesContainer>
+                    <GraphLinesContainer id={props.id}>
                         {connections.map(({ id, sourceId, targetId }) => {
                             const sourcePos = pos[sourceId] || { x: 0, y: 0 };
                             const targetPos = pos[targetId] || { x: 0, y: 0 };

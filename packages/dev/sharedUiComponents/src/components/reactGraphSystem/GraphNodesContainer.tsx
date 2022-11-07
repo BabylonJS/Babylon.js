@@ -9,6 +9,7 @@ import { useDrop } from "react-dnd";
  */
 export interface IGraphContainerProps {
     onNodeMoved: (id: string, x: number, y: number) => void;
+    id: string;
 }
 
 export const GraphNodesContainer: FC<IGraphContainerProps> = (props) => {
@@ -16,6 +17,9 @@ export const GraphNodesContainer: FC<IGraphContainerProps> = (props) => {
 
     const [, dropRef] = useDrop(() => ({
         accept: "node",
+        canDrop: (item: any) => {
+            return item.parentContainerId === props.id;
+        },
         hover: (item: any, monitor: DropTargetMonitor) => {
             const posXY = monitor.getClientOffset();
             const pos = new Vector2(posXY!.x, posXY!.y);

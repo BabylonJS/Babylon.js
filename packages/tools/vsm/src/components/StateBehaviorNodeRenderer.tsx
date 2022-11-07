@@ -33,7 +33,17 @@ export const StateBehaviorNodeRenderer = (props: IStateBehaviorNodeRendererProps
             }
         };
 
-        return <NodeRenderer nodes={nodes} connections={connections} updateConnections={() => {}} deleteLine={() => {}} deleteNode={() => {}} selectNode={selectNode} />;
+        return (
+            <NodeRenderer
+                id="stateBehavior"
+                nodes={nodes}
+                connections={connections}
+                updateConnections={() => {}}
+                deleteLine={() => {}}
+                deleteNode={() => {}}
+                selectNode={selectNode}
+            />
+        );
     } else {
         return null;
     }
