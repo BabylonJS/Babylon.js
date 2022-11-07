@@ -11,7 +11,7 @@ import type { IFrameData } from "./interfaces/nodeLocationInfo";
 import { StringTools } from "../stringTools";
 import styles from "./graphFrame.modules.scss";
 import commonStyles from "./common.modules.scss";
-import { ClassNames } from "shared-ui-components/components/classNames";
+import { ClassNames } from "../components/classNames";
 
 declare type ISelectionChangedOptions = import("./interfaces/selectionChangedOptions").ISelectionChangedOptions;
 
