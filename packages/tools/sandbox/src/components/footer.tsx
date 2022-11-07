@@ -42,8 +42,8 @@ export class Footer extends React.Component<IFooterProps> {
         }
     }
 
-    switchCamera(name: string) {
-        const camera = this.props.globalState.currentScene!.getCameraByName(name);
+    switchCamera(index: number) {
+        const camera = this.props.globalState.currentScene!.cameras[index];
 
         if (camera) {
             if (this.props.globalState.currentScene!.activeCamera) {
@@ -147,7 +147,7 @@ export class Footer extends React.Component<IFooterProps> {
                         label="Select camera"
                         options={this._cameraNames}
                         activeEntry={() => this.props.globalState.currentScene?.activeCamera?.name || ""}
-                        onOptionPicked={(option) => this.switchCamera(option)}
+                        onOptionPicked={(option, index) => this.switchCamera(index)}
                         enabled={this._cameraNames.length > 1}
                         searchPlaceholder="Search camera"
                     />
