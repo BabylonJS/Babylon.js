@@ -276,6 +276,9 @@ export class WebXRCamera extends FreeCamera {
                 // Set cameras to render to the session's render target
                 currentRig.outputRenderTarget = renderTargetTexture || this._xrSessionManager.getRenderTargetTextureForView(view);
             }
+
+            // Replicate parent rig camera behavior
+            currentRig.layerMask = this.layerMask;
         });
     }
 
