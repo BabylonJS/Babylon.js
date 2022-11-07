@@ -491,7 +491,7 @@ export class Geometry implements IGetSetVerticesData {
      * @returns true if data is present
      */
     public isVerticesDataPresent(kind: string): boolean {
-        if (!this._vertexBuffers || !this.getVerticesData(kind)) {
+        if (!this._vertexBuffers) {
             if (this._delayInfo) {
                 return this._delayInfo.indexOf(kind) !== -1;
             }
