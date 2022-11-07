@@ -8,6 +8,8 @@
         "**/*.js",
         "**/*.d.ts",
         "**/*.map",
+        "**/*.svg",
+        "**/*.scss",
         "readme.md",
         "license.md"
     ],
