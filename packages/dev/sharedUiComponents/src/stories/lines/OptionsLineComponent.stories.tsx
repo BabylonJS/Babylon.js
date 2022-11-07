@@ -40,9 +40,9 @@ export const Default: StoryObj<typeof RenderComponent> = {
     },
     args: {
         initialOptions: [
-            { label: "Option 1", value: "option1" },
-            { label: "Option 2", value: "option2" },
-            { label: "Option 3", value: "option3" },
+            { label: "Option 1", value: "option1", id: "1" },
+            { label: "Option 2", value: "option2", id: "2" },
+            { label: "Option 3", value: "option3", id: "3" },
         ],
         initialSelectedOptionValue: "option1",
     },

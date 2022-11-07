@@ -231,7 +231,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         }
     }
 
-    _filterFontDuplicates(array: { label: string; value: string }[]) {
+    _filterFontDuplicates(array: { label: string; value: string; id: string }[]) {
         const seen = new Set();
         return array.filter((item) => {
             const val = item.value;
@@ -322,9 +322,9 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         };
 
         const fontStyleOptions = [
-            { label: "regular", value: "regular" },
-            { label: "italic", value: "italic" },
-            { label: "oblique", value: "oblique" },
+            { label: "regular", value: "regular", id: "0" },
+            { label: "italic", value: "italic", id: "1" },
+            { label: "oblique", value: "oblique", id: "2" },
         ];
 
         let horizontalDisabled = false,
@@ -334,7 +334,9 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
 
         const parent = controls[0].parent;
 
-        const fonts = this._filterFontDuplicates(this.state.fontFamilyOptions.filter(({ label }) => label !== "Custom Font").map(({ label }) => ({ label, value: label })));
+        const fonts = this._filterFontDuplicates(
+            this.state.fontFamilyOptions.filter(({ label }) => label !== "Custom Font").map(({ label, value }) => ({ label, value: label, id: value.toString() }))
+        );
 
         if (parent?.getClassName() === "StackPanel" || parent?.getClassName() === "VirtualKeyboard") {
             if ((parent as StackPanel).isVertical) {
@@ -677,8 +679,8 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                 onOptionSelected={(selectedFontValue) => {
                                     proxy.fontFamily = selectedFontValue;
                                 }}
-                                onOptionAdded={(newFontValue) => {
-                                    this._addFont(newFontValue.value);
+                                onOptionAdded={({ value }) => {
+                                    this._addFont(value);
                                 }}
                                 addOptionPlaceholder={"Add new font..."}
                                 validateNewOptionValue={(newFontValue) => {
