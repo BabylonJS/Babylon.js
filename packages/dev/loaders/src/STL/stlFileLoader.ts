@@ -165,10 +165,9 @@ export class STLFileLoader implements ISceneLoaderPlugin {
             if( reader.getUint8(off) !== ascii[off]){
                 return true;
             }
-            if( off === 4 ) return false;
         }
         
-        return true;
+        return false;
     }
 
     private _parseBinary(mesh: Mesh, data: ArrayBuffer, rightHanded: boolean) {
