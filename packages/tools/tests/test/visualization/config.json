@@ -1386,7 +1386,7 @@
         {
             "title": "Sample depth texture",
             "renderCount": 5,
-            "playgroundId": "#8RU8Q3#108",
+            "playgroundId": "#8RU8Q3#146",
             "excludedEngines": ["webgl1"],
             "referenceImage": "sampleDepthTexture.png"
         },
