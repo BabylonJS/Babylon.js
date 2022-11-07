@@ -20,6 +20,7 @@ export interface IOptionsLineComponentProps {
     onOptionSelected: (selectedOptionValue: string) => void;
     selectedOptionValue: string; // The value of the currently selected option
     validateNewOptionValue?: (newOptionValue: string) => boolean; // Optional function that can be used to validate the value of a new option
+    addOptionText?: string; // Optional text to display on the add option button
 }
 
 /**
@@ -70,7 +71,7 @@ export const OptionsLineComponent = (props: IOptionsLineComponentProps) => {
                 <select className={style.optionsSelect} onChange={onOptionChange} value={props.selectedOptionValue}>
                     {props.onOptionAdded && (
                         <option key={_OptionAddKey} value={_OptionAddKey}>
-                            Custom
+                            {props.addOptionText ?? "Custom"}
                         </option>
                     )}
                     {props.options.map((option) => (
