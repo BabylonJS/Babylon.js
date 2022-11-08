@@ -870,13 +870,13 @@ export class Curve3 {
      * @param t1 (Vector3) the tangent vector at the origin point
      * @param p2 (Vector3) the end point of the Hermite Spline
      * @param t2 (Vector3) the tangent vector at the end point
-     * @param nbPoints (integer) the wanted number of points in the curve
+     * @param nSeg (integer) the number of curve segments or nSeg + 1 points in the array
      * @returns the created Curve3
      */
-    public static CreateHermiteSpline(p1: DeepImmutable<Vector3>, t1: DeepImmutable<Vector3>, p2: DeepImmutable<Vector3>, t2: DeepImmutable<Vector3>, nbPoints: number): Curve3 {
+    public static CreateHermiteSpline(p1: DeepImmutable<Vector3>, t1: DeepImmutable<Vector3>, p2: DeepImmutable<Vector3>, t2: DeepImmutable<Vector3>, nSeg: number): Curve3 {
         const hermite = new Array<Vector3>();
-        const step = 1.0 / nbPoints;
-        for (let i = 0; i <= nbPoints; i++) {
+        const step = 1.0 / nSeg;
+        for (let i = 0; i <= nSeg; i++) {
             hermite.push(Vector3.Hermite(p1, t1, p2, t2, i * step));
         }
         return new Curve3(hermite);
