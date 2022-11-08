@@ -4,20 +4,20 @@ import { useState, useEffect } from "react";
 import type { FC } from "react";
 import { CommandBarComponent } from "shared-ui-components/components/bars/CommandBarComponent";
 import { FlexibleGridLayout } from "shared-ui-components/components/layout/FlexibleGridLayout";
-import { SceneContext } from "./SceneContext";
+import { SceneContext } from "./context/SceneContext";
 import style from "./workbench.modules.scss";
-import { StateSelectionContext } from "./components/StateSelectionContext";
+import { StateSelectionContext } from "./context/StateSelectionContext";
 import { initialLayout } from "./initialLayout";
 import { StateMachine } from "./stateMachine/StateMachine";
-import type { IStateMachineWrapper } from "./StateMachineContext";
-import { StateMachineContext } from "./StateMachineContext";
+import type { IStateMachineWrapper } from "./context/StateMachineContext";
+import { StateMachineContext } from "./context/StateMachineContext";
 import { CommandButtonComponent } from "shared-ui-components/components/bars/CommandButtonComponent";
 import type { State } from "./stateMachine/State";
 
 import playIcon from "./components/imgs/playIcon.svg";
 import pauseIcon from "./components/imgs/pauseIcon.svg";
-import type { BaseAction } from "./actions/actions/BaseAction";
-import { ActionSelectionContext } from "./components/ActionSelectionContext";
+import type { IActionSelectionContextWrapper } from "./context/ActionSelectionContext";
+import { ActionSelectionContext } from "./context/ActionSelectionContext";
 
 export type WorkbenchProps = {};
 
@@ -29,7 +29,7 @@ export const Workbench: FC<WorkbenchProps> = () => {
     const [scene, setScene] = useState<Nullable<Scene>>(null);
     const [selectedState, setSelectedState] = useState<Nullable<State>>(null);
     const [stateMachineWrapper, setStateMachineWrapper] = useState<Nullable<IStateMachineWrapper>>(null);
-    const [selectedAction, setSelectedAction] = useState<Nullable<BaseAction>>(null);
+    const [selectedActionWrapper, setSelectedActionWrapper] = useState<IActionSelectionContextWrapper>({ action: null, lastUpdate: Date.now() });
 
     const startStateMachine = () => {
         if (stateMachineWrapper) {
@@ -58,7 +58,7 @@ export const Workbench: FC<WorkbenchProps> = () => {
         <SceneContext.Provider value={{ scene, setScene }}>
             <StateMachineContext.Provider value={{ stateMachineWrapper, setStateMachineWrapper }}>
                 <StateSelectionContext.Provider value={{ selectedState: selectedState, setSelectedState: setSelectedState }}>
-                    <ActionSelectionContext.Provider value={{ selectedAction: selectedAction, setSelectedAction: setSelectedAction }}>
+                    <ActionSelectionContext.Provider value={{ selectedActionWrapper, setSelectedActionWrapper }}>
                         <div className={style.workbenchContainer}>
                             <CommandBarComponent
                                 artboardColor={workAreaColor}

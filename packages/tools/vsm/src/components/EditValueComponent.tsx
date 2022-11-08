@@ -10,7 +10,7 @@ export interface IEditValueComponentProps {}
 const style = { width: "40px", backgroundColor: "rgb(87, 87, 87)", border: "unset" };
 
 export const EditValueComponent: FC<IEditValueComponentProps> = (props) => {
-    const { selectedAction } = useSelectedAction();
+    const { selectedAction, setSelectedAction } = useSelectedAction();
 
     const [text, setText] = useState<Nullable<{ x: string; y: string; z: string }>>(null);
 
@@ -31,6 +31,7 @@ export const EditValueComponent: FC<IEditValueComponentProps> = (props) => {
             if (isNaN(parsedValue)) return;
             if (selectedAction instanceof SetPositionAction) {
                 selectedAction.targetPosition[axis] = parsedValue;
+                setSelectedAction(selectedAction);
             }
         }
     };
