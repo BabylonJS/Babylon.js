@@ -60,6 +60,9 @@ export class LineContainerComponent extends React.Component<ILineContainerCompon
                 this.setState({ isHighlighted: false });
             }, 5000);
         } else if (this.props.selection.selectedLineContainerTitlesNoFocus.indexOf(this.props.title) > -1) {
+            setTimeout(() => {
+                this.props.selection!.selectedLineContainerTitlesNoFocus = [];
+            });
             this.setState({ isExpanded: true, isHighlighted: false });
         } else {
             this.setState({ isExpanded: false });
