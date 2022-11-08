@@ -137,7 +137,13 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
             switch (type) {
                 case PropertyTypeForEdition.Boolean: {
                     components.push(
-                        <CheckBoxLineComponent label={displayName} target={block} propertyName={propertyName} onValueChanged={() => this.forceRebuild(options.notifiers)} />
+                        <CheckBoxLineComponent
+                            key={`checkBox-${propertyName}`}
+                            label={displayName}
+                            target={block}
+                            propertyName={propertyName}
+                            onValueChanged={() => this.forceRebuild(options.notifiers)}
+                        />
                     );
                     break;
                 }
@@ -146,6 +152,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                     if (cantDisplaySlider) {
                         components.push(
                             <FloatLineComponent
+                                key={`float-${propertyName}`}
                                 lockObject={this.props.stateManager.lockObject}
                                 label={displayName}
                                 propertyName={propertyName}
@@ -156,6 +163,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                     } else {
                         components.push(
                             <SliderLineComponent
+                                key={`slider-${propertyName}`}
                                 lockObject={this.props.stateManager.lockObject}
                                 label={displayName}
                                 target={block}
@@ -172,6 +180,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                 case PropertyTypeForEdition.Int: {
                     components.push(
                         <FloatLineComponent
+                            key={`int-${propertyName}`}
                             lockObject={this.props.stateManager.lockObject}
                             digits={0}
                             step={"1"}
@@ -187,6 +196,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                 case PropertyTypeForEdition.Vector2: {
                     components.push(
                         <Vector2LineComponent
+                            key={`vector2-${propertyName}`}
                             lockObject={this.props.stateManager.lockObject}
                             label={displayName}
                             propertyName={propertyName}
@@ -199,6 +209,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                 case PropertyTypeForEdition.List: {
                     components.push(
                         <OptionsLineComponent
+                            key={`options-${propertyName}`}
                             label={displayName}
                             options={options.options as IEditablePropertyListOption[]}
                             target={block}
@@ -214,7 +225,9 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
         return (
             <>
                 {groups.map((group) => (
-                    <LineContainerComponent title={group}>{componentList[group]}</LineContainerComponent>
+                    <LineContainerComponent key={`group-${group}`} title={group}>
+                        {componentList[group]}
+                    </LineContainerComponent>
                 ))}
             </>
         );
