@@ -371,7 +371,7 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                                 step={0.1}
                                 label="Vignette center X"
                                 target={renderPipeline.imageProcessing}
-                                propertyName="vignetteCentreX"
+                                propertyName="vignetteCenterX"
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
                             <SliderLineComponent
@@ -381,7 +381,7 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                                 step={0.1}
                                 label="Vignette center Y"
                                 target={renderPipeline.imageProcessing}
-                                propertyName="vignetteCentreY"
+                                propertyName="vignetteCenterY"
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
                             <Color3LineComponent
