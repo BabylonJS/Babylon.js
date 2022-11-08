@@ -230,33 +230,33 @@ export class ImageProcessingPostProcess extends PostProcess {
     }
 
     /**
-     * Gets Vignette centre X Offset.
+     * Gets Vignette center X Offset.
      */
     public get vignetteCentreX(): number {
-        return this.imageProcessingConfiguration.vignetteCentreX;
+        return this.imageProcessingConfiguration.vignetteCenterX;
     }
     /**
-     * Sets Vignette centre X Offset.
+     * Sets Vignette center X Offset.
      */
     public set vignetteCentreX(value: number) {
-        this.imageProcessingConfiguration.vignetteCentreX = value;
+        this.imageProcessingConfiguration.vignetteCenterX = value;
     }
 
     /**
-     * Gets Vignette centre Y Offset.
+     * Gets Vignette center Y Offset.
      */
     public get vignetteCentreY(): number {
-        return this.imageProcessingConfiguration.vignetteCentreY;
+        return this.imageProcessingConfiguration.vignetteCenterY;
     }
     /**
-     * Sets Vignette centre Y Offset.
+     * Sets Vignette center Y Offset.
      */
     public set vignetteCentreY(value: number) {
-        this.imageProcessingConfiguration.vignetteCentreY = value;
+        this.imageProcessingConfiguration.vignetteCenterY = value;
     }
 
     /**
-     * Vignette centre Y Offset.
+     * Vignette center Y Offset.
      */
     public get vignetteCenterY(): number {
         return this.imageProcessingConfiguration.vignetteCenterY;
@@ -266,7 +266,7 @@ export class ImageProcessingPostProcess extends PostProcess {
     }
 
     /**
-     * Vignette centre X Offset.
+     * Vignette center X Offset.
      */
     public get vignetteCenterX(): number {
         return this.imageProcessingConfiguration.vignetteCenterX;
