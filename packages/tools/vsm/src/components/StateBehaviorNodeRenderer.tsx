@@ -1,7 +1,10 @@
 import { useSelectedState } from "./tools/useSelectedState";
+import type { INodeType } from "./NodeRenderer";
 import { NodeRenderer } from "./NodeRenderer";
 import { useSelectedAction } from "./tools/useSelectedAction";
 import type { Nullable } from "core/types";
+import type { SetPositionAction } from "../actions/actions/SetPositionAction";
+import { SetPositionBlock } from "./nodesDisplay/SetPositionBlock";
 
 export interface IStateBehaviorNodeRendererProps {}
 
@@ -10,7 +13,7 @@ export const StateBehaviorNodeRenderer = (props: IStateBehaviorNodeRendererProps
     const { setSelectedAction } = useSelectedAction();
 
     if (selectedState) {
-        const nodes = [
+        const nodes: INodeType[] = [
             { id: selectedState.name + "stateEnterAction", label: "Enter" },
             { id: selectedState.name + "stateExitAction", label: "Exit" },
         ];
@@ -19,7 +22,11 @@ export const StateBehaviorNodeRenderer = (props: IStateBehaviorNodeRendererProps
 
         const stateEnterAction = selectedState.stateEnterAction;
         if (stateEnterAction) {
-            nodes.push({ id: selectedState.name + "action", label: stateEnterAction.actionName() });
+            nodes.push({
+                id: selectedState.name + "action",
+                label: stateEnterAction.actionName(),
+                customData: { type: "SetPosition", value: { targetPosition: (stateEnterAction as SetPositionAction).targetPosition } },
+            });
             connections.push({ id: selectedState.name + "enter", sourceId: selectedState.name + "stateEnterAction", targetId: selectedState.name + "action" });
             connections.push({ id: selectedState.name + "exit", sourceId: selectedState.name + "action", targetId: selectedState.name + "stateExitAction" });
         }
@@ -42,6 +49,7 @@ export const StateBehaviorNodeRenderer = (props: IStateBehaviorNodeRendererProps
                 deleteLine={() => {}}
                 deleteNode={() => {}}
                 selectNode={selectNode}
+                customComponents={{ SetPosition: SetPositionBlock }}
             />
         );
     } else {

@@ -1,3 +1,4 @@
+import type { ComponentType } from "react";
 import { useState, useEffect, useMemo } from "react";
 import { GraphContainer } from "shared-ui-components/components/reactGraphSystem/GraphContainer";
 import { GraphLine } from "shared-ui-components/components/reactGraphSystem/GraphLine";
@@ -14,16 +15,19 @@ const fullscreenStyle = { width: "100%", height: "100%" };
 
 export type IVisualRecordsType = Record<string, { x: number; y: number }>;
 export type IConnectionType = { id: string; sourceId: string; targetId: string };
+export type ICustomDataType = { type: string; value: any };
+export type INodeType = { id: string; label: string; customData?: ICustomDataType };
 
 export interface INodeRendererProps {
     connections: IConnectionType[];
     updateConnections: (sourceId: string, targetId: string) => void;
     deleteLine: (lineId: string) => void;
     deleteNode: (nodeId: string) => void;
-    nodes: { id: string; label: string }[];
+    nodes: INodeType[];
     highlightedNode?: string; // id of the node to highlight
     selectNode?: (nodeId: Nullable<string>) => void; // function to be called if a node is selected
     id: string; // renderer id
+    customComponents?: Record<string, ComponentType<any>>;
 }
 
 export const NodeRenderer = (props: INodeRendererProps) => {
@@ -90,8 +94,9 @@ export const NodeRenderer = (props: INodeRendererProps) => {
             <GraphContextManager.Provider value={graphContext}>
                 <GraphContainer>
                     <GraphNodesContainer id={props.id} onNodeMoved={updatePos}>
-                        {nodes.map(({ id, label }) => {
+                        {nodes.map(({ id, label, customData }) => {
                             const posInRecord = pos[id] || { x: 0, y: 0 };
+                            const CustomComponent = customData && customData.type && props.customComponents && props.customComponents[customData.type];
                             return (
                                 <GraphNode
                                     parentContainerId={props.id}
@@ -102,7 +107,9 @@ export const NodeRenderer = (props: INodeRendererProps) => {
                                     y={posInRecord.y}
                                     selected={id === selectedNode}
                                     highlighted={id === highlightedNode}
-                                />
+                                >
+                                    {CustomComponent && <CustomComponent {...customData.value} />}
+                                </GraphNode>
                             );
                         })}
                     </GraphNodesContainer>

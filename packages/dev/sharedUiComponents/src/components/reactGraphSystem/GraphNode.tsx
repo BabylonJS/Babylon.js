@@ -54,6 +54,7 @@ export const GraphNode: FC<IGraphNodeProps> = (props) => {
                     parentWidth={width}
                     parentHeight={height}
                 />
+                {props.children}
             </div>
         </div>
     );
