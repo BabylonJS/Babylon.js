@@ -1048,7 +1048,7 @@ export class Texture extends BaseTexture {
      * Creates a texture from its base 64 representation.
      * @param data Define the base64 payload without the data: prefix
      * @param name Define the name of the texture in the scene useful fo caching purpose for instance
-     * @param scene Define the scene the texture should belong to
+     * @param sceneOrEngine defines the scene or engine the texture is attached to
      * @param noMipmapOrOptions defines if the texture will require mip maps or not or set of all options to create the texture
      * @param invertY define if the texture needs to be inverted on the y axis during loading
      * @param samplingMode define the sampling mode we want for the texture while fetching from it (Texture.NEAREST_SAMPLINGMODE...)
@@ -1061,7 +1061,7 @@ export class Texture extends BaseTexture {
     public static CreateFromBase64String(
         data: string,
         name: string,
-        scene: Scene,
+        sceneOrEngine: Scene | ThinEngine,
         noMipmapOrOptions?: boolean | ITextureCreationOptions,
         invertY?: boolean,
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
@@ -1070,14 +1070,14 @@ export class Texture extends BaseTexture {
         format: number = Constants.TEXTUREFORMAT_RGBA,
         creationFlags?: number
     ): Texture {
-        return new Texture("data:" + name, scene, noMipmapOrOptions, invertY, samplingMode, onLoad, onError, data, false, format, undefined, undefined, creationFlags);
+        return new Texture("data:" + name, sceneOrEngine, noMipmapOrOptions, invertY, samplingMode, onLoad, onError, data, false, format, undefined, undefined, creationFlags);
     }
 
     /**
      * Creates a texture from its data: representation. (data: will be added in case only the payload has been passed in)
      * @param name Define the name of the texture in the scene useful fo caching purpose for instance
      * @param buffer define the buffer to load the texture from in case the texture is loaded from a buffer representation
-     * @param scene Define the scene the texture should belong to
+     * @param sceneOrEngine defines the scene or engine the texture is attached to
      * @param deleteBuffer define if the buffer we are loading the texture from should be deleted after load
      * @param noMipmapOrOptions defines if the texture will require mip maps or not or set of all options to create the texture
      * @param invertY define if the texture needs to be inverted on the y axis during loading
@@ -1091,7 +1091,7 @@ export class Texture extends BaseTexture {
     public static LoadFromDataString(
         name: string,
         buffer: any,
-        scene: Scene,
+        sceneOrEngine: Scene | ThinEngine,
         deleteBuffer: boolean = false,
         noMipmapOrOptions?: boolean | ITextureCreationOptions,
         invertY: boolean = true,
@@ -1105,7 +1105,7 @@ export class Texture extends BaseTexture {
             name = "data:" + name;
         }
 
-        return new Texture(name, scene, noMipmapOrOptions, invertY, samplingMode, onLoad, onError, buffer, deleteBuffer, format, undefined, undefined, creationFlags);
+        return new Texture(name, sceneOrEngine, noMipmapOrOptions, invertY, samplingMode, onLoad, onError, buffer, deleteBuffer, format, undefined, undefined, creationFlags);
     }
 }
 

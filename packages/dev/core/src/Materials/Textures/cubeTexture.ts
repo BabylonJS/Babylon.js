@@ -1,7 +1,7 @@
 import { serialize, serializeAsMatrix, SerializationHelper } from "../../Misc/decorators";
 import { Tools } from "../../Misc/tools";
 import type { Nullable } from "../../types";
-import type { Scene } from "../../scene";
+import { Scene } from "../../scene";
 import { Matrix, Vector3 } from "../../Maths/math.vector";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../../Materials/Textures/texture";
@@ -119,34 +119,38 @@ export class CubeTexture extends BaseTexture {
     /**
      * Creates a cube texture from an array of image urls
      * @param files defines an array of image urls
-     * @param scene defines the hosting scene
+     * @param sceneOrEngine defines the scene or engine the texture is attached to
      * @param noMipmap specifies if mip maps are not used
      * @returns a cube texture
      */
-    public static CreateFromImages(files: string[], scene: Scene, noMipmap?: boolean): CubeTexture {
+    public static CreateFromImages(files: string[], sceneOrEngine: Scene | ThinEngine, noMipmap?: boolean): CubeTexture {
         let rootUrlKey = "";
 
         files.forEach((url) => (rootUrlKey += url));
 
-        return new CubeTexture(rootUrlKey, scene, null, noMipmap, files);
+        return new CubeTexture(rootUrlKey, sceneOrEngine, null, noMipmap, files);
     }
 
     /**
      * Creates and return a texture created from prefilterd data by tools like IBL Baker or Lys.
      * @param url defines the url of the prefiltered texture
-     * @param scene defines the scene the texture is attached to
+     * @param sceneOrEngine defines the scene or engine the texture is attached to
      * @param forcedExtension defines the extension of the file if different from the url
      * @param createPolynomials defines whether or not to create polynomial harmonics from the texture data if necessary
      * @returns the prefiltered texture
      */
-    public static CreateFromPrefilteredData(url: string, scene: Scene, forcedExtension: any = null, createPolynomials: boolean = true) {
-        const oldValue = scene.useDelayedTextureLoading;
-        scene.useDelayedTextureLoading = false;
+    public static CreateFromPrefilteredData(url: string, sceneOrEngine: Scene | ThinEngine, forcedExtension: any = null, createPolynomials: boolean = true) {
+        let oldValue = false;
+        if (sceneOrEngine instanceof Scene) {
+            oldValue = sceneOrEngine.useDelayedTextureLoading;
+            sceneOrEngine.useDelayedTextureLoading = false;
+        }
 
-        const result = new CubeTexture(url, scene, null, false, null, null, null, undefined, true, forcedExtension, createPolynomials);
+        const result = new CubeTexture(url, sceneOrEngine, null, false, null, null, null, undefined, true, forcedExtension, createPolynomials);
 
-        scene.useDelayedTextureLoading = oldValue;
-
+        if (sceneOrEngine instanceof Scene) {
+            sceneOrEngine.useDelayedTextureLoading = oldValue;
+        }
         return result;
     }
 
