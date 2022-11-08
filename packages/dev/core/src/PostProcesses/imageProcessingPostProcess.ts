@@ -256,6 +256,26 @@ export class ImageProcessingPostProcess extends PostProcess {
     }
 
     /**
+     * Vignette centre Y Offset.
+     */
+    public get vignetteCenterY(): number {
+        return this.imageProcessingConfiguration.vignetteCenterY;
+    }
+    public set vignetteCenterY(value: number) {
+        this.imageProcessingConfiguration.vignetteCenterY = value;
+    }
+
+    /**
+     * Vignette centre X Offset.
+     */
+    public get vignetteCenterX(): number {
+        return this.imageProcessingConfiguration.vignetteCenterX;
+    }
+    public set vignetteCenterX(value: number) {
+        this.imageProcessingConfiguration.vignetteCenterX = value;
+    }
+
+    /**
      * Gets Vignette weight or intensity of the vignette effect.
      */
     public get vignetteWeight(): number {

@@ -284,6 +284,26 @@ export class ImageProcessingConfiguration {
     public vignetteCentreY = 0;
 
     /**
+     * Vignette centre Y Offset.
+     */
+    public get vignetteCenterY(): number {
+        return this.vignetteCentreY;
+    }
+    public set vignetteCenterY(value: number) {
+        this.vignetteCentreY = value;
+    }
+
+    /**
+     * Vignette centre X Offset.
+     */
+    public get vignetteCenterX(): number {
+        return this.vignetteCentreX;
+    }
+    public set vignetteCenterX(value: number) {
+        this.vignetteCentreX = value;
+    }
+
+    /**
      * Vignette weight or intensity of the vignette effect.
      */
     @serialize()
