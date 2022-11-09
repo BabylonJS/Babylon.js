@@ -2480,6 +2480,10 @@ export class WebGPUEngine extends Engine {
             gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture);
         }
 
+        if (image instanceof HTMLImageElement) {
+            throw "WebGPU engine: HTMLImageElement not supported in _uploadImageToTexture!";
+        }
+
         const bitmap = image as ImageBitmap; // in WebGPU we will always get an ImageBitmap, not an HTMLImageElement
 
         const width = Math.ceil(texture.width / (1 << lod));
