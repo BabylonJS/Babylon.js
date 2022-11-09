@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-accessibility",
-    "version": "5.19.2",
+    "version": "5.31.2",
     "main": "babylon.accessibility.max.js",
     "types": "babylon.accessibility.module.d.ts",
     "files": [
