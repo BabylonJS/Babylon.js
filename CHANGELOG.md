@@ -1,5 +1,25 @@
 # Changelog
 
+## 5.31.2
+
+### Core
+
+
+## 5.31.1
+
+### Core
+
+- Test babylon octree block - by [Dok11](https://github.com/Dok11) ([#13201](https://github.com/BabylonJS/Babylon.js/pull/13201))
+- Test babylon mesh lod screen coverage - by [Dok11](https://github.com/Dok11) ([#13202](https://github.com/BabylonJS/Babylon.js/pull/13202))
+- fix: switch back to the main scene using multiple canvases, and rende… - [_Bug Fix_] by [MILIFIRE](https://github.com/MILIFIRE) ([#13204](https://github.com/BabylonJS/Babylon.js/pull/13204))
+- Cube textures: Fix updating data with engine.updateTextureData - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#13205](https://github.com/BabylonJS/Babylon.js/pull/13205))
+- Xr camera - [_Bug Fix_] by [sebavan](https://github.com/sebavan) ([#13190](https://github.com/BabylonJS/Babylon.js/pull/13190))
+- Motion blur: Fix motion blur when not in the "object based" mode - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#13200](https://github.com/BabylonJS/Babylon.js/pull/13200))
+- AssetContainer: Fix crash when calling moveAllFromScene if environmentTexture is present - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#13199](https://github.com/BabylonJS/Babylon.js/pull/13199))
+- Add missing samplers to motion blur post process - [_Bug Fix_] by [carolhmj](https://github.com/carolhmj) ([#13198](https://github.com/BabylonJS/Babylon.js/pull/13198))
+- Fix animatable loop - [_Bug Fix_] by [sebavan](https://github.com/sebavan) ([#13196](https://github.com/BabylonJS/Babylon.js/pull/13196))
+- Shadows: Fix transparent shadows with ALPHABLEND transparency mode - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#13197](https://github.com/BabylonJS/Babylon.js/pull/13197))
+
 ## 5.31.0
 
 ### Core

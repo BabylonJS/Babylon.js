@@ -7,6 +7,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    padding: 0 0;
     &.wide {
         width: 120px;
         height: 45px;
@@ -15,6 +16,10 @@
     &.small {
         width: 30px;
         height: 30px;
+    }
+    &.smaller {
+        width: 25px;
+        height: 25px;
     }
     &.light {
         background-color: light-background;

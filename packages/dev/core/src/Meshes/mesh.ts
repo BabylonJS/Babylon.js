@@ -250,7 +250,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     private _internalMeshDataInfo = new _InternalMeshDataInfo();
 
     /**
-     * Determines if the LOD levels are intended to be calculated using screen coverage (surface area ratio) instead of distance
+     * Determines if the LOD levels are intended to be calculated using screen coverage (surface area ratio) instead of distance.
      */
     public get useLODScreenCoverage() {
         return this._internalMeshDataInfo._useLODScreenCoverage;
@@ -258,6 +258,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     public set useLODScreenCoverage(value: boolean) {
         this._internalMeshDataInfo._useLODScreenCoverage = value;
+        this._sortLODLevels();
     }
 
     /**
@@ -847,6 +848,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @see https://doc.babylonjs.com/how_to/how_to_use_lod
      * @param distanceOrScreenCoverage Either distance from the center of the object to show this level or the screen coverage if `useScreenCoverage` is set to `true`.
      * If screen coverage, value is a fraction of the screen's total surface, between 0 and 1.
+     * Example Playground for distance https://playground.babylonjs.com/#QE7KM#197
+     * Example Playground for screen coverage https://playground.babylonjs.com/#QE7KM#196
      * @param mesh The mesh to be added as LOD level (can be null)
      * @returns This mesh (for chaining)
      */
@@ -2638,11 +2641,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * Modifies the mesh geometry according to the passed transformation matrix.
-     * This method returns nothing but it really modifies the mesh even if it's originally not set as updatable.
+     * This method returns nothing, but it really modifies the mesh even if it's originally not set as updatable.
      * The mesh normals are modified using the same transformation.
      * Note that, under the hood, this method sets a new VertexBuffer each call.
      * @param transform defines the transform matrix to use
-     * @see https://doc.babylonjs.com/resources/baking_transformations
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/transforms/center_origin/bakingTransforms
      * @returns the current mesh
      */
     public bakeTransformIntoVertices(transform: Matrix): Mesh {
@@ -2693,12 +2696,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * This method returns nothing but really modifies the mesh even if it's originally not set as updatable.
      * Note that, under the hood, this method sets a new VertexBuffer each call.
      * @see https://doc.babylonjs.com/resources/baking_transformations
-     * @param bakeIndependenlyOfChildren indicates whether to preserve all child nodes' World Matrix during baking
+     * @param bakeIndependentlyOfChildren indicates whether to preserve all child nodes' World Matrix during baking
      * @returns the current mesh
      */
-    public bakeCurrentTransformIntoVertices(bakeIndependenlyOfChildren: boolean = true): Mesh {
+    public bakeCurrentTransformIntoVertices(bakeIndependentlyOfChildren: boolean = true): Mesh {
         this.bakeTransformIntoVertices(this.computeWorldMatrix(true));
-        this.resetLocalMatrix(bakeIndependenlyOfChildren);
+        this.resetLocalMatrix(bakeIndependentlyOfChildren);
         return this;
     }
 

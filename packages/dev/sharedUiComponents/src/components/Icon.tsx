@@ -7,5 +7,5 @@ export type IconProps = {
 };
 
 export const Icon: React.FC<IconProps> = ({ color = "dark", icon }) => {
-    return <img src={icon} style={{ width: "30px", height: "30px" }} className={ClassNames({ light: color === "light" }, styles)} />;
+    return <img src={icon} style={{ width: "100%", height: "100%" }} className={ClassNames({ light: color === "light" }, styles)} />;
 };

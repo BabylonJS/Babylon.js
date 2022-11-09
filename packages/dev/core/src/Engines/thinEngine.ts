@@ -200,14 +200,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.31.0";
+        return "babylonjs@5.31.2";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.31.0";
+        return "5.31.2";
     }
 
     /**
@@ -4618,12 +4618,14 @@ export class ThinEngine {
 
         this._unpackFlipY(texture.invertY);
 
+        let targetForBinding = gl.TEXTURE_2D;
         let target = gl.TEXTURE_2D;
         if (texture.isCube) {
             target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex;
+            targetForBinding = gl.TEXTURE_CUBE_MAP;
         }
 
-        this._bindTextureDirectly(target, texture, true);
+        this._bindTextureDirectly(targetForBinding, texture, true);
 
         gl.texSubImage2D(target, lod, xOffset, yOffset, width, height, format, textureType, imageData);
 
@@ -4631,7 +4633,7 @@ export class ThinEngine {
             this._gl.generateMipmap(target);
         }
 
-        this._bindTextureDirectly(target, null);
+        this._bindTextureDirectly(targetForBinding, null);
     }
 
     /**
