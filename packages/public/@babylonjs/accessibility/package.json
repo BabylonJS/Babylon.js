@@ -6,9 +6,9 @@
     "esnext": "dist/babylon.accessibility.max.js",
     "typings": "dist/babylon.accessibility.module.d.ts",
     "files": [
-        "dist",
         "readme.md",
-        "license.md"
+        "license.md",
+        "dist/**/*.*"
     ],
     "scripts": {
         "build": "npm run clean && npm run build:dev && npm run build:prod && npm run build:declaration",
