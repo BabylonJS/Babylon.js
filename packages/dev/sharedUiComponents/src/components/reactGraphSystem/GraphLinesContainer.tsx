@@ -19,7 +19,7 @@ export const GraphLinesContainer: FC<IGraphLinesContainerProps> = (props) => {
             delta: monitor.getDifferenceFromInitialOffset() as any,
         }),
     }));
-    console.log("accept connector with item", start);
+    // console.log("accept connector with item", start);
     return (
         <svg width="100%" height="100%" ref={dropRef}>
             <defs>

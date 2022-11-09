@@ -27,10 +27,10 @@ export const StateViewNodeRenderer = (props: IStateViewNodeRendererProps) => {
     }, [lastUpdate]);
 
     const connections = useMemo(() => {
-        console.log("all transitions", stateMachine?.getTransitions());
+        // console.log("all transitions", stateMachine?.getTransitions());
         return (
             stateMachine?.getTransitions().map((transition) => {
-                console.log("transition", transition);
+                // console.log("transition", transition);
                 const fromId = transition[0];
                 const toId = transition[1].id;
                 const connId = `${fromId}-${toId}`;

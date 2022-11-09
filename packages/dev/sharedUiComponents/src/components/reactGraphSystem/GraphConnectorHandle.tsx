@@ -51,7 +51,7 @@ export const GraphConnectorHandler: FC<IGraphConnectorHandlerProps> = (props) =>
         },
         [dragRef, dropRef]
     );
-    console.log("type of useDrag is", "connector" + props.parentContainerId);
+    // console.log("type of useDrag is", "connector" + props.parentContainerId);
     // console.log("parentX", parentX, "parentY", parentY);
     return <div ref={attachRef} className={ClassNames({ handle: true, hovered: isOver }, style)} style={{ top: centerY + "px", left: centerX + "px" }} />;
 };

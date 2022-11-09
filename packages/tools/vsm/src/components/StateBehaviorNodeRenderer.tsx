@@ -32,7 +32,7 @@ export const StateBehaviorNodeRenderer = (props: IStateBehaviorNodeRendererProps
         }
 
         const selectNode = (nodeId: Nullable<string>) => {
-            console.log("call select node with", nodeId, "compare with ", selectedState.name + "action");
+            // console.log("call select node with", nodeId, "compare with ", selectedState.name + "action");
             if (nodeId === selectedState.name + "action") {
                 setSelectedAction(stateEnterAction);
             } else {

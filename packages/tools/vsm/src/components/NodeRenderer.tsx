@@ -46,18 +46,18 @@ export const NodeRenderer = (props: INodeRendererProps) => {
     };
 
     const onNodesConnected = (sourceId: string, targetId: string) => {
-        console.log("onNodesConnected", sourceId, targetId);
+        // console.log("onNodesConnected", sourceId, targetId);
         updateConnections(sourceId, targetId);
     };
 
     const onLineSelected = (lineId: string) => {
-        console.log("onLineSelected", lineId);
+        // console.log("onLineSelected", lineId);
         setSelectedLine(lineId);
         setSelectedNode(null);
     };
 
     const onNodeSelected = (nodeId: string) => {
-        console.log("onNodeSelected", nodeId);
+        // console.log("onNodeSelected", nodeId);
         setSelectedNode(nodeId);
         setSelectedLine(null);
     };
@@ -67,7 +67,7 @@ export const NodeRenderer = (props: INodeRendererProps) => {
     }, [selectedNode]);
 
     const onKeyDown = (evt: KeyboardEvent) => {
-        console.log("on key down", evt, "selectedLine", selectedLine, "selectedNode", selectedNode);
+        // console.log("on key down", evt, "selectedLine", selectedLine, "selectedNode", selectedNode);
         if (evt.key === "Delete") {
             if (selectedLine) {
                 console.log("call deleteline", selectedLine);
@@ -87,8 +87,8 @@ export const NodeRenderer = (props: INodeRendererProps) => {
     }, [selectedLine, selectedNode]);
 
     const graphContext = useMemo(() => ({ updatePos, onNodesConnected, onLineSelected, onNodeSelected }), []);
-    console.log("nodes", nodes);
-    console.log("connections", connections);
+    // console.log("nodes", nodes);
+    // console.log("connections", connections);
     return (
         <div style={fullscreenStyle}>
             <GraphContextManager.Provider value={graphContext}>

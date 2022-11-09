@@ -18,7 +18,7 @@ export const GraphLine: FC<IGraphLineProps> = (props: IGraphLineProps) => {
 
     // Line is only selectable when it has an id
     const onClick = () => {
-        console.log("clicked line", id);
+        // console.log("clicked line", id);
         id && onLineSelected && onLineSelected(id);
     };
 
