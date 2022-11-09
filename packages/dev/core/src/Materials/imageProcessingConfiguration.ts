@@ -285,6 +285,7 @@ export class ImageProcessingConfiguration {
 
     /**
      * Back Compat: Vignette center Y Offset.
+     * @deprecated use vignetteCenterY instead
      */
     public get vignetteCentreY(): number {
         return this.vignetteCenterY;
@@ -295,6 +296,7 @@ export class ImageProcessingConfiguration {
 
     /**
      * Back Compat: Vignette center X Offset.
+     * @deprecated use vignetteCenterX instead
      */
     public get vignetteCentreX(): number {
         return this.vignetteCenterX;

@@ -231,12 +231,14 @@ export class ImageProcessingPostProcess extends PostProcess {
 
     /**
      * Gets Vignette center X Offset.
+     * @deprecated use vignetteCenterX instead
      */
     public get vignetteCentreX(): number {
         return this.imageProcessingConfiguration.vignetteCenterX;
     }
     /**
      * Sets Vignette center X Offset.
+     * @deprecated use vignetteCenterX instead
      */
     public set vignetteCentreX(value: number) {
         this.imageProcessingConfiguration.vignetteCenterX = value;
@@ -244,12 +246,14 @@ export class ImageProcessingPostProcess extends PostProcess {
 
     /**
      * Gets Vignette center Y Offset.
+     * @deprecated use vignetteCenterY instead
      */
     public get vignetteCentreY(): number {
         return this.imageProcessingConfiguration.vignetteCenterY;
     }
     /**
      * Sets Vignette center Y Offset.
+     * @deprecated use vignetteCenterY instead
      */
     public set vignetteCentreY(value: number) {
         this.imageProcessingConfiguration.vignetteCenterY = value;
