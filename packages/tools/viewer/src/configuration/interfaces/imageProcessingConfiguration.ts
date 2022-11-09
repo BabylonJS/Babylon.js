@@ -28,6 +28,8 @@ export interface IImageProcessingConfiguration {
     vignetteStretch?: number;
     vignetteCentreX?: number;
     vignetteCentreY?: number;
+    vignetteCenterX?: number;
+    vignetteCenterY?: number;
     vignetteWeight?: number;
     vignetteColor?: { r: number; g: number; b: number; a?: number };
     vignetteCameraFov?: number;
