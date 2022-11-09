@@ -235,10 +235,10 @@ export class InputManager {
             this._movePointerInfo = pointerInfo;
         }
 
+        scene._onCameraInputObservable.notifyObservers(pointerInfo, type);
         if (scene.onPointerObservable.hasObservers()) {
             scene.onPointerObservable.notifyObservers(pointerInfo, type);
         }
-        scene._onCameraInputObservable.notifyObservers(pointerInfo, type);
     }
 
     // Pointers handling
@@ -407,10 +407,10 @@ export class InputManager {
             pointerInfo = new PointerInfo(type, evt, null, this);
         }
 
+        scene._onCameraInputObservable.notifyObservers(pointerInfo, type);
         if (scene.onPointerObservable.hasObservers()) {
             scene.onPointerObservable.notifyObservers(pointerInfo, type);
         }
-        scene._onCameraInputObservable.notifyObservers(pointerInfo, type);
     }
 
     /**
@@ -501,18 +501,18 @@ export class InputManager {
                 if (type) {
                     const pi = new PointerInfo(type, evt, pickResult);
                     this._setRayOnPointerInfo(pickResult, evt);
+                    scene._onCameraInputObservable.notifyObservers(pi, type);
                     if (scene.onPointerObservable.hasObservers() && scene.onPointerObservable.hasSpecificMask(type)) {
                         scene.onPointerObservable.notifyObservers(pi, type);
                     }
-                    scene._onCameraInputObservable.notifyObservers(pi, type);
                 }
             }
 
             type = PointerEventTypes.POINTERUP;
             const pi = new PointerInfo(type, evt, pickResult);
             this._setRayOnPointerInfo(pickResult, evt);
-            scene.onPointerObservable.notifyObservers(pi, type);
             scene._onCameraInputObservable.notifyObservers(pi, type);
+            scene.onPointerObservable.notifyObservers(pi, type);
         }
 
         if (scene.onPointerUp && !clickInfo.ignore) {
