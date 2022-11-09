@@ -159,10 +159,10 @@ export class STLFileLoader implements ISceneLoaderPlugin {
             return true;
         }
 
-        // check characters higher than ASCII to confirm binary
-        const fileLength = reader.byteLength;
-        for (let index = 0; index < fileLength; index++) {
-            if (reader.getUint8(index) > 127) {
+        // US-ASCII begin with 's', 'o', 'l', 'i', 'd'
+        const ascii = [115, 111, 108, 105, 100];
+        for (let off = 0; off < 5; off++) {
+            if (reader.getUint8(off) !== ascii[off]) {
                 return true;
             }
         }
