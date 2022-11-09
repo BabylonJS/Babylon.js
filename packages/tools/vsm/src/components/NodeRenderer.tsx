@@ -24,7 +24,7 @@ export interface INodeRendererProps {
     deleteLine: (lineId: string) => void;
     deleteNode: (nodeId: string) => void;
     nodes: INodeType[];
-    highlightedNode?: string; // id of the node to highlight
+    highlightedNode?: Nullable<string>; // id of the node to highlight
     selectNode?: (nodeId: Nullable<string>) => void; // function to be called if a node is selected
     id: string; // renderer id
     customComponents?: Record<string, ComponentType<any>>;

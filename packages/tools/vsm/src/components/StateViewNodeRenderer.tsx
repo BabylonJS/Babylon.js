@@ -3,8 +3,10 @@
  * the visual graph system.
  */
 
+import type { Observer } from "core/Misc/observable";
 import type { Nullable } from "core/types";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import type { State } from "../stateMachine/State";
 import { NodeRenderer } from "./NodeRenderer";
 import { useSelectedAction } from "./tools/useSelectedAction";
 import { useSelectedState } from "./tools/useSelectedState";
@@ -16,7 +18,7 @@ export const StateViewNodeRenderer = (props: IStateViewNodeRendererProps) => {
     const { stateMachine, lastUpdate, setStateMachine } = useStateMachine();
     const { selectedState, setSelectedState } = useSelectedState();
     const { setSelectedAction } = useSelectedAction();
-    // console.log("lastUpdate", lastUpdate);
+    const [enteredState, setEnteredState] = useState<Nullable<string>>(null);
 
     const nodes = useMemo(() => {
         return (
@@ -27,16 +29,33 @@ export const StateViewNodeRenderer = (props: IStateViewNodeRendererProps) => {
     }, [lastUpdate]);
 
     const connections = useMemo(() => {
-        // console.log("all transitions", stateMachine?.getTransitions());
         return (
             stateMachine?.getTransitions().map((transition) => {
-                // console.log("transition", transition);
                 const fromId = transition[0];
                 const toId = transition[1].id;
                 const connId = `${fromId}-${toId}`;
                 return { id: connId, sourceId: fromId, targetId: toId };
             }) || []
         );
+    }, [lastUpdate]);
+
+    useEffect(() => {
+        if (stateMachine) {
+            const stateEnterObservers: [State, Nullable<Observer<State>>][] = stateMachine.getStates().map((state) => {
+                return [
+                    state,
+                    state.onStateEnteredObservable.add(() => {
+                        setEnteredState(state.id);
+                    }),
+                ];
+            });
+            return () => {
+                stateEnterObservers.forEach(([state, observer]) => {
+                    state.onStateEnteredObservable.remove(observer);
+                });
+            };
+        }
+        return () => {};
     }, [lastUpdate]);
 
     const updateConnections = (sourceId: string, targetId: string) => {
@@ -88,6 +107,7 @@ export const StateViewNodeRenderer = (props: IStateViewNodeRendererProps) => {
                 deleteNode={deleteNode}
                 nodes={nodes}
                 selectNode={selectNode}
+                highlightedNode={enteredState}
             />
         );
     } else {
