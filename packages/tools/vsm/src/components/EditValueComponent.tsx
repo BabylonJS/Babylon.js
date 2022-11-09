@@ -15,7 +15,6 @@ export const EditValueComponent: FC<IEditValueComponentProps> = (props) => {
     const [text, setText] = useState<Nullable<{ x: string; y: string; z: string }>>(null);
 
     useEffect(() => {
-        // console.log("current selected action", selectedAction);
         if (selectedAction instanceof SetPositionAction) {
             setText({ x: selectedAction.targetPosition.x.toString(), y: selectedAction.targetPosition.y.toString(), z: selectedAction.targetPosition.z.toString() });
         } else {

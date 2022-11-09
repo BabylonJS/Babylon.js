@@ -1,7 +1,6 @@
 import type { FC } from "react";
 import type { DropTargetMonitor } from "react-dnd";
 import { useDrop } from "react-dnd";
-// @ts-ignore
 import { GraphLine, MarkerArrowId } from "./GraphLine";
 
 export interface IGraphLinesContainerProps {
@@ -19,7 +18,6 @@ export const GraphLinesContainer: FC<IGraphLinesContainerProps> = (props) => {
             delta: monitor.getDifferenceFromInitialOffset() as any,
         }),
     }));
-    // console.log("accept connector with item", start);
     return (
         <svg width="100%" height="100%" ref={dropRef}>
             <defs>

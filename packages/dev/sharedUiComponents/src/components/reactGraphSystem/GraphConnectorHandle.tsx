@@ -22,7 +22,6 @@ export const GraphConnectorHandler: FC<IGraphConnectorHandlerProps> = (props) =>
     const { onNodesConnected } = useGraphContext();
     const centerX = offsetX + parentWidth / 2;
     const centerY = offsetY + parentHeight / 2;
-    // console.log("centerX", centerX, "centerY", centerY);
     const [, dragRef] = useDrag(
         () => ({
             type: "connector",
@@ -40,7 +39,6 @@ export const GraphConnectorHandler: FC<IGraphConnectorHandlerProps> = (props) =>
             return item.parentContainerId === parentContainerId;
         },
         drop: (item: any) => {
-            // When drop, update the existing graph context?
             onNodesConnected && onNodesConnected(item.parentId, parentId);
         },
     }));
@@ -51,7 +49,5 @@ export const GraphConnectorHandler: FC<IGraphConnectorHandlerProps> = (props) =>
         },
         [dragRef, dropRef]
     );
-    // console.log("type of useDrag is", "connector" + props.parentContainerId);
-    // console.log("parentX", parentX, "parentY", parentY);
     return <div ref={attachRef} className={ClassNames({ handle: true, hovered: isOver }, style)} style={{ top: centerY + "px", left: centerX + "px" }} />;
 };

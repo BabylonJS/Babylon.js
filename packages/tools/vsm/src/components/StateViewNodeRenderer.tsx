@@ -7,13 +7,19 @@ import type { Observer } from "core/Misc/observable";
 import type { Nullable } from "core/types";
 import { useEffect, useMemo, useState } from "react";
 import type { State } from "../stateMachine/State";
-import { NodeRenderer } from "./NodeRenderer";
+import { NodeRenderer } from "../../../../dev/sharedUiComponents/src/components/reactGraphSystem/NodeRenderer";
 import { useSelectedAction } from "./tools/useSelectedAction";
 import { useSelectedState } from "./tools/useSelectedState";
 import { useStateMachine } from "./tools/useStateMachine";
 
 export interface IStateViewNodeRendererProps {}
 
+/**
+ * This component offers a view of the State Machine states and allows
+ * creating transitions between them
+ * @param props
+ * @returns
+ */
 export const StateViewNodeRenderer = (props: IStateViewNodeRendererProps) => {
     const { stateMachine, lastUpdate, setStateMachine } = useStateMachine();
     const { selectedState, setSelectedState } = useSelectedState();

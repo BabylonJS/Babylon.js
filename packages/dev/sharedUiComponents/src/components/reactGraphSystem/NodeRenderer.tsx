@@ -7,9 +7,6 @@ import { GraphNodesContainer } from "shared-ui-components/components/reactGraphS
 import { GraphLinesContainer } from "shared-ui-components/components/reactGraphSystem/GraphLinesContainer";
 import { GraphContextManager } from "shared-ui-components/components/reactGraphSystem/GraphContextManager";
 import type { Nullable } from "core/types";
-/**
- * Test component to use Reactive Nodes
- */
 
 const fullscreenStyle = { width: "100%", height: "100%" };
 
@@ -30,6 +27,12 @@ export interface INodeRendererProps {
     customComponents?: Record<string, ComponentType<any>>;
 }
 
+/**
+ * This component is a bridge between the app logic related to the graph, and the actual rendering
+ * of it. It manages the nodes' positions and selection states.
+ * @param props
+ * @returns
+ */
 export const NodeRenderer = (props: INodeRendererProps) => {
     const { nodes, connections, updateConnections, highlightedNode } = props;
     // Store the nodes positions
@@ -46,18 +49,15 @@ export const NodeRenderer = (props: INodeRendererProps) => {
     };
 
     const onNodesConnected = (sourceId: string, targetId: string) => {
-        // console.log("onNodesConnected", sourceId, targetId);
         updateConnections(sourceId, targetId);
     };
 
     const onLineSelected = (lineId: string) => {
-        // console.log("onLineSelected", lineId);
         setSelectedLine(lineId);
         setSelectedNode(null);
     };
 
     const onNodeSelected = (nodeId: string) => {
-        // console.log("onNodeSelected", nodeId);
         setSelectedNode(nodeId);
         setSelectedLine(null);
     };
@@ -67,13 +67,10 @@ export const NodeRenderer = (props: INodeRendererProps) => {
     }, [selectedNode]);
 
     const onKeyDown = (evt: KeyboardEvent) => {
-        // console.log("on key down", evt, "selectedLine", selectedLine, "selectedNode", selectedNode);
         if (evt.key === "Delete") {
             if (selectedLine) {
-                console.log("call deleteline", selectedLine);
                 props.deleteLine(selectedLine);
             } else if (selectedNode) {
-                console.log("call delete node", selectedNode);
                 props.deleteNode(selectedNode);
             }
         }
@@ -87,8 +84,6 @@ export const NodeRenderer = (props: INodeRendererProps) => {
     }, [selectedLine, selectedNode]);
 
     const graphContext = useMemo(() => ({ updatePos, onNodesConnected, onLineSelected, onNodeSelected }), []);
-    // console.log("nodes", nodes);
-    // console.log("connections", connections);
     return (
         <div style={fullscreenStyle}>
             <GraphContextManager.Provider value={graphContext}>

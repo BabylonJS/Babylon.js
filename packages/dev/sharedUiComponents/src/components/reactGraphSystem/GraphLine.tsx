@@ -18,7 +18,6 @@ export const GraphLine: FC<IGraphLineProps> = (props: IGraphLineProps) => {
 
     // Line is only selectable when it has an id
     const onClick = () => {
-        // console.log("clicked line", id);
         id && onLineSelected && onLineSelected(id);
     };
 
@@ -26,7 +25,6 @@ export const GraphLine: FC<IGraphLineProps> = (props: IGraphLineProps) => {
     const ym = (y1 + y2) / 2;
 
     return (
-        // <line x1={x1} y1={y1} x2={x2} y2={y2} strokeWidth={3} stroke={selected ? "yellow" : "black"} onClick={onClick} markerMid={directional ? `#${MarkerArrowId}` : ""}></line>
         <path
             d={`M ${x1} ${y1} L ${xm} ${ym} L ${x2} ${y2}`}
             strokeWidth={3}

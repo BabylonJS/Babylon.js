@@ -1,6 +1,6 @@
 import { useSelectedState } from "./tools/useSelectedState";
-import type { INodeType } from "./NodeRenderer";
-import { NodeRenderer } from "./NodeRenderer";
+import type { INodeType } from "../../../../dev/sharedUiComponents/src/components/reactGraphSystem/NodeRenderer";
+import { NodeRenderer } from "../../../../dev/sharedUiComponents/src/components/reactGraphSystem/NodeRenderer";
 import { useSelectedAction } from "./tools/useSelectedAction";
 import type { Nullable } from "core/types";
 import type { SetPositionAction } from "../actions/actions/SetPositionAction";
@@ -8,6 +8,9 @@ import { SetPositionBlock } from "./nodesDisplay/SetPositionBlock";
 
 export interface IStateBehaviorNodeRendererProps {}
 
+/**
+ * This component displays the Actions of the currently selected state.
+ */
 export const StateBehaviorNodeRenderer = (props: IStateBehaviorNodeRendererProps) => {
     const { selectedState } = useSelectedState();
     const { setSelectedAction } = useSelectedAction();
@@ -32,7 +35,6 @@ export const StateBehaviorNodeRenderer = (props: IStateBehaviorNodeRendererProps
         }
 
         const selectNode = (nodeId: Nullable<string>) => {
-            // console.log("call select node with", nodeId, "compare with ", selectedState.name + "action");
             if (nodeId === selectedState.name + "action") {
                 setSelectedAction(stateEnterAction);
             } else {

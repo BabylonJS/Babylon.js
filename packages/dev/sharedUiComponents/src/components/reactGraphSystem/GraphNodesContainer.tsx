@@ -3,14 +3,14 @@ import type { Nullable } from "core/types";
 import type { FC } from "react";
 import { useEffect, useRef } from "react";
 import { useDragLayer } from "react-dnd";
-/**
- * This component handles the rendering and interaction with nodes on the graph
- */
 export interface IGraphContainerProps {
     onNodeMoved: (id: string, x: number, y: number) => void;
     id: string;
 }
 
+/**
+ * This component contains all the nodes and handles their dragging
+ */
 export const GraphNodesContainer: FC<IGraphContainerProps> = (props) => {
     const lastDragPos = useRef<Nullable<Vector2>>(null);
 
@@ -22,10 +22,8 @@ export const GraphNodesContainer: FC<IGraphContainerProps> = (props) => {
 
     useEffect(() => {
         if (currentOffset && item) {
-            // console.log("currentOffset", currentOffset);
             if (lastDragPos.current) {
                 const delta = new Vector2(currentOffset.x, currentOffset.y).subtract(lastDragPos.current);
-                console.log("delta", delta);
                 props.onNodeMoved?.(item.id, delta.x, delta.y);
             }
             lastDragPos.current = new Vector2(currentOffset.x, currentOffset.y);
@@ -33,7 +31,6 @@ export const GraphNodesContainer: FC<IGraphContainerProps> = (props) => {
     }, [currentOffset, item]);
     useEffect(() => {
         if (!isDragging) {
-            // console.log("clear lastDragPos");
             lastDragPos.current = null;
         }
     }, [isDragging]);
