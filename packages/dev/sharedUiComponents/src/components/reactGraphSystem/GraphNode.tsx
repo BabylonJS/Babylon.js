@@ -40,7 +40,7 @@ export const GraphNode: FC<IGraphNodeProps> = (props) => {
         <div
             ref={dragRef}
             className={ClassNames({ node: true, selected, highlighted }, style)}
-            style={{ left: x, top: y, width: width + "px", height: height + "px" }}
+            style={{ left: x, top: y, minWidth: width + "px", minHeight: height + "px" }}
             onClick={onClick}
         >
             <div className={style.container}>

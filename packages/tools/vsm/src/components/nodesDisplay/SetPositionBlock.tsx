@@ -10,7 +10,6 @@ export const SetPositionBlock: FC<ISetPositionBlockProps> = (props) => {
 
     return (
         <div>
-            <div>Set Position</div>
             <div>{targetPosition.x + " " + targetPosition.y + " " + targetPosition.z}</div>
         </div>
     );
