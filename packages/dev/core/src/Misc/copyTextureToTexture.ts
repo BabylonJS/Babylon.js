@@ -2,6 +2,7 @@ import type { Engine } from "../Engines/engine";
 import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import { EffectRenderer, EffectWrapper } from "../Materials/effectRenderer";
 import type { IRenderTargetTexture, RenderTargetWrapper } from "../Engines/renderTargetWrapper";
+import type { ThinTexture } from "../Materials/Textures/thinTexture";
 
 import "../Shaders/copyTextureToTexture.fragment";
 
@@ -20,8 +21,12 @@ export enum ConversionMode {
 export class CopyTextureToTexture {
     private _renderer: EffectRenderer;
     private _effectWrapper: EffectWrapper;
-    private _source: InternalTexture;
+    private _source: InternalTexture | ThinTexture;
     private _conversion: number;
+
+    private _textureIsInternal(texture: InternalTexture | ThinTexture): texture is InternalTexture {
+        return (texture as ThinTexture).getInternalTexture === undefined;
+    }
 
     /**
      * Constructs a new instance of the class
@@ -39,7 +44,11 @@ export class CopyTextureToTexture {
         });
 
         this._effectWrapper.onApplyObservable.add(() => {
-            this._effectWrapper.effect._bindTexture("textureSampler", this._source);
+            if (this._textureIsInternal(this._source)) {
+                this._effectWrapper.effect._bindTexture("textureSampler", this._source);
+            } else {
+                this._effectWrapper.effect.setTexture("textureSampler", this._source);
+            }
             this._effectWrapper.effect.setFloat("conversion", this._conversion);
         });
     }
@@ -59,7 +68,7 @@ export class CopyTextureToTexture {
      * @param conversion The conversion mode that should be applied when copying
      * @returns
      */
-    public copy(source: InternalTexture, destination: RenderTargetWrapper | IRenderTargetTexture, conversion = ConversionMode.None): boolean {
+    public copy(source: InternalTexture | ThinTexture, destination: RenderTargetWrapper | IRenderTargetTexture, conversion = ConversionMode.None): boolean {
         if (!this.isReady()) {
             return false;
         }
