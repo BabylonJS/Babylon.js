@@ -16,7 +16,7 @@ export interface IOctreeContainer<T> {
 
 /**
  * Class used to store a cell in an octree
- * @see https://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/optimizeOctrees
  */
 export class OctreeBlock<T> {
     /**

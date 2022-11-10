@@ -109,7 +109,7 @@ export interface ITexturePackerJSON {
 
 /**
  * This is a support class that generates a series of packed texture sets.
- * @see https://doc.babylonjs.com/babylon101/materials
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/materials_introduction
  */
 export class TexturePacker {
     /** Packer Layout Constant 0 */

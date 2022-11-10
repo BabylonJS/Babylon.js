@@ -246,7 +246,7 @@ export class Animatable {
 
     /**
      * Allows the animatable to blend with current running animations
-     * @see https://doc.babylonjs.com/babylon101/animations#animation-blending
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#animation-blending
      * @param blendingSpeed defines the blending speed to use
      */
     public enableBlending(blendingSpeed: number): void {
@@ -260,7 +260,7 @@ export class Animatable {
 
     /**
      * Disable animation blending
-     * @see https://doc.babylonjs.com/babylon101/animations#animation-blending
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#animation-blending
      */
     public disableBlending(): void {
         const runtimeAnimations = this._runtimeAnimations;

@@ -28,7 +28,7 @@ import type { Animation } from "core/Animations/animation";
 
 /**
  * Root class used for all 2D controls
- * @see https://doc.babylonjs.com/how_to/gui#controls
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#controls
  */
 export class Control implements IAnimatable {
     /**
@@ -447,7 +447,7 @@ export class Control implements IAnimatable {
     }
 
     /** Gets or sets a value indicating the scale factor on X axis (1 by default)
-     * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#rotation-and-scaling
      */
     @serialize()
     public get scaleX(): number {
@@ -465,7 +465,7 @@ export class Control implements IAnimatable {
     }
 
     /** Gets or sets a value indicating the scale factor on Y axis (1 by default)
-     * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#rotation-and-scaling
      */
     @serialize()
     public get scaleY(): number {
@@ -483,7 +483,7 @@ export class Control implements IAnimatable {
     }
 
     /** Gets or sets the rotation angle (0 by default)
-     * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#rotation-and-scaling
      */
     @serialize()
     public get rotation(): number {
@@ -501,7 +501,7 @@ export class Control implements IAnimatable {
     }
 
     /** Gets or sets the transformation center on Y axis (0 by default)
-     * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#rotation-and-scaling
      */
     @serialize()
     public get transformCenterY(): number {
@@ -519,7 +519,7 @@ export class Control implements IAnimatable {
     }
 
     /** Gets or sets the transformation center on X axis (0 by default)
-     * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#rotation-and-scaling
      */
     @serialize()
     public get transformCenterX(): number {
@@ -538,7 +538,7 @@ export class Control implements IAnimatable {
 
     /**
      * Gets or sets the horizontal alignment
-     * @see https://doc.babylonjs.com/how_to/gui#alignments
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#alignments
      */
     @serialize()
     public get horizontalAlignment(): number {
@@ -556,7 +556,7 @@ export class Control implements IAnimatable {
 
     /**
      * Gets or sets the vertical alignment
-     * @see https://doc.babylonjs.com/how_to/gui#alignments
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#alignments
      */
     @serialize()
     public get verticalAlignment(): number {
@@ -585,7 +585,7 @@ export class Control implements IAnimatable {
 
     /**
      * Gets or sets control width
-     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     @serialize()
     public get width(): string | number {
@@ -606,7 +606,7 @@ export class Control implements IAnimatable {
 
     /**
      * Gets or sets the control width in pixel
-     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     public get widthInPixels(): number {
         return this._width.getValueInPixel(this._host, this._cachedParentMeasure.width);
@@ -622,7 +622,7 @@ export class Control implements IAnimatable {
 
     /**
      * Gets or sets control height
-     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     @serialize()
     public get height(): string | number {
@@ -643,7 +643,7 @@ export class Control implements IAnimatable {
 
     /**
      * Gets or sets control height in pixel
-     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     public get heightInPixels(): number {
         return this._height.getValueInPixel(this._host, this._cachedParentMeasure.height);
@@ -701,7 +701,7 @@ export class Control implements IAnimatable {
 
     /**
      * Gets or sets style
-     * @see https://doc.babylonjs.com/how_to/gui#styles
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#styles
      */
     @serialize()
     public get style(): Nullable<Style> {
@@ -863,7 +863,7 @@ export class Control implements IAnimatable {
 
     /**
      * Gets or sets a value indicating the padding to use on the left of the control
-     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     @serialize()
     public get paddingLeft(): string | number {
@@ -878,7 +878,7 @@ export class Control implements IAnimatable {
 
     /**
      * Gets or sets a value indicating the padding in pixels to use on the left of the control
-     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     public get paddingLeftInPixels(): number {
         return this._paddingLeft.getValueInPixel(this._host, this._cachedParentMeasure.width);
@@ -902,7 +902,7 @@ export class Control implements IAnimatable {
 
     /**
      * Gets or sets a value indicating the padding to use on the right of the control
-     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     @serialize()
     public get paddingRight(): string | number {
@@ -917,7 +917,7 @@ export class Control implements IAnimatable {
 
     /**
      * Gets or sets a value indicating the padding in pixels to use on the right of the control
-     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     public get paddingRightInPixels(): number {
         return this._paddingRight.getValueInPixel(this._host, this._cachedParentMeasure.width);
@@ -941,7 +941,7 @@ export class Control implements IAnimatable {
 
     /**
      * Gets or sets a value indicating the padding to use on the top of the control
-     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     @serialize()
     public get paddingTop(): string | number {
@@ -956,7 +956,7 @@ export class Control implements IAnimatable {
 
     /**
      * Gets or sets a value indicating the padding in pixels to use on the top of the control
-     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     public get paddingTopInPixels(): number {
         return this._paddingTop.getValueInPixel(this._host, this._cachedParentMeasure.height);
@@ -980,7 +980,7 @@ export class Control implements IAnimatable {
 
     /**
      * Gets or sets a value indicating the padding to use on the bottom of the control
-     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     @serialize()
     public get paddingBottom(): string | number {
@@ -995,7 +995,7 @@ export class Control implements IAnimatable {
 
     /**
      * Gets or sets a value indicating the padding in pixels to use on the bottom of the control
-     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     public get paddingBottomInPixels(): number {
         return this._paddingBottom.getValueInPixel(this._host, this._cachedParentMeasure.height);
@@ -1019,7 +1019,7 @@ export class Control implements IAnimatable {
 
     /**
      * Gets or sets a value indicating the left coordinate of the control
-     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     @serialize()
     public get left(): string | number {
@@ -1034,7 +1034,7 @@ export class Control implements IAnimatable {
 
     /**
      * Gets or sets a value indicating the left coordinate in pixels of the control
-     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     public get leftInPixels(): number {
         return this._left.getValueInPixel(this._host, this._cachedParentMeasure.width);
@@ -1049,7 +1049,7 @@ export class Control implements IAnimatable {
 
     /**
      * Gets or sets a value indicating the top coordinate of the control
-     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     @serialize()
     public get top(): string | number {
@@ -1064,7 +1064,7 @@ export class Control implements IAnimatable {
 
     /**
      * Gets or sets a value indicating the top coordinate in pixels of the control
-     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     public get topInPixels(): number {
         return this._top.getValueInPixel(this._host, this._cachedParentMeasure.height);
@@ -1079,7 +1079,7 @@ export class Control implements IAnimatable {
 
     /**
      * Gets or sets a value indicating the offset on X axis to the linked mesh
-     * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#tracking-positions
      */
     @serialize()
     public get linkOffsetX(): string | number {
@@ -1094,7 +1094,7 @@ export class Control implements IAnimatable {
 
     /**
      * Gets or sets a value indicating the offset in pixels on X axis to the linked mesh
-     * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#tracking-positions
      */
     public get linkOffsetXInPixels(): number {
         return this._linkOffsetX.getValueInPixel(this._host, this._cachedParentMeasure.width);
@@ -1109,7 +1109,7 @@ export class Control implements IAnimatable {
 
     /**
      * Gets or sets a value indicating the offset on Y axis to the linked mesh
-     * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#tracking-positions
      */
     @serialize()
     public get linkOffsetY(): string | number {
@@ -1124,7 +1124,7 @@ export class Control implements IAnimatable {
 
     /**
      * Gets or sets a value indicating the offset in pixels on Y axis to the linked mesh
-     * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#tracking-positions
      */
     public get linkOffsetYInPixels(): number {
         return this._linkOffsetY.getValueInPixel(this._host, this._cachedParentMeasure.height);
@@ -1210,7 +1210,7 @@ export class Control implements IAnimatable {
      * Gets/sets the overlap group of the control.
      * Controls with overlapGroup set to a number can be deoverlapped.
      * Controls with overlapGroup set to undefined are not deoverlapped.
-     * @see https://doc.babylonjs.com/how_to/gui#deoverlapping
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#deoverlapping
      */
     @serialize()
     public overlapGroup?: number;
@@ -1388,7 +1388,7 @@ export class Control implements IAnimatable {
     /**
      * Link current control with a target mesh
      * @param mesh defines the mesh to link with
-     * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#tracking-positions
      */
     public linkWithMesh(mesh: Nullable<TransformNode>): void {
         if (!this._host || (this.parent && this.parent !== this._host._rootContainer)) {
@@ -1421,7 +1421,7 @@ export class Control implements IAnimatable {
      * @param { string | number} paddingRight - The value of the right padding. If omitted, top is used.
      * @param { string | number} paddingBottom - The value of the bottom padding. If omitted, top is used.
      * @param { string | number} paddingLeft - The value of the left padding. If omitted, right is used.
-     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     public setPadding(paddingTop: string | number, paddingRight?: string | number, paddingBottom?: string | number, paddingLeft?: string | number) {
         const top = paddingTop;
@@ -1441,7 +1441,7 @@ export class Control implements IAnimatable {
      * @param { number} paddingRight - The value in pixels of the right padding. If omitted, top is used.
      * @param { number} paddingBottom - The value in pixels of the bottom padding. If omitted, top is used.
      * @param { number} paddingLeft - The value in pixels of the left padding. If omitted, right is used.
-     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     public setPaddingInPixels(paddingTop: number, paddingRight?: number, paddingBottom?: number, paddingLeft?: number) {
         const top = paddingTop;

@@ -139,7 +139,7 @@ export interface IShadowGenerator {
 /**
  * Default implementation IShadowGenerator.
  * This is the main object responsible of generating shadows in the framework.
- * Documentation: https://doc.babylonjs.com/babylon101/shadows
+ * Documentation: https://doc.babylonjs.com/features/featuresDeepDive/lights/shadows
  */
 export class ShadowGenerator implements IShadowGenerator {
     /**
@@ -849,7 +849,7 @@ export class ShadowGenerator implements IShadowGenerator {
      * Creates a ShadowGenerator object.
      * A ShadowGenerator is the required tool to use the shadows.
      * Each light casting shadows needs to use its own ShadowGenerator.
-     * Documentation : https://doc.babylonjs.com/babylon101/shadows
+     * Documentation : https://doc.babylonjs.com/features/featuresDeepDive/lights/shadows
      * @param mapSize The size of the texture what stores the shadows. Example : 1024.
      * @param light The light object generating the shadows.
      * @param usefullFloatFirst By default the generator will try to use half float textures but if you need precision (for self shadowing for instance), you can use this option to enforce full float texture.

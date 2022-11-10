@@ -1,12 +1,12 @@
 [
     {
         "label": "Create a sphere",
-        "documentation": "https://doc.babylonjs.com/how_to/set_shapes",
+        "documentation": "https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set",
         "insertText": "var sphere = BABYLON.MeshBuilder.CreateSphere(\"${1:sphere}\", {diameter: ${2:1}}, scene);"
     },
     {
         "label": "Create a box",
-        "documentation": "https://doc.babylonjs.com/how_to/set_shapes",
+        "documentation": "https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set",
         "insertText": "var box = BABYLON.MeshBuilder.CreateBox(\"${1:box}\", {size: ${2:1}}, scene);"
     },
     {
@@ -21,12 +21,12 @@
     },
     {
         "label": "Create a cylinder",
-        "documentation": "https://doc.babylonjs.com/how_to/set_shapes",
+        "documentation": "https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set",
         "insertText": "var cylinder = BABYLON.MeshBuilder.CreateCylinder(\"${1:cylinder}\", {height: ${2:2}, diameter: ${3:1}}, scene);"
     },
     {
         "label": "Create a ground plane",
-        "documentation": "https://doc.babylonjs.com/how_to/set_shapes",
+        "documentation": "https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set",
         "insertText": "var ground = BABYLON.MeshBuilder.CreateGround(\"${1:ground}\", {width: ${2:6}, height: ${3:6}}, scene);"
     },
     {
@@ -66,7 +66,7 @@
     },
     {
         "label": "Show the Inspector",
-        "documentation": "https://doc.babylonjs.com/features/playground_debuglayer",
+        "documentation": "https://doc.babylonjs.com/toolsAndResources/inspector",
         "insertText": "scene.debugLayer.show({\n     embedMode:true\n});"
     },
     {
@@ -81,17 +81,17 @@
     },
     {
         "label": "Create a WebXR Camera",
-        "documentation": "https://doc.babylonjs.com/divingDeeper/webXR/introToWebXR",
+        "documentation": "https://doc.babylonjs.com/features/featuresDeepDive/webXR/introToWebXR",
         "insertText": "scene.createDefaultXRExperienceAsync({}).then((defaultXRExperience) => {\n    ${1}\n});"
     },
     {
         "label": "Import a Mesh w/callback",
-        "documentation": "https://doc.babylonjs.com/resources/external_pg_assets",
+        "documentation": "https://doc.babylonjs.com/toolsAndResources/thePlayground/externalPGAssets",
         "insertText": "BABYLON.SceneLoader.ImportMesh(\"${1:meshName}\", \"${2:url to the mesh parent directory}\", \"${3:Mesh filename.fileextension}\", scene, function(newMeshes){\n\n});"
     },
     {
         "label": "Setup a shadow generator",
-        "documentation": "https://doc.babylonjs.com/babylon101/shadows",
+        "documentation": "https://doc.babylonjs.com/features/featuresDeepDive/lights/shadows",
         "insertText": "var shadowGenerator = new BABYLON.ShadowGenerator(${1:size}, ${2:the_light_source});\nshadowGenerator.getShadowMap().renderList.push(${3:the_mesh_that_casts_a_shadow});\n${4:mesh_that_receives_the_shadow}.receiveShadows = true;"
     },
     {

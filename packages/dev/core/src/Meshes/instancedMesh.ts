@@ -167,7 +167,7 @@ export class InstancedMesh extends AbstractMesh {
 
     /**
      * Creates a new InstancedMesh object from the mesh model.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_instances
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/copies/instances
      * @param name defines the name of the new instance
      * @returns a new InstancedMesh
      */
@@ -582,7 +582,7 @@ declare module "./mesh" {
     export interface Mesh {
         /**
          * Register a custom buffer that will be instanced
-         * @see https://doc.babylonjs.com/how_to/how_to_use_instances#custom-buffers
+         * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/copies/instances#custom-buffers
          * @param kind defines the buffer kind
          * @param stride defines the stride in floats
          */
@@ -613,7 +613,7 @@ declare module "./abstractMesh" {
     export interface AbstractMesh {
         /**
          * Object used to store instanced buffers defined by user
-         * @see https://doc.babylonjs.com/how_to/how_to_use_instances#custom-buffers
+         * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/copies/instances#custom-buffers
          */
         instancedBuffers: { [key: string]: any };
     }

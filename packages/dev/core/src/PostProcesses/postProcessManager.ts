@@ -10,7 +10,7 @@ declare type Scene = import("../scene").Scene;
 
 /**
  * PostProcessManager is used to manage one or more post processes or post process pipelines
- * See https://doc.babylonjs.com/how_to/how_to_use_postprocesses
+ * See https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/usePostProcesses
  */
 export class PostProcessManager {
     private _scene: Scene;

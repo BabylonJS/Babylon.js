@@ -18,7 +18,7 @@ import type { IPointerEvent } from "core/Events/deviceInputEvents";
 
 /**
  * Class used to manage 3D user interface
- * @see https://doc.babylonjs.com/how_to/gui3d
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui3D
  */
 export class GUI3DManager implements IDisposable {
     private _scene: Scene;

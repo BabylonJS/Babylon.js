@@ -118,7 +118,7 @@ export class Node implements IBehaviorAware<Node> {
 
     /**
      * List of inspectable custom properties (used by the Inspector)
-     * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
+     * @see https://doc.babylonjs.com/toolsAndResources/inspector#extensibility
      */
     public inspectableCustomProperties: IInspectable[];
 
@@ -210,7 +210,7 @@ export class Node implements IBehaviorAware<Node> {
 
     /**
      * Gets or sets the parent of the node (without keeping the current position in the scene)
-     * @see https://doc.babylonjs.com/how_to/parenting
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/transforms/parent_pivot/parent
      */
     public set parent(parent: Nullable<Node>) {
         if (this._parentNode === parent) {
@@ -372,7 +372,7 @@ export class Node implements IBehaviorAware<Node> {
 
     /**
      * Attach a behavior to the node
-     * @see https://doc.babylonjs.com/features/behaviour
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/behaviors
      * @param behavior defines the behavior to attach
      * @param attachImmediately defines that the behavior must be attached even if the scene is still loading
      * @returns the current Node
@@ -400,7 +400,7 @@ export class Node implements IBehaviorAware<Node> {
 
     /**
      * Remove an attached behavior
-     * @see https://doc.babylonjs.com/features/behaviour
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/behaviors
      * @param behavior defines the behavior to attach
      * @returns the current Node
      */
@@ -419,7 +419,7 @@ export class Node implements IBehaviorAware<Node> {
 
     /**
      * Gets the list of attached behaviors
-     * @see https://doc.babylonjs.com/features/behaviour
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/behaviors
      */
     public get behaviors(): Behavior<Node>[] {
         return this._behaviors;
@@ -428,7 +428,7 @@ export class Node implements IBehaviorAware<Node> {
     /**
      * Gets an attached behavior by name
      * @param name defines the name of the behavior to look for
-     * @see https://doc.babylonjs.com/features/behaviour
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/behaviors
      * @returns null if behavior was not found else the requested behavior
      */
     public getBehaviorByName(name: string): Nullable<Behavior<Node>> {

@@ -8,7 +8,7 @@ import { EngineStore } from "../Engines/engineStore";
 
 /**
  * Class used to work with sound analyzer using fast fourier transform (FFT)
- * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic
  */
 export class Analyser {
     /**

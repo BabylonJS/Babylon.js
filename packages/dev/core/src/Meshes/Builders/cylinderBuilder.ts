@@ -334,7 +334,7 @@ export function CreateCylinderVertexData(options: {
  * * If `enclose` is true, a ring surface is 3 successive elements in the array : the tubular surface, then the two closing faces.
  * * Example how to set colors and textures on a sliced cylinder : https://www.html5gamedevs.com/topic/17945-creating-a-closed-slice-of-a-cylinder/#comment-106379
  * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
- * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
+ * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#side-orientation
  * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
@@ -356,7 +356,7 @@ export function CreateCylinderVertexData(options: {
  * @param options.backUVs
  * @param scene defines the hosting scene
  * @returns the cylinder mesh
- * @see https://doc.babylonjs.com/how_to/set_shapes#cylinder-or-cone
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#cylinder-or-cone
  */
 export function CreateCylinder(
     name: string,

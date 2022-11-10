@@ -12,7 +12,7 @@ import type { SubMesh } from "../../../../Meshes/subMesh";
 
 /**
  * Block used to add support for instances
- * @see https://doc.babylonjs.com/how_to/how_to_use_instances
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/copies/instances
  */
 export class InstancesBlock extends NodeMaterialBlock {
     /**

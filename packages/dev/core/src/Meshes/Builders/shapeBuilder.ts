@@ -15,10 +15,10 @@ import { Path3D } from "../../Maths/math.path";
  * * The parameter `closeShape` (boolean, default false) closes the shape when true, since v5.0.0.
  * * The parameter `closePath` (boolean, default false) closes the path when true and no caps, since v5.0.0.
  * * The parameter `cap` sets the way the extruded shape is capped. Possible values : BABYLON.Mesh.NO_CAP (default), BABYLON.Mesh.CAP_START, BABYLON.Mesh.CAP_END, BABYLON.Mesh.CAP_ALL
- * * The optional parameter `instance` is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#extruded-shape
+ * * The optional parameter `instance` is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters : https://doc.babylonjs.com/features/featuresDeepDive/mesh/dynamicMeshMorph#extruded-shape
  * * Remember you can only change the shape or path point positions, not their number when updating an extruded shape.
  * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
- * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
+ * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#side-orientation
  * * The optional parameter `invertUV` (boolean, default false) swaps in the geometry the U and V coordinates to apply a texture.
  * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
  * * The optional parameter `firstNormal` (Vector3) defines the direction of the first normal of the supplied path. Consider using this for any path that is straight, and particular for paths in the xy plane.
@@ -42,8 +42,8 @@ import { Path3D } from "../../Maths/math.path";
  * @param options.adjustFrame
  * @param scene defines the hosting scene
  * @returns the extruded shape mesh
- * @see https://doc.babylonjs.com/how_to/parametric_shapes
- * @see https://doc.babylonjs.com/how_to/parametric_shapes#extruded-shapes
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param#extruded-shapes
  */
 export function ExtrudeShape(
     name: string,
@@ -116,10 +116,10 @@ export function ExtrudeShape(
  * * The parameter `ribbonClosePath` (boolean, default false) forces the extrusion underlying ribbon to close all the paths in its `pathArray` - depreciated in favor of closeShape
  * * The parameter `ribbonCloseArray` (boolean, default false) forces the extrusion underlying ribbon to close its `pathArray` - depreciated in favor of closePath
  * * The parameter `cap` sets the way the extruded shape is capped. Possible values : BABYLON.Mesh.NO_CAP (default), BABYLON.Mesh.CAP_START, BABYLON.Mesh.CAP_END, BABYLON.Mesh.CAP_ALL
- * * The optional parameter `instance` is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#extruded-shape
+ * * The optional parameter `instance` is an instance of an existing ExtrudedShape object to be updated with the passed `shape`, `path`, `scale` or `rotation` parameters : https://doc.babylonjs.com/features/featuresDeepDive/mesh/dynamicMeshMorph#extruded-shape
  * * Remember you can only change the shape or path point positions, not their number when updating an extruded shape
  * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
- * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
+ * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#side-orientation
  * * The optional parameter `invertUV` (boolean, default false) swaps in the geometry the U and V coordinates to apply a texture
  * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
  * * The optional parameter `firstNormal` (Vector3) defines the direction of the first normal of the supplied path. It should be supplied when the path is in the xy plane, and particularly if these sections are straight, because the underlying Path3D object will pick a normal in the xy plane that causes the extrusion to be collapsed into the plane. This should be used for any path that is straight.
@@ -145,9 +145,9 @@ export function ExtrudeShape(
  * @param options.adjustFrame
  * @param scene defines the hosting scene
  * @returns the custom extruded shape mesh
- * @see https://doc.babylonjs.com/how_to/parametric_shapes#custom-extruded-shapes
- * @see https://doc.babylonjs.com/how_to/parametric_shapes
- * @see https://doc.babylonjs.com/how_to/parametric_shapes#extruded-shapes
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param#custom-extruded-shapes
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param#extruded-shapes
  */
 export function ExtrudeShapeCustom(
     name: string,

@@ -11,7 +11,7 @@ Node.AddNodeConstructor("AnaglyphGamepadCamera", (name, scene, options) => {
 
 /**
  * Camera used to simulate anaglyphic rendering (based on GamepadCamera)
- * @see https://doc.babylonjs.com/features/cameras#anaglyph-cameras
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_introduction#anaglyph-cameras
  */
 export class AnaglyphGamepadCamera extends GamepadCamera {
     /**

@@ -226,7 +226,7 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
 /**
  * This is the default material used in Babylon. It is the best trade off between quality
  * and performances.
- * @see https://doc.babylonjs.com/babylon101/materials
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/materials_introduction
  */
 export class StandardMaterial extends PushMaterial {
     @serializeAsTexture("diffuseTexture")
@@ -259,7 +259,7 @@ export class StandardMaterial extends PushMaterial {
     private _reflectionTexture: Nullable<BaseTexture> = null;
     /**
      * Define the texture used to display the reflection.
-     * @see https://doc.babylonjs.com/how_to/reflect#how-to-obtain-reflections-and-refractions
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/reflectionTexture#how-to-obtain-reflections-and-refractions
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public reflectionTexture: Nullable<BaseTexture>;
@@ -286,7 +286,7 @@ export class StandardMaterial extends PushMaterial {
     /**
      * Bump mapping is a technique to simulate bump and dents on a rendered surface.
      * These are made by creating a normal map from an image. The means to do this can be found on the web, a search for 'normal map generator' will bring up free and paid for methods of doing this.
-     * @see https://doc.babylonjs.com/how_to/more_materials#bump-map
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/moreMaterials#bump-map
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public bumpTexture: Nullable<BaseTexture>;
@@ -296,7 +296,7 @@ export class StandardMaterial extends PushMaterial {
     /**
      * Complex lighting can be computationally expensive to compute at runtime.
      * To save on computation, lightmaps may be used to store calculated lighting in a texture which will be applied to a given mesh.
-     * @see https://doc.babylonjs.com/babylon101/lights#lightmaps
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/lights/lights_introduction#lightmaps
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public lightmapTexture: Nullable<BaseTexture>;
@@ -305,14 +305,14 @@ export class StandardMaterial extends PushMaterial {
     private _refractionTexture: Nullable<BaseTexture> = null;
     /**
      * Define the texture used to display the refraction.
-     * @see https://doc.babylonjs.com/how_to/reflect#how-to-obtain-reflections-and-refractions
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/reflectionTexture#how-to-obtain-reflections-and-refractions
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public refractionTexture: Nullable<BaseTexture>;
 
     /**
      * The color of the material lit by the environmental background lighting.
-     * @see https://doc.babylonjs.com/babylon101/materials#ambient-color-example
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/materials_introduction#ambient-color-example
      */
     @serializeAsColor3("ambient")
     public ambientColor = new Color3(0, 0, 0);
@@ -408,7 +408,7 @@ export class StandardMaterial extends PushMaterial {
     private _useParallax = false;
     /**
      * Is parallax enabled or not.
-     * @see https://doc.babylonjs.com/how_to/using_parallax_mapping
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/parallaxMapping
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public useParallax: boolean;
@@ -418,7 +418,7 @@ export class StandardMaterial extends PushMaterial {
     /**
      * Is parallax occlusion enabled or not.
      * If true, the outcome is way more realistic than traditional Parallax but you can expect a performance hit that worthes consideration.
-     * @see https://doc.babylonjs.com/how_to/using_parallax_mapping
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/parallaxMapping
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public useParallaxOcclusion: boolean;
@@ -439,7 +439,7 @@ export class StandardMaterial extends PushMaterial {
 
     /**
      * In case of refraction, define the value of the index of refraction.
-     * @see https://doc.babylonjs.com/how_to/reflect#how-to-obtain-reflections-and-refractions
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/reflectionTexture#how-to-obtain-reflections-and-refractions
      */
     @serialize()
     public indexOfRefraction = 0.98;
@@ -447,7 +447,7 @@ export class StandardMaterial extends PushMaterial {
     /**
      * Invert the refraction texture alongside the y axis.
      * It can be useful with procedural textures or probe for instance.
-     * @see https://doc.babylonjs.com/how_to/reflect#how-to-obtain-reflections-and-refractions
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/reflectionTexture#how-to-obtain-reflections-and-refractions
      */
     @serialize()
     public invertRefractionY = true;
@@ -471,7 +471,7 @@ export class StandardMaterial extends PushMaterial {
     private _diffuseFresnelParameters: FresnelParameters;
     /**
      * Define the diffuse fresnel parameters of the material.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_fresnelparameters
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/fresnelParameters
      */
     @expandToProperty("_markAllSubMeshesAsFresnelDirty")
     public diffuseFresnelParameters: FresnelParameters;
@@ -480,7 +480,7 @@ export class StandardMaterial extends PushMaterial {
     private _opacityFresnelParameters: FresnelParameters;
     /**
      * Define the opacity fresnel parameters of the material.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_fresnelparameters
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/fresnelParameters
      */
     @expandToProperty("_markAllSubMeshesAsFresnelAndMiscDirty")
     public opacityFresnelParameters: FresnelParameters;
@@ -489,7 +489,7 @@ export class StandardMaterial extends PushMaterial {
     private _reflectionFresnelParameters: FresnelParameters;
     /**
      * Define the reflection fresnel parameters of the material.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_fresnelparameters
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/fresnelParameters
      */
     @expandToProperty("_markAllSubMeshesAsFresnelDirty")
     public reflectionFresnelParameters: FresnelParameters;
@@ -498,7 +498,7 @@ export class StandardMaterial extends PushMaterial {
     private _refractionFresnelParameters: FresnelParameters;
     /**
      * Define the refraction fresnel parameters of the material.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_fresnelparameters
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/fresnelParameters
      */
     @expandToProperty("_markAllSubMeshesAsFresnelDirty")
     public refractionFresnelParameters: FresnelParameters;
@@ -507,7 +507,7 @@ export class StandardMaterial extends PushMaterial {
     private _emissiveFresnelParameters: FresnelParameters;
     /**
      * Define the emissive fresnel parameters of the material.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_fresnelparameters
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/fresnelParameters
      */
     @expandToProperty("_markAllSubMeshesAsFresnelDirty")
     public emissiveFresnelParameters: FresnelParameters;
@@ -516,7 +516,7 @@ export class StandardMaterial extends PushMaterial {
     private _useReflectionFresnelFromSpecular = false;
     /**
      * If true automatically deducts the fresnels values from the material specularity.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_fresnelparameters
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/fresnelParameters
      */
     @expandToProperty("_markAllSubMeshesAsFresnelDirty")
     public useReflectionFresnelFromSpecular: boolean;
@@ -755,7 +755,7 @@ export class StandardMaterial extends PushMaterial {
      * Instantiates a new standard material.
      * This is the default material used in Babylon. It is the best trade off between quality
      * and performances.
-     * @see https://doc.babylonjs.com/babylon101/materials
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/materials_introduction
      * @param name Define the name of the material in the scene
      * @param scene Define the scene the material belong to
      */
@@ -813,7 +813,7 @@ export class StandardMaterial extends PushMaterial {
     /**
      * In case the depth buffer does not allow enough depth precision for your scene (might be the case in large scenes)
      * You can try switching to logarithmic depth.
-     * @see https://doc.babylonjs.com/how_to/using_logarithmic_depth_buffer
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/advanced/logarithmicDepthBuffer
      */
     @serialize()
     public get useLogarithmicDepth(): boolean {

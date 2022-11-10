@@ -362,7 +362,7 @@ export class GeometryBufferRenderer {
 
             if (this._enableReflectivity) {
                 let metallicWorkflow = false;
-                // for PBR materials: cf. https://doc.babylonjs.com/divingDeeper/materials/using/masterPBR
+                // for PBR materials: cf. https://doc.babylonjs.com/features/featuresDeepDive/materials/using/masterPBR
                 if (material.getClassName() === "PBRMetallicRoughnessMaterial") {
                     // if it is a PBR material in MetallicRoughness Mode:
                     if (material.metallicRoughnessTexture !== null) {
@@ -818,7 +818,7 @@ export class GeometryBufferRenderer {
 
                     // Reflectivity
                     if (this._enableReflectivity) {
-                        // for PBR materials: cf. https://doc.babylonjs.com/divingDeeper/materials/using/masterPBR
+                        // for PBR materials: cf. https://doc.babylonjs.com/features/featuresDeepDive/materials/using/masterPBR
                         if (material.getClassName() === "PBRMetallicRoughnessMaterial") {
                             // if it is a PBR material in MetallicRoughness Mode:
                             if (material.metallicRoughnessTexture !== null) {

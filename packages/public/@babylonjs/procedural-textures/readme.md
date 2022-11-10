@@ -1,7 +1,7 @@
 Babylon.js Procedural Textures Library
 =====================
 
-For usage documentation please visit http://doc.babylonjs.com/extensions and choose "procedural textures library".
+For usage documentation please visit https://doc.babylonjs.com/extensions and choose "procedural textures library".
 
 # Installation instructions
 

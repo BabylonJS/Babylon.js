@@ -18,7 +18,7 @@ Mesh._LinesMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
 
 /**
  * Line mesh
- * @see https://doc.babylonjs.com/babylon101/parametric_shapes
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param
  */
 export class LinesMesh extends Mesh {
     /**
@@ -225,7 +225,7 @@ export class LinesMesh extends Mesh {
 
     /**
      * Creates a new InstancedLinesMesh object from the mesh model.
-     * @see https://doc.babylonjs.com/divingDeeper/mesh/copies/instances
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/copies/instances
      * @param name defines the name of the new instance
      * @returns a new InstancedLinesMesh
      */

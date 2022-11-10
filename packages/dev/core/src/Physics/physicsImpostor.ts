@@ -16,7 +16,7 @@ import { Space } from "../Maths/math.axis";
 
 /**
  * The interface for the physics imposter parameters
- * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
  */
 export interface PhysicsImpostorParameters {
     /**
@@ -85,7 +85,7 @@ export interface PhysicsImpostorParameters {
 
 /**
  * Interface for a physics-enabled object
- * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
  */
 export interface IPhysicsEnabledObject {
     /**
@@ -200,7 +200,7 @@ Mesh._PhysicsImpostorParser = function (scene: Scene, physicObject: IPhysicsEnab
 
 /**
  * Represents a physics imposter
- * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
  */
 export class PhysicsImpostor {
     /**

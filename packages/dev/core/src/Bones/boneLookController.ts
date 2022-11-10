@@ -7,7 +7,7 @@ import { Space, Axis } from "../Maths/math.axis";
 
 /**
  * Class used to make a bone look toward a point in space
- * @see https://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons#bonelookcontroller
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/bonesSkeletons#bonelookcontroller
  */
 export class BoneLookController {
     private static _TmpVecs: Vector3[] = ArrayTools.BuildArray(10, Vector3.Zero);

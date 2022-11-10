@@ -55,7 +55,7 @@ declare type Engine = import("../Engines/engine").Engine;
  * This represents a particle system in Babylon.
  * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
  * Particles can take different shapes while emitted like box, sphere, cone or you can write your custom function.
- * @example https://doc.babylonjs.com/babylon101/particles
+ * @example https://doc.babylonjs.com/features/featuresDeepDive/particles/particle_system/particle_system_intro
  */
 export class ParticleSystem extends BaseParticleSystem implements IDisposable, IAnimatable, IParticleSystem {
     /**
@@ -172,7 +172,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     public defaultViewMatrix: Matrix;
 
     /** Gets or sets a boolean indicating that ramp gradients must be used
-     * @see https://doc.babylonjs.com/babylon101/particles#ramp-gradients
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/particles/particle_system/particle_system_intro#ramp-gradients
      */
     public get useRampGradients(): boolean {
         return this._useRampGradients;

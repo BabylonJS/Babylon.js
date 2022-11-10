@@ -13,7 +13,7 @@ declare type Animation = import("../Animations/animation").Animation;
 
 /**
  * Defines a target to use with MorphTargetManager
- * @see https://doc.babylonjs.com/how_to/how_to_use_morphtargets
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/morphTargets
  */
 export class MorphTarget implements IAnimatable {
     /**

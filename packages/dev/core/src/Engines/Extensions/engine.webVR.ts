@@ -98,7 +98,7 @@ declare module "../../Engines/engine" {
          * Call this function to switch to webVR mode
          * Will do nothing if webVR is not supported or if there is no webVR device
          * @param options the webvr options provided to the camera. mainly used for multiview
-         * @see https://doc.babylonjs.com/how_to/webvr_camera
+         * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/webVRCamera
          */
         enableVR(options: WebVROptions): void;
 

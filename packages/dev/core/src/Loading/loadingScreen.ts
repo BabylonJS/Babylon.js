@@ -2,7 +2,7 @@ import type { Nullable } from "../types";
 import { Engine } from "../Engines/engine";
 /**
  * Interface used to present a loading screen while loading a scene
- * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
  */
 export interface ILoadingScreen {
     /**
@@ -25,7 +25,7 @@ export interface ILoadingScreen {
 
 /**
  * Class used for the default loading screen
- * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
  */
 export class DefaultLoadingScreen implements ILoadingScreen {
     private _loadingDiv: Nullable<HTMLDivElement>;
