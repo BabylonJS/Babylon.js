@@ -666,7 +666,7 @@ export class ArcRotateCamera extends TargetCamera {
 
     /**
      * Defines whether the camera should check collision with the objects oh the scene.
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_collisions#how-can-i-do-this
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_collisions#how-can-i-do-this-
      */
     public checkCollisions = false;
 
