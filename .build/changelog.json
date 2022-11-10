@@ -1,34 +1,21 @@
 {
-    "fromTag": "5.31.2",
+    "fromTag": "5.32.0",
     "changelog": {
-        "5.31.2": [
+        "5.32.1": [
             {
-                "pr": "13211",
-                "title": "Two fixes for the public shared-ui package",
+                "pr": "13227",
+                "title": "EffectRender: Fix culling state not reset properly",
                 "description": null,
                 "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
-                },
-                "files": [
-                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphFrame.ts",
-                    "packages/public/@babylonjs/shared-ui-components/package.json"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "13210",
-                "title": "Expose engine on effect renderer",
-                "description": null,
-                "author": {
-                    "name": "sebavan",
-                    "url": "https://github.com/sebavan"
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
                 },
                 "files": [
                     "packages/dev/core/src/Materials/effectRenderer.ts"
                 ],
                 "tags": [
-                    "skip changelog"
+                    "bug",
+                    "rendering engine"
                 ]
             }
         ],
@@ -259,6 +246,37 @@
                 ],
                 "tags": [
                     "bug"
+                ]
+            }
+        ],
+        "5.31.2": [
+            {
+                "pr": "13211",
+                "title": "Two fixes for the public shared-ui package",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphFrame.ts",
+                    "packages/public/@babylonjs/shared-ui-components/package.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13210",
+                "title": "Expose engine on effect renderer",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/effectRenderer.ts"
+                ],
+                "tags": [
+                    "skip changelog"
                 ]
             }
         ],
