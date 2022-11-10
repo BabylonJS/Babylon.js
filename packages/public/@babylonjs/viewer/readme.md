@@ -1,7 +1,7 @@
 # BabylonJS Viewer
 
 This project is a 3d model viewer using babylonjs.
-Online docs: https://doc.babylonjs.com/extensions/the_babylon_viewer
+Online docs: https://doc.babylonjs.com/features/featuresDeepDive/babylonViewer/viewerExamples
 
 ## ES6/NPM usage
 

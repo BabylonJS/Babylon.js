@@ -4,7 +4,7 @@ Babylon's viewer assets package contains all needed binary assets need for the p
 
 This package is only needed when installing the viewer's npm package and it is installed and used automatically.
 
-For basic and advanced viewer usage instructions please read the doc at https://doc.babylonjs.com/extensions/the_babylon_viewer
+For basic and advanced viewer usage instructions please read the doc at https://doc.babylonjs.com/features/featuresDeepDive/babylonViewer/viewerExamples
 
 The source code can be found at https://github.com/BabylonJS/Babylon.js/tree/master/Viewer
 
