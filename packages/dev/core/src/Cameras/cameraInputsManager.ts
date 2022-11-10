@@ -62,7 +62,7 @@ export interface CameraInputsMap<TCamera extends Camera> {
 /**
  * This represents the input manager used within a camera.
  * It helps dealing with all the different kind of input attached to a camera.
- * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/introToPBR
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
  */
 export class CameraInputsManager<TCamera extends Camera> {
     /**

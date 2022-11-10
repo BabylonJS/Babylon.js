@@ -15,7 +15,7 @@ declare type Collider = import("../Collisions/collider").Collider;
 /**
  * This represents a free type of camera. It can be useful in First Person Shooter game for instance.
  * Please consider using the new UniversalCamera instead as it adds more functionality like the gamepad.
- * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras#universal-camera
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_introduction#universal-camera
  */
 export class FreeCamera extends TargetCamera {
     /**
@@ -247,7 +247,7 @@ export class FreeCamera extends TargetCamera {
      * Instantiates a Free Camera.
      * This represents a free type of camera. It can be useful in First Person Shooter game for instance.
      * Please consider using the new UniversalCamera instead as it adds more functionality like touch to this camera.
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras#universal-camera
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_introduction#universal-camera
      * @param name Define the name of the camera in the scene
      * @param position Define the start position of the camera in the scene
      * @param scene Define the scene the camera belongs to

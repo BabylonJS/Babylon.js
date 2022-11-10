@@ -7,7 +7,7 @@ import { FollowCameraPointersInput } from "./Inputs/followCameraPointersInput";
 /**
  * Default Inputs manager for the FollowCamera.
  * It groups all the default supported inputs for ease of use.
- * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/introToPBR
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
  */
 export class FollowCameraInputsManager extends CameraInputsManager<FollowCamera> {
     /**

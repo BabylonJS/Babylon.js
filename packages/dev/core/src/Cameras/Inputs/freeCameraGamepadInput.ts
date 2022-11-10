@@ -9,7 +9,7 @@ import { Gamepad } from "../../Gamepads/gamepad";
 
 /**
  * Manage the gamepad inputs to control a free camera.
- * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/introToPBR
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
  */
 export class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
     /**

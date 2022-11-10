@@ -117,7 +117,7 @@ export interface EngineOptions extends WebGLContextAttributes {
 
     /**
      * Defines if animations should run using a deterministic lock step
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation#deterministic-lockstep
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#deterministic-lockstep
      */
     deterministicLockstep?: boolean;
     /** Defines the maximum steps to use with deterministic lock step mode */

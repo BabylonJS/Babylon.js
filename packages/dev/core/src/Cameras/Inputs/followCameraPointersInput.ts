@@ -7,7 +7,7 @@ import type { PointerTouch } from "../../Events/pointerEvents";
 
 /**
  * Manage the pointers inputs to control an follow camera.
- * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/introToPBR
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
  */
 export class FollowCameraPointersInput extends BaseCameraPointersInput {
     /**

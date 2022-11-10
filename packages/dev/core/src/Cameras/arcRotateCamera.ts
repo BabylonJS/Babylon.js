@@ -29,7 +29,7 @@ Node.AddNodeConstructor("ArcRotateCamera", (name, scene) => {
  *
  * This camera always points towards a given target position and can be rotated around that target with the target as the centre of rotation. It can be controlled with cursors and mouse, or with touch events.
  * Think of this camera as one orbiting its target position, or more imaginatively as a spy satellite orbiting the earth. Its position relative to the target (earth) can be set by three parameters, alpha (radians) the longitudinal rotation, beta (radians) the latitudinal rotation and radius the distance from the target position.
- * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras#arc-rotate-camera
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_introduction#arc-rotate-camera
  */
 export class ArcRotateCamera extends TargetCamera {
     /**

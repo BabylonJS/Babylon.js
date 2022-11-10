@@ -12,7 +12,7 @@ import { Tools } from "../../Misc/tools";
 
 /**
  * Manage the keyboard inputs to control the movement of a follow camera.
- * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/introToPBR
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
  */
 export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera> {
     /**

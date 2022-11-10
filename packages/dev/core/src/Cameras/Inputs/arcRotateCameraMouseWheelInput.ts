@@ -25,7 +25,7 @@ const ffMultiplier = 40;
 
 /**
  * Manage the mouse wheel inputs to control an arc rotate camera.
- * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/introToPBR
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
  */
 export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCamera> {
     /**

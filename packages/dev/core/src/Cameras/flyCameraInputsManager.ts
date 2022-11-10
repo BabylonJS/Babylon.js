@@ -6,7 +6,7 @@ import { FlyCameraKeyboardInput } from "../Cameras/Inputs/flyCameraKeyboardInput
 /**
  * Default Inputs manager for the FlyCamera.
  * It groups all the default supported inputs for ease of use.
- * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/introToPBR
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
  */
 export class FlyCameraInputsManager extends CameraInputsManager<FlyCamera> {
     /**

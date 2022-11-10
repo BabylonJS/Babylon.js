@@ -27,7 +27,7 @@ FreeCameraInputsManager.prototype.addVirtualJoystick = function (): FreeCameraIn
 
 /**
  * Manage the Virtual Joystick inputs to control the movement of a free camera.
- * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/introToPBR
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
  */
 export class FreeCameraVirtualJoystickInput implements ICameraInput<FreeCamera> {
     /**

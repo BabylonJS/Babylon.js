@@ -9,7 +9,7 @@ import type { Nullable } from "../types";
 /**
  * Default Inputs manager for the FreeCamera.
  * It groups all the default supported inputs for ease of use.
- * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/introToPBR
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
  */
 export class FreeCameraInputsManager extends CameraInputsManager<FreeCamera> {
     /**

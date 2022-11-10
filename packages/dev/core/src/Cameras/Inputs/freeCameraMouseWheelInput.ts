@@ -15,7 +15,7 @@ enum _CameraProperty {
 
 /**
  * Manage the mouse wheel inputs to control a free camera.
- * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/introToPBR
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
  */
 export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
     /**
