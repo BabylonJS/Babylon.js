@@ -98,6 +98,7 @@ export class EffectRenderer {
      * @param effectWrapper Defines the effect to draw with
      */
     public applyEffectWrapper(effectWrapper: EffectWrapper): void {
+        this.engine.setState(true);
         this.engine.depthCullingState.depthTest = false;
         this.engine.stencilState.stencilTest = false;
         this.engine.enableEffect(effectWrapper._drawWrapper);
