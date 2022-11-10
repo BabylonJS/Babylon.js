@@ -1165,7 +1165,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     public get isBlocked(): boolean {
-        return this._masterMesh !== null && this._masterMesh !== undefined;
+        return this._masterMesh != null;
     }
 
     /**
