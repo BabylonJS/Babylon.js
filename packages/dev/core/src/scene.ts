@@ -773,13 +773,13 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public skipPointerUpPicking = false;
 
     /** Callback called when a pointer move is detected */
-    public onPointerMove: (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;
+    public onPointerMove?: (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;
     /** Callback called when a pointer down is detected  */
-    public onPointerDown: (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;
+    public onPointerDown?: (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;
     /** Callback called when a pointer up is detected  */
-    public onPointerUp: (evt: IPointerEvent, pickInfo: Nullable<PickingInfo>, type: PointerEventTypes) => void;
+    public onPointerUp?: (evt: IPointerEvent, pickInfo: Nullable<PickingInfo>, type: PointerEventTypes) => void;
     /** Callback called when a pointer pick is detected */
-    public onPointerPick: (evt: IPointerEvent, pickInfo: PickingInfo) => void;
+    public onPointerPick?: (evt: IPointerEvent, pickInfo: PickingInfo) => void;
 
     /**
      * Gets or sets a predicate used to select candidate faces for a pointer move event
@@ -796,6 +796,12 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * Observable event triggered each time an input event is received from the rendering canvas
      */
     public onPointerObservable = new Observable<PointerInfo>();
+
+    /**
+     * Observable to handle camera pointer inputs
+     * @internal
+     */
+    public _onCameraInputObservable = new Observable<PointerInfo>();
 
     /**
      * Gets the pointer coordinates without any translation (ie. straight out of the pointer event)
@@ -4726,6 +4732,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this.onTextureRemovedObservable.clear();
         this.onPrePointerObservable.clear();
         this.onPointerObservable.clear();
+        this._onCameraInputObservable.clear();
         this.onPreKeyboardObservable.clear();
         this.onKeyboardObservable.clear();
         this.onActiveCameraChanged.clear();
