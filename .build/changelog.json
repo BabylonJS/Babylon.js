@@ -1,5 +1,5 @@
 {
-    "fromTag": "5.31.1",
+    "fromTag": "5.31.2",
     "changelog": {
         "5.31.2": [
             {
@@ -29,6 +29,236 @@
                 ],
                 "tags": [
                     "skip changelog"
+                ]
+            }
+        ],
+        "5.32.0": [
+            {
+                "pr": "13225",
+                "title": "STL file loader isBinary update",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/loaders/src/STL/stlFileLoader.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13222",
+                "title": "Texture: Add new copy texture to texture class",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Misc/copyTextureToTexture.ts",
+                    "packages/dev/core/src/Misc/index.ts",
+                    "packages/dev/core/src/Shaders/copyTextureToTexture.fragment.fx"
+                ],
+                "tags": [
+                    "rendering engine",
+                    "new feature",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "13224",
+                "title": "accessibility package not following the same version as core",
+                "description": "Package version was manually released to NPM.\nStarting next minor version it will fit the core versioning schema",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/public/@babylonjs/accessibility/package.json",
+                    "packages/public/umd/babylonjs-accessibility/package.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13220",
+                "title": "Support correct spelling on center",
+                "description": "Fix #13207 or mostly prevent the need for it",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/imageProcessingConfiguration.ts",
+                    "packages/dev/core/src/PostProcesses/imageProcessingPostProcess.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/postProcesses/defaultRenderingPipelinePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/scenePropertyGridComponent.tsx",
+                    "packages/tools/viewer/public/renderOnlyViewer.html",
+                    "packages/tools/viewer/src/configuration/interfaces/imageProcessingConfiguration.ts",
+                    "packages/tools/viewer/src/configuration/types/extended.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "post-process"
+                ]
+            },
+            {
+                "pr": "13218",
+                "title": "Properly clear a selected line container component after it is seen",
+                "description": null,
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/lines/lineContainerComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "inspector",
+                    "sandbox"
+                ]
+            },
+            {
+                "pr": "13219",
+                "title": "MeshExploder bugfix",
+                "description": "## Overview\r\n\r\nForces MeshExploder to update word matrix for the input meshes before calculating scale direction vectors. This was an issue mentioned on the forum where all playground made using MeshExploder are no longer working. \r\n\r\nForum issue: \r\nhttps://forum.babylonjs.com/t/meshexploder-is-not-working/35483\r\n\r\nFix: \r\nCall ```mesh.computeWorldMatrix(true)``` before calculating direction vectores. ",
+                "author": {
+                    "name": "SergioRZMasson",
+                    "url": "https://github.com/SergioRZMasson"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/meshExploder.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "13217",
+                "title": "Fix aliasing issue in webxr multiview",
+                "description": "If a setter is set, the getter is not inherited from the parent class.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/MultiviewRenderTarget.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13216",
+                "title": "Bump loader-utils from 2.0.2 to 2.0.3",
+                "description": "Bumps [loader-utils](https://github.com/webpack/loader-utils) from 2.0.2 to 2.0.3.\n<details>\n<summary>Release notes</summary>\n<p><em>Sourced from <a href=\"https://github.com/webpack/loader-utils/releases\">loader-utils's releases</a>.</em></p>\n<blockquote>\n<h2>v2.0.3</h2>\n<h3><a href=\"https://github.com/webpack/loader-utils/compare/v2.0.1...v2.0.3\">2.0.3</a> (2022-10-20)</h3>\n<h3>Bug Fixes</h3>\n<ul>\n<li><strong>security:</strong> prototype pollution exploit (<a href=\"https://github-redirect.dependabot.com/webpack/loader-utils/issues/217\">#217</a>) (<a href=\"https://github.com/webpack/loader-utils/commit/a93cf6f4702012030f6b5ee8340d5c95ec1c7d4c\">a93cf6f</a>)</li>\n</ul>\n</blockquote>\n</details>\n<details>\n<summary>Changelog</summary>\n<p><em>Sourced from <a href=\"https://github.com/webpack/loader-utils/blob/v2.0.3/CHANGELOG.md\">loader-utils's changelog</a>.</em></p>\n<blockquote>\n<h3><a href=\"https://github.com/webpack/loader-utils/compare/v2.0.1...v2.0.3\">2.0.3</a> (2022-10-20)</h3>\n<h3>Bug Fixes</h3>\n<ul>\n<li><strong>security:</strong> prototype pollution exploit (<a href=\"https://github-redirect.dependabot.com/webpack/loader-utils/issues/217\">#217</a>) (<a href=\"https://github.com/webpack/loader-utils/commit/a93cf6f4702012030f6b5ee8340d5c95ec1c7d4c\">a93cf6f</a>)</li>\n</ul>\n</blockquote>\n</details>\n<details>\n<summary>Commits</summary>\n<ul>\n<li><a href=\"https://github.com/webpack/loader-utils/commit/7162619fb982c394ed75098a0a0ed7e7f3177c70\"><code>7162619</code></a> chore(release): 2.0.3</li>\n<li><a href=\"https://github.com/webpack/loader-utils/commit/a93cf6f4702012030f6b5ee8340d5c95ec1c7d4c\"><code>a93cf6f</code></a> fix(security): prototype polution exploit (<a href=\"https://github-redirect.dependabot.com/webpack/loader-utils/issues/217\">#217</a>)</li>\n<li><a href=\"https://github.com/webpack/loader-utils/commit/90c7c4be17e3e0b2f6091a69c67db7a6df9fd044\"><code>90c7c4b</code></a> chore(release): 2.0.2</li>\n<li><a href=\"https://github.com/webpack/loader-utils/commit/8c2d24ee400bc4567335e97ee6004c3baa6ef66f\"><code>8c2d24e</code></a> fix: base64 generation and unicode characters (<a href=\"https://github-redirect.dependabot.com/webpack/loader-utils/issues/197\">#197</a>)</li>\n<li>See full diff in <a href=\"https://github.com/webpack/loader-utils/compare/v2.0.2...v2.0.3\">compare view</a></li>\n</ul>\n</details>\n<br />\n\n\n[![Dependabot compatibility score](https://dependabot-badges.githubapp.com/badges/compatibility_score?dependency-name=loader-utils&package-manager=npm_and_yarn&previous-version=2.0.2&new-version=2.0.3)](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-compatibility-scores)\n\nDependabot will resolve any conflicts with this PR as long as you don't alter it yourself. You can also trigger a rebase manually by commenting `@dependabot rebase`.\n\n[//]: # (dependabot-automerge-start)\n[//]: # (dependabot-automerge-end)\n\n---\n\n<details>\n<summary>Dependabot commands and options</summary>\n<br />\n\nYou can trigger Dependabot actions by commenting on this PR:\n- `@dependabot rebase` will rebase this PR\n- `@dependabot recreate` will recreate this PR, overwriting any edits that have been made to it\n- `@dependabot merge` will merge this PR after your CI passes on it\n- `@dependabot squash and merge` will squash and merge this PR after your CI passes on it\n- `@dependabot cancel merge` will cancel a previously requested merge and block automerging\n- `@dependabot reopen` will reopen this PR if it is closed\n- `@dependabot close` will close this PR and stop Dependabot recreating it. You can achieve the same result by closing it manually\n- `@dependabot ignore this major version` will close this PR and stop Dependabot creating any more for this major version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this minor version` will close this PR and stop Dependabot creating any more for this minor version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this dependency` will close this PR and stop Dependabot creating any more for this dependency (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot use these labels` will set the current labels as the default for future PRs for this repo and language\n- `@dependabot use these reviewers` will set the current reviewers as the default for future PRs for this repo and language\n- `@dependabot use these assignees` will set the current assignees as the default for future PRs for this repo and language\n- `@dependabot use this milestone` will set the current milestone as the default for future PRs for this repo and language\n\nYou can disable automated security fix PRs for this repo from the [Security Alerts page](https://github.com/BabylonJS/Babylon.js/network/alerts).\n\n</details>",
+                "author": {
+                    "name": "dependabot[bot]",
+                    "url": "https://github.com/apps/dependabot"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": [
+                    "dependencies"
+                ]
+            },
+            {
+                "pr": "13215",
+                "title": "Change doc to match code",
+                "description": "CreateHermiteSpline creates n+1 points or n curve segments, given its 'nbPoints' argument. This changes 'nbPoints' to ''nSegs' and rewords parameter description",
+                "author": {
+                    "name": "Lowclouds",
+                    "url": "https://github.com/Lowclouds"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.path.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13194",
+                "title": "Remake OptionsLineComponent with custom options",
+                "description": "This reverts the previous OptionsLineComponents in shared-ui-components/lines to the previous state to avoid more bugs, and reworks the custom font selection feature to use a new OptionsLineComponent in shared-ui-components/components/lines that's more flexible.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/sharedUiComponents/package.json",
+                    "packages/dev/sharedUiComponents/src/components/Button.modules.scss",
+                    "packages/dev/sharedUiComponents/src/components/Button.tsx",
+                    "packages/dev/sharedUiComponents/src/components/Icon.tsx",
+                    "packages/dev/sharedUiComponents/src/components/TextInputWithSubmit.modules.scss",
+                    "packages/dev/sharedUiComponents/src/components/TextInputWithSubmit.tsx",
+                    "packages/dev/sharedUiComponents/src/components/lines/OptionsLineComponent.modules.scss",
+                    "packages/dev/sharedUiComponents/src/components/lines/OptionsLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/optionsLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/stories/Introduction.stories.mdx",
+                    "packages/dev/sharedUiComponents/src/stories/bars/CommandBarComponent.stories.tsx",
+                    "packages/dev/sharedUiComponents/src/stories/bars/CommandButtonComponent.stories.tsx",
+                    "packages/dev/sharedUiComponents/src/stories/colorPicker/ColorPicker.stories.tsx",
+                    "packages/dev/sharedUiComponents/src/stories/layout/FlexibleGridLayout.stories.tsx",
+                    "packages/dev/sharedUiComponents/src/stories/lines/ColorLineComponent.stories.tsx",
+                    "packages/dev/sharedUiComponents/src/stories/lines/ColorPickerLineComponent.stories.tsx",
+                    "packages/dev/sharedUiComponents/src/stories/lines/FileButtonLineComponent.stories.tsx",
+                    "packages/dev/sharedUiComponents/src/stories/lines/NumericInputComponent.stories.tsx",
+                    "packages/dev/sharedUiComponents/src/stories/lines/OptionsLineComponent.stories.tsx",
+                    "packages/tools/guiEditor/src/components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13213",
+                "title": "WebGPU: Fixes errors in the console log",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/basis.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/bumpFragmentFunctions.fx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/webgpu/dissolve effect with node material and glow layer.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13206",
+                "title": "Test babylon mesh baking",
+                "description": "Here I found one bug in the `isVerticesDataPresent` method.\r\n\r\nTest case:\r\n```ts\r\nconst box = BABYLON.MeshBuilder.CreateBox(\"box\", { size: 1 }, scene);\r\nbox.getVertexBuffer(BABYLON.VertexBuffer.PositionKind)?.dispose();\r\nbox.bakeTransformIntoVertices(BABYLON.Matrix.Scaling(-1, -1, -1));\r\n```\r\nPlayground: https://playground.babylonjs.com/#YFTMIL\r\n\r\nError in the console:\r\n```\r\nTypeError: Cannot read properties of null (reading 'length')\r\n```\r\n\r\nSo I add a check into the method: `if (!this._vertexBuffers || !this.getVerticesData(kind)) {`\r\n\r\n\r\nAnd also I add test cases for baking methods — `bakeTransformIntoVertices` and `bakeCurrentTransformIntoVertices`.",
+                "author": {
+                    "name": "Dok11",
+                    "url": "https://github.com/Dok11"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/test/unit/Meshes/babylon.mesh.bake.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13212",
+                "title": "Fix camera selection in sandbox for cameras with duplicated names",
+                "description": "Fix #13203",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/sandbox/src/components/footer.tsx"
+                ],
+                "tags": [
+                    "bug"
                 ]
             }
         ],
