@@ -525,7 +525,7 @@ export class Engine extends ThinEngine {
     private _performanceMonitor = new PerformanceMonitor();
     /**
      * Gets the performance monitor attached to this engine
-     * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#engineinstrumentation
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/optimize_your_scene#engineinstrumentation
      */
     public get performanceMonitor(): PerformanceMonitor {
         return this._performanceMonitor;
@@ -754,7 +754,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Gets a boolean indicating that the engine is running in deterministic lock step mode
-     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation#deterministic-lockstep
      * @returns true if engine is in deterministic lock step mode
      */
     public isDeterministicLockStep(): boolean {
@@ -763,7 +763,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Gets the max steps when engine is running in deterministic lock step
-     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation#deterministic-lockstep
      * @returns the max steps
      */
     public getLockstepMaxSteps(): number {

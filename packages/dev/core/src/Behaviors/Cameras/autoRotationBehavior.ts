@@ -10,7 +10,7 @@ import { Epsilon } from "../../Maths/math.constants";
 
 /**
  * The autoRotation behavior (AutoRotationBehavior) is designed to create a smooth rotation of an ArcRotateCamera when there is no user interaction.
- * @see https://doc.babylonjs.com/how_to/camera_behaviors#autorotation-behavior
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/behaviors/cameraBehaviors#autorotation-behavior
  */
 export class AutoRotationBehavior implements Behavior<ArcRotateCamera> {
     /**

@@ -6,7 +6,7 @@ import { Space } from "../Maths/math.axis";
 
 /**
  * Class used to apply inverse kinematics to bones
- * @see https://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons#boneikcontroller
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/bonesSkeletons#boneikcontroller
  */
 export class BoneIKController {
     private static _TmpVecs: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];

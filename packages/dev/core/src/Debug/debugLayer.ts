@@ -53,7 +53,7 @@ export interface IExplorerAdditionalChild {
     getClassName(): string;
     /**
      * List of inspectable custom properties (used by the Inspector)
-     * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
+     * @see https://doc.babylonjs.com/toolsAndResources/inspector#extensibility
      */
     inspectableCustomProperties: IInspectable[];
 }

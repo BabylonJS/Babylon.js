@@ -168,7 +168,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     /**
      * Gets or sets the ideal width used to design controls.
      * The GUI will then rescale everything accordingly
-     * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#adaptive-scaling
      */
     public get idealWidth(): number {
         return this._idealWidth;
@@ -184,7 +184,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     /**
      * Gets or sets the ideal height used to design controls.
      * The GUI will then rescale everything accordingly
-     * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#adaptive-scaling
      */
     public get idealHeight(): number {
         return this._idealHeight;
@@ -199,7 +199,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     }
     /**
      * Gets or sets a boolean indicating if the smallest ideal value must be used if idealWidth and idealHeight are both set
-     * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#adaptive-scaling
      */
     public get useSmallestIdeal(): boolean {
         return this._useSmallestIdeal;
@@ -214,7 +214,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     }
     /**
      * Gets or sets a boolean indicating if adaptive scaling must be used
-     * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#adaptive-scaling
      */
     public get renderAtIdealSize(): boolean {
         return this._renderAtIdealSize;
@@ -229,7 +229,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
 
     /**
      * Gets the ratio used when in "ideal mode"
-     * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#adaptive-scaling
      * */
     public get idealRatio(): number {
         let rwidth: number = 0;
@@ -474,7 +474,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     /**
      * Helper function used to create a new style
      * @returns a new style
-     * @see https://doc.babylonjs.com/how_to/gui#styles
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#styles
      */
     public createStyle(): Style {
         return new Style(this);

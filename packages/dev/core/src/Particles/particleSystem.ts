@@ -172,7 +172,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     public defaultViewMatrix: Matrix;
 
     /** Gets or sets a boolean indicating that ramp gradients must be used
-     * @see https://doc.babylonjs.com/babylon101/particles#ramp-gradients
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/particles/particle_system/particle_system_intro#ramp-gradients
      */
     public get useRampGradients(): boolean {
         return this._useRampGradients;

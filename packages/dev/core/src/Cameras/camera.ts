@@ -737,7 +737,7 @@ export class Camera extends Node {
 
     /**
      * Attach a post process to the camera.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses#attach-postprocess
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/usePostProcesses#attach-postprocess
      * @param postProcess The post process to attach to the camera
      * @param insertAt The position of the post process in case several of them are in use in the scene
      * @returns the position the post process has been inserted at
@@ -767,7 +767,7 @@ export class Camera extends Node {
 
     /**
      * Detach a post process to the camera.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses#attach-postprocess
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/usePostProcesses#attach-postprocess
      * @param postProcess The post process to detach from the camera
      */
     public detachPostProcess(postProcess: PostProcess): void {

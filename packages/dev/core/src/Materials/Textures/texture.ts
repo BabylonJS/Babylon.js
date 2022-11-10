@@ -67,7 +67,7 @@ export interface ITextureCreationOptions {
 
 /**
  * This represents a texture in babylon. It can be easily loaded from a network, base64 or html input.
- * @see https://doc.babylonjs.com/babylon101/materials#texture
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/materials_introduction#texture
  */
 export class Texture extends BaseTexture {
     /**
@@ -183,28 +183,28 @@ export class Texture extends BaseTexture {
 
     /**
      * Define an offset on the texture to offset the u coordinates of the UVs
-     * @see https://doc.babylonjs.com/how_to/more_materials#offsetting
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/moreMaterials#offsetting
      */
     @serialize()
     public uOffset = 0;
 
     /**
      * Define an offset on the texture to offset the v coordinates of the UVs
-     * @see https://doc.babylonjs.com/how_to/more_materials#offsetting
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/moreMaterials#offsetting
      */
     @serialize()
     public vOffset = 0;
 
     /**
      * Define an offset on the texture to scale the u coordinates of the UVs
-     * @see https://doc.babylonjs.com/how_to/more_materials#tiling
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/moreMaterials#tiling
      */
     @serialize()
     public uScale = 1.0;
 
     /**
      * Define an offset on the texture to scale the v coordinates of the UVs
-     * @see https://doc.babylonjs.com/how_to/more_materials#tiling
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/moreMaterials#tiling
      */
     @serialize()
     public vScale = 1.0;
@@ -266,7 +266,7 @@ export class Texture extends BaseTexture {
 
     /**
      * List of inspectable custom properties (used by the Inspector)
-     * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
+     * @see https://doc.babylonjs.com/toolsAndResources/inspector#extensibility
      */
     public inspectableCustomProperties: Nullable<IInspectable[]> = null;
 
@@ -345,7 +345,7 @@ export class Texture extends BaseTexture {
     /**
      * Instantiates a new texture.
      * This represents a texture in babylon. It can be easily loaded from a network, base64 or html input.
-     * @see https://doc.babylonjs.com/babylon101/materials#texture
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/materials_introduction#texture
      * @param url defines the url of the picture to load as a texture
      * @param sceneOrEngine defines the scene or engine the texture will belong to
      * @param noMipmapOrOptions defines if the texture will require mip maps or not or set of all options to create the texture

@@ -31,7 +31,7 @@ const axisOverlap = (axis: DeepImmutable<Vector3>, box0: DeepImmutable<BoundingB
 
 /**
  * Interface for cullable objects
- * @see https://doc.babylonjs.com/babylon101/materials#back-face-culling
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/materials_introduction#back-face-culling
  */
 export interface ICullable {
     /**

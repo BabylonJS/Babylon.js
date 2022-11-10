@@ -217,14 +217,14 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /**
      * Gets the number of facets in the mesh
-     * @see https://doc.babylonjs.com/how_to/how_to_use_facetdata#what-is-a-mesh-facet
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/facetData#what-is-a-mesh-facet
      */
     public get facetNb(): number {
         return this._internalAbstractMeshDataInfo._facetData.facetNb;
     }
     /**
      * Gets or set the number (integer) of subdivisions per axis in the partitioning space
-     * @see https://doc.babylonjs.com/how_to/how_to_use_facetdata#tweaking-the-partitioning
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/facetData#tweaking-the-partitioning
      */
     public get partitioningSubdivisions(): number {
         return this._internalAbstractMeshDataInfo._facetData.partitioningSubdivisions;
@@ -235,7 +235,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     /**
      * The ratio (float) to apply to the bounding box size to set to the partitioning space.
      * Ex : 1.01 (default) the partitioning space is 1% bigger than the bounding box
-     * @see https://doc.babylonjs.com/how_to/how_to_use_facetdata#tweaking-the-partitioning
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/facetData#tweaking-the-partitioning
      */
     public get partitioningBBoxRatio(): number {
         return this._internalAbstractMeshDataInfo._facetData.partitioningBBoxRatio;
@@ -248,7 +248,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * Gets or sets a boolean indicating that the facets must be depth sorted on next call to `updateFacetData()`.
      * Works only for updatable meshes.
      * Doesn't work with multi-materials
-     * @see https://doc.babylonjs.com/how_to/how_to_use_facetdata#facet-depth-sort
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/facetData#facet-depth-sort
      */
     public get mustDepthSortFacets(): boolean {
         return this._internalAbstractMeshDataInfo._facetData.facetDepthSort;
@@ -261,7 +261,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * The location (Vector3) where the facet depth sort must be computed from.
      * By default, the active camera position.
      * Used only when facet depth sort is enabled
-     * @see https://doc.babylonjs.com/how_to/how_to_use_facetdata#facet-depth-sort
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/facetData#facet-depth-sort
      */
     public get facetDepthSortFrom(): Vector3 {
         return this._internalAbstractMeshDataInfo._facetData.facetDepthSortFrom;
@@ -279,7 +279,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
     /**
      * gets a boolean indicating if facetData is enabled
-     * @see https://doc.babylonjs.com/how_to/how_to_use_facetdata#what-is-a-mesh-facet
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/facetData#what-is-a-mesh-facet
      */
     public get isFacetDataEnabled(): boolean {
         return this._internalAbstractMeshDataInfo._facetData.facetDataEnabled;
@@ -402,7 +402,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /** Gets or sets the alpha index used to sort transparent meshes
-     * @see https://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered#alpha-index
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/advanced/transparent_rendering#alpha-index
      */
     public alphaIndex = Number.MAX_VALUE;
 
@@ -454,7 +454,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /**
      * Specifies the rendering group id for this mesh (0 by default)
-     * @see https://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered#rendering-groups
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/advanced/transparent_rendering#rendering-groups
      */
     public get renderingGroupId() {
         return this._internalAbstractMeshDataInfo._renderingGroupId;

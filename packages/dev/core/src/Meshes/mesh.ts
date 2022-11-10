@@ -1586,7 +1586,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * This method updates the vertex positions of an updatable mesh according to the `positionFunction` returned values.
-     * @see https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#other-shapes-updatemeshpositions
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/dynamicMeshMorph#other-shapes-updatemeshpositions
      * @param positionFunction is a simple JS function what is passed the mesh `positions` array. It doesn't need to return anything
      * @param computeNormals is a boolean (default true) to enable/disable the mesh normal recomputation after the vertex position update
      * @returns the current mesh

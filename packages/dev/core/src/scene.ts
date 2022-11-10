@@ -154,12 +154,12 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /**
      * Gets or sets the minimum deltatime when deterministic lock step is enabled
-     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation#deterministic-lockstep
      */
     public static MinDeltaTime = 1.0;
     /**
      * Gets or sets the maximum deltatime when deterministic lock step is enabled
-     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation#deterministic-lockstep
      */
     public static MaxDeltaTime = 1000.0;
 
@@ -930,7 +930,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /**
      * Sets the step Id used by deterministic lock step
-     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation#deterministic-lockstep
      * @param newStepId defines the step Id
      */
     public setStepId(newStepId: number): void {
@@ -939,7 +939,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /**
      * Gets the step Id used by deterministic lock step
-     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation#deterministic-lockstep
      * @returns the step Id
      */
     public getStepId(): number {
@@ -948,7 +948,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /**
      * Gets the internal step used by deterministic lock step
-     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation#deterministic-lockstep
      * @returns the internal step
      */
     public getInternalStep(): number {
@@ -960,7 +960,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     private _fogEnabled = true;
     /**
      * Gets or sets a boolean indicating if fog is enabled on this scene
-     * @see https://doc.babylonjs.com/babylon101/environment#fog
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/environment/environment_introduction#fog
      * (Default is true)
      */
     public set fogEnabled(value: boolean) {
@@ -977,7 +977,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     private _fogMode = Scene.FOGMODE_NONE;
     /**
      * Gets or sets the fog mode to use
-     * @see https://doc.babylonjs.com/babylon101/environment#fog
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/environment/environment_introduction#fog
      * | mode | value |
      * | --- | --- |
      * | FOGMODE_NONE | 0 |
@@ -998,25 +998,25 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /**
      * Gets or sets the fog color to use
-     * @see https://doc.babylonjs.com/babylon101/environment#fog
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/environment/environment_introduction#fog
      * (Default is Color3(0.2, 0.2, 0.3))
      */
     public fogColor = new Color3(0.2, 0.2, 0.3);
     /**
      * Gets or sets the fog density to use
-     * @see https://doc.babylonjs.com/babylon101/environment#fog
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/environment/environment_introduction#fog
      * (Default is 0.1)
      */
     public fogDensity = 0.1;
     /**
      * Gets or sets the fog start distance to use
-     * @see https://doc.babylonjs.com/babylon101/environment#fog
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/environment/environment_introduction#fog
      * (Default is 0)
      */
     public fogStart = 0;
     /**
      * Gets or sets the fog end distance to use
-     * @see https://doc.babylonjs.com/babylon101/environment#fog
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/environment/environment_introduction#fog
      * (Default is 1000)
      */
     public fogEnd = 1000.0;
@@ -1753,7 +1753,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /**
      * Gets the performance counter for total vertices
-     * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#instrumentation
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/optimize_your_scene#instrumentation
      */
     public get totalVerticesPerfCounter(): PerfCounter {
         return this._totalVertices;
@@ -1769,7 +1769,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /**
      * Gets the performance counter for active indices
-     * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#instrumentation
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/optimize_your_scene#instrumentation
      */
     public get totalActiveIndicesPerfCounter(): PerfCounter {
         return this._activeIndices;
@@ -1785,7 +1785,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /**
      * Gets the performance counter for active particles
-     * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#instrumentation
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/optimize_your_scene#instrumentation
      */
     public get activeParticlesPerfCounter(): PerfCounter {
         return this._activeParticles;
@@ -1801,7 +1801,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /**
      * Gets the performance counter for active bones
-     * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#instrumentation
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/optimize_your_scene#instrumentation
      */
     public get activeBonesPerfCounter(): PerfCounter {
         return this._activeBones;

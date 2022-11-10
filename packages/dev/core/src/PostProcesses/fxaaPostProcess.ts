@@ -15,7 +15,7 @@ import { SerializationHelper } from "../Misc/decorators";
 declare type Scene = import("../scene").Scene;
 /**
  * Fxaa post process
- * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses#fxaa
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/usePostProcesses#fxaa
  */
 export class FxaaPostProcess extends PostProcess {
     /**

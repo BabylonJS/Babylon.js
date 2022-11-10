@@ -87,13 +87,13 @@ export interface GlslangOptions {
 export interface WebGPUEngineOptions extends GPURequestAdapterOptions {
     /**
      * If delta time between frames should be constant
-     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation#deterministic-lockstep
      */
     deterministicLockstep?: boolean;
 
     /**
      * Maximum about of steps between frames (Default: 4)
-     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation#deterministic-lockstep
      */
     lockstepMaxSteps?: number;
 

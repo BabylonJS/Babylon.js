@@ -9,7 +9,7 @@ import type { TextureSize } from "../../../Materials/Textures/textureCreationOpt
 /**
  * Procedural texturing is a way to programmatically create a texture. There are 2 types of procedural textures: code-only, and code that references some classic 2D images, sometimes called 'refMaps' or 'sampler' images.
  * Custom Procedural textures are the easiest way to create your own procedural in your application.
- * @see https://doc.babylonjs.com/how_to/how_to_use_procedural_textures#creating-custom-procedural-textures
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/proceduralTextures#creating-custom-procedural-textures
  */
 export class CustomProceduralTexture extends ProceduralTexture {
     private _animate: boolean = true;
@@ -21,7 +21,7 @@ export class CustomProceduralTexture extends ProceduralTexture {
      * Instantiates a new Custom Procedural Texture.
      * Procedural texturing is a way to programmatically create a texture. There are 2 types of procedural textures: code-only, and code that references some classic 2D images, sometimes called 'refMaps' or 'sampler' images.
      * Custom Procedural textures are the easiest way to create your own procedural in your application.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_procedural_textures#creating-custom-procedural-textures
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/proceduralTextures#creating-custom-procedural-textures
      * @param name Define the name of the texture
      * @param texturePath Define the folder path containing all the custom texture related files (config, shaders...)
      * @param size Define the size of the texture to create

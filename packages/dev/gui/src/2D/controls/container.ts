@@ -15,7 +15,7 @@ import { Observable } from "core/Misc/observable";
 
 /**
  * Root class for 2D containers
- * @see https://doc.babylonjs.com/how_to/gui#containers
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#containers
  */
 export class Container extends Control {
     /** @internal */
