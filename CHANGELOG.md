@@ -1,5 +1,11 @@
 # Changelog
 
+## 5.32.1
+
+### Core
+
+- EffectRender: Fix culling state not reset properly - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#13227](https://github.com/BabylonJS/Babylon.js/pull/13227))
+
 ## 5.32.0
 
 ### Core
