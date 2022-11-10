@@ -1,7 +1,7 @@
 Babylon.js Loaders module
 =====================
 
-For usage documentation please visit http://doc.babylonjs.com/extensions and choose "loaders".
+For usage documentation please visit https://doc.babylonjs.com/extensions and choose "loaders".
 
 # Installation instructions
 
