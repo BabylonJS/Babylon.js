@@ -274,7 +274,7 @@ export class InputManager {
     /** @internal */
     public _pickMove(pointerId: number): PickingInfo {
         const scene = this._scene;
-        const pickResult: PickingInfo = scene.pick(
+        const pickResult = scene.pick(
             this._unTranslatedPointerX,
             this._unTranslatedPointerY,
             scene.pointerMovePredicate,
@@ -378,7 +378,7 @@ export class InputManager {
                             scene.cameraToUseForPointers
                         );
 
-                        if (pickResult && pickResult.hit && pickResult.pickedMesh && actionManager) {
+                        if (pickResult?.pickedMesh && actionManager) {
                             if (this._totalPointersPressed !== 0 && Date.now() - this._startingPointerTime > InputManager.LongPressDelay && !this._isPointerSwiping()) {
                                 this._startingPointerTime = 0;
                                 actionManager.processTrigger(Constants.ACTION_OnLongPressTrigger, ActionEvent.CreateNew(pickResult.pickedMesh, evt));
@@ -448,7 +448,7 @@ export class InputManager {
 
     private _processPointerUp(pickResult: Nullable<PickingInfo>, evt: IPointerEvent, clickInfo: _ClickInfo): void {
         const scene = this._scene;
-        if (pickResult && pickResult.hit && pickResult.pickedMesh) {
+        if (pickResult?.pickedMesh) {
             this._pickedUpMesh = pickResult.pickedMesh;
             if (this._pickedDownMesh === this._pickedUpMesh) {
                 if (scene.onPointerPick) {
