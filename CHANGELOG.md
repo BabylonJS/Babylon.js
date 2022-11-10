@@ -1,5 +1,33 @@
 # Changelog
 
+## 5.32.0
+
+### Core
+
+- Texture: Add new copy texture to texture class - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#13222](https://github.com/BabylonJS/Babylon.js/pull/13222))
+- Support correct spelling on center - by [sebavan](https://github.com/sebavan) ([#13220](https://github.com/BabylonJS/Babylon.js/pull/13220))
+- MeshExploder bugfix - [_Bug Fix_] by [SergioRZMasson](https://github.com/SergioRZMasson) ([#13219](https://github.com/BabylonJS/Babylon.js/pull/13219))
+- Fix aliasing issue in webxr multiview - by [RaananW](https://github.com/RaananW) ([#13217](https://github.com/BabylonJS/Babylon.js/pull/13217))
+- Change doc to match code - by [Lowclouds](https://github.com/Lowclouds) ([#13215](https://github.com/BabylonJS/Babylon.js/pull/13215))
+- Test babylon mesh baking - by [Dok11](https://github.com/Dok11) ([#13206](https://github.com/BabylonJS/Babylon.js/pull/13206))
+
+### GUI Editor
+
+
+### Inspector
+
+- Support correct spelling on center - by [sebavan](https://github.com/sebavan) ([#13220](https://github.com/BabylonJS/Babylon.js/pull/13220))
+
+### Loaders
+
+
+### Node Editor
+
+
+### Viewer
+
+- Support correct spelling on center - by [sebavan](https://github.com/sebavan) ([#13220](https://github.com/BabylonJS/Babylon.js/pull/13220))
+
 ## 5.31.2
 
 ### Core
