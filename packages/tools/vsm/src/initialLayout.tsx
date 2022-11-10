@@ -37,15 +37,15 @@ export const initialLayout: Layout = {
             rows: [
                 {
                     id: "row4",
-                    selectedTab: "reactiveNodes",
+                    selectedTab: "statesView",
                     height: "60%",
-                    tabs: [{ id: "reactiveNodes", title: "Test", component: <StateViewNodeRenderer /> }],
+                    tabs: [{ id: "statesView", title: "States", component: <StateViewNodeRenderer /> }],
                 },
                 {
                     id: "row5",
-                    selectedTab: "reactiveBehavior",
+                    selectedTab: "actionView",
                     height: "40%",
-                    tabs: [{ id: "reactiveBehavior", title: "Behavior", component: <StateBehaviorNodeRenderer /> }],
+                    tabs: [{ id: "actionView", title: "Actions", component: <StateBehaviorNodeRenderer /> }],
                 },
             ],
         },

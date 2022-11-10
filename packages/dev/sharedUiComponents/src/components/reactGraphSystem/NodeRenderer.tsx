@@ -1,11 +1,11 @@
 import type { ComponentType } from "react";
 import { useState, useEffect, useMemo } from "react";
-import { GraphContainer } from "shared-ui-components/components/reactGraphSystem/GraphContainer";
-import { GraphLine } from "shared-ui-components/components/reactGraphSystem/GraphLine";
-import { GraphNode } from "shared-ui-components/components/reactGraphSystem/GraphNode";
-import { GraphNodesContainer } from "shared-ui-components/components/reactGraphSystem/GraphNodesContainer";
-import { GraphLinesContainer } from "shared-ui-components/components/reactGraphSystem/GraphLinesContainer";
-import { GraphContextManager } from "shared-ui-components/components/reactGraphSystem/GraphContextManager";
+import { GraphContainer } from "./GraphContainer";
+import { GraphLine } from "./GraphLine";
+import { GraphNode } from "./GraphNode";
+import { GraphNodesContainer } from "./GraphNodesContainer";
+import { GraphLinesContainer } from "./GraphLinesContainer";
+import { GraphContextManager } from "./GraphContextManager";
 import type { Nullable } from "core/types";
 
 const fullscreenStyle = { width: "100%", height: "100%" };
@@ -15,15 +15,46 @@ export type IConnectionType = { id: string; sourceId: string; targetId: string }
 export type ICustomDataType = { type: string; value: any };
 export type INodeType = { id: string; label: string; customData?: ICustomDataType };
 
+/**
+ * props for the node renderer
+ */
 export interface INodeRendererProps {
+    /**
+     * array of connections between nodes
+     */
     connections: IConnectionType[];
+    /**
+     * function called when a new connection is created
+     */
     updateConnections: (sourceId: string, targetId: string) => void;
+    /**
+     * function called when a connection is deleted
+     */
     deleteLine: (lineId: string) => void;
+    /**
+     * function called when a node is deleted
+     */
     deleteNode: (nodeId: string) => void;
+    /**
+     * array of all nodes
+     */
     nodes: INodeType[];
-    highlightedNode?: Nullable<string>; // id of the node to highlight
-    selectNode?: (nodeId: Nullable<string>) => void; // function to be called if a node is selected
-    id: string; // renderer id
+    /**
+     * id of the node to highlight
+     */
+    highlightedNode?: Nullable<string>;
+    /**
+     * function to be called if a node is selected
+     */
+    selectNode?: (nodeId: Nullable<string>) => void;
+    /**
+     * id of this renderer
+     */
+    id: string;
+    /**
+     * optional list of custom components to be rendered inside nodes of
+     * a certain type
+     */
     customComponents?: Record<string, ComponentType<any>>;
 }
 

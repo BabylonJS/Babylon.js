@@ -3,10 +3,21 @@ import type { DropTargetMonitor } from "react-dnd";
 import { useDrop } from "react-dnd";
 import { GraphLine, MarkerArrowId } from "./GraphLine";
 
+/**
+ * props for the GraphLineContainer
+ */
 export interface IGraphLinesContainerProps {
-    id: string; // id of the container
+    /**
+     * id of the container
+     */
+    id: string;
 }
 
+/**
+ * this component handles the dragging of new connections
+ * @param props
+ * @returns
+ */
 export const GraphLinesContainer: FC<IGraphLinesContainerProps> = (props) => {
     const [{ start, delta }, dropRef] = useDrop(() => ({
         accept: "connector",

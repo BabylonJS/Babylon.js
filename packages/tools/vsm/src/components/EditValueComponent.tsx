@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState, useEffect } from "react";
 import type { FC } from "react";
 import { SetPositionAction } from "../actions/actions/SetPositionAction";
