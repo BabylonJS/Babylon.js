@@ -4,7 +4,7 @@ import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTextur
 /**
  * Creates a refraction texture used by refraction channel of the standard material.
  * It is like a mirror but to see through a material.
- * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/reflectionTexture#refraction
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/reflectionTexture#refractiontexture
  */
 export class RefractionTexture extends RenderTargetTexture {
     /**

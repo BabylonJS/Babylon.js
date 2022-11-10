@@ -15,7 +15,7 @@ import type { UniformBuffer } from "../uniformBuffer";
  * It will dynamically be rendered every frame to adapt to the camera point of view.
  * You can then easily use it as a reflectionTexture on a flat surface.
  * In case the surface is not a plane, please consider relying on reflection probes.
- * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/reflectionTexture#mirrors
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/reflectionTexture#mirrortexture
  */
 export class MirrorTexture extends RenderTargetTexture {
     /**

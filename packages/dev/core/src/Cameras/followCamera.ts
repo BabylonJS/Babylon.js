@@ -18,7 +18,7 @@ Node.AddNodeConstructor("ArcFollowCamera", (name, scene) => {
 /**
  * A follow camera takes a mesh as a target and follows it as it moves. Both a free camera version followCamera and
  * an arc rotate version arcFollowCamera are available.
- * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras#follow-camera
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_introduction#followcamera
  */
 export class FollowCamera extends TargetCamera {
     /**

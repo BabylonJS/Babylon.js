@@ -487,7 +487,7 @@ export class AnimationGroup implements IDisposable {
      * Set animation weight for all animatables
      * @param weight defines the weight to use
      * @returns the animationGroup
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation#animation-weights
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#animation-weights
      */
     public setWeightForAllAnimatables(weight: number): AnimationGroup {
         for (let index = 0; index < this._animatables.length; index++) {

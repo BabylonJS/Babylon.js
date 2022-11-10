@@ -7,7 +7,7 @@ import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { Gamepad } from "../../Gamepads/gamepad";
 /**
  * Manage the gamepad inputs to control an arc rotate camera.
- * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/introToPBR
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
  */
 export class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera> {
     /**

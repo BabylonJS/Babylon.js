@@ -13,7 +13,7 @@ Node.AddNodeConstructor("VirtualJoysticksCamera", (name, scene) => {
  * This represents a free type of camera. It can be useful in First Person Shooter game for instance.
  * It is identical to the Free Camera and simply adds by default a virtual joystick.
  * Virtual Joysticks are on-screen 2D graphics that are used to control the camera or other scene items.
- * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras#virtual-joysticks-camera
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_introduction#virtual-joysticks-camera
  */
 export class VirtualJoysticksCamera extends FreeCamera {
     /**
