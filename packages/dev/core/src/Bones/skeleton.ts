@@ -19,7 +19,7 @@ import type { AbstractScene } from "../abstractScene";
 
 /**
  * Class used to handle skinning animations
- * @see https://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/bonesSkeletons
  */
 export class Skeleton implements IAnimatable {
     /**

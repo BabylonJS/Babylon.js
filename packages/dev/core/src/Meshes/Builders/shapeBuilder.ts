@@ -42,7 +42,7 @@ import { Path3D } from "../../Maths/math.path";
  * @param options.adjustFrame
  * @param scene defines the hosting scene
  * @returns the extruded shape mesh
- * @see https://doc.babylonjs.com/how_to/parametric_shapes
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param
  * @see https://doc.babylonjs.com/how_to/parametric_shapes#extruded-shapes
  */
 export function ExtrudeShape(
@@ -146,7 +146,7 @@ export function ExtrudeShape(
  * @param scene defines the hosting scene
  * @returns the custom extruded shape mesh
  * @see https://doc.babylonjs.com/how_to/parametric_shapes#custom-extruded-shapes
- * @see https://doc.babylonjs.com/how_to/parametric_shapes
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param
  * @see https://doc.babylonjs.com/how_to/parametric_shapes#extruded-shapes
  */
 export function ExtrudeShapeCustom(

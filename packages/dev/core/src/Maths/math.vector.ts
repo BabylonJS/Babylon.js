@@ -2886,7 +2886,7 @@ export class Vector3 {
      * @param axis2 defines the second axis
      * @param axis3 defines the third axis
      * @returns a new Vector3
-     * @see https://doc.babylonjs.com/divingDeeper/mesh/transforms/center_origin/target_align
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/transforms/center_origin/target_align
      */
     public static RotationFromAxis<T extends Vector3>(axis1: DeepImmutable<T>, axis2: DeepImmutable<Vector3>, axis3: DeepImmutable<Vector3>): T {
         const rotation = new (axis1.constructor as Vector3Constructor<T>)();
@@ -3747,7 +3747,7 @@ export class Vector4 {
  * Class used to store quaternion data
  * Example Playground - Overview - https://playground.babylonjs.com/#L49EJ7#100
  * @see https://en.wikipedia.org/wiki/Quaternion
- * @see https://doc.babylonjs.com/features/position,_rotation,_scaling
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/transforms
  */
 export class Quaternion {
     /** @internal */
@@ -4212,7 +4212,7 @@ export class Quaternion {
      * Returns a new Vector3 set with the Euler angles translated from the current quaternion
      * Example Playground https://playground.babylonjs.com/#L49EJ7#32
      * @returns a new Vector3 containing the Euler angles
-     * @see https://doc.babylonjs.com/divingDeeper/mesh/transforms/center_origin/rotation_conventions
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/transforms/center_origin/rotation_conventions
      */
     public toEulerAngles(): Vector3 {
         const result = Vector3.Zero();
@@ -4225,7 +4225,7 @@ export class Quaternion {
      * Example Playground https://playground.babylonjs.com/#L49EJ7#31
      * @param result defines the vector which will be filled with the Euler angles
      * @returns result input
-     * @see https://doc.babylonjs.com/divingDeeper/mesh/transforms/center_origin/rotation_conventions
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/transforms/center_origin/rotation_conventions
      */
     public toEulerAnglesToRef<T extends Vector3>(result: T): T {
         const qz = this._z;

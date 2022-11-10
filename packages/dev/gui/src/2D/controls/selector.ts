@@ -319,7 +319,7 @@ export class SliderGroup extends SelectorGroup {
 }
 
 /** Class used to hold the controls for the checkboxes, radio buttons and sliders
- * @see https://doc.babylonjs.com/how_to/selector
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/selector
  */
 export class SelectionPanel extends Rectangle {
     private _panel: StackPanel;

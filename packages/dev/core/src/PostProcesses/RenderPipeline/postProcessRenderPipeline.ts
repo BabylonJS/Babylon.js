@@ -10,7 +10,7 @@ declare type PrePassRenderer = import("../../Rendering/prePassRenderer").PrePass
 
 /**
  * PostProcessRenderPipeline
- * @see https://doc.babylonjs.com/how_to/how_to_use_postprocessrenderpipeline
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/postProcessRenderPipeline
  */
 export class PostProcessRenderPipeline {
     protected _renderEffects: { [key: string]: PostProcessRenderEffect };

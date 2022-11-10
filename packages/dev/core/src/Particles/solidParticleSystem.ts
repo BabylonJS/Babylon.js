@@ -24,7 +24,7 @@ import type { PickingInfo } from "../Collisions/pickingInfo";
  * The SPS is also a particle system. It provides some methods to manage the particles.
  * However it is behavior agnostic. This means it has no emitter, no particle physics, no particle recycler. You have to implement your own behavior.
  *
- * Full documentation here : https://doc.babylonjs.com/how_to/Solid_Particle_System
+ * Full documentation here : https://doc.babylonjs.com/features/featuresDeepDive/particles/solid_particle_system/sps_intro
  */
 export class SolidParticleSystem implements IDisposable {
     /**

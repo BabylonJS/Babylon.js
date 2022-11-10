@@ -27,7 +27,7 @@ export interface WebXRSpectatorModeOption {
 
 /**
  * Base set of functionality needed to create an XR experience (WebXRSessionManager, Camera, StateManagement, etc.)
- * @see https://doc.babylonjs.com/how_to/webxr_experience_helpers
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/webXR/webXRExperienceHelpers
  */
 export class WebXRExperienceHelper implements IDisposable {
     private _nonVRCamera: Nullable<Camera> = null;

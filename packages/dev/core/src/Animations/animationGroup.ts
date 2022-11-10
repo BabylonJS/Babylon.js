@@ -218,7 +218,7 @@ export class AnimationGroup implements IDisposable {
     /**
      * Instantiates a new Animation Group.
      * This helps managing several animations at once.
-     * @see https://doc.babylonjs.com/divingDeeper/animation/groupAnimations
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/groupAnimations
      * @param name Defines the name of the group
      * @param scene Defines the scene the group belongs to
      */

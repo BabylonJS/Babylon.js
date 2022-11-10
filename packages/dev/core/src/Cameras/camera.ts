@@ -26,7 +26,7 @@ declare type Ray = import("../Culling/ray").Ray;
 
 /**
  * This is the base class of all the camera used in the application.
- * @see https://doc.babylonjs.com/features/cameras
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras
  */
 export class Camera extends Node {
     /**
@@ -422,7 +422,7 @@ export class Camera extends Node {
     /**
      * Instantiates a new camera object.
      * This should not be used directly but through the inherited cameras: ArcRotate, Free...
-     * @see https://doc.babylonjs.com/features/cameras
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras
      * @param name Defines the name of the camera in the scene
      * @param position Defines the position of the camera
      * @param scene Defines the scene the camera belongs too

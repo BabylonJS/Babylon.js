@@ -116,7 +116,7 @@ export interface WebGPUEngineOptions extends GPURequestAdapterOptions {
 
     /**
      * Defines if webaudio should be initialized as well
-     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic
      */
     audioEngine?: boolean;
 

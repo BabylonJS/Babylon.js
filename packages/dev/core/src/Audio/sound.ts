@@ -14,7 +14,7 @@ import { EngineStore } from "../Engines/engineStore";
 /**
  * Defines a sound that can be played in the application.
  * The sound can either be an ambient track or a simple sound played in reaction to a user action.
- * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic
  */
 export class Sound {
     /**

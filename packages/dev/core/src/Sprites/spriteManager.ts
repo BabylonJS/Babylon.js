@@ -104,7 +104,7 @@ export interface ISpriteManager extends IDisposable {
 
 /**
  * Class used to manage multiple sprites on the same spritesheet
- * @see https://doc.babylonjs.com/babylon101/sprites
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/sprites
  */
 export class SpriteManager implements ISpriteManager {
     /** Define the Url to load snippets */

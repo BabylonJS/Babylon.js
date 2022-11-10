@@ -35,7 +35,7 @@ declare type StandardMaterial = import("core/Materials/standardMaterial").Standa
 
 /**
  * Class used to create texture to support 2D GUI elements
- * @see https://doc.babylonjs.com/how_to/gui
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui
  */
 export class AdvancedDynamicTexture extends DynamicTexture {
     /** Define the Uurl to load snippets */

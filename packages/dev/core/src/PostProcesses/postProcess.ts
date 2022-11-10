@@ -36,7 +36,7 @@ type TextureCache = { texture: RenderTargetWrapper; postProcessChannel: number; 
 
 /**
  * PostProcess can be used to apply a shader to a texture after it has been rendered
- * See https://doc.babylonjs.com/how_to/how_to_use_postprocesses
+ * See https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/usePostProcesses
  */
 export class PostProcess {
     /** @internal */

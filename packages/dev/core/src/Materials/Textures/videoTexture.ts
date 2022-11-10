@@ -63,7 +63,7 @@ export interface VideoTextureSettings {
 /**
  * If you want to display a video in your scene, this is the special texture for that.
  * This special texture works similar to other textures, with the exception of a few parameters.
- * @see https://doc.babylonjs.com/divingDeeper/materials/using/videoTexture
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/videoTexture
  */
 export class VideoTexture extends Texture {
     /**
@@ -134,7 +134,7 @@ export class VideoTexture extends Texture {
      * Creates a video texture.
      * If you want to display a video in your scene, this is the special texture for that.
      * This special texture works similar to other textures, with the exception of a few parameters.
-     * @see https://doc.babylonjs.com/how_to/video_texture
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/videoTexture
      * @param name optional name, will detect from video source, if not defined
      * @param src can be used to provide an url, array of urls or an already setup HTML video element.
      * @param scene is obviously the current scene.

@@ -6,7 +6,7 @@ import type { Analyser } from "../analyser";
 /**
  * This represents an audio engine and it is responsible
  * to play, synchronize and analyse sounds throughout the application.
- * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic
  */
 export interface IAudioEngine extends IDisposable {
     /**

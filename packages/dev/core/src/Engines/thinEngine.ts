@@ -97,17 +97,17 @@ export interface EngineOptions extends WebGLContextAttributes {
     limitDeviceRatio?: number;
     /**
      * Defines if webvr should be enabled automatically
-     * @see https://doc.babylonjs.com/how_to/webvr_camera
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/webVRCamera
      */
     autoEnableWebVR?: boolean;
     /**
      * Defines if webgl2 should be turned off even if supported
-     * @see https://doc.babylonjs.com/features/webgl2
+     * @see https://doc.babylonjs.com/setup/support/webGL2
      */
     disableWebGL2Support?: boolean;
     /**
      * Defines if webaudio should be initialized as well
-     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic
      */
     audioEngine?: boolean;
     /**

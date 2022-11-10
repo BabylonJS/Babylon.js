@@ -10,7 +10,7 @@ import { _PrimaryIsoTriangle, GeodesicData } from "../geodesicMesh";
 /**
  * Creates the Mesh for a Geodesic Polyhedron
  * @see https://en.wikipedia.org/wiki/Geodesic_polyhedron
- * @see https://doc.babylonjs.com/divingDeeper/mesh/creation/polyhedra/geodesic_poly
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/polyhedra/geodesic_poly
  * @param name defines the name of the mesh
  * @param options an object used to set the following optional parameters for the polyhedron, required but can be empty
  * * m number of horizontal steps along an isogrid

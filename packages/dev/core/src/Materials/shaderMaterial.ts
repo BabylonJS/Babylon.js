@@ -96,7 +96,7 @@ export interface IShaderMaterialOptions {
  *
  * This returned material effects how the mesh will look based on the code in the shaders.
  *
- * @see https://doc.babylonjs.com/advanced_topics/shaders/shaderMaterial
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/shaders/shaderMaterial
  */
 export class ShaderMaterial extends PushMaterial {
     private _shaderPath: any;
@@ -140,7 +140,7 @@ export class ShaderMaterial extends PushMaterial {
      * Instantiate a new shader material.
      * The ShaderMaterial object has the necessary methods to pass data from your scene to the Vertex and Fragment Shaders and returns a material that can be applied to any mesh.
      * This returned material effects how the mesh will look based on the code in the shaders.
-     * @see https://doc.babylonjs.com/how_to/shader_material
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/shaders/shaderMaterial
      * @param name Define the name of the material in the scene
      * @param scene Define the scene the material belongs to
      * @param shaderPath Defines  the route to the shader code in one of three ways:

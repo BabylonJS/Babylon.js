@@ -3,7 +3,7 @@ import type { Nullable } from "../types";
 
 /**
  * Class used to represent a specific level of detail of a mesh
- * @see https://doc.babylonjs.com/how_to/how_to_use_lod
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/LOD
  */
 export class MeshLODLevel {
     /**

@@ -37,7 +37,7 @@ import { Path3D } from "../../Maths/math.path";
  * @param options.invertUV
  * @param scene defines the hosting scene
  * @returns the tube mesh
- * @see https://doc.babylonjs.com/how_to/parametric_shapes
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param
  * @see https://doc.babylonjs.com/how_to/set_shapes#tube
  */
 export function CreateTube(

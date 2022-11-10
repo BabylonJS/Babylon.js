@@ -309,8 +309,8 @@ export function CreateRibbonVertexData(options: {
  * @param options.colors
  * @param scene defines the hosting scene
  * @returns the ribbon mesh
- * @see https://doc.babylonjs.com/how_to/ribbon_tutorial
- * @see https://doc.babylonjs.com/how_to/parametric_shapes
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param/ribbon_extra
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param
  */
 export function CreateRibbon(
     name: string,

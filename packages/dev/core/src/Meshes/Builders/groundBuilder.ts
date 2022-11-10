@@ -415,7 +415,7 @@ export function CreateTiledGround(
  * @param options.onReady
  * @param scene defines the hosting scene
  * @returns the ground mesh
- * @see https://doc.babylonjs.com/babylon101/height_map
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set/height_map
  * @see https://doc.babylonjs.com/how_to/set_shapes#ground-from-a-height-map
  */
 export function CreateGroundFromHeightMap(

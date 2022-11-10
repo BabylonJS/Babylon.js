@@ -377,7 +377,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Gets the list of instances created from this mesh
      * it is not supposed to be modified manually.
      * Note also that the order of the InstancedMesh wihin the array is not significant and might change.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_instances
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/copies/instances
      */
     public instances = new Array<InstancedMesh>();
 
@@ -391,7 +391,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * User defined function used to change how LOD level selection is done
-     * @see https://doc.babylonjs.com/how_to/how_to_use_lod
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/LOD
      */
     public onLODLevelSelection: (distance: number, mesh: Mesh, selectedLevel: Nullable<Mesh>) => void;
 
@@ -845,7 +845,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * Add a mesh as LOD level triggered at the given distance.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_lod
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/LOD
      * @param distanceOrScreenCoverage Either distance from the center of the object to show this level or the screen coverage if `useScreenCoverage` is set to `true`.
      * If screen coverage, value is a fraction of the screen's total surface, between 0 and 1.
      * Example Playground for distance https://playground.babylonjs.com/#QE7KM#197
@@ -873,7 +873,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * Returns the LOD level mesh at the passed distance or null if not found.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_lod
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/LOD
      * @param distance The distance from the center of the object to show this level
      * @returns a Mesh or `null`
      */
@@ -891,7 +891,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * Remove a mesh from the LOD array
-     * @see https://doc.babylonjs.com/how_to/how_to_use_lod
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/LOD
      * @param mesh defines the mesh to be removed
      * @returns This mesh (for chaining)
      */
@@ -2695,7 +2695,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * The mesh World Matrix is then reset.
      * This method returns nothing but really modifies the mesh even if it's originally not set as updatable.
      * Note that, under the hood, this method sets a new VertexBuffer each call.
-     * @see https://doc.babylonjs.com/resources/baking_transformations
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/transforms/center_origin/bakingTransforms
      * @param bakeIndependentlyOfChildren indicates whether to preserve all child nodes' World Matrix during baking
      * @returns the current mesh
      */
@@ -3491,7 +3491,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * Creates a new InstancedMesh object from the mesh model.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_instances
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/copies/instances
      * @param name defines the name of the new instance
      * @returns a new InstancedMesh
      */

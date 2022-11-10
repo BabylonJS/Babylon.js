@@ -19,7 +19,7 @@ import { Constants } from "../Engines/constants";
 /**
  * Action Manager manages all events to be triggered on a given mesh or the global scene.
  * A single scene can have many Action Managers to handle predefined actions on specific meshes.
- * @see https://doc.babylonjs.com/how_to/how_to_use_actions
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions
  */
 export class ActionManager extends AbstractActionManager {
     /**

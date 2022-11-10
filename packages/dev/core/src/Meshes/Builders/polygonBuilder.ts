@@ -208,7 +208,7 @@ export function CreatePolygon(
 /**
  * Creates an extruded polygon mesh, with depth in the Y direction.
  * * You can set different colors and different images to the top, bottom and extruded side by using the parameters `faceColors` (an array of 3 Color3 elements) and `faceUV` (an array of 3 Vector4 elements)
- * @see https://doc.babylonjs.com/how_to/createbox_per_face_textures_and_colors
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/texturePerBoxFace
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
  * @param options.shape

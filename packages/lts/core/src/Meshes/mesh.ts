@@ -21,7 +21,7 @@ declare module "core/Meshes/mesh" {
     namespace Mesh {
         /**
          * Creates a ribbon mesh.
-         * @see https://doc.babylonjs.com/how_to/parametric_shapes
+         * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param
          * @param name defines the name of the mesh to create
          * @param pathArray is a required array of paths, what are each an array of successive Vector3. The pathArray parameter depicts the ribbon geometry.
          * @param closeArray creates a seam between the first and the last paths of the path array (default is false)
@@ -248,7 +248,7 @@ declare module "core/Meshes/mesh" {
         /**
          * Creates an extruded shape mesh.
          * The extrusion is a parametric shape. It has no predefined shape. Its final shape will depend on the input parameters.
-         * @see https://doc.babylonjs.com/how_to/parametric_shapes
+         * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param
          * @see https://doc.babylonjs.com/how_to/parametric_shapes#extruded-shapes
          * @param name defines the name of the mesh to create
          * @param shape is a required array of successive Vector3. This array depicts the shape to be extruded in its local space : the shape must be designed in the xOy plane and will be extruded along the Z axis
@@ -380,7 +380,7 @@ declare module "core/Meshes/mesh" {
 
         /**
          * Creates a ground mesh from a height map.
-         * @see https://doc.babylonjs.com/babylon101/height_map
+         * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set/height_map
          * @param name defines the name of the mesh to create
          * @param url sets the URL of the height map image resource
          * @param width set the ground width size
@@ -414,7 +414,7 @@ declare module "core/Meshes/mesh" {
          * The tube is a parametric shape.
          * It has no predefined shape. Its final shape will depend on the input parameters.
          *
-         * @see https://doc.babylonjs.com/how_to/parametric_shapes
+         * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param
          * @param name defines the name of the mesh to create
          * @param path is a required array of successive Vector3. It is the curve used as the axis of the tube
          * @param radius sets the tube radius size
@@ -450,7 +450,7 @@ declare module "core/Meshes/mesh" {
          * * You can build other polyhedron types than the 15 embbeded ones by setting the parameter `custom` (`polyhedronObject`, default null). If you set the parameter `custom`, this overwrittes the parameter `type`
          * * A `polyhedronObject` is a formatted javascript object. You'll find a full file with pre-set polyhedra here : https://github.com/BabylonJS/Extensions/tree/master/Polyhedron
          * * You can set the color and the UV of each side of the polyhedron with the parameters `faceColors` (Color4, default `(1, 1, 1, 1)`) and faceUV (Vector4, default `(0, 0, 1, 1)`)
-         * * To understand how to set `faceUV` or `faceColors`, please read this by considering the right number of faces of your polyhedron, instead of only 6 for the box : https://doc.babylonjs.com/how_to/createbox_per_face_textures_and_colors
+         * * To understand how to set `faceUV` or `faceColors`, please read this by considering the right number of faces of your polyhedron, instead of only 6 for the box : https://doc.babylonjs.com/features/featuresDeepDive/materials/using/texturePerBoxFace
          * * The parameter `flat` (boolean, default true). If set to false, it gives the polyhedron a single global face, so less vertices and shared normals. In this case, `faceColors` and `faceUV` are ignored
          * * You can also set the mesh side orientation with the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
          * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation

@@ -19,7 +19,7 @@ Engine.AudioEngineFactory = (
 /**
  * This represents the default audio engine used in babylon.
  * It is responsible to play, synchronize and analyse sounds throughout the  application.
- * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic
  */
 export class AudioEngine implements IAudioEngine {
     private _audioContext: Nullable<AudioContext> = null;

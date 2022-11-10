@@ -29,7 +29,7 @@ import type { RenderTargetWrapper } from "../../../Engines/renderTargetWrapper";
 /**
  * Procedural texturing is a way to programmatically create a texture. There are 2 types of procedural textures: code-only, and code that references some classic 2D images, sometimes calmpler' images.
  * This is the base class of any Procedural texture and contains most of the shareable code.
- * @see https://doc.babylonjs.com/how_to/how_to_use_procedural_textures
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/proceduralTextures
  */
 export class ProceduralTexture extends Texture {
     /**
@@ -111,7 +111,7 @@ export class ProceduralTexture extends Texture {
      * Instantiates a new procedural texture.
      * Procedural texturing is a way to programmatically create a texture. There are 2 types of procedural textures: code-only, and code that references some classic 2D images, sometimes called 'refMaps' or 'sampler' images.
      * This is the base class of any Procedural texture and contains most of the shareable code.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_procedural_textures
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/proceduralTextures
      * @param name  Define the name of the texture
      * @param size Define the size of the texture to create
      * @param fragment Define the fragment shader to use to generate the texture or null if it is defined later

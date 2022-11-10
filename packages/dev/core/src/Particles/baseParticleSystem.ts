@@ -32,7 +32,7 @@ declare type RawTexture = import("../Materials/Textures/rawTexture").RawTexture;
  * This represents the base class for particle system in Babylon.
  * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
  * Particles can take different shapes while emitted like box, sphere, cone or you can write your custom function.
- * @example https://doc.babylonjs.com/babylon101/particles
+ * @example https://doc.babylonjs.com/features/featuresDeepDive/particles/particle_system/particle_system_intro
  */
 export class BaseParticleSystem {
     /**

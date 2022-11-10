@@ -226,7 +226,7 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
 /**
  * This is the default material used in Babylon. It is the best trade off between quality
  * and performances.
- * @see https://doc.babylonjs.com/babylon101/materials
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/materials_introduction
  */
 export class StandardMaterial extends PushMaterial {
     @serializeAsTexture("diffuseTexture")
@@ -408,7 +408,7 @@ export class StandardMaterial extends PushMaterial {
     private _useParallax = false;
     /**
      * Is parallax enabled or not.
-     * @see https://doc.babylonjs.com/how_to/using_parallax_mapping
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/parallaxMapping
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public useParallax: boolean;
@@ -418,7 +418,7 @@ export class StandardMaterial extends PushMaterial {
     /**
      * Is parallax occlusion enabled or not.
      * If true, the outcome is way more realistic than traditional Parallax but you can expect a performance hit that worthes consideration.
-     * @see https://doc.babylonjs.com/how_to/using_parallax_mapping
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/parallaxMapping
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public useParallaxOcclusion: boolean;
@@ -471,7 +471,7 @@ export class StandardMaterial extends PushMaterial {
     private _diffuseFresnelParameters: FresnelParameters;
     /**
      * Define the diffuse fresnel parameters of the material.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_fresnelparameters
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/fresnelParameters
      */
     @expandToProperty("_markAllSubMeshesAsFresnelDirty")
     public diffuseFresnelParameters: FresnelParameters;
@@ -480,7 +480,7 @@ export class StandardMaterial extends PushMaterial {
     private _opacityFresnelParameters: FresnelParameters;
     /**
      * Define the opacity fresnel parameters of the material.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_fresnelparameters
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/fresnelParameters
      */
     @expandToProperty("_markAllSubMeshesAsFresnelAndMiscDirty")
     public opacityFresnelParameters: FresnelParameters;
@@ -489,7 +489,7 @@ export class StandardMaterial extends PushMaterial {
     private _reflectionFresnelParameters: FresnelParameters;
     /**
      * Define the reflection fresnel parameters of the material.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_fresnelparameters
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/fresnelParameters
      */
     @expandToProperty("_markAllSubMeshesAsFresnelDirty")
     public reflectionFresnelParameters: FresnelParameters;
@@ -498,7 +498,7 @@ export class StandardMaterial extends PushMaterial {
     private _refractionFresnelParameters: FresnelParameters;
     /**
      * Define the refraction fresnel parameters of the material.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_fresnelparameters
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/fresnelParameters
      */
     @expandToProperty("_markAllSubMeshesAsFresnelDirty")
     public refractionFresnelParameters: FresnelParameters;
@@ -507,7 +507,7 @@ export class StandardMaterial extends PushMaterial {
     private _emissiveFresnelParameters: FresnelParameters;
     /**
      * Define the emissive fresnel parameters of the material.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_fresnelparameters
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/fresnelParameters
      */
     @expandToProperty("_markAllSubMeshesAsFresnelDirty")
     public emissiveFresnelParameters: FresnelParameters;
@@ -516,7 +516,7 @@ export class StandardMaterial extends PushMaterial {
     private _useReflectionFresnelFromSpecular = false;
     /**
      * If true automatically deducts the fresnels values from the material specularity.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_fresnelparameters
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/fresnelParameters
      */
     @expandToProperty("_markAllSubMeshesAsFresnelDirty")
     public useReflectionFresnelFromSpecular: boolean;
@@ -755,7 +755,7 @@ export class StandardMaterial extends PushMaterial {
      * Instantiates a new standard material.
      * This is the default material used in Babylon. It is the best trade off between quality
      * and performances.
-     * @see https://doc.babylonjs.com/babylon101/materials
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/materials_introduction
      * @param name Define the name of the material in the scene
      * @param scene Define the scene the material belong to
      */
@@ -813,7 +813,7 @@ export class StandardMaterial extends PushMaterial {
     /**
      * In case the depth buffer does not allow enough depth precision for your scene (might be the case in large scenes)
      * You can try switching to logarithmic depth.
-     * @see https://doc.babylonjs.com/how_to/using_logarithmic_depth_buffer
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/advanced/logarithmicDepthBuffer
      */
     @serialize()
     public get useLogarithmicDepth(): boolean {

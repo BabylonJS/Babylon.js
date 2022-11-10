@@ -335,7 +335,7 @@ export class Path2 {
 
 /**
  * Represents a 3D path made up of multiple 3D points
- * @see https://doc.babylonjs.com/divingDeeper/mesh/path3D
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/path3D
  */
 export class Path3D {
     private _curve = new Array<Vector3>();
@@ -362,7 +362,7 @@ export class Path3D {
     /**
      * new Path3D(path, normal, raw)
      * Creates a Path3D. A Path3D is a logical math object, so not a mesh.
-     * please read the description in the tutorial : https://doc.babylonjs.com/how_to/how_to_use_path3d
+     * please read the description in the tutorial : https://doc.babylonjs.com/features/featuresDeepDive/mesh/path3D
      * @param path an array of Vector3, the curve axis of the Path3D
      * @param firstNormal (options) Vector3, the first wanted normal to the curve. Ex (0, 1, 0) for a vertical normal.
      * @param raw (optional, default false) : boolean, if true the returned Path3D isn't normalized. Useful to depict path acceleration or speed.
@@ -815,7 +815,7 @@ export class Path3D {
 /**
  * A Curve3 object is a logical object, so not a mesh, to handle curves in the 3D geometric space.
  * A Curve3 is designed from a series of successive Vector3.
- * @see https://doc.babylonjs.com/how_to/how_to_use_curve3
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/drawCurves
  */
 export class Curve3 {
     private _points: Vector3[];

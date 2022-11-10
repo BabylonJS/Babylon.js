@@ -9,7 +9,7 @@ import { Viewport } from "../../Maths/math.viewport";
 
 /**
  * Camera used to simulate stereoscopic rendering on real screens (based on UniversalCamera)
- * @see https://doc.babylonjs.com/features/cameras
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras
  */
 export class StereoscopicScreenUniversalCamera extends UniversalCamera {
     private _distanceToProjectionPlane: number;

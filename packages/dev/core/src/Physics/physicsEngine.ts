@@ -8,7 +8,7 @@ import { _WarnImport } from "../Misc/devTools";
 
 /**
  * Class used to control physics engine
- * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
  */
 export class PhysicsEngine implements IPhysicsEngine {
     /**

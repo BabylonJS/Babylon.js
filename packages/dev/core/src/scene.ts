@@ -140,7 +140,7 @@ export enum ScenePerformancePriority {
 
 /**
  * Represents a scene to be rendered by the engine.
- * @see https://doc.babylonjs.com/features/scene
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/scene
  */
 export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHolder {
     /** The fog is deactivated */
@@ -1181,7 +1181,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     // Collisions
     /**
      * Gets or sets a boolean indicating if collisions are enabled on this scene
-     * @see https://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_collisions
      */
     public collisionsEnabled = true;
 
@@ -1199,7 +1199,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /**
      * Defines the gravity applied to this scene (used only for collisions)
-     * @see https://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_collisions
      */
     public gravity = new Vector3(0, -9.807, 0);
 
@@ -1248,13 +1248,13 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     // Offline support
     /**
      * Gets or sets the current offline provider to use to store scene data
-     * @see https://doc.babylonjs.com/how_to/caching_resources_in_indexeddb
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/optimizeCached
      */
     public offlineProvider: IOfflineProvider;
 
     /**
      * Gets or sets the action manager associated with the scene
-     * @see https://doc.babylonjs.com/how_to/how_to_use_actions
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions
      */
     public actionManager: AbstractActionManager;
 
