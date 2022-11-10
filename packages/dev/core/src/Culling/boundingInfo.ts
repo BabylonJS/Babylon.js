@@ -31,7 +31,7 @@ const axisOverlap = (axis: DeepImmutable<Vector3>, box0: DeepImmutable<BoundingB
 
 /**
  * Interface for cullable objects
- * @see https://doc.babylonjs.com/babylon101/materials#back-face-culling
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/materials_introduction#back-face-culling
  */
 export interface ICullable {
     /**
@@ -234,7 +234,7 @@ export class BoundingInfo implements ICullable {
 
     /**
      * Checks if a point is inside the bounding box and bounding sphere or the mesh
-     * @see https://doc.babylonjs.com/babylon101/intersect_collisions_-_mesh
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/interactions/mesh_intersect
      * @param point the point to check intersection with
      * @returns if the point intersects
      */
@@ -256,7 +256,7 @@ export class BoundingInfo implements ICullable {
 
     /**
      * Checks if another bounding info intersects the bounding box and bounding sphere or the mesh
-     * @see https://doc.babylonjs.com/babylon101/intersect_collisions_-_mesh
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/interactions/mesh_intersect
      * @param boundingInfo the bounding info to check intersection with
      * @param precise if the intersection should be done using OBB
      * @returns if the bounding info intersects

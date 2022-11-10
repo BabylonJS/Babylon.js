@@ -10,7 +10,7 @@ Node.AddNodeConstructor("StereoscopicFreeCamera", (name, scene, options) => {
 });
 /**
  * Camera used to simulate stereoscopic rendering (based on UniversalCamera)
- * @see https://doc.babylonjs.com/features/cameras
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras
  */
 export class StereoscopicUniversalCamera extends UniversalCamera {
     /**

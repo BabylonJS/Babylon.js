@@ -12,7 +12,7 @@ import type { Engine } from "../../Engines/engine";
 import { Tools } from "../../Misc/tools";
 /**
  * Manage the keyboard inputs to control the movement of a free camera.
- * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
  */
 export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
     /**

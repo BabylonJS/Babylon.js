@@ -43,7 +43,7 @@ FreeCameraInputsManager.prototype.addDeviceOrientation = function (smoothFactor?
 /**
  * Takes information about the orientation of the device as reported by the deviceorientation event to orient the camera.
  * Screen rotation is taken into account.
- * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
  */
 export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera> {
     private _camera: FreeCamera;
@@ -109,7 +109,7 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
     public _onDeviceOrientationChangedObservable = new Observable<void>();
     /**
      * Instantiates a new input
-     * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
      */
     constructor() {
         this._constantTranform = new Quaternion(-Math.sqrt(0.5), 0, 0, Math.sqrt(0.5));

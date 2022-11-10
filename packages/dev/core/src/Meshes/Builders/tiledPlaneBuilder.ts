@@ -6,7 +6,7 @@ import { VertexData } from "../mesh.vertexData";
 
 /**
  * Creates the VertexData for a tiled plane
- * @see https://doc.babylonjs.com/divingDeeper/mesh/creation/set/tiled_plane
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set/tiled_plane
  * @param options an object used to set the following optional parameters for the tiled plane, required but can be empty
  * * pattern a limited pattern arrangement depending on the number
  * * size of the box
@@ -435,7 +435,7 @@ export function CreateTiledPlaneVertexData(options: {
 
 /**
  * Creates a tiled plane mesh
- * @see https://doc.babylonjs.com/divingDeeper/mesh/creation/set/tiled_plane
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set/tiled_plane
  * @param name defines the name of the mesh
  * @param options an object used to set the following optional parameters for the tiled plane, required but can be empty
  * * pattern a limited pattern arrangement depending on the number

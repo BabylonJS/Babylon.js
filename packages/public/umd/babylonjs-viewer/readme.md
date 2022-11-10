@@ -4,7 +4,7 @@ Babylon's viewer is a wrapper around Babylon, that automatically initializes the
 
 The viewer automatically interacts with the DOM, searching for HTML elements named `babylon`. It will then automatically read the configuration from the DOM element and will create a scene for it.
 
-for basic and advanced usage instructions please read the doc at https://doc.babylonjs.com/extensions/the_babylon_viewer
+for basic and advanced usage instructions please read the doc at https://doc.babylonjs.com/features/featuresDeepDive/babylonViewer/viewerExamples
 
 The source code can be found at https://github.com/BabylonJS/Babylon.js/tree/master/Viewer
 

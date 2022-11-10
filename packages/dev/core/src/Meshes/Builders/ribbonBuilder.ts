@@ -284,9 +284,9 @@ export function CreateRibbonVertexData(options: {
  * * The parameter `closePath` (boolean, default false) creates a seam between the first and the last points of each path of the path array
  * * The parameter `offset` (positive integer, default : rounded half size of the pathArray length), is taken in account only if the `pathArray` is containing a single path
  * * It's the offset to join the points from the same path. Ex : offset = 10 means the point 1 is joined to the point 11
- * * The optional parameter `instance` is an instance of an existing Ribbon object to be updated with the passed `pathArray` parameter : https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#ribbon
+ * * The optional parameter `instance` is an instance of an existing Ribbon object to be updated with the passed `pathArray` parameter : https://doc.babylonjs.com/features/featuresDeepDive/mesh/dynamicMeshMorph#ribbon
  * * You can also set the mesh side orientation with the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE
- * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/babylon101/discover_basic_elements#side-orientation
+ * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4). Detail here : https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#side-orientation
  * * The optional parameter `invertUV` (boolean, default false) swaps in the geometry the U and V coordinates to apply a texture
  * * The parameter `uvs` is an optional flat array of `Vector2` to update/set each ribbon vertex with its own custom UV values instead of the computed ones
  * * The parameters `colors` is an optional flat array of `Color4` to set/update each ribbon vertex with its own custom color values
@@ -309,8 +309,8 @@ export function CreateRibbonVertexData(options: {
  * @param options.colors
  * @param scene defines the hosting scene
  * @returns the ribbon mesh
- * @see https://doc.babylonjs.com/how_to/ribbon_tutorial
- * @see https://doc.babylonjs.com/how_to/parametric_shapes
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param/ribbon_extra
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param
  */
 export function CreateRibbon(
     name: string,

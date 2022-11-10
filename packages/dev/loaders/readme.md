@@ -2,9 +2,9 @@
 
 ### Usage
 See documentation links:
-- https://doc.babylonjs.com/how_to/obj
-- https://doc.babylonjs.com/how_to/stl
-- https://doc.babylonjs.com/how_to/gltf
+- https://doc.babylonjs.com/features/featuresDeepDive/importers/oBJ
+- https://doc.babylonjs.com/features/featuresDeepDive/importers/stl
+- https://doc.babylonjs.com/features/featuresDeepDive/importers/glTF
 
 ### Build
 To compile, from the tools/gulp folder:

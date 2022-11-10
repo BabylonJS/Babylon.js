@@ -11,7 +11,7 @@ import { Tools } from "../../Misc/tools";
 import type { IMouseEvent, IPointerEvent } from "../../Events/deviceInputEvents";
 /**
  * Manage the mouse inputs to control the movement of a free camera.
- * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
  */
 export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
     /**
@@ -52,7 +52,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
 
     /**
      * Manage the mouse inputs to control the movement of a free camera.
-     * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
      * @param touchEnabled Defines if touch is enabled or not
      */
     constructor(

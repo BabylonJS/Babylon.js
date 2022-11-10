@@ -13,7 +13,7 @@ import { Tools } from "../../Misc/tools";
 
 /**
  * Listen to keyboard events to control the camera.
- * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
  */
 export class FlyCameraKeyboardInput implements ICameraInput<FlyCamera> {
     /**

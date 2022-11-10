@@ -68,7 +68,7 @@ export interface IAction {
 
 /**
  * The action to be carried out following a trigger
- * @see https://doc.babylonjs.com/how_to/how_to_use_actions#available-actions
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#available-actions
  */
 export class Action implements IAction {
     /**

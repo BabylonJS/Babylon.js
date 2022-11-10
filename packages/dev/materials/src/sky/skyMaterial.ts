@@ -42,7 +42,7 @@ class SkyMaterialDefines extends MaterialDefines {
 
 /**
  * This is the sky material which allows to create dynamic and texture free effects for skyboxes.
- * @see https://doc.babylonjs.com/extensions/sky
+ * @see https://doc.babylonjs.com/toolsAndResources/assetLibraries/materialsLibrary/skyMat
  */
 export class SkyMaterial extends PushMaterial {
     /**
@@ -130,7 +130,7 @@ export class SkyMaterial extends PushMaterial {
      * Instantiates a new sky material.
      * This material allows to create dynamic and texture free
      * effects for skyboxes by taking care of the atmosphere state.
-     * @see https://doc.babylonjs.com/extensions/sky
+     * @see https://doc.babylonjs.com/toolsAndResources/assetLibraries/materialsLibrary/skyMat
      * @param name Define the name of the material in the scene
      * @param scene Define the scene the material belong to
      */

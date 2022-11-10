@@ -11,7 +11,7 @@ import { Tools } from "../../Misc/tools";
 
 /**
  * Manage the mouse wheel inputs to control a follow camera.
- * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
  */
 export class FollowCameraMouseWheelInput implements ICameraInput<FollowCamera> {
     /**

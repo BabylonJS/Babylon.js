@@ -113,7 +113,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
 
     /**
      * Gets the list of attached behaviors
-     * @see https://doc.babylonjs.com/features/behaviour
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/behaviors
      */
     public get behaviors(): Behavior<Control3D>[] {
         return this._behaviors;
@@ -121,7 +121,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
 
     /**
      * Attach a behavior to the control
-     * @see https://doc.babylonjs.com/features/behaviour
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/behaviors
      * @param behavior defines the behavior to attach
      * @returns the current control
      */
@@ -149,7 +149,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
 
     /**
      * Remove an attached behavior
-     * @see https://doc.babylonjs.com/features/behaviour
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/behaviors
      * @param behavior defines the behavior to attach
      * @returns the current control
      */
@@ -169,7 +169,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
     /**
      * Gets an attached behavior by name
      * @param name defines the name of the behavior to look for
-     * @see https://doc.babylonjs.com/features/behaviour
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/behaviors
      * @returns null if behavior was not found else the requested behavior
      */
     public getBehaviorByName(name: string): Nullable<Behavior<Control3D>> {

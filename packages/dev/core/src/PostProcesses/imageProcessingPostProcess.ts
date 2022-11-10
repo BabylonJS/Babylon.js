@@ -20,7 +20,7 @@ import "../Shaders/postprocess.vertex";
 
 /**
  * ImageProcessingPostProcess
- * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses#imageprocessing
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/usePostProcesses#imageprocessing
  */
 export class ImageProcessingPostProcess extends PostProcess {
     /**

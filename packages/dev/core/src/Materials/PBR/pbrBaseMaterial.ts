@@ -271,7 +271,7 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
  *
  * This offers the main features of a standard PBR material.
  * For more information, please refer to the documentation :
- * https://doc.babylonjs.com/how_to/physically_based_rendering
+ * https://doc.babylonjs.com/features/featuresDeepDive/materials/using/introToPBR
  */
 export abstract class PBRBaseMaterial extends PushMaterial {
     /**

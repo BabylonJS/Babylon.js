@@ -16,7 +16,7 @@ import type { ThinEngine } from "../Engines/thinEngine";
 
 /**
  * Manages an XRSession to work with Babylon's engine
- * @see https://doc.babylonjs.com/how_to/webxr_session_manager
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/webXR/webXRSessionManagers
  */
 export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextureProvider {
     private _engine: Nullable<Engine>;

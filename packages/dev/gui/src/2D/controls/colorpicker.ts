@@ -92,7 +92,7 @@ export class ColorPicker extends Control {
 
     /**
      * Gets or sets control width
-     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     @serialize()
     public get width(): string | number {
@@ -116,7 +116,7 @@ export class ColorPicker extends Control {
 
     /**
      * Gets or sets control height
-     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     @serialize()
     public get height(): string | number {

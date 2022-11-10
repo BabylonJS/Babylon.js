@@ -18,7 +18,7 @@ Node.AddNodeConstructor("ArcFollowCamera", (name, scene) => {
 /**
  * A follow camera takes a mesh as a target and follows it as it moves. Both a free camera version followCamera and
  * an arc rotate version arcFollowCamera are available.
- * @see https://doc.babylonjs.com/features/cameras#follow-camera
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_introduction#followcamera
  */
 export class FollowCamera extends TargetCamera {
     /**
@@ -109,7 +109,7 @@ export class FollowCamera extends TargetCamera {
 
     /**
      * Instantiates the follow camera.
-     * @see https://doc.babylonjs.com/features/cameras#follow-camera
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_introduction#followcamera
      * @param name Define the name of the camera in the scene
      * @param position Define the position of the camera
      * @param scene Define the scene the camera belong to
@@ -236,7 +236,7 @@ export class FollowCamera extends TargetCamera {
 /**
  * Arc Rotate version of the follow camera.
  * It still follows a Defined mesh but in an Arc Rotate Camera fashion.
- * @see https://doc.babylonjs.com/features/cameras#follow-camera
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_introduction#followcamera
  */
 export class ArcFollowCamera extends TargetCamera {
     private _cartesianCoordinates: Vector3 = Vector3.Zero();
@@ -246,7 +246,7 @@ export class ArcFollowCamera extends TargetCamera {
 
     /**
      * Instantiates a new ArcFollowCamera
-     * @see https://doc.babylonjs.com/features/cameras#follow-camera
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_introduction#followcamera
      * @param name Define the name of the camera
      * @param alpha Define the rotation angle of the camera around the longitudinal axis
      * @param beta Define the rotation angle of the camera around the elevation axis
