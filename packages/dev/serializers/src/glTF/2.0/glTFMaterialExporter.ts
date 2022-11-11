@@ -1,11 +1,4 @@
-import type {
-    ITextureInfo,
-    IMaterial,
-    IMaterialPbrMetallicRoughness,
-    IMaterialOcclusionTextureInfo,
-    ISampler,
-    IMaterialExtension,
-} from "babylonjs-gltf2interface";
+import type { ITextureInfo, IMaterial, IMaterialPbrMetallicRoughness, IMaterialOcclusionTextureInfo, ISampler, IMaterialExtension } from "babylonjs-gltf2interface";
 import { ImageMimeType, MaterialAlphaMode, TextureMagFilter, TextureMinFilter, TextureWrapMode } from "babylonjs-gltf2interface";
 
 import type { Nullable } from "core/types";
@@ -78,9 +71,12 @@ interface _IPBRMetallicRoughness {
 
 function getFileExtensionFromMimeType(mimeType: ImageMimeType): string {
     switch (mimeType) {
-        case ImageMimeType.JPEG: return ".jpg";
-        case ImageMimeType.PNG: return ".png";
-        case ImageMimeType.WEBP: return ".webp";
+        case ImageMimeType.JPEG:
+            return ".jpg";
+        case ImageMimeType.PNG:
+            return ".png";
+        case ImageMimeType.WEBP:
+            return ".webp";
     }
 }
 
@@ -440,7 +436,7 @@ export class _GLTFMaterialExporter {
 
         const data = await engine._readTexturePixels(tempTexture, width, height);
 
-        return await Tools.DumpDataAsync(width, height, data, mimeType, undefined, true, true) as ArrayBuffer;
+        return (await Tools.DumpDataAsync(width, height, data, mimeType, undefined, true, true)) as ArrayBuffer;
     }
 
     /**
@@ -658,14 +654,18 @@ export class _GLTFMaterialExporter {
             }
 
             if (writeOutMetallicRoughnessTexture) {
-                promises.push(this._getImageDataAsync(metallicRoughnessBuffer, width, height, mimeType).then((data) => {
-                    metallicRoughnessFactors.metallicRoughnessTextureData = data;
-                }));
+                promises.push(
+                    this._getImageDataAsync(metallicRoughnessBuffer, width, height, mimeType).then((data) => {
+                        metallicRoughnessFactors.metallicRoughnessTextureData = data;
+                    })
+                );
             }
             if (writeOutBaseColorTexture) {
-                promises.push(this._getImageDataAsync(baseColorBuffer, width, height, mimeType).then((data) => {
-                    metallicRoughnessFactors.baseColorTextureData = data;
-                }));
+                promises.push(
+                    this._getImageDataAsync(baseColorBuffer, width, height, mimeType).then((data) => {
+                        metallicRoughnessFactors.baseColorTextureData = data;
+                    })
+                );
             }
 
             return Promise.all(promises).then(() => {
@@ -1132,7 +1132,6 @@ export class _GLTFMaterialExporter {
             mimeType: mimeType,
         };
 
-
         const images = this._exporter._images;
         images.push({
             name: name,
@@ -1165,9 +1164,9 @@ export class _GLTFMaterialExporter {
 
         // if a pre-existing sampler with identical parameters exists, then reuse the previous sampler
         const samplers = this._exporter._samplers;
-        const samplerIndex = samplers.findIndex((s) =>
-            s.minFilter === sampler.minFilter && s.magFilter === sampler.magFilter &&
-            s.wrapS === sampler.wrapS && s.wrapT === sampler.wrapT);
+        const samplerIndex = samplers.findIndex(
+            (s) => s.minFilter === sampler.minFilter && s.magFilter === sampler.magFilter && s.wrapS === sampler.wrapS && s.wrapT === sampler.wrapT
+        );
         if (samplerIndex !== -1) {
             return samplerIndex;
         }
