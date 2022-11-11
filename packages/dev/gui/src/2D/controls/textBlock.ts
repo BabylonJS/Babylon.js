@@ -428,29 +428,31 @@ export class TextBlock extends Control {
         }
     }
 
+    private _linesTemp: object[] = [];
+
     protected _breakLines(refWidth: number, refHeight: number, context: ICanvasRenderingContext): object[] {
-        const lines = [];
+        this._linesTemp.length = 0;
         const _lines = this.text.split("\n");
 
         if (this._textWrapping === TextWrapping.Ellipsis) {
             for (const _line of _lines) {
-                lines.push(this._parseLineEllipsis(_line, refWidth, context));
+                this._linesTemp.push(this._parseLineEllipsis(_line, refWidth, context));
             }
         } else if (this._textWrapping === TextWrapping.WordWrap) {
             for (const _line of _lines) {
-                lines.push(...this._parseLineWordWrap(_line, refWidth, context));
+                this._linesTemp.push(...this._parseLineWordWrap(_line, refWidth, context));
             }
         } else if (this._textWrapping === TextWrapping.WordWrapEllipsis) {
             for (const _line of _lines) {
-                lines.push(...this._parseLineWordWrapEllipsis(_line, refWidth, refHeight!, context));
+                this._linesTemp.push(...this._parseLineWordWrapEllipsis(_line, refWidth, refHeight!, context));
             }
         } else {
             for (const _line of _lines) {
-                lines.push(this._parseLine(_line, context));
+                this._linesTemp.push(this._parseLine(_line, context));
             }
         }
 
-        return lines;
+        return this._linesTemp;
     }
 
     protected _parseLine(line: string = "", context: ICanvasRenderingContext): object {
