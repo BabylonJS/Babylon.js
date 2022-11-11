@@ -1111,7 +1111,9 @@ export class _GLTFMaterialExporter {
                 internalTextureToImage[internalTextureUniqueId][mimeType] = imageIndex;
             }
 
-            return this._exportTextureInfo(imageIndex, samplerIndex, babylonTexture.coordinatesIndex);
+            const textureInfo = this._exportTextureInfo(imageIndex, samplerIndex, babylonTexture.coordinatesIndex);
+            this._textureMap[textureUid] = textureInfo;
+            return textureInfo;
         }
     }
 
