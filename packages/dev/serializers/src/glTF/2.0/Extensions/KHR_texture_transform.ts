@@ -1,7 +1,6 @@
 import type { ITextureInfo, IKHRTextureTransform } from "babylonjs-gltf2interface";
 import { Tools } from "core/Misc/tools";
 import type { Texture } from "core/Materials/Textures/texture";
-import { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
 import type { Nullable } from "core/types";
 import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { _Exporter } from "../glTFExporter";
@@ -13,8 +12,6 @@ const NAME = "KHR_texture_transform";
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
-    private _recordedTextures: ProceduralTexture[] = [];
-
     /** Name of this extension */
     public readonly name = NAME;
 
@@ -29,11 +26,7 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
 
     constructor() {}
 
-    public dispose() {
-        for (const texture of this._recordedTextures) {
-            texture.dispose();
-        }
-    }
+    public dispose() {}
 
     /** @internal */
     public get wasUsed() {
