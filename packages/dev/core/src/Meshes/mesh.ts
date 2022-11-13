@@ -923,15 +923,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return this;
         }
 
-        let bSphere: BoundingSphere;
-
-        if (boundingSphere) {
-            bSphere = boundingSphere;
-        } else {
-            const boundingInfo = this.getBoundingInfo();
-
-            bSphere = boundingInfo.boundingSphere;
-        }
+        const bSphere = boundingSphere || this.getBoundingInfo().boundingSphere;
 
         const distanceToCamera = camera.mode === Camera.ORTHOGRAPHIC_CAMERA ? camera.minZ : bSphere.centerWorld.subtract(camera.globalPosition).length();
         const useScreenCoverage = internalDataInfo._useLODScreenCoverage;
