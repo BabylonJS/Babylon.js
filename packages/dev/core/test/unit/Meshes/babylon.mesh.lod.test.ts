@@ -1,4 +1,5 @@
 import { ArcRotateCamera, Camera } from "core/Cameras";
+import { BoundingSphere } from "core/Culling";
 import type { Engine } from "core/Engines";
 import { Constants, NullEngine } from "core/Engines";
 import { Vector3 } from "core/Maths";
@@ -228,6 +229,28 @@ describe("Babylon Mesh Levels of Details", () => {
                 cameraArc.radius = 380;
                 scene.render();
                 expect(knot0.getLOD(cameraArc)).toBeNull();
+            });
+        });
+
+        describe("check custom boundingSphere", () => {
+            it("should use custom boundingSphere", () => {
+                const customBoundingSphere = new BoundingSphere(new Vector3(0, 0, 0), new Vector3(1, 1, 1));
+
+                // Set LOD meshes
+                knot0.addLODLevel(10, knot1);
+                knot0.addLODLevel(20, knot2);
+
+                cameraArc.radius = 10;
+                scene.render();
+                expect(knot0.getLOD(cameraArc, customBoundingSphere)!.name).toEqual("Knot0");
+
+                cameraArc.radius = 11;
+                scene.render();
+                expect(knot0.getLOD(cameraArc, customBoundingSphere)!.name).toEqual("Knot1");
+
+                cameraArc.radius = 21;
+                scene.render();
+                expect(knot0.getLOD(cameraArc, customBoundingSphere)!.name).toEqual("Knot2");
             });
         });
     });
