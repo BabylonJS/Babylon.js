@@ -352,4 +352,14 @@ describe("Babylon Mesh Levels of Details", () => {
             expect(knot0.getLODLevelAtDistance(30)).toBeNull();
         });
     });
+
+    describe("addLODLevel", () => {
+        it("should not possible add one mesh twice", () => {
+            knot0.addLODLevel(10, knot1);
+            knot0.addLODLevel(20, knot1);
+            knot0.addLODLevel(30, knot1);
+
+            expect(knot0.getLODLevels().length).toEqual(1);
+        });
+    });
 });
