@@ -366,5 +366,23 @@ describe("Babylon Mesh Levels of Details", () => {
             // And no one lod level should be left
             expect(knot0.getLODLevels().length).toEqual(0);
         });
+
+        it("should remove lod level with null mesh", () => {
+            knot0.addLODLevel(10, knot1);
+            knot0.addLODLevel(20, knot2);
+            knot0.addLODLevel(30, null);
+
+            knot0.removeLODLevel(knot1);
+            knot0.removeLODLevel(knot2);
+            knot0.removeLODLevel(null);
+
+            // And no one lod level should be left
+            expect(knot0.getLODLevels().length).toEqual(0);
+
+            // And the getLOD should return the original mesh with radius relative to null by previous LOD level
+            cameraArc.radius = 35;
+            scene.render();
+            expect(knot0.getLOD(cameraArc)!.name).toEqual("Knot0");
+        });
     });
 });
