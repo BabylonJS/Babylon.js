@@ -381,4 +381,66 @@ describe("Babylon Mesh Levels of Details", () => {
             expect(knot0.getLOD(cameraArc)!.name).toEqual("Knot0");
         });
     });
+
+    describe("getLODLevelAtDistance", () => {
+        let scene: Scene;
+
+        let knot0: Mesh;
+        let knot1: Mesh;
+        let knot2: Mesh;
+
+        beforeEach(() => {
+            scene = new Scene(subject);
+
+            knot0 = MeshBuilder.CreateTorusKnot(
+                "Knot0",
+                {
+                    radius: 10,
+                    tube: 3,
+                    radialSegments: 128,
+                    tubularSegments: 64,
+                    p: 2,
+                    q: 3,
+                },
+                scene
+            );
+            knot1 = MeshBuilder.CreateTorusKnot(
+                "Knot1",
+                {
+                    radius: 10,
+                    tube: 3,
+                    radialSegments: 64,
+                    tubularSegments: 32,
+                    p: 2,
+                    q: 3,
+                },
+                scene
+            );
+            knot2 = MeshBuilder.CreateTorusKnot(
+                "Knot2",
+                {
+                    radius: 10,
+                    tube: 3,
+                    radialSegments: 32,
+                    tubularSegments: 16,
+                    p: 2,
+                    q: 3,
+                },
+                scene
+            );
+        });
+
+        it("should return the lod level at distance", () => {
+            knot0.addLODLevel(10, knot1);
+            knot0.addLODLevel(20, knot2);
+            knot0.addLODLevel(30, null);
+
+            expect(knot0.getLODLevelAtDistance(9)).toBeNull();
+            expect(knot0.getLODLevelAtDistance(10)).toEqual(knot1);
+            expect(knot0.getLODLevelAtDistance(19)).toBeNull();
+            expect(knot0.getLODLevelAtDistance(20)).toEqual(knot2);
+            expect(knot0.getLODLevelAtDistance(29)).toBeNull();
+            expect(knot0.getLODLevelAtDistance(30)).toBeNull();
+        });
+    });
 });
