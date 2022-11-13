@@ -75,6 +75,16 @@ describe("Babylon Mesh Levels of Details", () => {
             );
         });
 
+        it("should return self mesh when lods are not defined", () => {
+            cameraArc.radius = 15;
+            scene.render();
+            expect(knot0.getLOD(cameraArc)!.name).toEqual("Knot0");
+
+            cameraArc.radius = 25;
+            scene.render();
+            expect(knot0.getLOD(cameraArc)!.name).toEqual("Knot0");
+        });
+
         describe("check LOD by distance", () => {
             beforeEach(() => {
                 knot0.addLODLevel(10, knot1);
