@@ -926,11 +926,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         const bSphere = boundingSphere || this.getBoundingInfo().boundingSphere;
 
         const distanceToCamera = camera.mode === Camera.ORTHOGRAPHIC_CAMERA ? camera.minZ : bSphere.centerWorld.subtract(camera.globalPosition).length();
-        const useScreenCoverage = internalDataInfo._useLODScreenCoverage;
         let compareValue = distanceToCamera;
         let compareSign = 1;
 
-        if (useScreenCoverage) {
+        if (internalDataInfo._useLODScreenCoverage) {
             const screenArea = camera.screenArea;
             let meshArea = (bSphere.radiusWorld * camera.minZ) / distanceToCamera;
             meshArea = meshArea * meshArea * Math.PI;
