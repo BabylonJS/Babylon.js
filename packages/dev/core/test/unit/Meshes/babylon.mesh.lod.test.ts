@@ -276,4 +276,89 @@ describe("Babylon Mesh Levels of Details", () => {
             });
         });
     });
+
+    describe("removeLODLevel", () => {
+        let scene: Scene;
+        let cameraArc: ArcRotateCamera;
+        let cameraOrthographic: ArcRotateCamera;
+
+        let knot0: Mesh;
+        let knot1: Mesh;
+        let knot2: Mesh;
+
+        beforeEach(() => {
+            scene = new Scene(subject);
+
+            cameraArc = new ArcRotateCamera("Camera", 0, 0, 5, new Vector3(0, 0, 0), scene);
+
+            cameraOrthographic = new ArcRotateCamera("Camera", 0, 0, 5, new Vector3(0, 0, 0), scene);
+            cameraOrthographic.mode = Camera.ORTHOGRAPHIC_CAMERA;
+
+            knot0 = MeshBuilder.CreateTorusKnot(
+                "Knot0",
+                {
+                    radius: 10,
+                    tube: 3,
+                    radialSegments: 128,
+                    tubularSegments: 64,
+                    p: 2,
+                    q: 3,
+                },
+                scene
+            );
+            knot1 = MeshBuilder.CreateTorusKnot(
+                "Knot1",
+                {
+                    radius: 10,
+                    tube: 3,
+                    radialSegments: 64,
+                    tubularSegments: 32,
+                    p: 2,
+                    q: 3,
+                },
+                scene
+            );
+            knot2 = MeshBuilder.CreateTorusKnot(
+                "Knot2",
+                {
+                    radius: 10,
+                    tube: 3,
+                    radialSegments: 32,
+                    tubularSegments: 16,
+                    p: 2,
+                    q: 3,
+                },
+                scene
+            );
+        });
+
+        it("should remove lod level", () => {
+            knot0.addLODLevel(10, knot1);
+            knot0.addLODLevel(20, knot2);
+
+            knot0.removeLODLevel(knot1);
+            knot0.removeLODLevel(knot2);
+
+            // After remove lod levels, the LOD should be the original mesh with any radius
+            [5, 15, 25].forEach((radius) => {
+                cameraArc.radius = radius;
+                scene.render();
+                expect(knot0.getLOD(cameraArc)!.name).toEqual("Knot0");
+            });
+        });
+
+        it("should remove lod levels with chaining", () => {
+            knot0.addLODLevel(10, knot1);
+            knot0.addLODLevel(20, knot2);
+
+            knot0.removeLODLevel(knot1).removeLODLevel(knot2);
+
+            // After remove lod levels, the LOD should be the original mesh with any radius
+            [5, 15, 25].forEach((radius) => {
+                cameraArc.radius = radius;
+                scene.render();
+                expect(knot0.getLOD(cameraArc)!.name).toEqual("Knot0");
+            });
+        });
+    });
 });
