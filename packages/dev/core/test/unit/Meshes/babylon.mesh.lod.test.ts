@@ -345,6 +345,9 @@ describe("Babylon Mesh Levels of Details", () => {
                 scene.render();
                 expect(knot0.getLOD(cameraArc)!.name).toEqual("Knot0");
             });
+
+            // And no one lod level should be left
+            expect(knot0.getLODLevels().length).toEqual(0);
         });
 
         it("should remove lod levels with chaining", () => {
@@ -359,6 +362,9 @@ describe("Babylon Mesh Levels of Details", () => {
                 scene.render();
                 expect(knot0.getLOD(cameraArc)!.name).toEqual("Knot0");
             });
+
+            // And no one lod level should be left
+            expect(knot0.getLODLevels().length).toEqual(0);
         });
     });
 });
