@@ -9,6 +9,11 @@ import { Scene } from "core/scene";
 
 describe("Babylon Mesh Levels of Details", () => {
     let subject: Engine;
+    let scene: Scene;
+
+    let knot0: Mesh;
+    let knot1: Mesh;
+    let knot2: Mesh;
 
     beforeEach(() => {
         subject = new NullEngine({
@@ -18,61 +23,56 @@ describe("Babylon Mesh Levels of Details", () => {
             deterministicLockstep: false,
             lockstepMaxSteps: 1,
         });
+
+        scene = new Scene(subject);
+
+        knot0 = MeshBuilder.CreateTorusKnot(
+            "Knot0",
+            {
+                radius: 10,
+                tube: 3,
+                radialSegments: 128,
+                tubularSegments: 64,
+                p: 2,
+                q: 3,
+            },
+            scene
+        );
+        knot1 = MeshBuilder.CreateTorusKnot(
+            "Knot1",
+            {
+                radius: 10,
+                tube: 3,
+                radialSegments: 64,
+                tubularSegments: 32,
+                p: 2,
+                q: 3,
+            },
+            scene
+        );
+        knot2 = MeshBuilder.CreateTorusKnot(
+            "Knot2",
+            {
+                radius: 10,
+                tube: 3,
+                radialSegments: 32,
+                tubularSegments: 16,
+                p: 2,
+                q: 3,
+            },
+            scene
+        );
     });
 
     describe("getLOD method", () => {
-        let scene: Scene;
         let cameraArc: ArcRotateCamera;
         let cameraOrthographic: ArcRotateCamera;
 
-        let knot0: Mesh;
-        let knot1: Mesh;
-        let knot2: Mesh;
-
         beforeEach(() => {
-            scene = new Scene(subject);
-
             cameraArc = new ArcRotateCamera("Camera", 0, 0, 5, new Vector3(0, 0, 0), scene);
 
             cameraOrthographic = new ArcRotateCamera("Camera", 0, 0, 5, new Vector3(0, 0, 0), scene);
             cameraOrthographic.mode = Camera.ORTHOGRAPHIC_CAMERA;
-
-            knot0 = MeshBuilder.CreateTorusKnot(
-                "Knot0",
-                {
-                    radius: 10,
-                    tube: 3,
-                    radialSegments: 128,
-                    tubularSegments: 64,
-                    p: 2,
-                    q: 3,
-                },
-                scene
-            );
-            knot1 = MeshBuilder.CreateTorusKnot(
-                "Knot1",
-                {
-                    radius: 10,
-                    tube: 3,
-                    radialSegments: 64,
-                    tubularSegments: 32,
-                    p: 2,
-                    q: 3,
-                },
-                scene
-            );
-            knot2 = MeshBuilder.CreateTorusKnot(
-                "Knot2",
-                {
-                    radius: 10,
-                    tube: 3,
-                    radialSegments: 32,
-                    tubularSegments: 16,
-                    p: 2,
-                    q: 3,
-                },
-                scene
-            );
         });
 
         it("should return self mesh when lods are not defined", () => {
@@ -278,54 +278,10 @@ describe("Babylon Mesh Levels of Details", () => {
     });
 
     describe("removeLODLevel", () => {
-        let scene: Scene;
         let cameraArc: ArcRotateCamera;
 
-        let knot0: Mesh;
-        let knot1: Mesh;
-        let knot2: Mesh;
-
         beforeEach(() => {
-            scene = new Scene(subject);
-
             cameraArc = new ArcRotateCamera("Camera", 0, 0, 5, new Vector3(0, 0, 0), scene);
-
-            knot0 = MeshBuilder.CreateTorusKnot(
-                "Knot0",
-                {
-                    radius: 10,
-                    tube: 3,
-                    radialSegments: 128,
-                    tubularSegments: 64,
-                    p: 2,
-                    q: 3,
-                },
-                scene
-            );
-            knot1 = MeshBuilder.CreateTorusKnot(
-                "Knot1",
-                {
-                    radius: 10,
-                    tube: 3,
-                    radialSegments: 64,
-                    tubularSegments: 32,
-                    p: 2,
-                    q: 3,
-                },
-                scene
-            );
-            knot2 = MeshBuilder.CreateTorusKnot(
-                "Knot2",
-                {
-                    radius: 10,
-                    tube: 3,
-                    radialSegments: 32,
-                    tubularSegments: 16,
-                    p: 2,
-                    q: 3,
-                },
-                scene
-            );
         });
 
         it("should remove lod level", () => {
@@ -383,53 +339,6 @@ describe("Babylon Mesh Levels of Details", () => {
     });
 
     describe("getLODLevelAtDistance", () => {
-        let scene: Scene;
-
-        let knot0: Mesh;
-        let knot1: Mesh;
-        let knot2: Mesh;
-
-        beforeEach(() => {
-            scene = new Scene(subject);
-
-            knot0 = MeshBuilder.CreateTorusKnot(
-                "Knot0",
-                {
-                    radius: 10,
-                    tube: 3,
-                    radialSegments: 128,
-                    tubularSegments: 64,
-                    p: 2,
-                    q: 3,
-                },
-                scene
-            );
-            knot1 = MeshBuilder.CreateTorusKnot(
-                "Knot1",
-                {
-                    radius: 10,
-                    tube: 3,
-                    radialSegments: 64,
-                    tubularSegments: 32,
-                    p: 2,
-                    q: 3,
-                },
-                scene
-            );
-            knot2 = MeshBuilder.CreateTorusKnot(
-                "Knot2",
-                {
-                    radius: 10,
-                    tube: 3,
-                    radialSegments: 32,
-                    tubularSegments: 16,
-                    p: 2,
-                    q: 3,
-                },
-                scene
-            );
-        });
-
         it("should return the lod level at distance", () => {
             knot0.addLODLevel(10, knot1);
             knot0.addLODLevel(20, knot2);
