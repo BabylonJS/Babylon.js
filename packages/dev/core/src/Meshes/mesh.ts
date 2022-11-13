@@ -895,7 +895,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param mesh defines the mesh to be removed
      * @returns This mesh (for chaining)
      */
-    public removeLODLevel(mesh: Mesh): Mesh {
+    public removeLODLevel(mesh: Nullable<Mesh>): Mesh {
         const internalDataInfo = this._internalMeshDataInfo;
         for (let index = 0; index < internalDataInfo._LODLevels.length; index++) {
             if (internalDataInfo._LODLevels[index].mesh === mesh) {
