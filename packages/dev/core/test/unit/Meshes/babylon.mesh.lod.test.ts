@@ -280,7 +280,6 @@ describe("Babylon Mesh Levels of Details", () => {
     describe("removeLODLevel", () => {
         let scene: Scene;
         let cameraArc: ArcRotateCamera;
-        let cameraOrthographic: ArcRotateCamera;
 
         let knot0: Mesh;
         let knot1: Mesh;
@@ -290,9 +289,6 @@ describe("Babylon Mesh Levels of Details", () => {
             scene = new Scene(subject);
 
             cameraArc = new ArcRotateCamera("Camera", 0, 0, 5, new Vector3(0, 0, 0), scene);
-
-            cameraOrthographic = new ArcRotateCamera("Camera", 0, 0, 5, new Vector3(0, 0, 0), scene);
-            cameraOrthographic.mode = Camera.ORTHOGRAPHIC_CAMERA;
 
             knot0 = MeshBuilder.CreateTorusKnot(
                 "Knot0",
