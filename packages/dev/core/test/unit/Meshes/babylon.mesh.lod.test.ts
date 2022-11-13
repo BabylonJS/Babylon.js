@@ -85,6 +85,18 @@ describe("Babylon Mesh Levels of Details", () => {
             expect(knot0.getLOD(cameraArc)!.name).toEqual("Knot0");
         });
 
+        it("should add lod level by chaining", () => {
+            knot0.addLODLevel(10, knot1).addLODLevel(20, knot2);
+
+            cameraArc.radius = 15;
+            scene.render();
+            expect(knot0.getLOD(cameraArc)!.name).toEqual("Knot1");
+
+            cameraArc.radius = 25;
+            scene.render();
+            expect(knot0.getLOD(cameraArc)!.name).toEqual("Knot2");
+        });
+
         describe("check LOD by distance", () => {
             beforeEach(() => {
                 knot0.addLODLevel(10, knot1);
