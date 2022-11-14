@@ -27,7 +27,7 @@ export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDispo
      * @param mimeType The mime-type of the generated image
      * @returns A promise that resolves with the exported texture
      */
-    preExportTextureAsync?(context: string, babylonTexture: Nullable<Texture>, mimeType: ImageMimeType): Promise<Texture>;
+    preExportTextureAsync?(context: string, babylonTexture: Nullable<Texture>, mimeType: ImageMimeType): Promise<Nullable<Texture>>;
 
     /**
      * Define this method to get notified when a texture info is created
