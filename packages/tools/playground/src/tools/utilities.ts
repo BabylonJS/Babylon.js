@@ -1,6 +1,9 @@
 import type { GlobalState } from "../globalState";
 
 export class Utilities {
+    /** Error message to display when the playground might lose the current code */
+    public static CodeLostConfirmationMessage = "Are you sure you want to switch the language (You will lose your current project if it was not saved before)?";
+
     public static FastEval(code: string) {
         const head = document.getElementsByTagName("head")[0];
         const script = document.createElement("script");
@@ -61,7 +64,7 @@ export class Utilities {
     }
 
     public static SwitchLanguage(language: string, globalState: GlobalState, force?: boolean) {
-        if (force || window.confirm("Are you sure you want to switch the language (You will lose your current project if it was not saved before)?")) {
+        if (force || window.confirm(this.CodeLostConfirmationMessage)) {
             Utilities.StoreStringToStore("language", language);
             globalState.language = language;
             globalState.currentCode = "";
