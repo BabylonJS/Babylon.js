@@ -895,7 +895,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param mesh defines the mesh to be removed
      * @returns This mesh (for chaining)
      */
-    public removeLODLevel(mesh: Mesh): Mesh {
+    public removeLODLevel(mesh: Nullable<Mesh>): Mesh {
         const internalDataInfo = this._internalMeshDataInfo;
         for (let index = 0; index < internalDataInfo._LODLevels.length; index++) {
             if (internalDataInfo._LODLevels[index].mesh === mesh) {
@@ -923,22 +923,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return this;
         }
 
-        let bSphere: BoundingSphere;
-
-        if (boundingSphere) {
-            bSphere = boundingSphere;
-        } else {
-            const boundingInfo = this.getBoundingInfo();
-
-            bSphere = boundingInfo.boundingSphere;
-        }
+        const bSphere = boundingSphere || this.getBoundingInfo().boundingSphere;
 
         const distanceToCamera = camera.mode === Camera.ORTHOGRAPHIC_CAMERA ? camera.minZ : bSphere.centerWorld.subtract(camera.globalPosition).length();
-        const useScreenCoverage = internalDataInfo._useLODScreenCoverage;
         let compareValue = distanceToCamera;
         let compareSign = 1;
 
-        if (useScreenCoverage) {
+        if (internalDataInfo._useLODScreenCoverage) {
             const screenArea = camera.screenArea;
             let meshArea = (bSphere.radiusWorld * camera.minZ) / distanceToCamera;
             meshArea = meshArea * meshArea * Math.PI;
