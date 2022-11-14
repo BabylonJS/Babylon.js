@@ -198,11 +198,11 @@ export class Gizmo implements IGizmo {
     protected _attachedNodeChanged(value: Nullable<Node>) {}
 
     protected _beforeRenderObserver: Nullable<Observer<Scene>>;
-    private _tempQuaternion = new Quaternion(0, 0, 0, 1);
-    private _tempVector = new Vector3();
-    private _tempVector2 = new Vector3();
-    private _tempMatrix1 = new Matrix();
-    private _tempMatrix2 = new Matrix();
+    protected _tempQuaternion = new Quaternion(0, 0, 0, 1);
+    protected _tempVector = new Vector3();
+    protected _tempVector2 = new Vector3();
+    protected _tempMatrix1 = new Matrix();
+    protected _tempMatrix2 = new Matrix();
     private _rightHandtoLeftHandMatrix = Matrix.RotationY(Math.PI);
 
     /**

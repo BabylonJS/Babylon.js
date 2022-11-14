@@ -18,6 +18,8 @@ import { ShaderMaterial } from "../Materials/shaderMaterial";
 import { Effect } from "../Materials/effect";
 import { CreatePlane } from "../Meshes/Builders/planeBuilder";
 import { CreateTorus } from "../Meshes/Builders/torusBuilder";
+import { Epsilon } from "../Maths";
+import { Logger } from "../Misc/logger";
 
 /**
  * Interface for plane rotation gizmo
@@ -237,6 +239,13 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
                 const nodeTranslation = new Vector3(0, 0, 0);
                 this._handlePivot();
                 this.attachedNode.getWorldMatrix().decompose(nodeScale, nodeQuaternion, nodeTranslation);
+                const uniformScaling = (Math.abs(nodeScale.x - nodeScale.y) <= Epsilon) && (Math.abs(nodeScale.x - nodeScale.z) <= Epsilon);
+                if (!uniformScaling && this.updateGizmoRotationToMatchAttachedMesh)
+                {
+                    Logger.Warn("Unable to use a rotation gizmo matching mesh rotation with non uniform scaling. Use uniform scaling or set updateGizmoRotationToMatchAttachedMesh to false.");
+                    return;
+                }
+                nodeQuaternion.normalize();
 
                 const newVector = event.dragPlanePoint.subtract(nodeTranslation).normalize();
                 const originalVector = lastDragPosition.subtract(nodeTranslation).normalize();
@@ -300,13 +309,14 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
                 if (this.updateGizmoRotationToMatchAttachedMesh) {
                     // Rotate selected mesh quaternion over fixed axis
                     nodeQuaternion.multiplyToRef(amountToRotate, nodeQuaternion);
+                    // recompose matrix
+                    this.attachedNode.getWorldMatrix().copyFrom(Matrix.Compose(nodeScale, nodeQuaternion, nodeTranslation));
                 } else {
                     // Rotate selected mesh quaternion over rotated axis
-                    amountToRotate.multiplyToRef(nodeQuaternion, nodeQuaternion);
+                    amountToRotate.toRotationMatrix(this._tempMatrix1);
+                    this._tempMatrix1.multiplyToRef(this.attachedNode.getWorldMatrix(), this._tempMatrix2);
+                    this.attachedNode.getWorldMatrix().copyFrom(this._tempMatrix2);
                 }
-
-                // recompose matrix
-                this.attachedNode.getWorldMatrix().copyFrom(Matrix.Compose(nodeScale, nodeQuaternion, nodeTranslation));
 
                 lastDragPosition.copyFrom(event.dragPlanePoint);
                 if (snapped) {
