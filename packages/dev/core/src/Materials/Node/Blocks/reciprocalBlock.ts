@@ -19,7 +19,6 @@ export class ReciprocalBlock extends NodeMaterialBlock {
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.BasedOnInput);
 
         this._outputs[0]._typeConnectionSource = this._inputs[0];
-        this._outputs[0].excludedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Matrix);
     }
 
     /**
@@ -49,7 +48,11 @@ export class ReciprocalBlock extends NodeMaterialBlock {
 
         const output = this._outputs[0];
 
-        state.compilationString += this._declareOutput(output, state) + ` = 1. / ${this.input.associatedVariableName};\r\n`;
+        if (this.input.type === NodeMaterialBlockConnectionPointTypes.Matrix) {
+            state.compilationString += this._declareOutput(output, state) + ` = inverse(${this.input.associatedVariableName});\r\n`;
+        } else {
+            state.compilationString += this._declareOutput(output, state) + ` = 1. / ${this.input.associatedVariableName};\r\n`;
+        }
 
         return this;
     }
