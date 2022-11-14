@@ -209,6 +209,11 @@ export class Effect implements IDisposable {
     public _fragmentSourceCode: string = "";
 
     /** @internal */
+    private _vertexSourceCodeBeforeMigration: string = "";
+    /** @internal */
+    private _fragmentSourceCodeBeforeMigration: string = "";
+
+    /** @internal */
     private _rawVertexSourceCode: string = "";
     /** @internal */
     private _rawFragmentSourceCode: string = "";
@@ -353,7 +358,8 @@ export class Effect implements IDisposable {
                 ShaderProcessor.Process(
                     fragmentCode,
                     processorOptions,
-                    (migratedFragmentCode) => {
+                    (migratedFragmentCode, codeBeforeMigration) => {
+                        this._fragmentSourceCodeBeforeMigration = codeBeforeMigration;
                         if (processFinalCode) {
                             migratedFragmentCode = processFinalCode("fragment", migratedFragmentCode);
                         }
@@ -369,8 +375,9 @@ export class Effect implements IDisposable {
             ShaderProcessor.Process(
                 vertexCode,
                 processorOptions,
-                (migratedVertexCode) => {
+                (migratedVertexCode, codeBeforeMigration) => {
                     this._rawVertexSourceCode = vertexCode;
+                    this._vertexSourceCodeBeforeMigration = codeBeforeMigration;
                     if (processFinalCode) {
                         migratedVertexCode = processFinalCode("vertex", migratedVertexCode);
                     }
@@ -656,6 +663,7 @@ export class Effect implements IDisposable {
 
     /**
      * Gets the vertex shader source code of this effect
+     * This is the final source code that will be compiled, after all the processing has been done (pre-processing applied, code injection/replacement, etc)
      */
     public get vertexSourceCode(): string {
         return this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride
@@ -665,6 +673,7 @@ export class Effect implements IDisposable {
 
     /**
      * Gets the fragment shader source code of this effect
+     * This is the final source code that will be compiled, after all the processing has been done (pre-processing applied, code injection/replacement, etc)
      */
     public get fragmentSourceCode(): string {
         return this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride
@@ -673,14 +682,32 @@ export class Effect implements IDisposable {
     }
 
     /**
-     * Gets the vertex shader source code before it has been processed by the preprocessor
+     * Gets the vertex shader source code before migration.
+     * This is the source code after the include directives have been replaced by their contents but before the code is migrated, i.e. before ShaderProcess._ProcessShaderConversion is executed.
+     * This method is, among other things, responsible for parsing #if/#define directives as well as converting GLES2 syntax to GLES3 (in the case of WebGL).
+     */
+    public get vertexSourceCodeBeforeMigration(): string {
+        return this._vertexSourceCodeBeforeMigration;
+    }
+
+    /**
+     * Gets the fragment shader source code before migration.
+     * This is the source code after the include directives have been replaced by their contents but before the code is migrated, i.e. before ShaderProcess._ProcessShaderConversion is executed.
+     * This method is, among other things, responsible for parsing #if/#define directives as well as converting GLES2 syntax to GLES3 (in the case of WebGL).
+     */
+    public get fragmentSourceCodeBeforeMigration(): string {
+        return this._fragmentSourceCodeBeforeMigration;
+    }
+
+    /**
+     * Gets the vertex shader source code before it has been modified by any processing
      */
     public get rawVertexSourceCode(): string {
         return this._rawVertexSourceCode;
     }
 
     /**
-     * Gets the fragment shader source code before it has been processed by the preprocessor
+     * Gets the fragment shader source code before it has been modified by any processing
      */
     public get rawFragmentSourceCode(): string {
         return this._rawFragmentSourceCode;
