@@ -855,6 +855,10 @@ export class MRDLSliderBarMaterial extends PushMaterial {
 
     public dispose(forceDisposeEffect?: boolean): void {
         super.dispose(forceDisposeEffect);
+        this._reflectionMapTexture.dispose();
+        this._indirectEnvTexture.dispose();
+        this._blueGradientTexture.dispose();
+        this._decalTexture.dispose();
     }
 
     public clone(name: string): MRDLSliderBarMaterial {
