@@ -1,6 +1,6 @@
 import type { Nullable } from "core/types";
 import { createContext } from "react";
-import type { StateMachine } from "./stateMachine/StateMachine";
+import type { StateMachine } from "../stateMachine/StateMachine";
 
 export interface IStateMachineWrapper {
     stateMachine: StateMachine;
