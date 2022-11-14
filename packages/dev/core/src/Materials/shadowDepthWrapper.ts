@@ -213,8 +213,8 @@ export class ShadowDepthWrapper {
         params.depthDefines = join;
 
         // the depth effect is either out of date or has not been created yet
-        let vertexCode = origEffect.rawVertexSourceCode,
-            fragmentCode = origEffect.rawFragmentSourceCode;
+        let vertexCode = origEffect.vertexSourceCodeBeforeMigration,
+            fragmentCode = origEffect.fragmentSourceCodeBeforeMigration;
 
         // vertex code
         const vertexNormalBiasCode =
