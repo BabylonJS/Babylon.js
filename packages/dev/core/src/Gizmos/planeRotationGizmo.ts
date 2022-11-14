@@ -18,7 +18,7 @@ import { ShaderMaterial } from "../Materials/shaderMaterial";
 import { Effect } from "../Materials/effect";
 import { CreatePlane } from "../Meshes/Builders/planeBuilder";
 import { CreateTorus } from "../Meshes/Builders/torusBuilder";
-import { Epsilon } from "../Maths";
+import { Epsilon } from "../Maths/math.constants";
 import { Logger } from "../Misc/logger";
 
 /**
