@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import type { StateMachine } from "../../stateMachine/StateMachine";
-import { StateMachineContext } from "../../StateMachineContext";
+import { StateMachineContext } from "../../context/StateMachineContext";
 
 export const useStateMachine = () => {
     const { stateMachineWrapper, setStateMachineWrapper } = useContext(StateMachineContext);
