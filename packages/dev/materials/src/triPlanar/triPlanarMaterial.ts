@@ -21,6 +21,7 @@ import { RegisterClass } from "core/Misc/typeStore";
 import "./triplanar.fragment";
 import "./triplanar.vertex";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
+import { addClipPlaneUniforms, bindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
 
 class TriPlanarMaterialDefines extends MaterialDefines {
     public DIFFUSEX = false;
@@ -192,7 +193,7 @@ export class TriPlanarMaterial extends PushMaterial {
         defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
 
         // Values that need to be evaluated on every frame
-        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
+        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, this, defines, useInstances ? true : false);
 
         // Attribs
         MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
@@ -245,17 +246,13 @@ export class TriPlanarMaterial extends PushMaterial {
                 "vFogColor",
                 "pointSize",
                 "mBones",
-                "vClipPlane",
-                "vClipPlane2",
-                "vClipPlane3",
-                "vClipPlane4",
-                "vClipPlane5",
-                "vClipPlane6",
                 "tileSize",
             ];
             const samplers = ["diffuseSamplerX", "diffuseSamplerY", "diffuseSamplerZ", "normalSamplerX", "normalSamplerY", "normalSamplerZ"];
 
             const uniformBuffers = new Array<string>();
+
+            addClipPlaneUniforms(uniforms);
 
             MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,
@@ -340,7 +337,7 @@ export class TriPlanarMaterial extends PushMaterial {
                 this._activeEffect.setTexture("normalSamplerZ", this.normalTextureZ);
             }
             // Clip plane
-            MaterialHelper.BindClipPlane(this._activeEffect, scene);
+            bindClipPlane(effect, this, scene);
 
             // Point size
             if (this.pointsCloud) {

@@ -21,6 +21,7 @@ import type { StorageBuffer } from "../Buffers/storageBuffer";
 import { PushMaterial } from "./pushMaterial";
 import { EngineStore } from "../Engines/engineStore";
 import { Constants } from "../Engines/constants";
+import { addClipPlaneUniforms, bindClipPlane, prepareDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
 
 declare type ExternalTexture = import("./Textures/externalTexture").ExternalTexture;
 
@@ -792,46 +793,10 @@ export class ShaderMaterial extends PushMaterial {
         }
 
         // Clip planes
-        if ((this._options.useClipPlane === null && !!scene.clipPlane) || this._options.useClipPlane) {
-            defines.push("#define CLIPPLANE");
-            if (uniforms.indexOf("vClipPlane") === -1) {
-                uniforms.push("vClipPlane");
-            }
-        }
+        if (this._options.useClipPlane !== false) {
+            addClipPlaneUniforms(uniforms);
 
-        if ((this._options.useClipPlane === null && !!scene.clipPlane2) || this._options.useClipPlane) {
-            defines.push("#define CLIPPLANE2");
-            if (uniforms.indexOf("vClipPlane2") === -1) {
-                uniforms.push("vClipPlane2");
-            }
-        }
-
-        if ((this._options.useClipPlane === null && !!scene.clipPlane3) || this._options.useClipPlane) {
-            defines.push("#define CLIPPLANE3");
-            if (uniforms.indexOf("vClipPlane3") === -1) {
-                uniforms.push("vClipPlane3");
-            }
-        }
-
-        if ((this._options.useClipPlane === null && !!scene.clipPlane4) || this._options.useClipPlane) {
-            defines.push("#define CLIPPLANE4");
-            if (uniforms.indexOf("vClipPlane4") === -1) {
-                uniforms.push("vClipPlane4");
-            }
-        }
-
-        if ((this._options.useClipPlane === null && !!scene.clipPlane5) || this._options.useClipPlane) {
-            defines.push("#define CLIPPLANE5");
-            if (uniforms.indexOf("vClipPlane5") === -1) {
-                uniforms.push("vClipPlane5");
-            }
-        }
-
-        if ((this._options.useClipPlane === null && !!scene.clipPlane6) || this._options.useClipPlane) {
-            defines.push("#define CLIPPLANE6");
-            if (uniforms.indexOf("vClipPlane6") === -1) {
-                uniforms.push("vClipPlane6");
-            }
+            prepareDefinesForClipPlanes(this, scene, defines);
         }
 
         if (this.customShaderNameResolve) {
@@ -1001,7 +966,7 @@ export class ShaderMaterial extends PushMaterial {
             MaterialHelper.BindBonesParameters(mesh, effect);
 
             // Clip plane
-            MaterialHelper.BindClipPlane(effect, this.getScene());
+            bindClipPlane(effect, this, this.getScene());
 
             let name: string;
             // Texture
