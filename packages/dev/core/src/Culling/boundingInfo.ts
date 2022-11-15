@@ -183,6 +183,11 @@ export class BoundingInfo implements ICullable {
      * Returns `true` if the bounding info is within the frustum defined by the passed array of planes.
      * @param frustumPlanes defines the frustum to test
      * @param strategy defines the strategy to use for the culling (default is BABYLON.AbstractMesh.CULLINGSTRATEGY_STANDARD)
+     * The different strategies available are:
+     * * BABYLON.AbstractMesh.CULLINGSTRATEGY_STANDARD most accurate but slower @see https://doc.babylonjs.com/typedoc/classes/BABYLON.AbstractMesh#CULLINGSTRATEGY_STANDARD
+     * * BABYLON.AbstractMesh.CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY faster but less accurate @see https://doc.babylonjs.com/typedoc/classes/BABYLON.AbstractMesh#CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY
+     * * BABYLON.AbstractMesh.CULLINGSTRATEGY_OPTIMISTIC_INCLUSION can be faster if always visible @see https://doc.babylonjs.com/typedoc/classes/BABYLON.AbstractMesh#CULLINGSTRATEGY_OPTIMISTIC_INCLUSION
+     * * BABYLON.AbstractMesh.CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY can be faster if always visible @see https://doc.babylonjs.com/typedoc/classes/BABYLON.AbstractMesh#CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY
      * @returns true if the bounding info is in the frustum planes
      */
     public isInFrustum(frustumPlanes: Array<DeepImmutable<Plane>>, strategy: number = Constants.MESHES_CULLINGSTRATEGY_STANDARD): boolean {
