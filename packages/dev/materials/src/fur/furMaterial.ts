@@ -24,6 +24,7 @@ import { EffectFallbacks } from "core/Materials/effectFallbacks";
 
 import "./fur.fragment";
 import "./fur.vertex";
+import { addClipPlaneUniforms, bindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
 
 class FurMaterialDefines extends MaterialDefines {
     public DIFFUSE = false;
@@ -216,7 +217,7 @@ export class FurMaterial extends PushMaterial {
         defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
 
         // Values that need to be evaluated on every frame
-        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
+        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, this, defines, useInstances ? true : false);
 
         // Attribs
         MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
@@ -278,12 +279,6 @@ export class FurMaterial extends PushMaterial {
                 "pointSize",
                 "vDiffuseInfos",
                 "mBones",
-                "vClipPlane",
-                "vClipPlane2",
-                "vClipPlane3",
-                "vClipPlane4",
-                "vClipPlane5",
-                "vClipPlane6",
                 "diffuseMatrix",
                 "furLength",
                 "furAngle",
@@ -295,6 +290,7 @@ export class FurMaterial extends PushMaterial {
                 "furDensity",
                 "furOcclusion",
             ];
+            addClipPlaneUniforms(uniforms);
             const samplers = ["diffuseSampler", "heightTexture", "furTexture"];
 
             const uniformBuffers = new Array<string>();
@@ -373,7 +369,7 @@ export class FurMaterial extends PushMaterial {
             }
 
             // Clip plane
-            MaterialHelper.BindClipPlane(this._activeEffect, scene);
+            bindClipPlane(this._activeEffect, this, scene);
 
             // Point size
             if (this.pointsCloud) {

@@ -39,6 +39,7 @@ import { Color3 } from "../../Maths/math.color";
 import "../../Shaders/background.fragment";
 import "../../Shaders/background.vertex";
 import { EffectFallbacks } from "../effectFallbacks";
+import { addClipPlaneUniforms, bindClipPlane } from "../clipPlaneMaterialHelper";
 
 /**
  * Background material defines definition.
@@ -842,7 +843,7 @@ export class BackgroundMaterial extends PushMaterial {
         MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
 
         // Values that need to be evaluated on every frame
-        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances, null, subMesh.getRenderingMesh().hasThinInstances);
+        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, this, defines, useInstances, null, subMesh.getRenderingMesh().hasThinInstances);
 
         // Attribs
         if (MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, true, false)) {
@@ -902,12 +903,6 @@ export class BackgroundMaterial extends PushMaterial {
                 "vFogInfos",
                 "vFogColor",
                 "pointSize",
-                "vClipPlane",
-                "vClipPlane2",
-                "vClipPlane3",
-                "vClipPlane4",
-                "vClipPlane5",
-                "vClipPlane6",
                 "mBones",
 
                 "vPrimaryColor",
@@ -927,6 +922,7 @@ export class BackgroundMaterial extends PushMaterial {
                 "diffuseMatrix",
             ];
 
+            addClipPlaneUniforms(uniforms);
             const samplers = ["diffuseSampler", "reflectionSampler", "reflectionSamplerLow", "reflectionSamplerHigh"];
             const uniformBuffers = ["Material", "Scene"];
 
@@ -1169,7 +1165,7 @@ export class BackgroundMaterial extends PushMaterial {
             }
 
             // Clip plane
-            MaterialHelper.BindClipPlane(this._activeEffect, scene);
+            bindClipPlane(this._activeEffect, this, scene);
 
             scene.bindEyePosition(effect);
         } else if (scene.getEngine()._features.needToAlwaysBindUniformBuffers) {

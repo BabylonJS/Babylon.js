@@ -18,6 +18,7 @@ import { RegisterClass } from "core/Misc/typeStore";
 import "./sky.fragment";
 import "./sky.vertex";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
+import { addClipPlaneUniforms, bindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
 
 /** @internal */
 class SkyMaterialDefines extends MaterialDefines {
@@ -219,6 +220,25 @@ export class SkyMaterial extends PushMaterial {
 
             const shaderName = "sky";
 
+            const uniforms = 
+            [
+                "world",
+                "viewProjection",
+                "view",
+                "vFogInfos",
+                "vFogColor",
+                "pointSize",
+                "luminance",
+                "turbidity",
+                "rayleigh",
+                "mieCoefficient",
+                "mieDirectionalG",
+                "sunPosition",
+                "cameraPosition",
+                "cameraOffset",
+                "up",
+            ];
+            addClipPlaneUniforms(uniforms);
             const join = defines.toString();
             subMesh.setEffect(
                 scene
@@ -226,29 +246,7 @@ export class SkyMaterial extends PushMaterial {
                     .createEffect(
                         shaderName,
                         attribs,
-                        [
-                            "world",
-                            "viewProjection",
-                            "view",
-                            "vFogInfos",
-                            "vFogColor",
-                            "pointSize",
-                            "vClipPlane",
-                            "vClipPlane2",
-                            "vClipPlane3",
-                            "vClipPlane4",
-                            "vClipPlane5",
-                            "vClipPlane6",
-                            "luminance",
-                            "turbidity",
-                            "rayleigh",
-                            "mieCoefficient",
-                            "mieDirectionalG",
-                            "sunPosition",
-                            "cameraPosition",
-                            "cameraOffset",
-                            "up",
-                        ],
+                        uniforms,
                         [],
                         join,
                         fallbacks,
@@ -295,7 +293,7 @@ export class SkyMaterial extends PushMaterial {
         this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
 
         if (this._mustRebind(scene, effect)) {
-            MaterialHelper.BindClipPlane(this._activeEffect, scene);
+            bindClipPlane(effect, this, scene);
 
             // Point size
             if (this.pointsCloud) {

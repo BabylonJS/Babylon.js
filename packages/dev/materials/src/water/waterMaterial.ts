@@ -29,6 +29,7 @@ import "./water.fragment";
 import "./water.vertex";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import { CreateGround } from "core/Meshes/Builders/groundBuilder";
+import { addClipPlaneUniforms, bindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
 
 class WaterMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
     public BUMP = false;
@@ -355,7 +356,7 @@ export class WaterMaterial extends PushMaterial {
             }
         }
 
-        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
+        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, this, defines, useInstances ? true : false);
 
         MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
 
@@ -461,12 +462,6 @@ export class WaterMaterial extends PushMaterial {
                 "pointSize",
                 "vNormalInfos",
                 "mBones",
-                "vClipPlane",
-                "vClipPlane2",
-                "vClipPlane3",
-                "vClipPlane4",
-                "vClipPlane5",
-                "vClipPlane6",
                 "normalMatrix",
                 "logarithmicDepthConstant",
 
@@ -498,6 +493,8 @@ export class WaterMaterial extends PushMaterial {
                 ImageProcessingConfiguration.PrepareUniforms(uniforms, defines);
                 ImageProcessingConfiguration.PrepareSamplers(samplers, defines);
             }
+
+            addClipPlaneUniforms(uniforms);
 
             MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,
@@ -567,7 +564,7 @@ export class WaterMaterial extends PushMaterial {
                 this._activeEffect.setMatrix("normalMatrix", this.bumpTexture.getTextureMatrix());
             }
             // Clip plane
-            MaterialHelper.BindClipPlane(this._activeEffect, scene);
+            bindClipPlane(effect, this, scene);
 
             // Point size
             if (this.pointsCloud) {

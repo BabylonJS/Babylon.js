@@ -20,6 +20,7 @@ import type { IAnimatable } from "core/Animations/animatable.interface";
 import "./cell.fragment";
 import "./cell.vertex";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
+import { addClipPlaneUniforms, bindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
 
 class CellMaterialDefines extends MaterialDefines {
     public DIFFUSE = false;
@@ -140,7 +141,7 @@ export class CellMaterial extends PushMaterial {
         defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
 
         // Values that need to be evaluated on every frame
-        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
+        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, this, defines, useInstances ? true : false);
 
         // Attribs
         MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
@@ -200,17 +201,12 @@ export class CellMaterial extends PushMaterial {
                 "pointSize",
                 "vDiffuseInfos",
                 "mBones",
-                "vClipPlane",
-                "vClipPlane2",
-                "vClipPlane3",
-                "vClipPlane4",
-                "vClipPlane5",
-                "vClipPlane6",
                 "diffuseMatrix",
             ];
             const samplers = ["diffuseSampler"];
             const uniformBuffers = new Array<string>();
 
+            addClipPlaneUniforms(uniforms);
             MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,
                 uniformBuffersNames: uniformBuffers,
@@ -280,7 +276,7 @@ export class CellMaterial extends PushMaterial {
             }
 
             // Clip plane
-            MaterialHelper.BindClipPlane(this._activeEffect, scene);
+            bindClipPlane(this._activeEffect, this, scene);
 
             // Point size
             if (this.pointsCloud) {
