@@ -952,6 +952,31 @@ export class NativeEngine extends Engine {
             };
         }
 
+        // polyfill for Chakra
+        if (!Array.prototype.flat) {
+            Object.defineProperty(Array.prototype, "flat", {
+                configurable: true,
+                value: function flat() {
+                    const depth = isNaN(arguments[0]) ? 1 : Number(arguments[0]);
+
+                    return depth
+                        ? Array.prototype.reduce.call(
+                              this,
+                              function (acc: any, cur: any) {
+                                  if (Array.isArray(cur)) {
+                                      acc.push.apply(acc, flat.call(cur, depth - 1));
+                                  } else {
+                                      acc.push(cur);
+                                  }
+                                  return acc;
+                              },
+                              []
+                          )
+                        : Array.prototype.slice.call(this);
+                },
+                writable: true,
+            });
+        }
         // Currently we do not fully configure the ThinEngine on construction of NativeEngine.
         // Setup resolution scaling based on display settings.
         const devicePixelRatio = window ? window.devicePixelRatio || 1.0 : 1.0;
