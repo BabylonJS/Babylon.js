@@ -81,4 +81,3 @@ function addDefine(clipPlane: Nullable<Plane>, defines: string[] | Record<string
     }
     return changed || !isSet;
 }
-

@@ -174,19 +174,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
 
             const shaderName = "shadowOnly";
             const join = defines.toString();
-            const uniforms = [
-                "world",
-                "view",
-                "viewProjection",
-                "vEyePosition",
-                "vLightsType",
-                "vFogInfos",
-                "vFogColor",
-                "pointSize",
-                "alpha",
-                "shadowColor",
-                "mBones",
-            ];
+            const uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vFogInfos", "vFogColor", "pointSize", "alpha", "shadowColor", "mBones"];
             const samplers = new Array<string>();
 
             const uniformBuffers = new Array<string>();

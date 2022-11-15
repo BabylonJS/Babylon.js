@@ -1248,16 +1248,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @internal
      */
     public static _GetEffectCreationOptions(isAnimationSheetEnabled = false, useLogarithmicDepth = false): string[] {
-        const effectCreationOption = [
-            "emitterWM",
-            "worldOffset",
-            "view",
-            "projection",
-            "colorDead",
-            "invView",
-            "translationPivot",
-            "eyePosition",
-        ];
+        const effectCreationOption = ["emitterWM", "worldOffset", "view", "projection", "colorDead", "invView", "translationPivot", "eyePosition"];
         addClipPlaneUniforms(effectCreationOption);
 
         if (isAnimationSheetEnabled) {

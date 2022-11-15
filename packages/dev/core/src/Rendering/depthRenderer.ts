@@ -440,17 +440,9 @@ export class DepthRenderer {
         const join = defines.join("\n");
         if (cachedDefines !== join) {
             drawWrapper.setEffect(
-                engine.createEffect(
-                    "depth",
-                    attribs,
-                    uniforms,
-                    ["diffuseSampler", "morphTargets", "boneSampler"],
-                    join,
-                    undefined,
-                    undefined,
-                    undefined,
-                    { maxSimultaneousMorphTargets: numMorphInfluencers }
-                ),
+                engine.createEffect("depth", attribs, uniforms, ["diffuseSampler", "morphTargets", "boneSampler"], join, undefined, undefined, undefined, {
+                    maxSimultaneousMorphTargets: numMorphInfluencers,
+                }),
                 join
             );
         }

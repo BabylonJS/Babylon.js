@@ -1717,14 +1717,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      * @internal
      */
     public static _GetEffectCreationOptions(isAnimationSheetEnabled = false, useLogarithmicDepth = false): string[] {
-        const effectCreationOption = [
-            "invView",
-            "view",
-            "projection",
-            "textureMask",
-            "translationPivot",
-            "eyePosition",
-        ];
+        const effectCreationOption = ["invView", "view", "projection", "textureMask", "translationPivot", "eyePosition"];
 
         addClipPlaneUniforms(effectCreationOption);
 
