@@ -78,7 +78,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                         Utilities.StoreStringToStore("version", key, true);
                         window.location.reload();
                     },
-                    validate: () => window.confirm(Utilities.CodeLostConfirmationMessage),
+                    validate: () => window.confirm(Utilities.GetCodeLostConfirmationMessage("version")),
                 };
             });
 
