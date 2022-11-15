@@ -198,7 +198,13 @@ export class Gizmo implements IGizmo {
     /**
      * When set, the gizmo will always appear the same size no matter where the camera is (default: true)
      */
-    public updateScale = true;
+    protected _updateScale = true;
+    public set updateScale(value: boolean) {
+        this._updateScale = value;
+    }
+    public get updateScale() {
+        return this._updateScale;
+    }
     protected _interactionsEnabled = true;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _attachedNodeChanged(value: Nullable<Node>) {}
