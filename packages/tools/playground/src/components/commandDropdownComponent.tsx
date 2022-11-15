@@ -20,6 +20,7 @@ interface ICommandDropdownComponentProps {
         isActive?: boolean;
         defaultValue?: boolean | string;
         subItems?: string[];
+        validate?: () => boolean;
     }[];
     toRight?: boolean;
 }
@@ -88,6 +89,10 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                                         className={"command-dropdown-label" + (m.isActive ? " active" : "")}
                                         key={m.label}
                                         onClick={() => {
+                                            if (m.validate && !m.validate()) {
+                                                return;
+                                            }
+
                                             if (!m.onClick) {
                                                 const newValue = !Utilities.ReadBoolFromStore(m.storeKey!, (m.defaultValue as boolean) || false);
                                                 Utilities.StoreBoolToStore(m.storeKey!, newValue);
@@ -130,6 +135,10 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                                                                     : "")
                                                             }
                                                             onClick={() => {
+                                                                if (m.validate && !m.validate()) {
+                                                                    return;
+                                                                }
+
                                                                 if (m.storeKey) {
                                                                     Utilities.StoreStringToStore(m.storeKey, s, this.props.useSessionStorage);
                                                                 }
