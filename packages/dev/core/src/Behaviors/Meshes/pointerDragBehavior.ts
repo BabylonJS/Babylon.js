@@ -237,7 +237,6 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
                 // If behavior is disabled before releaseDrag is ever called, call it now.
                 if (this._attachedToElement) {
                     this.releaseDrag();
-                    this._activeDragButton = -1;
                 }
 
                 return;
@@ -266,7 +265,6 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
                     this._activeDragButton === pointerInfo.event.button
                 ) {
                     this.releaseDrag();
-                    this._activeDragButton = -1;
                 }
             } else if (pointerInfo.type == PointerEventTypes.POINTERMOVE) {
                 const pointerId = (<IPointerEvent>pointerInfo.event).pointerId;
@@ -329,6 +327,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
         }
 
         this.currentDraggingPointerId = -1;
+        this._activeDragButton = -1;
         this._moving = false;
 
         // Reattach camera controls
@@ -561,6 +560,5 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
             this._dragPlane.dispose();
         }
         this.releaseDrag();
-        this._activeDragButton = -1;
     }
 }

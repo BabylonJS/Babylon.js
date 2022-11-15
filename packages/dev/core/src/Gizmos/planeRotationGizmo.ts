@@ -238,6 +238,7 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
                 const nodeQuaternion = new Quaternion(0, 0, 0, 1);
                 const nodeTranslation = new Vector3(0, 0, 0);
                 this._handlePivot();
+
                 this.attachedNode.getWorldMatrix().decompose(nodeScale, nodeQuaternion, nodeTranslation);
                 const uniformScaling = Math.abs(nodeScale.x - nodeScale.y) <= Epsilon && Math.abs(nodeScale.x - nodeScale.z) <= Epsilon;
                 if (!uniformScaling && this.updateGizmoRotationToMatchAttachedMesh) {
@@ -248,8 +249,9 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
                 }
                 nodeQuaternion.normalize();
 
-                const newVector = event.dragPlanePoint.subtract(nodeTranslation).normalize();
-                const originalVector = lastDragPosition.subtract(nodeTranslation).normalize();
+                const nodeTranslationForOperation = this.updateGizmoPositionToMatchAttachedMesh ? nodeTranslation : this._rootMesh.absolutePosition;
+                const newVector = event.dragPlanePoint.subtract(nodeTranslationForOperation).normalize();
+                const originalVector = lastDragPosition.subtract(nodeTranslationForOperation).normalize();
                 const cross = Vector3.Cross(newVector, originalVector);
                 const dot = Vector3.Dot(newVector, originalVector);
                 let angle = Math.atan2(cross.length(), dot);
@@ -262,7 +264,7 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
                 // Flip up vector depending on which side the camera is on
                 let cameraFlipped = false;
                 if (gizmoLayer.utilityLayerScene.activeCamera) {
-                    const camVec = gizmoLayer.utilityLayerScene.activeCamera.position.subtract(nodeTranslation).normalize();
+                    const camVec = gizmoLayer.utilityLayerScene.activeCamera.position.subtract(nodeTranslationForOperation).normalize();
                     if (Vector3.Dot(camVec, localPlaneNormalTowardsCamera) > 0) {
                         planeNormalTowardsCamera.scaleInPlace(-1);
                         localPlaneNormalTowardsCamera.scaleInPlace(-1);

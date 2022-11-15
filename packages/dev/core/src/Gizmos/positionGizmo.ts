@@ -213,6 +213,28 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
         return this._updateGizmoRotationToMatchAttachedMesh;
     }
 
+    public set updateGizmoPositionToMatchAttachedMesh(value: boolean) {
+        this._updateGizmoPositionToMatchAttachedMesh = value;
+        [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
+            if (gizmo) {
+                gizmo.updateGizmoPositionToMatchAttachedMesh = value;
+            }
+        });
+    }
+    public get updateGizmoPositionToMatchAttachedMesh() {
+        return this._updateGizmoPositionToMatchAttachedMesh;
+    }
+
+    public set updateScale(value: boolean) {
+        if (this.xGizmo) {
+            this.xGizmo.updateScale = value;
+            this.yGizmo.updateScale = value;
+            this.zGizmo.updateScale = value;
+        }
+    }
+    public get updateScale() {
+        return this.xGizmo.updateScale;
+    }
     /**
      * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
      */
