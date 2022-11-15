@@ -7,13 +7,13 @@ import { DeviceType, PointerInput } from "core/DeviceInput";
 import { InternalDeviceSourceManager } from "core/DeviceInput/internalDeviceSourceManager";
 import { NullEngine } from "core/Engines";
 import type { Engine } from "core/Engines/engine";
-import type { IUIEvent} from "core/Events";
+import type { IUIEvent } from "core/Events";
 import { PointerEventTypes } from "core/Events";
 import { Vector3 } from "core/Maths/math.vector";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { Scene } from "core/scene";
 import type { Nullable } from "core/types";
-import type { ITestDeviceInputSystem} from "./testDeviceInputSystem";
+import type { ITestDeviceInputSystem } from "./testDeviceInputSystem";
 import { TestDeviceInputSystem } from "./testDeviceInputSystem";
 
 // Add function to NullEngine to allow for getting the canvas rect properties
@@ -112,10 +112,6 @@ describe("InputManager", () => {
             upCt++;
         };
 
-        scene!.onPointerPick = () => {
-            pickCt++;
-        };
-
         if (deviceInputSystem) {
             // Perform single move over mesh, then click
             deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Horizontal, 128, false);
@@ -137,16 +133,29 @@ describe("InputManager", () => {
             deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Vertical, 15, false);
             deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Move, 1);
             deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
+
+            // Since the pick checks for up and down also include checking for onPointerPick, we need to check with the callback not defined
+            // This is the check with the callback defined
+            scene!.onPointerPick = () => {
+                pickCt++;
+            };
+
+            // Repeat the above tests with the onPointerPick callback defined
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Horizontal, 128, false);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Vertical, 128, false);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Move, 1);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
         }
 
-        expect(downCt).toBe(3);
-        expect(upCt).toBe(3);
-        expect(moveCt).toBe(3);
+        expect(downCt).toBe(4);
+        expect(upCt).toBe(4);
+        expect(moveCt).toBe(4);
         expect(pickCt).toBe(1);
         // Check that picking on other callbacks is working
-        expect(downHitCt).toBe(1);
-        expect(upHitCt).toBe(1);
-        expect(moveHitCt).toBe(1);
+        expect(downHitCt).toBe(2);
+        expect(upHitCt).toBe(2);
+        expect(moveHitCt).toBe(2);
     });
 
     it("onPointerObservable can pick only when necessary", () => {
@@ -171,8 +180,7 @@ describe("InputManager", () => {
                     if (!eventData.pickInfo) {
                         throw "Error: pickInfo should not be null";
                     }
-                }
-                else {
+                } else {
                     throw "Error: Tried to lazy pick twice";
                 }
             };

@@ -557,7 +557,7 @@ export class InputManager {
         this._initActionManager = (act: Nullable<AbstractActionManager>): Nullable<AbstractActionManager> => {
             if (!this._meshPickProceed) {
                 const pickResult =
-                    scene.skipPointerUpPicking || (scene._registeredActions === 0 && !(scene.onPointerObservable.hasObservers() || scene.onPointerPick))
+                    scene.skipPointerUpPicking || (scene._registeredActions === 0 && !(scene.onPointerObservable.hasObservers() || scene.onPointerPick || scene.onPointerUp))
                         ? null
                         : scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerUpPredicate, false, scene.cameraToUseForPointers);
                 this._currentPickResult = pickResult;
@@ -797,7 +797,7 @@ export class InputManager {
             // Meshes
             this._pickedDownMesh = null;
             let pickResult;
-            if (scene.skipPointerDownPicking || (scene._registeredActions === 0 && !(scene.onPointerObservable.hasObservers() || scene.onPointerPick))) {
+            if (scene.skipPointerDownPicking || (scene._registeredActions === 0 && !(scene.onPointerObservable.hasObservers() || scene.onPointerPick || scene.onPointerDown))) {
                 pickResult = new PickingInfo();
             } else {
                 pickResult = scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerDownPredicate, false, scene.cameraToUseForPointers);
@@ -873,7 +873,7 @@ export class InputManager {
                 }
 
                 // Meshes
-                if (!this._meshPickProceed && ((AbstractActionManager && AbstractActionManager.HasTriggers) || scene.onPointerObservable.hasObservers() || scene.onPointerPick)) {
+                if (!this._meshPickProceed && ((AbstractActionManager && AbstractActionManager.HasTriggers) || scene.onPointerObservable.hasObservers() || scene.onPointerPick || scene.onPointerUp)) {
                     this._initActionManager(null, clickInfo);
                 }
                 if (!pickResult) {
