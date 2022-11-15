@@ -47,7 +47,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
     public _allowCameraRotation = true;
 
     private _currentActiveButton: number = -1;
-
+    private _activePointerId: number = -1;
     private _contextMenuBind: () => void;
 
     /**
@@ -91,7 +91,8 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
 
                 const srcElement = <HTMLElement>evt.target;
 
-                if (p.type === PointerEventTypes.POINTERDOWN && (this._currentActiveButton === -1 || isTouch)) {
+                if (p.type === PointerEventTypes.POINTERDOWN && (this._currentActiveButton === -1 || isTouch) && this._activePointerId === -1) {
+                    this._activePointerId = evt.pointerId;
                     try {
                         srcElement?.setPointerCapture(evt.pointerId);
                     } catch (e) {
@@ -116,7 +117,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
                     if (engine.isPointerLock && this._onMouseMove) {
                         this._onMouseMove(p.event);
                     }
-                } else if (p.type === PointerEventTypes.POINTERUP && (this._currentActiveButton === evt.button || isTouch)) {
+                } else if (p.type === PointerEventTypes.POINTERUP && (this._currentActiveButton === evt.button || isTouch) && this._activePointerId === evt.pointerId) {
                     try {
                         srcElement?.releasePointerCapture(evt.pointerId);
                     } catch (e) {
@@ -128,7 +129,9 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
-                } else if (p.type === PointerEventTypes.POINTERMOVE) {
+
+                    this._activePointerId = -1;
+                } else if (p.type === PointerEventTypes.POINTERMOVE && this._activePointerId === evt.pointerId) {
                     if (engine.isPointerLock && this._onMouseMove) {
                         this._onMouseMove(p.event);
                     } else if (this._previousPosition) {
