@@ -873,7 +873,10 @@ export class InputManager {
                 }
 
                 // Meshes
-                if (!this._meshPickProceed && ((AbstractActionManager && AbstractActionManager.HasTriggers) || scene.onPointerObservable.hasObservers() || scene.onPointerPick || scene.onPointerUp)) {
+                if (
+                    !this._meshPickProceed &&
+                    ((AbstractActionManager && AbstractActionManager.HasTriggers) || scene.onPointerObservable.hasObservers() || scene.onPointerPick || scene.onPointerUp)
+                ) {
                     this._initActionManager(null, clickInfo);
                 }
                 if (!pickResult) {
