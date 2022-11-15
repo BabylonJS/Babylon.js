@@ -220,8 +220,7 @@ export class SkyMaterial extends PushMaterial {
 
             const shaderName = "sky";
 
-            const uniforms = 
-            [
+            const uniforms = [
                 "world",
                 "viewProjection",
                 "view",
@@ -240,22 +239,7 @@ export class SkyMaterial extends PushMaterial {
             ];
             addClipPlaneUniforms(uniforms);
             const join = defines.toString();
-            subMesh.setEffect(
-                scene
-                    .getEngine()
-                    .createEffect(
-                        shaderName,
-                        attribs,
-                        uniforms,
-                        [],
-                        join,
-                        fallbacks,
-                        this.onCompiled,
-                        this.onError
-                    ),
-                defines,
-                this._materialContext
-            );
+            subMesh.setEffect(scene.getEngine().createEffect(shaderName, attribs, uniforms, [], join, fallbacks, this.onCompiled, this.onError), defines, this._materialContext);
         }
 
         if (!subMesh.effect || !subMesh.effect.isReady()) {
