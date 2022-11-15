@@ -2,7 +2,7 @@ import type { Observer } from "../Misc/observable";
 import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
 import type { PointerInfo } from "../Events/pointerEvents";
-import { Quaternion, Matrix, Vector3 } from "../Maths/math.vector";
+import { Quaternion, Matrix, Vector3, TmpVectors } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
 import "../Meshes/Builders/linesBuilder";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
@@ -311,12 +311,11 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
                     // Rotate selected mesh quaternion over fixed axis
                     nodeQuaternion.multiplyToRef(amountToRotate, nodeQuaternion);
                     // recompose matrix
-                    this.attachedNode.getWorldMatrix().copyFrom(Matrix.Compose(nodeScale, nodeQuaternion, nodeTranslation));
+                    Matrix.ComposeToRef(nodeScale, nodeQuaternion, nodeTranslation, this.attachedNode.getWorldMatrix());
                 } else {
                     // Rotate selected mesh quaternion over rotated axis
-                    amountToRotate.toRotationMatrix(this._tempMatrix1);
-                    this._tempMatrix1.multiplyToRef(this.attachedNode.getWorldMatrix(), this._tempMatrix2);
-                    this.attachedNode.getWorldMatrix().copyFrom(this._tempMatrix2);
+                    amountToRotate.toRotationMatrix(TmpVectors.Matrix[0]);
+                    TmpVectors.Matrix[0].multiplyToRef(this.attachedNode.getWorldMatrix(), this.attachedNode.getWorldMatrix());
                 }
 
                 lastDragPosition.copyFrom(event.dragPlanePoint);

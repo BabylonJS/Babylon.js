@@ -2,7 +2,7 @@ import type { Observer } from "../Misc/observable";
 import type { Nullable } from "../types";
 import type { WebVRFreeCamera } from "../Cameras/VR/webVRCamera";
 import type { Scene, IDisposable } from "../scene";
-import { Quaternion, Vector3, Matrix } from "../Maths/math.vector";
+import { Quaternion, Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { Camera } from "../Cameras/camera";
@@ -198,11 +198,6 @@ export class Gizmo implements IGizmo {
     protected _attachedNodeChanged(value: Nullable<Node>) {}
 
     protected _beforeRenderObserver: Nullable<Observer<Scene>>;
-    protected _tempQuaternion = new Quaternion(0, 0, 0, 1);
-    protected _tempVector = new Vector3();
-    protected _tempVector2 = new Vector3();
-    protected _tempMatrix1 = new Matrix();
-    protected _tempMatrix2 = new Matrix();
     private _rightHandtoLeftHandMatrix = Matrix.RotationY(Math.PI);
 
     /**
@@ -274,7 +269,7 @@ export class Gizmo implements IGizmo {
                 if ((<WebVRFreeCamera>activeCamera).devicePosition) {
                     cameraPosition = (<WebVRFreeCamera>activeCamera).devicePosition;
                 }
-                this._rootMesh.position.subtractToRef(cameraPosition, this._tempVector);
+                this._rootMesh.position.subtractToRef(cameraPosition, TmpVectors.Vector3[0]);
                 let scale = this.scaleRatio;
                 if (activeCamera.mode == Camera.ORTHOGRAPHIC_CAMERA) {
                     if (activeCamera.orthoTop && activeCamera.orthoBottom) {
@@ -284,7 +279,7 @@ export class Gizmo implements IGizmo {
                 } else {
                     const camForward = activeCamera.getScene().useRightHandedSystem ? Vector3.RightHandedForwardReadOnly : Vector3.LeftHandedForwardReadOnly;
                     const direction = activeCamera.getDirection(camForward);
-                    scale *= Vector3.Dot(this._tempVector, direction);
+                    scale *= Vector3.Dot(TmpVectors.Vector3[0], direction);
                 }
                 this._rootMesh.scaling.setAll(scale);
 
@@ -326,23 +321,23 @@ export class Gizmo implements IGizmo {
             let worldMatrix;
             let worldMatrixUC;
             if (camera.parent) {
-                const parentInv = this._tempMatrix2;
+                const parentInv = TmpVectors.Matrix[1];
                 camera.parent._worldMatrix.invertToRef(parentInv);
-                this._attachedNode._worldMatrix.multiplyToRef(parentInv, this._tempMatrix1);
-                worldMatrix = this._tempMatrix1;
+                this._attachedNode._worldMatrix.multiplyToRef(parentInv, TmpVectors.Matrix[0]);
+                worldMatrix = TmpVectors.Matrix[0];
             } else {
                 worldMatrix = this._attachedNode._worldMatrix;
             }
 
             if (camera.getScene().useRightHandedSystem) {
                 // avoid desync with RH matrix computation. Otherwise, rotation of PI around Y axis happens each frame resulting in axis flipped because worldMatrix is computed as inverse of viewMatrix.
-                this._rightHandtoLeftHandMatrix.multiplyToRef(worldMatrix, this._tempMatrix2);
-                worldMatrixUC = this._tempMatrix2;
+                this._rightHandtoLeftHandMatrix.multiplyToRef(worldMatrix, TmpVectors.Matrix[1]);
+                worldMatrixUC = TmpVectors.Matrix[1];
             } else {
                 worldMatrixUC = worldMatrix;
             }
 
-            worldMatrixUC.decompose(this._tempVector2, this._tempQuaternion, this._tempVector);
+            worldMatrixUC.decompose(TmpVectors.Vector3[1], TmpVectors.Quaternion[0], TmpVectors.Vector3[0]);
 
             const inheritsTargetCamera =
                 this._attachedNode.getClassName() === "FreeCamera" ||
@@ -354,15 +349,15 @@ export class Gizmo implements IGizmo {
 
             if (inheritsTargetCamera) {
                 const targetCamera = this._attachedNode as TargetCamera;
-                targetCamera.rotation = this._tempQuaternion.toEulerAngles();
+                targetCamera.rotation = TmpVectors.Quaternion[0].toEulerAngles();
 
                 if (targetCamera.rotationQuaternion) {
-                    targetCamera.rotationQuaternion.copyFrom(this._tempQuaternion);
+                    targetCamera.rotationQuaternion.copyFrom(TmpVectors.Quaternion[0]);
                     targetCamera.rotationQuaternion.normalize();
                 }
             }
 
-            camera.position.copyFrom(this._tempVector);
+            camera.position.copyFrom(TmpVectors.Vector3[0]);
         } else if (
             (<Mesh>this._attachedNode)._isMesh ||
             this._attachedNode.getClassName() === "AbstractMesh" ||
@@ -371,21 +366,21 @@ export class Gizmo implements IGizmo {
         ) {
             const transform = this._attachedNode as TransformNode;
             if (transform.parent) {
-                const parentInv = this._tempMatrix1;
-                const localMat = this._tempMatrix2;
+                const parentInv = TmpVectors.Matrix[0];
+                const localMat = TmpVectors.Matrix[1];
                 transform.parent.getWorldMatrix().invertToRef(parentInv);
                 this._attachedNode.getWorldMatrix().multiplyToRef(parentInv, localMat);
-                localMat.decompose(this._tempVector, this._tempQuaternion, transform.position, Gizmo.PreserveScaling ? transform : undefined);
+                localMat.decompose(TmpVectors.Vector3[0], TmpVectors.Quaternion[0], transform.position, Gizmo.PreserveScaling ? transform : undefined);
             } else {
-                this._attachedNode._worldMatrix.decompose(this._tempVector, this._tempQuaternion, transform.position, Gizmo.PreserveScaling ? transform : undefined);
+                this._attachedNode._worldMatrix.decompose(TmpVectors.Vector3[0], TmpVectors.Quaternion[0], transform.position, Gizmo.PreserveScaling ? transform : undefined);
             }
-            transform.scaling.copyFrom(this._tempVector);
+            transform.scaling.copyFrom(TmpVectors.Vector3[0]);
             if (!transform.billboardMode) {
                 if (transform.rotationQuaternion) {
-                    transform.rotationQuaternion.copyFrom(this._tempQuaternion);
+                    transform.rotationQuaternion.copyFrom(TmpVectors.Quaternion[0]);
                     transform.rotationQuaternion.normalize();
                 } else {
-                    transform.rotation = this._tempQuaternion.toEulerAngles();
+                    transform.rotation = TmpVectors.Quaternion[0].toEulerAngles();
                 }
             }
         } else if (this._attachedNode.getClassName() === "Bone") {
@@ -393,8 +388,8 @@ export class Gizmo implements IGizmo {
             const parent = bone.getParent();
 
             if (parent) {
-                const invParent = this._tempMatrix1;
-                const boneLocalMatrix = this._tempMatrix2;
+                const invParent = TmpVectors.Matrix[0];
+                const boneLocalMatrix = TmpVectors.Matrix[1];
                 parent.getWorldMatrix().invertToRef(invParent);
                 bone.getWorldMatrix().multiplyToRef(invParent, boneLocalMatrix);
                 const lmat = bone.getLocalMatrix();
@@ -412,16 +407,16 @@ export class Gizmo implements IGizmo {
                     const parent = light.parent;
 
                     if (parent) {
-                        const invParent = this._tempMatrix1;
-                        const nodeLocalMatrix = this._tempMatrix2;
+                        const invParent = TmpVectors.Matrix[0];
+                        const nodeLocalMatrix = TmpVectors.Matrix[1];
                         parent.getWorldMatrix().invertToRef(invParent);
                         light.getWorldMatrix().multiplyToRef(invParent, nodeLocalMatrix);
-                        nodeLocalMatrix.decompose(undefined, this._tempQuaternion, this._tempVector);
+                        nodeLocalMatrix.decompose(undefined, TmpVectors.Quaternion[0], TmpVectors.Vector3[0]);
                     } else {
-                        this._attachedNode._worldMatrix.decompose(undefined, this._tempQuaternion, this._tempVector);
+                        this._attachedNode._worldMatrix.decompose(undefined, TmpVectors.Quaternion[0], TmpVectors.Vector3[0]);
                     }
                     // setter doesn't copy values. Need a new Vector3
-                    light.position = new Vector3(this._tempVector.x, this._tempVector.y, this._tempVector.z);
+                    light.position = new Vector3(TmpVectors.Vector3[0].x, TmpVectors.Vector3[0].y, TmpVectors.Vector3[0].z);
                     if (light.direction) {
                         light.direction = new Vector3(light.direction.x, light.direction.y, light.direction.z);
                     }
