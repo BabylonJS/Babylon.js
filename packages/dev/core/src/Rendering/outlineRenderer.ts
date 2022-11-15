@@ -349,11 +349,9 @@ export class OutlineRenderer implements ISceneComponent {
 
         if (cachedDefines !== join) {
             drawWrapper.setEffect(
-                this.scene
-                    .getEngine()
-                    .createEffect("outline", attribs, uniforms, ["diffuseSampler", "morphTargets"], join, undefined, undefined, undefined, {
-                        maxSimultaneousMorphTargets: numMorphInfluencers,
-                    }),
+                this.scene.getEngine().createEffect("outline", attribs, uniforms, ["diffuseSampler", "morphTargets"], join, undefined, undefined, undefined, {
+                    maxSimultaneousMorphTargets: numMorphInfluencers,
+                }),
                 join
             );
         }
