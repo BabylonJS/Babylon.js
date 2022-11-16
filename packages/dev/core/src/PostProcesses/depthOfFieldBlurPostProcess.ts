@@ -3,7 +3,7 @@ import type { Vector2 } from "../Maths/math.vector";
 import type { Camera } from "../Cameras/camera";
 import type { Effect } from "../Materials/effect";
 import { Texture } from "../Materials/Textures/texture";
-import type { PostProcess, PostProcessCustomShaderCodeProcessing, PostProcessOptions } from "./postProcess";
+import type { PostProcess, PostProcessOptions } from "./postProcess";
 import { BlurPostProcess } from "./blurPostProcess";
 import type { Engine } from "../Engines/engine";
 import type { Scene } from "../scene";
@@ -48,7 +48,6 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
      * @param textureType Type of textures used when performing the post process. (default: 0)
      * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
      * @param textureFormat Format of textures used when performing the post process. (default: TEXTUREFORMAT_RGBA)
-     * @param customShaderCodeProcessing Callbacks to alter the shader code used by the post-process
      */
     constructor(
         name: string,
@@ -64,8 +63,7 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
         reusable?: boolean,
         textureType = Constants.TEXTURETYPE_UNSIGNED_INT,
         blockCompilation = false,
-        textureFormat = Constants.TEXTUREFORMAT_RGBA,
-        customShaderCodeProcessing?: PostProcessCustomShaderCodeProcessing
+        textureFormat = Constants.TEXTUREFORMAT_RGBA
     ) {
         super(
             name,
@@ -80,8 +78,7 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
             textureType,
             `#define DOF 1\r\n`,
             blockCompilation,
-            textureFormat,
-            customShaderCodeProcessing
+            textureFormat
         );
 
         this.direction = direction;

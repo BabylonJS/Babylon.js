@@ -80,6 +80,19 @@ export class PostProcess {
     /** @internal */
     public _parentContainer: Nullable<AbstractScene> = null;
 
+    private static _CustomShaderCodeProcessing?: PostProcessCustomShaderCodeProcessing;
+
+    /**
+     * Gets or sets the custom callbacks used to alther the post process shader code
+     */
+    public static get CustomShaderCodeProcessing() {
+        return PostProcess._CustomShaderCodeProcessing;
+    }
+
+    public static set CustomShaderCodeProcessing(customShaderCodeProcessing: PostProcessCustomShaderCodeProcessing | undefined) {
+        PostProcess._CustomShaderCodeProcessing = customShaderCodeProcessing;
+    }
+
     /**
      * Gets or sets the unique id of the post process
      */
@@ -247,9 +260,6 @@ export class PostProcess {
     protected _indexParameters: any;
     private _shareOutputWithPostProcess: Nullable<PostProcess>;
     private _texelSize = Vector2.Zero();
-    private _customShaderCodeProcessing?: PostProcessCustomShaderCodeProcessing;
-    private _processCodeAfterIncludes: Nullable<ShaderCustomProcessingFunction>;
-    private _processFinalCode: Nullable<ShaderCustomProcessingFunction>;
 
     /** @internal */
     public _forcedOutputTexture: Nullable<RenderTargetWrapper>;
@@ -416,7 +426,6 @@ export class PostProcess {
      * @param indexParameters The index parameters to be used for babylons include syntax "#include<kernelBlurVaryingDeclaration>[0..varyingCount]". (default: undefined) See usage in babylon.blurPostProcess.ts and kernelBlur.vertex.fx
      * @param blockCompilation If the shader should not be compiled immediatly. (default: false)
      * @param textureFormat Format of textures used when performing the post process. (default: TEXTUREFORMAT_RGBA)
-     * @param customShaderCodeProcessing Callbacks to alter the shader code used by the post-process
      */
     constructor(
         name: string,
@@ -433,8 +442,7 @@ export class PostProcess {
         vertexUrl: string = "postprocess",
         indexParameters?: any,
         blockCompilation = false,
-        textureFormat = Constants.TEXTUREFORMAT_RGBA,
-        customShaderCodeProcessing?: PostProcessCustomShaderCodeProcessing
+        textureFormat = Constants.TEXTUREFORMAT_RGBA
     ) {
         this.name = name;
         if (camera != null) {
@@ -461,13 +469,6 @@ export class PostProcess {
         this._fragmentUrl = fragmentUrl;
         this._vertexUrl = vertexUrl;
         this._parameters = parameters || [];
-        this._customShaderCodeProcessing = customShaderCodeProcessing;
-        this._processCodeAfterIncludes = this._customShaderCodeProcessing?.processCodeAfterIncludes
-            ? (shaderType: string, code: string) => this._customShaderCodeProcessing!.processCodeAfterIncludes!(this.name, shaderType, code)
-            : null;
-        this._processFinalCode = this._customShaderCodeProcessing?.processFinalCode
-            ? (shaderType: string, code: string) => this._customShaderCodeProcessing!.processFinalCode!(this.name, shaderType, code)
-            : null;
 
         this._parameters.push("scale");
 
@@ -549,14 +550,14 @@ export class PostProcess {
         vertexUrl?: string,
         fragmentUrl?: string
     ) {
-        if (this._customShaderCodeProcessing?.defineCustomBindings) {
+        if (PostProcess._CustomShaderCodeProcessing?.defineCustomBindings) {
             const newUniforms = uniforms?.slice() ?? [];
             newUniforms.push(...this._parameters);
 
             const newSamplers = samplers?.slice() ?? [];
             newSamplers.push(...this._samplers);
 
-            defines = this._customShaderCodeProcessing.defineCustomBindings(this.name, defines, newUniforms, newSamplers);
+            defines = PostProcess._CustomShaderCodeProcessing.defineCustomBindings(this.name, defines, newUniforms, newSamplers);
             uniforms = newUniforms;
             samplers = newSamplers;
         }
@@ -573,8 +574,12 @@ export class PostProcess {
                 onCompiled: onCompiled ?? null,
                 onError: onError ?? null,
                 indexParameters: indexParameters || this._indexParameters,
-                processCodeAfterIncludes: this._processCodeAfterIncludes,
-                processFinalCode: this._processFinalCode,
+                processCodeAfterIncludes: PostProcess._CustomShaderCodeProcessing?.processCodeAfterIncludes
+                    ? (shaderType: string, code: string) => PostProcess._CustomShaderCodeProcessing!.processCodeAfterIncludes!(this.name, shaderType, code)
+                    : null,
+                processFinalCode: PostProcess._CustomShaderCodeProcessing?.processFinalCode
+                    ? (shaderType: string, code: string) => PostProcess._CustomShaderCodeProcessing!.processFinalCode!(this.name, shaderType, code)
+                    : null,
             },
             this._engine
         );
@@ -855,7 +860,7 @@ export class PostProcess {
         this._drawWrapper.effect.setVector2("scale", this._scaleRatio);
         this.onApplyObservable.notifyObservers(this._drawWrapper.effect);
 
-        this._customShaderCodeProcessing?.bindCustomBindings?.(this.name, this._drawWrapper.effect);
+        PostProcess._CustomShaderCodeProcessing?.bindCustomBindings?.(this.name, this._drawWrapper.effect);
 
         return this._drawWrapper.effect;
     }
