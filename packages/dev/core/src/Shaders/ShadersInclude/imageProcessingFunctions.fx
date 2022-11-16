@@ -97,7 +97,7 @@
 
 vec4 applyImageProcessing(vec4 result) {
 
-#define CUSTOM_IMAGEPROCESSINGFUNCTIONS_UPDATERESULT_ATSTART
+	#define CUSTOM_IMAGEPROCESSINGFUNCTIONS_UPDATERESULT_ATSTART
 
 #ifdef EXPOSURE
 	result.rgb *= exposureLinear;
