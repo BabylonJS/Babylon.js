@@ -3,7 +3,7 @@ import { Vector2 } from "../Maths/math.vector";
 import type { Camera } from "../Cameras/camera";
 import { Texture } from "../Materials/Textures/texture";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import type { PostProcess, PostProcessCustomShaderCodeProcessing } from "./postProcess";
+import type { PostProcess } from "./postProcess";
 import { PostProcessRenderEffect } from "../PostProcesses/RenderPipeline/postProcessRenderEffect";
 import { CircleOfConfusionPostProcess } from "./circleOfConfusionPostProcess";
 import { DepthOfFieldBlurPostProcess } from "./depthOfFieldBlurPostProcess";
@@ -33,7 +33,6 @@ export enum DepthOfFieldEffectBlurLevel {
  */
 export class DepthOfFieldEffect extends PostProcessRenderEffect {
     private _circleOfConfusion: CircleOfConfusionPostProcess;
-
     /**
      * @internal Internal, blurs from high to low
      */
@@ -90,15 +89,13 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
      * @param blurLevel
      * @param pipelineTextureType The type of texture to be used when performing the post processing.
      * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
-     * @param customShaderCodeProcessing Callbacks to alter the shader code used by the post-process
      */
     constructor(
         scene: Scene,
         depthTexture: Nullable<RenderTargetTexture>,
         blurLevel: DepthOfFieldEffectBlurLevel = DepthOfFieldEffectBlurLevel.Low,
         pipelineTextureType = 0,
-        blockCompilation = false,
-        customShaderCodeProcessing?: PostProcessCustomShaderCodeProcessing
+        blockCompilation = false
     ) {
         super(
             scene.getEngine(),
@@ -124,8 +121,7 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
             engine,
             false,
             pipelineTextureType,
-            blockCompilation,
-            customShaderCodeProcessing
+            blockCompilation
         );
 
         // Create a pyramid of blurred images (eg. fullSize 1/4 blur, half size 1/2 blur, quarter size 3/4 blur, eith size 4/4 blur)
@@ -169,8 +165,7 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
                 false,
                 pipelineTextureType,
                 blockCompilation,
-                i == 0 ? circleOfConfusionTextureFormat : Constants.TEXTUREFORMAT_RGBA,
-                customShaderCodeProcessing
+                i == 0 ? circleOfConfusionTextureFormat : Constants.TEXTUREFORMAT_RGBA
             );
             blurY.autoClear = false;
             ratio = 0.75 / Math.pow(2, i);
@@ -188,8 +183,7 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
                 false,
                 pipelineTextureType,
                 blockCompilation,
-                undefined,
-                customShaderCodeProcessing
+                undefined
             );
             blurX.autoClear = false;
             this._depthOfFieldBlurY.push(blurY);
@@ -215,8 +209,7 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
             engine,
             false,
             pipelineTextureType,
-            blockCompilation,
-            customShaderCodeProcessing
+            blockCompilation
         );
         this._dofMerge.autoClear = false;
         this._effects.push(this._dofMerge);

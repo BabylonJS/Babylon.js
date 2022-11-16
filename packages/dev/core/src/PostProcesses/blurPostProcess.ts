@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import type { Vector2 } from "../Maths/math.vector";
 import type { Nullable } from "../types";
-import type { PostProcessCustomShaderCodeProcessing, PostProcessOptions } from "./postProcess";
+import type { PostProcessOptions } from "./postProcess";
 import { PostProcess } from "./postProcess";
 import type { Camera } from "../Cameras/camera";
 import type { Effect } from "../Materials/effect";
@@ -97,7 +97,6 @@ export class BlurPostProcess extends PostProcess {
      * @param defines
      * @param _blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
      * @param textureFormat Format of textures used when performing the post process. (default: TEXTUREFORMAT_RGBA)
-     * @param customShaderCodeProcessing Callbacks to alter the shader code used by the post-process
      */
     constructor(
         name: string,
@@ -111,8 +110,7 @@ export class BlurPostProcess extends PostProcess {
         textureType = Constants.TEXTURETYPE_UNSIGNED_INT,
         defines = "",
         private _blockCompilation = false,
-        textureFormat = Constants.TEXTUREFORMAT_RGBA,
-        customShaderCodeProcessing?: PostProcessCustomShaderCodeProcessing
+        textureFormat = Constants.TEXTUREFORMAT_RGBA
     ) {
         super(
             name,
@@ -129,8 +127,7 @@ export class BlurPostProcess extends PostProcess {
             "kernelBlur",
             { varyingCount: 0, depCount: 0 },
             true,
-            textureFormat,
-            customShaderCodeProcessing
+            textureFormat
         );
         this._staticDefines = defines;
         this.direction = direction;
