@@ -24,7 +24,7 @@ export class DumpTools {
     private static _DumpToolsEngine: Nullable<DumpToolsEngine>;
 
     private static _CreateDumpRenderer(): DumpToolsEngine {
-        if (!this._DumpToolsEngine) {
+        if (!DumpTools._DumpToolsEngine) {
             const canvas = document.createElement("canvas");
             const engine = new ThinEngine(canvas, false, {
                 preserveDrawingBuffer: true,
@@ -43,14 +43,14 @@ export class DumpTools {
                 fragmentShader: passPixelShader.shader,
                 samplerNames: ["textureSampler"],
             });
-            this._DumpToolsEngine = {
+            DumpTools._DumpToolsEngine = {
                 canvas,
                 engine,
                 renderer,
                 wrapper,
             };
         }
-        return this._DumpToolsEngine!;
+        return DumpTools._DumpToolsEngine!;
     }
 
     /**
@@ -76,7 +76,7 @@ export class DumpTools {
 
         const data = new Uint8Array(bufferView.buffer);
 
-        this.DumpData(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true);
+        DumpTools.DumpData(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true);
     }
 
     /**
@@ -102,7 +102,7 @@ export class DumpTools {
         quality?: number
     ): Promise<string | ArrayBuffer> {
         return new Promise((resolve) => {
-            this.DumpData(width, height, data, (result) => resolve(result), mimeType, fileName, invertY, toArrayBuffer, quality);
+            DumpTools.DumpData(width, height, data, (result) => resolve(result), mimeType, fileName, invertY, toArrayBuffer, quality);
         });
     }
 
@@ -129,7 +129,7 @@ export class DumpTools {
         toArrayBuffer = false,
         quality?: number
     ) {
-        const renderer = this._CreateDumpRenderer();
+        const renderer = DumpTools._CreateDumpRenderer();
         renderer.engine.setSize(width, height, true);
 
         // Convert if data are float32
@@ -178,12 +178,12 @@ export class DumpTools {
      * Dispose the dump tools associated resources
      */
     public static Dispose() {
-        if (this._DumpToolsEngine) {
-            this._DumpToolsEngine.wrapper.dispose();
-            this._DumpToolsEngine.renderer.dispose();
-            this._DumpToolsEngine.engine.dispose();
+        if (DumpTools._DumpToolsEngine) {
+            DumpTools._DumpToolsEngine.wrapper.dispose();
+            DumpTools._DumpToolsEngine.renderer.dispose();
+            DumpTools._DumpToolsEngine.engine.dispose();
         }
-        this._DumpToolsEngine = null;
+        DumpTools._DumpToolsEngine = null;
     }
 }
 
