@@ -426,13 +426,7 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
      * @param cameras The array of cameras that the rendering pipeline will be attached to (default: scene.cameras)
      * @param automaticBuild If false, you will have to manually call prepare() to update the pipeline (default: true)
      */
-    constructor(
-        name = "",
-        hdr = true,
-        scene: Scene = EngineStore.LastCreatedScene!,
-        cameras?: Camera[],
-        automaticBuild = true,
-    ) {
+    constructor(name = "", hdr = true, scene: Scene = EngineStore.LastCreatedScene!, cameras?: Camera[], automaticBuild = true) {
         super(scene.getEngine(), name);
         this._cameras = cameras || scene.cameras;
         this._cameras = this._cameras.slice();

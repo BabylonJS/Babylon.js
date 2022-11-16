@@ -64,10 +64,26 @@ export class PostProcess {
     /** @internal */
     public _parentContainer: Nullable<AbstractScene> = null;
 
+    private static _CustomShaderCodeProcessing: { [postProcessName: string]: PostProcessCustomShaderCodeProcessing } = {};
+
     /**
-     * Gets or sets the custom callbacks used to alther the post process shader code
+     * Registers a shader code processing with a post process name.
+     * @param postProcessName name of the post process. Use null for the fallback shader code processing. This is the shader code processing that will be used in case no specific shader code processing has been associated to a post process name
+     * @param customShaderCodeProcessing shader code processing to associate to the post process name
+     * @returns
      */
-    public static CustomShaderCodeProcessing?: PostProcessCustomShaderCodeProcessing;
+    public static RegisterShaderCodeProcessing(postProcessName: Nullable<string>, customShaderCodeProcessing?: PostProcessCustomShaderCodeProcessing) {
+        if (!customShaderCodeProcessing) {
+            delete PostProcess._CustomShaderCodeProcessing[postProcessName ?? ""];
+            return;
+        }
+
+        PostProcess._CustomShaderCodeProcessing[postProcessName ?? ""] = customShaderCodeProcessing;
+    }
+
+    private static _GetShaderCodeProcessing(postProcessName: string) {
+        return PostProcess._CustomShaderCodeProcessing[postProcessName] ?? PostProcess._CustomShaderCodeProcessing[""];
+    }
 
     /**
      * Gets or sets the unique id of the post process
@@ -526,14 +542,15 @@ export class PostProcess {
         vertexUrl?: string,
         fragmentUrl?: string
     ) {
-        if (PostProcess.CustomShaderCodeProcessing?.defineCustomBindings) {
+        const customShaderCodeProcessing = PostProcess._GetShaderCodeProcessing(this.name);
+        if (customShaderCodeProcessing?.defineCustomBindings) {
             const newUniforms = uniforms?.slice() ?? [];
             newUniforms.push(...this._parameters);
 
             const newSamplers = samplers?.slice() ?? [];
             newSamplers.push(...this._samplers);
 
-            defines = PostProcess.CustomShaderCodeProcessing.defineCustomBindings(this.name, defines, newUniforms, newSamplers);
+            defines = customShaderCodeProcessing.defineCustomBindings(this.name, defines, newUniforms, newSamplers);
             uniforms = newUniforms;
             samplers = newSamplers;
         }
@@ -550,11 +567,11 @@ export class PostProcess {
                 onCompiled: onCompiled ?? null,
                 onError: onError ?? null,
                 indexParameters: indexParameters || this._indexParameters,
-                processCodeAfterIncludes: PostProcess.CustomShaderCodeProcessing?.processCodeAfterIncludes
-                    ? (shaderType: string, code: string) => PostProcess.CustomShaderCodeProcessing!.processCodeAfterIncludes!(this.name, shaderType, code)
+                processCodeAfterIncludes: customShaderCodeProcessing?.processCodeAfterIncludes
+                    ? (shaderType: string, code: string) => customShaderCodeProcessing!.processCodeAfterIncludes!(this.name, shaderType, code)
                     : null,
-                processFinalCode: PostProcess.CustomShaderCodeProcessing?.processFinalCode
-                    ? (shaderType: string, code: string) => PostProcess.CustomShaderCodeProcessing!.processFinalCode!(this.name, shaderType, code)
+                processFinalCode: customShaderCodeProcessing?.processFinalCode
+                    ? (shaderType: string, code: string) => customShaderCodeProcessing!.processFinalCode!(this.name, shaderType, code)
                     : null,
             },
             this._engine
@@ -836,7 +853,7 @@ export class PostProcess {
         this._drawWrapper.effect.setVector2("scale", this._scaleRatio);
         this.onApplyObservable.notifyObservers(this._drawWrapper.effect);
 
-        PostProcess.CustomShaderCodeProcessing?.bindCustomBindings?.(this.name, this._drawWrapper.effect);
+        PostProcess._GetShaderCodeProcessing(this.name)?.bindCustomBindings?.(this.name, this._drawWrapper.effect);
 
         return this._drawWrapper.effect;
     }
