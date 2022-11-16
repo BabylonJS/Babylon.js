@@ -1,6 +1,5 @@
 import type { Observer } from "../../Misc/observable";
 import { Observable } from "../../Misc/observable";
-import { Tools } from "../../Misc/tools";
 import type { SmartArray } from "../../Misc/smartArray";
 import type { Nullable, Immutable } from "../../types";
 import type { Camera } from "../../Cameras/camera";
@@ -22,6 +21,7 @@ import "../../Engines/Extensions/engine.renderTarget";
 import "../../Engines/Extensions/engine.renderTargetCube";
 import { Engine } from "../../Engines/engine";
 import { _ObserveArray } from "core/Misc/arrayTools";
+import { DumpTools } from "core/Misc/dumpTools";
 
 declare type Material = import("../material").Material;
 
@@ -1145,7 +1145,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
             // Dump ?
             if (dumpForDebug) {
-                Tools.DumpFramebuffer(this.getRenderWidth(), this.getRenderHeight(), engine);
+                DumpTools.DumpFramebuffer(this.getRenderWidth(), this.getRenderHeight(), engine);
             }
         } else {
             // Clear

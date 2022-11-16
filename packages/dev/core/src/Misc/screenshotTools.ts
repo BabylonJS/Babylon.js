@@ -7,8 +7,12 @@ import { Constants } from "../Engines/constants";
 import { Logger } from "./logger";
 import { Tools } from "./tools";
 import type { IScreenshotSize } from "./interfaces/screenshotSize";
+import { DumpTools } from "./dumpTools";
+import type { Nullable } from "../types";
 
 declare type Engine = import("../Engines/engine").Engine;
+
+let screenshotCanvas: Nullable<HTMLCanvasElement> = null;
 
 /**
  * Captures a screenshot of the current rendering
@@ -42,14 +46,14 @@ export function CreateScreenshot(
         return;
     }
 
-    if (!Tools._ScreenshotCanvas) {
-        Tools._ScreenshotCanvas = document.createElement("canvas");
+    if (!screenshotCanvas) {
+        screenshotCanvas = document.createElement("canvas");
     }
 
-    Tools._ScreenshotCanvas.width = width;
-    Tools._ScreenshotCanvas.height = height;
+    screenshotCanvas.width = width;
+    screenshotCanvas.height = height;
 
-    const renderContext = Tools._ScreenshotCanvas.getContext("2d");
+    const renderContext = screenshotCanvas.getContext("2d");
 
     const ratio = engine.getRenderWidth() / engine.getRenderHeight();
     let newWidth = width;
@@ -90,13 +94,15 @@ export function CreateScreenshot(
                 renderContext.drawImage(renderingCanvas, offsetX, offsetY, newWidth, newHeight);
             }
 
-            if (forceDownload) {
-                Tools.EncodeScreenshotCanvasData(undefined, mimeType);
-                if (successCallback) {
-                    successCallback("");
+            if (screenshotCanvas) {
+                if (forceDownload) {
+                    Tools.EncodeScreenshotCanvasData(screenshotCanvas, undefined, mimeType);
+                    if (successCallback) {
+                        successCallback("");
+                    }
+                } else {
+                    Tools.EncodeScreenshotCanvasData(screenshotCanvas, successCallback, mimeType);
                 }
-            } else {
-                Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
             }
         });
     }
@@ -233,7 +239,7 @@ export function CreateScreenshotUsingRenderTarget(
     const renderToTexture = () => {
         engine.onEndFrameObservable.addOnce(() => {
             texture.readPixels(undefined, undefined, undefined, false)!.then((data) => {
-                Tools.DumpData(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true);
+                DumpTools.DumpData(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true);
                 texture.dispose();
             });
         });
