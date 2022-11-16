@@ -36,7 +36,7 @@ describe("FreeCameraMouseInput", () => {
         engine?.dispose();
     });
 
-    it("use only one touch input at a time", async () => {
+    it("use only one touch input at a time", () => {
         let cameraRotation = camera!.cameraRotation.clone();
         const testDeviceInputSystem = new TestDeviceInputSystem(
             engine!,
@@ -99,5 +99,44 @@ describe("FreeCameraMouseInput", () => {
         expect(camera?.cameraRotation.y).toEqual(cameraRotation.y);
         scene?._onCameraInputObservable.notifyObservers(upPI2);
         scene?._onCameraInputObservable.notifyObservers(upPI1);
+    });
+
+    it("can work with pointer lock", () => {
+        let cameraRotation = camera!.cameraRotation.clone();
+        const testDeviceInputSystem = new TestDeviceInputSystem(
+            engine!,
+            () => {},
+            () => {},
+            () => {}
+        );
+        testDeviceInputSystem.connectDevice(DeviceType.Mouse, 0, TestDeviceInputSystem.MAX_POINTER_INPUTS);
+        
+        // Create two events with different movement values
+        const moveEvt = DeviceEventFactory.CreateDeviceEvent(DeviceType.Mouse, 0, PointerInput.Move, 1, testDeviceInputSystem) as IMouseEvent;
+        moveEvt.movementX = 10;
+        moveEvt.movementY = 10;
+        const movePI = new PointerInfo(PointerEventTypes.POINTERMOVE, moveEvt, new PickingInfo());
+
+        const moveEvt2 = DeviceEventFactory.CreateDeviceEvent(DeviceType.Mouse, 0, PointerInput.Move, 1, testDeviceInputSystem) as IMouseEvent;
+        moveEvt2.movementX = -15;
+        moveEvt2.movementY = -15;
+        const movePI2 = new PointerInfo(PointerEventTypes.POINTERMOVE, moveEvt2, new PickingInfo());
+
+        // Set pointer lock
+        engine!.isPointerLock = true;
+
+        // Try to move the camera with the first event, it should move
+        scene?._onCameraInputObservable.notifyObservers(movePI);
+        expect(camera?.cameraRotation.x).not.toEqual(cameraRotation.x);
+        expect(camera?.cameraRotation.y).not.toEqual(cameraRotation.y);
+
+        // Remove pointer lock
+        cameraRotation = camera!.cameraRotation.clone();
+        engine!.isPointerLock = false;
+
+        // It should not move the camera
+        scene?._onCameraInputObservable.notifyObservers(movePI2);
+        expect(camera?.cameraRotation.x).toEqual(cameraRotation.x);
+        expect(camera?.cameraRotation.y).toEqual(cameraRotation.y);
     });
 });
