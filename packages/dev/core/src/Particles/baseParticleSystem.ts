@@ -22,8 +22,8 @@ import { Color4 } from "../Maths/math.color";
 import type { ThinEngine } from "../Engines/thinEngine";
 
 import "../Engines/Extensions/engine.dynamicBuffer";
-import type { IClipPlanesHolder } from "core/Misc/interfaces/iClipPlanesHolder";
-import type { Plane } from "core/Maths/math.plane";
+import type { IClipPlanesHolder } from "../Misc/interfaces/iClipPlanesHolder";
+import type { Plane } from "../Maths/math.plane";
 import type { Animation } from "../Animations/animation";
 import type { Scene } from "../scene";
 import type { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";

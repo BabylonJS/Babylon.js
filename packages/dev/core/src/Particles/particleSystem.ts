@@ -44,7 +44,7 @@ import { ThinEngine } from "../Engines/thinEngine";
 import { MaterialHelper } from "../Materials/materialHelper";
 
 import "../Engines/Extensions/engine.alpha";
-import { addClipPlaneUniforms, prepareDefinesForClipPlanes, bindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
+import { addClipPlaneUniforms, prepareDefinesForClipPlanes, bindClipPlane } from "../Materials/clipPlaneMaterialHelper";
 
 declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
 declare type ProceduralTexture = import("../Materials/Textures/Procedurals/proceduralTexture").ProceduralTexture;

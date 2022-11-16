@@ -35,7 +35,7 @@ declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
 import "../Shaders/gpuRenderParticles.fragment";
 import "../Shaders/gpuRenderParticles.vertex";
 import { GetClass } from "../Misc/typeStore";
-import { addClipPlaneUniforms, bindClipPlane, prepareDefinesForClipPlanes } from "core/Materials/clipPlaneMaterialHelper";
+import { addClipPlaneUniforms, bindClipPlane, prepareDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
 
 /**
  * This represents a GPU particle system in Babylon

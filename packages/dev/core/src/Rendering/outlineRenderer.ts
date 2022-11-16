@@ -328,26 +328,26 @@ export class OutlineRenderer implements ISceneComponent {
             }
         }
 
-        const uniforms = [
-            "world",
-            "mBones",
-            "viewProjection",
-            "diffuseMatrix",
-            "offset",
-            "color",
-            "logarithmicDepthConstant",
-            "morphTargetInfluences",
-            "morphTargetTextureInfo",
-            "morphTargetTextureIndices",
-        ];
-        addClipPlaneUniforms(uniforms);
-
         // Get correct effect
         const drawWrapper = subMesh._getDrawWrapper(renderPassId, true)!;
         const cachedDefines = drawWrapper.defines;
         const join = defines.join("\n");
 
         if (cachedDefines !== join) {
+            const uniforms = [
+                "world",
+                "mBones",
+                "viewProjection",
+                "diffuseMatrix",
+                "offset",
+                "color",
+                "logarithmicDepthConstant",
+                "morphTargetInfluences",
+                "morphTargetTextureInfo",
+                "morphTargetTextureIndices",
+            ];
+            addClipPlaneUniforms(uniforms);
+
             drawWrapper.setEffect(
                 this.scene.getEngine().createEffect("outline", attribs, uniforms, ["diffuseSampler", "morphTargets"], join, undefined, undefined, undefined, {
                     maxSimultaneousMorphTargets: numMorphInfluencers,
