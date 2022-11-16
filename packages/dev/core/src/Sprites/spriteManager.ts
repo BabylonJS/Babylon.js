@@ -122,6 +122,11 @@ export class SpriteManager implements ISpriteManager {
     /** Gets or sets a boolean indicating if the sprites are pickable */
     public isPickable = false;
 
+    /**
+     * Gets or sets an object used to store user defined information for the sprite manager
+     */
+    public metadata: any = null;
+
     /** @internal */
     public _wasDispatched = false;
 
@@ -629,6 +634,8 @@ export class SpriteManager implements ISpriteManager {
         // Callback
         this.onDisposeObservable.notifyObservers(this);
         this.onDisposeObservable.clear();
+
+        this.metadata = null;
     }
 
     /**
@@ -659,6 +666,8 @@ export class SpriteManager implements ISpriteManager {
             serializationObject.sprites.push(sprite.serialize());
         }
 
+        serializationObject.metadata = this.metadata;
+
         return serializationObject;
     }
 
@@ -680,6 +689,10 @@ export class SpriteManager implements ISpriteManager {
             },
             scene
         );
+
+        if (parsedManager.metadata !== undefined) {
+            manager.metadata = parsedManager.metadata;
+        }
 
         if (parsedManager.texture) {
             manager.texture = Texture.Parse(parsedManager.texture, scene, rootUrl) as Texture;
