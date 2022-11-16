@@ -89,7 +89,7 @@ export class LinesMesh extends Mesh {
         const defines: string[] = [];
         const options = {
             attributes: [VertexBuffer.PositionKind],
-            uniforms: ["vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "world", "viewProjection"],
+            uniforms: ["world", "viewProjection"],
             needAlphaBlending: true,
             defines: defines,
             useClipPlane: null,

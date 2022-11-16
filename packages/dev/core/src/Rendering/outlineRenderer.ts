@@ -12,6 +12,7 @@ import { MaterialHelper } from "../Materials/materialHelper";
 
 import "../Shaders/outline.fragment";
 import "../Shaders/outline.vertex";
+import { addClipPlaneUniforms, bindClipPlane, prepareDefinesForClipPlanes } from "core/Materials/clipPlaneMaterialHelper";
 
 declare module "../scene" {
     export interface Scene {
@@ -231,7 +232,7 @@ export class OutlineRenderer implements ISceneComponent {
         }
 
         // Clip plane
-        MaterialHelper.BindClipPlane(effect, scene);
+        bindClipPlane(effect, material, scene);
 
         engine.setZOffset(-this.zOffset);
         engine.setZOffsetUnits(-this.zOffsetUnits);
@@ -261,26 +262,31 @@ export class OutlineRenderer implements ISceneComponent {
         const mesh = subMesh.getMesh();
         const material = subMesh.getMaterial();
 
+        if (!material) {
+            return false;
+        }
+
         const scene = mesh.getScene();
 
-        if (material) {
-            // Alpha test
-            if (material.needAlphaTesting()) {
-                defines.push("#define ALPHATEST");
-                if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
-                    attribs.push(VertexBuffer.UVKind);
-                    defines.push("#define UV1");
-                }
-                if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
-                    attribs.push(VertexBuffer.UV2Kind);
-                    defines.push("#define UV2");
-                }
+        // Alpha test
+        if (material.needAlphaTesting()) {
+            defines.push("#define ALPHATEST");
+            if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
+                attribs.push(VertexBuffer.UVKind);
+                defines.push("#define UV1");
             }
-            //Logarithmic depth
-            if ((<any>material).useLogarithmicDepth) {
-                defines.push("#define LOGARITHMICDEPTH");
+            if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
+                attribs.push(VertexBuffer.UV2Kind);
+                defines.push("#define UV2");
             }
         }
+        //Logarithmic depth
+        if ((<any>material).useLogarithmicDepth) {
+            defines.push("#define LOGARITHMICDEPTH");
+        }
+        // Clip planes
+        prepareDefinesForClipPlanes(material, scene, defines);
+
         // Bones
         if (mesh.useBones && mesh.computeBonesUsingShaders) {
             attribs.push(VertexBuffer.MatricesIndicesKind);
@@ -322,68 +328,30 @@ export class OutlineRenderer implements ISceneComponent {
             }
         }
 
-        // Clip planes
-        if (scene.clipPlane) {
-            defines.push("#define CLIPPLANE");
-        }
-
-        if (scene.clipPlane2) {
-            defines.push("#define CLIPPLANE2");
-        }
-
-        if (scene.clipPlane3) {
-            defines.push("#define CLIPPLANE3");
-        }
-
-        if (scene.clipPlane4) {
-            defines.push("#define CLIPPLANE4");
-        }
-
-        if (scene.clipPlane5) {
-            defines.push("#define CLIPPLANE5");
-        }
-
-        if (scene.clipPlane6) {
-            defines.push("#define CLIPPLANE6");
-        }
-
         // Get correct effect
         const drawWrapper = subMesh._getDrawWrapper(renderPassId, true)!;
         const cachedDefines = drawWrapper.defines;
         const join = defines.join("\n");
 
         if (cachedDefines !== join) {
+            const uniforms = [
+                "world",
+                "mBones",
+                "viewProjection",
+                "diffuseMatrix",
+                "offset",
+                "color",
+                "logarithmicDepthConstant",
+                "morphTargetInfluences",
+                "morphTargetTextureInfo",
+                "morphTargetTextureIndices",
+            ];
+            addClipPlaneUniforms(uniforms);
+
             drawWrapper.setEffect(
-                this.scene
-                    .getEngine()
-                    .createEffect(
-                        "outline",
-                        attribs,
-                        [
-                            "world",
-                            "mBones",
-                            "viewProjection",
-                            "diffuseMatrix",
-                            "offset",
-                            "color",
-                            "logarithmicDepthConstant",
-                            "morphTargetInfluences",
-                            "morphTargetTextureInfo",
-                            "morphTargetTextureIndices",
-                            "vClipPlane",
-                            "vClipPlane2",
-                            "vClipPlane3",
-                            "vClipPlane4",
-                            "vClipPlane5",
-                            "vClipPlane6",
-                        ],
-                        ["diffuseSampler", "morphTargets"],
-                        join,
-                        undefined,
-                        undefined,
-                        undefined,
-                        { maxSimultaneousMorphTargets: numMorphInfluencers }
-                    ),
+                this.scene.getEngine().createEffect("outline", attribs, uniforms, ["diffuseSampler", "morphTargets"], join, undefined, undefined, undefined, {
+                    maxSimultaneousMorphTargets: numMorphInfluencers,
+                }),
                 join
             );
         }

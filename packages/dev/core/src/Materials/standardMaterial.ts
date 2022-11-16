@@ -38,6 +38,7 @@ import { Constants } from "../Engines/constants";
 import { EffectFallbacks } from "./effectFallbacks";
 import type { Effect, IEffectCreationOptions } from "./effect";
 import { DetailMapConfiguration } from "./material.detailMapConfiguration";
+import { addClipPlaneUniforms, bindClipPlane } from "./clipPlaneMaterialHelper";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -1179,7 +1180,7 @@ export class StandardMaterial extends PushMaterial {
         );
 
         // Values that need to be evaluated on every frame
-        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances, null, subMesh.getRenderingMesh().hasThinInstances);
+        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, this, defines, useInstances, null, subMesh.getRenderingMesh().hasThinInstances);
 
         // External config
         this._eventInfo.defines = defines;
@@ -1317,12 +1318,6 @@ export class StandardMaterial extends PushMaterial {
                 "vLightmapInfos",
                 "vRefractionInfos",
                 "mBones",
-                "vClipPlane",
-                "vClipPlane2",
-                "vClipPlane3",
-                "vClipPlane4",
-                "vClipPlane5",
-                "vClipPlane6",
                 "diffuseMatrix",
                 "ambientMatrix",
                 "opacityMatrix",
@@ -1400,6 +1395,8 @@ export class StandardMaterial extends PushMaterial {
                 defines: defines,
                 maxSimultaneousLights: this._maxSimultaneousLights,
             });
+
+            addClipPlaneUniforms(uniforms);
 
             const csnrOptions: ICustomShaderNameResolveOptions = {};
 
@@ -1751,7 +1748,7 @@ export class StandardMaterial extends PushMaterial {
             this._callbackPluginEventBindForSubMesh(this._eventInfo);
 
             // Clip plane
-            MaterialHelper.BindClipPlane(effect, scene);
+            bindClipPlane(effect, this, scene);
 
             // Colors
             this.bindEyePosition(effect);

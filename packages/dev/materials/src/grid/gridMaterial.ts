@@ -174,7 +174,7 @@ export class GridMaterial extends PushMaterial {
         MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, false, this.fogEnabled, false, defines);
 
         // Values that need to be evaluated on every frame
-        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, scene.getEngine(), defines, !!useInstances);
+        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, scene.getEngine(), this, defines, !!useInstances);
 
         // Get correct effect
         if (defines.isDirty) {
