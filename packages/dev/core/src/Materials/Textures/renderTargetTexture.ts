@@ -20,8 +20,8 @@ import type { IRenderTargetTexture, RenderTargetWrapper } from "../../Engines/re
 import "../../Engines/Extensions/engine.renderTarget";
 import "../../Engines/Extensions/engine.renderTargetCube";
 import { Engine } from "../../Engines/engine";
-import { _ObserveArray } from "core/Misc/arrayTools";
-import { DumpTools } from "core/Misc/dumpTools";
+import { _ObserveArray } from "../../Misc/arrayTools";
+import { DumpTools } from "../../Misc/dumpTools";
 
 declare type Material = import("../material").Material;
 
