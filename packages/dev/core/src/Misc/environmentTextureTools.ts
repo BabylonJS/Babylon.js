@@ -20,6 +20,7 @@ import "../Materials/Textures/baseTexture.polynomial";
 
 import "../Shaders/rgbdEncode.fragment";
 import "../Shaders/rgbdDecode.fragment";
+import { DumpTools } from "../Misc/dumpTools";
 
 const DefaultEnvironmentTextureImageType = "image/png";
 const CurrentVersion = 2;
@@ -289,7 +290,7 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
 
             const rgbdEncodedData = await engine._readTexturePixels(tempTexture, faceWidth, faceWidth);
 
-            const imageEncodedData = await Tools.DumpDataAsync(faceWidth, faceWidth, rgbdEncodedData, imageType, undefined, false, true, options.imageQuality);
+            const imageEncodedData = await DumpTools.DumpDataAsync(faceWidth, faceWidth, rgbdEncodedData, imageType, undefined, false, true, options.imageQuality);
 
             specularTextures[i * 6 + face] = imageEncodedData as ArrayBuffer;
 
