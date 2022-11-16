@@ -5,6 +5,7 @@ import type { Nullable } from "../../types";
 import type { Scene } from "../../scene";
 import { Texture } from "../../Materials/Textures/texture";
 import { Constants } from "../../Engines/constants";
+import type { ExternalTexture } from "./externalTexture";
 
 import "../../Engines/Extensions/engine.videoTexture";
 import "../../Engines/Extensions/engine.dynamicTexture";
@@ -76,6 +77,7 @@ export class VideoTexture extends Texture {
      */
     public readonly video: HTMLVideoElement;
 
+    private _externalTexture: Nullable<ExternalTexture>;
     private _onUserActionRequestedObservable: Nullable<Observable<Texture>> = null;
 
     /**
@@ -174,6 +176,7 @@ export class VideoTexture extends Texture {
         this._currentSrc = src;
         this.name = name || this._getName(src);
         this.video = this._getVideo(src);
+        this._externalTexture = this._engine?.createExternalTexture(this.video) ?? null;
 
         if (this._settings.poster) {
             this.video.poster = this._settings.poster;
@@ -367,7 +370,7 @@ export class VideoTexture extends Texture {
 
         this._frameId = frameId;
 
-        this._getEngine()!.updateVideoTexture(this._texture, this.video, this._invertY);
+        this._getEngine()!.updateVideoTexture(this._texture, this._externalTexture ? this._externalTexture : this.video, this._invertY);
     };
 
     /**
@@ -405,6 +408,8 @@ export class VideoTexture extends Texture {
         this.video.removeEventListener("seeked", this._updateInternalTexture);
         this.video.removeEventListener("emptied", this._reset);
         this.video.pause();
+
+        this._externalTexture?.dispose();
     }
 
     /**
