@@ -174,7 +174,7 @@ export class DumpTools {
                 quality
             );
         } else {
-            Tools.EncodeScreenshotCanvasData(renderer.canvas, successCallback, mimeType, fileName, renderer.canvas, quality);
+            Tools.EncodeScreenshotCanvasData(renderer.canvas, successCallback, mimeType, fileName, quality);
         }
 
         texture.dispose();
