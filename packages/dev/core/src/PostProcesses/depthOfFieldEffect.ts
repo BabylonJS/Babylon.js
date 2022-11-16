@@ -35,20 +35,6 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
     private _circleOfConfusion: CircleOfConfusionPostProcess;
 
     /**
-     * Gets the Circle Of Confusion post process used by the depth of field effect
-     */
-    public get circleOfConfusion() {
-        return this._circleOfConfusion;
-    }
-
-    /**
-     * Gets the Depth of Field Merge post process used by the depth of field effect
-     */
-    public get dofMerge() {
-        return this._dofMerge;
-    }
-
-    /**
      * @internal Internal, blurs from high to low
      */
     public _depthOfFieldBlurX: Array<DepthOfFieldBlurPostProcess>;
