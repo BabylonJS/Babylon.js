@@ -182,8 +182,7 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
                 engine,
                 false,
                 pipelineTextureType,
-                blockCompilation,
-                undefined
+                blockCompilation
             );
             blurX.autoClear = false;
             this._depthOfFieldBlurY.push(blurY);

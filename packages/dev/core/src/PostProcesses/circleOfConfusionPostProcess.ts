@@ -83,8 +83,7 @@ export class CircleOfConfusionPostProcess extends PostProcess {
             textureType,
             undefined,
             null,
-            blockCompilation,
-            undefined
+            blockCompilation
         );
         this._depthTexture = depthTexture;
         this.onApplyObservable.add((effect: Effect) => {
