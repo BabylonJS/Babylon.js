@@ -15,6 +15,7 @@ import type { Scene } from "core/scene";
 
 import type { _Exporter } from "./glTFExporter";
 import { Constants } from "core/Engines/constants";
+import { DumpTools } from "core/Misc/dumpTools";
 
 declare type Material = import("core/Materials/material").Material;
 declare type StandardMaterial = import("core/Materials/standardMaterial").StandardMaterial;
@@ -436,7 +437,7 @@ export class _GLTFMaterialExporter {
 
         const data = await engine._readTexturePixels(tempTexture, width, height);
 
-        return (await Tools.DumpDataAsync(width, height, data, mimeType, undefined, true, true)) as ArrayBuffer;
+        return (await DumpTools.DumpDataAsync(width, height, data, mimeType, undefined, true, true)) as ArrayBuffer;
     }
 
     /**
