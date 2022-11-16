@@ -2,6 +2,7 @@ import { ThinEngine } from "../../Engines/thinEngine";
 import type { InternalTexture } from "../../Materials/Textures/internalTexture";
 import type { Nullable } from "../../types";
 import { Constants } from "../constants";
+import type { ExternalTexture } from "../..//Materials/Textures/externalTexture";
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
@@ -11,7 +12,7 @@ declare module "../../Engines/thinEngine" {
          * @param video defines the video element to use
          * @param invertY defines if data must be stored with Y axis inverted
          */
-        updateVideoTexture(texture: Nullable<InternalTexture>, video: HTMLVideoElement, invertY: boolean): void;
+        updateVideoTexture(texture: Nullable<InternalTexture>, video: HTMLVideoElement | Nullable<ExternalTexture>, invertY: boolean): void;
     }
 }
 
