@@ -44,7 +44,7 @@ import type {
 } from "./materialPluginEvent";
 import { MaterialPluginEvent } from "./materialPluginEvent";
 import type { ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
-import type { IClipPlanesHolder } from "core/Misc/interfaces/iClipPlanesHolder";
+import type { IClipPlanesHolder } from "../Misc/interfaces/iClipPlanesHolder";
 
 declare type PrePassRenderer = import("../Rendering/prePassRenderer").PrePassRenderer;
 declare type Mesh = import("../Meshes/mesh").Mesh;

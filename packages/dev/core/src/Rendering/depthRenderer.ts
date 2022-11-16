@@ -14,7 +14,7 @@ import { Constants } from "../Engines/constants";
 import "../Shaders/depth.fragment";
 import "../Shaders/depth.vertex";
 import { _WarnImport } from "../Misc/devTools";
-import { addClipPlaneUniforms, bindClipPlane, prepareDefinesForClipPlanes } from "core/Materials/clipPlaneMaterialHelper";
+import { addClipPlaneUniforms, bindClipPlane, prepareDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
 
 declare type Material = import("../Materials/material").Material;
 declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
@@ -421,24 +421,24 @@ export class DepthRenderer {
         // Clip planes
         prepareDefinesForClipPlanes(material, scene, defines);
 
-        const uniforms = [
-            "world",
-            "mBones",
-            "boneTextureWidth",
-            "viewProjection",
-            "diffuseMatrix",
-            "depthValues",
-            "morphTargetInfluences",
-            "morphTargetTextureInfo",
-            "morphTargetTextureIndices",
-        ];
-        addClipPlaneUniforms(uniforms);
-
         // Get correct effect
         const drawWrapper = subMesh._getDrawWrapper(undefined, true)!;
         const cachedDefines = drawWrapper.defines;
         const join = defines.join("\n");
         if (cachedDefines !== join) {
+            const uniforms = [
+                "world",
+                "mBones",
+                "boneTextureWidth",
+                "viewProjection",
+                "diffuseMatrix",
+                "depthValues",
+                "morphTargetInfluences",
+                "morphTargetTextureInfo",
+                "morphTargetTextureIndices",
+            ];
+            addClipPlaneUniforms(uniforms);
+
             drawWrapper.setEffect(
                 engine.createEffect("depth", attribs, uniforms, ["diffuseSampler", "morphTargets", "boneSampler"], join, undefined, undefined, undefined, {
                     maxSimultaneousMorphTargets: numMorphInfluencers,

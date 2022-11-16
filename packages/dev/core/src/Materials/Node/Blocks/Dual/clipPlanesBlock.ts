@@ -8,7 +8,7 @@ import type { Effect } from "../../../effect";
 import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
 import type { Mesh } from "../../../../Meshes/mesh";
 import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
-import { bindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
+import { bindClipPlane } from "../../../../Materials/clipPlaneMaterialHelper";
 /**
  * Block used to implement clip planes
  */

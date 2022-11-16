@@ -28,7 +28,7 @@ import { _WarnImport } from "../Misc/devTools";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import { EffectFallbacks } from "../Materials/effectFallbacks";
 import { DrawWrapper } from "../Materials/drawWrapper";
-import { addClipPlaneUniforms, bindClipPlane, prepareDefinesForClipPlanes } from "core/Materials/clipPlaneMaterialHelper";
+import { addClipPlaneUniforms, bindClipPlane, prepareDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
 
 /**
  * Effect layer options. This helps customizing the behaviour
@@ -649,28 +649,28 @@ export abstract class EffectLayer {
 
         this._addCustomEffectDefines(defines);
 
-        const uniforms = [
-            "world",
-            "mBones",
-            "viewProjection",
-            "glowColor",
-            "morphTargetInfluences",
-            "boneTextureWidth",
-            "diffuseMatrix",
-            "emissiveMatrix",
-            "opacityMatrix",
-            "opacityIntensity",
-            "morphTargetTextureInfo",
-            "morphTargetTextureIndices",
-        ];
-
-        addClipPlaneUniforms(uniforms);
-
         // Get correct effect
         const drawWrapper = subMesh._getDrawWrapper(undefined, true)!;
         const cachedDefines = drawWrapper.defines as string;
         const join = defines.join("\n");
         if (cachedDefines !== join) {
+            const uniforms = [
+                "world",
+                "mBones",
+                "viewProjection",
+                "glowColor",
+                "morphTargetInfluences",
+                "boneTextureWidth",
+                "diffuseMatrix",
+                "emissiveMatrix",
+                "opacityMatrix",
+                "opacityIntensity",
+                "morphTargetTextureInfo",
+                "morphTargetTextureIndices",
+            ];
+
+            addClipPlaneUniforms(uniforms);
+
             drawWrapper.setEffect(
                 this._engine.createEffect(
                     "glowMapGeneration",
