@@ -29,17 +29,17 @@ export function addClipPlaneUniforms(uniforms: string[]): void {
 export function prepareDefinesForClipPlanes(primaryHolder: IClipPlanesHolder, secondaryHolder: IClipPlanesHolder, defines: string[] | Record<string, any>): boolean {
     let changed = false;
     let clipPlane = primaryHolder.clipPlane ?? secondaryHolder.clipPlane;
-    changed = addDefine(clipPlane, defines, "CLIPPLANE", changed);
+    changed = addDefine(clipPlane, defines, "CLIPPLANE") || changed;
     clipPlane = primaryHolder.clipPlane2 ?? secondaryHolder.clipPlane2;
-    changed = addDefine(clipPlane, defines, "CLIPPLANE2", changed);
+    changed = addDefine(clipPlane, defines, "CLIPPLANE2") || changed;
     clipPlane = primaryHolder.clipPlane3 ?? secondaryHolder.clipPlane3;
-    changed = addDefine(clipPlane, defines, "CLIPPLANE3", changed);
+    changed = addDefine(clipPlane, defines, "CLIPPLANE3") || changed;
     clipPlane = primaryHolder.clipPlane4 ?? secondaryHolder.clipPlane4;
-    changed = addDefine(clipPlane, defines, "CLIPPLANE4", changed);
+    changed = addDefine(clipPlane, defines, "CLIPPLANE4") || changed;
     clipPlane = primaryHolder.clipPlane5 ?? secondaryHolder.clipPlane5;
-    changed = addDefine(clipPlane, defines, "CLIPPLANE5", changed);
+    changed = addDefine(clipPlane, defines, "CLIPPLANE5") || changed;
     clipPlane = primaryHolder.clipPlane6 ?? secondaryHolder.clipPlane6;
-    changed = addDefine(clipPlane, defines, "CLIPPLANE6", changed);
+    changed = addDefine(clipPlane, defines, "CLIPPLANE6") || changed;
     return changed;
 }
 
@@ -65,7 +65,7 @@ function setClipPlane(effect: Effect, uniformName: string, clipPlane: Nullable<P
     }
 }
 
-function addDefine(clipPlane: Nullable<Plane>, defines: string[] | Record<string, any>, defineName: string, changed: boolean): boolean {
+function addDefine(clipPlane: Nullable<Plane>, defines: string[] | Record<string, any>, defineName: string): boolean {
     let isSet = false;
     if (clipPlane) {
         if (Array.isArray(defines)) {
@@ -79,5 +79,5 @@ function addDefine(clipPlane: Nullable<Plane>, defines: string[] | Record<string
             defines[defineName] = true;
         }
     }
-    return changed || !isSet;
+    return !isSet;
 }
