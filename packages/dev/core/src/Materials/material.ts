@@ -44,6 +44,7 @@ import type {
 } from "./materialPluginEvent";
 import { MaterialPluginEvent } from "./materialPluginEvent";
 import type { ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
+import type { IClipPlanesHolder } from "../Misc/interfaces/iClipPlanesHolder";
 
 declare type PrePassRenderer = import("../Rendering/prePassRenderer").PrePassRenderer;
 declare type Mesh = import("../Meshes/mesh").Mesh;
@@ -80,7 +81,7 @@ export interface ICustomShaderNameResolveOptions {
 /**
  * Base class for the main features of a material in Babylon.js
  */
-export class Material implements IAnimatable {
+export class Material implements IAnimatable, IClipPlanesHolder {
     /**
      * Returns the triangle fill mode
      */
@@ -727,6 +728,36 @@ export class Material implements IAnimatable {
         this._fillMode = value;
         this.markAsDirty(Material.MiscDirtyFlag);
     }
+
+    /**
+     * Gets or sets the active clipplane 1
+     */
+    public clipPlane: Nullable<Plane>;
+
+    /**
+     * Gets or sets the active clipplane 2
+     */
+    public clipPlane2: Nullable<Plane>;
+
+    /**
+     * Gets or sets the active clipplane 3
+     */
+    public clipPlane3: Nullable<Plane>;
+
+    /**
+     * Gets or sets the active clipplane 4
+     */
+    public clipPlane4: Nullable<Plane>;
+
+    /**
+     * Gets or sets the active clipplane 5
+     */
+    public clipPlane5: Nullable<Plane>;
+
+    /**
+     * Gets or sets the active clipplane 6
+     */
+    public clipPlane6: Nullable<Plane>;
 
     /**
      * Gives access to the stencil properties of the material

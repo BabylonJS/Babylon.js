@@ -14,6 +14,7 @@ import { Constants } from "../Engines/constants";
 import "../Shaders/depth.fragment";
 import "../Shaders/depth.vertex";
 import { _WarnImport } from "../Misc/devTools";
+import { addClipPlaneUniforms, bindClipPlane, prepareDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
 
 declare type Material = import("../Materials/material").Material;
 declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
@@ -244,7 +245,7 @@ export class DepthRenderer {
 
                 if (!renderingMaterial) {
                     // Alpha test
-                    if (material && material.needAlphaTesting()) {
+                    if (material.needAlphaTesting()) {
                         const alphaTexture = material.getAlphaTestTexture();
 
                         if (alphaTexture) {
@@ -271,7 +272,7 @@ export class DepthRenderer {
                     }
 
                     // Clip planes
-                    MaterialHelper.BindClipPlane(effect, scene);
+                    bindClipPlane(effect, material, scene);
 
                     // Morph targets
                     MaterialHelper.BindMorphTargetParameters(renderingMesh, effect);
@@ -418,63 +419,30 @@ export class DepthRenderer {
         }
 
         // Clip planes
-        if (scene.clipPlane) {
-            defines.push("#define CLIPPLANE");
-        }
-
-        if (scene.clipPlane2) {
-            defines.push("#define CLIPPLANE2");
-        }
-
-        if (scene.clipPlane3) {
-            defines.push("#define CLIPPLANE3");
-        }
-
-        if (scene.clipPlane4) {
-            defines.push("#define CLIPPLANE4");
-        }
-
-        if (scene.clipPlane5) {
-            defines.push("#define CLIPPLANE5");
-        }
-
-        if (scene.clipPlane6) {
-            defines.push("#define CLIPPLANE6");
-        }
+        prepareDefinesForClipPlanes(material, scene, defines);
 
         // Get correct effect
         const drawWrapper = subMesh._getDrawWrapper(undefined, true)!;
         const cachedDefines = drawWrapper.defines;
         const join = defines.join("\n");
         if (cachedDefines !== join) {
+            const uniforms = [
+                "world",
+                "mBones",
+                "boneTextureWidth",
+                "viewProjection",
+                "diffuseMatrix",
+                "depthValues",
+                "morphTargetInfluences",
+                "morphTargetTextureInfo",
+                "morphTargetTextureIndices",
+            ];
+            addClipPlaneUniforms(uniforms);
+
             drawWrapper.setEffect(
-                engine.createEffect(
-                    "depth",
-                    attribs,
-                    [
-                        "world",
-                        "mBones",
-                        "boneTextureWidth",
-                        "viewProjection",
-                        "diffuseMatrix",
-                        "depthValues",
-                        "morphTargetInfluences",
-                        "morphTargetTextureInfo",
-                        "morphTargetTextureIndices",
-                        "vClipPlane",
-                        "vClipPlane2",
-                        "vClipPlane3",
-                        "vClipPlane4",
-                        "vClipPlane5",
-                        "vClipPlane6",
-                    ],
-                    ["diffuseSampler", "morphTargets", "boneSampler"],
-                    join,
-                    undefined,
-                    undefined,
-                    undefined,
-                    { maxSimultaneousMorphTargets: numMorphInfluencers }
-                ),
+                engine.createEffect("depth", attribs, uniforms, ["diffuseSampler", "morphTargets", "boneSampler"], join, undefined, undefined, undefined, {
+                    maxSimultaneousMorphTargets: numMorphInfluencers,
+                }),
                 join
             );
         }
