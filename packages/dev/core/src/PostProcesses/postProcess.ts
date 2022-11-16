@@ -64,18 +64,10 @@ export class PostProcess {
     /** @internal */
     public _parentContainer: Nullable<AbstractScene> = null;
 
-    private static _CustomShaderCodeProcessing?: PostProcessCustomShaderCodeProcessing;
-
     /**
      * Gets or sets the custom callbacks used to alther the post process shader code
      */
-    public static get CustomShaderCodeProcessing() {
-        return PostProcess._CustomShaderCodeProcessing;
-    }
-
-    public static set CustomShaderCodeProcessing(customShaderCodeProcessing: PostProcessCustomShaderCodeProcessing | undefined) {
-        PostProcess._CustomShaderCodeProcessing = customShaderCodeProcessing;
-    }
+    public static CustomShaderCodeProcessing?: PostProcessCustomShaderCodeProcessing;
 
     /**
      * Gets or sets the unique id of the post process
@@ -534,14 +526,14 @@ export class PostProcess {
         vertexUrl?: string,
         fragmentUrl?: string
     ) {
-        if (PostProcess._CustomShaderCodeProcessing?.defineCustomBindings) {
+        if (PostProcess.CustomShaderCodeProcessing?.defineCustomBindings) {
             const newUniforms = uniforms?.slice() ?? [];
             newUniforms.push(...this._parameters);
 
             const newSamplers = samplers?.slice() ?? [];
             newSamplers.push(...this._samplers);
 
-            defines = PostProcess._CustomShaderCodeProcessing.defineCustomBindings(this.name, defines, newUniforms, newSamplers);
+            defines = PostProcess.CustomShaderCodeProcessing.defineCustomBindings(this.name, defines, newUniforms, newSamplers);
             uniforms = newUniforms;
             samplers = newSamplers;
         }
@@ -558,11 +550,11 @@ export class PostProcess {
                 onCompiled: onCompiled ?? null,
                 onError: onError ?? null,
                 indexParameters: indexParameters || this._indexParameters,
-                processCodeAfterIncludes: PostProcess._CustomShaderCodeProcessing?.processCodeAfterIncludes
-                    ? (shaderType: string, code: string) => PostProcess._CustomShaderCodeProcessing!.processCodeAfterIncludes!(this.name, shaderType, code)
+                processCodeAfterIncludes: PostProcess.CustomShaderCodeProcessing?.processCodeAfterIncludes
+                    ? (shaderType: string, code: string) => PostProcess.CustomShaderCodeProcessing!.processCodeAfterIncludes!(this.name, shaderType, code)
                     : null,
-                processFinalCode: PostProcess._CustomShaderCodeProcessing?.processFinalCode
-                    ? (shaderType: string, code: string) => PostProcess._CustomShaderCodeProcessing!.processFinalCode!(this.name, shaderType, code)
+                processFinalCode: PostProcess.CustomShaderCodeProcessing?.processFinalCode
+                    ? (shaderType: string, code: string) => PostProcess.CustomShaderCodeProcessing!.processFinalCode!(this.name, shaderType, code)
                     : null,
             },
             this._engine
@@ -844,7 +836,7 @@ export class PostProcess {
         this._drawWrapper.effect.setVector2("scale", this._scaleRatio);
         this.onApplyObservable.notifyObservers(this._drawWrapper.effect);
 
-        PostProcess._CustomShaderCodeProcessing?.bindCustomBindings?.(this.name, this._drawWrapper.effect);
+        PostProcess.CustomShaderCodeProcessing?.bindCustomBindings?.(this.name, this._drawWrapper.effect);
 
         return this._drawWrapper.effect;
     }
