@@ -13,7 +13,7 @@ import { Constants } from "../../../Engines/constants";
 import type { IDisposable, Scene } from "../../../scene";
 import { GlowLayer } from "../../../Layers/glowLayer";
 
-import type { PostProcess, PostProcessCustomShaderCodeProcessing } from "../../../PostProcesses/postProcess";
+import type { PostProcess } from "../../../PostProcesses/postProcess";
 import { SharpenPostProcess } from "../../../PostProcesses/sharpenPostProcess";
 import { ImageProcessingPostProcess } from "../../../PostProcesses/imageProcessingPostProcess";
 import { ChromaticAberrationPostProcess } from "../../../PostProcesses/chromaticAberrationPostProcess";

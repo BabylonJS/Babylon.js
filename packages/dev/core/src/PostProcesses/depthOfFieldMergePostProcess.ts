@@ -85,8 +85,7 @@ export class DepthOfFieldMergePostProcess extends PostProcess {
             textureType,
             undefined,
             null,
-            true,
-            undefined
+            true
         );
         this.externalTextureSamplerBinding = true;
         this.onApplyObservable.add((effect: Effect) => {
