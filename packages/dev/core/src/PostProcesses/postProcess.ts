@@ -19,7 +19,6 @@ import { GetClass, RegisterClass } from "../Misc/typeStore";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import type { AbstractScene } from "../abstractScene";
 import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
-import type { ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
 
 declare type Scene = import("../scene").Scene;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
@@ -29,40 +28,25 @@ declare type PrePassRenderer = import("../Rendering/prePassRenderer").PrePassRen
 declare type PrePassEffectConfiguration = import("../Rendering/prePassEffectConfiguration").PrePassEffectConfiguration;
 
 /**
- * Function for custom code injection when dealing with post processes
- */
-export type PostProcessShaderCustomProcessingFunction = (postProcessName: string, shaderType: string, code: string) => string;
-
-/**
- * Function for defining custom bindings (defines, uniforms, samplers) when dealing with post processes
- */
-export type PostProcessShaderDefineCustomBindingFunction = (postProcessName: string, defines: Nullable<string>, uniforms: string[], samplers: string[]) => Nullable<string>;
-
-/**
- * Function for binding custom bindings (uniforms, samplers) when dealing with post processes
- */
-export type PostProcessShaderBindCustomBindingFunction = (postProcessName: string, effect: Effect) => void;
-
-/**
  * Allows for custom processing of the shader code used by a post process
  */
 export type PostProcessCustomShaderCodeProcessing = {
     /**
      * If provided, will be called two times with the vertex and fragment code so that this code can be updated after the #include have been processed
      */
-    processCodeAfterIncludes?: PostProcessShaderCustomProcessingFunction;
+    processCodeAfterIncludes?: (postProcessName: string, shaderType: string, code: string) => string;
     /**
      * If provided, will be called two times with the vertex and fragment code so that this code can be updated before it is compiled by the GPU
      */
-    processFinalCode?: PostProcessShaderCustomProcessingFunction;
+    processFinalCode?: (postProcessName: string, shaderType: string, code: string) => string;
     /**
      * If provided, will be called before creating the effect to collect additional custom bindings (defines, uniforms, samplers)
      */
-    defineCustomBindings?: PostProcessShaderDefineCustomBindingFunction;
+    defineCustomBindings?: (postProcessName: string, defines: Nullable<string>, uniforms: string[], samplers: string[]) => Nullable<string>;
     /**
      * If provided, will be called when binding inputs to the shader code to allow the user to add custom bindings
      */
-    bindCustomBindings?: PostProcessShaderBindCustomBindingFunction;
+    bindCustomBindings?: (postProcessName: string, effect: Effect) => void;
 };
 
 /**
