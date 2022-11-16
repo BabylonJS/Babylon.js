@@ -8,6 +8,8 @@ import { EffectRenderer, EffectWrapper } from "../Materials/effectRenderer";
 import { Tools } from "./tools";
 import type { Nullable } from "../types";
 
+import { passPixelShader } from "../Shaders/pass.fragment";
+
 type DumpToolsEngine = {
     canvas: HTMLCanvasElement;
     engine: ThinEngine;
@@ -37,17 +39,9 @@ export class DumpTools {
             const renderer = new EffectRenderer(engine);
             const wrapper = new EffectWrapper({
                 engine,
-                name: "DumpWrapper",
-                fragmentShader: `
-                varying vec2 vUV;
-                
-                uniform sampler2D inputSampler;
-                
-                void main(void)
-                {
-                    gl_FragColor = texture2D(inputSampler, vUV);
-                }`,
-                samplerNames: ["inputSampler"],
+                name: passPixelShader.name,
+                fragmentShader: passPixelShader.shader,
+                samplerNames: ["textureSampler"],
             });
             this._DumpToolsEngine = {
                 canvas,
@@ -154,7 +148,7 @@ export class DumpTools {
 
         renderer.renderer.setViewport();
         renderer.renderer.applyEffectWrapper(renderer.wrapper);
-        renderer.wrapper.effect._bindTexture("inputSampler", texture);
+        renderer.wrapper.effect._bindTexture("textureSampler", texture);
         renderer.renderer.draw();
 
         if (toArrayBuffer) {
