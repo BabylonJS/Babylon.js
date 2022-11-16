@@ -1,7 +1,7 @@
 import type { Nullable } from "../types";
 import type { Camera } from "../Cameras/camera";
 import type { Effect } from "../Materials/effect";
-import type { PostProcessOptions } from "./postProcess";
+import type { PostProcessCustomShaderCodeProcessing, PostProcessOptions } from "./postProcess";
 import { PostProcess } from "./postProcess";
 import type { Engine } from "../Engines/engine";
 import { Constants } from "../Engines/constants";
@@ -57,6 +57,7 @@ export class DepthOfFieldMergePostProcess extends PostProcess {
      * @param reusable If the post process can be reused on the same frame. (default: false)
      * @param textureType Type of textures used when performing the post process. (default: 0)
      * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
+     * @param customShaderCodeProcessing Callbacks to alter the shader code used by the post-process
      */
     constructor(
         name: string,
@@ -69,7 +70,8 @@ export class DepthOfFieldMergePostProcess extends PostProcess {
         engine?: Engine,
         reusable?: boolean,
         textureType = Constants.TEXTURETYPE_UNSIGNED_INT,
-        blockCompilation = false
+        blockCompilation = false,
+        customShaderCodeProcessing?: PostProcessCustomShaderCodeProcessing
     ) {
         super(
             name,
@@ -85,7 +87,9 @@ export class DepthOfFieldMergePostProcess extends PostProcess {
             textureType,
             undefined,
             null,
-            true
+            true,
+            undefined,
+            customShaderCodeProcessing
         );
         this.externalTextureSamplerBinding = true;
         this.onApplyObservable.add((effect: Effect) => {

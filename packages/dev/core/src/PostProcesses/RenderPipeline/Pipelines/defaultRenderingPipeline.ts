@@ -13,7 +13,7 @@ import { Constants } from "../../../Engines/constants";
 import type { IDisposable, Scene } from "../../../scene";
 import { GlowLayer } from "../../../Layers/glowLayer";
 
-import type { PostProcess } from "../../../PostProcesses/postProcess";
+import type { PostProcess, PostProcessCustomShaderCodeProcessing } from "../../../PostProcesses/postProcess";
 import { SharpenPostProcess } from "../../../PostProcesses/sharpenPostProcess";
 import { ImageProcessingPostProcess } from "../../../PostProcesses/imageProcessingPostProcess";
 import { ChromaticAberrationPostProcess } from "../../../PostProcesses/chromaticAberrationPostProcess";
@@ -37,6 +37,7 @@ declare type Animation = import("../../../Animations/animation").Animation;
 export class DefaultRenderingPipeline extends PostProcessRenderPipeline implements IDisposable, IAnimatable {
     private _scene: Scene;
     private _camerasToBeAttached: Array<Camera> = [];
+    private _customShaderCodeProcessing?: PostProcessCustomShaderCodeProcessing;
     /**
      * ID of the sharpen post process,
      */
@@ -297,7 +298,7 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
         // recreate dof and dispose old as this setting is not dynamic
         const oldDof = this.depthOfField;
 
-        this.depthOfField = new DepthOfFieldEffect(this._scene, null, this._depthOfFieldBlurLevel, this._defaultPipelineTextureType, false);
+        this.depthOfField = new DepthOfFieldEffect(this._scene, null, this._depthOfFieldBlurLevel, this._defaultPipelineTextureType, false, this._customShaderCodeProcessing);
         this.depthOfField.focalLength = oldDof.focalLength;
         this.depthOfField.focusDistance = oldDof.focusDistance;
         this.depthOfField.fStop = oldDof.fStop;
@@ -425,14 +426,23 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
      * @param scene The scene linked to this pipeline (default: the last created scene)
      * @param cameras The array of cameras that the rendering pipeline will be attached to (default: scene.cameras)
      * @param automaticBuild If false, you will have to manually call prepare() to update the pipeline (default: true)
+     * @param customShaderCodeProcessing Callbacks to alter the shader code used by the post-processes. The callbacks will be called for all post processes used by the rendering pipeline
      */
-    constructor(name = "", hdr = true, scene: Scene = EngineStore.LastCreatedScene!, cameras?: Camera[], automaticBuild = true) {
+    constructor(
+        name = "",
+        hdr = true,
+        scene: Scene = EngineStore.LastCreatedScene!,
+        cameras?: Camera[],
+        automaticBuild = true,
+        customShaderCodeProcessing?: PostProcessCustomShaderCodeProcessing
+    ) {
         super(scene.getEngine(), name);
         this._cameras = cameras || scene.cameras;
         this._cameras = this._cameras.slice();
         this._camerasToBeAttached = this._cameras.slice();
 
         this._buildAllowed = automaticBuild;
+        this._customShaderCodeProcessing = customShaderCodeProcessing;
 
         // Initialize
         this._scene = scene;
@@ -466,7 +476,7 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
             true
         );
 
-        this.depthOfField = new DepthOfFieldEffect(this._scene, null, this._depthOfFieldBlurLevel, this._defaultPipelineTextureType, true);
+        this.depthOfField = new DepthOfFieldEffect(this._scene, null, this._depthOfFieldBlurLevel, this._defaultPipelineTextureType, true, this._customShaderCodeProcessing);
 
         this.bloom = new BloomEffect(this._scene, this._bloomScale, this._bloomWeight, this.bloomKernel, this._defaultPipelineTextureType, true);
 
