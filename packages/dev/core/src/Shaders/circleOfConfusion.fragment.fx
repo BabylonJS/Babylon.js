@@ -18,7 +18,13 @@ uniform float cocPrecalculation;
 void main(void)
 {
     float depth = texture2D(depthSampler, vUV).r;
+
+    #define CUSTOM_COC_DEPTH
+
     float pixelDistance = (cameraMinMaxZ.x + cameraMinMaxZ.y * depth) * 1000.0; // actual distance from the lens in scene units/1000 (eg. millimeter)
+
+    #define CUSTOM_COC_PIXELDISTANCE
+
     float coc = abs(cocPrecalculation * ((focusDistance - pixelDistance) / pixelDistance));
     coc = clamp(coc, 0.0, 1.0);
     gl_FragColor = vec4(coc, coc, coc, 1.0);
