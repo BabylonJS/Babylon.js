@@ -624,11 +624,6 @@ export class Tools {
     }
 
     /**
-     * @ignore
-     */
-    public static _ScreenshotCanvas: HTMLCanvasElement;
-
-    /**
      * Dumps the current bound framebuffer
      * @param width defines the rendering width
      * @param height defines the rendering height
@@ -646,12 +641,7 @@ export class Tools {
         mimeType: string = "image/png",
         fileName?: string
     ) {
-        // Read the contents of the framebuffer
-        const bufferView = await engine.readPixels(0, 0, width, height);
-
-        const data = new Uint8Array(bufferView.buffer);
-
-        Tools.DumpData(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true);
+        throw _WarnImport("DumpTools");
     }
 
     /**
@@ -677,71 +667,7 @@ export class Tools {
         toArrayBuffer = false,
         quality?: number
     ) {
-        // Create a 2D canvas to store the result
-        if (!Tools._ScreenshotCanvas) {
-            Tools._ScreenshotCanvas = document.createElement("canvas");
-        }
-        Tools._ScreenshotCanvas.width = width;
-        Tools._ScreenshotCanvas.height = height;
-        const context = Tools._ScreenshotCanvas.getContext("2d");
-
-        if (context) {
-            // Convert if data are float32
-            if (data instanceof Float32Array) {
-                const data2 = new Uint8Array(data.length);
-                let n = data.length;
-                while (n--) {
-                    const v = data[n];
-                    data2[n] = v < 0 ? 0 : v > 1 ? 1 : Math.round(v * 255);
-                }
-                data = data2;
-            }
-
-            // Copy the pixels to a 2D canvas
-            const imageData = context.createImageData(width, height);
-            const castData = <any>imageData.data;
-            castData.set(data);
-            context.putImageData(imageData, 0, 0);
-
-            let canvas = Tools._ScreenshotCanvas;
-
-            if (invertY) {
-                const canvas2 = document.createElement("canvas");
-                canvas2.width = width;
-                canvas2.height = height;
-
-                const ctx2 = canvas2.getContext("2d");
-                if (!ctx2) {
-                    return;
-                }
-
-                ctx2.translate(0, height);
-                ctx2.scale(1, -1);
-                ctx2.drawImage(Tools._ScreenshotCanvas, 0, 0);
-
-                canvas = canvas2;
-            }
-
-            if (toArrayBuffer) {
-                Tools.ToBlob(
-                    canvas,
-                    (blob) => {
-                        const fileReader = new FileReader();
-                        fileReader.onload = (event: any) => {
-                            const arrayBuffer = event.target!.result as ArrayBuffer;
-                            if (successCallback) {
-                                successCallback(arrayBuffer);
-                            }
-                        };
-                        fileReader.readAsArrayBuffer(blob!);
-                    },
-                    mimeType,
-                    quality
-                );
-            } else {
-                Tools.EncodeScreenshotCanvasData(successCallback, mimeType, fileName, canvas, quality);
-            }
-        }
+        throw _WarnImport("DumpTools");
     }
 
     /**
@@ -766,9 +692,7 @@ export class Tools {
         toArrayBuffer = false,
         quality?: number
     ): Promise<string | ArrayBuffer> {
-        return new Promise((resolve) => {
-            Tools.DumpData(width, height, data, (result) => resolve(result), mimeType, fileName, invertY, toArrayBuffer, quality);
-        });
+        throw _WarnImport("DumpTools");
     }
 
     /**
@@ -842,25 +766,25 @@ export class Tools {
 
     /**
      * Encodes the canvas data to base 64 or automatically download the result if filename is defined
+     * @param canvas canvas to get the data from.
      * @param successCallback defines the callback triggered once the data are available
      * @param mimeType defines the mime type of the result
      * @param fileName defines he filename to download. If present, the result will automatically be downloaded
-     * @param canvas canvas to get the data from. If not provided, use the default screenshot canvas
      * @param quality defines the quality of the result
      */
     static EncodeScreenshotCanvasData(
+        canvas: HTMLCanvasElement,
         successCallback?: (data: string) => void,
         mimeType: string = "image/png",
         fileName?: string,
-        canvas?: HTMLCanvasElement,
         quality?: number
     ): void {
         if (successCallback) {
-            const base64Image = (canvas ?? Tools._ScreenshotCanvas).toDataURL(mimeType, quality);
+            const base64Image = canvas.toDataURL(mimeType, quality);
             successCallback(base64Image);
         } else {
             this.ToBlob(
-                canvas ?? Tools._ScreenshotCanvas,
+                canvas,
                 function (blob) {
                     if (blob) {
                         Tools.DownloadBlob(blob, fileName);
