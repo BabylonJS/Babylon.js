@@ -66,12 +66,12 @@ export class ClipPlanesBlock extends NodeMaterialBlock {
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         const scene = mesh.getScene();
 
-        const useClipPlane1 = scene.clipPlane ?? nodeMaterial.clipPlane;
-        const useClipPlane2 = scene.clipPlane2 ?? nodeMaterial.clipPlane2;
-        const useClipPlane3 = scene.clipPlane3 ?? nodeMaterial.clipPlane3;
-        const useClipPlane4 = scene.clipPlane4 ?? nodeMaterial.clipPlane4;
-        const useClipPlane5 = scene.clipPlane5 ?? nodeMaterial.clipPlane5;
-        const useClipPlane6 = scene.clipPlane6 ?? nodeMaterial.clipPlane6;
+        const useClipPlane1 = (nodeMaterial.clipPlane ?? scene.clipPlane) ? true : false;
+        const useClipPlane2 = (nodeMaterial.clipPlane2 ?? scene.clipPlane2) ? true : false;
+        const useClipPlane3 = (nodeMaterial.clipPlane3 ?? scene.clipPlane3) ? true : false;
+        const useClipPlane4 = (nodeMaterial.clipPlane4 ?? scene.clipPlane4) ? true : false;
+        const useClipPlane5 = (nodeMaterial.clipPlane5 ?? scene.clipPlane5) ? true : false;
+        const useClipPlane6 = (nodeMaterial.clipPlane6 ?? scene.clipPlane6) ? true : false;
 
         defines.setValue("CLIPPLANE", useClipPlane1, true);
         defines.setValue("CLIPPLANE2", useClipPlane2, true);
