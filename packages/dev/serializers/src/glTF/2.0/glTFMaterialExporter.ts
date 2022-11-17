@@ -101,7 +101,7 @@ export class _GLTFMaterialExporter {
     private _textureMap: { [textureId: string]: ITextureInfo } = {};
 
     // Mapping of internal textures to images to avoid exporting duplicate images.
-    private _internalTextureToImage: { [uniqueId: number]: { [mimeType: string]: number } } = {};
+    private _internalTextureToImage: { [uniqueId: number]: { [mimeType: string]: Promise<number> } } = {};
 
     /**
      * Numeric tolerance value
@@ -1103,15 +1103,17 @@ export class _GLTFMaterialExporter {
             const internalTextureToImage = this._internalTextureToImage;
             const internalTextureUniqueId = babylonTexture.getInternalTexture()!.uniqueId;
             internalTextureToImage[internalTextureUniqueId] ||= {};
-            let imageIndex = internalTextureToImage[internalTextureUniqueId][mimeType];
-            if (imageIndex === undefined) {
+            let imageIndexPromise = internalTextureToImage[internalTextureUniqueId][mimeType];
+            if (imageIndexPromise === undefined) {
                 const size = babylonTexture.getSize();
-                const data = await this._getImageDataAsync(pixels, size.width, size.height, mimeType);
-                imageIndex = this._exportImage(babylonTexture.name, mimeType, data);
-                internalTextureToImage[internalTextureUniqueId][mimeType] = imageIndex;
+                imageIndexPromise = (async () => {
+                    const data = await this._getImageDataAsync(pixels, size.width, size.height, mimeType);
+                    return this._exportImage(babylonTexture.name, mimeType, data);
+                })();
+                internalTextureToImage[internalTextureUniqueId][mimeType] = imageIndexPromise;
             }
 
-            const textureInfo = this._exportTextureInfo(imageIndex, samplerIndex, babylonTexture.coordinatesIndex);
+            const textureInfo = this._exportTextureInfo(await imageIndexPromise, samplerIndex, babylonTexture.coordinatesIndex);
             this._textureMap[textureUid] = textureInfo;
             return textureInfo;
         }
