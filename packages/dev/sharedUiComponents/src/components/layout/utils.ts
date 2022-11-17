@@ -1,4 +1,4 @@
-import type { Layout } from "./types";
+import type { Layout, LayoutColumn, LayoutTabsRow } from "./types";
 
 /**
  * Given a column and row number in the layout, return the corresponding column/row
@@ -7,7 +7,7 @@ import type { Layout } from "./types";
  * @param row
  * @returns
  */
-export const getPosInLayout = (layout: Layout, column: number, row?: number) => {
+export const getPosInLayout = (layout: Layout, column: number, row?: number): LayoutColumn | LayoutTabsRow => {
     if (!layout.columns) {
         throw new Error("Attempted to get position on empty layout");
     }

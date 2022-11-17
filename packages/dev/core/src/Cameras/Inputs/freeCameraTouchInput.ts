@@ -11,7 +11,7 @@ import { Tools } from "../../Misc/tools";
 import type { IPointerEvent } from "../../Events/deviceInputEvents";
 /**
  * Manage the touch inputs to control the movement of a free camera.
- * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
  */
 export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
     /**
@@ -49,7 +49,7 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
 
     /**
      * Manage the touch inputs to control the movement of a free camera.
-     * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
      * @param allowMouse Defines if mouse events can be treated as touch events
      */
     constructor(
@@ -141,7 +141,7 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
 
         this._observer = this.camera
             .getScene()
-            .onPointerObservable.add(this._pointerInput, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);
+            ._onCameraInputObservable.add(this._pointerInput, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);
 
         if (this._onLostFocus) {
             const engine = this.camera.getEngine();
@@ -156,7 +156,7 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
     public detachControl(): void {
         if (this._pointerInput) {
             if (this._observer) {
-                this.camera.getScene().onPointerObservable.remove(this._observer);
+                this.camera.getScene()._onCameraInputObservable.remove(this._observer);
                 this._observer = null;
             }
 

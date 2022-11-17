@@ -8,7 +8,7 @@ import type { IPointerEvent } from "../../Events/deviceInputEvents";
 
 /**
  * Manage the pointers inputs to control an arc rotate camera.
- * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
  */
 export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
     /**

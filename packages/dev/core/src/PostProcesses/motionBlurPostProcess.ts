@@ -1,6 +1,6 @@
 import type { Nullable } from "../types";
 import { Logger } from "../Misc/logger";
-import { Matrix, Vector2 } from "../Maths/math.vector";
+import { Matrix, TmpVectors, Vector2 } from "../Maths/math.vector";
 import type { Camera } from "../Cameras/camera";
 import type { Effect } from "../Materials/effect";
 import type { PostProcessOptions } from "./postProcess";
@@ -135,8 +135,8 @@ export class MotionBlurPostProcess extends PostProcess {
         super(
             name,
             "motionBlur",
-            ["motionStrength", "motionScale", "screenSize", "inverseViewProjection", "prevViewProjection"],
-            ["velocitySampler"],
+            ["motionStrength", "motionScale", "screenSize", "inverseViewProjection", "prevViewProjection", "projection"],
+            ["velocitySampler", "depthSampler"],
             options,
             camera,
             samplingMode,
@@ -250,7 +250,7 @@ export class MotionBlurPostProcess extends PostProcess {
             this.onApply = (effect: Effect) => this._onApplyObjectBased(effect);
         } else {
             this._invViewProjection = Matrix.Identity();
-            this._previousViewProjection = Matrix.Identity();
+            this._previousViewProjection = this._scene.getTransformMatrix().clone();
 
             if (this._prePassRenderer && this._prePassEffectConfiguration) {
                 this._prePassEffectConfiguration.texturesRequired[0] = Constants.PREPASS_DEPTH_TEXTURE_TYPE;
@@ -284,13 +284,16 @@ export class MotionBlurPostProcess extends PostProcess {
      * @param effect
      */
     private _onApplyScreenBased(effect: Effect): void {
-        const viewProjection = this._scene.getProjectionMatrix().multiply(this._scene.getViewMatrix());
+        const viewProjection = TmpVectors.Matrix[0];
+        viewProjection.copyFrom(this._scene.getTransformMatrix());
 
         viewProjection.invertToRef(this._invViewProjection!);
         effect.setMatrix("inverseViewProjection", this._invViewProjection!);
 
         effect.setMatrix("prevViewProjection", this._previousViewProjection!);
-        this._previousViewProjection = viewProjection;
+        this._previousViewProjection!.copyFrom(viewProjection);
+
+        effect.setMatrix("projection", this._scene.getProjectionMatrix());
 
         effect.setVector2("screenSize", new Vector2(this.width, this.height));
 

@@ -285,16 +285,18 @@ export abstract class WebGPUShaderProcessor implements IShaderProcessor {
     }
 
     protected _injectStartingAndEndingCode(code: string, mainFuncDecl: string, startingCode?: string, endingCode?: string): string {
+        let idx = code.indexOf(mainFuncDecl);
+        if (idx < 0) {
+            console.error(`No "main" function found in shader code! Processing aborted.`);
+            return code;
+        }
         if (startingCode) {
-            let idx = code.indexOf(mainFuncDecl);
-            if (idx >= 0) {
-                // eslint-disable-next-line no-empty
-                while (idx++ < code.length && code.charAt(idx) != "{") {}
-                if (idx < code.length) {
-                    const part1 = code.substring(0, idx + 1);
-                    const part2 = code.substring(idx + 1);
-                    code = part1 + startingCode + part2;
-                }
+            // eslint-disable-next-line no-empty
+            while (idx++ < code.length && code.charAt(idx) != "{") {}
+            if (idx < code.length) {
+                const part1 = code.substring(0, idx + 1);
+                const part2 = code.substring(idx + 1);
+                code = part1 + startingCode + part2;
             }
         }
 

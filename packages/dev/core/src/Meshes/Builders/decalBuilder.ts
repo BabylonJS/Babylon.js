@@ -66,7 +66,7 @@ class DecalVertex {
  * @param options.cullBackFaces
  * @param options.localMode
  * @returns the decal mesh
- * @see https://doc.babylonjs.com/how_to/decals
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/decals
  */
 export function CreateDecal(
     name: string,

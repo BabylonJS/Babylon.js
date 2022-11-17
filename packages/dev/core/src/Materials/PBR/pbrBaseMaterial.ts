@@ -47,6 +47,7 @@ import { PBRAnisotropicConfiguration } from "./pbrAnisotropicConfiguration";
 import { PBRSheenConfiguration } from "./pbrSheenConfiguration";
 import { PBRSubSurfaceConfiguration } from "./pbrSubSurfaceConfiguration";
 import { DetailMapConfiguration } from "../material.detailMapConfiguration";
+import { addClipPlaneUniforms, bindClipPlane } from "../clipPlaneMaterialHelper";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -271,7 +272,7 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
  *
  * This offers the main features of a standard PBR material.
  * For more information, please refer to the documentation :
- * https://doc.babylonjs.com/how_to/physically_based_rendering
+ * https://doc.babylonjs.com/features/featuresDeepDive/materials/using/introToPBR
  */
 export abstract class PBRBaseMaterial extends PushMaterial {
     /**
@@ -1381,12 +1382,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             "vBumpInfos",
             "vLightmapInfos",
             "mBones",
-            "vClipPlane",
-            "vClipPlane2",
-            "vClipPlane3",
-            "vClipPlane4",
-            "vClipPlane5",
-            "vClipPlane6",
             "albedoMatrix",
             "ambientMatrix",
             "opacityMatrix",
@@ -1464,6 +1459,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         PrePassConfiguration.AddUniforms(uniforms);
         PrePassConfiguration.AddSamplers(samplers);
+        addClipPlaneUniforms(uniforms);
 
         if (ImageProcessingConfiguration) {
             ImageProcessingConfiguration.PrepareUniforms(uniforms, defines);
@@ -1841,7 +1837,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         // Values that need to be evaluated on every frame
-        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false, useClipPlane, useThinInstances);
+        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, this, defines, useInstances ? true : false, useClipPlane, useThinInstances);
 
         // External config
         this._eventInfo.defines = defines;
@@ -2275,7 +2271,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             this._callbackPluginEventBindForSubMesh(this._eventInfo);
 
             // Clip plane
-            MaterialHelper.BindClipPlane(this._activeEffect, scene);
+            bindClipPlane(this._activeEffect, this, scene);
 
             this.bindEyePosition(effect);
         } else if (scene.getEngine()._features.needToAlwaysBindUniformBuffers) {
@@ -2454,6 +2450,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         if (this._reflectionTexture === texture) {
+            return true;
+        }
+
+        if (this._emissiveTexture === texture) {
             return true;
         }
 

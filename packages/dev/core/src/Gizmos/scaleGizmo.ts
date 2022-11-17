@@ -116,6 +116,16 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
         });
     }
 
+    public set updateScale(value: boolean) {
+        if (this.xGizmo) {
+            this.xGizmo.updateScale = value;
+            this.yGizmo.updateScale = value;
+            this.zGizmo.updateScale = value;
+        }
+    }
+    public get updateScale() {
+        return this.xGizmo.updateScale;
+    }
     /**
      * True when the mouse pointer is hovering a gizmo mesh
      */

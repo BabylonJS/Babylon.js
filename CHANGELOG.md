@@ -1,5 +1,129 @@
 # Changelog
 
+## 5.33.0
+
+### Core
+
+- FreeCameraMouseInput: Fix for PointerLock Movement - by [PolygonalSun](https://github.com/PolygonalSun) ([#13258](https://github.com/BabylonJS/Babylon.js/pull/13258))
+- Fix IKController with leaf node - [_Bug Fix_] by [sebavan](https://github.com/sebavan) ([#13257](https://github.com/BabylonJS/Babylon.js/pull/13257))
+- PostProcess: Add hooks to alter shader code used by post processes - by [Popov72](https://github.com/Popov72) ([#13256](https://github.com/BabylonJS/Babylon.js/pull/13256))
+- Fix dump tools premultiplied alpha. - [_Bug Fix_] by [sebavan](https://github.com/sebavan) ([#13251](https://github.com/BabylonJS/Babylon.js/pull/13251))
+- Support ClipPlanes in Materials - [_New Feature_] by [sebavan](https://github.com/sebavan) ([#13249](https://github.com/BabylonJS/Babylon.js/pull/13249))
+- WebGPU: Improve copy video to texture - by [Popov72](https://github.com/Popov72) ([#13254](https://github.com/BabylonJS/Babylon.js/pull/13254))
+
+### Materials
+
+- Support ClipPlanes in Materials - [_New Feature_] by [sebavan](https://github.com/sebavan) ([#13249](https://github.com/BabylonJS/Babylon.js/pull/13249))
+
+### Serializers
+
+- Fix dump tools premultiplied alpha. - [_Bug Fix_] by [sebavan](https://github.com/sebavan) ([#13251](https://github.com/BabylonJS/Babylon.js/pull/13251))
+
+## 5.32.2
+
+### Core
+
+- InputManager: Fixed up/down picking on callback - [_Bug Fix_] by [PolygonalSun](https://github.com/PolygonalSun) ([#13250](https://github.com/BabylonJS/Babylon.js/pull/13250))
+- Fix for FreeCameraMouseInput fluxuating input on multi-touch - [_Bug Fix_] by [PolygonalSun](https://github.com/PolygonalSun) ([#13233](https://github.com/BabylonJS/Babylon.js/pull/13233))
+- array flat polyfill for Chakra - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#13246](https://github.com/BabylonJS/Babylon.js/pull/13246))
+- Extend dragPlanePoint doc on onDrag*Observables - by [dennemark](https://github.com/dennemark) ([#13245](https://github.com/BabylonJS/Babylon.js/pull/13245))
+- Fix Gizmo Release Drag - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#13237](https://github.com/BabylonJS/Babylon.js/pull/13237))
+- Rotation gizmos with non uniform scaling - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#13240](https://github.com/BabylonJS/Babylon.js/pull/13240))
+- Support matrix in reciproqual block - by [sebavan](https://github.com/sebavan) ([#13241](https://github.com/BabylonJS/Babylon.js/pull/13241))
+- Test babylon mesh lod 2 - by [Dok11](https://github.com/Dok11) ([#13234](https://github.com/BabylonJS/Babylon.js/pull/13234))
+- ShadowDepthWrapper: Fix shadows when wrapping a material using custom material plugins - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#13236](https://github.com/BabylonJS/Babylon.js/pull/13236))
+- InputManager: Modify Picking to only happen with necessary scenarios - by [PolygonalSun](https://github.com/PolygonalSun) ([#13145](https://github.com/BabylonJS/Babylon.js/pull/13145))
+- Fix redirects in code doc - by [RaananW](https://github.com/RaananW) ([#13228](https://github.com/BabylonJS/Babylon.js/pull/13228))
+
+### GUI
+
+- 3d slider - dispose textures correctly - by [RaananW](https://github.com/RaananW) ([#13235](https://github.com/BabylonJS/Babylon.js/pull/13235))
+- Fix memory leaks - by [RaananW](https://github.com/RaananW) ([#13231](https://github.com/BabylonJS/Babylon.js/pull/13231))
+
+### Playground
+
+
+### Serializers
+
+- Improve glTF material export code - by [bghgary](https://github.com/bghgary) ([#13229](https://github.com/BabylonJS/Babylon.js/pull/13229))
+
+## 5.32.1
+
+### Core
+
+- EffectRender: Fix culling state not reset properly - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#13227](https://github.com/BabylonJS/Babylon.js/pull/13227))
+
+## 5.32.0
+
+### Core
+
+- Texture: Add new copy texture to texture class - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#13222](https://github.com/BabylonJS/Babylon.js/pull/13222))
+- Support correct spelling on center - by [sebavan](https://github.com/sebavan) ([#13220](https://github.com/BabylonJS/Babylon.js/pull/13220))
+- MeshExploder bugfix - [_Bug Fix_] by [SergioRZMasson](https://github.com/SergioRZMasson) ([#13219](https://github.com/BabylonJS/Babylon.js/pull/13219))
+- Fix aliasing issue in webxr multiview - by [RaananW](https://github.com/RaananW) ([#13217](https://github.com/BabylonJS/Babylon.js/pull/13217))
+- Change doc to match code - by [Lowclouds](https://github.com/Lowclouds) ([#13215](https://github.com/BabylonJS/Babylon.js/pull/13215))
+- Test babylon mesh baking - by [Dok11](https://github.com/Dok11) ([#13206](https://github.com/BabylonJS/Babylon.js/pull/13206))
+
+### GUI Editor
+
+
+### Inspector
+
+- Support correct spelling on center - by [sebavan](https://github.com/sebavan) ([#13220](https://github.com/BabylonJS/Babylon.js/pull/13220))
+
+### Loaders
+
+
+### Node Editor
+
+
+### Viewer
+
+- Support correct spelling on center - by [sebavan](https://github.com/sebavan) ([#13220](https://github.com/BabylonJS/Babylon.js/pull/13220))
+
+## 5.31.2
+
+### Core
+
+
+## 5.31.1
+
+### Core
+
+- Test babylon octree block - by [Dok11](https://github.com/Dok11) ([#13201](https://github.com/BabylonJS/Babylon.js/pull/13201))
+- Test babylon mesh lod screen coverage - by [Dok11](https://github.com/Dok11) ([#13202](https://github.com/BabylonJS/Babylon.js/pull/13202))
+- fix: switch back to the main scene using multiple canvases, and rende… - [_Bug Fix_] by [MILIFIRE](https://github.com/MILIFIRE) ([#13204](https://github.com/BabylonJS/Babylon.js/pull/13204))
+- Cube textures: Fix updating data with engine.updateTextureData - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#13205](https://github.com/BabylonJS/Babylon.js/pull/13205))
+- Xr camera - [_Bug Fix_] by [sebavan](https://github.com/sebavan) ([#13190](https://github.com/BabylonJS/Babylon.js/pull/13190))
+- Motion blur: Fix motion blur when not in the "object based" mode - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#13200](https://github.com/BabylonJS/Babylon.js/pull/13200))
+- AssetContainer: Fix crash when calling moveAllFromScene if environmentTexture is present - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#13199](https://github.com/BabylonJS/Babylon.js/pull/13199))
+- Add missing samplers to motion blur post process - [_Bug Fix_] by [carolhmj](https://github.com/carolhmj) ([#13198](https://github.com/BabylonJS/Babylon.js/pull/13198))
+- Fix animatable loop - [_Bug Fix_] by [sebavan](https://github.com/sebavan) ([#13196](https://github.com/BabylonJS/Babylon.js/pull/13196))
+- Shadows: Fix transparent shadows with ALPHABLEND transparency mode - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#13197](https://github.com/BabylonJS/Babylon.js/pull/13197))
+
+## 5.31.0
+
+### Core
+
+- Reduce memory usage in bakeTransformIntoVertices - by [rgerd](https://github.com/rgerd) ([#13193](https://github.com/BabylonJS/Babylon.js/pull/13193))
+- NME: fix wrong perturbed normals when using pre-existing tangents - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#13186](https://github.com/BabylonJS/Babylon.js/pull/13186))
+- Test babylon camera inputs manager - by [Dok11](https://github.com/Dok11) ([#13188](https://github.com/BabylonJS/Babylon.js/pull/13188))
+- WebGPU: Add support for GLES3 to WebGPU GLSL processing - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#13191](https://github.com/BabylonJS/Babylon.js/pull/13191))
+- Test babylon octree block - by [Dok11](https://github.com/Dok11) ([#13189](https://github.com/BabylonJS/Babylon.js/pull/13189))
+- Test babylon mesh lod - by [Dok11](https://github.com/Dok11) ([#13184](https://github.com/BabylonJS/Babylon.js/pull/13184))
+- Test babylon transform node - by [Dok11](https://github.com/Dok11) ([#13181](https://github.com/BabylonJS/Babylon.js/pull/13181))
+- Lights: Add support for multiple shadow generators - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#13177](https://github.com/BabylonJS/Babylon.js/pull/13177))
+- Fix bug rendering transparent meshes using their own materials in effect layer - [_Bug Fix_] by [djn24](https://github.com/djn24) ([#13179](https://github.com/BabylonJS/Babylon.js/pull/13179))
+- fix nightly for BN - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#13178](https://github.com/BabylonJS/Babylon.js/pull/13178))
+
+### Node Editor
+
+- NME: Fix preview not updated when changing the clamp settings in the Texture block - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#13187](https://github.com/BabylonJS/Babylon.js/pull/13187))
+
+### Viewer
+
+- Lights: Add support for multiple shadow generators - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#13177](https://github.com/BabylonJS/Babylon.js/pull/13177))
+
 ## 5.30.0
 
 ### Core

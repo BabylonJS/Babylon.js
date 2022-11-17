@@ -21,7 +21,7 @@ Node.AddNodeConstructor("Light_Type_2", (name, scene) => {
  * These values define a cone of light starting from the position, emitting toward the direction.
  * The angle, in radians, defines the size (field of illumination) of the spotlight's conical beam,
  * and the exponent defines the speed of the decay of the light with distance (reach).
- * Documentation: https://doc.babylonjs.com/babylon101/lights
+ * Documentation: https://doc.babylonjs.com/features/featuresDeepDive/lights/lights_introduction
  */
 export class SpotLight extends ShadowLight {
     /*
@@ -223,7 +223,7 @@ export class SpotLight extends ShadowLight {
     /**
      * Creates a SpotLight object in the scene. A spot light is a simply light oriented cone.
      * It can cast shadows.
-     * Documentation : https://doc.babylonjs.com/babylon101/lights
+     * Documentation : https://doc.babylonjs.com/features/featuresDeepDive/lights/lights_introduction
      * @param name The light friendly name
      * @param position The position of the spot light in the scene
      * @param direction The direction of the light in the scene

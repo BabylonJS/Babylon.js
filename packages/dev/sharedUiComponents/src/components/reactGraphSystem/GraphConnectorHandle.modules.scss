@@ -1,0 +1,12 @@
+.handle {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    overflow: visible;
+    position: absolute;
+    background-color: darkgray;
+}
+
+.hovered {
+    background-color: yellow;
+}

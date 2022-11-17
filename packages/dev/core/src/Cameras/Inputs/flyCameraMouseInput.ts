@@ -13,7 +13,7 @@ import { Tools } from "../../Misc/tools";
 import type { IPointerEvent } from "../../Events/deviceInputEvents";
 /**
  * Listen to mouse events to control the camera.
- * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
  */
 export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
     /**
@@ -71,7 +71,7 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
 
     /**
      * Listen to mouse events to control the camera.
-     * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
      */
     constructor() {}
 
@@ -84,7 +84,7 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         this._noPreventDefault = noPreventDefault;
 
-        this._observer = this.camera.getScene().onPointerObservable.add((p: any) => {
+        this._observer = this.camera.getScene()._onCameraInputObservable.add((p: any) => {
             this._pointerInput(p);
         }, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);
 
@@ -101,7 +101,7 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
      */
     public detachControl(): void {
         if (this._observer) {
-            this.camera.getScene().onPointerObservable.remove(this._observer);
+            this.camera.getScene()._onCameraInputObservable.remove(this._observer);
 
             this.camera.getScene().onBeforeRenderObservable.remove(this._rollObserver);
 

@@ -2,8 +2,13 @@ import type { InternalTexture } from "../../../Materials/Textures/internalTextur
 import type { Nullable } from "../../../types";
 import { WebGPUEngine } from "../../webgpuEngine";
 import type { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
+import type { ExternalTexture } from "../../../Materials/Textures/externalTexture";
 
-WebGPUEngine.prototype.updateVideoTexture = function (texture: Nullable<InternalTexture>, video: HTMLVideoElement, invertY: boolean): void {
+function IsExternalTexture(texture: Nullable<ExternalTexture> | HTMLVideoElement): texture is ExternalTexture {
+    return texture && (texture as ExternalTexture).underlyingResource !== undefined ? true : false;
+}
+
+WebGPUEngine.prototype.updateVideoTexture = function (texture: Nullable<InternalTexture>, video: HTMLVideoElement | Nullable<ExternalTexture>, invertY: boolean): void {
     if (!texture || texture._isDisabled) {
         return;
     }
@@ -18,18 +23,26 @@ WebGPUEngine.prototype.updateVideoTexture = function (texture: Nullable<Internal
         gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture);
     }
 
-    this.createImageBitmap(video)
-        .then((bitmap) => {
-            this._textureHelper.updateTexture(bitmap, texture, texture.width, texture.height, texture.depth, gpuTextureWrapper.format, 0, 0, !invertY, false, 0, 0);
-            if (texture.generateMipMaps) {
-                this._generateMipmaps(texture, this._uploadEncoder);
-            }
+    if (IsExternalTexture(video)) {
+        this._textureHelper.copyVideoToTexture(video, texture, gpuTextureWrapper.format, !invertY);
+        if (texture.generateMipMaps) {
+            this._generateMipmaps(texture, this._uploadEncoder);
+        }
+        texture.isReady = true;
+    } else if (video) {
+        this.createImageBitmap(video)
+            .then((bitmap) => {
+                this._textureHelper.updateTexture(bitmap, texture, texture.width, texture.height, texture.depth, gpuTextureWrapper.format, 0, 0, !invertY, false, 0, 0);
+                if (texture.generateMipMaps) {
+                    this._generateMipmaps(texture, this._uploadEncoder);
+                }
 
-            texture.isReady = true;
-        })
-        .catch(() => {
-            // Sometimes createImageBitmap(video) fails with "Failed to execute 'createImageBitmap' on 'Window': The provided element's player has no current data."
-            // Just keep going on
-            texture.isReady = true;
-        });
+                texture.isReady = true;
+            })
+            .catch(() => {
+                // Sometimes createImageBitmap(video) fails with "Failed to execute 'createImageBitmap' on 'Window': The provided element's player has no current data."
+                // Just keep going on
+                texture.isReady = true;
+            });
+    }
 };

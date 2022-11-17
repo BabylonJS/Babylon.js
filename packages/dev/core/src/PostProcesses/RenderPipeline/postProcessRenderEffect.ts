@@ -6,7 +6,7 @@ import type { Engine } from "../../Engines/engine";
 /**
  * This represents a set of one or more post processes in Babylon.
  * A post process can be used to apply a shader to a texture after it is rendered.
- * @example https://doc.babylonjs.com/how_to/how_to_use_postprocessrenderpipeline
+ * @example https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/postProcessRenderPipeline
  */
 export class PostProcessRenderEffect {
     private _postProcesses: { [Key: string]: Array<PostProcess> };

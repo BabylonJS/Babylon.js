@@ -11,7 +11,7 @@ export class ValueAndUnit {
 
     /**
      * Gets or sets a value indicating that this value will not scale accordingly with adaptive scaling property
-     * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#adaptive-scaling
      */
     public ignoreAdaptiveScaling = false;
 

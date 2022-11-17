@@ -28,16 +28,21 @@ export interface IEffectRendererOptions {
     indices?: number[];
 }
 
+// Fullscreen quad buffers by default.
+const defaultOptions = {
+    positions: [1, 1, -1, 1, -1, -1, 1, -1],
+    indices: [0, 1, 2, 0, 2, 3],
+};
+
 /**
  * Helper class to render one or more effects.
  * You can access the previous rendering in your shader by declaring a sampler named textureSampler
  */
 export class EffectRenderer {
-    // Fullscreen quad buffers by default.
-    private static _DefaultOptions: IEffectRendererOptions = {
-        positions: [1, 1, -1, 1, -1, -1, 1, -1],
-        indices: [0, 1, 2, 0, 2, 3],
-    };
+    /**
+     * The engine the effect renderer has been created for.
+     */
+    public readonly engine: ThinEngine;
 
     private _vertexBuffers: { [key: string]: VertexBuffer };
     private _indexBuffer: DataBuffer;
@@ -47,25 +52,24 @@ export class EffectRenderer {
 
     /**
      * Creates an effect renderer
-     * @param _engine the engine to use for rendering
+     * @param engine the engine to use for rendering
      * @param options defines the options of the effect renderer
      */
-    constructor(private _engine: ThinEngine, options: IEffectRendererOptions = EffectRenderer._DefaultOptions) {
-        options = {
-            ...EffectRenderer._DefaultOptions,
-            ...options,
-        };
+    constructor(engine: ThinEngine, options: IEffectRendererOptions = defaultOptions) {
+        const positions = options.positions ?? defaultOptions.positions;
+        const indices = options.indices ?? defaultOptions.indices;
 
+        this.engine = engine;
         this._vertexBuffers = {
-            [VertexBuffer.PositionKind]: new VertexBuffer(_engine, options.positions!, VertexBuffer.PositionKind, false, false, 2),
+            [VertexBuffer.PositionKind]: new VertexBuffer(engine, positions, VertexBuffer.PositionKind, false, false, 2),
         };
-        this._indexBuffer = _engine.createIndexBuffer(options.indices!);
+        this._indexBuffer = engine.createIndexBuffer(indices);
 
-        this._onContextRestoredObserver = _engine.onContextRestoredObservable.add(() => {
-            this._indexBuffer = _engine.createIndexBuffer(options.indices!);
+        this._onContextRestoredObserver = engine.onContextRestoredObservable.add(() => {
+            this._indexBuffer = engine.createIndexBuffer(indices);
 
             for (const key in this._vertexBuffers) {
-                const vertexBuffer = <VertexBuffer>this._vertexBuffers[key];
+                const vertexBuffer = this._vertexBuffers[key];
                 vertexBuffer._rebuild();
             }
         });
@@ -76,7 +80,7 @@ export class EffectRenderer {
      * @param viewport Defines the viewport to set (defaults to 0 0 1 1)
      */
     public setViewport(viewport = this._fullscreenViewport): void {
-        this._engine.setViewport(viewport);
+        this.engine.setViewport(viewport);
     }
 
     /**
@@ -84,7 +88,7 @@ export class EffectRenderer {
      * @param effect Defines the effect to bind the attributes for
      */
     public bindBuffers(effect: Effect): void {
-        this._engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
+        this.engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
     }
 
     /**
@@ -94,9 +98,10 @@ export class EffectRenderer {
      * @param effectWrapper Defines the effect to draw with
      */
     public applyEffectWrapper(effectWrapper: EffectWrapper): void {
-        this._engine.depthCullingState.depthTest = false;
-        this._engine.stencilState.stencilTest = false;
-        this._engine.enableEffect(effectWrapper._drawWrapper);
+        this.engine.setState(true);
+        this.engine.depthCullingState.depthTest = false;
+        this.engine.stencilState.stencilTest = false;
+        this.engine.enableEffect(effectWrapper._drawWrapper);
         this.bindBuffers(effectWrapper.effect);
         effectWrapper.onApplyObservable.notifyObservers({});
     }
@@ -105,15 +110,15 @@ export class EffectRenderer {
      * Restores engine states
      */
     public restoreStates(): void {
-        this._engine.depthCullingState.depthTest = true;
-        this._engine.stencilState.stencilTest = true;
+        this.engine.depthCullingState.depthTest = true;
+        this.engine.stencilState.stencilTest = true;
     }
 
     /**
      * Draws a full screen quad.
      */
     public draw(): void {
-        this._engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, 6);
+        this.engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, 6);
     }
 
     private _isRenderTargetTexture(texture: RenderTargetWrapper | IRenderTargetTexture): texture is IRenderTargetTexture {
@@ -137,7 +142,7 @@ export class EffectRenderer {
         const out = outputTexture === null ? null : this._isRenderTargetTexture(outputTexture) ? outputTexture.renderTarget! : outputTexture;
 
         if (out) {
-            this._engine.bindFramebuffer(out);
+            this.engine.bindFramebuffer(out);
         }
 
         this.applyEffectWrapper(effectWrapper);
@@ -145,7 +150,7 @@ export class EffectRenderer {
         this.draw();
 
         if (out) {
-            this._engine.unBindFramebuffer(out);
+            this.engine.unBindFramebuffer(out);
         }
 
         this.restoreStates();
@@ -162,11 +167,11 @@ export class EffectRenderer {
         }
 
         if (this._indexBuffer) {
-            this._engine._releaseBuffer(this._indexBuffer);
+            this.engine._releaseBuffer(this._indexBuffer);
         }
 
         if (this._onContextRestoredObserver) {
-            this._engine.onContextRestoredObservable.remove(this._onContextRestoredObserver);
+            this.engine.onContextRestoredObservable.remove(this._onContextRestoredObserver);
             this._onContextRestoredObserver = null;
         }
     }

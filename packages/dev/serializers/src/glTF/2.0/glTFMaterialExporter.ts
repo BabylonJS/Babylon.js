@@ -1,13 +1,4 @@
-import type {
-    ITextureInfo,
-    IMaterial,
-    IMaterialPbrMetallicRoughness,
-    IMaterialOcclusionTextureInfo,
-    ISampler,
-    ITexture,
-    IImage,
-    IMaterialExtension,
-} from "babylonjs-gltf2interface";
+import type { ITextureInfo, IMaterial, IMaterialPbrMetallicRoughness, IMaterialOcclusionTextureInfo, ISampler, IMaterialExtension } from "babylonjs-gltf2interface";
 import { ImageMimeType, MaterialAlphaMode, TextureMagFilter, TextureMinFilter, TextureWrapMode } from "babylonjs-gltf2interface";
 
 import type { Nullable } from "core/types";
@@ -24,6 +15,7 @@ import type { Scene } from "core/scene";
 
 import type { _Exporter } from "./glTFExporter";
 import { Constants } from "core/Engines/constants";
+import { DumpTools } from "core/Misc/dumpTools";
 
 declare type Material = import("core/Materials/material").Material;
 declare type StandardMaterial = import("core/Materials/standardMaterial").StandardMaterial;
@@ -61,7 +53,7 @@ interface _IPBRMetallicRoughness {
      */
     baseColor: Color3;
     /**
-     * Represents the metallness of the material
+     * Represents the metalness of the material
      */
     metallic: Nullable<number>;
     /**
@@ -69,13 +61,24 @@ interface _IPBRMetallicRoughness {
      */
     roughness: Nullable<number>;
     /**
-     * The metallic roughness texture as a base64 string
+     * The metallic roughness texture data
      */
-    metallicRoughnessTextureBase64?: Nullable<string>;
+    metallicRoughnessTextureData?: Nullable<ArrayBuffer>;
     /**
-     * The base color texture as a base64 string
+     * The base color texture data
      */
-    baseColorTextureBase64?: Nullable<string>;
+    baseColorTextureData?: Nullable<ArrayBuffer>;
+}
+
+function getFileExtensionFromMimeType(mimeType: ImageMimeType): string {
+    switch (mimeType) {
+        case ImageMimeType.JPEG:
+            return ".jpg";
+        case ImageMimeType.PNG:
+            return ".png";
+        case ImageMimeType.WEBP:
+            return ".webp";
+    }
 }
 
 /**
@@ -97,6 +100,9 @@ export class _GLTFMaterialExporter {
      * Mapping to store textures
      */
     private _textureMap: { [textureId: string]: ITextureInfo } = {};
+
+    // Mapping of internal textures to images to avoid exporting duplicate images.
+    private _internalTextureToImage: { [uniqueId: number]: { [mimeType: string]: number } } = {};
 
     /**
      * Numeric tolerance value
@@ -307,57 +313,57 @@ export class _GLTFMaterialExporter {
         const materialMap = this._exporter._materialMap;
         const materials = this._exporter._materials;
         const promises = [];
-        const glTFPbrMetallicRoughness = this._convertToGLTFPBRMetallicRoughness(babylonStandardMaterial);
+        const pbrMetallicRoughness = this._convertToGLTFPBRMetallicRoughness(babylonStandardMaterial);
 
-        const glTFMaterial: IMaterial = { name: babylonStandardMaterial.name };
+        const material: IMaterial = { name: babylonStandardMaterial.name };
         if (babylonStandardMaterial.backFaceCulling != null && !babylonStandardMaterial.backFaceCulling) {
             if (!babylonStandardMaterial.twoSidedLighting) {
                 Tools.Warn(babylonStandardMaterial.name + ": Back-face culling disabled and two-sided lighting disabled is not supported in glTF.");
             }
-            glTFMaterial.doubleSided = true;
+            material.doubleSided = true;
         }
         if (hasTextureCoords) {
             if (babylonStandardMaterial.diffuseTexture) {
                 promises.push(
-                    this._exportTextureAsync(babylonStandardMaterial.diffuseTexture, mimeType).then((glTFTexture) => {
-                        if (glTFTexture) {
-                            glTFPbrMetallicRoughness.baseColorTexture = glTFTexture;
+                    this._exportTextureAsync(babylonStandardMaterial.diffuseTexture, mimeType).then((textureInfo) => {
+                        if (textureInfo) {
+                            pbrMetallicRoughness.baseColorTexture = textureInfo;
                         }
                     })
                 );
             }
-            if (babylonStandardMaterial.bumpTexture) {
+            const bumpTexture = babylonStandardMaterial.bumpTexture;
+            if (bumpTexture) {
                 promises.push(
-                    this._exportTextureAsync(babylonStandardMaterial.bumpTexture, mimeType).then((glTFTexture) => {
-                        if (glTFTexture) {
-                            glTFMaterial.normalTexture = glTFTexture;
-                            if (babylonStandardMaterial.bumpTexture != null && babylonStandardMaterial.bumpTexture.level !== 1) {
-                                glTFMaterial.normalTexture.scale = babylonStandardMaterial.bumpTexture.level;
+                    this._exportTextureAsync(bumpTexture, mimeType).then((textureInfo) => {
+                        if (textureInfo) {
+                            material.normalTexture = textureInfo;
+                            if (bumpTexture.level !== 1) {
+                                material.normalTexture.scale = bumpTexture.level;
                             }
                         }
                     })
                 );
             }
             if (babylonStandardMaterial.emissiveTexture) {
-                glTFMaterial.emissiveFactor = [1.0, 1.0, 1.0];
+                material.emissiveFactor = [1.0, 1.0, 1.0];
 
                 promises.push(
-                    this._exportTextureAsync(babylonStandardMaterial.emissiveTexture, mimeType).then((glTFEmissiveTexture) => {
-                        if (glTFEmissiveTexture) {
-                            glTFMaterial.emissiveTexture = glTFEmissiveTexture;
+                    this._exportTextureAsync(babylonStandardMaterial.emissiveTexture, mimeType).then((textureInfo) => {
+                        if (textureInfo) {
+                            material.emissiveTexture = textureInfo;
                         }
                     })
                 );
             }
             if (babylonStandardMaterial.ambientTexture) {
                 promises.push(
-                    this._exportTextureAsync(babylonStandardMaterial.ambientTexture, mimeType).then((glTFTexture) => {
-                        if (glTFTexture) {
+                    this._exportTextureAsync(babylonStandardMaterial.ambientTexture, mimeType).then((textureInfo) => {
+                        if (textureInfo) {
                             const occlusionTexture: IMaterialOcclusionTextureInfo = {
-                                index: glTFTexture.index,
+                                index: textureInfo.index,
                             };
-                            glTFMaterial.occlusionTexture = occlusionTexture;
-                            occlusionTexture.strength = 1.0;
+                            material.occlusionTexture = occlusionTexture;
                         }
                     })
                 );
@@ -366,22 +372,22 @@ export class _GLTFMaterialExporter {
 
         if (babylonStandardMaterial.alpha < 1.0 || babylonStandardMaterial.opacityTexture) {
             if (babylonStandardMaterial.alphaMode === Constants.ALPHA_COMBINE) {
-                glTFMaterial.alphaMode = MaterialAlphaMode.BLEND;
+                material.alphaMode = MaterialAlphaMode.BLEND;
             } else {
                 Tools.Warn(babylonStandardMaterial.name + ": glTF 2.0 does not support alpha mode: " + babylonStandardMaterial.alphaMode.toString());
             }
         }
         if (babylonStandardMaterial.emissiveColor && !_GLTFMaterialExporter._FuzzyEquals(babylonStandardMaterial.emissiveColor, Color3.Black(), _GLTFMaterialExporter._Epsilon)) {
-            glTFMaterial.emissiveFactor = babylonStandardMaterial.emissiveColor.asArray();
+            material.emissiveFactor = babylonStandardMaterial.emissiveColor.asArray();
         }
 
-        glTFMaterial.pbrMetallicRoughness = glTFPbrMetallicRoughness;
-        _GLTFMaterialExporter._SetAlphaMode(glTFMaterial, babylonStandardMaterial);
+        material.pbrMetallicRoughness = pbrMetallicRoughness;
+        _GLTFMaterialExporter._SetAlphaMode(material, babylonStandardMaterial);
 
-        materials.push(glTFMaterial);
+        materials.push(material);
         materialMap[babylonStandardMaterial.uniqueId] = materials.length - 1;
 
-        return this._finishMaterial(promises, glTFMaterial, babylonStandardMaterial, mimeType);
+        return this._finishMaterial(promises, material, babylonStandardMaterial, mimeType);
     }
 
     private _finishMaterial<T>(promises: Promise<T>[], glTFMaterial: IMaterial, babylonMaterial: Material, mimeType: ImageMimeType) {
@@ -418,25 +424,20 @@ export class _GLTFMaterialExporter {
      * @param mimeType mimetype of the image
      * @returns base64 image string
      */
-    private _createBase64FromCanvasAsync(buffer: Uint8Array | Float32Array, width: number, height: number, mimeType: ImageMimeType): Promise<string> {
-        // eslint-disable-next-line no-async-promise-executor
-        return new Promise<string>(async (resolve) => {
-            const textureType = Constants.TEXTURETYPE_UNSIGNED_INT;
+    private async _getImageDataAsync(buffer: Uint8Array | Float32Array, width: number, height: number, mimeType: ImageMimeType): Promise<ArrayBuffer> {
+        const textureType = Constants.TEXTURETYPE_UNSIGNED_INT;
 
-            const hostingScene = this._exporter._babylonScene;
-            const engine = hostingScene.getEngine();
+        const hostingScene = this._exporter._babylonScene;
+        const engine = hostingScene.getEngine();
 
-            // Create a temporary texture with the texture buffer data
-            const tempTexture = engine.createRawTexture(buffer, width, height, Constants.TEXTUREFORMAT_RGBA, false, true, Texture.NEAREST_SAMPLINGMODE, null, textureType);
+        // Create a temporary texture with the texture buffer data
+        const tempTexture = engine.createRawTexture(buffer, width, height, Constants.TEXTUREFORMAT_RGBA, false, true, Texture.NEAREST_SAMPLINGMODE, null, textureType);
 
-            await TextureTools.ApplyPostProcess("pass", tempTexture, hostingScene, textureType, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTUREFORMAT_RGBA);
+        await TextureTools.ApplyPostProcess("pass", tempTexture, hostingScene, textureType, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTUREFORMAT_RGBA);
 
-            const data = await engine._readTexturePixels(tempTexture, width, height);
+        const data = await engine._readTexturePixels(tempTexture, width, height);
 
-            const base64: string = await (Tools.DumpDataAsync(width, height, data, mimeType, undefined, true, false) as Promise<string>);
-
-            resolve(base64);
-        });
+        return (await DumpTools.DumpDataAsync(width, height, data, mimeType, undefined, true, true)) as ArrayBuffer;
     }
 
     /**
@@ -533,7 +534,7 @@ export class _GLTFMaterialExporter {
         factors: _IPBRSpecularGlossiness,
         mimeType: ImageMimeType
     ): Promise<_IPBRMetallicRoughness> {
-        const promises = [];
+        const promises = new Array<Promise<void>>();
         if (!(diffuseTexture || specularGlossinessTexture)) {
             return Promise.reject("_ConvertSpecularGlosinessTexturesToMetallicRoughness: diffuse and specular glossiness textures are not defined!");
         }
@@ -654,16 +655,18 @@ export class _GLTFMaterialExporter {
             }
 
             if (writeOutMetallicRoughnessTexture) {
-                const promise = this._createBase64FromCanvasAsync(metallicRoughnessBuffer, width, height, mimeType).then((metallicRoughnessBase64) => {
-                    metallicRoughnessFactors.metallicRoughnessTextureBase64 = metallicRoughnessBase64;
-                });
-                promises.push(promise);
+                promises.push(
+                    this._getImageDataAsync(metallicRoughnessBuffer, width, height, mimeType).then((data) => {
+                        metallicRoughnessFactors.metallicRoughnessTextureData = data;
+                    })
+                );
             }
             if (writeOutBaseColorTexture) {
-                const promise = this._createBase64FromCanvasAsync(baseColorBuffer, width, height, mimeType).then((baseColorBase64) => {
-                    metallicRoughnessFactors.baseColorTextureBase64 = baseColorBase64;
-                });
-                promises.push(promise);
+                promises.push(
+                    this._getImageDataAsync(baseColorBuffer, width, height, mimeType).then((data) => {
+                        metallicRoughnessFactors.baseColorTextureData = data;
+                    })
+                );
             }
 
             return Promise.all(promises).then(() => {
@@ -777,74 +780,85 @@ export class _GLTFMaterialExporter {
         });
     }
 
-    private _getGLTFTextureSampler(texture: BaseTexture): ISampler {
-        const sampler = this._getGLTFTextureWrapModesSampler(texture);
+    private _getTextureSampler(texture: Nullable<BaseTexture>): ISampler {
+        const sampler: ISampler = {};
+        if (!texture || !(texture instanceof Texture)) {
+            return sampler;
+        }
 
-        const samplingMode = texture instanceof Texture ? texture.samplingMode : null;
-        if (samplingMode != null) {
-            switch (samplingMode) {
-                case Texture.LINEAR_LINEAR: {
-                    sampler.magFilter = TextureMagFilter.LINEAR;
-                    sampler.minFilter = TextureMinFilter.LINEAR;
-                    break;
-                }
-                case Texture.LINEAR_NEAREST: {
-                    sampler.magFilter = TextureMagFilter.LINEAR;
-                    sampler.minFilter = TextureMinFilter.NEAREST;
-                    break;
-                }
-                case Texture.NEAREST_LINEAR: {
-                    sampler.magFilter = TextureMagFilter.NEAREST;
-                    sampler.minFilter = TextureMinFilter.LINEAR;
-                    break;
-                }
-                case Texture.NEAREST_LINEAR_MIPLINEAR: {
-                    sampler.magFilter = TextureMagFilter.NEAREST;
-                    sampler.minFilter = TextureMinFilter.LINEAR_MIPMAP_LINEAR;
-                    break;
-                }
-                case Texture.NEAREST_NEAREST: {
-                    sampler.magFilter = TextureMagFilter.NEAREST;
-                    sampler.minFilter = TextureMinFilter.NEAREST;
-                    break;
-                }
-                case Texture.NEAREST_LINEAR_MIPNEAREST: {
-                    sampler.magFilter = TextureMagFilter.NEAREST;
-                    sampler.minFilter = TextureMinFilter.LINEAR_MIPMAP_NEAREST;
-                    break;
-                }
-                case Texture.LINEAR_NEAREST_MIPNEAREST: {
-                    sampler.magFilter = TextureMagFilter.LINEAR;
-                    sampler.minFilter = TextureMinFilter.NEAREST_MIPMAP_NEAREST;
-                    break;
-                }
-                case Texture.LINEAR_NEAREST_MIPLINEAR: {
-                    sampler.magFilter = TextureMagFilter.LINEAR;
-                    sampler.minFilter = TextureMinFilter.NEAREST_MIPMAP_LINEAR;
-                    break;
-                }
-                case Texture.NEAREST_NEAREST_MIPLINEAR: {
-                    sampler.magFilter = TextureMagFilter.NEAREST;
-                    sampler.minFilter = TextureMinFilter.NEAREST_MIPMAP_LINEAR;
-                    break;
-                }
-                case Texture.LINEAR_LINEAR_MIPLINEAR: {
-                    sampler.magFilter = TextureMagFilter.LINEAR;
-                    sampler.minFilter = TextureMinFilter.LINEAR_MIPMAP_LINEAR;
-                    break;
-                }
-                case Texture.LINEAR_LINEAR_MIPNEAREST: {
-                    sampler.magFilter = TextureMagFilter.LINEAR;
-                    sampler.minFilter = TextureMinFilter.LINEAR_MIPMAP_NEAREST;
-                    break;
-                }
-                case Texture.NEAREST_NEAREST_MIPNEAREST: {
-                    sampler.magFilter = TextureMagFilter.NEAREST;
-                    sampler.minFilter = TextureMinFilter.NEAREST_MIPMAP_NEAREST;
-                    break;
-                }
+        const wrapS = this._getGLTFTextureWrapMode(texture.wrapU);
+        if (wrapS !== TextureWrapMode.REPEAT) {
+            sampler.wrapS = wrapS;
+        }
+
+        const wrapT = this._getGLTFTextureWrapMode(texture.wrapV);
+        if (wrapT !== TextureWrapMode.REPEAT) {
+            sampler.wrapT = wrapT;
+        }
+
+        switch (texture.samplingMode) {
+            case Texture.LINEAR_LINEAR: {
+                sampler.magFilter = TextureMagFilter.LINEAR;
+                sampler.minFilter = TextureMinFilter.LINEAR;
+                break;
+            }
+            case Texture.LINEAR_NEAREST: {
+                sampler.magFilter = TextureMagFilter.LINEAR;
+                sampler.minFilter = TextureMinFilter.NEAREST;
+                break;
+            }
+            case Texture.NEAREST_LINEAR: {
+                sampler.magFilter = TextureMagFilter.NEAREST;
+                sampler.minFilter = TextureMinFilter.LINEAR;
+                break;
+            }
+            case Texture.NEAREST_LINEAR_MIPLINEAR: {
+                sampler.magFilter = TextureMagFilter.NEAREST;
+                sampler.minFilter = TextureMinFilter.LINEAR_MIPMAP_LINEAR;
+                break;
+            }
+            case Texture.NEAREST_NEAREST: {
+                sampler.magFilter = TextureMagFilter.NEAREST;
+                sampler.minFilter = TextureMinFilter.NEAREST;
+                break;
+            }
+            case Texture.NEAREST_LINEAR_MIPNEAREST: {
+                sampler.magFilter = TextureMagFilter.NEAREST;
+                sampler.minFilter = TextureMinFilter.LINEAR_MIPMAP_NEAREST;
+                break;
+            }
+            case Texture.LINEAR_NEAREST_MIPNEAREST: {
+                sampler.magFilter = TextureMagFilter.LINEAR;
+                sampler.minFilter = TextureMinFilter.NEAREST_MIPMAP_NEAREST;
+                break;
+            }
+            case Texture.LINEAR_NEAREST_MIPLINEAR: {
+                sampler.magFilter = TextureMagFilter.LINEAR;
+                sampler.minFilter = TextureMinFilter.NEAREST_MIPMAP_LINEAR;
+                break;
+            }
+            case Texture.NEAREST_NEAREST_MIPLINEAR: {
+                sampler.magFilter = TextureMagFilter.NEAREST;
+                sampler.minFilter = TextureMinFilter.NEAREST_MIPMAP_LINEAR;
+                break;
+            }
+            case Texture.LINEAR_LINEAR_MIPLINEAR: {
+                sampler.magFilter = TextureMagFilter.LINEAR;
+                sampler.minFilter = TextureMinFilter.LINEAR_MIPMAP_LINEAR;
+                break;
+            }
+            case Texture.LINEAR_LINEAR_MIPNEAREST: {
+                sampler.magFilter = TextureMagFilter.LINEAR;
+                sampler.minFilter = TextureMinFilter.LINEAR_MIPMAP_NEAREST;
+                break;
+            }
+            case Texture.NEAREST_NEAREST_MIPNEAREST: {
+                sampler.magFilter = TextureMagFilter.NEAREST;
+                sampler.minFilter = TextureMinFilter.NEAREST_MIPMAP_NEAREST;
+                break;
             }
         }
+
         return sampler;
     }
 
@@ -866,18 +880,6 @@ export class _GLTFMaterialExporter {
         }
     }
 
-    private _getGLTFTextureWrapModesSampler(texture: BaseTexture): ISampler {
-        const wrapS = this._getGLTFTextureWrapMode(texture instanceof Texture ? texture.wrapU : Texture.WRAP_ADDRESSMODE);
-        const wrapT = this._getGLTFTextureWrapMode(texture instanceof Texture ? texture.wrapV : Texture.WRAP_ADDRESSMODE);
-
-        if (wrapS === TextureWrapMode.REPEAT && wrapT === TextureWrapMode.REPEAT) {
-            // default wrapping mode in glTF, so omitting
-            return {};
-        }
-
-        return { wrapS: wrapS, wrapT: wrapT };
-    }
-
     /**
      * Convert a PBRMaterial (Specular/Glossiness) to Metallic Roughness factors
      * @param babylonPBRMaterial BJS PBR Metallic Roughness Material
@@ -889,60 +891,32 @@ export class _GLTFMaterialExporter {
     private _convertSpecGlossFactorsToMetallicRoughnessAsync(
         babylonPBRMaterial: PBRBaseMaterial,
         mimeType: ImageMimeType,
-        glTFPbrMetallicRoughness: IMaterialPbrMetallicRoughness,
+        pbrMetallicRoughness: IMaterialPbrMetallicRoughness,
         hasTextureCoords: boolean
     ): Promise<_IPBRMetallicRoughness> {
         return Promise.resolve().then(() => {
-            const samplers = this._exporter._samplers;
-            const textures = this._exporter._textures;
-            const diffuseColor = babylonPBRMaterial._albedoColor;
-            const specularColor = babylonPBRMaterial._reflectivityColor;
-            const glossiness = babylonPBRMaterial._microSurface;
             const specGloss: _IPBRSpecularGlossiness = {
-                diffuseColor: diffuseColor,
-                specularColor: specularColor,
-                glossiness: glossiness,
+                diffuseColor: babylonPBRMaterial._albedoColor,
+                specularColor: babylonPBRMaterial._reflectivityColor,
+                glossiness: babylonPBRMaterial._microSurface,
             };
-            let samplerIndex: Nullable<number> = null;
             const albedoTexture = babylonPBRMaterial._albedoTexture;
             const reflectivityTexture = babylonPBRMaterial._reflectivityTexture;
-            if (albedoTexture) {
-                const sampler = this._getGLTFTextureSampler(albedoTexture);
-                if (sampler.magFilter != null && sampler.minFilter != null && sampler.wrapS != null && sampler.wrapT != null) {
-                    samplers.push(sampler);
-                    samplerIndex = samplers.length - 1;
-                }
-            }
-
             const useMicrosurfaceFromReflectivityMapAlpha = babylonPBRMaterial._useMicroSurfaceFromReflectivityMapAlpha;
             if (reflectivityTexture && !useMicrosurfaceFromReflectivityMapAlpha) {
                 return Promise.reject("_ConvertPBRMaterial: Glossiness values not included in the reflectivity texture are currently not supported");
             }
             if ((albedoTexture || reflectivityTexture) && hasTextureCoords) {
+                const samplerIndex = this._exportTextureSampler(albedoTexture || reflectivityTexture);
                 return this._convertSpecularGlossinessTexturesToMetallicRoughnessAsync(albedoTexture, reflectivityTexture, specGloss, mimeType).then((metallicRoughnessFactors) => {
-                    if (metallicRoughnessFactors.baseColorTextureBase64) {
-                        const glTFBaseColorTexture = this._getTextureInfoFromBase64(
-                            metallicRoughnessFactors.baseColorTextureBase64,
-                            "bjsBaseColorTexture_" + textures.length + ".png",
-                            mimeType,
-                            albedoTexture ? albedoTexture.coordinatesIndex : null,
-                            samplerIndex
-                        );
-                        if (glTFBaseColorTexture) {
-                            glTFPbrMetallicRoughness.baseColorTexture = glTFBaseColorTexture;
-                        }
+                    const textures = this._exporter._textures;
+                    if (metallicRoughnessFactors.baseColorTextureData) {
+                        const imageIndex = this._exportImage(`baseColor${textures.length}`, mimeType, metallicRoughnessFactors.baseColorTextureData);
+                        pbrMetallicRoughness.baseColorTexture = this._exportTextureInfo(imageIndex, samplerIndex, albedoTexture?.coordinatesIndex);
                     }
-                    if (metallicRoughnessFactors.metallicRoughnessTextureBase64) {
-                        const glTFMRColorTexture = this._getTextureInfoFromBase64(
-                            metallicRoughnessFactors.metallicRoughnessTextureBase64,
-                            "bjsMetallicRoughnessTexture_" + textures.length + ".png",
-                            mimeType,
-                            reflectivityTexture ? reflectivityTexture.coordinatesIndex : null,
-                            samplerIndex
-                        );
-                        if (glTFMRColorTexture) {
-                            glTFPbrMetallicRoughness.metallicRoughnessTexture = glTFMRColorTexture;
-                        }
+                    if (metallicRoughnessFactors.metallicRoughnessTextureData) {
+                        const imageIndex = this._exportImage(`metallicRoughness${textures.length}`, mimeType, metallicRoughnessFactors.metallicRoughnessTextureData);
+                        pbrMetallicRoughness.metallicRoughnessTexture = this._exportTextureInfo(imageIndex, samplerIndex, reflectivityTexture?.coordinatesIndex);
                     }
 
                     return metallicRoughnessFactors;
@@ -1100,147 +1074,105 @@ export class _GLTFMaterialExporter {
         });
     }
 
-    public _exportTextureInfoAsync(babylonTexture: BaseTexture, mimeType: ImageMimeType): Promise<Nullable<ITextureInfo>> {
-        return Promise.resolve().then(async () => {
-            const textureUid = babylonTexture.uid;
-            if (textureUid in this._textureMap) {
-                return this._textureMap[textureUid];
-            } else {
-                const pixels = await this._getPixelsFromTexture(babylonTexture);
-                if (!pixels) {
-                    return null;
-                }
-
-                const samplers = this._exporter._samplers;
-                const sampler = this._getGLTFTextureSampler(babylonTexture);
-                let samplerIndex: Nullable<number> = null;
-
-                //  if a pre-existing sampler with identical parameters exists, then reuse the previous sampler
-                let foundSamplerIndex: Nullable<number> = null;
-                for (let i = 0; i < samplers.length; ++i) {
-                    const s = samplers[i];
-                    if (s.minFilter === sampler.minFilter && s.magFilter === sampler.magFilter && s.wrapS === sampler.wrapS && s.wrapT === sampler.wrapT) {
-                        foundSamplerIndex = i;
-                        break;
-                    }
-                }
-
-                if (foundSamplerIndex == null) {
-                    samplers.push(sampler);
-                    samplerIndex = samplers.length - 1;
-                } else {
-                    samplerIndex = foundSamplerIndex;
-                }
-                const size = babylonTexture.getSize();
-
-                // Preserve texture mime type if defined
-                if ((babylonTexture as Texture).mimeType) {
-                    switch ((babylonTexture as Texture).mimeType) {
-                        case "image/jpeg":
-                            mimeType = ImageMimeType.JPEG;
-                            break;
-                        case "image/png":
-                            mimeType = ImageMimeType.PNG;
-                            break;
-                        case "image/webp":
-                            mimeType = ImageMimeType.WEBP;
-                            break;
-                    }
-                }
-
-                return this._createBase64FromCanvasAsync(pixels, size.width, size.height, mimeType).then((base64Data) => {
-                    const textureInfo = this._getTextureInfoFromBase64(
-                        base64Data,
-                        babylonTexture.name.replace(/\.\/|\/|\.\\|\\/g, "_"),
-                        mimeType,
-                        babylonTexture.coordinatesIndex,
-                        samplerIndex
-                    );
-                    if (textureInfo) {
-                        this._textureMap[textureUid] = textureInfo;
-                        this._exporter._extensionsPostExportTextures("linkTextureInfo", textureInfo, babylonTexture);
-                    }
-
-                    return textureInfo;
-                });
+    public async _exportTextureInfoAsync(babylonTexture: BaseTexture, mimeType: ImageMimeType): Promise<Nullable<ITextureInfo>> {
+        const textureUid = babylonTexture.uid;
+        if (textureUid in this._textureMap) {
+            return this._textureMap[textureUid];
+        } else {
+            const pixels = await this._getPixelsFromTexture(babylonTexture);
+            if (!pixels) {
+                return null;
             }
-        });
+
+            const samplerIndex = this._exportTextureSampler(babylonTexture);
+
+            // Preserve texture mime type if defined
+            const textureMimeType = (babylonTexture as Texture).mimeType;
+            if (textureMimeType) {
+                switch (textureMimeType) {
+                    case "image/jpeg":
+                    case "image/png":
+                    case "image/webp":
+                        mimeType = textureMimeType as ImageMimeType;
+                        break;
+                    default:
+                        Tools.Warn("Unsupported media type: ${textureMimeType}");
+                        break;
+                }
+            }
+
+            const internalTextureToImage = this._internalTextureToImage;
+            const internalTextureUniqueId = babylonTexture.getInternalTexture()!.uniqueId;
+            internalTextureToImage[internalTextureUniqueId] ||= {};
+            let imageIndex = internalTextureToImage[internalTextureUniqueId][mimeType];
+            if (imageIndex === undefined) {
+                const size = babylonTexture.getSize();
+                const data = await this._getImageDataAsync(pixels, size.width, size.height, mimeType);
+                imageIndex = this._exportImage(babylonTexture.name, mimeType, data);
+                internalTextureToImage[internalTextureUniqueId][mimeType] = imageIndex;
+            }
+
+            const textureInfo = this._exportTextureInfo(imageIndex, samplerIndex, babylonTexture.coordinatesIndex);
+            this._textureMap[textureUid] = textureInfo;
+            return textureInfo;
+        }
     }
 
-    /**
-     * Builds a texture from base64 string
-     * @param base64Texture base64 texture string
-     * @param baseTextureName Name to use for the texture
-     * @param mimeType image mime type for the texture
-     * @param texCoordIndex
-     * @param samplerIndex
-     * @returns glTF texture info, or null if the texture format is not supported
-     */
-    private _getTextureInfoFromBase64(
-        base64Texture: string,
-        baseTextureName: string,
-        mimeType: ImageMimeType,
-        texCoordIndex: Nullable<number>,
-        samplerIndex: Nullable<number>
-    ): Nullable<ITextureInfo> {
-        const textures = this._exporter._textures;
-        const images = this._exporter._images;
+    private _exportImage(name: string, mimeType: ImageMimeType, data: ArrayBuffer): number {
         const imageData = this._exporter._imageData;
-        let textureInfo: Nullable<ITextureInfo> = null;
 
-        const glTFTexture: ITexture = {
-            source: images.length,
-            name: baseTextureName,
+        const baseName = name.replace(/\.\/|\/|\.\\|\\/g, "_");
+        const extension = getFileExtensionFromMimeType(mimeType);
+        let fileName = baseName + extension;
+        if (fileName in imageData) {
+            fileName = `${baseName}_${Tools.RandomId()}${extension}`;
+        }
+
+        imageData[fileName] = {
+            data: data,
+            mimeType: mimeType,
         };
-        if (samplerIndex != null) {
-            glTFTexture.sampler = samplerIndex;
+
+        const images = this._exporter._images;
+        images.push({
+            name: name,
+            uri: fileName,
+        });
+
+        return images.length - 1;
+    }
+
+    private _exportTextureInfo(imageIndex: number, samplerIndex: number, coordinatesIndex?: number): ITextureInfo {
+        const textures = this._exporter._textures;
+        let textureIndex = textures.findIndex((t) => t.sampler == samplerIndex && t.source === imageIndex);
+        if (textureIndex === -1) {
+            textureIndex = textures.length;
+            textures.push({
+                source: imageIndex,
+                sampler: samplerIndex,
+            });
         }
 
-        const binStr = atob(base64Texture.split(",")[1]);
-        const arrBuff = new ArrayBuffer(binStr.length);
-        const arr = new Uint8Array(arrBuff);
-        for (let i = 0, length = binStr.length; i < length; ++i) {
-            arr[i] = binStr.charCodeAt(i);
+        const textureInfo: ITextureInfo = { index: textureIndex };
+        if (coordinatesIndex) {
+            textureInfo.texCoord = coordinatesIndex;
         }
-        const imageValues = { data: arr, mimeType: mimeType };
-
-        const extension = mimeType === ImageMimeType.JPEG ? ".jpeg" : ".png";
-        let textureName = baseTextureName + extension;
-        const originalTextureName = textureName;
-        if (textureName in imageData) {
-            textureName = `${baseTextureName}_${Tools.RandomId()}${extension}`;
-        }
-
-        imageData[textureName] = imageValues;
-        if (mimeType === ImageMimeType.JPEG || mimeType === ImageMimeType.PNG || mimeType === ImageMimeType.WEBP) {
-            const glTFImage: IImage = {
-                name: baseTextureName,
-                uri: textureName,
-            };
-            let foundIndex: Nullable<number> = null;
-            for (let i = 0; i < images.length; ++i) {
-                if (images[i].uri === originalTextureName) {
-                    foundIndex = i;
-                    break;
-                }
-            }
-            if (foundIndex == null) {
-                images.push(glTFImage);
-                glTFTexture.source = images.length - 1;
-            } else {
-                glTFTexture.source = foundIndex;
-            }
-            textures.push(glTFTexture);
-            textureInfo = {
-                index: textures.length - 1,
-            };
-            if (texCoordIndex != null) {
-                textureInfo.texCoord = texCoordIndex;
-            }
-        } else {
-            Tools.Error(`Unsupported texture mime type ${mimeType}`);
-        }
-
         return textureInfo;
+    }
+
+    private _exportTextureSampler(texture: Nullable<BaseTexture>): number {
+        const sampler = this._getTextureSampler(texture);
+
+        // if a pre-existing sampler with identical parameters exists, then reuse the previous sampler
+        const samplers = this._exporter._samplers;
+        const samplerIndex = samplers.findIndex(
+            (s) => s.minFilter === sampler.minFilter && s.magFilter === sampler.magFilter && s.wrapS === sampler.wrapS && s.wrapT === sampler.wrapT
+        );
+        if (samplerIndex !== -1) {
+            return samplerIndex;
+        }
+
+        samplers.push(sampler);
+        return samplers.length - 1;
     }
 }

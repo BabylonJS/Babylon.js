@@ -5,6 +5,7 @@ import type { Nullable } from "../../types";
 import type { Scene } from "../../scene";
 import { Texture } from "../../Materials/Textures/texture";
 import { Constants } from "../../Engines/constants";
+import type { ExternalTexture } from "./externalTexture";
 
 import "../../Engines/Extensions/engine.videoTexture";
 import "../../Engines/Extensions/engine.dynamicTexture";
@@ -63,7 +64,7 @@ export interface VideoTextureSettings {
 /**
  * If you want to display a video in your scene, this is the special texture for that.
  * This special texture works similar to other textures, with the exception of a few parameters.
- * @see https://doc.babylonjs.com/divingDeeper/materials/using/videoTexture
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/videoTexture
  */
 export class VideoTexture extends Texture {
     /**
@@ -76,6 +77,7 @@ export class VideoTexture extends Texture {
      */
     public readonly video: HTMLVideoElement;
 
+    private _externalTexture: Nullable<ExternalTexture>;
     private _onUserActionRequestedObservable: Nullable<Observable<Texture>> = null;
 
     /**
@@ -134,7 +136,7 @@ export class VideoTexture extends Texture {
      * Creates a video texture.
      * If you want to display a video in your scene, this is the special texture for that.
      * This special texture works similar to other textures, with the exception of a few parameters.
-     * @see https://doc.babylonjs.com/how_to/video_texture
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/videoTexture
      * @param name optional name, will detect from video source, if not defined
      * @param src can be used to provide an url, array of urls or an already setup HTML video element.
      * @param scene is obviously the current scene.
@@ -174,6 +176,7 @@ export class VideoTexture extends Texture {
         this._currentSrc = src;
         this.name = name || this._getName(src);
         this.video = this._getVideo(src);
+        this._externalTexture = this._engine?.createExternalTexture(this.video) ?? null;
 
         if (this._settings.poster) {
             this.video.poster = this._settings.poster;
@@ -367,7 +370,7 @@ export class VideoTexture extends Texture {
 
         this._frameId = frameId;
 
-        this._getEngine()!.updateVideoTexture(this._texture, this.video, this._invertY);
+        this._getEngine()!.updateVideoTexture(this._texture, this._externalTexture ? this._externalTexture : this.video, this._invertY);
     };
 
     /**
@@ -405,6 +408,8 @@ export class VideoTexture extends Texture {
         this.video.removeEventListener("seeked", this._updateInternalTexture);
         this.video.removeEventListener("emptied", this._reset);
         this.video.pause();
+
+        this._externalTexture?.dispose();
     }
 
     /**

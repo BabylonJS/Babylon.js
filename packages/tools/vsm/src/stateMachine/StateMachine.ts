@@ -36,7 +36,7 @@ export class StateMachine {
     private _transitionStates() {
         if (this._currentState.canLeaveState()) {
             const possibleNext = this._transitions[this._currentState.id];
-            if (possibleNext.canEnterState()) {
+            if (possibleNext?.canEnterState()) {
                 this._currentState.leaveState();
                 possibleNext.enterState();
                 this._currentState = possibleNext;
@@ -50,6 +50,10 @@ export class StateMachine {
 
     getStates() {
         return this._states;
+    }
+
+    getStateById(id: string) {
+        return this._states.find((state) => state.id === id);
     }
 
     getTransitions() {
@@ -66,6 +70,31 @@ export class StateMachine {
             return;
         }
         this._transitions[from.id] = to;
+    }
+
+    removeTransition(from: State, to: State) {
+        if (this._states.indexOf(from) === -1 || this._states.indexOf(to) === -1) {
+            Tools.Warn("Trying to remove a transition betweens states that don't exist");
+            return;
+        }
+        if (!this._transitions[from.id]) {
+            Tools.Warn("Trying to remove a transition that doesn't exist");
+        }
+        delete this._transitions[from.id];
+    }
+
+    removeState(state: State) {
+        if (state === this._startingState || state === this._currentState) {
+            Tools.Warn("Trying to remove starting or current state");
+            return;
+        }
+        this._states.splice(this._states.indexOf(state), 1);
+        delete this._transitions[state.id];
+        for (const [key, value] of Object.entries(this._transitions)) {
+            if (value === state) {
+                delete this._transitions[key];
+            }
+        }
     }
 
     setStartingState(state: State) {

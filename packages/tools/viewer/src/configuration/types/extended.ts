@@ -224,8 +224,8 @@ export const extendedConfiguration: ViewerConfiguration = {
             a: 1.0,
         },
         imageProcessingConfiguration: {
-            vignetteCentreX: 0,
-            vignetteCentreY: 0,
+            vignetteCenterX: 0,
+            vignetteCenterY: 0,
             vignetteColor: {
                 r: 0.086,
                 g: 0.184,

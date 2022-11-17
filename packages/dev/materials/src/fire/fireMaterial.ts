@@ -21,6 +21,7 @@ import type { IAnimatable } from "core/Animations/animatable.interface";
 import "./fire.fragment";
 import "./fire.vertex";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
+import { addClipPlaneUniforms, bindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
 
 class FireMaterialDefines extends MaterialDefines {
     public DIFFUSE = false;
@@ -134,7 +135,7 @@ export class FireMaterial extends PushMaterial {
         }
 
         // Values that need to be evaluated on every frame
-        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
+        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, this, defines, useInstances ? true : false);
 
         // Attribs
         MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, true);
@@ -174,33 +175,30 @@ export class FireMaterial extends PushMaterial {
             // Legacy browser patch
             const shaderName = "fire";
 
+            const uniforms = [
+                "world",
+                "view",
+                "viewProjection",
+                "vEyePosition",
+                "vFogInfos",
+                "vFogColor",
+                "pointSize",
+                "vDiffuseInfos",
+                "mBones",
+                "diffuseMatrix",
+                // Fire
+                "time",
+                "speed",
+            ];
+            addClipPlaneUniforms(uniforms);
+
             const join = defines.toString();
             subMesh.setEffect(
                 scene.getEngine().createEffect(
                     shaderName,
                     {
                         attributes: attribs,
-                        uniformsNames: [
-                            "world",
-                            "view",
-                            "viewProjection",
-                            "vEyePosition",
-                            "vFogInfos",
-                            "vFogColor",
-                            "pointSize",
-                            "vDiffuseInfos",
-                            "mBones",
-                            "vClipPlane",
-                            "vClipPlane2",
-                            "vClipPlane3",
-                            "vClipPlane4",
-                            "vClipPlane5",
-                            "vClipPlane6",
-                            "diffuseMatrix",
-                            // Fire
-                            "time",
-                            "speed",
-                        ],
+                        uniformsNames: uniforms,
                         uniformBuffersNames: [],
                         samplers: [
                             "diffuseSampler",
@@ -268,7 +266,7 @@ export class FireMaterial extends PushMaterial {
             }
 
             // Clip plane
-            MaterialHelper.BindClipPlane(this._activeEffect, scene);
+            bindClipPlane(this._activeEffect, this, scene);
 
             // Point size
             if (this.pointsCloud) {

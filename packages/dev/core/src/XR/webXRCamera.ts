@@ -10,7 +10,7 @@ import { WebXRTrackingState } from "./webXRTypes";
 
 /**
  * WebXR Camera which holds the views for the xrSession
- * @see https://doc.babylonjs.com/how_to/webxr_camera
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/webXR/webXRCamera
  */
 export class WebXRCamera extends FreeCamera {
     private static _ScaleReadOnly = Vector3.One();
@@ -276,6 +276,9 @@ export class WebXRCamera extends FreeCamera {
                 // Set cameras to render to the session's render target
                 currentRig.outputRenderTarget = renderTargetTexture || this._xrSessionManager.getRenderTargetTextureForView(view);
             }
+
+            // Replicate parent rig camera behavior
+            currentRig.layerMask = this.layerMask;
         });
     }
 

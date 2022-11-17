@@ -3,10 +3,11 @@ import { Vector3, Quaternion, Matrix } from "../Maths/math.vector";
 import type { TransformNode } from "../Meshes/transformNode";
 import type { Nullable } from "../types";
 import { Space } from "../Maths/math.axis";
+import { Logger } from "../Misc/logger";
 
 /**
  * Class used to apply inverse kinematics to bones
- * @see https://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons#boneikcontroller
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/bonesSkeletons#boneikcontroller
  */
 export class BoneIKController {
     private static _TmpVecs: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
@@ -62,7 +63,7 @@ export class BoneIKController {
     private _bone1Mat = Matrix.Identity();
     private _bone2Ang = Math.PI;
 
-    private _bone1: Nullable<Bone>;
+    private _bone1: Bone;
     private _bone2: Bone;
     private _bone1Length: number;
     private _bone2Length: number;
@@ -75,6 +76,8 @@ export class BoneIKController {
     private _slerping = false;
 
     private _adjustRoll = 0;
+
+    private _notEnoughInformation = false;
 
     /**
      * Gets or sets maximum allowed angle
@@ -90,7 +93,7 @@ export class BoneIKController {
     /**
      * Creates a new BoneIKController
      * @param mesh defines the TransformNode to control
-     * @param bone defines the bone to control
+     * @param bone defines the bone to control. The bone needs to have a parent bone. It also needs to have a length greater than 0 or a children we can use to infer its length.
      * @param options defines options to set up the controller
      * @param options.targetMesh
      * @param options.poleTargetMesh
@@ -116,9 +119,18 @@ export class BoneIKController {
         }
     ) {
         this._bone2 = bone;
-        this._bone1 = bone.getParent();
+        const bone1 = bone.getParent();
 
-        if (!this._bone1) {
+        if (!bone1) {
+            this._notEnoughInformation = true;
+            Logger.Error("BoneIKController: bone must have a parent for IK to work.");
+            return;
+        }
+        this._bone1 = bone1;
+
+        if (this._bone2.children.length === 0 && !this._bone2.length) {
+            this._notEnoughInformation = true;
+            Logger.Error("BoneIKController: bone must not be a leaf or it should have a length for IK to work.");
             return;
         }
 
@@ -138,21 +150,31 @@ export class BoneIKController {
             }
         }
 
-        if (this._bone1.length) {
+        if (this._bone1.length && this._bone2.length) {
             const boneScale1 = this._bone1.getScale();
             const boneScale2 = this._bone2.getScale();
 
             this._bone1Length = this._bone1.length * boneScale1.y * this.mesh.scaling.y;
             this._bone2Length = this._bone2.length * boneScale2.y * this.mesh.scaling.y;
-        } else if (this._bone1.children[0]) {
+        } else if (this._bone2.children[0]) {
             mesh.computeWorldMatrix(true);
 
             const pos1 = this._bone2.children[0].getAbsolutePosition(mesh);
             const pos2 = this._bone2.getAbsolutePosition(mesh);
             const pos3 = this._bone1.getAbsolutePosition(mesh);
 
-            this._bone1Length = Vector3.Distance(pos1, pos2);
-            this._bone2Length = Vector3.Distance(pos2, pos3);
+            this._bone2Length = Vector3.Distance(pos1, pos2);
+            this._bone1Length = Vector3.Distance(pos2, pos3);
+        } else {
+            mesh.computeWorldMatrix(true);
+
+            const boneScale2 = this._bone2.getScale();
+            this._bone2Length = this._bone2.length * boneScale2.y * this.mesh.scaling.y;
+
+            const pos2 = this._bone2.getAbsolutePosition(mesh);
+            const pos3 = this._bone1.getAbsolutePosition(mesh);
+
+            this._bone1Length = Vector3.Distance(pos2, pos3);
         }
 
         this._bone1.getRotationMatrixToRef(Space.WORLD, mesh, this._bone1Mat);
@@ -216,9 +238,7 @@ export class BoneIKController {
      * Force the controller to update the bones
      */
     public update(): void {
-        const bone1 = this._bone1;
-
-        if (!bone1) {
+        if (this._notEnoughInformation) {
             return;
         }
 
@@ -246,7 +266,7 @@ export class BoneIKController {
 
         const tmpQuat = BoneIKController._TmpQuat;
 
-        bone1.getAbsolutePositionToRef(this.mesh, bonePos);
+        this._bone1.getAbsolutePositionToRef(this.mesh, bonePos);
 
         poleTarget.subtractToRef(bonePos, upAxis);
 

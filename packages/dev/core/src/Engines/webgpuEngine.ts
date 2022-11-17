@@ -87,13 +87,13 @@ export interface GlslangOptions {
 export interface WebGPUEngineOptions extends GPURequestAdapterOptions {
     /**
      * If delta time between frames should be constant
-     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#deterministic-lockstep
      */
     deterministicLockstep?: boolean;
 
     /**
      * Maximum about of steps between frames (Default: 4)
-     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#deterministic-lockstep
      */
     lockstepMaxSteps?: number;
 
@@ -116,7 +116,7 @@ export interface WebGPUEngineOptions extends GPURequestAdapterOptions {
 
     /**
      * Defines if webaudio should be initialized as well
-     * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic
      */
     audioEngine?: boolean;
 
@@ -481,7 +481,7 @@ export class WebGPUEngine extends Engine {
     /**
      * (WebGPU only) True (default) to be in compatibility mode, meaning rendering all existing scenes without artifacts (same rendering than WebGL).
      * Setting the property to false will improve performances but may not work in some scenes if some precautions are not taken.
-     * See https://doc.babylonjs.com/advanced_topics/webGPU/webGPUOptimization/webGPUNonCompatibilityMode for more details
+     * See https://doc.babylonjs.com/setup/support/webGPU/webGPUOptimization/webGPUNonCompatibilityMode for more details
      */
     public get compatibilityMode() {
         return this._compatibilityMode;
@@ -2478,6 +2478,10 @@ export class WebGPUEngine extends Engine {
 
         if (!texture._hardwareTexture?.underlyingResource) {
             gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture);
+        }
+
+        if (image instanceof HTMLImageElement) {
+            throw "WebGPU engine: HTMLImageElement not supported in _uploadImageToTexture!";
         }
 
         const bitmap = image as ImageBitmap; // in WebGPU we will always get an ImageBitmap, not an HTMLImageElement

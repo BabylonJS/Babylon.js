@@ -25,7 +25,7 @@ const ffMultiplier = 40;
 
 /**
  * Manage the mouse wheel inputs to control an arc rotate camera.
- * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
  */
 export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCamera> {
     /**
@@ -128,7 +128,7 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
             }
         };
 
-        this._observer = this.camera.getScene().onPointerObservable.add(this._wheel, PointerEventTypes.POINTERWHEEL);
+        this._observer = this.camera.getScene()._onCameraInputObservable.add(this._wheel, PointerEventTypes.POINTERWHEEL);
 
         if (this.zoomToMouseLocation) {
             this._inertialPanning.setAll(0);
@@ -140,7 +140,7 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
      */
     public detachControl(): void {
         if (this._observer) {
-            this.camera.getScene().onPointerObservable.remove(this._observer);
+            this.camera.getScene()._onCameraInputObservable.remove(this._observer);
             this._observer = null;
             this._wheel = null;
         }

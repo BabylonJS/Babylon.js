@@ -22,7 +22,7 @@ declare let Ammo: any;
 
 /**
  * AmmoJS Physics plugin
- * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
  * @see https://github.com/kripken/ammo.js/
  */
 export class AmmoJSPlugin implements IPhysicsEnginePlugin {

@@ -71,7 +71,7 @@ class PolygonPoints {
 
 /**
  * Polygon
- * @see https://doc.babylonjs.com/how_to/parametric_shapes#non-regular-polygon
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param#non-regular-polygon
  */
 export class Polygon {
     /**
@@ -139,7 +139,7 @@ export class Polygon {
 
 /**
  * Builds a polygon
- * @see https://doc.babylonjs.com/how_to/polygonmeshbuilder
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param/polyMeshBuilder
  */
 export class PolygonMeshBuilder {
     private _points = new PolygonPoints();

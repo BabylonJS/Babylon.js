@@ -22,7 +22,7 @@ declare module "../../Engines/thinEngine" {
 
         /**
          * Create a multi render target texture
-         * @see https://doc.babylonjs.com/features/webgl2#multiple-render-target
+         * @see https://doc.babylonjs.com/setup/support/webGL2#multiple-render-target
          * @param size defines the size of the texture
          * @param options defines the creation options
          * @param initializeBuffers if set to true, the engine will make an initializing call of drawBuffers
@@ -32,7 +32,7 @@ declare module "../../Engines/thinEngine" {
 
         /**
          * Update the sample count for a given multiple render target texture
-         * @see https://doc.babylonjs.com/features/webgl2#multisample-render-targets
+         * @see https://doc.babylonjs.com/setup/support/webGL2#multisample-render-targets
          * @param rtWrapper defines the render target wrapper to update
          * @param samples defines the sample count to set
          * @param initializeBuffers if set to true, the engine will make an initializing call of drawBuffers

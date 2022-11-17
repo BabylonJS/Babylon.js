@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/shared-ui-components",
-    "version": "5.30.0",
+    "version": "5.33.0",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -8,6 +8,8 @@
         "**/*.js",
         "**/*.d.ts",
         "**/*.map",
+        "**/*.svg",
+        "**/*.scss",
         "readme.md",
         "license.md"
     ],
@@ -29,6 +31,8 @@
     "peerDependencies": {
         "@babylonjs/core": "^5.22.0",
         "@babylonjs/gui": "^5.22.0",
+        "@types/dagre": "^0.7.47",
+        "dagre": "^0.8.5",
         "react": "^17.0.2",
         "react-dnd": "15.0.1",
         "react-dnd-touch-backend": "15.0.1",

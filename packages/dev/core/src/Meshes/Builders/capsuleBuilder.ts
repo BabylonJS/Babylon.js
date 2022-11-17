@@ -8,7 +8,7 @@ import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
  * Scripts based off of https://github.com/maximeq/three-js-capsule-geometry/blob/master/src/CapsuleBufferGeometry.js
  * @param options the constructors options used to shape the mesh.
  * @returns the capsule VertexData
- * @see https://doc.babylonjs.com/divingDeeper/mesh/creation/set/capsule
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set/capsule
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function CreateCapsuleVertexData(

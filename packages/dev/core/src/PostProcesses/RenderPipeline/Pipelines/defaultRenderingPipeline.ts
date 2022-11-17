@@ -32,7 +32,7 @@ declare type Animation = import("../../../Animations/animation").Animation;
 
 /**
  * The default rendering pipeline can be added to a scene to apply common post processing effects such as anti-aliasing or depth of field.
- * See https://doc.babylonjs.com/how_to/using_default_rendering_pipeline
+ * See https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/defaultRenderingPipeline
  */
 export class DefaultRenderingPipeline extends PostProcessRenderPipeline implements IDisposable, IAnimatable {
     private _scene: Scene;

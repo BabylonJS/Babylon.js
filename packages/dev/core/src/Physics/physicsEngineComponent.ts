@@ -163,13 +163,13 @@ declare module "../Meshes/abstractMesh" {
 
         /**
          * Gets or sets impostor used for physic simulation
-         * @see https://doc.babylonjs.com/features/physics_engine
+         * @see https://doc.babylonjs.com/features/featuresDeepDive/physics
          */
         physicsImpostor: Nullable<PhysicsImpostor>;
 
         /**
          * Gets the current physics impostor
-         * @see https://doc.babylonjs.com/features/physics_engine
+         * @see https://doc.babylonjs.com/features/featuresDeepDive/physics
          * @returns a physics impostor or null
          */
         getPhysicsImpostor(): Nullable<PhysicsImpostor>;
@@ -178,7 +178,7 @@ declare module "../Meshes/abstractMesh" {
          * @param force defines the force to apply
          * @param contactPoint defines where to apply the force
          * @returns the current mesh
-         * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+         * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
          */
         applyImpulse(force: Vector3, contactPoint: Vector3): AbstractMesh;
 
@@ -228,7 +228,7 @@ Object.defineProperty(AbstractMesh.prototype, "physicsImpostor", {
 
 /**
  * Gets the current physics impostor
- * @see https://doc.babylonjs.com/features/physics_engine
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/physics
  * @returns a physics impostor or null
  */
 AbstractMesh.prototype.getPhysicsImpostor = function (): Nullable<PhysicsImpostor> {
@@ -240,7 +240,7 @@ AbstractMesh.prototype.getPhysicsImpostor = function (): Nullable<PhysicsImposto
  * @param force defines the force to apply
  * @param contactPoint defines where to apply the force
  * @returns the current mesh
- * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
  */
 AbstractMesh.prototype.applyImpulse = function (force: Vector3, contactPoint: Vector3): AbstractMesh {
     if (!this.physicsImpostor) {

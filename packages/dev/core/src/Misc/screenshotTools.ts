@@ -7,12 +7,16 @@ import { Constants } from "../Engines/constants";
 import { Logger } from "./logger";
 import { Tools } from "./tools";
 import type { IScreenshotSize } from "./interfaces/screenshotSize";
+import { DumpTools } from "./dumpTools";
+import type { Nullable } from "../types";
 
 declare type Engine = import("../Engines/engine").Engine;
 
+let screenshotCanvas: Nullable<HTMLCanvasElement> = null;
+
 /**
  * Captures a screenshot of the current rendering
- * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
  * @param engine defines the rendering engine
  * @param camera defines the source camera
  * @param size This parameter can be set to a single number or to an object with the
@@ -42,14 +46,14 @@ export function CreateScreenshot(
         return;
     }
 
-    if (!Tools._ScreenshotCanvas) {
-        Tools._ScreenshotCanvas = document.createElement("canvas");
+    if (!screenshotCanvas) {
+        screenshotCanvas = document.createElement("canvas");
     }
 
-    Tools._ScreenshotCanvas.width = width;
-    Tools._ScreenshotCanvas.height = height;
+    screenshotCanvas.width = width;
+    screenshotCanvas.height = height;
 
-    const renderContext = Tools._ScreenshotCanvas.getContext("2d");
+    const renderContext = screenshotCanvas.getContext("2d");
 
     const ratio = engine.getRenderWidth() / engine.getRenderHeight();
     let newWidth = width;
@@ -90,13 +94,15 @@ export function CreateScreenshot(
                 renderContext.drawImage(renderingCanvas, offsetX, offsetY, newWidth, newHeight);
             }
 
-            if (forceDownload) {
-                Tools.EncodeScreenshotCanvasData(undefined, mimeType);
-                if (successCallback) {
-                    successCallback("");
+            if (screenshotCanvas) {
+                if (forceDownload) {
+                    Tools.EncodeScreenshotCanvasData(screenshotCanvas, undefined, mimeType);
+                    if (successCallback) {
+                        successCallback("");
+                    }
+                } else {
+                    Tools.EncodeScreenshotCanvasData(screenshotCanvas, successCallback, mimeType);
                 }
-            } else {
-                Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
             }
         });
     }
@@ -104,7 +110,7 @@ export function CreateScreenshot(
 
 /**
  * Captures a screenshot of the current rendering
- * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
  * @param engine defines the rendering engine
  * @param camera defines the source camera
  * @param size This parameter can be set to a single number or to an object with the
@@ -137,7 +143,7 @@ export function CreateScreenshotAsync(engine: Engine, camera: Camera, size: IScr
 
 /**
  * Captures a screenshot of the current rendering for a specific size. This will render the entire canvas but will generate a blink (due to canvas resize)
- * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
  * @param engine defines the rendering engine
  * @param camera defines the source camera
  * @param width defines the expected width
@@ -164,7 +170,7 @@ export function CreateScreenshotWithResizeAsync(engine: Engine, camera: Camera, 
 
 /**
  * Generates an image screenshot from the specified camera.
- * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
  * @param engine The engine to use for rendering
  * @param camera The camera to use for rendering
  * @param size This parameter can be set to a single number or to an object with the
@@ -233,7 +239,7 @@ export function CreateScreenshotUsingRenderTarget(
     const renderToTexture = () => {
         engine.onEndFrameObservable.addOnce(() => {
             texture.readPixels(undefined, undefined, undefined, false)!.then((data) => {
-                Tools.DumpData(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true);
+                DumpTools.DumpData(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true);
                 texture.dispose();
             });
         });
@@ -273,7 +279,7 @@ export function CreateScreenshotUsingRenderTarget(
 
 /**
  * Generates an image screenshot from the specified camera.
- * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
  * @param engine The engine to use for rendering
  * @param camera The camera to use for rendering
  * @param size This parameter can be set to a single number or to an object with the
@@ -383,7 +389,7 @@ function _GetScreenshotSize(engine: Engine, camera: Camera, size: IScreenshotSiz
 export const ScreenshotTools = {
     /**
      * Captures a screenshot of the current rendering
-     * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
      * @param engine defines the rendering engine
      * @param camera defines the source camera
      * @param size This parameter can be set to a single number or to an object with the
@@ -402,7 +408,7 @@ export const ScreenshotTools = {
 
     /**
      * Captures a screenshot of the current rendering
-     * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
      * @param engine defines the rendering engine
      * @param camera defines the source camera
      * @param size This parameter can be set to a single number or to an object with the
@@ -419,7 +425,7 @@ export const ScreenshotTools = {
 
     /**
      * Captures a screenshot of the current rendering for a specific size. This will render the entire canvas but will generate a blink (due to canvas resize)
-     * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
      * @param engine defines the rendering engine
      * @param camera defines the source camera
      * @param width defines the expected width
@@ -433,7 +439,7 @@ export const ScreenshotTools = {
 
     /**
      * Generates an image screenshot from the specified camera.
-     * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
      * @param engine The engine to use for rendering
      * @param camera The camera to use for rendering
      * @param size This parameter can be set to a single number or to an object with the
@@ -456,7 +462,7 @@ export const ScreenshotTools = {
 
     /**
      * Generates an image screenshot from the specified camera.
-     * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
      * @param engine The engine to use for rendering
      * @param camera The camera to use for rendering
      * @param size This parameter can be set to a single number or to an object with the

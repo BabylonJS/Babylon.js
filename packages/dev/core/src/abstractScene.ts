@@ -112,13 +112,13 @@ export abstract class AbstractScene {
     public rootNodes = new Array<Node>();
 
     /** All of the cameras added to this scene
-     * @see https://doc.babylonjs.com/babylon101/cameras
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras
      */
     public cameras = new Array<Camera>();
 
     /**
      * All of the lights added to this scene
-     * @see https://doc.babylonjs.com/babylon101/lights
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/lights/lights_introduction
      */
     public lights = new Array<Light>();
 
@@ -129,13 +129,13 @@ export abstract class AbstractScene {
 
     /**
      * The list of skeletons added to the scene
-     * @see https://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/bonesSkeletons
      */
     public skeletons = new Array<Skeleton>();
 
     /**
      * All of the particle systems added to this scene
-     * @see https://doc.babylonjs.com/babylon101/particles
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/particles/particle_system/particle_system_intro
      */
     public particleSystems = new Array<IParticleSystem>();
 
@@ -146,13 +146,13 @@ export abstract class AbstractScene {
 
     /**
      * All of the animation groups added to this scene
-     * @see https://doc.babylonjs.com/divingDeeper/animation/groupAnimations
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/groupAnimations
      */
     public animationGroups = new Array<AnimationGroup>();
 
     /**
      * All of the multi-materials added to this scene
-     * @see https://doc.babylonjs.com/how_to/multi_materials
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/multiMaterials
      */
     public multiMaterials = new Array<MultiMaterial>();
 
@@ -161,13 +161,13 @@ export abstract class AbstractScene {
      * In the context of a Scene, it is not supposed to be modified manually.
      * Any addition or removal should be done using the addMaterial and removeMaterial Scene methods.
      * Note also that the order of the Material within the array is not significant and might change.
-     * @see https://doc.babylonjs.com/babylon101/materials
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/materials_introduction
      */
     public materials = new Array<Material>();
 
     /**
      * The list of morph target managers added to the scene
-     * @see https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/dynamicMeshMorph
      */
     public morphTargetManagers = new Array<MorphTargetManager>();
 
@@ -181,7 +181,7 @@ export abstract class AbstractScene {
      * In the context of a Scene, it is not supposed to be modified manually.
      * Any addition or removal should be done using the addTransformNode and removeTransformNode Scene methods.
      * Note also that the order of the TransformNode within the array is not significant and might change.
-     * @see https://doc.babylonjs.com/how_to/transformnode
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/transforms/parent_pivot/transform_node
      */
     public transformNodes = new Array<TransformNode>();
 

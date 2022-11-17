@@ -6,7 +6,7 @@ import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { Vector3 } from "core/Maths/math";
-import { SceneContext } from "../SceneContext";
+import { SceneContext } from "../context/SceneContext";
 import type { Nullable } from "core/types";
 
 /**

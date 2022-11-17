@@ -215,6 +215,27 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
         return this.xGizmo.updateGizmoRotationToMatchAttachedMesh;
     }
 
+    public set updateGizmoPositionToMatchAttachedMesh(value: boolean) {
+        if (this.xGizmo) {
+            this.xGizmo.updateGizmoPositionToMatchAttachedMesh = value;
+            this.yGizmo.updateGizmoPositionToMatchAttachedMesh = value;
+            this.zGizmo.updateGizmoPositionToMatchAttachedMesh = value;
+        }
+    }
+    public get updateGizmoPositionToMatchAttachedMesh() {
+        return this.xGizmo.updateGizmoPositionToMatchAttachedMesh;
+    }
+
+    public set updateScale(value: boolean) {
+        if (this.xGizmo) {
+            this.xGizmo.updateScale = value;
+            this.yGizmo.updateScale = value;
+            this.zGizmo.updateScale = value;
+        }
+    }
+    public get updateScale() {
+        return this.xGizmo.updateScale;
+    }
     /**
      * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
      */

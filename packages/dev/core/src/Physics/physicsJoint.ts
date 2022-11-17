@@ -2,7 +2,7 @@ import type { Vector3 } from "../Maths/math.vector";
 import type { IPhysicsEnginePlugin } from "./IPhysicsEngine";
 /**
  * Interface for Physics-Joint data
- * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
  */
 export interface PhysicsJointData {
     //Important for some engines, optional!
@@ -35,7 +35,7 @@ export interface PhysicsJointData {
 /**
  * This is a holder class for the physics joint created by the physics plugin
  * It holds a set of functions to control the underlying joint
- * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
  */
 export class PhysicsJoint {
     private _physicsJoint: any;
@@ -149,7 +149,7 @@ export class PhysicsJoint {
 
 /**
  * A class representing a physics distance joint
- * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
  */
 export class DistanceJoint extends PhysicsJoint {
     /**
@@ -172,7 +172,7 @@ export class DistanceJoint extends PhysicsJoint {
 
 /**
  * Represents a Motor-Enabled Joint
- * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
  */
 export class MotorEnabledJoint extends PhysicsJoint implements IMotorEnabledJoint {
     /**
@@ -207,7 +207,7 @@ export class MotorEnabledJoint extends PhysicsJoint implements IMotorEnabledJoin
 
 /**
  * This class represents a single physics Hinge-Joint
- * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
  */
 export class HingeJoint extends MotorEnabledJoint {
     /**
@@ -241,7 +241,7 @@ export class HingeJoint extends MotorEnabledJoint {
 
 /**
  * This class represents a dual hinge physics joint (same as wheel joint)
- * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
  */
 export class Hinge2Joint extends MotorEnabledJoint {
     /**
@@ -277,7 +277,7 @@ export class Hinge2Joint extends MotorEnabledJoint {
 
 /**
  * Interface for a motor enabled joint
- * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
  */
 export interface IMotorEnabledJoint {
     /**
@@ -302,7 +302,7 @@ export interface IMotorEnabledJoint {
 
 /**
  * Joint data for a Distance-Joint
- * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
  */
 export interface DistanceJointData extends PhysicsJointData {
     /**
@@ -315,7 +315,7 @@ export interface DistanceJointData extends PhysicsJointData {
 
 /**
  * Joint data from a spring joint
- * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
  */
 export interface SpringJointData extends PhysicsJointData {
     /**

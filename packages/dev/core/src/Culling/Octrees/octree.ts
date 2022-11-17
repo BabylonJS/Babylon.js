@@ -9,7 +9,7 @@ import type { Plane } from "../../Maths/math.plane";
 
 /**
  * Octrees are a really powerful data structure that can quickly select entities based on space coordinates.
- * @see https://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/optimizeOctrees
  */
 export class Octree<T> {
     /**
@@ -27,7 +27,7 @@ export class Octree<T> {
 
     /**
      * Creates a octree
-     * @see https://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/optimizeOctrees
      * @param creationFunc function to be used to instantiate the octree
      * @param maxBlockCapacity defines the maximum number of meshes you want on your octree's leaves (default: 64)
      * @param maxDepth defines the maximum depth (sub-levels) for your octree. Default value is 2, which means 8 8 8 = 512 blocks :) (This parameter takes precedence over capacity.)

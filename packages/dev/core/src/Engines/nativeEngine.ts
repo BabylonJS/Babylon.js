@@ -952,6 +952,31 @@ export class NativeEngine extends Engine {
             };
         }
 
+        // polyfill for Chakra
+        if (!Array.prototype.flat) {
+            Object.defineProperty(Array.prototype, "flat", {
+                configurable: true,
+                value: function flat() {
+                    const depth = isNaN(arguments[0]) ? 1 : Number(arguments[0]);
+
+                    return depth
+                        ? Array.prototype.reduce.call(
+                              this,
+                              function (acc: any, cur: any) {
+                                  if (Array.isArray(cur)) {
+                                      acc.push.apply(acc, flat.call(cur, depth - 1));
+                                  } else {
+                                      acc.push(cur);
+                                  }
+                                  return acc;
+                              },
+                              []
+                          )
+                        : Array.prototype.slice.call(this);
+                },
+                writable: true,
+            });
+        }
         // Currently we do not fully configure the ThinEngine on construction of NativeEngine.
         // Setup resolution scaling based on display settings.
         const devicePixelRatio = window ? window.devicePixelRatio || 1.0 : 1.0;
@@ -1745,7 +1770,7 @@ export class NativeEngine extends Engine {
      * Sets the current alpha mode
      * @param mode defines the mode to use (one of the BABYLON.Constants.ALPHA_XXX)
      * @param noDepthWriteChange defines if depth writing state should remains unchanged (false by default)
-     * @see https://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/advanced/transparent_rendering
      */
     public setAlphaMode(mode: number, noDepthWriteChange: boolean = false): void {
         if (this._alphaMode === mode) {
@@ -1767,7 +1792,7 @@ export class NativeEngine extends Engine {
 
     /**
      * Gets the current alpha mode
-     * @see https://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/advanced/transparent_rendering
      * @returns the current alpha mode
      */
     public getAlphaMode(): number {

@@ -31,6 +31,7 @@ import type { HardwareTextureWrapper } from "../../Materials/Textures/hardwareTe
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
 import type { WebGPUTintWASM } from "./webgpuTintWASM";
+import type { ExternalTexture } from "../../Materials/Textures/externalTexture";
 
 // TODO WEBGPU improve mipmap generation by using compute shaders
 
@@ -159,11 +160,72 @@ const clearFragmentSource = `
     }
     `;
 
+const copyVideoToTextureVertexSource = `
+    struct VertexOutput {
+        @builtin(position) Position : vec4<f32>,
+        @location(0) fragUV : vec2<f32>
+    }
+  
+    @vertex
+    fn main(
+        @builtin(vertex_index) VertexIndex : u32
+    ) -> VertexOutput {
+        var pos = array<vec2<f32>, 4>(
+            vec2(-1.0,  1.0),
+            vec2( 1.0,  1.0),
+            vec2(-1.0, -1.0),
+            vec2( 1.0, -1.0)
+        );
+        var tex = array<vec2<f32>, 4>(
+            vec2(0.0, 0.0),
+            vec2(1.0, 0.0),
+            vec2(0.0, 1.0),
+            vec2(1.0, 1.0)
+        );
+
+        var output: VertexOutput;
+
+        output.Position = vec4<f32>(pos[VertexIndex], 0.0, 1.0);
+        output.fragUV = tex[VertexIndex];
+
+        return output;
+    }
+    `;
+
+const copyVideoToTextureFragmentSource = `
+    @group(0) @binding(0) var videoSampler: sampler;
+    @group(0) @binding(1) var videoTexture: texture_external;
+
+    @fragment
+    fn main(
+        @location(0) fragUV: vec2<f32>
+    ) -> @location(0) vec4<f32> {
+        return textureSampleBaseClampToEdge(videoTexture, videoSampler, fragUV);
+    }
+    `;
+
+const copyVideoToTextureInvertYFragmentSource = `
+    @group(0) @binding(0) var videoSampler: sampler;
+    @group(0) @binding(1) var videoTexture: texture_external;
+
+    @fragment
+    fn main(
+        @location(0) fragUV: vec2<f32>
+    ) -> @location(0) vec4<f32> {
+        return textureSampleBaseClampToEdge(videoTexture, videoSampler, vec2<f32>(fragUV.x, 1.0 - fragUV.y));
+    }
+    `;
+
 enum PipelineType {
     MipMap = 0,
     InvertYPremultiplyAlpha = 1,
     Clear = 2,
     InvertYPremultiplyAlphaWithOfst = 3,
+}
+
+enum VideoPipelineType {
+    DontInvertY = 0,
+    InvertY = 1,
 }
 
 interface IPipelineParameters {
@@ -238,9 +300,12 @@ export class WebGPUTextureHelper {
     private _tintWASM: Nullable<WebGPUTintWASM>;
     private _bufferManager: WebGPUBufferManager;
     private _mipmapSampler: GPUSampler;
+    private _videoSampler: GPUSampler;
     private _ubCopyWithOfst: GPUBuffer;
     private _pipelines: { [format: string]: Array<[GPURenderPipeline, GPUBindGroupLayout]> } = {};
     private _compiledShaders: GPUShaderModule[][] = [];
+    private _videoPipelines: { [format: string]: Array<[GPURenderPipeline, GPUBindGroupLayout]> } = {};
+    private _videoCompiledShaders: GPUShaderModule[][] = [];
     private _deferredReleaseTextures: Array<[Nullable<HardwareTextureWrapper | GPUTexture>, Nullable<BaseTexture>]> = [];
     private _commandEncoderForCreation: GPUCommandEncoder;
 
@@ -259,9 +324,11 @@ export class WebGPUTextureHelper {
         this._bufferManager = bufferManager;
 
         this._mipmapSampler = device.createSampler({ minFilter: WebGPUConstants.FilterMode.Linear });
+        this._videoSampler = device.createSampler({ minFilter: WebGPUConstants.FilterMode.Linear });
         this._ubCopyWithOfst = this._bufferManager.createBuffer(4 * 4, WebGPUConstants.BufferUsage.Uniform | WebGPUConstants.BufferUsage.CopyDst).underlyingResource;
 
         this._getPipeline(WebGPUConstants.TextureFormat.RGBA8Unorm);
+        this._getVideoPipeline(WebGPUConstants.TextureFormat.RGBA8Unorm);
     }
 
     private _getPipeline(format: GPUTextureFormat, type: PipelineType = PipelineType.MipMap, params?: IPipelineParameters): [GPURenderPipeline, GPUBindGroupLayout] {
@@ -333,6 +400,54 @@ export class WebGPUTextureHelper {
             });
 
             pipelineAndBGL = this._pipelines[format][index] = [pipeline, pipeline.getBindGroupLayout(0)];
+        }
+
+        return pipelineAndBGL;
+    }
+
+    private _getVideoPipeline(format: GPUTextureFormat, type: VideoPipelineType = VideoPipelineType.DontInvertY): [GPURenderPipeline, GPUBindGroupLayout] {
+        const index = type === VideoPipelineType.InvertY ? 1 << 0 : 0;
+
+        if (!this._videoPipelines[format]) {
+            this._videoPipelines[format] = [];
+        }
+
+        let pipelineAndBGL = this._videoPipelines[format][index];
+        if (!pipelineAndBGL) {
+            let modules = this._videoCompiledShaders[index];
+            if (!modules) {
+                const vertexModule = this._device.createShaderModule({
+                    code: copyVideoToTextureVertexSource,
+                });
+                const fragmentModule = this._device.createShaderModule({
+                    code: index === 0 ? copyVideoToTextureFragmentSource : copyVideoToTextureInvertYFragmentSource,
+                });
+                modules = this._videoCompiledShaders[index] = [vertexModule, fragmentModule];
+            }
+
+            const pipeline = this._device.createRenderPipeline({
+                label: `CopyVideoToTexture_${format}_${index === 0 ? "DontInvertY" : "InvertY"}`,
+                layout: WebGPUConstants.AutoLayoutMode.Auto,
+                vertex: {
+                    module: modules[0],
+                    entryPoint: "main",
+                },
+                fragment: {
+                    module: modules[1],
+                    entryPoint: "main",
+                    targets: [
+                        {
+                            format,
+                        },
+                    ],
+                },
+                primitive: {
+                    topology: WebGPUConstants.PrimitiveTopology.TriangleStrip,
+                    stripIndexFormat: WebGPUConstants.IndexFormat.Uint16,
+                },
+            });
+
+            pipelineAndBGL = this._videoPipelines[format][index] = [pipeline, pipeline.getBindGroupLayout(0)];
         }
 
         return pipelineAndBGL;
@@ -1008,6 +1123,68 @@ export class WebGPUTextureHelper {
         }
 
         return false;
+    }
+
+    public copyVideoToTexture(video: ExternalTexture, texture: InternalTexture, format: GPUTextureFormat, invertY = false, commandEncoder?: GPUCommandEncoder): void {
+        const useOwnCommandEncoder = commandEncoder === undefined;
+        const [pipeline, bindGroupLayout] = this._getVideoPipeline(format, invertY ? VideoPipelineType.InvertY : VideoPipelineType.DontInvertY);
+
+        if (useOwnCommandEncoder) {
+            commandEncoder = this._device.createCommandEncoder({});
+        }
+
+        commandEncoder!.pushDebugGroup?.(`copy video to texture - invertY=${invertY}`);
+
+        const webgpuHardwareTexture = texture._hardwareTexture as WebGPUHardwareTexture;
+
+        const renderPassDescriptor: GPURenderPassDescriptor = {
+            colorAttachments: [
+                {
+                    view: webgpuHardwareTexture.underlyingResource!.createView({
+                        format,
+                        dimension: WebGPUConstants.TextureViewDimension.E2d,
+                        mipLevelCount: 1,
+                        baseArrayLayer: 0,
+                        baseMipLevel: 0,
+                        arrayLayerCount: 1,
+                        aspect: WebGPUConstants.TextureAspect.All,
+                    }),
+                    loadOp: WebGPUConstants.LoadOp.Load,
+                    storeOp: WebGPUConstants.StoreOp.Store,
+                },
+            ],
+        };
+        const passEncoder = commandEncoder!.beginRenderPass(renderPassDescriptor);
+
+        const descriptor: GPUBindGroupDescriptor = {
+            layout: bindGroupLayout,
+            entries: [
+                {
+                    binding: 0,
+                    resource: this._videoSampler,
+                },
+                {
+                    binding: 1,
+                    resource: this._device.importExternalTexture({
+                        source: video.underlyingResource,
+                    }),
+                },
+            ],
+        };
+
+        const bindGroup = this._device.createBindGroup(descriptor);
+
+        passEncoder.setPipeline(pipeline);
+        passEncoder.setBindGroup(0, bindGroup);
+        passEncoder.draw(4, 1, 0, 0);
+        passEncoder.end();
+
+        commandEncoder!.popDebugGroup?.();
+
+        if (useOwnCommandEncoder) {
+            this._device.queue.submit([commandEncoder!.finish()]);
+            commandEncoder = null as any;
+        }
     }
 
     public invertYPreMultiplyAlpha(

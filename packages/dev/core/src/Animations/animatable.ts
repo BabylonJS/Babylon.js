@@ -23,6 +23,7 @@ export class Animatable {
     private _weight = -1.0;
     private _syncRoot: Nullable<Animatable> = null;
     private _frameToSyncFromJump: Nullable<number> = null;
+    private _goToFrame: Nullable<number> = null;
 
     /**
      * Gets or sets a boolean indicating if the animatable must be disposed and removed at the end of the animation.
@@ -96,6 +97,11 @@ export class Animatable {
             animation._prepareForSpeedRatioChange(value);
         }
         this._speedRatio = value;
+
+        // Resync _manualJumpDelay in case goToFrame was called before speedRatio was set.
+        if (this._goToFrame !== null) {
+            this.goToFrame(this._goToFrame);
+        }
     }
 
     /**
@@ -240,7 +246,7 @@ export class Animatable {
 
     /**
      * Allows the animatable to blend with current running animations
-     * @see https://doc.babylonjs.com/babylon101/animations#animation-blending
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#animation-blending
      * @param blendingSpeed defines the blending speed to use
      */
     public enableBlending(blendingSpeed: number): void {
@@ -254,7 +260,7 @@ export class Animatable {
 
     /**
      * Disable animation blending
-     * @see https://doc.babylonjs.com/babylon101/animations#animation-blending
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#animation-blending
      */
     public disableBlending(): void {
         const runtimeAnimations = this._runtimeAnimations;
@@ -281,6 +287,8 @@ export class Animatable {
         for (let index = 0; index < runtimeAnimations.length; index++) {
             runtimeAnimations[index].goToFrame(frame);
         }
+
+        this._goToFrame = frame;
     }
 
     /**
@@ -397,6 +405,8 @@ export class Animatable {
             this._manualJumpDelay = null;
             this._frameToSyncFromJump = null;
         }
+
+        this._goToFrame = null;
 
         if (this._weight === 0) {
             // We consider that an animation with a weight === 0 is "actively" paused

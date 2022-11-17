@@ -325,7 +325,7 @@ export function CreateGroundFromHeightMapVertexData(options: {
  * @param options.updatable
  * @param scene defines the hosting scene
  * @returns the ground mesh
- * @see https://doc.babylonjs.com/how_to/set_shapes#ground
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#ground
  */
 export function CreateGround(
     name: string,
@@ -374,7 +374,7 @@ export function CreateGround(
  * @param options.updatable
  * @param scene defines the hosting scene
  * @returns the tiled ground mesh
- * @see https://doc.babylonjs.com/how_to/set_shapes#tiled-ground
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#tiled-ground
  */
 export function CreateTiledGround(
     name: string,
@@ -415,8 +415,8 @@ export function CreateTiledGround(
  * @param options.onReady
  * @param scene defines the hosting scene
  * @returns the ground mesh
- * @see https://doc.babylonjs.com/babylon101/height_map
- * @see https://doc.babylonjs.com/how_to/set_shapes#ground-from-a-height-map
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set/height_map
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#ground-from-a-height-map
  */
 export function CreateGroundFromHeightMap(
     name: string,

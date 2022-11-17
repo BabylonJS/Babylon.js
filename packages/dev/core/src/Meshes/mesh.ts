@@ -250,7 +250,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     private _internalMeshDataInfo = new _InternalMeshDataInfo();
 
     /**
-     * Determines if the LOD levels are intended to be calculated using screen coverage (surface area ratio) instead of distance
+     * Determines if the LOD levels are intended to be calculated using screen coverage (surface area ratio) instead of distance.
      */
     public get useLODScreenCoverage() {
         return this._internalMeshDataInfo._useLODScreenCoverage;
@@ -258,6 +258,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     public set useLODScreenCoverage(value: boolean) {
         this._internalMeshDataInfo._useLODScreenCoverage = value;
+        this._sortLODLevels();
     }
 
     /**
@@ -376,7 +377,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Gets the list of instances created from this mesh
      * it is not supposed to be modified manually.
      * Note also that the order of the InstancedMesh wihin the array is not significant and might change.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_instances
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/copies/instances
      */
     public instances = new Array<InstancedMesh>();
 
@@ -390,7 +391,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * User defined function used to change how LOD level selection is done
-     * @see https://doc.babylonjs.com/how_to/how_to_use_lod
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/LOD
      */
     public onLODLevelSelection: (distance: number, mesh: Mesh, selectedLevel: Nullable<Mesh>) => void;
 
@@ -844,9 +845,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * Add a mesh as LOD level triggered at the given distance.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_lod
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/LOD
      * @param distanceOrScreenCoverage Either distance from the center of the object to show this level or the screen coverage if `useScreenCoverage` is set to `true`.
      * If screen coverage, value is a fraction of the screen's total surface, between 0 and 1.
+     * Example Playground for distance https://playground.babylonjs.com/#QE7KM#197
+     * Example Playground for screen coverage https://playground.babylonjs.com/#QE7KM#196
      * @param mesh The mesh to be added as LOD level (can be null)
      * @returns This mesh (for chaining)
      */
@@ -870,7 +873,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * Returns the LOD level mesh at the passed distance or null if not found.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_lod
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/LOD
      * @param distance The distance from the center of the object to show this level
      * @returns a Mesh or `null`
      */
@@ -888,11 +891,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * Remove a mesh from the LOD array
-     * @see https://doc.babylonjs.com/how_to/how_to_use_lod
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/LOD
      * @param mesh defines the mesh to be removed
      * @returns This mesh (for chaining)
      */
-    public removeLODLevel(mesh: Mesh): Mesh {
+    public removeLODLevel(mesh: Nullable<Mesh>): Mesh {
         const internalDataInfo = this._internalMeshDataInfo;
         for (let index = 0; index < internalDataInfo._LODLevels.length; index++) {
             if (internalDataInfo._LODLevels[index].mesh === mesh) {
@@ -920,22 +923,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return this;
         }
 
-        let bSphere: BoundingSphere;
-
-        if (boundingSphere) {
-            bSphere = boundingSphere;
-        } else {
-            const boundingInfo = this.getBoundingInfo();
-
-            bSphere = boundingInfo.boundingSphere;
-        }
+        const bSphere = boundingSphere || this.getBoundingInfo().boundingSphere;
 
         const distanceToCamera = camera.mode === Camera.ORTHOGRAPHIC_CAMERA ? camera.minZ : bSphere.centerWorld.subtract(camera.globalPosition).length();
-        const useScreenCoverage = internalDataInfo._useLODScreenCoverage;
         let compareValue = distanceToCamera;
         let compareSign = 1;
 
-        if (useScreenCoverage) {
+        if (internalDataInfo._useLODScreenCoverage) {
             const screenArea = camera.screenArea;
             let meshArea = (bSphere.radiusWorld * camera.minZ) / distanceToCamera;
             meshArea = meshArea * meshArea * Math.PI;
@@ -1583,7 +1577,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * This method updates the vertex positions of an updatable mesh according to the `positionFunction` returned values.
-     * @see https://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh#other-shapes-updatemeshpositions
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/dynamicMeshMorph#other-shapes-updatemeshpositions
      * @param positionFunction is a simple JS function what is passed the mesh `positions` array. It doesn't need to return anything
      * @param computeNormals is a boolean (default true) to enable/disable the mesh normal recomputation after the vertex position update
      * @returns the current mesh
@@ -2638,11 +2632,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * Modifies the mesh geometry according to the passed transformation matrix.
-     * This method returns nothing but it really modifies the mesh even if it's originally not set as updatable.
+     * This method returns nothing, but it really modifies the mesh even if it's originally not set as updatable.
      * The mesh normals are modified using the same transformation.
      * Note that, under the hood, this method sets a new VertexBuffer each call.
      * @param transform defines the transform matrix to use
-     * @see https://doc.babylonjs.com/resources/baking_transformations
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/transforms/center_origin/bakingTransforms
      * @returns the current mesh
      */
     public bakeTransformIntoVertices(transform: Matrix): Mesh {
@@ -2692,13 +2686,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * The mesh World Matrix is then reset.
      * This method returns nothing but really modifies the mesh even if it's originally not set as updatable.
      * Note that, under the hood, this method sets a new VertexBuffer each call.
-     * @see https://doc.babylonjs.com/resources/baking_transformations
-     * @param bakeIndependenlyOfChildren indicates whether to preserve all child nodes' World Matrix during baking
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/transforms/center_origin/bakingTransforms
+     * @param bakeIndependentlyOfChildren indicates whether to preserve all child nodes' World Matrix during baking
      * @returns the current mesh
      */
-    public bakeCurrentTransformIntoVertices(bakeIndependenlyOfChildren: boolean = true): Mesh {
+    public bakeCurrentTransformIntoVertices(bakeIndependentlyOfChildren: boolean = true): Mesh {
         this.bakeTransformIntoVertices(this.computeWorldMatrix(true));
-        this.resetLocalMatrix(bakeIndependenlyOfChildren);
+        this.resetLocalMatrix(bakeIndependentlyOfChildren);
         return this;
     }
 
@@ -3488,7 +3482,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * Creates a new InstancedMesh object from the mesh model.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_instances
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/copies/instances
      * @param name defines the name of the new instance
      * @returns a new InstancedMesh
      */

@@ -21,7 +21,7 @@ import type { Viewport } from "../Maths/math.viewport";
 /**
  * This represents a Lens Flare System or the shiny effect created by the light reflection on the  camera lenses.
  * It is usually composed of several `lensFlare`.
- * @see https://doc.babylonjs.com/how_to/how_to_use_lens_flares
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/environment/lenseFlare
  */
 export class LensFlareSystem {
     /**
@@ -79,7 +79,7 @@ export class LensFlareSystem {
      * Instantiates a lens flare system.
      * This represents a Lens Flare System or the shiny effect created by the light reflection on the  camera lenses.
      * It is usually composed of several `lensFlare`.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_lens_flares
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/environment/lenseFlare
      * @param name Define the name of the lens flare system in the scene
      * @param emitter Define the source (the emitter) of the lens flares (it can be a camera, a light or a mesh).
      * @param scene Define the scene the lens flare system belongs to

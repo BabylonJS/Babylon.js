@@ -272,16 +272,38 @@ export class ImageProcessingConfiguration {
     public vignetteStretch = 0;
 
     /**
-     * Vignette centre X Offset.
+     * Vignette center X Offset.
      */
     @serialize()
-    public vignetteCentreX = 0;
+    public vignetteCenterX = 0;
 
     /**
-     * Vignette centre Y Offset.
+     * Vignette center Y Offset.
      */
     @serialize()
-    public vignetteCentreY = 0;
+    public vignetteCenterY = 0;
+
+    /**
+     * Back Compat: Vignette center Y Offset.
+     * @deprecated use vignetteCenterY instead
+     */
+    public get vignetteCentreY(): number {
+        return this.vignetteCenterY;
+    }
+    public set vignetteCentreY(value: number) {
+        this.vignetteCenterY = value;
+    }
+
+    /**
+     * Back Compat: Vignette center X Offset.
+     * @deprecated use vignetteCenterX instead
+     */
+    public get vignetteCentreX(): number {
+        return this.vignetteCenterX;
+    }
+    public set vignetteCentreX(value: number) {
+        this.vignetteCenterX = value;
+    }
 
     /**
      * Vignette weight or intensity of the vignette effect.
@@ -602,7 +624,7 @@ export class ImageProcessingConfiguration {
                 vignetteScaleX = Tools.Mix(vignetteScaleX, vignetteScaleGeometricMean, this.vignetteStretch);
                 vignetteScaleY = Tools.Mix(vignetteScaleY, vignetteScaleGeometricMean, this.vignetteStretch);
 
-                effect.setFloat4("vignetteSettings1", vignetteScaleX, vignetteScaleY, -vignetteScaleX * this.vignetteCentreX, -vignetteScaleY * this.vignetteCentreY);
+                effect.setFloat4("vignetteSettings1", vignetteScaleX, vignetteScaleY, -vignetteScaleX * this.vignetteCenterX, -vignetteScaleY * this.vignetteCenterY);
 
                 const vignettePower = -2.0 * this.vignetteWeight;
                 effect.setFloat4("vignetteSettings2", this.vignetteColor.r, this.vignetteColor.g, this.vignetteColor.b, vignettePower);
@@ -652,7 +674,16 @@ export class ImageProcessingConfiguration {
      * @returns The parsed image processing
      */
     public static Parse(source: any): ImageProcessingConfiguration {
-        return SerializationHelper.Parse(() => new ImageProcessingConfiguration(), source, null, null);
+        const parsed = SerializationHelper.Parse(() => new ImageProcessingConfiguration(), source, null, null);
+        // Backward compatibility
+        if (source.vignetteCentreX !== undefined) {
+            parsed.vignetteCenterX = source.vignetteCentreX;
+        }
+        if (source.vignetteCentreY !== undefined) {
+            parsed.vignetteCenterY = source.vignetteCentreY;
+        }
+
+        return parsed;
     }
 
     // Static constants associated to the image processing.
