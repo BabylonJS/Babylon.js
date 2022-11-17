@@ -2453,6 +2453,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             return true;
         }
 
+        if (this._emissiveTexture === texture) {
+            return true;
+        }
+
         if (this._reflectivityTexture === texture) {
             return true;
         }
