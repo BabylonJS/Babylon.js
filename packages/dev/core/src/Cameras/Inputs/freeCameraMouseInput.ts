@@ -11,7 +11,7 @@ import { Tools } from "../../Misc/tools";
 import type { IMouseEvent, IPointerEvent } from "../../Events/deviceInputEvents";
 /**
  * Manage the mouse inputs to control the movement of a free camera.
- * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
  */
 export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
     /**
@@ -47,12 +47,12 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
     public _allowCameraRotation = true;
 
     private _currentActiveButton: number = -1;
-
+    private _activePointerId: number = -1;
     private _contextMenuBind: () => void;
 
     /**
      * Manage the mouse inputs to control the movement of a free camera.
-     * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
      * @param touchEnabled Defines if touch is enabled or not
      */
     constructor(
@@ -91,7 +91,13 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
 
                 const srcElement = <HTMLElement>evt.target;
 
-                if (p.type === PointerEventTypes.POINTERDOWN && (this._currentActiveButton === -1 || isTouch)) {
+                if (p.type === PointerEventTypes.POINTERDOWN) {
+                    // If the input is touch with more than one touch OR if the input is mouse and there is already an active button, return
+                    if ((isTouch && this._activePointerId !== -1) || (!isTouch && this._currentActiveButton !== -1)) {
+                        return;
+                    }
+
+                    this._activePointerId = evt.pointerId;
                     try {
                         srcElement?.setPointerCapture(evt.pointerId);
                     } catch (e) {
@@ -116,7 +122,12 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
                     if (engine.isPointerLock && this._onMouseMove) {
                         this._onMouseMove(p.event);
                     }
-                } else if (p.type === PointerEventTypes.POINTERUP && (this._currentActiveButton === evt.button || isTouch)) {
+                } else if (p.type === PointerEventTypes.POINTERUP) {
+                    // If input is touch with a different touch id OR if input is mouse with a different button, return
+                    if ((isTouch && this._activePointerId !== evt.pointerId) || (!isTouch && this._currentActiveButton !== evt.button)) {
+                        return;
+                    }
+
                     try {
                         srcElement?.releasePointerCapture(evt.pointerId);
                     } catch (e) {
@@ -128,7 +139,9 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
                     if (!noPreventDefault) {
                         evt.preventDefault();
                     }
-                } else if (p.type === PointerEventTypes.POINTERMOVE) {
+
+                    this._activePointerId = -1;
+                } else if (p.type === PointerEventTypes.POINTERMOVE && (this._activePointerId === evt.pointerId || !isTouch)) {
                     if (engine.isPointerLock && this._onMouseMove) {
                         this._onMouseMove(p.event);
                     } else if (this._previousPosition) {
@@ -190,7 +203,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
 
         this._observer = this.camera
             .getScene()
-            .onPointerObservable.add(this._pointerInput, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);
+            ._onCameraInputObservable.add(this._pointerInput, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);
 
         if (element) {
             this._contextMenuBind = this.onContextMenu.bind(this);
@@ -212,7 +225,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
      */
     public detachControl(): void {
         if (this._observer) {
-            this.camera.getScene().onPointerObservable.remove(this._observer);
+            this.camera.getScene()._onCameraInputObservable.remove(this._observer);
 
             if (this._contextMenuBind) {
                 const engine = this.camera.getEngine();

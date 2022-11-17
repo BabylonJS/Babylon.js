@@ -35,6 +35,7 @@ declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
 import "../Shaders/gpuRenderParticles.fragment";
 import "../Shaders/gpuRenderParticles.vertex";
 import { GetClass } from "../Misc/typeStore";
+import { addClipPlaneUniforms, bindClipPlane, prepareDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
 
 /**
  * This represents a GPU particle system in Babylon
@@ -690,7 +691,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     /**
      * Not supported by GPUParticleSystem
      * Gets or sets a boolean indicating that ramp gradients must be used
-     * @see https://doc.babylonjs.com/babylon101/particles#ramp-gradients
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/particles/particle_system/particle_system_intro#ramp-gradients
      */
     public get useRampGradients(): boolean {
         //Not supported by GPUParticleSystem
@@ -1247,22 +1248,8 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @internal
      */
     public static _GetEffectCreationOptions(isAnimationSheetEnabled = false, useLogarithmicDepth = false): string[] {
-        const effectCreationOption = [
-            "emitterWM",
-            "worldOffset",
-            "view",
-            "projection",
-            "colorDead",
-            "invView",
-            "vClipPlane",
-            "vClipPlane2",
-            "vClipPlane3",
-            "vClipPlane4",
-            "vClipPlane5",
-            "vClipPlane6",
-            "translationPivot",
-            "eyePosition",
-        ];
+        const effectCreationOption = ["emitterWM", "worldOffset", "view", "projection", "colorDead", "invView", "translationPivot", "eyePosition"];
+        addClipPlaneUniforms(effectCreationOption);
 
         if (isAnimationSheetEnabled) {
             effectCreationOption.push("sheetInfos");
@@ -1281,24 +1268,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      */
     public fillDefines(defines: Array<string>, blendMode: number = 0) {
         if (this._scene) {
-            if (this._scene.clipPlane) {
-                defines.push("#define CLIPPLANE");
-            }
-            if (this._scene.clipPlane2) {
-                defines.push("#define CLIPPLANE2");
-            }
-            if (this._scene.clipPlane3) {
-                defines.push("#define CLIPPLANE3");
-            }
-            if (this._scene.clipPlane4) {
-                defines.push("#define CLIPPLANE4");
-            }
-            if (this._scene.clipPlane5) {
-                defines.push("#define CLIPPLANE5");
-            }
-            if (this._scene.clipPlane6) {
-                defines.push("#define CLIPPLANE6");
-            }
+            prepareDefinesForClipPlanes(this, this._scene, defines);
         }
 
         if (blendMode === ParticleSystem.BLENDMODE_MULTIPLY) {
@@ -1483,9 +1453,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         const defines = effect.defines;
 
         if (this._scene) {
-            if (this._scene.clipPlane || this._scene.clipPlane2 || this._scene.clipPlane3 || this._scene.clipPlane4 || this._scene.clipPlane5 || this._scene.clipPlane6) {
-                MaterialHelper.BindClipPlane(effect, this._scene);
-            }
+            bindClipPlane(effect, this, this._scene);
         }
 
         if (defines.indexOf("#define BILLBOARDMODE_ALL") >= 0) {

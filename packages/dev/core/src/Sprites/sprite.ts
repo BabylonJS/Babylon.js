@@ -11,7 +11,7 @@ declare type Animation = import("../Animations/animation").Animation;
 
 /**
  * Class used to represent a sprite
- * @see https://doc.babylonjs.com/babylon101/sprites
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/sprites
  */
 export class Sprite extends ThinSprite implements IAnimatable {
     /** Gets or sets the current world position */

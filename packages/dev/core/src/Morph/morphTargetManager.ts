@@ -12,7 +12,7 @@ import { RawTexture2DArray } from "../Materials/Textures/rawTexture2DArray";
 import type { AbstractScene } from "../abstractScene";
 /**
  * This class is used to deform meshes using morphing between different targets
- * @see https://doc.babylonjs.com/how_to/how_to_use_morphtargets
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/morphTargets
  */
 export class MorphTargetManager implements IDisposable {
     /** Enable storing morph target data into textures when set to true (true by default) */

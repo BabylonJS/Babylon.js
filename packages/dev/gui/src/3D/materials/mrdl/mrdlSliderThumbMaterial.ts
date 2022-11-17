@@ -49,6 +49,9 @@ export class MRDLSliderThumbMaterial extends PushMaterial {
      */
     public static BLUE_GRADIENT_TEXTURE_URL = "https://assets.babylonjs.com/meshes/MRTK/MRDL/mrtk-mrdl-blue-gradient.png";
     private _blueGradientTexture: Texture;
+    private _decalTexture: Texture;
+    private _reflectionMapTexture: Texture;
+    private _indirectEnvTexture: Texture;
 
     /**
      * Gets or sets the corner Radius on the slider thumb.
@@ -759,8 +762,8 @@ export class MRDLSliderThumbMaterial extends PushMaterial {
 
         // "Mapped Environment"
         //define ENV_ENABLE false;
-        this._activeEffect.setTexture("_Reflection_Map_", new Texture("", this.getScene()));
-        this._activeEffect.setTexture("_Indirect_Environment_", new Texture("", this.getScene()));
+        this._activeEffect.setTexture("_Reflection_Map_", this._reflectionMapTexture);
+        this._activeEffect.setTexture("_Indirect_Environment_", this._indirectEnvTexture);
 
         // "FingerOcclusion"
         //define OCCLUSION_ENABLED false;
@@ -804,7 +807,7 @@ export class MRDLSliderThumbMaterial extends PushMaterial {
 
         // "Decal Texture"
         //define DECAL_ENABLE false;
-        this._activeEffect.setTexture("_Decal_", new Texture("", this.getScene()));
+        this._activeEffect.setTexture("_Decal_", this._decalTexture);
         this._activeEffect.setVector2("_Decal_Scale_XY_", this.decalScaleXY);
         this._activeEffect.setFloat("_Decal_Front_Only_", this.decalFrontOnly ? 1.0 : 0.0);
 
@@ -849,6 +852,10 @@ export class MRDLSliderThumbMaterial extends PushMaterial {
 
     public dispose(forceDisposeEffect?: boolean): void {
         super.dispose(forceDisposeEffect);
+        this._reflectionMapTexture.dispose();
+        this._indirectEnvTexture.dispose();
+        this._blueGradientTexture.dispose();
+        this._decalTexture.dispose();
     }
 
     public clone(name: string): MRDLSliderThumbMaterial {

@@ -82,14 +82,22 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
      *  * dragDistance along the drag axis
      *  * dragPlaneNormal normal of the current drag plane used during the drag
      *  * dragPlanePoint in world space where the drag intersects the drag plane
+     *
+     *  (if validatedDrag is used, the position of the attached mesh might not equal dragPlanePoint)
      */
     public onDragObservable = new Observable<{ delta: Vector3; dragPlanePoint: Vector3; dragPlaneNormal: Vector3; dragDistance: number; pointerId: number }>();
     /**
      *  Fires each time a drag begins (eg. mouse down on mesh)
+     *  * dragPlanePoint in world space where the drag intersects the drag plane
+     *
+     *  (if validatedDrag is used, the position of the attached mesh might not equal dragPlanePoint)
      */
     public onDragStartObservable = new Observable<{ dragPlanePoint: Vector3; pointerId: number }>();
     /**
      *  Fires each time a drag ends (eg. mouse release after drag)
+     *  * dragPlanePoint in world space where the drag intersects the drag plane
+     *
+     *  (if validatedDrag is used, the position of the attached mesh might not equal dragPlanePoint)
      */
     public onDragEndObservable = new Observable<{ dragPlanePoint: Vector3; pointerId: number }>();
     /**
@@ -237,7 +245,6 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
                 // If behavior is disabled before releaseDrag is ever called, call it now.
                 if (this._attachedToElement) {
                     this.releaseDrag();
-                    this._activeDragButton = -1;
                 }
 
                 return;
@@ -266,7 +273,6 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
                     this._activeDragButton === pointerInfo.event.button
                 ) {
                     this.releaseDrag();
-                    this._activeDragButton = -1;
                 }
             } else if (pointerInfo.type == PointerEventTypes.POINTERMOVE) {
                 const pointerId = (<IPointerEvent>pointerInfo.event).pointerId;
@@ -329,6 +335,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
         }
 
         this.currentDraggingPointerId = -1;
+        this._activeDragButton = -1;
         this._moving = false;
 
         // Reattach camera controls
@@ -561,6 +568,5 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
             this._dragPlane.dispose();
         }
         this.releaseDrag();
-        this._activeDragButton = -1;
     }
 }

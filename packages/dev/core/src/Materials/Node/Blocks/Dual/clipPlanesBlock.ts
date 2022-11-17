@@ -4,11 +4,11 @@ import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import { MaterialHelper } from "../../../materialHelper";
 import type { Effect } from "../../../effect";
 import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
 import type { Mesh } from "../../../../Meshes/mesh";
 import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
+import { bindClipPlane } from "../../../../Materials/clipPlaneMaterialHelper";
 /**
  * Block used to implement clip planes
  */
@@ -66,12 +66,12 @@ export class ClipPlanesBlock extends NodeMaterialBlock {
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         const scene = mesh.getScene();
 
-        const useClipPlane1 = scene.clipPlane !== undefined && scene.clipPlane !== null;
-        const useClipPlane2 = scene.clipPlane2 !== undefined && scene.clipPlane2 !== null;
-        const useClipPlane3 = scene.clipPlane3 !== undefined && scene.clipPlane3 !== null;
-        const useClipPlane4 = scene.clipPlane4 !== undefined && scene.clipPlane4 !== null;
-        const useClipPlane5 = scene.clipPlane5 !== undefined && scene.clipPlane5 !== null;
-        const useClipPlane6 = scene.clipPlane6 !== undefined && scene.clipPlane6 !== null;
+        const useClipPlane1 = nodeMaterial.clipPlane ?? scene.clipPlane ? true : false;
+        const useClipPlane2 = nodeMaterial.clipPlane2 ?? scene.clipPlane2 ? true : false;
+        const useClipPlane3 = nodeMaterial.clipPlane3 ?? scene.clipPlane3 ? true : false;
+        const useClipPlane4 = nodeMaterial.clipPlane4 ?? scene.clipPlane4 ? true : false;
+        const useClipPlane5 = nodeMaterial.clipPlane5 ?? scene.clipPlane5 ? true : false;
+        const useClipPlane6 = nodeMaterial.clipPlane6 ?? scene.clipPlane6 ? true : false;
 
         defines.setValue("CLIPPLANE", useClipPlane1, true);
         defines.setValue("CLIPPLANE2", useClipPlane2, true);
@@ -88,7 +88,7 @@ export class ClipPlanesBlock extends NodeMaterialBlock {
 
         const scene = mesh.getScene();
 
-        MaterialHelper.BindClipPlane(effect, scene);
+        bindClipPlane(effect, nodeMaterial, scene);
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {

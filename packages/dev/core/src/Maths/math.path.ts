@@ -335,7 +335,7 @@ export class Path2 {
 
 /**
  * Represents a 3D path made up of multiple 3D points
- * @see https://doc.babylonjs.com/divingDeeper/mesh/path3D
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/path3D
  */
 export class Path3D {
     private _curve = new Array<Vector3>();
@@ -362,7 +362,7 @@ export class Path3D {
     /**
      * new Path3D(path, normal, raw)
      * Creates a Path3D. A Path3D is a logical math object, so not a mesh.
-     * please read the description in the tutorial : https://doc.babylonjs.com/how_to/how_to_use_path3d
+     * please read the description in the tutorial : https://doc.babylonjs.com/features/featuresDeepDive/mesh/path3D
      * @param path an array of Vector3, the curve axis of the Path3D
      * @param firstNormal (options) Vector3, the first wanted normal to the curve. Ex (0, 1, 0) for a vertical normal.
      * @param raw (optional, default false) : boolean, if true the returned Path3D isn't normalized. Useful to depict path acceleration or speed.
@@ -815,14 +815,14 @@ export class Path3D {
 /**
  * A Curve3 object is a logical object, so not a mesh, to handle curves in the 3D geometric space.
  * A Curve3 is designed from a series of successive Vector3.
- * @see https://doc.babylonjs.com/how_to/how_to_use_curve3
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/drawCurves
  */
 export class Curve3 {
     private _points: Vector3[];
     private _length: number = 0.0;
 
     /**
-     * Returns a Curve3 object along a Quadratic Bezier curve : https://doc.babylonjs.com/how_to/how_to_use_curve3#quadratic-bezier-curve
+     * Returns a Curve3 object along a Quadratic Bezier curve : https://doc.babylonjs.com/features/featuresDeepDive/mesh/drawCurves#quadratic-bezier-curve
      * @param v0 (Vector3) the origin point of the Quadratic Bezier
      * @param v1 (Vector3) the control point
      * @param v2 (Vector3) the end point of the Quadratic Bezier
@@ -843,7 +843,7 @@ export class Curve3 {
     }
 
     /**
-     * Returns a Curve3 object along a Cubic Bezier curve : https://doc.babylonjs.com/how_to/how_to_use_curve3#cubic-bezier-curve
+     * Returns a Curve3 object along a Cubic Bezier curve : https://doc.babylonjs.com/features/featuresDeepDive/mesh/drawCurves#cubic-bezier-curve
      * @param v0 (Vector3) the origin point of the Cubic Bezier
      * @param v1 (Vector3) the first control point
      * @param v2 (Vector3) the second control point
@@ -865,18 +865,18 @@ export class Curve3 {
     }
 
     /**
-     * Returns a Curve3 object along a Hermite Spline curve : https://doc.babylonjs.com/how_to/how_to_use_curve3#hermite-spline
+     * Returns a Curve3 object along a Hermite Spline curve : https://doc.babylonjs.com/features/featuresDeepDive/mesh/drawCurves#hermite-spline
      * @param p1 (Vector3) the origin point of the Hermite Spline
      * @param t1 (Vector3) the tangent vector at the origin point
      * @param p2 (Vector3) the end point of the Hermite Spline
      * @param t2 (Vector3) the tangent vector at the end point
-     * @param nbPoints (integer) the wanted number of points in the curve
+     * @param nSeg (integer) the number of curve segments or nSeg + 1 points in the array
      * @returns the created Curve3
      */
-    public static CreateHermiteSpline(p1: DeepImmutable<Vector3>, t1: DeepImmutable<Vector3>, p2: DeepImmutable<Vector3>, t2: DeepImmutable<Vector3>, nbPoints: number): Curve3 {
+    public static CreateHermiteSpline(p1: DeepImmutable<Vector3>, t1: DeepImmutable<Vector3>, p2: DeepImmutable<Vector3>, t2: DeepImmutable<Vector3>, nSeg: number): Curve3 {
         const hermite = new Array<Vector3>();
-        const step = 1.0 / nbPoints;
-        for (let i = 0; i <= nbPoints; i++) {
+        const step = 1.0 / nSeg;
+        for (let i = 0; i <= nSeg; i++) {
             hermite.push(Vector3.Hermite(p1, t1, p2, t2, i * step));
         }
         return new Curve3(hermite);
@@ -989,7 +989,7 @@ export class Curve3 {
     /**
      * A Curve3 object is a logical object, so not a mesh, to handle curves in the 3D geometric space.
      * A Curve3 is designed from a series of successive Vector3.
-     * Tuto : https://doc.babylonjs.com/how_to/how_to_use_curve3#curve3-object
+     * Tuto : https://doc.babylonjs.com/features/featuresDeepDive/mesh/drawCurves#curve3-object
      * @param points points which make up the curve
      */
     constructor(points: Vector3[]) {

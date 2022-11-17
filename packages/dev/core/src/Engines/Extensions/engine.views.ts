@@ -6,7 +6,7 @@ import { Observable } from "../../Misc/observable";
 
 /**
  * Class used to define an additional view for the engine
- * @see https://doc.babylonjs.com/divingDeeper/scene/multiCanvas
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/multiCanvas
  */
 export class EngineView {
     /**
@@ -52,7 +52,7 @@ declare module "../../Engines/engine" {
 
         /**
          * Gets the current engine view
-         * @see https://doc.babylonjs.com/how_to/multi_canvases
+         * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/multiCanvas
          */
         activeView: Nullable<EngineView>;
 
@@ -138,7 +138,7 @@ Engine.prototype.registerView = function (canvas: HTMLCanvasElement, camera?: Ca
 };
 
 Engine.prototype.unRegisterView = function (canvas: HTMLCanvasElement): Engine {
-    if (!this.views) {
+    if (!this.views || this.views.length === 0) {
         return this;
     }
 
@@ -157,7 +157,7 @@ Engine.prototype.unRegisterView = function (canvas: HTMLCanvasElement): Engine {
 };
 
 Engine.prototype._renderViews = function () {
-    if (!this.views) {
+    if (!this.views || this.views.length === 0) {
         return false;
     }
 

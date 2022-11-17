@@ -70,7 +70,7 @@ export interface IInspectableOptions {
 /**
  * Interface used to define custom inspectable properties.
  * This interface is used by the inspector to display custom property grids
- * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
+ * @see https://doc.babylonjs.com/toolsAndResources/inspector#extensibility
  */
 export interface IInspectable {
     /**

@@ -93,7 +93,11 @@
 	}
 #endif
 
+#define CUSTOM_IMAGEPROCESSINGFUNCTIONS_DEFINITIONS
+
 vec4 applyImageProcessing(vec4 result) {
+
+	#define CUSTOM_IMAGEPROCESSINGFUNCTIONS_UPDATERESULT_ATSTART
 
 #ifdef EXPOSURE
 	result.rgb *= exposureLinear;
@@ -173,6 +177,8 @@ vec4 applyImageProcessing(vec4 result) {
 	float dither = mix(-ditherIntensity, ditherIntensity, rand);
 	result.rgb = saturate(result.rgb + vec3(dither));
 #endif
+
+	#define CUSTOM_IMAGEPROCESSINGFUNCTIONS_UPDATERESULT_ATEND
 
 	return result;
 }

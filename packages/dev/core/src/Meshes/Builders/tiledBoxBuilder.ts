@@ -9,7 +9,7 @@ import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
 
 /**
  * Creates the VertexData for a tiled box
- * @see https://doc.babylonjs.com/divingDeeper/mesh/creation/set/tiled_box
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set/tiled_box
  * @param options an object used to set the following optional parameters for the tiled box, required but can be empty
  * * pattern sets the rotation or reflection pattern for the tiles,
  * * size of the box
@@ -274,7 +274,7 @@ export function CreateTiledBoxVertexData(options: {
 
 /**
  * Creates a tiled box mesh
- * @see https://doc.babylonjs.com/divingDeeper/mesh/creation/set/tiled_box
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set/tiled_box
  * @param name defines the name of the mesh
  * @param options an object used to set the following optional parameters for the tiled box, required but can be empty
  * * pattern sets the rotation or reflection pattern for the tiles,

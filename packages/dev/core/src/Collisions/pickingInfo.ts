@@ -9,7 +9,7 @@ declare type Ray = import("../Culling/ray").Ray;
 
 /**
  * Information about the result of picking within a scene
- * @see https://doc.babylonjs.com/divingDeeper/mesh/interactions/picking_collisions
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/interactions/picking_collisions
  */
 export class PickingInfo {
     /**

@@ -2,7 +2,7 @@ import { Vector3 } from "../Maths/math.vector";
 
 /**
  * Holds the data for the raycast result
- * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
  */
 export class PhysicsRaycastResult {
     private _hasHit: boolean = false;

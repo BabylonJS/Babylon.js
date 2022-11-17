@@ -12,7 +12,7 @@ import type { Observer } from "../Misc/observable";
 /**
  * As raycast might be hard to debug, the RayHelper can help rendering the different rays
  * in order to better appreciate the issue one might have.
- * @see https://doc.babylonjs.com/babylon101/raycasts#debugging
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/interactions/picking_collisions#debugging
  */
 export class RayHelper {
     /**
@@ -50,7 +50,7 @@ export class RayHelper {
      * Instantiate a new ray helper.
      * As raycast might be hard to debug, the RayHelper can help rendering the different rays
      * in order to better appreciate the issue one might have.
-     * @see https://doc.babylonjs.com/babylon101/raycasts#debugging
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/interactions/picking_collisions#debugging
      * @param ray Defines the ray we are currently tryin to visualize
      */
     constructor(ray: Ray) {

@@ -31,6 +31,7 @@ import "../../Shaders/shadowMap.fragment";
 import "../../Shaders/shadowMap.vertex";
 import "../../Shaders/depthBoxBlur.fragment";
 import "../../Shaders/ShadersInclude/shadowMapFragmentSoftTransparentShadow";
+import { addClipPlaneUniforms, bindClipPlane, prepareDefinesForClipPlanes } from "../../Materials/clipPlaneMaterialHelper";
 
 /**
  * Defines the options associated with the creation of a custom shader for a shadow generator.
@@ -139,7 +140,7 @@ export interface IShadowGenerator {
 /**
  * Default implementation IShadowGenerator.
  * This is the main object responsible of generating shadows in the framework.
- * Documentation: https://doc.babylonjs.com/babylon101/shadows
+ * Documentation: https://doc.babylonjs.com/features/featuresDeepDive/lights/shadows
  */
 export class ShadowGenerator implements IShadowGenerator {
     /**
@@ -849,7 +850,7 @@ export class ShadowGenerator implements IShadowGenerator {
      * Creates a ShadowGenerator object.
      * A ShadowGenerator is the required tool to use the shadows.
      * Each light casting shadows needs to use its own ShadowGenerator.
-     * Documentation : https://doc.babylonjs.com/babylon101/shadows
+     * Documentation : https://doc.babylonjs.com/features/featuresDeepDive/lights/shadows
      * @param mapSize The size of the texture what stores the shadows. Example : 1024.
      * @param light The light object generating the shadows.
      * @param usefullFloatFirst By default the generator will try to use half float textures but if you need precision (for self shadowing for instance), you can use this option to enforce full float texture.
@@ -1225,13 +1226,13 @@ export class ShadowGenerator implements IShadowGenerator {
                 subMesh._setMainDrawWrapperOverride(null);
             } else {
                 // Alpha test
-                if (material && this.useOpacityTextureForTransparentShadow) {
+                if (this.useOpacityTextureForTransparentShadow) {
                     const opacityTexture = (material as any).opacityTexture;
                     if (opacityTexture) {
                         effect.setTexture("diffuseSampler", opacityTexture);
                         effect.setMatrix("diffuseMatrix", opacityTexture.getTextureMatrix() || this._defaultTextureMatrix);
                     }
-                } else if (material && material.needAlphaTesting()) {
+                } else if (material.needAlphaTesting() || material.needAlphaBlending()) {
                     const alphaTexture = material.getAlphaTestTexture();
                     if (alphaTexture) {
                         effect.setTexture("diffuseSampler", alphaTexture);
@@ -1265,7 +1266,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 }
 
                 // Clip planes
-                MaterialHelper.BindClipPlane(effect, scene);
+                bindClipPlane(effect, material, scene);
             }
 
             if (!this._useUBO && !shadowDepthWrapper) {
@@ -1446,6 +1447,10 @@ export class ShadowGenerator implements IShadowGenerator {
         const material = subMesh.getMaterial(),
             shadowDepthWrapper = material?.shadowDepthWrapper;
 
+        if (!material) {
+            return false;
+        }
+
         const defines: string[] = [];
 
         this._prepareShadowDefines(subMesh, useInstances, defines, isTransparent);
@@ -1474,7 +1479,10 @@ export class ShadowGenerator implements IShadowGenerator {
             }
 
             // Alpha test
-            if (material && material.needAlphaTesting()) {
+            const needAlphaTesting = material?.needAlphaTesting();
+            const needAlphaBlending = material?.needAlphaBlending();
+
+            if (material && (needAlphaTesting || needAlphaBlending)) {
                 let alphaTexture = null;
                 if (this.useOpacityTextureForTransparentShadow) {
                     alphaTexture = (material as any).opacityTexture;
@@ -1488,8 +1496,10 @@ export class ShadowGenerator implements IShadowGenerator {
 
                     const alphaCutOff = (material as any).alphaCutOff ?? ShadowGenerator.DEFAULT_ALPHA_CUTOFF;
 
-                    defines.push("#define ALPHATEST");
-                    defines.push(`#define ALPHATESTVALUE ${alphaCutOff}${alphaCutOff % 1 === 0 ? "." : ""}`);
+                    defines.push("#define ALPHATEXTURE");
+                    if (needAlphaTesting) {
+                        defines.push(`#define ALPHATESTVALUE ${alphaCutOff}${alphaCutOff % 1 === 0 ? "." : ""}`);
+                    }
                     if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
                         attribs.push(VertexBuffer.UVKind);
                         defines.push("#define UV1");
@@ -1543,25 +1553,7 @@ export class ShadowGenerator implements IShadowGenerator {
             }
 
             // ClipPlanes
-            const scene = this._scene;
-            if (scene.clipPlane) {
-                defines.push("#define CLIPPLANE");
-            }
-            if (scene.clipPlane2) {
-                defines.push("#define CLIPPLANE2");
-            }
-            if (scene.clipPlane3) {
-                defines.push("#define CLIPPLANE3");
-            }
-            if (scene.clipPlane4) {
-                defines.push("#define CLIPPLANE4");
-            }
-            if (scene.clipPlane5) {
-                defines.push("#define CLIPPLANE5");
-            }
-            if (scene.clipPlane6) {
-                defines.push("#define CLIPPLANE6");
-            }
+            prepareDefinesForClipPlanes(material, this._scene, defines);
 
             // Instances
             if (useInstances) {
@@ -1598,18 +1590,14 @@ export class ShadowGenerator implements IShadowGenerator {
                     "biasAndScaleSM",
                     "morphTargetInfluences",
                     "boneTextureWidth",
-                    "vClipPlane",
-                    "vClipPlane2",
-                    "vClipPlane3",
-                    "vClipPlane4",
-                    "vClipPlane5",
-                    "vClipPlane6",
                     "softTransparentShadowSM",
                     "morphTargetTextureInfo",
                     "morphTargetTextureIndices",
                 ];
                 const samplers = ["diffuseSampler", "boneSampler", "morphTargets"];
                 const uniformBuffers = ["Scene", "Mesh"];
+
+                addClipPlaneUniforms(uniforms);
 
                 // Custom shader?
                 if (this.customShaderOptions) {

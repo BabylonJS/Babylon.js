@@ -41,10 +41,10 @@ import { Color4, Color3, TmpColors } from "../Maths/math.color";
 import type { ISize } from "../Maths/math.size";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import { ThinEngine } from "../Engines/thinEngine";
-import { ThinMaterialHelper } from "../Materials/thinMaterialHelper";
 import { MaterialHelper } from "../Materials/materialHelper";
 
 import "../Engines/Extensions/engine.alpha";
+import { addClipPlaneUniforms, prepareDefinesForClipPlanes, bindClipPlane } from "../Materials/clipPlaneMaterialHelper";
 
 declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
 declare type ProceduralTexture = import("../Materials/Textures/Procedurals/proceduralTexture").ProceduralTexture;
@@ -55,7 +55,7 @@ declare type Engine = import("../Engines/engine").Engine;
  * This represents a particle system in Babylon.
  * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
  * Particles can take different shapes while emitted like box, sphere, cone or you can write your custom function.
- * @example https://doc.babylonjs.com/babylon101/particles
+ * @example https://doc.babylonjs.com/features/featuresDeepDive/particles/particle_system/particle_system_intro
  */
 export class ParticleSystem extends BaseParticleSystem implements IDisposable, IAnimatable, IParticleSystem {
     /**
@@ -172,7 +172,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     public defaultViewMatrix: Matrix;
 
     /** Gets or sets a boolean indicating that ramp gradients must be used
-     * @see https://doc.babylonjs.com/babylon101/particles#ramp-gradients
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/particles/particle_system/particle_system_intro#ramp-gradients
      */
     public get useRampGradients(): boolean {
         return this._useRampGradients;
@@ -1717,20 +1717,9 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      * @internal
      */
     public static _GetEffectCreationOptions(isAnimationSheetEnabled = false, useLogarithmicDepth = false): string[] {
-        const effectCreationOption = [
-            "invView",
-            "view",
-            "projection",
-            "vClipPlane",
-            "vClipPlane2",
-            "vClipPlane3",
-            "vClipPlane4",
-            "vClipPlane5",
-            "vClipPlane6",
-            "textureMask",
-            "translationPivot",
-            "eyePosition",
-        ];
+        const effectCreationOption = ["invView", "view", "projection", "textureMask", "translationPivot", "eyePosition"];
+
+        addClipPlaneUniforms(effectCreationOption);
 
         if (isAnimationSheetEnabled) {
             effectCreationOption.push("particlesInfos");
@@ -1749,29 +1738,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      */
     public fillDefines(defines: Array<string>, blendMode: number) {
         if (this._scene) {
-            if (this._scene.clipPlane) {
-                defines.push("#define CLIPPLANE");
-            }
-
-            if (this._scene.clipPlane2) {
-                defines.push("#define CLIPPLANE2");
-            }
-
-            if (this._scene.clipPlane3) {
-                defines.push("#define CLIPPLANE3");
-            }
-
-            if (this._scene.clipPlane4) {
-                defines.push("#define CLIPPLANE4");
-            }
-
-            if (this._scene.clipPlane5) {
-                defines.push("#define CLIPPLANE5");
-            }
-
-            if (this._scene.clipPlane6) {
-                defines.push("#define CLIPPLANE6");
-            }
+            prepareDefinesForClipPlanes(this, this._scene, defines);
         }
 
         if (this._isAnimationSheetEnabled) {
@@ -2079,9 +2046,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         const defines = effect.defines;
 
         if (this._scene) {
-            if (this._scene.clipPlane || this._scene.clipPlane2 || this._scene.clipPlane3 || this._scene.clipPlane4 || this._scene.clipPlane5 || this._scene.clipPlane6) {
-                ThinMaterialHelper.BindClipPlane(effect, this._scene);
-            }
+            bindClipPlane(effect, this, this._scene);
         }
 
         if (defines.indexOf("#define BILLBOARDMODE_ALL") >= 0) {

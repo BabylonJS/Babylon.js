@@ -6,17 +6,22 @@ export type ButtonProps = {
     active?: boolean;
     onClick?: () => void;
     color: "light" | "dark";
-    size: "default" | "small" | "wide";
+    size: "default" | "small" | "wide" | "smaller";
     title?: string;
+    backgroundColor?: string;
 };
 
-export const Button: React.FC<ButtonProps> = ({ disabled, active, onClick, children, color, size, title }) => {
+export const Button: React.FC<ButtonProps> = ({ disabled, active, onClick, children, color, size, title, backgroundColor }) => {
     return (
         <button
-            className={ClassNames({ button: true, active, wide: size === "wide", small: size === "small", light: color === "light", dark: color === "dark" }, styles)}
+            className={ClassNames(
+                { button: true, active, wide: size === "wide", small: size === "small", smaller: size === "smaller", light: color === "light", dark: color === "dark" },
+                styles
+            )}
             disabled={disabled}
             onClick={onClick}
             title={title}
+            style={{ backgroundColor }}
         >
             {children}
         </button>

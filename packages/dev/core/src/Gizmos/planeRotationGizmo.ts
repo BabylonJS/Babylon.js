@@ -2,7 +2,7 @@ import type { Observer } from "../Misc/observable";
 import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
 import type { PointerInfo } from "../Events/pointerEvents";
-import { Quaternion, Matrix, Vector3 } from "../Maths/math.vector";
+import { Quaternion, Matrix, Vector3, TmpVectors } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
 import "../Meshes/Builders/linesBuilder";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
@@ -18,6 +18,8 @@ import { ShaderMaterial } from "../Materials/shaderMaterial";
 import { Effect } from "../Materials/effect";
 import { CreatePlane } from "../Meshes/Builders/planeBuilder";
 import { CreateTorus } from "../Meshes/Builders/torusBuilder";
+import { Epsilon } from "../Maths/math.constants";
+import { Logger } from "../Misc/logger";
 
 /**
  * Interface for plane rotation gizmo
@@ -236,10 +238,20 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
                 const nodeQuaternion = new Quaternion(0, 0, 0, 1);
                 const nodeTranslation = new Vector3(0, 0, 0);
                 this._handlePivot();
-                this.attachedNode.getWorldMatrix().decompose(nodeScale, nodeQuaternion, nodeTranslation);
 
-                const newVector = event.dragPlanePoint.subtract(nodeTranslation).normalize();
-                const originalVector = lastDragPosition.subtract(nodeTranslation).normalize();
+                this.attachedNode.getWorldMatrix().decompose(nodeScale, nodeQuaternion, nodeTranslation);
+                const uniformScaling = Math.abs(nodeScale.x - nodeScale.y) <= Epsilon && Math.abs(nodeScale.x - nodeScale.z) <= Epsilon;
+                if (!uniformScaling && this.updateGizmoRotationToMatchAttachedMesh) {
+                    Logger.Warn(
+                        "Unable to use a rotation gizmo matching mesh rotation with non uniform scaling. Use uniform scaling or set updateGizmoRotationToMatchAttachedMesh to false."
+                    );
+                    return;
+                }
+                nodeQuaternion.normalize();
+
+                const nodeTranslationForOperation = this.updateGizmoPositionToMatchAttachedMesh ? nodeTranslation : this._rootMesh.absolutePosition;
+                const newVector = event.dragPlanePoint.subtract(nodeTranslationForOperation).normalize();
+                const originalVector = lastDragPosition.subtract(nodeTranslationForOperation).normalize();
                 const cross = Vector3.Cross(newVector, originalVector);
                 const dot = Vector3.Dot(newVector, originalVector);
                 let angle = Math.atan2(cross.length(), dot);
@@ -252,7 +264,7 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
                 // Flip up vector depending on which side the camera is on
                 let cameraFlipped = false;
                 if (gizmoLayer.utilityLayerScene.activeCamera) {
-                    const camVec = gizmoLayer.utilityLayerScene.activeCamera.position.subtract(nodeTranslation).normalize();
+                    const camVec = gizmoLayer.utilityLayerScene.activeCamera.position.subtract(nodeTranslationForOperation).normalize();
                     if (Vector3.Dot(camVec, localPlaneNormalTowardsCamera) > 0) {
                         planeNormalTowardsCamera.scaleInPlace(-1);
                         localPlaneNormalTowardsCamera.scaleInPlace(-1);
@@ -300,13 +312,13 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
                 if (this.updateGizmoRotationToMatchAttachedMesh) {
                     // Rotate selected mesh quaternion over fixed axis
                     nodeQuaternion.multiplyToRef(amountToRotate, nodeQuaternion);
+                    // recompose matrix
+                    Matrix.ComposeToRef(nodeScale, nodeQuaternion, nodeTranslation, this.attachedNode.getWorldMatrix());
                 } else {
                     // Rotate selected mesh quaternion over rotated axis
-                    amountToRotate.multiplyToRef(nodeQuaternion, nodeQuaternion);
+                    amountToRotate.toRotationMatrix(TmpVectors.Matrix[0]);
+                    TmpVectors.Matrix[0].multiplyToRef(this.attachedNode.getWorldMatrix(), this.attachedNode.getWorldMatrix());
                 }
-
-                // recompose matrix
-                this.attachedNode.getWorldMatrix().copyFrom(Matrix.Compose(nodeScale, nodeQuaternion, nodeTranslation));
 
                 lastDragPosition.copyFrom(event.dragPlanePoint);
                 if (snapped) {

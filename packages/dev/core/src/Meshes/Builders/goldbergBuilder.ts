@@ -119,7 +119,7 @@ export function CreateGoldbergVertexData(options: GoldbergVertexDataOption, gold
 /**
  * Creates the Mesh for a Goldberg Polyhedron which is made from 12 pentagonal and the rest hexagonal faces
  * @see https://en.wikipedia.org/wiki/Goldberg_polyhedron
- * @see https://doc.babylonjs.com/divingDeeper/mesh/creation/polyhedra/goldberg_poly
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/polyhedra/goldberg_poly
  * @param name defines the name of the mesh
  * @param options an object used to set the following optional parameters for the polyhedron, required but can be empty
  * @param scene defines the hosting scene

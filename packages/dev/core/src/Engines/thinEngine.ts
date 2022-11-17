@@ -97,17 +97,17 @@ export interface EngineOptions extends WebGLContextAttributes {
     limitDeviceRatio?: number;
     /**
      * Defines if webvr should be enabled automatically
-     * @see https://doc.babylonjs.com/how_to/webvr_camera
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/webVRCamera
      */
     autoEnableWebVR?: boolean;
     /**
      * Defines if webgl2 should be turned off even if supported
-     * @see https://doc.babylonjs.com/features/webgl2
+     * @see https://doc.babylonjs.com/setup/support/webGL2
      */
     disableWebGL2Support?: boolean;
     /**
      * Defines if webaudio should be initialized as well
-     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic
      */
     audioEngine?: boolean;
     /**
@@ -117,7 +117,7 @@ export interface EngineOptions extends WebGLContextAttributes {
 
     /**
      * Defines if animations should run using a deterministic lock step
-     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#deterministic-lockstep
      */
     deterministicLockstep?: boolean;
     /** Defines the maximum steps to use with deterministic lock step mode */
@@ -200,14 +200,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.30.0";
+        return "babylonjs@5.33.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.30.0";
+        return "5.33.0";
     }
 
     /**
@@ -357,7 +357,7 @@ export class ThinEngine {
 
     /**
      * Gets a boolean indicating that the engine supports uniform buffers
-     * @see https://doc.babylonjs.com/features/webgl2#uniform-buffer-objets
+     * @see https://doc.babylonjs.com/setup/support/webGL2#uniform-buffer-objets
      */
     public get supportsUniformBuffers(): boolean {
         return this.webGLVersion > 1 && !this.disableUniformBuffers;
@@ -447,7 +447,7 @@ export class ThinEngine {
 
     /**
      * Gets or sets a boolean indicating if resources should be retained to be able to handle context lost events
-     * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#handling-webgl-context-lost
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/optimize_your_scene#handling-webgl-context-lost
      */
     public get doNotHandleContextLost(): boolean {
         return this._doNotHandleContextLost;
@@ -2306,7 +2306,7 @@ export class ThinEngine {
 
     /**
      * Records a vertex array object
-     * @see https://doc.babylonjs.com/features/webgl2#vertex-array-objects
+     * @see https://doc.babylonjs.com/setup/support/webGL2#vertex-array-objects
      * @param vertexBuffers defines the list of vertex buffers to store
      * @param indexBuffer defines the index buffer to store
      * @param effect defines the effect to store
@@ -2342,7 +2342,7 @@ export class ThinEngine {
 
     /**
      * Bind a specific vertex array object
-     * @see https://doc.babylonjs.com/features/webgl2#vertex-array-objects
+     * @see https://doc.babylonjs.com/setup/support/webGL2#vertex-array-objects
      * @param vertexArrayObject defines the vertex array object to bind
      * @param indexBuffer defines the index buffer to bind
      */
@@ -4618,12 +4618,14 @@ export class ThinEngine {
 
         this._unpackFlipY(texture.invertY);
 
+        let targetForBinding = gl.TEXTURE_2D;
         let target = gl.TEXTURE_2D;
         if (texture.isCube) {
             target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex;
+            targetForBinding = gl.TEXTURE_CUBE_MAP;
         }
 
-        this._bindTextureDirectly(target, texture, true);
+        this._bindTextureDirectly(targetForBinding, texture, true);
 
         gl.texSubImage2D(target, lod, xOffset, yOffset, width, height, format, textureType, imageData);
 
@@ -4631,7 +4633,7 @@ export class ThinEngine {
             this._gl.generateMipmap(target);
         }
 
-        this._bindTextureDirectly(target, null);
+        this._bindTextureDirectly(targetForBinding, null);
     }
 
     /**

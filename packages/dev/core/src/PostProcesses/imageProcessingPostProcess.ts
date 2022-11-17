@@ -20,7 +20,7 @@ import "../Shaders/postprocess.vertex";
 
 /**
  * ImageProcessingPostProcess
- * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses#imageprocessing
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/usePostProcesses#imageprocessing
  */
 export class ImageProcessingPostProcess extends PostProcess {
     /**
@@ -230,29 +230,53 @@ export class ImageProcessingPostProcess extends PostProcess {
     }
 
     /**
-     * Gets Vignette centre X Offset.
+     * Gets Vignette center X Offset.
+     * @deprecated use vignetteCenterX instead
      */
     public get vignetteCentreX(): number {
-        return this.imageProcessingConfiguration.vignetteCentreX;
+        return this.imageProcessingConfiguration.vignetteCenterX;
     }
     /**
-     * Sets Vignette centre X Offset.
+     * Sets Vignette center X Offset.
+     * @deprecated use vignetteCenterX instead
      */
     public set vignetteCentreX(value: number) {
-        this.imageProcessingConfiguration.vignetteCentreX = value;
+        this.imageProcessingConfiguration.vignetteCenterX = value;
     }
 
     /**
-     * Gets Vignette centre Y Offset.
+     * Gets Vignette center Y Offset.
+     * @deprecated use vignetteCenterY instead
      */
     public get vignetteCentreY(): number {
-        return this.imageProcessingConfiguration.vignetteCentreY;
+        return this.imageProcessingConfiguration.vignetteCenterY;
     }
     /**
-     * Sets Vignette centre Y Offset.
+     * Sets Vignette center Y Offset.
+     * @deprecated use vignetteCenterY instead
      */
     public set vignetteCentreY(value: number) {
-        this.imageProcessingConfiguration.vignetteCentreY = value;
+        this.imageProcessingConfiguration.vignetteCenterY = value;
+    }
+
+    /**
+     * Vignette center Y Offset.
+     */
+    public get vignetteCenterY(): number {
+        return this.imageProcessingConfiguration.vignetteCenterY;
+    }
+    public set vignetteCenterY(value: number) {
+        this.imageProcessingConfiguration.vignetteCenterY = value;
+    }
+
+    /**
+     * Vignette center X Offset.
+     */
+    public get vignetteCenterX(): number {
+        return this.imageProcessingConfiguration.vignetteCenterX;
+    }
+    public set vignetteCenterX(value: number) {
+        this.imageProcessingConfiguration.vignetteCenterX = value;
     }
 
     /**

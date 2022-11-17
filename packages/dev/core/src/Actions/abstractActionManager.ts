@@ -7,7 +7,7 @@ import type { Nullable } from "../types";
 /**
  * Abstract class used to decouple action Manager from scene and meshes.
  * Do not instantiate.
- * @see https://doc.babylonjs.com/how_to/how_to_use_actions
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions
  */
 export abstract class AbstractActionManager implements IDisposable {
     /** Gets the list of active triggers */

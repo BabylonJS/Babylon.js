@@ -37,7 +37,7 @@ declare module "../../Engines/thinEngine" {
 
         /**
          * Updates the sample count of a render target texture
-         * @see https://doc.babylonjs.com/features/webgl2#multisample-render-targets
+         * @see https://doc.babylonjs.com/setup/support/webGL2#multisample-render-targets
          * @param rtWrapper defines the render target wrapper to update
          * @param samples defines the sample count to set
          * @returns the effective sample count (could be 0 if multisample render targets are not supported)

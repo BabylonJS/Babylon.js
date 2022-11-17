@@ -99,7 +99,7 @@ export interface IGlowLayerOptions {
  *
  * Once instantiated in a scene, by default, all the emissive meshes will glow.
  *
- * Documentation: https://doc.babylonjs.com/how_to/glow_layer
+ * Documentation: https://doc.babylonjs.com/features/featuresDeepDive/mesh/glowLayer
  */
 export class GlowLayer extends EffectLayer {
     /**

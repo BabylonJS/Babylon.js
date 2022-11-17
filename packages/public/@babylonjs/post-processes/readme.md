@@ -1,7 +1,7 @@
 Babylon.js Post Processes Library
 =====================
 
-For usage documentation please visit http://doc.babylonjs.com/extensions and choose "post process library".
+For usage documentation please visit https://doc.babylonjs.com/extensions and choose "post process library".
 
 # Installation instructions
 

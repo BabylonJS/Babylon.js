@@ -12,7 +12,7 @@ Node.AddNodeConstructor("AnaglyphUniversalCamera", (name, scene, options) => {
 
 /**
  * Camera used to simulate anaglyphic rendering (based on UniversalCamera)
- * @see https://doc.babylonjs.com/features/cameras#anaglyph-cameras
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_introduction#anaglyph-cameras
  */
 export class AnaglyphUniversalCamera extends UniversalCamera {
     /**

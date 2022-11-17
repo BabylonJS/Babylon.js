@@ -1,9 +1,9 @@
 import { SceneRendererComponent } from "./components/SceneRendererComponent";
-import { StatesViewComponent } from "./components/StatesViewComponent";
-import { StateBehaviorViewComponent } from "./components/StateBehaviorViewComponent";
 import type { Layout } from "shared-ui-components/components/layout/types";
 import { EditValueComponent } from "./components/EditValueComponent";
 import { NodeListComponent } from "./components/NodeListComponent";
+import { StateViewNodeRenderer } from "./components/StateViewNodeRenderer";
+import { StateBehaviorNodeRenderer } from "./components/StateBehaviorNodeRenderer";
 
 export const initialLayout: Layout = {
     columns: [
@@ -13,18 +13,21 @@ export const initialLayout: Layout = {
             rows: [
                 {
                     id: "scene",
-                    height: "80%",
+                    height: "60%",
                     selectedTab: "sceneTab",
                     tabs: [{ id: "sceneTab", title: "Scene", component: <SceneRendererComponent /> }],
                 },
                 {
                     id: "edit",
                     height: "20%",
+                    selectedTab: "editTab",
+                    tabs: [{ id: "editTab", title: "Edit value", component: <EditValueComponent /> }],
+                },
+                {
+                    id: "add",
+                    height: "20%",
                     selectedTab: "addNode",
-                    tabs: [
-                        { id: "editTab", title: "Edit value", component: <EditValueComponent /> },
-                        { id: "addNode", title: "Add node", component: <NodeListComponent /> },
-                    ],
+                    tabs: [{ id: "addNode", title: "Add node", component: <NodeListComponent /> }],
                 },
             ],
         },
@@ -36,13 +39,13 @@ export const initialLayout: Layout = {
                     id: "row4",
                     selectedTab: "statesView",
                     height: "60%",
-                    tabs: [{ id: "statesView", title: "States", component: <StatesViewComponent /> }],
+                    tabs: [{ id: "statesView", title: "States", component: <StateViewNodeRenderer /> }],
                 },
                 {
                     id: "row5",
-                    selectedTab: "behaviorView",
+                    selectedTab: "actionView",
                     height: "40%",
-                    tabs: [{ id: "behaviorView", title: "Behavior", component: <StateBehaviorViewComponent /> }],
+                    tabs: [{ id: "actionView", title: "Actions", component: <StateBehaviorNodeRenderer /> }],
                 },
             ],
         },

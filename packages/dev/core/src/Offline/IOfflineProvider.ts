@@ -1,6 +1,6 @@
 /**
  * Class used to enable access to offline support
- * @see https://doc.babylonjs.com/how_to/caching_resources_in_indexeddb
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/optimizeCached
  */
 export interface IOfflineProvider {
     /**

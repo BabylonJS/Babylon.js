@@ -2,14 +2,14 @@ import type { Camera } from "../../Cameras/camera";
 import type { PostProcessRenderPipeline } from "./postProcessRenderPipeline";
 /**
  * PostProcessRenderPipelineManager class
- * @see https://doc.babylonjs.com/how_to/how_to_use_postprocessrenderpipeline
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/postProcessRenderPipeline
  */
 export class PostProcessRenderPipelineManager {
     private _renderPipelines: { [Key: string]: PostProcessRenderPipeline };
 
     /**
      * Initializes a PostProcessRenderPipelineManager
-     * @see https://doc.babylonjs.com/how_to/how_to_use_postprocessrenderpipeline
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/postProcessRenderPipeline
      */
     constructor() {
         this._renderPipelines = {};

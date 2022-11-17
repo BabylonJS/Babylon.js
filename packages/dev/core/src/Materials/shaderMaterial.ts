@@ -21,6 +21,7 @@ import type { StorageBuffer } from "../Buffers/storageBuffer";
 import { PushMaterial } from "./pushMaterial";
 import { EngineStore } from "../Engines/engineStore";
 import { Constants } from "../Engines/constants";
+import { addClipPlaneUniforms, bindClipPlane, prepareDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
 
 declare type ExternalTexture = import("./Textures/externalTexture").ExternalTexture;
 
@@ -96,7 +97,7 @@ export interface IShaderMaterialOptions {
  *
  * This returned material effects how the mesh will look based on the code in the shaders.
  *
- * @see https://doc.babylonjs.com/advanced_topics/shaders/shaderMaterial
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/shaders/shaderMaterial
  */
 export class ShaderMaterial extends PushMaterial {
     private _shaderPath: any;
@@ -140,7 +141,7 @@ export class ShaderMaterial extends PushMaterial {
      * Instantiate a new shader material.
      * The ShaderMaterial object has the necessary methods to pass data from your scene to the Vertex and Fragment Shaders and returns a material that can be applied to any mesh.
      * This returned material effects how the mesh will look based on the code in the shaders.
-     * @see https://doc.babylonjs.com/how_to/shader_material
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/shaders/shaderMaterial
      * @param name Define the name of the material in the scene
      * @param scene Define the scene the material belongs to
      * @param shaderPath Defines  the route to the shader code in one of three ways:
@@ -792,46 +793,10 @@ export class ShaderMaterial extends PushMaterial {
         }
 
         // Clip planes
-        if ((this._options.useClipPlane === null && !!scene.clipPlane) || this._options.useClipPlane) {
-            defines.push("#define CLIPPLANE");
-            if (uniforms.indexOf("vClipPlane") === -1) {
-                uniforms.push("vClipPlane");
-            }
-        }
+        if (this._options.useClipPlane !== false) {
+            addClipPlaneUniforms(uniforms);
 
-        if ((this._options.useClipPlane === null && !!scene.clipPlane2) || this._options.useClipPlane) {
-            defines.push("#define CLIPPLANE2");
-            if (uniforms.indexOf("vClipPlane2") === -1) {
-                uniforms.push("vClipPlane2");
-            }
-        }
-
-        if ((this._options.useClipPlane === null && !!scene.clipPlane3) || this._options.useClipPlane) {
-            defines.push("#define CLIPPLANE3");
-            if (uniforms.indexOf("vClipPlane3") === -1) {
-                uniforms.push("vClipPlane3");
-            }
-        }
-
-        if ((this._options.useClipPlane === null && !!scene.clipPlane4) || this._options.useClipPlane) {
-            defines.push("#define CLIPPLANE4");
-            if (uniforms.indexOf("vClipPlane4") === -1) {
-                uniforms.push("vClipPlane4");
-            }
-        }
-
-        if ((this._options.useClipPlane === null && !!scene.clipPlane5) || this._options.useClipPlane) {
-            defines.push("#define CLIPPLANE5");
-            if (uniforms.indexOf("vClipPlane5") === -1) {
-                uniforms.push("vClipPlane5");
-            }
-        }
-
-        if ((this._options.useClipPlane === null && !!scene.clipPlane6) || this._options.useClipPlane) {
-            defines.push("#define CLIPPLANE6");
-            if (uniforms.indexOf("vClipPlane6") === -1) {
-                uniforms.push("vClipPlane6");
-            }
+            prepareDefinesForClipPlanes(this, scene, defines);
         }
 
         if (this.customShaderNameResolve) {
@@ -1001,7 +966,7 @@ export class ShaderMaterial extends PushMaterial {
             MaterialHelper.BindBonesParameters(mesh, effect);
 
             // Clip plane
-            MaterialHelper.BindClipPlane(effect, this.getScene());
+            bindClipPlane(effect, this, this.getScene());
 
             let name: string;
             // Texture

@@ -79,7 +79,7 @@ export class ShadowDepthWrapper {
      * Instantiate a new shadow depth wrapper.
      * It works by injecting some specific code in the vertex/fragment shaders of the base material and is used by a shadow generator to
      * generate the shadow depth map. For more information, please refer to the documentation:
-     * https://doc.babylonjs.com/babylon101/shadows
+     * https://doc.babylonjs.com/features/featuresDeepDive/lights/shadows
      * @param baseMaterial Material to wrap
      * @param scene Define the scene the material belongs to
      * @param options Options used to create the wrapper
@@ -213,8 +213,8 @@ export class ShadowDepthWrapper {
         params.depthDefines = join;
 
         // the depth effect is either out of date or has not been created yet
-        let vertexCode = origEffect.rawVertexSourceCode,
-            fragmentCode = origEffect.rawFragmentSourceCode;
+        let vertexCode = origEffect.vertexSourceCodeBeforeMigration,
+            fragmentCode = origEffect.fragmentSourceCodeBeforeMigration;
 
         // vertex code
         const vertexNormalBiasCode =

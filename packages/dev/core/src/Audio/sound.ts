@@ -14,7 +14,7 @@ import { EngineStore } from "../Engines/engineStore";
 /**
  * Defines a sound that can be played in the application.
  * The sound can either be an ambient track or a simple sound played in reaction to a user action.
- * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic
  */
 export class Sound {
     /**
@@ -46,7 +46,7 @@ export class Sound {
     /**
      * Does the sound use a custom attenuation curve to simulate the falloff
      * happening when the source gets further away from the camera.
-     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-your-own-custom-attenuation-function
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic#creating-your-own-custom-attenuation-function
      */
     public useCustomAttenuation: boolean = false;
     /**
@@ -63,22 +63,22 @@ export class Sound {
     public isPaused: boolean = false;
     /**
      * Define the reference distance the sound should be heard perfectly.
-     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic#creating-a-spatial-3d-sound
      */
     public refDistance: number = 1;
     /**
      * Define the roll off factor of spatial sounds.
-     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic#creating-a-spatial-3d-sound
      */
     public rolloffFactor: number = 1;
     /**
      * Define the max distance the sound should be heard (intensity just became 0 at this point).
-     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic#creating-a-spatial-3d-sound
      */
     public maxDistance: number = 100;
     /**
      * Define the distance attenuation model the sound will follow.
-     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic#creating-a-spatial-3d-sound
      */
     public distanceModel: string = "linear";
     /**
@@ -113,14 +113,14 @@ export class Sound {
 
     /**
      * Does this sound enables spatial sound.
-     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic#creating-a-spatial-3d-sound
      */
     public get spatialSound(): boolean {
         return this._spatialSound;
     }
     /**
      * Does this sound enables spatial sound.
-     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic#creating-a-spatial-3d-sound
      */
     public set spatialSound(newValue: boolean) {
         this._spatialSound = newValue;
@@ -564,7 +564,7 @@ export class Sound {
     /**
      * Switch the panning model to HRTF:
      * Renders a stereo output of higher quality than equalpower — it uses a convolution with measured impulse responses from human subjects.
-     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic#creating-a-spatial-3d-sound
      */
     public switchPanningModelToHRTF() {
         this._panningModel = "HRTF";
@@ -574,7 +574,7 @@ export class Sound {
     /**
      * Switch the panning model to Equal Power:
      * Represents the equal-power panning algorithm, generally regarded as simple and efficient. equalpower is the default value.
-     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic#creating-a-spatial-3d-sound
      */
     public switchPanningModelToEqualPower() {
         this._panningModel = "equalpower";
@@ -724,7 +724,7 @@ export class Sound {
     /**
      * Sets a new custom attenuation function for the sound.
      * @param callback Defines the function used for the attenuation
-     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-your-own-custom-attenuation-function
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic#creating-your-own-custom-attenuation-function
      */
     public setAttenuationFunction(callback: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number): void {
         this._customAttenuationFunction = callback;
@@ -979,7 +979,7 @@ export class Sound {
     /**
      * Attach the sound to a dedicated mesh
      * @param transformNode The transform node to connect the sound with
-     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#attaching-a-sound-to-a-mesh
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic#attaching-a-sound-to-a-mesh
      */
     public attachToMesh(transformNode: TransformNode): void {
         if (this._connectedTransformNode && this._registerFunc) {
@@ -1002,7 +1002,7 @@ export class Sound {
 
     /**
      * Detach the sound from the previously attached mesh
-     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#attaching-a-sound-to-a-mesh
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic#attaching-a-sound-to-a-mesh
      */
     public detachFromMesh() {
         if (this._connectedTransformNode && this._registerFunc) {
