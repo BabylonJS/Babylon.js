@@ -6466,8 +6466,8 @@ export class Matrix {
     }
 
     /**
-     * Gets a new rotation matrix used to rotate an entity so as it looks at the target vector3, from the eye vector3 position, the up vector3 being oriented like "up"
-     * This function works in left handed mode
+     * Creates a new matrix that transforms vertices from world space to camera space. It takes three vectors as arguments that together describe the position and orientation of the camera.
+     * This function generates a matrix suitable for a left handed coordinate system
      * @param eye defines the final position of the entity
      * @param target defines where the entity should look at
      * @param up defines the up vector for the entity
@@ -6480,8 +6480,8 @@ export class Matrix {
     }
 
     /**
-     * Sets the given "result" Matrix to a rotation matrix used to rotate an entity so that it looks at the target vector3, from the eye vector3 position, the up vector3 being oriented like "up".
-     * This function works in left handed mode
+     * Sets the given "result" Matrix to a matrix that transforms vertices from world space to camera space. It takes three vectors as arguments that together describe the position and orientation of the camera.
+     * This function generates a matrix suitable for a left handed coordinate system
      * @param eye defines the final position of the entity
      * @param target defines where the entity should look at
      * @param up defines the up vector for the entity
@@ -6520,8 +6520,8 @@ export class Matrix {
     }
 
     /**
-     * Gets a new rotation matrix used to rotate an entity so as it looks at the target vector3, from the eye vector3 position, the up vector3 being oriented like "up"
-     * This function works in right handed mode
+     * Creates a new matrix that transforms vertices from world space to camera space. It takes three vectors as arguments that together describe the position and orientation of the camera.
+     * This function generates a matrix suitable for a right handed coordinate system
      * @param eye defines the final position of the entity
      * @param target defines where the entity should look at
      * @param up defines the up vector for the entity
@@ -6534,8 +6534,8 @@ export class Matrix {
     }
 
     /**
-     * Sets the given "result" Matrix to a rotation matrix used to rotate an entity so that it looks at the target vector3, from the eye vector3 position, the up vector3 being oriented like "up".
-     * This function works in right handed mode
+     * Sets the given "result" Matrix to a matrix that transforms vertices from world space to camera space. It takes three vectors as arguments that together describe the position and orientation of the camera.
+     * This function generates a matrix suitable for a right handed coordinate system
      * @param eye defines the final position of the entity
      * @param target defines where the entity should look at
      * @param up defines the up vector for the entity
@@ -6575,8 +6575,8 @@ export class Matrix {
     }
 
     /**
-     * Gets a new rotation matrix used to rotate an entity so as it looks in the direction specified by forward from the eye position, the up direction being oriented like "up".
-     * This function works in left handed mode
+     * Creates a new matrix that transforms vertices from world space to camera space. It takes two vectors as arguments that together describe the orientation of the camera. The position is assumed to be at the origin (0,0,0)
+     * This function generates a matrix suitable for a left handed coordinate system
      * @param forward defines the forward direction - Must be normalized and orthogonal to up.
      * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
      * @returns the new matrix
@@ -6588,8 +6588,8 @@ export class Matrix {
     }
 
     /**
-     * Sets the given "result" Matrix to a rotation matrix used to rotate an entity so that it looks in the direction of forward, the up direction being oriented like "up".
-     * This function works in left handed mode
+     * Sets the given "result" Matrix to a matrix that transforms vertices from world space to camera space. It takes two vectors as arguments that together describe the orientation of the camera. The position is assumed to be at the origin (0,0,0)
+     * This function generates a matrix suitable for a left handed coordinate system
      * @param forward defines the forward direction - Must be normalized and orthogonal to up.
      * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
      * @param result defines the target matrix
@@ -6608,8 +6608,8 @@ export class Matrix {
     }
 
     /**
-     * Gets a new rotation matrix used to rotate an entity so as it looks in the direction specified by forward from the eye position, the up Vector3 being oriented like "up".
-     * This function works in right handed mode
+     * Creates a new matrix that transforms vertices from world space to camera space. It takes two vectors as arguments that together describe the orientation of the camera. The position is assumed to be at the origin (0,0,0)
+     * This function generates a matrix suitable for a right handed coordinate system
      * @param forward defines the forward direction - Must be normalized and orthogonal to up.
      * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
      * @returns the new matrix
@@ -6621,8 +6621,8 @@ export class Matrix {
     }
 
     /**
-     * Sets the given "result" Matrix to a rotation matrix used to rotate an entity so that it looks in the direction of forward, the up vector3 being oriented like "up".
-     * This function works in right handed mode
+     * Sets the given "result" Matrix to a matrix that transforms vertices from world space to camera space. It takes two vectors as arguments that together describe the orientation of the camera. The position is assumed to be at the origin (0,0,0)
+     * This function generates a matrix suitable for a right handed coordinate system
      * @param forward defines the forward direction - Must be normalized and orthogonal to up.
      * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
      * @param result defines the target matrix
