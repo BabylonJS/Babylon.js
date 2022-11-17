@@ -1,5 +1,24 @@
 # Changelog
 
+## 5.33.0
+
+### Core
+
+- FreeCameraMouseInput: Fix for PointerLock Movement - by [PolygonalSun](https://github.com/PolygonalSun) ([#13258](https://github.com/BabylonJS/Babylon.js/pull/13258))
+- Fix IKController with leaf node - [_Bug Fix_] by [sebavan](https://github.com/sebavan) ([#13257](https://github.com/BabylonJS/Babylon.js/pull/13257))
+- PostProcess: Add hooks to alter shader code used by post processes - by [Popov72](https://github.com/Popov72) ([#13256](https://github.com/BabylonJS/Babylon.js/pull/13256))
+- Fix dump tools premultiplied alpha. - [_Bug Fix_] by [sebavan](https://github.com/sebavan) ([#13251](https://github.com/BabylonJS/Babylon.js/pull/13251))
+- Support ClipPlanes in Materials - [_New Feature_] by [sebavan](https://github.com/sebavan) ([#13249](https://github.com/BabylonJS/Babylon.js/pull/13249))
+- WebGPU: Improve copy video to texture - by [Popov72](https://github.com/Popov72) ([#13254](https://github.com/BabylonJS/Babylon.js/pull/13254))
+
+### Materials
+
+- Support ClipPlanes in Materials - [_New Feature_] by [sebavan](https://github.com/sebavan) ([#13249](https://github.com/BabylonJS/Babylon.js/pull/13249))
+
+### Serializers
+
+- Fix dump tools premultiplied alpha. - [_Bug Fix_] by [sebavan](https://github.com/sebavan) ([#13251](https://github.com/BabylonJS/Babylon.js/pull/13251))
+
 ## 5.32.2
 
 ### Core
