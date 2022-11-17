@@ -1,22 +1,172 @@
 {
-    "fromTag": "5.32.1",
+    "fromTag": "5.32.2",
     "changelog": {
-        "5.32.1": [
+        "5.33.0": [
             {
-                "pr": "13227",
-                "title": "EffectRender: Fix culling state not reset properly",
-                "description": null,
+                "pr": "13258",
+                "title": "FreeCameraMouseInput: Fix for PointerLock Movement",
+                "description": "A bug was identified in the forums where the camera wasn't moving while a pointer lock was active.  The issue was determined to be caused by a previous bug fix that tracked active pointer ids but the logic for ignoring input was incorrect.  This PR corrects that input and adds a test to verify that movementX/Y will move the camera for pointer lock but not standard input.\r\n\r\nForum Post: https://forum.babylonjs.com/t/camera-rotate-broken/35752",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/Inputs/freeCameraMouseInput.ts",
+                    "packages/dev/core/test/unit/Cameras/babylon.freeCameraInputs.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13257",
+                "title": "Fix IKController with leaf node",
+                "description": "https://forum.babylonjs.com/t/exception-in-boneikcontroller-for-leaf-bones/34896/8",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Bones/boneIKController.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "animations"
+                ]
+            },
+            {
+                "pr": "13256",
+                "title": "PostProcess: Add hooks to alter shader code used by post processes",
+                "description": "This PR allows you to customize the shader code used by the post-processes when specific needs arise.\r\n\r\nIt allows something like:\r\n```javascript\r\n    BABYLON.PostProcess.RegisterShaderCodeProcessing(\"dofMerge\", {\r\n        processFinalCode: (ppName, shaderType, code) => {\r\n            if (shaderType === \"fragment\") {\r\n                code = code.replace(\"#define CUSTOM_FRAGMENT_DEFINITIONS\", \"uniform vec4 colorFilter;\");\r\n                code = code.replace(\"original,\", \"original*colorFilter,\");\r\n            }\r\n            return code;\r\n        },\r\n\r\n        defineCustomBindings: (ppName, defines, uniforms, samplers) => {\r\n            uniforms.push(\"colorFilter\");\r\n            return defines;\r\n        },\r\n\r\n        bindCustomBindings: (ppName, effect) => {\r\n            effect.setFloat4(\"colorFilter\", 0.3, 0.9, 0.4, 1.);\r\n        }\r\n    });\r\n```\r\n\r\nPG: https://playground.babylonjs.com/#B8LWGL#12\r\n\r\nFix #13243 ",
                 "author": {
                     "name": "Popov72",
                     "url": "https://github.com/Popov72"
                 },
                 "files": [
-                    "packages/dev/core/src/Materials/effectRenderer.ts"
+                    "packages/dev/core/src/PostProcesses/postProcess.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/imageProcessingFunctions.fx",
+                    "packages/dev/core/src/Shaders/circleOfConfusion.fragment.fx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "post-process"
+                ]
+            },
+            {
+                "pr": "13251",
+                "title": "Fix dump tools premultiplied alpha.",
+                "description": "Fix #11967\r\n\r\nFixes as well the generation of Environment Textures.",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts",
+                    "packages/dev/core/src/Misc/dumpTools.ts",
+                    "packages/dev/core/src/Misc/environmentTextureTools.ts",
+                    "packages/dev/core/src/Misc/index.ts",
+                    "packages/dev/core/src/Misc/screenshotTools.ts",
+                    "packages/dev/core/src/Misc/tools.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFMaterialExporter.ts"
                 ],
                 "tags": [
                     "bug",
-                    "rendering engine"
+                    "exporters"
                 ]
+            },
+            {
+                "pr": "13249",
+                "title": "Support ClipPlanes in Materials",
+                "description": "Fix #13002",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/boundingInfo.ts",
+                    "packages/dev/core/src/Layers/effectLayer.ts",
+                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts",
+                    "packages/dev/core/src/Materials/Background/backgroundMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/clipPlanesBlock.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/clipPlaneMaterialHelper.ts",
+                    "packages/dev/core/src/Materials/index.ts",
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/Materials/materialHelper.ts",
+                    "packages/dev/core/src/Materials/shaderMaterial.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/Materials/thinMaterialHelper.ts",
+                    "packages/dev/core/src/Meshes/linesMesh.ts",
+                    "packages/dev/core/src/Particles/baseParticleSystem.ts",
+                    "packages/dev/core/src/Particles/gpuParticleSystem.ts",
+                    "packages/dev/core/src/Particles/particleSystem.ts",
+                    "packages/dev/core/src/Rendering/depthRenderer.ts",
+                    "packages/dev/core/src/Rendering/outlineRenderer.ts",
+                    "packages/dev/materials/src/cell/cellMaterial.ts",
+                    "packages/dev/materials/src/fire/fireMaterial.ts",
+                    "packages/dev/materials/src/fur/furMaterial.ts",
+                    "packages/dev/materials/src/gradient/gradientMaterial.ts",
+                    "packages/dev/materials/src/grid/gridMaterial.ts",
+                    "packages/dev/materials/src/lava/lavaMaterial.ts",
+                    "packages/dev/materials/src/mix/mixMaterial.ts",
+                    "packages/dev/materials/src/normal/normalMaterial.ts",
+                    "packages/dev/materials/src/shadowOnly/shadowOnlyMaterial.ts",
+                    "packages/dev/materials/src/simple/simpleMaterial.ts",
+                    "packages/dev/materials/src/sky/skyMaterial.ts",
+                    "packages/dev/materials/src/terrain/terrainMaterial.ts",
+                    "packages/dev/materials/src/triPlanar/triPlanarMaterial.ts",
+                    "packages/dev/materials/src/water/waterMaterial.ts"
+                ],
+                "tags": [
+                    "materials",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13254",
+                "title": "WebGPU: Improve copy video to texture",
+                "description": "Fix #13238 ",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.videoTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.videoTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureHelper.ts",
+                    "packages/dev/core/src/Materials/Textures/htmlElementTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/videoTexture.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "13253",
+                "title": "Bump loader-utils from 2.0.3 to 2.0.4",
+                "description": "Bumps [loader-utils](https://github.com/webpack/loader-utils) from 2.0.3 to 2.0.4.\n<details>\n<summary>Release notes</summary>\n<p><em>Sourced from <a href=\"https://github.com/webpack/loader-utils/releases\">loader-utils's releases</a>.</em></p>\n<blockquote>\n<h2>v2.0.4</h2>\n<h3><a href=\"https://github.com/webpack/loader-utils/compare/v2.0.3...v2.0.4\">2.0.4</a> (2022-11-11)</h3>\n<h3>Bug Fixes</h3>\n<ul>\n<li>ReDoS problem (<a href=\"https://github-redirect.dependabot.com/webpack/loader-utils/issues/225\">#225</a>) (<a href=\"https://github.com/webpack/loader-utils/commit/ac09944dfacd7c4497ef692894b09e63e09a5eeb\">ac09944</a>)</li>\n</ul>\n</blockquote>\n</details>\n<details>\n<summary>Changelog</summary>\n<p><em>Sourced from <a href=\"https://github.com/webpack/loader-utils/blob/v2.0.4/CHANGELOG.md\">loader-utils's changelog</a>.</em></p>\n<blockquote>\n<h3><a href=\"https://github.com/webpack/loader-utils/compare/v2.0.3...v2.0.4\">2.0.4</a> (2022-11-11)</h3>\n<h3>Bug Fixes</h3>\n<ul>\n<li>ReDoS problem (<a href=\"https://github-redirect.dependabot.com/webpack/loader-utils/issues/225\">#225</a>) (<a href=\"https://github.com/webpack/loader-utils/commit/ac09944dfacd7c4497ef692894b09e63e09a5eeb\">ac09944</a>)</li>\n</ul>\n</blockquote>\n</details>\n<details>\n<summary>Commits</summary>\n<ul>\n<li><a href=\"https://github.com/webpack/loader-utils/commit/6688b5028106f144ee9f543bebc8e6a87b57829f\"><code>6688b50</code></a> chore(release): 2.0.4</li>\n<li><a href=\"https://github.com/webpack/loader-utils/commit/ac09944dfacd7c4497ef692894b09e63e09a5eeb\"><code>ac09944</code></a> fix: ReDoS problem (<a href=\"https://github-redirect.dependabot.com/webpack/loader-utils/issues/225\">#225</a>)</li>\n<li>See full diff in <a href=\"https://github.com/webpack/loader-utils/compare/v2.0.3...v2.0.4\">compare view</a></li>\n</ul>\n</details>\n<br />\n\n\n[![Dependabot compatibility score](https://dependabot-badges.githubapp.com/badges/compatibility_score?dependency-name=loader-utils&package-manager=npm_and_yarn&previous-version=2.0.3&new-version=2.0.4)](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-compatibility-scores)\n\nDependabot will resolve any conflicts with this PR as long as you don't alter it yourself. You can also trigger a rebase manually by commenting `@dependabot rebase`.\n\n[//]: # (dependabot-automerge-start)\n[//]: # (dependabot-automerge-end)\n\n---\n\n<details>\n<summary>Dependabot commands and options</summary>\n<br />\n\nYou can trigger Dependabot actions by commenting on this PR:\n- `@dependabot rebase` will rebase this PR\n- `@dependabot recreate` will recreate this PR, overwriting any edits that have been made to it\n- `@dependabot merge` will merge this PR after your CI passes on it\n- `@dependabot squash and merge` will squash and merge this PR after your CI passes on it\n- `@dependabot cancel merge` will cancel a previously requested merge and block automerging\n- `@dependabot reopen` will reopen this PR if it is closed\n- `@dependabot close` will close this PR and stop Dependabot recreating it. You can achieve the same result by closing it manually\n- `@dependabot ignore this major version` will close this PR and stop Dependabot creating any more for this major version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this minor version` will close this PR and stop Dependabot creating any more for this minor version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this dependency` will close this PR and stop Dependabot creating any more for this dependency (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot use these labels` will set the current labels as the default for future PRs for this repo and language\n- `@dependabot use these reviewers` will set the current reviewers as the default for future PRs for this repo and language\n- `@dependabot use these assignees` will set the current assignees as the default for future PRs for this repo and language\n- `@dependabot use this milestone` will set the current milestone as the default for future PRs for this repo and language\n\nYou can disable automated security fix PRs for this repo from the [Security Alerts page](https://github.com/BabylonJS/Babylon.js/network/alerts).\n\n</details>",
+                "author": {
+                    "name": "dependabot[bot]",
+                    "url": "https://github.com/apps/dependabot"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": [
+                    "dependencies"
+                ]
+            },
+            {
+                "pr": "13255",
+                "title": "import types to fix d.ts for inspector",
+                "description": "Fixes https://forum.babylonjs.com/t/import-bug-with-npm-install-babylonjs-inspector-proposed-fix-included/35583",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/components/layout/utils.ts"
+                ],
+                "tags": []
             }
         ],
         "5.32.2": [
@@ -437,6 +587,24 @@
                     "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts"
                 ],
                 "tags": []
+            }
+        ],
+        "5.32.1": [
+            {
+                "pr": "13227",
+                "title": "EffectRender: Fix culling state not reset properly",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/effectRenderer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
             }
         ],
         "5.32.0": [
