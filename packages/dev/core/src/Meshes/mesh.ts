@@ -3930,7 +3930,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         mesh.receiveShadows = parsedMesh.receiveShadows;
 
-        mesh.billboardMode = parsedMesh.billboardMode;
+        if (parsedMesh.billboardMode !== undefined) {
+            mesh.billboardMode = parsedMesh.billboardMode;
+        }
 
         if (parsedMesh.visibility !== undefined) {
             mesh.visibility = parsedMesh.visibility;
