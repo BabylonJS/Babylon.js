@@ -1,5 +1,21 @@
 # Changelog
 
+## 5.33.1
+
+### Core
+
+- fixing billboardMode mode for instanced meshes - by [Bastl34](https://github.com/Bastl34) ([#13265](https://github.com/BabylonJS/Babylon.js/pull/13265))
+- PBR material: Add missing test for the emissive texture in hasTexture - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#13261](https://github.com/BabylonJS/Babylon.js/pull/13261))
+- Add Sprite Manager Metadata - by [sebavan](https://github.com/sebavan) ([#13259](https://github.com/BabylonJS/Babylon.js/pull/13259))
+
+### Playground
+
+
+### Serializers
+
+- Fix glTF export texture dedupe code - [_Bug Fix_] by [bghgary](https://github.com/bghgary) ([#13263](https://github.com/BabylonJS/Babylon.js/pull/13263))
+- glTF export root node removal fix - by [bghgary](https://github.com/bghgary) ([#13214](https://github.com/BabylonJS/Babylon.js/pull/13214))
+
 ## 5.33.0
 
 ### Core
