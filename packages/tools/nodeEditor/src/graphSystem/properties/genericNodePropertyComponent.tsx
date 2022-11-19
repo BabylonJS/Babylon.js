@@ -145,7 +145,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                             label={displayName}
                             target={block}
                             propertyName={propertyName}
-                            onValueChanged={() => this.forceRebuild(options.notifiers)}
+                            onValueChanged={() => this.forceRebuild(propertyName, options.notifiers)}
                         />
                     );
                     break;
