@@ -107,6 +107,31 @@ export class MaterialHelper {
     }
 
     /**
+     * Helper used to prepare the defines relative to the active camera
+     * @param scene defines the current scene
+     * @param defines specifies the list of active defines
+     * @returns true if the defines have been updated, else false
+     */
+    public static PrepareDefinesForCamera(scene: Scene, defines: any): boolean {
+        let changed = false;
+
+        if (scene.activeCamera) {
+            const wasOrtho = defines["CAMERA_ORTHOGRAPHIC"] ? 1 : 0;
+            const wasPersp = defines["CAMERA_PERSPECTIVE"] ? 1 : 0;
+            const isOrtho = scene.activeCamera.mode === Camera.ORTHOGRAPHIC_CAMERA ? 1 : 0;
+            const isPersp = scene.activeCamera.mode === Camera.PERSPECTIVE_CAMERA ? 1 : 0;
+
+            if (wasOrtho ^ isOrtho || wasPersp ^ isPersp) {
+                defines["CAMERA_ORTHOGRAPHIC"] = isOrtho === 1;
+                defines["CAMERA_PERSPECTIVE"] = isPersp === 1;
+                changed = true;
+            }
+        }
+
+        return changed;
+    }
+
+    /**
      * Helper used to prepare the list of defines associated with frame values for shader compilation
      * @param scene defines the current scene
      * @param engine defines the current engine
@@ -125,7 +150,7 @@ export class MaterialHelper {
         useClipPlane: Nullable<boolean> = null,
         useThinInstances: boolean = false
     ): void {
-        let changed = false;
+        let changed = MaterialHelper.PrepareDefinesForCamera(scene, defines);
 
         if (useClipPlane !== false) {
             changed = prepareDefinesForClipPlanes(material, scene, defines);
