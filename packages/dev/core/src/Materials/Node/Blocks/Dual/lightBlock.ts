@@ -38,7 +38,9 @@ export class LightBlock extends NodeMaterialBlock {
     public light: Nullable<Light>;
 
     /** Indicates that no code should be generated in the vertex shader. Can be useful in some specific circumstances (like when doing ray marching for eg) */
-    @editableInPropertyPage("Generate only fragment code", PropertyTypeForEdition.Boolean, "PROPERTIES", { notifiers: { rebuild: true, update: true, onValidation: LightBlock._OnGenerateOnlyFragmentCodeChanged }})
+    @editableInPropertyPage("Generate only fragment code", PropertyTypeForEdition.Boolean, "PROPERTIES", {
+        notifiers: { rebuild: true, update: true, onValidation: LightBlock._OnGenerateOnlyFragmentCodeChanged },
+    })
     public generateOnlyFragmentCode = false;
 
     private static _OnGenerateOnlyFragmentCodeChanged(block: NodeMaterialBlock, propertyName: string): boolean {
@@ -315,6 +317,11 @@ export class LightBlock extends NodeMaterialBlock {
             worldPosVariableName = state._getFreeVariableName("globalWorldPos");
             state._emitFunction("light_globalworldpos", `vec3 ${worldPosVariableName};\r\n`, comments);
             state.compilationString += `${worldPosVariableName} = ${worldPos.associatedVariableName}.xyz;\r\n`;
+
+            state.compilationString += state._emitCodeFromInclude("shadowsVertex", comments, {
+                repeatKey: "maxSimultaneousLights",
+                substitutionVars: this.generateOnlyFragmentCode ? `worldPos,${worldPos.associatedVariableName}` : undefined,
+            });
         } else {
             worldPosVariableName = "v_" + worldPosVariableName + ".xyz";
         }
@@ -333,6 +340,7 @@ export class LightBlock extends NodeMaterialBlock {
             // Emit for all lights
             state._emitFunctionFromInclude(state.supportUniformBuffers ? "lightUboDeclaration" : "lightFragmentDeclaration", comments, {
                 repeatKey: "maxSimultaneousLights",
+                substitutionVars: this.generateOnlyFragmentCode ? "varying," : undefined,
             });
         } else {
             state._emitFunctionFromInclude(

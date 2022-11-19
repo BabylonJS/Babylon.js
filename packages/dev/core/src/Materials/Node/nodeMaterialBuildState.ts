@@ -248,10 +248,11 @@ export class NodeMaterialBuildState {
         options?: {
             replaceStrings?: { search: RegExp; replace: string }[];
             repeatKey?: string;
+            substitutionVars?: string;
         }
     ) {
         if (options && options.repeatKey) {
-            return `#include<${includeName}>[0..${options.repeatKey}]\r\n`;
+            return `#include<${includeName}>${options.substitutionVars ? "(" + options.substitutionVars + ")" : ""}[0..${options.repeatKey}]\r\n`;
         }
 
         let code = Effect.IncludesShadersStore[includeName] + "\r\n";
@@ -282,6 +283,7 @@ export class NodeMaterialBuildState {
         comments: string,
         options?: {
             repeatKey?: string;
+            substitutionVars?: string;
             removeAttributes?: boolean;
             removeUniforms?: boolean;
             removeVaryings?: boolean;
@@ -297,9 +299,9 @@ export class NodeMaterialBuildState {
 
         if (!options || (!options.removeAttributes && !options.removeUniforms && !options.removeVaryings && !options.removeIfDef && !options.replaceStrings)) {
             if (options && options.repeatKey) {
-                this.functions[key] = `#include<${includeName}>[0..${options.repeatKey}]\r\n`;
+                this.functions[key] = `#include<${includeName}>${options.substitutionVars ? "(" + options.substitutionVars + ")" : ""}[0..${options.repeatKey}]\r\n`;
             } else {
-                this.functions[key] = `#include<${includeName}>\r\n`;
+                this.functions[key] = `#include<${includeName}>${options?.substitutionVars ? "(" + options?.substitutionVars + ")" : ""}\r\n`;
             }
 
             if (this.sharedData.emitComments) {
