@@ -2,6 +2,8 @@ import type { Engine } from "core/Engines";
 import { NullEngine } from "core/Engines";
 import { PBRMaterial, Texture } from "core/Materials";
 import { Scene } from "core/scene";
+import "core/Rendering/prePassRendererSceneComponent";
+import "core/Rendering/subSurfaceSceneComponent";
 
 describe("PBRMaterial", () => {
     let subject: Engine;
@@ -94,6 +96,32 @@ describe("PBRMaterial", () => {
         it("should return true when refraction texture is defined", () => {
             material.refractionTexture = texture;
             expect(material.hasTexture(texture)).toEqual(true);
+        });
+    });
+
+    describe("setPrePassRenderer", () => {
+        let material: PBRMaterial;
+
+        beforeEach(() => {
+            material = new PBRMaterial("mat", scene);
+        });
+
+        it("should scene prePassRenderer be disabled by default", () => {
+            expect(scene.prePassRenderer).toBeUndefined();
+        });
+
+        it("should set prepass renderer when scattering enable", () => {
+            material.subSurface.isScatteringEnabled = true;
+            material.setPrePassRenderer();
+
+            expect(scene.prePassRenderer).toBeDefined();
+        });
+
+        it("should not set prepass renderer when refraction disabled", () => {
+            material.subSurface.isScatteringEnabled = false;
+            material.setPrePassRenderer();
+
+            expect(scene.prePassRenderer).toBeUndefined();
         });
     });
 });
