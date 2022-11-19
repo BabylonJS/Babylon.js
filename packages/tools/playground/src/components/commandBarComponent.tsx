@@ -96,6 +96,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                         window.location.reload();
                     }
                 },
+                validate: () => window.confirm(Utilities.GetCodeLostConfirmationMessage("version")),
             },
             {
                 label: "WebGL",
@@ -113,6 +114,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                         window.location.reload();
                     }
                 },
+                validate: () => window.confirm(Utilities.GetCodeLostConfirmationMessage("version")),
             },
         ];
 
@@ -126,6 +128,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                     Utilities.StoreStringToStore("engineVersion", "WebGPU", true);
                     window.location.reload();
                 },
+                validate: () => window.confirm(Utilities.GetCodeLostConfirmationMessage("version")),
             });
         }
 

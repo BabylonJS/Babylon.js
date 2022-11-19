@@ -1,6 +1,127 @@
 {
-    "fromTag": "5.32.2",
+    "fromTag": "5.33.0",
     "changelog": {
+        "5.33.1": [
+            {
+                "pr": "13267",
+                "title": "Fix prepareDefinesForClipPlanes returning true too often",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/clipPlaneMaterialHelper.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13265",
+                "title": "fixing billboardMode mode for instanced meshes",
+                "description": "Hi.\r\nThis PR is fixing an issue with the `billboardMode` for instanced objects.\r\nIt was sometimes `undefined` which was causing the `instancedMesh` to use the rotation of the source transformation.\r\n\r\nHere is a simple demo of this issue:\r\nhttps://playground.babylonjs.com/#9NN1BK#1\r\n\r\nIf you uncomment the \"FIX\" it's working as expected (only the source mesh is rotating)",
+                "author": {
+                    "name": "Bastl34",
+                    "url": "https://github.com/Bastl34"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13264",
+                "title": "Add confirmation message in PG when switching version",
+                "description": "Fix #13260",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/tools/playground/src/components/commandBarComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13263",
+                "title": "Fix glTF export texture dedupe code",
+                "description": "See: https://forum.babylonjs.com/t/exported-file-size/35740/4\r\n\r\nThe dedupe code was async and I didn't test it properly the first time. Working with @RaananW on adding tests.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/glTFMaterialExporter.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "exporters"
+                ]
+            },
+            {
+                "pr": "13214",
+                "title": "glTF export root node removal fix",
+                "description": "See forum: https://forum.babylonjs.com/t/glbexporter-exports-bones-facing-opposite-direction-to-mesh/35330\r\n\r\nTests will be done later.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13262",
+                "title": "Matrix: Update the doc for the LookAt functions",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13261",
+                "title": "PBR material: Add missing test for the emissive texture in hasTexture",
+                "description": "See https://forum.babylonjs.com/t/weird-result-when-setting-texture-offset/35769",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "13259",
+                "title": "Add Sprite Manager Metadata",
+                "description": "https://forum.babylonjs.com/t/serialize-spritemanager-missing-id-and-metadata/35750",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Sprites/spriteManager.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "sprite"
+                ]
+            }
+        ],
         "5.33.0": [
             {
                 "pr": "13258",

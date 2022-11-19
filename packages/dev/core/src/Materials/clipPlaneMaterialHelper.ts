@@ -66,7 +66,7 @@ function setClipPlane(effect: Effect, uniformName: string, clipPlane: Nullable<P
 }
 
 function addDefine(clipPlane: Nullable<Plane>, defines: string[] | Record<string, any>, defineName: string): boolean {
-    let isSet = false;
+    let isSet = true;
     if (clipPlane) {
         if (Array.isArray(defines)) {
             const defineString = "#define " + defineName;
