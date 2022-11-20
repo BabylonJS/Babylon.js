@@ -236,5 +236,49 @@ describe("PBRMaterial", () => {
                 expect(refractionTextureDisposeSpy).toBeCalledTimes(0);
             });
         });
+
+        it("should not dispose environment BRDF texture if it used as environment texture in the scene", () => {
+            const texture = new Texture("texture.jpg", scene);
+
+            scene.environmentBRDFTexture = texture;
+            material.environmentBRDFTexture = texture;
+
+            const environmentTextureDisposeSpy = jest.spyOn(material.environmentBRDFTexture, "dispose");
+            const textureDisposeSpy = jest.spyOn(texture, "dispose");
+
+            material.dispose(true, true);
+
+            expect(environmentTextureDisposeSpy).toBeCalledTimes(0);
+            expect(textureDisposeSpy).toBeCalledTimes(0);
+        });
+
+        it("should dispose environment BRDF texture if it not used as environment texture in the scene", () => {
+            const texture = new Texture("texture.jpg", scene);
+
+            material.environmentBRDFTexture = texture;
+
+            const environmentTextureDisposeSpy = jest.spyOn(material.environmentBRDFTexture, "dispose");
+            const textureDisposeSpy = jest.spyOn(texture, "dispose");
+
+            material.dispose(true, true);
+
+            expect(environmentTextureDisposeSpy).toBeCalledTimes(1);
+            expect(textureDisposeSpy).toBeCalledTimes(1);
+        });
+
+        it("should not dispose environment BRDF texture if it used as environment texture in the scene and forceDisposeTextures is false", () => {
+            const texture = new Texture("texture.jpg", scene);
+
+            scene.environmentBRDFTexture = texture;
+            material.environmentBRDFTexture = texture;
+
+            const environmentTextureDisposeSpy = jest.spyOn(material.environmentBRDFTexture, "dispose");
+            const textureDisposeSpy = jest.spyOn(texture, "dispose");
+
+            material.dispose(true, false);
+
+            expect(environmentTextureDisposeSpy).toBeCalledTimes(0);
+            expect(textureDisposeSpy).toBeCalledTimes(0);
+        });
     });
 });
