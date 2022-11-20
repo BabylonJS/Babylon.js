@@ -45,7 +45,6 @@ describe("PBRMaterial", () => {
 
             const textures = material.getActiveTextures();
 
-            expect(textures.length).toBe(13);
             expect(textures.map((x) => x.getInternalTexture()?.url)).toEqual([
                 // Texture from default Material
                 "refractionTexture.jpg",
@@ -68,8 +67,6 @@ describe("PBRMaterial", () => {
 
         it("should return an empty array if no textures", () => {
             const textures = material.getActiveTextures();
-
-            expect(textures.length).toBe(0);
             expect(textures).toEqual([]);
         });
     });
