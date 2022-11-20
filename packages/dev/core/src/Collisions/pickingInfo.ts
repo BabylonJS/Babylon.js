@@ -105,9 +105,20 @@ export class PickingInfo {
             result = Vector3.Cross(p1p2, p3p2);
         }
 
-        // Flip the normal if the picking ray is in the same direction.
-        if (this.ray && Vector3.Dot(result, this.ray.direction) > 0) {
-            result.negateInPlace();
+        if (this.ray) {
+            const matMesh = TmpVectors.Matrix[0];
+            const rayDirInLocal = TmpVectors.Vector3[0];
+
+            // Transform the ray direction to mesh local space
+            matMesh.copyFrom(this.pickedMesh.getWorldMatrix());
+            matMesh.invert();
+
+            Vector3.TransformNormalToRef(this.ray.direction, matMesh, rayDirInLocal);
+
+            // Flip the normal if the picking ray is in the same direction.
+            if (Vector3.Dot(result, rayDirInLocal) > 0) {
+                result.negateInPlace();
+            }
         }
 
         if (useWorldCoordinates) {
