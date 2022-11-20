@@ -2490,6 +2490,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
     /**
      * Sets the required values to the prepass renderer.
+     * It can't be sets when subsurface scattering of this material is disabled.
+     * When scene have ability to enable subsurface prepass effect, it will enable.
      */
     public setPrePassRenderer(): boolean {
         if (!this.subSurface?.isScatteringEnabled) {
