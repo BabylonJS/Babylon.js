@@ -8,6 +8,7 @@ import type { CurrentScreenBlock } from "./Blocks/Dual/currentScreenBlock";
 import type { ParticleTextureBlock } from "./Blocks/Particle/particleTextureBlock";
 import type { Scene } from "../../scene";
 import type { ImageSourceBlock } from "./Blocks/Dual/imageSourceBlock";
+import type { TriPlanarBlock } from "./Blocks/triPlanarBlock";
 import type { Immutable } from "../../types";
 
 /**
@@ -42,7 +43,7 @@ export class NodeMaterialBuildStateSharedData {
     /**
      * Input blocks
      */
-    public textureBlocks = new Array<TextureBlock | ReflectionTextureBaseBlock | RefractionBlock | CurrentScreenBlock | ParticleTextureBlock | ImageSourceBlock>();
+    public textureBlocks = new Array<TextureBlock | ReflectionTextureBaseBlock | RefractionBlock | CurrentScreenBlock | ParticleTextureBlock | ImageSourceBlock | TriPlanarBlock>();
 
     /**
      * Bindable blocks (Blocks that need to set data to the effect)

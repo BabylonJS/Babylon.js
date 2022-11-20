@@ -170,6 +170,8 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         HeightToNormalBlock: "Convert a height map into a normal map",
         FragDepthBlock: "A final node that sets the fragment depth",
         ShadowMapBlock: "Compute a depth value suitable for shadow map generation",
+        TriPlanarBlock: "A node for reading a texture with triplanar mapping",
+        BiPlanarBlock: "A node for reading a texture with biplanar mapping",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -324,6 +326,8 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "FragCoordBlock",
                 "ScreenSizeBlock",
                 "ImageSourceBlock",
+                "TriPlanarBlock",
+                "BiPlanarBlock",
             ],
             Interpolation: ["LerpBlock", "StepBlock", "SmoothStepBlock", "NLerpBlock"],
             Logical: ["EqualBlock", "NotEqualBlock", "LessThanBlock", "LessOrEqualBlock", "GreaterThanBlock", "GreaterOrEqualBlock", "XorBlock", "OrBlock", "AndBlock"],

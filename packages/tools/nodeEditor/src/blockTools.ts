@@ -91,6 +91,8 @@ import { ElbowBlock } from "core/Materials/Node/Blocks/elbowBlock";
 import { ClipPlanesBlock } from "core/Materials/Node/Blocks/Dual/clipPlanesBlock";
 import { FragDepthBlock } from "core/Materials/Node/Blocks/Fragment/fragDepthBlock";
 import { ShadowMapBlock } from "core/Materials/Node/Blocks/Fragment/shadowMapBlock";
+import { TriPlanarBlock } from "core/Materials/Node/Blocks/triPlanarBlock";
+import { BiPlanarBlock } from "core/Materials/Node/Blocks/biPlanarBlock";
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
@@ -604,7 +606,11 @@ export class BlockTools {
                 return new FragDepthBlock("FragDepth");
             case "ShadowMapBlock":
                 return new ShadowMapBlock("ShadowMap");
-        }
+            case "TriPlanarBlock":
+                return new TriPlanarBlock("TriPlanarTexture");
+            case "BiPlanarBlock":
+                return new BiPlanarBlock("BiPlanarTexture");
+            }
 
         return null;
     }

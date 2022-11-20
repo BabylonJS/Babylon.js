@@ -6,6 +6,7 @@ import { TextureLineComponent } from "../../sharedComponents/textureLineComponen
 import { CurrentScreenBlock } from "core/Materials/Node/Blocks/Dual/currentScreenBlock";
 import { ParticleTextureBlock } from "core/Materials/Node/Blocks/Particle/particleTextureBlock";
 import { ReflectionBlock } from "core/Materials/Node/Blocks/PBR/reflectionBlock";
+import { TriPlanarBlock } from "core/Materials/Node/Blocks/triPlanarBlock";
 import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import localStyles from "./textureDisplayManager.modules.scss";
@@ -34,7 +35,7 @@ export class TextureDisplayManager implements IDisplayManager {
 
     public updatePreviewContent(nodeData: INodeData, contentArea: HTMLDivElement): void {
         const block = nodeData.data as NodeMaterialBlock;
-        const textureBlock = block as TextureBlock | ReflectionTextureBlock | RefractionBlock | CurrentScreenBlock;
+        const textureBlock = block as TextureBlock | ReflectionTextureBlock | RefractionBlock | CurrentScreenBlock | TriPlanarBlock;
 
         if (!this._previewCanvas) {
             contentArea.classList.add(commonStyles["texture-block"]);
@@ -46,6 +47,9 @@ export class TextureDisplayManager implements IDisplayManager {
             }
             if (block instanceof CurrentScreenBlock || block instanceof ParticleTextureBlock) {
                 contentArea.classList.add(localStyles["reduced-texture-block"]);
+            }
+            if (block instanceof TriPlanarBlock) {
+                contentArea.classList.add(localStyles["triplanar-texture-block"]);
             }
 
             this._previewCanvas = contentArea.ownerDocument!.createElement("canvas");
