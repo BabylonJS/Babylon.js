@@ -2492,16 +2492,16 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * Sets the required values to the prepass renderer.
      */
     public setPrePassRenderer(): boolean {
-        if (this.subSurface?.isScatteringEnabled) {
-            const subSurfaceConfiguration = this.getScene().enableSubSurfaceForPrePass();
-            if (subSurfaceConfiguration) {
-                subSurfaceConfiguration.enabled = true;
-            }
-
-            return true;
+        if (!this.subSurface?.isScatteringEnabled) {
+            return false;
         }
 
-        return false;
+        const subSurfaceConfiguration = this.getScene().enableSubSurfaceForPrePass();
+        if (subSurfaceConfiguration) {
+            subSurfaceConfiguration.enabled = true;
+        }
+
+        return true;
     }
 
     /**
