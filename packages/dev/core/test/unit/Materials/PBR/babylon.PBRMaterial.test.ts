@@ -21,6 +21,59 @@ describe("PBRMaterial", () => {
         scene = new Scene(subject);
     });
 
+    describe("getActiveTextures", () => {
+        let material: PBRMaterial;
+
+        beforeEach(() => {
+            material = new PBRMaterial("mat", scene);
+        });
+
+        it("should return all textures", () => {
+            material.albedoTexture = new Texture("albedoTexture.jpg", scene);
+            material.ambientTexture = new Texture("ambientTexture.jpg", scene);
+            material.opacityTexture = new Texture("opacityTexture.jpg", scene);
+            material.reflectionTexture = new Texture("reflectionTexture.jpg", scene);
+            material.emissiveTexture = new Texture("emissiveTexture.jpg", scene);
+            material.reflectivityTexture = new Texture("reflectivityTexture.jpg", scene);
+            material.metallicTexture = new Texture("metallicTexture.jpg", scene);
+            material.metallicReflectanceTexture = new Texture("metallicReflectanceTexture.jpg", scene);
+            material.reflectanceTexture = new Texture("reflectanceTexture.jpg", scene);
+            material.microSurfaceTexture = new Texture("microSurfaceTexture.jpg", scene);
+            material.bumpTexture = new Texture("bumpTexture.jpg", scene);
+            material.lightmapTexture = new Texture("lightmapTexture.jpg", scene);
+            material.refractionTexture = new Texture("refractionTexture.jpg", scene);
+
+            const textures = material.getActiveTextures();
+
+            expect(textures.length).toBe(13);
+            expect(textures.map((x) => x.getInternalTexture()?.url)).toEqual([
+                // Texture from default Material
+                "refractionTexture.jpg",
+
+                // PBR specific textures
+                "albedoTexture.jpg",
+                "ambientTexture.jpg",
+                "opacityTexture.jpg",
+                "reflectionTexture.jpg",
+                "emissiveTexture.jpg",
+                "reflectivityTexture.jpg",
+                "metallicTexture.jpg",
+                "metallicReflectanceTexture.jpg",
+                "reflectanceTexture.jpg",
+                "microSurfaceTexture.jpg",
+                "bumpTexture.jpg",
+                "lightmapTexture.jpg",
+            ]);
+        });
+
+        it("should return an empty array if no textures", () => {
+            const textures = material.getActiveTextures();
+
+            expect(textures.length).toBe(0);
+            expect(textures).toEqual([]);
+        });
+    });
+
     describe("hasTexture", () => {
         let material: PBRMaterial;
         let texture: Texture;
