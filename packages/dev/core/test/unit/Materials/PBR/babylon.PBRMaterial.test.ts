@@ -1,6 +1,6 @@
 import type { Engine } from "core/Engines";
 import { NullEngine } from "core/Engines";
-import { PBRMaterial, RenderTargetTexture, Texture } from "core/Materials";
+import { ImageProcessingConfiguration, PBRMaterial, RenderTargetTexture, Texture } from "core/Materials";
 import { PrePassRenderer } from "core/Rendering";
 import "core/Rendering/prePassRendererSceneComponent";
 import "core/Rendering/subSurfaceSceneComponent";
@@ -290,6 +290,18 @@ describe("PBRMaterial", () => {
             material.dispose();
 
             expect(renderingTextures?.length).toBe(0);
+        });
+
+        it("should remove image processing observer", () => {
+            const imageProcessingConfiguration = new ImageProcessingConfiguration();
+
+            material.imageProcessingConfiguration = imageProcessingConfiguration;
+
+            const imageProcessingRemoveSpy = jest.spyOn(imageProcessingConfiguration.onUpdateParameters, "remove");
+
+            material.dispose();
+
+            expect(imageProcessingRemoveSpy).toBeCalledTimes(1);
         });
     });
 });
