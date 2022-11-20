@@ -1,3 +1,4 @@
+import { Animation } from "core/Animations";
 import type { Engine } from "core/Engines";
 import { NullEngine } from "core/Engines";
 import { ImageProcessingConfiguration, PBRMaterial, RenderTargetTexture, Texture } from "core/Materials";
@@ -19,6 +20,104 @@ describe("PBRMaterial", () => {
             lockstepMaxSteps: 1,
         });
         scene = new Scene(subject);
+    });
+
+    describe("getAnimatables", () => {
+        let material: PBRMaterial;
+
+        beforeEach(() => {
+            material = new PBRMaterial("mat", scene);
+        });
+
+        it("should return an empty array when no any textures setup", () => {
+            expect(material.getAnimatables()).toEqual([]);
+        });
+
+        it("should return an empty array when material has no any textures with animation", () => {
+            material.albedoTexture = new Texture("texture.jpg", scene);
+            material.ambientTexture = new Texture("texture.jpg", scene);
+            material.opacityTexture = new Texture("texture.jpg", scene);
+            material.reflectionTexture = new Texture("texture.jpg", scene);
+            material.emissiveTexture = new Texture("texture.jpg", scene);
+            material.reflectivityTexture = new Texture("texture.jpg", scene);
+            material.metallicTexture = new Texture("texture.jpg", scene);
+            material.metallicReflectanceTexture = new Texture("texture.jpg", scene);
+            material.reflectanceTexture = new Texture("texture.jpg", scene);
+            material.microSurfaceTexture = new Texture("texture.jpg", scene);
+            material.bumpTexture = new Texture("texture.jpg", scene);
+            material.lightmapTexture = new Texture("texture.jpg", scene);
+            material.refractionTexture = new Texture("texture.jpg", scene);
+
+            expect(material.getAnimatables()).toEqual([]);
+        });
+
+        it("should return an array with all available textures with animation", () => {
+            const animParams = ["anim", "name", 1, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CYCLE] as const;
+
+            material.albedoTexture = new Texture("albedoTexture.jpg", scene);
+            material.albedoTexture.animations = [new Animation(...animParams)];
+
+            material.ambientTexture = new Texture("ambientTexture.jpg", scene);
+            material.ambientTexture.animations = [new Animation(...animParams)];
+
+            material.opacityTexture = new Texture("opacityTexture.jpg", scene);
+            material.opacityTexture.animations = [new Animation(...animParams)];
+
+            material.reflectionTexture = new Texture("reflectionTexture.jpg", scene);
+            material.reflectionTexture.animations = [new Animation(...animParams)];
+
+            material.emissiveTexture = new Texture("emissiveTexture.jpg", scene);
+            material.emissiveTexture.animations = [new Animation(...animParams)];
+
+            material.reflectivityTexture = new Texture("reflectivityTexture.jpg", scene);
+            material.reflectivityTexture.animations = [new Animation(...animParams)];
+
+            material.metallicTexture = new Texture("metallicTexture.jpg", scene);
+            material.metallicTexture.animations = [new Animation(...animParams)];
+
+            material.metallicReflectanceTexture = new Texture("metallicReflectanceTexture.jpg", scene);
+            material.metallicReflectanceTexture.animations = [new Animation(...animParams)];
+
+            material.reflectanceTexture = new Texture("reflectanceTexture.jpg", scene);
+            material.reflectanceTexture.animations = [new Animation(...animParams)];
+
+            material.microSurfaceTexture = new Texture("microSurfaceTexture.jpg", scene);
+            material.microSurfaceTexture.animations = [new Animation(...animParams)];
+
+            material.bumpTexture = new Texture("bumpTexture.jpg", scene);
+            material.bumpTexture.animations = [new Animation(...animParams)];
+
+            material.lightmapTexture = new Texture("lightmapTexture.jpg", scene);
+            material.lightmapTexture.animations = [new Animation(...animParams)];
+
+            material.refractionTexture = new Texture("refractionTexture.jpg", scene);
+            material.refractionTexture.animations = [new Animation(...animParams)];
+
+            // By some reason not all textures can have animations, it's commented out
+            expect(material.getAnimatables().map((x) => (x as Texture).url)).toEqual([
+                "refractionTexture.jpg",
+                "albedoTexture.jpg",
+                "ambientTexture.jpg",
+                "opacityTexture.jpg",
+                "reflectionTexture.jpg",
+                "emissiveTexture.jpg",
+                // "reflectivityTexture.jpg",
+                "metallicTexture.jpg",
+                // "metallicReflectanceTexture.jpg",
+                // "reflectanceTexture.jpg",
+                // "microSurfaceTexture.jpg",
+                "bumpTexture.jpg",
+                "lightmapTexture.jpg",
+                // "refractionTexture.jpg",
+            ]);
+        });
+
+        it("should return reflectivity texture when metallic texture is not set", () => {
+            material.reflectivityTexture = new Texture("reflectivityTexture.jpg", scene);
+            material.reflectivityTexture.animations = [new Animation("anim", "name", 1, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CYCLE)];
+
+            expect(material.getAnimatables().map((x) => (x as Texture).url)).toEqual(["reflectivityTexture.jpg"]);
+        });
     });
 
     describe("getActiveTextures", () => {
