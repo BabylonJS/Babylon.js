@@ -144,61 +144,97 @@ describe("PBRMaterial", () => {
             material = new PBRMaterial("mat", scene);
         });
 
-        it("should dispose all textures", () => {
-            material.albedoTexture = new Texture("texture.jpg", scene);
-            const albedoTextureDisposeSpy = jest.spyOn(material.albedoTexture, "dispose");
+        describe("textures disposal", () => {
+            let albedoTextureDisposeSpy: jest.SpyInstance<void, []>;
+            let ambientTextureDisposeSpy: jest.SpyInstance<void, []>;
+            let opacityTextureDisposeSpy: jest.SpyInstance<void, []>;
+            let reflectionTextureDisposeSpy: jest.SpyInstance<void, []>;
+            let emissiveTextureDisposeSpy: jest.SpyInstance<void, []>;
+            let reflectivityTextureDisposeSpy: jest.SpyInstance<void, []>;
+            let metallicTextureDisposeSpy: jest.SpyInstance<void, []>;
+            let metallicReflectanceTextureDisposeSpy: jest.SpyInstance<void, []>;
+            let reflectanceTextureDisposeSpy: jest.SpyInstance<void, []>;
+            let microSurfaceTextureDisposeSpy: jest.SpyInstance<void, []>;
+            let bumpTextureDisposeSpy: jest.SpyInstance<void, []>;
+            let lightmapTextureDisposeSpy: jest.SpyInstance<void, []>;
+            let refractionTextureDisposeSpy: jest.SpyInstance<void, []>;
 
-            material.ambientTexture = new Texture("texture.jpg", scene);
-            const ambientTextureDisposeSpy = jest.spyOn(material.ambientTexture, "dispose");
+            beforeEach(() => {
+                material.albedoTexture = new Texture("texture.jpg", scene);
+                albedoTextureDisposeSpy = jest.spyOn(material.albedoTexture, "dispose");
 
-            material.opacityTexture = new Texture("texture.jpg", scene);
-            const opacityTextureDisposeSpy = jest.spyOn(material.opacityTexture, "dispose");
+                material.ambientTexture = new Texture("texture.jpg", scene);
+                ambientTextureDisposeSpy = jest.spyOn(material.ambientTexture, "dispose");
 
-            material.reflectionTexture = new Texture("texture.jpg", scene);
-            const reflectionTextureDisposeSpy = jest.spyOn(material.reflectionTexture, "dispose");
+                material.opacityTexture = new Texture("texture.jpg", scene);
+                opacityTextureDisposeSpy = jest.spyOn(material.opacityTexture, "dispose");
 
-            material.emissiveTexture = new Texture("texture.jpg", scene);
-            const emissiveTextureDisposeSpy = jest.spyOn(material.emissiveTexture, "dispose");
+                material.reflectionTexture = new Texture("texture.jpg", scene);
+                reflectionTextureDisposeSpy = jest.spyOn(material.reflectionTexture, "dispose");
 
-            material.reflectivityTexture = new Texture("texture.jpg", scene);
-            const reflectivityTextureDisposeSpy = jest.spyOn(material.reflectivityTexture, "dispose");
+                material.emissiveTexture = new Texture("texture.jpg", scene);
+                emissiveTextureDisposeSpy = jest.spyOn(material.emissiveTexture, "dispose");
 
-            material.metallicTexture = new Texture("texture.jpg", scene);
-            const metallicTextureDisposeSpy = jest.spyOn(material.metallicTexture, "dispose");
+                material.reflectivityTexture = new Texture("texture.jpg", scene);
+                reflectivityTextureDisposeSpy = jest.spyOn(material.reflectivityTexture, "dispose");
 
-            material.metallicReflectanceTexture = new Texture("texture.jpg", scene);
-            const metallicReflectanceTextureDisposeSpy = jest.spyOn(material.metallicReflectanceTexture, "dispose");
+                material.metallicTexture = new Texture("texture.jpg", scene);
+                metallicTextureDisposeSpy = jest.spyOn(material.metallicTexture, "dispose");
 
-            material.reflectanceTexture = new Texture("texture.jpg", scene);
-            const reflectanceTextureDisposeSpy = jest.spyOn(material.reflectanceTexture, "dispose");
+                material.metallicReflectanceTexture = new Texture("texture.jpg", scene);
+                metallicReflectanceTextureDisposeSpy = jest.spyOn(material.metallicReflectanceTexture, "dispose");
 
-            material.microSurfaceTexture = new Texture("texture.jpg", scene);
-            const microSurfaceTextureDisposeSpy = jest.spyOn(material.microSurfaceTexture, "dispose");
+                material.reflectanceTexture = new Texture("texture.jpg", scene);
+                reflectanceTextureDisposeSpy = jest.spyOn(material.reflectanceTexture, "dispose");
 
-            material.bumpTexture = new Texture("texture.jpg", scene);
-            const bumpTextureDisposeSpy = jest.spyOn(material.bumpTexture, "dispose");
+                material.microSurfaceTexture = new Texture("texture.jpg", scene);
+                microSurfaceTextureDisposeSpy = jest.spyOn(material.microSurfaceTexture, "dispose");
 
-            material.lightmapTexture = new Texture("texture.jpg", scene);
-            const lightmapTextureDisposeSpy = jest.spyOn(material.lightmapTexture, "dispose");
+                material.bumpTexture = new Texture("texture.jpg", scene);
+                bumpTextureDisposeSpy = jest.spyOn(material.bumpTexture, "dispose");
 
-            material.refractionTexture = new Texture("texture.jpg", scene);
-            const refractionTextureDisposeSpy = jest.spyOn(material.refractionTexture, "dispose");
+                material.lightmapTexture = new Texture("texture.jpg", scene);
+                lightmapTextureDisposeSpy = jest.spyOn(material.lightmapTexture, "dispose");
 
-            material.dispose(true, true);
+                material.refractionTexture = new Texture("texture.jpg", scene);
+                refractionTextureDisposeSpy = jest.spyOn(material.refractionTexture, "dispose");
+            });
 
-            expect(albedoTextureDisposeSpy).toBeCalledTimes(1);
-            expect(ambientTextureDisposeSpy).toBeCalledTimes(1);
-            expect(opacityTextureDisposeSpy).toBeCalledTimes(1);
-            expect(reflectionTextureDisposeSpy).toBeCalledTimes(1);
-            expect(emissiveTextureDisposeSpy).toBeCalledTimes(1);
-            expect(reflectivityTextureDisposeSpy).toBeCalledTimes(1);
-            expect(metallicTextureDisposeSpy).toBeCalledTimes(1);
-            expect(metallicReflectanceTextureDisposeSpy).toBeCalledTimes(1);
-            expect(reflectanceTextureDisposeSpy).toBeCalledTimes(1);
-            expect(microSurfaceTextureDisposeSpy).toBeCalledTimes(1);
-            expect(bumpTextureDisposeSpy).toBeCalledTimes(1);
-            expect(lightmapTextureDisposeSpy).toBeCalledTimes(1);
-            expect(refractionTextureDisposeSpy).toBeCalledTimes(1);
+            it("should dispose all textures", () => {
+                material.dispose(true, true);
+
+                expect(albedoTextureDisposeSpy).toBeCalledTimes(1);
+                expect(ambientTextureDisposeSpy).toBeCalledTimes(1);
+                expect(opacityTextureDisposeSpy).toBeCalledTimes(1);
+                expect(reflectionTextureDisposeSpy).toBeCalledTimes(1);
+                expect(emissiveTextureDisposeSpy).toBeCalledTimes(1);
+                expect(reflectivityTextureDisposeSpy).toBeCalledTimes(1);
+                expect(metallicTextureDisposeSpy).toBeCalledTimes(1);
+                expect(metallicReflectanceTextureDisposeSpy).toBeCalledTimes(1);
+                expect(reflectanceTextureDisposeSpy).toBeCalledTimes(1);
+                expect(microSurfaceTextureDisposeSpy).toBeCalledTimes(1);
+                expect(bumpTextureDisposeSpy).toBeCalledTimes(1);
+                expect(lightmapTextureDisposeSpy).toBeCalledTimes(1);
+                expect(refractionTextureDisposeSpy).toBeCalledTimes(1);
+            });
+
+            it("should not dispose textures when forceDisposeTextures is false", () => {
+                material.dispose(true, false);
+
+                expect(albedoTextureDisposeSpy).toBeCalledTimes(0);
+                expect(ambientTextureDisposeSpy).toBeCalledTimes(0);
+                expect(opacityTextureDisposeSpy).toBeCalledTimes(0);
+                expect(reflectionTextureDisposeSpy).toBeCalledTimes(0);
+                expect(emissiveTextureDisposeSpy).toBeCalledTimes(0);
+                expect(reflectivityTextureDisposeSpy).toBeCalledTimes(0);
+                expect(metallicTextureDisposeSpy).toBeCalledTimes(0);
+                expect(metallicReflectanceTextureDisposeSpy).toBeCalledTimes(0);
+                expect(reflectanceTextureDisposeSpy).toBeCalledTimes(0);
+                expect(microSurfaceTextureDisposeSpy).toBeCalledTimes(0);
+                expect(bumpTextureDisposeSpy).toBeCalledTimes(0);
+                expect(lightmapTextureDisposeSpy).toBeCalledTimes(0);
+                expect(refractionTextureDisposeSpy).toBeCalledTimes(0);
+            });
         });
     });
 });
