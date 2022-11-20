@@ -1,6 +1,6 @@
 import type { Engine } from "core/Engines";
 import { NullEngine } from "core/Engines";
-import { PBRMaterial, Texture } from "core/Materials";
+import { PBRMaterial, RenderTargetTexture, Texture } from "core/Materials";
 import { PrePassRenderer } from "core/Rendering";
 import "core/Rendering/prePassRendererSceneComponent";
 import "core/Rendering/subSurfaceSceneComponent";
@@ -279,6 +279,17 @@ describe("PBRMaterial", () => {
 
             expect(environmentTextureDisposeSpy).toBeCalledTimes(0);
             expect(textureDisposeSpy).toBeCalledTimes(0);
+        });
+
+        it("should dispose render targets", () => {
+            material.reflectionTexture = new RenderTargetTexture("renderTarget", 512, scene);
+
+            const renderingTextures = material.getRenderTargetTextures!();
+            expect(renderingTextures?.length).toBe(1);
+
+            material.dispose();
+
+            expect(renderingTextures?.length).toBe(0);
         });
     });
 });
