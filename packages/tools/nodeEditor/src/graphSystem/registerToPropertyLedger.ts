@@ -23,6 +23,8 @@ export const RegisterToPropertyTabManagers = () => {
     PropertyLedger.RegisteredControls["RefractionBlock"] = TexturePropertyTabComponent;
     PropertyLedger.RegisteredControls["CurrentScreenBlock"] = TexturePropertyTabComponent;
     PropertyLedger.RegisteredControls["ParticleTextureBlock"] = TexturePropertyTabComponent;
+    PropertyLedger.RegisteredControls["TriPlanarBlock"] = TexturePropertyTabComponent;
+    PropertyLedger.RegisteredControls["BiPlanarBlock"] = TexturePropertyTabComponent;
     PropertyLedger.RegisteredControls["TrigonometryBlock"] = TrigonometryPropertyTabComponent;
     PropertyLedger.RegisteredControls["ConditionalBlock"] = ConditionalPropertyTabComponent;
     PropertyLedger.RegisteredControls["ImageSourceBlock"] = ImageSourcePropertyTabComponent;
