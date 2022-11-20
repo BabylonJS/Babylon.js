@@ -136,4 +136,69 @@ describe("PBRMaterial", () => {
             expect(scene.subSurfaceConfiguration?.enabled).toBeTruthy();
         });
     });
+
+    describe("dispose", () => {
+        let material: PBRMaterial;
+
+        beforeEach(() => {
+            material = new PBRMaterial("mat", scene);
+        });
+
+        it("should dispose all textures", () => {
+            material.albedoTexture = new Texture("texture.jpg", scene);
+            const albedoTextureDisposeSpy = jest.spyOn(material.albedoTexture, "dispose");
+
+            material.ambientTexture = new Texture("texture.jpg", scene);
+            const ambientTextureDisposeSpy = jest.spyOn(material.ambientTexture, "dispose");
+
+            material.opacityTexture = new Texture("texture.jpg", scene);
+            const opacityTextureDisposeSpy = jest.spyOn(material.opacityTexture, "dispose");
+
+            material.reflectionTexture = new Texture("texture.jpg", scene);
+            const reflectionTextureDisposeSpy = jest.spyOn(material.reflectionTexture, "dispose");
+
+            material.emissiveTexture = new Texture("texture.jpg", scene);
+            const emissiveTextureDisposeSpy = jest.spyOn(material.emissiveTexture, "dispose");
+
+            material.reflectivityTexture = new Texture("texture.jpg", scene);
+            const reflectivityTextureDisposeSpy = jest.spyOn(material.reflectivityTexture, "dispose");
+
+            material.metallicTexture = new Texture("texture.jpg", scene);
+            const metallicTextureDisposeSpy = jest.spyOn(material.metallicTexture, "dispose");
+
+            material.metallicReflectanceTexture = new Texture("texture.jpg", scene);
+            const metallicReflectanceTextureDisposeSpy = jest.spyOn(material.metallicReflectanceTexture, "dispose");
+
+            material.reflectanceTexture = new Texture("texture.jpg", scene);
+            const reflectanceTextureDisposeSpy = jest.spyOn(material.reflectanceTexture, "dispose");
+
+            material.microSurfaceTexture = new Texture("texture.jpg", scene);
+            const microSurfaceTextureDisposeSpy = jest.spyOn(material.microSurfaceTexture, "dispose");
+
+            material.bumpTexture = new Texture("texture.jpg", scene);
+            const bumpTextureDisposeSpy = jest.spyOn(material.bumpTexture, "dispose");
+
+            material.lightmapTexture = new Texture("texture.jpg", scene);
+            const lightmapTextureDisposeSpy = jest.spyOn(material.lightmapTexture, "dispose");
+
+            material.refractionTexture = new Texture("texture.jpg", scene);
+            const refractionTextureDisposeSpy = jest.spyOn(material.refractionTexture, "dispose");
+
+            material.dispose(true, true);
+
+            expect(albedoTextureDisposeSpy).toBeCalledTimes(1);
+            expect(ambientTextureDisposeSpy).toBeCalledTimes(1);
+            expect(opacityTextureDisposeSpy).toBeCalledTimes(1);
+            expect(reflectionTextureDisposeSpy).toBeCalledTimes(1);
+            expect(emissiveTextureDisposeSpy).toBeCalledTimes(1);
+            expect(reflectivityTextureDisposeSpy).toBeCalledTimes(1);
+            expect(metallicTextureDisposeSpy).toBeCalledTimes(1);
+            expect(metallicReflectanceTextureDisposeSpy).toBeCalledTimes(1);
+            expect(reflectanceTextureDisposeSpy).toBeCalledTimes(1);
+            expect(microSurfaceTextureDisposeSpy).toBeCalledTimes(1);
+            expect(bumpTextureDisposeSpy).toBeCalledTimes(1);
+            expect(lightmapTextureDisposeSpy).toBeCalledTimes(1);
+            expect(refractionTextureDisposeSpy).toBeCalledTimes(1);
+        });
+    });
 });
