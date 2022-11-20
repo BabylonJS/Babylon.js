@@ -1,9 +1,10 @@
 import type { Engine } from "core/Engines";
 import { NullEngine } from "core/Engines";
 import { PBRMaterial, Texture } from "core/Materials";
-import { Scene } from "core/scene";
+import { PrePassRenderer } from "core/Rendering";
 import "core/Rendering/prePassRendererSceneComponent";
 import "core/Rendering/subSurfaceSceneComponent";
+import { Scene } from "core/scene";
 
 describe("PBRMaterial", () => {
     let subject: Engine;
@@ -122,6 +123,17 @@ describe("PBRMaterial", () => {
             material.setPrePassRenderer();
 
             expect(scene.prePassRenderer).toBeUndefined();
+        });
+
+        it("should enable subSurfaceConfiguration when PrePassRenderer supported (WebGL2)", () => {
+            expect(scene.subSurfaceConfiguration?.enabled).toBeFalsy();
+
+            jest.spyOn(PrePassRenderer.prototype, "isSupported", "get").mockReturnValue(true);
+
+            material.subSurface.isScatteringEnabled = true;
+            material.setPrePassRenderer();
+
+            expect(scene.subSurfaceConfiguration?.enabled).toBeTruthy();
         });
     });
 });
