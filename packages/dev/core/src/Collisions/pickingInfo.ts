@@ -126,8 +126,7 @@ export class PickingInfo {
         }
 
         if (this.ray) {
-            const normalForDirectionChecking = TmpVectors.Vector3[0];
-            normalForDirectionChecking.copyFrom(result);
+            const normalForDirectionChecking = TmpVectors.Vector3[0].copyFrom(result);
 
             if (!useWorldCoordinates) {
                 // the normal has not been transformed to world space as part as the normal processing, so we must do it now
