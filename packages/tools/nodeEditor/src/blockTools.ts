@@ -610,7 +610,7 @@ export class BlockTools {
                 return new TriPlanarBlock("TriPlanarTexture");
             case "BiPlanarBlock":
                 return new BiPlanarBlock("BiPlanarTexture");
-            }
+        }
 
         return null;
     }
