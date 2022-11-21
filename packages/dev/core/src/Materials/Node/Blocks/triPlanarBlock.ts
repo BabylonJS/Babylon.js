@@ -280,16 +280,21 @@ export class TriPlanarBlock extends NodeMaterialBlock {
 
         const sharpness = this.sharpness.isConnected ? this.sharpness.associatedVariableName : "1.0";
 
+        const x = state._getFreeVariableName("x");
+        const y = state._getFreeVariableName("y");
+        const z = state._getFreeVariableName("z");
+        const w = state._getFreeVariableName("z");
+
         state.compilationString += `
-            vec4 x = texture2D(${samplerName}, ${this.position.associatedVariableName}.yz);
-            vec4 y = texture2D(${samplerName}, ${this.position.associatedVariableName}.zx);
-            vec4 z = texture2D(${samplerName}, ${this.position.associatedVariableName}.xy);
+            vec4 ${x} = texture2D(${samplerName}, ${this.position.associatedVariableName}.yz);
+            vec4 ${y} = texture2D(${samplerName}, ${this.position.associatedVariableName}.zx);
+            vec4 ${z} = texture2D(${samplerName}, ${this.position.associatedVariableName}.xy);
             
             // blend weights
-            vec3 w = pow(abs(${this.normal.associatedVariableName}.xyz), vec3(${sharpness}));
+            vec3 ${w} = pow(abs(${this.normal.associatedVariableName}.xyz), vec3(${sharpness}));
 
             // blend and return
-            vec4 ${this._tempTextureRead} = (x*w.x + y*w.y + z*w.z) / (w.x + w.y + w.z);        
+            vec4 ${this._tempTextureRead} = (${x}*${w}.x + ${y}*${w}.y + ${z}*${w}.z) / (${w}.x + ${w}.y + ${w}.z);        
         `;
     }
 
