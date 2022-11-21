@@ -84,6 +84,7 @@ module.exports = (env) => {
             "proceduralTexturesLibrary/babylonjs.proceduralTextures.min": `./src/proceduralTextures/index-${source}.ts`,
             "nodeEditor/babylon.nodeEditor.min": `./src/nodeEditor/index.ts`,
             "guiEditor/babylon.guiEditor.min": `./src/guiEditor/index.ts`,
+            "accessibility/babylon.accessibility.min": `./src/accessibility/index.ts`,
             "babylon.ktx2Decoder": `./src/ktx2Decoder/index.ts`,
             // "babylonjs-gltf2interface": `./src/babylon.glTF2Interface.d.ts`,
         },
@@ -106,6 +107,7 @@ module.exports = (env) => {
                 "procedural-textures": path.resolve(basePathForSources, "proceduralTextures", outputDirectoryForAliases),
                 "node-editor": path.resolve(basePathForTools, "nodeEditor", outputDirectoryForAliases),
                 "gui-editor": path.resolve(basePathForTools, "guiEditor", outputDirectoryForAliases),
+                "accesibility": path.resolve(basePathForTools, "accessibility", outputDirectoryForAliases),
             },
             symlinks: false,
             // modules: [path.resolve(__dirname, "../../dev/"), 'node_modules'],
@@ -218,6 +220,14 @@ module.exports = (env) => {
         {
             from: "/guiEditor/babylon.guiEditor.d.ts",
             to: "/gui-editor.d.ts",
+        },
+        {
+            from: "/accessibility/babylon.accessibility.js",
+            to: "/accessibility/babylon.accessibility.min.js",
+        },
+        {
+            from: "/accessibility/babylon.accessibility.d.ts",
+            to: "/accessibility.d.ts",
         },
         /*
             still missing

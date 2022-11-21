@@ -236,6 +236,7 @@ class Playground {
             "https://preview.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.d.ts",
             "https://preview.babylonjs.com/serializers/babylonjs.serializers.d.ts",
             "https://preview.babylonjs.com/inspector/babylon.inspector.d.ts",
+            "https://preview.babylonjs.com/accessibility/babylon.accessibility.d.ts",
         ];
 
         let snapshot = "";
