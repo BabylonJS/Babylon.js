@@ -105,15 +105,10 @@ export class PickingInfo {
             result = Vector3.Cross(p1p2, p3p2);
         }
 
-        // Flip the normal if the picking ray is in the same direction.
-        if (this.ray && Vector3.Dot(result, this.ray.direction) > 0) {
-            result.negateInPlace();
-        }
+        const transformNormalToWorld = (pickedMesh: AbstractMesh, n: Vector3) => {
+            let wm = pickedMesh.getWorldMatrix();
 
-        if (useWorldCoordinates) {
-            let wm = this.pickedMesh.getWorldMatrix();
-
-            if (this.pickedMesh.nonUniformScaling) {
+            if (pickedMesh.nonUniformScaling) {
                 TmpVectors.Matrix[0].copyFrom(wm);
                 wm = TmpVectors.Matrix[0];
                 wm.setTranslationFromFloats(0, 0, 0);
@@ -123,7 +118,25 @@ export class PickingInfo {
                 wm = TmpVectors.Matrix[1];
             }
 
-            Vector3.TransformNormalToRef(result, wm, result);
+            Vector3.TransformNormalToRef(n, wm, n);
+        };
+
+        if (useWorldCoordinates) {
+            transformNormalToWorld(this.pickedMesh, result);
+        }
+
+        if (this.ray) {
+            const normalForDirectionChecking = TmpVectors.Vector3[0].copyFrom(result);
+
+            if (!useWorldCoordinates) {
+                // the normal has not been transformed to world space as part as the normal processing, so we must do it now
+                transformNormalToWorld(this.pickedMesh, normalForDirectionChecking);
+            }
+
+            // Flip the normal if the picking ray is in the same direction.
+            if (Vector3.Dot(normalForDirectionChecking, this.ray.direction) > 0) {
+                result.negateInPlace();
+            }
         }
 
         result.normalize();
