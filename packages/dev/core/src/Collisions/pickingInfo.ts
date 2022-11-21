@@ -105,26 +105,10 @@ export class PickingInfo {
             result = Vector3.Cross(p1p2, p3p2);
         }
 
-        if (this.ray) {
-            const matMesh = TmpVectors.Matrix[0];
-            const rayDirInLocal = TmpVectors.Vector3[0];
+        const transformNormalToWorld = (n: Vector3) => {
+            let wm = this.pickedMesh!.getWorldMatrix();
 
-            // Transform the ray direction to mesh local space
-            matMesh.copyFrom(this.pickedMesh.getWorldMatrix());
-            matMesh.invert();
-
-            Vector3.TransformNormalToRef(this.ray.direction, matMesh, rayDirInLocal);
-
-            // Flip the normal if the picking ray is in the same direction.
-            if (Vector3.Dot(result, rayDirInLocal) > 0) {
-                result.negateInPlace();
-            }
-        }
-
-        if (useWorldCoordinates) {
-            let wm = this.pickedMesh.getWorldMatrix();
-
-            if (this.pickedMesh.nonUniformScaling) {
+            if (this.pickedMesh!.nonUniformScaling) {
                 TmpVectors.Matrix[0].copyFrom(wm);
                 wm = TmpVectors.Matrix[0];
                 wm.setTranslationFromFloats(0, 0, 0);
@@ -134,7 +118,26 @@ export class PickingInfo {
                 wm = TmpVectors.Matrix[1];
             }
 
-            Vector3.TransformNormalToRef(result, wm, result);
+            Vector3.TransformNormalToRef(n, wm, n);
+        };
+
+        if (useWorldCoordinates) {
+            transformNormalToWorld(result);
+        }
+
+        if (this.ray) {
+            const normalForDirectionChecking = TmpVectors.Vector3[0];
+            normalForDirectionChecking.copyFrom(result);
+
+            if (!useWorldCoordinates) {
+                // the normal has not been transformed to world space as part as the normal processing, so we must do it now
+                transformNormalToWorld(normalForDirectionChecking);
+            }
+
+            // Flip the normal if the picking ray is in the same direction.
+            if (Vector3.Dot(normalForDirectionChecking, this.ray.direction) > 0) {
+                result.negateInPlace();
+            }
         }
 
         result.normalize();
