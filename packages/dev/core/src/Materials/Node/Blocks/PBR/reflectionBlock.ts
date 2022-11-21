@@ -63,6 +63,26 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
     @editableInPropertyPage("Force irradiance in fragment", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { update: true } })
     public forceIrradianceInFragment: boolean = false;
 
+    protected _onGenerateOnlyFragmentCodeChanged(): boolean {
+        if (this.position.isConnected) {
+            this.generateOnlyFragmentCode = !this.generateOnlyFragmentCode;
+            console.error("The position input must not be connected to be able to switch!");
+            return false;
+        }
+
+        this._setTarget();
+
+        return true;
+    }
+
+    protected _setTarget(): void {
+        super._setTarget();
+        this.getInputByName("position")!.target = this.generateOnlyFragmentCode ? NodeMaterialBlockTargets.Fragment : NodeMaterialBlockTargets.Vertex;
+        if (this.generateOnlyFragmentCode) {
+            this.forceIrradianceInFragment = true;
+        }
+    }
+
     /**
      * Create a new ReflectionBlock
      * @param name defines the block name
@@ -82,6 +102,8 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
             NodeMaterialBlockTargets.Fragment,
             new NodeMaterialConnectionPointCustomObject("reflection", this, NodeMaterialConnectionPointDirection.Output, ReflectionBlock, "ReflectionBlock")
         );
+
+        this.position.acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector4);
     }
 
     /**
@@ -368,7 +390,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
             reflectionOutParams reflectionOut;
 
             reflectionBlock(
-                ${"v_" + this.worldPosition.associatedVariableName + ".xyz"},
+                ${this.generateOnlyFragmentCode ? this._worldPositionNameInFragmentOnlyMode : "v_" + this.worldPosition.associatedVariableName}.xyz,
                 ${normalVarName},
                 alphaG,
                 ${this._vReflectionMicrosurfaceInfosName},

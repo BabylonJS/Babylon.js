@@ -57,28 +57,22 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
      */
     public light: Nullable<Light>;
 
-    /** Indicates that no code should be generated in the vertex shader. Can be useful in some specific circumstances (like when doing ray marching for eg) */
-    @editableInPropertyPage("Generate only fragment code", PropertyTypeForEdition.Boolean, "PROPERTIES", {
-        notifiers: { rebuild: true, update: true, onValidation: PBRMetallicRoughnessBlock._OnGenerateOnlyFragmentCodeChanged },
-    })
-    public generateOnlyFragmentCode = false;
-
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private static _OnGenerateOnlyFragmentCodeChanged(block: NodeMaterialBlock, propertyName: string): boolean {
-        const this_ = block as PBRMetallicRoughnessBlock;
+        const that = block as PBRMetallicRoughnessBlock;
 
-        if (this_.worldPosition.isConnected) {
-            this_.generateOnlyFragmentCode = !this_.generateOnlyFragmentCode;
+        if (that.worldPosition.isConnected) {
+            that.generateOnlyFragmentCode = !that.generateOnlyFragmentCode;
             console.error("The worldPosition input must not be connected to be able to switch!");
             return false;
         }
 
-        this_._setTarget();
+        that._setTarget();
 
         return true;
     }
 
-    /** @internal */
-    public _setTarget(): void {
+    private _setTarget(): void {
         this._setInitialTarget(this.generateOnlyFragmentCode ? NodeMaterialBlockTargets.Fragment : NodeMaterialBlockTargets.VertexAndFragment);
         this.getInputByName("worldPosition")!.target = this.generateOnlyFragmentCode ? NodeMaterialBlockTargets.Fragment : NodeMaterialBlockTargets.Vertex;
     }
@@ -297,6 +291,12 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
      */
     @editableInPropertyPage("Force normal forward", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { update: true } })
     public forceNormalForward: boolean = false;
+
+    /** Indicates that no code should be generated in the vertex shader. Can be useful in some specific circumstances (like when doing ray marching for eg) */
+    @editableInPropertyPage("Generate only fragment code", PropertyTypeForEdition.Boolean, "ADVANCED", {
+        notifiers: { rebuild: true, update: true, onValidation: PBRMetallicRoughnessBlock._OnGenerateOnlyFragmentCodeChanged },
+    })
+    public generateOnlyFragmentCode = false;
 
     /**
      * Defines the material debug mode.
@@ -1025,6 +1025,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             reflectionBlock.worldPositionConnectionPoint = this.worldPosition;
             reflectionBlock.cameraPositionConnectionPoint = this.cameraPosition;
             reflectionBlock.worldNormalConnectionPoint = this.worldNormal;
+            reflectionBlock.viewConnectionPoint = this.view;
         }
 
         if (state.target !== NodeMaterialBlockTargets.Fragment) {
@@ -1146,6 +1147,10 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         //
 
         state._emitUniformFromString("vLightingIntensity", "vec4");
+
+        if (reflectionBlock?.generateOnlyFragmentCode) {
+            state.compilationString += reflectionBlock.handleVertexSide(state);
+        }
 
         // _____________________________ Geometry Information ____________________________
         this._vNormalWName = state._getFreeVariableName("vNormalW");
