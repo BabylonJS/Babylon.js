@@ -38,27 +38,27 @@ export class LightBlock extends NodeMaterialBlock {
     public light: Nullable<Light>;
 
     /** Indicates that no code should be generated in the vertex shader. Can be useful in some specific circumstances (like when doing ray marching for eg) */
-    @editableInPropertyPage("Generate only fragment code", PropertyTypeForEdition.Boolean, "PROPERTIES", {
+    @editableInPropertyPage("Generate only fragment code", PropertyTypeForEdition.Boolean, "ADVANCED", {
         notifiers: { rebuild: true, update: true, onValidation: LightBlock._OnGenerateOnlyFragmentCodeChanged },
     })
     public generateOnlyFragmentCode = false;
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private static _OnGenerateOnlyFragmentCodeChanged(block: NodeMaterialBlock, propertyName: string): boolean {
-        const this_ = block as LightBlock;
+        const that = block as LightBlock;
 
-        if (this_.worldPosition.isConnected) {
-            this_.generateOnlyFragmentCode = !this_.generateOnlyFragmentCode;
+        if (that.worldPosition.isConnected) {
+            that.generateOnlyFragmentCode = !that.generateOnlyFragmentCode;
             console.error("The worldPosition input must not be connected to be able to switch!");
             return false;
         }
 
-        this_._setTarget();
+        that._setTarget();
 
         return true;
     }
 
-    /** @internal */
-    public _setTarget(): void {
+    private _setTarget(): void {
         this._setInitialTarget(this.generateOnlyFragmentCode ? NodeMaterialBlockTargets.Fragment : NodeMaterialBlockTargets.VertexAndFragment);
         this.getInputByName("worldPosition")!.target = this.generateOnlyFragmentCode ? NodeMaterialBlockTargets.Fragment : NodeMaterialBlockTargets.Vertex;
     }
