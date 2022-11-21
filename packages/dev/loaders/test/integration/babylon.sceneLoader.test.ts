@@ -1,7 +1,7 @@
 import { evaluateDisposeEngine, evaluateCreateScene, evaluateInitEngine, getGlobalConfig, logPageErrors } from "@tools/test-tools";
 import type { GLTFFileLoader } from "loaders/glTF";
 
-declare const BABYLON: typeof import("core/index") & typeof import("loaders/index") & typeof import("serializers/index");
+declare const BABYLON: typeof import("core/index") & typeof import("loaders/index");
 
 const debug = process.env.DEBUG === "true";
 interface Window {
