@@ -17,7 +17,7 @@ import { Observable } from "../Misc/observable";
 import type { EnvironmentTextureSpecularInfoV1 } from "../Misc/environmentTextureTools";
 import { CreateImageDataArrayBufferViews, GetEnvInfo, UploadEnvSpherical } from "../Misc/environmentTextureTools";
 import type { Scene } from "../scene";
-import type { RenderTargetCreationOptions, TextureSize, DepthTextureCreationOptions } from "../Materials/Textures/textureCreationOptions";
+import type { RenderTargetCreationOptions, TextureSize, DepthTextureCreationOptions, InternalTextureCreationOptions } from "../Materials/Textures/textureCreationOptions";
 import type { IPipelineContext } from "./IPipelineContext";
 import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IViewportLike, IQuaternionLike } from "../Maths/math.like";
 import { Logger } from "../Misc/logger";
@@ -2422,7 +2422,7 @@ export class NativeEngine extends Engine {
      * @param texture defines the external texture
      * @returns the babylon internal texture
      */
-    wrapNativeTexture(texture: any): InternalTexture {
+    public wrapNativeTexture(texture: any): InternalTexture {
         // Currently native is using the WebGL wrapper
         const hardwareTexture = new WebGLHardwareTexture(texture, this._gl);
         const internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
@@ -2435,7 +2435,7 @@ export class NativeEngine extends Engine {
      * Wraps an external web gl texture in a Babylon texture.
      * @returns the babylon internal texture
      */
-    wrapWebGLTexture(): InternalTexture {
+    public wrapWebGLTexture(): InternalTexture {
         throw new Error("wrapWebGLTexture is not supported, use wrapNativeTexture instead.");
     }
 
@@ -2657,80 +2657,122 @@ export class NativeEngine extends Engine {
         return texture;
     }
 
-    /**
-     * @internal
-     */
+    /** @internal */
     public _createHardwareRenderTargetWrapper(isMulti: boolean, isCube: boolean, size: TextureSize): RenderTargetWrapper {
         const rtWrapper = new NativeRenderTargetWrapper(isMulti, isCube, size, this);
         this._renderTargetWrapperCache.push(rtWrapper);
         return rtWrapper;
     }
 
+    /** @internal */
+    public _createInternalTexture(
+        size: TextureSize,
+        options: boolean | InternalTextureCreationOptions,
+        _delayGPUTextureCreation = true,
+        source = InternalTextureSource.Unknown
+    ): InternalTexture {
+        let generateMipMaps = false;
+        let type = Constants.TEXTURETYPE_UNSIGNED_INT;
+        let samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
+        let format = Constants.TEXTUREFORMAT_RGBA;
+        let useSRGBBuffer = false;
+        let samples = 1;
+        if (options !== undefined && typeof options === "object") {
+            generateMipMaps = !!options.generateMipMaps;
+            type = options.type === undefined ? Constants.TEXTURETYPE_UNSIGNED_INT : options.type;
+            samplingMode = options.samplingMode === undefined ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
+            format = options.format === undefined ? Constants.TEXTUREFORMAT_RGBA : options.format;
+            useSRGBBuffer = options.useSRGBBuffer === undefined ? false : options.useSRGBBuffer;
+            samples = options.samples ?? 1;
+        } else {
+            generateMipMaps = !!options;
+        }
+
+        useSRGBBuffer &&= this._caps.supportSRGBBuffers && (this.webGLVersion > 1 || this.isWebGPU);
+
+        if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+            // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
+            samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        } else if (type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+            // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
+            samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        }
+        if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
+            type = Constants.TEXTURETYPE_UNSIGNED_INT;
+            Logger.Warn("Float textures are not supported. Type forced to TEXTURETYPE_UNSIGNED_BYTE");
+        }
+
+        const texture = new InternalTexture(this, source);
+        const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
+        const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
+
+        const layers = (<{ width: number; height: number; layers?: number }>size).layers || 0;
+        if (layers !== 0) {
+            throw new Error("Texture layers are not supported in Babylon Native");
+        }
+
+        this._setTextureSampling(texture._hardwareTexture!.underlyingResource, this._getNativeSamplingMode(samplingMode));
+
+        texture._useSRGBBuffer = useSRGBBuffer;
+        texture.baseWidth = width;
+        texture.baseHeight = height;
+        texture.width = width;
+        texture.height = height;
+        texture.depth = layers;
+        texture.isReady = true;
+        texture.samples = samples;
+        texture.generateMipMaps = generateMipMaps;
+        texture.samplingMode = samplingMode;
+        texture.type = type;
+        texture.format = format;
+
+        this._internalTexturesCache.push(texture);
+
+        return texture;
+    }
+
     public createRenderTargetTexture(size: number | { width: number; height: number }, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper {
         const rtWrapper = this._createHardwareRenderTargetWrapper(false, false, size) as NativeRenderTargetWrapper;
 
-        const fullOptions: RenderTargetCreationOptions = {};
-
+        let generateDepthBuffer = true;
+        let generateStencilBuffer = false;
+        let noColorAttachment = false;
+        let colorAttachment: InternalTexture | undefined = undefined;
+        //let samples = 1;
         if (options !== undefined && typeof options === "object") {
-            fullOptions.generateMipMaps = options.generateMipMaps;
-            fullOptions.generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
-            fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && options.generateStencilBuffer;
-            fullOptions.type = options.type === undefined ? Constants.TEXTURETYPE_UNSIGNED_INT : options.type;
-            fullOptions.samplingMode = options.samplingMode === undefined ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
-            fullOptions.format = options.format === undefined ? Constants.TEXTUREFORMAT_RGBA : options.format;
-        } else {
-            fullOptions.generateMipMaps = <boolean>options;
-            fullOptions.generateDepthBuffer = true;
-            fullOptions.generateStencilBuffer = false;
-            fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
-            fullOptions.samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
-            fullOptions.format = Constants.TEXTUREFORMAT_RGBA;
+            generateDepthBuffer = !!options.generateDepthBuffer;
+            generateStencilBuffer = !!options.generateStencilBuffer;
+            noColorAttachment = !!options.noColorAttachment;
+            colorAttachment = options.colorAttachment;
+            //samples = options.samples ?? 1;
         }
 
-        if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
-            // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
-            fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
-        } else if (fullOptions.type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
-            // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
-            fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
-        }
-        const texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
+        const texture = colorAttachment || (noColorAttachment ? null : this._createInternalTexture(size, options, true, InternalTextureSource.RenderTarget));
+        const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
+        const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
 
-        const width = (<{ width: number; height: number }>size).width || <number>size;
-        const height = (<{ width: number; height: number }>size).height || <number>size;
-
-        if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
-            fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
-            Logger.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
+        if (!texture) {
+            throw new Error("No color attachment is not supported in Babylon Native");
         }
 
         const framebuffer = this._engine.createFrameBuffer(
             texture._hardwareTexture!.underlyingResource,
             width,
             height,
-            this._getNativeTextureFormat(fullOptions.format, fullOptions.type),
-            fullOptions.generateStencilBuffer ? true : false,
-            fullOptions.generateDepthBuffer,
-            fullOptions.generateMipMaps ? true : false
+            this._getNativeTextureFormat(texture.format, texture.type),
+            generateStencilBuffer,
+            generateDepthBuffer,
+            texture.generateMipMaps
         );
 
         rtWrapper._framebuffer = framebuffer;
-        rtWrapper._generateDepthBuffer = fullOptions.generateDepthBuffer;
-        rtWrapper._generateStencilBuffer = fullOptions.generateStencilBuffer ? true : false;
+        rtWrapper._generateDepthBuffer = generateDepthBuffer;
+        rtWrapper._generateStencilBuffer = generateStencilBuffer;
 
-        texture.baseWidth = width;
-        texture.baseHeight = height;
-        texture.width = width;
-        texture.height = height;
-        texture.isReady = true;
-        texture.samples = 1;
-        texture.generateMipMaps = fullOptions.generateMipMaps ? true : false;
-        texture.samplingMode = fullOptions.samplingMode;
-        texture.type = fullOptions.type;
-        texture.format = fullOptions.format;
-
-        this._internalTexturesCache.push(texture);
         rtWrapper.setTextures(texture);
+
+        // TODO: handle this in native
+        //this.updateRenderTargetTextureSampleCount(rtWrapper, samples);
 
         return rtWrapper;
     }
@@ -2740,6 +2782,7 @@ export class NativeEngine extends Engine {
             const filter = this._getNativeSamplingMode(samplingMode);
             this._setTextureSampling(texture._hardwareTexture.underlyingResource, filter);
         }
+
         texture.samplingMode = samplingMode;
     }
 

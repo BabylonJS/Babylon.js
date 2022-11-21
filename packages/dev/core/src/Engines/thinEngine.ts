@@ -3735,58 +3735,56 @@ export class ThinEngine {
         delayGPUTextureCreation = true,
         source = InternalTextureSource.Unknown
     ): InternalTexture {
-        const fullOptions: InternalTextureCreationOptions = {};
-
+        let generateMipMaps = false;
+        let type = Constants.TEXTURETYPE_UNSIGNED_INT;
+        let samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
+        let format = Constants.TEXTUREFORMAT_RGBA;
+        let useSRGBBuffer = false;
+        let samples = 1;
         if (options !== undefined && typeof options === "object") {
-            fullOptions.generateMipMaps = options.generateMipMaps;
-            fullOptions.type = options.type === undefined ? Constants.TEXTURETYPE_UNSIGNED_INT : options.type;
-            fullOptions.samplingMode = options.samplingMode === undefined ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
-            fullOptions.format = options.format === undefined ? Constants.TEXTUREFORMAT_RGBA : options.format;
-            fullOptions.useSRGBBuffer = options.useSRGBBuffer === undefined ? false : options.useSRGBBuffer;
-            fullOptions.samples = options.samples ?? 1;
+            generateMipMaps = !!options.generateMipMaps;
+            type = options.type === undefined ? Constants.TEXTURETYPE_UNSIGNED_INT : options.type;
+            samplingMode = options.samplingMode === undefined ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
+            format = options.format === undefined ? Constants.TEXTUREFORMAT_RGBA : options.format;
+            useSRGBBuffer = options.useSRGBBuffer === undefined ? false : options.useSRGBBuffer;
+            samples = options.samples ?? 1;
         } else {
-            fullOptions.generateMipMaps = <boolean>options;
-            fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
-            fullOptions.samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
-            fullOptions.format = Constants.TEXTUREFORMAT_RGBA;
-            fullOptions.useSRGBBuffer = false;
-            fullOptions.samples = 1;
+            generateMipMaps = !!options;
         }
 
-        fullOptions.useSRGBBuffer = fullOptions.useSRGBBuffer && this._caps.supportSRGBBuffers && (this.webGLVersion > 1 || this.isWebGPU);
+        useSRGBBuffer &&= this._caps.supportSRGBBuffers && (this.webGLVersion > 1 || this.isWebGPU);
 
-        if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+        if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
             // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
-            fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
-        } else if (fullOptions.type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+            samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        } else if (type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
             // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
-            fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+            samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
         }
-        if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
-            fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
+        if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
+            type = Constants.TEXTURETYPE_UNSIGNED_INT;
             Logger.Warn("Float textures are not supported. Type forced to TEXTURETYPE_UNSIGNED_BYTE");
         }
 
         const gl = this._gl;
         const texture = new InternalTexture(this, source);
-        texture._useSRGBBuffer = !!fullOptions.useSRGBBuffer;
         const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
         const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
         const layers = (<{ width: number; height: number; layers?: number }>size).layers || 0;
-        const filters = this._getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps ? true : false);
+        const filters = this._getSamplingParameters(samplingMode, generateMipMaps);
         const target = layers !== 0 ? gl.TEXTURE_2D_ARRAY : gl.TEXTURE_2D;
-        const sizedFormat = this._getRGBABufferInternalSizedFormat(fullOptions.type, fullOptions.format, fullOptions.useSRGBBuffer);
-        const internalFormat = this._getInternalFormat(fullOptions.format);
-        const type = this._getWebGLTextureType(fullOptions.type);
+        const sizedFormat = this._getRGBABufferInternalSizedFormat(type, format, useSRGBBuffer);
+        const internalFormat = this._getInternalFormat(format);
+        const textureType = this._getWebGLTextureType(type);
 
         // Bind
         this._bindTextureDirectly(target, texture);
 
         if (layers !== 0) {
             texture.is2DArray = true;
-            gl.texImage3D(target, 0, sizedFormat, width, height, layers, 0, internalFormat, type, null);
+            gl.texImage3D(target, 0, sizedFormat, width, height, layers, 0, internalFormat, textureType, null);
         } else {
-            gl.texImage2D(target, 0, sizedFormat, width, height, 0, internalFormat, type, null);
+            gl.texImage2D(target, 0, sizedFormat, width, height, 0, internalFormat, textureType, null);
         }
 
         gl.texParameteri(target, gl.TEXTURE_MAG_FILTER, filters.mag);
@@ -3795,23 +3793,24 @@ export class ThinEngine {
         gl.texParameteri(target, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
         // MipMaps
-        if (fullOptions.generateMipMaps) {
+        if (generateMipMaps) {
             this._gl.generateMipmap(target);
         }
 
         this._bindTextureDirectly(target, null);
 
+        texture._useSRGBBuffer = useSRGBBuffer;
         texture.baseWidth = width;
         texture.baseHeight = height;
         texture.width = width;
         texture.height = height;
         texture.depth = layers;
         texture.isReady = true;
-        texture.samples = fullOptions.samples;
-        texture.generateMipMaps = fullOptions.generateMipMaps ? true : false;
-        texture.samplingMode = fullOptions.samplingMode;
-        texture.type = fullOptions.type;
-        texture.format = fullOptions.format;
+        texture.samples = samples;
+        texture.generateMipMaps = generateMipMaps;
+        texture.samplingMode = samplingMode;
+        texture.type = type;
+        texture.format = format;
 
         this._internalTexturesCache.push(texture);
 

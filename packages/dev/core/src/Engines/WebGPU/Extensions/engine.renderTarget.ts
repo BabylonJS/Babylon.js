@@ -23,7 +23,7 @@ WebGPUEngine.prototype.createRenderTargetTexture = function (size: TextureSize, 
         fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && options.generateStencilBuffer;
         fullOptions.samplingMode = options.samplingMode === undefined ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
         fullOptions.creationFlags = options.creationFlags ?? 0;
-        fullOptions.noColorTarget = !!options.noColorTarget;
+        fullOptions.noColorAttachment = !!options.noColorAttachment;
         fullOptions.samples = options.samples;
     } else {
         fullOptions.generateMipMaps = <boolean>options;
@@ -31,10 +31,10 @@ WebGPUEngine.prototype.createRenderTargetTexture = function (size: TextureSize, 
         fullOptions.generateStencilBuffer = false;
         fullOptions.samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
         fullOptions.creationFlags = 0;
-        fullOptions.noColorTarget = false;
+        fullOptions.noColorAttachment = false;
     }
 
-    const texture = fullOptions.noColorTarget ? null : this._createInternalTexture(size, options, true, InternalTextureSource.RenderTarget);
+    const texture = fullOptions.noColorAttachment ? null : this._createInternalTexture(size, options, true, InternalTextureSource.RenderTarget);
 
     rtWrapper._samples = fullOptions.samples ?? 1;
     rtWrapper._generateDepthBuffer = fullOptions.generateDepthBuffer;

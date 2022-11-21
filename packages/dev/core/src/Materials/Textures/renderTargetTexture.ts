@@ -363,8 +363,8 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      * @param format The internal format of the buffer in the RTT (RED, RG, RGB, RGBA, ALPHA...)
      * @param delayAllocation if the texture allocation should be delayed (default: false)
      * @param samples sample count to use when creating the RTT
-     * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
-     * @param noColorTarget True to indicate that no color target should be created. Useful if you only want to write to the depth buffer, for eg
+     * @param creationFlags specific flags to use when creating the texture (e.g., Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures)
+     * @param noColorAttachment True to indicate that no color target should be created. (e.g., if you only want to write to the depth buffer)
      * @param useSRGBBuffer True to create a SRGB texture
      */
     constructor(
@@ -383,7 +383,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         delayAllocation = false,
         samples?: number,
         creationFlags?: number,
-        noColorTarget = false,
+        noColorAttachment = false,
         useSRGBBuffer = false
     ) {
         super(null, scene, !generateMipMaps, undefined, samplingMode, undefined, undefined, undefined, undefined, format);
@@ -428,7 +428,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             generateStencilBuffer: generateStencilBuffer,
             samples,
             creationFlags,
-            noColorTarget,
+            noColorAttachment: noColorAttachment,
             useSRGBBuffer,
         };
 
