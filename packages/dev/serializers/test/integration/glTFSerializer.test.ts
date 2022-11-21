@@ -1,8 +1,13 @@
 import { evaluateDisposeEngine, evaluateCreateScene, evaluateInitEngine, getGlobalConfig, logPageErrors } from "@tools/test-tools";
 import type { IAnimationKey } from "core/Animations/animationKey";
-declare const BABYLON: typeof import("core/index") & typeof import("loaders/index") & typeof import("serializers/index");
+declare const BABYLON: typeof import("core/index") &
+    typeof import("serializers/index") & {
+        GLTF2: {
+            Exporter: any;
+        };
+    };
 interface Window {
-    BABYLON: typeof import("core/index");
+    BABYLON: typeof BABYLON;
     scene: typeof BABYLON.Scene | null;
 }
 
@@ -41,7 +46,7 @@ describe("Babylon glTF Serializer", () => {
                 babylonStandardMaterial.specularColor = BABYLON.Color3.Black();
                 babylonStandardMaterial.specularPower = 64;
                 babylonStandardMaterial.alpha = 1;
-                const materialExporter = new BABYLON.GLTF2.Exporter._GLTFMaterialExporter(new BABYLON.GLTF2.Exporter._Exporter(scene));
+                const materialExporter = new BABYLON.GLTF2.Exporter._GLTFMaterialExporter(new BABYLON.GLTF2.Exporter._Exporter(window.scene));
 
                 const metalRough = materialExporter._convertToGLTFPBRMetallicRoughness(babylonStandardMaterial);
                 return {
