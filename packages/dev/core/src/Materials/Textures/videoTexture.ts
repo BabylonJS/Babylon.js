@@ -481,7 +481,7 @@ export class VideoTexture extends Texture {
      * @param invertY Defines if the video should be stored with invert Y set to true (true by default)
      * @returns The created video texture as a promise
      */
-    public static CreateFromWebCamAsync(
+    public static async CreateFromWebCamAsync(
         scene: Scene,
         constraints: {
             minWidth: number;
@@ -493,50 +493,20 @@ export class VideoTexture extends Texture {
         audioConstaints: boolean | MediaTrackConstraints = false,
         invertY = true
     ): Promise<VideoTexture> {
-        let constraintsDeviceId;
-        if (constraints && constraints.deviceId) {
-            constraintsDeviceId = {
-                exact: constraints.deviceId,
-            };
-        }
-
         if (navigator.mediaDevices) {
-            return navigator.mediaDevices
-                .getUserMedia({
-                    video: constraints,
-                    audio: audioConstaints,
-                })
-                .then((stream) => {
-                    return this.CreateFromStreamAsync(scene, stream, constraints, invertY);
-                });
-        } else {
-            // This is technically not needed because all moden browsers support mediaDevices.getUserMedia
-            const getUserMedia = (navigator as any).getUserMedia || navigator.mozGetUserMedia;
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: constraints,
+                audio: audioConstaints,
+            });
 
-            if (getUserMedia) {
-                getUserMedia(
-                    {
-                        video: {
-                            deviceId: constraintsDeviceId,
-                            width: {
-                                min: (constraints && constraints.minWidth) || 256,
-                                max: (constraints && constraints.maxWidth) || 640,
-                            },
-                            height: {
-                                min: (constraints && constraints.minHeight) || 256,
-                                max: (constraints && constraints.maxHeight) || 480,
-                            },
-                        },
-                        audio: audioConstaints,
-                    },
-                    (stream: any) => {
-                        return this.CreateFromStreamAsync(scene, stream, constraints, invertY);
-                    },
-                    function (e: any) {
-                        Logger.Error(e.name);
-                    }
-                );
-            }
+            const videoTexture = await this.CreateFromStreamAsync(scene, stream, constraints, invertY);
+            videoTexture.onDisposeObservable.addOnce(() => {
+                stream.getTracks().forEach((track) => {
+                    track.stop();
+                });
+            });
+
+            return videoTexture;
         }
 
         return Promise.reject("No support for userMedia on this device");

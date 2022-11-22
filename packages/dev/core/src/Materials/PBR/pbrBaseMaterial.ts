@@ -2356,6 +2356,18 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             results.push(this._lightmapTexture);
         }
 
+        if (this._metallicReflectanceTexture && this._metallicReflectanceTexture.animations && this._metallicReflectanceTexture.animations.length > 0) {
+            results.push(this._metallicReflectanceTexture);
+        }
+
+        if (this._reflectanceTexture && this._reflectanceTexture.animations && this._reflectanceTexture.animations.length > 0) {
+            results.push(this._reflectanceTexture);
+        }
+
+        if (this._microSurfaceTexture && this._microSurfaceTexture.animations && this._microSurfaceTexture.animations.length > 0) {
+            results.push(this._microSurfaceTexture);
+        }
+
         return results;
     }
 
