@@ -43,8 +43,7 @@ export class LightBlock extends NodeMaterialBlock {
     })
     public generateOnlyFragmentCode = false;
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private static _OnGenerateOnlyFragmentCodeChanged(block: NodeMaterialBlock, propertyName: string): boolean {
+    private static _OnGenerateOnlyFragmentCodeChanged(block: NodeMaterialBlock, _propertyName: string): boolean {
         const that = block as LightBlock;
 
         if (that.worldPosition.isConnected) {

@@ -103,8 +103,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
     })
     public generateOnlyFragmentCode = false;
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    protected static _OnGenerateOnlyFragmentCodeChanged(block: NodeMaterialBlock, propertyName: string): boolean {
+    protected static _OnGenerateOnlyFragmentCodeChanged(block: NodeMaterialBlock, _propertyName: string): boolean {
         const that = block as ReflectionTextureBaseBlock;
         return that._onGenerateOnlyFragmentCodeChanged();
     }
