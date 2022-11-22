@@ -57,8 +57,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
      */
     public light: Nullable<Light>;
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private static _OnGenerateOnlyFragmentCodeChanged(block: NodeMaterialBlock, propertyName: string): boolean {
+    private static _OnGenerateOnlyFragmentCodeChanged(block: NodeMaterialBlock, _propertyName: string): boolean {
         const that = block as PBRMetallicRoughnessBlock;
 
         if (that.worldPosition.isConnected) {

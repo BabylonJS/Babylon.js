@@ -117,7 +117,7 @@ export class ShadowMapBlock extends NodeMaterialBlock {
 
         state.compilationString += `
             #if SM_DEPTHTEXTURE == 1
-                #ifdef WEBGPU
+                #ifdef IS_NDC_HALF_ZRANGE
                     gl_FragDepth = (clipPos.z / clipPos.w);
                 #else
                     gl_FragDepth = (clipPos.z / clipPos.w) * 0.5 + 0.5;

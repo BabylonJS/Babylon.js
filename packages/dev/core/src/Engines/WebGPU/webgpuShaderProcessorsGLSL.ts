@@ -56,7 +56,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
             if (this._fragmentIsGLES3) {
                 this.varyingFragmentKeywordName = "in";
             }
-            return !alreadyInjected ? ubDeclaration + "##INJECTCODE##\n" + code : code;
+            return alreadyInjected ? code : ubDeclaration + "##INJECTCODE##\n" + code;
         }
 
         this._vertexIsGLES3 = code.indexOf("#version 3") !== -1;
@@ -64,7 +64,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
             this.attributeKeywordName = "in";
             this.varyingVertexKeywordName = "out";
         }
-        return !alreadyInjected ? ubDeclaration + code : code;
+        return alreadyInjected ? code : ubDeclaration + code;
     }
 
     public varyingProcessor(varying: string, isFragment: boolean, preProcessors: { [key: string]: string }) {

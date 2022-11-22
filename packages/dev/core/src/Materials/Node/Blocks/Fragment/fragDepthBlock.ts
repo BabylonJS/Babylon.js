@@ -58,7 +58,7 @@ export class FragDepthBlock extends NodeMaterialBlock {
             state.compilationString += `
                 vec4 p = ${this.viewProjection.associatedVariableName} * ${this.worldPos.associatedVariableName};
                 float v = p.z / p.w;
-                #ifndef WEBGPU
+                #ifndef IS_NDC_HALF_ZRANGE
                     v = v * 0.5 + 0.5;
                 #endif
                 gl_FragDepth = v;
