@@ -48,14 +48,15 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
     }
 
     public preProcessShaderCode(code: string, isFragment: boolean): string {
-        const ubDeclaration = `uniform ${WebGPUShaderProcessor.InternalsUBOName} {\nfloat yFactor_;\nfloat textureOutputHeight_;\n};\n`;
+        const ubDeclaration = `// Internals UBO\r\nuniform ${WebGPUShaderProcessor.InternalsUBOName} {\nfloat yFactor_;\nfloat textureOutputHeight_;\n};\n`;
+        const alreadyInjected = code.indexOf("// Internals UBO") !== -1;
 
         if (isFragment) {
             this._fragmentIsGLES3 = code.indexOf("#version 3") !== -1;
             if (this._fragmentIsGLES3) {
                 this.varyingFragmentKeywordName = "in";
             }
-            return ubDeclaration + "##INJECTCODE##\n" + code;
+            return alreadyInjected ? code : ubDeclaration + "##INJECTCODE##\n" + code;
         }
 
         this._vertexIsGLES3 = code.indexOf("#version 3") !== -1;
@@ -63,7 +64,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
             this.attributeKeywordName = "in";
             this.varyingVertexKeywordName = "out";
         }
-        return ubDeclaration + code;
+        return alreadyInjected ? code : ubDeclaration + code;
     }
 
     public varyingProcessor(varying: string, isFragment: boolean, preProcessors: { [key: string]: string }) {

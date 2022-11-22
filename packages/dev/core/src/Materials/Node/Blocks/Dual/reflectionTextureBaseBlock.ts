@@ -18,6 +18,7 @@ import "../../../../Shaders/ShadersInclude/reflectionFunction";
 import { CubeTexture } from "../../../Textures/cubeTexture";
 import { Texture } from "../../../Textures/texture";
 import { EngineStore } from "../../../../Engines/engineStore";
+import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
 
 /**
  * Base block used to read a reflection texture from a sampler
@@ -64,6 +65,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
     /** @internal */
     public _reflectionMatrixName: string;
     protected _reflectionColorName: string;
+    protected _worldPositionNameInFragmentOnlyMode: string;
 
     protected _texture: Nullable<BaseTexture>;
     /**
@@ -93,6 +95,26 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
                 return mat.hasTexture(texture);
             });
         }
+    }
+
+    /** Indicates that no code should be generated in the vertex shader. Can be useful in some specific circumstances (like when doing ray marching for eg) */
+    @editableInPropertyPage("Generate only fragment code", PropertyTypeForEdition.Boolean, "ADVANCED", {
+        notifiers: { rebuild: true, update: true, onValidation: ReflectionTextureBaseBlock._OnGenerateOnlyFragmentCodeChanged },
+    })
+    public generateOnlyFragmentCode = false;
+
+    protected static _OnGenerateOnlyFragmentCodeChanged(block: NodeMaterialBlock, _propertyName: string): boolean {
+        const that = block as ReflectionTextureBaseBlock;
+        return that._onGenerateOnlyFragmentCodeChanged();
+    }
+
+    protected _onGenerateOnlyFragmentCodeChanged(): boolean {
+        this._setTarget();
+        return true;
+    }
+
+    protected _setTarget(): void {
+        this._setInitialTarget(this.generateOnlyFragmentCode ? NodeMaterialBlockTargets.Fragment : NodeMaterialBlockTargets.VertexAndFragment);
     }
 
     /**
@@ -240,6 +262,10 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
      * @returns the shader code
      */
     public handleVertexSide(state: NodeMaterialBuildState): string {
+        if (this.generateOnlyFragmentCode && state.target === NodeMaterialBlockTargets.Vertex) {
+            return "";
+        }
+
         this._define3DName = state._getFreeDefineName("REFLECTIONMAP_3D");
         this._defineCubicName = state._getFreeDefineName("REFLECTIONMAP_CUBIC");
         this._defineSphericalName = state._getFreeDefineName("REFLECTIONMAP_SPHERICAL");
@@ -259,21 +285,24 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
 
         let code = "";
 
-        const worldPosVaryingName = "v_" + this.worldPosition.associatedVariableName;
-        if (state._emitVaryingFromString(worldPosVaryingName, "vec4")) {
-            code += `${worldPosVaryingName} = ${this.worldPosition.associatedVariableName};\r\n`;
+        this._worldPositionNameInFragmentOnlyMode = state._getFreeVariableName("worldPosition");
+
+        const worldPosVaryingName = this.generateOnlyFragmentCode ? this._worldPositionNameInFragmentOnlyMode : "v_" + this.worldPosition.associatedVariableName;
+        if (this.generateOnlyFragmentCode || state._emitVaryingFromString(worldPosVaryingName, "vec4")) {
+            code += `${this.generateOnlyFragmentCode ? "vec4 " : ""}${worldPosVaryingName} = ${this.worldPosition.associatedVariableName};\r\n`;
         }
 
         this._positionUVWName = state._getFreeVariableName("positionUVW");
         this._directionWName = state._getFreeVariableName("directionW");
 
-        if (state._emitVaryingFromString(this._positionUVWName, "vec3", this._defineSkyboxName)) {
+        if (this.generateOnlyFragmentCode || state._emitVaryingFromString(this._positionUVWName, "vec3", this._defineSkyboxName)) {
             code += `#ifdef ${this._defineSkyboxName}\r\n`;
-            code += `${this._positionUVWName} = ${this.position.associatedVariableName}.xyz;\r\n`;
+            code += `${this.generateOnlyFragmentCode ? "vec3 " : ""}${this._positionUVWName} = ${this.position.associatedVariableName}.xyz;\r\n`;
             code += `#endif\r\n`;
         }
 
         if (
+            this.generateOnlyFragmentCode ||
             state._emitVaryingFromString(
                 this._directionWName,
                 "vec3",
@@ -281,7 +310,9 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
             )
         ) {
             code += `#if defined(${this._defineEquirectangularFixedName}) || defined(${this._defineMirroredEquirectangularFixedName})\r\n`;
-            code += `${this._directionWName} = normalize(vec3(${this.world.associatedVariableName} * vec4(${this.position.associatedVariableName}.xyz, 0.0)));\r\n`;
+            code += `${this.generateOnlyFragmentCode ? "vec3 " : ""}${this._directionWName} = normalize(vec3(${this.world.associatedVariableName} * vec4(${
+                this.position.associatedVariableName
+            }.xyz, 0.0)));\r\n`;
             code += `#endif\r\n`;
         }
 
@@ -341,7 +372,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
      */
     public handleFragmentSideCodeReflectionCoords(worldNormalVarName: string, worldPos?: string, onlyReflectionVector = false, doNotEmitInvertZ = false): string {
         if (!worldPos) {
-            worldPos = `v_${this.worldPosition.associatedVariableName}`;
+            worldPos = this.generateOnlyFragmentCode ? this._worldPositionNameInFragmentOnlyMode : `v_${this.worldPosition.associatedVariableName}`;
         }
         const reflectionMatrix = this._reflectionMatrixName;
         const direction = `normalize(${this._directionWName})`;
@@ -498,6 +529,8 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
             serializationObject.texture = this.texture.serialize();
         }
 
+        serializationObject.generateOnlyFragmentCode = this.generateOnlyFragmentCode;
+
         return serializationObject;
     }
 
@@ -512,6 +545,10 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
                 this.texture = Texture.Parse(serializationObject.texture, scene, rootUrl);
             }
         }
+
+        this.generateOnlyFragmentCode = serializationObject.generateOnlyFragmentCode;
+
+        this._setTarget();
     }
 }
 

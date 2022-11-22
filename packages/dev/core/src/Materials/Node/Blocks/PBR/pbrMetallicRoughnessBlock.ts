@@ -57,6 +57,25 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
      */
     public light: Nullable<Light>;
 
+    private static _OnGenerateOnlyFragmentCodeChanged(block: NodeMaterialBlock, _propertyName: string): boolean {
+        const that = block as PBRMetallicRoughnessBlock;
+
+        if (that.worldPosition.isConnected) {
+            that.generateOnlyFragmentCode = !that.generateOnlyFragmentCode;
+            console.error("The worldPosition input must not be connected to be able to switch!");
+            return false;
+        }
+
+        that._setTarget();
+
+        return true;
+    }
+
+    private _setTarget(): void {
+        this._setInitialTarget(this.generateOnlyFragmentCode ? NodeMaterialBlockTargets.Fragment : NodeMaterialBlockTargets.VertexAndFragment);
+        this.getInputByName("worldPosition")!.target = this.generateOnlyFragmentCode ? NodeMaterialBlockTargets.Fragment : NodeMaterialBlockTargets.Vertex;
+    }
+
     private _lightId: number;
     private _scene: Scene;
     private _environmentBRDFTexture: Nullable<BaseTexture> = null;
@@ -271,6 +290,12 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
      */
     @editableInPropertyPage("Force normal forward", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { update: true } })
     public forceNormalForward: boolean = false;
+
+    /** Indicates that no code should be generated in the vertex shader. Can be useful in some specific circumstances (like when doing ray marching for eg) */
+    @editableInPropertyPage("Generate only fragment code", PropertyTypeForEdition.Boolean, "ADVANCED", {
+        notifiers: { rebuild: true, update: true, onValidation: PBRMetallicRoughnessBlock._OnGenerateOnlyFragmentCodeChanged },
+    })
+    public generateOnlyFragmentCode = false;
 
     /**
      * Defines the material debug mode.
@@ -876,9 +901,6 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         state.compilationString += reflectionBlock?.handleVertexSide(state) ?? "";
 
-        state._emitUniformFromString("vDebugMode", "vec2", "defined(IGNORE) || DEBUGMODE > 0");
-        state._emitUniformFromString("ambientFromScene", "vec3");
-
         if (state._emitVaryingFromString("vClipSpacePosition", "vec4", "defined(IGNORE) || DEBUGMODE > 0")) {
             state._injectAtEnd += `#if DEBUGMODE > 0\r\n`;
             state._injectAtEnd += `vClipSpacePosition = gl_Position;\r\n`;
@@ -1002,6 +1024,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             reflectionBlock.worldPositionConnectionPoint = this.worldPosition;
             reflectionBlock.cameraPositionConnectionPoint = this.cameraPosition;
             reflectionBlock.worldNormalConnectionPoint = this.worldNormal;
+            reflectionBlock.viewConnectionPoint = this.view;
         }
 
         if (state.target !== NodeMaterialBlockTargets.Fragment) {
@@ -1015,10 +1038,30 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state.sharedData.forcedBindableBlocks.push(this);
         state.sharedData.blocksWithDefines.push(this);
         state.sharedData.blockingBlocks.push(this);
+        if (this.generateOnlyFragmentCode) {
+            state.sharedData.dynamicUniformBlocks.push(this);
+        }
 
         const comments = `//${this.name}`;
-        const worldPosVarName = "v_" + this.worldPosition.associatedVariableName;
         const normalShading = this.perturbedNormal;
+
+        let worldPosVarName = this.worldPosition.associatedVariableName;
+        if (this.generateOnlyFragmentCode) {
+            worldPosVarName = state._getFreeVariableName("globalWorldPos");
+            state._emitFunction("pbr_globalworldpos", `vec3 ${worldPosVarName};\r\n`, comments);
+            state.compilationString += `${worldPosVarName} = ${this.worldPosition.associatedVariableName}.xyz;\r\n`;
+
+            state.compilationString += state._emitCodeFromInclude("shadowsVertex", comments, {
+                repeatKey: "maxSimultaneousLights",
+                substitutionVars: this.generateOnlyFragmentCode ? `worldPos,${this.worldPosition.associatedVariableName}` : undefined,
+            });
+
+            state.compilationString += `#if DEBUGMODE > 0\r\n`;
+            state.compilationString += `vec4 vClipSpacePosition = vec4((vec2(gl_FragCoord.xy) / vec2(1.0)) * 2.0 - 1.0, 0.0, 1.0);\r\n`;
+            state.compilationString += `#endif\r\n`;
+        } else {
+            worldPosVarName = "v_" + worldPosVarName;
+        }
 
         this._environmentBrdfSamplerName = state._getFreeVariableName("environmentBrdfSampler");
 
@@ -1029,6 +1072,9 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         state._emitExtension("lod", "#extension GL_EXT_shader_texture_lod : enable", "defined(LODBASEDMICROSFURACE)");
         state._emitExtension("derivatives", "#extension GL_OES_standard_derivatives : enable");
+
+        state._emitUniformFromString("vDebugMode", "vec2", "defined(IGNORE) || DEBUGMODE > 0");
+        state._emitUniformFromString("ambientFromScene", "vec3");
 
         // Image processing uniforms
         state.uniforms.push("exposureLinear");
@@ -1050,6 +1096,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             // Emit for all lights
             state._emitFunctionFromInclude(state.supportUniformBuffers ? "lightUboDeclaration" : "lightFragmentDeclaration", comments, {
                 repeatKey: "maxSimultaneousLights",
+                substitutionVars: this.generateOnlyFragmentCode ? "varying," : undefined,
             });
         } else {
             state._emitFunctionFromInclude(
@@ -1099,6 +1146,10 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         //
 
         state._emitUniformFromString("vLightingIntensity", "vec4");
+
+        if (reflectionBlock?.generateOnlyFragmentCode) {
+            state.compilationString += reflectionBlock.handleVertexSide(state);
+        }
 
         // _____________________________ Geometry Information ____________________________
         this._vNormalWName = state._getFreeVariableName("vNormalW");
@@ -1401,6 +1452,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         serializationObject.debugMode = this.debugMode;
         serializationObject.debugLimit = this.debugLimit;
         serializationObject.debugFactor = this.debugFactor;
+        serializationObject.generateOnlyFragmentCode = this.generateOnlyFragmentCode;
 
         return serializationObject;
     }
@@ -1429,6 +1481,9 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         this.debugMode = serializationObject.debugMode;
         this.debugLimit = serializationObject.debugLimit;
         this.debugFactor = serializationObject.debugFactor;
+        this.generateOnlyFragmentCode = !!serializationObject.generateOnlyFragmentCode;
+
+        this._setTarget();
     }
 }
 
