@@ -461,6 +461,9 @@ export class VideoTexture extends Texture {
                     });
                 }
                 videoTexture.onDisposeObservable.addOnce(() => {
+                    stream.getTracks().forEach((track) => {
+                        track.stop();
+                    });
                     removeSource(video);
                 });
 
