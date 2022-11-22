@@ -1,5 +1,23 @@
 # Changelog
 
+## 5.33.2
+
+### Core
+
+- Test babylon pbrmaterial - by [Dok11](https://github.com/Dok11) ([#13268](https://github.com/BabylonJS/Babylon.js/pull/13268))
+
+### Loaders
+
+- adding integration tests for loaders and serializers - by [RaananW](https://github.com/RaananW) ([#13266](https://github.com/BabylonJS/Babylon.js/pull/13266))
+
+### Playground
+
+- Add accessibility package to playground - by [RaananW](https://github.com/RaananW) ([#13271](https://github.com/BabylonJS/Babylon.js/pull/13271))
+
+### Serializers
+
+- adding integration tests for loaders and serializers - by [RaananW](https://github.com/RaananW) ([#13266](https://github.com/BabylonJS/Babylon.js/pull/13266))
+
 ## 5.33.1
 
 ### Core
