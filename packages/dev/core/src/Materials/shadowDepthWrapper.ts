@@ -27,6 +27,9 @@ export interface IIOptionShadowDepthMaterial {
 
     /** Set standalone to true if the base material wrapped by ShadowDepthMaterial is not used for a regular object but for depth shadow generation only */
     standalone?: boolean;
+
+    /** Set doNotInjectCode if the specific shadow map generation code is already implemented by the material. That will prevent this code to be injected twice by ShadowDepthWrapper */
+    doNotInjectCode?: boolean;
 }
 
 class MapMap<Ka, Kb, V> {
@@ -73,6 +76,11 @@ export class ShadowDepthWrapper {
     /** Gets the base material the wrapper is built upon */
     public get baseMaterial(): Material {
         return this._baseMaterial;
+    }
+
+    /** Gets the doNotInjectCode status of the wrapper */
+    public get doNotInjectCode(): boolean {
+        return this._options?.doNotInjectCode ?? false;
     }
 
     /**
@@ -212,64 +220,66 @@ export class ShadowDepthWrapper {
 
         params.depthDefines = join;
 
+        const uniforms = origEffect.getUniformNames().slice();
+
         // the depth effect is either out of date or has not been created yet
         let vertexCode = origEffect.vertexSourceCodeBeforeMigration,
             fragmentCode = origEffect.fragmentSourceCodeBeforeMigration;
 
-        // vertex code
-        const vertexNormalBiasCode =
-                this._options && this._options.remappedVariables
-                    ? `#include<shadowMapVertexNormalBias>(${this._options.remappedVariables.join(",")})`
-                    : Effect.IncludesShadersStore["shadowMapVertexNormalBias"],
-            vertexMetricCode =
-                this._options && this._options.remappedVariables
-                    ? `#include<shadowMapVertexMetric>(${this._options.remappedVariables.join(",")})`
-                    : Effect.IncludesShadersStore["shadowMapVertexMetric"],
-            fragmentSoftTransparentShadow =
-                this._options && this._options.remappedVariables
-                    ? `#include<shadowMapFragmentSoftTransparentShadow>(${this._options.remappedVariables.join(",")})`
-                    : Effect.IncludesShadersStore["shadowMapFragmentSoftTransparentShadow"],
-            fragmentBlockCode = Effect.IncludesShadersStore["shadowMapFragment"];
+        if (!this.doNotInjectCode) {
+            // vertex code
+            const vertexNormalBiasCode =
+                    this._options && this._options.remappedVariables
+                        ? `#include<shadowMapVertexNormalBias>(${this._options.remappedVariables.join(",")})`
+                        : Effect.IncludesShadersStore["shadowMapVertexNormalBias"],
+                vertexMetricCode =
+                    this._options && this._options.remappedVariables
+                        ? `#include<shadowMapVertexMetric>(${this._options.remappedVariables.join(",")})`
+                        : Effect.IncludesShadersStore["shadowMapVertexMetric"],
+                fragmentSoftTransparentShadow =
+                    this._options && this._options.remappedVariables
+                        ? `#include<shadowMapFragmentSoftTransparentShadow>(${this._options.remappedVariables.join(",")})`
+                        : Effect.IncludesShadersStore["shadowMapFragmentSoftTransparentShadow"],
+                fragmentBlockCode = Effect.IncludesShadersStore["shadowMapFragment"];
 
-        vertexCode = vertexCode.replace(/void\s+?main/g, Effect.IncludesShadersStore["shadowMapVertexExtraDeclaration"] + "\r\nvoid main");
-        vertexCode = vertexCode.replace(/#define SHADOWDEPTH_NORMALBIAS|#define CUSTOM_VERTEX_UPDATE_WORLDPOS/g, vertexNormalBiasCode);
+            vertexCode = vertexCode.replace(/void\s+?main/g, Effect.IncludesShadersStore["shadowMapVertexExtraDeclaration"] + "\r\nvoid main");
+            vertexCode = vertexCode.replace(/#define SHADOWDEPTH_NORMALBIAS|#define CUSTOM_VERTEX_UPDATE_WORLDPOS/g, vertexNormalBiasCode);
 
-        if (vertexCode.indexOf("#define SHADOWDEPTH_METRIC") !== -1) {
-            vertexCode = vertexCode.replace(/#define SHADOWDEPTH_METRIC/g, vertexMetricCode);
-        } else {
-            vertexCode = vertexCode.replace(/}\s*$/g, vertexMetricCode + "\r\n}");
+            if (vertexCode.indexOf("#define SHADOWDEPTH_METRIC") !== -1) {
+                vertexCode = vertexCode.replace(/#define SHADOWDEPTH_METRIC/g, vertexMetricCode);
+            } else {
+                vertexCode = vertexCode.replace(/}\s*$/g, vertexMetricCode + "\r\n}");
+            }
+            vertexCode = vertexCode.replace(/#define SHADER_NAME.*?\n|out vec4 glFragColor;\n/g, "");
+
+            // fragment code
+            const hasLocationForSoftTransparentShadow =
+                fragmentCode.indexOf("#define SHADOWDEPTH_SOFTTRANSPARENTSHADOW") >= 0 || fragmentCode.indexOf("#define CUSTOM_FRAGMENT_BEFORE_FOG") >= 0;
+            const hasLocationForFragment = fragmentCode.indexOf("#define SHADOWDEPTH_FRAGMENT") !== -1;
+
+            let fragmentCodeToInjectAtEnd = "";
+
+            if (!hasLocationForSoftTransparentShadow) {
+                fragmentCodeToInjectAtEnd = fragmentSoftTransparentShadow + "\r\n";
+            } else {
+                fragmentCode = fragmentCode.replace(/#define SHADOWDEPTH_SOFTTRANSPARENTSHADOW|#define CUSTOM_FRAGMENT_BEFORE_FOG/g, fragmentSoftTransparentShadow);
+            }
+
+            fragmentCode = fragmentCode.replace(/void\s+?main/g, Effect.IncludesShadersStore["shadowMapFragmentExtraDeclaration"] + "\r\nvoid main");
+
+            if (hasLocationForFragment) {
+                fragmentCode = fragmentCode.replace(/#define SHADOWDEPTH_FRAGMENT/g, fragmentBlockCode);
+            } else {
+                fragmentCodeToInjectAtEnd += fragmentBlockCode + "\r\n";
+            }
+            if (fragmentCodeToInjectAtEnd) {
+                fragmentCode = fragmentCode.replace(/}\s*$/g, fragmentCodeToInjectAtEnd + "}");
+            }
+
+            fragmentCode = fragmentCode.replace(/#define SHADER_NAME.*?\n|out vec4 glFragColor;\n/g, "");
+
+            uniforms.push("biasAndScaleSM", "depthValuesSM", "lightDataSM", "softTransparentShadowSM");
         }
-        vertexCode = vertexCode.replace(/#define SHADER_NAME.*?\n|out vec4 glFragColor;\n/g, "");
-
-        // fragment code
-        const hasLocationForSoftTransparentShadow =
-            fragmentCode.indexOf("#define SHADOWDEPTH_SOFTTRANSPARENTSHADOW") >= 0 || fragmentCode.indexOf("#define CUSTOM_FRAGMENT_BEFORE_FOG") >= 0;
-        const hasLocationForFragment = fragmentCode.indexOf("#define SHADOWDEPTH_FRAGMENT") !== -1;
-
-        let fragmentCodeToInjectAtEnd = "";
-
-        if (!hasLocationForSoftTransparentShadow) {
-            fragmentCodeToInjectAtEnd = fragmentSoftTransparentShadow + "\r\n";
-        } else {
-            fragmentCode = fragmentCode.replace(/#define SHADOWDEPTH_SOFTTRANSPARENTSHADOW|#define CUSTOM_FRAGMENT_BEFORE_FOG/g, fragmentSoftTransparentShadow);
-        }
-
-        fragmentCode = fragmentCode.replace(/void\s+?main/g, Effect.IncludesShadersStore["shadowMapFragmentExtraDeclaration"] + "\r\nvoid main");
-
-        if (hasLocationForFragment) {
-            fragmentCode = fragmentCode.replace(/#define SHADOWDEPTH_FRAGMENT/g, fragmentBlockCode);
-        } else {
-            fragmentCodeToInjectAtEnd += fragmentBlockCode + "\r\n";
-        }
-        if (fragmentCodeToInjectAtEnd) {
-            fragmentCode = fragmentCode.replace(/}\s*$/g, fragmentCodeToInjectAtEnd + "}");
-        }
-
-        fragmentCode = fragmentCode.replace(/#define SHADER_NAME.*?\n|out vec4 glFragColor;\n/g, "");
-
-        const uniforms = origEffect.getUniformNames().slice();
-
-        uniforms.push("biasAndScaleSM", "depthValuesSM", "lightDataSM", "softTransparentShadowSM");
 
         params.mainDrawWrapper.effect = engine.createEffect(
             {

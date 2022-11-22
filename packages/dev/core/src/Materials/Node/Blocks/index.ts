@@ -55,3 +55,5 @@ export * from "./conditionalBlock";
 export * from "./cloudBlock";
 export * from "./voronoiNoiseBlock";
 export * from "./elbowBlock";
+export * from "./triPlanarBlock";
+export * from "./biPlanarBlock";
