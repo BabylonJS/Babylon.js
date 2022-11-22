@@ -1,5 +1,5 @@
 {
-    "fromTag": "5.33.0",
+    "fromTag": "5.33.1",
     "changelog": {
         "5.33.1": [
             {
@@ -120,6 +120,83 @@
                     "enhancement",
                     "sprite"
                 ]
+            }
+        ],
+        "5.33.2": [
+            {
+                "pr": "13269",
+                "title": "Ray picking: Fix flipping of the normal when calling getNormal",
+                "description": "See https://forum.babylonjs.com/t/how-to-get-correct-rotation-value-from-pickinfo-getnormal/14280/8\r\n\r\nThis is a follow-up to #13128.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/pickingInfo.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13271",
+                "title": "Add accessibility package to playground",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/babylonServer/declarationConfigDev.json",
+                    "packages/tools/babylonServer/src/accessibility/index.ts",
+                    "packages/tools/babylonServer/webpack.config.js",
+                    "packages/tools/playground/public/index.js",
+                    "packages/tools/playground/src/tools/monacoManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13270",
+                "title": "Addressing export issue",
+                "description": "UMD was fixed, es6 is now built correctly.\r\n\r\nAddressing https://forum.babylonjs.com/t/import-bug-with-npm-install-babylonjs-inspector-proposed-fix-included/35583/8",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/public/@babylonjs/gui-editor/config.json",
+                    "packages/public/@babylonjs/inspector/config.json",
+                    "packages/public/@babylonjs/node-editor/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13268",
+                "title": "Test babylon pbrmaterial",
+                "description": "Hi!\r\nI made some test cases for PBRMaterial.\r\nOne strange point — the getAnimatables don't return all possilbe textures, such metallic reflectance, reflectance, micro surface and refraction texture. So I added a note to the method JSDoc, and comment to the test case.",
+                "author": {
+                    "name": "Dok11",
+                    "url": "https://github.com/Dok11"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/test/unit/Materials/PBR/babylon.PBRMaterial.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13266",
+                "title": "adding integration tests for loaders and serializers",
+                "description": "Some loader tests still need to be added.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/loaders/test/integration/babylon.sceneLoader.test.ts",
+                    "packages/dev/serializers/test/integration/glTFSerializer.test.ts"
+                ],
+                "tags": []
             }
         ],
         "5.33.0": [
