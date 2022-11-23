@@ -15,8 +15,8 @@
         "precompile": "npm run compile:assets",
         "compile": "npm run compile:source",
         "compile:source": "tsc -b tsconfig.build.json",
-        "compile:assets": "build-tools -c process-assets --package core",
-        "watch:assets": "build-tools -c process-assets --package core --watch",
+        "compile:assets": "build-tools -c process-assets",
+        "watch:assets": "build-tools -c process-assets --watch",
         "watch:source": "tsc -b tsconfig.build.json -w",
         "watch": "build-tools -c dev-watch --packages \"inspector\" -wa"
     },
