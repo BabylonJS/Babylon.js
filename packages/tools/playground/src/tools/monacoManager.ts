@@ -290,6 +290,15 @@ class Playground {
                 libContent += await response.text();
             }
         }
+        libContent += `
+interface Window {
+    engine: BABYLON.Engine;
+    canvas: HTMLCanvasElement;
+};
+
+declare var engine: BABYLON.Engine;
+declare var canvas: HTMLCanvasElement;
+        `;
 
         this._createEditor();
 
