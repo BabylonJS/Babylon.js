@@ -2516,6 +2516,21 @@ export class Vector3 {
     }
 
     /**
+     * Reflects a vector off the plane defined by a normal
+     * @param inDirection defines the vector direction
+     * @param normal defines the normal
+     * @returns the resulting vector
+     */
+    public static Reflect<T extends Vector3>(inDirection: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>): Vector3 {
+        const _inDirection = new (inDirection.constructor as Vector3Constructor<T>)();
+        const _normal = new (normal.constructor as Vector3Constructor<T>)();
+        _inDirection.copyFrom(inDirection);
+        _normal.copyFrom(normal).normalize();
+
+        return _inDirection.subtract(_normal.scale( 2 * Vector3.Dot(_inDirection, _normal)));
+    }
+
+    /**
      * @internal
      */
     public static _UnprojectFromInvertedMatrixToRef<T extends Vector3>(source: DeepImmutable<Vector3>, matrix: DeepImmutable<Matrix>, result: T): T {

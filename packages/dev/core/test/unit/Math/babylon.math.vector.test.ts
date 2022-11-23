@@ -45,6 +45,16 @@ describe("Babylon Vectors", () => {
             expect(rayGoingThrough.projectOnPlane(simplePlane, rayOrigin)).toEqual(expected);
         });
 
+        it("can reflect off the plane defined by a normal", () => {
+            const inDirection = new Vector3(10, 10, 5);
+
+            const normal = Vector3.Right();
+
+            const expected = new Vector3(-10, 10, 5);
+
+            expect(Vector3.Reflect(inDirection, normal)).toEqual(expected);
+        });
+
         describe("can get angle between vectors on a plane", () => {
             BabylonMathVectorGetAngleBetweenVectorsOnPlaneTestCases.forEach(({ v0, v1, normal, result }, index) => {
                 const v0Vector = new Vector3(v0.x, v0.y, v0.z);
