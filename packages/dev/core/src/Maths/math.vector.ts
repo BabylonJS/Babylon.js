@@ -2521,7 +2521,7 @@ export class Vector3 {
      * @param normal defines the normal
      * @returns the resulting vector
      */
-    public static Reflect<T extends Vector3>(inDirection: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>): Vector3 {
+    public static Reflect<T extends Vector3>(inDirection: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>): T {
         const _inDirection = new (inDirection.constructor as Vector3Constructor<T>)();
         const _normal = new (normal.constructor as Vector3Constructor<T>)();
         _inDirection.copyFrom(inDirection);
