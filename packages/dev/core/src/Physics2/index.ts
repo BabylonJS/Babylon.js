@@ -6,3 +6,4 @@ export * from "./physicsRaycastResult";
 export * from "./physicsShape";
 export * from "./physicsJoint";
 export * from "./physicsMaterial";
+export * from "./physicsAggregate";

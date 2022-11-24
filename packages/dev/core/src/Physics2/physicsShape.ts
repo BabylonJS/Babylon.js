@@ -1,10 +1,12 @@
 import type { TransformNode } from "../Meshes/transformNode";
-import type { BoundingBox } from "../Culling/boundingBox";
-import { IPhysicsEnginePlugin, ShapeType, PhysicsShapeParameters } from "./IPhysicsEngine";
+import { BoundingBox } from "../Culling/boundingBox";
+import { ShapeType } from "./IPhysicsEngine";
+import type { IPhysicsEnginePlugin2, PhysicsShapeParameters } from "./IPhysicsEngine";
 import type { PhysicsMaterial } from "./physicsMaterial";
-import { Quaternion, Vector3 } from "../Maths/math.vector";
-import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Nullable, Scene } from "..";
+import { Vector3 } from "../Maths/math.vector";
+import type { Quaternion } from "../Maths/math.vector";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type {  Scene } from "../scene";
 
 
 /**
@@ -12,12 +14,19 @@ import { Nullable, Scene } from "..";
  */
 export class PhysicsShape {
     /** @internal */
-    public _pluginData: any = {};
+    public _pluginData: any = undefined;
 
-    protected _physicsPlugin: Nullable<IPhysicsEnginePlugin>;
+    private _physicsPlugin: IPhysicsEnginePlugin2;
 
     private _type: ShapeType;
 
+    /**
+     * 
+     * @param type 
+     * @param options 
+     * @param scene 
+     * @returns 
+     */
     constructor(type: number,
         options: PhysicsShapeParameters = { },
         scene: Scene) {
@@ -25,10 +34,12 @@ export class PhysicsShape {
             if (!scene) {
                 return;
             }
-            const physicsEngine = scene.getPhysicsEngine();
-            this._physicsPlugin = physicsEngine?.getPhysicsPlugin();
-            this._physicsPlugin?.createShape(type, options);
 
+            this._physicsPlugin = scene.getPhysicsEngine()?.getPhysicsPlugin() as any;
+            if (!this._physicsPlugin) {
+                return;
+            }
+            this._physicsPlugin?.initShape(this, type, options);
     }
 
     /**
@@ -43,7 +54,7 @@ export class PhysicsShape {
      * @param layer
      */
     public setFilterLayer(layer: number): void {
-        this._physicsPlugin.setFilterLayer(this, layer);
+        this._physicsPlugin?.setFilterLayer(this, layer);
     }
 
     /**
@@ -51,7 +62,7 @@ export class PhysicsShape {
      * @returns
      */
     public getFilterLayer(): number {
-        return this._physicsPlugin.getFilterLayer(this);
+        return this._physicsPlugin ? this._physicsPlugin.getFilterLayer(this) : 0;
     }
 
     /**
@@ -59,15 +70,15 @@ export class PhysicsShape {
      * @param materialId
      */
     public setMaterial(materialId: PhysicsMaterial): void {
-        this._physicsPlugin.setMaterial(this, materialId);
+        this._physicsPlugin?.setMaterial(this, materialId);
     }
 
     /**
      *
      * @returns
      */
-    public getMaterial(): PhysicsMaterial {
-        return this._physicsPlugin.getMaterial(this);
+    public getMaterial(): PhysicsMaterial | undefined {
+        return this._physicsPlugin ? this._physicsPlugin.getMaterial(this) : undefined;
     }
 
     /**
@@ -75,14 +86,14 @@ export class PhysicsShape {
      * @param density
      */
     public setDensity(density: number): void {
-        this._physicsPlugin.setDensity(this, density);
+        this._physicsPlugin?.setDensity(this, density);
     }
 
     /**
      *
      */
     public getDensity(): number {
-        return this._physicsPlugin.getDensity(this);
+        return this._physicsPlugin ? this._physicsPlugin.getDensity(this) : 0;
     }
 
     /**
@@ -91,7 +102,7 @@ export class PhysicsShape {
      * @param childTransform
      */
     public addChild(newChild: PhysicsShape, childTransform: TransformNode): void {
-        this._physicsPlugin.addChild(this, newChild, childTransform);
+        this._physicsPlugin?.addChild(this, newChild, childTransform);
     }
 
     /**
@@ -99,7 +110,7 @@ export class PhysicsShape {
      * @param childIndex
      */
     public removeChild(childIndex: number): void {
-        this._physicsPlugin.removeChild(this, childIndex);
+        this._physicsPlugin?.removeChild(this, childIndex);
     }
 
     /**
@@ -107,62 +118,132 @@ export class PhysicsShape {
      * @returns
      */
     public getNumChildren(): number {
-        return this._physicsPlugin.getNumChildren(this);
+        return this._physicsPlugin ? this._physicsPlugin.getNumChildren(this) : 0;
     }
 
     /**
      *
      */
     public getBoundingBox(): BoundingBox {
-        return this._physicsPlugin.getBoundingBox(this);
+        return this._physicsPlugin ? this._physicsPlugin.getBoundingBox(this) : new BoundingBox(Vector3.Zero(), Vector3.Zero());
     }
 
     /**
      *
      */
     public dispose() {
-        this._physicsPlugin.disposeShape(this);
+        this._physicsPlugin?.disposeShape(this);
     }
 }
 
+/**
+ * 
+ */
 export class PhysicsShapeSphere extends PhysicsShape {
-    constructor(center: Vector3, radius: number) {
-        super(ShapeType.BOX, {center:center, radius:radius});
+    /**
+     * 
+     * @param center 
+     * @param radius 
+     * @param scene 
+     */
+    constructor(center: Vector3, radius: number,
+        scene: Scene) {
+        super(ShapeType.BOX, {center:center, radius:radius}, scene);
     }
 }
 
+/***
+ * 
+ */
 export class PhysicsShapeCapsule extends PhysicsShape {
-    constructor(pointA: Vector3, pointB: Vector3, radius: number) {
-        super(ShapeType.CAPSULE, {pointA:pointA, pointB:pointB, radius:radius});
+    /**
+     * 
+     * @param pointA 
+     * @param pointB 
+     * @param radius 
+     * @param scene 
+     */
+    constructor(pointA: Vector3, pointB: Vector3, radius: number,
+        scene: Scene) {
+        super(ShapeType.CAPSULE, {pointA:pointA, pointB:pointB, radius:radius}, scene);
     }
 }
 
+/**
+ * 
+ */
 export class PhysicsShapeCylinder extends PhysicsShape {
-    constructor(pointA: Vector3, pointB: Vector3, radius: number) {
-        super(ShapeType.CYLINDER, {pointA:pointA, pointB:pointB, radius:radius});
+    /**
+     * 
+     * @param pointA 
+     * @param pointB 
+     * @param radius 
+     * @param scene 
+     */
+    constructor(pointA: Vector3, pointB: Vector3, radius: number,
+        scene: Scene) {
+        super(ShapeType.CYLINDER, {pointA:pointA, pointB:pointB, radius:radius}, scene);
     }
 }
 
+/**
+ * 
+ */
 export class PhysicsShapeShapeBox extends PhysicsShape {
-    constructor(center: Vector3, rotation: Quaternion, extents: Vector3) {
-        super(ShapeType.BOX, {center:center, rotation:rotation, extents:extents});
+    /**
+     * 
+     * @param center 
+     * @param rotation 
+     * @param extents 
+     * @param scene 
+     */
+    constructor(center: Vector3, rotation: Quaternion, extents: Vector3,
+        scene: Scene) {
+        super(ShapeType.BOX, {center:center, rotation:rotation, extents:extents}, scene);
     }
 }
 
+/**
+ * 
+ */
 export class PhysicsShapeShapeConvexHull extends PhysicsShape {
-    constructor(mesh: AbstractMesh) {
-        super(ShapeType.CONVEX_HULL, {mesh:mesh});
+    /**
+     * 
+     * @param mesh 
+     * @param scene 
+     */
+    constructor(mesh: AbstractMesh,
+        scene: Scene) {
+        super(ShapeType.CONVEX_HULL, {mesh:mesh}, scene);
     }
 }
 
+/**
+ * 
+ */
 export class PhysicsShapeShapeMesh extends PhysicsShape {
-    constructor(mesh: AbstractMesh) {
-        super(ShapeType.MESH, {mesh:mesh});
+    /**
+     * 
+     * @param mesh 
+     * @param scene 
+     */
+    constructor(mesh: AbstractMesh,
+        scene: Scene) {
+        super(ShapeType.MESH, {mesh:mesh}, scene);
     }
 }
 
+/**
+ * 
+ */
 export class PhysicsShapeShapeContainer extends PhysicsShape {
-    constructor(mesh: AbstractMesh) {
-        super(ShapeType.CONTAINER, {});
+    /**
+     * 
+     * @param mesh 
+     * @param scene 
+     */
+    constructor(mesh: AbstractMesh,
+        scene: Scene) {
+        super(ShapeType.CONTAINER, {}, scene);
     }
 }
