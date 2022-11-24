@@ -2516,18 +2516,27 @@ export class Vector3 {
     }
 
     /**
-     * Reflects a vector off the plane defined by a normal
+     * Reflects a vector off the plane defined by a normalized normal
      * @param inDirection defines the vector direction
      * @param normal defines the normal
      * @returns the resulting vector
      */
-    public static Reflect<T extends Vector3>(inDirection: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>): T {
-        const _inDirection = new (inDirection.constructor as Vector3Constructor<T>)();
-        const _normal = new (normal.constructor as Vector3Constructor<T>)();
-        _inDirection.copyFrom(inDirection);
-        _normal.copyFrom(normal).normalize();
+    public static Reflect<T extends Vector3>(inDirection: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>): Vector3 {
+        return this.ReflectToRef(inDirection, normal, new Vector3());
+    }
 
-        return _inDirection.subtract(_normal.scale(2 * Vector3.Dot(_inDirection, _normal)));
+    /**
+     * Reflects a vector off the plane defined by a normalized normal to reference
+     * @param inDirection defines the vector direction
+     * @param normal defines the normal
+     * @param result defines the Vector3 where to store the result
+     * @returns the resulting vector
+     */
+    public static ReflectToRef<T extends Vector3>(inDirection: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>, ref: T): T {
+        const tmp = TmpVectors.Vector3[0];
+        tmp.copyFrom(normal).scaleInPlace(2 * Vector3.Dot(inDirection, normal));
+
+        return ref.copyFrom(inDirection).subtractInPlace(tmp);
     }
 
     /**
