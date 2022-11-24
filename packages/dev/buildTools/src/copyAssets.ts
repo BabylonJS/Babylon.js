@@ -6,9 +6,9 @@ import type { DevPackageName } from "./packageMapping";
 import { buildShader } from "./buildShaders";
 
 const processFile = (file: string, options: { isCore?: boolean; basePackageName?: DevPackageName; pathPrefix?: string; outputDir?: string } = {}) => {
-    if(!options.outputDir) {
+    if (!options.outputDir) {
         options.outputDir = "dist";
-    };
+    }
     if (path.extname(file) === ".fx") {
         buildShader(file, options.basePackageName, options.isCore);
     } else {
