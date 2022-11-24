@@ -13,7 +13,7 @@ export enum JointAxisLimitMode {
     FREE,
     LIMITED,
     LOCKED,
-    NONE
+    NONE,
 }
 
 export enum JointAxis {

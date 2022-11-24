@@ -13,9 +13,9 @@ export class PhysicsBody {
     private _physicsPlugin: IPhysicsEnginePlugin2 | undefined;
 
     /**
-     * 
-     * @param scene 
-     * @returns 
+     *
+     * @param scene
+     * @returns
      */
     constructor(scene: Scene) {
         if (!scene) {
@@ -36,7 +36,7 @@ export class PhysicsBody {
      *
      * @returns
      */
-    public getShape(): PhysicsShape | undefined{
+    public getShape(): PhysicsShape | undefined {
         return this._physicsPlugin ? this._physicsPlugin.getShape(this) : undefined;
     }
 
@@ -84,7 +84,7 @@ export class PhysicsBody {
      *
      * @returns
      */
-    public getMassProperties(): MassProperties | undefined{
+    public getMassProperties(): MassProperties | undefined {
         return this._physicsPlugin ? this._physicsPlugin.getMassProperties(this) : undefined;
     }
 
