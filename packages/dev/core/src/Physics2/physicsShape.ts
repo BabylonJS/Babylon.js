@@ -6,8 +6,7 @@ import type { PhysicsMaterial } from "./physicsMaterial";
 import { Vector3 } from "../Maths/math.vector";
 import type { Quaternion } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type {  Scene } from "../scene";
-
+import type { Scene } from "../scene";
 
 /**
  *
@@ -21,25 +20,23 @@ export class PhysicsShape {
     private _type: ShapeType;
 
     /**
-     * 
-     * @param type 
-     * @param options 
-     * @param scene 
-     * @returns 
+     *
+     * @param type
+     * @param options
+     * @param scene
+     * @returns
      */
-    constructor(type: number,
-        options: PhysicsShapeParameters = { },
-        scene: Scene) {
-            this._type = type;
-            if (!scene) {
-                return;
-            }
+    constructor(type: number, options: PhysicsShapeParameters = {}, scene: Scene) {
+        this._type = type;
+        if (!scene) {
+            return;
+        }
 
-            this._physicsPlugin = scene.getPhysicsEngine()?.getPhysicsPlugin() as any;
-            if (!this._physicsPlugin) {
-                return;
-            }
-            this._physicsPlugin?.initShape(this, type, options);
+        this._physicsPlugin = scene.getPhysicsEngine()?.getPhysicsPlugin() as any;
+        if (!this._physicsPlugin) {
+            return;
+        }
+        this._physicsPlugin?.initShape(this, type, options);
     }
 
     /**
@@ -137,113 +134,106 @@ export class PhysicsShape {
 }
 
 /**
- * 
+ *
  */
 export class PhysicsShapeSphere extends PhysicsShape {
     /**
-     * 
-     * @param center 
-     * @param radius 
-     * @param scene 
+     *
+     * @param center
+     * @param radius
+     * @param scene
      */
-    constructor(center: Vector3, radius: number,
-        scene: Scene) {
-        super(ShapeType.BOX, {center:center, radius:radius}, scene);
+    constructor(center: Vector3, radius: number, scene: Scene) {
+        super(ShapeType.BOX, { center: center, radius: radius }, scene);
     }
 }
 
 /***
- * 
+ *
  */
 export class PhysicsShapeCapsule extends PhysicsShape {
     /**
-     * 
-     * @param pointA 
-     * @param pointB 
-     * @param radius 
-     * @param scene 
+     *
+     * @param pointA
+     * @param pointB
+     * @param radius
+     * @param scene
      */
-    constructor(pointA: Vector3, pointB: Vector3, radius: number,
-        scene: Scene) {
-        super(ShapeType.CAPSULE, {pointA:pointA, pointB:pointB, radius:radius}, scene);
+    constructor(pointA: Vector3, pointB: Vector3, radius: number, scene: Scene) {
+        super(ShapeType.CAPSULE, { pointA: pointA, pointB: pointB, radius: radius }, scene);
     }
 }
 
 /**
- * 
+ *
  */
 export class PhysicsShapeCylinder extends PhysicsShape {
     /**
-     * 
-     * @param pointA 
-     * @param pointB 
-     * @param radius 
-     * @param scene 
+     *
+     * @param pointA
+     * @param pointB
+     * @param radius
+     * @param scene
      */
-    constructor(pointA: Vector3, pointB: Vector3, radius: number,
-        scene: Scene) {
-        super(ShapeType.CYLINDER, {pointA:pointA, pointB:pointB, radius:radius}, scene);
+    constructor(pointA: Vector3, pointB: Vector3, radius: number, scene: Scene) {
+        super(ShapeType.CYLINDER, { pointA: pointA, pointB: pointB, radius: radius }, scene);
     }
 }
 
 /**
- * 
+ *
  */
 export class PhysicsShapeShapeBox extends PhysicsShape {
     /**
-     * 
-     * @param center 
-     * @param rotation 
-     * @param extents 
-     * @param scene 
+     *
+     * @param center
+     * @param rotation
+     * @param extents
+     * @param scene
      */
-    constructor(center: Vector3, rotation: Quaternion, extents: Vector3,
-        scene: Scene) {
-        super(ShapeType.BOX, {center:center, rotation:rotation, extents:extents}, scene);
+    constructor(center: Vector3, rotation: Quaternion, extents: Vector3, scene: Scene) {
+        super(ShapeType.BOX, { center: center, rotation: rotation, extents: extents }, scene);
     }
 }
 
 /**
- * 
+ *
  */
 export class PhysicsShapeShapeConvexHull extends PhysicsShape {
     /**
-     * 
-     * @param mesh 
-     * @param scene 
+     *
+     * @param mesh
+     * @param scene
      */
-    constructor(mesh: AbstractMesh,
-        scene: Scene) {
-        super(ShapeType.CONVEX_HULL, {mesh:mesh}, scene);
+    constructor(mesh: AbstractMesh, scene: Scene) {
+        super(ShapeType.CONVEX_HULL, { mesh: mesh }, scene);
     }
 }
 
 /**
- * 
+ *
  */
 export class PhysicsShapeShapeMesh extends PhysicsShape {
     /**
-     * 
-     * @param mesh 
-     * @param scene 
+     *
+     * @param mesh
+     * @param scene
      */
-    constructor(mesh: AbstractMesh,
-        scene: Scene) {
-        super(ShapeType.MESH, {mesh:mesh}, scene);
+    constructor(mesh: AbstractMesh, scene: Scene) {
+        super(ShapeType.MESH, { mesh: mesh }, scene);
     }
 }
 
 /**
- * 
+ *
  */
 export class PhysicsShapeShapeContainer extends PhysicsShape {
     /**
-     * 
-     * @param mesh 
-     * @param scene 
+     *
+     * @param mesh
+     * @param scene
      */
-    constructor(mesh: AbstractMesh,
-        scene: Scene) {
+    constructor(mesh: AbstractMesh, scene: Scene) {
         super(ShapeType.CONTAINER, {}, scene);
     }
 }

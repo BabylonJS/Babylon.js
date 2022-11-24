@@ -8,7 +8,7 @@ import type { TransformNode } from "../Meshes/transformNode";
 /**
  * The interface for the physics aggregate parameters
  */
- export interface PhysicsAggregateParameters {
+export interface PhysicsAggregateParameters {
     /**
      * The mass of the physics imposter
      */
@@ -87,7 +87,7 @@ export class PhysicsAggregate {
     public shape: PhysicsShape;
 
     /**
-     * 
+     *
      */
     public material: PhysicsMaterial;
 

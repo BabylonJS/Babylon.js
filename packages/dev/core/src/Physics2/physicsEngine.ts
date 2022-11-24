@@ -95,7 +95,6 @@ export class PhysicsEngine implements IPhysicsEngine2 {
      * Release all resources
      */
     public dispose(): void {
-        
         this._physicsPlugin.dispose();
     }
 
@@ -112,7 +111,7 @@ export class PhysicsEngine implements IPhysicsEngine2 {
      * This will be done by the impostor itself.
      * @param impostor the impostor to add
      */
-    
+
     /**
      * Called by the scene. No need to call it.
      * @param delta defines the timespan between frames
@@ -141,8 +140,6 @@ export class PhysicsEngine implements IPhysicsEngine2 {
     public getPhysicsPlugin(): IPhysicsEnginePlugin2 {
         return this._physicsPlugin;
     }
-
-    
 
     /**
      * Does a raycast in the physics world

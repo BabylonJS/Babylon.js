@@ -12,7 +12,7 @@ import type { PhysicsBody } from "./physicsBody";
  */
 export class PhysicsJoint {
     /**
-     * 
+     *
      */
     public _pluginData: any = undefined;
     protected _physicsPlugin: IPhysicsEnginePlugin2 | undefined;
@@ -20,9 +20,7 @@ export class PhysicsJoint {
     /**
      *
      */
-    constructor(type: JointType, options: PhysicsJointParameters,
-        scene: Scene)
-    {
+    constructor(type: JointType, options: PhysicsJointParameters, scene: Scene) {
         if (!scene) {
             return;
         }
@@ -228,52 +226,46 @@ export class PhysicsJoint {
 }
 
 /**
- * 
+ *
  */
 export class PhysicsJointBallAndSocket extends PhysicsJoint {
-    constructor(pivotA: Vector3, pivotB: Vector3, axisA: Vector3, axisB: Vector3, scene: Scene)
-    {
-        super(JointType.BALL_AND_SOCKET, {pivotA:pivotA, pivotB:pivotB, axisA:axisA, axisB:axisB}, scene);
+    constructor(pivotA: Vector3, pivotB: Vector3, axisA: Vector3, axisB: Vector3, scene: Scene) {
+        super(JointType.BALL_AND_SOCKET, { pivotA: pivotA, pivotB: pivotB, axisA: axisA, axisB: axisB }, scene);
     }
 }
 
 /**
- * 
+ *
  */
 export class PhysicsJointDistance extends PhysicsJoint {
-    constructor(pivotA: Vector3, pivotB: Vector3, axisA: Vector3, axisB: Vector3, scene: Scene)
-    {
-        super(JointType.DISTANCE, {pivotA:pivotA, pivotB:pivotB, axisA:axisA, axisB:axisB}, scene);
+    constructor(pivotA: Vector3, pivotB: Vector3, axisA: Vector3, axisB: Vector3, scene: Scene) {
+        super(JointType.DISTANCE, { pivotA: pivotA, pivotB: pivotB, axisA: axisA, axisB: axisB }, scene);
     }
 }
 
 /**
- * 
+ *
  */
 export class PhysicsJointHinge extends PhysicsJoint {
-    constructor(pivotA: Vector3, pivotB: Vector3, axisA: Vector3, axisB: Vector3, scene: Scene)
-    {
-        super(JointType.HINGE, {pivotA:pivotA, pivotB:pivotB, axisA:axisA, axisB:axisB}, scene);
+    constructor(pivotA: Vector3, pivotB: Vector3, axisA: Vector3, axisB: Vector3, scene: Scene) {
+        super(JointType.HINGE, { pivotA: pivotA, pivotB: pivotB, axisA: axisA, axisB: axisB }, scene);
     }
 }
 
 /**
- * 
+ *
  */
 export class PhysicsJointSlider extends PhysicsJoint {
-    constructor(pivotA: Vector3, pivotB: Vector3, axisA: Vector3, axisB: Vector3, scene: Scene)
-    {
-        super(JointType.SLIDER, {pivotA:pivotA, pivotB:pivotB, axisA:axisA, axisB:axisB}, scene);
+    constructor(pivotA: Vector3, pivotB: Vector3, axisA: Vector3, axisB: Vector3, scene: Scene) {
+        super(JointType.SLIDER, { pivotA: pivotA, pivotB: pivotB, axisA: axisA, axisB: axisB }, scene);
     }
 }
 
 /**
- * 
+ *
  */
 export class PhysicsJointLock extends PhysicsJoint {
-    constructor(pivotA: Vector3, pivotB: Vector3, axisA: Vector3, axisB: Vector3, scene: Scene)
-    {
-        super(JointType.LOCK, {pivotA:pivotA, pivotB:pivotB, axisA:axisA, axisB:axisB}, scene);
+    constructor(pivotA: Vector3, pivotB: Vector3, axisA: Vector3, axisB: Vector3, scene: Scene) {
+        super(JointType.LOCK, { pivotA: pivotA, pivotB: pivotB, axisA: axisA, axisB: axisB }, scene);
     }
 }
-
