@@ -2527,7 +2527,7 @@ export class Vector3 {
         _inDirection.copyFrom(inDirection);
         _normal.copyFrom(normal).normalize();
 
-        return _inDirection.subtract(_normal.scale( 2 * Vector3.Dot(_inDirection, _normal)));
+        return _inDirection.subtract(_normal.scale(2 * Vector3.Dot(_inDirection, _normal)));
     }
 
     /**
