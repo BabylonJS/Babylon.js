@@ -6,26 +6,26 @@ import type { KTX2FileReader, IKTX2_ImageDesc } from "../ktx2FileReader";
  * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export class LiteTranscoder_UASTC_RGBA_UNORM extends LiteTranscoder {
+export class LiteTranscoder_UASTC_RG8_UNORM extends LiteTranscoder {
     /**
-     * URL to use when loading the wasm module for the transcoder (unorm)
+     * URL to use when loading the wasm module for the transcoder (srgb)
      */
-    public static WasmModuleURL = "https://preview.babylonjs.com/ktx2Transcoders/uastc_rgba8_unorm.wasm";
+    public static WasmModuleURL = "https://preview.babylonjs.com/ktx2Transcoders/uastc_rg8_unorm.wasm";
 
     public static CanTranscode(src: sourceTextureFormat, dst: transcodeTarget, isInGammaSpace: boolean): boolean {
-        return src === sourceTextureFormat.UASTC4x4 && dst === transcodeTarget.RGBA32 && !isInGammaSpace;
+        return src === sourceTextureFormat.UASTC4x4 && dst === transcodeTarget.RG8;
     }
 
-    public static Name = "UniversalTranscoder_UASTC_RGBA_UNORM";
+    public static Name = "UniversalTranscoder_UASTC_RG8_UNORM";
 
     public getName(): string {
-        return LiteTranscoder_UASTC_RGBA_UNORM.Name;
+        return LiteTranscoder_UASTC_RG8_UNORM.Name;
     }
 
     public initialize(): void {
         super.initialize();
         this._transcodeInPlace = false;
-        this.setModulePath(LiteTranscoder_UASTC_RGBA_UNORM.WasmModuleURL);
+        this.setModulePath(LiteTranscoder_UASTC_RG8_UNORM.WasmModuleURL);
     }
 
     public transcode(
@@ -41,7 +41,7 @@ export class LiteTranscoder_UASTC_RGBA_UNORM extends LiteTranscoder {
     ): Promise<Uint8Array | null> {
         return this._loadModule().then((moduleWrapper: any) => {
             const transcoder: any = moduleWrapper.module;
-            const [, uncompressedTextureView] = this._prepareTranscoding(width, height, uncompressedByteLength, encodedData, 4);
+            const [, uncompressedTextureView] = this._prepareTranscoding(width, height, uncompressedByteLength, encodedData, 2);
 
             return transcoder.decode(width, height) === 0 ? uncompressedTextureView!.slice() : null;
         });
