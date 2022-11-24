@@ -29,6 +29,14 @@ function applyConfig(urls: typeof KhronosTextureContainer2.URLConfig): void {
         KTX2DECODER.LiteTranscoder_UASTC_RGBA_SRGB.WasmModuleURL = urls.wasmUASTCToRGBA_SRGB;
     }
 
+    if (urls.wasmUASTCToR8_UNORM !== null) {
+        KTX2DECODER.LiteTranscoder_UASTC_R8_UNORM.WasmModuleURL = urls.wasmUASTCToR8_UNORM;
+    }
+
+    if (urls.wasmUASTCToRG8_UNORM !== null) {
+        KTX2DECODER.LiteTranscoder_UASTC_RG8_UNORM.WasmModuleURL = urls.wasmUASTCToRG8_UNORM;
+    }
+
     if (urls.jsMSCTranscoder !== null) {
         KTX2DECODER.MSCTranscoder.JSModuleURL = urls.jsMSCTranscoder;
     }
@@ -59,6 +67,8 @@ export class KhronosTextureContainer2 {
      *     URLConfig.wasmUASTCToBC7
      *     URLConfig.wasmUASTCToRGBA_UNORM
      *     URLConfig.wasmUASTCToRGBA_SRGB
+     *     URLConfig.wasmUASTCToR8_UNORM
+     *     URLConfig.wasmUASTCToRG8_UNORM
      *     URLConfig.jsMSCTranscoder
      *     URLConfig.wasmMSCTranscoder
      *     URLConfig.wasmZSTDDecoder
@@ -70,6 +80,8 @@ export class KhronosTextureContainer2 {
         wasmUASTCToBC7: Nullable<string>;
         wasmUASTCToRGBA_UNORM: Nullable<string>;
         wasmUASTCToRGBA_SRGB: Nullable<string>;
+        wasmUASTCToR8_UNORM: Nullable<string>;
+        wasmUASTCToRG8_UNORM: Nullable<string>;
         jsMSCTranscoder: Nullable<string>;
         wasmMSCTranscoder: Nullable<string>;
         wasmZSTDDecoder: Nullable<string>;
@@ -79,6 +91,8 @@ export class KhronosTextureContainer2 {
         wasmUASTCToBC7: null,
         wasmUASTCToRGBA_UNORM: null,
         wasmUASTCToRGBA_SRGB: null,
+        wasmUASTCToR8_UNORM: null,
+        wasmUASTCToRG8_UNORM: null,
         jsMSCTranscoder: null,
         wasmMSCTranscoder: null,
         wasmZSTDDecoder: null,
@@ -111,6 +125,8 @@ export class KhronosTextureContainer2 {
             wasmUASTCToBC7: getAbsoluteUrlOrNull(this.URLConfig.wasmUASTCToBC7),
             wasmUASTCToRGBA_UNORM: getAbsoluteUrlOrNull(this.URLConfig.wasmUASTCToRGBA_UNORM),
             wasmUASTCToRGBA_SRGB: getAbsoluteUrlOrNull(this.URLConfig.wasmUASTCToRGBA_SRGB),
+            wasmUASTCToR8_UNORM: getAbsoluteUrlOrNull(this.URLConfig.wasmUASTCToR8_UNORM),
+            wasmUASTCToRG8_UNORM: getAbsoluteUrlOrNull(this.URLConfig.wasmUASTCToRG8_UNORM),
             jsMSCTranscoder: getAbsoluteUrlOrNull(this.URLConfig.jsMSCTranscoder),
             wasmMSCTranscoder: getAbsoluteUrlOrNull(this.URLConfig.wasmMSCTranscoder),
             wasmZSTDDecoder: getAbsoluteUrlOrNull(this.URLConfig.wasmZSTDDecoder),
@@ -263,11 +279,25 @@ export class KhronosTextureContainer2 {
             options.transcoderName = data.transcoderName;
         }
 
-        if (data.transcodedFormat === 0x8058 /* RGBA8 */) {
-            internalTexture.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
-            internalTexture.format = Constants.TEXTUREFORMAT_RGBA;
-        } else {
-            internalTexture.format = data.transcodedFormat;
+        let isUncompressedFormat = true;
+
+        switch (data.transcodedFormat) {
+            case 0x8058 /* RGBA8 */:
+                internalTexture.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+                internalTexture.format = Constants.TEXTUREFORMAT_RGBA;
+                break;
+            case 0x8229 /* R8 */:
+                internalTexture.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+                internalTexture.format = Constants.TEXTUREFORMAT_R;
+                break;
+            case 0x822b /* RG8 */:
+                internalTexture.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+                internalTexture.format = Constants.TEXTUREFORMAT_RG;
+                break;
+            default:
+                internalTexture.format = data.transcodedFormat;
+                isUncompressedFormat = false;
+                break;
         }
 
         internalTexture._gammaSpace = data.isInGammaSpace;
@@ -284,8 +314,8 @@ export class KhronosTextureContainer2 {
                 throw new Error("KTX2 container - could not transcode one of the image");
             }
 
-            if (data.transcodedFormat === 0x8058 /* RGBA8 */) {
-                // uncompressed RGBA
+            if (isUncompressedFormat) {
+                // uncompressed RGBA / R8 / RG8
                 internalTexture.width = mipmap.width; // need to set width/height so that the call to _uploadDataToTextureDirectly uses the right dimensions
                 internalTexture.height = mipmap.height;
 

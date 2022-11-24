@@ -15,6 +15,8 @@ import { LiteTranscoder_UASTC_ASTC } from "./Transcoders/liteTranscoder_UASTC_AS
 import { LiteTranscoder_UASTC_BC7 } from "./Transcoders/liteTranscoder_UASTC_BC7";
 import { LiteTranscoder_UASTC_RGBA_UNORM } from "./Transcoders/liteTranscoder_UASTC_RGBA_UNORM";
 import { LiteTranscoder_UASTC_RGBA_SRGB } from "./Transcoders/liteTranscoder_UASTC_RGBA_SRGB";
+import { LiteTranscoder_UASTC_R8_UNORM } from "./Transcoders/liteTranscoder_UASTC_R8_UNORM";
+import { LiteTranscoder_UASTC_RG8_UNORM } from "./Transcoders/liteTranscoder_UASTC_RG8_UNORM";
 import { MSCTranscoder } from "./Transcoders/mscTranscoder";
 import { transcodeTarget, sourceTextureFormat } from "./transcoder";
 import { ZSTDDecoder } from "./zstddec";
@@ -50,8 +52,14 @@ export interface IKTX2DecoderOptions {
     /** use RGBA format if ASTC and BC7 are not available as transcoded format */
     useRGBAIfASTCBC7NotAvailableWhenUASTC?: boolean;
 
-    /** force to always use RGBA for transcoded format */
+    /** force to always use (uncompressed) RGBA for transcoded format */
     forceRGBA?: boolean;
+
+    /** force to always use (uncompressed) R8 for transcoded format */
+    forceR8?: boolean;
+
+    /** force to always use (uncompressed) RG8 for transcoded format */
+    forceRG8?: boolean;
 
     /**
      * list of transcoders to bypass when looking for a suitable transcoder. The available transcoders are:
@@ -59,6 +67,8 @@ export interface IKTX2DecoderOptions {
      *      UniversalTranscoder_UASTC_BC7
      *      UniversalTranscoder_UASTC_RGBA_UNORM
      *      UniversalTranscoder_UASTC_RGBA_SRGB
+     *      UniversalTranscoder_UASTC_R8_UNORM
+     *      UniversalTranscoder_UASTC_RG8_UNORM
      *      MSCTranscoder
      */
     bypassTranscoders?: string[];
@@ -212,4 +222,6 @@ TranscoderManager.RegisterTranscoder(LiteTranscoder_UASTC_ASTC);
 TranscoderManager.RegisterTranscoder(LiteTranscoder_UASTC_BC7);
 TranscoderManager.RegisterTranscoder(LiteTranscoder_UASTC_RGBA_UNORM);
 TranscoderManager.RegisterTranscoder(LiteTranscoder_UASTC_RGBA_SRGB);
+TranscoderManager.RegisterTranscoder(LiteTranscoder_UASTC_R8_UNORM);
+TranscoderManager.RegisterTranscoder(LiteTranscoder_UASTC_RG8_UNORM);
 TranscoderManager.RegisterTranscoder(MSCTranscoder); // catch all transcoder - will throw an error if the format can't be transcoded
