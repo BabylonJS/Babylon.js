@@ -49,6 +49,7 @@ export enum ShapeType {
     CYLINDER,
     BOX,
     CONVEX_HULL,
+    CONTAINER,
     MESH,
 }
 
@@ -57,6 +58,17 @@ export enum JointMotorType {
     VELOCITY,
     POSITION,
 }
+
+export interface PhysicsShapeParameters {
+    center?: Vector3;
+    radius?: number;
+    pointA?: Vector3;
+    pointB?: Vector3;
+    rotation?: Quaternion;
+    extents?: Vector3;
+    mesh?: AbstractMesh;
+}
+
 /**
  *
  */
@@ -116,13 +128,7 @@ export interface IPhysicsEnginePlugin {
     disposeBody(body: PhysicsBody): void;
 
     // shape
-    createShapeSphere(center: Vector3, radius: number): PhysicsShape;
-    createShapeCapsule(pointA: Vector3, pointB: Vector3, radius: number): PhysicsShape;
-    createShapeCylinder(pointA: Vector3, pointB: Vector3, radius: number): PhysicsShape;
-    createShapeBox(center: Vector3, rotation: Quaternion, extents: Vector3): PhysicsShape;
-    createShapeConvexHull(mesh: AbstractMesh): PhysicsShape;
-    createShapeMesh(mesh: AbstractMesh): PhysicsShape;
-    createShapeContainer(): PhysicsShape;
+    createShape(type: ShapeType, options: PhysicsShapeParameters): PhysicsShape;
 
     setFilterLayer(shape: PhysicsShape, layer: number): void;
     getFilterLayer(shape: PhysicsShape): number;

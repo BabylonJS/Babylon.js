@@ -1,6 +1,8 @@
 import type { IPhysicsEnginePlugin, MassProperties } from "./IPhysicsEngine";
 import type { PhysicsShape } from "./PhysicsShape";
 import type { Vector3 } from "../Maths/math.vector";
+import type { Scene } from "../scene";
+import { Nullable } from "..";
 
 /**
  *
@@ -9,8 +11,15 @@ export class PhysicsBody {
     /** @internal */
     public _pluginData: any = {};
 
-    private _physicsPlugin: IPhysicsEnginePlugin;
+    private _physicsPlugin: Nullable<IPhysicsEnginePlugin>;
 
+    constructor(scene: Scene) {
+        if (!scene) {
+            return;
+        }
+        const physicsEngine = scene.getPhysicsEngine();
+        this._physicsPlugin = physicsEngine?.getPhysicsPlugin();
+    }
     /**
      *
      * @param shape
