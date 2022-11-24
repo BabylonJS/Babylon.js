@@ -1,6 +1,5 @@
 import type { Vector3, Quaternion } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { PhysicsImpostor } from "./physicsImpostor";
 import type { PhysicsRaycastResult } from "./physicsRaycastResult";
 import type { PhysicsBody } from "./physicsBody";
 import type { PhysicsShape } from "./physicsShape";
@@ -8,22 +7,13 @@ import type { PhysicsJoint } from "./physicsJoint";
 import type { BoundingBox } from "../culling/boundingBox";
 import type { TransformNode } from "../Meshes/transformNode";
 import type { PhysicsMaterial } from "./physicsMaterial";
-/**
- * Interface used to describe a physics joint
- */
-export interface PhysicsImpostorJoint {
-    /** Defines the main impostor to which the joint is linked */
-    mainImpostor: PhysicsImpostor;
-    /** Defines the impostor that is connected to the main impostor using this joint */
-    connectedImpostor: PhysicsImpostor;
-    /** Defines the joint itself */
-    joint: PhysicsJoint;
-}
+import type { PhysicsAggregate } from "./physicsAggregate";
 
 export enum JointAxisLimitMode {
     FREE,
     LIMITED,
     LOCKED,
+    NONE
 }
 
 export enum JointAxis {
@@ -69,6 +59,13 @@ export interface PhysicsShapeParameters {
     mesh?: AbstractMesh;
 }
 
+export interface PhysicsJointParameters {
+    pivotA?: Vector3;
+    pivotB?: Vector3;
+    axisA?: Vector3;
+    axisB?: Vector3;
+}
+
 /**
  *
  */
@@ -92,7 +89,7 @@ export interface MassProperties {
 }
 
 /** @internal */
-export interface IPhysicsEnginePlugin {
+export interface IPhysicsEnginePlugin2 {
     /**
      *
      */
@@ -104,10 +101,10 @@ export interface IPhysicsEnginePlugin {
     setGravity(gravity: Vector3): void;
     setTimeStep(timeStep: number): void;
     getTimeStep(): number;
-    executeStep(delta: number, impostors: Array<PhysicsImpostor>): void; //not forgetting pre and post events
+    executeStep(delta: number): void; //not forgetting pre and post events
 
     // body
-    createBody(): PhysicsBody;
+    initBody(body: PhysicsBody): void;
     setShape(body: PhysicsBody, shape: PhysicsShape): void;
     getShape(body: PhysicsBody): PhysicsShape;
     setFilterGroup(body: PhysicsBody, group: number): void;
@@ -128,8 +125,7 @@ export interface IPhysicsEnginePlugin {
     disposeBody(body: PhysicsBody): void;
 
     // shape
-    createShape(type: ShapeType, options: PhysicsShapeParameters): PhysicsShape;
-
+    initShape(shape: PhysicsShape, type: ShapeType, options: PhysicsShapeParameters): void;
     setFilterLayer(shape: PhysicsShape, layer: number): void;
     getFilterLayer(shape: PhysicsShape): number;
     setMaterial(shape: PhysicsShape, material: PhysicsMaterial): void;
@@ -143,6 +139,7 @@ export interface IPhysicsEnginePlugin {
     disposeShape(shape: PhysicsShape): void;
 
     // material
+    initMaterial(material: PhysicsMaterial): void;
     setFriction(material: PhysicsMaterial, friction: number): void;
     getFriction(material: PhysicsMaterial): number;
     setRestitution(material: PhysicsMaterial, restitution: number): void;
@@ -150,11 +147,7 @@ export interface IPhysicsEnginePlugin {
     disposeMaterial(material: PhysicsMaterial): void;
 
     // joint
-    createJointBallAndSocket(): PhysicsJoint;
-    createJointDistance(): PhysicsJoint;
-    createJointHinge(): PhysicsJoint;
-    createJointSlider(): PhysicsJoint;
-    createJointLock(): PhysicsJoint;
+    initJoint(joint: PhysicsJoint, type: JointType, options: PhysicsJointParameters): void;
     setParentBody(joint: PhysicsJoint, body: PhysicsBody): void;
     getParentBody(joint: PhysicsJoint): PhysicsBody;
     setChildBody(joint: PhysicsJoint, body: PhysicsBody): void;
@@ -191,7 +184,7 @@ export interface IPhysicsEnginePlugin {
  * Interface used to define a physics engine
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
  */
-export interface IPhysicsEngine {
+export interface IPhysicsEngine2 {
     /**
      * Gets the gravity vector used by the simulation
      */
@@ -243,42 +236,16 @@ export interface IPhysicsEngine {
      */
     getPhysicsPluginName(): string;
 
-    //***********************************************************
-    createShapeSphere(center: Vector3, radius: number): PhysicsShape;
-    createShapeCapsule(pointA: Vector3, pointB: Vector3, radius: number): PhysicsShape;
-    createShapeCylinder(pointA: Vector3, pointB: Vector3, radius: number): PhysicsShape;
-    createShapeBox(center: Vector3, rotation: Quaternion, extents: Vector3): PhysicsShape;
-    createShapeConvexHull(mesh: AbstractMesh): PhysicsShape;
-    createShapeMesh(mesh: AbstractMesh): PhysicsShape;
-    createShapeContainer(): PhysicsShape;
-
-    createJointBallAndSocket(): PhysicsJoint;
-    createJointDistance(): PhysicsJoint;
-    createJointHinge(): PhysicsJoint;
-    createJointSlider(): PhysicsJoint;
-    createJointLock(): PhysicsJoint;
-
-    createBody(): PhysicsBody;
-
-    addBody(body: PhysicsBody): void;
-    removeBody(body: PhysicsBody): void;
-
     // Helpers
-    getBodies(): Array<PhysicsBody>;
-    addImpostor(impostor: PhysicsImpostor): void;
-    removeImpostor(impostor: PhysicsImpostor): void;
-
+    /*getBodies(): Array<PhysicsBody>;
+    addAggregate(impostor: PhysicsAggregate): void;
+    removeAggregate(impostor: PhysicsAggregate): void;
+*/
     /**
      * Gets the current plugin used to run the simulation
      * @returns current plugin
      */
-    getPhysicsPlugin(): IPhysicsEnginePlugin;
-
-    /**
-     * Gets the list of physic impostors
-     * @returns an array of PhysicsImpostor
-     */
-    getImpostors(): Array<PhysicsImpostor>;
+    getPhysicsPlugin(): IPhysicsEnginePlugin2;
 
     //****************************************************************************
 

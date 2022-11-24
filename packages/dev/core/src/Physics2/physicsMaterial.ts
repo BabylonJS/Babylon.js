@@ -1,4 +1,5 @@
-import type { IPhysicsEnginePlugin } from "./IPhysicsEngine";
+import type { Scene } from "../scene";
+import type { IPhysicsEnginePlugin2 } from "./IPhysicsEngine";
 
 /**
  *
@@ -7,10 +8,20 @@ export class PhysicsMaterial {
     /**
      *
      */
-    public _pluginData: any = {};
+    public _pluginData: any = undefined;
 
-    protected _physicsPlugin: IPhysicsEnginePlugin;
+    protected _physicsPlugin: IPhysicsEnginePlugin2;
 
+    /**
+     * 
+     * @param friction 
+     * @param restitution 
+     * @param scene 
+     */
+    constructor(friction: number, restitution: number, scene: Scene) {
+        this._physicsPlugin = scene.getPhysicsEngine()?.getPhysicsPlugin() as any;
+        this._physicsPlugin?.initMaterial(this);
+    }
     /**
      *
      * @param friction

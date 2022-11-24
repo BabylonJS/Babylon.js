@@ -1,39 +1,43 @@
-import type { IPhysicsEnginePlugin, MassProperties } from "./IPhysicsEngine";
+import type { IPhysicsEnginePlugin2, MassProperties } from "./IPhysicsEngine";
 import type { PhysicsShape } from "./PhysicsShape";
-import type { Vector3 } from "../Maths/math.vector";
+import { Vector3 } from "../Maths/math.vector";
 import type { Scene } from "../scene";
-import { Nullable } from "..";
 
 /**
  *
  */
 export class PhysicsBody {
     /** @internal */
-    public _pluginData: any = {};
+    public _pluginData: any = undefined;
 
-    private _physicsPlugin: Nullable<IPhysicsEnginePlugin>;
+    private _physicsPlugin: IPhysicsEnginePlugin2 | undefined;
 
+    /**
+     * 
+     * @param scene 
+     * @returns 
+     */
     constructor(scene: Scene) {
         if (!scene) {
             return;
         }
-        const physicsEngine = scene.getPhysicsEngine();
-        this._physicsPlugin = physicsEngine?.getPhysicsPlugin();
+        this._physicsPlugin = scene.getPhysicsEngine()?.getPhysicsPlugin() as any;
+        this._physicsPlugin?.initBody(this);
     }
     /**
      *
      * @param shape
      */
     public setShape(shape: PhysicsShape): void {
-        this._physicsPlugin.setShape(this, shape);
+        this._physicsPlugin?.setShape(this, shape);
     }
 
     /**
      *
      * @returns
      */
-    public getShape(): PhysicsShape {
-        return this._physicsPlugin.getShape(this);
+    public getShape(): PhysicsShape | undefined{
+        return this._physicsPlugin ? this._physicsPlugin.getShape(this) : undefined;
     }
 
     /**
@@ -41,7 +45,7 @@ export class PhysicsBody {
      * @param group
      */
     public setFilterGroup(group: number): void {
-        this._physicsPlugin.setFilterGroup(this, group);
+        this._physicsPlugin?.setFilterGroup(this, group);
     }
 
     /**
@@ -49,7 +53,7 @@ export class PhysicsBody {
      * @returns
      */
     public getFilterGroup(): number {
-        return this._physicsPlugin.getFilterGroup(this);
+        return this._physicsPlugin ? this._physicsPlugin.getFilterGroup(this) : 0;
     }
 
     /**
@@ -57,7 +61,7 @@ export class PhysicsBody {
      * @param eventMask
      */
     public setEventMask(eventMask: number): void {
-        this._physicsPlugin.setEventMask(this, eventMask);
+        this._physicsPlugin?.setEventMask(this, eventMask);
     }
 
     /**
@@ -65,7 +69,7 @@ export class PhysicsBody {
      * @returns
      */
     public getEventMask(): number {
-        return this._physicsPlugin.getEventMask(this);
+        return this._physicsPlugin ? this._physicsPlugin.getEventMask(this) : 0;
     }
 
     /**
@@ -73,15 +77,15 @@ export class PhysicsBody {
      * @param massProps
      */
     public setMassProperties(massProps: MassProperties): void {
-        this._physicsPlugin.setMassProperties(this, massProps);
+        this._physicsPlugin?.setMassProperties(this, massProps);
     }
 
     /**
      *
      * @returns
      */
-    public getMassProperties(): MassProperties {
-        return this._physicsPlugin.getMassProperties(this);
+    public getMassProperties(): MassProperties | undefined{
+        return this._physicsPlugin ? this._physicsPlugin.getMassProperties(this) : undefined;
     }
 
     /**
@@ -89,7 +93,7 @@ export class PhysicsBody {
      * @param damping
      */
     public setLinearDamping(damping: number): void {
-        this._physicsPlugin.setLinearDamping(this, damping);
+        this._physicsPlugin?.setLinearDamping(this, damping);
     }
 
     /**
@@ -97,7 +101,7 @@ export class PhysicsBody {
      * @returns
      */
     public getLinearDamping(): number {
-        return this._physicsPlugin.getLinearDamping(this);
+        return this._physicsPlugin ? this._physicsPlugin.getLinearDamping(this) : 0;
     }
 
     /**
@@ -105,7 +109,7 @@ export class PhysicsBody {
      * @param damping
      */
     public setAngularDamping(damping: number): void {
-        this._physicsPlugin.setAngularDamping(this, damping);
+        this._physicsPlugin?.setAngularDamping(this, damping);
     }
 
     /**
@@ -113,7 +117,7 @@ export class PhysicsBody {
      * @returns
      */
     public getAngularDamping(): number {
-        return this._physicsPlugin.getAngularDamping(this);
+        return this._physicsPlugin ? this._physicsPlugin.getAngularDamping(this) : 0;
     }
 
     /**
@@ -121,7 +125,7 @@ export class PhysicsBody {
      * @param linVel
      */
     public setLinearVelocity(linVel: Vector3): void {
-        this._physicsPlugin.setLinearVelocity(this, linVel);
+        this._physicsPlugin?.setLinearVelocity(this, linVel);
     }
 
     /**
@@ -129,7 +133,7 @@ export class PhysicsBody {
      * @returns
      */
     public getLinearVelocity(): Vector3 {
-        return this._physicsPlugin.getLinearVelocity(this);
+        return this._physicsPlugin ? this._physicsPlugin.getLinearVelocity(this) : Vector3.Zero();
     }
 
     /**
@@ -137,7 +141,7 @@ export class PhysicsBody {
      * @param angVel
      */
     public setAngularVelocity(angVel: Vector3): void {
-        this._physicsPlugin.setAngularVelocity(this, angVel);
+        this._physicsPlugin?.setAngularVelocity(this, angVel);
     }
 
     /**
@@ -145,7 +149,7 @@ export class PhysicsBody {
      * @returns
      */
     public getAngularVelocity(): Vector3 {
-        return this._physicsPlugin.getAngularVelocity(this);
+        return this._physicsPlugin ? this._physicsPlugin.getAngularVelocity(this) : Vector3.Zero();
     }
 
     /**
@@ -154,13 +158,13 @@ export class PhysicsBody {
      * @param impulse
      */
     public applyImpulse(location: Vector3, impulse: Vector3): void {
-        this._physicsPlugin.applyImpulse(this, location, impulse);
+        this._physicsPlugin?.applyImpulse(this, location, impulse);
     }
 
     /**
      *
      */
     public dispose() {
-        this._physicsPlugin.disposeBody(this);
+        this._physicsPlugin?.disposeBody(this);
     }
 }
