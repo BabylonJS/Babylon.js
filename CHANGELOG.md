@@ -1,5 +1,19 @@
 # Changelog
 
+## 5.34.0
+
+### Core
+
+- NME: multiple changes to support ray marching in the NME - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#13272](https://github.com/BabylonJS/Babylon.js/pull/13272))
+
+### Node Editor
+
+- NME: multiple changes to support ray marching in the NME - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#13272](https://github.com/BabylonJS/Babylon.js/pull/13272))
+
+### Playground
+
+- define engine and canvas as globals - [_New Feature_] by [RaananW](https://github.com/RaananW) ([#13278](https://github.com/BabylonJS/Babylon.js/pull/13278))
+
 ## 5.33.2
 
 ### Core
