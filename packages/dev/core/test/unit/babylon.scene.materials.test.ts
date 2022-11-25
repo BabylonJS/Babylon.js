@@ -102,6 +102,14 @@ describe("Scene Materials", () => {
             expect(scene.getMaterialByName(multiMaterial.name)).toBeNull();
             expect(scene.getMaterialByName(multiMaterial.name, true)).toBe(multiMaterial);
         });
+
+        it("should not to return the material that was renamed after creation", () => {
+            const materialX = new StandardMaterial("materialX", scene);
+
+            materialX.name = "materialY";
+
+            expect(scene.getMaterialByName("materialX")).toBeNull();
+        });
     });
 
     describe("getLastMaterialById", () => {
