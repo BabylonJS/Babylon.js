@@ -256,7 +256,7 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
     private _rebuildBloom() {
         // recreate bloom and dispose old as this setting is not dynamic
         const oldBloom = this.bloom;
-        this.bloom = new BloomEffect(this._scene, this.bloomScale, this._bloomWeight, this.bloomKernel, this._defaultPipelineTextureType, false);
+        this.bloom = new BloomEffect(this._scene, this.bloomScale, this._bloomWeight, this.bloomKernel / this._hardwareScaleLevel, this._defaultPipelineTextureType, false);
         this.bloom.threshold = oldBloom.threshold;
         for (let i = 0; i < this._cameras.length; i++) {
             oldBloom.disposeEffects(this._cameras[i]);
@@ -454,6 +454,7 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
         scene.postProcessRenderPipelineManager.addPipeline(this);
 
         const engine = this._scene.getEngine();
+
         // Create post processes before hand so they can be modified before enabled.
         // Block compilation flag is set to true to avoid compilation prior to use, these will be updated on first use in build pipeline.
         this.sharpen = new SharpenPostProcess("sharpen", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType, true);
@@ -468,7 +469,14 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
 
         this.depthOfField = new DepthOfFieldEffect(this._scene, null, this._depthOfFieldBlurLevel, this._defaultPipelineTextureType, true);
 
-        this.bloom = new BloomEffect(this._scene, this._bloomScale, this._bloomWeight, this.bloomKernel, this._defaultPipelineTextureType, true);
+        // To keep the bloom sizes consistent across different display densities, factor in the hardware scaling level.
+        this._hardwareScaleLevel = engine.getHardwareScalingLevel();
+        this._resizeObserver = engine.onResizeObservable.add(() => {
+            this._hardwareScaleLevel = engine.getHardwareScalingLevel();
+            this.bloomKernel = this._bloomKernel;
+        });
+
+        this.bloom = new BloomEffect(this._scene, this._bloomScale, this._bloomWeight, this.bloomKernel / this._hardwareScaleLevel, this._defaultPipelineTextureType, true);
 
         this.chromaticAberration = new ChromaticAberrationPostProcess(
             "ChromaticAberration",
@@ -500,11 +508,6 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
             },
             true
         );
-
-        this._resizeObserver = engine.onResizeObservable.add(() => {
-            this._hardwareScaleLevel = engine.getHardwareScalingLevel();
-            this.bloomKernel = this._bloomKernel;
-        });
 
         this._imageProcessingConfigurationObserver = this._scene.imageProcessingConfiguration.onUpdateParameters.add(() => {
             this.bloom._downscale._exposure = this._scene.imageProcessingConfiguration.exposure;
