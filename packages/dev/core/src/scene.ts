@@ -2895,11 +2895,18 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     private _getMaterial(allowMultiMaterials: boolean, predicate: (m: Material) => boolean): Nullable<Material> {
-        const targetMaterials = allowMultiMaterials ? this.multiMaterials : this.materials;
-
-        for (let index = 0; index < targetMaterials.length; index++) {
-            if (predicate(targetMaterials[index])) {
-                return targetMaterials[index];
+        for (let index = 0; index < this.materials.length; index++) {
+            const material = this.materials[index];
+            if (predicate(material)) {
+                return material;
+            }
+        }
+        if (allowMultiMaterials) {
+            for (let index = 0; index < this.multiMaterials.length; index++) {
+                const material = this.multiMaterials[index];
+                if (predicate(material)) {
+                    return material;
+                }
             }
         }
 
@@ -2943,11 +2950,16 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @returns the last material with the given id or null if none found.
      */
     public getLastMaterialById(id: string, allowMultiMaterials: boolean = false): Nullable<Material> {
-        const targetMaterials = allowMultiMaterials ? this.multiMaterials : this.materials;
-
-        for (let index = targetMaterials.length - 1; index >= 0; index--) {
-            if (targetMaterials[index].id === id) {
-                return targetMaterials[index];
+        for (let index = this.materials.length - 1; index >= 0; index--) {
+            if (this.materials[index].id === id) {
+                return this.materials[index];
+            }
+        }
+        if (allowMultiMaterials) {
+            for (let index = this.multiMaterials.length - 1; index >= 0; index--) {
+                if (this.multiMaterials[index].id === id) {
+                    return this.multiMaterials[index];
+                }
             }
         }
 

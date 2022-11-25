@@ -45,6 +45,14 @@ describe("Scene Materials", () => {
             expect(scene.getMaterialByUniqueID(multiMaterial.uniqueId)).toBeNull();
             expect(scene.getMaterialByUniqueID(multiMaterial.uniqueId, true)).toBe(multiMaterial);
         });
+
+        it("should looking for material first before looking for multiMaterial", () => {
+            const materialX = new StandardMaterial("materialX", scene);
+            const multiMaterial = new MultiMaterial("multiMaterial", scene);
+
+            expect(scene.getMaterialByUniqueID(materialX.uniqueId, true)).toBe(materialX);
+            expect(scene.getMaterialByUniqueID(multiMaterial.uniqueId, true)).toBe(multiMaterial);
+        });
     });
 
     describe("getMaterialById", () => {
@@ -73,6 +81,16 @@ describe("Scene Materials", () => {
 
             expect(scene.getMaterialById(multiMaterial.id)).toBeNull();
             expect(scene.getMaterialById(multiMaterial.id, true)).toBe(multiMaterial);
+        });
+
+        it("should looking for material first before looking for multiMaterial", () => {
+            const materialX = new StandardMaterial("materialX", scene);
+
+            expect(scene.getMaterialById(materialX.id, true)).toBe(materialX);
+
+            const multiMaterial = new MultiMaterial("materialX", scene);
+
+            expect(scene.getMaterialById(multiMaterial.id, true)).toBe(materialX);
         });
     });
 
@@ -103,6 +121,13 @@ describe("Scene Materials", () => {
             expect(scene.getMaterialByName(multiMaterial.name, true)).toBe(multiMaterial);
         });
 
+        it("should looking for material first before looking for multiMaterial", () => {
+            const materialX = new StandardMaterial("materialX", scene);
+            const multiMaterial = new MultiMaterial("materialX", scene);
+
+            expect(scene.getMaterialByName("materialX", true)).toBe(materialX);
+        });
+
         it("should not to return the material that was renamed after creation", () => {
             const materialX = new StandardMaterial("materialX", scene);
 
@@ -127,6 +152,18 @@ describe("Scene Materials", () => {
 
             expect(scene.getLastMaterialById(multiMaterial1.id)).toBeNull();
             expect(scene.getLastMaterialById(multiMaterial1.id, true)).toBe(multiMaterial2);
+        });
+
+        it("should looking for material first before looking for multiMaterial", () => {
+            const materialX1 = new StandardMaterial("materialX", scene);
+            const materialX2 = new StandardMaterial("materialX", scene);
+
+            expect(scene.getLastMaterialById("materialX", true)).toBe(materialX2);
+
+            new MultiMaterial("materialX", scene);
+            new MultiMaterial("materialX", scene);
+
+            expect(scene.getLastMaterialById("materialX", true)).toBe(materialX2);
         });
     });
 
