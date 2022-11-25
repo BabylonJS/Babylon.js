@@ -103,4 +103,22 @@ describe("Scene Materials", () => {
             expect(scene.getMaterialByName(multiMaterial.name, true)).toBe(multiMaterial);
         });
     });
+
+    describe("getLastMaterialById", () => {
+        it("should return the last material with the given id", () => {
+            const materialX1 = new StandardMaterial("materialX", scene);
+            const materialX2 = new StandardMaterial("materialX", scene);
+
+            expect(scene.getLastMaterialById("000")).toBeNull();
+            expect(scene.getLastMaterialById("materialX")).toBe(materialX2);
+        });
+
+        it("should return multiMaterial that added to default scene", () => {
+            const multiMaterial1 = new MultiMaterial("multiMaterial", scene);
+            const multiMaterial2 = new MultiMaterial("multiMaterial", scene);
+
+            expect(scene.getLastMaterialById(multiMaterial1.id)).toBeNull();
+            expect(scene.getLastMaterialById(multiMaterial1.id, true)).toBe(multiMaterial2);
+        });
+    });
 });
