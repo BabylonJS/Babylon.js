@@ -230,5 +230,30 @@ describe("Scene Materials", () => {
             expect(materialYSpy).toBeCalledTimes(1);
             expect(materialZSpy).toBeCalledTimes(0);
         });
+
+        it("should don't touch multimaterials", () => {
+            const secondaryScene = new Scene(subject);
+
+            const materialX = new StandardMaterial("materialX", scene);
+            const materialY = new StandardMaterial("materialY", scene);
+            const materialZ = new StandardMaterial("materialZ", secondaryScene);
+
+            const multiMaterial = new MultiMaterial("multiMaterial", scene);
+            multiMaterial.subMaterials.push(materialX);
+            multiMaterial.subMaterials.push(materialY);
+            multiMaterial.subMaterials.push(materialZ);
+
+            const multiMaterialSpy = jest.spyOn(multiMaterial, "unfreeze");
+            const materialXSpy = jest.spyOn(materialX, "unfreeze");
+            const materialYSpy = jest.spyOn(materialY, "unfreeze");
+            const materialZSpy = jest.spyOn(materialZ, "unfreeze");
+
+            scene.unfreezeMaterials();
+
+            expect(multiMaterialSpy).toBeCalledTimes(0);
+            expect(materialXSpy).toBeCalledTimes(1);
+            expect(materialYSpy).toBeCalledTimes(1);
+            expect(materialZSpy).toBeCalledTimes(0);
+        });
     });
 });
