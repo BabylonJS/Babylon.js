@@ -1,6 +1,6 @@
 import type { Engine } from "core/Engines";
 import { NullEngine } from "core/Engines";
-import { MultiMaterial, StandardMaterial } from "core/Materials";
+import { Material, MultiMaterial, StandardMaterial } from "core/Materials";
 import { Scene } from "core/scene";
 
 describe("Scene Materials", () => {
@@ -127,6 +127,26 @@ describe("Scene Materials", () => {
 
             expect(scene.getLastMaterialById(multiMaterial1.id)).toBeNull();
             expect(scene.getLastMaterialById(multiMaterial1.id, true)).toBe(multiMaterial2);
+        });
+    });
+
+    describe("markAllMaterialsAsDirty", () => {
+        it("should mark all materials as dirty", () => {
+            const materialX = new StandardMaterial("materialX", scene);
+            const materialY = new StandardMaterial("materialY", scene);
+
+            const materialXSpy = jest.spyOn(materialX, "markAsDirty");
+            const materialYSpy = jest.spyOn(materialY, "markAsDirty");
+
+            scene.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
+
+            expect(materialXSpy).toHaveBeenCalledWith(Material.TextureDirtyFlag);
+            expect(materialYSpy).toHaveBeenCalledWith(Material.TextureDirtyFlag);
+
+            scene.markAllMaterialsAsDirty(Material.AllDirtyFlag);
+
+            expect(materialXSpy).toHaveBeenCalledWith(Material.AllDirtyFlag);
+            expect(materialYSpy).toHaveBeenCalledWith(Material.AllDirtyFlag);
         });
     });
 });
