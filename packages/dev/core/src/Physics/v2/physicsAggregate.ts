@@ -1,9 +1,9 @@
 import type { PhysicsBody } from "./physicsBody";
 import { PhysicsMaterial } from "./physicsMaterial";
 import type { PhysicsShape } from "./physicsShape";
-import { Logger } from "../Misc/logger";
-import type { Scene } from "../scene";
-import type { TransformNode } from "../Meshes/transformNode";
+import { Logger } from "../../Misc/logger";
+import type { Scene } from "../../scene";
+import type { TransformNode } from "../../Meshes/transformNode";
 
 /**
  * The interface for the physics aggregate parameters

@@ -1,12 +1,12 @@
-import type { TransformNode } from "../Meshes/transformNode";
-import { BoundingBox } from "../Culling/boundingBox";
-import { ShapeType } from "./IPhysicsEngine";
-import type { IPhysicsEnginePlugin2, PhysicsShapeParameters } from "./IPhysicsEngine";
+import type { TransformNode } from "../../Meshes/transformNode";
+import { BoundingBox } from "../../Culling/boundingBox";
+import { ShapeType } from "./IPhysicsEngineV2";
+import type { IPhysicsEnginePluginV2, PhysicsShapeParameters } from "./IPhysicsEngineV2";
 import type { PhysicsMaterial } from "./physicsMaterial";
-import { Vector3 } from "../Maths/math.vector";
-import type { Quaternion } from "../Maths/math.vector";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { Scene } from "../scene";
+import { Vector3 } from "../../Maths/math.vector";
+import type { Quaternion } from "../../Maths/math.vector";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { Scene } from "../../scene";
 
 /**
  *
@@ -15,7 +15,7 @@ export class PhysicsShape {
     /** @internal */
     public _pluginData: any = undefined;
 
-    private _physicsPlugin: IPhysicsEnginePlugin2;
+    private _physicsPlugin: IPhysicsEnginePluginV2;
 
     private _type: ShapeType;
 

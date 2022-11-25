@@ -1,32 +1,32 @@
-import type { Scene } from "../scene";
-import type { Vector3 } from "../Maths/math.vector";
-import type { IPhysicsEnginePlugin2, JointAxis, PhysicsJointParameters } from "./IPhysicsEngine";
-import { JointAxisLimitMode, JointMotorType } from "./IPhysicsEngine";
-import { JointType } from "./IPhysicsEngine";
+import type { Scene } from "../../scene";
+import type { Vector3 } from "../../Maths/math.vector";
+import type { IPhysicsEnginePluginV2, ConstraintAxis, PhysicsConstraintParameters } from "./IPhysicsEngineV2";
+import { ConstraintType, ConstraintAxisLimitMode, ConstraintMotorType } from "./IPhysicsEngineV2";
+//import { ConstraintType } from "./IPhysicsEngine2";
 import type { PhysicsBody } from "./physicsBody";
 
 /**
- * This is a holder class for the physics joint created by the physics plugin
- * It holds a set of functions to control the underlying joint
+ * This is a holder class for the physics constraint created by the physics plugin
+ * It holds a set of functions to control the underlying constraint
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
  */
-export class PhysicsJoint {
+export class PhysicsConstraint {
     /**
      *
      */
     public _pluginData: any = undefined;
-    protected _physicsPlugin: IPhysicsEnginePlugin2 | undefined;
+    protected _physicsPlugin: IPhysicsEnginePluginV2 | undefined;
 
     /**
      *
      */
-    constructor(type: JointType, options: PhysicsJointParameters, scene: Scene) {
+    constructor(type: ConstraintType, options: PhysicsConstraintParameters, scene: Scene) {
         if (!scene) {
             return;
         }
         const physicsEngine = scene.getPhysicsEngine() as any;
         this._physicsPlugin = physicsEngine?.getPhysicsPlugin();
-        this._physicsPlugin?.initJoint(this, type, options);
+        this._physicsPlugin?.initConstraint(this, type, options);
     }
 
     /**
@@ -118,7 +118,7 @@ export class PhysicsJoint {
      * @param axis
      * @param friction
      */
-    public setAxisFriction(axis: JointAxis, friction: number): void {
+    public setAxisFriction(axis: ConstraintAxis, friction: number): void {
         this._physicsPlugin?.setAxisFriction(this, axis, friction);
     }
 
@@ -127,7 +127,7 @@ export class PhysicsJoint {
      * @param axis
      * @returns
      */
-    public getAxisFriction(axis: JointAxis): number {
+    public getAxisFriction(axis: ConstraintAxis): number {
         return this._physicsPlugin ? this._physicsPlugin.getAxisFriction(this, axis) : 0;
     }
 
@@ -136,84 +136,84 @@ export class PhysicsJoint {
      * @param axis
      * @param limitMode
      */
-    public setAxisMode(axis: JointAxis, limitMode: JointAxisLimitMode): void {
+    public setAxisMode(axis: ConstraintAxis, limitMode: ConstraintAxisLimitMode): void {
         this._physicsPlugin?.setAxisMode(this, axis, limitMode);
     }
     /**
      *
      * @param axis
      */
-    public getAxisMode(axis: JointAxis): JointAxisLimitMode {
-        return this._physicsPlugin ? this._physicsPlugin.getAxisMode(this, axis) : JointAxisLimitMode.NONE;
+    public getAxisMode(axis: ConstraintAxis): ConstraintAxisLimitMode {
+        return this._physicsPlugin ? this._physicsPlugin.getAxisMode(this, axis) : ConstraintAxisLimitMode.NONE;
     }
 
     /**
      *
      */
-    public setAxisMinLimit(axis: JointAxis, minLimit: number): void {
+    public setAxisMinLimit(axis: ConstraintAxis, minLimit: number): void {
         this._physicsPlugin?.setAxisMinLimit(this, axis, minLimit);
     }
 
     /**
      *
      */
-    public getAxisMinLimit(axis: JointAxis): number {
+    public getAxisMinLimit(axis: ConstraintAxis): number {
         return this._physicsPlugin ? this._physicsPlugin.getAxisMinLimit(this, axis) : 0;
     }
 
     /**
      *
      */
-    public setAxisMaxLimit(axis: JointAxis, limit: number): void {
+    public setAxisMaxLimit(axis: ConstraintAxis, limit: number): void {
         this._physicsPlugin?.setAxisMaxLimit(this, axis, limit);
     }
 
     /**
      *
      */
-    public getAxisMaxLimit(axis: JointAxis): number {
+    public getAxisMaxLimit(axis: ConstraintAxis): number {
         return this._physicsPlugin ? this._physicsPlugin.getAxisMaxLimit(this, axis) : 0;
     }
 
     /**
      *
      */
-    public setAxisMotorType(axis: JointAxis, motorType: JointMotorType): void {
+    public setAxisMotorType(axis: ConstraintAxis, motorType: ConstraintMotorType): void {
         this._physicsPlugin?.setAxisMotorType(this, axis, motorType);
     }
 
     /**
      *
      */
-    public getAxisMotorType(axis: JointAxis): JointMotorType {
-        return this._physicsPlugin ? this._physicsPlugin.getAxisMotorType(this, axis) : JointMotorType.NONE;
+    public getAxisMotorType(axis: ConstraintAxis): ConstraintMotorType {
+        return this._physicsPlugin ? this._physicsPlugin.getAxisMotorType(this, axis) : ConstraintMotorType.NONE;
     }
 
     /**
      *
      */
-    public setAxisMotorTarget(axis: JointAxis, target: number): void {
+    public setAxisMotorTarget(axis: ConstraintAxis, target: number): void {
         this._physicsPlugin?.setAxisMotorTarget(this, axis, target);
     }
 
     /**
      *
      */
-    public getAxisMotorTarget(axis: JointAxis): number {
+    public getAxisMotorTarget(axis: ConstraintAxis): number {
         return this._physicsPlugin ? this._physicsPlugin.getAxisMotorTarget(this, axis) : 0;
     }
 
     /**
      *
      */
-    public setAxisMotorMaxForce(axis: JointAxis, maxForce: number): void {
+    public setAxisMotorMaxForce(axis: ConstraintAxis, maxForce: number): void {
         this._physicsPlugin?.setAxisMotorMaxForce(this, axis, maxForce);
     }
 
     /**
      *
      */
-    public getAxisMotorMaxForce(axis: JointAxis): number {
+    public getAxisMotorMaxForce(axis: ConstraintAxis): number {
         return this._physicsPlugin ? this._physicsPlugin.getAxisMotorMaxForce(this, axis) : 0;
     }
 
@@ -221,51 +221,51 @@ export class PhysicsJoint {
      *
      */
     public dispose(): void {
-        this._physicsPlugin?.disposeJoint(this);
+        this._physicsPlugin?.disposeConstraint(this);
     }
 }
 
 /**
  *
  */
-export class PhysicsJointBallAndSocket extends PhysicsJoint {
+export class PhysicsConstraintBallAndSocket extends PhysicsConstraint {
     constructor(pivotA: Vector3, pivotB: Vector3, axisA: Vector3, axisB: Vector3, scene: Scene) {
-        super(JointType.BALL_AND_SOCKET, { pivotA: pivotA, pivotB: pivotB, axisA: axisA, axisB: axisB }, scene);
+        super(ConstraintType.BALL_AND_SOCKET, { pivotA: pivotA, pivotB: pivotB, axisA: axisA, axisB: axisB }, scene);
     }
 }
 
 /**
  *
  */
-export class PhysicsJointDistance extends PhysicsJoint {
+export class PhysicsConstraintDistance extends PhysicsConstraint {
     constructor(pivotA: Vector3, pivotB: Vector3, axisA: Vector3, axisB: Vector3, scene: Scene) {
-        super(JointType.DISTANCE, { pivotA: pivotA, pivotB: pivotB, axisA: axisA, axisB: axisB }, scene);
+        super(ConstraintType.DISTANCE, { pivotA: pivotA, pivotB: pivotB, axisA: axisA, axisB: axisB }, scene);
     }
 }
 
 /**
  *
  */
-export class PhysicsJointHinge extends PhysicsJoint {
+export class PhysicsConstraintHinge extends PhysicsConstraint {
     constructor(pivotA: Vector3, pivotB: Vector3, axisA: Vector3, axisB: Vector3, scene: Scene) {
-        super(JointType.HINGE, { pivotA: pivotA, pivotB: pivotB, axisA: axisA, axisB: axisB }, scene);
+        super(ConstraintType.HINGE, { pivotA: pivotA, pivotB: pivotB, axisA: axisA, axisB: axisB }, scene);
     }
 }
 
 /**
  *
  */
-export class PhysicsJointSlider extends PhysicsJoint {
+export class PhysicsConstraintSlider extends PhysicsConstraint {
     constructor(pivotA: Vector3, pivotB: Vector3, axisA: Vector3, axisB: Vector3, scene: Scene) {
-        super(JointType.SLIDER, { pivotA: pivotA, pivotB: pivotB, axisA: axisA, axisB: axisB }, scene);
+        super(ConstraintType.SLIDER, { pivotA: pivotA, pivotB: pivotB, axisA: axisA, axisB: axisB }, scene);
     }
 }
 
 /**
  *
  */
-export class PhysicsJointLock extends PhysicsJoint {
+export class PhysicsConstraintLock extends PhysicsConstraint {
     constructor(pivotA: Vector3, pivotB: Vector3, axisA: Vector3, axisB: Vector3, scene: Scene) {
-        super(JointType.LOCK, { pivotA: pivotA, pivotB: pivotB, axisA: axisA, axisB: axisB }, scene);
+        super(ConstraintType.LOCK, { pivotA: pivotA, pivotB: pivotB, axisA: axisA, axisB: axisB }, scene);
     }
 }

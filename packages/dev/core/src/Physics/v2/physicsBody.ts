@@ -1,7 +1,7 @@
-import type { IPhysicsEnginePlugin2, MassProperties } from "./IPhysicsEngine";
+import type { IPhysicsEnginePluginV2, MassProperties } from "./IPhysicsEngineV2";
 import type { PhysicsShape } from "./physicsShape";
-import { Vector3 } from "../Maths/math.vector";
-import type { Scene } from "../scene";
+import { Vector3 } from "../../Maths/math.vector";
+import type { Scene } from "../../scene";
 
 /**
  *
@@ -10,7 +10,7 @@ export class PhysicsBody {
     /** @internal */
     public _pluginData: any = undefined;
 
-    private _physicsPlugin: IPhysicsEnginePlugin2 | undefined;
+    private _physicsPlugin: IPhysicsEnginePluginV2 | undefined;
 
     /**
      *
