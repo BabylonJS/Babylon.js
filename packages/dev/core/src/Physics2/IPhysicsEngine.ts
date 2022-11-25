@@ -4,10 +4,10 @@ import type { PhysicsRaycastResult } from "./physicsRaycastResult";
 import type { PhysicsBody } from "./physicsBody";
 import type { PhysicsShape } from "./physicsShape";
 import type { PhysicsJoint } from "./physicsJoint";
-import type { BoundingBox } from "../culling/boundingBox";
+import type { BoundingBox } from "../Culling/boundingBox";
 import type { TransformNode } from "../Meshes/transformNode";
 import type { PhysicsMaterial } from "./physicsMaterial";
-import type { PhysicsAggregate } from "./physicsAggregate";
+//import type { PhysicsAggregate } from "./physicsAggregate";
 
 export enum JointAxisLimitMode {
     FREE,

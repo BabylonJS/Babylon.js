@@ -2,7 +2,7 @@ import type { Nullable } from "../types";
 import { Vector3 } from "../Maths/math.vector";
 import type { IPhysicsEngine2, IPhysicsEnginePlugin2 } from "./IPhysicsEngine";
 //import type { PhysicsImpostor, IPhysicsEnabledObject } from "./physicsImpostor";
-import type { PhysicsJoint } from "./physicsJoint";
+//import type { PhysicsJoint } from "./physicsJoint";
 import type { PhysicsRaycastResult } from "./physicsRaycastResult";
 import { _WarnImport } from "../Misc/devTools";
 
@@ -19,7 +19,7 @@ export class PhysicsEngine implements IPhysicsEngine2 {
     //private _impostors: Array<PhysicsImpostor> = [];
     //private _joints: Array<PhysicsImpostorJoint> = [];
     private _subTimeStep: number = 0;
-    private _uniqueIdCounter = 0;
+    //private _uniqueIdCounter = 0;
 
     /**
      * Gets the gravity vector used by the simulation
