@@ -1,5 +1,5 @@
 import type { Scene } from "../../scene";
-import type { IPhysicsEnginePluginV2 } from "./IPhysicsEngineV2";
+import type { IPhysicsEnginePluginV2 } from "./IPhysicsEnginePluginV2";
 
 /**
  *

@@ -1,4 +1,4 @@
-import type { IPhysicsEnginePluginV2, MassProperties } from "./IPhysicsEngineV2";
+import type { IPhysicsEnginePluginV2, MassProperties } from "./IPhysicsEnginePluginV2";
 import type { PhysicsShape } from "./physicsShape";
 import { Vector3 } from "../../Maths/math.vector";
 import type { Scene } from "../../scene";

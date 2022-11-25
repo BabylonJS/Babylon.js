@@ -1,5 +1,5 @@
-import type { Vector3 } from "../Maths/math.vector";
-import type { IPhysicsEnginePlugin } from "./IPhysicsEngine";
+import type { Vector3 } from "../../Maths/math.vector";
+import type { IPhysicsEnginePluginV1 } from "./IPhysicsEnginePluginV1";
 /**
  * Interface for Physics-Joint data
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
@@ -39,7 +39,7 @@ export interface PhysicsJointData {
  */
 export class PhysicsJoint {
     private _physicsJoint: any;
-    protected _physicsPlugin: IPhysicsEnginePlugin;
+    protected _physicsPlugin: IPhysicsEnginePluginV1;
 
     /**
      * Initializes the physics joint
@@ -80,7 +80,7 @@ export class PhysicsJoint {
     /**
      * Sets the physics plugin
      */
-    public set physicsPlugin(physicsPlugin: IPhysicsEnginePlugin) {
+    public set physicsPlugin(physicsPlugin: IPhysicsEnginePluginV1) {
         this._physicsPlugin = physicsPlugin;
     }
 

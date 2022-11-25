@@ -1,7 +1,7 @@
 import type { TransformNode } from "../../Meshes/transformNode";
 import { BoundingBox } from "../../Culling/boundingBox";
-import { ShapeType } from "./IPhysicsEngineV2";
-import type { IPhysicsEnginePluginV2, PhysicsShapeParameters } from "./IPhysicsEngineV2";
+import { ShapeType } from "./IPhysicsEnginePluginV2";
+import type { IPhysicsEnginePluginV2, PhysicsShapeParameters } from "./IPhysicsEnginePluginV2";
 import type { PhysicsMaterial } from "./physicsMaterial";
 import { Vector3 } from "../../Maths/math.vector";
 import type { Quaternion } from "../../Maths/math.vector";
