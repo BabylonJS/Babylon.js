@@ -79,7 +79,7 @@ Scene.prototype.getPhysicsEngine = function (): Nullable<IPhysicsEngine> {
  * @param plugin defines the physics engine to be used. defaults to CannonJS.
  * @returns a boolean indicating if the physics engine was initialized
  */
-Scene.prototype.enablePhysics = function (gravity: Nullable<Vector3> = null, plugin?: IPhysicsEnginePlugin): boolean {
+Scene.prototype.enablePhysics = function (gravity: Nullable<Vector3> = null, plugin?: any): boolean {
     if (this._physicsEngine) {
         return true;
     }
