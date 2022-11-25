@@ -9,8 +9,8 @@ import { Color3 } from "../Maths/math.color";
 import type { Material } from "../Materials/material";
 import { EngineStore } from "../Engines/engineStore";
 import { StandardMaterial } from "../Materials/standardMaterial";
-import type { IPhysicsEnginePlugin } from "../Physics/IPhysicsEngine";
-import { PhysicsImpostor } from "../Physics/physicsImpostor";
+import type { IPhysicsEnginePluginV1 } from "../Physics/v1/IPhysicsEnginePluginV1";
+import { PhysicsImpostor } from "../Physics/v1/physicsImpostor";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder";
 import type { ICreateCapsuleOptions } from "../Meshes/Builders/capsuleBuilder";
@@ -30,7 +30,7 @@ export class PhysicsViewer {
     /** @internal */
     protected _numMeshes = 0;
     /** @internal */
-    protected _physicsEnginePlugin: Nullable<IPhysicsEnginePlugin>;
+    protected _physicsEnginePlugin: Nullable<IPhysicsEnginePluginV1>;
     private _renderFunction: () => void;
     private _utilityLayer: Nullable<UtilityLayerRenderer>;
 

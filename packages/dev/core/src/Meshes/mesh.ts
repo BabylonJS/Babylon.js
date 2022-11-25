@@ -38,11 +38,12 @@ import type { Path3D } from "../Maths/math.path";
 import type { Plane } from "../Maths/math.plane";
 import type { TransformNode } from "./transformNode";
 import type { DrawWrapper } from "../Materials/drawWrapper";
+import type { PhysicsEngineV1 } from "../Physics/v1/physicsEngineV1";
 
 declare type GoldbergMesh = import("./goldbergMesh").GoldbergMesh;
 declare type InstancedMesh = import("./instancedMesh").InstancedMesh;
-declare type IPhysicsEnabledObject = import("../Physics/physicsImpostor").IPhysicsEnabledObject;
-declare type PhysicsImpostor = import("../Physics/physicsImpostor").PhysicsImpostor;
+declare type IPhysicsEnabledObject = import("../Physics/v1/physicsImpostor").IPhysicsEnabledObject;
+declare type PhysicsImpostor = import("../Physics/v1/physicsImpostor").PhysicsImpostor;
 
 /**
  * @internal
@@ -661,7 +662,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
             // Physics clone
             if (scene.getPhysicsEngine) {
-                const physicsEngine = scene.getPhysicsEngine();
+                const physicsEngine = scene.getPhysicsEngine() as PhysicsEngineV1;
                 if (clonePhysicsImpostor && physicsEngine) {
                     const impostor = physicsEngine.getImpostorForPhysicsObject(source);
                     if (impostor) {
