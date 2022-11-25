@@ -75,4 +75,32 @@ describe("Scene Materials", () => {
             expect(scene.getMaterialById(multiMaterial.id, true)).toBe(multiMaterial);
         });
     });
+
+    describe("getMaterialByName", () => {
+        it("should return the material with the given name", () => {
+            const materialX = new StandardMaterial("materialX", scene);
+
+            expect(scene.getMaterialByName("materialX")).toBe(materialX);
+        });
+
+        it("should return material that added to default scene", () => {
+            const materialX = new StandardMaterial("materialX");
+
+            expect(scene.getMaterialByName(materialX.name)).toBe(materialX);
+        });
+
+        it("should return null if the material with the given name does not exist in the current scene", () => {
+            const secondaryScene = new Scene(subject);
+            const materialX = new StandardMaterial("materialX", secondaryScene);
+
+            expect(scene.getMaterialByName(materialX.name)).toBeNull();
+        });
+
+        it("should return multiMaterial that added to default scene", () => {
+            const multiMaterial = new MultiMaterial("multiMaterial", scene);
+
+            expect(scene.getMaterialByName(multiMaterial.name)).toBeNull();
+            expect(scene.getMaterialByName(multiMaterial.name, true)).toBe(multiMaterial);
+        });
+    });
 });
