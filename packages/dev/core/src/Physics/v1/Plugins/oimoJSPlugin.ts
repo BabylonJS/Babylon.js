@@ -1,19 +1,19 @@
-import type { IPhysicsEnginePlugin, PhysicsImpostorJoint } from "../../Physics/IPhysicsEngine";
-import type { IPhysicsEnabledObject } from "../../Physics/physicsImpostor";
-import { PhysicsImpostor } from "../../Physics/physicsImpostor";
-import type { IMotorEnabledJoint, DistanceJointData, SpringJointData } from "../../Physics/physicsJoint";
-import { PhysicsJoint } from "../../Physics/physicsJoint";
-import { PhysicsEngine } from "../../Physics/physicsEngine";
-import type { AbstractMesh } from "../../Meshes/abstractMesh";
-import { Vector3, Quaternion } from "../../Maths/math.vector";
-import type { Nullable } from "../../types";
-import { Logger } from "../../Misc/logger";
-import { PhysicsRaycastResult } from "../physicsRaycastResult";
+import type { IPhysicsEnabledObject } from "..//physicsImpostor";
+import { PhysicsImpostor } from "../physicsImpostor";
+import type { IMotorEnabledJoint, DistanceJointData, SpringJointData } from "../physicsJoint";
+import { PhysicsJoint } from "../physicsJoint";
+import { PhysicsEngineV1 } from "../physicsEngineV1";
+import type { AbstractMesh } from "../../../Meshes/abstractMesh";
+import { Vector3, Quaternion } from "../../../Maths/math.vector";
+import type { Nullable } from "../../../types";
+import { Logger } from "../../../Misc/logger";
+import { PhysicsRaycastResult } from "../../physicsRaycastResult";
+import type { IPhysicsEnginePluginV1, PhysicsImpostorJoint } from "../IPhysicsEnginePluginV1";
 
 declare let OIMO: any;
 
 /** @internal */
-export class OimoJSPlugin implements IPhysicsEnginePlugin {
+export class OimoJSPlugin implements IPhysicsEnginePluginV1 {
     public world: any;
     public name: string = "OimoJSPlugin";
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -134,7 +134,7 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
             addToArray(impostor.object);
 
             const checkWithEpsilon = (value: number): number => {
-                return Math.max(value, PhysicsEngine.Epsilon);
+                return Math.max(value, PhysicsEngineV1.Epsilon);
             };
 
             const globalQuaternion: Quaternion = new Quaternion();

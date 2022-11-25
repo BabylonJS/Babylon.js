@@ -1,21 +1,21 @@
-import { Quaternion, Vector3, Matrix } from "../../Maths/math.vector";
-import type { IPhysicsEnginePlugin, PhysicsImpostorJoint } from "../../Physics/IPhysicsEngine";
-import { Logger } from "../../Misc/logger";
-import type { IPhysicsEnabledObject } from "../../Physics/physicsImpostor";
-import { PhysicsImpostor } from "../../Physics/physicsImpostor";
-import type { IMotorEnabledJoint, DistanceJointData } from "../../Physics/physicsJoint";
-import { PhysicsJoint } from "../../Physics/physicsJoint";
-import { VertexBuffer } from "../../Buffers/buffer";
-import { VertexData } from "../../Meshes/mesh.vertexData";
-import type { Nullable } from "../../types";
-import type { AbstractMesh } from "../../Meshes/abstractMesh";
-import type { Mesh } from "../../Meshes/mesh";
-import { ExtrudeShape } from "../../Meshes/Builders/shapeBuilder";
-import { CreateLines } from "../../Meshes/Builders/linesBuilder";
-import type { LinesMesh } from "../../Meshes/linesMesh";
-import { PhysicsRaycastResult } from "../physicsRaycastResult";
-import { Scalar } from "../../Maths/math.scalar";
-import { Epsilon } from "../../Maths/math.constants";
+import { Quaternion, Vector3, Matrix } from "../../../Maths/math.vector";
+import type { IPhysicsEnginePluginV1, PhysicsImpostorJoint } from "../IPhysicsEnginePluginV1";
+import { Logger } from "../../../Misc/logger";
+import type { IPhysicsEnabledObject } from "../physicsImpostor";
+import { PhysicsImpostor } from "../physicsImpostor";
+import type { IMotorEnabledJoint, DistanceJointData } from "..//physicsJoint";
+import { PhysicsJoint } from "../physicsJoint";
+import { VertexBuffer } from "../../../Buffers/buffer";
+import { VertexData } from "../../../Meshes/mesh.vertexData";
+import type { Nullable } from "../../../types";
+import type { AbstractMesh } from "../../../Meshes/abstractMesh";
+import type { Mesh } from "../../../Meshes/mesh";
+import { ExtrudeShape } from "../../../Meshes/Builders/shapeBuilder";
+import { CreateLines } from "../../../Meshes/Builders/linesBuilder";
+import type { LinesMesh } from "../../../Meshes/linesMesh";
+import { PhysicsRaycastResult } from "../../physicsRaycastResult";
+import { Scalar } from "../../../Maths/math.scalar";
+import { Epsilon } from "../../../Maths/math.constants";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare let Ammo: any;
@@ -25,7 +25,7 @@ declare let Ammo: any;
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
  * @see https://github.com/kripken/ammo.js/
  */
-export class AmmoJSPlugin implements IPhysicsEnginePlugin {
+export class AmmoJSPlugin implements IPhysicsEnginePluginV1 {
     /**
      * Reference to the Ammo library
      */

@@ -7,7 +7,7 @@ import type { WebXRInput } from "../webXRInput";
 import type { WebXRInputSource } from "../webXRInputSource";
 import { Matrix, Quaternion } from "../../Maths/math.vector";
 import type { Nullable } from "../../types";
-import { PhysicsImpostor } from "../../Physics/physicsImpostor";
+import { PhysicsImpostor } from "../../Physics/v1/physicsImpostor";
 
 import type { IDisposable, Scene } from "../../scene";
 import { Observable } from "../../Misc/observable";
