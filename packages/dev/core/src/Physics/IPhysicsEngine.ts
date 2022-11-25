@@ -5,7 +5,6 @@ import type { Vector3 } from "../Maths/math.vector";
 //import type { PhysicsJoint, IMotorEnabledJoint } from "./physicsJoint";
 import type { PhysicsRaycastResult } from "./physicsRaycastResult";
 
-
 /**
  * Interface used to define a physics engine
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine

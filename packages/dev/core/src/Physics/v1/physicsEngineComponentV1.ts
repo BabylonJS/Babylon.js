@@ -17,7 +17,7 @@ import { PhysicsJoint } from "./physicsJoint";
 
 declare module "../../Meshes/abstractMesh" {
     /**
-     * 
+     *
      */
     export interface AbstractMesh {
         /** @internal */

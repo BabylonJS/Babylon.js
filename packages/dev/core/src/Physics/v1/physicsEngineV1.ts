@@ -1,6 +1,6 @@
 import type { Nullable } from "../../types";
 import { Vector3 } from "../../Maths/math.vector";
-import type { PhysicsImpostorJoint,IPhysicsEnginePluginV1 } from "./IPhysicsEnginePluginV1";
+import type { PhysicsImpostorJoint, IPhysicsEnginePluginV1 } from "./IPhysicsEnginePluginV1";
 import type { IPhysicsEngine } from "../IPhysicsEngine";
 import type { PhysicsImpostor, IPhysicsEnabledObject } from "./physicsImpostor";
 import type { PhysicsJoint } from "./physicsJoint";

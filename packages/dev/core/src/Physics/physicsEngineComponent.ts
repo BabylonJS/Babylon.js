@@ -14,7 +14,7 @@ import type { IPhysicsEngine } from "./IPhysicsEngine";
 
 declare module "../scene" {
     /**
-     * 
+     *
      */
     export interface Scene {
         /** @internal (Backing field) */
@@ -34,7 +34,7 @@ declare module "../scene" {
          * @param plugin defines the physics engine to be used. defaults to CannonJS.
          * @returns a boolean indicating if the physics engine was initialized
          */
-        enablePhysics(gravity?: Nullable<Vector3>, plugin?: any/*IPhysicsEnginePlugin*/): boolean;
+        enablePhysics(gravity?: Nullable<Vector3>, plugin?: any /*IPhysicsEnginePlugin*/): boolean;
 
         /**
          * Disables and disposes the physics engine associated with the scene
@@ -127,7 +127,6 @@ Scene.prototype.isPhysicsEnabled = function (): boolean {
  */
 Scene.prototype.deleteCompoundImpostor = function (compound: any): void {
     //const mesh: AbstractMesh = compound.parts[0].mesh;
-
     // TODO
     //if (mesh.physicsImpostor) {
     //    mesh.physicsImpostor.dispose(/*true*/);
