@@ -2944,8 +2944,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Gets a the last added material using a given id
-     * @param id defines the material's Id
+     * Gets a last added material using a given id
+     * @param id defines the material's id
      * @param allowMultiMaterials determines whether multimaterials should be considered
      * @returns the last material with the given id or null if none found.
      */
