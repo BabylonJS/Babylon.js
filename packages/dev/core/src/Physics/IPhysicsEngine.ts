@@ -1,5 +1,5 @@
 //import type { Nullable } from "../types";
-import type { Vector3, Quaternion } from "../Maths/math.vector";
+import type { Vector3 } from "../Maths/math.vector";
 //import type { AbstractMesh } from "../Meshes/abstractMesh";
 //import type { PhysicsImpostor, IPhysicsEnabledObject } from "./physicsImpostor";
 //import type { PhysicsJoint, IMotorEnabledJoint } from "./physicsJoint";
@@ -96,7 +96,7 @@ export interface IPhysicsEngine {
      * Gets the current plugin used to run the simulation
      * @returns current plugin
      */
-    //getPhysicsPlugin(): IPhysicsEnginePlugin;
+    getPhysicsPlugin(): any;
 
     /**
      * Gets the list of physic impostors

@@ -911,13 +911,9 @@ export class PhysicsImpostor {
     public onCollideEvent: Nullable<(collider: PhysicsImpostor, collidedWith: PhysicsImpostor) => void> = null;
 
     /**
-     * event and body object due to cannon's event-based architecture.
-     * @param e
-     * @param e.body
-     * @param e.point
-     * @param e.distance
-     * @param e.impulse
-     * @param e.normal
+     * 
+     * @param e 
+     * @returns 
      */
     public onCollide = (e: { body: any; point: Nullable<Vector3>; distance: number; impulse: number; normal: Nullable<Vector3> }) => {
         if (!this._onPhysicsCollideCallbacks.length && !this.onCollideEvent) {
