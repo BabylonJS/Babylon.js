@@ -187,4 +187,23 @@ describe("Scene Materials", () => {
             expect(materialZSpy).toBeCalledTimes(0);
         });
     });
+
+    describe("unfreezeMaterials", () => {
+        it("should call unfreeze on the all scene materials and dont touch other", () => {
+            const secondaryScene = new Scene(subject);
+            const materialX = new StandardMaterial("materialX", scene);
+            const materialY = new StandardMaterial("materialY", scene);
+            const materialZ = new StandardMaterial("materialZ", secondaryScene);
+
+            const materialXSpy = jest.spyOn(materialX, "unfreeze");
+            const materialYSpy = jest.spyOn(materialY, "unfreeze");
+            const materialZSpy = jest.spyOn(materialZ, "unfreeze");
+
+            scene.unfreezeMaterials();
+
+            expect(materialXSpy).toBeCalledTimes(1);
+            expect(materialYSpy).toBeCalledTimes(1);
+            expect(materialZSpy).toBeCalledTimes(0);
+        });
+    });
 });
