@@ -1,18 +1,20 @@
-import type { Nullable, IndicesArray } from "../types";
-import { Logger } from "../Misc/logger";
-import { ArrayTools } from "../Misc/arrayTools";
-import type { Matrix } from "../Maths/math.vector";
-import { Vector3, Quaternion } from "../Maths/math.vector";
-import type { TransformNode } from "../Meshes/transformNode";
-import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Mesh } from "../Meshes/mesh";
-import type { Scene } from "../scene";
-import type { Bone } from "../Bones/bone";
-import type { BoundingInfo } from "../Culling/boundingInfo";
-import type { IPhysicsEngine } from "./IPhysicsEngine";
+import type { Nullable, IndicesArray } from "../../types";
+import { Logger } from "../../Misc/logger";
+import { ArrayTools } from "../../Misc/arrayTools";
+import type { Matrix } from "../../Maths/math.vector";
+import { Vector3, Quaternion } from "../../Maths/math.vector";
+import type { TransformNode } from "../../Meshes/transformNode";
+import { AbstractMesh } from "../../Meshes/abstractMesh";
+import { Mesh } from "../../Meshes/mesh";
+import type { Scene } from "../../scene";
+import type { Bone } from "../../Bones/bone";
+import type { BoundingInfo } from "../../Culling/boundingInfo";
+//import type { IPhysicsEngine } from "../IPhysicsEngine";
+import type { PhysicsEngineV1 } from "./physicsEngineV1";
+
 import type { PhysicsJointData } from "./physicsJoint";
 import { PhysicsJoint } from "./physicsJoint";
-import { Space } from "../Maths/math.axis";
+import { Space } from "../../Maths/math.axis";
 
 /**
  * The interface for the physics imposter parameters
@@ -216,7 +218,7 @@ export class PhysicsImpostor {
     /** @internal */
     public _pluginData: any = {};
 
-    private _physicsEngine: Nullable<IPhysicsEngine>;
+    private _physicsEngine: Nullable<PhysicsEngineV1>;
     //The native cannon/oimo/energy physics body object.
     private _physicsBody: any;
     private _bodyUpdateRequired: boolean = false;
@@ -470,7 +472,7 @@ export class PhysicsImpostor {
             this.soft = true;
         }
 
-        this._physicsEngine = this._scene.getPhysicsEngine();
+        this._physicsEngine = this._scene.getPhysicsEngine() as any;
         if (!this._physicsEngine) {
             Logger.Error("Physics not enabled. Please use scene.enablePhysics(...) before creating impostors.");
         } else {
