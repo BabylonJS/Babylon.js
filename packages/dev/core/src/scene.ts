@@ -4591,6 +4591,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Freeze all materials
      * A frozen material will not be updatable but should be faster to render
+     * Note: multimaterials will not be frozen, but their submaterials will
      */
     public freezeMaterials(): void {
         for (let i = 0; i < this.materials.length; i++) {
