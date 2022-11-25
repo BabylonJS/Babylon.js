@@ -1,6 +1,6 @@
 import type { Engine } from "core/Engines";
 import { NullEngine } from "core/Engines";
-import { StandardMaterial } from "core/Materials";
+import { MultiMaterial, StandardMaterial } from "core/Materials";
 import { Scene } from "core/scene";
 
 describe("Scene Materials", () => {
@@ -40,6 +40,13 @@ describe("Scene Materials", () => {
             const materialX = new StandardMaterial("materialX", secondaryScene);
 
             expect(scene.getMaterialByUniqueID(materialX.uniqueId)).toBeNull();
+        });
+
+        it("should return multiMaterial that added to default scene", () => {
+            const multiMaterial = new MultiMaterial("multiMaterial", scene);
+
+            expect(scene.getMaterialByUniqueID(multiMaterial.uniqueId)).toBeNull();
+            expect(scene.getMaterialByUniqueID(multiMaterial.uniqueId, true)).toBe(multiMaterial);
         });
     });
 });
