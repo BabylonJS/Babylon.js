@@ -1,5 +1,5 @@
 import type { PhysicsBody } from "./physicsBody";
-import type { PhysicsMaterial } from "./physicsMaterial";
+import { PhysicsMaterial } from "./physicsMaterial";
 import type { PhysicsShape } from "./physicsShape";
 import { Logger } from "../Misc/logger";
 import type { Scene } from "../scene";
@@ -108,7 +108,7 @@ export class PhysicsAggregate {
             Logger.Error("No object was provided. A physics object is obligatory");
             return;
         }
-        if (this.transformNode.parent && _options.mass !== 0) {
+        if (this.transformNode.parent && this._options.mass !== 0) {
             Logger.Warn("A physics impostor has been created for an object which has a parent. Babylon physics currently works in local space so unexpected issues may occur.");
         }
 
@@ -116,6 +116,20 @@ export class PhysicsAggregate {
         if (!this._scene && transformNode.getScene) {
             this._scene = transformNode.getScene();
         }
-        // TODO
+        
+        if (!this._scene) {
+            return;
+        }
+
+        this.material = new PhysicsMaterial(this._options.friction ? this._options.friction : 0, this._options.restitution ? this._options.restitution : 0, this._scene);
+    }
+
+    /**
+     * 
+     */
+    public dispose(): void {
+        this.body.dispose();
+        this.material.dispose();
+        this.shape.dispose();
     }
 }
