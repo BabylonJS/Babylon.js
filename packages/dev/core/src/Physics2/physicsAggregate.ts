@@ -1,6 +1,6 @@
 import type { PhysicsBody } from "./physicsBody";
 import type { PhysicsMaterial } from "./physicsMaterial";
-import type { PhysicsShape } from "./PhysicsShape";
+import type { PhysicsShape } from "./physicsShape";
 import { Logger } from "../Misc/logger";
 import type { Scene } from "../scene";
 import type { TransformNode } from "../Meshes/transformNode";
