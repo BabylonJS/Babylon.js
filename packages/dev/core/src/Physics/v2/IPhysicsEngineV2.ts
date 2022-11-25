@@ -1,22 +1,22 @@
-import type { Vector3, Quaternion } from "../Maths/math.vector";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { PhysicsRaycastResult } from "./physicsRaycastResult";
+import type { Vector3, Quaternion } from "../../Maths/math.vector";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { PhysicsRaycastResult } from "../physicsRaycastResult";
 import type { PhysicsBody } from "./physicsBody";
 import type { PhysicsShape } from "./physicsShape";
-import type { PhysicsJoint } from "./physicsJoint";
-import type { BoundingBox } from "../Culling/boundingBox";
-import type { TransformNode } from "../Meshes/transformNode";
+import type { PhysicsConstraint } from "./physicsConstraint";
+import type { BoundingBox } from "../../Culling/boundingBox";
+import type { TransformNode } from "../../Meshes/transformNode";
 import type { PhysicsMaterial } from "./physicsMaterial";
 //import type { PhysicsAggregate } from "./physicsAggregate";
 
-export enum JointAxisLimitMode {
+export enum ConstraintAxisLimitMode {
     FREE,
     LIMITED,
     LOCKED,
     NONE,
 }
 
-export enum JointAxis {
+export enum ConstraintAxis {
     LINEAR_X,
     LINEAR_Y,
     LINEAR_Z,
@@ -25,7 +25,7 @@ export enum JointAxis {
     ANGULAR_Z,
     LINEAR_DISTANCE,
 }
-export enum JointType {
+export enum ConstraintType {
     BALL_AND_SOCKET,
     DISTANCE,
     HINGE,
@@ -43,7 +43,7 @@ export enum ShapeType {
     MESH,
 }
 
-export enum JointMotorType {
+export enum ConstraintMotorType {
     NONE,
     VELOCITY,
     POSITION,
@@ -59,7 +59,7 @@ export interface PhysicsShapeParameters {
     mesh?: AbstractMesh;
 }
 
-export interface PhysicsJointParameters {
+export interface PhysicsConstraintParameters {
     pivotA?: Vector3;
     pivotB?: Vector3;
     axisA?: Vector3;
@@ -89,7 +89,7 @@ export interface MassProperties {
 }
 
 /** @internal */
-export interface IPhysicsEnginePlugin2 {
+export interface IPhysicsEnginePluginV2 {
     /**
      *
      */
@@ -146,33 +146,33 @@ export interface IPhysicsEnginePlugin2 {
     getRestitution(material: PhysicsMaterial): number;
     disposeMaterial(material: PhysicsMaterial): void;
 
-    // joint
-    initJoint(joint: PhysicsJoint, type: JointType, options: PhysicsJointParameters): void;
-    setParentBody(joint: PhysicsJoint, body: PhysicsBody): void;
-    getParentBody(joint: PhysicsJoint): PhysicsBody;
-    setChildBody(joint: PhysicsJoint, body: PhysicsBody): void;
-    getChildBody(joint: PhysicsJoint): PhysicsBody;
-    setAnchorInParent(joint: PhysicsJoint, pivot: Vector3, axisX: Vector3, axisY: Vector3): void;
-    setAnchorInChild(joint: PhysicsJoint, pivot: Vector3, axisX: Vector3, axisY: Vector3): void;
-    setEnabled(joint: PhysicsJoint, isEnabled: boolean): void;
-    getEnabled(joint: PhysicsJoint): boolean;
-    setCollisionsEnabled(joint: PhysicsJoint, isEnabled: boolean): void;
-    getCollisionsEnabled(joint: PhysicsJoint): boolean;
-    setAxisFriction(joint: PhysicsJoint, axis: JointAxis, friction: number): void;
-    getAxisFriction(joint: PhysicsJoint, axis: JointAxis): number;
-    setAxisMode(joint: PhysicsJoint, axis: JointAxis, limitMode: JointAxisLimitMode): void;
-    getAxisMode(joint: PhysicsJoint, axis: JointAxis): JointAxisLimitMode;
-    setAxisMinLimit(joint: PhysicsJoint, axis: JointAxis, minLimit: number): void;
-    getAxisMinLimit(joint: PhysicsJoint, axis: JointAxis): number;
-    setAxisMaxLimit(joint: PhysicsJoint, axis: JointAxis, limit: number): void;
-    getAxisMaxLimit(joint: PhysicsJoint, axis: JointAxis): number;
-    setAxisMotorType(joint: PhysicsJoint, axis: JointAxis, motorType: JointMotorType): void;
-    getAxisMotorType(joint: PhysicsJoint, axis: JointAxis): JointMotorType;
-    setAxisMotorTarget(joint: PhysicsJoint, axis: JointAxis, target: number): void;
-    getAxisMotorTarget(joint: PhysicsJoint, axis: JointAxis): number;
-    setAxisMotorMaxForce(joint: PhysicsJoint, axis: JointAxis, maxForce: number): void;
-    getAxisMotorMaxForce(joint: PhysicsJoint, axis: JointAxis): number;
-    disposeJoint(joint: PhysicsJoint): void;
+    // constraint
+    initConstraint(constraint: PhysicsConstraint, type: ConstraintType, options: PhysicsConstraintParameters): void;
+    setParentBody(constraint: PhysicsConstraint, body: PhysicsBody): void;
+    getParentBody(constraint: PhysicsConstraint): PhysicsBody;
+    setChildBody(constraint: PhysicsConstraint, body: PhysicsBody): void;
+    getChildBody(constraint: PhysicsConstraint): PhysicsBody;
+    setAnchorInParent(constraint: PhysicsConstraint, pivot: Vector3, axisX: Vector3, axisY: Vector3): void;
+    setAnchorInChild(constraint: PhysicsConstraint, pivot: Vector3, axisX: Vector3, axisY: Vector3): void;
+    setEnabled(constraint: PhysicsConstraint, isEnabled: boolean): void;
+    getEnabled(constraint: PhysicsConstraint): boolean;
+    setCollisionsEnabled(constraint: PhysicsConstraint, isEnabled: boolean): void;
+    getCollisionsEnabled(constraint: PhysicsConstraint): boolean;
+    setAxisFriction(constraint: PhysicsConstraint, axis: ConstraintAxis, friction: number): void;
+    getAxisFriction(constraint: PhysicsConstraint, axis: ConstraintAxis): number;
+    setAxisMode(constraint: PhysicsConstraint, axis: ConstraintAxis, limitMode: ConstraintAxisLimitMode): void;
+    getAxisMode(constraint: PhysicsConstraint, axis: ConstraintAxis): ConstraintAxisLimitMode;
+    setAxisMinLimit(constraint: PhysicsConstraint, axis: ConstraintAxis, minLimit: number): void;
+    getAxisMinLimit(constraint: PhysicsConstraint, axis: ConstraintAxis): number;
+    setAxisMaxLimit(constraint: PhysicsConstraint, axis: ConstraintAxis, limit: number): void;
+    getAxisMaxLimit(constraint: PhysicsConstraint, axis: ConstraintAxis): number;
+    setAxisMotorType(constraint: PhysicsConstraint, axis: ConstraintAxis, motorType: ConstraintMotorType): void;
+    getAxisMotorType(constraint: PhysicsConstraint, axis: ConstraintAxis): ConstraintMotorType;
+    setAxisMotorTarget(constraint: PhysicsConstraint, axis: ConstraintAxis, target: number): void;
+    getAxisMotorTarget(constraint: PhysicsConstraint, axis: ConstraintAxis): number;
+    setAxisMotorMaxForce(constraint: PhysicsConstraint, axis: ConstraintAxis, maxForce: number): void;
+    getAxisMotorMaxForce(constraint: PhysicsConstraint, axis: ConstraintAxis): number;
+    disposeConstraint(constraint: PhysicsConstraint): void;
 
     // raycast
     raycast(from: Vector3, to: Vector3): PhysicsRaycastResult;

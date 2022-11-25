@@ -1,16 +1,16 @@
-import type { Nullable } from "../types";
-import { Vector3 } from "../Maths/math.vector";
-import type { IPhysicsEngine2, IPhysicsEnginePlugin2 } from "./IPhysicsEngine";
+import type { Nullable } from "../../types";
+import { Vector3 } from "../../Maths/math.vector";
+import type { IPhysicsEngine, IPhysicsEnginePlugin } from "../IPhysicsEngine";
 //import type { PhysicsImpostor, IPhysicsEnabledObject } from "./physicsImpostor";
 //import type { PhysicsJoint } from "./physicsJoint";
-import type { PhysicsRaycastResult } from "./physicsRaycastResult";
-import { _WarnImport } from "../Misc/devTools";
+import type { PhysicsRaycastResult } from "../physicsRaycastResult";
+import { _WarnImport } from "../../Misc/devTools";
 
 /**
  * Class used to control physics engine
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
  */
-export class PhysicsEngine implements IPhysicsEngine2 {
+export class PhysicsEngineV2 implements IPhysicsEngine {
     /**
      * Global value used to control the smallest number supported by the simulation
      */

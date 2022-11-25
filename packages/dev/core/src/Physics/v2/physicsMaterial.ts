@@ -1,5 +1,5 @@
-import type { Scene } from "../scene";
-import type { IPhysicsEnginePlugin2 } from "./IPhysicsEngine";
+import type { Scene } from "../../scene";
+import type { IPhysicsEnginePluginV2 } from "./IPhysicsEngineV2";
 
 /**
  *
@@ -10,7 +10,7 @@ export class PhysicsMaterial {
      */
     public _pluginData: any = undefined;
 
-    protected _physicsPlugin: IPhysicsEnginePlugin2;
+    protected _physicsPlugin: IPhysicsEnginePluginV2;
 
     /**
      *
