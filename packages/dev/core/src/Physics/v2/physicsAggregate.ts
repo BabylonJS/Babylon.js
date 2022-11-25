@@ -116,7 +116,7 @@ export class PhysicsAggregate {
         if (!this._scene && transformNode.getScene) {
             this._scene = transformNode.getScene();
         }
-        
+
         if (!this._scene) {
             return;
         }
@@ -125,7 +125,7 @@ export class PhysicsAggregate {
     }
 
     /**
-     * 
+     *
      */
     public dispose(): void {
         this.body.dispose();

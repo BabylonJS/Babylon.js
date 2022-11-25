@@ -911,9 +911,9 @@ export class PhysicsImpostor {
     public onCollideEvent: Nullable<(collider: PhysicsImpostor, collidedWith: PhysicsImpostor) => void> = null;
 
     /**
-     * 
-     * @param e 
-     * @returns 
+     *
+     * @param e
+     * @returns
      */
     public onCollide = (e: { body: any; point: Nullable<Vector3>; distance: number; impulse: number; normal: Nullable<Vector3> }) => {
         if (!this._onPhysicsCollideCallbacks.length && !this.onCollideEvent) {

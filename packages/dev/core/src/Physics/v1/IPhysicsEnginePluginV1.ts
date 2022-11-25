@@ -20,11 +20,11 @@ export interface PhysicsImpostorJoint {
 /** @internal */
 export interface IPhysicsEnginePluginV1 {
     /**
-     * 
+     *
      */
     world: any;
     /**
-     * 
+     *
      */
     name: string;
     setGravity(gravity: Vector3): void;
