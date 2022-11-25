@@ -148,5 +148,24 @@ describe("Scene Materials", () => {
             expect(materialXSpy).toHaveBeenCalledWith(Material.AllDirtyFlag);
             expect(materialYSpy).toHaveBeenCalledWith(Material.AllDirtyFlag);
         });
+
+        it("should mark as dirty only materials limited by predicate", () => {
+            const materialX = new StandardMaterial("materialX", scene);
+            const materialY = new StandardMaterial("materialY", scene);
+
+            const materialXSpy = jest.spyOn(materialX, "markAsDirty");
+            const materialYSpy = jest.spyOn(materialY, "markAsDirty");
+
+            scene.markAllMaterialsAsDirty(Material.TextureDirtyFlag, (material) => material.name === "materialX");
+
+            expect(materialXSpy).toBeCalledTimes(1);
+            expect(materialXSpy).toHaveBeenCalledWith(Material.TextureDirtyFlag);
+            expect(materialYSpy).not.toHaveBeenCalled();
+
+            scene.markAllMaterialsAsDirty(Material.TextureDirtyFlag, (material) => material.name === "000");
+
+            expect(materialXSpy).toBeCalledTimes(1);
+            expect(materialYSpy).not.toHaveBeenCalled();
+        });
     });
 });
