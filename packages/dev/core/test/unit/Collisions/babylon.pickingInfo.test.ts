@@ -115,5 +115,39 @@ describe("PickingInfo", () => {
             expect(normal!.y).toBeCloseTo(-0.08);
             expect(normal!.z).toBeCloseTo(-0.45);
         });
+
+        it('should transform normal to world when "useWorldCoordinates" is true', () => {
+            const pickingInfo = new PickingInfo();
+            pickingInfo.pickedMesh = box;
+            pickingInfo.faceId = 0;
+            pickingInfo.bu = 0.5;
+            pickingInfo.bv = 0.5;
+
+            box.scaling = new Vector3(1, 2, 3);
+            box.rotation = new Vector3(0, Math.PI / 2, 0);
+            box.computeWorldMatrix(true);
+
+            const normalBox = pickingInfo.getNormal(true, true);
+
+            expect(normalBox).toBeInstanceOf(Vector3);
+            expect(normalBox!.x).toBeCloseTo(1);
+            expect(normalBox!.y).toBeCloseTo(0);
+            expect(normalBox!.z).toBeCloseTo(0);
+
+            // And test with the knot
+
+            pickingInfo.pickedMesh = torusKnot;
+
+            torusKnot.scaling = new Vector3(1, 2, 3);
+            torusKnot.rotation = new Vector3(0, Math.PI / 2, 0);
+            torusKnot.computeWorldMatrix(true);
+
+            const normal = pickingInfo.getNormal(true, true);
+
+            expect(normal).toBeInstanceOf(Vector3);
+            expect(normal!.x).toBeCloseTo(-0.18);
+            expect(normal!.y).toBeCloseTo(-0.14);
+            expect(normal!.z).toBeCloseTo(0.97);
+        });
     });
 });
