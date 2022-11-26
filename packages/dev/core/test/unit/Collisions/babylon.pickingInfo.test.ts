@@ -1,4 +1,5 @@
 import { PickingInfo } from "core/Collisions";
+import { Ray } from "core/Culling";
 import type { Engine } from "core/Engines";
 import { NullEngine } from "core/Engines";
 import { Vector3 } from "core/Maths";
@@ -148,6 +149,68 @@ describe("PickingInfo", () => {
             expect(normal!.x).toBeCloseTo(-0.18);
             expect(normal!.y).toBeCloseTo(-0.14);
             expect(normal!.z).toBeCloseTo(0.97);
+        });
+
+        it("should use the ray when provided", () => {
+            const pickingInfo = new PickingInfo();
+            pickingInfo.pickedMesh = box;
+            pickingInfo.faceId = 0;
+            pickingInfo.bu = 0.5;
+            pickingInfo.bv = 0.5;
+            pickingInfo.ray = new Ray(new Vector3(0, 0, 0), new Vector3(0, 0, 1));
+
+            const normalBox = pickingInfo.getNormal(true, true);
+
+            expect(normalBox).toBeInstanceOf(Vector3);
+            expect(normalBox!.x).toBeCloseTo(0);
+            expect(normalBox!.y).toBeCloseTo(0);
+            expect(normalBox!.z).toBeCloseTo(-1);
+
+            // And test with the knot
+
+            pickingInfo.pickedMesh = torusKnot;
+
+            const normal = pickingInfo.getNormal(true, true);
+
+            expect(normal).toBeInstanceOf(Vector3);
+            expect(normal!.x).toBeCloseTo(-0.84);
+            expect(normal!.y).toBeCloseTo(-0.24);
+            expect(normal!.z).toBeCloseTo(-0.48);
+        });
+
+        it("should transform normal to world when 'useWorldCoordinates' is false and ray is provided", () => {
+            const pickingInfo = new PickingInfo();
+            pickingInfo.pickedMesh = box;
+            pickingInfo.faceId = 0;
+            pickingInfo.bu = 0.5;
+            pickingInfo.bv = 0.5;
+            pickingInfo.ray = new Ray(new Vector3(0, 0, 0), new Vector3(0, 0, 1));
+
+            box.scaling = new Vector3(1, 2, 3);
+            box.rotation = new Vector3(0, Math.PI / 4, 0);
+            box.computeWorldMatrix(true);
+
+            const normalBox = pickingInfo.getNormal(false, true);
+
+            expect(normalBox).toBeInstanceOf(Vector3);
+            expect(normalBox!.x).toBeCloseTo(0);
+            expect(normalBox!.y).toBeCloseTo(0);
+            expect(normalBox!.z).toBeCloseTo(-1);
+
+            // And test with the knot
+
+            pickingInfo.pickedMesh = torusKnot;
+
+            torusKnot.scaling = new Vector3(1, 2, 3);
+            torusKnot.rotation = new Vector3(0, Math.PI / 4, 0);
+            torusKnot.computeWorldMatrix(true);
+
+            const normal = pickingInfo.getNormal(false, true);
+
+            expect(normal).toBeInstanceOf(Vector3);
+            expect(normal!.x).toBeCloseTo(0.84);
+            expect(normal!.y).toBeCloseTo(0.24);
+            expect(normal!.z).toBeCloseTo(0.48);
         });
     });
 });
