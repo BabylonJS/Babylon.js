@@ -2,7 +2,7 @@ import { PickingInfo } from "core/Collisions";
 import { Ray } from "core/Culling";
 import type { Engine } from "core/Engines";
 import { NullEngine } from "core/Engines";
-import { Vector3 } from "core/Maths";
+import { Vector2, Vector3 } from "core/Maths";
 import type { Mesh } from "core/Meshes";
 import { MeshBuilder } from "core/Meshes";
 import { Scene } from "core/scene";
@@ -248,6 +248,29 @@ describe("PickingInfo", () => {
             box.getVerticesData = () => null;
 
             expect(pickingInfo.getTextureCoordinates()).toBeNull();
+        });
+
+        it("should return vector2 with correct values", () => {
+            const pickingInfo = new PickingInfo();
+            pickingInfo.pickedMesh = box;
+            pickingInfo.faceId = 0;
+            pickingInfo.bu = 0.5;
+            pickingInfo.bv = 0.5;
+
+            const uv = pickingInfo.getTextureCoordinates();
+
+            expect(uv).toBeInstanceOf(Vector2);
+            expect(uv!.x).toBeCloseTo(0.5);
+            expect(uv!.y).toBeCloseTo(1);
+
+            // And test with the knot
+
+            pickingInfo.pickedMesh = torusKnot;
+
+            const uvKnot = pickingInfo.getTextureCoordinates();
+
+            expect(uvKnot!.x).toBeCloseTo(0.02);
+            expect(uvKnot!.y).toBeCloseTo(0.06);
         });
     });
 });
