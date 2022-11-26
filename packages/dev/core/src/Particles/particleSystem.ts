@@ -211,6 +211,9 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      */
     public isLocal = false;
 
+    /** Indicates that the particle system is CPU based */
+    public readonly isGPU = false;
+
     private _rootParticleSystem: Nullable<ParticleSystem>;
     //end of Sub-emitter
 
