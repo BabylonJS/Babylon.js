@@ -879,15 +879,20 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                     if (this.customIsReadyFunction) {
                         if (!this.customIsReadyFunction(mesh, this.refreshRate, checkReadiness)) {
                             returnValue = false;
-                            break;
+                            continue;
                         }
                     } else if (!mesh.isReady(true)) {
                         returnValue = false;
-                        break;
+                        continue;
                     }
                 }
 
                 this.onAfterRenderObservable.notifyObservers(layer);
+
+                if (this.is2DArray || this.isCube) {
+                    scene.incrementRenderId();
+                    scene.resetCachedMaterial();
+                }
             }
         }
 
