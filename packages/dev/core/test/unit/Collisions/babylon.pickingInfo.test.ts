@@ -213,4 +213,41 @@ describe("PickingInfo", () => {
             expect(normal!.z).toBeCloseTo(0.48);
         });
     });
+
+    describe("getTextureCoordinates", () => {
+        it("should return null when no pickedMesh", () => {
+            const pickingInfo = new PickingInfo();
+            expect(pickingInfo.getTextureCoordinates()).toBeNull();
+        });
+
+        it("should return null when pickedMesh has no UV", () => {
+            const pickingInfo = new PickingInfo();
+            pickingInfo.pickedMesh = box;
+
+            box.isVerticesDataPresent = () => false;
+
+            expect(pickingInfo.getTextureCoordinates()).toBeNull();
+        });
+
+        it("should return null when indicies are not present", () => {
+            const pickingInfo = new PickingInfo();
+            pickingInfo.pickedMesh = box;
+
+            box.isVerticesDataPresent = () => true;
+            box.getIndices = () => null;
+
+            expect(pickingInfo.getTextureCoordinates()).toBeNull();
+        });
+
+        it("should return null when uvs are not present", () => {
+            const pickingInfo = new PickingInfo();
+            pickingInfo.pickedMesh = box;
+
+            box.isVerticesDataPresent = () => true;
+            box.getIndices = () => [];
+            box.getVerticesData = () => null;
+
+            expect(pickingInfo.getTextureCoordinates()).toBeNull();
+        });
+    });
 });
