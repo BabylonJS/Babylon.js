@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Nullable, float, DataArray } from "../types";
+import type { Immutable, Nullable, float, DataArray } from "../types";
 import type { Color3Gradient, IValueGradient } from "../Misc/gradients";
 import { FactorGradient, ColorGradient, GradientHelper } from "../Misc/gradients";
 import { Observable } from "../Misc/observable";
@@ -57,6 +57,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     private _buffer0: Buffer;
     private _buffer1: Buffer;
     private _spriteBuffer: Buffer;
+    private _renderVertexBuffers: Array<{ [key: string]: VertexBuffer }> = [];
 
     private _targetIndex = 0;
     private _sourceBuffer: Buffer;
@@ -138,6 +139,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * Specifies if the particles are updated in emitter local space or world space.
      */
     public isLocal = false;
+
+    /** Indicates that the particle system is GPU based */
+    public readonly isGPU = true;
 
     /** Gets or sets a matrix to use to compute projection */
     public defaultProjectionMatrix: Matrix;
@@ -298,6 +302,20 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      */
     public get vertexShaderName(): string {
         return "gpuRenderParticles";
+    }
+
+    /**
+     * Gets the vertex buffers used by the particle system
+     */
+    public get vertexBuffers(): Immutable<{ [key: string]: VertexBuffer }> {
+        return this._renderVertexBuffers[this._targetIndex ^ 1];
+    }
+
+    /**
+     * Gets the index buffer used by the particle system (null for GPU particle systems)
+     */
+    public get indexBuffer(): Nullable<DataBuffer> {
+        return null;
     }
 
     /** @internal */
@@ -924,6 +942,8 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         renderVertexBuffers["offset"] = spriteSource.createVertexBuffer("offset", 0, 2);
         renderVertexBuffers["uv"] = spriteSource.createVertexBuffer("uv", 2, 2);
 
+        this._renderVertexBuffers.push(renderVertexBuffers);
+
         this._platform.createVertexBuffers(updateBuffer, renderVertexBuffers);
 
         this.resetDrawCache();
@@ -1506,9 +1526,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * Renders the particle system in its current state
      * @param preWarm defines if the system should only update the particles but not render them
      * @param forceUpdateOnly if true, force to only update the particles and never display them (meaning, even if preWarm=false, when forceUpdateOnly=true the particles won't be displayed)
+     * @param renderOnly if true, do only rendering and no update (it takes precedence over forceUpdateOnly)
      * @returns the current number of particles
      */
-    public render(preWarm = false, forceUpdateOnly = false): number {
+    public render(preWarm = false, forceUpdateOnly = false, renderOnly = false): number {
         if (!this._started) {
             return 0;
         }
@@ -1607,10 +1628,12 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             this._updateBuffer.setMatrix("emitterWM", emitterWM);
         }
 
-        this._platform.updateParticleBuffer(this._targetIndex, this._targetBuffer, this._currentActiveCount);
+        if (!renderOnly) {
+            this._platform.updateParticleBuffer(this._targetIndex, this._targetBuffer, this._currentActiveCount);
+        }
 
         let outparticles = 0;
-        if (!preWarm && !forceUpdateOnly) {
+        if ((!preWarm && !forceUpdateOnly) || renderOnly) {
             engine.setState(false);
 
             if (this.forceDepthWrite) {
@@ -1626,16 +1649,18 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             this._engine.setAlphaMode(Constants.ALPHA_DISABLE);
         }
 
-        // Switch VAOs
-        this._targetIndex++;
-        if (this._targetIndex === 2) {
-            this._targetIndex = 0;
-        }
+        if (!renderOnly) {
+            // Switch VAOs
+            this._targetIndex++;
+            if (this._targetIndex === 2) {
+                this._targetIndex = 0;
+            }
 
-        // Switch buffers
-        const tmpBuffer = this._sourceBuffer;
-        this._sourceBuffer = this._targetBuffer;
-        this._targetBuffer = tmpBuffer;
+            // Switch buffers
+            const tmpBuffer = this._sourceBuffer;
+            this._sourceBuffer = this._targetBuffer;
+            this._targetBuffer = tmpBuffer;
+        }
 
         return outparticles;
     }
@@ -1684,6 +1709,15 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         this._releaseBuffers();
         this._platform.releaseVertexBuffers();
+
+        for (let i = 0; i < this._renderVertexBuffers.length; ++i) {
+            const rvb = this._renderVertexBuffers[i];
+            for (const key in rvb) {
+                rvb[key].dispose();
+            }
+        }
+
+        this._renderVertexBuffers = [];
 
         if (this._colorGradientsTexture) {
             this._colorGradientsTexture.dispose();
