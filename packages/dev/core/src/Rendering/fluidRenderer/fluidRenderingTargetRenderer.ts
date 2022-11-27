@@ -10,6 +10,7 @@ import { Observable } from "core/Misc/observable";
 import { PostProcess } from "core/PostProcesses/postProcess";
 import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
+
 import type { FluidRenderingObject } from "./fluidRenderingObject";
 import { FluidRenderingRenderTarget } from "./fluidRenderingRenderTarget";
 
