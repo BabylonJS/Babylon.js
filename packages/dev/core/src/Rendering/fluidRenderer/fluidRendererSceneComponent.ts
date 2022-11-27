@@ -1,12 +1,12 @@
 import type { Camera } from "core/Cameras/camera";
+import type { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
+import type { SmartArrayNoDuplicate } from "core/Misc/smartArray";
 import { Scene } from "core/scene";
 import type { ISceneComponent } from "core/sceneComponent";
+import { SceneComponentConstants } from "core/sceneComponent";
 import type { Nullable } from "core/types";
-import { FluidRenderer } from "./fluidRenderer";
 
-const NAME_FLUIDRENDERER = "FluidRenderer";
-const STEP_GATHERACTIVECAMERARENDERTARGET_FLUIDRENDERER = 1;
-const STEP_AFTERCAMERADRAW_FLUIDRENDERER = 5;
+import { FluidRenderer } from "./fluidRenderer";
 
 declare module "core/abstractScene" {
     export interface AbstractScene {
@@ -58,14 +58,13 @@ Scene.prototype.disableFluidRenderer = function (): void {
 };
 
 /**
- * Defines the Geometry Buffer scene component responsible to manage a G-Buffer useful
- * in several rendering techniques.
+ * Defines the fluid renderer scene component responsible to render objects as fluids
  */
 export class FluidRendererSceneComponent implements ISceneComponent {
     /**
      * The component name helpful to identify the component in the list of scene components.
      */
-    public readonly name = NAME_FLUIDRENDERER;
+    public readonly name = SceneComponentConstants.NAME_FLUIDRENDERER;
 
     /**
      * The scene the component belongs to.
@@ -84,11 +83,15 @@ export class FluidRendererSceneComponent implements ISceneComponent {
      * Registers the component in a given scene
      */
     public register(): void {
-        this.scene._gatherActiveCameraRenderTargetsStage.registerStep(STEP_GATHERACTIVECAMERARENDERTARGET_FLUIDRENDERER, this, this._gatherActiveCameraRenderTargets);
-        this.scene._afterCameraDrawStage.registerStep(STEP_AFTERCAMERADRAW_FLUIDRENDERER, this, this._afterCameraDraw);
+        this.scene._gatherActiveCameraRenderTargetsStage.registerStep(
+            SceneComponentConstants.STEP_GATHERACTIVECAMERARENDERTARGETS_FLUIDRENDERER,
+            this,
+            this._gatherActiveCameraRenderTargets
+        );
+        this.scene._afterCameraDrawStage.registerStep(SceneComponentConstants.STEP_AFTERCAMERADRAW_FLUIDRENDERER, this, this._afterCameraDraw);
     }
 
-    private _gatherActiveCameraRenderTargets(/*renderTargets: SmartArrayNoDuplicate<RenderTargetTexture>*/): void {
+    private _gatherActiveCameraRenderTargets(_renderTargets: SmartArrayNoDuplicate<RenderTargetTexture>): void {
         this.scene.fluidRenderer?._prepareRendering();
     }
 
@@ -119,7 +122,7 @@ export class FluidRendererSceneComponent implements ISceneComponent {
 }
 
 FluidRenderer._SceneComponentInitialization = (scene: Scene) => {
-    let component = scene._getComponent(NAME_FLUIDRENDERER) as FluidRendererSceneComponent;
+    let component = scene._getComponent(SceneComponentConstants.NAME_FLUIDRENDERER) as FluidRendererSceneComponent;
     if (!component) {
         component = new FluidRendererSceneComponent(scene);
         scene._addComponent(component);

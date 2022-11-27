@@ -6,8 +6,12 @@ import type { Observer } from "core/Misc/observable";
 import type { IParticleSystem } from "core/Particles/IParticleSystem";
 import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
+
 import { FluidRenderingObject } from "./fluidRenderingObject";
 
+/**
+ * Defines a rendering object based on a particle system
+ */
 export class FluidRenderingObjectParticleSystem extends FluidRenderingObject {
     private _particleSystem: IParticleSystem;
     private _originalRender: () => number;
@@ -15,16 +19,25 @@ export class FluidRenderingObjectParticleSystem extends FluidRenderingObject {
     private _blendMode: number;
     private _onBeforeDrawParticleObserver: Nullable<Observer<Nullable<Effect>>>;
 
+    /** Gets the particle system */
     public get particleSystem() {
         return this._particleSystem;
     }
 
+    /**
+     * Gets the name of the class
+     */
     public getClassName(): string {
         return "FluidRenderingObjectParticleSystem";
     }
 
     private _useTrueRenderingForDiffuseTexture = true;
 
+    /**
+     * Gets or sets a boolean indicating that the diffuse texture should be generated based on the regular rendering of the particle system (default: true).
+     * Sometimes, generating the diffuse texture this way may be sub-optimal. In that case, you can disable this property, in which case the particle system will be
+     * rendered using a ALPHA_COMBINE mode instead of the one used by the particle system.
+     */
     public get useTrueRenderingForDiffuseTexture() {
         return this._useTrueRenderingForDiffuseTexture;
     }
@@ -48,14 +61,25 @@ export class FluidRenderingObjectParticleSystem extends FluidRenderingObject {
         }
     }
 
+    /**
+     * Gets the vertex buffers
+     */
     public get vertexBuffers(): { [key: string]: VertexBuffer } {
         return this._particleSystem.vertexBuffers as { [key: string]: VertexBuffer };
     }
 
+    /**
+     * Gets the index buffer (or null if the object is using instancing)
+     */
     public get indexBuffer(): Nullable<DataBuffer> {
         return this._particleSystem.indexBuffer;
     }
 
+    /**
+     * Creates a new instance of the class
+     * @param scene The scene the particle system is part of
+     * @param ps The particle system
+     */
     constructor(scene: Scene, ps: IParticleSystem) {
         super(scene);
 
@@ -77,18 +101,32 @@ export class FluidRenderingObjectParticleSystem extends FluidRenderingObject {
         this.useTrueRenderingForDiffuseTexture = false;
     }
 
+    /**
+     * Indicates if the object is ready to be rendered
+     * @returns True if everything is ready for the object to be rendered, otherwise false
+     */
     public isReady(): boolean {
         return super.isReady() && this._particleSystem.isReady();
     }
 
+    /**
+     * Gets the number of particles in this particle system
+     * @returns The number of particles
+     */
     public numParticles(): number {
         return this._particleSystem.getActiveCount();
     }
 
+    /**
+     * Render the diffuse texture for this object
+     */
     public renderDiffuseTexture(): void {
         this._renderDiffuse();
     }
 
+    /**
+     * Releases the ressources used by the class
+     */
     public dispose() {
         super.dispose();
 

@@ -13,6 +13,9 @@ import type { Nullable } from "core/types";
 import type { FluidRenderingObject } from "./fluidRenderingObject";
 import { FluidRenderingRenderTarget } from "./fluidRenderingRenderTarget";
 
+/**
+ * Textures that can be displayed as a debugging tool
+ */
 export enum FluidRenderingDebug {
     DepthTexture,
     DepthBlurredTexture,
@@ -23,16 +26,13 @@ export enum FluidRenderingDebug {
     DiffuseRendering,
 }
 
+/**
+ * Class used to render an object as a fluid thanks to different render target textures (depth, thickness, diffuse)
+ */
 export class FluidRenderingTargetRenderer {
     protected _scene: Scene;
     protected _camera: Nullable<Camera>;
     protected _engine: Engine;
-
-    protected _depthRenderTarget: Nullable<FluidRenderingRenderTarget>;
-    protected _diffuseRenderTarget: Nullable<FluidRenderingRenderTarget>;
-    protected _thicknessRenderTarget: Nullable<FluidRenderingRenderTarget>;
-
-    protected _renderPostProcess: Nullable<PostProcess>;
 
     protected _invProjectionMatrix: Matrix;
     protected _depthClearColor: Color4;
@@ -40,12 +40,18 @@ export class FluidRenderingTargetRenderer {
 
     protected _needInitialization: boolean;
 
+    /**
+     * Returns true if the class needs to be reinitialized (because of changes in parameterization)
+     */
     public get needInitialization() {
         return this._needInitialization;
     }
 
     private _generateDiffuseTexture = false;
 
+    /**
+     * Gets or sets a boolean indicating that the diffuse texture should be generated and used for the rendering
+     */
     public get generateDiffuseTexture() {
         return this._generateDiffuseTexture;
     }
@@ -59,22 +65,46 @@ export class FluidRenderingTargetRenderer {
         this._needInitialization = true;
     }
 
+    /**
+     * Fluid color. Not used if generateDiffuseTexture is true
+     */
     public fluidColor = new Color3(0.085, 0.6375, 0.765);
 
+    /**
+     * Density of the fluid. The higher the value, the more opaque the fluid.
+     */
     public density = 2;
 
+    /**
+     * Strength of the refraction.
+     */
     public refractionStrength = 0.1;
 
+    /**
+     * Strength of the fresnel effect (value between 0 and 1). Lower the value if you want to soften the specular effect
+     */
     public fresnelClamp = 1.0;
 
+    /**
+     * Strength of the specular power. Increase the value to make the specular effect more concentrated
+     */
     public specularPower = 250;
 
+    /**
+     * Minimum thickness of the particles. If useFixedThickness is true, minimumThickness is the thickness used
+     */
     public minimumThickness = 0;
 
+    /**
+     * Direction of the light. The fluid is assumed to be lit by a directional light
+     */
     public dirLight: Vector3 = new Vector3(-2, -1, 1).normalize();
 
     private _debugFeature: FluidRenderingDebug = FluidRenderingDebug.DepthBlurredTexture;
 
+    /**
+     * Gets or sets the feature (texture) to be debugged. Not used if debug is false
+     */
     public get debugFeature() {
         return this._debugFeature;
     }
@@ -90,6 +120,9 @@ export class FluidRenderingTargetRenderer {
 
     private _debug = false;
 
+    /**
+     * Gets or sets a boolean indicating if we should display a specific texture (given by debugFeature) for debugging purpose
+     */
     public get debug() {
         return this._debug;
     }
@@ -105,6 +138,10 @@ export class FluidRenderingTargetRenderer {
 
     private _environmentMap?: Nullable<BaseTexture>;
 
+    /**
+     * Gets or sets the environment map used for the reflection part of the shading
+     * If null, no map will be used. If undefined, the scene.environmentMap will be used (if defined)
+     */
     public get environmentMap() {
         return this._environmentMap;
     }
@@ -120,6 +157,9 @@ export class FluidRenderingTargetRenderer {
 
     private _enableBlurDepth = true;
 
+    /**
+     * Gets or sets a boolean indicating that the depth texture should be blurred
+     */
     public get enableBlurDepth() {
         return this._enableBlurDepth;
     }
@@ -135,6 +175,10 @@ export class FluidRenderingTargetRenderer {
 
     private _blurDepthSizeDivisor = 1;
 
+    /**
+     * Gets or sets the depth size divisor, which is used as a divisor when creating the texture used for blurring the depth
+     * For eg. if blurDepthSizeDivisor=2, the texture used to blur the depth will be half the size of the depth texture
+     */
     public get blurDepthSizeDivisor() {
         return this._blurDepthSizeDivisor;
     }
@@ -150,6 +194,9 @@ export class FluidRenderingTargetRenderer {
 
     private _blurDepthFilterSize = 7;
 
+    /**
+     * Size of the kernel used to filter the depth blur texture
+     */
     public get blurDepthFilterSize() {
         return this._blurDepthFilterSize;
     }
@@ -165,6 +212,9 @@ export class FluidRenderingTargetRenderer {
 
     private _blurDepthNumIterations = 3;
 
+    /**
+     * Number of blurring iterations used to generate the depth blur texture
+     */
     public get blurDepthNumIterations() {
         return this._blurDepthNumIterations;
     }
@@ -180,6 +230,9 @@ export class FluidRenderingTargetRenderer {
 
     private _blurDepthMaxFilterSize = 100;
 
+    /**
+     * Maximum size of the kernel used to blur the depth texture.
+     */
     public get blurDepthMaxFilterSize() {
         return this._blurDepthMaxFilterSize;
     }
@@ -195,6 +248,9 @@ export class FluidRenderingTargetRenderer {
 
     private _blurDepthDepthScale = 10;
 
+    /**
+     * Depth weight in the calculation when applying the bilateral blur to generate the depth blur texture
+     */
     public get blurDepthDepthScale() {
         return this._blurDepthDepthScale;
     }
@@ -210,6 +266,9 @@ export class FluidRenderingTargetRenderer {
 
     private _enableBlurThickness = true;
 
+    /**
+     * Gets or sets a boolean indicating that the thickness texture should be blurred
+     */
     public get enableBlurThickness() {
         return this._enableBlurThickness;
     }
@@ -225,6 +284,10 @@ export class FluidRenderingTargetRenderer {
 
     private _blurThicknessSizeDivisor = 1;
 
+    /**
+     * Gets or sets the thickness size divisor, which is used as a divisor when creating the texture used for blurring the thickness
+     * For eg. if blurThicknessSizeDivisor=2, the texture used to blur the thickness will be half the size of the thickness texture
+     */
     public get blurThicknessSizeDivisor() {
         return this._blurThicknessSizeDivisor;
     }
@@ -240,6 +303,9 @@ export class FluidRenderingTargetRenderer {
 
     private _blurThicknessFilterSize = 5;
 
+    /**
+     * Size of the kernel used to filter the thickness blur texture
+     */
     public get blurThicknessFilterSize() {
         return this._blurThicknessFilterSize;
     }
@@ -255,6 +321,9 @@ export class FluidRenderingTargetRenderer {
 
     private _blurThicknessNumIterations = 1;
 
+    /**
+     * Number of blurring iterations used to generate the thickness blur texture
+     */
     public get blurThicknessNumIterations() {
         return this._blurThicknessNumIterations;
     }
@@ -270,6 +339,9 @@ export class FluidRenderingTargetRenderer {
 
     private _useFixedThickness = false;
 
+    /**
+     * Gets or sets a boolean indicating that a fixed thickness should be used instead of generating a thickness texture
+     */
     public get useFixedThickness() {
         return this._useFixedThickness;
     }
@@ -283,13 +355,18 @@ export class FluidRenderingTargetRenderer {
         this._needInitialization = true;
     }
 
-    /** @hidden */
+    /** @internal */
     public _bgDepthTexture: Nullable<InternalTexture>;
 
-    public onUseVelocityChanged = new Observable<FluidRenderingTargetRenderer>();
+    /** @internal */
+    public _onUseVelocityChanged = new Observable<FluidRenderingTargetRenderer>();
 
     private _useVelocity = false;
 
+    /**
+     * Gets or sets a boolean indicating that the velocity should be used when rendering the particles as a fluid.
+     * Note: the vertex buffers must contain a "velocity" buffer for this to work!
+     */
     public get useVelocity() {
         return this._useVelocity;
     }
@@ -301,11 +378,15 @@ export class FluidRenderingTargetRenderer {
 
         this._useVelocity = use;
         this._needInitialization = true;
-        this.onUseVelocityChanged.notifyObservers(this);
+        this._onUseVelocityChanged.notifyObservers(this);
     }
 
     private _depthMapSize: Nullable<number> = null;
 
+    /**
+     * Defines the size of the depth texture.
+     * If null, the texture will have the size of the screen
+     */
     public get depthMapSize() {
         return this._depthMapSize;
     }
@@ -321,6 +402,10 @@ export class FluidRenderingTargetRenderer {
 
     private _thicknessMapSize: Nullable<number> = null;
 
+    /**
+     * Defines the size of the thickness texture.
+     * If null, the texture will have the size of the screen
+     */
     public get thicknessMapSize() {
         return this._thicknessMapSize;
     }
@@ -336,6 +421,10 @@ export class FluidRenderingTargetRenderer {
 
     private _diffuseMapSize: Nullable<number> = null;
 
+    /**
+     * Defines the size of the diffuse texture.
+     * If null, the texture will have the size of the screen
+     */
     public get diffuseMapSize() {
         return this._diffuseMapSize;
     }
@@ -349,9 +438,12 @@ export class FluidRenderingTargetRenderer {
         this._needInitialization = true;
     }
 
-    // Note: changing this value does not work because depth/stencil textures can't be created with MSAA yet (see https://github.com/BabylonJS/Babylon.js/issues/12444)
     private _samples = 1;
 
+    /**
+     * Gets or sets the number of samples used by MSAA
+     * Note: changing this value in WebGL does not work because depth/stencil textures can't be created with MSAA (see https://github.com/BabylonJS/Babylon.js/issues/12444)
+     */
     public get samples() {
         return this._samples;
     }
@@ -365,30 +457,30 @@ export class FluidRenderingTargetRenderer {
         this._needInitialization = true;
     }
 
+    /**
+     * Gets the camera used for the rendering
+     */
     public get camera() {
         return this._camera;
     }
 
-    /** @hidden */
-    public get renderPostProcess() {
-        return this._renderPostProcess;
-    }
+    /** @internal */
+    public _renderPostProcess: Nullable<PostProcess>;
 
-    /** @hidden */
-    public get depthRenderTarget() {
-        return this._depthRenderTarget;
-    }
+    /** @internal */
+    public _depthRenderTarget: Nullable<FluidRenderingRenderTarget>;
 
-    /** @hidden */
-    public get thicknessRenderTarget() {
-        return this._thicknessRenderTarget;
-    }
+    /** @internal */
+    public _diffuseRenderTarget: Nullable<FluidRenderingRenderTarget>;
 
-    /** @hidden */
-    public get diffuseRenderTarget() {
-        return this._diffuseRenderTarget;
-    }
+    /** @internal */
+    public _thicknessRenderTarget: Nullable<FluidRenderingRenderTarget>;
 
+    /**
+     * Creates an instance of the class
+     * @param scene Scene used to render the fluid object into
+     * @param camera Camera used to render the fluid object. If not provided, use the active camera of the scene instead
+     */
     constructor(scene: Scene, camera?: Camera) {
         this._scene = scene;
         this._engine = scene.getEngine();
@@ -407,7 +499,8 @@ export class FluidRenderingTargetRenderer {
         this._renderPostProcess = null;
     }
 
-    public initialize(): void {
+    /** @internal */
+    public _initialize(): void {
         this.dispose();
 
         this._needInitialization = false;
@@ -730,7 +823,8 @@ export class FluidRenderingTargetRenderer {
         });
     }
 
-    public clearTargets(): void {
+    /** @internal */
+    public _clearTargets(): void {
         if (this._depthRenderTarget?.renderTarget) {
             this._engine.bindFramebuffer(this._depthRenderTarget.renderTarget);
             this._engine.clear(this._depthClearColor, true, true, false);
@@ -751,7 +845,8 @@ export class FluidRenderingTargetRenderer {
         }
     }
 
-    public render(fluidObject: FluidRenderingObject): void {
+    /** @internal */
+    public _render(fluidObject: FluidRenderingObject): void {
         if (this._needInitialization || !fluidObject.isReady()) {
             return;
         }
@@ -803,6 +898,10 @@ export class FluidRenderingTargetRenderer {
         }
     }
 
+    /**
+     * Releases all the ressources used by the class
+     * @param onlyPostProcesses If true, releases only the ressources used by the render post processes
+     */
     public dispose(onlyPostProcesses = false): void {
         if (!onlyPostProcesses) {
             this._depthRenderTarget?.dispose();

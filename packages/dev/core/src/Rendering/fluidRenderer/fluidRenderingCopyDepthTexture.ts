@@ -4,10 +4,10 @@ import { Constants } from "core/Engines/constants";
 import type { Engine } from "core/Engines/engine";
 import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 import { EffectWrapper } from "core/Materials/effectRenderer";
-//import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import type { InternalTexture } from "core/Materials/Textures/internalTexture";
 import type { Nullable } from "core/types";
 
+/** @internal */
 export class FluidRenderingCopyDepthTexture {
     private _engine: Engine;
     private _indexBuffer: Nullable<DataBuffer>;
