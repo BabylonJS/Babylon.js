@@ -3,17 +3,31 @@ import { Constants } from "core/Engines/constants";
 import { EffectWrapper } from "core/Materials/effectRenderer";
 import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
+
 import { FluidRenderingObject } from "./fluidRenderingObject";
 
+/**
+ * Defines a rendering object based on a list of vertex buffers
+ * The list must contain at least a "position" buffer!
+ */
 export class FluidRenderingObjectVertexBuffer extends FluidRenderingObject {
     private _numParticles: number;
     private _disposeVBOffset: boolean;
     private _diffuseEffectWrapper: Nullable<EffectWrapper>;
 
+    /**
+     * Gets the name of the class
+     */
     public getClassName(): string {
         return "FluidRenderingObjectVertexBuffer";
     }
 
+    /**
+     * Creates a new instance of the class
+     * @param scene The scene the particles should be rendered into
+     * @param vertexBuffers The list of vertex buffers (should contain at least a "position" buffer!)
+     * @param numParticles Number of vertices to take into account from the buffers
+     */
     constructor(scene: Scene, public readonly vertexBuffers: { [key: string]: VertexBuffer }, numParticles: number) {
         super(scene);
 
@@ -44,18 +58,33 @@ export class FluidRenderingObjectVertexBuffer extends FluidRenderingObject {
         });
     }
 
+    /**
+     * Indicates if the object is ready to be rendered
+     * @returns True if everything is ready for the object to be rendered, otherwise false
+     */
     public isReady(): boolean {
         return super.isReady() && (this._diffuseEffectWrapper?.effect!.isReady() ?? false);
     }
 
+    /**
+     * Gets the number of particles in this object
+     * @returns The number of particles
+     */
     public numParticles(): number {
         return this._numParticles;
     }
 
+    /**
+     * Sets the number of particles in this object
+     * @param num The number of particles to take into account
+     */
     public setNumParticles(num: number) {
         this._numParticles = num;
     }
 
+    /**
+     * Render the diffuse texture for this object
+     */
     public renderDiffuseTexture(): void {
         const numParticles = this.numParticles();
 
@@ -82,6 +111,9 @@ export class FluidRenderingObjectVertexBuffer extends FluidRenderingObject {
         }
     }
 
+    /**
+     * Releases the ressources used by the class
+     */
     public dispose(): void {
         super.dispose();
 

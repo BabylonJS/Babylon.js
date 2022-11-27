@@ -10,6 +10,7 @@ import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
 import { Observable } from "core/Misc/observable";
 
+/** @internal */
 export class FluidRenderingRenderTarget {
     protected _name: string;
     protected _scene: Scene;

@@ -5,8 +5,9 @@ import { Color3 } from "core/Maths/math.color";
 import type { Observer } from "core/Misc/observable";
 import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
-import { FluidRenderingDebug } from "./fluidRenderingTargetRenderer";
 import { Tools } from "core/Misc/tools";
+
+import { FluidRenderingDebug } from "./fluidRenderingTargetRenderer";
 
 async function LoadLiLGUI(): Promise<void> {
     return Tools.LoadScriptAsync("https://cdn.jsdelivr.net/npm/lil-gui@0.17.0/dist/lil-gui.umd.min.js");
@@ -19,6 +20,11 @@ namespace lil {
     export type Controller = any;
 }
 
+const domElementName = "fluidRendererGUI";
+
+/**
+ * A simple GUI to easily interact with the fluid renderer
+ */
 export class FluidRendererGUI {
     private _gui: Nullable<lil.GUI>;
     private _visible: boolean;
@@ -30,6 +36,13 @@ export class FluidRendererGUI {
     private _renderObjectIndex: number;
     private _renderObjectsGUIElements: lil.Controller[];
 
+    /**
+     * Shows or hides the GUI
+     */
+    public get visible() {
+        return this._visible;
+    }
+
     public set visible(v: boolean) {
         if (v === this._visible) {
             return;
@@ -40,6 +53,11 @@ export class FluidRendererGUI {
         }
     }
 
+    /**
+     * Initializes the class
+     * @param scene Scene from which the fluid renderer should be retrieved
+     * @param showGeneralMenu True to show the general menu, false to hide it (default: true)
+     */
     constructor(scene: Scene, showGeneralMenu = true) {
         this._scene = scene;
         this._showGeneralMenu = showGeneralMenu;
@@ -51,11 +69,14 @@ export class FluidRendererGUI {
         this._renderObjectsGUIElements = [];
         this._gui = null;
 
-        this.initialize();
+        this._initialize();
     }
 
+    /**
+     * Disposes of all the ressources used by the class
+     */
     public dispose() {
-        const oldgui = document.getElementById("datGUI");
+        const oldgui = document.getElementById(domElementName);
         if (oldgui !== null) {
             oldgui.remove();
             this._gui = null;
@@ -67,9 +88,6 @@ export class FluidRendererGUI {
     private _setupKeyboard(): void {
         this._onKeyObserver = this._scene.onKeyboardObservable.add((kbInfo) => {
             switch (kbInfo.type) {
-                case KeyboardEventTypes.KEYDOWN:
-                    //console.log("KEY DOWN: ", kbInfo.event.key);
-                    break;
                 case KeyboardEventTypes.KEYUP:
                     switch (kbInfo.event.key) {
                         case "F8": {
@@ -77,13 +95,12 @@ export class FluidRendererGUI {
                             break;
                         }
                     }
-                    //console.log("KEY UP: ", kbInfo.event.key, kbInfo.event.keyCode);
                     break;
             }
         });
     }
 
-    public async initialize() {
+    private async _initialize() {
         this.dispose();
 
         if (typeof lil === "undefined") {
@@ -92,7 +109,7 @@ export class FluidRendererGUI {
 
         this._gui = new lil.GUI({ title: "Fluid Rendering" });
         this._gui.domElement.style.marginTop = "60px";
-        this._gui.domElement.id = "datGUI";
+        this._gui.domElement.id = domElementName;
 
         this._setupKeyboard();
 
@@ -356,6 +373,9 @@ export class FluidRendererGUI {
         }
     }
 
+    /**
+     * Updates the values displayed by the GUI according to the property values of the underlying objects
+     */
     public syncGUI(): void {
         const fluidRenderer = this._scene.fluidRenderer;
 
@@ -372,11 +392,11 @@ export class FluidRendererGUI {
                 if (value) {
                     this._scene.enableFluidRenderer();
                     this._targetRendererIndex = 0;
-                    this.initialize();
+                    this._initialize();
                 } else {
                     this._scene.disableFluidRenderer();
                     this._targetRendererIndex = 0;
-                    this.initialize();
+                    this._initialize();
                 }
                 return;
             case "targets_fluidColor":

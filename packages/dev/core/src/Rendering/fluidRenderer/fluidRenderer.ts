@@ -6,13 +6,13 @@ import type { Observer } from "core/Misc/observable";
 import type { Camera } from "core/Cameras/camera";
 import { VertexBuffer } from "core/Buffers/buffer";
 import type { IParticleSystem } from "core/Particles/IParticleSystem";
+import { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
 
 import type { FluidRenderingObject } from "./fluidRenderingObject";
 import { FluidRenderingObjectParticleSystem } from "./fluidRenderingObjectParticleSystem";
 import { FluidRenderingTargetRenderer } from "./fluidRenderingTargetRenderer";
 import { FluidRenderingObjectVertexBuffer } from "./fluidRenderingObjectVertexBuffer";
 import { FluidRenderingCopyDepthTexture } from "./fluidRenderingCopyDepthTexture";
-import { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
 
 import "../../Shaders/fluidRenderingParticleDepth.vertex";
 import "../../Shaders/fluidRenderingParticleDepth.fragment";
@@ -38,7 +38,7 @@ declare module "core/Particles/particleSystem" {
         /** @hidden (Backing field) */
         _renderAsFluid: boolean;
 
-        /** Sets this property to true to render the particle system with the fluid renderer */
+        /** Sets this property to true to render the particle system with the fluid renderer (don't forget to enable the fluid renderer at the scene level!) */
         renderAsFluid: boolean;
     }
 }
@@ -48,7 +48,7 @@ declare module "core/Particles/gpuParticleSystem" {
         /** @hidden (Backing field) */
         _renderAsFluid: boolean;
 
-        /** Sets this property to true to render the particle system with the fluid renderer */
+        /** Sets this property to true to render the particle system with the fluid renderer (don't forget to enable the fluid renderer at the scene level!) */
         renderAsFluid: boolean;
     }
 }
@@ -72,17 +72,26 @@ Object.defineProperty(GPUParticleSystem.prototype, "renderAsFluid", {
     set: function (this: GPUParticleSystem, value: boolean) {
         this._renderAsFluid = value;
         this._scene?.fluidRenderer?.collectParticleSystems();
-        //console.error("Fluid rendering not supported with GPU particle systems!");
     },
     enumerable: true,
     configurable: true,
 });
 
+/**
+ * An object rendered as a fluid.
+ * It consists of the object itself as well as the render target renderer (which is used to generate the textures (render target) needed for fluid rendering)
+ */
 export interface IFluidRenderingRenderObject {
+    /** object rendered as a fluid */
     object: FluidRenderingObject;
+    /** target renderer used to render the fluid object */
     targetRenderer: FluidRenderingTargetRenderer;
 }
 
+/**
+ * Class responsible for fluid rendering.
+ * It is implementing the method described in https://developer.download.nvidia.com/presentations/2010/gdc/Direct3D_Effects.pdf
+ */
 export class FluidRenderer {
     /** @hidden */
     public static _SceneComponentInitialization: (scene: Scene) => void = (/*_*/) => {
@@ -96,14 +105,20 @@ export class FluidRenderer {
     private _targetRenderers: FluidRenderingTargetRenderer[];
     private _cameras: Map<Camera, [Array<FluidRenderingTargetRenderer>, { [key: string]: FluidRenderingCopyDepthTexture }]>;
 
+    /** Retrives all the render objects managed by the class */
     public get renderObjects() {
         return this._renderObjects;
     }
 
+    /** Retrives all the render target renderers managed by the class */
     public get targetRenderers() {
         return this._targetRenderers;
     }
 
+    /**
+     * Initializes the class
+     * @param scene Scene in which the objects are part of
+     */
     constructor(scene: Scene) {
         this._scene = scene;
         this._engine = scene.getEngine();
@@ -121,21 +136,36 @@ export class FluidRenderer {
         this.collectParticleSystems();
     }
 
+    /**
+     * Reinitializes the class
+     * Can be used if you change the object priority (FluidRenderingObject.priority), to make sure the objects are rendered in the right order
+     */
     public recreate(): void {
         this._sortRenderingObjects();
         this._initialize();
     }
 
-    public getRenderObjectFromParticleSystem(ps: ParticleSystem): Nullable<IFluidRenderingRenderObject> {
+    /** Gets the render object corresponding to a particle system (null if the particle system is not rendered as a fluid) */
+    public getRenderObjectFromParticleSystem(ps: IParticleSystem): Nullable<IFluidRenderingRenderObject> {
         const index = this._getParticleSystemIndex(ps);
         return index !== -1 ? this._renderObjects[index] : null;
     }
 
+    /** Gets the render object corresponding to a vertex buffer (null if the vertex buffer is not rendered as a fluid) */
     public getRenderObjectFromVertexBuffer(vb: VertexBuffer): Nullable<IFluidRenderingRenderObject> {
         const index = this._getVertexBufferIndex(vb);
         return index !== -1 ? this._renderObjects[index] : null;
     }
 
+    /**
+     * Adds a particle system to the fluid renderer.
+     * Note that you should not normally call this method directly, as you can simply use the renderAsFluid property of the ParticleSystem/GPUParticleSystem class
+     * @param ps particle system
+     * @param generateDiffuseTexture True if you want to generate a diffuse texture from the particle system and use it as part of the fluid rendering (default: false)
+     * @param targetRenderer The target renderer used to display the particle system as a fluid. If not provided, the method will create a new one
+     * @param camera The camera used by the target renderer (if the target renderer is created by the method)
+     * @returns the render object corresponding to the particle system
+     */
     public addParticleSystem(ps: IParticleSystem, generateDiffuseTexture?: boolean, targetRenderer?: FluidRenderingTargetRenderer, camera?: Camera): IFluidRenderingRenderObject {
         const object = new FluidRenderingObjectParticleSystem(this._scene, ps);
 
@@ -146,8 +176,8 @@ export class FluidRenderer {
             this._targetRenderers.push(targetRenderer);
         }
 
-        if (!targetRenderer.onUseVelocityChanged.hasObservers()) {
-            targetRenderer.onUseVelocityChanged.add(this._setUseVelocityForRenderObject.bind(this));
+        if (!targetRenderer._onUseVelocityChanged.hasObservers()) {
+            targetRenderer._onUseVelocityChanged.add(this._setUseVelocityForRenderObject.bind(this));
         }
 
         if (generateDiffuseTexture !== undefined) {
@@ -165,6 +195,15 @@ export class FluidRenderer {
         return renderObject;
     }
 
+    /**
+     * Adds a vertex buffer set to the fluid renderer.
+     * @param vertexBuffers the vertex buffers. There must be at least a "position" vertex buffer in the set!
+     * @param numParticles number of vertices in the vertex buffer
+     * @param generateDiffuseTexture True if you want to generate a diffuse texture from the vertex buffer and use it as part of the fluid rendering (default: false). For the texture to be generated correctly, you need a "color" vertex buffer in the set!
+     * @param targetRenderer The target renderer used to display the particle system as a fluid. If not provided, the method will create a new one
+     * @param camera The camera used by the target renderer (if the target renderer is created by the method)
+     * @returns the render object corresponding to the vertex buffer set
+     */
     public addVertexBuffer(
         vertexBuffers: { [key: string]: VertexBuffer },
         numParticles: number,
@@ -181,8 +220,8 @@ export class FluidRenderer {
             this._targetRenderers.push(targetRenderer);
         }
 
-        if (!targetRenderer.onUseVelocityChanged.hasObservers()) {
-            targetRenderer.onUseVelocityChanged.add(this._setUseVelocityForRenderObject.bind(this));
+        if (!targetRenderer._onUseVelocityChanged.hasObservers()) {
+            targetRenderer._onUseVelocityChanged.add(this._setUseVelocityForRenderObject.bind(this));
         }
 
         if (generateDiffuseTexture !== undefined) {
@@ -200,6 +239,12 @@ export class FluidRenderer {
         return renderObject;
     }
 
+    /**
+     * Removes a render object from the fluid renderer
+     * @param renderObject the render object to remove
+     * @param removeUnusedTargetRenderer True to remove/dispose of the target renderer if it's not used anymore (default: true)
+     * @returns True if the render object has been found and released, else false
+     */
     public removeRenderObject(renderObject: IFluidRenderingRenderObject, removeUnusedTargetRenderer = true): boolean {
         const index = this._renderObjects.indexOf(renderObject);
         if (index === -1) {
@@ -225,6 +270,9 @@ export class FluidRenderer {
         });
     }
 
+    /**
+     * Loops over all particle systems of the scene and prepare them for fluid rendering if their renderAsFluid property is true
+     */
     public collectParticleSystems(): void {
         for (let i = 0; i < this._scene.particleSystems.length; ++i) {
             const ps = this._scene.particleSystems[i];
@@ -309,16 +357,16 @@ export class FluidRenderer {
         for (let i = 0; i < this._targetRenderers.length; ++i) {
             const targetRenderer = this._targetRenderers[i];
 
-            targetRenderer.initialize();
+            targetRenderer._initialize();
 
-            if (targetRenderer.camera && targetRenderer.renderPostProcess) {
+            if (targetRenderer.camera && targetRenderer._renderPostProcess) {
                 let list = cameras.get(targetRenderer.camera);
                 if (!list) {
                     list = [[], {}];
                     cameras.set(targetRenderer.camera, list);
                 }
                 list[0].push(targetRenderer);
-                targetRenderer.camera.attachPostProcess(targetRenderer.renderPostProcess, i);
+                targetRenderer.camera.attachPostProcess(targetRenderer._renderPostProcess, i);
             }
         }
 
@@ -335,7 +383,7 @@ export class FluidRenderer {
                     firstPostProcess.inputTexture.createDepthStencilTexture(0, true, this._engine.isStencilEnable, targetRenderers[0].samples);
                 }
                 for (const targetRenderer of targetRenderers) {
-                    const thicknessRT = targetRenderer.thicknessRenderTarget?.renderTarget;
+                    const thicknessRT = targetRenderer._thicknessRenderTarget?.renderTarget;
                     const thicknessTexture = thicknessRT?.texture;
                     if (thicknessRT && thicknessTexture) {
                         const key = thicknessTexture.width + "_" + thicknessTexture.height;
@@ -386,8 +434,8 @@ export class FluidRenderer {
         }
 
         for (const [targetRenderer, particleSize] of particleSizes) {
-            if (targetRenderer.depthRenderTarget) {
-                targetRenderer.depthRenderTarget.particleSize = particleSize;
+            if (targetRenderer._depthRenderTarget) {
+                targetRenderer._depthRenderTarget.particleSize = particleSize;
             }
         }
     }
@@ -414,7 +462,7 @@ export class FluidRenderer {
     public _render(forCamera?: Camera): void {
         for (let i = 0; i < this._targetRenderers.length; ++i) {
             if (!forCamera || this._targetRenderers[i].camera === forCamera) {
-                this._targetRenderers[i].clearTargets();
+                this._targetRenderers[i]._clearTargets();
             }
         }
 
@@ -443,11 +491,14 @@ export class FluidRenderer {
         for (let i = 0; i < this._renderObjects.length; ++i) {
             const renderingObject = this._renderObjects[i];
             if (!forCamera || renderingObject.targetRenderer.camera === forCamera) {
-                renderingObject.targetRenderer.render(renderingObject.object);
+                renderingObject.targetRenderer._render(renderingObject.object);
             }
         }
     }
 
+    /**
+     * Disposes of all the ressources used by the class
+     */
     public dispose(): void {
         this._engine.onResizeObservable.remove(this._onEngineResizeObserver);
         this._onEngineResizeObserver = null;

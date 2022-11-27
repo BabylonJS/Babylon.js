@@ -7,6 +7,10 @@ import { Observable } from "core/Misc/observable";
 import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
 
+/**
+ * Defines the base object used for fluid rendering.
+ * It is based on a list of vertices (particles)
+ */
 export abstract class FluidRenderingObject {
     protected _scene: Scene;
     protected _engine: Engine;
@@ -14,12 +18,15 @@ export abstract class FluidRenderingObject {
     protected _depthEffectWrapper: Nullable<EffectWrapper>;
     protected _thicknessEffectWrapper: Nullable<EffectWrapper>;
 
+    /** Defines the priority of the object. Objects will be rendered in ascending order of priority */
     public priority = 0;
 
     protected _particleSize = 0.1;
 
+    /** Observable triggered when the size of the particle is changed */
     public onParticleSizeChanged = new Observable<FluidRenderingObject>();
 
+    /** Gets or sets the size of the particle */
     public get particleSize() {
         return this._particleSize;
     }
@@ -33,14 +40,17 @@ export abstract class FluidRenderingObject {
         this.onParticleSizeChanged.notifyObservers(this);
     }
 
+    /** Defines the alpha value of a particle */
     public particleThicknessAlpha = 0.05;
 
+    /** Indicates if the object uses instancing or not */
     public get useInstancing() {
         return !this.indexBuffer;
     }
 
     private _useVelocity = false;
 
+    /** Indicates if velocity of particles should be used when rendering the object. The vertex buffer set must contain a "velocity" buffer for this to work! */
     public get useVelocity() {
         return this._useVelocity;
     }
@@ -58,16 +68,29 @@ export abstract class FluidRenderingObject {
         return !!this.vertexBuffers?.velocity;
     }
 
+    /**
+     * Gets the vertex buffers
+     */
     public abstract get vertexBuffers(): { [key: string]: VertexBuffer };
 
+    /**
+     * Gets the index buffer (or null if the object is using instancing)
+     */
     public get indexBuffer(): Nullable<DataBuffer> {
         return null;
     }
 
+    /**
+     * Gets the name of the class
+     */
     public getClassName(): string {
         return "FluidRenderingObject";
     }
 
+    /**
+     * Instantiates a fluid rendering object
+     * @param scene The scene the object is part of
+     */
     constructor(scene: Scene) {
         this._scene = scene;
         this._engine = scene.getEngine();
@@ -112,6 +135,10 @@ export abstract class FluidRenderingObject {
         });
     }
 
+    /**
+     * Indicates if the object is ready to be rendered
+     * @returns True if everything is ready for the object to be rendered, otherwise false
+     */
     public isReady(): boolean {
         if (this._effectsAreDirty) {
             this._createEffects();
@@ -127,10 +154,17 @@ export abstract class FluidRenderingObject {
         return depthEffect.isReady() && thicknessEffect.isReady();
     }
 
+    /**
+     * Gets the number of particles (vertices) of this object
+     * @returns The number of particles
+     */
     public numParticles(): number {
         return 0;
     }
 
+    /**
+     * Render the depth texture for this object
+     */
     public renderDepthTexture(): void {
         const numParticles = this.numParticles();
 
@@ -156,6 +190,9 @@ export abstract class FluidRenderingObject {
         }
     }
 
+    /**
+     * Render the thickness texture for this object
+     */
     public renderThicknessTexture(): void {
         const numParticles = this.numParticles();
 
@@ -187,10 +224,16 @@ export abstract class FluidRenderingObject {
         this._engine.setAlphaMode(Constants.ALPHA_DISABLE);
     }
 
+    /**
+     * Render the diffuse texture for this object
+     */
     public renderDiffuseTexture(): void {
         // do nothing by default
     }
 
+    /**
+     * Releases the ressources used by the class
+     */
     public dispose(): void {
         this._depthEffectWrapper?.dispose();
         this._thicknessEffectWrapper?.dispose();
