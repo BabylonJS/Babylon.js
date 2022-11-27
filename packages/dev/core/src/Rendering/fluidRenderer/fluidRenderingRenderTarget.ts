@@ -169,6 +169,8 @@ export class FluidRenderingRenderTarget {
 
         const renderTexture = this._rt.texture!;
 
+        renderTexture.incrementReferences();
+
         this._texture = new Texture(null, this._scene);
         this._texture.name = "rtt" + this._name;
         this._texture._texture = renderTexture;
@@ -205,6 +207,8 @@ export class FluidRenderingRenderTarget {
         );
 
         const renderTexture = rtBlur.texture!;
+
+        renderTexture.incrementReferences();
 
         const texture = new Texture(null, this._scene);
         texture.name = "rttBlurred" + debugName;
@@ -398,8 +402,12 @@ export class FluidRenderingRenderTarget {
 
         this._rt?.dispose();
         this._rt = null;
+        this._texture?.dispose();
+        this._texture = null;
         this._rtBlur?.dispose();
         this._rtBlur = null;
+        this._textureBlurred?.dispose();
+        this._textureBlurred = null;
         if (this._blurPostProcesses) {
             this._blurPostProcesses[0].dispose();
             this._blurPostProcesses[1].dispose();
