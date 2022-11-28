@@ -216,7 +216,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
 
         this._observer = this.camera
             .getScene()
-            ._onCameraInputObservable.add(
+            ._inputManager._addCameraPointerObserver(
                 this._pointerInput,
                 PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE | PointerEventTypes.POINTERDOUBLETAP
             );
@@ -251,7 +251,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
         }
 
         if (this._observer) {
-            this.camera.getScene()._onCameraInputObservable.remove(this._observer);
+            this.camera.getScene()._inputManager._removeCameraPointerObserver(this._observer);
             this._observer = null;
 
             if (this._contextMenuBind) {
