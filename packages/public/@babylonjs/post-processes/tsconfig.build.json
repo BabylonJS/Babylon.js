@@ -2,7 +2,7 @@
     "extends": "../../../../tsconfig.build.json",
 
     "compilerOptions": {
-        "outDir": "./dist",
+        "outDir": "./",
         "rootDir": "../../../lts/postProcesses/generated",
         "declaration": true,
         "importHelpers": true,

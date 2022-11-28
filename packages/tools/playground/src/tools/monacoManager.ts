@@ -236,6 +236,7 @@ class Playground {
             "https://preview.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.d.ts",
             "https://preview.babylonjs.com/serializers/babylonjs.serializers.d.ts",
             "https://preview.babylonjs.com/inspector/babylon.inspector.d.ts",
+            "https://preview.babylonjs.com/accessibility/babylon.accessibility.d.ts",
         ];
 
         let snapshot = "";
@@ -289,6 +290,15 @@ class Playground {
                 libContent += await response.text();
             }
         }
+        libContent += `
+interface Window {
+    engine: BABYLON.Engine;
+    canvas: HTMLCanvasElement;
+};
+
+declare var engine: BABYLON.Engine;
+declare var canvas: HTMLCanvasElement;
+        `;
 
         this._createEditor();
 

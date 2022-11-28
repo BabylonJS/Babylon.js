@@ -14,6 +14,7 @@ import type { Light } from "../../../../Lights/light";
 import type { Nullable } from "../../../../types";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Scene } from "../../../../scene";
+import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
 
 import "../../../../Shaders/ShadersInclude/lightFragmentDeclaration";
 import "../../../../Shaders/ShadersInclude/lightVxFragmentDeclaration";
@@ -29,12 +30,37 @@ import "../../../../Shaders/ShadersInclude/shadowsVertex";
  * Block used to add light in the fragment shader
  */
 export class LightBlock extends NodeMaterialBlock {
-    private _lightId: number;
+    private _lightId: number = 0;
 
     /**
      * Gets or sets the light associated with this block
      */
     public light: Nullable<Light>;
+
+    /** Indicates that no code should be generated in the vertex shader. Can be useful in some specific circumstances (like when doing ray marching for eg) */
+    @editableInPropertyPage("Generate only fragment code", PropertyTypeForEdition.Boolean, "ADVANCED", {
+        notifiers: { rebuild: true, update: true, onValidation: LightBlock._OnGenerateOnlyFragmentCodeChanged },
+    })
+    public generateOnlyFragmentCode = false;
+
+    private static _OnGenerateOnlyFragmentCodeChanged(block: NodeMaterialBlock, _propertyName: string): boolean {
+        const that = block as LightBlock;
+
+        if (that.worldPosition.isConnected) {
+            that.generateOnlyFragmentCode = !that.generateOnlyFragmentCode;
+            console.error("The worldPosition input must not be connected to be able to switch!");
+            return false;
+        }
+
+        that._setTarget();
+
+        return true;
+    }
+
+    private _setTarget(): void {
+        this._setInitialTarget(this.generateOnlyFragmentCode ? NodeMaterialBlockTargets.Fragment : NodeMaterialBlockTargets.VertexAndFragment);
+        this.getInputByName("worldPosition")!.target = this.generateOnlyFragmentCode ? NodeMaterialBlockTargets.Fragment : NodeMaterialBlockTargets.Vertex;
+    }
 
     /**
      * Create a new LightBlock
@@ -274,6 +300,10 @@ export class LightBlock extends NodeMaterialBlock {
             return;
         }
 
+        if (this.generateOnlyFragmentCode) {
+            state.sharedData.dynamicUniformBlocks.push(this);
+        }
+
         // Fragment
         state.sharedData.forcedBindableBlocks.push(this);
         state.sharedData.blocksWithDefines.push(this);
@@ -281,20 +311,35 @@ export class LightBlock extends NodeMaterialBlock {
         const comments = `//${this.name}`;
         const worldPos = this.worldPosition;
 
+        let worldPosVariableName = worldPos.associatedVariableName;
+        if (this.generateOnlyFragmentCode) {
+            worldPosVariableName = state._getFreeVariableName("globalWorldPos");
+            state._emitFunction("light_globalworldpos", `vec3 ${worldPosVariableName};\r\n`, comments);
+            state.compilationString += `${worldPosVariableName} = ${worldPos.associatedVariableName}.xyz;\r\n`;
+
+            state.compilationString += state._emitCodeFromInclude("shadowsVertex", comments, {
+                repeatKey: "maxSimultaneousLights",
+                substitutionVars: this.generateOnlyFragmentCode ? `worldPos,${worldPos.associatedVariableName}` : undefined,
+            });
+        } else {
+            worldPosVariableName = "v_" + worldPosVariableName + ".xyz";
+        }
+
         state._emitFunctionFromInclude("helperFunctions", comments);
 
         state._emitFunctionFromInclude("lightsFragmentFunctions", comments, {
-            replaceStrings: [{ search: /vPositionW/g, replace: "v_" + worldPos.associatedVariableName + ".xyz" }],
+            replaceStrings: [{ search: /vPositionW/g, replace: worldPosVariableName }],
         });
 
         state._emitFunctionFromInclude("shadowsFragmentFunctions", comments, {
-            replaceStrings: [{ search: /vPositionW/g, replace: "v_" + worldPos.associatedVariableName + ".xyz" }],
+            replaceStrings: [{ search: /vPositionW/g, replace: worldPosVariableName }],
         });
 
         if (!this.light) {
             // Emit for all lights
             state._emitFunctionFromInclude(state.supportUniformBuffers ? "lightUboDeclaration" : "lightFragmentDeclaration", comments, {
                 repeatKey: "maxSimultaneousLights",
+                substitutionVars: this.generateOnlyFragmentCode ? "varying," : undefined,
             });
         } else {
             state._emitFunctionFromInclude(
@@ -310,7 +355,7 @@ export class LightBlock extends NodeMaterialBlock {
         // Code
         if (this._lightId === 0) {
             if (state._registerTempVariable("viewDirectionW")) {
-                state.compilationString += `vec3 viewDirectionW = normalize(${this.cameraPosition.associatedVariableName} - ${"v_" + worldPos.associatedVariableName}.xyz);\r\n`;
+                state.compilationString += `vec3 viewDirectionW = normalize(${this.cameraPosition.associatedVariableName} - ${worldPosVariableName});\r\n`;
             }
             state.compilationString += `lightingInfo info;\r\n`;
             state.compilationString += `float shadow = 1.;\r\n`;
@@ -352,6 +397,8 @@ export class LightBlock extends NodeMaterialBlock {
     public serialize(): any {
         const serializationObject = super.serialize();
 
+        serializationObject.generateOnlyFragmentCode = this.generateOnlyFragmentCode;
+
         if (this.light) {
             serializationObject.lightId = this.light.id;
         }
@@ -365,6 +412,10 @@ export class LightBlock extends NodeMaterialBlock {
         if (serializationObject.lightId) {
             this.light = scene.getLightById(serializationObject.lightId);
         }
+
+        this.generateOnlyFragmentCode = serializationObject.generateOnlyFragmentCode;
+
+        this._setTarget();
     }
 }
 

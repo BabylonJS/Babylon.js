@@ -59,6 +59,8 @@ import { NodeMaterialSystemValues } from "./Enums/nodeMaterialSystemValues";
 import type { ImageSourceBlock } from "./Blocks/Dual/imageSourceBlock";
 import { EngineStore } from "../../Engines/engineStore";
 import type { Material } from "../material";
+import { MaterialHelper } from "../materialHelper";
+import type { TriPlanarBlock } from "./Blocks/triPlanarBlock";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -118,6 +120,8 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
 
     /** MISC. */
     public BUMPDIRECTUV = 0;
+    public CAMERA_ORTHOGRAPHIC = false;
+    public CAMERA_PERSPECTIVE = false;
 
     constructor() {
         super();
@@ -1173,6 +1177,12 @@ export class NodeMaterial extends PushMaterial {
     }> {
         let result = null;
 
+        // Global defines
+        const scene = this.getScene();
+        if (MaterialHelper.PrepareDefinesForCamera(scene, defines)) {
+            defines.markAsMiscDirty();
+        }
+
         // Shared defines
         this._sharedData.blocksWithDefines.forEach((b) => {
             b.initializeDefines(mesh, this, defines, useInstances);
@@ -1451,7 +1461,7 @@ export class NodeMaterial extends PushMaterial {
      * Gets the list of texture blocks
      * @returns an array of texture blocks
      */
-    public getTextureBlocks(): (TextureBlock | ReflectionTextureBaseBlock | RefractionBlock | CurrentScreenBlock | ParticleTextureBlock | ImageSourceBlock)[] {
+    public getTextureBlocks(): (TextureBlock | ReflectionTextureBaseBlock | RefractionBlock | CurrentScreenBlock | ParticleTextureBlock | ImageSourceBlock | TriPlanarBlock)[] {
         if (!this._sharedData) {
             return [];
         }

@@ -12,6 +12,30 @@ import { ReflectionTextureBaseBlock } from "./reflectionTextureBaseBlock";
  * Block used to read a reflection texture from a sampler
  */
 export class ReflectionTextureBlock extends ReflectionTextureBaseBlock {
+    protected _onGenerateOnlyFragmentCodeChanged(): boolean {
+        if (this.position.isConnected) {
+            this.generateOnlyFragmentCode = !this.generateOnlyFragmentCode;
+            console.error("The position input must not be connected to be able to switch!");
+            return false;
+        }
+
+        if (this.worldPosition.isConnected) {
+            this.generateOnlyFragmentCode = !this.generateOnlyFragmentCode;
+            console.error("The worldPosition input must not be connected to be able to switch!");
+            return false;
+        }
+
+        this._setTarget();
+
+        return true;
+    }
+
+    protected _setTarget(): void {
+        super._setTarget();
+        this.getInputByName("position")!.target = this.generateOnlyFragmentCode ? NodeMaterialBlockTargets.Fragment : NodeMaterialBlockTargets.Vertex;
+        this.getInputByName("worldPosition")!.target = this.generateOnlyFragmentCode ? NodeMaterialBlockTargets.Fragment : NodeMaterialBlockTargets.Vertex;
+    }
+
     /**
      * Create a new ReflectionTextureBlock
      * @param name defines the block name
@@ -154,6 +178,10 @@ export class ReflectionTextureBlock extends ReflectionTextureBaseBlock {
         if (state.target !== NodeMaterialBlockTargets.Fragment) {
             state.compilationString += this.handleVertexSide(state);
             return this;
+        }
+
+        if (this.generateOnlyFragmentCode) {
+            state.compilationString += this.handleVertexSide(state);
         }
 
         this.handleFragmentSideInits(state);

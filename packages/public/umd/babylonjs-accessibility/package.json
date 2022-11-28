@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-accessibility",
-    "version": "5.33.0",
+    "version": "5.34.0",
     "main": "babylon.accessibility.max.js",
     "types": "babylon.accessibility.module.d.ts",
     "files": [
@@ -14,8 +14,8 @@
         "clean": "rimraf dist && rimraf babylon*.*"
     },
     "dependencies": {
-        "babylonjs": "^5.33.0",
-        "babylonjs-gui": "^5.33.0"
+        "babylonjs": "^5.34.0",
+        "babylonjs-gui": "^5.34.0"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",

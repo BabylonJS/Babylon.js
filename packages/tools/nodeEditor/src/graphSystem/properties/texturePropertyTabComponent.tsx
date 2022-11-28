@@ -22,10 +22,11 @@ import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineCompon
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
+import type { TriPlanarBlock } from "core/Materials/Node/Blocks/triPlanarBlock";
 
 type ReflectionTexture = ReflectionTextureBlock | ReflectionBlock | RefractionBlock;
 
-type AnyTexture = TextureBlock | ReflectionTexture | CurrentScreenBlock | ParticleTextureBlock;
+type AnyTexture = TextureBlock | ReflectionTexture | CurrentScreenBlock | ParticleTextureBlock | TriPlanarBlock;
 
 export class TexturePropertyTabComponent extends React.Component<IPropertyComponentProps, { isEmbedded: boolean; loadAsCubeTexture: boolean; textureIsPrefiltered: boolean }> {
     get textureBlock(): AnyTexture {
