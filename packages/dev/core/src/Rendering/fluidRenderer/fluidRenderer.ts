@@ -204,7 +204,7 @@ export class FluidRenderer {
      * @param camera The camera used by the target renderer (if the target renderer is created by the method)
      * @returns the render object corresponding to the vertex buffer set
      */
-    public addVertexBuffer(
+    public addVertexBuffers(
         vertexBuffers: { [key: string]: VertexBuffer },
         numParticles: number,
         generateDiffuseTexture?: boolean,
