@@ -25,7 +25,7 @@ export class PickingInfo {
      */
     public pickedPoint: Nullable<Vector3> = null;
     /**
-     * The mesh corresponding the the pick collision
+     * The mesh corresponding the pick collision
      */
     public pickedMesh: Nullable<AbstractMesh> = null;
     /** (See getTextureCoordinates) The barycentric U coordinate that is used when calculating the texture coordinates of the collision.*/
@@ -36,7 +36,7 @@ export class PickingInfo {
     public faceId = -1;
     /** The index of the face on the subMesh that was picked, or the index of the Line if the picked Mesh is a LinesMesh */
     public subMeshFaceId = -1;
-    /** Id of the the submesh that was picked */
+    /** Id of the submesh that was picked */
     public subMeshId = 0;
     /** If a sprite was picked, this will be the sprite the pick collided with */
     public pickedSprite: Nullable<Sprite> = null;
@@ -63,7 +63,7 @@ export class PickingInfo {
     /**
      * Gets the normal corresponding to the face the pick collided with
      * @param useWorldCoordinates If the resulting normal should be relative to the world (default: false)
-     * @param useVerticesNormals If the vertices normals should be used to calculate the normal instead of the normal map
+     * @param useVerticesNormals If the vertices normals should be used to calculate the normal instead of the normal map (default: true)
      * @returns The normal corresponding to the face the pick collided with
      * @remarks Note that the returned normal will always point towards the picking ray.
      */
@@ -146,7 +146,7 @@ export class PickingInfo {
 
     /**
      * Gets the texture coordinates of where the pick occurred
-     * @returns the vector containing the coordinates of the texture
+     * @returns The vector containing the coordinates of the texture
      */
     public getTextureCoordinates(): Nullable<Vector2> {
         if (!this.pickedMesh || !this.pickedMesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
