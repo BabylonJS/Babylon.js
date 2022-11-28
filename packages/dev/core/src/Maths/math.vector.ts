@@ -2516,6 +2516,30 @@ export class Vector3 {
     }
 
     /**
+     * Reflects a vector off the plane defined by a normalized normal
+     * @param inDirection defines the vector direction
+     * @param normal defines the normal - Must be normalized
+     * @returns the resulting vector
+     */
+    public static Reflect<T extends Vector3>(inDirection: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>): Vector3 {
+        return this.ReflectToRef(inDirection, normal, new Vector3());
+    }
+
+    /**
+     * Reflects a vector off the plane defined by a normalized normal to reference
+     * @param inDirection defines the vector direction
+     * @param normal defines the normal - Must be normalized
+     * @param result defines the Vector3 where to store the result
+     * @returns the resulting vector
+     */
+    public static ReflectToRef<T extends Vector3>(inDirection: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>, ref: T): T {
+        const tmp = TmpVectors.Vector3[0];
+        tmp.copyFrom(normal).scaleInPlace(2 * Vector3.Dot(inDirection, normal));
+
+        return ref.copyFrom(inDirection).subtractInPlace(tmp);
+    }
+
+    /**
      * @internal
      */
     public static _UnprojectFromInvertedMatrixToRef<T extends Vector3>(source: DeepImmutable<Vector3>, matrix: DeepImmutable<Matrix>, result: T): T {
