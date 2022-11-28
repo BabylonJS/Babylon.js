@@ -17,9 +17,8 @@
         "build": "npm run clean && npm run compile",
         "clean": "rimraf dist && rimraf *.tsbuildinfo && rimraf \"./**/*.!(md|json|build.json)\"",
         "compile": "tsc -b tsconfig.build.json --verbose",
-        "precompile": "build-tools -c process-assets --path-prefix ../../../dev/sharedUiComponents/",
-        "postcompile": "build-tools -c add-js-to-es6",
-        "prepublishOnly": "build-tools -c prepare-es6-build"
+        "precompile": "build-tools -c process-assets --path-prefix ../../../dev/sharedUiComponents/ --output-dir ./",
+        "postcompile": "build-tools -c add-js-to-es6"
     },
     "devDependencies": {
         "@dev/build-tools": "^1.0.0",
