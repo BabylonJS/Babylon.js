@@ -24,6 +24,8 @@ export enum transcodeTarget {
     ETC2_RGBA,
     ETC1_RGB,
     RGBA32,
+    R8,
+    RG8,
 }
 
 /**

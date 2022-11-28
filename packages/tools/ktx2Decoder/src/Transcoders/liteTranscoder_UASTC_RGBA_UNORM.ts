@@ -10,7 +10,7 @@ export class LiteTranscoder_UASTC_RGBA_UNORM extends LiteTranscoder {
     /**
      * URL to use when loading the wasm module for the transcoder (unorm)
      */
-    public static WasmModuleURL = "https://preview.babylonjs.com/ktx2Transcoders/uastc_rgba32_unorm.wasm";
+    public static WasmModuleURL = "https://preview.babylonjs.com/ktx2Transcoders/1/uastc_rgba8_unorm_v2.wasm";
 
     public static CanTranscode(src: sourceTextureFormat, dst: transcodeTarget, isInGammaSpace: boolean): boolean {
         return src === sourceTextureFormat.UASTC4x4 && dst === transcodeTarget.RGBA32 && !isInGammaSpace;
@@ -41,9 +41,9 @@ export class LiteTranscoder_UASTC_RGBA_UNORM extends LiteTranscoder {
     ): Promise<Uint8Array | null> {
         return this._loadModule().then((moduleWrapper: any) => {
             const transcoder: any = moduleWrapper.module;
-            const [, uncompressedTextureView] = this._prepareTranscoding(width, height, uncompressedByteLength, encodedData, true);
+            const [, uncompressedTextureView] = this._prepareTranscoding(width, height, uncompressedByteLength, encodedData, 4);
 
-            return transcoder.decodeRGBA32(width, height) === 0 ? uncompressedTextureView!.slice() : null;
+            return transcoder.decode(width, height) === 0 ? uncompressedTextureView!.slice() : null;
         });
     }
 }

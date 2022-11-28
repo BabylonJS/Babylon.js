@@ -11,6 +11,8 @@ const COMPRESSED_RGBA8_ETC2_EAC = 0x9278;
 const COMPRESSED_RGB8_ETC2 = 0x9274;
 const COMPRESSED_RGB_ETC1_WEBGL = 0x8d64;
 const RGBA8Format = 0x8058;
+const R8Format = 0x8229;
+const RG8Format = 0x822b;
 
 interface ILeaf {
     transcodeFormat: number;
@@ -112,74 +114,90 @@ const DecisionTree: IDecisionTree = {
             roundToMultiple4: false,
         },
         no: {
-            cap: "astc",
+            option: "forceR8",
             yes: {
-                transcodeFormat: transcodeTarget.ASTC_4x4_RGBA,
-                engineFormat: COMPRESSED_RGBA_ASTC_4x4_KHR,
+                transcodeFormat: transcodeTarget.R8,
+                engineFormat: R8Format,
+                roundToMultiple4: false,
             },
             no: {
-                cap: "bptc",
+                option: "forceRG8",
                 yes: {
-                    transcodeFormat: transcodeTarget.BC7_RGBA,
-                    engineFormat: COMPRESSED_RGBA_BPTC_UNORM_EXT,
+                    transcodeFormat: transcodeTarget.RG8,
+                    engineFormat: RG8Format,
+                    roundToMultiple4: false,
                 },
                 no: {
-                    option: "useRGBAIfASTCBC7NotAvailableWhenUASTC",
+                    cap: "astc",
                     yes: {
-                        transcodeFormat: transcodeTarget.RGBA32,
-                        engineFormat: RGBA8Format,
-                        roundToMultiple4: false,
+                        transcodeFormat: transcodeTarget.ASTC_4x4_RGBA,
+                        engineFormat: COMPRESSED_RGBA_ASTC_4x4_KHR,
                     },
                     no: {
-                        cap: "etc2",
+                        cap: "bptc",
                         yes: {
-                            alpha: true,
-                            yes: {
-                                transcodeFormat: transcodeTarget.ETC2_RGBA,
-                                engineFormat: COMPRESSED_RGBA8_ETC2_EAC,
-                            },
-                            no: {
-                                transcodeFormat: transcodeTarget.ETC1_RGB,
-                                engineFormat: COMPRESSED_RGB8_ETC2,
-                            },
+                            transcodeFormat: transcodeTarget.BC7_RGBA,
+                            engineFormat: COMPRESSED_RGBA_BPTC_UNORM_EXT,
                         },
                         no: {
-                            cap: "etc1",
+                            option: "useRGBAIfASTCBC7NotAvailableWhenUASTC",
                             yes: {
-                                transcodeFormat: transcodeTarget.ETC1_RGB,
-                                engineFormat: COMPRESSED_RGB_ETC1_WEBGL,
+                                transcodeFormat: transcodeTarget.RGBA32,
+                                engineFormat: RGBA8Format,
+                                roundToMultiple4: false,
                             },
                             no: {
-                                cap: "s3tc",
+                                cap: "etc2",
                                 yes: {
                                     alpha: true,
                                     yes: {
-                                        transcodeFormat: transcodeTarget.BC3_RGBA,
-                                        engineFormat: COMPRESSED_RGBA_S3TC_DXT5_EXT,
+                                        transcodeFormat: transcodeTarget.ETC2_RGBA,
+                                        engineFormat: COMPRESSED_RGBA8_ETC2_EAC,
                                     },
                                     no: {
-                                        transcodeFormat: transcodeTarget.BC1_RGB,
-                                        engineFormat: COMPRESSED_RGB_S3TC_DXT1_EXT,
+                                        transcodeFormat: transcodeTarget.ETC1_RGB,
+                                        engineFormat: COMPRESSED_RGB8_ETC2,
                                     },
                                 },
                                 no: {
-                                    cap: "pvrtc",
-                                    needsPowerOfTwo: true,
+                                    cap: "etc1",
                                     yes: {
-                                        alpha: true,
-                                        yes: {
-                                            transcodeFormat: transcodeTarget.PVRTC1_4_RGBA,
-                                            engineFormat: COMPRESSED_RGBA_PVRTC_4BPPV1_IMG,
-                                        },
-                                        no: {
-                                            transcodeFormat: transcodeTarget.PVRTC1_4_RGB,
-                                            engineFormat: COMPRESSED_RGB_PVRTC_4BPPV1_IMG,
-                                        },
+                                        transcodeFormat: transcodeTarget.ETC1_RGB,
+                                        engineFormat: COMPRESSED_RGB_ETC1_WEBGL,
                                     },
                                     no: {
-                                        transcodeFormat: transcodeTarget.RGBA32,
-                                        engineFormat: RGBA8Format,
-                                        roundToMultiple4: false,
+                                        cap: "s3tc",
+                                        yes: {
+                                            alpha: true,
+                                            yes: {
+                                                transcodeFormat: transcodeTarget.BC3_RGBA,
+                                                engineFormat: COMPRESSED_RGBA_S3TC_DXT5_EXT,
+                                            },
+                                            no: {
+                                                transcodeFormat: transcodeTarget.BC1_RGB,
+                                                engineFormat: COMPRESSED_RGB_S3TC_DXT1_EXT,
+                                            },
+                                        },
+                                        no: {
+                                            cap: "pvrtc",
+                                            needsPowerOfTwo: true,
+                                            yes: {
+                                                alpha: true,
+                                                yes: {
+                                                    transcodeFormat: transcodeTarget.PVRTC1_4_RGBA,
+                                                    engineFormat: COMPRESSED_RGBA_PVRTC_4BPPV1_IMG,
+                                                },
+                                                no: {
+                                                    transcodeFormat: transcodeTarget.PVRTC1_4_RGB,
+                                                    engineFormat: COMPRESSED_RGB_PVRTC_4BPPV1_IMG,
+                                                },
+                                            },
+                                            no: {
+                                                transcodeFormat: transcodeTarget.RGBA32,
+                                                engineFormat: RGBA8Format,
+                                                roundToMultiple4: false,
+                                            },
+                                        },
                                     },
                                 },
                             },
