@@ -10,7 +10,7 @@ export class LiteTranscoder_UASTC_RGBA_UNORM extends LiteTranscoder {
     /**
      * URL to use when loading the wasm module for the transcoder (unorm)
      */
-    public static WasmModuleURL = "https://preview.babylonjs.com/ktx2Transcoders/uastc_rgba8_unorm.wasm";
+    public static WasmModuleURL = "https://preview.babylonjs.com/ktx2Transcoders/uastc_rgba8_unorm_v2.wasm";
 
     public static CanTranscode(src: sourceTextureFormat, dst: transcodeTarget, isInGammaSpace: boolean): boolean {
         return src === sourceTextureFormat.UASTC4x4 && dst === transcodeTarget.RGBA32 && !isInGammaSpace;
