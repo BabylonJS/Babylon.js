@@ -80,7 +80,7 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
             }
         };
 
-        this._observer = this.camera.getScene()._onCameraInputObservable.add(this._wheel, PointerEventTypes.POINTERWHEEL);
+        this._observer = this.camera.getScene()._inputManager._addCameraPointerObserver(this._wheel, PointerEventTypes.POINTERWHEEL);
     }
 
     /**
@@ -88,7 +88,7 @@ export abstract class BaseCameraMouseWheelInput implements ICameraInput<Camera> 
      */
     public detachControl(): void {
         if (this._observer) {
-            this.camera.getScene()._onCameraInputObservable.remove(this._observer);
+            this.camera.getScene()._inputManager._removeCameraPointerObserver(this._observer);
             this._observer = null;
             this._wheel = null;
         }
