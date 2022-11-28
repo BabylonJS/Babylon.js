@@ -9,7 +9,7 @@ export class LiteTranscoder_UASTC_BC7 extends LiteTranscoder {
     /**
      * URL to use when loading the wasm module for the transcoder
      */
-    public static WasmModuleURL = "https://preview.babylonjs.com/ktx2Transcoders/uastc_bc7.wasm";
+    public static WasmModuleURL = "https://preview.babylonjs.com/ktx2Transcoders/1/uastc_bc7.wasm";
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static CanTranscode(src: sourceTextureFormat, dst: transcodeTarget, isInGammaSpace: boolean): boolean {
