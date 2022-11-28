@@ -33,7 +33,7 @@ export const addJsExtensionsToCompiledFilesCommand = () => {
     let pathForFiles = checkArgs(["--path-of-sources", "-pos"], false, true);
     const forceMJS = !!checkArgs("--mjs", true);
     if (!pathForFiles) {
-        pathForFiles = "./dist/**/*.js";
+        pathForFiles = "./**/*.js";
         console.log("No path specified, using default: " + pathForFiles);
     }
     if (typeof pathForFiles === "string") {
