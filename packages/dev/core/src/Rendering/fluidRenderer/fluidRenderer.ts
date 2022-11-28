@@ -1,4 +1,3 @@
-import { ParticleSystem } from "core/Particles/particleSystem";
 import type { Scene } from "core/scene";
 import type { Engine } from "core/Engines/engine";
 import type { Nullable } from "core/types";
@@ -6,7 +5,6 @@ import type { Observer } from "core/Misc/observable";
 import type { Camera } from "core/Cameras/camera";
 import { VertexBuffer } from "core/Buffers/buffer";
 import type { IParticleSystem } from "core/Particles/IParticleSystem";
-import { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
 
 import type { FluidRenderingObject } from "./fluidRenderingObject";
 import { FluidRenderingObjectParticleSystem } from "./fluidRenderingObjectParticleSystem";
@@ -25,57 +23,6 @@ import "../../Shaders/fluidRenderingStandardBlur.fragment";
 import "../../Shaders/fluidRenderingPassDepth.vertex";
 import "../../Shaders/fluidRenderingPassDepth.fragment";
 import "../../Shaders/fluidRenderingRender.fragment";
-
-declare module "core/Particles/IParticleSystem" {
-    export interface IParticleSystem {
-        /** Sets this property to true to render the particle system with the fluid renderer */
-        renderAsFluid: boolean;
-    }
-}
-
-declare module "core/Particles/particleSystem" {
-    export interface ParticleSystem {
-        /** @hidden (Backing field) */
-        _renderAsFluid: boolean;
-
-        /** Sets this property to true to render the particle system with the fluid renderer (don't forget to enable the fluid renderer at the scene level!) */
-        renderAsFluid: boolean;
-    }
-}
-
-declare module "core/Particles/gpuParticleSystem" {
-    export interface GPUParticleSystem {
-        /** @hidden (Backing field) */
-        _renderAsFluid: boolean;
-
-        /** Sets this property to true to render the particle system with the fluid renderer (don't forget to enable the fluid renderer at the scene level!) */
-        renderAsFluid: boolean;
-    }
-}
-
-Object.defineProperty(ParticleSystem.prototype, "renderAsFluid", {
-    get: function (this: ParticleSystem) {
-        return this._renderAsFluid;
-    },
-    set: function (this: ParticleSystem, value: boolean) {
-        this._renderAsFluid = value;
-        this._scene?.fluidRenderer?.collectParticleSystems();
-    },
-    enumerable: true,
-    configurable: true,
-});
-
-Object.defineProperty(GPUParticleSystem.prototype, "renderAsFluid", {
-    get: function (this: GPUParticleSystem) {
-        return this._renderAsFluid;
-    },
-    set: function (this: GPUParticleSystem, value: boolean) {
-        this._renderAsFluid = value;
-        this._scene?.fluidRenderer?.collectParticleSystems();
-    },
-    enumerable: true,
-    configurable: true,
-});
 
 /**
  * An object rendered as a fluid.
@@ -132,8 +79,6 @@ export class FluidRenderer {
         this._onEngineResizeObserver = this._engine.onResizeObservable.add(() => {
             this._initialize();
         });
-
-        this.collectParticleSystems();
     }
 
     /**
@@ -268,26 +213,6 @@ export class FluidRenderer {
         this._renderObjects.sort((a, b) => {
             return a.object.priority < b.object.priority ? -1 : a.object.priority > b.object.priority ? 1 : 0;
         });
-    }
-
-    /**
-     * Loops over all particle systems of the scene and prepare them for fluid rendering if their renderAsFluid property is true
-     */
-    public collectParticleSystems(): void {
-        for (let i = 0; i < this._scene.particleSystems.length; ++i) {
-            const ps = this._scene.particleSystems[i];
-            const index = this._getParticleSystemIndex(ps);
-            if (index === -1) {
-                if (ps.renderAsFluid && (ps.getClassName() === "ParticleSystem" || ps.getClassName() === "GPUParticleSystem")) {
-                    this.addParticleSystem(ps, true);
-                }
-            } else if (!ps.renderAsFluid) {
-                this._renderObjects[index].object.dispose();
-                this._renderObjects.splice(index, 1);
-            }
-        }
-        this._removeUnusedTargetRenderers();
-        this._initialize();
     }
 
     private _removeUnusedTargetRenderers(): boolean {
