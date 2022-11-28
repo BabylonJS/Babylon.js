@@ -512,7 +512,7 @@ export class ThinEngine {
     /** @internal */
     public _currentRenderTarget: Nullable<RenderTargetWrapper>;
     private _uintIndicesCurrentlySet = false;
-    protected _currentBoundBuffer = new Array<Nullable<WebGLBuffer>>();
+    protected _currentBoundBuffer = new Array<Nullable<DataBuffer>>();
     /** @internal */
     public _currentFramebuffer: Nullable<WebGLFramebuffer> = null;
     /** @internal */

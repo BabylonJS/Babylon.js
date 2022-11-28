@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { Nullable, IndicesArray, DataArray } from "../types";
 import { Engine } from "../Engines/engine";
@@ -19,7 +18,7 @@ import { CreateImageDataArrayBufferViews, GetEnvInfo, UploadEnvSpherical } from 
 import type { Scene } from "../scene";
 import type { RenderTargetCreationOptions, TextureSize, DepthTextureCreationOptions, InternalTextureCreationOptions } from "../Materials/Textures/textureCreationOptions";
 import type { IPipelineContext } from "./IPipelineContext";
-import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IViewportLike, IQuaternionLike } from "../Maths/math.like";
+import type { IColor3Like, IColor4Like, IViewportLike } from "../Maths/math.like";
 import { Logger } from "../Misc/logger";
 import { Constants } from "./constants";
 import type { ISceneLike } from "./thinEngine";
@@ -35,9 +34,12 @@ import type { IStencilState } from "../States/IStencilState";
 import { RenderTargetWrapper } from "./renderTargetWrapper";
 import type { NativeData } from "./Native/nativeDataStream";
 import { NativeDataStream } from "./Native/nativeDataStream";
-import type { INative, INativeCamera, INativeEngine } from "./Native/nativeInterfaces";
+import type { INative, INativeCamera, INativeEngine, NativeFramebuffer, NativeProgram, NativeTexture, NativeUniform, NativeVertexArrayObject } from "./Native/nativeInterfaces";
 import { RuntimeError, ErrorCodes } from "../Misc/error";
-import { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
+import { NativePipelineContext } from "./Native/nativePipelineContext";
+import { NativeRenderTargetWrapper } from "./Native/nativeRenderTargetWrapper";
+import { NativeHardwareTexture } from "./Native/nativeHardwareTexture";
+import { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
 
 declare const _native: INative;
 
@@ -75,628 +77,6 @@ export function AcquireNativeObjectAsync(): Promise<INative> {
  */
 export async function RegisterNativeTypeAsync<Type>(typeName: string, constructor: Type) {
     ((await AcquireNativeObjectAsync()) as any)[typeName] = constructor;
-}
-
-class NativePipelineContext implements IPipelineContext {
-    // TODO: async should be true?
-    public isAsync = false;
-    public isReady = false;
-
-    public _getVertexShaderCode(): string | null {
-        return null;
-    }
-
-    public _getFragmentShaderCode(): string | null {
-        return null;
-    }
-
-    // TODO: what should this do?
-    public _handlesSpectorRebuildCallback(onCompiled: (compiledObject: any) => void): void {
-        throw new Error("Not implemented");
-    }
-
-    public nativeProgram: any;
-
-    private _valueCache: { [key: string]: any } = {};
-    private _uniforms: { [key: string]: Nullable<WebGLUniformLocation> };
-
-    public engine: NativeEngine;
-    public context?: WebGLRenderingContext;
-    public vertexShader?: WebGLShader;
-    public fragmentShader?: WebGLShader;
-    public isParallelCompiled: boolean;
-    public onCompiled?: () => void;
-    public transformFeedback?: WebGLTransformFeedback | null;
-
-    constructor(engine: NativeEngine) {
-        this.engine = engine;
-    }
-
-    public _fillEffectInformation(
-        effect: Effect,
-        uniformBuffersNames: { [key: string]: number },
-        uniformsNames: string[],
-        uniforms: { [key: string]: Nullable<WebGLUniformLocation> },
-        samplerList: string[],
-        samplers: { [key: string]: number },
-        attributesNames: string[],
-        attributes: number[]
-    ) {
-        const engine = this.engine;
-        if (engine.supportsUniformBuffers) {
-            for (const name in uniformBuffersNames) {
-                effect.bindUniformBlock(name, uniformBuffersNames[name]);
-            }
-        }
-
-        const effectAvailableUniforms = this.engine.getUniforms(this, uniformsNames);
-        effectAvailableUniforms.forEach((uniform, index) => {
-            uniforms[uniformsNames[index]] = uniform;
-        });
-        this._uniforms = uniforms;
-
-        let index: number;
-        for (index = 0; index < samplerList.length; index++) {
-            const sampler = effect.getUniform(samplerList[index]);
-            if (sampler == null) {
-                samplerList.splice(index, 1);
-                index--;
-            }
-        }
-
-        samplerList.forEach((name, index) => {
-            samplers[name] = index;
-        });
-
-        attributes.push(...engine.getAttributes(this, attributesNames));
-    }
-
-    /**
-     * Release all associated resources.
-     **/
-    public dispose() {
-        this._uniforms = {};
-    }
-
-    /**
-     * @internal
-     */
-    public _cacheMatrix(uniformName: string, matrix: IMatrixLike): boolean {
-        const cache = this._valueCache[uniformName];
-        const flag = matrix.updateFlag;
-        if (cache !== undefined && cache === flag) {
-            return false;
-        }
-
-        this._valueCache[uniformName] = flag;
-
-        return true;
-    }
-
-    /**
-     * @internal
-     */
-    public _cacheFloat2(uniformName: string, x: number, y: number): boolean {
-        let cache = this._valueCache[uniformName];
-        if (!cache) {
-            cache = [x, y];
-            this._valueCache[uniformName] = cache;
-            return true;
-        }
-
-        let changed = false;
-        if (cache[0] !== x) {
-            cache[0] = x;
-            changed = true;
-        }
-        if (cache[1] !== y) {
-            cache[1] = y;
-            changed = true;
-        }
-
-        return changed;
-    }
-
-    /**
-     * @internal
-     */
-    public _cacheFloat3(uniformName: string, x: number, y: number, z: number): boolean {
-        let cache = this._valueCache[uniformName];
-        if (!cache) {
-            cache = [x, y, z];
-            this._valueCache[uniformName] = cache;
-            return true;
-        }
-
-        let changed = false;
-        if (cache[0] !== x) {
-            cache[0] = x;
-            changed = true;
-        }
-        if (cache[1] !== y) {
-            cache[1] = y;
-            changed = true;
-        }
-        if (cache[2] !== z) {
-            cache[2] = z;
-            changed = true;
-        }
-
-        return changed;
-    }
-
-    /**
-     * @internal
-     */
-    public _cacheFloat4(uniformName: string, x: number, y: number, z: number, w: number): boolean {
-        let cache = this._valueCache[uniformName];
-        if (!cache) {
-            cache = [x, y, z, w];
-            this._valueCache[uniformName] = cache;
-            return true;
-        }
-
-        let changed = false;
-        if (cache[0] !== x) {
-            cache[0] = x;
-            changed = true;
-        }
-        if (cache[1] !== y) {
-            cache[1] = y;
-            changed = true;
-        }
-        if (cache[2] !== z) {
-            cache[2] = z;
-            changed = true;
-        }
-        if (cache[3] !== w) {
-            cache[3] = w;
-            changed = true;
-        }
-
-        return changed;
-    }
-
-    /**
-     * Sets an integer value on a uniform variable.
-     * @param uniformName Name of the variable.
-     * @param value Value to be set.
-     */
-    public setInt(uniformName: string, value: number): void {
-        const cache = this._valueCache[uniformName];
-        if (cache !== undefined && cache === value) {
-            return;
-        }
-
-        if (this.engine.setInt(this._uniforms[uniformName]!, value)) {
-            this._valueCache[uniformName] = value;
-        }
-    }
-
-    /**
-     * Sets a int2 on a uniform variable.
-     * @param uniformName Name of the variable.
-     * @param x First int in int2.
-     * @param y Second int in int2.
-     */
-    public setInt2(uniformName: string, x: number, y: number): void {
-        if (this._cacheFloat2(uniformName, x, y)) {
-            if (!this.engine.setInt2(this._uniforms[uniformName], x, y)) {
-                this._valueCache[uniformName] = null;
-            }
-        }
-    }
-
-    /**
-     * Sets a int3 on a uniform variable.
-     * @param uniformName Name of the variable.
-     * @param x First int in int3.
-     * @param y Second int in int3.
-     * @param z Third int in int3.
-     */
-    public setInt3(uniformName: string, x: number, y: number, z: number): void {
-        if (this._cacheFloat3(uniformName, x, y, z)) {
-            if (!this.engine.setInt3(this._uniforms[uniformName], x, y, z)) {
-                this._valueCache[uniformName] = null;
-            }
-        }
-    }
-
-    /**
-     * Sets a int4 on a uniform variable.
-     * @param uniformName Name of the variable.
-     * @param x First int in int4.
-     * @param y Second int in int4.
-     * @param z Third int in int4.
-     * @param w Fourth int in int4.
-     */
-    public setInt4(uniformName: string, x: number, y: number, z: number, w: number): void {
-        if (this._cacheFloat4(uniformName, x, y, z, w)) {
-            if (!this.engine.setInt4(this._uniforms[uniformName], x, y, z, w)) {
-                this._valueCache[uniformName] = null;
-            }
-        }
-    }
-
-    /**
-     * Sets an int array on a uniform variable.
-     * @param uniformName Name of the variable.
-     * @param array array to be set.
-     */
-    public setIntArray(uniformName: string, array: Int32Array): void {
-        this._valueCache[uniformName] = null;
-        this.engine.setIntArray(this._uniforms[uniformName]!, array);
-    }
-
-    /**
-     * Sets an int array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
-     * @param uniformName Name of the variable.
-     * @param array array to be set.
-     */
-    public setIntArray2(uniformName: string, array: Int32Array): void {
-        this._valueCache[uniformName] = null;
-        this.engine.setIntArray2(this._uniforms[uniformName]!, array);
-    }
-
-    /**
-     * Sets an int array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
-     * @param uniformName Name of the variable.
-     * @param array array to be set.
-     */
-    public setIntArray3(uniformName: string, array: Int32Array): void {
-        this._valueCache[uniformName] = null;
-        this.engine.setIntArray3(this._uniforms[uniformName]!, array);
-    }
-
-    /**
-     * Sets an int array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
-     * @param uniformName Name of the variable.
-     * @param array array to be set.
-     */
-    public setIntArray4(uniformName: string, array: Int32Array): void {
-        this._valueCache[uniformName] = null;
-        this.engine.setIntArray4(this._uniforms[uniformName]!, array);
-    }
-
-    /**
-     * Sets an float array on a uniform variable.
-     * @param uniformName Name of the variable.
-     * @param array array to be set.
-     */
-    public setFloatArray(uniformName: string, array: Float32Array): void {
-        this._valueCache[uniformName] = null;
-        this.engine.setFloatArray(this._uniforms[uniformName]!, array);
-    }
-
-    /**
-     * Sets an float array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
-     * @param uniformName Name of the variable.
-     * @param array array to be set.
-     */
-    public setFloatArray2(uniformName: string, array: Float32Array): void {
-        this._valueCache[uniformName] = null;
-        this.engine.setFloatArray2(this._uniforms[uniformName]!, array);
-    }
-
-    /**
-     * Sets an float array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
-     * @param uniformName Name of the variable.
-     * @param array array to be set.
-     */
-    public setFloatArray3(uniformName: string, array: Float32Array): void {
-        this._valueCache[uniformName] = null;
-        this.engine.setFloatArray3(this._uniforms[uniformName]!, array);
-    }
-
-    /**
-     * Sets an float array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
-     * @param uniformName Name of the variable.
-     * @param array array to be set.
-     */
-    public setFloatArray4(uniformName: string, array: Float32Array): void {
-        this._valueCache[uniformName] = null;
-        this.engine.setFloatArray4(this._uniforms[uniformName]!, array);
-    }
-
-    /**
-     * Sets an array on a uniform variable.
-     * @param uniformName Name of the variable.
-     * @param array array to be set.
-     */
-    public setArray(uniformName: string, array: number[]): void {
-        this._valueCache[uniformName] = null;
-        this.engine.setArray(this._uniforms[uniformName]!, array);
-    }
-
-    /**
-     * Sets an array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
-     * @param uniformName Name of the variable.
-     * @param array array to be set.
-     */
-    public setArray2(uniformName: string, array: number[]): void {
-        this._valueCache[uniformName] = null;
-        this.engine.setArray2(this._uniforms[uniformName]!, array);
-    }
-
-    /**
-     * Sets an array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
-     * @param uniformName Name of the variable.
-     * @param array array to be set.
-     * @returns this effect.
-     */
-    public setArray3(uniformName: string, array: number[]): void {
-        this._valueCache[uniformName] = null;
-        this.engine.setArray3(this._uniforms[uniformName]!, array);
-    }
-
-    /**
-     * Sets an array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
-     * @param uniformName Name of the variable.
-     * @param array array to be set.
-     */
-    public setArray4(uniformName: string, array: number[]): void {
-        this._valueCache[uniformName] = null;
-        this.engine.setArray4(this._uniforms[uniformName]!, array);
-    }
-
-    /**
-     * Sets matrices on a uniform variable.
-     * @param uniformName Name of the variable.
-     * @param matrices matrices to be set.
-     */
-    public setMatrices(uniformName: string, matrices: Float32Array): void {
-        if (!matrices) {
-            return;
-        }
-
-        this._valueCache[uniformName] = null;
-        this.engine.setMatrices(this._uniforms[uniformName]!, matrices);
-    }
-
-    /**
-     * Sets matrix on a uniform variable.
-     * @param uniformName Name of the variable.
-     * @param matrix matrix to be set.
-     */
-    public setMatrix(uniformName: string, matrix: IMatrixLike): void {
-        if (this._cacheMatrix(uniformName, matrix)) {
-            if (!this.engine.setMatrices(this._uniforms[uniformName]!, matrix.toArray() as Float32Array)) {
-                this._valueCache[uniformName] = null;
-            }
-        }
-    }
-
-    /**
-     * Sets a 3x3 matrix on a uniform variable. (Specified as [1,2,3,4,5,6,7,8,9] will result in [1,2,3][4,5,6][7,8,9] matrix)
-     * @param uniformName Name of the variable.
-     * @param matrix matrix to be set.
-     */
-    public setMatrix3x3(uniformName: string, matrix: Float32Array): void {
-        this._valueCache[uniformName] = null;
-        this.engine.setMatrix3x3(this._uniforms[uniformName]!, matrix);
-    }
-
-    /**
-     * Sets a 2x2 matrix on a uniform variable. (Specified as [1,2,3,4] will result in [1,2][3,4] matrix)
-     * @param uniformName Name of the variable.
-     * @param matrix matrix to be set.
-     */
-    public setMatrix2x2(uniformName: string, matrix: Float32Array): void {
-        this._valueCache[uniformName] = null;
-        this.engine.setMatrix2x2(this._uniforms[uniformName]!, matrix);
-    }
-
-    /**
-     * Sets a float on a uniform variable.
-     * @param uniformName Name of the variable.
-     * @param value value to be set.
-     * @returns this effect.
-     */
-    public setFloat(uniformName: string, value: number): void {
-        const cache = this._valueCache[uniformName];
-        if (cache !== undefined && cache === value) {
-            return;
-        }
-
-        if (this.engine.setFloat(this._uniforms[uniformName]!, value)) {
-            this._valueCache[uniformName] = value;
-        }
-    }
-
-    /**
-     * Sets a boolean on a uniform variable.
-     * @param uniformName Name of the variable.
-     * @param bool value to be set.
-     */
-    public setBool(uniformName: string, bool: boolean): void {
-        const cache = this._valueCache[uniformName];
-        if (cache !== undefined && cache === bool) {
-            return;
-        }
-
-        if (this.engine.setInt(this._uniforms[uniformName]!, bool ? 1 : 0)) {
-            this._valueCache[uniformName] = bool ? 1 : 0;
-        }
-    }
-
-    /**
-     * Sets a Vector2 on a uniform variable.
-     * @param uniformName Name of the variable.
-     * @param vector2 vector2 to be set.
-     */
-    public setVector2(uniformName: string, vector2: IVector2Like): void {
-        if (this._cacheFloat2(uniformName, vector2.x, vector2.y)) {
-            if (!this.engine.setFloat2(this._uniforms[uniformName]!, vector2.x, vector2.y)) {
-                this._valueCache[uniformName] = null;
-            }
-        }
-    }
-
-    /**
-     * Sets a float2 on a uniform variable.
-     * @param uniformName Name of the variable.
-     * @param x First float in float2.
-     * @param y Second float in float2.
-     */
-    public setFloat2(uniformName: string, x: number, y: number): void {
-        if (this._cacheFloat2(uniformName, x, y)) {
-            if (!this.engine.setFloat2(this._uniforms[uniformName]!, x, y)) {
-                this._valueCache[uniformName] = null;
-            }
-        }
-    }
-
-    /**
-     * Sets a Vector3 on a uniform variable.
-     * @param uniformName Name of the variable.
-     * @param vector3 Value to be set.
-     */
-    public setVector3(uniformName: string, vector3: IVector3Like): void {
-        if (this._cacheFloat3(uniformName, vector3.x, vector3.y, vector3.z)) {
-            if (!this.engine.setFloat3(this._uniforms[uniformName]!, vector3.x, vector3.y, vector3.z)) {
-                this._valueCache[uniformName] = null;
-            }
-        }
-    }
-
-    /**
-     * Sets a float3 on a uniform variable.
-     * @param uniformName Name of the variable.
-     * @param x First float in float3.
-     * @param y Second float in float3.
-     * @param z Third float in float3.
-     */
-    public setFloat3(uniformName: string, x: number, y: number, z: number): void {
-        if (this._cacheFloat3(uniformName, x, y, z)) {
-            if (!this.engine.setFloat3(this._uniforms[uniformName]!, x, y, z)) {
-                this._valueCache[uniformName] = null;
-            }
-        }
-    }
-
-    /**
-     * Sets a Vector4 on a uniform variable.
-     * @param uniformName Name of the variable.
-     * @param vector4 Value to be set.
-     */
-    public setVector4(uniformName: string, vector4: IVector4Like): void {
-        if (this._cacheFloat4(uniformName, vector4.x, vector4.y, vector4.z, vector4.w)) {
-            if (!this.engine.setFloat4(this._uniforms[uniformName]!, vector4.x, vector4.y, vector4.z, vector4.w)) {
-                this._valueCache[uniformName] = null;
-            }
-        }
-    }
-
-    /**
-     * Sets a Quaternion on a uniform variable.
-     * @param uniformName Name of the variable.
-     * @param quaternion Value to be set.
-     */
-    public setQuaternion(uniformName: string, quaternion: IQuaternionLike): void {
-        if (this._cacheFloat4(uniformName, quaternion.x, quaternion.y, quaternion.z, quaternion.w)) {
-            if (!this.engine.setFloat4(this._uniforms[uniformName]!, quaternion.x, quaternion.y, quaternion.z, quaternion.w)) {
-                this._valueCache[uniformName] = null;
-            }
-        }
-    }
-
-    /**
-     * Sets a float4 on a uniform variable.
-     * @param uniformName Name of the variable.
-     * @param x First float in float4.
-     * @param y Second float in float4.
-     * @param z Third float in float4.
-     * @param w Fourth float in float4.
-     * @returns this effect.
-     */
-    public setFloat4(uniformName: string, x: number, y: number, z: number, w: number): void {
-        if (this._cacheFloat4(uniformName, x, y, z, w)) {
-            if (!this.engine.setFloat4(this._uniforms[uniformName]!, x, y, z, w)) {
-                this._valueCache[uniformName] = null;
-            }
-        }
-    }
-
-    /**
-     * Sets a Color3 on a uniform variable.
-     * @param uniformName Name of the variable.
-     * @param color3 Value to be set.
-     */
-    public setColor3(uniformName: string, color3: IColor3Like): void {
-        if (this._cacheFloat3(uniformName, color3.r, color3.g, color3.b)) {
-            if (!this.engine.setFloat3(this._uniforms[uniformName]!, color3.r, color3.g, color3.b)) {
-                this._valueCache[uniformName] = null;
-            }
-        }
-    }
-
-    /**
-     * Sets a Color4 on a uniform variable.
-     * @param uniformName Name of the variable.
-     * @param color3 Value to be set.
-     * @param alpha Alpha value to be set.
-     */
-    public setColor4(uniformName: string, color3: IColor3Like, alpha: number): void {
-        if (this._cacheFloat4(uniformName, color3.r, color3.g, color3.b, alpha)) {
-            if (!this.engine.setFloat4(this._uniforms[uniformName]!, color3.r, color3.g, color3.b, alpha)) {
-                this._valueCache[uniformName] = null;
-            }
-        }
-    }
-
-    /**
-     * Sets a Color4 on a uniform variable
-     * @param uniformName defines the name of the variable
-     * @param color4 defines the value to be set
-     */
-    public setDirectColor4(uniformName: string, color4: IColor4Like): void {
-        if (this._cacheFloat4(uniformName, color4.r, color4.g, color4.b, color4.a)) {
-            if (!this.engine.setFloat4(this._uniforms[uniformName]!, color4.r, color4.g, color4.b, color4.a)) {
-                this._valueCache[uniformName] = null;
-            }
-        }
-    }
-}
-
-class NativeRenderTargetWrapper extends RenderTargetWrapper {
-    public override readonly _engine: NativeEngine;
-
-    private __framebuffer: Nullable<WebGLFramebuffer> = null;
-    private __framebufferDepthStencil: Nullable<WebGLFramebuffer> = null;
-
-    public get _framebuffer(): Nullable<WebGLFramebuffer> {
-        return this.__framebuffer;
-    }
-
-    public set _framebuffer(framebuffer: Nullable<WebGLFramebuffer>) {
-        if (this.__framebuffer) {
-            this._engine._releaseFramebufferObjects(this.__framebuffer);
-        }
-        this.__framebuffer = framebuffer;
-    }
-
-    public get _framebufferDepthStencil(): Nullable<WebGLFramebuffer> {
-        return this.__framebufferDepthStencil;
-    }
-
-    public set _framebufferDepthStencil(framebufferDepthStencil: Nullable<WebGLFramebuffer>) {
-        if (this.__framebufferDepthStencil) {
-            this._engine._releaseFramebufferObjects(this.__framebufferDepthStencil);
-        }
-        this.__framebufferDepthStencil = framebufferDepthStencil;
-    }
-
-    constructor(isMulti: boolean, isCube: boolean, size: TextureSize, engine: NativeEngine) {
-        super(isMulti, isCube, size, engine);
-        this._engine = engine;
-    }
-
-    public dispose(disposeOnlyFramebuffers = false): void {
-        this._framebuffer = null;
-        this._framebufferDepthStencil = null;
-
-        super.dispose(disposeOnlyFramebuffers);
-    }
 }
 
 /**
@@ -800,7 +180,7 @@ class CommandBufferEncoder {
 /** @internal */
 export class NativeEngine extends Engine {
     // This must match the protocol version in NativeEngine.cpp
-    private static readonly PROTOCOL_VERSION = 6;
+    private static readonly PROTOCOL_VERSION = 7;
 
     private readonly _engine: INativeEngine = new _native.Engine();
     private readonly _camera: Nullable<INativeCamera> = _native.Camera ? new _native.Camera() : null;
@@ -1036,13 +416,13 @@ export class NativeEngine extends Engine {
         if (this._currentFramebuffer !== framebuffer) {
             if (this._currentFramebuffer) {
                 this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_UNBINDFRAMEBUFFER);
-                this._commandBufferEncoder.encodeCommandArgAsNativeData(this._currentFramebuffer as NativeData);
+                this._commandBufferEncoder.encodeCommandArgAsNativeData(this._currentFramebuffer as NativeFramebuffer);
                 this._commandBufferEncoder.finishEncodingCommand();
             }
 
             if (framebuffer) {
                 this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_BINDFRAMEBUFFER);
-                this._commandBufferEncoder.encodeCommandArgAsNativeData(framebuffer as NativeData);
+                this._commandBufferEncoder.encodeCommandArgAsNativeData(framebuffer as NativeFramebuffer);
                 this._commandBufferEncoder.finishEncodingCommand();
             }
 
@@ -1162,20 +542,20 @@ export class NativeEngine extends Engine {
         return vertexArray;
     }
 
-    private _deleteVertexArray(vertexArray: unknown) {
+    private _deleteVertexArray(vertexArray: NativeVertexArrayObject) {
         this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DELETEVERTEXARRAY);
-        this._commandBufferEncoder.encodeCommandArgAsNativeData(vertexArray as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(vertexArray);
         this._commandBufferEncoder.finishEncodingCommand();
     }
 
     public bindVertexArrayObject(vertexArray: WebGLVertexArrayObject): void {
         this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_BINDVERTEXARRAY);
-        this._commandBufferEncoder.encodeCommandArgAsNativeData(vertexArray as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(vertexArray as NativeVertexArrayObject);
         this._commandBufferEncoder.finishEncodingCommand();
     }
 
     public releaseVertexArrayObject(vertexArray: WebGLVertexArrayObject) {
-        this._deleteVertexArray(vertexArray);
+        this._deleteVertexArray(vertexArray as NativeVertexArrayObject);
     }
 
     public getAttributes(pipelineContext: IPipelineContext, attributesNames: string[]): number[] {
@@ -1252,18 +632,17 @@ export class NativeEngine extends Engine {
         vertexSourceCode: string,
         fragmentSourceCode: string,
         createAsRaw: boolean,
-        rawVertexSourceCode: string,
-        rawFragmentSourceCode: string,
-        rebuildRebind: any,
-        defines: Nullable<string>,
-        transformFeedbackVaryings: Nullable<string[]>
+        _rawVertexSourceCode: string,
+        _rawFragmentSourceCode: string,
+        _rebuildRebind: any,
+        defines: Nullable<string>
     ) {
         const nativePipelineContext = pipelineContext as NativePipelineContext;
 
         if (createAsRaw) {
-            nativePipelineContext.nativeProgram = this.createRawShaderProgram(pipelineContext, vertexSourceCode, fragmentSourceCode, undefined, transformFeedbackVaryings);
+            nativePipelineContext.nativeProgram = this.createRawShaderProgram();
         } else {
-            nativePipelineContext.nativeProgram = this.createShaderProgram(pipelineContext, vertexSourceCode, fragmentSourceCode, defines, undefined, transformFeedbackVaryings);
+            nativePipelineContext.nativeProgram = this.createShaderProgram(pipelineContext, vertexSourceCode, fragmentSourceCode, defines);
         }
     }
 
@@ -1283,24 +662,11 @@ export class NativeEngine extends Engine {
         action();
     }
 
-    public createRawShaderProgram(
-        pipelineContext: IPipelineContext,
-        vertexCode: string,
-        fragmentCode: string,
-        context?: WebGLRenderingContext,
-        transformFeedbackVaryings: Nullable<string[]> = null
-    ): any {
+    public createRawShaderProgram(): WebGLProgram {
         throw new Error("Not Supported");
     }
 
-    public createShaderProgram(
-        pipelineContext: IPipelineContext,
-        vertexCode: string,
-        fragmentCode: string,
-        defines: Nullable<string>,
-        context?: WebGLRenderingContext,
-        transformFeedbackVaryings: Nullable<string[]> = null
-    ): any {
+    public createShaderProgram(_pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: Nullable<string>): WebGLProgram {
         this.onBeforeShaderCompilationObservable.notifyObservers(this);
 
         const vertexInliner = new ShaderCodeInliner(vertexCode);
@@ -1316,7 +682,7 @@ export class NativeEngine extends Engine {
 
         const program = this._engine.createProgram(vertexCode, fragmentCode);
         this.onAfterShaderCompilationObservable.notifyObservers(this);
-        return program;
+        return program as WebGLProgram;
     }
 
     /**
@@ -1334,7 +700,7 @@ export class NativeEngine extends Engine {
     protected _setProgram(program: WebGLProgram): void {
         if (this._currentProgram !== program) {
             this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETPROGRAM);
-            this._commandBufferEncoder.encodeCommandArgAsNativeData(program as NativeData);
+            this._commandBufferEncoder.encodeCommandArgAsNativeData(program as NativeProgram);
             this._commandBufferEncoder.finishEncodingCommand();
             this._currentProgram = program;
         }
@@ -1373,18 +739,6 @@ export class NativeEngine extends Engine {
             }
         }
         this._currentEffect = null;
-    }
-
-    public setMatrix(uniform: WebGLUniformLocation, matrix: IMatrixLike): void {
-        if (!uniform) {
-            return;
-        }
-
-        const matrixArray = matrix.toArray() as Float32Array;
-        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETMATRIX);
-        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
-        this._commandBufferEncoder.encodeCommandArgAsFloat32s(matrixArray);
-        this._commandBufferEncoder.finishEncodingCommand();
     }
 
     public getRenderWidth(useScreen = false): number {
@@ -2074,7 +1428,7 @@ export class NativeEngine extends Engine {
 
     protected _deleteTexture(texture: Nullable<WebGLTexture>): void {
         if (texture) {
-            this._engine.deleteTexture(texture);
+            this._engine.deleteTexture(texture as NativeTexture);
         }
     }
 
@@ -2188,11 +1542,11 @@ export class NativeEngine extends Engine {
         texture.is2DArray = true;
 
         if (texture._hardwareTexture) {
-            const webGLTexture = texture._hardwareTexture.underlyingResource;
-            this._engine.loadRawTexture2DArray(webGLTexture, data, width, height, depth, this._getNativeTextureFormat(format, textureType), generateMipMaps, invertY);
+            const nativeTexture = texture._hardwareTexture.underlyingResource;
+            this._engine.loadRawTexture2DArray(nativeTexture, data, width, height, depth, this._getNativeTextureFormat(format, textureType), generateMipMaps, invertY);
 
             const filter = this._getNativeSamplingMode(samplingMode);
-            this._setTextureSampling(webGLTexture, filter);
+            this._setTextureSampling(nativeTexture, filter);
         }
 
         texture.isReady = true;
@@ -2233,7 +1587,7 @@ export class NativeEngine extends Engine {
     // TODO: Refactor to share more logic with babylon.engine.ts version.
     /**
      * Usually called from Texture.ts.
-     * Passed information to create a WebGLTexture
+     * Passed information to create a NativeTexture
      * @param url defines a value which contains one of the following:
      * * A conventional http URL, e.g. 'http://...' or 'file://...'
      * * A base64 string of in-line texture data, e.g. 'data:image/jpg;base64,/...'
@@ -2423,8 +1777,7 @@ export class NativeEngine extends Engine {
      * @returns the babylon internal texture
      */
     public wrapNativeTexture(texture: any): InternalTexture {
-        // Currently native is using the WebGL wrapper
-        const hardwareTexture = new WebGLHardwareTexture(texture, this._gl);
+        const hardwareTexture = new NativeHardwareTexture(texture, this._engine);
         const internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
         internalTexture._hardwareTexture = hardwareTexture;
         internalTexture.isReady = true;
@@ -2440,13 +1793,15 @@ export class NativeEngine extends Engine {
     }
 
     public _createDepthStencilTexture(size: TextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
+        // TODO: options?
+
         const nativeRTWrapper = rtWrapper as NativeRenderTargetWrapper;
         const texture = new InternalTexture(this, InternalTextureSource.DepthStencil);
 
         const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
         const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
 
-        const framebuffer = this._engine.createFrameBuffer(texture._hardwareTexture!.underlyingResource, width, height, _native.Engine.TEXTURE_FORMAT_RGBA8, false, true, false);
+        const framebuffer = this._engine.createFrameBuffer(texture._hardwareTexture!.underlyingResource, width, height, true, true);
         nativeRTWrapper._framebufferDepthStencil = framebuffer;
         return texture;
     }
@@ -2454,7 +1809,7 @@ export class NativeEngine extends Engine {
     /**
      * @internal
      */
-    public _releaseFramebufferObjects(framebuffer: Nullable<WebGLFramebuffer>): void {
+    public _releaseFramebufferObjects(framebuffer: Nullable<NativeFramebuffer>): void {
         if (framebuffer) {
             this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DELETEFRAMEBUFFER);
             this._commandBufferEncoder.encodeCommandArgAsNativeData(framebuffer as NativeData);
@@ -2462,9 +1817,8 @@ export class NativeEngine extends Engine {
         }
     }
 
-    /** @internal */
     /**
-     * Engine abstraction for loading and creating an image bitmap from a given source string.
+     * @internal Engine abstraction for loading and creating an image bitmap from a given source string.
      * @param imageSource source to load the image from.
      * @param options An object that sets options for the image's extraction.
      * @returns ImageBitmap
@@ -2658,6 +2012,11 @@ export class NativeEngine extends Engine {
     }
 
     /** @internal */
+    public _createHardwareTexture(): HardwareTextureWrapper {
+        return new NativeHardwareTexture(this._createTexture() as NativeTexture, this._engine);
+    }
+
+    /** @internal */
     public _createHardwareRenderTargetWrapper(isMulti: boolean, isCube: boolean, size: TextureSize): RenderTargetWrapper {
         const rtWrapper = new NativeRenderTargetWrapper(isMulti, isCube, size, this);
         this._renderTargetWrapperCache.push(rtWrapper);
@@ -2711,6 +2070,8 @@ export class NativeEngine extends Engine {
             throw new Error("Texture layers are not supported in Babylon Native");
         }
 
+        // TODO: `renderTarget` argument is always set to true
+        this._engine.initializeTexture(texture._hardwareTexture!.underlyingResource, width, height, generateMipMaps, format, true, useSRGBBuffer);
         this._setTextureSampling(texture._hardwareTexture!.underlyingResource, this._getNativeSamplingMode(samplingMode));
 
         texture._useSRGBBuffer = useSRGBBuffer;
@@ -2759,10 +2120,8 @@ export class NativeEngine extends Engine {
             texture._hardwareTexture!.underlyingResource,
             width,
             height,
-            this._getNativeTextureFormat(texture.format, texture.type),
             generateStencilBuffer,
-            generateDepthBuffer,
-            texture.generateMipMaps
+            generateDepthBuffer
         );
 
         rtWrapper._framebuffer = framebuffer;
@@ -2837,7 +2196,7 @@ export class NativeEngine extends Engine {
 
     // TODO: Refactor to share more logic with base Engine implementation.
     protected _setTexture(channel: number, texture: Nullable<BaseTexture>, isPartOfTextureArray = false, depthStencilTexture = false): boolean {
-        const uniform = this._boundUniforms[channel];
+        const uniform = this._boundUniforms[channel] as unknown as NativeUniform;
         if (!uniform) {
             return false;
         }
@@ -2846,7 +2205,7 @@ export class NativeEngine extends Engine {
         if (!texture) {
             if (this._boundTexturesCache[channel] != null) {
                 this._activeChannel = channel;
-                this._setTextureCore(uniform, null);
+                this._boundTexturesCache[channel] = null;
             }
             return false;
         }
@@ -2896,7 +2255,7 @@ export class NativeEngine extends Engine {
     }
 
     // filter is a NativeFilter.XXXX value.
-    private _setTextureSampling(texture: WebGLTexture, filter: number) {
+    private _setTextureSampling(texture: NativeTexture, filter: number) {
         this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETTEXTURESAMPLING);
         this._commandBufferEncoder.encodeCommandArgAsNativeData(texture as NativeData);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(filter);
@@ -2904,7 +2263,7 @@ export class NativeEngine extends Engine {
     }
 
     // addressModes are NativeAddressMode.XXXX values.
-    private _setTextureWrapMode(texture: WebGLTexture, addressModeU: number, addressModeV: number, addressModeW: number) {
+    private _setTextureWrapMode(texture: NativeTexture, addressModeU: number, addressModeV: number, addressModeW: number) {
         this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETTEXTUREWRAPMODE);
         this._commandBufferEncoder.encodeCommandArgAsNativeData(texture as NativeData);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(addressModeU);
@@ -2913,10 +2272,10 @@ export class NativeEngine extends Engine {
         this._commandBufferEncoder.finishEncodingCommand();
     }
 
-    private _setTextureCore(uniform: WebGLUniformLocation, texture: Nullable<WebGLTexture>) {
+    private _setTextureCore(uniform: NativeUniform, texture: NativeTexture) {
         this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETTEXTURE);
-        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform as any as NativeData);
-        this._commandBufferEncoder.encodeCommandArgAsNativeData(texture as NativeData);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(texture);
         this._commandBufferEncoder.finishEncodingCommand();
     }
 
@@ -2957,7 +2316,7 @@ export class NativeEngine extends Engine {
      * @internal
      */
     public _bindTexture(channel: number, texture: InternalTexture): void {
-        const uniform = this._boundUniforms[channel];
+        const uniform = this._boundUniforms[channel] as unknown as NativeUniform;
         if (!uniform) {
             return;
         }
@@ -3269,8 +2628,8 @@ export class NativeEngine extends Engine {
         faceIndex?: number,
         level?: number,
         buffer?: Nullable<ArrayBufferView>,
-        flushRenderer?: boolean,
-        noDataConversion?: boolean,
+        _flushRenderer?: boolean,
+        _noDataConversion?: boolean,
         x?: number,
         y?: number
     ): Promise<ArrayBufferView> {
