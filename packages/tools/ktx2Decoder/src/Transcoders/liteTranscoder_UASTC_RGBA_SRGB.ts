@@ -10,7 +10,7 @@ export class LiteTranscoder_UASTC_RGBA_SRGB extends LiteTranscoder {
     /**
      * URL to use when loading the wasm module for the transcoder (srgb)
      */
-    public static WasmModuleURL = "https://preview.babylonjs.com/ktx2Transcoders/uastc_rgba8_srgb_v2.wasm";
+    public static WasmModuleURL = "https://preview.babylonjs.com/ktx2Transcoders/1/uastc_rgba8_srgb_v2.wasm";
 
     public static CanTranscode(src: sourceTextureFormat, dst: transcodeTarget, isInGammaSpace: boolean): boolean {
         return src === sourceTextureFormat.UASTC4x4 && dst === transcodeTarget.RGBA32 && isInGammaSpace;
