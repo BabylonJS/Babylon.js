@@ -238,6 +238,8 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
     public POINTSIZE = false;
     public FOG = false;
     public LOGARITHMICDEPTH = false;
+    public CAMERA_ORTHOGRAPHIC = false;
+    public CAMERA_PERSPECTIVE = false;
 
     public FORCENORMALFORWARD = false;
 
@@ -2316,7 +2318,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     /**
      * Returns the animatable textures.
      * If material have animatable metallic texture, then reflectivity texture will not be returned, even if it has animations.
-     * The metallic reflectance, reflectance, micro surface and refraction texture will not be returned either.
      * @returns - Array of animatable textures.
      */
     public getAnimatables(): IAnimatable[] {
@@ -2354,6 +2355,18 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         if (this._lightmapTexture && this._lightmapTexture.animations && this._lightmapTexture.animations.length > 0) {
             results.push(this._lightmapTexture);
+        }
+
+        if (this._metallicReflectanceTexture && this._metallicReflectanceTexture.animations && this._metallicReflectanceTexture.animations.length > 0) {
+            results.push(this._metallicReflectanceTexture);
+        }
+
+        if (this._reflectanceTexture && this._reflectanceTexture.animations && this._reflectanceTexture.animations.length > 0) {
+            results.push(this._reflectanceTexture);
+        }
+
+        if (this._microSurfaceTexture && this._microSurfaceTexture.animations && this._microSurfaceTexture.animations.length > 0) {
+            results.push(this._microSurfaceTexture);
         }
 
         return results;

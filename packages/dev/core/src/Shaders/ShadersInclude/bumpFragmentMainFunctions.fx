@@ -41,7 +41,8 @@
 		bitangent *= tangentSpaceParams.y;
 
 		// construct a scale-invariant frame
-		float invmax = inversesqrt(max(dot(tangent, tangent), dot(bitangent, bitangent)));
+		float det = max(dot(tangent, tangent), dot(bitangent, bitangent));
+		float invmax = det == 0.0 ? 0.0 : inversesqrt(det);
 		return mat3(tangent * invmax, bitangent * invmax, normal);
 	}
 #endif

@@ -203,7 +203,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
 
         this._observer = this.camera
             .getScene()
-            ._onCameraInputObservable.add(this._pointerInput, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);
+            ._inputManager._addCameraPointerObserver(this._pointerInput, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);
 
         if (element) {
             this._contextMenuBind = this.onContextMenu.bind(this);
@@ -225,7 +225,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
      */
     public detachControl(): void {
         if (this._observer) {
-            this.camera.getScene()._onCameraInputObservable.remove(this._observer);
+            this.camera.getScene()._inputManager._removeCameraPointerObserver(this._observer);
 
             if (this._contextMenuBind) {
                 const engine = this.camera.getEngine();

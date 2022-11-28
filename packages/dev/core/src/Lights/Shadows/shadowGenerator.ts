@@ -1413,6 +1413,8 @@ export class ShadowGenerator implements IShadowGenerator {
     protected _isReadyCustomDefines(defines: any, subMesh: SubMesh, useInstances: boolean): void {}
 
     private _prepareShadowDefines(subMesh: SubMesh, useInstances: boolean, defines: string[], isTransparent: boolean): string[] {
+        defines.push("#define SM_LIGHTTYPE_" + this._light.getClassName().toUpperCase());
+
         defines.push("#define SM_FLOAT " + (this._textureType !== Constants.TEXTURETYPE_UNSIGNED_INT ? "1" : "0"));
 
         defines.push("#define SM_ESM " + (this.useExponentialShadowMap || this.useBlurExponentialShadowMap ? "1" : "0"));

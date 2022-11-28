@@ -103,12 +103,11 @@ describe("PBRMaterial", () => {
                 "emissiveTexture.jpg",
                 // "reflectivityTexture.jpg",
                 "metallicTexture.jpg",
-                // "metallicReflectanceTexture.jpg",
-                // "reflectanceTexture.jpg",
-                // "microSurfaceTexture.jpg",
                 "bumpTexture.jpg",
                 "lightmapTexture.jpg",
-                // "refractionTexture.jpg",
+                "metallicReflectanceTexture.jpg",
+                "reflectanceTexture.jpg",
+                "microSurfaceTexture.jpg",
             ]);
         });
 

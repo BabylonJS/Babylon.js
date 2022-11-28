@@ -27,6 +27,8 @@ export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["RefractionBlock"] = TextureDisplayManager;
     DisplayLedger.RegisteredControls["CurrentScreenBlock"] = TextureDisplayManager;
     DisplayLedger.RegisteredControls["ParticleTextureBlock"] = TextureDisplayManager;
+    DisplayLedger.RegisteredControls["TriPlanarBlock"] = TextureDisplayManager;
+    DisplayLedger.RegisteredControls["BiPlanarBlock"] = TextureDisplayManager;
     DisplayLedger.RegisteredControls["DiscardBlock"] = DiscardDisplayManager;
     DisplayLedger.RegisteredControls["PBRMetallicRoughnessBlock"] = PBRDisplayManager;
     DisplayLedger.RegisteredControls["AnisotropyBlock"] = PBRDisplayManager;

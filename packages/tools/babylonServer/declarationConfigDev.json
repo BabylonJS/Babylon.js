@@ -36,6 +36,12 @@
         "outputDirectory": "./declarations"
     },
     {
+        "declarationLibs": ["@tools/accessibility"],
+        "devPackageName": "gui-editor",
+        "filename": "accessibility.d.ts",
+        "outputDirectory": "./declarations"
+    },
+    {
         "declarationLibs": ["@tools/ktx2decoder"],
         "devPackageName": "ktx2decoder",
         "filename": "ktx2decoder.d.ts",

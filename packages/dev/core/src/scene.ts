@@ -798,12 +798,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public onPointerObservable = new Observable<PointerInfo>();
 
     /**
-     * Observable to handle camera pointer inputs
-     * @internal
-     */
-    public _onCameraInputObservable = new Observable<PointerInfo>();
-
-    /**
      * Gets the pointer coordinates without any translation (ie. straight out of the pointer event)
      */
     public get unTranslatedPointer(): Vector2 {
@@ -2894,39 +2888,58 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return null;
     }
 
-    /**
-     * Get a material using its unique id
-     * @param uniqueId defines the material's unique id
-     * @returns the material or null if none found.
-     */
-    public getMaterialByUniqueID(uniqueId: number): Nullable<Material> {
+    private _getMaterial(allowMultiMaterials: boolean, predicate: (m: Material) => boolean): Nullable<Material> {
         for (let index = 0; index < this.materials.length; index++) {
-            if (this.materials[index].uniqueId === uniqueId) {
-                return this.materials[index];
+            const material = this.materials[index];
+            if (predicate(material)) {
+                return material;
+            }
+        }
+        if (allowMultiMaterials) {
+            for (let index = 0; index < this.multiMaterials.length; index++) {
+                const material = this.multiMaterials[index];
+                if (predicate(material)) {
+                    return material;
+                }
             }
         }
 
         return null;
+    }
+
+    /**
+     * Get a material using its unique id
+     * @param uniqueId defines the material's unique id
+     * @param allowMultiMaterials determines whether multimaterials should be considered
+     * @returns the material or null if none found.
+     */
+    public getMaterialByUniqueID(uniqueId: number, allowMultiMaterials: boolean = false): Nullable<Material> {
+        return this._getMaterial(allowMultiMaterials, (m) => m.uniqueId === uniqueId);
     }
 
     /**
      * get a material using its id
      * @param id defines the material's Id
+     * @param allowMultiMaterials determines whether multimaterials should be considered
      * @returns the material or null if none found.
      */
-    public getMaterialById(id: string): Nullable<Material> {
-        for (let index = 0; index < this.materials.length; index++) {
-            if (this.materials[index].id === id) {
-                return this.materials[index];
-            }
-        }
-
-        return null;
+    public getMaterialById(id: string, allowMultiMaterials: boolean = false): Nullable<Material> {
+        return this._getMaterial(allowMultiMaterials, (m) => m.id === id);
     }
 
     /**
-     * Gets a the last added material using a given id
-     * @param id defines the material's Id
+     * Gets a material using its name
+     * @param name defines the material's name
+     * @param allowMultiMaterials determines whether multimaterials should be considered
+     * @returns the material or null if none found.
+     */
+    public getMaterialByName(name: string, allowMultiMaterials: boolean = false): Nullable<Material> {
+        return this._getMaterial(allowMultiMaterials, (m) => m.name === name);
+    }
+
+    /**
+     * Gets a last added material using a given id
+     * @param id defines the material's id
      * @param allowMultiMaterials determines whether multimaterials should be considered
      * @returns the last material with the given id or null if none found.
      */
@@ -2941,21 +2954,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                 if (this.multiMaterials[index].id === id) {
                     return this.multiMaterials[index];
                 }
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Gets a material using its name
-     * @param name defines the material's name
-     * @returns the material or null if none found.
-     */
-    public getMaterialByName(name: string): Nullable<Material> {
-        for (let index = 0; index < this.materials.length; index++) {
-            if (this.materials[index].name === name) {
-                return this.materials[index];
             }
         }
 
@@ -4599,6 +4597,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Freeze all materials
      * A frozen material will not be updatable but should be faster to render
+     * Note: multimaterials will not be frozen, but their submaterials will
      */
     public freezeMaterials(): void {
         for (let i = 0; i < this.materials.length; i++) {
@@ -4732,7 +4731,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this.onTextureRemovedObservable.clear();
         this.onPrePointerObservable.clear();
         this.onPointerObservable.clear();
-        this._onCameraInputObservable.clear();
         this.onPreKeyboardObservable.clear();
         this.onKeyboardObservable.clear();
         this.onActiveCameraChanged.clear();

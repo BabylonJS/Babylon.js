@@ -181,6 +181,12 @@ export class NodeMaterialBlock {
         this.uniqueId = UniqueIdGenerator.UniqueId;
     }
 
+    /** @internal */
+    public _setInitialTarget(target: NodeMaterialBlockTargets): void {
+        this._target = target;
+        (this._originalTargetIsNeutral as boolean) = target === NodeMaterialBlockTargets.Neutral;
+    }
+
     /**
      * Initialize the block and prepare the context for build
      * @param state defines the state that will be used for the build
