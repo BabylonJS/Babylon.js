@@ -38,6 +38,9 @@ import type { IInspectableOptions } from "core/Misc/iInspectable";
 import { NormalMaterial } from "materials/normal/normalMaterial";
 
 import "core/Physics/physicsEngineComponent";
+import "core/Physics/v1/physicsEngineComponentV1";
+import "core/Physics/v1/physicsEngineComponentV2";
+
 import { ParentPropertyGridComponent } from "../parentPropertyGridComponent";
 import { Tools } from "core/Misc/tools";
 
