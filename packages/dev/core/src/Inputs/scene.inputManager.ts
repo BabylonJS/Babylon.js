@@ -566,7 +566,8 @@ export class InputManager {
         this._initActionManager = (act: Nullable<AbstractActionManager>): Nullable<AbstractActionManager> => {
             if (!this._meshPickProceed) {
                 const pickResult =
-                    scene.skipPointerUpPicking || (scene._registeredActions === 0 && !(scene.onPointerObservable.observers.length > this._cameraObserverCount || scene.onPointerPick || scene.onPointerUp))
+                    scene.skipPointerUpPicking ||
+                    (scene._registeredActions === 0 && !(scene.onPointerObservable.observers.length > this._cameraObserverCount || scene.onPointerPick || scene.onPointerUp))
                         ? null
                         : scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerUpPredicate, false, scene.cameraToUseForPointers);
                 this._currentPickResult = pickResult;
@@ -806,7 +807,10 @@ export class InputManager {
             // Meshes
             this._pickedDownMesh = null;
             let pickResult;
-            if (scene.skipPointerDownPicking || (scene._registeredActions === 0 && !(scene.onPointerObservable.observers.length > this._cameraObserverCount || scene.onPointerPick || scene.onPointerDown))) {
+            if (
+                scene.skipPointerDownPicking ||
+                (scene._registeredActions === 0 && !(scene.onPointerObservable.observers.length > this._cameraObserverCount || scene.onPointerPick || scene.onPointerDown))
+            ) {
                 pickResult = new PickingInfo();
             } else {
                 pickResult = scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerDownPredicate, false, scene.cameraToUseForPointers);
@@ -884,7 +888,10 @@ export class InputManager {
                 // Meshes
                 if (
                     !this._meshPickProceed &&
-                    ((AbstractActionManager && AbstractActionManager.HasTriggers) || scene.onPointerObservable.observers.length > this._cameraObserverCount || scene.onPointerPick || scene.onPointerUp)
+                    ((AbstractActionManager && AbstractActionManager.HasTriggers) ||
+                        scene.onPointerObservable.observers.length > this._cameraObserverCount ||
+                        scene.onPointerPick ||
+                        scene.onPointerUp)
                 ) {
                     this._initActionManager(null, clickInfo);
                 }
