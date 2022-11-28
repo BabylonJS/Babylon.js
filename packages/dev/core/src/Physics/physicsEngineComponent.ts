@@ -1,16 +1,13 @@
 import type { Nullable } from "../types";
 import { Logger } from "../Misc/logger";
-//import type { Observer } from "../Misc/observable";
 import { Observable } from "../Misc/observable";
 import type { Vector3 } from "../Maths/math.vector";
-//import type { Mesh } from "../Meshes/mesh";
-//import { AbstractMesh } from "../Meshes/abstractMesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { ISceneComponent } from "../sceneComponent";
 import { SceneComponentConstants } from "../sceneComponent";
 import { Scene } from "../scene";
-//import type { Node } from "../node";
-
 import type { IPhysicsEngine } from "./IPhysicsEngine";
+import { PhysicsEngineV1 } from "./v1";
 
 declare module "../scene" {
     /**
@@ -92,7 +89,7 @@ Scene.prototype.enablePhysics = function (gravity: Nullable<Vector3> = null, plu
     }
 
     try {
-        this._physicsEngine = null; // new PhysicsEngine(gravity, plugin);
+        this._physicsEngine = new PhysicsEngineV1(gravity, plugin);
         this._physicsTimeAccumulator = 0;
         return true;
     } catch (e) {
@@ -126,12 +123,12 @@ Scene.prototype.isPhysicsEnabled = function (): boolean {
  * @param compound defines the compound to delete
  */
 Scene.prototype.deleteCompoundImpostor = function (compound: any): void {
-    //const mesh: AbstractMesh = compound.parts[0].mesh;
-    // TODO
-    //if (mesh.physicsImpostor) {
-    //    mesh.physicsImpostor.dispose(/*true*/);
-    //    mesh.physicsImpostor = null;
-    //}
+    const mesh: AbstractMesh = compound.parts[0].mesh;
+    
+    if (mesh.physicsImpostor) {
+        mesh.physicsImpostor.dispose(/*true*/);
+        mesh.physicsImpostor = null;
+    }
 };
 
 /**
