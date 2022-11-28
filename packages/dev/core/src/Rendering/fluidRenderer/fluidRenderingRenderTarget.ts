@@ -57,7 +57,10 @@ export class FluidRenderingRenderTarget {
             const blurX = this._blurPostProcesses[0];
             const blurY = this._blurPostProcesses[1];
 
-            this._blurPostProcesses = [...Array(this._blurNumIterations * 2).keys()].map((elm) => (elm & 1 ? blurY : blurX));
+            this._blurPostProcesses = [];
+            for (let i = 0; i < this._blurNumIterations * 2; ++i) {
+                this._blurPostProcesses[i] = i & 1 ? blurY : blurX;
+            }
         }
     }
 
@@ -290,7 +293,12 @@ export class FluidRenderingRenderTarget {
             kernelBlurXPostprocess.autoClear = false;
             kernelBlurYPostprocess.autoClear = false;
 
-            return [rtBlur, texture, [...Array(this._blurNumIterations * 2).keys()].map((elm) => (elm & 1 ? kernelBlurYPostprocess : kernelBlurXPostprocess))];
+            const blurList = [];
+            for (let i = 0; i < this._blurNumIterations * 2; ++i) {
+                blurList[i] = i & 1 ? kernelBlurYPostprocess : kernelBlurXPostprocess;
+            }
+
+            return [rtBlur, texture, blurList];
         } else {
             const uniforms: string[] = ["maxFilterSize", "blurDir", "projectedParticleConstant", "depthThreshold"];
 
@@ -369,7 +377,12 @@ export class FluidRenderingRenderTarget {
             kernelBlurXPostprocess.autoClear = false;
             kernelBlurYPostprocess.autoClear = false;
 
-            return [rtBlur, texture, [...Array(this._blurNumIterations * 2).keys()].map((elm) => (elm & 1 ? kernelBlurYPostprocess : kernelBlurXPostprocess))];
+            const blurList = [];
+            for (let i = 0; i < this._blurNumIterations * 2; ++i) {
+                blurList[i] = i & 1 ? kernelBlurYPostprocess : kernelBlurXPostprocess;
+            }
+
+            return [rtBlur, texture, blurList];
         }
     }
 
