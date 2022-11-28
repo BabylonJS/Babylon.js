@@ -370,10 +370,10 @@ export class FluidRenderer {
             }
         }
 
-        for (const [camera, list] of cameras) {
+        cameras.forEach((list, camera) => {
             const firstPostProcess = camera._getFirstPostProcess();
             if (!firstPostProcess) {
-                continue;
+                return;
             }
 
             const [targetRenderers, copyDepthTextures] = list;
@@ -395,10 +395,10 @@ export class FluidRenderer {
                     }
                 }
             });
-        }
+        });
 
         // Dispose the CopyDepthTexture instances that we don't need anymore
-        for (const [camera, list] of this._cameras) {
+        this._cameras.forEach((list, camera) => {
             const copyDepthTextures = list[1];
 
             const list2 = cameras.get(camera);
@@ -413,7 +413,7 @@ export class FluidRenderer {
                     }
                 }
             }
-        }
+        });
 
         this._cameras.clear();
         this._cameras = cameras;
@@ -433,11 +433,11 @@ export class FluidRenderer {
             particleSizes.set(renderingObject.targetRenderer, Math.max(curSize, renderingObject.object.particleSize));
         }
 
-        for (const [targetRenderer, particleSize] of particleSizes) {
+        particleSizes.forEach((particleSize, targetRenderer) => {
             if (targetRenderer._depthRenderTarget) {
                 targetRenderer._depthRenderTarget.particleSize = particleSize;
             }
-        }
+        });
     }
 
     private _setUseVelocityForRenderObject(): void {
@@ -466,14 +466,14 @@ export class FluidRenderer {
             }
         }
 
-        for (const [camera, list] of this._cameras) {
+        this._cameras.forEach((list, camera) => {
             if (forCamera && camera !== forCamera) {
-                continue;
+                return;
             }
 
             const firstPostProcess = camera._getFirstPostProcess();
             if (!firstPostProcess) {
-                continue;
+                return;
             }
 
             const sourceCopyDepth = firstPostProcess.inputTexture?.depthStencilTexture;
@@ -486,7 +486,7 @@ export class FluidRenderer {
                     copyDepthTextures[key].copy(sourceCopyDepth);
                 }
             }
-        }
+        });
 
         for (let i = 0; i < this._renderObjects.length; ++i) {
             const renderingObject = this._renderObjects[i];
@@ -511,12 +511,12 @@ export class FluidRenderer {
             this._targetRenderers[i].dispose();
         }
 
-        for (const key of this._cameras) {
-            const copyDepthTextures = key[1][1];
+        this._cameras.forEach((list) => {
+            const copyDepthTextures = list[1];
             for (const key in copyDepthTextures) {
                 copyDepthTextures[key].dispose();
             }
-        }
+        });
 
         this._renderObjects = [];
         this._targetRenderers = [];
