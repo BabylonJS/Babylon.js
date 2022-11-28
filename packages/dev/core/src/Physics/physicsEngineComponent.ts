@@ -7,7 +7,7 @@ import type { ISceneComponent } from "../sceneComponent";
 import { SceneComponentConstants } from "../sceneComponent";
 import { Scene } from "../scene";
 import type { IPhysicsEngine } from "./IPhysicsEngine";
-import { PhysicsEngineV1 } from "./v1";
+import { PhysicsEngineV1 } from "./v1/physicsEngineV1";
 
 declare module "../scene" {
     /**
@@ -124,7 +124,7 @@ Scene.prototype.isPhysicsEnabled = function (): boolean {
  */
 Scene.prototype.deleteCompoundImpostor = function (compound: any): void {
     const mesh: AbstractMesh = compound.parts[0].mesh;
-    
+
     if (mesh.physicsImpostor) {
         mesh.physicsImpostor.dispose(/*true*/);
         mesh.physicsImpostor = null;
