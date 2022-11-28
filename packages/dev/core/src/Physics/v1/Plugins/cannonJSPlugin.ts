@@ -8,7 +8,6 @@ import type { IPhysicsEnabledObject } from "..//physicsImpostor";
 import { PhysicsImpostor } from "..//physicsImpostor";
 import type { IMotorEnabledJoint, DistanceJointData, SpringJointData } from "../physicsJoint";
 import { PhysicsJoint } from "../physicsJoint";
-//import { PhysicsEngineV1 } from "./physicsEngineV1";
 import { PhysicsRaycastResult } from "../../physicsRaycastResult";
 import type { TransformNode } from "../../../Meshes/transformNode";
 import { PhysicsEngineV1 } from "../physicsEngineV1";
