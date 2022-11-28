@@ -14,12 +14,12 @@ declare module "../../Meshes/abstractMesh" {
         _physicsBody: Nullable<PhysicsBody>;
 
         /**
-         * @see 
+         * @see
          */
         physicsBody: Nullable<PhysicsBody>;
 
         /**
-         * 
+         *
          */
         getPhysicsBody(): Nullable<PhysicsBody>;
 
