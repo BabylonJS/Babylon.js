@@ -2318,7 +2318,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     /**
      * Returns the animatable textures.
      * If material have animatable metallic texture, then reflectivity texture will not be returned, even if it has animations.
-     * The metallic reflectance, reflectance, micro surface and refraction texture will not be returned either.
      * @returns - Array of animatable textures.
      */
     public getAnimatables(): IAnimatable[] {
