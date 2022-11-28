@@ -75,6 +75,7 @@ class _InstanceDataStorage {
     public instancesPreviousData: Float32Array;
     public overridenInstanceCount: number;
     public isFrozen: boolean;
+    public forceMatrixUpdates: boolean;
     public previousBatch: Nullable<_InstancesBatch>;
     public hardwareInstancedRendering: boolean;
     public sideOrientation: number;
@@ -499,6 +500,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     public set manualUpdateOfPreviousWorldMatrixInstancedBuffer(value: boolean) {
         this._instanceDataStorage.previousManualUpdate = value;
+    }
+
+    /** Gets or sets a boolean indicating that the update of the instance buffer of the world matrices must be performed in all cases (and notably even in frozen mode) */
+    public get forceWorldMatrixInstancedBufferUpdate() {
+        return this._instanceDataStorage.forceMatrixUpdates;
+    }
+
+    public set forceWorldMatrixInstancedBufferUpdate(value: boolean) {
+        this._instanceDataStorage.forceMatrixUpdates = value;
     }
 
     /**
@@ -1953,7 +1963,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
             this._invalidateInstanceVertexArrayObject();
         } else {
-            if (!this._instanceDataStorage.isFrozen) {
+            if (!this._instanceDataStorage.isFrozen || this._instanceDataStorage.forceMatrixUpdates) {
                 instancesBuffer!.updateDirectly(instanceStorage.instancesData, 0, instancesCount);
                 if (this._scene.needsPreviousWorldMatrices && (!this._instanceDataStorage.manualUpdate || this._instanceDataStorage.previousManualUpdate)) {
                     instancesPreviousBuffer!.updateDirectly(instanceStorage.instancesPreviousData, 0, instancesCount);
@@ -1980,7 +1990,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this._scene.needsPreviousWorldMatrices &&
             !needUpdateBuffer &&
             this._instanceDataStorage.manualUpdate &&
-            !this._instanceDataStorage.isFrozen &&
+            (!this._instanceDataStorage.isFrozen || this._instanceDataStorage.forceMatrixUpdates) &&
             !this._instanceDataStorage.previousManualUpdate
         ) {
             instancesPreviousBuffer!.updateDirectly(instanceStorage.instancesData, 0, instancesCount);
@@ -3930,7 +3940,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         mesh.receiveShadows = parsedMesh.receiveShadows;
 
-        mesh.billboardMode = parsedMesh.billboardMode;
+        if (parsedMesh.billboardMode !== undefined) {
+            mesh.billboardMode = parsedMesh.billboardMode;
+        }
 
         if (parsedMesh.visibility !== undefined) {
             mesh.visibility = parsedMesh.visibility;

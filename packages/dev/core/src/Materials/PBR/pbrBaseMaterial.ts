@@ -238,6 +238,8 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
     public POINTSIZE = false;
     public FOG = false;
     public LOGARITHMICDEPTH = false;
+    public CAMERA_ORTHOGRAPHIC = false;
+    public CAMERA_PERSPECTIVE = false;
 
     public FORCENORMALFORWARD = false;
 
@@ -2315,6 +2317,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
     /**
      * Returns the animatable textures.
+     * If material have animatable metallic texture, then reflectivity texture will not be returned, even if it has animations.
      * @returns - Array of animatable textures.
      */
     public getAnimatables(): IAnimatable[] {
@@ -2352,6 +2355,18 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         if (this._lightmapTexture && this._lightmapTexture.animations && this._lightmapTexture.animations.length > 0) {
             results.push(this._lightmapTexture);
+        }
+
+        if (this._metallicReflectanceTexture && this._metallicReflectanceTexture.animations && this._metallicReflectanceTexture.animations.length > 0) {
+            results.push(this._metallicReflectanceTexture);
+        }
+
+        if (this._reflectanceTexture && this._reflectanceTexture.animations && this._reflectanceTexture.animations.length > 0) {
+            results.push(this._reflectanceTexture);
+        }
+
+        if (this._microSurfaceTexture && this._microSurfaceTexture.animations && this._microSurfaceTexture.animations.length > 0) {
+            results.push(this._microSurfaceTexture);
         }
 
         return results;
@@ -2490,18 +2505,20 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
     /**
      * Sets the required values to the prepass renderer.
+     * It can't be sets when subsurface scattering of this material is disabled.
+     * When scene have ability to enable subsurface prepass effect, it will enable.
      */
     public setPrePassRenderer(): boolean {
-        if (this.subSurface?.isScatteringEnabled) {
-            const subSurfaceConfiguration = this.getScene().enableSubSurfaceForPrePass();
-            if (subSurfaceConfiguration) {
-                subSurfaceConfiguration.enabled = true;
-            }
-
-            return true;
+        if (!this.subSurface?.isScatteringEnabled) {
+            return false;
         }
 
-        return false;
+        const subSurfaceConfiguration = this.getScene().enableSubSurfaceForPrePass();
+        if (subSurfaceConfiguration) {
+            subSurfaceConfiguration.enabled = true;
+        }
+
+        return true;
     }
 
     /**
