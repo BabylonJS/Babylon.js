@@ -3,6 +3,7 @@ import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import { EffectRenderer, EffectWrapper } from "../Materials/effectRenderer";
 import type { IRenderTargetTexture, RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
+import { Constants } from "core/Engines/constants";
 
 import "../Shaders/copyTextureToTexture.fragment";
 
@@ -19,6 +20,8 @@ export enum ConversionMode {
  * Class used for fast copy from one texture to another
  */
 export class CopyTextureToTexture {
+    private _engine: Engine;
+    private _isDepthTexture: boolean;
     private _renderer: EffectRenderer;
     private _effectWrapper: EffectWrapper;
     private _source: InternalTexture | ThinTexture;
@@ -31,9 +34,14 @@ export class CopyTextureToTexture {
     /**
      * Constructs a new instance of the class
      * @param engine The engine to use for the copy
+     * @param isDepthTexture True means that we should write (using gl_FragDepth) into the depth texture attached to the destination (default: false)
      */
-    constructor(engine: Engine) {
+    constructor(engine: Engine, isDepthTexture = false) {
+        this._engine = engine;
+        this._isDepthTexture = isDepthTexture;
+
         this._renderer = new EffectRenderer(engine);
+
         this._effectWrapper = new EffectWrapper({
             engine: engine,
             name: "CopyTextureToTexture",
@@ -41,9 +49,17 @@ export class CopyTextureToTexture {
             useShaderStore: true,
             uniformNames: ["conversion"],
             samplerNames: ["textureSampler"],
+            defines: isDepthTexture ? ["#define DEPTH_TEXTURE"] : [],
         });
 
         this._effectWrapper.onApplyObservable.add(() => {
+            if (isDepthTexture) {
+                engine.setState(false);
+                engine.setDepthBuffer(true);
+                engine.setDepthWrite(true);
+                engine.setDepthFunction(Constants.ALWAYS);
+            }
+
             if (this._textureIsInternal(this._source)) {
                 this._effectWrapper.effect._bindTexture("textureSampler", this._source);
             } else {
@@ -76,7 +92,13 @@ export class CopyTextureToTexture {
         this._source = source;
         this._conversion = conversion;
 
+        const engineDepthFunc = this._engine.getDepthFunction();
+
         this._renderer.render(this._effectWrapper, destination);
+
+        if (this._isDepthTexture && engineDepthFunc) {
+            this._engine.setDepthFunction(engineDepthFunc);
+        }
 
         return true;
     }

@@ -9,6 +9,10 @@ varying vec2 vUV;
 void main(void) 
 {
     vec4 color = texture2D(textureSampler, vUV);
+
+#ifdef DEPTH_TEXTURE
+    gl_FragDepth = color.r;
+#else
     if (conversion == 1.) {
         color = toLinearSpace(color);
     } else if (conversion == 2.) {
@@ -16,4 +20,5 @@ void main(void)
     }
 
     gl_FragColor = color;
+#endif
 }

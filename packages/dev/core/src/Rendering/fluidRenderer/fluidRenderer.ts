@@ -10,7 +10,7 @@ import type { FluidRenderingObject } from "./fluidRenderingObject";
 import { FluidRenderingObjectParticleSystem } from "./fluidRenderingObjectParticleSystem";
 import { FluidRenderingTargetRenderer } from "./fluidRenderingTargetRenderer";
 import { FluidRenderingObjectVertexBuffer } from "./fluidRenderingObjectVertexBuffer";
-import { FluidRenderingCopyDepthTexture } from "./fluidRenderingCopyDepthTexture";
+import { FluidRenderingDepthTextureCopy } from "./fluidRenderingDepthTextureCopy";
 
 import "../../Shaders/fluidRenderingParticleDepth.vertex";
 import "../../Shaders/fluidRenderingParticleDepth.fragment";
@@ -50,7 +50,7 @@ export class FluidRenderer {
     private _onEngineResizeObserver: Nullable<Observer<Engine>>;
     private _renderObjects: Array<IFluidRenderingRenderObject>;
     private _targetRenderers: FluidRenderingTargetRenderer[];
-    private _cameras: Map<Camera, [Array<FluidRenderingTargetRenderer>, { [key: string]: FluidRenderingCopyDepthTexture }]>;
+    private _cameras: Map<Camera, [Array<FluidRenderingTargetRenderer>, { [key: string]: FluidRenderingDepthTextureCopy }]>;
 
     /** Retrives all the render objects managed by the class */
     public get renderObjects() {
@@ -277,7 +277,7 @@ export class FluidRenderer {
             this._targetRenderers[i].dispose();
         }
 
-        const cameras: Map<Camera, [Array<FluidRenderingTargetRenderer>, { [key: string]: FluidRenderingCopyDepthTexture }]> = new Map();
+        const cameras: Map<Camera, [Array<FluidRenderingTargetRenderer>, { [key: string]: FluidRenderingDepthTextureCopy }]> = new Map();
 
         for (let i = 0; i < this._targetRenderers.length; ++i) {
             const targetRenderer = this._targetRenderers[i];
@@ -314,7 +314,7 @@ export class FluidRenderer {
                         const key = thicknessTexture.width + "_" + thicknessTexture.height;
                         let copyDepthTexture = copyDepthTextures[key];
                         if (!copyDepthTexture) {
-                            copyDepthTexture = copyDepthTextures[key] = new FluidRenderingCopyDepthTexture(this._engine, thicknessTexture.width, thicknessTexture.height);
+                            copyDepthTexture = copyDepthTextures[key] = new FluidRenderingDepthTextureCopy(this._engine, thicknessTexture.width, thicknessTexture.height);
                         }
                         copyDepthTexture.depthRTWrapper._shareDepth(thicknessRT);
                     }
