@@ -7,7 +7,6 @@ import { CreateSphere } from "../../Meshes/Builders/sphereBuilder";
 import { CreateCylinder } from "../../Meshes/Builders/cylinderBuilder";
 import { Ray } from "../../Culling/ray";
 import type { Scene } from "../../scene";
-//import type { IPhysicsEngine } from "../IPhysicsEngine";
 import type { PhysicsEngineV1 } from "./physicsEngineV1";
 import type { PhysicsImpostor } from "./physicsImpostor";
 
