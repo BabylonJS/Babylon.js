@@ -1,15 +1,14 @@
 import type { Scene } from "core/scene";
 import type { Engine } from "core/Engines/engine";
-import type { Nullable } from "core/types";
+import type { FloatArray, Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import type { Camera } from "core/Cameras/camera";
-import { VertexBuffer } from "core/Buffers/buffer";
 import type { IParticleSystem } from "core/Particles/IParticleSystem";
 
 import type { FluidRenderingObject } from "./fluidRenderingObject";
 import { FluidRenderingObjectParticleSystem } from "./fluidRenderingObjectParticleSystem";
 import { FluidRenderingTargetRenderer } from "./fluidRenderingTargetRenderer";
-import { FluidRenderingObjectVertexBuffer } from "./fluidRenderingObjectVertexBuffer";
+import { FluidRenderingObjectCustomParticles } from "./fluidRenderingObjectCustomParticles";
 import { FluidRenderingDepthTextureCopy } from "./fluidRenderingDepthTextureCopy";
 
 import "../../Shaders/fluidRenderingParticleDepth.vertex";
@@ -96,12 +95,6 @@ export class FluidRenderer {
         return index !== -1 ? this._renderObjects[index] : null;
     }
 
-    /** Gets the render object corresponding to a vertex buffer (null if the vertex buffer is not rendered as a fluid) */
-    public getRenderObjectFromVertexBuffer(vb: VertexBuffer): Nullable<IFluidRenderingRenderObject> {
-        const index = this._getVertexBufferIndex(vb);
-        return index !== -1 ? this._renderObjects[index] : null;
-    }
-
     /**
      * Adds a particle system to the fluid renderer.
      * Note that you should not normally call this method directly, as you can simply use the renderAsFluid property of the ParticleSystem/GPUParticleSystem class
@@ -141,22 +134,22 @@ export class FluidRenderer {
     }
 
     /**
-     * Adds a vertex buffer set to the fluid renderer.
-     * @param vertexBuffers the vertex buffers. There must be at least a "position" vertex buffer in the set!
-     * @param numParticles number of vertices in the vertex buffer
-     * @param generateDiffuseTexture True if you want to generate a diffuse texture from the vertex buffer and use it as part of the fluid rendering (default: false). For the texture to be generated correctly, you need a "color" vertex buffer in the set!
+     * Adds a custom particle set to the fluid renderer.
+     * @param buffers The list of buffers (should contain at least a "position" buffer!)
+     * @param numParticles Number of particles in each buffer
+     * @param generateDiffuseTexture True if you want to generate a diffuse texture from buffers and use it as part of the fluid rendering (default: false). For the texture to be generated correctly, you need a "color" buffer in the set!
      * @param targetRenderer The target renderer used to display the particle system as a fluid. If not provided, the method will create a new one
      * @param camera The camera used by the target renderer (if the target renderer is created by the method)
-     * @returns the render object corresponding to the vertex buffer set
+     * @returns the render object corresponding to the custom particle set
      */
-    public addVertexBuffers(
-        vertexBuffers: { [key: string]: VertexBuffer },
+    public addCustomParticles(
+        buffers: { [key: string]: FloatArray },
         numParticles: number,
         generateDiffuseTexture?: boolean,
         targetRenderer?: FluidRenderingTargetRenderer,
         camera?: Camera
     ): IFluidRenderingRenderObject {
-        const object = new FluidRenderingObjectVertexBuffer(this._scene, vertexBuffers, numParticles);
+        const object = new FluidRenderingObjectCustomParticles(this._scene, buffers, numParticles);
 
         object.onParticleSizeChanged.add(this._setParticleSizeForRenderTargets.bind(this));
 
@@ -246,25 +239,10 @@ export class FluidRenderer {
         return !!(obj as FluidRenderingObjectParticleSystem).particleSystem;
     }
 
-    private static _IsVertexBufferObject(obj: FluidRenderingObject): obj is FluidRenderingObjectVertexBuffer {
-        return (obj as FluidRenderingObjectVertexBuffer).getClassName() === "FluidRenderingObjectVertexBuffer";
-    }
-
     private _getParticleSystemIndex(ps: IParticleSystem): number {
         for (let i = 0; i < this._renderObjects.length; ++i) {
             const obj = this._renderObjects[i].object;
             if (FluidRenderer._IsParticleSystemObject(obj) && obj.particleSystem === ps) {
-                return i;
-            }
-        }
-
-        return -1;
-    }
-
-    private _getVertexBufferIndex(vb: VertexBuffer): number {
-        for (let i = 0; i < this._renderObjects.length; ++i) {
-            const obj = this._renderObjects[i].object;
-            if (FluidRenderer._IsVertexBufferObject(obj) && obj.vertexBuffers[VertexBuffer.PositionKind] === vb) {
                 return i;
             }
         }

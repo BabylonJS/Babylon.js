@@ -2,42 +2,68 @@ import { VertexBuffer } from "core/Buffers/buffer";
 import { Constants } from "core/Engines/constants";
 import { EffectWrapper } from "core/Materials/effectRenderer";
 import type { Scene } from "core/scene";
-import type { Nullable } from "core/types";
+import type { FloatArray, Nullable } from "core/types";
 
 import { FluidRenderingObject } from "./fluidRenderingObject";
 
 /**
- * Defines a rendering object based on a list of vertex buffers
+ * Defines a rendering object based on a list of custom buffers
  * The list must contain at least a "position" buffer!
  */
-export class FluidRenderingObjectVertexBuffer extends FluidRenderingObject {
+export class FluidRenderingObjectCustomParticles extends FluidRenderingObject {
     private _numParticles: number;
-    private _disposeVBOffset: boolean;
     private _diffuseEffectWrapper: Nullable<EffectWrapper>;
+    private _vertexBuffers: { [key: string]: VertexBuffer };
 
     /**
      * Gets the name of the class
      */
     public getClassName(): string {
-        return "FluidRenderingObjectVertexBuffer";
+        return "FluidRenderingObjectCustomParticles";
+    }
+
+    /**
+     * Gets the vertex buffers
+     */
+    public get vertexBuffers(): { [key: string]: VertexBuffer } {
+        return this._vertexBuffers;
     }
 
     /**
      * Creates a new instance of the class
      * @param scene The scene the particles should be rendered into
-     * @param vertexBuffers The list of vertex buffers (should contain at least a "position" buffer!)
+     * @param buffers The list of buffers (must contain at least one "position" buffer!). Note that you don't have to pass all (or any!) buffers at once in the constructor, you can use the addBuffers method to add more later.
      * @param numParticles Number of vertices to take into account from the buffers
      */
-    constructor(scene: Scene, public readonly vertexBuffers: { [key: string]: VertexBuffer }, numParticles: number) {
+    constructor(scene: Scene, buffers: { [key: string]: FloatArray }, numParticles: number) {
         super(scene);
 
         this._numParticles = numParticles;
-        this._disposeVBOffset = false;
         this._diffuseEffectWrapper = null;
+        this._vertexBuffers = {};
 
-        if (!vertexBuffers["offset"]) {
-            vertexBuffers["offset"] = new VertexBuffer(this._engine, [0, 0, 1, 0, 0, 1, 1, 1], "offset", false, false, 2);
-            this._disposeVBOffset = true;
+        this.addBuffers(buffers);
+    }
+
+    /**
+     * Add some new buffers
+     * @param buffers List of buffers
+     */
+    public addBuffers(buffers: { [key: string]: FloatArray }) {
+        for (const name in buffers) {
+            let stride: number | undefined;
+            let instanced = true;
+
+            switch (name) {
+                case "velocity":
+                    stride = 3;
+                    break;
+                case "offset":
+                    instanced = false;
+                    break;
+            }
+
+            this._vertexBuffers[name] = new VertexBuffer(this._engine, buffers[name], name, true, false, stride, instanced);
         }
     }
 
@@ -63,6 +89,10 @@ export class FluidRenderingObjectVertexBuffer extends FluidRenderingObject {
      * @returns True if everything is ready for the object to be rendered, otherwise false
      */
     public isReady(): boolean {
+        if (!this._vertexBuffers["offset"]) {
+            this._vertexBuffers["offset"] = new VertexBuffer(this._engine, [0, 0, 1, 0, 0, 1, 1, 1], "offset", false, false, 2);
+        }
+
         return super.isReady() && (this._diffuseEffectWrapper?.effect!.isReady() ?? false);
     }
 
@@ -119,8 +149,10 @@ export class FluidRenderingObjectVertexBuffer extends FluidRenderingObject {
 
         this._diffuseEffectWrapper?.dispose();
 
-        if (this._disposeVBOffset) {
-            this.vertexBuffers["offset"].dispose();
+        for (const name in this._vertexBuffers) {
+            this._vertexBuffers[name].dispose();
         }
+
+        this._vertexBuffers = {};
     }
 }
