@@ -91,6 +91,7 @@ export class InputManager {
     private _doubleClickOccured = false;
     private _isSwiping: boolean = false;
     private _swipeButtonPressed: number = -1;
+    private _skipPointerTap: boolean = false;
 
     private _pointerOverMesh: Nullable<AbstractMesh>;
 
@@ -265,11 +266,7 @@ export class InputManager {
     }
 
     private _checkForPicking(): boolean {
-        if (this._scene.onPointerObservable.observers.length > this._cameraObserverCount || this._scene.onPointerPick || this._scene.onPointerUp) {
-            return true;
-        }
-
-        return false;
+        return !!(this._scene.onPointerObservable.observers.length > this._cameraObserverCount || this._scene.onPointerPick || this._scene.onPointerUp);
     }
 
     private _checkPrePointerObservable(pickResult: Nullable<PickingInfo>, evt: IPointerEvent, type: number) {
@@ -508,9 +505,18 @@ export class InputManager {
             }
         }
 
-        let type = 0;
         if (!clickInfo.ignore) {
-            if (!clickInfo.hasSwiped) {
+            const pi = new PointerInfo(PointerEventTypes.POINTERUP, evt, pickResult);
+            // Set ray on picking info.  Note that this info will also be reused for the tap notification.
+            this._setRayOnPointerInfo(pickResult, evt);
+            scene.onPointerObservable.notifyObservers(pi, PointerEventTypes.POINTERUP);
+
+            if (scene.onPointerUp) {
+                scene.onPointerUp(evt, pickResult, PointerEventTypes.POINTERUP);
+            }
+
+            if (!clickInfo.hasSwiped && !this._skipPointerTap) {
+                let type = 0;
                 if (clickInfo.singleClick) {
                     type = PointerEventTypes.POINTERTAP;
                 } else if (clickInfo.doubleClick) {
@@ -519,21 +525,11 @@ export class InputManager {
 
                 if (type) {
                     const pi = new PointerInfo(type, evt, pickResult);
-                    this._setRayOnPointerInfo(pickResult, evt);
                     if (scene.onPointerObservable.hasObservers() && scene.onPointerObservable.hasSpecificMask(type)) {
                         scene.onPointerObservable.notifyObservers(pi, type);
                     }
                 }
             }
-
-            type = PointerEventTypes.POINTERUP;
-            const pi = new PointerInfo(type, evt, pickResult);
-            this._setRayOnPointerInfo(pickResult, evt);
-            scene.onPointerObservable.notifyObservers(pi, type);
-        }
-
-        if (scene.onPointerUp && !clickInfo.ignore) {
-            scene.onPointerUp(evt, pickResult, type);
         }
     }
 
@@ -722,6 +718,13 @@ export class InputManager {
 
             this._updatePointerPosition(evt as IPointerEvent);
 
+            // Check if pointer leaves DragMovementThreshold range to determine if swipe is occurring
+            if (!this._isSwiping && this._swipeButtonPressed !== -1) {
+                this._isSwiping =
+                    Math.abs(this._startingPointerPosition.x - this._pointerX) > InputManager.DragMovementThreshold ||
+                    Math.abs(this._startingPointerPosition.y - this._pointerY) > InputManager.DragMovementThreshold;
+            }
+
             // PreObservable support
             if (
                 this._checkPrePointerObservable(
@@ -750,13 +753,6 @@ export class InputManager {
                     mesh.isEnabled() &&
                     (mesh.enablePointerMoveEvents || scene.constantlyUpdateMeshUnderPointer || mesh._getActionManagerForTrigger() !== null) &&
                     (!scene.cameraToUseForPointers || (scene.cameraToUseForPointers.layerMask & mesh.layerMask) !== 0);
-            }
-
-            // Check if pointer leaves DragMovementThreshold range to determine if swipe is occurring
-            if (!this._isSwiping && this._swipeButtonPressed !== -1) {
-                this._isSwiping =
-                    Math.abs(this._startingPointerPosition.x - this._pointerX) > InputManager.DragMovementThreshold ||
-                    Math.abs(this._startingPointerPosition.y - this._pointerY) > InputManager.DragMovementThreshold;
             }
 
             const pickResult = scene._registeredActions > 0 ? this._pickMove((evt as IPointerEvent).pointerId) : null;
@@ -848,19 +844,8 @@ export class InputManager {
             this._initClickEvent(scene.onPrePointerObservable, scene.onPointerObservable, evt, (clickInfo: _ClickInfo, pickResult: Nullable<PickingInfo>) => {
                 // PreObservable support
                 if (scene.onPrePointerObservable.hasObservers()) {
+                    this._skipPointerTap = false;
                     if (!clickInfo.ignore) {
-                        if (!clickInfo.hasSwiped) {
-                            if (clickInfo.singleClick && scene.onPrePointerObservable.hasSpecificMask(PointerEventTypes.POINTERTAP)) {
-                                if (this._checkPrePointerObservable(null, evt, PointerEventTypes.POINTERTAP)) {
-                                    return;
-                                }
-                            }
-                            if (clickInfo.doubleClick && scene.onPrePointerObservable.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP)) {
-                                if (this._checkPrePointerObservable(null, evt, PointerEventTypes.POINTERDOUBLETAP)) {
-                                    return;
-                                }
-                            }
-                        }
                         if (this._checkPrePointerObservable(null, evt, PointerEventTypes.POINTERUP)) {
                             // If we're skipping the next observable, we need to reset the swipe state before returning
                             if (this._swipeButtonPressed === evt.button) {
@@ -868,6 +853,18 @@ export class InputManager {
                                 this._swipeButtonPressed = -1;
                             }
                             return;
+                        }
+                        if (!clickInfo.hasSwiped) {
+                            if (clickInfo.singleClick && scene.onPrePointerObservable.hasSpecificMask(PointerEventTypes.POINTERTAP)) {
+                                if (this._checkPrePointerObservable(null, evt, PointerEventTypes.POINTERTAP)) {
+                                    this._skipPointerTap = true;
+                                }
+                            }
+                            if (clickInfo.doubleClick && scene.onPrePointerObservable.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP)) {
+                                if (this._checkPrePointerObservable(null, evt, PointerEventTypes.POINTERDOUBLETAP)) {
+                                    this._skipPointerTap = true;
+                                }
+                            }
                         }
                     }
                 }
