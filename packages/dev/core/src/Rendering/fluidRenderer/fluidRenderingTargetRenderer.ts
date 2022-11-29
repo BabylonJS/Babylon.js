@@ -72,12 +72,12 @@ export class FluidRenderingTargetRenderer {
     public fluidColor = new Color3(0.085, 0.6375, 0.765);
 
     /**
-     * Density of the fluid. The higher the value, the more opaque the fluid.
+     * Density of the fluid (positive number). The higher the value, the more opaque the fluid.
      */
     public density = 2;
 
     /**
-     * Strength of the refraction.
+     * Strength of the refraction (positive number, but generally between 0 and 0.3).
      */
     public refractionStrength = 0.1;
 
@@ -87,12 +87,12 @@ export class FluidRenderingTargetRenderer {
     public fresnelClamp = 1.0;
 
     /**
-     * Strength of the specular power. Increase the value to make the specular effect more concentrated
+     * Strength of the specular power (positive number). Increase the value to make the specular effect more concentrated
      */
     public specularPower = 250;
 
     /**
-     * Minimum thickness of the particles. If useFixedThickness is true, minimumThickness is the thickness used
+     * Minimum thickness of the particles (positive number). If useFixedThickness is true, minimumThickness is the thickness used
      */
     public minimumThickness = 0;
 
@@ -177,7 +177,7 @@ export class FluidRenderingTargetRenderer {
     private _blurDepthSizeDivisor = 1;
 
     /**
-     * Gets or sets the depth size divisor, which is used as a divisor when creating the texture used for blurring the depth
+     * Gets or sets the depth size divisor (positive number, generally between 1 and 4), which is used as a divisor when creating the texture used for blurring the depth
      * For eg. if blurDepthSizeDivisor=2, the texture used to blur the depth will be half the size of the depth texture
      */
     public get blurDepthSizeDivisor() {
@@ -196,7 +196,7 @@ export class FluidRenderingTargetRenderer {
     private _blurDepthFilterSize = 7;
 
     /**
-     * Size of the kernel used to filter the depth blur texture
+     * Size of the kernel used to filter the depth blur texture (positive number, generally between 1 and 20 - higher values will require more processing power from the GPU)
      */
     public get blurDepthFilterSize() {
         return this._blurDepthFilterSize;
@@ -214,7 +214,7 @@ export class FluidRenderingTargetRenderer {
     private _blurDepthNumIterations = 3;
 
     /**
-     * Number of blurring iterations used to generate the depth blur texture
+     * Number of blurring iterations used to generate the depth blur texture (positive number, generally between 1 and 10 - higher values will require more processing power from the GPU)
      */
     public get blurDepthNumIterations() {
         return this._blurDepthNumIterations;
@@ -232,7 +232,7 @@ export class FluidRenderingTargetRenderer {
     private _blurDepthMaxFilterSize = 100;
 
     /**
-     * Maximum size of the kernel used to blur the depth texture.
+     * Maximum size of the kernel used to blur the depth texture (positive number, generally between 1 and 200 - higher values will require more processing power from the GPU when the particles are larger on screen)
      */
     public get blurDepthMaxFilterSize() {
         return this._blurDepthMaxFilterSize;
@@ -250,7 +250,7 @@ export class FluidRenderingTargetRenderer {
     private _blurDepthDepthScale = 10;
 
     /**
-     * Depth weight in the calculation when applying the bilateral blur to generate the depth blur texture
+     * Depth weight in the calculation when applying the bilateral blur to generate the depth blur texture (positive number, generally between 0 and 100)
      */
     public get blurDepthDepthScale() {
         return this._blurDepthDepthScale;
@@ -286,7 +286,7 @@ export class FluidRenderingTargetRenderer {
     private _blurThicknessSizeDivisor = 1;
 
     /**
-     * Gets or sets the thickness size divisor, which is used as a divisor when creating the texture used for blurring the thickness
+     * Gets or sets the thickness size divisor (positive number, generally between 1 and 4), which is used as a divisor when creating the texture used for blurring the thickness
      * For eg. if blurThicknessSizeDivisor=2, the texture used to blur the thickness will be half the size of the thickness texture
      */
     public get blurThicknessSizeDivisor() {
@@ -305,7 +305,7 @@ export class FluidRenderingTargetRenderer {
     private _blurThicknessFilterSize = 5;
 
     /**
-     * Size of the kernel used to filter the thickness blur texture
+     * Size of the kernel used to filter the thickness blur texture (positive number, generally between 1 and 20 - higher values will require more processing power from the GPU)
      */
     public get blurThicknessFilterSize() {
         return this._blurThicknessFilterSize;
@@ -323,7 +323,7 @@ export class FluidRenderingTargetRenderer {
     private _blurThicknessNumIterations = 1;
 
     /**
-     * Number of blurring iterations used to generate the thickness blur texture
+     * Number of blurring iterations used to generate the thickness blur texture (positive number, generally between 1 and 10 - higher values will require more processing power from the GPU)
      */
     public get blurThicknessNumIterations() {
         return this._blurThicknessNumIterations;
