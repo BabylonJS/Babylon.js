@@ -266,11 +266,7 @@ export class InputManager {
     }
 
     private _checkForPicking(): boolean {
-        if (this._scene.onPointerObservable.observers.length > this._cameraObserverCount || this._scene.onPointerPick || this._scene.onPointerUp) {
-            return true;
-        }
-
-        return false;
+        return !!(this._scene.onPointerObservable.observers.length > this._cameraObserverCount || this._scene.onPointerPick || this._scene.onPointerUp);
     }
 
     private _checkPrePointerObservable(pickResult: Nullable<PickingInfo>, evt: IPointerEvent, type: number) {
