@@ -19,8 +19,6 @@ import "../../Shaders/fluidRenderingParticleDiffuse.vertex";
 import "../../Shaders/fluidRenderingParticleDiffuse.fragment";
 import "../../Shaders/fluidRenderingBilateralBlur.fragment";
 import "../../Shaders/fluidRenderingStandardBlur.fragment";
-import "../../Shaders/fluidRenderingPassDepth.vertex";
-import "../../Shaders/fluidRenderingPassDepth.fragment";
 import "../../Shaders/fluidRenderingRender.fragment";
 
 /**
