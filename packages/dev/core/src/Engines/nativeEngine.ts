@@ -2112,12 +2112,8 @@ export class NativeEngine extends Engine {
         const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
         const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
 
-        if (!texture) {
-            throw new Error("No color attachment is not supported in Babylon Native");
-        }
-
         const framebuffer = this._engine.createFrameBuffer(
-            texture._hardwareTexture!.underlyingResource,
+            texture ? texture._hardwareTexture!.underlyingResource : null,
             width,
             height,
             generateStencilBuffer,
