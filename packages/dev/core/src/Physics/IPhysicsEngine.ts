@@ -1,8 +1,4 @@
-//import type { Nullable } from "../types";
 import type { Vector3 } from "../Maths/math.vector";
-//import type { AbstractMesh } from "../Meshes/abstractMesh";
-//import type { PhysicsImpostor, IPhysicsEnabledObject } from "./physicsImpostor";
-//import type { PhysicsJoint, IMotorEnabledJoint } from "./physicsJoint";
 import type { PhysicsRaycastResult } from "./physicsRaycastResult";
 
 /**
@@ -62,60 +58,10 @@ export interface IPhysicsEngine {
     getPhysicsPluginName(): string;
 
     /**
-     * Adding a new impostor for the impostor tracking.
-     * This will be done by the impostor itself.
-     * @param impostor the impostor to add
-     */
-    //addImpostor(impostor: PhysicsImpostor): void;
-
-    /**
-     * Remove an impostor from the engine.
-     * This impostor and its mesh will not longer be updated by the physics engine.
-     * @param impostor the impostor to remove
-     */
-    //removeImpostor(impostor: PhysicsImpostor): void;
-
-    /**
-     * Add a joint to the physics engine
-     * @param mainImpostor defines the main impostor to which the joint is added.
-     * @param connectedImpostor defines the impostor that is connected to the main impostor using this joint
-     * @param joint defines the joint that will connect both impostors.
-     */
-    //addJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
-
-    /**
-     * Removes a joint from the simulation
-     * @param mainImpostor defines the impostor used with the joint
-     * @param connectedImpostor defines the other impostor connected to the main one by the joint
-     * @param joint defines the joint to remove
-     */
-    //removeJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
-
-    /**
      * Gets the current plugin used to run the simulation
      * @returns current plugin
      */
     getPhysicsPlugin(): any;
-
-    /**
-     * Gets the list of physic impostors
-     * @returns an array of PhysicsImpostor
-     */
-    //getImpostors(): Array<PhysicsImpostor>;
-
-    /**
-     * Gets the impostor for a physics enabled object
-     * @param object defines the object impersonated by the impostor
-     * @returns the PhysicsImpostor or null if not found
-     */
-    //getImpostorForPhysicsObject(object: IPhysicsEnabledObject): Nullable<PhysicsImpostor>;
-
-    /**
-     * Gets the impostor for a physics body object
-     * @param body defines physics body used by the impostor
-     * @returns the PhysicsImpostor or null if not found
-     */
-    //getImpostorWithPhysicsBody(body: any): Nullable<PhysicsImpostor>;
 
     /**
      * Does a raycast in the physics world

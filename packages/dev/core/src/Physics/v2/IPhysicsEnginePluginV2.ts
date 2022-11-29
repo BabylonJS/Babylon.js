@@ -7,7 +7,6 @@ import type { PhysicsConstraint } from "./physicsConstraint";
 import type { BoundingBox } from "../../Culling/boundingBox";
 import type { TransformNode } from "../../Meshes/transformNode";
 import type { PhysicsMaterial } from "./physicsMaterial";
-//import type { PhysicsAggregate } from "./physicsAggregate";
 
 export enum ConstraintAxisLimitMode {
     FREE,

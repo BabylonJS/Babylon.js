@@ -9,7 +9,6 @@ import { Mesh } from "../../Meshes/mesh";
 import type { Scene } from "../../scene";
 import type { Bone } from "../../Bones/bone";
 import type { BoundingInfo } from "../../Culling/boundingInfo";
-//import type { IPhysicsEngine } from "../IPhysicsEngine";
 import type { PhysicsEngineV1 } from "./physicsEngineV1";
 
 import type { PhysicsJointData } from "./physicsJoint";

@@ -2,7 +2,6 @@ import type { Scene } from "../../scene";
 import type { Vector3 } from "../../Maths/math.vector";
 import type { IPhysicsEnginePluginV2, ConstraintAxis, PhysicsConstraintParameters } from "./IPhysicsEnginePluginV2";
 import { ConstraintType, ConstraintAxisLimitMode, ConstraintMotorType } from "./IPhysicsEnginePluginV2";
-//import { ConstraintType } from "./IPhysicsEngine2";
 import type { PhysicsBody } from "./physicsBody";
 
 /**

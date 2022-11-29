@@ -3,8 +3,6 @@ import { Vector3 } from "../../Maths/math.vector";
 import type { IPhysicsEngine } from "../IPhysicsEngine";
 import type { IPhysicsEnginePluginV2 } from "./IPhysicsEnginePluginV2";
 
-//import type { PhysicsImpostor, IPhysicsEnabledObject } from "./physicsImpostor";
-//import type { PhysicsJoint } from "./physicsJoint";
 import type { PhysicsRaycastResult } from "../physicsRaycastResult";
 import { _WarnImport } from "../../Misc/devTools";
 
