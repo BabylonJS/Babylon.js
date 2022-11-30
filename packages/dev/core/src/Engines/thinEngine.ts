@@ -1029,6 +1029,10 @@ export class ThinEngine {
 
             // Rebuild context
             await initEngine();
+
+            // Ensure webgl and engine states are matching
+            this.wipeCaches(true);
+
             // Rebuild effects
             this._rebuildEffects();
             this._rebuildComputeEffects?.();
@@ -1038,7 +1042,8 @@ export class ThinEngine {
             this._rebuildRenderTargetWrappers();
             // Rebuild buffers
             this._rebuildBuffers();
-            // Cache
+
+            // Reset engine states after all the buffer/textures/... have been rebuilt
             this.wipeCaches(true);
 
             this._depthCullingState.depthTest = depthTest;
