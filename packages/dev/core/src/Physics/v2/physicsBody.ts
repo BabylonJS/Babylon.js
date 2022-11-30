@@ -1,6 +1,6 @@
 import type { IPhysicsEnginePluginV2, MassProperties } from "./IPhysicsEnginePluginV2";
 import type { PhysicsShape } from "./physicsShape";
-import { Vector3 } from "../../Maths/math.vector";
+import type { Vector3 } from "../../Maths/math.vector";
 import type { Scene } from "../../scene";
 
 /**
@@ -10,7 +10,7 @@ export class PhysicsBody {
     /** @internal */
     public _pluginData: any = undefined;
 
-    private _physicsPlugin: IPhysicsEnginePluginV2 | undefined;
+    private _physicsPlugin: IPhysicsEnginePluginV2;
 
     /**
      *
@@ -21,15 +21,27 @@ export class PhysicsBody {
         if (!scene) {
             return;
         }
-        this._physicsPlugin = scene.getPhysicsEngine()?.getPhysicsPlugin() as any;
-        this._physicsPlugin?.initBody(this);
+        const physicsEngine = scene.getPhysicsEngine();
+        if (!physicsEngine) {
+            throw new Error("No Physics Engine available.");
+        }
+        if (physicsEngine.getPluginVersion() != 2) {
+            throw new Error("Plugin version is incorrect. Expected version 2.");
+        }
+        const physicsPlugin = physicsEngine.getPhysicsPlugin();
+        if (!physicsPlugin) {
+            throw new Error("No Physics Plugin available.");
+        }
+
+        this._physicsPlugin = physicsPlugin as IPhysicsEnginePluginV2;
+        this._physicsPlugin.initBody(this);
     }
     /**
      *
      * @param shape
      */
     public setShape(shape: PhysicsShape): void {
-        this._physicsPlugin?.setShape(this, shape);
+        this._physicsPlugin.setShape(this, shape);
     }
 
     /**
@@ -37,7 +49,7 @@ export class PhysicsBody {
      * @returns
      */
     public getShape(): PhysicsShape | undefined {
-        return this._physicsPlugin ? this._physicsPlugin.getShape(this) : undefined;
+        return this._physicsPlugin.getShape(this);
     }
 
     /**
@@ -45,7 +57,7 @@ export class PhysicsBody {
      * @param group
      */
     public setFilterGroup(group: number): void {
-        this._physicsPlugin?.setFilterGroup(this, group);
+        this._physicsPlugin.setFilterGroup(this, group);
     }
 
     /**
@@ -53,7 +65,7 @@ export class PhysicsBody {
      * @returns
      */
     public getFilterGroup(): number {
-        return this._physicsPlugin ? this._physicsPlugin.getFilterGroup(this) : 0;
+        return this._physicsPlugin.getFilterGroup(this);
     }
 
     /**
@@ -61,7 +73,7 @@ export class PhysicsBody {
      * @param eventMask
      */
     public setEventMask(eventMask: number): void {
-        this._physicsPlugin?.setEventMask(this, eventMask);
+        this._physicsPlugin.setEventMask(this, eventMask);
     }
 
     /**
@@ -69,7 +81,7 @@ export class PhysicsBody {
      * @returns
      */
     public getEventMask(): number {
-        return this._physicsPlugin ? this._physicsPlugin.getEventMask(this) : 0;
+        return this._physicsPlugin.getEventMask(this);
     }
 
     /**
@@ -77,7 +89,7 @@ export class PhysicsBody {
      * @param massProps
      */
     public setMassProperties(massProps: MassProperties): void {
-        this._physicsPlugin?.setMassProperties(this, massProps);
+        this._physicsPlugin.setMassProperties(this, massProps);
     }
 
     /**
@@ -85,7 +97,7 @@ export class PhysicsBody {
      * @returns
      */
     public getMassProperties(): MassProperties | undefined {
-        return this._physicsPlugin ? this._physicsPlugin.getMassProperties(this) : undefined;
+        return this._physicsPlugin.getMassProperties(this);
     }
 
     /**
@@ -93,7 +105,7 @@ export class PhysicsBody {
      * @param damping
      */
     public setLinearDamping(damping: number): void {
-        this._physicsPlugin?.setLinearDamping(this, damping);
+        this._physicsPlugin.setLinearDamping(this, damping);
     }
 
     /**
@@ -101,7 +113,7 @@ export class PhysicsBody {
      * @returns
      */
     public getLinearDamping(): number {
-        return this._physicsPlugin ? this._physicsPlugin.getLinearDamping(this) : 0;
+        return this._physicsPlugin.getLinearDamping(this);
     }
 
     /**
@@ -109,7 +121,7 @@ export class PhysicsBody {
      * @param damping
      */
     public setAngularDamping(damping: number): void {
-        this._physicsPlugin?.setAngularDamping(this, damping);
+        this._physicsPlugin.setAngularDamping(this, damping);
     }
 
     /**
@@ -117,7 +129,7 @@ export class PhysicsBody {
      * @returns
      */
     public getAngularDamping(): number {
-        return this._physicsPlugin ? this._physicsPlugin.getAngularDamping(this) : 0;
+        return this._physicsPlugin.getAngularDamping(this);
     }
 
     /**
@@ -125,15 +137,15 @@ export class PhysicsBody {
      * @param linVel
      */
     public setLinearVelocity(linVel: Vector3): void {
-        this._physicsPlugin?.setLinearVelocity(this, linVel);
+        this._physicsPlugin.setLinearVelocity(this, linVel);
     }
 
     /**
      *
      * @returns
      */
-    public getLinearVelocity(): Vector3 {
-        return this._physicsPlugin ? this._physicsPlugin.getLinearVelocity(this) : Vector3.Zero();
+    public getLinearVelocityToRef(linVel: Vector3): void {
+        return this._physicsPlugin.getLinearVelocityToRef(this, linVel);
     }
 
     /**
@@ -141,15 +153,15 @@ export class PhysicsBody {
      * @param angVel
      */
     public setAngularVelocity(angVel: Vector3): void {
-        this._physicsPlugin?.setAngularVelocity(this, angVel);
+        this._physicsPlugin.setAngularVelocity(this, angVel);
     }
 
     /**
      *
      * @returns
      */
-    public getAngularVelocity(): Vector3 {
-        return this._physicsPlugin ? this._physicsPlugin.getAngularVelocity(this) : Vector3.Zero();
+    public getAngularVelocityToRef(angVel: Vector3): void {
+        return this._physicsPlugin.getAngularVelocityToRef(this, angVel);
     }
 
     /**
@@ -158,13 +170,13 @@ export class PhysicsBody {
      * @param impulse
      */
     public applyImpulse(location: Vector3, impulse: Vector3): void {
-        this._physicsPlugin?.applyImpulse(this, location, impulse);
+        this._physicsPlugin.applyImpulse(this, location, impulse);
     }
 
     /**
      *
      */
     public dispose() {
-        this._physicsPlugin?.disposeBody(this);
+        this._physicsPlugin.disposeBody(this);
     }
 }

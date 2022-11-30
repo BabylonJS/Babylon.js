@@ -1,9 +1,9 @@
 import type { TransformNode } from "../../Meshes/transformNode";
-import { BoundingBox } from "../../Culling/boundingBox";
+import type { BoundingBox } from "../../Culling/boundingBox";
 import { ShapeType } from "./IPhysicsEnginePluginV2";
 import type { IPhysicsEnginePluginV2, PhysicsShapeParameters } from "./IPhysicsEnginePluginV2";
 import type { PhysicsMaterial } from "./physicsMaterial";
-import { Vector3 } from "../../Maths/math.vector";
+import type { Vector3 } from "../../Maths/math.vector";
 import type { Quaternion } from "../../Maths/math.vector";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import type { Scene } from "../../scene";
@@ -32,11 +32,20 @@ export class PhysicsShape {
             return;
         }
 
-        this._physicsPlugin = scene.getPhysicsEngine()?.getPhysicsPlugin() as any;
-        if (!this._physicsPlugin) {
-            return;
+        const physicsEngine = scene.getPhysicsEngine();
+        if (!physicsEngine) {
+            throw new Error("No Physics Engine available.");
         }
-        this._physicsPlugin?.initShape(this, type, options);
+        if (physicsEngine.getPluginVersion() != 2) {
+            throw new Error("Plugin version is incorrect. Expected version 2.");
+        }
+        const physicsPlugin = physicsEngine.getPhysicsPlugin();
+        if (!physicsPlugin) {
+            throw new Error("No Physics Plugin available.");
+        }
+
+        this._physicsPlugin = physicsPlugin as IPhysicsEnginePluginV2;
+        this._physicsPlugin.initShape(this, type, options);
     }
 
     /**
@@ -51,7 +60,7 @@ export class PhysicsShape {
      * @param layer
      */
     public setFilterLayer(layer: number): void {
-        this._physicsPlugin?.setFilterLayer(this, layer);
+        this._physicsPlugin.setFilterLayer(this, layer);
     }
 
     /**
@@ -59,7 +68,7 @@ export class PhysicsShape {
      * @returns
      */
     public getFilterLayer(): number {
-        return this._physicsPlugin ? this._physicsPlugin.getFilterLayer(this) : 0;
+        return this._physicsPlugin.getFilterLayer(this);
     }
 
     /**
@@ -67,7 +76,7 @@ export class PhysicsShape {
      * @param materialId
      */
     public setMaterial(materialId: PhysicsMaterial): void {
-        this._physicsPlugin?.setMaterial(this, materialId);
+        this._physicsPlugin.setMaterial(this, materialId);
     }
 
     /**
@@ -75,7 +84,7 @@ export class PhysicsShape {
      * @returns
      */
     public getMaterial(): PhysicsMaterial | undefined {
-        return this._physicsPlugin ? this._physicsPlugin.getMaterial(this) : undefined;
+        return this._physicsPlugin.getMaterial(this);
     }
 
     /**
@@ -83,14 +92,14 @@ export class PhysicsShape {
      * @param density
      */
     public setDensity(density: number): void {
-        this._physicsPlugin?.setDensity(this, density);
+        this._physicsPlugin.setDensity(this, density);
     }
 
     /**
      *
      */
     public getDensity(): number {
-        return this._physicsPlugin ? this._physicsPlugin.getDensity(this) : 0;
+        return this._physicsPlugin.getDensity(this);
     }
 
     /**
@@ -99,7 +108,7 @@ export class PhysicsShape {
      * @param childTransform
      */
     public addChild(newChild: PhysicsShape, childTransform: TransformNode): void {
-        this._physicsPlugin?.addChild(this, newChild, childTransform);
+        this._physicsPlugin.addChild(this, newChild, childTransform);
     }
 
     /**
@@ -107,7 +116,7 @@ export class PhysicsShape {
      * @param childIndex
      */
     public removeChild(childIndex: number): void {
-        this._physicsPlugin?.removeChild(this, childIndex);
+        this._physicsPlugin.removeChild(this, childIndex);
     }
 
     /**
@@ -115,21 +124,21 @@ export class PhysicsShape {
      * @returns
      */
     public getNumChildren(): number {
-        return this._physicsPlugin ? this._physicsPlugin.getNumChildren(this) : 0;
+        return this._physicsPlugin.getNumChildren(this);
     }
 
     /**
      *
      */
     public getBoundingBox(): BoundingBox {
-        return this._physicsPlugin ? this._physicsPlugin.getBoundingBox(this) : new BoundingBox(Vector3.Zero(), Vector3.Zero());
+        return this._physicsPlugin.getBoundingBox(this);
     }
 
     /**
      *
      */
     public dispose() {
-        this._physicsPlugin?.disposeShape(this);
+        this._physicsPlugin.disposeShape(this);
     }
 }
 

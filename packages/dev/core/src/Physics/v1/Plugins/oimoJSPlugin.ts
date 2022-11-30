@@ -2,13 +2,13 @@ import type { IPhysicsEnabledObject } from "..//physicsImpostor";
 import { PhysicsImpostor } from "../physicsImpostor";
 import type { IMotorEnabledJoint, DistanceJointData, SpringJointData } from "../physicsJoint";
 import { PhysicsJoint } from "../physicsJoint";
-import { PhysicsEngineV1 } from "../physicsEngineV1";
 import type { AbstractMesh } from "../../../Meshes/abstractMesh";
 import { Vector3, Quaternion } from "../../../Maths/math.vector";
 import type { Nullable } from "../../../types";
 import { Logger } from "../../../Misc/logger";
 import { PhysicsRaycastResult } from "../../physicsRaycastResult";
 import type { IPhysicsEnginePluginV1, PhysicsImpostorJoint } from "../IPhysicsEnginePluginV1";
+import { Epsilon } from "../../../Maths/math.constants";
 
 declare let OIMO: any;
 
@@ -134,7 +134,7 @@ export class OimoJSPlugin implements IPhysicsEnginePluginV1 {
             addToArray(impostor.object);
 
             const checkWithEpsilon = (value: number): number => {
-                return Math.max(value, PhysicsEngineV1.Epsilon);
+                return Math.max(value, Epsilon);
             };
 
             const globalQuaternion: Quaternion = new Quaternion();
@@ -506,5 +506,17 @@ export class OimoJSPlugin implements IPhysicsEnginePluginV1 {
         this._raycastResult.reset(from, to);
 
         return this._raycastResult;
+    }
+
+    /**
+     * Does a raycast in the physics world
+     * @param from when should the ray start?
+     * @param to when should the ray end?
+     * @param result resulting PhysicsRaycastResult
+     */
+    public raycastToRef(from: Vector3, to: Vector3, result: PhysicsRaycastResult): void {
+        Logger.Warn("raycast is not currently supported by the Oimo physics plugin");
+
+        result.reset(from, to);
     }
 }

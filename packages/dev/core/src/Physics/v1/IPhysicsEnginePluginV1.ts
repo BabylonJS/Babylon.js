@@ -63,6 +63,8 @@ export interface IPhysicsEnginePluginV1 {
     sleepBody(impostor: PhysicsImpostor): void;
     wakeUpBody(impostor: PhysicsImpostor): void;
     raycast(from: Vector3, to: Vector3): PhysicsRaycastResult;
+    raycastToRef(from: Vector3, to: Vector3, result: PhysicsRaycastResult): void;
+
     //Joint Update
     updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number): void;
     setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number): void;

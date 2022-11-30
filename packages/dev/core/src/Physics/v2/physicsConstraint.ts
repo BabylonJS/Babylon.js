@@ -1,7 +1,7 @@
 import type { Scene } from "../../scene";
 import type { Vector3 } from "../../Maths/math.vector";
-import type { IPhysicsEnginePluginV2, ConstraintAxis, PhysicsConstraintParameters } from "./IPhysicsEnginePluginV2";
-import { ConstraintType, ConstraintAxisLimitMode, ConstraintMotorType } from "./IPhysicsEnginePluginV2";
+import type { IPhysicsEnginePluginV2, ConstraintAxis, PhysicsConstraintParameters, ConstraintAxisLimitMode, ConstraintMotorType } from "./IPhysicsEnginePluginV2";
+import { ConstraintType } from "./IPhysicsEnginePluginV2";
 import type { PhysicsBody } from "./physicsBody";
 
 /**
@@ -14,7 +14,7 @@ export class PhysicsConstraint {
      *
      */
     public _pluginData: any = undefined;
-    protected _physicsPlugin: IPhysicsEnginePluginV2 | undefined;
+    protected _physicsPlugin: IPhysicsEnginePluginV2;
 
     /**
      *
@@ -23,9 +23,20 @@ export class PhysicsConstraint {
         if (!scene) {
             return;
         }
-        const physicsEngine = scene.getPhysicsEngine() as any;
-        this._physicsPlugin = physicsEngine?.getPhysicsPlugin();
-        this._physicsPlugin?.initConstraint(this, type, options);
+        const physicsEngine = scene.getPhysicsEngine();
+        if (!physicsEngine) {
+            throw new Error("No Physics Engine available.");
+        }
+        if (physicsEngine.getPluginVersion() != 2) {
+            throw new Error("Plugin version is incorrect. Expected version 2.");
+        }
+        const physicsPlugin = physicsEngine.getPhysicsPlugin();
+        if (!physicsPlugin) {
+            throw new Error("No Physics Plugin available.");
+        }
+
+        this._physicsPlugin = physicsPlugin as IPhysicsEnginePluginV2;
+        this._physicsPlugin.initConstraint(this, type, options);
     }
 
     /**
@@ -33,7 +44,7 @@ export class PhysicsConstraint {
      * @param body
      */
     public setParentBody(body: PhysicsBody): void {
-        this._physicsPlugin?.setParentBody(this, body);
+        this._physicsPlugin.setParentBody(this, body);
     }
 
     /**
@@ -41,7 +52,7 @@ export class PhysicsConstraint {
      * @returns
      */
     public getParentBody(): PhysicsBody | undefined {
-        return this._physicsPlugin ? this._physicsPlugin.getParentBody(this) : undefined;
+        return this._physicsPlugin.getParentBody(this);
     }
 
     /**
@@ -49,7 +60,7 @@ export class PhysicsConstraint {
      * @param body
      */
     public setChildBody(body: PhysicsBody): void {
-        this._physicsPlugin?.setChildBody(this, body);
+        this._physicsPlugin.setChildBody(this, body);
     }
 
     /**
@@ -57,7 +68,7 @@ export class PhysicsConstraint {
      * @returns
      */
     public getChildBody(): PhysicsBody | undefined {
-        return this._physicsPlugin ? this._physicsPlugin.getChildBody(this) : undefined;
+        return this._physicsPlugin.getChildBody(this);
     }
 
     /**
@@ -67,7 +78,7 @@ export class PhysicsConstraint {
      * @param axisY
      */
     public setAnchorInParent(pivot: Vector3, axisX: Vector3, axisY: Vector3): void {
-        this._physicsPlugin?.setAnchorInParent(this, pivot, axisX, axisY);
+        this._physicsPlugin.setAnchorInParent(this, pivot, axisX, axisY);
     }
 
     /**
@@ -77,7 +88,7 @@ export class PhysicsConstraint {
      * @param axisY
      */
     public setAnchorInChild(pivot: Vector3, axisX: Vector3, axisY: Vector3): void {
-        this._physicsPlugin?.setAnchorInChild(this, pivot, axisX, axisY);
+        this._physicsPlugin.setAnchorInChild(this, pivot, axisX, axisY);
     }
 
     /**
@@ -85,7 +96,7 @@ export class PhysicsConstraint {
      * @param isEnabled
      */
     public setEnabled(isEnabled: boolean): void {
-        this._physicsPlugin?.setEnabled(this, isEnabled);
+        this._physicsPlugin.setEnabled(this, isEnabled);
     }
 
     /**
@@ -93,7 +104,7 @@ export class PhysicsConstraint {
      * @returns
      */
     public getEnabled(): boolean {
-        return this._physicsPlugin ? this._physicsPlugin.getEnabled(this) : false;
+        return this._physicsPlugin.getEnabled(this);
     }
 
     /**
@@ -101,7 +112,7 @@ export class PhysicsConstraint {
      * @param isEnabled
      */
     public setCollisionsEnabled(isEnabled: boolean): void {
-        this._physicsPlugin?.setCollisionsEnabled(this, isEnabled);
+        this._physicsPlugin.setCollisionsEnabled(this, isEnabled);
     }
 
     /**
@@ -109,7 +120,7 @@ export class PhysicsConstraint {
      * @returns
      */
     public getCollisionsEnabled(): boolean {
-        return this._physicsPlugin ? this._physicsPlugin.getCollisionsEnabled(this) : false;
+        return this._physicsPlugin.getCollisionsEnabled(this);
     }
 
     /**
@@ -118,7 +129,7 @@ export class PhysicsConstraint {
      * @param friction
      */
     public setAxisFriction(axis: ConstraintAxis, friction: number): void {
-        this._physicsPlugin?.setAxisFriction(this, axis, friction);
+        this._physicsPlugin.setAxisFriction(this, axis, friction);
     }
 
     /**
@@ -127,7 +138,7 @@ export class PhysicsConstraint {
      * @returns
      */
     public getAxisFriction(axis: ConstraintAxis): number {
-        return this._physicsPlugin ? this._physicsPlugin.getAxisFriction(this, axis) : 0;
+        return this._physicsPlugin.getAxisFriction(this, axis);
     }
 
     /**
@@ -136,91 +147,91 @@ export class PhysicsConstraint {
      * @param limitMode
      */
     public setAxisMode(axis: ConstraintAxis, limitMode: ConstraintAxisLimitMode): void {
-        this._physicsPlugin?.setAxisMode(this, axis, limitMode);
+        this._physicsPlugin.setAxisMode(this, axis, limitMode);
     }
     /**
      *
      * @param axis
      */
     public getAxisMode(axis: ConstraintAxis): ConstraintAxisLimitMode {
-        return this._physicsPlugin ? this._physicsPlugin.getAxisMode(this, axis) : ConstraintAxisLimitMode.NONE;
+        return this._physicsPlugin.getAxisMode(this, axis);
     }
 
     /**
      *
      */
     public setAxisMinLimit(axis: ConstraintAxis, minLimit: number): void {
-        this._physicsPlugin?.setAxisMinLimit(this, axis, minLimit);
+        this._physicsPlugin.setAxisMinLimit(this, axis, minLimit);
     }
 
     /**
      *
      */
     public getAxisMinLimit(axis: ConstraintAxis): number {
-        return this._physicsPlugin ? this._physicsPlugin.getAxisMinLimit(this, axis) : 0;
+        return this._physicsPlugin.getAxisMinLimit(this, axis);
     }
 
     /**
      *
      */
     public setAxisMaxLimit(axis: ConstraintAxis, limit: number): void {
-        this._physicsPlugin?.setAxisMaxLimit(this, axis, limit);
+        this._physicsPlugin.setAxisMaxLimit(this, axis, limit);
     }
 
     /**
      *
      */
     public getAxisMaxLimit(axis: ConstraintAxis): number {
-        return this._physicsPlugin ? this._physicsPlugin.getAxisMaxLimit(this, axis) : 0;
+        return this._physicsPlugin.getAxisMaxLimit(this, axis);
     }
 
     /**
      *
      */
     public setAxisMotorType(axis: ConstraintAxis, motorType: ConstraintMotorType): void {
-        this._physicsPlugin?.setAxisMotorType(this, axis, motorType);
+        this._physicsPlugin.setAxisMotorType(this, axis, motorType);
     }
 
     /**
      *
      */
     public getAxisMotorType(axis: ConstraintAxis): ConstraintMotorType {
-        return this._physicsPlugin ? this._physicsPlugin.getAxisMotorType(this, axis) : ConstraintMotorType.NONE;
+        return this._physicsPlugin.getAxisMotorType(this, axis);
     }
 
     /**
      *
      */
     public setAxisMotorTarget(axis: ConstraintAxis, target: number): void {
-        this._physicsPlugin?.setAxisMotorTarget(this, axis, target);
+        this._physicsPlugin.setAxisMotorTarget(this, axis, target);
     }
 
     /**
      *
      */
     public getAxisMotorTarget(axis: ConstraintAxis): number {
-        return this._physicsPlugin ? this._physicsPlugin.getAxisMotorTarget(this, axis) : 0;
+        return this._physicsPlugin.getAxisMotorTarget(this, axis);
     }
 
     /**
      *
      */
     public setAxisMotorMaxForce(axis: ConstraintAxis, maxForce: number): void {
-        this._physicsPlugin?.setAxisMotorMaxForce(this, axis, maxForce);
+        this._physicsPlugin.setAxisMotorMaxForce(this, axis, maxForce);
     }
 
     /**
      *
      */
     public getAxisMotorMaxForce(axis: ConstraintAxis): number {
-        return this._physicsPlugin ? this._physicsPlugin.getAxisMotorMaxForce(this, axis) : 0;
+        return this._physicsPlugin.getAxisMotorMaxForce(this, axis);
     }
 
     /**
      *
      */
     public dispose(): void {
-        this._physicsPlugin?.disposeConstraint(this);
+        this._physicsPlugin.disposeConstraint(this);
     }
 }
 

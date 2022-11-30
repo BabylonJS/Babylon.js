@@ -80,7 +80,7 @@ AbstractMesh.prototype.getPhysicsBody = function (): Nullable<PhysicsBody> {
  */
 AbstractMesh.prototype.applyImpulse = function (force: Vector3, contactPoint: Vector3): AbstractMesh {
     if (!this.physicsBody) {
-        return this;
+        throw new Error("No Physics Body for AbstractMesh");
     }
     this.physicsBody.applyImpulse(force, contactPoint);
     return this;
