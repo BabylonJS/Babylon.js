@@ -18,6 +18,7 @@ export class FluidRenderingObjectParticleSystem extends FluidRenderingObject {
     private _renderDiffuse: () => number;
     private _blendMode: number;
     private _onBeforeDrawParticleObserver: Nullable<Observer<Nullable<Effect>>>;
+    private _updateInAnimate: boolean;
 
     /** Gets the particle system */
     public get particleSystem() {
@@ -86,15 +87,12 @@ export class FluidRenderingObjectParticleSystem extends FluidRenderingObject {
         this._particleSystem = ps;
 
         this._originalRender = ps.render.bind(ps);
-        this._renderDiffuse = ps.isGPU ? ps.render.bind(ps, true, false, true) : this._originalRender;
+        this._renderDiffuse = this._originalRender;
         this._blendMode = ps.blendMode;
         this._onBeforeDrawParticleObserver = null;
-
-        if (ps.isGPU) {
-            ps.render = ps.render.bind(ps, false, true, false);
-        } else {
-            ps.render = () => 0;
-        }
+        this._updateInAnimate = this._particleSystem.updateInAnimate;
+        this._particleSystem.updateInAnimate = true;
+        this._particleSystem.render = () => 0;
 
         this.particleSize = (ps.minSize + ps.maxSize) / 2;
 
@@ -134,5 +132,6 @@ export class FluidRenderingObjectParticleSystem extends FluidRenderingObject {
         this._onBeforeDrawParticleObserver = null;
         this._particleSystem.render = this._originalRender;
         this._particleSystem.blendMode = this._blendMode;
+        this._particleSystem.updateInAnimate = this._updateInAnimate;
     }
 }

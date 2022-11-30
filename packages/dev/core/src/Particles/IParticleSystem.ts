@@ -280,8 +280,8 @@ export interface IParticleSystem {
     /** Gets or sets a matrix to use to compute projection */
     defaultProjectionMatrix: Matrix;
 
-    /** Indicates if the particle system is a GPU particle system */
-    isGPU: boolean;
+    /** Indicates that the update of particles is done in the animate function (and not in render) */
+    updateInAnimate: boolean;
 
     /** @internal */
     _wasDispatched: boolean;
