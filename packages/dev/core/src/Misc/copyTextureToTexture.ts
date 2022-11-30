@@ -1,4 +1,4 @@
-import type { Engine } from "../Engines/engine";
+import type { ThinEngine } from "core/Engines/thinEngine";
 import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import { EffectRenderer, EffectWrapper } from "../Materials/effectRenderer";
 import type { IRenderTargetTexture, RenderTargetWrapper } from "../Engines/renderTargetWrapper";
@@ -20,7 +20,7 @@ export enum ConversionMode {
  * Class used for fast copy from one texture to another
  */
 export class CopyTextureToTexture {
-    private _engine: Engine;
+    private _engine: ThinEngine;
     private _isDepthTexture: boolean;
     private _renderer: EffectRenderer;
     private _effectWrapper: EffectWrapper;
@@ -36,7 +36,7 @@ export class CopyTextureToTexture {
      * @param engine The engine to use for the copy
      * @param isDepthTexture True means that we should write (using gl_FragDepth) into the depth texture attached to the destination (default: false)
      */
-    constructor(engine: Engine, isDepthTexture = false) {
+    constructor(engine: ThinEngine, isDepthTexture = false) {
         this._engine = engine;
         this._isDepthTexture = isDepthTexture;
 
@@ -56,8 +56,8 @@ export class CopyTextureToTexture {
             if (isDepthTexture) {
                 engine.setState(false);
                 engine.setDepthBuffer(true);
-                engine.setDepthWrite(true);
-                engine.setDepthFunction(Constants.ALWAYS);
+                engine.depthCullingState.depthMask = true;
+                engine.depthCullingState.depthFunc = Constants.ALWAYS;
             }
 
             if (this._textureIsInternal(this._source)) {
@@ -92,12 +92,12 @@ export class CopyTextureToTexture {
         this._source = source;
         this._conversion = conversion;
 
-        const engineDepthFunc = this._engine.getDepthFunction();
+        const engineDepthFunc = this._engine.depthCullingState.depthFunc;
 
         this._renderer.render(this._effectWrapper, destination);
 
         if (this._isDepthTexture && engineDepthFunc) {
-            this._engine.setDepthFunction(engineDepthFunc);
+            this._engine.depthCullingState.depthFunc = engineDepthFunc;
         }
 
         return true;
