@@ -37,7 +37,7 @@ export interface IFluidRenderingRenderObject {
  * It is implementing the method described in https://developer.download.nvidia.com/presentations/2010/gdc/Direct3D_Effects.pdf
  */
 export class FluidRenderer {
-    /** @hidden */
+    /** @internal */
     public static _SceneComponentInitialization: (scene: Scene) => void = (/*_*/) => {
         throw `FluidRendererSceneComponent needs to be imported before as it contains a side-effect required by your code.`;
     };
@@ -49,12 +49,12 @@ export class FluidRenderer {
     private _targetRenderers: FluidRenderingTargetRenderer[];
     private _cameras: Map<Camera, [Array<FluidRenderingTargetRenderer>, { [key: string]: FluidRenderingDepthTextureCopy }]>;
 
-    /** Retrives all the render objects managed by the class */
+    /** Retrieves all the render objects managed by the class */
     public get renderObjects() {
         return this._renderObjects;
     }
 
-    /** Retrives all the render target renderers managed by the class */
+    /** Retrieves all the render target renderers managed by the class */
     public get targetRenderers() {
         return this._targetRenderers;
     }
@@ -348,7 +348,7 @@ export class FluidRenderer {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _prepareRendering(): void {
         let needInitialization = false;
         for (let i = 0; i < this._targetRenderers.length; ++i) {
@@ -359,7 +359,7 @@ export class FluidRenderer {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _render(forCamera?: Camera): void {
         for (let i = 0; i < this._targetRenderers.length; ++i) {
             if (!forCamera || this._targetRenderers[i].camera === forCamera) {

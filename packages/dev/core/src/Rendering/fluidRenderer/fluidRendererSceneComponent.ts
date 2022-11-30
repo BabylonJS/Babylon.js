@@ -10,7 +10,7 @@ import { FluidRenderer } from "./fluidRenderer";
 
 declare module "core/abstractScene" {
     export interface AbstractScene {
-        /** @hidden (Backing field) */
+        /** @internal (Backing field) */
         _fluidRenderer: Nullable<FluidRenderer>;
 
         /**
