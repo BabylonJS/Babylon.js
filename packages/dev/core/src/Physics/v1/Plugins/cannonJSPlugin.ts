@@ -11,6 +11,7 @@ import { PhysicsJoint } from "../physicsJoint";
 import { PhysicsRaycastResult } from "../../physicsRaycastResult";
 import type { TransformNode } from "../../../Meshes/transformNode";
 import { PhysicsEngineV1 } from "../physicsEngineV1";
+import { Epsilon } from "../../../Maths/math.constants";
 
 //declare var require: any;
 declare let CANNON: any;
@@ -313,7 +314,7 @@ export class CannonJSPlugin implements IPhysicsEnginePluginV1 {
     }
 
     private _checkWithEpsilon(value: number): number {
-        return value < PhysicsEngineV1.Epsilon ? PhysicsEngineV1.Epsilon : value;
+        return value < Epsilon ? Epsilon : value;
     }
 
     private _createShape(impostor: PhysicsImpostor) {
@@ -738,13 +739,25 @@ export class CannonJSPlugin implements IPhysicsEnginePluginV1 {
      * @returns PhysicsRaycastResult
      */
     public raycast(from: Vector3, to: Vector3): PhysicsRaycastResult {
+        this._raycastResult.reset(from, to);
+        this.raycastToRef(from, to, this._raycastResult);
+        return this._raycastResult;
+    }
+
+    /**
+     * Does a raycast in the physics world
+     * @param from when should the ray start?
+     * @param to when should the ray end?
+     * @param result resulting PhysicsRaycastResult
+     */
+    public raycastToRef(from: Vector3, to: Vector3, result: PhysicsRaycastResult): void {
         this._cannonRaycastResult.reset();
         this.world.raycastClosest(from, to, {}, this._cannonRaycastResult);
 
-        this._raycastResult.reset(from, to);
+        result.reset(from, to);
         if (this._cannonRaycastResult.hasHit) {
             // TODO: do we also want to get the body it hit?
-            this._raycastResult.setHitData(
+            result.setHitData(
                 {
                     x: this._cannonRaycastResult.hitNormalWorld.x,
                     y: this._cannonRaycastResult.hitNormalWorld.y,
@@ -756,10 +769,8 @@ export class CannonJSPlugin implements IPhysicsEnginePluginV1 {
                     z: this._cannonRaycastResult.hitPointWorld.z,
                 }
             );
-            this._raycastResult.setHitDistance(this._cannonRaycastResult.distance);
+            result.setHitDistance(this._cannonRaycastResult.distance);
         }
-
-        return this._raycastResult;
     }
 }
 

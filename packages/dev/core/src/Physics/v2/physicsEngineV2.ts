@@ -3,7 +3,7 @@ import { Vector3 } from "../../Maths/math.vector";
 import type { IPhysicsEngine } from "../IPhysicsEngine";
 import type { IPhysicsEnginePluginV2 } from "./IPhysicsEnginePluginV2";
 
-import type { PhysicsRaycastResult } from "../physicsRaycastResult";
+import { PhysicsRaycastResult } from "../physicsRaycastResult";
 import { _WarnImport } from "../../Misc/devTools";
 
 /**
@@ -26,12 +26,15 @@ export class PhysicsEngineV2 implements IPhysicsEngine {
      */
     public gravity: Vector3;
 
+    public getPluginVersion(): number {
+        return 2;
+    }
     /**
      * Factory used to create the default physics plugin.
      * @returns The default physics plugin
      */
     public static DefaultPluginFactory(): IPhysicsEnginePluginV2 {
-        throw _WarnImport("CannonJSPlugin");
+        throw _WarnImport("");
     }
 
     /**
@@ -145,9 +148,21 @@ export class PhysicsEngineV2 implements IPhysicsEngine {
      * Does a raycast in the physics world
      * @param from when should the ray start?
      * @param to when should the ray end?
+     * @param result resulting PhysicsRaycastResult
+     */
+    public raycastToRef(from: Vector3, to: Vector3, result: PhysicsRaycastResult): void {
+        this._physicsPlugin.raycast(from, to, result);
+    }
+
+    /**
+     * Does a raycast in the physics world
+     * @param from when should the ray start?
+     * @param to when should the ray end?
      * @returns PhysicsRaycastResult
      */
     public raycast(from: Vector3, to: Vector3): PhysicsRaycastResult {
-        return this._physicsPlugin.raycast(from, to);
+        const result = new PhysicsRaycastResult();
+        this._physicsPlugin.raycast(from, to, result);
+        return result;
     }
 }

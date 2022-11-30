@@ -1593,13 +1593,23 @@ export class AmmoJSPlugin implements IPhysicsEnginePluginV1 {
      * @returns PhysicsRaycastResult
      */
     public raycast(from: Vector3, to: Vector3): PhysicsRaycastResult {
+        this.raycastToRef(from, to, this._raycastResult);
+        return this._raycastResult;
+    }
+    /**
+     * Does a raycast in the physics world
+     * @param from when should the ray start?
+     * @param to when should the ray end?
+     * @param result resulting PhysicsRaycastResult
+     */
+    public raycastToRef(from: Vector3, to: Vector3, result: PhysicsRaycastResult): void {
         this._tmpAmmoVectorRCA = new this.bjsAMMO.btVector3(from.x, from.y, from.z);
         this._tmpAmmoVectorRCB = new this.bjsAMMO.btVector3(to.x, to.y, to.z);
 
         const rayCallback = new this.bjsAMMO.ClosestRayResultCallback(this._tmpAmmoVectorRCA, this._tmpAmmoVectorRCB);
         this.world.rayTest(this._tmpAmmoVectorRCA, this._tmpAmmoVectorRCB, rayCallback);
 
-        this._raycastResult.reset(from, to);
+        result.reset(from, to);
         if (rayCallback.hasHit()) {
             // TODO: do we want/need the body? If so, set all the data
             /*
@@ -1608,7 +1618,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePluginV1 {
             );
             var body = {};
             */
-            this._raycastResult.setHitData(
+            result.setHitData(
                 {
                     x: rayCallback.get_m_hitNormalWorld().x(),
                     y: rayCallback.get_m_hitNormalWorld().y(),
@@ -1620,11 +1630,10 @@ export class AmmoJSPlugin implements IPhysicsEnginePluginV1 {
                     z: rayCallback.get_m_hitPointWorld().z(),
                 }
             );
-            this._raycastResult.calculateHitDistance();
+            result.calculateHitDistance();
         }
         this.bjsAMMO.destroy(rayCallback);
         this.bjsAMMO.destroy(this._tmpAmmoVectorRCA);
         this.bjsAMMO.destroy(this._tmpAmmoVectorRCB);
-        return this._raycastResult;
     }
 }

@@ -1,5 +1,7 @@
 import type { Vector3 } from "../Maths/math.vector";
 import type { PhysicsRaycastResult } from "./physicsRaycastResult";
+import type { IPhysicsEnginePluginV1 } from "./v1/IPhysicsEnginePluginV1";
+import type { IPhysicsEnginePluginV2 } from "./v2/IPhysicsEnginePluginV2";
 
 /**
  * Interface used to define a physics engine
@@ -11,6 +13,10 @@ export interface IPhysicsEngine {
      */
     gravity: Vector3;
 
+    /**
+     *
+     */
+    getPluginVersion(): number;
     /**
      * Sets the gravity vector used by the simulation
      * @param gravity defines the gravity vector to use
@@ -61,7 +67,7 @@ export interface IPhysicsEngine {
      * Gets the current plugin used to run the simulation
      * @returns current plugin
      */
-    getPhysicsPlugin(): any;
+    getPhysicsPlugin(): IPhysicsEnginePluginV1 | IPhysicsEnginePluginV2 | null;
 
     /**
      * Does a raycast in the physics world

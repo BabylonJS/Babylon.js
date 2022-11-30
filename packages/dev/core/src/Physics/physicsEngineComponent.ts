@@ -7,6 +7,8 @@ import type { ISceneComponent } from "../sceneComponent";
 import { SceneComponentConstants } from "../sceneComponent";
 import { Scene } from "../scene";
 import type { IPhysicsEngine } from "./IPhysicsEngine";
+import type { IPhysicsEnginePluginV1 } from "./v1/IPhysicsEnginePluginV1";
+import type { IPhysicsEnginePluginV2 } from "./v2/IPhysicsEnginePluginV2";
 import { PhysicsEngineV1 } from "./v1/physicsEngineV1";
 
 declare module "../scene" {
@@ -31,7 +33,7 @@ declare module "../scene" {
          * @param plugin defines the physics engine to be used. defaults to CannonJS.
          * @returns a boolean indicating if the physics engine was initialized
          */
-        enablePhysics(gravity?: Nullable<Vector3>, plugin?: any /*IPhysicsEnginePlugin*/): boolean;
+        enablePhysics(gravity?: Nullable<Vector3>, plugin?: IPhysicsEnginePluginV1 | IPhysicsEnginePluginV2): boolean;
 
         /**
          * Disables and disposes the physics engine associated with the scene

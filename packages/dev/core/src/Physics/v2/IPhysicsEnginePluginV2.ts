@@ -117,10 +117,10 @@ export interface IPhysicsEnginePluginV2 {
     setAngularDamping(body: PhysicsBody, damping: number): void;
     getAngularDamping(body: PhysicsBody): number;
     setLinearVelocity(body: PhysicsBody, linVel: Vector3): void;
-    getLinearVelocity(body: PhysicsBody): Vector3;
+    getLinearVelocityToRef(body: PhysicsBody, linVel: Vector3): void;
     applyImpulse(body: PhysicsBody, location: Vector3, impulse: Vector3): void;
     setAngularVelocity(body: PhysicsBody, angVel: Vector3): void;
-    getAngularVelocity(body: PhysicsBody): Vector3;
+    getAngularVelocityToRef(body: PhysicsBody, angVel: Vector3): void;
     disposeBody(body: PhysicsBody): void;
 
     // shape
@@ -174,7 +174,7 @@ export interface IPhysicsEnginePluginV2 {
     disposeConstraint(constraint: PhysicsConstraint): void;
 
     // raycast
-    raycast(from: Vector3, to: Vector3): PhysicsRaycastResult;
+    raycast(from: Vector3, to: Vector3, result: PhysicsRaycastResult): void;
 
     dispose(): void;
 }

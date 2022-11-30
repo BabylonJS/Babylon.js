@@ -19,8 +19,20 @@ export class PhysicsMaterial {
      * @param scene
      */
     constructor(friction: number, restitution: number, scene: Scene) {
-        this._physicsPlugin = scene.getPhysicsEngine()?.getPhysicsPlugin() as any;
-        this._physicsPlugin?.initMaterial(this);
+        const physicsEngine = scene.getPhysicsEngine();
+        if (!physicsEngine) {
+            throw new Error("No Physics Engine available.");
+        }
+        if (physicsEngine.getPluginVersion() != 2) {
+            throw new Error("Plugin version is incorrect. Expected version 2.");
+        }
+        const physicsPlugin = physicsEngine.getPhysicsPlugin();
+        if (!physicsPlugin) {
+            throw new Error("No Physics Plugin available.");
+        }
+
+        this._physicsPlugin = physicsPlugin as IPhysicsEnginePluginV2;
+        this._physicsPlugin.initMaterial(this);
     }
     /**
      *

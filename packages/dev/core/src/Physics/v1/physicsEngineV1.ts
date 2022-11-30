@@ -15,8 +15,6 @@ export class PhysicsEngineV1 implements IPhysicsEngine {
     /**
      * Global value used to control the smallest number supported by the simulation
      */
-    public static Epsilon = 0.001;
-
     private _impostors: Array<PhysicsImpostor> = [];
     private _joints: Array<PhysicsImpostorJoint> = [];
     private _subTimeStep: number = 0;
@@ -27,6 +25,13 @@ export class PhysicsEngineV1 implements IPhysicsEngine {
      */
     public gravity: Vector3;
 
+    /**
+     *
+     * @returns version
+     */
+    public getPluginVersion(): number {
+        return 1;
+    }
     /**
      * Factory used to create the default physics plugin.
      * @returns The default physics plugin
@@ -251,5 +256,15 @@ export class PhysicsEngineV1 implements IPhysicsEngine {
      */
     public raycast(from: Vector3, to: Vector3): PhysicsRaycastResult {
         return this._physicsPlugin.raycast(from, to);
+    }
+
+    /**
+     * Does a raycast in the physics world
+     * @param from when should the ray start?
+     * @param to when should the ray end?
+     * @param result resulting PhysicsRaycastResult
+     */
+    public raycastToRef(from: Vector3, to: Vector3, result: PhysicsRaycastResult) {
+        return this._physicsPlugin.raycastToRef(from, to, result);
     }
 }
