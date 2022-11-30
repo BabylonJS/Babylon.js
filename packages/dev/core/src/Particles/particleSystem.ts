@@ -161,6 +161,9 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     /** @internal */
     public _currentStartSize2 = 0;
 
+    /** Indicates that the update of particles is done in the animate function */
+    public readonly updateInAnimate = true;
+
     private readonly _rawTextureWidth = 256;
     private _rampGradientsTexture: Nullable<RawTexture>;
     private _useRampGradients = false;
