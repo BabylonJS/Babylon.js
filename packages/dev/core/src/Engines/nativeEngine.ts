@@ -2070,7 +2070,7 @@ export class NativeEngine extends Engine {
             throw new Error("Texture layers are not supported in Babylon Native");
         }
 
-        // TODO: `renderTarget` argument is always set to true
+        // REVIEW: We are always setting the renderTarget flag as we don't know whether the texture will be used as a render target here.
         this._engine.initializeTexture(texture._hardwareTexture!.underlyingResource, width, height, generateMipMaps, format, true, useSRGBBuffer);
         this._setTextureSampling(texture._hardwareTexture!.underlyingResource, this._getNativeSamplingMode(samplingMode));
 
