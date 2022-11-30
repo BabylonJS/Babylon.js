@@ -30,49 +30,49 @@ declare type Material = import("../material").Material;
  */
 export interface RenderTargetTextureOptions {
     /** True if mip maps need to be generated after render */
-    generateMipMaps: boolean;
+    generateMipMaps?: boolean;
 
     /** True to not change the aspect ratio of the scene in the RTT */
-    doNotChangeAspectRatio: boolean;
+    doNotChangeAspectRatio?: boolean;
 
     /** The type of the buffer in the RTT (int, half float, float...) */
-    type: number;
+    type?: number;
 
     /** True if a cube texture needs to be created */
-    isCube: boolean;
+    isCube?: boolean;
 
     /** The sampling mode to be usedwith the render target (Linear, Nearest...) */
-    samplingMode: number;
+    samplingMode?: number;
 
     /** True to generate a depth buffer */
-    generateDepthBuffer: boolean;
+    generateDepthBuffer?: boolean;
 
     /** True to generate a stencil buffer */
-    generateStencilBuffer: boolean;
+    generateStencilBuffer?: boolean;
 
     /** True if multiple textures need to be created (Draw Buffers) */
-    isMulti: boolean;
+    isMulti?: boolean;
 
     /** The internal format of the buffer in the RTT (RED, RG, RGB, RGBA, ALPHA...) */
-    format: number;
+    format?: number;
 
     /** if the texture allocation should be delayed (default: false) */
-    delayAllocation: boolean;
+    delayAllocation?: boolean;
 
     /** sample count to use when creating the RTT */
-    samples: number;
+    samples?: number;
 
     /** specific flags to use when creating the texture (e.g., Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures) */
-    creationFlags: number,
+    creationFlags?: number;
 
     /** True to indicate that no color target should be created. (e.g., if you only want to write to the depth buffer) */
-    noColorAttachment: boolean;
+    noColorAttachment?: boolean;
 
     /** Specifies the internal texture to use directly instead of creating one (ignores `noColorAttachment` flag when set) **/
-    colorAttachment: InternalTexture;
+    colorAttachment?: InternalTexture;
 
     /** True to create a SRGB texture */
-    useSRGBBuffer: boolean;
+    useSRGBBuffer?: boolean;
 }
 
 /**
@@ -404,12 +404,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      * @param scene The scene the RTT belongs to. The latest created scene will be used if not precised.
      * @param options The options for creating the render target texture.
      */
-     constructor(
-        name: string,
-        size: number | { width: number; height: number; layers?: number } | { ratio: number },
-        scene?: Nullable<Scene>,
-        options?: Partial<RenderTargetTextureOptions>
-    );
+    constructor(name: string, size: number | { width: number; height: number; layers?: number } | { ratio: number }, scene?: Nullable<Scene>, options?: RenderTargetTextureOptions);
 
     /**
      * Instantiate a render target texture. This is mainly used to render of screen the scene to for instance apply post process
@@ -457,7 +452,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         name: string,
         size: number | { width: number; height: number; layers?: number } | { ratio: number },
         scene?: Nullable<Scene>,
-        generateMipMaps: boolean | Partial<RenderTargetTextureOptions> = false,
+        generateMipMaps: boolean | RenderTargetTextureOptions = false,
         doNotChangeAspectRatio: boolean = true,
         type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
         isCube = false,
@@ -470,7 +465,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         samples?: number,
         creationFlags?: number,
         noColorAttachment = false,
-        useSRGBBuffer = false,
+        useSRGBBuffer = false
     ) {
         let colorAttachment: InternalTexture | undefined = undefined;
         if (typeof generateMipMaps === "object") {

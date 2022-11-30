@@ -758,7 +758,7 @@ export class NullEngine extends Engine {
      * @param options defines the options used to create the texture
      * @returns a new render target wrapper
      */
-    public createRenderTargetCubeTexture(size: number, options?: Partial<RenderTargetCreationOptions>): RenderTargetWrapper {
+    public createRenderTargetCubeTexture(size: number, options?: RenderTargetCreationOptions): RenderTargetWrapper {
         const rtWrapper = this._createHardwareRenderTargetWrapper(false, true, size);
 
         const fullOptions = {
