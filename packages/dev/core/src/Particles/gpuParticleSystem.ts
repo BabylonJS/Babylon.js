@@ -313,7 +313,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * in the current frame (there's a ping-pong between two sets of buffers - for a given frame, one set is used as the source and the other as the destination)
      */
     public get vertexBuffers(): Immutable<{ [key: string]: VertexBuffer }> {
-        // We return the other buffers than those corresponding to this._targetIndex because it is assumed vertexBuffers will be called in the current frame 
+        // We return the other buffers than those corresponding to this._targetIndex because it is assumed vertexBuffers will be called in the current frame
         // after render() has been called, meaning that the buffers have already been swapped and this._targetIndex points to the buffers that will be updated
         // in the next frame (and which are the sources in this frame) and (this._targetIndex ^ 1) points to the buffers that have been updated this frame
         // (and that will be the source buffers in the next frame)
