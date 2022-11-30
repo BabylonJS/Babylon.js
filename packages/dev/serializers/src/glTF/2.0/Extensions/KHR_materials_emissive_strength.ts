@@ -1,13 +1,13 @@
 import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
-import type { Nullable } from "core/types";
 import { _Exporter } from "../glTFExporter";
-import { Material } from 'core/Materials';
+import type { Material } from 'core/Materials';
 import { PBRMaterial } from 'core/Materials';
 import * as _ from 'lodash';
 import type { IMaterial, IKHRMaterialsEmissiveStrength } from 'babylonjs-gltf2interface';
 
 const NAME = "KHR_materials_emissive_strength";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_materials_emissive_strength implements IGLTFExporterExtensionV2 {
     /** Name of this extension */
     public readonly name = NAME;
@@ -27,7 +27,7 @@ export class KHR_materials_emissive_strength implements IGLTFExporterExtensionV2
         return this._wasUsed;
     }
 
-    public postExportMaterialAsync(context: string, node: IMaterial, babylonMaterial: Material): Promise<Nullable<BABYLON.GLTF2.IMaterial>> {
+    public postExportMaterialAsync(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial> {
       return new Promise((resolve) => {
         if (!(babylonMaterial instanceof PBRMaterial)) {
           return resolve(node);
