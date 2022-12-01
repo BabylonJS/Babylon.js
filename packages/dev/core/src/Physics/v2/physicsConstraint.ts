@@ -10,6 +10,7 @@ import type { PhysicsBody } from "./physicsBody";
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
  */
 export class PhysicsConstraint {
+    /** @internal */
     /**
      *
      */
@@ -239,6 +240,7 @@ export class PhysicsConstraint {
  *
  */
 export class PhysicsConstraintBallAndSocket extends PhysicsConstraint {
+    /** @internal */
     constructor(pivotA: Vector3, pivotB: Vector3, axisA: Vector3, axisB: Vector3, scene: Scene) {
         super(ConstraintType.BALL_AND_SOCKET, { pivotA: pivotA, pivotB: pivotB, axisA: axisA, axisB: axisB }, scene);
     }
@@ -248,6 +250,7 @@ export class PhysicsConstraintBallAndSocket extends PhysicsConstraint {
  *
  */
 export class PhysicsConstraintDistance extends PhysicsConstraint {
+    /** @internal */
     constructor(pivotA: Vector3, pivotB: Vector3, axisA: Vector3, axisB: Vector3, scene: Scene) {
         super(ConstraintType.DISTANCE, { pivotA: pivotA, pivotB: pivotB, axisA: axisA, axisB: axisB }, scene);
     }
@@ -257,6 +260,7 @@ export class PhysicsConstraintDistance extends PhysicsConstraint {
  *
  */
 export class PhysicsConstraintHinge extends PhysicsConstraint {
+    /** @internal */
     constructor(pivotA: Vector3, pivotB: Vector3, axisA: Vector3, axisB: Vector3, scene: Scene) {
         super(ConstraintType.HINGE, { pivotA: pivotA, pivotB: pivotB, axisA: axisA, axisB: axisB }, scene);
     }
@@ -266,6 +270,7 @@ export class PhysicsConstraintHinge extends PhysicsConstraint {
  *
  */
 export class PhysicsConstraintSlider extends PhysicsConstraint {
+    /** @internal */
     constructor(pivotA: Vector3, pivotB: Vector3, axisA: Vector3, axisB: Vector3, scene: Scene) {
         super(ConstraintType.SLIDER, { pivotA: pivotA, pivotB: pivotB, axisA: axisA, axisB: axisB }, scene);
     }
@@ -275,6 +280,7 @@ export class PhysicsConstraintSlider extends PhysicsConstraint {
  *
  */
 export class PhysicsConstraintLock extends PhysicsConstraint {
+    /** @internal */
     constructor(pivotA: Vector3, pivotB: Vector3, axisA: Vector3, axisB: Vector3, scene: Scene) {
         super(ConstraintType.LOCK, { pivotA: pivotA, pivotB: pivotB, axisA: axisA, axisB: axisB }, scene);
     }

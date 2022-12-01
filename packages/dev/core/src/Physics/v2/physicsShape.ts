@@ -146,6 +146,7 @@ export class PhysicsShape {
  *
  */
 export class PhysicsShapeSphere extends PhysicsShape {
+    /** @internal */
     /**
      *
      * @param center
@@ -161,6 +162,7 @@ export class PhysicsShapeSphere extends PhysicsShape {
  *
  */
 export class PhysicsShapeCapsule extends PhysicsShape {
+    /** @internal */
     /**
      *
      * @param pointA
@@ -177,6 +179,7 @@ export class PhysicsShapeCapsule extends PhysicsShape {
  *
  */
 export class PhysicsShapeCylinder extends PhysicsShape {
+    /** @internal */
     /**
      *
      * @param pointA
@@ -193,6 +196,7 @@ export class PhysicsShapeCylinder extends PhysicsShape {
  *
  */
 export class PhysicsShapeShapeBox extends PhysicsShape {
+    /** @internal */
     /**
      *
      * @param center
@@ -209,6 +213,7 @@ export class PhysicsShapeShapeBox extends PhysicsShape {
  *
  */
 export class PhysicsShapeShapeConvexHull extends PhysicsShape {
+    /** @internal */
     /**
      *
      * @param mesh
@@ -223,6 +228,7 @@ export class PhysicsShapeShapeConvexHull extends PhysicsShape {
  *
  */
 export class PhysicsShapeShapeMesh extends PhysicsShape {
+    /** @internal */
     /**
      *
      * @param mesh
@@ -237,6 +243,7 @@ export class PhysicsShapeShapeMesh extends PhysicsShape {
  *
  */
 export class PhysicsShapeShapeContainer extends PhysicsShape {
+    /** @internal */
     /**
      *
      * @param mesh
