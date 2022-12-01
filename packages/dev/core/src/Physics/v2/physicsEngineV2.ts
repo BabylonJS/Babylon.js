@@ -27,7 +27,7 @@ export class PhysicsEngineV2 implements IPhysicsEngine {
     public gravity: Vector3;
 
     public getPluginVersion(): number {
-        return 2;
+        return this._physicsPlugin.getPluginVersion();
     }
     /**
      * Factory used to create the default physics plugin.

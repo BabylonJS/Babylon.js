@@ -31,6 +31,7 @@ export interface IPhysicsEnginePluginV1 {
     setTimeStep(timeStep: number): void;
     getTimeStep(): number;
     executeStep(delta: number, impostors: Array<PhysicsImpostor>): void; //not forgetting pre and post events
+    getPluginVersion(): number;
     applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
     applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
     generatePhysicsBody(impostor: PhysicsImpostor): void;

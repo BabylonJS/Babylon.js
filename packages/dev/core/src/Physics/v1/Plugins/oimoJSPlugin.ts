@@ -30,6 +30,14 @@ export class OimoJSPlugin implements IPhysicsEnginePluginV1 {
         this._raycastResult = new PhysicsRaycastResult();
     }
 
+    /**
+     *
+     * @returns plugin version
+     */
+    public getPluginVersion(): number {
+        return 1;
+    }
+
     public setGravity(gravity: Vector3) {
         this.world.gravity.set(gravity.x, gravity.y, gravity.z);
     }
