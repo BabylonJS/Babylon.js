@@ -1114,9 +1114,8 @@ export class _GLTFMaterialExporter {
 
             const textureInfo = this._exportTextureInfo(await imageIndexPromise, samplerIndex, babylonTexture.coordinatesIndex);
             this._textureMap[textureUid] = textureInfo;
+            this._exporter._extensionsPostExportTextures("exporter", this._textureMap[textureUid], babylonTexture);
         }
-
-        this._exporter._extensionsPostExportTextures("exporter", this._textureMap[textureUid], babylonTexture);
 
         return this._textureMap[textureUid];
     }
