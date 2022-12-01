@@ -130,6 +130,7 @@ interface INativeEngineConstructor {
 
     readonly TEXTURE_FORMAT_RGB8: number;
     readonly TEXTURE_FORMAT_RGBA8: number;
+    readonly TEXTURE_FORMAT_RGBA16F: number;
     readonly TEXTURE_FORMAT_RGBA32F: number;
 
     readonly ATTRIB_TYPE_INT8: number;

@@ -2,7 +2,7 @@ import type { Nullable } from "../../types";
 import type { TextureSize } from "../../Materials/Textures/textureCreationOptions";
 import { RenderTargetWrapper } from "../renderTargetWrapper";
 import type { NativeEngine } from "../nativeEngine";
-import { NativeFramebuffer } from "./nativeInterfaces";
+import type { NativeFramebuffer } from "./nativeInterfaces";
 
 export class NativeRenderTargetWrapper extends RenderTargetWrapper {
     public override readonly _engine: NativeEngine;

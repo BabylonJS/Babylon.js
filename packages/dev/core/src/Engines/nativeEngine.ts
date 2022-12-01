@@ -31,7 +31,7 @@ import type { IMaterialContext } from "./IMaterialContext";
 import type { IDrawContext } from "./IDrawContext";
 import type { ICanvas, IImage } from "./ICanvas";
 import type { IStencilState } from "../States/IStencilState";
-import { RenderTargetWrapper } from "./renderTargetWrapper";
+import type { RenderTargetWrapper } from "./renderTargetWrapper";
 import type { NativeData } from "./Native/nativeDataStream";
 import { NativeDataStream } from "./Native/nativeDataStream";
 import type { INative, INativeCamera, INativeEngine, NativeFramebuffer, NativeProgram, NativeTexture, NativeUniform, NativeVertexArrayObject } from "./Native/nativeInterfaces";
@@ -39,7 +39,7 @@ import { RuntimeError, ErrorCodes } from "../Misc/error";
 import { NativePipelineContext } from "./Native/nativePipelineContext";
 import { NativeRenderTargetWrapper } from "./Native/nativeRenderTargetWrapper";
 import { NativeHardwareTexture } from "./Native/nativeHardwareTexture";
-import { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
+import type { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
 
 declare const _native: INative;
 
@@ -2070,9 +2070,11 @@ export class NativeEngine extends Engine {
             throw new Error("Texture layers are not supported in Babylon Native");
         }
 
-        // REVIEW: We are always setting the renderTarget flag as we don't know whether the texture will be used as a render target here.
-        this._engine.initializeTexture(texture._hardwareTexture!.underlyingResource, width, height, generateMipMaps, format, true, useSRGBBuffer);
-        this._setTextureSampling(texture._hardwareTexture!.underlyingResource, this._getNativeSamplingMode(samplingMode));
+        const nativeTexture = texture._hardwareTexture!.underlyingResource;
+        const nativeTextureFormat = this._getNativeTextureFormat(format, type);
+        // REVIEW: We are always setting the renderTarget flag as we don't know whether the texture will be used as a render target.
+        this._engine.initializeTexture(nativeTexture, width, height, generateMipMaps, nativeTextureFormat, true, useSRGBBuffer);
+        this._setTextureSampling(nativeTexture, this._getNativeSamplingMode(samplingMode));
 
         texture._useSRGBBuffer = useSRGBBuffer;
         texture.baseWidth = width;
@@ -2558,6 +2560,8 @@ export class NativeEngine extends Engine {
             return _native.Engine.TEXTURE_FORMAT_RGB8;
         } else if (format == Constants.TEXTUREFORMAT_RGBA && type == Constants.TEXTURETYPE_UNSIGNED_INT) {
             return _native.Engine.TEXTURE_FORMAT_RGBA8;
+        } else if (format == Constants.TEXTUREFORMAT_RGBA && type == Constants.TEXTURETYPE_HALF_FLOAT) {
+            return _native.Engine.TEXTURE_FORMAT_RGBA16F;
         } else if (format == Constants.TEXTUREFORMAT_RGBA && type == Constants.TEXTURETYPE_FLOAT) {
             return _native.Engine.TEXTURE_FORMAT_RGBA32F;
         } else {
