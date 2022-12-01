@@ -2746,6 +2746,12 @@ export class NativeEngine extends Engine {
     public bindFramebuffer(texture: RenderTargetWrapper, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void {
         const nativeRTWrapper = texture as NativeRenderTargetWrapper;
 
+        if (this._currentRenderTarget) {
+            this.unBindFramebuffer(this._currentRenderTarget);
+        }
+
+        this._currentRenderTarget = texture;
+
         if (faceIndex) {
             throw new Error("Cuboid frame buffers are not yet supported in NativeEngine.");
         }
