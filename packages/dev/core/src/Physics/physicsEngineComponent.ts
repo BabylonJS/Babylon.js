@@ -10,6 +10,7 @@ import type { IPhysicsEngine } from "./IPhysicsEngine";
 import type { IPhysicsEnginePluginV1 } from "./v1/IPhysicsEnginePluginV1";
 import type { IPhysicsEnginePluginV2 } from "./v2/IPhysicsEnginePluginV2";
 import { PhysicsEngineV1 } from "./v1/physicsEngineV1";
+import { PhysicsEngineV2 } from "./v2/physicsEngineV2";
 
 declare module "../scene" {
     /**
@@ -78,7 +79,7 @@ Scene.prototype.getPhysicsEngine = function (): Nullable<IPhysicsEngine> {
  * @param plugin defines the physics engine to be used. defaults to CannonJS.
  * @returns a boolean indicating if the physics engine was initialized
  */
-Scene.prototype.enablePhysics = function (gravity: Nullable<Vector3> = null, plugin?: any): boolean {
+Scene.prototype.enablePhysics = function (gravity: Nullable<Vector3> = null, plugin?: IPhysicsEnginePluginV1 | IPhysicsEnginePluginV2): boolean {
     if (this._physicsEngine) {
         return true;
     }
@@ -91,7 +92,13 @@ Scene.prototype.enablePhysics = function (gravity: Nullable<Vector3> = null, plu
     }
 
     try {
-        this._physicsEngine = new PhysicsEngineV1(gravity, plugin);
+        if (plugin?.getPluginVersion() === 1) {
+            this._physicsEngine = new PhysicsEngineV1(gravity, plugin as IPhysicsEnginePluginV1);
+        } else if (plugin?.getPluginVersion() === 2) {
+            this._physicsEngine = new PhysicsEngineV2(gravity, plugin as IPhysicsEnginePluginV2);
+        } else {
+            throw new Error("Unsupported Physics plugin version.");
+        }
         this._physicsTimeAccumulator = 0;
         return true;
     } catch (e) {

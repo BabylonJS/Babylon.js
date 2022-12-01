@@ -662,9 +662,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
             // Physics clone
             if (scene.getPhysicsEngine) {
-                const physicsEngine = scene.getPhysicsEngine() as PhysicsEngineV1;
-                if (clonePhysicsImpostor && physicsEngine) {
-                    const impostor = physicsEngine.getImpostorForPhysicsObject(source);
+                const physicsEngine = scene.getPhysicsEngine();
+                if (clonePhysicsImpostor && physicsEngine && physicsEngine.getPluginVersion() === 1) {
+                    const impostor = (physicsEngine as PhysicsEngineV1).getImpostorForPhysicsObject(source);
                     if (impostor) {
                         this.physicsImpostor = impostor.clone(this);
                     }
