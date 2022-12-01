@@ -1,5 +1,34 @@
 # Changelog
 
+## 5.35.0
+
+### Core
+
+- Preserve camera control settings when reattaching camera controls - [_Bug Fix_] by [ericwood73](https://github.com/ericwood73) ([#13300](https://github.com/BabylonJS/Babylon.js/pull/13300))
+- Fix Texture rebuild on context lost - [_Bug Fix_] by [sebavan](https://github.com/sebavan) ([#13299](https://github.com/BabylonJS/Babylon.js/pull/13299))
+- Fix teleportation bug When changing controllers - by [RaananW](https://github.com/RaananW) ([#13298](https://github.com/BabylonJS/Babylon.js/pull/13298))
+- clear as default when in layers multiview - by [RaananW](https://github.com/RaananW) ([#13297](https://github.com/BabylonJS/Babylon.js/pull/13297))
+- InputManager: Fix Order and Execution of onPrePointerObservable - [_Bug Fix_] by [PolygonalSun](https://github.com/PolygonalSun) ([#13295](https://github.com/BabylonJS/Babylon.js/pull/13295))
+- KTXDecoder: Update and add new universal transcoders - by [Popov72](https://github.com/Popov72) ([#13284](https://github.com/BabylonJS/Babylon.js/pull/13284))
+- Cameras: Modified cameras to work under onPointerObservable - [_Bug Fix_] by [PolygonalSun](https://github.com/PolygonalSun) ([#13293](https://github.com/BabylonJS/Babylon.js/pull/13293))
+- Add static Reflect function to Vector3 - by [AlvaroHerreroDev](https://github.com/AlvaroHerreroDev) ([#13281](https://github.com/BabylonJS/Babylon.js/pull/13281))
+- Test the PickingInfo class - by [Dok11](https://github.com/Dok11) ([#13290](https://github.com/BabylonJS/Babylon.js/pull/13290))
+- RTT: Make sure we increment scene frameId even in "check readiness" mode - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#13289](https://github.com/BabylonJS/Babylon.js/pull/13289))
+- PBRBaseMaterial fix getAnimatables JSDoc - by [Dok11](https://github.com/Dok11) ([#13288](https://github.com/BabylonJS/Babylon.js/pull/13288))
+- Bump: Fix black spots in bump when no uv gradients - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#13287](https://github.com/BabylonJS/Babylon.js/pull/13287))
+- Ensure bloom blur size is consistent across hardware scaling levels - [_Bug Fix_] by [kircher1](https://github.com/kircher1) ([#13286](https://github.com/BabylonJS/Babylon.js/pull/13286))
+- Test babylon scene materials - by [Dok11](https://github.com/Dok11) ([#13285](https://github.com/BabylonJS/Babylon.js/pull/13285))
+- Mesh: Add forceWorldMatrixInstancedBufferUpdate property - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#13282](https://github.com/BabylonJS/Babylon.js/pull/13282))
+- Observable: Do not include deleted observers in hasObservers result - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#13283](https://github.com/BabylonJS/Babylon.js/pull/13283))
+
+### GUI
+
+- remove prepublish step, fix node.js issue on windows - by [RaananW](https://github.com/RaananW) ([#13280](https://github.com/BabylonJS/Babylon.js/pull/13280))
+
+### Inspector
+
+- remove prepublish step, fix node.js issue on windows - by [RaananW](https://github.com/RaananW) ([#13280](https://github.com/BabylonJS/Babylon.js/pull/13280))
+
 ## 5.34.0
 
 ### Core
