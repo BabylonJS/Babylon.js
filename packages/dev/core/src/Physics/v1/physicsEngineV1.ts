@@ -30,7 +30,7 @@ export class PhysicsEngineV1 implements IPhysicsEngine {
      * @returns version
      */
     public getPluginVersion(): number {
-        return 1;
+        return this._physicsPlugin.getPluginVersion();
     }
     /**
      * Factory used to create the default physics plugin.

@@ -10,6 +10,7 @@ import type { Material } from "../Materials/material";
 import { EngineStore } from "../Engines/engineStore";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import type { IPhysicsEnginePluginV1 } from "../Physics/v1/IPhysicsEnginePluginV1";
+import type { IPhysicsEnginePluginV2 } from "../Physics/v2/IPhysicsEnginePluginV2";
 import { PhysicsImpostor } from "../Physics/v1/physicsImpostor";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder";
@@ -30,7 +31,7 @@ export class PhysicsViewer {
     /** @internal */
     protected _numMeshes = 0;
     /** @internal */
-    protected _physicsEnginePlugin: Nullable<IPhysicsEnginePluginV1>;
+    protected _physicsEnginePlugin: IPhysicsEnginePluginV1 | IPhysicsEnginePluginV2 | null;
     private _renderFunction: () => void;
     private _utilityLayer: Nullable<UtilityLayerRenderer>;
 
@@ -80,8 +81,8 @@ export class PhysicsViewer {
                 }
                 const mesh = this._meshes[i];
 
-                if (mesh && plugin) {
-                    plugin.syncMeshWithImpostor(mesh, impostor);
+                if (mesh && plugin && plugin.getPluginVersion() === 1) {
+                    (plugin as IPhysicsEnginePluginV1).syncMeshWithImpostor(mesh, impostor);
                 }
             }
         }

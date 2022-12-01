@@ -46,6 +46,14 @@ export class CannonJSPlugin implements IPhysicsEnginePluginV1 {
         this._raycastResult = new PhysicsRaycastResult();
     }
 
+    /**
+     *
+     * @returns plugin version
+     */
+    public getPluginVersion(): number {
+        return 1;
+    }
+
     public setGravity(gravity: Vector3): void {
         const vec = gravity;
         this.world.gravity.set(vec.x, vec.y, vec.z);

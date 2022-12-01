@@ -125,6 +125,14 @@ export class AmmoJSPlugin implements IPhysicsEnginePluginV1 {
     }
 
     /**
+     *
+     * @returns plugin version
+     */
+    public getPluginVersion(): number {
+        return 1;
+    }
+
+    /**
      * Sets the gravity of the physics world (m/(s^2))
      * @param gravity Gravity to set
      */

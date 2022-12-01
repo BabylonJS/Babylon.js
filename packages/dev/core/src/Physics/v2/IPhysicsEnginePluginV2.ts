@@ -101,6 +101,7 @@ export interface IPhysicsEnginePluginV2 {
     setTimeStep(timeStep: number): void;
     getTimeStep(): number;
     executeStep(delta: number): void; //not forgetting pre and post events
+    getPluginVersion(): number;
 
     // body
     initBody(body: PhysicsBody): void;
