@@ -5,6 +5,7 @@ import type { IPhysicsEnginePluginV2 } from "./IPhysicsEnginePluginV2";
  *
  */
 export class PhysicsMaterial {
+    /** @internal */
     /**
      *
      */

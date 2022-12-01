@@ -11,6 +11,7 @@ import { _WarnImport } from "../../Misc/devTools";
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
  */
 export class PhysicsEngineV2 implements IPhysicsEngine {
+    /** @internal */
     /**
      * Global value used to control the smallest number supported by the simulation
      */
