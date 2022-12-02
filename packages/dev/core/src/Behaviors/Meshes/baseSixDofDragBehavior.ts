@@ -15,6 +15,7 @@ import type { PickingInfo } from "../../Collisions/pickingInfo";
 import { Camera } from "../../Cameras/camera";
 import type { Ray } from "../../Culling/ray";
 import type { IPointerEvent } from "../../Events/deviceInputEvents";
+import type { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 
 /**
  * Data store to track virtual pointers movement
@@ -392,7 +393,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
 
                         // Reattach camera controls
                         if (this.detachCameraControls && this._attachedToElement && this._pointerCamera && !this._pointerCamera.leftCamera) {
-                            this._pointerCamera.attachControl(true);
+                            this._reattachCameraControls();
                             this._attachedToElement = false;
                         }
                     }
@@ -462,13 +463,31 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
         // Herited classes can override that
     }
 
+    protected _reattachCameraControls() {
+        if (this._pointerCamera) {
+            // If the camera is an ArcRotateCamera, preserve the settings from the camera
+            // when reattaching control
+            if (this._pointerCamera.getClassName() === "ArcRotateCamera") {
+                const arcRotateCamera = this._pointerCamera as ArcRotateCamera;
+                arcRotateCamera.attachControl(
+                    arcRotateCamera.inputs ? arcRotateCamera.inputs.noPreventDefault : true,
+                    arcRotateCamera._useCtrlForPanning,
+                    arcRotateCamera._panningMouseButton
+                );
+            } else {
+                // preserve the settings from the camera when reattaching control
+                this._pointerCamera.attachControl(this._pointerCamera.inputs ? this._pointerCamera.inputs.noPreventDefault : true);
+            }
+        }
+    }
+
     /**
      * Detaches the behavior from the mesh
      */
     public detach(): void {
         if (this._scene) {
             if (this.detachCameraControls && this._attachedToElement && this._pointerCamera && !this._pointerCamera.leftCamera) {
-                this._pointerCamera.attachControl(true);
+                this._reattachCameraControls();
                 this._attachedToElement = false;
             }
             this._scene.onPointerObservable.remove(this._pointerObserver);

@@ -32,6 +32,8 @@ NullEngine.prototype.getInputElementClientRect = function (): Nullable<DOMRect> 
     return rect;
 };
 
+// Required for timers (eg. setTimeout) to work
+jest.useFakeTimers();
 jest.mock("core/DeviceInput/webDeviceInputSystem", () => {
     return {
         // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -166,7 +168,7 @@ describe("InputManager", () => {
 
         const pickSpy = jest.spyOn(scene!, "pick");
 
-        scene?.onPointerObservable.add((eventData) => {
+        const observer = scene?.onPointerObservable.add((eventData) => {
             const gen = eventData._generatePickInfo.bind(eventData);
             let haveNotPicked = false;
             let lazyPicked = false;
@@ -213,7 +215,9 @@ describe("InputManager", () => {
             deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
 
             // Clear the observable and try the same actions again
-            scene?.onPointerObservable.clear();
+            scene?.onPointerObservable.remove(observer!);
+            // Since the remove function uses setTimeout (with a time of 0), we need to force it to run the timer.
+            jest.runOnlyPendingTimers();
 
             // Perform single move over mesh, then click
             deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Horizontal, 128, false);
@@ -301,13 +305,71 @@ describe("InputManager", () => {
             deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Vertical, 128, false);
             deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Move, 1);
             deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
+
+            // Next, we test that the skipNextObservers flag is working correctly
+            let testObserver = scene?.onPrePointerObservable.add((eventData) => {
+                eventData.skipOnPointerObservable = true;
+            }, PointerEventTypes.POINTERDOWN);
+
+            // Expect to get just an UP
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
+
+            scene?.onPrePointerObservable.remove(testObserver!);
+
+            testObserver = scene?.onPrePointerObservable.add((eventData) => {
+                eventData.skipOnPointerObservable = true;
+            }, PointerEventTypes.POINTERMOVE);
+
+            // Expect a DOWN and UP
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Horizontal, 64, false);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Vertical, 64, false);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Move, 1);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
+
+            scene?.onPrePointerObservable.remove(testObserver!);
+
+            testObserver = scene?.onPrePointerObservable.add((eventData) => {
+                eventData.skipOnPointerObservable = true;
+            }, PointerEventTypes.POINTERTAP);
+
+            // Expect 2 DOWNs, 2 UPs, and a DOUBLETAP
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
+
+            scene?.onPrePointerObservable.remove(testObserver!);
+
+            testObserver = scene?.onPrePointerObservable.add((eventData) => {
+                eventData.skipOnPointerObservable = true;
+            }, PointerEventTypes.POINTERDOUBLETAP);
+
+            // Expect 2 DOWNs, 2 UPs, and a TAP
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
+
+            scene?.onPrePointerObservable.remove(testObserver!);
+
+            testObserver = scene?.onPrePointerObservable.add((eventData) => {
+                eventData.skipOnPointerObservable = true;
+            }, PointerEventTypes.POINTERUP);
+
+            // Expect 2 DOWNs
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
         }
 
-        expect(downCt).toBe(5);
-        expect(upCt).toBe(5);
+        expect(downCt).toBe(12);
+        expect(upCt).toBe(11);
         expect(moveCt).toBe(5);
         expect(pickCt).toBe(1);
-        expect(tapCt).toBe(2);
-        expect(dblTapCt).toBe(2);
+        expect(tapCt).toBe(4);
+        expect(dblTapCt).toBe(3);
     });
 });

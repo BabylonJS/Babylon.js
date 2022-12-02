@@ -86,19 +86,19 @@ describe("FreeCameraMouseInput", () => {
         const upPI2 = new PointerInfo(PointerEventTypes.POINTERUP, upEvt2 as IMouseEvent, new PickingInfo());
 
         // With the first touch, the camera should rotate
-        scene?._onCameraInputObservable.notifyObservers(downPI1);
-        scene?._onCameraInputObservable.notifyObservers(movePI1);
+        scene?.onPointerObservable.notifyObservers(downPI1);
+        scene?.onPointerObservable.notifyObservers(movePI1);
         expect(camera?.cameraRotation.x).not.toEqual(cameraRotation.x);
         expect(camera?.cameraRotation.y).not.toEqual(cameraRotation.y);
 
         // With the second touch, the camera should not rotate because the first touch is still active
         cameraRotation = camera!.cameraRotation.clone();
-        scene?._onCameraInputObservable.notifyObservers(downPI2);
-        scene?._onCameraInputObservable.notifyObservers(movePI2);
+        scene?.onPointerObservable.notifyObservers(downPI2);
+        scene?.onPointerObservable.notifyObservers(movePI2);
         expect(camera?.cameraRotation.x).toEqual(cameraRotation.x);
         expect(camera?.cameraRotation.y).toEqual(cameraRotation.y);
-        scene?._onCameraInputObservable.notifyObservers(upPI2);
-        scene?._onCameraInputObservable.notifyObservers(upPI1);
+        scene?.onPointerObservable.notifyObservers(upPI2);
+        scene?.onPointerObservable.notifyObservers(upPI1);
     });
 
     it("can work with pointer lock", () => {
@@ -126,7 +126,7 @@ describe("FreeCameraMouseInput", () => {
         engine!.isPointerLock = true;
 
         // Try to move the camera with the first event, it should move
-        scene?._onCameraInputObservable.notifyObservers(movePI);
+        scene?.onPointerObservable.notifyObservers(movePI);
         expect(camera?.cameraRotation.x).not.toEqual(cameraRotation.x);
         expect(camera?.cameraRotation.y).not.toEqual(cameraRotation.y);
 
@@ -135,7 +135,7 @@ describe("FreeCameraMouseInput", () => {
         engine!.isPointerLock = false;
 
         // It should not move the camera
-        scene?._onCameraInputObservable.notifyObservers(movePI2);
+        scene?.onPointerObservable.notifyObservers(movePI2);
         expect(camera?.cameraRotation.x).toEqual(cameraRotation.x);
         expect(camera?.cameraRotation.y).toEqual(cameraRotation.y);
     });

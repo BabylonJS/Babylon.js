@@ -128,7 +128,7 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
             }
         };
 
-        this._observer = this.camera.getScene()._onCameraInputObservable.add(this._wheel, PointerEventTypes.POINTERWHEEL);
+        this._observer = this.camera.getScene()._inputManager._addCameraPointerObserver(this._wheel, PointerEventTypes.POINTERWHEEL);
 
         if (this.zoomToMouseLocation) {
             this._inertialPanning.setAll(0);
@@ -140,7 +140,7 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
      */
     public detachControl(): void {
         if (this._observer) {
-            this.camera.getScene()._onCameraInputObservable.remove(this._observer);
+            this.camera.getScene()._inputManager._removeCameraPointerObserver(this._observer);
             this._observer = null;
             this._wheel = null;
         }

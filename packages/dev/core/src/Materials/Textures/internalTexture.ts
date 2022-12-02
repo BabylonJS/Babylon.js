@@ -356,8 +356,10 @@ export class InternalTexture extends TextureSampler {
                     this.invertY,
                     null,
                     this.samplingMode,
-                    () => {
-                        proxy._swapAndDie(this, false);
+                    // Do not use Proxy here as it could be fully synchronous
+                    // and proxy would be undefined.
+                    (temp) => {
+                        temp._swapAndDie(this, false);
                         this.isReady = true;
                     },
                     null,

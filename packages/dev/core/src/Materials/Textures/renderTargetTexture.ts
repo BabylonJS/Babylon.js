@@ -26,6 +26,56 @@ import { DumpTools } from "../../Misc/dumpTools";
 declare type Material = import("../material").Material;
 
 /**
+ * Options for the RenderTargetTexture constructor
+ */
+export interface RenderTargetTextureOptions {
+    /** True if mip maps need to be generated after render */
+    generateMipMaps?: boolean;
+
+    /** True to not change the aspect ratio of the scene in the RTT */
+    doNotChangeAspectRatio?: boolean;
+
+    /** The type of the buffer in the RTT (int, half float, float...) */
+    type?: number;
+
+    /** True if a cube texture needs to be created */
+    isCube?: boolean;
+
+    /** The sampling mode to be usedwith the render target (Linear, Nearest...) */
+    samplingMode?: number;
+
+    /** True to generate a depth buffer */
+    generateDepthBuffer?: boolean;
+
+    /** True to generate a stencil buffer */
+    generateStencilBuffer?: boolean;
+
+    /** True if multiple textures need to be created (Draw Buffers) */
+    isMulti?: boolean;
+
+    /** The internal format of the buffer in the RTT (RED, RG, RGB, RGBA, ALPHA...) */
+    format?: number;
+
+    /** if the texture allocation should be delayed (default: false) */
+    delayAllocation?: boolean;
+
+    /** sample count to use when creating the RTT */
+    samples?: number;
+
+    /** specific flags to use when creating the texture (e.g., Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures) */
+    creationFlags?: number;
+
+    /** True to indicate that no color target should be created. (e.g., if you only want to write to the depth buffer) */
+    noColorAttachment?: boolean;
+
+    /** Specifies the internal texture to use directly instead of creating one (ignores `noColorAttachment` flag when set) **/
+    colorAttachment?: InternalTexture;
+
+    /** True to create a SRGB texture */
+    useSRGBBuffer?: boolean;
+}
+
+/**
  * This Helps creating a texture that will be created from a camera in your scene.
  * It is basically a dynamic texture that could be used to create special effects for instance.
  * Actually, It is the base of lot of effects in the framework like post process, shadows, effect layers and rendering pipelines...
@@ -352,6 +402,16 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      * @param name The friendly name of the texture
      * @param size The size of the RTT (number if square, or {width: number, height:number} or {ratio:} to define a ratio from the main scene)
      * @param scene The scene the RTT belongs to. The latest created scene will be used if not precised.
+     * @param options The options for creating the render target texture.
+     */
+    constructor(name: string, size: number | { width: number; height: number; layers?: number } | { ratio: number }, scene?: Nullable<Scene>, options?: RenderTargetTextureOptions);
+
+    /**
+     * Instantiate a render target texture. This is mainly used to render of screen the scene to for instance apply post process
+     * or used a shadow, depth texture...
+     * @param name The friendly name of the texture
+     * @param size The size of the RTT (number if square, or {width: number, height:number} or {ratio:} to define a ratio from the main scene)
+     * @param scene The scene the RTT belongs to. The latest created scene will be used if not precised.
      * @param generateMipMaps True if mip maps need to be generated after render.
      * @param doNotChangeAspectRatio True to not change the aspect ratio of the scene in the RTT
      * @param type The type of the buffer in the RTT (int, half float, float...)
@@ -363,8 +423,8 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      * @param format The internal format of the buffer in the RTT (RED, RG, RGB, RGBA, ALPHA...)
      * @param delayAllocation if the texture allocation should be delayed (default: false)
      * @param samples sample count to use when creating the RTT
-     * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
-     * @param noColorTarget True to indicate that no color target should be created. Useful if you only want to write to the depth buffer, for eg
+     * @param creationFlags specific flags to use when creating the texture (e.g., Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures)
+     * @param noColorAttachment True to indicate that no color target should be created. (e.g., if you only want to write to the depth buffer)
      * @param useSRGBBuffer True to create a SRGB texture
      */
     constructor(
@@ -372,6 +432,27 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         size: number | { width: number; height: number; layers?: number } | { ratio: number },
         scene?: Nullable<Scene>,
         generateMipMaps?: boolean,
+        doNotChangeAspectRatio?: boolean,
+        type?: number,
+        isCube?: boolean,
+        samplingMode?: number,
+        generateDepthBuffer?: boolean,
+        generateStencilBuffer?: boolean,
+        isMulti?: boolean,
+        format?: number,
+        delayAllocation?: boolean,
+        samples?: number,
+        creationFlags?: number,
+        noColorAttachment?: boolean,
+        useSRGBBuffer?: boolean
+    );
+
+    /** @internal */
+    constructor(
+        name: string,
+        size: number | { width: number; height: number; layers?: number } | { ratio: number },
+        scene?: Nullable<Scene>,
+        generateMipMaps: boolean | RenderTargetTextureOptions = false,
         doNotChangeAspectRatio: boolean = true,
         type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
         isCube = false,
@@ -383,10 +464,31 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         delayAllocation = false,
         samples?: number,
         creationFlags?: number,
-        noColorTarget = false,
+        noColorAttachment = false,
         useSRGBBuffer = false
     ) {
+        let colorAttachment: InternalTexture | undefined = undefined;
+        if (typeof generateMipMaps === "object") {
+            const options = generateMipMaps;
+            generateMipMaps = !!options.generateMipMaps;
+            doNotChangeAspectRatio = !!options.doNotChangeAspectRatio;
+            type = options.type ?? Constants.TEXTURETYPE_UNSIGNED_INT;
+            isCube = !!options.isCube;
+            samplingMode = options.samplingMode ?? Texture.TRILINEAR_SAMPLINGMODE;
+            generateDepthBuffer = !!options.generateDepthBuffer;
+            generateStencilBuffer = !!options.generateStencilBuffer;
+            isMulti = !!options.isMulti;
+            format = options.format ?? Constants.TEXTUREFORMAT_RGBA;
+            delayAllocation = !!options.delayAllocation;
+            samples = options.samples;
+            creationFlags = options.creationFlags;
+            noColorAttachment = !!options.noColorAttachment;
+            useSRGBBuffer = !!options.useSRGBBuffer;
+            colorAttachment = options.colorAttachment;
+        }
+
         super(null, scene, !generateMipMaps, undefined, samplingMode, undefined, undefined, undefined, undefined, format);
+
         scene = this.getScene();
         if (!scene) {
             return;
@@ -428,8 +530,9 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             generateStencilBuffer: generateStencilBuffer,
             samples,
             creationFlags,
-            noColorTarget,
+            noColorAttachment: noColorAttachment,
             useSRGBBuffer,
+            colorAttachment: colorAttachment,
         };
 
         if (this.samplingMode === Texture.NEAREST_SAMPLINGMODE) {
@@ -879,15 +982,20 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                     if (this.customIsReadyFunction) {
                         if (!this.customIsReadyFunction(mesh, this.refreshRate, checkReadiness)) {
                             returnValue = false;
-                            break;
+                            continue;
                         }
                     } else if (!mesh.isReady(true)) {
                         returnValue = false;
-                        break;
+                        continue;
                     }
                 }
 
                 this.onAfterRenderObservable.notifyObservers(layer);
+
+                if (this.is2DArray || this.isCube) {
+                    scene.incrementRenderId();
+                    scene.resetCachedMaterial();
+                }
             }
         }
 

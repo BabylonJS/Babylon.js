@@ -14,11 +14,11 @@ declare module "../../Engines/thinEngine" {
          * @param options defines the options used to create the texture
          * @returns a new render target cube wrapper
          */
-        createRenderTargetCubeTexture(size: number, options?: Partial<RenderTargetCreationOptions>): RenderTargetWrapper;
+        createRenderTargetCubeTexture(size: number, options?: RenderTargetCreationOptions): RenderTargetWrapper;
     }
 }
 
-ThinEngine.prototype.createRenderTargetCubeTexture = function (size: number, options?: Partial<RenderTargetCreationOptions>): RenderTargetWrapper {
+ThinEngine.prototype.createRenderTargetCubeTexture = function (size: number, options?: RenderTargetCreationOptions): RenderTargetWrapper {
     const rtWrapper = this._createHardwareRenderTargetWrapper(false, true, size) as WebGLRenderTargetWrapper;
 
     const fullOptions = {
