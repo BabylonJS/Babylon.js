@@ -85,7 +85,8 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
 
             if (babylonTexture.uAng !== 0 || babylonTexture.vAng !== 0) {
                 Tools.Warn(`${context}: Texture ${babylonTexture.name} with rotation in the u or v axis is not supported in glTF.`);
-            }
+                resolve(null);
+            } else 
             /*
              * The KHR_texture_transform schema only supports w rotation around the origin.
              * See https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_texture_transform#gltf-schema-updates.
