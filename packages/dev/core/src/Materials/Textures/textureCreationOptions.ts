@@ -1,4 +1,4 @@
-import type { InternalTexture } from ".";
+import type { InternalTexture } from "./internalTexture";
 
 /**
  * Define options used to create an internal texture
