@@ -12,7 +12,7 @@ import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
 
 import type { FluidRenderingObject } from "./fluidRenderingObject";
-import { FluidRenderingRenderTarget } from "./fluidRenderingRenderTarget";
+import { FluidRenderingTextures } from "./fluidRenderingTextures";
 
 /**
  * Textures that can be displayed as a debugging tool
@@ -469,13 +469,13 @@ export class FluidRenderingTargetRenderer {
     public _renderPostProcess: Nullable<PostProcess>;
 
     /** @internal */
-    public _depthRenderTarget: Nullable<FluidRenderingRenderTarget>;
+    public _depthRenderTarget: Nullable<FluidRenderingTextures>;
 
     /** @internal */
-    public _diffuseRenderTarget: Nullable<FluidRenderingRenderTarget>;
+    public _diffuseRenderTarget: Nullable<FluidRenderingTextures>;
 
     /** @internal */
-    public _thicknessRenderTarget: Nullable<FluidRenderingRenderTarget>;
+    public _thicknessRenderTarget: Nullable<FluidRenderingTextures>;
 
     /**
      * Creates an instance of the class
@@ -510,7 +510,7 @@ export class FluidRenderingTargetRenderer {
         const depthHeight =
             this._depthMapSize !== null ? Math.round((this._depthMapSize * this._engine.getRenderHeight()) / this._engine.getRenderWidth()) : this._engine.getRenderHeight();
 
-        this._depthRenderTarget = new FluidRenderingRenderTarget(
+        this._depthRenderTarget = new FluidRenderingTextures(
             "Depth",
             this._scene,
             depthWidth,
@@ -536,7 +536,7 @@ export class FluidRenderingTargetRenderer {
                     ? Math.round((this._diffuseMapSize * this._engine.getRenderHeight()) / this._engine.getRenderWidth())
                     : this._engine.getRenderHeight();
 
-            this._diffuseRenderTarget = new FluidRenderingRenderTarget(
+            this._diffuseRenderTarget = new FluidRenderingTextures(
                 "Diffuse",
                 this._scene,
                 diffuseWidth,
@@ -563,7 +563,7 @@ export class FluidRenderingTargetRenderer {
                 : this._engine.getRenderHeight();
 
         if (!this._useFixedThickness) {
-            this._thicknessRenderTarget = new FluidRenderingRenderTarget(
+            this._thicknessRenderTarget = new FluidRenderingTextures(
                 "Thickness",
                 this._scene,
                 thicknessWidth,
@@ -586,7 +586,7 @@ export class FluidRenderingTargetRenderer {
         this._createLiquidRenderingPostProcess();
     }
 
-    protected _setBlurParameters(renderTarget: Nullable<FluidRenderingRenderTarget> = null): void {
+    protected _setBlurParameters(renderTarget: Nullable<FluidRenderingTextures> = null): void {
         if (renderTarget === null || renderTarget === this._depthRenderTarget) {
             this._setBlurDepthParameters();
         }
@@ -613,7 +613,7 @@ export class FluidRenderingTargetRenderer {
         this._thicknessRenderTarget.blurNumIterations = this.blurThicknessNumIterations;
     }
 
-    protected _initializeRenderTarget(renderTarget: FluidRenderingRenderTarget): void {
+    protected _initializeRenderTarget(renderTarget: FluidRenderingTextures): void {
         if (renderTarget !== this._diffuseRenderTarget) {
             renderTarget.enableBlur = renderTarget === this._depthRenderTarget ? this.enableBlurDepth : this.enableBlurThickness;
             renderTarget.blurSizeDivisor = renderTarget === this._depthRenderTarget ? this.blurDepthSizeDivisor : this.blurThicknessSizeDivisor;

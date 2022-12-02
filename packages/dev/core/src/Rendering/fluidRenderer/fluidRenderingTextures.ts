@@ -11,7 +11,7 @@ import type { Nullable } from "core/types";
 import { Observable } from "core/Misc/observable";
 
 /** @internal */
-export class FluidRenderingRenderTarget {
+export class FluidRenderingTextures {
     protected _name: string;
     protected _scene: Scene;
     protected _camera: Nullable<Camera>;
@@ -70,7 +70,7 @@ export class FluidRenderingRenderTarget {
 
     public particleSize = 0.02;
 
-    public onDisposeObservable: Observable<FluidRenderingRenderTarget> = new Observable<FluidRenderingRenderTarget>();
+    public onDisposeObservable: Observable<FluidRenderingTextures> = new Observable<FluidRenderingTextures>();
 
     public get renderTarget() {
         return this._rt;
