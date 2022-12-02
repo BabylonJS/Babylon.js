@@ -1,7 +1,7 @@
 import type { Scene } from "../../scene";
 import type { Vector3 } from "../../Maths/math.vector";
-import type { IPhysicsEnginePluginV2, ConstraintAxis, PhysicsConstraintParameters, ConstraintAxisLimitMode, ConstraintMotorType } from "./IPhysicsEnginePluginV2";
-import { ConstraintType } from "./IPhysicsEnginePluginV2";
+import type { IPhysicsEnginePlugin, ConstraintAxis, PhysicsConstraintParameters, ConstraintAxisLimitMode, ConstraintMotorType } from "./IPhysicsEnginePlugin";
+import { ConstraintType } from "./IPhysicsEnginePlugin";
 import type { PhysicsBody } from "./physicsBody";
 
 /**
@@ -15,7 +15,7 @@ export class PhysicsConstraint {
      *
      */
     public _pluginData: any = undefined;
-    protected _physicsPlugin: IPhysicsEnginePluginV2;
+    protected _physicsPlugin: IPhysicsEnginePlugin;
 
     /**
      *
@@ -36,7 +36,7 @@ export class PhysicsConstraint {
             throw new Error("No Physics Plugin available.");
         }
 
-        this._physicsPlugin = physicsPlugin as IPhysicsEnginePluginV2;
+        this._physicsPlugin = physicsPlugin as IPhysicsEnginePlugin;
         this._physicsPlugin.initConstraint(this, type, options);
     }
 

@@ -1,7 +1,7 @@
 import type { TransformNode } from "../../Meshes/transformNode";
 import type { BoundingBox } from "../../Culling/boundingBox";
-import { ShapeType } from "./IPhysicsEnginePluginV2";
-import type { IPhysicsEnginePluginV2, PhysicsShapeParameters } from "./IPhysicsEnginePluginV2";
+import { ShapeType } from "./IPhysicsEnginePlugin";
+import type { IPhysicsEnginePlugin, PhysicsShapeParameters } from "./IPhysicsEnginePlugin";
 import type { PhysicsMaterial } from "./physicsMaterial";
 import type { Vector3 } from "../../Maths/math.vector";
 import type { Quaternion } from "../../Maths/math.vector";
@@ -15,7 +15,7 @@ export class PhysicsShape {
     /** @internal */
     public _pluginData: any = undefined;
 
-    private _physicsPlugin: IPhysicsEnginePluginV2;
+    private _physicsPlugin: IPhysicsEnginePlugin;
 
     private _type: ShapeType;
 
@@ -44,7 +44,7 @@ export class PhysicsShape {
             throw new Error("No Physics Plugin available.");
         }
 
-        this._physicsPlugin = physicsPlugin as IPhysicsEnginePluginV2;
+        this._physicsPlugin = physicsPlugin as IPhysicsEnginePlugin;
         this._physicsPlugin.initShape(this, type, options);
     }
 

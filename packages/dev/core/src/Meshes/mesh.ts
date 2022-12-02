@@ -38,7 +38,7 @@ import type { Path3D } from "../Maths/math.path";
 import type { Plane } from "../Maths/math.plane";
 import type { TransformNode } from "./transformNode";
 import type { DrawWrapper } from "../Materials/drawWrapper";
-import type { PhysicsEngineV1 } from "../Physics/v1/physicsEngineV1";
+import type { PhysicsEngine as PhysicsEngineV1 } from "../Physics/v1/physicsEngine";
 
 declare type GoldbergMesh = import("./goldbergMesh").GoldbergMesh;
 declare type InstancedMesh = import("./instancedMesh").InstancedMesh;

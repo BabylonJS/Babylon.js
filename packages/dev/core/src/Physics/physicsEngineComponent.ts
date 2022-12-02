@@ -7,10 +7,10 @@ import type { ISceneComponent } from "../sceneComponent";
 import { SceneComponentConstants } from "../sceneComponent";
 import { Scene } from "../scene";
 import type { IPhysicsEngine } from "./IPhysicsEngine";
-import type { IPhysicsEnginePluginV1 } from "./v1/IPhysicsEnginePluginV1";
-import type { IPhysicsEnginePluginV2 } from "./v2/IPhysicsEnginePluginV2";
-import { PhysicsEngineV1 } from "./v1/physicsEngineV1";
-import { PhysicsEngineV2 } from "./v2/physicsEngineV2";
+import type { IPhysicsEnginePlugin as IPhysicsEnginePluginV1 } from "./v1/IPhysicsEnginePlugin";
+import type { IPhysicsEnginePlugin as IPhysicsEnginePluginV2 } from "./v2/IPhysicsEnginePlugin";
+import { PhysicsEngine as PhysicsEngineV1 } from "./v1/physicsEngine";
+import { PhysicsEngine as PhysicsEngineV2 } from "./v2/physicsEngine";
 
 declare module "../scene" {
     /**

@@ -1,5 +1,5 @@
 import type { Scene } from "../../scene";
-import type { IPhysicsEnginePluginV2 } from "./IPhysicsEnginePluginV2";
+import type { IPhysicsEnginePlugin } from "./IPhysicsEnginePlugin";
 
 /**
  *
@@ -11,7 +11,7 @@ export class PhysicsMaterial {
      */
     public _pluginData: any = undefined;
 
-    protected _physicsPlugin: IPhysicsEnginePluginV2;
+    protected _physicsPlugin: IPhysicsEnginePlugin;
 
     /**
      *
@@ -32,7 +32,7 @@ export class PhysicsMaterial {
             throw new Error("No Physics Plugin available.");
         }
 
-        this._physicsPlugin = physicsPlugin as IPhysicsEnginePluginV2;
+        this._physicsPlugin = physicsPlugin as IPhysicsEnginePlugin;
         this._physicsPlugin.initMaterial(this);
     }
     /**

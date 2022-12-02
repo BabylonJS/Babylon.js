@@ -88,7 +88,7 @@ export interface MassProperties {
 }
 
 /** @internal */
-export interface IPhysicsEnginePluginV2 {
+export interface IPhysicsEnginePlugin {
     /**
      *
      */

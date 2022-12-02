@@ -18,7 +18,7 @@ export interface PhysicsImpostorJoint {
 }
 
 /** @internal */
-export interface IPhysicsEnginePluginV1 {
+export interface IPhysicsEnginePlugin {
     /**
      *
      */
