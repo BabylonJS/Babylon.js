@@ -15,7 +15,6 @@ import { FluidRenderingObject } from "./fluidRenderingObject";
 export class FluidRenderingObjectParticleSystem extends FluidRenderingObject {
     private _particleSystem: IParticleSystem;
     private _originalRender: () => number;
-    private _renderDiffuse: () => number;
     private _blendMode: number;
     private _onBeforeDrawParticleObserver: Nullable<Observer<Nullable<Effect>>>;
     private _updateInAnimate: boolean;
@@ -87,7 +86,6 @@ export class FluidRenderingObjectParticleSystem extends FluidRenderingObject {
         this._particleSystem = ps;
 
         this._originalRender = ps.render.bind(ps);
-        this._renderDiffuse = this._originalRender;
         this._blendMode = ps.blendMode;
         this._onBeforeDrawParticleObserver = null;
         this._updateInAnimate = this._particleSystem.updateInAnimate;
@@ -119,7 +117,7 @@ export class FluidRenderingObjectParticleSystem extends FluidRenderingObject {
      * Render the diffuse texture for this object
      */
     public renderDiffuseTexture(): void {
-        this._renderDiffuse();
+        this._originalRender();
     }
 
     /**
