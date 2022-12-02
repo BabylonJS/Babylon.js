@@ -1,3 +1,5 @@
+import type { InternalTexture } from "./internalTexture";
+
 /**
  * Define options used to create an internal texture
  */
@@ -33,7 +35,9 @@ export interface RenderTargetCreationOptions extends InternalTextureCreationOpti
     /** Specifies whether or not a stencil should be allocated in the texture (false by default)*/
     generateStencilBuffer?: boolean;
     /** Specifies that no color target should be bound to the render target (useful if you only want to write to the depth buffer, for eg) */
-    noColorTarget?: boolean;
+    noColorAttachment?: boolean;
+    /** Specifies the internal texture to use directly instead of creating one (ignores `noColorAttachment` flag when set) **/
+    colorAttachment?: InternalTexture;
 }
 
 /**
