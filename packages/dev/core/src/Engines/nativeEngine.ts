@@ -2773,6 +2773,8 @@ export class NativeEngine extends Engine {
 
     public unBindFramebuffer(texture: RenderTargetWrapper, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
         // NOTE: Disabling mipmap generation is not yet supported in NativeEngine.
+        
+        this._currentRenderTarget = null;
 
         if (onBeforeUnbind) {
             onBeforeUnbind();
