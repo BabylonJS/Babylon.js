@@ -108,7 +108,6 @@ describe("PBRMaterial", () => {
                 "metallicReflectanceTexture.jpg",
                 "reflectanceTexture.jpg",
                 "microSurfaceTexture.jpg",
-                // "refractionTexture.jpg",
             ]);
         });
 

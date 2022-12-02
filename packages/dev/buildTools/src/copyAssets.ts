@@ -5,15 +5,18 @@ import * as chokidar from "chokidar";
 import type { DevPackageName } from "./packageMapping";
 import { buildShader } from "./buildShaders";
 
-const processFile = (file: string, options: { isCore?: boolean; basePackageName?: DevPackageName; pathPrefix?: string } = {}) => {
+const processFile = (file: string, options: { isCore?: boolean; basePackageName?: DevPackageName; pathPrefix?: string; outputDir?: string } = {}) => {
+    if (!options.outputDir) {
+        options.outputDir = "dist";
+    }
     if (path.extname(file) === ".fx") {
         buildShader(file, options.basePackageName, options.isCore);
     } else {
         if (options.pathPrefix) {
             const regex = new RegExp(`${options.pathPrefix.replace(/\//g, "\\/")}./src([/\\\\])`);
-            copyFile(file, file.replace(regex, "./dist$1"), true, true);
+            copyFile(file, file.replace(regex, `${options.outputDir}$1`), true, true);
         } else {
-            copyFile(file, file.replace(/src([/\\])/, "dist$1"), true, true);
+            copyFile(file, file.replace(/src([/\\])/, `${options.outputDir}$1`), true, true);
         }
         // support windows path with "\\" instead of "/"
     }
@@ -26,6 +29,7 @@ export const processAssets = (options: { extensions: string[] } = { extensions: 
     const pathPrefix = (checkArgs("--path-prefix", false, true) as string) || "";
     const globDirectory = global ? `./packages/**/*/src/**/*.+(${extensions.join("|")})` : pathPrefix + `./src/**/*.+(${extensions.join("|")})`;
     const isCore = !!checkArgs("--isCore", true);
+    const outputDir = checkArgs(["--output-dir"], false, true) as string;
     let basePackageName: DevPackageName = "core";
     if (!isCore) {
         const cliPackage = checkArgs("--package", false, true);
@@ -33,7 +37,7 @@ export const processAssets = (options: { extensions: string[] } = { extensions: 
             basePackageName = cliPackage as DevPackageName;
         }
     }
-    const processOptions = { isCore, basePackageName, pathPrefix };
+    const processOptions = { isCore, basePackageName, pathPrefix, outputDir };
     // this script copies all assets (anything other than .ts?x) from the "src" folder to the "dist" folder
     console.log(`Processing assets from ${globDirectory}`);
 

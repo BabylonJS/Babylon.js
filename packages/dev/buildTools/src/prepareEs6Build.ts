@@ -9,10 +9,10 @@ export const prepareES6Build = async () => {
     const constFile = checkArgs(["--constFile", "-cf"], false, true);
     try {
         if (constFile) {
-            const constantsContent = fs.readFileSync(path.resolve(baseDir, "dist", constFile as string), "utf8").replace("export class Constants", "const Constants = ");
+            const constantsContent = fs.readFileSync(path.resolve(baseDir, constFile as string), "utf8").replace("export class Constants", "const Constants = ");
             // eslint-disable-next-line @typescript-eslint/naming-convention
             const Constants = eval(constantsContent + "\nConstants;");
-            const allSourceFiles = glob.sync(path.resolve(baseDir, "dist", "**", "*.js"));
+            const allSourceFiles = glob.sync(path.resolve(baseDir, "**", "*.js"));
             allSourceFiles.forEach((file) => {
                 if (file.endsWith(constFile as string)) {
                     return;
@@ -48,14 +48,4 @@ export const prepareES6Build = async () => {
         console.log(e);
         process.exit(1);
     }
-    // this script copies all files from dist to ../
-
-    // first move to a temp folder
-    // const rootDir = findRootDirectory();
-    // fs.emptyDirSync(path.resolve(rootDir, ".temp"));
-    // fs.moveSync(path.resolve(baseDir, "dist"), path.resolve(rootDir, ".temp"), { overwrite: true });
-    // clear directory
-    // then copy the files
-    fs.copySync(path.resolve(baseDir, "dist"), path.resolve(baseDir), { overwrite: true });
-    fs.emptyDirSync(path.resolve(baseDir, "dist"));
 };

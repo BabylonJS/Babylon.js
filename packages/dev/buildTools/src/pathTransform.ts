@@ -3,7 +3,6 @@ import * as path from "path";
 import * as fs from "fs";
 import type { BuildType, PublicPackageVariable } from "./packageMapping";
 import { getDevPackagesByBuildType, getPublicPackageName, isValidDevPackageName, declarationsOnlyPackages } from "./packageMapping";
-import { checkDirectorySync } from "./utils";
 
 const addJS = (to: string, forceAppend?: boolean | string): string => (forceAppend && !to.endsWith(".js") ? to + (forceAppend === true ? ".js" : forceAppend) : to);
 
@@ -190,8 +189,7 @@ export function transformerFactory<T extends TransformerNode>(context: ts.Transf
 }
 
 export const storeTsLib = () => {
-    const tsLibPath = path.resolve(path.resolve(".", "dist", "tslib.es6.js"));
-    checkDirectorySync(path.resolve(".", "dist"));
+    const tsLibPath = path.resolve(path.resolve(".", "tslib.es6.js"));
     if (!fs.existsSync(tsLibPath)) {
         fs.writeFileSync(tsLibPath, tslibContent);
     }

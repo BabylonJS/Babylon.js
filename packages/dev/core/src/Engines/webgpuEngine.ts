@@ -2098,7 +2098,7 @@ export class WebGPUEngine extends Engine {
      * @param texture defines the external texture
      * @returns the babylon internal texture
      */
-    wrapWebGPUTexture(texture: GPUTexture): InternalTexture {
+    public wrapWebGPUTexture(texture: GPUTexture): InternalTexture {
         const hardwareTexture = new WebGPUHardwareTexture(texture);
         const internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
         internalTexture._hardwareTexture = hardwareTexture;
@@ -2110,7 +2110,7 @@ export class WebGPUEngine extends Engine {
      * Wraps an external web gl texture in a Babylon texture.
      * @returns the babylon internal texture
      */
-    wrapWebGLTexture(): InternalTexture {
+    public wrapWebGLTexture(): InternalTexture {
         throw new Error("wrapWebGLTexture is not supported, use wrapWebGPUTexture instead.");
     }
 

@@ -874,7 +874,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
     }
 
     private _showParabolicPath(pickInfo: PickingInfo) {
-        if (!pickInfo.pickedPoint) {
+        if (!pickInfo.pickedPoint || !this._currentTeleportationControllerId) {
             return;
         }
 
