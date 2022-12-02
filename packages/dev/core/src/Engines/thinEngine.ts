@@ -1036,12 +1036,17 @@ export class ThinEngine {
             // Rebuild effects
             this._rebuildEffects();
             this._rebuildComputeEffects?.();
+
+            // Note:
+            //  The call to _rebuildBuffers must be made before the call to _rebuildInternalTextures because in the process of _rebuildBuffers the buffers used by the post process managers will be rebuilt
+            //  and we may need to use the post process manager of the scene during _rebuildInternalTextures (in WebGL1, non-POT textures are rescaled using a post process + post process manager of the scene)
+
+            // Rebuild buffers
+            this._rebuildBuffers();
             // Rebuild textures
             this._rebuildInternalTextures();
             // Rebuild textures
             this._rebuildRenderTargetWrappers();
-            // Rebuild buffers
-            this._rebuildBuffers();
 
             // Reset engine states after all the buffer/textures/... have been rebuilt
             this.wipeCaches(true);
