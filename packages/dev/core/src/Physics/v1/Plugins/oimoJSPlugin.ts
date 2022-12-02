@@ -7,13 +7,13 @@ import { Vector3, Quaternion } from "../../../Maths/math.vector";
 import type { Nullable } from "../../../types";
 import { Logger } from "../../../Misc/logger";
 import { PhysicsRaycastResult } from "../../physicsRaycastResult";
-import type { IPhysicsEnginePluginV1, PhysicsImpostorJoint } from "../IPhysicsEnginePluginV1";
+import type { IPhysicsEnginePlugin, PhysicsImpostorJoint } from "../IPhysicsEnginePlugin";
 import { Epsilon } from "../../../Maths/math.constants";
 
 declare let OIMO: any;
 
 /** @internal */
-export class OimoJSPlugin implements IPhysicsEnginePluginV1 {
+export class OimoJSPlugin implements IPhysicsEnginePlugin {
     public world: any;
     public name: string = "OimoJSPlugin";
     // eslint-disable-next-line @typescript-eslint/naming-convention

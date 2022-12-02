@@ -1,5 +1,5 @@
 import { Quaternion, Vector3, Matrix } from "../../../Maths/math.vector";
-import type { IPhysicsEnginePluginV1, PhysicsImpostorJoint } from "../IPhysicsEnginePluginV1";
+import type { IPhysicsEnginePlugin, PhysicsImpostorJoint } from "../IPhysicsEnginePlugin";
 import { Logger } from "../../../Misc/logger";
 import type { IPhysicsEnabledObject } from "../physicsImpostor";
 import { PhysicsImpostor } from "../physicsImpostor";
@@ -25,7 +25,7 @@ declare let Ammo: any;
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
  * @see https://github.com/kripken/ammo.js/
  */
-export class AmmoJSPlugin implements IPhysicsEnginePluginV1 {
+export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     /**
      * Reference to the Ammo library
      */

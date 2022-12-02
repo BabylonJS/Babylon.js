@@ -1,8 +1,7 @@
 import type { Nullable } from "../../types";
 import { Vector3 } from "../../Maths/math.vector";
 import type { IPhysicsEngine } from "../IPhysicsEngine";
-import type { IPhysicsEnginePluginV2 } from "./IPhysicsEnginePluginV2";
-
+import type { IPhysicsEnginePlugin } from "./IPhysicsEnginePlugin";
 import { PhysicsRaycastResult } from "../physicsRaycastResult";
 import { _WarnImport } from "../../Misc/devTools";
 
@@ -10,7 +9,7 @@ import { _WarnImport } from "../../Misc/devTools";
  * Class used to control physics engine
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
  */
-export class PhysicsEngineV2 implements IPhysicsEngine {
+export class PhysicsEngine implements IPhysicsEngine {
     /** @internal */
     /**
      * Global value used to control the smallest number supported by the simulation
@@ -34,7 +33,7 @@ export class PhysicsEngineV2 implements IPhysicsEngine {
      * Factory used to create the default physics plugin.
      * @returns The default physics plugin
      */
-    public static DefaultPluginFactory(): IPhysicsEnginePluginV2 {
+    public static DefaultPluginFactory(): IPhysicsEnginePlugin {
         throw _WarnImport("");
     }
 
@@ -43,7 +42,7 @@ export class PhysicsEngineV2 implements IPhysicsEngine {
      * @param gravity defines the gravity vector used by the simulation
      * @param _physicsPlugin defines the plugin to use (CannonJS by default)
      */
-    constructor(gravity: Nullable<Vector3>, private _physicsPlugin: IPhysicsEnginePluginV2 = PhysicsEngineV2.DefaultPluginFactory()) {
+    constructor(gravity: Nullable<Vector3>, private _physicsPlugin: IPhysicsEnginePlugin = PhysicsEngine.DefaultPluginFactory()) {
         gravity = gravity || new Vector3(0, -9.807, 0);
         this.setGravity(gravity);
         this.setTimeStep();
@@ -141,7 +140,7 @@ export class PhysicsEngineV2 implements IPhysicsEngine {
      * Gets the current plugin used to run the simulation
      * @returns current plugin
      */
-    public getPhysicsPlugin(): IPhysicsEnginePluginV2 {
+    public getPhysicsPlugin(): IPhysicsEnginePlugin {
         return this._physicsPlugin;
     }
 

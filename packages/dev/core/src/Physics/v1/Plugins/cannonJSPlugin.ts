@@ -3,21 +3,21 @@ import { Logger } from "../../../Misc/logger";
 import { Vector3, Matrix, Quaternion } from "../../../Maths/math.vector";
 import { VertexBuffer } from "../../../Buffers/buffer";
 import type { AbstractMesh } from "../../../Meshes/abstractMesh";
-import type { IPhysicsEnginePluginV1, PhysicsImpostorJoint } from "../IPhysicsEnginePluginV1";
+import type { IPhysicsEnginePlugin, PhysicsImpostorJoint } from "../IPhysicsEnginePlugin";
 import type { IPhysicsEnabledObject } from "..//physicsImpostor";
 import { PhysicsImpostor } from "..//physicsImpostor";
 import type { IMotorEnabledJoint, DistanceJointData, SpringJointData } from "../physicsJoint";
 import { PhysicsJoint } from "../physicsJoint";
 import { PhysicsRaycastResult } from "../../physicsRaycastResult";
 import type { TransformNode } from "../../../Meshes/transformNode";
-import { PhysicsEngineV1 } from "../physicsEngineV1";
+import { PhysicsEngine } from "../physicsEngine";
 import { Epsilon } from "../../../Maths/math.constants";
 
 //declare var require: any;
 declare let CANNON: any;
 
 /** @internal */
-export class CannonJSPlugin implements IPhysicsEnginePluginV1 {
+export class CannonJSPlugin implements IPhysicsEnginePlugin {
     public world: any;
     public name: string = "CannonJSPlugin";
     private _physicsMaterials = new Array();
@@ -782,6 +782,6 @@ export class CannonJSPlugin implements IPhysicsEnginePluginV1 {
     }
 }
 
-PhysicsEngineV1.DefaultPluginFactory = () => {
+PhysicsEngine.DefaultPluginFactory = () => {
     return new CannonJSPlugin();
 };

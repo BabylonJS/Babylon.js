@@ -7,7 +7,7 @@ import { CreateSphere } from "../../Meshes/Builders/sphereBuilder";
 import { CreateCylinder } from "../../Meshes/Builders/cylinderBuilder";
 import { Ray } from "../../Culling/ray";
 import type { Scene } from "../../scene";
-import type { PhysicsEngineV1 } from "./physicsEngineV1";
+import type { PhysicsEngine } from "./physicsEngine";
 import type { PhysicsImpostor } from "./physicsImpostor";
 
 /**
@@ -16,7 +16,7 @@ import type { PhysicsImpostor } from "./physicsImpostor";
  */
 export class PhysicsHelper {
     private _scene: Scene;
-    private _physicsEngine: Nullable<PhysicsEngineV1>;
+    private _physicsEngine: Nullable<PhysicsEngine>;
 
     /**
      * Initializes the Physics helper
@@ -458,7 +458,7 @@ class PhysicsGravitationalFieldEvent {
  * Represents a physics updraft event
  */
 class PhysicsUpdraftEvent {
-    private _physicsEngine: PhysicsEngineV1;
+    private _physicsEngine: PhysicsEngine;
     private _originTop: Vector3 = Vector3.Zero(); // the most upper part of the cylinder
     private _originDirection: Vector3 = Vector3.Zero(); // used if the updraftMode is perpendicular
     private _tickCallback: any;
@@ -473,7 +473,7 @@ class PhysicsUpdraftEvent {
      * @param _options The options for the updraft event
      */
     constructor(private _scene: Scene, private _origin: Vector3, private _options: PhysicsUpdraftEventOptions) {
-        this._physicsEngine = <PhysicsEngineV1>this._scene.getPhysicsEngine();
+        this._physicsEngine = <PhysicsEngine>this._scene.getPhysicsEngine();
         this._options = { ...new PhysicsUpdraftEventOptions(), ...this._options };
 
         this._origin.addToRef(new Vector3(0, this._options.height / 2, 0), this._cylinderPosition);
@@ -601,7 +601,7 @@ class PhysicsUpdraftEvent {
  * Represents a physics vortex event
  */
 class PhysicsVortexEvent {
-    private _physicsEngine: PhysicsEngineV1;
+    private _physicsEngine: PhysicsEngine;
     private _originTop: Vector3 = Vector3.Zero(); // the most upper part of the cylinder
     private _tickCallback: any;
     private _cylinder: Mesh;
@@ -615,7 +615,7 @@ class PhysicsVortexEvent {
      * @param _options The options for the vortex event
      */
     constructor(private _scene: Scene, private _origin: Vector3, private _options: PhysicsVortexEventOptions) {
-        this._physicsEngine = <PhysicsEngineV1>this._scene.getPhysicsEngine();
+        this._physicsEngine = <PhysicsEngine>this._scene.getPhysicsEngine();
         this._options = { ...new PhysicsVortexEventOptions(), ...this._options };
 
         this._origin.addToRef(new Vector3(0, this._options.height / 2, 0), this._cylinderPosition);
