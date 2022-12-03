@@ -1145,6 +1145,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._spriteBuffer = new Buffer(engine, spriteData, false, 4);
 
         // Update & Render vertex buffers
+        this._renderVertexBuffers = [];
         this._createVertexBuffers(this._buffer0, this._buffer1, this._spriteBuffer);
         this._createVertexBuffers(this._buffer1, this._buffer0, this._spriteBuffer);
 
@@ -1537,6 +1538,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
     /** @internal */
     public _update(emitterWM?: Matrix): void {
+        if (!this.emitter) {
+            return;
+        }
+
         this._recreateUpdateEffect();
 
         if ((<AbstractMesh>this.emitter).position) {

@@ -158,15 +158,13 @@ export abstract class FluidRenderingObject {
      * Gets the number of particles (vertices) of this object
      * @returns The number of particles
      */
-    public numParticles(): number {
-        return 0;
-    }
+    public abstract get numParticles(): number;
 
     /**
      * Render the depth texture for this object
      */
     public renderDepthTexture(): void {
-        const numParticles = this.numParticles();
+        const numParticles = this.numParticles;
 
         if (!this._depthEffectWrapper || numParticles === 0) {
             return;
@@ -194,7 +192,7 @@ export abstract class FluidRenderingObject {
      * Render the thickness texture for this object
      */
     public renderThicknessTexture(): void {
-        const numParticles = this.numParticles();
+        const numParticles = this.numParticles;
 
         if (!this._thicknessEffectWrapper || numParticles === 0) {
             return;

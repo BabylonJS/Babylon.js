@@ -109,7 +109,7 @@ export class FluidRenderingObjectParticleSystem extends FluidRenderingObject {
      * Gets the number of particles in this particle system
      * @returns The number of particles
      */
-    public numParticles(): number {
+    public get numParticles(): number {
         return this._particleSystem.getActiveCount();
     }
 
