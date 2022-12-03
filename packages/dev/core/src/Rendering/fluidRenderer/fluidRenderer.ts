@@ -74,6 +74,12 @@ Scene.prototype.disableFluidRenderer = function (): void {
     this._fluidRenderer = null;
 };
 
+type CameraMapForFluidRendering = [Array<FluidRenderingTargetRenderer>, { [key: string]: FluidRenderingDepthTextureCopy }];
+
+function IsParticleSystemObject(obj: FluidRenderingObject): obj is FluidRenderingObjectParticleSystem {
+    return !!(obj as FluidRenderingObjectParticleSystem).particleSystem;
+}
+
 /**
  * Defines the fluid renderer scene component responsible to render objects as fluids
  */
@@ -166,19 +172,13 @@ export class FluidRenderer {
     private _scene: Scene;
     private _engine: Engine;
     private _onEngineResizeObserver: Nullable<Observer<Engine>>;
-    private _renderObjects: Array<IFluidRenderingRenderObject>;
-    private _targetRenderers: FluidRenderingTargetRenderer[];
-    private _cameras: Map<Camera, [Array<FluidRenderingTargetRenderer>, { [key: string]: FluidRenderingDepthTextureCopy }]>;
+    private _cameras: Map<Camera, CameraMapForFluidRendering>;
 
     /** Retrieves all the render objects managed by the class */
-    public get renderObjects() {
-        return this._renderObjects;
-    }
+    public readonly renderObjects: Array<IFluidRenderingRenderObject>;
 
     /** Retrieves all the render target renderers managed by the class */
-    public get targetRenderers() {
-        return this._targetRenderers;
-    }
+    public readonly targetRenderers: FluidRenderingTargetRenderer[];
 
     /**
      * Initializes the class
@@ -188,8 +188,8 @@ export class FluidRenderer {
         this._scene = scene;
         this._engine = scene.getEngine();
         this._onEngineResizeObserver = null;
-        this._renderObjects = [];
-        this._targetRenderers = [];
+        this.renderObjects = [];
+        this.targetRenderers = [];
         this._cameras = new Map();
 
         FluidRenderer._SceneComponentInitialization(this._scene);
@@ -208,10 +208,14 @@ export class FluidRenderer {
         this._initialize();
     }
 
-    /** Gets the render object corresponding to a particle system (null if the particle system is not rendered as a fluid) */
+    /**
+     * Gets the render object corresponding to a particle system (null if the particle system is not rendered as a fluid)
+     * @param ps The particle system
+     * @returns the render object corresponding to this particle system if any, otherwise null
+     */
     public getRenderObjectFromParticleSystem(ps: IParticleSystem): Nullable<IFluidRenderingRenderObject> {
         const index = this._getParticleSystemIndex(ps);
-        return index !== -1 ? this._renderObjects[index] : null;
+        return index !== -1 ? this.renderObjects[index] : null;
     }
 
     /**
@@ -230,7 +234,7 @@ export class FluidRenderer {
 
         if (!targetRenderer) {
             targetRenderer = new FluidRenderingTargetRenderer(this._scene, camera);
-            this._targetRenderers.push(targetRenderer);
+            this.targetRenderers.push(targetRenderer);
         }
 
         if (!targetRenderer._onUseVelocityChanged.hasObservers()) {
@@ -243,7 +247,7 @@ export class FluidRenderer {
 
         const renderObject = { object, targetRenderer };
 
-        this._renderObjects.push(renderObject);
+        this.renderObjects.push(renderObject);
 
         this._sortRenderingObjects();
 
@@ -274,7 +278,7 @@ export class FluidRenderer {
 
         if (!targetRenderer) {
             targetRenderer = new FluidRenderingTargetRenderer(this._scene, camera);
-            this._targetRenderers.push(targetRenderer);
+            this.targetRenderers.push(targetRenderer);
         }
 
         if (!targetRenderer._onUseVelocityChanged.hasObservers()) {
@@ -287,7 +291,7 @@ export class FluidRenderer {
 
         const renderObject = { object, targetRenderer };
 
-        this._renderObjects.push(renderObject);
+        this.renderObjects.push(renderObject);
 
         this._sortRenderingObjects();
 
@@ -303,14 +307,14 @@ export class FluidRenderer {
      * @returns True if the render object has been found and released, else false
      */
     public removeRenderObject(renderObject: IFluidRenderingRenderObject, removeUnusedTargetRenderer = true): boolean {
-        const index = this._renderObjects.indexOf(renderObject);
+        const index = this.renderObjects.indexOf(renderObject);
         if (index === -1) {
             return false;
         }
 
         renderObject.object.dispose();
 
-        this._renderObjects.splice(index, 1);
+        this.renderObjects.splice(index, 1);
 
         if (removeUnusedTargetRenderer && this._removeUnusedTargetRenderers()) {
             this._initialize();
@@ -322,7 +326,7 @@ export class FluidRenderer {
     }
 
     private _sortRenderingObjects(): void {
-        this._renderObjects.sort((a, b) => {
+        this.renderObjects.sort((a, b) => {
             return a.object.priority < b.object.priority ? -1 : a.object.priority > b.object.priority ? 1 : 0;
         });
     }
@@ -330,38 +334,34 @@ export class FluidRenderer {
     private _removeUnusedTargetRenderers(): boolean {
         const indexes: { [id: number]: boolean } = {};
 
-        for (let i = 0; i < this._renderObjects.length; ++i) {
-            const targetRenderer = this._renderObjects[i].targetRenderer;
-            indexes[this._targetRenderers.indexOf(targetRenderer)] = true;
+        for (let i = 0; i < this.renderObjects.length; ++i) {
+            const targetRenderer = this.renderObjects[i].targetRenderer;
+            indexes[this.targetRenderers.indexOf(targetRenderer)] = true;
         }
 
         let removed = false;
         const newList: Array<FluidRenderingTargetRenderer> = [];
-        for (let i = 0; i < this._targetRenderers.length; ++i) {
+        for (let i = 0; i < this.targetRenderers.length; ++i) {
             if (!indexes[i]) {
-                this._targetRenderers[i].dispose();
+                this.targetRenderers[i].dispose();
                 removed = true;
             } else {
-                newList.push(this._targetRenderers[i]);
+                newList.push(this.targetRenderers[i]);
             }
         }
 
         if (removed) {
-            this._targetRenderers.length = 0;
-            this._targetRenderers.push(...newList);
+            this.targetRenderers.length = 0;
+            this.targetRenderers.push(...newList);
         }
 
         return removed;
     }
 
-    private static _IsParticleSystemObject(obj: FluidRenderingObject): obj is FluidRenderingObjectParticleSystem {
-        return !!(obj as FluidRenderingObjectParticleSystem).particleSystem;
-    }
-
     private _getParticleSystemIndex(ps: IParticleSystem): number {
-        for (let i = 0; i < this._renderObjects.length; ++i) {
-            const obj = this._renderObjects[i].object;
-            if (FluidRenderer._IsParticleSystemObject(obj) && obj.particleSystem === ps) {
+        for (let i = 0; i < this.renderObjects.length; ++i) {
+            const obj = this.renderObjects[i].object;
+            if (IsParticleSystemObject(obj) && obj.particleSystem === ps) {
                 return i;
             }
         }
@@ -370,14 +370,14 @@ export class FluidRenderer {
     }
 
     private _initialize(): void {
-        for (let i = 0; i < this._targetRenderers.length; ++i) {
-            this._targetRenderers[i].dispose();
+        for (let i = 0; i < this.targetRenderers.length; ++i) {
+            this.targetRenderers[i].dispose();
         }
 
-        const cameras: Map<Camera, [Array<FluidRenderingTargetRenderer>, { [key: string]: FluidRenderingDepthTextureCopy }]> = new Map();
+        const cameras: Map<Camera, CameraMapForFluidRendering> = new Map();
 
-        for (let i = 0; i < this._targetRenderers.length; ++i) {
-            const targetRenderer = this._targetRenderers[i];
+        for (let i = 0; i < this.targetRenderers.length; ++i) {
+            const targetRenderer = this.targetRenderers[i];
 
             targetRenderer._initialize();
 
@@ -446,8 +446,8 @@ export class FluidRenderer {
     private _setParticleSizeForRenderTargets(): void {
         const particleSizes = new Map<FluidRenderingTargetRenderer, number>();
 
-        for (let i = 0; i < this._renderObjects.length; ++i) {
-            const renderingObject = this._renderObjects[i];
+        for (let i = 0; i < this.renderObjects.length; ++i) {
+            const renderingObject = this.renderObjects[i];
             let curSize = particleSizes.get(renderingObject.targetRenderer);
             if (curSize === undefined) {
                 curSize = 0;
@@ -463,39 +463,40 @@ export class FluidRenderer {
     }
 
     private _setUseVelocityForRenderObject(): void {
-        for (let i = 0; i < this._renderObjects.length; ++i) {
-            const renderingObject = this._renderObjects[i];
+        for (const renderingObject of this.renderObjects) {
             renderingObject.object.useVelocity = renderingObject.targetRenderer.useVelocity;
         }
     }
 
     /** @internal */
     public _prepareRendering(): void {
-        let needInitialization = false;
-        for (let i = 0; i < this._targetRenderers.length; ++i) {
-            needInitialization = needInitialization || this._targetRenderers[i].needInitialization;
-        }
-        if (needInitialization) {
-            this._initialize();
+        for (const renderer of this.targetRenderers) {
+            if (renderer.needInitialization) {
+                this._initialize();
+                return;
+            }
         }
     }
 
     /** @internal */
     public _render(forCamera?: Camera): void {
-        for (let i = 0; i < this._targetRenderers.length; ++i) {
-            if (!forCamera || this._targetRenderers[i].camera === forCamera) {
-                this._targetRenderers[i]._clearTargets();
+        for (let i = 0; i < this.targetRenderers.length; ++i) {
+            if (!forCamera || this.targetRenderers[i].camera === forCamera) {
+                this.targetRenderers[i]._clearTargets();
             }
         }
 
-        this._cameras.forEach((list, camera) => {
+        const iterator = this._cameras.keys();
+        for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
+            const camera = key.value;
+            const list = this._cameras.get(camera)!;
             if (forCamera && camera !== forCamera) {
-                return;
+                break;
             }
 
             const firstPostProcess = camera._getFirstPostProcess();
             if (!firstPostProcess) {
-                return;
+                break;
             }
 
             const sourceCopyDepth = firstPostProcess.inputTexture?.depthStencilTexture;
@@ -508,10 +509,10 @@ export class FluidRenderer {
                     copyDepthTextures[key].copy(sourceCopyDepth);
                 }
             }
-        });
+        }
 
-        for (let i = 0; i < this._renderObjects.length; ++i) {
-            const renderingObject = this._renderObjects[i];
+        for (let i = 0; i < this.renderObjects.length; ++i) {
+            const renderingObject = this.renderObjects[i];
             if (!forCamera || renderingObject.targetRenderer.camera === forCamera) {
                 renderingObject.targetRenderer._render(renderingObject.object);
             }
@@ -525,12 +526,12 @@ export class FluidRenderer {
         this._engine.onResizeObservable.remove(this._onEngineResizeObserver);
         this._onEngineResizeObserver = null;
 
-        for (let i = 0; i < this._renderObjects.length; ++i) {
-            this._renderObjects[i].object.dispose();
+        for (let i = 0; i < this.renderObjects.length; ++i) {
+            this.renderObjects[i].object.dispose();
         }
 
-        for (let i = 0; i < this._targetRenderers.length; ++i) {
-            this._targetRenderers[i].dispose();
+        for (let i = 0; i < this.targetRenderers.length; ++i) {
+            this.targetRenderers[i].dispose();
         }
 
         this._cameras.forEach((list) => {
@@ -540,8 +541,8 @@ export class FluidRenderer {
             }
         });
 
-        this._renderObjects = [];
-        this._targetRenderers = [];
+        (this.renderObjects as Array<IFluidRenderingRenderObject>) = [];
+        (this.targetRenderers as FluidRenderingTargetRenderer[]) = [];
         this._cameras.clear();
     }
 }

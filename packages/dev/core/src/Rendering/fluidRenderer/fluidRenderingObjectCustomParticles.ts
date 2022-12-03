@@ -100,7 +100,7 @@ export class FluidRenderingObjectCustomParticles extends FluidRenderingObject {
      * Gets the number of particles in this object
      * @returns The number of particles
      */
-    public numParticles(): number {
+    public get numParticles(): number {
         return this._numParticles;
     }
 
@@ -116,7 +116,7 @@ export class FluidRenderingObjectCustomParticles extends FluidRenderingObject {
      * Render the diffuse texture for this object
      */
     public renderDiffuseTexture(): void {
-        const numParticles = this.numParticles();
+        const numParticles = this.numParticles;
 
         if (!this._diffuseEffectWrapper || numParticles === 0) {
             return;

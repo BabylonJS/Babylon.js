@@ -28,7 +28,7 @@ export class FluidRenderingDepthTextureCopy {
                 generateDepthBuffer: true,
                 generateStencilBuffer: false,
                 samples,
-                noColorTarget: true,
+                noColorAttachment: true,
             }
         );
         this._depthRTWrapper.createDepthStencilTexture(0, false, false, 1);
@@ -40,5 +40,6 @@ export class FluidRenderingDepthTextureCopy {
 
     public dispose() {
         this._depthRTWrapper.dispose();
+        this._copyTextureToTexture.dispose();
     }
 }
