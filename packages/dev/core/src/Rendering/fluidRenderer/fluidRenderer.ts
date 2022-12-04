@@ -392,7 +392,11 @@ export class FluidRenderer {
             }
         }
 
-        cameras.forEach((list, camera) => {
+        const iterator = this._cameras.keys();
+        for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
+            const camera = key.value;
+            const list = this._cameras.get(camera)!;
+
             const firstPostProcess = camera._getFirstPostProcess();
             if (!firstPostProcess) {
                 return;
@@ -417,7 +421,7 @@ export class FluidRenderer {
                     }
                 }
             });
-        });
+        }
 
         // Dispose the CopyDepthTexture instances that we don't need anymore
         this._cameras.forEach((list, camera) => {
