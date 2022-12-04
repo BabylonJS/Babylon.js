@@ -496,7 +496,7 @@ export class Engine extends ThinEngine {
 
     private _loadingScreen: ILoadingScreen;
     private _pointerLockRequested: boolean;
-    private _rescalePostProcess: PostProcess;
+    private _rescalePostProcess: Nullable<PostProcess>;
 
     // Deterministic lockstepMaxSteps
     protected _deterministicLockstep: boolean = false;
@@ -640,6 +640,12 @@ export class Engine extends ThinEngine {
         if (options.autoEnableWebVR) {
             this.initWebVR();
         }
+    }
+
+    protected _initGLContext(): void {
+        super._initGLContext();
+
+        this._rescalePostProcess = null;
     }
 
     /**
@@ -1636,29 +1642,31 @@ export class Engine extends ThinEngine {
             this._rescalePostProcess = Engine._RescalePostProcessFactory(this);
         }
 
-        this._rescalePostProcess.externalTextureSamplerBinding = true;
-        this._rescalePostProcess.getEffect().executeWhenCompiled(() => {
-            this._rescalePostProcess.onApply = function (effect) {
-                effect._bindTexture("textureSampler", source);
-            };
+        if (this._rescalePostProcess) {
+            this._rescalePostProcess.externalTextureSamplerBinding = true;
+            this._rescalePostProcess.getEffect().executeWhenCompiled(() => {
+                this._rescalePostProcess!.onApply = function (effect) {
+                    effect._bindTexture("textureSampler", source);
+                };
 
-            let hostingScene: Scene = scene;
+                let hostingScene: Scene = scene;
 
-            if (!hostingScene) {
-                hostingScene = this.scenes[this.scenes.length - 1];
-            }
-            hostingScene.postProcessManager.directRender([this._rescalePostProcess], rtt, true);
+                if (!hostingScene) {
+                    hostingScene = this.scenes[this.scenes.length - 1];
+                }
+                hostingScene.postProcessManager.directRender([this._rescalePostProcess!], rtt, true);
 
-            this._bindTextureDirectly(this._gl.TEXTURE_2D, destination, true);
-            this._gl.copyTexImage2D(this._gl.TEXTURE_2D, 0, internalFormat, 0, 0, destination.width, destination.height, 0);
+                this._bindTextureDirectly(this._gl.TEXTURE_2D, destination, true);
+                this._gl.copyTexImage2D(this._gl.TEXTURE_2D, 0, internalFormat, 0, 0, destination.width, destination.height, 0);
 
-            this.unBindFramebuffer(rtt);
-            rtt.dispose();
+                this.unBindFramebuffer(rtt);
+                rtt.dispose();
 
-            if (onComplete) {
-                onComplete();
-            }
-        });
+                if (onComplete) {
+                    onComplete();
+                }
+            });
+        }
     }
 
     // FPS
@@ -1690,7 +1698,7 @@ export class Engine extends ThinEngine {
      * @param texture defines the external texture
      * @returns the babylon internal texture
      */
-    wrapWebGLTexture(texture: WebGLTexture): InternalTexture {
+    public wrapWebGLTexture(texture: WebGLTexture): InternalTexture {
         const hardwareTexture = new WebGLHardwareTexture(texture, this._gl);
         const internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
         internalTexture._hardwareTexture = hardwareTexture;

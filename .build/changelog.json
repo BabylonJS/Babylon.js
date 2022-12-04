@@ -1,58 +1,309 @@
 {
-    "fromTag": "5.33.2",
+    "fromTag": "5.35.0",
     "changelog": {
-        "5.33.2": [
+        "5.35.1": [
             {
-                "pr": "13269",
-                "title": "Ray picking: Fix flipping of the normal when calling getNormal",
-                "description": "See https://forum.babylonjs.com/t/how-to-get-correct-rotation-value-from-pickinfo-getnormal/14280/8\r\n\r\nThis is a follow-up to #13128.",
+                "pr": "13308",
+                "title": "Fix restore context in WebGL1 when using non POT textures",
+                "description": "See https://forum.babylonjs.com/t/context-restore-for-textures-with-bloburl-not-working/36114/7",
                 "author": {
                     "name": "Popov72",
                     "url": "https://github.com/Popov72"
                 },
                 "files": [
-                    "packages/dev/core/src/Collisions/pickingInfo.ts"
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13306",
+                "title": "Fixed NativeEngine render target assignment",
+                "description": "Native engine is currently not assingning the new texture passed in bindFrameBuffer to its _currentRenderTarget. This will result in NaN values for camera's projection matrix since it uses the engine.getRenderWidth() and engine.getRenderHeight() and those values will be zero. \r\n\r\nStoring _currentRenderTarget fixes the problem. ",
+                "author": {
+                    "name": "SergioRZMasson",
+                    "url": "https://github.com/SergioRZMasson"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "13275",
+                "title": "Support create RTT from internal texture directly",
+                "description": "Currently, once a hardware texture is wrapped with `engine.wrapWebGLTexture`/`engine.wrapWebGPUTexture`/`engine.wrapNativeTexture`, there is no way to create a render target from it. With this change it is now possible.\r\n\r\nAlso cleaned up the code quite a bit to make web and native engines more consistent.\r\n\r\nThere is also a corresponding change on the Babylon Native side: https://github.com/BabylonJS/BabylonNative/pull/1173.\r\n\r\nNote that there is PROTOCOL_VERSION change in both PRs.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.renderTarget.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.renderTargetCube.ts",
+                    "packages/dev/core/src/Engines/Native/nativeHardwareTexture.ts",
+                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
+                    "packages/dev/core/src/Engines/Native/nativePipelineContext.ts",
+                    "packages/dev/core/src/Engines/Native/nativeRenderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.renderTarget.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.renderTargetCube.ts",
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Engines/nullEngine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/textureCreationOptions.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            }
+        ],
+        "5.35.0": [
+            {
+                "pr": "13302",
+                "title": "Enabling gizmo when NME is open renders gizmo in NME preview panel instead of scene",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/sceneExplorer/entities/sceneTreeItemComponent.tsx"
                 ],
                 "tags": [
                     "skip changelog"
                 ]
             },
             {
-                "pr": "13271",
-                "title": "Add accessibility package to playground",
+                "pr": "13300",
+                "title": "Preserve camera control settings when reattaching camera controls",
+                "description": "This PR addressed the issue I described in https://forum.babylonjs.com/t/boundingboxgizmo-does-not-respect-panning-button-when-reattaching-camera/36118",
+                "author": {
+                    "name": "ericwood73",
+                    "url": "https://github.com/ericwood73"
+                },
+                "files": [
+                    "packages/dev/core/src/Behaviors/Meshes/baseSixDofDragBehavior.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "gizmos"
+                ]
+            },
+            {
+                "pr": "13299",
+                "title": "Fix Texture rebuild on context lost",
+                "description": "https://forum.babylonjs.com/t/context-restore-for-textures-with-bloburl-not-working/36114",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Materials/Textures/internalTexture.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "13298",
+                "title": "Fix teleportation bug When changing controllers",
                 "description": null,
                 "author": {
                     "name": "RaananW",
                     "url": "https://github.com/RaananW"
                 },
                 "files": [
-                    "packages/tools/babylonServer/declarationConfigDev.json",
-                    "packages/tools/babylonServer/src/accessibility/index.ts",
-                    "packages/tools/babylonServer/webpack.config.js",
-                    "packages/tools/playground/public/index.js",
-                    "packages/tools/playground/src/tools/monacoManager.ts"
+                    "packages/dev/core/src/XR/features/WebXRControllerTeleportation.ts"
                 ],
                 "tags": []
             },
             {
-                "pr": "13270",
-                "title": "Addressing export issue",
-                "description": "UMD was fixed, es6 is now built correctly.\r\n\r\nAddressing https://forum.babylonjs.com/t/import-bug-with-npm-install-babylonjs-inspector-proposed-fix-included/35583/8",
+                "pr": "13297",
+                "title": "clear as default when in layers multiview",
+                "description": null,
                 "author": {
                     "name": "RaananW",
                     "url": "https://github.com/RaananW"
                 },
                 "files": [
-                    "packages/public/@babylonjs/gui-editor/config.json",
-                    "packages/public/@babylonjs/inspector/config.json",
-                    "packages/public/@babylonjs/node-editor/config.json"
+                    "packages/dev/core/src/scene.ts"
                 ],
                 "tags": []
             },
             {
-                "pr": "13268",
-                "title": "Test babylon pbrmaterial",
-                "description": "Hi!\r\nI made some test cases for PBRMaterial.\r\nOne strange point — the getAnimatables don't return all possilbe textures, such metallic reflectance, reflectance, micro surface and refraction texture. So I added a note to the method JSDoc, and comment to the test case.",
+                "pr": "13295",
+                "title": "InputManager: Fix Order and Execution of onPrePointerObservable",
+                "description": "A user on the forum had pointed out that there was an issue with how `onPrePointerObservable` was handling types and skipping for `onPointerObservable`.  After investigating the areas pointed out by the user and their proposed solutions, we were able to determine that there was an issue with `onPrePointerObservable` and how it interacted with `onPointerObservable`.\r\n\r\nThis PR not only contains the proposed fixes but also changes the order that UP and TAP/DOUBLETAP are executed to reflect a similar order to how PointerEvents are processed (`pointerup` happens before `click`).\r\n\r\nForum Link: https://forum.babylonjs.com/t/prepointerobservable-pointertap-fired-after-drag-when-skiponpointerobservable-true/35691/2",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Inputs/scene.inputManager.ts",
+                    "packages/dev/core/test/unit/DeviceInput/babylon.inputManager.test.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inputs"
+                ]
+            },
+            {
+                "pr": "13284",
+                "title": "KTXDecoder: Update and add new universal transcoders",
+                "description": "Fixes #12002 ",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/khronosTextureContainer2.ts",
+                    "packages/tools/babylonServer/public/ktx2Transcoders/1/msc_basis_transcoder.js",
+                    "packages/tools/babylonServer/public/ktx2Transcoders/1/msc_basis_transcoder.wasm",
+                    "packages/tools/babylonServer/public/ktx2Transcoders/1/uastc_astc.wasm",
+                    "packages/tools/babylonServer/public/ktx2Transcoders/1/uastc_bc7.wasm",
+                    "packages/tools/babylonServer/public/ktx2Transcoders/1/uastc_r8_unorm.wasm",
+                    "packages/tools/babylonServer/public/ktx2Transcoders/1/uastc_rg8_unorm.wasm",
+                    "packages/tools/babylonServer/public/ktx2Transcoders/1/uastc_rgba8_srgb_v2.wasm",
+                    "packages/tools/babylonServer/public/ktx2Transcoders/1/uastc_rgba8_unorm_v2.wasm",
+                    "packages/tools/babylonServer/src/ktx2Decoder/index.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_ASTC.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_BC7.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_R8_UNORM.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_RG8_UNORM.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_RGBA_SRGB.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_RGBA_UNORM.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/mscTranscoder.ts",
+                    "packages/tools/ktx2Decoder/src/ktx2Decoder.ts",
+                    "packages/tools/ktx2Decoder/src/transcodeDecisionTree.ts",
+                    "packages/tools/ktx2Decoder/src/transcoder.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "glTF"
+                ]
+            },
+            {
+                "pr": "13293",
+                "title": "Cameras: Modified cameras to work under onPointerObservable",
+                "description": "A user on the forums recently found an issue related to `onPointerObservable` where skipNextObservers weren't working as they used to.  This issue was a side effect of an optimization make in support of Lazy Picking.  This optimization would take all internal camera inputs and remove them from the user-facing `onPointerObservable`.  This would cause the camera input observers to be inaccessible in the same way.  This PR will add them back to `onPointerObservable` but keep track of how many camera input observers have been added and require either user-defined observer as part of the criteria for picking.\r\n\r\nForum Post: https://forum.babylonjs.com/t/no-longer-able-to-cancel-camera-inputs-with-new-oncamerainputobservable/35793",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/Inputs/BaseCameraMouseWheelInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/BaseCameraPointersInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/arcRotateCameraMouseWheelInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/flyCameraMouseInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/followCameraMouseWheelInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/freeCameraMouseInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/freeCameraTouchInput.ts",
+                    "packages/dev/core/src/Inputs/scene.inputManager.ts",
+                    "packages/dev/core/src/scene.ts",
+                    "packages/dev/core/test/unit/Cameras/babylon.freeCameraInputs.test.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inputs"
+                ]
+            },
+            {
+                "pr": "13280",
+                "title": "remove prepublish step, fix node.js issue on windows",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/addJSToCompiledFiles.ts",
+                    "packages/dev/buildTools/src/copyAssets.ts",
+                    "packages/dev/buildTools/src/pathTransform.ts",
+                    "packages/dev/buildTools/src/prepareEs6Build.ts",
+                    "packages/dev/gui/package.json",
+                    "packages/dev/inspector/package.json",
+                    "packages/dev/sharedUiComponents/package.json",
+                    "packages/public/@babylonjs/core/node.cmd",
+                    "packages/public/@babylonjs/core/package.json",
+                    "packages/public/@babylonjs/core/tsconfig.build.json",
+                    "packages/public/@babylonjs/gui/package.json",
+                    "packages/public/@babylonjs/gui/tsconfig.build.json",
+                    "packages/public/@babylonjs/loaders/package.json",
+                    "packages/public/@babylonjs/loaders/tsconfig.build.json",
+                    "packages/public/@babylonjs/materials/package.json",
+                    "packages/public/@babylonjs/materials/tsconfig.build.json",
+                    "packages/public/@babylonjs/post-processes/package.json",
+                    "packages/public/@babylonjs/post-processes/tsconfig.build.json",
+                    "packages/public/@babylonjs/procedural-textures/package.json",
+                    "packages/public/@babylonjs/procedural-textures/tsconfig.build.json",
+                    "packages/public/@babylonjs/serializers/package.json",
+                    "packages/public/@babylonjs/serializers/tsconfig.build.json",
+                    "packages/public/@babylonjs/shared-ui-components/package.json",
+                    "packages/public/@babylonjs/shared-ui-components/tsconfig.build.json",
+                    "packages/public/@babylonjs/viewer/package.json",
+                    "packages/public/@babylonjs/viewer/tsconfig.build.json",
+                    "packages/tools/accessibility/package.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13281",
+                "title": "Add static Reflect function to Vector3",
+                "description": "This adds a static function to Vector3 to Reflect a vector off the plane defined by a normal",
+                "author": {
+                    "name": "AlvaroHerreroDev",
+                    "url": "https://github.com/AlvaroHerreroDev"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts",
+                    "packages/dev/core/test/unit/Math/babylon.math.vector.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13290",
+                "title": "Test the PickingInfo class",
+                "description": "See https://github.com/BabylonJS/Babylon.js/pull/13269\r\n\r\nThe getTextureCoordinates method don't return normal of pickedSprite if it is picked. Is it correct baheviour?",
+                "author": {
+                    "name": "Dok11",
+                    "url": "https://github.com/Dok11"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/pickingInfo.ts",
+                    "packages/dev/core/test/unit/Collisions/babylon.pickingInfo.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13289",
+                "title": "RTT: Make sure we increment scene frameId even in \"check readiness\" mode",
+                "description": "See https://forum.babylonjs.com/t/cube-rendertargettexture-cameras-inverty-and-rendering/35999/6",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13288",
+                "title": "PBRBaseMaterial fix getAnimatables JSDoc",
+                "description": "Updates after changes here https://github.com/BabylonJS/Babylon.js/pull/13276/files#diff-239207fce5e96cbc0a17abc8f42802e31cb87e9d4fab70be77f697b789df0112",
                 "author": {
                     "name": "Dok11",
                     "url": "https://github.com/Dok11"
@@ -64,18 +315,82 @@
                 "tags": []
             },
             {
-                "pr": "13266",
-                "title": "adding integration tests for loaders and serializers",
-                "description": "Some loader tests still need to be added.",
+                "pr": "13287",
+                "title": "Bump: Fix black spots in bump when no uv gradients",
+                "description": "See https://forum.babylonjs.com/t/grain-flickering-on-glb-model-with-grain-disabled-and-enabled/35942/3",
                 "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
                 },
                 "files": [
-                    "packages/dev/loaders/test/integration/babylon.sceneLoader.test.ts",
-                    "packages/dev/serializers/test/integration/glTFSerializer.test.ts"
+                    "packages/dev/core/src/Shaders/ShadersInclude/bumpFragmentMainFunctions.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13286",
+                "title": "Ensure bloom blur size is consistent across hardware scaling levels",
+                "description": "The default rendering pipeline seemed like it was attempting to normalize the bloom blur kernel by the hardware scaling level, but it only took it into account when the hardware scaling level changes at runtime and didn't factor it in upon creation or when constructing the bloom effect itself.\r\n\r\nI think the idea to keep the bloom size consistent across different hardware scaling levels is the right idea, but the code needs to change a bit to account for this.\r\n\r\nTo show the difference:\r\n\r\n| Starting hardware scale | Before | After |\r\n| --- | --- | --- |\r\n| 1x | ![image](https://user-images.githubusercontent.com/20366429/204055178-0bf27171-6da8-4012-a48e-d128aa3a4d05.png) ✅  |  ![image](https://user-images.githubusercontent.com/20366429/204055427-14b6491a-c1af-4632-90c4-f18ec8ba8b1c.png) ✅ |\r\n| 2x | ![image](https://user-images.githubusercontent.com/20366429/204055206-640b8bbb-9272-4c64-8578-506d6cb5f439.png) ❌ |  ![image](https://user-images.githubusercontent.com/20366429/204055264-06ecfcbe-42fa-4bdd-a6e7-f3658d91c32b.png) ✅  |\r\n\r\nNotice the bottom left before image of 2x scale has a bloom that is much wider and blurrier, rather than matching the 1x scale.",
+                "author": {
+                    "name": "kircher1",
+                    "url": "https://github.com/kircher1"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "post-process"
+                ]
+            },
+            {
+                "pr": "13285",
+                "title": "Test babylon scene materials",
+                "description": "See https://github.com/BabylonJS/Babylon.js/pull/13277 from @sebavan \r\nHere I added some tests for scene materials, note to the method, fix typos and simplify methods bodies.",
+                "author": {
+                    "name": "Dok11",
+                    "url": "https://github.com/Dok11"
+                },
+                "files": [
+                    "packages/dev/core/src/scene.ts",
+                    "packages/dev/core/test/unit/babylon.scene.materials.test.ts"
                 ],
                 "tags": []
+            },
+            {
+                "pr": "13282",
+                "title": "Mesh: Add forceWorldMatrixInstancedBufferUpdate property",
+                "description": "See https://forum.babylonjs.com/t/webgpu-instancing-does-not-render/31622/4\r\n\r\nInstead of creating a new method I have added a boolean that forces updating the matrix buffer even in frozen mode.\r\n\r\nFix #12780 ",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": [
+                    "rendering engine",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13283",
+                "title": "Observable: Do not include deleted observers in hasObservers result",
+                "description": "See https://forum.babylonjs.com/t/observable-hasobservers-is-still-true-after-removing-all-the-observers/35987\r\n\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/observable.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "design"
+                ]
             }
         ],
         "5.34.0": [
@@ -171,6 +486,83 @@
                 "tags": [
                     "skip changelog"
                 ]
+            }
+        ],
+        "5.33.2": [
+            {
+                "pr": "13269",
+                "title": "Ray picking: Fix flipping of the normal when calling getNormal",
+                "description": "See https://forum.babylonjs.com/t/how-to-get-correct-rotation-value-from-pickinfo-getnormal/14280/8\r\n\r\nThis is a follow-up to #13128.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/pickingInfo.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13271",
+                "title": "Add accessibility package to playground",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/babylonServer/declarationConfigDev.json",
+                    "packages/tools/babylonServer/src/accessibility/index.ts",
+                    "packages/tools/babylonServer/webpack.config.js",
+                    "packages/tools/playground/public/index.js",
+                    "packages/tools/playground/src/tools/monacoManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13270",
+                "title": "Addressing export issue",
+                "description": "UMD was fixed, es6 is now built correctly.\r\n\r\nAddressing https://forum.babylonjs.com/t/import-bug-with-npm-install-babylonjs-inspector-proposed-fix-included/35583/8",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/public/@babylonjs/gui-editor/config.json",
+                    "packages/public/@babylonjs/inspector/config.json",
+                    "packages/public/@babylonjs/node-editor/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13268",
+                "title": "Test babylon pbrmaterial",
+                "description": "Hi!\r\nI made some test cases for PBRMaterial.\r\nOne strange point — the getAnimatables don't return all possilbe textures, such metallic reflectance, reflectance, micro surface and refraction texture. So I added a note to the method JSDoc, and comment to the test case.",
+                "author": {
+                    "name": "Dok11",
+                    "url": "https://github.com/Dok11"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/test/unit/Materials/PBR/babylon.PBRMaterial.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13266",
+                "title": "adding integration tests for loaders and serializers",
+                "description": "Some loader tests still need to be added.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/loaders/test/integration/babylon.sceneLoader.test.ts",
+                    "packages/dev/serializers/test/integration/glTFSerializer.test.ts"
+                ],
+                "tags": []
             }
         ],
         "5.33.1": [
