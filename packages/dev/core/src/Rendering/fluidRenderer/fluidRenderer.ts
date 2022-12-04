@@ -392,14 +392,14 @@ export class FluidRenderer {
             }
         }
 
-        let iterator = this._cameras.keys();
+        let iterator = cameras.keys();
         for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
             const camera = key.value;
-            const list = this._cameras.get(camera)!;
+            const list = cameras.get(camera)!;
 
             const firstPostProcess = camera._getFirstPostProcess();
             if (!firstPostProcess) {
-                return;
+                continue;
             }
 
             const [targetRenderers, copyDepthTextures] = list;
@@ -499,12 +499,12 @@ export class FluidRenderer {
             const camera = key.value;
             const list = this._cameras.get(camera)!;
             if (forCamera && camera !== forCamera) {
-                break;
+                continue;
             }
 
             const firstPostProcess = camera._getFirstPostProcess();
             if (!firstPostProcess) {
-                break;
+                continue;
             }
 
             const sourceCopyDepth = firstPostProcess.inputTexture?.depthStencilTexture;
