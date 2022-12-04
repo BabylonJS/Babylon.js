@@ -33,18 +33,22 @@ export class KHR_materials_emissive_strength implements IGLTFExporterExtensionV2
           return resolve(node);
         }
 
-        if (babylonMaterial.metadata.emissiveStrength !== undefined) {
+        const emissiveColor = babylonMaterial.emissiveColor.asArray();
+        const tempEmissiveStrength = Math.max(...emissiveColor);
+
+        if (tempEmissiveStrength > 1) {
           this._wasUsed = true;
 
-          if (node.extensions == null){
+          if (node.extensions == null) {
             node.extensions = {};
           }
 
           const emissiveStrengthInfo: IKHRMaterialsEmissiveStrength = {
-            emissiveStrength: babylonMaterial.metadata.emissiveStrength
-          }
+            emissiveStrength: tempEmissiveStrength
+          };
 
-          const newEmissiveFactor = babylonMaterial.emissiveColor.scale((1 / emissiveStrengthInfo.emissiveStrength));
+          // Normalize each value of the emissive factor to have a max value of 1
+          const newEmissiveFactor = babylonMaterial.emissiveColor.scale((1 / emissiveStrengthInfo.emissiveStrength))
 
           node.emissiveFactor = newEmissiveFactor.asArray();
           node.extensions[NAME] = emissiveStrengthInfo;
