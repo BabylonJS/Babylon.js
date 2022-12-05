@@ -1508,6 +1508,12 @@
             "referenceImage": "fluidBoxSphere.png",
             "renderCount": 120,
             "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "Export GLTF Extension KHR_texture_transform",
+            "playgroundId": "#20OAV9#9228",
+            "referenceImage": "exportGltfKHRTextureTransform.png",
+            "renderCount": 5
         }
     ]
 }

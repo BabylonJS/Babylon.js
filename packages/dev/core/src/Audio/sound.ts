@@ -969,6 +969,14 @@ export class Sound {
     }
 
     /**
+     * Gets the sound play back rate.
+     * @returns the  play back rate of the sound
+     */
+    public getPlaybackRate(): number {
+        return this._playbackRate;
+    }
+
+    /**
      * Gets the volume of the sound.
      * @returns the volume of the sound
      */
