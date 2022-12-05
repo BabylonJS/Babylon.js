@@ -19,6 +19,7 @@ import { GetClass, RegisterClass } from "../Misc/typeStore";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import type { AbstractScene } from "../abstractScene";
 import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
+import { ShaderLanguage } from "../Materials/shaderLanguage";
 
 declare type Scene = import("../scene").Scene;
 declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
@@ -219,6 +220,7 @@ export class PostProcess {
     private _renderId = 0;
     private _textureType: number;
     private _textureFormat: number;
+    private _shaderLanguage: ShaderLanguage;
 
     /**
      * if externalTextureSamplerBinding is true, the "apply" method won't bind the textureSampler texture, it is expected to be done by the "outside" (by the onApplyObservable observer most probably).
@@ -434,7 +436,8 @@ export class PostProcess {
         vertexUrl: string = "postprocess",
         indexParameters?: any,
         blockCompilation = false,
-        textureFormat = Constants.TEXTUREFORMAT_RGBA
+        textureFormat = Constants.TEXTUREFORMAT_RGBA,
+        shaderLanguage = ShaderLanguage.GLSL
     ) {
         this.name = name;
         if (camera != null) {
@@ -454,6 +457,7 @@ export class PostProcess {
         this._reusable = reusable || false;
         this._textureType = textureType;
         this._textureFormat = textureFormat;
+        this._shaderLanguage = shaderLanguage;
 
         this._samplers = samplers || [];
         this._samplers.push("textureSampler");
@@ -573,6 +577,7 @@ export class PostProcess {
                 processFinalCode: customShaderCodeProcessing?.processFinalCode
                     ? (shaderType: string, code: string) => customShaderCodeProcessing!.processFinalCode!(this.name, shaderType, code)
                     : null,
+                shaderLanguage: this._shaderLanguage,
             },
             this._engine
         );
