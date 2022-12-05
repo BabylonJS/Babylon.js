@@ -1,5 +1,13 @@
 # Changelog
 
+## 5.35.1
+
+### Core
+
+- Fix restore context in WebGL1 when using non POT textures - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#13308](https://github.com/BabylonJS/Babylon.js/pull/13308))
+- Fixed NativeEngine render target assignment - [_Bug Fix_] by [SergioRZMasson](https://github.com/SergioRZMasson) ([#13306](https://github.com/BabylonJS/Babylon.js/pull/13306))
+- Support create RTT from internal texture directly - [_New Feature_] by [bghgary](https://github.com/bghgary) ([#13275](https://github.com/BabylonJS/Babylon.js/pull/13275))
+
 ## 5.35.0
 
 ### Core

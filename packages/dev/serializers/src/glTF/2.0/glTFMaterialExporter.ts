@@ -1076,9 +1076,7 @@ export class _GLTFMaterialExporter {
 
     public async _exportTextureInfoAsync(babylonTexture: BaseTexture, mimeType: ImageMimeType): Promise<Nullable<ITextureInfo>> {
         const textureUid = babylonTexture.uid;
-        if (textureUid in this._textureMap) {
-            return this._textureMap[textureUid];
-        } else {
+        if (!(textureUid in this._textureMap)) {
             const pixels = await this._getPixelsFromTexture(babylonTexture);
             if (!pixels) {
                 return null;
@@ -1116,8 +1114,10 @@ export class _GLTFMaterialExporter {
 
             const textureInfo = this._exportTextureInfo(await imageIndexPromise, samplerIndex, babylonTexture.coordinatesIndex);
             this._textureMap[textureUid] = textureInfo;
-            return textureInfo;
+            this._exporter._extensionsPostExportTextures("exporter", this._textureMap[textureUid], babylonTexture);
         }
+
+        return this._textureMap[textureUid];
     }
 
     private _exportImage(name: string, mimeType: ImageMimeType, data: ArrayBuffer): number {

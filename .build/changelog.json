@@ -1,98 +1,66 @@
 {
-    "fromTag": "5.34.0",
+    "fromTag": "5.35.0",
     "changelog": {
-        "5.34.0": [
+        "5.35.1": [
             {
-                "pr": "13278",
-                "title": "define engine and canvas as globals",
-                "description": "https://forum.babylonjs.com/t/code-completion-for-the-engine-in-the-playground/35525",
-                "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
-                },
-                "files": [
-                    "packages/tools/playground/src/tools/monacoManager.ts"
-                ],
-                "tags": [
-                    "Playground",
-                    "new feature"
-                ]
-            },
-            {
-                "pr": "13277",
-                "title": "Add multi material in material search",
-                "description": "https://forum.babylonjs.com/t/how-to-find-a-multimaterial-by-its-name/35906/3",
-                "author": {
-                    "name": "sebavan",
-                    "url": "https://github.com/sebavan"
-                },
-                "files": [
-                    "packages/dev/core/src/scene.ts"
-                ],
-                "tags": [
-                    "skip changelog"
-                ]
-            },
-            {
-                "pr": "13272",
-                "title": "NME: multiple changes to support ray marching in the NME",
-                "description": "The main changes are that some blocks can be configured to generate their code in the fragments shader only (`Lights`, `PBRMetallicRoughness`, `Reflection`).\r\n\r\nNew blocks have also been added: `FragDepthBlock` to write fragment depth, `ShadowMapBlock` to generate depth in a shadow map.\r\n\r\nThe `ShadowDepthWrapper` has also been updated to work with materials using a `ShadowMapBlock`.\r\n\r\nA couple of helper blocks have also been created: `TriPlanarBlock` and `BiPlanarBlock` for sampling a texture with a tri/bi planar mapping (ray marching does not usually produce uvs, so we need to be able to sample a texture with a position+normal instead).\r\n\r\nNote that we haven't created a ray marching node itself, but it's now possible for users to create one. In the PG demo below, we have implemented a very basic one with a `CustomBlock`.\r\n\r\nHere is a PG that uses all these new features:\r\n\r\nhttps://playground.babylonjs.com/#M3QR7E#34\r\n\r\n![image](https://user-images.githubusercontent.com/4152247/203122324-d3f20b41-c7c5-40b9-96ab-b0baa03da9ca.png)\r\n",
+                "pr": "13308",
+                "title": "Fix restore context in WebGL1 when using non POT textures",
+                "description": "See https://forum.babylonjs.com/t/context-restore-for-textures-with-bloburl-not-working/36114/7",
                 "author": {
                     "name": "Popov72",
                     "url": "https://github.com/Popov72"
                 },
                 "files": [
-                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsGLSL.ts",
-                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts",
-                    "packages/dev/core/src/Materials/Node/Blocks/Dual/lightBlock.ts",
-                    "packages/dev/core/src/Materials/Node/Blocks/Dual/reflectionTextureBaseBlock.ts",
-                    "packages/dev/core/src/Materials/Node/Blocks/Dual/reflectionTextureBlock.ts",
-                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/fragDepthBlock.ts",
-                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/index.ts",
-                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/shadowMapBlock.ts",
-                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.ts",
-                    "packages/dev/core/src/Materials/Node/Blocks/PBR/reflectionBlock.ts",
-                    "packages/dev/core/src/Materials/Node/Blocks/biPlanarBlock.ts",
-                    "packages/dev/core/src/Materials/Node/Blocks/index.ts",
-                    "packages/dev/core/src/Materials/Node/Blocks/triPlanarBlock.ts",
-                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
-                    "packages/dev/core/src/Materials/Node/nodeMaterialBlock.ts",
-                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildState.ts",
-                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildStateSharedData.ts",
-                    "packages/dev/core/src/Materials/Node/nodeMaterialDecorator.ts",
-                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
-                    "packages/dev/core/src/Materials/materialHelper.ts",
-                    "packages/dev/core/src/Materials/shadowDepthWrapper.ts",
-                    "packages/dev/core/src/Materials/standardMaterial.ts",
-                    "packages/tools/nodeEditor/src/blockTools.ts",
-                    "packages/tools/nodeEditor/src/components/nodeList/nodeListComponent.tsx",
-                    "packages/tools/nodeEditor/src/graphSystem/display/textureDisplayManager.modules.scss",
-                    "packages/tools/nodeEditor/src/graphSystem/display/textureDisplayManager.ts",
-                    "packages/tools/nodeEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx",
-                    "packages/tools/nodeEditor/src/graphSystem/properties/texturePropertyTabComponent.tsx",
-                    "packages/tools/nodeEditor/src/graphSystem/registerToDisplayLedger.ts",
-                    "packages/tools/nodeEditor/src/graphSystem/registerToPropertyLedger.ts"
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts"
                 ],
                 "tags": [
-                    "new feature",
-                    "nme"
+                    "bug",
+                    "rendering engine"
                 ]
             },
             {
-                "pr": "13276",
-                "title": "Couple tiny fixes",
-                "description": "Fix #13274",
+                "pr": "13306",
+                "title": "Fixed NativeEngine render target assignment",
+                "description": "Native engine is currently not assingning the new texture passed in bindFrameBuffer to its _currentRenderTarget. This will result in NaN values for camera's projection matrix since it uses the engine.getRenderWidth() and engine.getRenderHeight() and those values will be zero. \r\n\r\nStoring _currentRenderTarget fixes the problem. ",
                 "author": {
-                    "name": "sebavan",
-                    "url": "https://github.com/sebavan"
+                    "name": "SergioRZMasson",
+                    "url": "https://github.com/SergioRZMasson"
                 },
                 "files": [
-                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
-                    "packages/dev/core/src/Materials/Textures/videoTexture.ts",
-                    "packages/dev/core/test/unit/Materials/PBR/babylon.PBRMaterial.test.ts"
+                    "packages/dev/core/src/Engines/nativeEngine.ts"
                 ],
                 "tags": [
-                    "skip changelog"
+                    "bug"
+                ]
+            },
+            {
+                "pr": "13275",
+                "title": "Support create RTT from internal texture directly",
+                "description": "Currently, once a hardware texture is wrapped with `engine.wrapWebGLTexture`/`engine.wrapWebGPUTexture`/`engine.wrapNativeTexture`, there is no way to create a render target from it. With this change it is now possible.\r\n\r\nAlso cleaned up the code quite a bit to make web and native engines more consistent.\r\n\r\nThere is also a corresponding change on the Babylon Native side: https://github.com/BabylonJS/BabylonNative/pull/1173.\r\n\r\nNote that there is PROTOCOL_VERSION change in both PRs.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.renderTarget.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.renderTargetCube.ts",
+                    "packages/dev/core/src/Engines/Native/nativeHardwareTexture.ts",
+                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
+                    "packages/dev/core/src/Engines/Native/nativePipelineContext.ts",
+                    "packages/dev/core/src/Engines/Native/nativeRenderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.renderTarget.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.renderTargetCube.ts",
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Engines/nullEngine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/textureCreationOptions.ts"
+                ],
+                "tags": [
+                    "new feature"
                 ]
             }
         ],
@@ -422,6 +390,101 @@
                 "tags": [
                     "bug",
                     "design"
+                ]
+            }
+        ],
+        "5.34.0": [
+            {
+                "pr": "13278",
+                "title": "define engine and canvas as globals",
+                "description": "https://forum.babylonjs.com/t/code-completion-for-the-engine-in-the-playground/35525",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/playground/src/tools/monacoManager.ts"
+                ],
+                "tags": [
+                    "Playground",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13277",
+                "title": "Add multi material in material search",
+                "description": "https://forum.babylonjs.com/t/how-to-find-a-multimaterial-by-its-name/35906/3",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13272",
+                "title": "NME: multiple changes to support ray marching in the NME",
+                "description": "The main changes are that some blocks can be configured to generate their code in the fragments shader only (`Lights`, `PBRMetallicRoughness`, `Reflection`).\r\n\r\nNew blocks have also been added: `FragDepthBlock` to write fragment depth, `ShadowMapBlock` to generate depth in a shadow map.\r\n\r\nThe `ShadowDepthWrapper` has also been updated to work with materials using a `ShadowMapBlock`.\r\n\r\nA couple of helper blocks have also been created: `TriPlanarBlock` and `BiPlanarBlock` for sampling a texture with a tri/bi planar mapping (ray marching does not usually produce uvs, so we need to be able to sample a texture with a position+normal instead).\r\n\r\nNote that we haven't created a ray marching node itself, but it's now possible for users to create one. In the PG demo below, we have implemented a very basic one with a `CustomBlock`.\r\n\r\nHere is a PG that uses all these new features:\r\n\r\nhttps://playground.babylonjs.com/#M3QR7E#34\r\n\r\n![image](https://user-images.githubusercontent.com/4152247/203122324-d3f20b41-c7c5-40b9-96ab-b0baa03da9ca.png)\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsGLSL.ts",
+                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/lightBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/reflectionTextureBaseBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/reflectionTextureBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/fragDepthBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/index.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/shadowMapBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/reflectionBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/biPlanarBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/index.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/triPlanarBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildState.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildStateSharedData.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialDecorator.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/materialHelper.ts",
+                    "packages/dev/core/src/Materials/shadowDepthWrapper.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/tools/nodeEditor/src/blockTools.ts",
+                    "packages/tools/nodeEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/display/textureDisplayManager.modules.scss",
+                    "packages/tools/nodeEditor/src/graphSystem/display/textureDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/texturePropertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/registerToDisplayLedger.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/registerToPropertyLedger.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "13276",
+                "title": "Couple tiny fixes",
+                "description": "Fix #13274",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/Textures/videoTexture.ts",
+                    "packages/dev/core/test/unit/Materials/PBR/babylon.PBRMaterial.test.ts"
+                ],
+                "tags": [
+                    "skip changelog"
                 ]
             }
         ],

@@ -1363,7 +1363,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     /**
      * Perform relative position change from the point of view of behind the front of the mesh.
      * This is performed taking into account the meshes current rotation, so you do not have to care.
-     * Supports definition of mesh facing forward or backward
+     * Supports definition of mesh facing forward or backward {@link definedFacingForwardSearch | See definedFacingForwardSearch }.
      * @param amountRight defines the distance on the right axis
      * @param amountUp defines the distance on the up axis
      * @param amountForward defines the distance on the forward axis
@@ -1377,7 +1377,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     /**
      * Calculate relative position change from the point of view of behind the front of the mesh.
      * This is performed taking into account the meshes current rotation, so you do not have to care.
-     * Supports definition of mesh facing forward or backward
+     * Supports definition of mesh facing forward or backward {@link definedFacingForwardSearch | See definedFacingForwardSearch }.
      * @param amountRight defines the distance on the right axis
      * @param amountUp defines the distance on the up axis
      * @param amountForward defines the distance on the forward axis
@@ -1396,7 +1396,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     // ================================== Point of View Rotation =================================
     /**
      * Perform relative rotation change from the point of view of behind the front of the mesh.
-     * Supports definition of mesh facing forward or backward
+     * Supports definition of mesh facing forward or backward {@link definedFacingForwardSearch | See definedFacingForwardSearch }.
      * @param flipBack defines the flip
      * @param twirlClockwise defines the twirl
      * @param tiltRight defines the tilt
@@ -1409,7 +1409,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /**
      * Calculate relative rotation change from the point of view of behind the front of the mesh.
-     * Supports definition of mesh facing forward or backward.
+     * Supports definition of mesh facing forward or backward {@link definedFacingForwardSearch | See definedFacingForwardSearch }.
      * @param flipBack defines the flip
      * @param twirlClockwise defines the twirl
      * @param tiltRight defines the tilt
