@@ -1,8 +1,7 @@
 import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { _Exporter } from "../glTFExporter";
-import type { Material } from 'core/Materials';
-import { PBRMaterial } from 'core/Materials';
-import * as _ from 'lodash';
+import type { Material } from 'core/Materials/material';
+import { PBRMaterial } from 'core/Materials/PBR/pbrMaterial';
 import type { IMaterial, IKHRMaterialsEmissiveStrength } from 'babylonjs-gltf2interface';
 
 const NAME = "KHR_materials_emissive_strength";
