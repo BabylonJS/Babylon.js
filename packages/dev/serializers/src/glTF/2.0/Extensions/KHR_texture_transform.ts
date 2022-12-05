@@ -54,7 +54,7 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
             }
 
             if (babylonTexture.wAng !== 0) {
-                textureTransform.rotation = babylonTexture.wAng;
+                textureTransform.rotation = -babylonTexture.wAng;
                 transformIsRequired = true;
             }
 
@@ -84,13 +84,13 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
             }
 
             /*
-             * The KHR_texture_transform schema only supports rotation around the origin.
+             * The KHR_texture_transform schema only supports w rotation around the origin.
              * See https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_texture_transform#gltf-schema-updates.
              */
-            if (
-                (babylonTexture.uAng !== 0 || babylonTexture.wAng !== 0 || babylonTexture.vAng !== 0) &&
-                (babylonTexture.uRotationCenter !== 0 || babylonTexture.vRotationCenter !== 0)
-            ) {
+            if (babylonTexture.uAng !== 0 || babylonTexture.vAng !== 0) {
+                Tools.Warn(`${context}: Texture ${babylonTexture.name} with rotation in the u or v axis is not supported in glTF.`);
+                resolve(null);
+            } else if (babylonTexture.wAng !== 0 && (babylonTexture.uRotationCenter !== 0 || babylonTexture.vRotationCenter !== 0)) {
                 Tools.Warn(`${context}: Texture ${babylonTexture.name} with rotation not centered at the origin cannot be exported with ${NAME}`);
                 resolve(null);
             } else {
