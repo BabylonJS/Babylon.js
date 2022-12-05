@@ -266,7 +266,7 @@ export class InputManager {
     }
 
     private _checkForPicking(): boolean {
-        return !!(this._scene.onPointerObservable.observers.length > this._cameraObserverCount || this._scene.onPointerPick || this._scene.onPointerUp);
+        return !!(this._scene.onPointerObservable.observers.length > this._cameraObserverCount || this._scene.onPointerPick);
     }
 
     private _checkPrePointerObservable(pickResult: Nullable<PickingInfo>, evt: IPointerEvent, type: number) {
@@ -570,7 +570,7 @@ export class InputManager {
         this._initActionManager = (act: Nullable<AbstractActionManager>): Nullable<AbstractActionManager> => {
             if (!this._meshPickProceed) {
                 const pickResult =
-                    scene.skipPointerUpPicking || (scene._registeredActions === 0 && !this._checkForPicking())
+                    scene.skipPointerUpPicking || (scene._registeredActions === 0 && !this._checkForPicking() && !scene.onPointerUp)
                         ? null
                         : scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerUpPredicate, false, scene.cameraToUseForPointers);
                 this._currentPickResult = pickResult;
@@ -810,7 +810,7 @@ export class InputManager {
             // Meshes
             this._pickedDownMesh = null;
             let pickResult;
-            if (scene.skipPointerDownPicking || (scene._registeredActions === 0 && !this._checkForPicking())) {
+            if (scene.skipPointerDownPicking  || (scene._registeredActions === 0 && !this._checkForPicking() && !scene.onPointerDown)) {
                 pickResult = new PickingInfo();
             } else {
                 pickResult = scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerDownPredicate, false, scene.cameraToUseForPointers);
@@ -887,7 +887,7 @@ export class InputManager {
                 }
 
                 // Meshes
-                if (!this._meshPickProceed && ((AbstractActionManager && AbstractActionManager.HasTriggers) || this._checkForPicking())) {
+                if (!this._meshPickProceed && ((AbstractActionManager && AbstractActionManager.HasTriggers) || this._checkForPicking() || scene.onPointerUp)) {
                     this._initActionManager(null, clickInfo);
                 }
                 if (!pickResult) {
