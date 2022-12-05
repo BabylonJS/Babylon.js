@@ -4687,7 +4687,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this._activeRequests.length = 0;
 
         // Events
-        this.onDisposeObservable.notifyObservers(this);
+        try {
+            this.onDisposeObservable.notifyObservers(this);
+        } catch (e) {
+            console.error("An error occurred while calling onDisposeObservable!", e);
+        }
 
         this.onDisposeObservable.clear();
         this.onBeforeRenderObservable.clear();
