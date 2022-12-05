@@ -75,7 +75,7 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
     updateCurrentFrame(animationGroup: AnimationGroup) {
         const targetedAnimations = animationGroup.targetedAnimations;
         if (targetedAnimations.length > 0) {
-            const runtimeAnimation = animationGroup.targetedAnimations[0].animation.runtimeAnimations.find((rA) => rA.target === animationGroup.targetedAnimations[0].target);
+            const runtimeAnimation = targetedAnimations[0].animation.runtimeAnimations.find((rA) => rA.target === targetedAnimations[0].target);
             if (runtimeAnimation) {
                 this.setState({ currentFrame: runtimeAnimation.currentFrame });
             } else {
