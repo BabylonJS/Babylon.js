@@ -1,4 +1,4 @@
-import type { Nullable } from "../types";
+import type { Immutable, Nullable } from "../types";
 import type { Vector2, Vector3, Matrix } from "../Maths/math.vector";
 import type { Color3, Color4 } from "../Maths/math.color";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
@@ -17,6 +17,8 @@ import type { Scene } from "../scene";
 import type { ColorGradient, FactorGradient, Color3Gradient } from "../Misc/gradients";
 import type { Effect } from "../Materials/effect";
 import type { Observable } from "../Misc/observable";
+import type { VertexBuffer } from "../Buffers/buffer";
+import type { DataBuffer } from "../Buffers/dataBuffer";
 
 declare type Animation = import("../Animations/animation").Animation;
 declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
@@ -278,6 +280,9 @@ export interface IParticleSystem {
     /** Gets or sets a matrix to use to compute projection */
     defaultProjectionMatrix: Matrix;
 
+    /** Indicates that the update of particles is done in the animate function (and not in render) */
+    updateInAnimate: boolean;
+
     /** @internal */
     _wasDispatched: boolean;
 
@@ -408,6 +413,15 @@ export interface IParticleSystem {
      * Gets the name of the particle vertex shader
      */
     vertexShaderName: string;
+
+    /**
+     * Gets the vertex buffers used by the particle system
+     */
+    vertexBuffers: Immutable<{ [key: string]: VertexBuffer }>;
+    /**
+     * Gets the index buffer used by the particle system (or null if no index buffer is used)
+     */
+    indexBuffer: Nullable<DataBuffer>;
 
     /**
      * Adds a new color gradient
