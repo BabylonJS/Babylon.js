@@ -1,3 +1,4 @@
+/* eslint-disable import/no-internal-modules */
 export * from "./boundingBoxRenderer";
 export * from "./depthRenderer";
 export * from "./depthRendererSceneComponent";
@@ -13,3 +14,4 @@ export * from "./outlineRenderer";
 export * from "./renderingGroup";
 export * from "./renderingManager";
 export * from "./utilityLayerRenderer";
+export * from "./fluidRenderer/index";

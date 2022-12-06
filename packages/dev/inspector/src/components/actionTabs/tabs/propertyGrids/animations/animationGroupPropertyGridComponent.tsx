@@ -37,13 +37,15 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
         const animationGroup = this.props.animationGroup;
         this.state = { playButtonText: animationGroup.isPlaying ? "Pause" : "Play", currentFrame: 0 };
 
+        this._timelineRef = React.createRef();
+    }
+
+    componentDidMount(): void {
         this.connect(this.props.animationGroup);
 
         this._onBeforeRenderObserver = this.props.scene.onBeforeRenderObservable.add(() => {
             this.updateCurrentFrame(this.props.animationGroup);
         });
-
-        this._timelineRef = React.createRef();
     }
 
     disconnect(animationGroup: AnimationGroup) {
@@ -73,9 +75,9 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
     updateCurrentFrame(animationGroup: AnimationGroup) {
         const targetedAnimations = animationGroup.targetedAnimations;
         if (targetedAnimations.length > 0) {
-            const runtimeAnimations = animationGroup.targetedAnimations[0].animation.runtimeAnimations;
-            if (runtimeAnimations.length > 0) {
-                this.setState({ currentFrame: runtimeAnimations[0].currentFrame });
+            const runtimeAnimation = targetedAnimations[0].animation.runtimeAnimations.find((rA) => rA.target === targetedAnimations[0].target);
+            if (runtimeAnimation) {
+                this.setState({ currentFrame: runtimeAnimation.currentFrame });
             } else {
                 this.setState({ currentFrame: 0 });
             }
@@ -107,7 +109,6 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
             animationGroup.pause();
         } else {
             this.setState({ playButtonText: "Pause" });
-            this.props.scene.animationGroups.forEach((grp) => grp.pause());
             animationGroup.play(true);
         }
     }
