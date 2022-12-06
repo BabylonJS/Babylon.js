@@ -25,6 +25,7 @@ export class HTMLTwinHostComponent extends React.Component<IHTMLTwinHostComponen
 
     constructor(props: IHTMLTwinHostComponentProps) {
         super(props);
+        console.log("html twin host constructor");
         const a11yTreeItems = this._updateHTMLTwinItems();
         this.state = {
             a11yTreeItems: a11yTreeItems,
@@ -95,13 +96,13 @@ export class HTMLTwinHostComponent extends React.Component<IHTMLTwinHostComponen
                 this._observersMap.set(node.onAccessibilityTagChangedObservable, node.onAccessibilityTagChangedObservable.add(updateA11yTree));
             }
 
-            // If the node has GUI, add observer to the controls
-            if (this._isGUI(node)) {
-                const curMesh = node as AbstractMesh;
-                const adt = curMesh.material?.getActiveTextures()[0] as AdvancedDynamicTexture;
-                const guiRoot = adt.getChildren();
-                guiRoot.forEach((control) => addGUIObservers(control));
-            }
+            // // If the node has GUI, add observer to the controls
+            // if (this._isGUI(node)) {
+            //     const curMesh = node as AbstractMesh;
+            //     const adt = curMesh.material?.getActiveTextures()[0] as AdvancedDynamicTexture;
+            //     const guiRoot = adt.getChildren();
+            //     guiRoot.forEach((control) => addGUIObservers(control));
+            // }
         };
 
         // observe add node and deal with new nodes
@@ -123,6 +124,19 @@ export class HTMLTwinHostComponent extends React.Component<IHTMLTwinHostComponen
                 })
             );
         }
+        if (!this._observersMap.has(scene.onNewTextureAddedObservable)) {
+            this._observersMap.set(
+                scene.onNewTextureAddedObservable,
+                scene.onNewTextureAddedObservable.add((newTexture) => {
+                    if (newTexture instanceof AdvancedDynamicTexture) {
+                        updateA11yTree();
+                        newTexture.getChildren().forEach((control) => {
+                            addGUIObservers(control);
+                        });
+                    }
+                })
+            );
+        }
         // observe remove node
         if (!this._observersMap.has(scene.onMeshRemovedObservable)) {
             this._observersMap.set(scene.onMeshRemovedObservable, scene.onMeshRemovedObservable.add(updateA11yTree));
@@ -130,10 +144,21 @@ export class HTMLTwinHostComponent extends React.Component<IHTMLTwinHostComponen
         if (!this._observersMap.has(scene.onTransformNodeRemovedObservable)) {
             this._observersMap.set(scene.onTransformNodeRemovedObservable, scene.onTransformNodeRemovedObservable.add(updateA11yTree));
         }
+        if (!this._observersMap.has(scene.onTextureRemovedObservable)) {
+            this._observersMap.set(scene.onTextureRemovedObservable, scene.onTextureRemovedObservable.add(updateA11yTree));
+        }
 
         // observe node enabled changed
         scene.getNodes().forEach((node) => {
             addNodeObservers(node);
+        });
+
+        scene.textures.forEach((texture) => {
+            if (texture instanceof AdvancedDynamicTexture) {
+                texture.getChildren().forEach((control) => {
+                    addGUIObservers(control);
+                });
+            }
         });
     }
 
@@ -170,8 +195,23 @@ export class HTMLTwinHostComponent extends React.Component<IHTMLTwinHostComponen
             }
         }
 
-        const a11yTreeItems = this._getHTMLTwinItemsFromNodes(rootNodes);
-        return a11yTreeItems;
+        const a11yNodeTreeItems = this._getHTMLTwinItemsFromNodes(rootNodes);
+
+        // Get GUI twin tree nodes
+        const guiRootNodes: Control[] = [];
+        for (const texture of this.props.scene.textures) {
+            if (texture instanceof AdvancedDynamicTexture) {
+                texture.getChildren().forEach((control) => {
+                    if (control) {
+                        guiRootNodes.push(control);
+                    }
+                });
+            }
+        }
+
+        const a11yGuiTreeItems = this._getHTMLTwinItemsFromGUI(guiRootNodes);
+
+        return [...a11yNodeTreeItems, ...a11yGuiTreeItems];
     }
 
     private _getHTMLTwinItemsFromNodes(rootItems: Node[]): HTMLTwinItem[] {
@@ -187,13 +227,14 @@ export class HTMLTwinHostComponent extends React.Component<IHTMLTwinHostComponen
                 continue;
             }
 
-            if (this._isGUI(curNode)) {
+            /*if (this._isGUI(curNode)) {
                 // if node texture is GUI, add that as a a11y GUI item (renders differently)
                 const curMesh = curNode as AbstractMesh;
                 const adt = curMesh.material?.getActiveTextures()[0] as AdvancedDynamicTexture;
                 const guiRoot = adt.getChildren();
                 result.push(new HTMLTwinNodeItem(curNode, this.props.scene, this._getHTMLTwinItemsFromGUI(guiRoot)));
-            } else if (curNode.accessibilityTag) {
+            } else */
+            if (curNode.accessibilityTag) {
                 result.push(new HTMLTwinNodeItem(curNode, this.props.scene, this._getHTMLTwinItemsFromNodes(curNode.getChildren())));
             } else {
                 queue.push(...curNode.getChildren());
