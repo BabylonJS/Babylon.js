@@ -1495,6 +1495,25 @@
             "errorRatio": 2,
             "renderCount": 5,
             "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "Fluid rendering particle system",
+            "playgroundId": "#544N0Q#25",
+            "referenceImage": "fluidParticleSystem.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "Fluid rendering box sphere",
+            "playgroundId": "#PCMH7A#2",
+            "referenceImage": "fluidBoxSphere.png",
+            "renderCount": 120,
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "Export GLTF Extension KHR_texture_transform",
+            "playgroundId": "#20OAV9#9228",
+            "referenceImage": "exportGltfKHRTextureTransform.png",
+            "renderCount": 5
         }
     ]
 }

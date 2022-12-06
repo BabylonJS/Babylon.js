@@ -3,11 +3,12 @@
  */
 
 import { FreeCamera } from "core/Cameras";
+import type { PickingInfo } from "core/Collisions/pickingInfo";
 import { DeviceType, PointerInput } from "core/DeviceInput";
 import { InternalDeviceSourceManager } from "core/DeviceInput/internalDeviceSourceManager";
 import { NullEngine } from "core/Engines";
 import type { Engine } from "core/Engines/engine";
-import type { IUIEvent } from "core/Events";
+import type { IPointerEvent, IUIEvent } from "core/Events";
 import { PointerEventTypes } from "core/Events";
 import { Vector3 } from "core/Maths/math.vector";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
@@ -90,31 +91,34 @@ describe("InputManager", () => {
         let upCt = 0;
         let upHitCt = 0;
         let pickCt = 0;
-        const box = MeshBuilder.CreateBox("box", { size: 1 }, scene);
-        box.enablePointerMoveEvents = true;
-
-        scene!.onPointerDown = (evt, pickInfo) => {
+        const downFn = (evt: IPointerEvent, pickInfo: PickingInfo) => {
             if (pickInfo.hit) {
                 downHitCt++;
             }
             downCt++;
         };
-
-        scene!.onPointerMove = (evt, pickInfo) => {
+        const moveFn = (evt: IPointerEvent, pickInfo: PickingInfo) => {
             if (pickInfo.hit) {
                 moveHitCt++;
             }
             moveCt++;
         };
-
-        scene!.onPointerUp = (evt, pickInfo) => {
+        const upFn = (evt: IPointerEvent, pickInfo: Nullable<PickingInfo>, type: PointerEventTypes) => {
             if (pickInfo?.hit) {
                 upHitCt++;
             }
             upCt++;
         };
+        const pickFn = () => {
+            pickCt++;
+        };
+        const box = MeshBuilder.CreateBox("box", { size: 1 }, scene);
+        box.enablePointerMoveEvents = true;
 
-        if (deviceInputSystem) {
+        if (deviceInputSystem && scene) {
+            scene.onPointerDown = downFn;
+            scene.onPointerMove = moveFn;
+            scene.onPointerUp = upFn;
             // Perform single move over mesh, then click
             deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Horizontal, 128, false);
             deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Vertical, 128, false);
@@ -138,9 +142,7 @@ describe("InputManager", () => {
 
             // Since the pick checks for up and down also include checking for onPointerPick, we need to check with the callback not defined
             // This is the check with the callback defined
-            scene!.onPointerPick = () => {
-                pickCt++;
-            };
+            scene.onPointerPick = pickFn;
 
             // Repeat the above tests with the onPointerPick callback defined
             deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Horizontal, 128, false);
@@ -148,16 +150,65 @@ describe("InputManager", () => {
             deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Move, 1);
             deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 1);
             deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
+
+            // Test just down
+            scene.onPointerUp = undefined;
+            scene.onPointerMove = undefined;
+            scene.onPointerPick = undefined;
+
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Horizontal, 128, false);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Vertical, 128, false);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Move, 1);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
+
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Horizontal, 0, false);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Vertical, 0, false);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Move, 1);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
+
+            // Test just move
+            scene.onPointerDown = undefined;
+            scene.onPointerMove = moveFn;
+
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Horizontal, 128, false);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Vertical, 128, false);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Move, 1);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
+
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Horizontal, 0, false);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Vertical, 0, false);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Move, 1);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
+
+            // Test just up
+            scene.onPointerUp = upFn;
+            scene.onPointerMove = undefined;
+
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Horizontal, 128, false);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Vertical, 128, false);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Move, 1);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
+
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Horizontal, 0, false);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Vertical, 0, false);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Move, 1);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
         }
 
-        expect(downCt).toBe(4);
-        expect(upCt).toBe(4);
-        expect(moveCt).toBe(4);
+        expect(downCt).toBe(6);
+        expect(upCt).toBe(6);
+        expect(moveCt).toBe(6);
         expect(pickCt).toBe(1);
         // Check that picking on other callbacks is working
-        expect(downHitCt).toBe(2);
-        expect(upHitCt).toBe(2);
-        expect(moveHitCt).toBe(2);
+        expect(downHitCt).toBe(3);
+        expect(upHitCt).toBe(3);
+        expect(moveHitCt).toBe(3);
     });
 
     it("onPointerObservable can pick only when necessary", () => {

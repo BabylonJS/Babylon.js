@@ -161,6 +161,9 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     /** @internal */
     public _currentStartSize2 = 0;
 
+    /** Indicates that the update of particles is done in the animate function */
+    public readonly updateInAnimate = true;
+
     private readonly _rawTextureWidth = 256;
     private _rampGradientsTexture: Nullable<RawTexture>;
     private _useRampGradients = false;
@@ -210,6 +213,9 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      * Specifies if the particles are updated in emitter local space or world space
      */
     public isLocal = false;
+
+    /** Indicates that the particle system is CPU based */
+    public readonly isGPU = false;
 
     private _rootParticleSystem: Nullable<ParticleSystem>;
     //end of Sub-emitter
@@ -2226,9 +2232,10 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      * Clones the particle system.
      * @param name The name of the cloned object
      * @param newEmitter The new emitter to use
+     * @param cloneTexture Also clone the textures if true
      * @returns the cloned particle system
      */
-    public clone(name: string, newEmitter: any): ParticleSystem {
+    public clone(name: string, newEmitter: any, cloneTexture = false): ParticleSystem {
         const custom = { ...this._customWrappers };
         let program: any = null;
         const engine = this._engine as Engine;
@@ -2245,7 +2252,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             }
         }
 
-        const serialization = this.serialize();
+        const serialization = this.serialize(cloneTexture);
         const result = ParticleSystem.Parse(serialization, this._scene || this._engine, this._rootUrl);
         result.name = name;
         result.customShader = program;

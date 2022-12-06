@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Nullable, float, DataArray } from "../types";
+import type { Immutable, Nullable, float, DataArray } from "../types";
 import type { Color3Gradient, IValueGradient } from "../Misc/gradients";
 import { FactorGradient, ColorGradient, GradientHelper } from "../Misc/gradients";
 import { Observable } from "../Misc/observable";
@@ -57,6 +57,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     private _buffer0: Buffer;
     private _buffer1: Buffer;
     private _spriteBuffer: Buffer;
+    private _renderVertexBuffers: Array<{ [key: string]: VertexBuffer }> = [];
 
     private _targetIndex = 0;
     private _sourceBuffer: Buffer;
@@ -73,6 +74,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     public _randomTexture: RawTexture;
     /** @internal */
     public _randomTexture2: RawTexture;
+
+    /** Indicates that the update of particles is done in the animate function (and not in render). Default: false */
+    public updateInAnimate = false;
 
     private _attributesStrideSize: number;
     private _cachedUpdateDefines: string;
@@ -138,6 +142,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * Specifies if the particles are updated in emitter local space or world space.
      */
     public isLocal = false;
+
+    /** Indicates that the particle system is GPU based */
+    public readonly isGPU = true;
 
     /** Gets or sets a matrix to use to compute projection */
     public defaultProjectionMatrix: Matrix;
@@ -298,6 +305,26 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      */
     public get vertexShaderName(): string {
         return "gpuRenderParticles";
+    }
+
+    /**
+     * Gets the vertex buffers used by the particle system
+     * Should be called after render() has been called for the current frame so that the buffers returned are the ones that have been updated
+     * in the current frame (there's a ping-pong between two sets of buffers - for a given frame, one set is used as the source and the other as the destination)
+     */
+    public get vertexBuffers(): Immutable<{ [key: string]: VertexBuffer }> {
+        // We return the other buffers than those corresponding to this._targetIndex because it is assumed vertexBuffers will be called in the current frame
+        // after render() has been called, meaning that the buffers have already been swapped and this._targetIndex points to the buffers that will be updated
+        // in the next frame (and which are the sources in this frame) and (this._targetIndex ^ 1) points to the buffers that have been updated this frame
+        // (and that will be the source buffers in the next frame)
+        return this._renderVertexBuffers[this._targetIndex ^ 1];
+    }
+
+    /**
+     * Gets the index buffer used by the particle system (null for GPU particle systems)
+     */
+    public get indexBuffer(): Nullable<DataBuffer> {
+        return null;
     }
 
     /** @internal */
@@ -924,6 +951,8 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         renderVertexBuffers["offset"] = spriteSource.createVertexBuffer("offset", 0, 2);
         renderVertexBuffers["uv"] = spriteSource.createVertexBuffer("uv", 2, 2);
 
+        this._renderVertexBuffers.push(renderVertexBuffers);
+
         this._platform.createVertexBuffers(updateBuffer, renderVertexBuffers);
 
         this.resetDrawCache();
@@ -1116,6 +1145,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._spriteBuffer = new Buffer(engine, spriteData, false, 4);
 
         // Update & Render vertex buffers
+        this._renderVertexBuffers = [];
         this._createVertexBuffers(this._buffer0, this._buffer1, this._spriteBuffer);
         this._createVertexBuffers(this._buffer1, this._buffer0, this._spriteBuffer);
 
@@ -1354,6 +1384,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
                 this.stop();
             }
         }
+
+        if (this.updateInAnimate) {
+            this._update();
+        }
     }
 
     private _createFactorGradientTexture(factorGradients: Nullable<IValueGradient[]>, textureName: string) {
@@ -1502,6 +1536,69 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         return this._currentActiveCount;
     }
 
+    /** @internal */
+    public _update(emitterWM?: Matrix): void {
+        if (!this.emitter) {
+            return;
+        }
+
+        this._recreateUpdateEffect();
+
+        if ((<AbstractMesh>this.emitter).position) {
+            const emitterMesh = <AbstractMesh>this.emitter;
+            emitterWM = emitterMesh.getWorldMatrix();
+        } else {
+            const emitterPosition = <Vector3>this.emitter;
+            emitterWM = TmpVectors.Matrix[0];
+            Matrix.TranslationToRef(emitterPosition.x, emitterPosition.y, emitterPosition.z, emitterWM);
+        }
+
+        this._platform.preUpdateParticleBuffer();
+
+        this._updateBuffer.setFloat("currentCount", this._currentActiveCount);
+        this._updateBuffer.setFloat("timeDelta", this._timeDelta);
+        this._updateBuffer.setFloat("stopFactor", this._stopped ? 0 : 1);
+        this._updateBuffer.setInt("randomTextureSize", this._randomTextureSize);
+        this._updateBuffer.setFloat2("lifeTime", this.minLifeTime, this.maxLifeTime);
+        this._updateBuffer.setFloat2("emitPower", this.minEmitPower, this.maxEmitPower);
+        if (!this._colorGradientsTexture) {
+            this._updateBuffer.setDirectColor4("color1", this.color1);
+            this._updateBuffer.setDirectColor4("color2", this.color2);
+        }
+        this._updateBuffer.setFloat2("sizeRange", this.minSize, this.maxSize);
+        this._updateBuffer.setFloat4("scaleRange", this.minScaleX, this.maxScaleX, this.minScaleY, this.maxScaleY);
+        this._updateBuffer.setFloat4("angleRange", this.minAngularSpeed, this.maxAngularSpeed, this.minInitialRotation, this.maxInitialRotation);
+        this._updateBuffer.setVector3("gravity", this.gravity);
+        if (this._limitVelocityGradientsTexture) {
+            this._updateBuffer.setFloat("limitVelocityDamping", this.limitVelocityDamping);
+        }
+        if (this.particleEmitterType) {
+            this.particleEmitterType.applyToShader(this._updateBuffer);
+        }
+        if (this._isAnimationSheetEnabled) {
+            this._updateBuffer.setFloat4("cellInfos", this.startSpriteCellID, this.endSpriteCellID, this.spriteCellChangeSpeed, this.spriteCellLoop ? 1 : 0);
+        }
+        if (this.noiseTexture) {
+            this._updateBuffer.setVector3("noiseStrength", this.noiseStrength);
+        }
+        if (!this.isLocal) {
+            this._updateBuffer.setMatrix("emitterWM", emitterWM);
+        }
+
+        this._platform.updateParticleBuffer(this._targetIndex, this._targetBuffer, this._currentActiveCount);
+
+        // Switch VAOs
+        this._targetIndex++;
+        if (this._targetIndex === 2) {
+            this._targetIndex = 0;
+        }
+
+        // Switch buffers
+        const tmpBuffer = this._sourceBuffer;
+        this._sourceBuffer = this._targetBuffer;
+        this._targetBuffer = tmpBuffer;
+    }
+
     /**
      * Renders the particle system in its current state
      * @param preWarm defines if the system should only update the particles but not render them
@@ -1519,8 +1616,6 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._createVelocityGradientTexture();
         this._createLimitVelocityGradientTexture();
         this._createDragGradientTexture();
-
-        this._recreateUpdateEffect();
 
         if (!this.isReady()) {
             return 0;
@@ -1570,44 +1665,15 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             emitterWM = emitterMesh.getWorldMatrix();
         } else {
             const emitterPosition = <Vector3>this.emitter;
-            emitterWM = Matrix.Translation(emitterPosition.x, emitterPosition.y, emitterPosition.z);
+            emitterWM = TmpVectors.Matrix[0];
+            Matrix.TranslationToRef(emitterPosition.x, emitterPosition.y, emitterPosition.z, emitterWM);
         }
 
         const engine = this._engine as Engine;
 
-        this._platform.preUpdateParticleBuffer();
-
-        this._updateBuffer.setFloat("currentCount", this._currentActiveCount);
-        this._updateBuffer.setFloat("timeDelta", this._timeDelta);
-        this._updateBuffer.setFloat("stopFactor", this._stopped ? 0 : 1);
-        this._updateBuffer.setInt("randomTextureSize", this._randomTextureSize);
-        this._updateBuffer.setFloat2("lifeTime", this.minLifeTime, this.maxLifeTime);
-        this._updateBuffer.setFloat2("emitPower", this.minEmitPower, this.maxEmitPower);
-        if (!this._colorGradientsTexture) {
-            this._updateBuffer.setDirectColor4("color1", this.color1);
-            this._updateBuffer.setDirectColor4("color2", this.color2);
+        if (!this.updateInAnimate) {
+            this._update(emitterWM);
         }
-        this._updateBuffer.setFloat2("sizeRange", this.minSize, this.maxSize);
-        this._updateBuffer.setFloat4("scaleRange", this.minScaleX, this.maxScaleX, this.minScaleY, this.maxScaleY);
-        this._updateBuffer.setFloat4("angleRange", this.minAngularSpeed, this.maxAngularSpeed, this.minInitialRotation, this.maxInitialRotation);
-        this._updateBuffer.setVector3("gravity", this.gravity);
-        if (this._limitVelocityGradientsTexture) {
-            this._updateBuffer.setFloat("limitVelocityDamping", this.limitVelocityDamping);
-        }
-        if (this.particleEmitterType) {
-            this.particleEmitterType.applyToShader(this._updateBuffer);
-        }
-        if (this._isAnimationSheetEnabled) {
-            this._updateBuffer.setFloat4("cellInfos", this.startSpriteCellID, this.endSpriteCellID, this.spriteCellChangeSpeed, this.spriteCellLoop ? 1 : 0);
-        }
-        if (this.noiseTexture) {
-            this._updateBuffer.setVector3("noiseStrength", this.noiseStrength);
-        }
-        if (!this.isLocal) {
-            this._updateBuffer.setMatrix("emitterWM", emitterWM);
-        }
-
-        this._platform.updateParticleBuffer(this._targetIndex, this._targetBuffer, this._currentActiveCount);
 
         let outparticles = 0;
         if (!preWarm && !forceUpdateOnly) {
@@ -1625,17 +1691,6 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
             this._engine.setAlphaMode(Constants.ALPHA_DISABLE);
         }
-
-        // Switch VAOs
-        this._targetIndex++;
-        if (this._targetIndex === 2) {
-            this._targetIndex = 0;
-        }
-
-        // Switch buffers
-        const tmpBuffer = this._sourceBuffer;
-        this._sourceBuffer = this._targetBuffer;
-        this._targetBuffer = tmpBuffer;
 
         return outparticles;
     }
@@ -1684,6 +1739,15 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         this._releaseBuffers();
         this._platform.releaseVertexBuffers();
+
+        for (let i = 0; i < this._renderVertexBuffers.length; ++i) {
+            const rvb = this._renderVertexBuffers[i];
+            for (const key in rvb) {
+                rvb[key].dispose();
+            }
+        }
+
+        this._renderVertexBuffers = [];
 
         if (this._colorGradientsTexture) {
             this._colorGradientsTexture.dispose();
@@ -1744,9 +1808,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * Clones the particle system.
      * @param name The name of the cloned object
      * @param newEmitter The new emitter to use
+     * @param cloneTexture Also clone the textures if true
      * @returns the cloned particle system
      */
-    public clone(name: string, newEmitter: any): GPUParticleSystem {
+    public clone(name: string, newEmitter: any, cloneTexture = false): GPUParticleSystem {
         const custom = { ...this._customWrappers };
         let program: any = null;
         const engine = this._engine as any;
@@ -1767,7 +1832,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             }
         }
 
-        const serialization = this.serialize();
+        const serialization = this.serialize(cloneTexture);
         const result = GPUParticleSystem.Parse(serialization, this._scene || this._engine, this._rootUrl);
         result.name = name;
         result.customShader = program;
