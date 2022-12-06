@@ -240,6 +240,8 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
                 this._handlePivot();
 
                 this.attachedNode.getWorldMatrix().decompose(nodeScale, nodeQuaternion, nodeTranslation);
+                // uniform scaling of absolute value of components
+                // (-1,1,1) is uniform but (1,1.001,1) is not
                 const uniformScaling = Math.abs(Math.abs(nodeScale.x) - Math.abs(nodeScale.y)) <= Epsilon && Math.abs(Math.abs(nodeScale.x) - Math.abs(nodeScale.z)) <= Epsilon;
                 if (!uniformScaling && this.updateGizmoRotationToMatchAttachedMesh) {
                     Logger.Warn(
