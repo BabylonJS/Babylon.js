@@ -2232,9 +2232,10 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      * Clones the particle system.
      * @param name The name of the cloned object
      * @param newEmitter The new emitter to use
+     * @param cloneTexture Also clone the textures if true
      * @returns the cloned particle system
      */
-    public clone(name: string, newEmitter: any): ParticleSystem {
+    public clone(name: string, newEmitter: any, cloneTexture = false): ParticleSystem {
         const custom = { ...this._customWrappers };
         let program: any = null;
         const engine = this._engine as Engine;
@@ -2251,7 +2252,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             }
         }
 
-        const serialization = this.serialize();
+        const serialization = this.serialize(cloneTexture);
         const result = ParticleSystem.Parse(serialization, this._scene || this._engine, this._rootUrl);
         result.name = name;
         result.customShader = program;
