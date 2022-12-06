@@ -1808,9 +1808,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * Clones the particle system.
      * @param name The name of the cloned object
      * @param newEmitter The new emitter to use
+     * @param cloneTexture Also clone the textures if true
      * @returns the cloned particle system
      */
-    public clone(name: string, newEmitter: any): GPUParticleSystem {
+    public clone(name: string, newEmitter: any, cloneTexture = false): GPUParticleSystem {
         const custom = { ...this._customWrappers };
         let program: any = null;
         const engine = this._engine as any;
@@ -1831,7 +1832,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             }
         }
 
-        const serialization = this.serialize();
+        const serialization = this.serialize(cloneTexture);
         const result = GPUParticleSystem.Parse(serialization, this._scene || this._engine, this._rootUrl);
         result.name = name;
         result.customShader = program;
