@@ -810,7 +810,7 @@ export class InputManager {
             // Meshes
             this._pickedDownMesh = null;
             let pickResult;
-            if (scene.skipPointerDownPicking  || (scene._registeredActions === 0 && !this._checkForPicking() && !scene.onPointerDown)) {
+            if (scene.skipPointerDownPicking || (scene._registeredActions === 0 && !this._checkForPicking() && !scene.onPointerDown)) {
                 pickResult = new PickingInfo();
             } else {
                 pickResult = scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerDownPredicate, false, scene.cameraToUseForPointers);
