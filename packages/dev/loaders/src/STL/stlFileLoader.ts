@@ -214,7 +214,7 @@ export class STLFileLoader implements ISceneLoaderPlugin {
                 offset += 3;
             }
 
-            if (rightHanded) {
+            if (STLFileLoader.DO_NOT_ALTER_FILE_COORDINATES) {
                 indices[indicesCount] = indicesCount;
                 indices[indicesCount + 1] = indicesCount + 2;
                 indices[indicesCount + 2] = indicesCount + 1;
@@ -263,7 +263,7 @@ export class STLFileLoader implements ISceneLoaderPlugin {
                     normals.push(normal[0], normal[2], normal[1]);
                 }
             }
-            if (rightHanded) {
+            if (STLFileLoader.DO_NOT_ALTER_FILE_COORDINATES) {
                 indices.push(indicesCount, indicesCount + 2, indicesCount + 1);
                 indicesCount += 3;
             } else {
