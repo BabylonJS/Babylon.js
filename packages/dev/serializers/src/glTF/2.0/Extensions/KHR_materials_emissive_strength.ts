@@ -41,9 +41,7 @@ export class KHR_materials_emissive_strength implements IGLTFExporterExtensionV2
             if (tempEmissiveStrength > 1) {
                 this._wasUsed = true;
 
-                if (node.extensions == null) {
-                    node.extensions = {};
-                }
+                node.extensions ||= {};
 
                 const emissiveStrengthInfo: IKHRMaterialsEmissiveStrength = {
                     emissiveStrength: tempEmissiveStrength,
