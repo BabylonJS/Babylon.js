@@ -6,6 +6,7 @@ import type { Scene } from "../../scene";
 /**
  *
  */
+/** @internal */
 export class PhysicsBody {
     /** @internal */
     public _pluginData: any = undefined;

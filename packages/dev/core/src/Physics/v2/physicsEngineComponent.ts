@@ -9,6 +9,7 @@ declare module "../../Meshes/abstractMesh" {
     /**
      *
      */
+    /** @internal */
     export interface AbstractMesh {
         /** @internal */
         _physicsBody: Nullable<PhysicsBody>;
@@ -67,6 +68,7 @@ Object.defineProperty(AbstractMesh.prototype, "physicsBody", {
  * Gets the current physics body
  * @returns a physics body or null
  */
+/** @internal */
 AbstractMesh.prototype.getPhysicsBody = function (): Nullable<PhysicsBody> {
     return this.physicsBody;
 };
@@ -78,6 +80,7 @@ AbstractMesh.prototype.getPhysicsBody = function (): Nullable<PhysicsBody> {
  * @returns the current mesh
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
  */
+/** @internal */
 AbstractMesh.prototype.applyImpulse = function (force: Vector3, contactPoint: Vector3): AbstractMesh {
     if (!this.physicsBody) {
         throw new Error("No Physics Body for AbstractMesh");

@@ -8,6 +8,7 @@ import type { TransformNode } from "../../Meshes/transformNode";
 /**
  * The interface for the physics aggregate parameters
  */
+/** @internal */
 export interface PhysicsAggregateParameters {
     /** @internal */
     /**
