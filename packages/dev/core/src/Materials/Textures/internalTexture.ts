@@ -262,6 +262,11 @@ export class InternalTexture extends TextureSampler {
         return this._uniqueId;
     }
 
+    /** @internal */
+    public _setUniqueId(id: number) {
+        this._uniqueId = id;
+    }
+
     /**
      * Gets the Engine the texture belongs to.
      * @returns The babylon engine

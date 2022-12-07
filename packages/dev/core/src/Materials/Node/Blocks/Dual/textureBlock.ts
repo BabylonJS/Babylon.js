@@ -84,7 +84,7 @@ export class TextureBlock extends NodeMaterialBlock {
      * Gets a boolean indicating that this block is linked to an ImageSourceBlock
      */
     public get hasImageSource(): boolean {
-        return !!this._imageSource;
+        return this.source.isConnected;
     }
 
     private _convertToGammaSpace = false;

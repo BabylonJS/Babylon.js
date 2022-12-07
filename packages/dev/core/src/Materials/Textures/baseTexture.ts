@@ -841,10 +841,11 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
 
     /**
      * Serialize the texture into a JSON representation that can be parsed later on.
+     * @param allowEmptyName True to force serialization even if name is empty. Default: false
      * @returns the JSON representation of the texture
      */
-    public serialize(): any {
-        if (!this.name) {
+    public serialize(allowEmptyName = false): any {
+        if (!this.name && !allowEmptyName) {
             return null;
         }
 
