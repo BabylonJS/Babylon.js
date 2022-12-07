@@ -9,6 +9,7 @@ import type { PhysicsBody } from "./physicsBody";
  * It holds a set of functions to control the underlying constraint
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
  */
+/** @internal */
 export class PhysicsConstraint {
     /** @internal */
     /**
@@ -239,6 +240,7 @@ export class PhysicsConstraint {
 /**
  *
  */
+/** @internal */
 export class PhysicsConstraintBallAndSocket extends PhysicsConstraint {
     /** @internal */
     constructor(pivotA: Vector3, pivotB: Vector3, axisA: Vector3, axisB: Vector3, scene: Scene) {
@@ -249,6 +251,7 @@ export class PhysicsConstraintBallAndSocket extends PhysicsConstraint {
 /**
  *
  */
+/** @internal */
 export class PhysicsConstraintDistance extends PhysicsConstraint {
     /** @internal */
     constructor(pivotA: Vector3, pivotB: Vector3, axisA: Vector3, axisB: Vector3, scene: Scene) {
@@ -259,6 +262,7 @@ export class PhysicsConstraintDistance extends PhysicsConstraint {
 /**
  *
  */
+/** @internal */
 export class PhysicsConstraintHinge extends PhysicsConstraint {
     /** @internal */
     constructor(pivotA: Vector3, pivotB: Vector3, axisA: Vector3, axisB: Vector3, scene: Scene) {
@@ -269,6 +273,7 @@ export class PhysicsConstraintHinge extends PhysicsConstraint {
 /**
  *
  */
+/** @internal */
 export class PhysicsConstraintSlider extends PhysicsConstraint {
     /** @internal */
     constructor(pivotA: Vector3, pivotB: Vector3, axisA: Vector3, axisB: Vector3, scene: Scene) {
@@ -279,6 +284,7 @@ export class PhysicsConstraintSlider extends PhysicsConstraint {
 /**
  *
  */
+/** @internal */
 export class PhysicsConstraintLock extends PhysicsConstraint {
     /** @internal */
     constructor(pivotA: Vector3, pivotB: Vector3, axisA: Vector3, axisB: Vector3, scene: Scene) {

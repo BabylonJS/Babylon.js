@@ -11,6 +11,7 @@ import type { Scene } from "../../scene";
 /**
  *
  */
+/** @internal */
 export class PhysicsShape {
     /** @internal */
     public _pluginData: any = undefined;
@@ -145,6 +146,7 @@ export class PhysicsShape {
 /**
  *
  */
+/** @internal */
 export class PhysicsShapeSphere extends PhysicsShape {
     /** @internal */
     /**
@@ -161,6 +163,7 @@ export class PhysicsShapeSphere extends PhysicsShape {
 /***
  *
  */
+/** @internal */
 export class PhysicsShapeCapsule extends PhysicsShape {
     /** @internal */
     /**
@@ -178,6 +181,7 @@ export class PhysicsShapeCapsule extends PhysicsShape {
 /**
  *
  */
+/** @internal */
 export class PhysicsShapeCylinder extends PhysicsShape {
     /** @internal */
     /**
@@ -195,6 +199,7 @@ export class PhysicsShapeCylinder extends PhysicsShape {
 /**
  *
  */
+/** @internal */
 export class PhysicsShapeShapeBox extends PhysicsShape {
     /** @internal */
     /**
@@ -212,6 +217,7 @@ export class PhysicsShapeShapeBox extends PhysicsShape {
 /**
  *
  */
+/** @internal */
 export class PhysicsShapeShapeConvexHull extends PhysicsShape {
     /** @internal */
     /**
@@ -227,6 +233,7 @@ export class PhysicsShapeShapeConvexHull extends PhysicsShape {
 /**
  *
  */
+/** @internal */
 export class PhysicsShapeShapeMesh extends PhysicsShape {
     /** @internal */
     /**
@@ -242,6 +249,7 @@ export class PhysicsShapeShapeMesh extends PhysicsShape {
 /**
  *
  */
+/** @internal */
 export class PhysicsShapeShapeContainer extends PhysicsShape {
     /** @internal */
     /**

@@ -8,6 +8,7 @@ import type { BoundingBox } from "../../Culling/boundingBox";
 import type { TransformNode } from "../../Meshes/transformNode";
 import type { PhysicsMaterial } from "./physicsMaterial";
 
+/** @internal */
 export enum ConstraintAxisLimitMode {
     FREE,
     LIMITED,
@@ -15,6 +16,7 @@ export enum ConstraintAxisLimitMode {
     NONE,
 }
 
+/** @internal */
 export enum ConstraintAxis {
     LINEAR_X,
     LINEAR_Y,
@@ -24,6 +26,8 @@ export enum ConstraintAxis {
     ANGULAR_Z,
     LINEAR_DISTANCE,
 }
+
+/** @internal */
 export enum ConstraintType {
     BALL_AND_SOCKET,
     DISTANCE,
@@ -32,6 +36,7 @@ export enum ConstraintType {
     LOCK,
 }
 
+/** @internal */
 export enum ShapeType {
     SPHERE,
     CAPSULE,
@@ -42,12 +47,14 @@ export enum ShapeType {
     MESH,
 }
 
+/** @internal */
 export enum ConstraintMotorType {
     NONE,
     VELOCITY,
     POSITION,
 }
 
+/** @internal */
 export interface PhysicsShapeParameters {
     center?: Vector3;
     radius?: number;
@@ -58,6 +65,7 @@ export interface PhysicsShapeParameters {
     mesh?: AbstractMesh;
 }
 
+/** @internal */
 export interface PhysicsConstraintParameters {
     pivotA?: Vector3;
     pivotB?: Vector3;
@@ -68,6 +76,7 @@ export interface PhysicsConstraintParameters {
 /**
  *
  */
+/** @internal */
 export interface MassProperties {
     /**
      *
