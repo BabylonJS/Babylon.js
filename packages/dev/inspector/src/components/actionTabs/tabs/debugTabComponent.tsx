@@ -9,6 +9,8 @@ import { StandardMaterial } from "core/Materials/standardMaterial";
 import type { Mesh } from "core/Meshes/mesh";
 
 import "core/Physics/physicsEngineComponent";
+import "core/Physics/v1/physicsEngineComponent";
+import "core/Physics/v1/physicsEngineComponent";
 
 export class DebugTabComponent extends PaneComponent {
     private _physicsViewersEnabled = false;

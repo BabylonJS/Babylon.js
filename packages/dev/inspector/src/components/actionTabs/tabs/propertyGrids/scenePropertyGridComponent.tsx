@@ -27,6 +27,8 @@ import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineCompon
 import { AnimationGridComponent } from "./animations/animationPropertyGridComponent";
 
 import "core/Physics/physicsEngineComponent";
+import "core/Physics/v1/physicsEngineComponent";
+import "core/Physics/v1/physicsEngineComponent";
 
 interface IScenePropertyGridComponentProps {
     globalState: GlobalState;

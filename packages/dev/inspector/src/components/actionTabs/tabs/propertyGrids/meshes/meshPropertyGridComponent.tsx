@@ -6,7 +6,7 @@ import { Color3 } from "core/Maths/math.color";
 import type { Mesh } from "core/Meshes/mesh";
 import { VertexBuffer } from "core/Buffers/buffer";
 import { CreateLineSystem } from "core/Meshes/Builders/linesBuilder";
-import { PhysicsImpostor } from "core/Physics/physicsImpostor";
+import { PhysicsImpostor } from "core/Physics/v1/physicsImpostor";
 import { Scene } from "core/scene";
 
 import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
@@ -38,6 +38,9 @@ import type { IInspectableOptions } from "core/Misc/iInspectable";
 import { NormalMaterial } from "materials/normal/normalMaterial";
 
 import "core/Physics/physicsEngineComponent";
+import "core/Physics/v1/physicsEngineComponent";
+import "core/Physics/v1/physicsEngineComponent";
+
 import { ParentPropertyGridComponent } from "../parentPropertyGridComponent";
 import { Tools } from "core/Misc/tools";
 
