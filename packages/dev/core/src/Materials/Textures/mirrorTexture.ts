@@ -208,8 +208,6 @@ export class MirrorTexture extends RenderTargetTexture {
             saveClipPlane = scene!.clipPlane;
             scene!.clipPlane = this.mirrorPlane;
 
-            scene!.getEngine().cullBackFaces = false;
-
             scene!._mirroredCameraPosition = Vector3.TransformCoordinates((<Camera>scene!.activeCamera).globalPosition, this._mirrorMatrix);
         });
 
@@ -218,7 +216,6 @@ export class MirrorTexture extends RenderTargetTexture {
                 scene!.setSceneUniformBuffer(this._currentSceneUBO);
             }
             scene!.updateTransformMatrix();
-            scene!.getEngine().cullBackFaces = null;
             scene!._mirroredCameraPosition = null;
 
             scene!.clipPlane = saveClipPlane;
