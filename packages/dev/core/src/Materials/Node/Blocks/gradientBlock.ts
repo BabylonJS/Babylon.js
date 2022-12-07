@@ -77,14 +77,17 @@ export class GradientBlock extends NodeMaterialBlock {
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Neutral);
 
-        this.registerInput("gradient", NodeMaterialBlockConnectionPointTypes.Float);
+        this.registerInput("gradient", NodeMaterialBlockConnectionPointTypes.AutoDetect);
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Color3);
 
-        this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector2);
-        this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector3);
-        this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector4);
-        this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Color3);
-        this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Color4);
+        this._inputs[0].addExcludedConnectionPointFromAllowedTypes(
+            NodeMaterialBlockConnectionPointTypes.Float |
+                NodeMaterialBlockConnectionPointTypes.Vector2 |
+                NodeMaterialBlockConnectionPointTypes.Vector3 |
+                NodeMaterialBlockConnectionPointTypes.Vector4 |
+                NodeMaterialBlockConnectionPointTypes.Color3 |
+                NodeMaterialBlockConnectionPointTypes.Color4
+        );
     }
 
     /**

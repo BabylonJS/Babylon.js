@@ -133,8 +133,8 @@ export class TriPlanarBlock extends NodeMaterialBlock {
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Neutral);
 
-        this.registerInput("position", NodeMaterialBlockConnectionPointTypes.Vector3, false);
-        this.registerInput("normal", NodeMaterialBlockConnectionPointTypes.Vector3, false);
+        this.registerInput("position", NodeMaterialBlockConnectionPointTypes.AutoDetect, false);
+        this.registerInput("normal", NodeMaterialBlockConnectionPointTypes.AutoDetect, false);
         this.registerInput("sharpness", NodeMaterialBlockConnectionPointTypes.Float, true);
         this.registerInput(
             "source",
@@ -153,8 +153,8 @@ export class TriPlanarBlock extends NodeMaterialBlock {
 
         this.registerOutput("level", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Neutral);
 
-        this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector4);
-        this._inputs[1].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector4);
+        this._inputs[0].addExcludedConnectionPointFromAllowedTypes(NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4);
+        this._inputs[1].addExcludedConnectionPointFromAllowedTypes(NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4);
     }
 
     /**
