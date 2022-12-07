@@ -29,7 +29,11 @@ export interface ITextInputLineComponentProps {
     unit?: React.ReactNode;
     validator?: (value: string) => boolean;
     multilines?: boolean;
+    throttlePropertyChangedNotification?: boolean;
+    throttlePropertyChangedNotificationDelay?: number;
 }
+
+let throttleTimerId = -1;
 
 export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, { value: string; dragging: boolean }> {
     private _localChange = false;
@@ -146,7 +150,16 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
             this.props.target[this.props.propertyName] = value;
         }
 
-        this.raiseOnPropertyChanged(value, store);
+        if (this.props.throttlePropertyChangedNotification) {
+            if (throttleTimerId >= 0) {
+                window.clearTimeout(throttleTimerId);
+            }
+            throttleTimerId = window.setTimeout(() => {
+                this.raiseOnPropertyChanged(value, store);
+            }, this.props.throttlePropertyChangedNotificationDelay ?? 200);
+        } else {
+            this.raiseOnPropertyChanged(value, store);
+        }
     }
 
     incrementValue(amount: number) {

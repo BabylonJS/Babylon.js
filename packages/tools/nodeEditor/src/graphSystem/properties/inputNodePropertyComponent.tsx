@@ -319,6 +319,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                 this.props.stateManager.onUpdateRequiredObservable.notifyObservers(inputBlock);
                                 this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
                             }}
+                            throttlePropertyChangedNotification={true}
                         />
                     )}
                     <OptionsLineComponent
