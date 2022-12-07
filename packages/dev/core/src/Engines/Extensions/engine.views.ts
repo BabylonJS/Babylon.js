@@ -78,7 +78,7 @@ declare module "../../Engines/engine" {
         /**
          * @internal
          */
-        _renderViewStep(view: EngineView, parent: HTMLCanvasElement): boolean;
+        _renderViewStep(view: EngineView): boolean;
     }
 }
 
@@ -161,12 +161,14 @@ Engine.prototype.unRegisterView = function (canvas: HTMLCanvasElement): Engine {
     return this;
 };
 
-Engine.prototype._renderViewStep = function (view: EngineView, parent: HTMLCanvasElement): boolean {
+Engine.prototype._renderViewStep = function (view: EngineView): boolean {
     const canvas = view.target;
     const context = canvas.getContext("2d");
     if (!context) {
-        return false;
+        return true;
     }
+    const parent = this.getRenderingCanvas()!;
+
     _onBeforeViewRenderObservable.notifyObservers(view);
     const camera = view.camera;
     let previewCamera: Nullable<Camera> = null;
@@ -175,7 +177,7 @@ Engine.prototype._renderViewStep = function (view: EngineView, parent: HTMLCanva
         scene = camera.getScene();
 
         if (!scene || (scene.activeCameras && scene.activeCameras.length)) {
-            return false;
+            return true;
         }
 
         this.activeView = view;
@@ -245,13 +247,13 @@ Engine.prototype._renderViews = function () {
             continue;
         }
 
-        if (!this._renderViewStep(view, parent)) {
+        if (!this._renderViewStep(view)) {
             return false;
         }
     }
 
     if (inputElementView) {
-        if (!this._renderViewStep(inputElementView, parent)) {
+        if (!this._renderViewStep(inputElementView)) {
             return false;
         }
     }
