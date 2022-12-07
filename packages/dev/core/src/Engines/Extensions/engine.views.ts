@@ -74,6 +74,11 @@ declare module "../../Engines/engine" {
          * @returns the current engine
          */
         unRegisterView(canvas: HTMLCanvasElement): Engine;
+
+        /**
+         * @internal
+         */
+        _renderViewStep(view: EngineView): boolean;
     }
 }
 
@@ -156,6 +161,69 @@ Engine.prototype.unRegisterView = function (canvas: HTMLCanvasElement): Engine {
     return this;
 };
 
+Engine.prototype._renderViewStep = function (view: EngineView): boolean {
+    const canvas = view.target;
+    const context = canvas.getContext("2d");
+    if (!context) {
+        return true;
+    }
+    const parent = this.getRenderingCanvas()!;
+
+    _onBeforeViewRenderObservable.notifyObservers(view);
+    const camera = view.camera;
+    let previewCamera: Nullable<Camera> = null;
+    let scene: Nullable<Scene> = null;
+    if (camera) {
+        scene = camera.getScene();
+
+        if (!scene || (scene.activeCameras && scene.activeCameras.length)) {
+            return true;
+        }
+
+        this.activeView = view;
+
+        previewCamera = scene.activeCamera;
+        scene.activeCamera = camera;
+    }
+
+    if (view.customResize) {
+        view.customResize(canvas);
+    } else {
+        // Set sizes
+        const width = Math.floor(canvas.clientWidth / this._hardwareScalingLevel);
+        const height = Math.floor(canvas.clientHeight / this._hardwareScalingLevel);
+
+        const dimsChanged = width !== canvas.width || parent.width !== canvas.width || height !== canvas.height || parent.height !== canvas.height;
+        if (canvas.clientWidth && canvas.clientHeight && dimsChanged) {
+            canvas.width = width;
+            canvas.height = height;
+            this.setSize(width, height);
+        }
+    }
+
+    if (!parent.width || !parent.height) {
+        return false;
+    }
+
+    // Render the frame
+    this._renderFrame();
+
+    this.flushFramebuffer();
+
+    // Copy to target
+    if (view.clearBeforeCopy) {
+        context.clearRect(0, 0, parent.width, parent.height);
+    }
+    context.drawImage(parent, 0, 0);
+
+    // Restore
+    if (previewCamera && scene) {
+        scene.activeCamera = previewCamera;
+    }
+    _onAfterViewRenderObservable.notifyObservers(view);
+    return true;
+};
+
 Engine.prototype._renderViews = function () {
     if (!this.views || this.views.length === 0) {
         return false;
@@ -167,67 +235,27 @@ Engine.prototype._renderViews = function () {
         return false;
     }
 
+    let inputElementView;
     for (const view of this.views) {
         if (!view.enabled) {
             continue;
         }
         const canvas = view.target;
-        const context = canvas.getContext("2d");
-        if (!context) {
+        // Always render the view correspondent to the inputElement for last
+        if (canvas === this.inputElement) {
+            inputElementView = view;
             continue;
         }
-        _onBeforeViewRenderObservable.notifyObservers(view);
-        const camera = view.camera;
-        let previewCamera: Nullable<Camera> = null;
-        let scene: Nullable<Scene> = null;
-        if (camera) {
-            scene = camera.getScene();
 
-            if (scene.activeCameras && scene.activeCameras.length) {
-                continue;
-            }
-
-            this.activeView = view;
-
-            previewCamera = scene.activeCamera;
-            scene.activeCamera = camera;
-        }
-
-        if (view.customResize) {
-            view.customResize(canvas);
-        } else {
-            // Set sizes
-            const width = Math.floor(canvas.clientWidth / this._hardwareScalingLevel);
-            const height = Math.floor(canvas.clientHeight / this._hardwareScalingLevel);
-
-            const dimsChanged = width !== canvas.width || parent.width !== canvas.width || height !== canvas.height || parent.height !== canvas.height;
-            if (canvas.clientWidth && canvas.clientHeight && dimsChanged) {
-                canvas.width = width;
-                canvas.height = height;
-                this.setSize(width, height);
-            }
-        }
-
-        if (!parent.width || !parent.height) {
+        if (!this._renderViewStep(view)) {
             return false;
         }
+    }
 
-        // Render the frame
-        this._renderFrame();
-
-        this.flushFramebuffer();
-
-        // Copy to target
-        if (view.clearBeforeCopy) {
-            context.clearRect(0, 0, parent.width, parent.height);
+    if (inputElementView) {
+        if (!this._renderViewStep(inputElementView)) {
+            return false;
         }
-        context.drawImage(parent, 0, 0);
-
-        // Restore
-        if (previewCamera && scene) {
-            scene.activeCamera = previewCamera;
-        }
-        _onAfterViewRenderObservable.notifyObservers(view);
     }
 
     this.activeView = null;
