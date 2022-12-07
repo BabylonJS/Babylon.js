@@ -516,6 +516,20 @@ export class NodeMaterialConnectionPoint {
     }
 
     /**
+     * Fill the list of excluded connection point types with all types other than those passed in the parameter
+     * @param mask Types (ORed values of NodeMaterialBlockConnectionPointTypes) that are allowed, and thus will not be pushed to the excluded list
+     */
+    public addExcludedConnectionPointFromAllowedTypes(mask: number): void {
+        let bitmask = 1;
+        while (bitmask < NodeMaterialBlockConnectionPointTypes.All) {
+            if (!(mask & bitmask)) {
+                this.excludedConnectionPointTypes.push(bitmask);
+            }
+            bitmask = bitmask << 1;
+        }
+    }
+
+    /**
      * Serializes this point in a JSON representation
      * @param isInput defines if the connection point is an input (default is true)
      * @returns the serialized point object
