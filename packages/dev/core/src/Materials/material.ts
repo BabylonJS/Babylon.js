@@ -1154,7 +1154,15 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         const reverse = orientation === Material.ClockWiseSideOrientation;
 
         engine.enableEffect(effect ? effect : this._getDrawWrapper());
-        engine.setState(this.backFaceCulling, this.zOffset, false, reverse, this.cullBackFaces, this.stencil, this.zOffsetUnits);
+        engine.setState(
+            this.backFaceCulling,
+            this.zOffset,
+            false,
+            reverse,
+            this._scene._mirroredCameraPosition ? !this.cullBackFaces : this.cullBackFaces,
+            this.stencil,
+            this.zOffsetUnits
+        );
 
         return reverse;
     }
