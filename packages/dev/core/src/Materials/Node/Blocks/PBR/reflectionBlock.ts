@@ -92,7 +92,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
 
         this._isUnique = true;
 
-        this.registerInput("position", NodeMaterialBlockConnectionPointTypes.Vector3, false, NodeMaterialBlockTargets.Vertex);
+        this.registerInput("position", NodeMaterialBlockConnectionPointTypes.AutoDetect, false, NodeMaterialBlockTargets.Vertex);
         this.registerInput("world", NodeMaterialBlockConnectionPointTypes.Matrix, false, NodeMaterialBlockTargets.Vertex);
         this.registerInput("color", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
 
@@ -103,7 +103,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
             new NodeMaterialConnectionPointCustomObject("reflection", this, NodeMaterialConnectionPointDirection.Output, ReflectionBlock, "ReflectionBlock")
         );
 
-        this.position.acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector4);
+        this.position.addExcludedConnectionPointFromAllowedTypes(NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4);
     }
 
     /**

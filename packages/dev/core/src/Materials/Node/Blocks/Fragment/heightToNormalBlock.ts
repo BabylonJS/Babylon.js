@@ -21,11 +21,11 @@ export class HeightToNormalBlock extends NodeMaterialBlock {
         this.registerInput("input", NodeMaterialBlockConnectionPointTypes.Float);
         this.registerInput("worldPosition", NodeMaterialBlockConnectionPointTypes.Vector3);
         this.registerInput("worldNormal", NodeMaterialBlockConnectionPointTypes.Vector3);
-        this.registerInput("worldTangent", NodeMaterialBlockConnectionPointTypes.Vector3, true);
+        this.registerInput("worldTangent", NodeMaterialBlockConnectionPointTypes.AutoDetect, true);
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Vector4);
         this.registerOutput("xyz", NodeMaterialBlockConnectionPointTypes.Vector3);
 
-        this._inputs[3].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector4);
+        this._inputs[3].addExcludedConnectionPointFromAllowedTypes(NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4);
     }
 
     /**
