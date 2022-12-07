@@ -696,7 +696,6 @@ export class WaterMaterial extends PushMaterial {
 
             mirrorMatrix.multiplyToRef(savedViewMatrix, this._reflectionTransform);
             scene.setTransformMatrix(this._reflectionTransform, scene.getProjectionMatrix());
-            scene.getEngine().cullBackFaces = false;
             scene._mirroredCameraPosition = Vector3.TransformCoordinates((<Camera>scene.activeCamera).position, mirrorMatrix);
         };
 
@@ -710,7 +709,6 @@ export class WaterMaterial extends PushMaterial {
 
             // Transform
             scene.setTransformMatrix(savedViewMatrix, scene.getProjectionMatrix());
-            scene.getEngine().cullBackFaces = null;
             scene._mirroredCameraPosition = null;
         };
     }
