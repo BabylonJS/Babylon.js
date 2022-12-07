@@ -1,7 +1,7 @@
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { Vector3, Quaternion } from "../../Maths/math.vector";
 import type { WebXRInputSource } from "../webXRInputSource";
-import { PhysicsImpostor } from "../../Physics/physicsImpostor";
+import { PhysicsImpostor } from "../../Physics/v1/physicsImpostor";
 import type { WebXRInput } from "../webXRInput";
 import type { WebXRSessionManager } from "../webXRSessionManager";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
