@@ -20,11 +20,17 @@ export class NormalBlendBlock extends NodeMaterialBlock {
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Vector3);
 
         this._inputs[0].addExcludedConnectionPointFromAllowedTypes(
-            NodeMaterialBlockConnectionPointTypes.Color3 | NodeMaterialBlockConnectionPointTypes.Color4 | NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4
+            NodeMaterialBlockConnectionPointTypes.Color3 |
+                NodeMaterialBlockConnectionPointTypes.Color4 |
+                NodeMaterialBlockConnectionPointTypes.Vector3 |
+                NodeMaterialBlockConnectionPointTypes.Vector4
         );
 
         this._inputs[1].addExcludedConnectionPointFromAllowedTypes(
-            NodeMaterialBlockConnectionPointTypes.Color3 | NodeMaterialBlockConnectionPointTypes.Color4 | NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4
+            NodeMaterialBlockConnectionPointTypes.Color3 |
+                NodeMaterialBlockConnectionPointTypes.Color4 |
+                NodeMaterialBlockConnectionPointTypes.Vector3 |
+                NodeMaterialBlockConnectionPointTypes.Vector4
         );
     }
 
