@@ -43,15 +43,14 @@ export class MonacoManager {
         globalState.onNewRequiredObservable.add(() => {
             if (Utilities.CheckSafeMode("Are you sure you want to create a new playground?")) {
                 this._setNewContent();
-                this._isDirty = true;
+                this._resetEditor(true);
             }
         });
 
         globalState.onClearRequiredObservable.add(() => {
             if (Utilities.CheckSafeMode("Are you sure you want to remove all your code?")) {
                 this._editor?.setValue("");
-                location.hash = "";
-                this._isDirty = true;
+                this._resetEditor();
             }
         });
 
@@ -169,11 +168,20 @@ class Playground {
 
         this.globalState.onRunRequiredObservable.notifyObservers();
 
-        location.hash = "";
         if (location.pathname.indexOf("pg/") !== -1) {
             // reload to create a new pg if in full-path playground mode.
             window.location.pathname = "";
         }
+    }
+
+    private _resetEditor(resetMetadata?: boolean) {
+        location.hash = "";
+        if (resetMetadata) {
+            this.globalState.currentSnippetTitle = "";
+            this.globalState.currentSnippetDescription = "";
+            this.globalState.currentSnippetTags = "";
+        }
+        this._isDirty = true;
     }
 
     private _createEditor() {
