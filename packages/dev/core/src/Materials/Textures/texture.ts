@@ -86,6 +86,9 @@ export class Texture extends BaseTexture {
      */
     public static OnTextureLoadErrorObservable = new Observable<BaseTexture>();
 
+    /** @internal */
+    public static _SerializeInternalTextureUniqueId = false;
+
     /**
      * @internal
      */
@@ -469,7 +472,7 @@ export class Texture extends BaseTexture {
             Texture.OnTextureLoadErrorObservable.notifyObservers(this);
         };
 
-        if (!this.url) {
+        if (!this.url && !internalTexture) {
             this._delayedOnLoad = load;
             this._delayedOnError = errorHandler;
             return;
@@ -858,7 +861,7 @@ export class Texture extends BaseTexture {
             this.url = "";
         }
 
-        const serializationObject = super.serialize();
+        const serializationObject = super.serialize(Texture._SerializeInternalTextureUniqueId);
 
         if (!serializationObject) {
             return null;
@@ -880,6 +883,9 @@ export class Texture extends BaseTexture {
         serializationObject.samplingMode = this.samplingMode;
         serializationObject._creationFlags = this._creationFlags;
         serializationObject._useSRGBBuffer = this._useSRGBBuffer;
+        if (Texture._SerializeInternalTextureUniqueId) {
+            serializationObject.internalTextureUniqueId = this._texture?.uniqueId ?? undefined;
+        }
 
         this.name = savedName;
 
@@ -930,8 +936,22 @@ export class Texture extends BaseTexture {
             return Texture._CubeTextureParser(parsedTexture, scene, rootUrl);
         }
 
-        if (!parsedTexture.name && !parsedTexture.isRenderTarget) {
+        const hasInternalTextureUniqueId = parsedTexture.internalTextureUniqueId !== undefined;
+
+        if (!parsedTexture.name && !parsedTexture.isRenderTarget && !hasInternalTextureUniqueId) {
             return null;
+        }
+
+        let internalTexture: InternalTexture | undefined;
+
+        if (hasInternalTextureUniqueId) {
+            const cache = scene.getEngine().getLoadedTexturesCache();
+            for (const texture of cache) {
+                if (texture.uniqueId === parsedTexture.internalTextureUniqueId) {
+                    internalTexture = texture;
+                    break;
+                }
+            }
         }
 
         const onLoaded = (texture: Texture | null) => {
@@ -958,6 +978,10 @@ export class Texture extends BaseTexture {
                         texture.animations.push(internalClass.Parse(parsedAnimation));
                     }
                 }
+            }
+
+            if (hasInternalTextureUniqueId && !internalTexture) {
+                texture?._texture?._setUniqueId(parsedTexture.internalTextureUniqueId);
             }
         };
 
@@ -1000,7 +1024,7 @@ export class Texture extends BaseTexture {
                 } else {
                     let texture: Texture;
 
-                    if (parsedTexture.base64String) {
+                    if (parsedTexture.base64String && !internalTexture) {
                         // name and url are the same to ensure caching happens from the actual base64 string
                         texture = Texture.CreateFromBase64String(
                             parsedTexture.base64String,
@@ -1029,9 +1053,18 @@ export class Texture extends BaseTexture {
                         if (parsedTexture.url && (parsedTexture.url.startsWith("data:") || Texture.UseSerializedUrlIfAny)) {
                             url = parsedTexture.url;
                         }
-                        texture = new Texture(url, scene, !generateMipMaps, parsedTexture.invertY, parsedTexture.samplingMode, () => {
-                            onLoaded(texture);
-                        });
+
+                        const options: ITextureCreationOptions = {
+                            noMipmap: !generateMipMaps,
+                            invertY: parsedTexture.invertY,
+                            samplingMode: parsedTexture.samplingMode,
+                            onLoad: () => {
+                                onLoaded(texture);
+                            },
+                            internalTexture,
+                        };
+
+                        texture = new Texture(url, scene, options);
                     }
 
                     return texture;
