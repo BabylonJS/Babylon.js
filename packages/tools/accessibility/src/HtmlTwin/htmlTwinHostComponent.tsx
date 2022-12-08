@@ -210,7 +210,7 @@ export class HTMLTwinHostComponent extends React.Component<IHTMLTwinHostComponen
                 rootNodes.push(mesh);
             }
         }
-        const a11yNodeTreeItems = this._getHTMLTwinItemsFromNodes(rootNodes);
+        const a11yTreeItems = this._getHTMLTwinItemsFromNodes(rootNodes);
 
         // Get GUI twin tree nodes
         const guiRootNodes: Control[] = [];
@@ -221,8 +221,12 @@ export class HTMLTwinHostComponent extends React.Component<IHTMLTwinHostComponen
         }
         const a11yGuiTreeItems = this._getHTMLTwinItemsFromGUI(guiRootNodes);
 
+        for (const guiItem of a11yGuiTreeItems) {
+            a11yTreeItems.push(guiItem);
+        }
+
         this.setState({
-            a11yTreeItems: [...a11yNodeTreeItems, ...a11yGuiTreeItems],
+            a11yTreeItems,
         });
     }
 
