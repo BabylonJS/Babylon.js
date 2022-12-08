@@ -500,7 +500,7 @@ export class TextureBlock extends NodeMaterialBlock {
             this._imageSource = null;
         }
 
-        if (state.target === NodeMaterialBlockTargets.Vertex || this._fragmentOnly || (state.target === NodeMaterialBlockTargets.Fragment && this._tempTextureRead === undefined)) {
+        if (state.target === NodeMaterialBlockTargets.Vertex || this._fragmentOnly || state.target === NodeMaterialBlockTargets.Fragment) {
             this._tempTextureRead = state._getFreeVariableName("tempTextureRead");
             this._linearDefineName = state._getFreeDefineName("ISLINEAR");
             this._gammaDefineName = state._getFreeDefineName("ISGAMMA");
