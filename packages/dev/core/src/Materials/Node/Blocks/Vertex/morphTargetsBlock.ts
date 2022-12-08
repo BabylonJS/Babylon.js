@@ -30,8 +30,8 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
 
         this.registerInput("position", NodeMaterialBlockConnectionPointTypes.Vector3);
         this.registerInput("normal", NodeMaterialBlockConnectionPointTypes.Vector3);
-        this.registerInput("tangent", NodeMaterialBlockConnectionPointTypes.Vector4);
-        this.tangent.acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector3);
+        this.registerInput("tangent", NodeMaterialBlockConnectionPointTypes.AutoDetect);
+        this.tangent.addExcludedConnectionPointFromAllowedTypes(NodeMaterialBlockConnectionPointTypes.Vector4 | NodeMaterialBlockConnectionPointTypes.Vector3);
         this.registerInput("uv", NodeMaterialBlockConnectionPointTypes.Vector2);
         this.registerOutput("positionOutput", NodeMaterialBlockConnectionPointTypes.Vector3);
         this.registerOutput("normalOutput", NodeMaterialBlockConnectionPointTypes.Vector3);
