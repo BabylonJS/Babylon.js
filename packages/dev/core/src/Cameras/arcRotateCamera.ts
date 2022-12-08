@@ -182,14 +182,14 @@ export class ArcRotateCamera extends TargetCamera {
      * This can help limiting how the Camera is able to move in the scene.
      */
     @serialize()
-    public lowerBetaLimit = 0.01;
+    public lowerBetaLimit: Nullable<number> = 0.01;
 
     /**
      * Maximum allowed angle on the latitudinal axis.
      * This can help limiting how the Camera is able to move in the scene.
      */
     @serialize()
-    public upperBetaLimit = Math.PI - 0.01;
+    public upperBetaLimit: Nullable<number> = Math.PI - 0.01;
 
     /**
      * Minimum allowed distance of the camera to the target (The camera can not get closer).
