@@ -135,15 +135,21 @@ export class HTMLTwinHostComponent extends React.Component<IHTMLTwinHostComponen
                 scene.onNewTextureAddedObservable,
                 scene.onNewTextureAddedObservable.add((newTexture) => {
                     if (this._isFullscreenGUI(newTexture)) {
-                        const advTexture = newTexture as AdvancedDynamicTexture;
-                        setTimeout(() => {
-                            advTexture.onLoadObservable.addOnce(() => {
-                                updateA11yTree();
-                                advTexture.getChildren().forEach((control) => {
-                                    addGUIObservers(control);
+                        if (newTexture.isReady()) {
+                            updateA11yTree();
+                            newTexture.getChildren().forEach((control) => {
+                                addGUIObservers(control);
+                            });
+                        } else {
+                            setTimeout(() => {
+                                newTexture.onLoadObservable.addOnce(() => {
+                                    updateA11yTree();
+                                    newTexture.getChildren().forEach((control) => {
+                                        addGUIObservers(control);
+                                    });
                                 });
                             });
-                        });
+                        }
                     }
                 })
             );
@@ -166,7 +172,7 @@ export class HTMLTwinHostComponent extends React.Component<IHTMLTwinHostComponen
 
         scene.textures.forEach((texture) => {
             if (this._isFullscreenGUI(texture)) {
-                (texture as AdvancedDynamicTexture).getChildren().forEach((control) => {
+                texture.getChildren().forEach((control) => {
                     addGUIObservers(control);
                 });
             }
@@ -216,7 +222,7 @@ export class HTMLTwinHostComponent extends React.Component<IHTMLTwinHostComponen
         const guiRootNodes: Control[] = [];
         for (const texture of this.props.scene.textures) {
             if (this._isFullscreenGUI(texture) && texture.isReady()) {
-                guiRootNodes.push((texture as AdvancedDynamicTexture).rootContainer);
+                guiRootNodes.push(texture.rootContainer);
             }
         }
         const a11yGuiTreeItems = this._getHTMLTwinItemsFromGUI(guiRootNodes);
@@ -277,8 +283,8 @@ export class HTMLTwinHostComponent extends React.Component<IHTMLTwinHostComponen
         return result;
     }
 
-    private _isFullscreenGUI(texture: BaseTexture) {
-        return texture instanceof AdvancedDynamicTexture && texture.layer && !texture.layer.isBackground;
+    private _isFullscreenGUI(texture: BaseTexture): texture is AdvancedDynamicTexture {
+        return texture instanceof AdvancedDynamicTexture && !!(texture.layer && !texture.layer.isBackground);
     }
 
     private _isMeshGUI(node: Node) {
