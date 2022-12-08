@@ -61,7 +61,7 @@ export class STLFileLoader implements ISceneLoaderPlugin {
             if (this._isBinary(data)) {
                 // binary .stl
                 const babylonMesh = new Mesh("stlmesh", scene);
-                this._parseBinary(babylonMesh, data, scene.useRightHandedSystem);
+                this._parseBinary(babylonMesh, data);
                 if (meshes) {
                     meshes.push(babylonMesh);
                 }
@@ -106,7 +106,7 @@ export class STLFileLoader implements ISceneLoaderPlugin {
             meshName = meshName || "stlmesh";
 
             const babylonMesh = new Mesh(meshName, scene);
-            this._parseASCII(babylonMesh, matches[2], scene.useRightHandedSystem);
+            this._parseASCII(babylonMesh, matches[2]);
             if (meshes) {
                 meshes.push(babylonMesh);
             }
@@ -170,7 +170,7 @@ export class STLFileLoader implements ISceneLoaderPlugin {
         return false;
     }
 
-    private _parseBinary(mesh: Mesh, data: ArrayBuffer, rightHanded: boolean) {
+    private _parseBinary(mesh: Mesh, data: ArrayBuffer) {
         const reader = new DataView(data);
         const faces = reader.getUint32(80, true);
 
@@ -232,7 +232,7 @@ export class STLFileLoader implements ISceneLoaderPlugin {
         mesh.computeWorldMatrix(true);
     }
 
-    private _parseASCII(mesh: Mesh, solidData: string, rightHanded: boolean) {
+    private _parseASCII(mesh: Mesh, solidData: string) {
         const positions = [];
         const normals = [];
         const indices = [];
