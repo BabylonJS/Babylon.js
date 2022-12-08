@@ -45,7 +45,7 @@ export class HTMLTwinHostComponent extends React.Component<IHTMLTwinHostComponen
         const scene = this.props.scene;
 
         // Find all a11y entities in the scene, assemble the a11y forest (a11yTreeItems), and update React state to let React update DOM.
-        const updateA11yTree: () => void = () => {
+        const updateA11yTree = () => {
             this._updateHTMLTwinItems();
         };
 
@@ -111,45 +111,39 @@ export class HTMLTwinHostComponent extends React.Component<IHTMLTwinHostComponen
             }
         };
 
+        const _updateAndAddNode = (node: Node) => {
+            updateA11yTree();
+            addNodeObservers(node);
+        };
+
+        const _updateAndAddTexture = (texture: AdvancedDynamicTexture) => {
+            updateA11yTree();
+            texture.getChildren().forEach((control) => {
+                addGUIObservers(control);
+            });
+        };
+
         // observe add node and deal with new nodes
         if (!this._observersMap.has(scene.onNewMeshAddedObservable)) {
-            this._observersMap.set(
-                scene.onNewMeshAddedObservable,
-                scene.onNewMeshAddedObservable.add((newNode) => {
-                    updateA11yTree();
-                    addNodeObservers(newNode);
-                })
-            );
+            this._observersMap.set(scene.onNewMeshAddedObservable, scene.onNewMeshAddedObservable.add(_updateAndAddNode));
         }
         if (!this._observersMap.has(scene.onNewTransformNodeAddedObservable)) {
-            this._observersMap.set(
-                scene.onNewTransformNodeAddedObservable,
-                scene.onNewTransformNodeAddedObservable.add((newNode) => {
-                    updateA11yTree();
-                    addNodeObservers(newNode);
-                })
-            );
+            this._observersMap.set(scene.onNewTransformNodeAddedObservable, scene.onNewTransformNodeAddedObservable.add(_updateAndAddNode));
         }
         if (!this._observersMap.has(scene.onNewTextureAddedObservable)) {
             this._observersMap.set(
                 scene.onNewTextureAddedObservable,
                 scene.onNewTextureAddedObservable.add((newTexture) => {
                     if (this._isFullscreenGUI(newTexture)) {
-                        if (newTexture.isReady()) {
-                            updateA11yTree();
-                            newTexture.getChildren().forEach((control) => {
-                                addGUIObservers(control);
-                            });
-                        } else {
-                            setTimeout(() => {
+                        setTimeout(() => {
+                            if (newTexture.isReady()) {
+                                _updateAndAddTexture(newTexture);
+                            } else {
                                 newTexture.onLoadObservable.addOnce(() => {
-                                    updateA11yTree();
-                                    newTexture.getChildren().forEach((control) => {
-                                        addGUIObservers(control);
-                                    });
+                                    _updateAndAddTexture(newTexture);
                                 });
-                            });
-                        }
+                            }
+                        });
                     }
                 })
             );
@@ -284,7 +278,7 @@ export class HTMLTwinHostComponent extends React.Component<IHTMLTwinHostComponen
     }
 
     private _isFullscreenGUI(texture: BaseTexture): texture is AdvancedDynamicTexture {
-        return texture instanceof AdvancedDynamicTexture && !!(texture.layer && !texture.layer.isBackground);
+        return texture.getClassName() === "AdvancedDynamicTexture" && !!((texture as any).layer && !(texture as any).layer.isBackground);
     }
 
     private _isMeshGUI(node: Node) {
