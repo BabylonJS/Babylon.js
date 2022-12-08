@@ -202,14 +202,13 @@ export class VideoTexture extends Texture {
             this.video.addEventListener("seeked", this._updateInternalTexture);
             this.video.addEventListener("emptied", this._reset);
 
-            this._createInternalTextureOnEvent = this._settings.poster && !this._settings.autoPlay ? "play" : "canplay";
-            this.video.addEventListener(this._createInternalTextureOnEvent, this._createInternalTexture);
-
             if (this._settings.autoPlay) {
                 this._handlePlay();
             }
         }
 
+        this._createInternalTextureOnEvent = this._settings.poster && !this._settings.autoPlay ? "play" : "canplay";
+        this.video.addEventListener(this._createInternalTextureOnEvent, this._createInternalTexture);
         this._format = format;
 
         const videoHasEnoughData = this.video.readyState >= this.video.HAVE_CURRENT_DATA;
