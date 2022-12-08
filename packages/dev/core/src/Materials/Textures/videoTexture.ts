@@ -59,6 +59,12 @@ export interface VideoTextureSettings {
      * Defines the associated texture format.
      */
     format?: number;
+
+    /**
+     * Notify babylon to not modify any video settings and not control the video's playback.
+     * Set this to true if you are controlling the way the video is being played, stopped and paused.
+     */
+    independentVideoSource?: boolean;
 }
 
 /**
@@ -177,31 +183,32 @@ export class VideoTexture extends Texture {
         this.name = name || this._getName(src);
         this.video = this._getVideo(src);
         this._externalTexture = this._engine?.createExternalTexture(this.video) ?? null;
+        if (!this._settings.independentVideoSource) {
+            if (this._settings.poster) {
+                this.video.poster = this._settings.poster;
+            }
+            if (this._settings.autoPlay !== undefined) {
+                this.video.autoplay = this._settings.autoPlay;
+            }
+            if (this._settings.loop !== undefined) {
+                this.video.loop = this._settings.loop;
+            }
+            if (this._settings.muted !== undefined) {
+                this.video.muted = this._settings.muted;
+            }
 
-        if (this._settings.poster) {
-            this.video.poster = this._settings.poster;
-        }
-        if (this._settings.autoPlay !== undefined) {
-            this.video.autoplay = this._settings.autoPlay;
-        }
-        if (this._settings.loop !== undefined) {
-            this.video.loop = this._settings.loop;
-        }
-        if (this._settings.muted !== undefined) {
-            this.video.muted = this._settings.muted;
+            this.video.setAttribute("playsinline", "");
+            this.video.addEventListener("paused", this._updateInternalTexture);
+            this.video.addEventListener("seeked", this._updateInternalTexture);
+            this.video.addEventListener("emptied", this._reset);
+
+            if (this._settings.autoPlay) {
+                this._handlePlay();
+            }
         }
 
-        this.video.setAttribute("playsinline", "");
-        this.video.addEventListener("paused", this._updateInternalTexture);
-        this.video.addEventListener("seeked", this._updateInternalTexture);
-        this.video.addEventListener("emptied", this._reset);
         this._createInternalTextureOnEvent = this._settings.poster && !this._settings.autoPlay ? "play" : "canplay";
         this.video.addEventListener(this._createInternalTextureOnEvent, this._createInternalTexture);
-
-        if (this._settings.autoPlay) {
-            this._handlePlay();
-        }
-
         this._format = format;
 
         const videoHasEnoughData = this.video.readyState >= this.video.HAVE_CURRENT_DATA;
@@ -283,7 +290,7 @@ export class VideoTexture extends Texture {
         this._texture = this._getEngine()!.createDynamicTexture(this.video.videoWidth, this.video.videoHeight, this._generateMipMaps, this.samplingMode);
         this._texture.format = this._format ?? Constants.TEXTUREFORMAT_RGBA;
 
-        if (!this.video.autoplay && !this._settings.poster) {
+        if (!this.video.autoplay && !this._settings.poster && !this._settings.independentVideoSource) {
             const oldHandler = this.video.onplaying;
             const oldMuted = this.video.muted;
             this.video.muted = true;
@@ -404,10 +411,12 @@ export class VideoTexture extends Texture {
         }
 
         this.video.removeEventListener(this._createInternalTextureOnEvent, this._createInternalTexture);
-        this.video.removeEventListener("paused", this._updateInternalTexture);
-        this.video.removeEventListener("seeked", this._updateInternalTexture);
-        this.video.removeEventListener("emptied", this._reset);
-        this.video.pause();
+        if (!this._settings.independentVideoSource) {
+            this.video.removeEventListener("paused", this._updateInternalTexture);
+            this.video.removeEventListener("seeked", this._updateInternalTexture);
+            this.video.removeEventListener("emptied", this._reset);
+            this.video.pause();
+        }
 
         this._externalTexture?.dispose();
     }
