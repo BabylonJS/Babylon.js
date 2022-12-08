@@ -92,7 +92,7 @@ Scene.prototype.enablePhysics = function (gravity: Nullable<Vector3> = null, plu
     }
 
     try {
-        if (plugin?.getPluginVersion() === 1) {
+        if (!plugin || plugin?.getPluginVersion() === 1) {
             this._physicsEngine = new PhysicsEngineV1(gravity, plugin as IPhysicsEnginePluginV1);
         } else if (plugin?.getPluginVersion() === 2) {
             this._physicsEngine = new PhysicsEngineV2(gravity, plugin as IPhysicsEnginePluginV2);
