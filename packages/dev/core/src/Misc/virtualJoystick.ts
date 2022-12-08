@@ -124,6 +124,7 @@ export class VirtualJoystick {
     private _alwaysVisible: boolean;
     private _puckImage: HTMLImageElement;
     private _containerImage: HTMLImageElement;
+    private _released = false;
 
     // size properties
     private _joystickPuckSize: number;
@@ -626,6 +627,10 @@ export class VirtualJoystick {
     }
 
     private _drawVirtualJoystick() {
+        // canvas released? don't continue iterating
+        if (this._released) {
+            return;
+        }
         if (this.alwaysVisible) {
             this._drawContainer();
         }
@@ -674,5 +679,6 @@ export class VirtualJoystick {
             document.body.removeChild(VirtualJoystick.Canvas);
             VirtualJoystick.Canvas = null;
         }
+        this._released = true;
     }
 }
