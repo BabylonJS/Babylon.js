@@ -202,6 +202,9 @@ export class MaterialHelper {
         } else {
             defines["NUM_BONE_INFLUENCERS"] = 0;
             defines["BonesPerMesh"] = 0;
+            if (defines["BONETEXTURE"] !== undefined) {
+                defines["BONETEXTURE"] = false;
+            }
         }
     }
 
