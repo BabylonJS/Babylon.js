@@ -1,5 +1,5 @@
 {
-    "fromTag": "5.35.0",
+    "fromTag": "5.35.1",
     "changelog": {
         "5.35.1": [
             {
@@ -62,6 +62,365 @@
                 "tags": [
                     "new feature"
                 ]
+            }
+        ],
+        "5.36.0": [
+            {
+                "pr": "13327",
+                "title": "Fix: ACE always opening with the first targeted animation selected",
+                "description": "Fix #13316",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/targetedAnimationPropertyGridComponent.tsx"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "13326",
+                "title": "NME: fixed slowdowns when working in the editor",
+                "description": "Slowdowns could occur when using too many or too large textures, because texture data was always serialized when going back and forth with the preview window. Now texture data is serialized only when necessary.\r\n\r\nIn addition, throttling has been added when updating the title/comment of a node to avoid updating the preview window too often (previously, with each keystroke) and slowing down the process.\r\n\r\nCloses BabylonJS/ThePirateCove#280",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/textureBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildStateSharedData.ts",
+                    "packages/dev/core/src/Materials/Textures/baseTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/internalTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/texture.ts",
+                    "packages/dev/sharedUiComponents/src/lines/textInputLineComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/preview/previewManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/inputNodePropertyComponent.tsx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "13320",
+                "title": "When rendering in a multi-canvas setup, always render the input view …",
+                "description": "…last, so that the canvas size is set correctly for picking later.\r\nRelated forum issue: https://forum.babylonjs.com/t/in-the-combination-of-multi-canvas-and-3d-gui-problems-occur-in-3d-gui-pointer-position-detection-due-to-the-execution-order-of-registerview/36262/6\r\n\r\n",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.views.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "13322",
+                "title": "Mirror: Fix rendering when cullBackFaces is false",
+                "description": "See https://forum.babylonjs.com/t/mirrortexture-render-cullbackface-as-cullfrontface/36336",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/mirrorTexture.ts",
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/materials/src/water/waterMaterial.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13323",
+                "title": "clear metadata when a new pg is created",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/playground/src/tools/monacoManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13279",
+                "title": "PhysicsPlugin refactor",
+                "description": "Goal of this PR: move physics to v1, add v2 folder. keep existing working (back compat). \r\n\r\nAll current physics moved to `physics/v1`. New stuff in `physics/v2`. Shared things are in `physics/`\r\n- v1 and v2 have different names (body/shape/material/constraint in V2 and impostor/joint in V1) and different concepts\r\n- Have an helper `PhysicsAggregate` that will contain a body, a material and a shape that can be created by 1 call (just like existing v1)\r\n\r\nOn the Babylon side, Material, shape, body are opaque proxies. Real work is done in the plugin. Plugin stores its references thanks to `public _pluginData: any = undefined;`\r\n\r\nPhysicsViewer, mesh,....still using v1.\r\n\r\nTested with PG from documentation and PhysicsDebug Viewer.\r\n",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Debug/physicsViewer.ts",
+                    "packages/dev/core/src/Loading/Plugins/babylonFileLoader.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/Physics/IPhysicsEngine.ts",
+                    "packages/dev/core/src/Physics/Plugins/ammoJSPlugin.ts",
+                    "packages/dev/core/src/Physics/Plugins/cannonJSPlugin.ts",
+                    "packages/dev/core/src/Physics/Plugins/oimoJSPlugin.ts",
+                    "packages/dev/core/src/Physics/index.ts",
+                    "packages/dev/core/src/Physics/physicsEngine.ts",
+                    "packages/dev/core/src/Physics/physicsEngineComponent.ts",
+                    "packages/dev/core/src/Physics/physicsHelper.ts",
+                    "packages/dev/core/src/Physics/physicsImpostor.ts",
+                    "packages/dev/core/src/Physics/physicsJoint.ts",
+                    "packages/dev/core/src/Physics/v1/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v1/Plugins/ammoJSPlugin.ts",
+                    "packages/dev/core/src/Physics/v1/Plugins/cannonJSPlugin.ts",
+                    "packages/dev/core/src/Physics/v1/Plugins/index.ts",
+                    "packages/dev/core/src/Physics/v1/Plugins/oimoJSPlugin.ts",
+                    "packages/dev/core/src/Physics/v1/index.ts",
+                    "packages/dev/core/src/Physics/v1/physicsEngine.ts",
+                    "packages/dev/core/src/Physics/v1/physicsEngineComponent.ts",
+                    "packages/dev/core/src/Physics/v1/physicsHelper.ts",
+                    "packages/dev/core/src/Physics/v1/physicsImpostor.ts",
+                    "packages/dev/core/src/Physics/v1/physicsJoint.ts",
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/Plugins/index.ts",
+                    "packages/dev/core/src/Physics/v2/index.ts",
+                    "packages/dev/core/src/Physics/v2/physicsAggregate.ts",
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts",
+                    "packages/dev/core/src/Physics/v2/physicsConstraint.ts",
+                    "packages/dev/core/src/Physics/v2/physicsEngine.ts",
+                    "packages/dev/core/src/Physics/v2/physicsEngineComponent.ts",
+                    "packages/dev/core/src/Physics/v2/physicsMaterial.ts",
+                    "packages/dev/core/src/Physics/v2/physicsShape.ts",
+                    "packages/dev/core/src/XR/features/WebXRControllerPhysics.ts",
+                    "packages/dev/core/src/XR/features/WebXRHandTracking.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/debugTabComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/meshPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/scenePropertyGridComponent.tsx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "physics"
+                ]
+            },
+            {
+                "pr": "13321",
+                "title": "InputManager: Update logic for detecting when to pick",
+                "description": "In the forum, there was an issue found where particle picking wasn't working properly.  It was determined that there was an issue with the function used to define when picking would happen.  This PR fixes that issue.  Additionally, tests have been added to check for this in future PRs.\r\n\r\nForum Link: https://forum.babylonjs.com/t/picking-particles-in-sps-bug/36259/6",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Inputs/scene.inputManager.ts",
+                    "packages/dev/core/test/unit/DeviceInput/babylon.inputManager.test.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inputs"
+                ]
+            },
+            {
+                "pr": "13318",
+                "title": "Particle System: Add a parameter to also clone textures when cloning a particle system",
+                "description": "See https://forum.babylonjs.com/t/texture-is-not-set-when-cloning-a-particle-system/36280",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/gpuParticleSystem.ts",
+                    "packages/dev/core/src/Particles/particleSystem.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "particles"
+                ]
+            },
+            {
+                "pr": "13319",
+                "title": "Fix bad uniform scale check for rotation gizmo",
+                "description": "fixes #13315 \r\n\r\nuniform scaling check was not taking negative component properly. Added a comment for future me.",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/planeRotationGizmo.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "gizmos"
+                ]
+            },
+            {
+                "pr": "13303",
+                "title": "Support KHR_materials_emissive_stength in glTF export",
+                "description": "This PR adds support for the glTF extension KHR_materials_emissive_strength to be exported.\r\n\r\nModel used for testing: [link](https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/EmissiveStrengthTest)",
+                "author": {
+                    "name": "tboggs300",
+                    "url": "https://github.com/tboggs300"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_materials_emissive_strength.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/index.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "exporters",
+                    "glTF"
+                ]
+            },
+            {
+                "pr": "13291",
+                "title": "Add a Fluid Renderer component",
+                "description": "Sorry, big PR (but I didn't really have a choice)!\r\n\r\nI still need to update the documentation repo and port the demos to the playground.\r\n\r\nRegarding `FluidRenderingGUI`, it is a debug class which is using the LiLGUI package...\r\n\r\nIt was the easiest and fastest way to provide a debug UI when I did it as a standalone project, but now that the classes are merged into Babylon.js, it should probably be a component of the inspector... However, it's not a small task and I'm not a React expert, so I have not done it as part of this PR.\r\n\r\nIf we don't want to reference the LiLGUI package from `FluidRenderingGUI`, maybe I should remove the class and add it in the documentation for users as a debugging tool?\r\n\r\nCloses #13087 ",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/copyTextureToTexture.ts",
+                    "packages/dev/core/src/Particles/IParticleSystem.ts",
+                    "packages/dev/core/src/Particles/gpuParticleSystem.ts",
+                    "packages/dev/core/src/Particles/particleSystem.ts",
+                    "packages/dev/core/src/PostProcesses/postProcess.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderer.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingDepthTextureCopy.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingObject.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingObjectCustomParticles.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingObjectParticleSystem.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingTargetRenderer.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingTextures.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/index.ts",
+                    "packages/dev/core/src/Rendering/index.ts",
+                    "packages/dev/core/src/Shaders/copyTextureToTexture.fragment.fx",
+                    "packages/dev/core/src/Shaders/fluidRenderingBilateralBlur.fragment.fx",
+                    "packages/dev/core/src/Shaders/fluidRenderingParticleDepth.fragment.fx",
+                    "packages/dev/core/src/Shaders/fluidRenderingParticleDepth.vertex.fx",
+                    "packages/dev/core/src/Shaders/fluidRenderingParticleDiffuse.fragment.fx",
+                    "packages/dev/core/src/Shaders/fluidRenderingParticleDiffuse.vertex.fx",
+                    "packages/dev/core/src/Shaders/fluidRenderingParticleThickness.fragment.fx",
+                    "packages/dev/core/src/Shaders/fluidRenderingParticleThickness.vertex.fx",
+                    "packages/dev/core/src/Shaders/fluidRenderingRender.fragment.fx",
+                    "packages/dev/core/src/Shaders/fluidRenderingStandardBlur.fragment.fx",
+                    "packages/dev/core/src/sceneComponent.ts",
+                    "packages/tools/playground/public/textures/flare32bits.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/fluidBoxSphere.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/fluidParticleSystem.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "rendering engine",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13307",
+                "title": "Fix: Animation Groups not showing the correct current frame value in …",
+                "description": "…the Inspector. Fix: When playing an animation group in the Inspector, other groups in the same scene were being paused.\r\n\r\nRelated forum issue: https://forum.babylonjs.com/t/loading-character-with-animations-to-scene-and-cloning-it-with-animation-groups/19685/14",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/animationGroupPropertyGridComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13305",
+                "title": "Call the KHR_texture_transform exporter when exporting a GLTF file",
+                "description": "Related issue: https://forum.babylonjs.com/t/glb-export-uv-mapping-not-saving/36140\r\nYou can use this playground that exports and imports some textured planes to compare the expected results: https://playground.babylonjs.com/#20OAV9#9228 (also added as a visualization test)",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_texture_transform.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFMaterialExporter.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/exportGltfKHRTextureTransform.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "enhancement",
+                    "exporters",
+                    "glTF"
+                ]
+            },
+            {
+                "pr": "13311",
+                "title": "Scene: Make sure dispose cleans up everything even if running custom code raises an exception",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13312",
+                "title": "Add playback rate getter",
+                "description": "https://forum.babylonjs.com/t/sound-playbackrate-requires-getter/36241/2",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Audio/sound.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "audio"
+                ]
+            },
+            {
+                "pr": "13314",
+                "title": "update image from snapshot",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/tests/test/visualization/ReferenceImages/node-material1.png"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13309",
+                "title": "Bump decode-uri-component from 0.2.0 to 0.2.2",
+                "description": "Bumps [decode-uri-component](https://github.com/SamVerschueren/decode-uri-component) from 0.2.0 to 0.2.2.\n<details>\n<summary>Release notes</summary>\n<p><em>Sourced from <a href=\"https://github.com/SamVerschueren/decode-uri-component/releases\">decode-uri-component's releases</a>.</em></p>\n<blockquote>\n<h2>v0.2.2</h2>\n<ul>\n<li>Prevent overwriting previously decoded tokens  980e0bf</li>\n</ul>\n<p><a href=\"https://github.com/SamVerschueren/decode-uri-component/compare/v0.2.1...v0.2.2\">https://github.com/SamVerschueren/decode-uri-component/compare/v0.2.1...v0.2.2</a></p>\n<h2>v0.2.1</h2>\n<ul>\n<li>Switch to GitHub workflows  76abc93</li>\n<li>Fix issue where decode throws - fixes <a href=\"https://github-redirect.dependabot.com/SamVerschueren/decode-uri-component/issues/6\">#6</a>  746ca5d</li>\n<li>Update license (<a href=\"https://github-redirect.dependabot.com/SamVerschueren/decode-uri-component/issues/1\">#1</a>)  486d7e2</li>\n<li>Tidelift tasks  a650457</li>\n<li>Meta tweaks  66e1c28</li>\n</ul>\n<p><a href=\"https://github.com/SamVerschueren/decode-uri-component/compare/v0.2.0...v0.2.1\">https://github.com/SamVerschueren/decode-uri-component/compare/v0.2.0...v0.2.1</a></p>\n</blockquote>\n</details>\n<details>\n<summary>Commits</summary>\n<ul>\n<li><a href=\"https://github.com/SamVerschueren/decode-uri-component/commit/a0eea469d26eb0df668b081672cdb9581feb78eb\"><code>a0eea46</code></a> 0.2.2</li>\n<li><a href=\"https://github.com/SamVerschueren/decode-uri-component/commit/980e0bf09b64d94f1aa79012f895816c30ffd152\"><code>980e0bf</code></a> Prevent overwriting previously decoded tokens</li>\n<li><a href=\"https://github.com/SamVerschueren/decode-uri-component/commit/3c8a373dd4837e89b3f970e01295dd03e1405a33\"><code>3c8a373</code></a> 0.2.1</li>\n<li><a href=\"https://github.com/SamVerschueren/decode-uri-component/commit/76abc939783fe3900fadb7d384a74d324d5557f3\"><code>76abc93</code></a> Switch to GitHub workflows</li>\n<li><a href=\"https://github.com/SamVerschueren/decode-uri-component/commit/746ca5dcb6667c5d364e782d53c542830e4c10b9\"><code>746ca5d</code></a> Fix issue where decode throws - fixes <a href=\"https://github-redirect.dependabot.com/SamVerschueren/decode-uri-component/issues/6\">#6</a></li>\n<li><a href=\"https://github.com/SamVerschueren/decode-uri-component/commit/486d7e26d3a8c0fbe860fb651fe1bc98c2f2be30\"><code>486d7e2</code></a> Update license (<a href=\"https://github-redirect.dependabot.com/SamVerschueren/decode-uri-component/issues/1\">#1</a>)</li>\n<li><a href=\"https://github.com/SamVerschueren/decode-uri-component/commit/a65045724e6234acef87f31da499d4807b20b134\"><code>a650457</code></a> Tidelift tasks</li>\n<li><a href=\"https://github.com/SamVerschueren/decode-uri-component/commit/66e1c2834c0e189201cb65196ec3101372459b02\"><code>66e1c28</code></a> Meta tweaks</li>\n<li>See full diff in <a href=\"https://github.com/SamVerschueren/decode-uri-component/compare/v0.2.0...v0.2.2\">compare view</a></li>\n</ul>\n</details>\n<br />\n\n\n[![Dependabot compatibility score](https://dependabot-badges.githubapp.com/badges/compatibility_score?dependency-name=decode-uri-component&package-manager=npm_and_yarn&previous-version=0.2.0&new-version=0.2.2)](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-compatibility-scores)\n\nDependabot will resolve any conflicts with this PR as long as you don't alter it yourself. You can also trigger a rebase manually by commenting `@dependabot rebase`.\n\n[//]: # (dependabot-automerge-start)\n[//]: # (dependabot-automerge-end)\n\n---\n\n<details>\n<summary>Dependabot commands and options</summary>\n<br />\n\nYou can trigger Dependabot actions by commenting on this PR:\n- `@dependabot rebase` will rebase this PR\n- `@dependabot recreate` will recreate this PR, overwriting any edits that have been made to it\n- `@dependabot merge` will merge this PR after your CI passes on it\n- `@dependabot squash and merge` will squash and merge this PR after your CI passes on it\n- `@dependabot cancel merge` will cancel a previously requested merge and block automerging\n- `@dependabot reopen` will reopen this PR if it is closed\n- `@dependabot close` will close this PR and stop Dependabot recreating it. You can achieve the same result by closing it manually\n- `@dependabot ignore this major version` will close this PR and stop Dependabot creating any more for this major version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this minor version` will close this PR and stop Dependabot creating any more for this minor version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this dependency` will close this PR and stop Dependabot creating any more for this dependency (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot use these labels` will set the current labels as the default for future PRs for this repo and language\n- `@dependabot use these reviewers` will set the current reviewers as the default for future PRs for this repo and language\n- `@dependabot use these assignees` will set the current assignees as the default for future PRs for this repo and language\n- `@dependabot use this milestone` will set the current milestone as the default for future PRs for this repo and language\n\nYou can disable automated security fix PRs for this repo from the [Security Alerts page](https://github.com/BabylonJS/Babylon.js/network/alerts).\n\n</details>",
+                "author": {
+                    "name": "dependabot[bot]",
+                    "url": "https://github.com/apps/dependabot"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": [
+                    "dependencies"
+                ]
+            },
+            {
+                "pr": "13310",
+                "title": "typedoc update for POV methods",
+                "description": null,
+                "author": {
+                    "name": "ssatguru",
+                    "url": "https://github.com/ssatguru"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.ts"
+                ],
+                "tags": []
             }
         ],
         "5.35.0": [

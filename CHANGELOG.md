@@ -1,5 +1,44 @@
 # Changelog
 
+## 5.36.0
+
+### Core
+
+- NME: fixed slowdowns when working in the editor - by [Popov72](https://github.com/Popov72) ([#13326](https://github.com/BabylonJS/Babylon.js/pull/13326))
+- When rendering in a multi-canvas setup, always render the input view … - [_Bug Fix_] by [carolhmj](https://github.com/carolhmj) ([#13320](https://github.com/BabylonJS/Babylon.js/pull/13320))
+- Mirror: Fix rendering when cullBackFaces is false - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#13322](https://github.com/BabylonJS/Babylon.js/pull/13322))
+- PhysicsPlugin refactor - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#13279](https://github.com/BabylonJS/Babylon.js/pull/13279))
+- InputManager: Update logic for detecting when to pick - [_Bug Fix_] by [PolygonalSun](https://github.com/PolygonalSun) ([#13321](https://github.com/BabylonJS/Babylon.js/pull/13321))
+- Particle System: Add a parameter to also clone textures when cloning a particle system - by [Popov72](https://github.com/Popov72) ([#13318](https://github.com/BabylonJS/Babylon.js/pull/13318))
+- Fix bad uniform scale check for rotation gizmo - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#13319](https://github.com/BabylonJS/Babylon.js/pull/13319))
+- Add a Fluid Renderer component - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#13291](https://github.com/BabylonJS/Babylon.js/pull/13291))
+- Add playback rate getter - by [sebavan](https://github.com/sebavan) ([#13312](https://github.com/BabylonJS/Babylon.js/pull/13312))
+- typedoc update for POV methods - by [ssatguru](https://github.com/ssatguru) ([#13310](https://github.com/BabylonJS/Babylon.js/pull/13310))
+
+### Inspector
+
+- Fix: ACE always opening with the first targeted animation selected - [_Bug Fix_] by [carolhmj](https://github.com/carolhmj) ([#13327](https://github.com/BabylonJS/Babylon.js/pull/13327))
+- PhysicsPlugin refactor - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#13279](https://github.com/BabylonJS/Babylon.js/pull/13279))
+- Fix: Animation Groups not showing the correct current frame value in … - by [carolhmj](https://github.com/carolhmj) ([#13307](https://github.com/BabylonJS/Babylon.js/pull/13307))
+
+### Materials
+
+- Mirror: Fix rendering when cullBackFaces is false - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#13322](https://github.com/BabylonJS/Babylon.js/pull/13322))
+
+### Node Editor
+
+- NME: fixed slowdowns when working in the editor - by [Popov72](https://github.com/Popov72) ([#13326](https://github.com/BabylonJS/Babylon.js/pull/13326))
+
+### Playground
+
+- clear metadata when a new pg is created - by [RaananW](https://github.com/RaananW) ([#13323](https://github.com/BabylonJS/Babylon.js/pull/13323))
+- Add a Fluid Renderer component - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#13291](https://github.com/BabylonJS/Babylon.js/pull/13291))
+
+### Serializers
+
+- Support KHR_materials_emissive_stength in glTF export - by [tboggs300](https://github.com/tboggs300) ([#13303](https://github.com/BabylonJS/Babylon.js/pull/13303))
+- Call the KHR_texture_transform exporter when exporting a GLTF file - by [carolhmj](https://github.com/carolhmj) ([#13305](https://github.com/BabylonJS/Babylon.js/pull/13305))
+
 ## 5.35.1
 
 ### Core
