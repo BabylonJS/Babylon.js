@@ -29,10 +29,10 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         super(name, NodeMaterialBlockTargets.Fragment, true);
 
         this.registerInput("rgba", NodeMaterialBlockConnectionPointTypes.Color4, true);
-        this.registerInput("rgb", NodeMaterialBlockConnectionPointTypes.Color3, true);
+        this.registerInput("rgb", NodeMaterialBlockConnectionPointTypes.AutoDetect, true);
         this.registerInput("a", NodeMaterialBlockConnectionPointTypes.Float, true);
 
-        this.rgb.acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Float);
+        this.rgb.addExcludedConnectionPointFromAllowedTypes(NodeMaterialBlockConnectionPointTypes.Color3 | NodeMaterialBlockConnectionPointTypes.Float);
     }
 
     /** Gets or sets a boolean indicating if content needs to be converted to gamma space */

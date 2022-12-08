@@ -18,13 +18,16 @@ export class RandomNumberBlock extends NodeMaterialBlock {
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Neutral);
 
-        this.registerInput("seed", NodeMaterialBlockConnectionPointTypes.Vector2);
+        this.registerInput("seed", NodeMaterialBlockConnectionPointTypes.AutoDetect);
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Float);
 
-        this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector3);
-        this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector4);
-        this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Color3);
-        this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Color4);
+        this._inputs[0].addExcludedConnectionPointFromAllowedTypes(
+            NodeMaterialBlockConnectionPointTypes.Vector2 |
+                NodeMaterialBlockConnectionPointTypes.Vector3 |
+                NodeMaterialBlockConnectionPointTypes.Vector4 |
+                NodeMaterialBlockConnectionPointTypes.Color3 |
+                NodeMaterialBlockConnectionPointTypes.Color4
+        );
     }
 
     /**
