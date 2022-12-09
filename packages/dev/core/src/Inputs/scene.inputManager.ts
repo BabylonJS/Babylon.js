@@ -238,6 +238,10 @@ export class InputManager {
         }
 
         if (scene.onPointerObservable.hasObservers()) {
+            // Normally, the transform matrix (and also the view matrix) are updated when the
+            // picking ray is created. But in this case, the picking ray may not be created so
+            // we need to update the transform matrix here.
+            scene.updateTransformMatrix();
             scene.onPointerObservable.notifyObservers(pointerInfo, type);
         }
     }
