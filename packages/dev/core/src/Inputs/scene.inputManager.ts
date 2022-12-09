@@ -209,7 +209,7 @@ export class InputManager {
 
             // Restore pointer
             if (!scene.doNotHandleCursors) {
-                canvas.style.cursor = scene.defaultCursor;
+                scene._setCursor(scene.defaultCursor);
             }
         }
 
@@ -315,7 +315,8 @@ export class InputManager {
             if (!scene.doNotHandleCursors && canvas && this._pointerOverMesh) {
                 const actionManager = this._pointerOverMesh._getActionManagerForTrigger();
                 if (actionManager && actionManager.hasPointerTriggers) {
-                    canvas.style.cursor = actionManager.hoverCursor || scene.hoverCursor;
+                    const cursor = actionManager.hoverCursor || scene.hoverCursor;
+                    scene._setCursor(cursor);
                 }
             }
         } else {

@@ -417,6 +417,24 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * Defines whether cursors are handled by the scene.
      */
     public doNotHandleCursors = false;
+
+    /** @internal */
+    public _lastUsedCursor: string = "";
+
+    /** @internal */
+    public _setCursor(cursor: string) {
+        if (this.doNotHandleCursors) {
+            return;
+        }
+
+        const canvas = this._engine.getInputElement();
+
+        if (canvas) {
+            this._lastUsedCursor = canvas.style.cursor;
+            canvas.style.cursor = cursor !== "" ? cursor : this.defaultCursor;
+        }
+    }
+
     /**
      * This is used to call preventDefault() on pointer down
      * in order to block unwanted artifacts like system double clicks
