@@ -1,66 +1,162 @@
 {
-    "fromTag": "5.35.1",
+    "fromTag": "5.36.0",
     "changelog": {
-        "5.35.1": [
+        "5.37.0": [
             {
-                "pr": "13308",
-                "title": "Fix restore context in WebGL1 when using non POT textures",
-                "description": "See https://forum.babylonjs.com/t/context-restore-for-textures-with-bloburl-not-working/36114/7",
+                "pr": "13325",
+                "title": "Add Fullscreen ADT to HTMLTwinRenderer",
+                "description": "Currently the HTMLTwinRenderer won't render a fullscreen ADT. This PR adds this capability.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/accessibility/src/HtmlTwin/htmlTwinHostComponent.tsx"
+                ],
+                "tags": [
+                    "enhancement"
+                ]
+            },
+            {
+                "pr": "13335",
+                "title": "NME: Fix reusing the same temporary variable name in TextureBlock",
+                "description": null,
                 "author": {
                     "name": "Popov72",
                     "url": "https://github.com/Popov72"
                 },
                 "files": [
-                    "packages/dev/core/src/Engines/engine.ts",
-                    "packages/dev/core/src/Engines/thinEngine.ts"
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/textureBlock.ts"
                 ],
                 "tags": [
                     "bug",
-                    "rendering engine"
+                    "nme"
                 ]
             },
             {
-                "pr": "13306",
-                "title": "Fixed NativeEngine render target assignment",
-                "description": "Native engine is currently not assingning the new texture passed in bindFrameBuffer to its _currentRenderTarget. This will result in NaN values for camera's projection matrix since it uses the engine.getRenderWidth() and engine.getRenderHeight() and those values will be zero. \r\n\r\nStoring _currentRenderTarget fixes the problem. ",
+                "pr": "13334",
+                "title": "fix missing plugin when enabling physics",
+                "description": null,
                 "author": {
-                    "name": "SergioRZMasson",
-                    "url": "https://github.com/SergioRZMasson"
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
                 },
                 "files": [
-                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                    "packages/dev/core/src/Physics/physicsEngineComponent.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13317",
+                "title": "The STL loader flips the faces",
+                "description": "The current code loads STL files with faces flipped for the following combinations (RH for `useRightHandedSystem`, NO_ALTER for `DO_NOT_ALTER_FILE_COORDINATES`):\r\n|&nbsp;|NO_ALTER-true | NO_ALTER-false |\r\n|---|---|---|\r\n| RH-true | good | bad |\r\n| RH-false | bad | good |\r\n\r\nThe correct combination for whether flip the face indices is like the following table, which means, we should only detect `DO_NOT_ALTER_FILE_COORDINATES` but not `useRightHandedSystem`:\r\n|&nbsp;|NO_ALTER-true | NO_ALTER-false |\r\n|---|---|---|\r\n| RH-true | flip | no-flip |\r\n| RH-false | flip | no-flip |\r\n",
+                "author": {
+                    "name": "YusakuNo1",
+                    "url": "https://github.com/YusakuNo1"
+                },
+                "files": [
+                    "packages/dev/loaders/src/STL/stlFileLoader.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13333",
+                "title": "Make sure BONETEXTURE is always set with a value when supported",
+                "description": "See https://forum.babylonjs.com/t/chrome-visual-glitch-when-baking-and-nulling-mesh-skeleton/36372",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/materialHelper.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13328",
+                "title": "NME: Add a rgb output to the ImageProcessing block",
+                "description": "The PR also changes the `color` input type to **AutoDetect** to make it clear that it accepts multiple types.\r\n\r\nWhile I was at it, I also updated some inputs in some blocks to **AutoDetect** for the same reason as above.\r\n\r\nCloses BabylonJS/ThePirateCove#296\r\n\r\nNote:\r\n\r\nThe test fix is due to the fact that this test is quite old and the node material generated code used the old way of connecting blocks together: we didn't use the name of the source output or the name of the input to be connected, the system selected them automagically. But this could fail in a number of ways, and we switched to a more robust system where we explicitely name the output of the source block and the input of the connecting block. The changes took place in October 2019.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/currentScreenBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/fogBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/reflectionTextureBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/sceneDepthBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/textureBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/TBNBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/fragmentOutputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/heightToNormalBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/imageProcessingBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/screenSpaceBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/shadowMapBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/clearCoatBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/reflectionBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Particle/particleTextureBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/morphTargetsBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/gradientBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/normalBlendBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/randomNumberBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/reflectBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/refractBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/triPlanarBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Enums/nodeMaterialBlockConnectionPointTypes.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBlockConnectionPoint.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "enhancement",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "13331",
+                "title": "allow independent video sources in VideoTexture",
+                "description": "Fixed #13324",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/videoTexture.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13332",
+                "title": "VirtualJoystick - Stop iterating when canvas is released",
+                "description": "See https://forum.babylonjs.com/t/freecameravirtualjoystickinput-joystick-images-stuck-on-screen/36337",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/virtualJoystick.ts"
                 ],
                 "tags": [
                     "bug"
                 ]
             },
             {
-                "pr": "13275",
-                "title": "Support create RTT from internal texture directly",
-                "description": "Currently, once a hardware texture is wrapped with `engine.wrapWebGLTexture`/`engine.wrapWebGPUTexture`/`engine.wrapNativeTexture`, there is no way to create a render target from it. With this change it is now possible.\r\n\r\nAlso cleaned up the code quite a bit to make web and native engines more consistent.\r\n\r\nThere is also a corresponding change on the Babylon Native side: https://github.com/BabylonJS/BabylonNative/pull/1173.\r\n\r\nNote that there is PROTOCOL_VERSION change in both PRs.",
+                "pr": "13330",
+                "title": "ArcRotateCamera: Fix lower and upper beta limit type",
+                "description": "See https://forum.babylonjs.com/t/arcrotatecamera-alpha-rotation-inverted-in-certain-beta-range/36357",
                 "author": {
-                    "name": "bghgary",
-                    "url": "https://github.com/bghgary"
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
                 },
                 "files": [
-                    "packages/dev/core/src/Engines/Extensions/engine.renderTarget.ts",
-                    "packages/dev/core/src/Engines/Extensions/engine.renderTargetCube.ts",
-                    "packages/dev/core/src/Engines/Native/nativeHardwareTexture.ts",
-                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
-                    "packages/dev/core/src/Engines/Native/nativePipelineContext.ts",
-                    "packages/dev/core/src/Engines/Native/nativeRenderTargetWrapper.ts",
-                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.renderTarget.ts",
-                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.renderTargetCube.ts",
-                    "packages/dev/core/src/Engines/engine.ts",
-                    "packages/dev/core/src/Engines/nativeEngine.ts",
-                    "packages/dev/core/src/Engines/nullEngine.ts",
-                    "packages/dev/core/src/Engines/thinEngine.ts",
-                    "packages/dev/core/src/Engines/webgpuEngine.ts",
-                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts",
-                    "packages/dev/core/src/Materials/Textures/textureCreationOptions.ts"
+                    "packages/dev/core/src/Cameras/arcRotateCamera.ts"
                 ],
                 "tags": [
-                    "new feature"
+                    "bug",
+                    "inputs"
                 ]
             }
         ],
@@ -421,6 +517,69 @@
                     "packages/dev/core/src/Meshes/abstractMesh.ts"
                 ],
                 "tags": []
+            }
+        ],
+        "5.35.1": [
+            {
+                "pr": "13308",
+                "title": "Fix restore context in WebGL1 when using non POT textures",
+                "description": "See https://forum.babylonjs.com/t/context-restore-for-textures-with-bloburl-not-working/36114/7",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13306",
+                "title": "Fixed NativeEngine render target assignment",
+                "description": "Native engine is currently not assingning the new texture passed in bindFrameBuffer to its _currentRenderTarget. This will result in NaN values for camera's projection matrix since it uses the engine.getRenderWidth() and engine.getRenderHeight() and those values will be zero. \r\n\r\nStoring _currentRenderTarget fixes the problem. ",
+                "author": {
+                    "name": "SergioRZMasson",
+                    "url": "https://github.com/SergioRZMasson"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "13275",
+                "title": "Support create RTT from internal texture directly",
+                "description": "Currently, once a hardware texture is wrapped with `engine.wrapWebGLTexture`/`engine.wrapWebGPUTexture`/`engine.wrapNativeTexture`, there is no way to create a render target from it. With this change it is now possible.\r\n\r\nAlso cleaned up the code quite a bit to make web and native engines more consistent.\r\n\r\nThere is also a corresponding change on the Babylon Native side: https://github.com/BabylonJS/BabylonNative/pull/1173.\r\n\r\nNote that there is PROTOCOL_VERSION change in both PRs.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.renderTarget.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.renderTargetCube.ts",
+                    "packages/dev/core/src/Engines/Native/nativeHardwareTexture.ts",
+                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
+                    "packages/dev/core/src/Engines/Native/nativePipelineContext.ts",
+                    "packages/dev/core/src/Engines/Native/nativeRenderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.renderTarget.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.renderTargetCube.ts",
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Engines/nullEngine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/textureCreationOptions.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
             }
         ],
         "5.35.0": [

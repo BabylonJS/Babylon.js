@@ -1,5 +1,19 @@
 # Changelog
 
+## 5.37.0
+
+### Core
+
+- NME: Fix reusing the same temporary variable name in TextureBlock - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#13335](https://github.com/BabylonJS/Babylon.js/pull/13335))
+- fix missing plugin when enabling physics - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#13334](https://github.com/BabylonJS/Babylon.js/pull/13334))
+- NME: Add a rgb output to the ImageProcessing block - by [Popov72](https://github.com/Popov72) ([#13328](https://github.com/BabylonJS/Babylon.js/pull/13328))
+- allow independent video sources in VideoTexture - by [RaananW](https://github.com/RaananW) ([#13331](https://github.com/BabylonJS/Babylon.js/pull/13331))
+- VirtualJoystick - Stop iterating when canvas is released - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#13332](https://github.com/BabylonJS/Babylon.js/pull/13332))
+- ArcRotateCamera: Fix lower and upper beta limit type - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#13330](https://github.com/BabylonJS/Babylon.js/pull/13330))
+
+### Loaders
+
+
 ## 5.36.0
 
 ### Core
