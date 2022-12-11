@@ -21,7 +21,9 @@ export class ShadowMapBlock extends NodeMaterialBlock {
         this.registerInput("worldNormal", NodeMaterialBlockConnectionPointTypes.AutoDetect, true);
         this.registerOutput("depth", NodeMaterialBlockConnectionPointTypes.Vector3);
 
-        this.worldNormal.addExcludedConnectionPointFromAllowedTypes(NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4);
+        this.worldNormal.addExcludedConnectionPointFromAllowedTypes(
+            NodeMaterialBlockConnectionPointTypes.Color3 | NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4
+        );
     }
 
     /**

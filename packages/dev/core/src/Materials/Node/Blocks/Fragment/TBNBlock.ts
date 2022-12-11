@@ -23,7 +23,9 @@ export class TBNBlock extends NodeMaterialBlock {
         super(name, NodeMaterialBlockTargets.Fragment, true);
 
         this.registerInput("normal", NodeMaterialBlockConnectionPointTypes.AutoDetect, false);
-        this.normal.addExcludedConnectionPointFromAllowedTypes(NodeMaterialBlockConnectionPointTypes.Vector4 | NodeMaterialBlockConnectionPointTypes.Vector3);
+        this.normal.addExcludedConnectionPointFromAllowedTypes(
+            NodeMaterialBlockConnectionPointTypes.Color4 | NodeMaterialBlockConnectionPointTypes.Vector4 | NodeMaterialBlockConnectionPointTypes.Vector3
+        );
         this.registerInput("tangent", NodeMaterialBlockConnectionPointTypes.Vector4, false);
         this.registerInput("world", NodeMaterialBlockConnectionPointTypes.Matrix, false);
 
