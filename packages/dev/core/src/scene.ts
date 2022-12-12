@@ -431,7 +431,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         if (canvas) {
             this._lastUsedCursor = canvas.style.cursor;
-            canvas.style.cursor = cursor !== "" ? cursor : this.defaultCursor;
+            canvas.style.cursor = cursor || this.defaultCursor;
         }
     }
 

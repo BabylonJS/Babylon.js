@@ -746,7 +746,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         const scene = this.getScene();
         if (this._rootElement && scene) {
             scene._lastUsedCursor = this._rootElement.style.cursor;
-            this._rootElement.style.cursor = cursor !== "" ? cursor : scene._lastUsedCursor;
+            const cursorToSet = cursor || scene._lastUsedCursor;
+            scene._setCursor(cursorToSet);
             this._cursorChanged = true;
         }
     }
