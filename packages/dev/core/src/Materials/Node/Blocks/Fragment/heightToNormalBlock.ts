@@ -25,7 +25,9 @@ export class HeightToNormalBlock extends NodeMaterialBlock {
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Vector4);
         this.registerOutput("xyz", NodeMaterialBlockConnectionPointTypes.Vector3);
 
-        this._inputs[3].addExcludedConnectionPointFromAllowedTypes(NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4);
+        this._inputs[3].addExcludedConnectionPointFromAllowedTypes(
+            NodeMaterialBlockConnectionPointTypes.Color3 | NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4
+        );
     }
 
     /**

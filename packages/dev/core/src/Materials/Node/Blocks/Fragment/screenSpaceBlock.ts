@@ -25,7 +25,9 @@ export class ScreenSpaceBlock extends NodeMaterialBlock {
         this.registerOutput("x", NodeMaterialBlockConnectionPointTypes.Float);
         this.registerOutput("y", NodeMaterialBlockConnectionPointTypes.Float);
 
-        this.inputs[0].addExcludedConnectionPointFromAllowedTypes(NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4);
+        this.inputs[0].addExcludedConnectionPointFromAllowedTypes(
+            NodeMaterialBlockConnectionPointTypes.Color3 | NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4
+        );
     }
 
     /**

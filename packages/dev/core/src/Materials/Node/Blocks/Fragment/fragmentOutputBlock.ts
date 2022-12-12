@@ -32,7 +32,9 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         this.registerInput("rgb", NodeMaterialBlockConnectionPointTypes.AutoDetect, true);
         this.registerInput("a", NodeMaterialBlockConnectionPointTypes.Float, true);
 
-        this.rgb.addExcludedConnectionPointFromAllowedTypes(NodeMaterialBlockConnectionPointTypes.Color3 | NodeMaterialBlockConnectionPointTypes.Float);
+        this.rgb.addExcludedConnectionPointFromAllowedTypes(
+            NodeMaterialBlockConnectionPointTypes.Color3 | NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Float
+        );
     }
 
     /** Gets or sets a boolean indicating if content needs to be converted to gamma space */
