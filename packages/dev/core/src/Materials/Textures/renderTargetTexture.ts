@@ -475,7 +475,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             type = options.type ?? Constants.TEXTURETYPE_UNSIGNED_INT;
             isCube = !!options.isCube;
             samplingMode = options.samplingMode ?? Texture.TRILINEAR_SAMPLINGMODE;
-            generateDepthBuffer = !!options.generateDepthBuffer;
+            generateDepthBuffer = options.generateDepthBuffer ?? true;
             generateStencilBuffer = !!options.generateStencilBuffer;
             isMulti = !!options.isMulti;
             format = options.format ?? Constants.TEXTUREFORMAT_RGBA;
