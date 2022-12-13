@@ -37,29 +37,34 @@ import { addClipPlaneUniforms, bindClipPlane, prepareDefinesForClipPlanes } from
 export interface IEffectLayerOptions {
     /**
      * Multiplication factor apply to the canvas size to compute the render target size
-     * used to generated the objects (the smaller the faster).
+     * used to generated the objects (the smaller the faster). Default: 0.5
      */
     mainTextureRatio: number;
 
     /**
-     * Enforces a fixed size texture to ensure effect stability across devices.
+     * Enforces a fixed size texture to ensure effect stability across devices. Default: undefined
      */
     mainTextureFixedSize?: number;
 
     /**
-     * Alpha blending mode used to apply the blur. Default depends of the implementation.
+     * Alpha blending mode used to apply the blur. Default depends of the implementation. Default: ALPHA_COMBINE
      */
     alphaBlendingMode: number;
 
     /**
-     * The camera attached to the layer.
+     * The camera attached to the layer. Default: null
      */
     camera: Nullable<Camera>;
 
     /**
-     * The rendering group to draw the layer in.
+     * The rendering group to draw the layer in. Default: -1
      */
     renderingGroupId: number;
+
+    /**
+     * The type of the main texture. Default: TEXTURETYPE_UNSIGNED_INT
+     */
+    mainTextureType: number;
 }
 
 /**
@@ -307,6 +312,7 @@ export abstract class EffectLayer {
             alphaBlendingMode: Constants.ALPHA_COMBINE,
             camera: null,
             renderingGroupId: -1,
+            mainTextureType: Constants.TEXTURETYPE_UNSIGNED_INT,
             ...options,
         };
 
@@ -384,7 +390,7 @@ export abstract class EffectLayer {
             this._scene,
             false,
             true,
-            Constants.TEXTURETYPE_UNSIGNED_INT
+            this._effectLayerOptions.mainTextureType
         );
         this._mainTexture.activeCamera = this._effectLayerOptions.camera;
         this._mainTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
