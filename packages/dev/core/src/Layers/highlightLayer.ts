@@ -84,50 +84,55 @@ class GlowBlurPostProcess extends PostProcess {
 export interface IHighlightLayerOptions {
     /**
      * Multiplication factor apply to the canvas size to compute the render target size
-     * used to generated the glowing objects (the smaller the faster).
+     * used to generated the glowing objects (the smaller the faster). Default: 0.5
      */
     mainTextureRatio: number;
 
     /**
-     * Enforces a fixed size texture to ensure resize independent blur.
+     * Enforces a fixed size texture to ensure resize independent blur. Default: undefined
      */
     mainTextureFixedSize?: number;
 
     /**
      * Multiplication factor apply to the main texture size in the first step of the blur to reduce the size
-     * of the picture to blur (the smaller the faster).
+     * of the picture to blur (the smaller the faster). Default: 0.5
      */
     blurTextureSizeRatio: number;
 
     /**
-     * How big in texel of the blur texture is the vertical blur.
+     * How big in texel of the blur texture is the vertical blur. Default: 1
      */
     blurVerticalSize: number;
 
     /**
-     * How big in texel of the blur texture is the horizontal blur.
+     * How big in texel of the blur texture is the horizontal blur. Default: 1
      */
     blurHorizontalSize: number;
 
     /**
-     * Alpha blending mode used to apply the blur. Default is combine.
+     * Alpha blending mode used to apply the blur.  Default: ALPHA_COMBINE
      */
     alphaBlendingMode: number;
 
     /**
-     * The camera attached to the layer.
+     * The camera attached to the layer. Default: null
      */
     camera: Nullable<Camera>;
 
     /**
-     * Should we display highlight as a solid stroke?
+     * Should we display highlight as a solid stroke? Default: false
      */
     isStroke?: boolean;
 
     /**
-     * The rendering group to draw the layer in.
+     * The rendering group to draw the layer in. Default: -1
      */
     renderingGroupId: number;
+
+    /**
+     * The type of the main texture. Default: TEXTURETYPE_UNSIGNED_INT
+     */
+    mainTextureType: number;
 }
 
 /**
@@ -295,6 +300,7 @@ export class HighlightLayer extends EffectLayer {
             alphaBlendingMode: Constants.ALPHA_COMBINE,
             camera: null,
             renderingGroupId: -1,
+            mainTextureType: Constants.TEXTURETYPE_UNSIGNED_INT,
             ...options,
         };
 
@@ -305,6 +311,7 @@ export class HighlightLayer extends EffectLayer {
             mainTextureFixedSize: this._options.mainTextureFixedSize,
             mainTextureRatio: this._options.mainTextureRatio,
             renderingGroupId: this._options.renderingGroupId,
+            mainTextureType: this._options.mainTextureType,
         });
 
         // Do not render as long as no meshes have been added
