@@ -419,9 +419,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public doNotHandleCursors = false;
 
     /** @internal */
-    public _lastUsedCursor: string = "";
-
-    /** @internal */
     public _setCursor(cursor: string) {
         if (this.doNotHandleCursors) {
             return;
@@ -430,7 +427,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         const canvas = this._engine.getInputElement();
 
         if (canvas) {
-            this._lastUsedCursor = canvas.style.cursor;
             canvas.style.cursor = cursor || this.defaultCursor;
         }
     }
