@@ -2323,6 +2323,27 @@ export class Control implements IAnimatable {
         this.getDescendants().forEach((child) => child._markAllAsDirty());
     }
 
+    public clone(host?: AdvancedDynamicTexture): Control {
+        const serialization: any = {};
+        this.serialize(serialization);
+
+        const controlType = Tools.Instantiate("BABYLON.GUI." + serialization.className);
+        const cloned = new controlType();
+        cloned.parse(serialization, host);
+
+        return cloned;
+    }
+
+    public parse(serializedObject: any, host?: AdvancedDynamicTexture): Control {
+        SerializationHelper.Parse(() => this, serializedObject, null);
+
+        this.name = serializedObject.name;
+
+        this._parseFromContent(serializedObject, host ?? this._host);
+
+        return this;
+    }
+
     /**
      * Serializes the current control
      * @param serializationObject defined the JSON serialized object

@@ -217,7 +217,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             return null;
         }
 
-        const guiElements = scene.textures.filter((t) => t.getClassName() === "AdvancedDynamicTexture");
+        const guiElements = [this.props.globalState.guiTexture];
 
         return (
             <div

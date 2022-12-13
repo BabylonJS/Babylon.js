@@ -206,7 +206,6 @@ export class GizmoGeneric extends React.Component<IGuiGizmoProps, IGuiGizmoState
             const inNodeSpace = CoordinateHelper.RttToLocalNodeSpace(node, inRTT.x, inRTT.y, undefined, this._storedValues);
             this._dragLocalBounds(inNodeSpace);
             this._updateNodeFromLocalBounds();
-            this.props.globalState.workbench._liveGuiTextureRerender = false;
             this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
         }
         if (this.state.isRotating) {
