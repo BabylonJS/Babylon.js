@@ -4903,20 +4903,25 @@ export class Quaternion {
 
 /**
  * Class used to store matrix data (4x4)
- * Note on matrix definitions in Babylon.js for setting values directly rather than using one of the methods available.
+ * Note on matrix definitions in Babylon.js for setting values directly
+ * rather than using one of the methods available.
  * Matrix size is given by rows x columns.
  * A Vector3 is a 1 X 3 matrix [x, y, z].
+ *
  * In Babylon.js multiplying a 1 x 3 matrix by a 4 x 4 matrix
- * is done using BABYLON.Vector4.TransformCoordinates(vector3, matrix)
- * and extending the passed Vector3 to a Vector4 [x, y, z, w] with w = 1.
- * The multiplication has this form
- * [x, y, z, w] |m0,  m1,  m2,  m3 |
- *              |m4,  m5,  m6,  m7 |
- *              |m8,  m9,  m10, m11|
- *              |m12, m13, m14, m15|
+ * is done using BABYLON.Vector4.TransformCoordinates(Vector3, Matrix).
+ * and extending the passed Vector3 to a Vector4, V = [x, y, z, 1].
+ * Let M be a matrix with elements m(row, column), so that
+ * m(2, 3) is the element in row 2 column 3 of M.
  *
- * = [xm0 + ym4 + zm8 + wm12, xm1 + ym5 + zm9 + wm13, xm2 + ym6 + zm10 + wm14, xm3 + ym7 + zm11 + wm15]
+ * Multiplication is of the form VM and has the resulting Vector4
+ * VM = [xm(0, 0) + ym(1, 0) + zm(2, 0) + m(3, 0), xm(0, 1) + ym(1, 1) + zm(2, 1) + m(3, 1), xm(0, 2) + ym(1, 2) + zm(2, 2) + m(3, 2), xm(0, 3) + ym(1, 3) + zm(2, 3) + m(3, 3)].
+ * On the web you will find many examples that use the opposite convention of MV,
+ * in which case to make use of the examples you will need to transpose the matrix.
  *
+ * Example Playground - Overview Linear Algebra - https://playground.babylonjs.com/#AV9X17
+ * Example Playground - Overview Transformation - https://playground.babylonjs.com/#AV9X17#1
+ * Example Playground - Overview Projection - https://playground.babylonjs.com/#AV9X17#2
  */
 export class Matrix {
     /**
@@ -5047,6 +5052,7 @@ export class Matrix {
 
     /**
      * Gets the determinant of the matrix
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#34
      * @returns the matrix determinant
      */
     public determinant(): number {
@@ -5098,6 +5104,7 @@ export class Matrix {
 
     /**
      * Returns the matrix as a Float32Array or Array<number>
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#49
      * @returns the matrix underlying array
      */
     public toArray(): DeepImmutable<Float32Array | Array<number>> {
@@ -5105,6 +5112,7 @@ export class Matrix {
     }
     /**
      * Returns the matrix as a Float32Array or Array<number>
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#114
      * @returns the matrix underlying array.
      */
     public asArray(): DeepImmutable<Float32Array | Array<number>> {
@@ -5113,6 +5121,7 @@ export class Matrix {
 
     /**
      * Inverts the current matrix in place
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#118
      * @returns the current inverted matrix
      */
     public invert(): this {
@@ -5131,6 +5140,7 @@ export class Matrix {
 
     /**
      * Adds the current matrix with a second one
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#44
      * @param other defines the matrix to add
      * @returns a new matrix as the addition of the current matrix and the given one
      */
@@ -5142,6 +5152,7 @@ export class Matrix {
 
     /**
      * Sets the given matrix "result" to the addition of the current matrix and the given one
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#45
      * @param other defines the matrix to add
      * @param result defines the target matrix
      * @returns result input
@@ -5159,6 +5170,7 @@ export class Matrix {
 
     /**
      * Adds in place the given matrix to the current matrix
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#46
      * @param other defines the second operand
      * @returns the current updated matrix
      */
@@ -5174,6 +5186,7 @@ export class Matrix {
 
     /**
      * Sets the given matrix to the current inverted Matrix
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#119
      * @param other defines the target matrix
      * @returns result input
      */
@@ -5276,6 +5289,7 @@ export class Matrix {
 
     /**
      * add a value at the specified position in the current Matrix
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#47
      * @param index the index of the value within the matrix. between 0 and 15.
      * @param value the value to be added
      * @returns the current updated matrix
@@ -5300,6 +5314,7 @@ export class Matrix {
 
     /**
      * Inserts the translation vector (using 3 floats) in the current matrix
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#120
      * @param x defines the 1st component of the translation
      * @param y defines the 2nd component of the translation
      * @param z defines the 3rd component of the translation
@@ -5315,6 +5330,8 @@ export class Matrix {
 
     /**
      * Adds the translation vector (using 3 floats) in the current matrix
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#20
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#48
      * @param x defines the 1st component of the translation
      * @param y defines the 2nd component of the translation
      * @param z defines the 3rd component of the translation
@@ -5330,6 +5347,7 @@ export class Matrix {
 
     /**
      * Inserts the translation vector in the current matrix
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#121
      * @param vector3 defines the translation to insert
      * @returns the current updated matrix
      */
@@ -5339,6 +5357,7 @@ export class Matrix {
 
     /**
      * Gets the translation value of the current matrix
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#122
      * @returns a new Vector3 as the extracted translation from the matrix
      */
     public getTranslation(): Vector3 {
@@ -5347,6 +5366,7 @@ export class Matrix {
 
     /**
      * Fill a Vector3 with the extracted translation from the matrix
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#123
      * @param result defines the Vector3 where to store the translation
      * @returns the current matrix
      */
@@ -5370,6 +5390,7 @@ export class Matrix {
 
     /**
      * Multiply two matrices
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#15
      * A.multiply(B) means apply B to A so result is B x A
      * @param other defines the second operand
      * @returns a new matrix set with the multiplication result of the current Matrix and the given one
@@ -5382,6 +5403,7 @@ export class Matrix {
 
     /**
      * Copy the current matrix from the given one
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#21
      * @param other defines the source matrix
      * @returns the current updated matrix
      */
@@ -5424,6 +5446,7 @@ export class Matrix {
     /**
      * Sets the given matrix "result" with the multiplication result of the current Matrix and the given one
      * A.multiplyToRef(B, R) means apply B to A and store in R and R = B x A
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#16
      * @param other defines the second operand
      * @param result defines the matrix where to store the multiplication
      * @returns result input
