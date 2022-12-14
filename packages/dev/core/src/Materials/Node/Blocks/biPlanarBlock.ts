@@ -11,7 +11,7 @@ export class BiPlanarBlock extends TriPlanarBlock {
      * @param name defines the block name
      */
     public constructor(name: string) {
-        super(name);
+        super(name, true);
     }
 
     /**
@@ -24,6 +24,7 @@ export class BiPlanarBlock extends TriPlanarBlock {
 
     protected _generateTextureLookup(state: NodeMaterialBuildState): void {
         const samplerName = this.samplerName;
+        const samplerYName = this.samplerYName ?? this.samplerName;
 
         const sharpness = this.sharpness.isConnected ? this.sharpness.associatedVariableName : "1.0";
 
@@ -58,7 +59,7 @@ export class BiPlanarBlock extends TriPlanarBlock {
             vec4 ${x} = textureGrad( ${samplerName}, vec2(   ${this.position.associatedVariableName}[${ma}.y],   ${this.position.associatedVariableName}[${ma}.z]), 
                                     vec2(${dpdx}[${ma}.y],${dpdx}[${ma}.z]), 
                                     vec2(${dpdy}[${ma}.y],${dpdy}[${ma}.z]) );
-            vec4 ${y} = textureGrad( ${samplerName}, vec2(   ${this.position.associatedVariableName}[${me}.y],   ${this.position.associatedVariableName}[${me}.z]), 
+            vec4 ${y} = textureGrad( ${samplerYName}, vec2(   ${this.position.associatedVariableName}[${me}.y],   ${this.position.associatedVariableName}[${me}.z]), 
                                     vec2(${dpdx}[${me}.y],${dpdx}[${me}.z]),
                                     vec2(${dpdy}[${me}.y],${dpdy}[${me}.z]) );
             
