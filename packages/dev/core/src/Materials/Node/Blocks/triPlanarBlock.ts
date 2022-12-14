@@ -83,7 +83,7 @@ export class TriPlanarBlock extends NodeMaterialBlock {
     }
 
     protected _getImageSourceBlock(connectionPoint: Nullable<NodeMaterialConnectionPoint>): Nullable<ImageSourceBlock> {
-        return connectionPoint?.isConnected ? connectionPoint.connectedPoint!.ownerBlock as ImageSourceBlock : null;
+        return connectionPoint?.isConnected ? (connectionPoint.connectedPoint!.ownerBlock as ImageSourceBlock) : null;
     }
 
     /**
