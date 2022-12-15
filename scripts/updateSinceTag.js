@@ -19,9 +19,6 @@ const updateSinceTag = (version) => {
         try {
             // check if file contains @since\n
             const data = fs.readFileSync(file, "utf-8").replace(/\r/gm, "");
-            if (file.indexOf("engine.ts") !== -1) {
-                console.log(data.indexOf("* @since\n"));
-            }
             if (data.indexOf("* @since\n") !== -1) {
                 console.log(`Updating @since tag in ${file} to ${version}`);
                 // replace @since with @since version
