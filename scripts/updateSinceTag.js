@@ -16,22 +16,26 @@ const updateSinceTag = (version) => {
     // get all typescript files in the dev folder
     const files = glob.sync(path.join(baseDirectory, "packages", "dev", "**", "*.ts"));
     files.forEach((file) => {
-        // check if file contains @since\n
-        const data = fs.readFileSync(file, "utf-8").replace(/\r/gm, "");
-        if(file.indexOf("engine.ts") !== -1) {
-            console.log(data.indexOf("* @since\n"));
-        }
-        if (data.indexOf("* @since\n") !== -1) {
-            console.log(`Updating @since tag in ${file} to ${version}`)
-            // replace @since with @since version
-            const newData = data.replace(
-                /\* @since\n/gm,
-                `* @since ${version}
-`
-            );
+        try {
+            // check if file contains @since\n
+            const data = fs.readFileSync(file, "utf-8").replace(/\r/gm, "");
+            if (file.indexOf("engine.ts") !== -1) {
+                console.log(data.indexOf("* @since\n"));
+            }
+            if (data.indexOf("* @since\n") !== -1) {
+                console.log(`Updating @since tag in ${file} to ${version}`);
+                // replace @since with @since version
+                const newData = data.replace(
+                    /\* @since\n/gm,
+                    `* @since ${version}
+    `
+                );
 
-            // write file
-            fs.writeFileSync(file, newData);
+                // write file
+                fs.writeFileSync(file, newData);
+            }
+        } catch (e) {
+            console.log(e);
         }
     });
 };
