@@ -28,7 +28,7 @@ const updateSinceTag = (version) => {
                 const newData = data.replace(
                     /\* @since\n/gm,
                     `* @since ${version}
-    `
+`
                 );
 
                 // write file
