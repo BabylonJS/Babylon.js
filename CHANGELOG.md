@@ -1,5 +1,18 @@
 # Changelog
 
+## 5.38.0
+
+### Core
+
+- EffectLayer: Allows to set the type of the main texture - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#13343](https://github.com/BabylonJS/Babylon.js/pull/13343))
+- NME: Fix of input types allowed for some blocks - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#13339](https://github.com/BabylonJS/Babylon.js/pull/13339))
+
+### Node Editor
+
+
+### Playground
+
+
 ## 5.37.0
 
 ### Core
