@@ -54,44 +54,49 @@ AbstractScene.prototype.getGlowLayerByName = function (name: string): Nullable<G
 export interface IGlowLayerOptions {
     /**
      * Multiplication factor apply to the canvas size to compute the render target size
-     * used to generated the glowing objects (the smaller the faster).
+     * used to generated the glowing objects (the smaller the faster). Default: 0.5
      */
     mainTextureRatio: number;
 
     /**
-     * Enforces a fixed size texture to ensure resize independent blur.
+     * Enforces a fixed size texture to ensure resize independent blur. Default: undefined
      */
     mainTextureFixedSize?: number;
 
     /**
-     * How big is the kernel of the blur texture.
+     * How big is the kernel of the blur texture. Default: 32
      */
     blurKernelSize: number;
 
     /**
-     * The camera attached to the layer.
+     * The camera attached to the layer. Default: null
      */
     camera: Nullable<Camera>;
 
     /**
-     * Enable MSAA by choosing the number of samples.
+     * Enable MSAA by choosing the number of samples. Default: 1
      */
     mainTextureSamples?: number;
 
     /**
-     * The rendering group to draw the layer in.
+     * The rendering group to draw the layer in. Default: -1
      */
     renderingGroupId: number;
 
     /**
-     * Forces the merge step to be done in ldr (clamp values > 1)
+     * Forces the merge step to be done in ldr (clamp values > 1). Default: false
      */
     ldrMerge?: boolean;
 
     /**
-     * Defines the blend mode used by the merge
+     * Defines the blend mode used by the merge. Default: ALPHA_ADD
      */
     alphaBlendingMode?: number;
+
+    /**
+     * The type of the main texture. Default: TEXTURETYPE_UNSIGNED_INT
+     */
+    mainTextureType: number;
 }
 
 /**
@@ -203,6 +208,7 @@ export class GlowLayer extends EffectLayer {
             renderingGroupId: -1,
             ldrMerge: false,
             alphaBlendingMode: Constants.ALPHA_ADD,
+            mainTextureType: Constants.TEXTURETYPE_UNSIGNED_INT,
             ...options,
         };
 
@@ -213,6 +219,7 @@ export class GlowLayer extends EffectLayer {
             mainTextureFixedSize: this._options.mainTextureFixedSize,
             mainTextureRatio: this._options.mainTextureRatio,
             renderingGroupId: this._options.renderingGroupId,
+            mainTextureType: this._options.mainTextureType,
         });
     }
 

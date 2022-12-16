@@ -1,6 +1,130 @@
 {
-    "fromTag": "5.36.0",
+    "fromTag": "5.37.0",
     "changelog": {
+        "5.38.0": [
+            {
+                "pr": "13346",
+                "title": "Update dependencies",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/tools/testsMemoryLeaks/src/index.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13347",
+                "title": "NME: Allow 3 textures for the TriPlanar block",
+                "description": "See https://forum.babylonjs.com/t/triplanar-shader-strange-behavior-when-meshs-are-translated-possible-bug/17985/4\r\n\r\nIn order to be able to replace the `TriPlanar` material, I added the possibility to give additional textures for the Y and Z axis.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/biPlanarBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/triPlanarBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialConnectionPointCustomObject.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/textureDisplayManager.modules.scss"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13344",
+                "title": "Output linting errors and warning to pipelines",
+                "description": "Adds the lint:check-ci NPM script which when run from a continuous integration environment will output linting errors and warnings to the pipeline.\r\n\r\n**Important Note** The pipeline will need to have its linting command updated as well.",
+                "author": {
+                    "name": "dr-vortex",
+                    "url": "https://github.com/dr-vortex"
+                },
+                "files": [
+                    "package.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13343",
+                "title": "EffectLayer: Allows to set the type of the main texture",
+                "description": "See https://forum.babylonjs.com/t/setting-the-type-of-effectlayer-main-texture/36512",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Layers/effectLayer.ts",
+                    "packages/dev/core/src/Layers/glowLayer.ts",
+                    "packages/dev/core/src/Layers/highlightLayer.ts"
+                ],
+                "tags": [
+                    "rendering engine",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13342",
+                "title": "NME: Add a CSS class to all graph nodes",
+                "description": "Use this new feature to widen the `LightInformationBlock`.\r\n\r\nCloses #13329 ",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx",
+                    "packages/tools/nodeEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeEditor/src/main.scss"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13339",
+                "title": "NME: Fix of input types allowed for some blocks",
+                "description": "See https://forum.babylonjs.com/t/procedural-mode-not-working-in-nme/36447\r\n\r\nThat's a fix of #13328.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/fogBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/reflectionTextureBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/TBNBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/fragmentOutputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/heightToNormalBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/screenSpaceBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/shadowMapBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/clearCoatBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/reflectionBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/morphTargetsBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/triPlanarBlock.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "13341",
+                "title": "Update 4.2.1 to host from CDN",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/playground/public/index.js"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
         "5.37.0": [
             {
                 "pr": "13325",
