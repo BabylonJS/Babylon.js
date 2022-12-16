@@ -6174,6 +6174,7 @@ export class Matrix {
 
     /**
      * Creates a new rotation matrix for "angle" radians around the X axis
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#97
      * @param angle defines the angle (in radians) to use
      * @returns the new matrix
      */
@@ -6185,6 +6186,7 @@ export class Matrix {
 
     /**
      * Creates a new matrix as the invert of a given matrix
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#124
      * @param source defines the source matrix
      * @returns the new matrix
      */
@@ -6196,6 +6198,7 @@ export class Matrix {
 
     /**
      * Creates a new rotation matrix for "angle" radians around the X axis and stores it in a given matrix
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#98
      * @param angle defines the angle (in radians) to use
      * @param result defines the target matrix
      * @returns result input
@@ -6211,6 +6214,7 @@ export class Matrix {
 
     /**
      * Creates a new rotation matrix for "angle" radians around the Y axis
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#99
      * @param angle defines the angle (in radians) to use
      * @returns the new matrix
      */
@@ -6222,6 +6226,7 @@ export class Matrix {
 
     /**
      * Creates a new rotation matrix for "angle" radians around the Y axis and stores it in a given matrix
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#100
      * @param angle defines the angle (in radians) to use
      * @param result defines the target matrix
      * @returns result input
@@ -6237,6 +6242,7 @@ export class Matrix {
 
     /**
      * Creates a new rotation matrix for "angle" radians around the Z axis
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#101
      * @param angle defines the angle (in radians) to use
      * @returns the new matrix
      */
@@ -6248,6 +6254,7 @@ export class Matrix {
 
     /**
      * Creates a new rotation matrix for "angle" radians around the Z axis and stores it in a given matrix
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#102
      * @param angle defines the angle (in radians) to use
      * @param result defines the target matrix
      * @returns result input
@@ -6263,6 +6270,7 @@ export class Matrix {
 
     /**
      * Creates a new rotation matrix for "angle" radians around the given axis
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#96
      * @param axis defines the axis to use
      * @param angle defines the angle (in radians) to use
      * @returns the new matrix
@@ -6275,6 +6283,7 @@ export class Matrix {
 
     /**
      * Creates a new rotation matrix for "angle" radians around the given axis and stores it in a given matrix
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#94
      * @param axis defines the axis to use
      * @param angle defines the angle (in radians) to use
      * @param result defines the target matrix
@@ -6314,6 +6323,7 @@ export class Matrix {
     /**
      * Takes normalised vectors and returns a rotation matrix to align "from" with "to".
      * Taken from http://www.iquilezles.org/www/articles/noacos/noacos.htm
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#93
      * @param from defines the vector to align
      * @param to defines the vector to align to
      * @param result defines the target matrix
