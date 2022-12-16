@@ -2323,6 +2323,11 @@ export class Control implements IAnimatable {
         this.getDescendants().forEach((child) => child._markAllAsDirty());
     }
 
+    /**
+     * Clones a control and its descendants
+     * @param host the texture where the control will be instantiated. Can be empty, in which case the control will be created on the same texture
+     * @returns the cloned control
+     */
     public clone(host?: AdvancedDynamicTexture): Control {
         const serialization: any = {};
         this.serialize(serialization);
@@ -2334,6 +2339,12 @@ export class Control implements IAnimatable {
         return cloned;
     }
 
+    /**
+     * Parses a serialized object into this control
+     * @param serializedObject the object with the serialized properties
+     * @param host the texture where the control will be instantiated. Can be empty, in which case the control will be created on the same texture
+     * @returns this control
+     */
     public parse(serializedObject: any, host?: AdvancedDynamicTexture): Control {
         SerializationHelper.Parse(() => this, serializedObject, null);
 
