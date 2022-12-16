@@ -5573,6 +5573,7 @@ export class Matrix {
 
     /**
      * Clone the current matrix
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#18
      * @returns a new matrix from the current matrix
      */
     public clone(): this {
@@ -5603,6 +5604,7 @@ export class Matrix {
 
     /**
      * Decomposes the current Matrix into a translation, rotation and scaling components of the provided node
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#13
      * @param node the node to decompose the matrix to
      * @returns true if operation was successful
      */
@@ -5610,9 +5612,9 @@ export class Matrix {
         node.rotationQuaternion = node.rotationQuaternion || new Quaternion();
         return this.decompose(node.scaling, node.rotationQuaternion, node.position);
     }
-
     /**
      * Decomposes the current Matrix into a translation, rotation and scaling components
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#12
      * @param scale defines the scale vector3 given as a reference to update
      * @param rotation defines the rotation quaternion given as a reference to update
      * @param translation defines the translation vector3 given as a reference to update
@@ -5697,6 +5699,7 @@ export class Matrix {
 
     /**
      * Gets specific row of the matrix
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#36
      * @param index defines the number of the row to get
      * @returns the index-th row of the current matrix as a new Vector4
      */
@@ -5710,6 +5713,7 @@ export class Matrix {
 
     /**
      * Gets specific row of the matrix to ref
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#36
      * @param index defines the number of the row to get
      * @param rowVector vector to store the index-th row of the current matrix
      * @returns result input
@@ -5727,6 +5731,7 @@ export class Matrix {
 
     /**
      * Sets the index-th row of the current matrix to the vector4 values
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#36
      * @param index defines the number of the row to set
      * @param row defines the target vector4
      * @returns the updated current matrix
@@ -5737,6 +5742,7 @@ export class Matrix {
 
     /**
      * Compute the transpose of the matrix
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#40
      * @returns the new transposed matrix
      */
     public transpose(): this {
@@ -5747,6 +5753,7 @@ export class Matrix {
 
     /**
      * Compute the transpose of the matrix and store it in a given matrix
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#41
      * @param result defines the target matrix
      * @returns result input
      */
@@ -5757,6 +5764,7 @@ export class Matrix {
 
     /**
      * Sets the index-th row of the current matrix with the given 4 x float values
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#36
      * @param index defines the row index
      * @param x defines the x component to set
      * @param y defines the y component to set
@@ -5819,6 +5827,7 @@ export class Matrix {
 
     /**
      * Writes to the given matrix a normal matrix, computed from this one (using values from identity matrix for fourth row and column).
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#17
      * @param ref matrix to store the result
      */
     public toNormalMatrix<T extends Matrix>(ref: T): T {
@@ -5890,6 +5899,7 @@ export class Matrix {
     // Statics
     /**
      * Creates a matrix from an array
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#42
      * @param array defines the source array
      * @param offset defines an offset in the source array
      * @returns a new Matrix set from the starting index of the given array
@@ -5902,6 +5912,7 @@ export class Matrix {
 
     /**
      * Copy the content of an array into a given matrix
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#43
      * @param array defines the source array
      * @param offset defines an offset in the source array
      * @param result defines the target matrix
@@ -5917,6 +5928,7 @@ export class Matrix {
 
     /**
      * Stores an array into a matrix after having multiplied each component by a given factor
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#50
      * @param array defines the source array
      * @param offset defines the offset in the source array
      * @param scale defines the scaling factor
@@ -6061,6 +6073,7 @@ export class Matrix {
 
     /**
      * Creates a new matrix composed by merging scale (vector3), rotation (quaternion) and translation (vector3)
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#24
      * @param scale defines the scale vector3
      * @param rotation defines the rotation quaternion
      * @param translation defines the translation vector3
@@ -6074,6 +6087,7 @@ export class Matrix {
 
     /**
      * Sets a matrix to a value composed by merging scale (vector3), rotation (quaternion) and translation (vector3)
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#25
      * @param scale defines the scale vector3
      * @param rotation defines the rotation quaternion
      * @param translation defines the translation vector3
