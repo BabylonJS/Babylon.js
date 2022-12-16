@@ -19,7 +19,7 @@ import { KeyboardEventTypes } from "core/Events/keyboardEvents";
 import type { Line } from "gui/2D/controls/line";
 import type { Grid } from "gui/2D/controls/grid";
 import { Tools } from "../tools";
-import type { Observable, Observer } from "core/Misc/observable";
+import type { Observer } from "core/Misc/observable";
 import type { ISize } from "core/Maths/math";
 import { Texture } from "core/Materials/Textures/texture";
 import type { DimensionProperties } from "./coordinateHelper";
@@ -28,6 +28,8 @@ import { Logger } from "core/Misc/logger";
 import "./workbenchCanvas.scss";
 import { ValueAndUnit } from "gui/2D/valueAndUnit";
 import type { StackPanel } from "gui/2D/controls/stackPanel";
+import type { TransformNode } from "core/Meshes/transformNode";
+import { RandomGUID } from "core/Misc/guid";
 import { DataStorage } from "core/Misc/dataStorage";
 
 export interface IWorkbenchComponentProps {
@@ -38,6 +40,24 @@ export enum ConstraintDirection {
     NONE = 0,
     X = 2, // Horizontal constraint
     Y = 3, // Vertical constraint
+}
+
+/**
+ * This function will throttle calls to functions.
+ *
+ * @param callback callback to call.
+ * @param time time to wait between calls in ms.
+ */
+function throttle(callback: (...args: any[]) => void, time: number) {
+    let lastCalledTime: number = 0;
+    return function (...args: any[]) {
+        const now = Date.now();
+        if (now - lastCalledTime < time) {
+            return;
+        }
+        lastCalledTime = now;
+        callback(...args);
+    };
 }
 
 const ARROW_KEY_MOVEMENT_SMALL = 1; // px
@@ -56,16 +76,15 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private _panning: boolean;
     private _isOverGUINode: Control[] = [];
     private _engine: Engine;
-    private _liveRenderObserver: Nullable<Observer<AdvancedDynamicTexture>>;
     private _guiRenderObserver: Nullable<Observer<AdvancedDynamicTexture>>;
     private _doubleClick: Nullable<Control> = null;
-    public _liveGuiTextureRerender: boolean = true;
     private _currLeft: number = 0;
     private _currTop: number = 0;
     private _controlsHit: Control[] = [];
     private _pointerTravelDistance = 0;
     private _processSelectionOnUp = false;
     private _visibleRegionContainer: Container;
+
     private static _addedFonts: string[] = [];
     public static get addedFonts() {
         return this._addedFonts;
@@ -90,8 +109,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     public get trueRootContainer() {
         return this._trueRootContainer;
     }
-    private _nextLiveGuiRender = -1;
-    private _liveGuiRerenderDelay = 30;
+
     private _defaultGUISize: ISize = { width: 1024, height: 1024 };
     private _initialPanningOffset: Vector2 = new Vector2(0, 0);
     private _panningOffset = new Vector2(0, 0);
@@ -375,17 +393,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
      * @param guiControl
      */
     addEditorBehavior(guiControl: Control) {
-        const onPointerUpStored = guiControl.onPointerUpObservable.observers.slice();
-        guiControl.onPointerUpObservable.clear();
-        const onPointerDownStored = guiControl.onPointerDownObservable.observers.slice();
-        guiControl.onPointerDownObservable.clear();
-        const onPointerEnterStored = guiControl.onPointerEnterObservable.observers.slice();
-        guiControl.onPointerEnterObservable.clear();
-        const onPointerOutStored = guiControl.onPointerOutObservable.observers.slice();
-        guiControl.onPointerOutObservable.clear();
-        const onDisposeStored = guiControl.onDisposeObservable.observers.slice();
-        guiControl.onDisposeObservable.clear();
-
         guiControl.onPointerUpObservable.add(() => {
             this.clicked = false;
         });
@@ -414,21 +421,10 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 this._isOverGUINode.splice(index, 1);
             }
         });
-        // use metadata to keep track of things we need to cleanup/restore when the gui editor closes
-        // also stores the old metadata
+
         guiControl.metadata = {
+            ...guiControl.metadata,
             guiEditor: true,
-            metadata: guiControl.metadata,
-            isHighlighted: guiControl.isHighlighted,
-            highlightLineWidth: guiControl.highlightLineWidth,
-            isReadOnly: guiControl.isReadOnly,
-            isHitTestVisible: guiControl.isHitTestVisible,
-            isPointerBlocker: guiControl.isPointerBlocker,
-            onPointerUpStored,
-            onPointerDownStored,
-            onPointerEnterStored,
-            onPointerOutStored,
-            onDisposeStored,
         };
         guiControl.highlightLineWidth = 5;
         guiControl.isHighlighted = false;
@@ -445,47 +441,16 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         if (!control.metadata || !control.metadata.guiEditor) {
             return;
         }
-        const restoreObservers = (observable: Observable<any>, storedObservers: Observer<any>[]) => {
-            observable.clear();
-            for (const observer of storedObservers) {
-                const obs = observer as Observer<any>;
-                observable.add(obs.callback, obs.mask, false, obs.scope, obs.unregisterOnNextCall);
-            }
-        };
-        restoreObservers(control.onPointerUpObservable, control.metadata.onPointerUpStored);
-        restoreObservers(control.onPointerDownObservable, control.metadata.onPointerDownStored);
-        restoreObservers(control.onPointerEnterObservable, control.metadata.onPointerEnterStored);
-        restoreObservers(control.onPointerOutObservable, control.metadata.onPointerOutStored);
-        restoreObservers(control.onDisposeObservable, control.metadata.onDisposeStored);
-
-        control.highlightLineWidth = control.metadata.highlightLineWidth;
-        control.isHighlighted = control.metadata.isHighlighted;
-        control.isPointerBlocker = control.metadata.isPointerBlocker;
-        control.isHitTestVisible = control.metadata.isHitTestVisible;
-        control.isReadOnly = control.metadata.isReadOnly;
-
-        control.metadata = control.metadata.metadata;
+        delete control.metadata.guiEditor;
+        delete control.metadata.editorUniqueId;
     }
 
     dispose() {
         this.props.globalState.hostDocument!.removeEventListener("keyup", this.keyEvent);
         this.props.globalState.hostDocument!.removeEventListener("keydown", this.keyEvent);
         this.props.globalState.hostDocument!.defaultView!.removeEventListener("blur", this.blurEvent);
-        if (this.props.globalState.liveGuiTexture) {
-            this.props.globalState.liveGuiTexture.onEndRenderObservable.remove(this._liveRenderObserver);
-            this.props.globalState.guiTexture.onBeginRenderObservable.remove(this._guiRenderObserver);
-            this.props.globalState.guiTexture.getDescendants().forEach((control) => {
-                this.removeEditorBehavior(control);
-                this.props.globalState.guiTexture.removeControl(control);
-                if (control.parent === this._trueRootContainer) {
-                    control.parent = this.props.globalState.liveGuiTexture!.rootContainer;
-                }
-                control._host = this.props.globalState.liveGuiTexture!;
-            });
-            this.props.globalState.liveGuiTexture.markAsDirty();
-            this.props.globalState.guiTexture.getDescendants(true).forEach((control) => {
-                this.props.globalState.guiTexture.removeControl(control);
-            });
+        if (this._guiRenderObserver) {
+            this.props.globalState.guiTexture.onEndRenderObservable.remove(this._guiRenderObserver);
         }
         this._engine.dispose();
     }
@@ -546,9 +511,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     }
 
     appendBlock(guiElement: Control) {
-        if (this.props.globalState.liveGuiTexture) {
-            this.props.globalState.liveGuiTexture.addControl(guiElement);
-        }
         this.addEditorBehavior(guiElement);
         guiElement.getDescendants(true).forEach((desc) => this.addEditorBehavior(desc));
         if (this.props.globalState.selectedControls.length != 0) {
@@ -561,7 +523,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
     private parent(dropLocationControl: Nullable<Control>) {
         const draggedControl = this.props.globalState.draggedControl;
         const draggedControlParent = draggedControl?.parent;
-
         if (draggedControlParent && draggedControl) {
             if (this._isNotChildInsert(dropLocationControl, draggedControl)) {
                 //checking to make sure the element is not being inserted into a child
@@ -573,12 +534,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                         this.props.globalState.draggedControlDirection === DragOverLocation.CENTER
                     ) {
                         draggedControlParent.removeControl(draggedControl);
-                        const liveGui = this.props.globalState.liveGuiTexture;
-                        if (liveGui) {
-                            if (liveGui.rootContainer.children.indexOf(draggedControl) !== -1) {
-                                liveGui.rootContainer.removeControl(draggedControl);
-                            }
-                        }
                         (dropLocationControl as Container).addControl(draggedControl);
                     } else if (dropLocationControl.parent) {
                         //dropping inside the controls parent container
@@ -631,7 +586,39 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             }
         }
         this.props.globalState.draggedControl = null;
-        this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
+    }
+
+    private _canClone() {
+        return this.props.globalState.liveGuiTexture && this.props.globalState.guiTexture && this.trueRootContainer;
+    }
+
+    private _copyEditorGUIToLiveGUI() {
+        if (this._canClone()) {
+            // Before cloning, save all of the live GUI controls that have a linked mesh
+            const controlToLinkedMesh = new Map<Control, TransformNode>();
+            const liveRoot = this.props.globalState.liveGuiTexture!.rootContainer;
+            liveRoot.getDescendants().forEach((control) => {
+                if (control.linkedMesh) {
+                    controlToLinkedMesh.set(control.metadata.editorUniqueId, control.linkedMesh);
+                }
+            });
+            liveRoot.clearControls();
+            const updatedRootChildren = this.trueRootContainer.children.slice(0);
+            for (const child of updatedRootChildren) {
+                const clone = child.clone(this.props.globalState.liveGuiTexture!);
+                liveRoot.addControl(clone);
+            }
+
+            // Relink all meshes
+            liveRoot.getDescendants().forEach((control) => {
+                if (control.metadata && controlToLinkedMesh.has(control.metadata.editorUniqueId)) {
+                    const linkedMesh = controlToLinkedMesh.get(control.metadata.editorUniqueId);
+                    if (linkedMesh) {
+                        control.linkWithMesh(linkedMesh);
+                    }
+                }
+            });
+        }
     }
 
     private _reorderGrid(grid: Grid, draggedControl: Control, dropLocationControl: Control) {
@@ -854,6 +841,20 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         }
     }
 
+    private _copyLiveGUIToEditorGUI() {
+        if (this.props.globalState.liveGuiTexture && this.trueRootContainer) {
+            // Create special IDs that will allow us to know which cloned control corresponds to its original
+            this.props.globalState.liveGuiTexture.rootContainer.getDescendants().forEach((control) => {
+                control.metadata = { ...(control.metadata ?? {}), editorUniqueId: RandomGUID() };
+            });
+            this.trueRootContainer.clearControls();
+            for (const control of this.props.globalState.liveGuiTexture.rootContainer.children) {
+                const cloned = control.clone(this.props.globalState.guiTexture);
+                this.appendBlock(cloned);
+            }
+        }
+    }
+
     public createGUICanvas(embed?: boolean) {
         // Get the canvas element from the DOM.
 
@@ -868,10 +869,15 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         const light = new HemisphericLight("light1", Axis.Y, this._scene);
         light.intensity = 0.9;
 
-        if (embed) {
-            this.props.globalState.fromPG = true;
-            this._guiSize.width = DataStorage.ReadNumber("width", 1024);
-            this._guiSize.height = DataStorage.ReadNumber("height", 1024);
+        if (this.props.globalState.liveGuiTexture) {
+            this._guiSize.width = this.props.globalState.liveGuiTexture.getSize().width;
+            this._guiSize.height = this.props.globalState.liveGuiTexture.getSize().height;
+
+            canvas.width = this._guiSize.width;
+            canvas.height = this._guiSize.height;
+        } else {
+            this._guiSize.width = DataStorage.ReadNumber("GUIEditorWidth", 1024);
+            this._guiSize.height = DataStorage.ReadNumber("GUIEditorHeight", 1024);
         }
 
         this._panAndZoomContainer = new Container("panAndZoom");
@@ -895,7 +901,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.trueRootContainer = adt.rootContainer;
         adt.onEndRenderObservable.add(() => this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers());
 
-        this.synchronizeLiveGUI();
+        this._copyLiveGUIToEditorGUI();
 
         new ArcRotateCamera("Camera", 0, 0, 0, Vector3.Zero(), this._scene);
 
@@ -923,27 +929,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this.props.globalState.onWindowResizeObservable.notifyObservers();
         });
 
-        // Every time the original ADT re-renders, we must also re-render, so that layout information is computed correctly
-        // also, every time *we* re-render (due to a change in the GUI), we must re-render the original ADT
-        // to prevent an infinite loop, we flip a boolean flag
+        const throttledSynchronization = throttle(() => {
+            this._copyEditorGUIToLiveGUI();
+        }, 33);
+
         if (this.props.globalState.liveGuiTexture) {
-            this._guiRenderObserver = this.props.globalState.guiTexture.onBeginRenderObservable.add(() => {
-                if (this._liveGuiTextureRerender) {
-                    this._nextLiveGuiRender = Date.now() + this._liveGuiRerenderDelay;
-                }
-                this._liveGuiTextureRerender = true;
-            });
-            this._liveRenderObserver = this.props.globalState.liveGuiTexture.onEndRenderObservable.add(() => {
-                // return the GUI to the editor mode
-                this.props.globalState.guiTexture?.markAsDirty();
-                this._liveGuiTextureRerender = false;
-            });
-            this._scene.onAfterRenderObservable.add(() => {
-                if (this._nextLiveGuiRender > 0 && Date.now() > this._nextLiveGuiRender) {
-                    this._nextLiveGuiRender = -1;
-                    this.props.globalState.liveGuiTexture?.markAsDirty();
-                }
-            });
+            this._guiRenderObserver = this.props.globalState.guiTexture.onEndRenderObservable.add(throttledSynchronization);
         }
 
         this._engine.runRenderLoop(() => {
