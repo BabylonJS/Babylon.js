@@ -76,8 +76,8 @@ export class PhysicsShape {
      *
      * @param materialId
      */
-    public setMaterial(materialId: PhysicsMaterial): void {
-        this._physicsPlugin.setMaterial(this, materialId);
+    public setMaterial(material: PhysicsMaterial): void {
+        this._physicsPlugin.setMaterial(this, material);
     }
 
     /**
@@ -156,7 +156,7 @@ export class PhysicsShapeSphere extends PhysicsShape {
      * @param scene
      */
     constructor(center: Vector3, radius: number, scene: Scene) {
-        super(ShapeType.BOX, { center: center, radius: radius }, scene);
+        super(ShapeType.SPHERE, { center: center, radius: radius }, scene);
     }
 }
 

@@ -7,6 +7,7 @@ import type { PhysicsConstraint } from "./physicsConstraint";
 import type { BoundingBox } from "../../Culling/boundingBox";
 import type { TransformNode } from "../../Meshes/transformNode";
 import type { PhysicsMaterial } from "./physicsMaterial";
+import type { Mesh } from "../../Meshes/mesh";
 
 /** @internal */
 export enum ConstraintAxisLimitMode {
@@ -45,6 +46,7 @@ export enum ShapeType {
     CONVEX_HULL,
     CONTAINER,
     MESH,
+    HEIGHTFIELD,
 }
 
 /** @internal */
@@ -109,11 +111,12 @@ export interface IPhysicsEnginePlugin {
     setGravity(gravity: Vector3): void;
     setTimeStep(timeStep: number): void;
     getTimeStep(): number;
-    executeStep(delta: number): void; //not forgetting pre and post events
+    executeStep(delta: number, bodies: Array<any>): void; //not forgetting pre and post events
     getPluginVersion(): number;
 
     // body
-    initBody(body: PhysicsBody): void;
+    initBody(body: PhysicsBody, position: Vector3, orientation: Quaternion): void;
+    initBodyInstances(body: PhysicsBody, mesh: Mesh): void;
     setShape(body: PhysicsBody, shape: PhysicsShape): void;
     getShape(body: PhysicsBody): PhysicsShape;
     setFilterGroup(body: PhysicsBody, group: number): void;
@@ -131,6 +134,7 @@ export interface IPhysicsEnginePlugin {
     applyImpulse(body: PhysicsBody, location: Vector3, impulse: Vector3): void;
     setAngularVelocity(body: PhysicsBody, angVel: Vector3): void;
     getAngularVelocityToRef(body: PhysicsBody, angVel: Vector3): void;
+    getBodyGeometry(body: PhysicsBody): {};
     disposeBody(body: PhysicsBody): void;
 
     // shape
