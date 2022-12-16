@@ -6374,6 +6374,8 @@ export class Matrix {
 
     /**
      * Creates a rotation matrix
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#103
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#105
      * @param yaw defines the yaw angle in radians (Y axis)
      * @param pitch defines the pitch angle in radians (X axis)
      * @param roll defines the roll angle in radians (Z axis)
@@ -6387,6 +6389,7 @@ export class Matrix {
 
     /**
      * Creates a rotation matrix and stores it in a given matrix
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#104
      * @param yaw defines the yaw angle in radians (Y axis)
      * @param pitch defines the pitch angle in radians (X axis)
      * @param roll defines the roll angle in radians (Z axis)
@@ -6401,6 +6404,7 @@ export class Matrix {
 
     /**
      * Creates a scaling matrix
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#107
      * @param x defines the scale factor on X axis
      * @param y defines the scale factor on Y axis
      * @param z defines the scale factor on Z axis
@@ -6414,6 +6418,7 @@ export class Matrix {
 
     /**
      * Creates a scaling matrix and stores it in a given matrix
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#108
      * @param x defines the scale factor on X axis
      * @param y defines the scale factor on Y axis
      * @param z defines the scale factor on Z axis
@@ -6429,6 +6434,7 @@ export class Matrix {
 
     /**
      * Creates a translation matrix
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#109
      * @param x defines the translation on X axis
      * @param y defines the translation on Y axis
      * @param z defines the translationon Z axis
@@ -6442,6 +6448,7 @@ export class Matrix {
 
     /**
      * Creates a translation matrix and stores it in a given matrix
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#110
      * @param x defines the translation on X axis
      * @param y defines the translation on Y axis
      * @param z defines the translationon Z axis
@@ -6456,6 +6463,7 @@ export class Matrix {
 
     /**
      * Returns a new Matrix whose values are the interpolated values for "gradient" (float) between the ones of the matrices "startValue" and "endValue".
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#55
      * @param startValue defines the start value
      * @param endValue defines the end value
      * @param gradient defines the gradient factor
@@ -6469,6 +6477,7 @@ export class Matrix {
 
     /**
      * Set the given matrix "result" as the interpolated values for "gradient" (float) between the ones of the matrices "startValue" and "endValue".
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#54
      * @param startValue defines the start value
      * @param endValue defines the end value
      * @param gradient defines the gradient factor
@@ -6491,6 +6500,8 @@ export class Matrix {
      * * decomposing the the "startValue" and "endValue" matrices into their respective scale, rotation and translation matrices
      * * interpolating for "gradient" (float) the values between each of these decomposed matrices between the start and the end
      * * recomposing a new matrix from these 3 interpolated scale, rotation and translation matrices
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#22
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#51
      * @param startValue defines the first matrix
      * @param endValue defines the second matrix
      * @param gradient defines the gradient between the two matrices
@@ -6507,6 +6518,8 @@ export class Matrix {
      * * decomposing the the "startValue" and "endValue" matrices into their respective scale, rotation and translation matrices
      * * interpolating for "gradient" (float) the values between each of these decomposed matrices between the start and the end
      * * recomposing a new matrix from these 3 interpolated scale, rotation and translation matrices
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#23
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#53
      * @param startValue defines the first matrix
      * @param endValue defines the second matrix
      * @param gradient defines the gradient between the two matrices
@@ -6539,6 +6552,8 @@ export class Matrix {
     /**
      * Creates a new matrix that transforms vertices from world space to camera space. It takes three vectors as arguments that together describe the position and orientation of the camera.
      * This function generates a matrix suitable for a left handed coordinate system
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#58
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#59
      * @param eye defines the final position of the entity
      * @param target defines where the entity should look at
      * @param up defines the up vector for the entity
@@ -6553,6 +6568,8 @@ export class Matrix {
     /**
      * Sets the given "result" Matrix to a matrix that transforms vertices from world space to camera space. It takes three vectors as arguments that together describe the position and orientation of the camera.
      * This function generates a matrix suitable for a left handed coordinate system
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#60
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#61
      * @param eye defines the final position of the entity
      * @param target defines where the entity should look at
      * @param up defines the up vector for the entity
@@ -6593,6 +6610,8 @@ export class Matrix {
     /**
      * Creates a new matrix that transforms vertices from world space to camera space. It takes three vectors as arguments that together describe the position and orientation of the camera.
      * This function generates a matrix suitable for a right handed coordinate system
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#62
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#63
      * @param eye defines the final position of the entity
      * @param target defines where the entity should look at
      * @param up defines the up vector for the entity
@@ -6607,6 +6626,8 @@ export class Matrix {
     /**
      * Sets the given "result" Matrix to a matrix that transforms vertices from world space to camera space. It takes three vectors as arguments that together describe the position and orientation of the camera.
      * This function generates a matrix suitable for a right handed coordinate system
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#64
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#65
      * @param eye defines the final position of the entity
      * @param target defines where the entity should look at
      * @param up defines the up vector for the entity
@@ -6648,6 +6669,7 @@ export class Matrix {
     /**
      * Creates a new matrix that transforms vertices from world space to camera space. It takes two vectors as arguments that together describe the orientation of the camera. The position is assumed to be at the origin (0,0,0)
      * This function generates a matrix suitable for a left handed coordinate system
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#66
      * @param forward defines the forward direction - Must be normalized and orthogonal to up.
      * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
      * @returns the new matrix
@@ -6661,6 +6683,7 @@ export class Matrix {
     /**
      * Sets the given "result" Matrix to a matrix that transforms vertices from world space to camera space. It takes two vectors as arguments that together describe the orientation of the camera. The position is assumed to be at the origin (0,0,0)
      * This function generates a matrix suitable for a left handed coordinate system
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#67
      * @param forward defines the forward direction - Must be normalized and orthogonal to up.
      * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
      * @param result defines the target matrix
@@ -6681,6 +6704,7 @@ export class Matrix {
     /**
      * Creates a new matrix that transforms vertices from world space to camera space. It takes two vectors as arguments that together describe the orientation of the camera. The position is assumed to be at the origin (0,0,0)
      * This function generates a matrix suitable for a right handed coordinate system
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#68
      * @param forward defines the forward direction - Must be normalized and orthogonal to up.
      * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
      * @returns the new matrix
@@ -6694,6 +6718,7 @@ export class Matrix {
     /**
      * Sets the given "result" Matrix to a matrix that transforms vertices from world space to camera space. It takes two vectors as arguments that together describe the orientation of the camera. The position is assumed to be at the origin (0,0,0)
      * This function generates a matrix suitable for a right handed coordinate system
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#69
      * @param forward defines the forward direction - Must be normalized and orthogonal to up.
      * @param up defines the up vector for the entity - Must be normalized and orthogonal to forward.
      * @param result defines the target matrix
@@ -6710,6 +6735,7 @@ export class Matrix {
 
     /**
      * Create a left-handed orthographic projection matrix
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#70
      * @param width defines the viewport width
      * @param height defines the viewport height
      * @param znear defines the near clip plane
@@ -6725,6 +6751,7 @@ export class Matrix {
 
     /**
      * Store a left-handed orthographic projection to a given matrix
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#71
      * @param width defines the viewport width
      * @param height defines the viewport height
      * @param znear defines the near clip plane
@@ -6754,6 +6781,7 @@ export class Matrix {
 
     /**
      * Create a left-handed orthographic projection matrix
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#72
      * @param left defines the viewport left coordinate
      * @param right defines the viewport right coordinate
      * @param bottom defines the viewport bottom coordinate
@@ -6771,6 +6799,7 @@ export class Matrix {
 
     /**
      * Stores a left-handed orthographic projection into a given matrix
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#73
      * @param left defines the viewport left coordinate
      * @param right defines the viewport right coordinate
      * @param bottom defines the viewport bottom coordinate
@@ -6813,6 +6842,7 @@ export class Matrix {
 
     /**
      * Creates a right-handed orthographic projection matrix
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#76
      * @param left defines the viewport left coordinate
      * @param right defines the viewport right coordinate
      * @param bottom defines the viewport bottom coordinate
@@ -6830,6 +6860,7 @@ export class Matrix {
 
     /**
      * Stores a right-handed orthographic projection into a given matrix
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#77
      * @param left defines the viewport left coordinate
      * @param right defines the viewport right coordinate
      * @param bottom defines the viewport bottom coordinate
@@ -6857,6 +6888,7 @@ export class Matrix {
 
     /**
      * Creates a left-handed perspective projection matrix
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#85
      * @param width defines the viewport width
      * @param height defines the viewport height
      * @param znear defines the near clip plane
@@ -6889,6 +6921,7 @@ export class Matrix {
 
     /**
      * Creates a left-handed perspective projection matrix
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#78
      * @param fov defines the horizontal field of view
      * @param aspect defines the aspect ratio
      * @param znear defines the near clip plane
@@ -6914,6 +6947,7 @@ export class Matrix {
 
     /**
      * Stores a left-handed perspective projection into a given matrix
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#81
      * @param fov defines the horizontal field of view
      * @param aspect defines the aspect ratio
      * @param znear defines the near clip plane
@@ -6958,6 +6992,7 @@ export class Matrix {
 
     /**
      * Stores a left-handed perspective projection into a given matrix with depth reversed
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#89
      * @param fov defines the horizontal field of view
      * @param aspect defines the aspect ratio
      * @param znear defines the near clip plane
@@ -6993,6 +7028,7 @@ export class Matrix {
 
     /**
      * Creates a right-handed perspective projection matrix
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#83
      * @param fov defines the horizontal field of view
      * @param aspect defines the aspect ratio
      * @param znear defines the near clip plane
@@ -7018,6 +7054,7 @@ export class Matrix {
 
     /**
      * Stores a right-handed perspective projection into a given matrix
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#84
      * @param fov defines the horizontal field of view
      * @param aspect defines the aspect ratio
      * @param znear defines the near clip plane
@@ -7067,6 +7104,7 @@ export class Matrix {
 
     /**
      * Stores a right-handed perspective projection into a given matrix
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#90
      * @param fov defines the horizontal field of view
      * @param aspect defines the aspect ratio
      * @param znear defines the near clip plane
@@ -7104,6 +7142,7 @@ export class Matrix {
 
     /**
      * Stores a perspective projection for WebVR info a given matrix
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#92
      * @param fov defines the field of view
      * @param fov.upDegrees
      * @param fov.downDegrees
@@ -7159,6 +7198,7 @@ export class Matrix {
 
     /**
      * Computes a complete transformation matrix
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#113
      * @param viewport defines the viewport to use
      * @param world defines the world matrix
      * @param view defines the view matrix
@@ -7211,6 +7251,7 @@ export class Matrix {
 
     /**
      * Compute the transpose of a given matrix
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#111
      * @param matrix defines the matrix to transpose
      * @returns the new matrix
      */
@@ -7222,6 +7263,7 @@ export class Matrix {
 
     /**
      * Compute the transpose of a matrix and store it in a target matrix
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#112
      * @param matrix defines the matrix to transpose
      * @param result defines the target matrix
      * @returns result input
@@ -7258,6 +7300,7 @@ export class Matrix {
 
     /**
      * Computes a reflection matrix from a plane
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#87
      * @param plane defines the reflection plane
      * @returns a new matrix
      */
@@ -7269,6 +7312,7 @@ export class Matrix {
 
     /**
      * Computes a reflection matrix from a plane
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#88
      * @param plane defines the reflection plane
      * @param result defines the target matrix
      * @returns result input
