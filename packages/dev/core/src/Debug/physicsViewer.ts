@@ -131,7 +131,7 @@ export class PhysicsViewer {
     }
 
     /**
-     * 
+     *
      */
     public showBody(body: PhysicsBody): Nullable<AbstractMesh> {
         if (!this._scene) {
@@ -373,7 +373,7 @@ export class PhysicsViewer {
         if (!this._utilityLayer) {
             return null;
         }
-        
+
         const utilityLayerScene = this._utilityLayer.utilityLayerScene;
 
         const mesh = new Mesh("custom", utilityLayerScene);
