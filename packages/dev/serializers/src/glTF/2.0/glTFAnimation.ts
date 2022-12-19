@@ -782,8 +782,6 @@ export class _GLTFAnimation {
         convertToRightHandedSystem: boolean,
         useQuaternion: boolean
     ): Vector3 | Quaternion {
-        let property: string[];
-        let componentName: string;
         const basePositionRotationOrScale = _GLTFAnimation._GetBasePositionRotationOrScale(
             babylonTransformNode,
             animationChannelTargetPath,
@@ -791,8 +789,8 @@ export class _GLTFAnimation {
             useQuaternion
         );
         // handles single component x, y, z or w component animation by using a base property and animating over a component.
-        property = animation.targetProperty.split(".");
-        componentName = property ? property[1] : ""; // x, y, or z component
+        const property = animation.targetProperty.split(".");
+        const componentName = property ? property[1] : ""; // x, y, or z component
         const value = useQuaternion ? Quaternion.FromArray(basePositionRotationOrScale).normalize() : Vector3.FromArray(basePositionRotationOrScale);
 
         switch (componentName) {
