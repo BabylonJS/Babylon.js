@@ -67,7 +67,7 @@ ThinEngine.prototype.createRenderTargetTexture = function (this: ThinEngine, siz
     let colorAttachment: InternalTexture | undefined = undefined;
     let samples = 1;
     if (options !== undefined && typeof options === "object") {
-        generateDepthBuffer = !!options.generateDepthBuffer;
+        generateDepthBuffer = options.generateDepthBuffer ?? true;
         generateStencilBuffer = !!options.generateStencilBuffer;
         noColorAttachment = !!options.noColorAttachment;
         colorAttachment = options.colorAttachment;
