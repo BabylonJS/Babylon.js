@@ -88,6 +88,13 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
     public excludedMeshes = new Array<AbstractMesh>();
 
     /**
+     * Array containing the only meshes rendered in the internal pass.
+     * If this array is not empty, only the meshes from this array are rendered in the internal pass
+     */
+    @serialize()
+    public includedMeshes = new Array<AbstractMesh>();
+
+    /**
      * Controls the overall intensity of the post-process
      */
     @serialize()
@@ -305,7 +312,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
 
     // Private methods
     private _meshExcluded(mesh: AbstractMesh) {
-        if (this.excludedMeshes.length > 0 && this.excludedMeshes.indexOf(mesh) !== -1) {
+        if ((this.includedMeshes.length > 0 && this.includedMeshes.indexOf(mesh) === -1) || (this.excludedMeshes.length > 0 && this.excludedMeshes.indexOf(mesh) !== -1)) {
             return true;
         }
 
