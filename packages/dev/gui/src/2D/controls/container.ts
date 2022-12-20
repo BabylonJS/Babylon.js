@@ -12,7 +12,7 @@ import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { Constants } from "core/Engines/constants";
 import { Observable } from "core/Misc/observable";
-import { BaseGradient } from "./gradient/BaseGradient";
+import type { BaseGradient } from "./gradient/BaseGradient";
 
 /**
  * Root class for 2D containers

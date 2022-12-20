@@ -25,7 +25,7 @@ import type { IAccessibilityTag } from "core/IAccessibilityTag";
 import type { IPointerEvent } from "core/Events/deviceInputEvents";
 import type { IAnimatable } from "core/Animations/animatable.interface";
 import type { Animation } from "core/Animations/animation";
-import { BaseGradient } from "./gradient/BaseGradient";
+import type { BaseGradient } from "./gradient/BaseGradient";
 
 /**
  * Root class used for all 2D controls

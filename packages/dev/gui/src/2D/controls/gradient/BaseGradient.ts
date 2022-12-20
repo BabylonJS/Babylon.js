@@ -2,7 +2,7 @@
  * Base Gradient class. Should not be used directly.
  */
 
-import { ICanvasGradient, ICanvasRenderingContext } from "core/Engines/ICanvas";
+import type { ICanvasGradient, ICanvasRenderingContext } from "core/Engines/ICanvas";
 import { serialize } from "core/Misc/decorators";
 
 /**

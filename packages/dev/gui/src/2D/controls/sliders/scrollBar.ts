@@ -5,8 +5,8 @@ import { Measure } from "../../measure";
 import type { PointerInfoBase } from "core/Events/pointerEvents";
 import { serialize } from "core/Misc/decorators";
 import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
-import { Nullable } from "core/types";
-import { BaseGradient } from "../gradient/BaseGradient";
+import type { Nullable } from "core/types";
+import type { BaseGradient } from "../gradient/BaseGradient";
 
 /**
  * Class used to create slider controls

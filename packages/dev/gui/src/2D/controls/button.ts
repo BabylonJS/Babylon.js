@@ -8,7 +8,7 @@ import { Image } from "./image";
 import { RegisterClass } from "core/Misc/typeStore";
 import type { PointerInfoBase } from "core/Events/pointerEvents";
 import type { AdvancedDynamicTexture } from "../advancedDynamicTexture";
-import { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
 
 /**
  * Class used to create 2D buttons
