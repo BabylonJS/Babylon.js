@@ -1,6 +1,4 @@
 vec4 finalColor = vec4(
-        finalAmbient +
-        finalDiffuse +
 #ifndef UNLIT
     #ifdef REFLECTION
         finalIrradiance +
@@ -27,6 +25,8 @@ vec4 finalColor = vec4(
         subSurfaceOut.finalRefraction +
     #endif
 #endif
+        finalAmbient +
+        finalDiffuse
         alpha);
 
 // _____________________________ LightMappping _____________________________________
