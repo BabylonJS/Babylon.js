@@ -2,6 +2,8 @@ import { BaseSlider } from "./baseSlider";
 import { RegisterClass } from "core/Misc/typeStore";
 import { serialize } from "core/Misc/decorators";
 import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import { Nullable } from "core/types";
+import { BaseGradient } from "../gradient/BaseGradient";
 
 /**
  * Class used to create slider controls
@@ -12,6 +14,7 @@ export class Slider extends BaseSlider {
     private _thumbColor = "";
     private _isThumbCircle = false;
     protected _displayValueBar = true;
+    private _backgroundGradient: Nullable<BaseGradient> = null;
 
     /** Gets or sets a boolean indicating if the value bar must be rendered */
     @serialize()
@@ -58,6 +61,19 @@ export class Slider extends BaseSlider {
         this._markAsDirty();
     }
 
+    public get backgroundGradient(): Nullable<BaseGradient> {
+        return this._backgroundGradient;
+    }
+
+    public set backgroundGradient(value: Nullable<BaseGradient>) {
+        if (this._backgroundGradient === value) {
+            return;
+        }
+
+        this._backgroundGradient = value;
+        this._markAsDirty();
+    }
+
     /** Gets or sets thumb's color */
     @serialize()
     public get thumbColor(): string {
@@ -100,6 +116,10 @@ export class Slider extends BaseSlider {
         return "Slider";
     }
 
+    protected _getBackgroundColor(context: ICanvasRenderingContext) {
+        return this._backgroundGradient ? this._backgroundGradient.getCanvasGradient(context) : this._background;
+    }
+
     public _draw(context: ICanvasRenderingContext): void {
         context.save();
 
@@ -132,7 +152,7 @@ export class Slider extends BaseSlider {
         }
 
         const thumbPosition = this._getThumbPosition();
-        context.fillStyle = this._background;
+        context.fillStyle = this._getBackgroundColor(context);
 
         if (this.isVertical) {
             if (this.isThumbClamped) {
@@ -169,7 +189,7 @@ export class Slider extends BaseSlider {
         }
 
         // Value bar
-        context.fillStyle = this.color;
+        context.fillStyle = this._getColor(context);
         if (this._displayValueBar) {
             if (this.isVertical) {
                 if (this.isThumbClamped) {
@@ -201,7 +221,7 @@ export class Slider extends BaseSlider {
         }
 
         // Thumb
-        context.fillStyle = this._thumbColor || this.color;
+        context.fillStyle = this._thumbColor || this._getColor(context);
         if (this.displayThumb) {
             if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
                 context.shadowColor = this.shadowColor;

@@ -186,7 +186,7 @@ export class Line extends Control {
         }
 
         this._applyStates(context);
-        context.strokeStyle = this.color;
+        context.strokeStyle = this._getColor(context);
         context.lineWidth = this._lineWidth;
         context.setLineDash(this._dash);
 

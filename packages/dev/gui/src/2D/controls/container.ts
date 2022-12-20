@@ -7,11 +7,12 @@ import type { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 import { RegisterClass } from "core/Misc/typeStore";
 import type { PointerInfoBase } from "core/Events/pointerEvents";
 import { serialize } from "core/Misc/decorators";
-import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import type { ICanvasGradient, ICanvasRenderingContext } from "core/Engines/ICanvas";
 import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { Constants } from "core/Engines/constants";
 import { Observable } from "core/Misc/observable";
+import { BaseGradient } from "./gradient/BaseGradient";
 
 /**
  * Root class for 2D containers
@@ -24,6 +25,8 @@ export class Container extends Control {
     protected _measureForChildren = Measure.Empty();
     /** @internal */
     protected _background = "";
+    /** @internal */
+    protected _backgroundGradient: Nullable<BaseGradient> = null;
     /** @internal */
     protected _adaptWidthToChildren = false;
     /** @internal */
@@ -109,6 +112,19 @@ export class Container extends Control {
         }
 
         this._background = value;
+        this._markAsDirty();
+    }
+
+    /** Gets or sets background gradient color. Takes precedence over background */
+    public get backgroundGradient() {
+        return this._backgroundGradient;
+    }
+
+    public set backgroundGradient(value: Nullable<BaseGradient>) {
+        if (this._backgroundGradient === value) {
+            return;
+        }
+        this._backgroundGradient = value;
         this._markAsDirty();
     }
 
@@ -327,6 +343,10 @@ export class Container extends Control {
         }
     }
 
+    protected _getBackgroundColor(context: ICanvasRenderingContext): string | ICanvasGradient {
+        return this._backgroundGradient ? this._backgroundGradient.getCanvasGradient(context) : this._background;
+    }
+
     /**
      * @internal
      */
@@ -340,7 +360,8 @@ export class Container extends Control {
                 context.shadowOffsetY = this.shadowOffsetY;
             }
 
-            context.fillStyle = this._background;
+            context.fillStyle = this._getBackgroundColor(context);
+
             context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
             context.restore();
         }
