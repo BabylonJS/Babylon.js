@@ -2,8 +2,8 @@ import { BaseSlider } from "./baseSlider";
 import { RegisterClass } from "core/Misc/typeStore";
 import { serialize } from "core/Misc/decorators";
 import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
-import { Nullable } from "core/types";
-import { BaseGradient } from "../gradient/BaseGradient";
+import type { Nullable } from "core/types";
+import type { BaseGradient } from "../gradient/BaseGradient";
 
 /**
  * Class used to create slider controls
