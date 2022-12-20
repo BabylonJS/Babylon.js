@@ -3,12 +3,24 @@ import { BaseGradient } from "./BaseGradient";
 import { RegisterClass } from "core/Misc/typeStore";
 import { serialize } from "core/Misc/decorators";
 
+/**
+ * Gradient along a line that connects two coordinates.
+ * These coordinates are relative to the canvas' space, not to any control's space.
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createLinearGradient
+ */
 export class LinearGradient extends BaseGradient {
     private _x0: number;
     private _y0: number;
     private _x1: number;
     private _y1: number;
 
+    /**
+     * Creates a new linear gradient
+     * @param x0
+     * @param y0
+     * @param x1
+     * @param y1
+     */
     constructor(x0: number, y0: number, x1: number, y1: number) {
         super();
         this._x0 = x0;

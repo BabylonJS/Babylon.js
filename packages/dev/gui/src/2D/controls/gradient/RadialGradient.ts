@@ -3,6 +3,11 @@ import { BaseGradient } from "./BaseGradient";
 import { RegisterClass } from "core/Misc/typeStore";
 import { serialize } from "core/Misc/decorators";
 
+/**
+ * Gradient formed from two circles with their own centers and radius.
+ * The coordinates of the circles centers are relative to the canvas' space, not to any control's space.
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createRadialGradient
+ */
 export class RadialGradient extends BaseGradient {
     private _x0: number;
     private _y0: number;
@@ -11,6 +16,15 @@ export class RadialGradient extends BaseGradient {
     private _y1: number;
     private _r1: number;
 
+    /**
+     * Creates a new radial gradient
+     * @param x0 x coordinate of the first circle's center
+     * @param y0 y coordinate of the first circle's center
+     * @param r0 radius of the first circle
+     * @param x1 x coordinate of the second circle's center
+     * @param y1 y coordinate of the second circle's center
+     * @param r1 radius of the second circle
+     */
     constructor(x0: number, y0: number, r0: number, x1: number, y1: number, r1: number) {
         super();
         this._x0 = x0;

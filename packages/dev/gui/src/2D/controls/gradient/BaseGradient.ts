@@ -5,6 +5,9 @@
 import { ICanvasGradient, ICanvasRenderingContext } from "core/Engines/ICanvas";
 import { serialize } from "core/Misc/decorators";
 
+/**
+ * Class that represents a single stop on the gradient.
+ */
 export class ColorStop {
     @serialize()
     public offset: number;
@@ -12,6 +15,11 @@ export class ColorStop {
     @serialize()
     public color: string;
 
+    /**
+     * Build a new Color Stop
+     * @param offset the offset of the stop. Should be between 0 and 1
+     * @param color the color of the stop
+     */
     constructor(offset: number, color: string) {
         this.offset = offset;
 
@@ -42,7 +50,7 @@ export class BaseGradient {
         throw new Error("BaseGradient shouldn't be used directly.");
     }
 
-    private _addColorStops() {
+    private _addColorStopsToCanvasGradient() {
         for (const stop of this._colorStops) {
             this._canvasGradient.addColorStop(stop.offset, stop.color);
         }
@@ -52,22 +60,34 @@ export class BaseGradient {
         if (this._gradientDirty || this._context !== context) {
             this._context = context;
             this._canvasGradient = this._createCanvasGradient(context);
-            this._addColorStops();
+            this._addColorStopsToCanvasGradient();
             this._gradientDirty = false;
         }
         return this._canvasGradient;
     }
 
+    /**
+     * Adds a new color stop to the gradient.
+     * @param offset the offset of the stop on the gradient. Should be between 0 and 1
+     * @param color the color of the stop
+     */
     public addColorStop(offset: number, color: string) {
         this._colorStops.push(new ColorStop(offset, color));
         this._gradientDirty = true;
     }
 
+    /**
+     * Removes an existing color stop with the specified offset from the gradient
+     * @param offset the offset of the stop to be removed
+     */
     public removeColorStop(offset: number) {
         this._colorStops = this._colorStops.filter((colorStop) => colorStop.offset !== offset);
         this._gradientDirty = true;
     }
 
+    /**
+     * Removes all color stops from the gradient
+     */
     public clearColorStops() {
         this._colorStops = [];
         this._gradientDirty = true;
