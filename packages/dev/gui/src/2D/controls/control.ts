@@ -784,6 +784,7 @@ export class Control implements IAnimatable {
     }
 
     /** Gets or sets gradient. Setting a gradient will override the color */
+    @serialize()
     public get gradient(): Nullable<BaseGradient> {
         return this._gradient;
     }

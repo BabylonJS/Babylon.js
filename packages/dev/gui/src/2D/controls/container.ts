@@ -116,6 +116,7 @@ export class Container extends Control {
     }
 
     /** Gets or sets background gradient color. Takes precedence over background */
+    @serialize()
     public get backgroundGradient() {
         return this._backgroundGradient;
     }

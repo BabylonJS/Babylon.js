@@ -3,16 +3,23 @@
  */
 
 import { ICanvasGradient, ICanvasRenderingContext } from "core/Engines/ICanvas";
+import { serialize } from "core/Misc/decorators";
 
 export class ColorStop {
+    @serialize()
     public offset: number;
 
+    @serialize()
     public color: string;
 
     constructor(offset: number, color: string) {
         this.offset = offset;
 
         this.color = color;
+    }
+
+    public getClassName() {
+        return "ColorStop";
     }
 }
 
@@ -64,5 +71,14 @@ export class BaseGradient {
     public clearColorStops() {
         this._colorStops = [];
         this._gradientDirty = true;
+    }
+
+    @serialize()
+    public get colorStops() {
+        return this._colorStops;
+    }
+
+    public getClassName() {
+        return "BaseGradient";
     }
 }
