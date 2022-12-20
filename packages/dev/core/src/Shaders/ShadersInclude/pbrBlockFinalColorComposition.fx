@@ -27,7 +27,6 @@ vec4 finalColor = vec4(
         subSurfaceOut.finalRefraction +
     #endif
 #endif
-        finalEmissive,
         alpha);
 
 // _____________________________ LightMappping _____________________________________
@@ -40,6 +39,9 @@ vec4 finalColor = vec4(
         #endif
     #endif
 #endif
+
+// _____________________________ EmissiveLight _____________________________________
+finalColor.rgb += finalEmissive;
 
 #define CUSTOM_FRAGMENT_BEFORE_FOG
 
