@@ -207,9 +207,12 @@ export class LinesMesh extends Mesh {
     /**
      * Disposes of the line mesh
      * @param doNotRecurse If children should be disposed
+     * @param doNotDisposeMaterial If the material should not be disposed (default: false, meaning the material is disposed)
      */
-    public dispose(doNotRecurse?: boolean): void {
-        this._lineMaterial.dispose(false, false, true);
+    public dispose(doNotRecurse?: boolean, doNotDisposeMaterial?: boolean): void {
+        if (!doNotDisposeMaterial) {
+            this._lineMaterial.dispose(false, false, true);
+        }
         super.dispose(doNotRecurse);
     }
 
