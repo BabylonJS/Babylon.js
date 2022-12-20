@@ -154,6 +154,11 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     public renderSprites = false;
 
     /**
+     * Force checking the layerMask property even if a custom list of meshes is provided (ie. if renderList is not undefined)
+     */
+    public forceLayerMaskCheck = false;
+
+    /**
      * Define the camera used to render the texture.
      */
     public activeCamera: Nullable<Camera>;
@@ -1185,13 +1190,13 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                 // No custom render list provided, we prepare the rendering for the default list, but check
                 // first if we did not already performed the preparation before so as to avoid re-doing it several times
                 if (!this._defaultRenderListPrepared) {
-                    this._prepareRenderingManager(defaultRenderList, defaultRenderListLength, camera, !this.renderList);
+                    this._prepareRenderingManager(defaultRenderList, defaultRenderListLength, camera, !this.renderList || this.forceLayerMaskCheck);
                     this._defaultRenderListPrepared = true;
                 }
                 currentRenderList = defaultRenderList;
             } else {
                 // Prepare the rendering for the custom render list provided
-                this._prepareRenderingManager(currentRenderList, currentRenderList.length, camera, false);
+                this._prepareRenderingManager(currentRenderList, currentRenderList.length, camera, this.forceLayerMaskCheck);
             }
 
             // Before clear
