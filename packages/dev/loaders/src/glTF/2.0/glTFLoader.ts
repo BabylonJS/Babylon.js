@@ -97,6 +97,7 @@ interface IRegisteredExtension {
 }
 
 interface IWithMetadata {
+    metadata: any;
     _internalMetadata: any;
 }
 
@@ -2456,6 +2457,7 @@ export class GLTFLoader implements IGLTFLoader {
      * @param pointer the JSON pointer
      */
     public static AddPointerMetadata(babylonObject: IWithMetadata, pointer: string): void {
+        babylonObject.metadata = babylonObject.metadata || {};
         const metadata = (babylonObject._internalMetadata = babylonObject._internalMetadata || {});
         const gltf = (metadata.gltf = metadata.gltf || {});
         const pointers = (gltf.pointers = gltf.pointers || []);
