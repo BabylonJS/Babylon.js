@@ -26,7 +26,7 @@ vec4 finalColor = vec4(
     #endif
 #endif
         finalAmbient +
-        finalDiffuse
+        finalDiffuse,
         alpha);
 
 // _____________________________ LightMappping _____________________________________
