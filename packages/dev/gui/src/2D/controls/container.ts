@@ -13,6 +13,7 @@ import { Texture } from "core/Materials/Textures/texture";
 import { Constants } from "core/Engines/constants";
 import { Observable } from "core/Misc/observable";
 import type { BaseGradient } from "./gradient/BaseGradient";
+import { Tools } from "core/Misc/tools";
 
 /**
  * Root class for 2D containers
@@ -618,6 +619,12 @@ export class Container extends Control {
      */
     public serialize(serializationObject: any) {
         super.serialize(serializationObject);
+
+        if (this.backgroundGradient) {
+            serializationObject.backgroundGradient = {};
+            this.backgroundGradient.serialize(serializationObject.backgroundGradient);
+        }
+
         if (!this.children.length) {
             return;
         }
@@ -647,6 +654,13 @@ export class Container extends Control {
     public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
         super._parseFromContent(serializedObject, host);
         this._link(host);
+
+        // Gradient
+        if (serializedObject.backgroundGradient) {
+            const className = Tools.Instantiate("BABYLON.GUI." + serializedObject.backgroundGradient.className);
+            this._backgroundGradient = new className();
+            this._backgroundGradient?.parse(serializedObject.backgroundGradient);
+        }
 
         if (!serializedObject.children) {
             return;

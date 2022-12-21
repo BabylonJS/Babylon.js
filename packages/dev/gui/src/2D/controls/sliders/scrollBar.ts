@@ -7,6 +7,9 @@ import { serialize } from "core/Misc/decorators";
 import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
 import type { Nullable } from "core/types";
 import type { BaseGradient } from "../gradient/BaseGradient";
+import type { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
+import { Tools } from "core/Misc/tools";
+import { RegisterClass } from "core/Misc/typeStore";
 
 /**
  * Class used to create slider controls
@@ -186,4 +189,24 @@ export class ScrollBar extends BaseSlider {
 
         return super._onPointerDown(target, coordinates, pointerId, buttonIndex, pi);
     }
+
+    public serialize(serializationObject: any) {
+        super.serialize(serializationObject);
+
+        if (this.backgroundGradient) {
+            serializationObject.backgroundGradient = {};
+            this.backgroundGradient.serialize(serializationObject.backgroundGradient);
+        }
+    }
+
+    public _parseFromContent(serializationObject: any, host: AdvancedDynamicTexture) {
+        super._parseFromContent(serializationObject, host);
+
+        if (serializationObject.backgroundGradient) {
+            const className = Tools.Instantiate("BABYLON.GUI." + serializationObject.backgroundGradient.className);
+            this.backgroundGradient = new className();
+            this.backgroundGradient!.parse(serializationObject.backgroundGradient);
+        }
+    }
 }
+RegisterClass("BABYLON.GUI.Scrollbar", ScrollBar);

@@ -3,33 +3,11 @@
  */
 
 import type { ICanvasGradient, ICanvasRenderingContext } from "core/Engines/ICanvas";
-import { serialize } from "core/Misc/decorators";
 
 /**
- * Class that represents a single stop on the gradient.
+ * Type that represents a single stop on the gradient.
  */
-export class ColorStop {
-    @serialize()
-    public offset: number;
-
-    @serialize()
-    public color: string;
-
-    /**
-     * Build a new Color Stop
-     * @param offset the offset of the stop. Should be between 0 and 1
-     * @param color the color of the stop
-     */
-    constructor(offset: number, color: string) {
-        this.offset = offset;
-
-        this.color = color;
-    }
-
-    public getClassName() {
-        return "ColorStop";
-    }
-}
+export type ColorStop = { offset: number; color: string };
 
 export class BaseGradient {
     private _colorStops: ColorStop[];
@@ -72,7 +50,7 @@ export class BaseGradient {
      * @param color the color of the stop
      */
     public addColorStop(offset: number, color: string) {
-        this._colorStops.push(new ColorStop(offset, color));
+        this._colorStops.push({ offset, color });
         this._gradientDirty = true;
     }
 
@@ -93,12 +71,20 @@ export class BaseGradient {
         this._gradientDirty = true;
     }
 
-    @serialize()
     public get colorStops() {
         return this._colorStops;
     }
 
     public getClassName() {
         return "BaseGradient";
+    }
+
+    public serialize(serializationObject: any) {
+        serializationObject.colorStops = this._colorStops;
+        serializationObject.className = this.getClassName();
+    }
+
+    public parse(serializationObject: any) {
+        this._colorStops = serializationObject.colorStops;
     }
 }

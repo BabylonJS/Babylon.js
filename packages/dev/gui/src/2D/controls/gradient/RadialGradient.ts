@@ -1,7 +1,6 @@
 import type { ICanvasGradient, ICanvasRenderingContext } from "core/Engines/ICanvas";
 import { BaseGradient } from "./BaseGradient";
 import { RegisterClass } from "core/Misc/typeStore";
-import { serialize } from "core/Misc/decorators";
 
 /**
  * Gradient formed from two circles with their own centers and radius.
@@ -25,48 +24,66 @@ export class RadialGradient extends BaseGradient {
      * @param y1 y coordinate of the second circle's center
      * @param r1 radius of the second circle
      */
-    constructor(x0: number, y0: number, r0: number, x1: number, y1: number, r1: number) {
+    constructor(x0?: number, y0?: number, r0?: number, x1?: number, y1?: number, r1?: number) {
         super();
-        this._x0 = x0;
-        this._y0 = y0;
-        this._r0 = r0;
-        this._x1 = x1;
-        this._y1 = y1;
-        this._r1 = r1;
+        this._x0 = x0 ?? 0;
+        this._y0 = y0 ?? 0;
+        this._r0 = r0 ?? 0;
+        this._x1 = x1 ?? 0;
+        this._y1 = y1 ?? 0;
+        this._r1 = r1 ?? 0;
     }
 
     protected _createCanvasGradient(context: ICanvasRenderingContext): ICanvasGradient {
         return context.createRadialGradient(this._x0, this._y0, this._r0, this._x1, this._y1, this._r1);
     }
 
-    @serialize()
     public get x0() {
         return this._x0;
     }
 
-    @serialize()
     public get x1() {
         return this._x1;
     }
 
-    @serialize()
     public get y0() {
         return this._y0;
     }
 
-    @serialize()
     public get y1() {
         return this._y1;
     }
 
-    @serialize()
     public get r0() {
         return this._r0;
     }
 
-    @serialize()
     public get r1() {
         return this._r1;
+    }
+
+    public getClassName() {
+        return "RadialGradient";
+    }
+
+    public serialize(serializationObject: any): void {
+        super.serialize(serializationObject);
+        serializationObject.x0 = this._x0;
+        serializationObject.y0 = this._y0;
+        serializationObject.r0 = this._r0;
+        serializationObject.x1 = this._x1;
+        serializationObject.y1 = this._y1;
+        serializationObject.r1 = this._r1;
+    }
+
+    public parse(serializationObject: any): void {
+        super.parse(serializationObject);
+        this._x0 = serializationObject.x0;
+        this._y0 = serializationObject.y0;
+        this._r0 = serializationObject.r0;
+        this._x1 = serializationObject.x1;
+        this._y1 = serializationObject.y1;
+        this._r1 = serializationObject.r1;
     }
 }
 RegisterClass("BABYLON.GUI.RadialGradient", RadialGradient);

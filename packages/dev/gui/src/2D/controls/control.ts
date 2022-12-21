@@ -2392,6 +2392,11 @@ export class Control implements IAnimatable {
             serializationObject.fontStyle = this.fontStyle;
         }
 
+        if (this._gradient) {
+            serializationObject.gradient = {};
+            this._gradient.serialize(serializationObject.gradient);
+        }
+
         // Animations
         SerializationHelper.AppendSerializedAnimations(this, serializationObject);
     }
@@ -2414,6 +2419,13 @@ export class Control implements IAnimatable {
 
         if (serializedObject.fontStyle) {
             this.fontStyle = serializedObject.fontStyle;
+        }
+
+        // Gradient
+        if (serializedObject.gradient) {
+            const className = Tools.Instantiate("BABYLON.GUI." + serializedObject.gradient.className);
+            this._gradient = new className();
+            this._gradient?.parse(serializedObject.gradient);
         }
 
         // Animations

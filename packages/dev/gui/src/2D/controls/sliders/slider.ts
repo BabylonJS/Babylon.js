@@ -4,6 +4,8 @@ import { serialize } from "core/Misc/decorators";
 import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
 import type { Nullable } from "core/types";
 import type { BaseGradient } from "../gradient/BaseGradient";
+import type { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
+import { Tools } from "core/Misc/tools";
 
 /**
  * Class used to create slider controls
@@ -265,6 +267,26 @@ export class Slider extends BaseSlider {
             }
         }
         context.restore();
+    }
+
+    public serialize(serializationObject: any) {
+        super.serialize(serializationObject);
+
+        if (this.backgroundGradient) {
+            serializationObject.backgroundGradient = {};
+            this.backgroundGradient.serialize(serializationObject.backgroundGradient);
+        }
+    }
+
+    /** @internal */
+    public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
+        super._parseFromContent(serializedObject, host);
+
+        if (serializedObject.backgroundGradient) {
+            const className = Tools.Instantiate("BABYLON.GUI." + serializedObject.backgroundGradient.className);
+            this.backgroundGradient = new className();
+            this.backgroundGradient!.parse(serializedObject.backgroundGradient);
+        }
     }
 }
 RegisterClass("BABYLON.GUI.Slider", Slider);
