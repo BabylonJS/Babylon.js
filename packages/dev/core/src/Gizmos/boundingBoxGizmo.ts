@@ -479,7 +479,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
 
                     const box = CreateBox("", { size: 1 }, gizmoLayer.utilityLayerScene);
                     box.material = this._coloredMaterial;
-                    box.metadata = zeroAxisCount === 2; // None homogenous scale handle
+                    box._internalMetadata = zeroAxisCount === 2; // None homogenous scale handle
                     box.isNearGrabbable = true;
 
                     // Dragging logic
@@ -795,7 +795,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
         this._scaleBoxesParent.getChildMeshes().forEach((m) => {
             let enableMesh = enable;
             // Disable heterogeneous scale handles if requested.
-            if (homogeneousScaling && m.metadata === true) {
+            if (homogeneousScaling && m._internalMetadata === true) {
                 enableMesh = false;
             }
             m.setEnabled(enableMesh);

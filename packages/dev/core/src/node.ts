@@ -111,6 +111,9 @@ export class Node implements IBehaviorAware<Node> {
     @serialize()
     public metadata: any = null;
 
+    /** @internal */
+    public _internalMetadata: any;
+
     /**
      * For internal use only. Please do not use.
      */
