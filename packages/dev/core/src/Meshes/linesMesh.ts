@@ -207,9 +207,11 @@ export class LinesMesh extends Mesh {
     /**
      * Disposes of the line mesh
      * @param doNotRecurse If children should be disposed
+     * @param disposeMaterialAndTextures This parameter is not used by the LineMesh class
      * @param doNotDisposeMaterial If the material should not be disposed (default: false, meaning the material is disposed)
      */
-    public dispose(doNotRecurse?: boolean, doNotDisposeMaterial?: boolean): void {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false, doNotDisposeMaterial?: boolean): void {
         if (!doNotDisposeMaterial) {
             this._lineMaterial.dispose(false, false, true);
         }
