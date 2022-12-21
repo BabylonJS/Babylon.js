@@ -48,9 +48,7 @@ export class MatrixDeterminantBlock extends NodeMaterialBlock {
         const output = this.output;
         const input = this.input;
 
-        state.compilationString +=
-            this._declareOutput(output, state) +
-            `${output.associatedVariableName} = determinant(${input.associatedVariableName});\r\n`;
+        state.compilationString += this._declareOutput(output, state) + `${output.associatedVariableName} = determinant(${input.associatedVariableName});\r\n`;
 
         return this;
     }
