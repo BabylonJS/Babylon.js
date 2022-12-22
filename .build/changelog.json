@@ -1,5 +1,5 @@
 {
-    "fromTag": "5.37.0",
+    "fromTag": "5.38.0",
     "changelog": {
         "5.38.0": [
             {
@@ -123,6 +123,243 @@
                 "tags": [
                     "skip changelog"
                 ]
+            }
+        ],
+        "5.39.0": [
+            {
+                "pr": "13368",
+                "title": "Add Transpose and Determinant matrix blocks",
+                "description": "Closes #13354",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/index.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/matrixDeterminantBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/matrixTransposeBlock.ts",
+                    "packages/tools/nodeEditor/src/blockTools.ts",
+                    "packages/tools/nodeEditor/src/components/nodeList/nodeListComponent.tsx"
+                ],
+                "tags": [
+                    "new feature",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "13366",
+                "title": "Mesh indices are not passed into trianglePredicate",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/ray.ts",
+                    "packages/dev/core/src/Meshes/subMesh.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13363",
+                "title": "LineMesh: Fix the signature of dispose",
+                "description": "See https://forum.babylonjs.com/t/best-way-to-keep-dash-size-constant/36631/19\r\n\r\nI added the `disposeMaterialAndTextures` parameter to be in line with the base class signature but don't use it to keep backward compatibility.\r\n\r\nFollow-up to #13358 ",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/linesMesh.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13362",
+                "title": "Fix PBR Emissive with lightmap",
+                "description": "https://forum.babylonjs.com/t/emissive-vs-lightmaps-channels/36445/8",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockFinalColorComposition.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "13358",
+                "title": "LineMesh: Add an option to not dispose the material",
+                "description": "See https://forum.babylonjs.com/t/best-way-to-keep-dash-size-constant/36631/16",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/linesMesh.ts"
+                ],
+                "tags": [
+                    "rendering engine",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13360",
+                "title": "docs: ES6 packages installation note in README.md",
+                "description": "IMO, this added note in the installation documentation can clear possible confusion between using 'babylonjs' and using its '@babylonjs/core' counterpart.\r\n\r\nAn example for this possible confusion can be seen in [this](https://forum.babylonjs.com/t/difference-between-babylonjs-and-babylonjs-npm-packages/28380/4) forum question.\r\n\r\nI think the reason this can be confusing is that some NPM packages use a none-scoped package such as 'package-name' that uses a scoped package ('@scope/package-name') behind the scenes. With `Babylon.js`, this is not the case, you can use one or the other, the original package or its ES6 counterpart, not both.\r\n\r\nThis note clears this up. \r\n\r\nPerhaps even add a complete section to emphasis the ES6 version installation process? Will the ES6 version be the recommended go-to version in the near future?",
+                "author": {
+                    "name": "dht",
+                    "url": "https://github.com/dht"
+                },
+                "files": [
+                    "readme.md"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13359",
+                "title": "RenderTargetTexture: Add forceLayerMaskCheck property",
+                "description": "See https://forum.babylonjs.com/t/rendertargettexture-camera-potential-issues/36689",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts"
+                ],
+                "tags": [
+                    "rendering engine",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13356",
+                "title": "Fix bug in glTF animation export",
+                "description": "See https://forum.babylonjs.com/t/able-to-corrupt-gltf-file-by-adding-an-animation-that-rotates/36620.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/glTFAnimation.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "exporters",
+                    "glTF"
+                ]
+            },
+            {
+                "pr": "13340",
+                "title": "Fix rtt option default",
+                "description": "The generateDepthBuffer option should default to true when using an options object to be consistent with the full parameters constructor.\r\n\r\nThe options constructor was introduced recently in #13275, so I assume this was just a small oversight.",
+                "author": {
+                    "name": "thscott",
+                    "url": "https://github.com/thscott"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.renderTarget.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13355",
+                "title": "VolumetricLightScattering: Add support for included only meshes",
+                "description": "See https://forum.babylonjs.com/t/meshinclude-for-volumetric-light-scattering-postprocess/36664",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/volumetricLightScatteringPostProcess.ts"
+                ],
+                "tags": [
+                    "rendering engine",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13353",
+                "title": "Rework Scene and GUI Editor connection",
+                "description": "Currently, when a GUI Editor instance is opened through the Inspector, all existing controls on the Scene are removed and then re-added to both the \"live\" scene and the editor scene. This has been causing variety of problems, such as:\r\n\r\n- When a control in the editor is scaled, it doesn't update visually on the live scene\r\n- If a control in the live scene is linked to a mesh, it loses that connection after the editor is opened\r\n- Scroll viewers on the live scene lose scroll functionality once the editor is opened\r\n- Controls on the live scene changed size because the editor scene could have a different size \r\n\r\nThis PR introduces a new approach, such as when the editor is opened, the \"live\" scene's Controls are cloned and the clones added to the editor scene. Then, it periodically executes the opposite operation, cloning the editor controllers and adding them to the live scene.  ",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/control.ts",
+                    "packages/tools/guiEditor/src/components/sceneExplorer/sceneExplorerComponent.tsx",
+                    "packages/tools/guiEditor/src/diagram/gizmoGeneric.tsx",
+                    "packages/tools/guiEditor/src/diagram/workbench.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "gui editor"
+                ]
+            },
+            {
+                "pr": "13351",
+                "title": "Some examples for matrices",
+                "description": "Examples for some methods for Matrix Class. Changes to comments only.",
+                "author": {
+                    "name": "BabylonJSGuide",
+                    "url": "https://github.com/BabylonJSGuide"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13349",
+                "title": "DepthRenderer: Allow passing the sampling mode to the scene depth renderer",
+                "description": "See https://forum.babylonjs.com/t/flickering-issue-when-sampling-depth-in-chromium-browsers-but-not-other-browsers/36299/4",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/depthRendererSceneComponent.ts"
+                ],
+                "tags": [
+                    "rendering engine",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13350",
+                "title": "Move since-tag changes to the version update process",
+                "description": "The changes from yesterday were correct, but cannot run in a different CI step because otherwise there will be two commits for the version update. To avoid that, the since-tag is now updated as part of the version-update process - engine version, changlog and now since-tag. \nThere is no reason to run this outside of this step.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "scripts/updateSinceTag.js",
+                    "scripts/updateVersion.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13348",
+                "title": "Allow adding a dynamic @since tag that adjusts automatically",
+                "description": "Fixes #13209\r\n\r\nThis script will be running during the publish CI process and update all tags marked with @since with nothing after (newline only) something like this:\r\n\r\n```javascript\r\n/**\r\n * This function does nothing, please use it as much as you want\r\n * @since\r\n */\r\nbuyNFT();\r\n```\r\n\r\nIf there is anything after the @since tag it will not be processed.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "scripts/updateSinceTag.js"
+                ],
+                "tags": []
             }
         ],
         "5.37.0": [
