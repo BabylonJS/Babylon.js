@@ -56,6 +56,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private _pointerObserver: Nullable<Observer<PointerInfo>>;
     private _canvasPointerOutObserver: Nullable<Observer<PointerEvent>>;
     private _canvasBlurObserver: Nullable<Observer<Engine>>;
+    private _controlAddedObserver: Nullable<Observer<Nullable<Control>>>;
     private _background: string;
     /** @internal */
     public _rootContainer = new Container("root");
@@ -384,6 +385,11 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this.applyYInversionOnUpdate = invertY;
         this._rootElement = scene.getEngine().getInputElement();
         this._renderObserver = scene.onBeforeCameraRenderObservable.add((camera: Camera) => this._checkUpdate(camera));
+        this._controlAddedObserver = this._rootContainer.onControlAddedObservable.add((control) => {
+            if (control && this._scene && this._scene.activeCamera) {
+                this._checkUpdate(this._scene.activeCamera);
+            }
+        });
         this._preKeyboardObserver = scene.onPreKeyboardObservable.add((info) => {
             if (!this._focusedControl) {
                 return;
@@ -570,6 +576,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         }
         if (this._canvasBlurObserver) {
             scene.getEngine().onCanvasBlurObservable.remove(this._canvasBlurObserver);
+        }
+        if (this._controlAddedObserver) {
+            this._rootContainer.onControlAddedObservable.remove(this._controlAddedObserver);
         }
         if (this._layerToDispose) {
             this._layerToDispose.texture = null;
