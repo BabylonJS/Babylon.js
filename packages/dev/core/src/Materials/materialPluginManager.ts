@@ -342,8 +342,9 @@ export class MaterialPluginManager {
                 if (injectedCode.length > 0) {
                     if (pointName.charAt(0) === "!") {
                         // pointName is a regular expression
-                        let regexFlags = "g";
                         pointName = pointName.substring(1);
+
+                        let regexFlags = "g";
                         if (pointName.charAt(0) === "!") {
                             // no flags
                             regexFlags = "";
@@ -356,16 +357,22 @@ export class MaterialPluginManager {
                                 pointName = pointName.substring(regexFlags.length + 1);
                             }
                         }
-                        console.log(regexFlags, pointName);
+
+                        if (regexFlags.indexOf("g") < 0) {
+                            // we force the "g" flag so that the regexp object is stateful!
+                            regexFlags += "g";
+                        }
+
+                        const sourceCode = code;
                         const rx = new RegExp(pointName, regexFlags);
-                        let match = rx.exec(code);
+                        let match = rx.exec(sourceCode);
                         while (match !== null) {
                             let newCode = injectedCode;
                             for (let i = 0; i < match.length; ++i) {
                                 newCode = newCode.replace("$" + i, match[i]);
                             }
                             code = code.replace(match[0], newCode);
-                            match = rx.exec(code);
+                            match = rx.exec(sourceCode);
                         }
                     } else {
                         const fullPointName = "#define " + pointName;
