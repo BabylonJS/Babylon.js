@@ -812,7 +812,10 @@ export class Sound {
                     const tryToPlay = () => {
                         if (Engine.audioEngine?.audioContext) {
                             length = length || this._length;
-                            offset = offset || this._offset;
+
+                            if (offset) {
+                                this._offset = offset;
+                            }
 
                             if (this._soundSource) {
                                 const oldSource = this._soundSource;
@@ -836,7 +839,7 @@ export class Sound {
                                     this._onended();
                                 };
                                 startTime = time ? Engine.audioEngine?.audioContext!.currentTime + time : Engine.audioEngine.audioContext!.currentTime;
-                                const actualOffset = this.isPaused ? this._startOffset % this._soundSource!.buffer!.duration : offset ? offset : 0;
+                                const actualOffset = (this.isPaused ? this._startOffset % this._soundSource!.buffer!.duration : 0) + (this._offset ?? 0);
                                 this._soundSource!.start(startTime, actualOffset, this.loop ? undefined : length);
                             }
                         }
