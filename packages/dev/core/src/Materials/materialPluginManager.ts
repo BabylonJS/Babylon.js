@@ -31,6 +31,8 @@ declare module "./material" {
     }
 }
 
+const rxOption = new RegExp("^([gimus]+)!");
+
 /**
  * Class that manages the plugins of a material
  * @since 5.0
@@ -329,7 +331,7 @@ export class MaterialPluginManager {
             if (!points) {
                 return code;
             }
-            for (const pointName in points) {
+            for (let pointName in points) {
                 let injectedCode = "";
                 for (const plugin of this._activePlugins) {
                     const customCode = plugin.getCustomCode(shaderType);
@@ -340,7 +342,22 @@ export class MaterialPluginManager {
                 if (injectedCode.length > 0) {
                     if (pointName.charAt(0) === "!") {
                         // pointName is a regular expression
-                        const rx = new RegExp(pointName.substring(1), "g");
+                        let regexFlags = "g";
+                        pointName = pointName.substring(1);
+                        if (pointName.charAt(0) === "!") {
+                            // no flags
+                            regexFlags = "";
+                            pointName = pointName.substring(1);
+                        } else {
+                            // get the flag(s)
+                            const matchOption = rxOption.exec(pointName);
+                            if (matchOption && matchOption.length >= 2) {
+                                regexFlags = matchOption[1];
+                                pointName = pointName.substring(regexFlags.length + 1);
+                            }
+                        }
+                        console.log(regexFlags, pointName);
+                        const rx = new RegExp(pointName, regexFlags);
                         let match = rx.exec(code);
                         while (match !== null) {
                             let newCode = injectedCode;
