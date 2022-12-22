@@ -24,11 +24,12 @@ interface IGizmoScalePointProps {
     scalePoint: IScalePoint;
     clickable: boolean;
     key: number;
-    onDrag: () => void;
+    onDrag: (event?: React.PointerEvent<HTMLDivElement>, scalePoint?: IScalePoint) => void;
     onRotate: () => void;
     onUp: () => void;
     overrideCursor?: string;
     canRotate: boolean;
+    allowClickOnPivot?: boolean;
 }
 
 import gizmoPivotIcon from "../imgs/gizmoPivotIcon.svg";
@@ -70,7 +71,7 @@ const rotateCursors = [cursor_rotate0, cursor_rotate1, cursor_rotate2, cursor_ro
 const modulo = (dividend: number, divisor: number) => ((dividend % divisor) + divisor) % divisor;
 
 export function GizmoScalePoint(props: IGizmoScalePointProps) {
-    const { scalePoint, clickable, onDrag, onRotate, onUp, overrideCursor, canRotate } = props;
+    const { scalePoint, clickable, onDrag, onRotate, onUp, overrideCursor, canRotate, allowClickOnPivot } = props;
 
     const style: React.CSSProperties = {
         left: `${scalePoint.position.x}px`,
@@ -80,7 +81,24 @@ export function GizmoScalePoint(props: IGizmoScalePointProps) {
     };
 
     if (scalePoint.isPivot) {
-        return <img className="pivot-point" src={gizmoPivotIcon} style={style} onDragStart={(evt) => evt.preventDefault()} />;
+        return (
+            <img
+                className="pivot-point"
+                src={gizmoPivotIcon}
+                style={style}
+                onDragStart={(evt) => evt.preventDefault()}
+                onPointerDown={(event) => {
+                    if (allowClickOnPivot) {
+                        onDrag(event, scalePoint);
+                    }
+                }}
+                onPointerUp={() => {
+                    if (allowClickOnPivot) {
+                        onUp();
+                    }
+                }}
+            />
+        );
     }
     // compute which cursor icon to use on hover
     const angleOfCursor = scalePoint.defaultRotation + scalePoint.rotation;
@@ -113,7 +131,7 @@ export function GizmoScalePoint(props: IGizmoScalePointProps) {
                 onPointerDown={(event) => {
                     // if left mouse button down
                     if (event.buttons & 1) {
-                        onDrag();
+                        onDrag(event, scalePoint);
                     }
                 }}
                 onPointerUp={onUp}
@@ -125,7 +143,7 @@ export function GizmoScalePoint(props: IGizmoScalePointProps) {
                 onDragStart={(evt) => evt.preventDefault()}
                 onPointerDown={(event) => {
                     if (event.buttons & 1) {
-                        onDrag();
+                        onDrag(event, scalePoint);
                     }
                 }}
                 onPointerUp={onUp}

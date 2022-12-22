@@ -74,7 +74,7 @@ export class Control implements IAnimatable {
     /** @internal */
     public _prevCurrentMeasureTransformedIntoGlobalSpace = Measure.Empty();
     /** @internal */
-    protected _cachedParentMeasure = Measure.Empty();
+    public _cachedParentMeasure = Measure.Empty();
     private _descendantsOnlyPadding = false;
     private _paddingLeft = new ValueAndUnit(0);
     private _paddingRight = new ValueAndUnit(0);
