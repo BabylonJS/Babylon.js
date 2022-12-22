@@ -149,6 +149,11 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
                         onSelect={(value) => (extensionStates["EXT_texture_webp"].enabled = value)}
                     />
                     <CheckBoxLineComponent
+                        label="EXT_texture_avif"
+                        isSelected={() => extensionStates["EXT_texture_avif"].enabled}
+                        onSelect={(value) => (extensionStates["EXT_texture_avif"].enabled = value)}
+                    />
+                    <CheckBoxLineComponent
                         label="KHR_draco_mesh_compression"
                         isSelected={() => extensionStates["KHR_draco_mesh_compression"].enabled}
                         onSelect={(value) => (extensionStates["KHR_draco_mesh_compression"].enabled = value)}

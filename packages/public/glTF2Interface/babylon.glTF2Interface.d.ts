@@ -1189,6 +1189,15 @@ declare module BABYLON.GLTF2 {
     }
 
     /**
+     * Interfaces from the EXT_texture_avif extension
+     */
+
+    /** @internal */
+    interface IEXTTextureAVIF {
+        source: number;
+    }
+
+    /**
      * Interfaces from the KHR_texture_transform extension
      */
 

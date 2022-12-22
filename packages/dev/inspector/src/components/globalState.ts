@@ -59,6 +59,7 @@ export class GlobalState {
         EXT_lights_image_based: { enabled: true },
         EXT_mesh_gpu_instancing: { enabled: true },
         EXT_texture_webp: { enabled: true },
+        EXT_texture_avif: { enabled: true },
     };
 
     public glTFLoaderDefaults: { [key: string]: any } = {
