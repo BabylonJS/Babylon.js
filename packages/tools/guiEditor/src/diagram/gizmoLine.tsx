@@ -112,8 +112,13 @@ export function GizmoLine(props: IGizmoLineProps) {
             const rttLastCoordinates = CoordinateHelper.MousePointerToRTTSpace(control, lastCursor.current.x, lastCursor.current.y);
             const localLastCoordinates = CoordinateHelper.RttToLocalNodeSpace(control, rttLastCoordinates.x, rttLastCoordinates.y);
 
-            const deltaX = localClientCoords.x - localLastCoordinates.x;
-            const deltaY = localClientCoords.y - localLastCoordinates.y;
+            const delta = new Vector2(localClientCoords.x - localLastCoordinates.x, localClientCoords.y - localLastCoordinates.y);
+
+            const rotatedDelta = new Vector2();
+            delta.rotateToRef(control.rotation, rotatedDelta);
+
+            const deltaX = rotatedDelta.x;
+            const deltaY = rotatedDelta.y;
 
             let x1 = control._x1.getValue(control._host);
             x1 += deltaX;
@@ -130,6 +135,8 @@ export function GizmoLine(props: IGizmoLineProps) {
             let y2 = control._y2.getValue(control._host);
             y2 += deltaY;
             control.y2 = y2;
+
+            globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
         } else if (isDragging.current) {
             // Moving the scale points
             const rttClientCoords = CoordinateHelper.MousePointerToRTTSpace(control, pointerEvent.clientX, pointerEvent.clientY);
@@ -138,8 +145,13 @@ export function GizmoLine(props: IGizmoLineProps) {
             const rttLastCoordinates = CoordinateHelper.MousePointerToRTTSpace(control, lastCursor.current.x, lastCursor.current.y);
             const localLastCoordinates = CoordinateHelper.RttToLocalNodeSpace(control, rttLastCoordinates.x, rttLastCoordinates.y);
 
-            const deltaX = localClientCoords.x - localLastCoordinates.x;
-            const deltaY = localClientCoords.y - localLastCoordinates.y;
+            const delta = new Vector2(localClientCoords.x - localLastCoordinates.x, localClientCoords.y - localLastCoordinates.y);
+
+            const rotatedDelta = new Vector2();
+            delta.rotateToRef(control.rotation, rotatedDelta);
+
+            const deltaX = rotatedDelta.x;
+            const deltaY = rotatedDelta.y;
 
             // Move only the scale point that was touched
             const movedPointIndex = scalePoints.findIndex((point) => point.id === movedScalePoint.current?.id);
@@ -162,6 +174,7 @@ export function GizmoLine(props: IGizmoLineProps) {
                 y2 += deltaY;
                 control.y2 = y2;
             }
+            globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
         } else if (isRotating.current && pivot.current) {
             // Rotation
             // Get the angle formed from the pivot to last and current cursor position
@@ -180,6 +193,7 @@ export function GizmoLine(props: IGizmoLineProps) {
 
     const onUp = () => {
         isDragging.current = false;
+        isRotating.current = false;
     };
 
     React.useEffect(() => {
@@ -195,7 +209,36 @@ export function GizmoLine(props: IGizmoLineProps) {
         if (event && scalePoint) {
             lastCursor.current = { x: event.clientX, y: event.clientY };
             isPivotBeingMoved.current = scalePoint.isPivot;
+            // If the control has any rotation, reset the
+            // rotation, modifying the so the scale behave as expected
+            // points such that the orientation is the same
+            if (!scalePoint.isPivot && control.rotation) {
+                const line = control as Line;
+                const x1 = control._cachedParentMeasure.left + line._x1.getValue(line._host);
+                const y1 = control._cachedParentMeasure.top + line._y1.getValue(line._host);
+                const x2 = control._cachedParentMeasure.left + line._effectiveX2;
+                const y2 = control._cachedParentMeasure.top + line._effectiveY2;
+
+                const v1 = new Vector2(x1, y1);
+                const v2 = new Vector2(x2, y2);
+
+                const matrix = control._transformMatrix;
+
+                const p1 = new Vector2();
+                const p2 = new Vector2();
+
+                matrix.transformCoordinates(v1.x, v1.y, p1);
+                matrix.transformCoordinates(v2.x, v2.y, p2);
+
+                control.rotation = 0;
+                control.x1 = x1;
+                control.y1 = y1;
+                control.x2 = x2;
+                control.y2 = y2;
+                globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
+            }
             isDragging.current = true;
+            isRotating.current = false;
             movedScalePoint.current = scalePoint;
         }
     };
@@ -204,6 +247,7 @@ export function GizmoLine(props: IGizmoLineProps) {
         if (event) {
             lastCursor.current = { x: event.clientX, y: event.clientY };
             isRotating.current = true;
+            isDragging.current = false;
         }
     };
 
