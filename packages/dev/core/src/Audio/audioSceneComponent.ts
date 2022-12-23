@@ -1,7 +1,6 @@
 import { Sound } from "./sound";
 import { SoundTrack } from "./soundTrack";
 import { Engine } from "../Engines/engine";
-import type { Camera } from "../Cameras/camera";
 import type { Nullable } from "../types";
 import { Matrix, Vector3 } from "../Maths/math.vector";
 import type { ISceneSerializableComponent } from "../sceneComponent";
