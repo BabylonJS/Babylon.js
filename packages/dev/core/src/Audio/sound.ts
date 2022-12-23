@@ -839,7 +839,7 @@ export class Sound {
                                     this._onended();
                                 };
                                 startTime = time ? Engine.audioEngine?.audioContext!.currentTime + time : Engine.audioEngine.audioContext!.currentTime;
-                                const actualOffset = (this.isPaused ? this._startOffset % this._soundSource!.buffer!.duration : 0) + (this._offset ?? 0);
+                                const actualOffset = ((this.isPaused ? this._startOffset : 0) + (this._offset ?? 0)) % this._soundSource!.buffer!.duration;
                                 this._soundSource!.start(startTime, actualOffset, this.loop ? undefined : length);
                             }
                         }
