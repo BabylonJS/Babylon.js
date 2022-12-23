@@ -18,6 +18,7 @@ export interface IScalePoint {
     rotation: number;
     isPivot: boolean;
     defaultRotation: number;
+    id?: string;
 }
 
 interface IGizmoScalePointProps {
@@ -25,7 +26,7 @@ interface IGizmoScalePointProps {
     clickable: boolean;
     key: number;
     onDrag: (event?: React.PointerEvent<HTMLDivElement>, scalePoint?: IScalePoint) => void;
-    onRotate: () => void;
+    onRotate: (event?: React.PointerEvent<HTMLDivElement>, scalePoint?: IScalePoint) => void;
     onUp: () => void;
     overrideCursor?: string;
     canRotate: boolean;
@@ -123,7 +124,15 @@ export function GizmoScalePoint(props: IGizmoScalePointProps) {
     };
     return (
         <div style={style} className="scale-point-container">
-            {canRotate && <div className="rotate-click-area" onPointerDown={onRotate} style={rotateClickAreaStyle}></div>}
+            {canRotate && (
+                <div
+                    className="rotate-click-area"
+                    onPointerDown={(event) => {
+                        onRotate(event, scalePoint);
+                    }}
+                    style={rotateClickAreaStyle}
+                ></div>
+            )}
             <div
                 className="scale-click-area"
                 draggable={true}

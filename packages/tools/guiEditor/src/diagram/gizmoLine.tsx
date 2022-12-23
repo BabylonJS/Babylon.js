@@ -11,17 +11,45 @@ interface IGizmoLineProps {
     control: Line;
 }
 
+const ROTATION_SENSITIVITY = 1.5;
+
 export function GizmoLine(props: IGizmoLineProps) {
     const { control, globalState } = props;
     const lastCursor = React.useRef({ x: 0, y: 0 });
     const isPivotBeingMoved = React.useRef(false);
     const isDragging = React.useRef(false);
     const movedScalePoint = React.useRef<IScalePoint>();
+    const isRotating = React.useRef(false);
+    const pivot = React.useRef<Vector2>();
 
     const [scalePoints, setScalePoints] = React.useState<IScalePoint[]>([
-        { position: new Vector2(), horizontalPosition: ScalePointPosition.Left, verticalPosition: ScalePointPosition.Top, rotation: 0, isPivot: false, defaultRotation: 0 },
-        { position: new Vector2(), horizontalPosition: ScalePointPosition.Center, verticalPosition: ScalePointPosition.Center, rotation: 0, isPivot: true, defaultRotation: 0 },
-        { position: new Vector2(), horizontalPosition: ScalePointPosition.Right, verticalPosition: ScalePointPosition.Bottom, rotation: 0, isPivot: false, defaultRotation: 0 },
+        {
+            position: new Vector2(),
+            horizontalPosition: ScalePointPosition.Left,
+            verticalPosition: ScalePointPosition.Top,
+            rotation: 0,
+            isPivot: false,
+            defaultRotation: 0,
+            id: "0",
+        },
+        {
+            position: new Vector2(),
+            horizontalPosition: ScalePointPosition.Center,
+            verticalPosition: ScalePointPosition.Center,
+            rotation: 0,
+            isPivot: true,
+            defaultRotation: 0,
+            id: "1",
+        },
+        {
+            position: new Vector2(),
+            horizontalPosition: ScalePointPosition.Right,
+            verticalPosition: ScalePointPosition.Bottom,
+            rotation: 0,
+            isPivot: false,
+            defaultRotation: 0,
+            id: "2",
+        },
     ]);
 
     React.useEffect(() => {
@@ -53,9 +81,11 @@ export function GizmoLine(props: IGizmoLineProps) {
         matrix.transformCoordinates(v1.x, v1.y, p1);
         matrix.transformCoordinates(v2.x, v2.y, p2);
 
-        // Get middle
-        const xm = (p1.x + p2.x) * 0.5;
-        const ym = (p1.y + p2.y) * 0.5;
+        // Get pivot
+        const xm = (p1.x + p2.x) * control.transformCenterX;
+        const ym = (p1.y + p2.y) * control.transformCenterY;
+
+        pivot.current = new Vector2(xm, ym);
 
         const positions = [new Vector2(p1.x, p1.y), new Vector2(xm, ym), new Vector2(p2.x, p2.y)];
 
@@ -72,7 +102,6 @@ export function GizmoLine(props: IGizmoLineProps) {
     };
 
     const onMove = (pointerEvent: React.PointerEvent<HTMLCanvasElement>) => {
-        // console.log("on move", pointerEvent);
         // Pivot movement corresponds to moving the control itself
         if (isDragging.current && isPivotBeingMoved.current) {
             // We have to compute the difference in movement in the local node
@@ -113,7 +142,8 @@ export function GizmoLine(props: IGizmoLineProps) {
             const deltaY = localClientCoords.y - localLastCoordinates.y;
 
             // Move only the scale point that was touched
-            const movedPointIndex = scalePoints.findIndex((point) => point === movedScalePoint.current);
+            const movedPointIndex = scalePoints.findIndex((point) => point.id === movedScalePoint.current?.id);
+
             if (movedPointIndex === 0) {
                 // Moved first point, (x1, y1)
                 let x1 = control._x1.getValue(control._host);
@@ -132,6 +162,18 @@ export function GizmoLine(props: IGizmoLineProps) {
                 y2 += deltaY;
                 control.y2 = y2;
             }
+        } else if (isRotating.current && pivot.current) {
+            // Rotation
+            // Get the angle formed from the pivot to last and current cursor position
+            const pivotRtt = CoordinateHelper.NodeToRTTSpace(control, pivot.current.x, pivot.current.y);
+            const pivotCanvas = CoordinateHelper.RttToCanvasSpace(pivotRtt.x, pivotRtt.y);
+
+            const anglePivotLast = Math.atan2(lastCursor.current.y - pivotCanvas.y, lastCursor.current.x - pivotCanvas.x);
+            const anglePivotClient = Math.atan2(pointerEvent.clientY - pivotCanvas.y, pointerEvent.clientX - pivotCanvas.x);
+            const angle = (anglePivotClient - anglePivotLast) * ROTATION_SENSITIVITY;
+
+            control.rotation += angle;
+            globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
         }
         lastCursor.current = { x: pointerEvent.clientX, y: pointerEvent.clientY };
     };
@@ -158,10 +200,17 @@ export function GizmoLine(props: IGizmoLineProps) {
         }
     };
 
+    const onRotate = (event?: React.PointerEvent<HTMLDivElement>) => {
+        if (event) {
+            lastCursor.current = { x: event.clientX, y: event.clientY };
+            isRotating.current = true;
+        }
+    };
+
     return (
         <div className="gizmo">
             {scalePoints.map((point, index) => (
-                <GizmoScalePoint scalePoint={point} allowClickOnPivot={true} clickable={true} onDrag={onDrag} onRotate={() => {}} onUp={onUp} key={index} canRotate={true} />
+                <GizmoScalePoint scalePoint={point} allowClickOnPivot={true} clickable={true} onDrag={onDrag} onRotate={onRotate} onUp={onUp} key={index} canRotate={true} />
             ))}
         </div>
     );
