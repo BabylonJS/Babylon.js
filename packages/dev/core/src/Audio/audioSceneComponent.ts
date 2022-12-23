@@ -95,7 +95,7 @@ declare module "../scene" {
         audioListenerPositionProvider: Nullable<() => Vector3>;
 
         /**
-         * Gets or sets custom audio listener position provider
+         * Gets or sets custom audio listener rotation provider
          * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic
          */
         audioListenerRotationProvider: Nullable<() => Vector3>;
