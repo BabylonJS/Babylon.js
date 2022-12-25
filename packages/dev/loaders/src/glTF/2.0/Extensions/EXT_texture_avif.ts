@@ -8,6 +8,7 @@ import type { IEXTTextureAVIF } from "babylonjs-gltf2interface";
 const NAME = "EXT_texture_avif";
 
 /**
+ * [glTF PR](https://github.com/KhronosGroup/glTF/pull/2235)
  * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_texture_avif/README.md)
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention

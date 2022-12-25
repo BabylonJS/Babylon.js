@@ -148,6 +148,10 @@ declare module BABYLON.GLTF2 {
          * WEBP Mime-type
          */
         WEBP = "image/webp",
+        /**
+         * AVIF Mime-type
+         */
+        AVIF = "image/avif",
     }
 
     /**
@@ -1224,7 +1228,6 @@ declare module BABYLON.GLTF2 {
     interface IKHRXmpJsonLd_Node {
         packet: number;
     }
-
 
     /**
      * Interfaces from the KHR_animation_pointer extension
