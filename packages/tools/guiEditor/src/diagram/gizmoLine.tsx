@@ -34,9 +34,6 @@ export function GizmoLine(props: IGizmoLineProps) {
     const isDragging = React.useRef(false);
     const movedScalePoint = React.useRef<number>();
     const isRotating = React.useRef(false);
-    const pivot = React.useRef<Vector2>();
-    const initialAngleToPivot = React.useRef<number>(0);
-    const firstRotationChange = React.useRef(true);
 
     const [scalePoints, setScalePoints] = React.useState<IScalePoint[]>([
         {
@@ -190,32 +187,8 @@ export function GizmoLine(props: IGizmoLineProps) {
                 control.y2 = y2;
             }
             globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
-        } else if (isRotating.current && pivot.current) {
+        } else if (isRotating.current) {
             // Rotation
-            // Get the angle formed from the pivot to last and current cursor position
-            // const pivotRtt = CoordinateHelper.NodeToRTTSpace(control, pivot.current.x, pivot.current.y);
-            // const pivotCanvas = CoordinateHelper.RttToCanvasSpace(pivotRtt.x, pivotRtt.y);
-
-            // const anglePivotLast = Math.atan2(lastCursor.current.y - pivotCanvas.y, lastCursor.current.x - pivotCanvas.x);
-            // const anglePivotClient = Math.atan2(pointerEvent.clientY - pivotCanvas.y, pointerEvent.clientX - pivotCanvas.x);
-            // const angle = (anglePivotClient - anglePivotLast) * ROTATION_SENSITIVITY;
-
-            // control.rotation += angle;
-            // globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
-            // const scene = props.globalState.workbench._scene;
-            // console.log("scene", scene.pointerX, scene.pointerY, "event", pointerEvent.clientX, pointerEvent.clientY);
-            const angle = Math.atan2(pointerEvent.clientY - pivot.current.y, pointerEvent.clientX - pivot.current.x);
-            if (firstRotationChange.current) {
-                firstRotationChange.current = false;
-            } else {
-                for (const control of globalState.selectedControls) {
-                    console.log("rotation change", angle - initialAngleToPivot.current);
-
-                    control.rotation += angle - initialAngleToPivot.current;
-                }
-            }
-            initialAngleToPivot.current = angle;
-            globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
         }
         lastCursor.current = { x: pointerEvent.clientX, y: pointerEvent.clientY };
     };
@@ -282,20 +255,9 @@ export function GizmoLine(props: IGizmoLineProps) {
 
     const onRotate = (event?: React.PointerEvent<HTMLDivElement>) => {
         if (event) {
-            // const scene = props.globalState.workbench._scene;
-            // lastCursor.current = { x: event.clientX, y: event.clientY };
             isRotating.current = true;
             isDragging.current = false;
-            const nodeSpace = new Vector2(control.transformCenterX, control.transformCenterY);
-            const rtt = CoordinateHelper.NodeToRTTSpace(control, nodeSpace.x, nodeSpace.y, undefined);
-            const canvas = CoordinateHelper.RttToCanvasSpace(rtt.x, rtt.y);
-            pivot.current = new Vector2(canvas.x, canvas.y);
-            console.log("pivot", pivot.current.x, pivot.current.y);
-            // console.log("scene", scene.pointerX, scene.pointerY, "pointer event", pointerEvent?.clientX, pointerEvent?.clientY);
-            // initialAngleToPivot.current = Math.atan2(scene.pointerY - pivot.current.y, scene.pointerX - pivot.current.x);
-            initialAngleToPivot.current = Math.atan2(event.clientY - pivot.current.y, event.clientX - pivot.current.x);
-            console.log("initialAngleToPivot", initialAngleToPivot.current);
-            firstRotationChange.current = true;
+            lastCursor.current = { x: event.clientX, y: event.clientY };
         }
     };
 
