@@ -12,8 +12,6 @@ interface IGizmoLineProps {
     control: Line;
 }
 
-const ROTATION_SENSITIVITY = 1.5;
-
 function getPivot(x1: number, y1: number, x2: number, y2: number, centerX: number, centerY: number) {
     const minX = Math.min(x1, x2);
     const minY = Math.min(y1, y2);
@@ -34,9 +32,11 @@ export function GizmoLine(props: IGizmoLineProps) {
     const lastCursor = React.useRef({ x: 0, y: 0 });
     const isPivotBeingMoved = React.useRef(false);
     const isDragging = React.useRef(false);
-    const movedScalePoint = React.useRef<IScalePoint>();
+    const movedScalePoint = React.useRef<number>();
     const isRotating = React.useRef(false);
     const pivot = React.useRef<Vector2>();
+    const initialAngleToPivot = React.useRef<number>(0);
+    const firstRotationChange = React.useRef(true);
 
     const [scalePoints, setScalePoints] = React.useState<IScalePoint[]>([
         {
@@ -46,7 +46,7 @@ export function GizmoLine(props: IGizmoLineProps) {
             rotation: 0,
             isPivot: false,
             defaultRotation: 0,
-            id: "0",
+            id: 0,
         },
         {
             position: new Vector2(),
@@ -55,7 +55,7 @@ export function GizmoLine(props: IGizmoLineProps) {
             rotation: 0,
             isPivot: true,
             defaultRotation: 0,
-            id: "1",
+            id: 1,
         },
         {
             position: new Vector2(),
@@ -64,7 +64,7 @@ export function GizmoLine(props: IGizmoLineProps) {
             rotation: 0,
             isPivot: false,
             defaultRotation: 0,
-            id: "2",
+            id: 2,
         },
     ]);
 
@@ -100,7 +100,7 @@ export function GizmoLine(props: IGizmoLineProps) {
         matrix.transformCoordinates(v2.x, v2.y, p2);
         matrix.transformCoordinates(vm.x, vm.y, pm);
 
-        pivot.current = new Vector2(pm.x, pm.y);
+        // pivot.current = new Vector2(pm.x, pm.y);
 
         const positions = [new Vector2(p1.x, p1.y), new Vector2(pm.x, pm.y), new Vector2(p2.x, p2.y)];
 
@@ -169,7 +169,7 @@ export function GizmoLine(props: IGizmoLineProps) {
             const deltaY = rotatedDelta.y;
 
             // Move only the scale point that was touched
-            const movedPointIndex = scalePoints.findIndex((point) => point.id === movedScalePoint.current?.id);
+            const movedPointIndex = movedScalePoint.current;
 
             if (movedPointIndex === 0) {
                 // Moved first point, (x1, y1)
@@ -193,14 +193,28 @@ export function GizmoLine(props: IGizmoLineProps) {
         } else if (isRotating.current && pivot.current) {
             // Rotation
             // Get the angle formed from the pivot to last and current cursor position
-            const pivotRtt = CoordinateHelper.NodeToRTTSpace(control, pivot.current.x, pivot.current.y);
-            const pivotCanvas = CoordinateHelper.RttToCanvasSpace(pivotRtt.x, pivotRtt.y);
+            // const pivotRtt = CoordinateHelper.NodeToRTTSpace(control, pivot.current.x, pivot.current.y);
+            // const pivotCanvas = CoordinateHelper.RttToCanvasSpace(pivotRtt.x, pivotRtt.y);
 
-            const anglePivotLast = Math.atan2(lastCursor.current.y - pivotCanvas.y, lastCursor.current.x - pivotCanvas.x);
-            const anglePivotClient = Math.atan2(pointerEvent.clientY - pivotCanvas.y, pointerEvent.clientX - pivotCanvas.x);
-            const angle = (anglePivotClient - anglePivotLast) * ROTATION_SENSITIVITY;
+            // const anglePivotLast = Math.atan2(lastCursor.current.y - pivotCanvas.y, lastCursor.current.x - pivotCanvas.x);
+            // const anglePivotClient = Math.atan2(pointerEvent.clientY - pivotCanvas.y, pointerEvent.clientX - pivotCanvas.x);
+            // const angle = (anglePivotClient - anglePivotLast) * ROTATION_SENSITIVITY;
 
-            control.rotation += angle;
+            // control.rotation += angle;
+            // globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
+            // const scene = props.globalState.workbench._scene;
+            // console.log("scene", scene.pointerX, scene.pointerY, "event", pointerEvent.clientX, pointerEvent.clientY);
+            const angle = Math.atan2(pointerEvent.clientY - pivot.current.y, pointerEvent.clientX - pivot.current.x);
+            if (firstRotationChange.current) {
+                firstRotationChange.current = false;
+            } else {
+                for (const control of globalState.selectedControls) {
+                    console.log("rotation change", angle - initialAngleToPivot.current);
+
+                    control.rotation += angle - initialAngleToPivot.current;
+                }
+            }
+            initialAngleToPivot.current = angle;
             globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
         }
         lastCursor.current = { x: pointerEvent.clientX, y: pointerEvent.clientY };
@@ -262,15 +276,26 @@ export function GizmoLine(props: IGizmoLineProps) {
             }
             isDragging.current = true;
             isRotating.current = false;
-            movedScalePoint.current = scalePoint;
+            movedScalePoint.current = scalePoint.id!;
         }
     };
 
     const onRotate = (event?: React.PointerEvent<HTMLDivElement>) => {
         if (event) {
-            lastCursor.current = { x: event.clientX, y: event.clientY };
+            // const scene = props.globalState.workbench._scene;
+            // lastCursor.current = { x: event.clientX, y: event.clientY };
             isRotating.current = true;
             isDragging.current = false;
+            const nodeSpace = new Vector2(control.transformCenterX, control.transformCenterY);
+            const rtt = CoordinateHelper.NodeToRTTSpace(control, nodeSpace.x, nodeSpace.y, undefined);
+            const canvas = CoordinateHelper.RttToCanvasSpace(rtt.x, rtt.y);
+            pivot.current = new Vector2(canvas.x, canvas.y);
+            console.log("pivot", pivot.current.x, pivot.current.y);
+            // console.log("scene", scene.pointerX, scene.pointerY, "pointer event", pointerEvent?.clientX, pointerEvent?.clientY);
+            // initialAngleToPivot.current = Math.atan2(scene.pointerY - pivot.current.y, scene.pointerX - pivot.current.x);
+            initialAngleToPivot.current = Math.atan2(event.clientY - pivot.current.y, event.clientX - pivot.current.x);
+            console.log("initialAngleToPivot", initialAngleToPivot.current);
+            firstRotationChange.current = true;
         }
     };
 

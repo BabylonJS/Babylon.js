@@ -18,7 +18,7 @@ export interface IScalePoint {
     rotation: number;
     isPivot: boolean;
     defaultRotation: number;
-    id?: string;
+    id?: number;
 }
 
 interface IGizmoScalePointProps {
