@@ -5,6 +5,7 @@ import { GizmoScalePoint, ScalePointPosition } from "./gizmoScalePoint";
 import { Vector2 } from "core/Maths/math";
 import type { Line } from "gui/2D/controls/line";
 import { CoordinateHelper } from "./coordinateHelper";
+import { Matrix2D } from "gui/2d/math2D";
 
 interface IGizmoLineProps {
     globalState: GlobalState;
@@ -12,6 +13,21 @@ interface IGizmoLineProps {
 }
 
 const ROTATION_SENSITIVITY = 1.5;
+
+function getPivot(x1: number, y1: number, x2: number, y2: number, centerX: number, centerY: number) {
+    const minX = Math.min(x1, x2);
+    const minY = Math.min(y1, y2);
+    const maxX = Math.max(x1, x2);
+    const maxY = Math.max(y1, y2);
+    const width = maxX - minX;
+    const height = maxY - minY;
+
+    // Get pivot
+    const xm = minX + width * centerX;
+    const ym = minY + height * centerY;
+
+    return new Vector2(xm, ym);
+}
 
 export function GizmoLine(props: IGizmoLineProps) {
     const { control, globalState } = props;
@@ -72,22 +88,21 @@ export function GizmoLine(props: IGizmoLineProps) {
 
         const v1 = new Vector2(x1, y1);
         const v2 = new Vector2(x2, y2);
+        const vm = getPivot(x1, y1, x2, y2, control.transformCenterX, control.transformCenterY);
 
         const matrix = control._transformMatrix;
 
         const p1 = new Vector2();
         const p2 = new Vector2();
+        const pm = new Vector2();
 
         matrix.transformCoordinates(v1.x, v1.y, p1);
         matrix.transformCoordinates(v2.x, v2.y, p2);
+        matrix.transformCoordinates(vm.x, vm.y, pm);
 
-        // Get pivot
-        const xm = (p1.x + p2.x) * control.transformCenterX;
-        const ym = (p1.y + p2.y) * control.transformCenterY;
+        pivot.current = new Vector2(pm.x, pm.y);
 
-        pivot.current = new Vector2(xm, ym);
-
-        const positions = [new Vector2(p1.x, p1.y), new Vector2(xm, ym), new Vector2(p2.x, p2.y)];
+        const positions = [new Vector2(p1.x, p1.y), new Vector2(pm.x, pm.y), new Vector2(p2.x, p2.y)];
 
         setScalePoints(
             scalePoints.map((point, index) => {
@@ -211,30 +226,38 @@ export function GizmoLine(props: IGizmoLineProps) {
             isPivotBeingMoved.current = scalePoint.isPivot;
             // If the control has any rotation, reset the
             // rotation, modifying the so the scale behave as expected
-            // points such that the orientation is the same
             if (!scalePoint.isPivot && control.rotation) {
                 const line = control as Line;
-                const x1 = control._cachedParentMeasure.left + line._x1.getValue(line._host);
-                const y1 = control._cachedParentMeasure.top + line._y1.getValue(line._host);
-                const x2 = control._cachedParentMeasure.left + line._effectiveX2;
-                const y2 = control._cachedParentMeasure.top + line._effectiveY2;
+                const x1 = line._x1.getValue(line._host);
+                const y1 = line._y1.getValue(line._host);
+                const x2 = line._x2.getValue(line._host);
+                const y2 = line._y2.getValue(line._host);
 
                 const v1 = new Vector2(x1, y1);
                 const v2 = new Vector2(x2, y2);
 
-                const matrix = control._transformMatrix;
+                const vm = getPivot(x1, y1, x2, y2, line.transformCenterX, line.transformCenterY);
+
+                const finalTransform = Matrix2D.Identity();
+                const currentTransform = Matrix2D.Identity();
+                Matrix2D.TranslationToRef(-vm.x, -vm.y, currentTransform);
+                finalTransform.multiplyToRef(currentTransform, finalTransform);
+                Matrix2D.RotationToRef(control.rotation, currentTransform);
+                finalTransform.multiplyToRef(currentTransform, finalTransform);
+                Matrix2D.TranslationToRef(vm.x, vm.y, currentTransform);
+                finalTransform.multiplyToRef(currentTransform, finalTransform);
 
                 const p1 = new Vector2();
                 const p2 = new Vector2();
 
-                matrix.transformCoordinates(v1.x, v1.y, p1);
-                matrix.transformCoordinates(v2.x, v2.y, p2);
+                finalTransform.transformCoordinates(v1.x, v1.y, p1);
+                finalTransform.transformCoordinates(v2.x, v2.y, p2);
 
                 control.rotation = 0;
-                control.x1 = x1;
-                control.y1 = y1;
-                control.x2 = x2;
-                control.y2 = y2;
+                control.x1 = p1.x;
+                control.y1 = p1.y;
+                control.x2 = p2.x;
+                control.y2 = p2.y;
                 globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
             }
             isDragging.current = true;
