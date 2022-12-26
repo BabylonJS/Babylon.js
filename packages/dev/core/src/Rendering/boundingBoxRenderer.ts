@@ -223,6 +223,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
             },
             false
         );
+        this._colorShader.doNotSerialize = true;
 
         this._colorShader.reservedDataStore = {
             hidden: true,
@@ -239,6 +240,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
             },
             true
         );
+        this._colorShaderForOcclusionQuery.doNotSerialize = true;
 
         this._colorShaderForOcclusionQuery.reservedDataStore = {
             hidden: true,
