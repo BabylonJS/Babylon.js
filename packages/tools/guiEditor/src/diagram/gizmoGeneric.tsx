@@ -11,6 +11,7 @@ import type { Nullable } from "core/types";
 import { ValueAndUnit } from "gui/2D/valueAndUnit";
 import type { IScalePoint } from "./gizmoScalePoint";
 import { GizmoScalePoint, ScalePointPosition } from "./gizmoScalePoint";
+import { MathTools } from "gui/2D/math2D";
 
 export interface IGuiGizmoProps {
     globalState: GlobalState;
@@ -228,37 +229,50 @@ export class GizmoGeneric extends React.Component<IGuiGizmoProps, IGuiGizmoState
     private _dragLocalBounds(toPosition: Vector2, preserveAspectRatio = false) {
         const scalePoint = this.state.scalePoints[this.state.scalePointDragging];
         const newBounds = this._localBounds.clone();
-        const currentAspectRatio = this._localBounds.width / this._localBounds.height;
-        let skipChange = false;
+        const currentAspectRatio = MathTools.Round(this._localBounds.width / this._localBounds.height);
+
         if (scalePoint.horizontalPosition === ScalePointPosition.Left) {
-            const previousValue = newBounds.left;
             newBounds.left = Math.min(this._localBounds.right - 1, toPosition.x);
-            if (preserveAspectRatio) {
-                const changedValue = newBounds.left - previousValue;
-                const aspectRatioChangedValue = changedValue / currentAspectRatio;
-                if (scalePoint.verticalPosition === ScalePointPosition.Top) {
-                    newBounds.top += aspectRatioChangedValue;
-                } else if (scalePoint.verticalPosition === ScalePointPosition.Bottom) {
-                    newBounds.bottom += aspectRatioChangedValue;
-                } else {
-                    newBounds.top += aspectRatioChangedValue / 2;
-                    newBounds.bottom += aspectRatioChangedValue / 2;
-                }
-                skipChange = true;
-            }
         }
-        if (!skipChange && scalePoint.verticalPosition === ScalePointPosition.Top) {
-            // console.log("change top");
+        if (scalePoint.verticalPosition === ScalePointPosition.Top) {
             newBounds.top = Math.min(this._localBounds.bottom - 1, toPosition.y);
         }
         if (scalePoint.horizontalPosition === ScalePointPosition.Right) {
-            // console.log("change right");
             newBounds.right = Math.max(this._localBounds.left + 1, toPosition.x);
         }
         if (scalePoint.verticalPosition === ScalePointPosition.Bottom) {
-            // console.log("change bottom");
             newBounds.bottom = Math.max(this._localBounds.top + 1, toPosition.y);
         }
+
+        if (preserveAspectRatio) {
+            const deltaWidth = newBounds.width - this._localBounds.width;
+            const deltaHeight = newBounds.height - this._localBounds.height;
+
+            const signInverted = scalePoint.horizontalPosition === ScalePointPosition.Center || scalePoint.verticalPosition === ScalePointPosition.Center;
+            const comparison = Math.abs(deltaWidth) > Math.abs(deltaHeight);
+            if (signInverted ? comparison : !comparison) {
+                const aspectRatioDeltaHeight = deltaWidth / currentAspectRatio;
+                if (scalePoint.verticalPosition === ScalePointPosition.Top) {
+                    newBounds.top = this._localBounds.top - aspectRatioDeltaHeight;
+                } else if (scalePoint.verticalPosition === ScalePointPosition.Bottom) {
+                    newBounds.bottom = this._localBounds.bottom + aspectRatioDeltaHeight;
+                } else {
+                    newBounds.top = this._localBounds.top - aspectRatioDeltaHeight / 2;
+                    newBounds.bottom = this._localBounds.bottom + aspectRatioDeltaHeight / 2;
+                }
+            } else {
+                const aspectRatioDeltaWidth = deltaHeight * currentAspectRatio;
+                if (scalePoint.horizontalPosition === ScalePointPosition.Left) {
+                    newBounds.left = this._localBounds.left - aspectRatioDeltaWidth;
+                } else if (scalePoint.horizontalPosition === ScalePointPosition.Right) {
+                    newBounds.right = this._localBounds.right + aspectRatioDeltaWidth;
+                } else {
+                    newBounds.left = this._localBounds.left - aspectRatioDeltaWidth / 2;
+                    newBounds.right = this._localBounds.right + aspectRatioDeltaWidth / 2;
+                }
+            }
+        }
+
         // apply bounds changes to all controls
         const edges: ["left", "top", "right", "bottom"] = ["left", "top", "right", "bottom"];
         for (const node of this.props.globalState.selectedControls) {

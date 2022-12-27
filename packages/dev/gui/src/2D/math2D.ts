@@ -241,3 +241,20 @@ export class Matrix2D {
         }
     }
 }
+
+export class MathTools {
+    /**
+     * Default rounding precision for GUI elements
+     */
+    public static readonly DefaultRoundingPrecision = 100;
+
+    /**
+     * Rounds a number to the nearest multiple of a given precision
+     * @param value the value to be rounded
+     * @param precision the multiple to which the value will be rounded. Default is 100 (2 decimal digits)
+     * @returns
+     */
+    public static Round(value: number, precision: number = MathTools.DefaultRoundingPrecision): number {
+        return Math.round(value * precision) / precision;
+    }
+}

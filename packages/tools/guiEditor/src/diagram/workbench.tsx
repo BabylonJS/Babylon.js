@@ -287,7 +287,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             this._constraintDirection = ConstraintDirection.NONE;
         }
         this.props.globalState.shiftKeyPressed = evt.shiftKey && evt.type === "keydown";
-        console.log("key event shift key pressed", this.props.globalState.shiftKeyPressed);
 
         if (evt.key === "Delete" || evt.key === "Backspace") {
             if (!this.props.globalState.lockObject.lock) {
