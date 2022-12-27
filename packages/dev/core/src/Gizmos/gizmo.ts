@@ -179,6 +179,7 @@ export class Gizmo implements IGizmo {
 
     /**
      * If set the gizmo's rotation will be updated to match the attached mesh each frame (Default: true)
+     * NOTE: This is only possible for meshes with uniform scaling, as otherwise it's not possible to decompose the rotation
      */
     public set updateGizmoRotationToMatchAttachedMesh(value: boolean) {
         this._updateGizmoRotationToMatchAttachedMesh = value;
