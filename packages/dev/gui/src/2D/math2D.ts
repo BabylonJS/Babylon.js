@@ -242,11 +242,17 @@ export class Matrix2D {
     }
 }
 
+/**
+ * Useful math functions
+ */
 export class MathTools {
     /**
-     * Default rounding precision for GUI elements
+     * Default rounding precision for GUI elements. It should be
+     * set to a power of ten, where the exponent means the number
+     * of decimal digits to round to, i.e, 100 means 2 decimal digits,
+     * 1000 means 3 decimal digits, etc. Default is 100 (2 decimal digits).
      */
-    public static readonly DefaultRoundingPrecision = 100;
+    public static DefaultRoundingPrecision = 100;
 
     /**
      * Rounds a number to the nearest multiple of a given precision
