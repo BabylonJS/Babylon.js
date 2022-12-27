@@ -204,7 +204,7 @@ export class GizmoGeneric extends React.Component<IGuiGizmoProps, IGuiGizmoState
             const node = this.props.control;
             const inRTT = CoordinateHelper.MousePointerToRTTSpace(node, scene.pointerX, scene.pointerY);
             const inNodeSpace = CoordinateHelper.RttToLocalNodeSpace(node, inRTT.x, inRTT.y, undefined, this._storedValues);
-            this._dragLocalBounds(inNodeSpace);
+            this._dragLocalBounds(inNodeSpace, this.props.globalState.shiftKeyPressed);
             this._updateNodeFromLocalBounds();
             this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
         }
@@ -225,19 +225,38 @@ export class GizmoGeneric extends React.Component<IGuiGizmoProps, IGuiGizmoState
         };
     }
 
-    private _dragLocalBounds(toPosition: Vector2) {
+    private _dragLocalBounds(toPosition: Vector2, preserveAspectRatio = false) {
         const scalePoint = this.state.scalePoints[this.state.scalePointDragging];
         const newBounds = this._localBounds.clone();
+        const currentAspectRatio = this._localBounds.width / this._localBounds.height;
+        let skipChange = false;
         if (scalePoint.horizontalPosition === ScalePointPosition.Left) {
+            const previousValue = newBounds.left;
             newBounds.left = Math.min(this._localBounds.right - 1, toPosition.x);
+            if (preserveAspectRatio) {
+                const changedValue = newBounds.left - previousValue;
+                const aspectRatioChangedValue = changedValue / currentAspectRatio;
+                if (scalePoint.verticalPosition === ScalePointPosition.Top) {
+                    newBounds.top += aspectRatioChangedValue;
+                } else if (scalePoint.verticalPosition === ScalePointPosition.Bottom) {
+                    newBounds.bottom += aspectRatioChangedValue;
+                } else {
+                    newBounds.top += aspectRatioChangedValue / 2;
+                    newBounds.bottom += aspectRatioChangedValue / 2;
+                }
+                skipChange = true;
+            }
         }
-        if (scalePoint.verticalPosition === ScalePointPosition.Left) {
+        if (!skipChange && scalePoint.verticalPosition === ScalePointPosition.Top) {
+            // console.log("change top");
             newBounds.top = Math.min(this._localBounds.bottom - 1, toPosition.y);
         }
         if (scalePoint.horizontalPosition === ScalePointPosition.Right) {
+            // console.log("change right");
             newBounds.right = Math.max(this._localBounds.left + 1, toPosition.x);
         }
         if (scalePoint.verticalPosition === ScalePointPosition.Bottom) {
+            // console.log("change bottom");
             newBounds.bottom = Math.max(this._localBounds.top + 1, toPosition.y);
         }
         // apply bounds changes to all controls
