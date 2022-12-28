@@ -53,7 +53,8 @@ export class Image extends Control {
         key: string;
     } = { data: null, key: "" };
 
-    public static SourceImgCache = new Map<string, IImage>();
+    public static SourceImgCache = new Map<string, { img: IImage; lastUsed: number }>();
+    public static SourceImgCacheMaxSize = 100;
 
     /**
      * Observable notified when the content is loaded
@@ -484,7 +485,6 @@ export class Image extends Control {
     }
 
     private _onImageLoaded(): void {
-        console.log(this.name, "image loaded");
         this._imageDataCache.data = null;
         this._imageWidth = this._domImage.width;
         this._imageHeight = this._domImage.height;
@@ -533,19 +533,30 @@ export class Image extends Control {
             throw new Error("Invalid engine. Unable to create a canvas.");
         }
         if (value && Image.SourceImgCache.has(value)) {
-            console.log("cache hit for", value);
-            this._domImage = Image.SourceImgCache.get(value)!;
+            const cachedData = Image.SourceImgCache.get(value)!;
+            this._domImage = cachedData.img;
+            // Update the last used time
+            cachedData.lastUsed = Date.now();
             this._onImageLoaded();
-            return;
-            // this._domImage.onload = () => {
-            //     this._onImageLoaded();
-            // };
             return;
         }
         this._domImage = engine.createCanvasImage();
         if (value) {
-            console.log("populate image cache");
-            Image.SourceImgCache.set(value, this._domImage);
+            if (Image.SourceImgCache.size > Image.SourceImgCacheMaxSize) {
+                // If the cache is at max capacity, delete the oldest image
+                let oldestKey = "";
+                let oldestTime = -Number.MAX_VALUE;
+
+                Image.SourceImgCache.forEach((value, key) => {
+                    if (value.lastUsed < oldestTime) {
+                        oldestTime = value.lastUsed;
+                        oldestKey = key;
+                    }
+                });
+
+                Image.SourceImgCache.delete(oldestKey);
+            }
+            Image.SourceImgCache.set(value, { img: this._domImage, lastUsed: Date.now() });
         }
 
         this._domImage.onload = () => {
