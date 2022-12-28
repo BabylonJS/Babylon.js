@@ -53,6 +53,8 @@ export class Image extends Control {
         key: string;
     } = { data: null, key: "" };
 
+    public static SourceImgCache = new Map<string, IImage>();
+
     /**
      * Observable notified when the content is loaded
      */
@@ -482,6 +484,7 @@ export class Image extends Control {
     }
 
     private _onImageLoaded(): void {
+        console.log(this.name, "image loaded");
         this._imageDataCache.data = null;
         this._imageWidth = this._domImage.width;
         this._imageHeight = this._domImage.height;
@@ -529,7 +532,21 @@ export class Image extends Control {
         if (!engine) {
             throw new Error("Invalid engine. Unable to create a canvas.");
         }
+        if (value && Image.SourceImgCache.has(value)) {
+            console.log("cache hit for", value);
+            this._domImage = Image.SourceImgCache.get(value)!;
+            this._onImageLoaded();
+            return;
+            // this._domImage.onload = () => {
+            //     this._onImageLoaded();
+            // };
+            return;
+        }
         this._domImage = engine.createCanvasImage();
+        if (value) {
+            console.log("populate image cache");
+            Image.SourceImgCache.set(value, this._domImage);
+        }
 
         this._domImage.onload = () => {
             this._onImageLoaded();
