@@ -1,128 +1,227 @@
 {
-    "fromTag": "5.38.0",
+    "fromTag": "5.39.0",
     "changelog": {
-        "5.38.0": [
+        "5.40.0": [
             {
-                "pr": "13346",
-                "title": "Update dependencies",
-                "description": null,
+                "pr": "13386",
+                "title": "Hold shift when resizing to lock aspect ratio in GUI Editor",
+                "description": "![ezgif com-gif-maker](https://user-images.githubusercontent.com/6002144/209701953-70090782-8add-43bb-93cf-762c354d64dd.gif)\r\n",
                 "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
                 },
                 "files": [
-                    "package-lock.json",
-                    "package.json",
-                    "packages/tools/testsMemoryLeaks/src/index.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "13347",
-                "title": "NME: Allow 3 textures for the TriPlanar block",
-                "description": "See https://forum.babylonjs.com/t/triplanar-shader-strange-behavior-when-meshs-are-translated-possible-bug/17985/4\r\n\r\nIn order to be able to replace the `TriPlanar` material, I added the possibility to give additional textures for the Y and Z axis.",
-                "author": {
-                    "name": "Popov72",
-                    "url": "https://github.com/Popov72"
-                },
-                "files": [
-                    "packages/dev/core/src/Materials/Node/Blocks/biPlanarBlock.ts",
-                    "packages/dev/core/src/Materials/Node/Blocks/triPlanarBlock.ts",
-                    "packages/dev/core/src/Materials/Node/nodeMaterialConnectionPointCustomObject.ts",
-                    "packages/tools/nodeEditor/src/graphSystem/display/textureDisplayManager.modules.scss"
+                    "packages/dev/gui/src/2D/math2D.ts",
+                    "packages/tools/guiEditor/src/diagram/gizmoGeneric.tsx",
+                    "packages/tools/guiEditor/src/diagram/workbench.tsx",
+                    "packages/tools/guiEditor/src/globalState.ts"
                 ],
                 "tags": [
-                    "skip changelog"
+                    "enhancement",
+                    "gui editor"
                 ]
             },
             {
-                "pr": "13344",
-                "title": "Output linting errors and warning to pipelines",
-                "description": "Adds the lint:check-ci NPM script which when run from a continuous integration environment will output linting errors and warnings to the pipeline.\r\n\r\n**Important Note** The pipeline will need to have its linting command updated as well.",
+                "pr": "13384",
+                "title": "Add a parameter to CreateScreenshotUsingRenderTarget(Async) to allow …",
+                "description": "…layer mask checking\r\n\r\nRelated forum issue: https://forum.babylonjs.com/t/screenshot-and-layermask-problems-after-13040/36894\r\nExample Playground: #VET9Q9#1\r\n\r\nWith this, the screenshot RTT will take into account the camera's layer mask (matching the previous screenshot behavior that didn't set the render list), but it will also be possible to turn this behavior off.",
                 "author": {
-                    "name": "dr-vortex",
-                    "url": "https://github.com/dr-vortex"
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
                 },
                 "files": [
-                    "package.json"
+                    "packages/dev/core/src/Misc/screenshotTools.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13383",
+                "title": "Add some comments on docs reinforcing that it's only possible to upda…",
+                "description": "…te gizmo rotation on mesh when scaling is uniform.\r\n\r\nRelated forum issue: https://forum.babylonjs.com/t/unable-to-use-a-rotation-gizmo-matching-mesh-rotation-with-non-uniform-scaling/36910",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/gizmo.ts",
+                    "packages/dev/core/src/Gizmos/positionGizmo.ts",
+                    "packages/dev/core/src/Gizmos/rotationGizmo.ts"
                 ],
                 "tags": []
             },
             {
-                "pr": "13343",
-                "title": "EffectLayer: Allows to set the type of the main texture",
-                "description": "See https://forum.babylonjs.com/t/setting-the-type-of-effectlayer-main-texture/36512",
+                "pr": "13382",
+                "title": "More defensive handling of name property in Inspector",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/debugger-layout-inspector-crash-after-opening-material-tab/36895",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/inspector/src/tools.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "13380",
+                "title": "Change GUI Editor default image URL",
+                "description": "The previous URL couldn't be accessed if the GE was opened through the Playground, leading to an invalid image.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/guiEditor/src/guiNodeTools.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "gui editor"
+                ]
+            },
+            {
+                "pr": "13379",
+                "title": "Don't serialize internal shader materials",
+                "description": "See https://forum.babylonjs.com/t/colorshader-and-colorshaderoccquery-kept-after-serialize/36870\r\n\r\nWe should not serialize those materials as they will be recreated automatically when needed.",
                 "author": {
                     "name": "Popov72",
                     "url": "https://github.com/Popov72"
                 },
                 "files": [
-                    "packages/dev/core/src/Layers/effectLayer.ts",
-                    "packages/dev/core/src/Layers/glowLayer.ts",
-                    "packages/dev/core/src/Layers/highlightLayer.ts"
+                    "packages/dev/core/src/Meshes/linesMesh.ts",
+                    "packages/dev/core/src/Rendering/boundingBoxRenderer.ts"
                 ],
                 "tags": [
-                    "rendering engine",
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13377",
+                "title": "Fix crash when calling getGlowLayerByName when no effects have been created yet",
+                "description": "See https://forum.babylonjs.com/t/scene-getglowlayerbyname-throws-undefined-reading-length-exception/36849",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Layers/glowLayer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13376",
+                "title": "Fix doc comment for audio listener rotation provider",
+                "description": null,
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/Audio/audioSceneComponent.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13373",
+                "title": "Fix audio offset issues",
+                "description": "Related forum issues:\r\n- https://forum.babylonjs.com/t/pausing-and-playing-an-audio-with-offset-restarts-it-from-the-beginning-instead-of-the-current-position/36668\r\n- https://forum.babylonjs.com/t/audio-seek-functionality-missing/36532",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/Audio/sound.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "audio"
+                ]
+            },
+            {
+                "pr": "13375",
+                "title": "Add audioListenerRotationProvider",
+                "description": "https://forum.babylonjs.com/t/spatial-sound-listener-orientation-audiolistenerpositionprovider/36771",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Audio/audioSceneComponent.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "audio"
+                ]
+            },
+            {
+                "pr": "13371",
+                "title": "Material plugins: Allow custom flags when injecting code with regexp",
+                "description": "See https://forum.babylonjs.com/t/how-to-write-a-materialplugin-regex-that-will-find-and-replace-multiple-lines/36794/2\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/materialPluginManager.ts"
+                ],
+                "tags": [
+                    "materials",
                     "new feature"
                 ]
             },
             {
-                "pr": "13342",
-                "title": "NME: Add a CSS class to all graph nodes",
-                "description": "Use this new feature to widen the `LightInformationBlock`.\r\n\r\nCloses #13329 ",
+                "pr": "13374",
+                "title": "Workaround Tabs css name conflict",
+                "description": "https://forum.babylonjs.com/t/about-color-of-input-field-in-inspector/26686/9",
                 "author": {
-                    "name": "Popov72",
-                    "url": "https://github.com/Popov72"
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
                 },
                 "files": [
-                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx",
-                    "packages/tools/nodeEditor/src/graphEditor.tsx",
-                    "packages/tools/nodeEditor/src/main.scss"
+                    "packages/dev/inspector/src/components/actionTabs/actionTabs.scss",
+                    "packages/dev/inspector/src/components/actionTabs/tabsComponent.tsx"
                 ],
                 "tags": [
                     "skip changelog"
                 ]
             },
             {
-                "pr": "13339",
-                "title": "NME: Fix of input types allowed for some blocks",
-                "description": "See https://forum.babylonjs.com/t/procedural-mode-not-working-in-nme/36447\r\n\r\nThat's a fix of #13328.",
+                "pr": "13372",
+                "title": "If a new control is added on root, call the camera update function to…",
+                "description": "… update the positions of controls linked to meshes.\r\n\r\nThis is to fix a issue when the camera is moved while new controls are being added, and some of them are linked to a mesh, their positions have to be properly updated again.\r\n\r\nExample PG: https://playground.babylonjs.com/#XCPP9Y#16922",
                 "author": {
-                    "name": "Popov72",
-                    "url": "https://github.com/Popov72"
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
                 },
                 "files": [
-                    "packages/dev/core/src/Materials/Node/Blocks/Dual/fogBlock.ts",
-                    "packages/dev/core/src/Materials/Node/Blocks/Dual/reflectionTextureBlock.ts",
-                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/TBNBlock.ts",
-                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/fragmentOutputBlock.ts",
-                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/heightToNormalBlock.ts",
-                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/screenSpaceBlock.ts",
-                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/shadowMapBlock.ts",
-                    "packages/dev/core/src/Materials/Node/Blocks/PBR/clearCoatBlock.ts",
-                    "packages/dev/core/src/Materials/Node/Blocks/PBR/reflectionBlock.ts",
-                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/morphTargetsBlock.ts",
-                    "packages/dev/core/src/Materials/Node/Blocks/triPlanarBlock.ts"
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts"
                 ],
                 "tags": [
                     "bug",
-                    "nme"
+                    "gui"
                 ]
             },
             {
-                "pr": "13341",
-                "title": "Update 4.2.1 to host from CDN",
-                "description": null,
+                "pr": "13369",
+                "title": "Allow accessing private fields and methods of SPS",
+                "description": "Related forum post: https://forum.babylonjs.com/t/accessing-private-fields-when-extending-sps/36729",
                 "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
+                    "name": "s207152",
+                    "url": "https://github.com/s207152"
                 },
                 "files": [
-                    "packages/tools/playground/public/index.js"
+                    "packages/dev/core/src/Particles/solidParticleSystem.ts"
                 ],
-                "tags": [
-                    "skip changelog"
-                ]
+                "tags": []
             }
         ],
         "5.39.0": [
@@ -360,6 +459,130 @@
                     "scripts/updateSinceTag.js"
                 ],
                 "tags": []
+            }
+        ],
+        "5.38.0": [
+            {
+                "pr": "13346",
+                "title": "Update dependencies",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/tools/testsMemoryLeaks/src/index.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13347",
+                "title": "NME: Allow 3 textures for the TriPlanar block",
+                "description": "See https://forum.babylonjs.com/t/triplanar-shader-strange-behavior-when-meshs-are-translated-possible-bug/17985/4\r\n\r\nIn order to be able to replace the `TriPlanar` material, I added the possibility to give additional textures for the Y and Z axis.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/biPlanarBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/triPlanarBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialConnectionPointCustomObject.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/textureDisplayManager.modules.scss"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13344",
+                "title": "Output linting errors and warning to pipelines",
+                "description": "Adds the lint:check-ci NPM script which when run from a continuous integration environment will output linting errors and warnings to the pipeline.\r\n\r\n**Important Note** The pipeline will need to have its linting command updated as well.",
+                "author": {
+                    "name": "dr-vortex",
+                    "url": "https://github.com/dr-vortex"
+                },
+                "files": [
+                    "package.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13343",
+                "title": "EffectLayer: Allows to set the type of the main texture",
+                "description": "See https://forum.babylonjs.com/t/setting-the-type-of-effectlayer-main-texture/36512",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Layers/effectLayer.ts",
+                    "packages/dev/core/src/Layers/glowLayer.ts",
+                    "packages/dev/core/src/Layers/highlightLayer.ts"
+                ],
+                "tags": [
+                    "rendering engine",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13342",
+                "title": "NME: Add a CSS class to all graph nodes",
+                "description": "Use this new feature to widen the `LightInformationBlock`.\r\n\r\nCloses #13329 ",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx",
+                    "packages/tools/nodeEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeEditor/src/main.scss"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13339",
+                "title": "NME: Fix of input types allowed for some blocks",
+                "description": "See https://forum.babylonjs.com/t/procedural-mode-not-working-in-nme/36447\r\n\r\nThat's a fix of #13328.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/fogBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/reflectionTextureBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/TBNBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/fragmentOutputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/heightToNormalBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/screenSpaceBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/shadowMapBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/clearCoatBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/reflectionBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/morphTargetsBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/triPlanarBlock.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "13341",
+                "title": "Update 4.2.1 to host from CDN",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/playground/public/index.js"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
             }
         ],
         "5.37.0": [
