@@ -11,6 +11,12 @@ export class FadeInOutBehavior implements Behavior<Mesh> {
      * Time in milliseconds to delay before fading in (Default: 0)
      */
     public delay = 0;
+
+    /**
+     * Time in milliseconds to delay before fading out (Default: 0)
+     */
+    public fadeOutDelay = 0;
+
     /**
      * Time in milliseconds for the mesh to fade in (Default: 300)
      */
@@ -20,6 +26,7 @@ export class FadeInOutBehavior implements Behavior<Mesh> {
     private _hovered = false;
     private _hoverValue = 0;
     private _ownerNode: Nullable<Mesh> = null;
+    private _timeoutHandle: Nullable<NodeJS.Timeout>;
 
     /**
      * Instantiates the FadeInOutBehavior
@@ -58,7 +65,29 @@ export class FadeInOutBehavior implements Behavior<Mesh> {
      * @param value if the object should fade in or out (true to fade in)
      */
     public fadeIn(value: boolean) {
+        // Otherwise the value has changed so abort the next update
+        if (this._timeoutHandle) {
+            // prevent any pending updates
+            clearTimeout(this._timeoutHandle);
+            this._timeoutHandle = null;
+        }
+
+        if (this._ownerNode && 
+            ((value && this._ownerNode.visibility >= 1) || 
+            (!value && this._ownerNode.visibility <= 0))) {
+            // If fading in and already visible or fading out and already not visible do nothing
+            return;
+        }
+
         this._hovered = value;
+
+        // Reset the hoverValue.  This is neccessary becasue we may have been fading out, e.g. but not yet reached
+        // the delay, so the hover value is greater than 1
+        if (this._ownerNode!.visibility >= 1) {
+            this._hoverValue = this.fadeInTime;
+        } else if (this._ownerNode!.visibility <= 0) {
+            this._hoverValue = 0;
+        }
         this._update();
     }
 
@@ -66,12 +95,18 @@ export class FadeInOutBehavior implements Behavior<Mesh> {
         if (this._ownerNode) {
             this._hoverValue += this._hovered ? this._millisecondsPerFrame : -this._millisecondsPerFrame;
 
-            this._setAllVisibility(this._ownerNode, (this._hoverValue - this.delay) / this.fadeInTime);
+            this._setAllVisibility(this._ownerNode, this._hovered ?
+                // Keep the visibility value less than 0 until delay has elapsed
+                (this._hoverValue - this.delay) / this.fadeInTime :
+                // keep the visibility value greater than 1 until delay has elapsed
+                (this._hoverValue + this.fadeOutDelay) / this.fadeInTime)
 
             if (this._ownerNode.visibility > 1) {
                 this._setAllVisibility(this._ownerNode, 1);
-                this._hoverValue = this.fadeInTime + this.delay;
-                return;
+                if (this._hoverValue > this.fadeInTime) {
+                    this._hoverValue = this.fadeInTime;
+                    return;
+                }
             } else if (this._ownerNode.visibility < 0) {
                 this._setAllVisibility(this._ownerNode, 0);
                 if (this._hoverValue < 0) {
@@ -79,7 +114,7 @@ export class FadeInOutBehavior implements Behavior<Mesh> {
                     return;
                 }
             }
-            setTimeout(this._update, this._millisecondsPerFrame);
+            this._timeoutHandle = setTimeout(this._update, this._millisecondsPerFrame);
         }
     };
 
