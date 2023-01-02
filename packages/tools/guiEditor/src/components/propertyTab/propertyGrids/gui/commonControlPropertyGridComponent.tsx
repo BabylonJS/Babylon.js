@@ -322,7 +322,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         };
 
         const fontStyleOptions = [
-            { label: "regular", value: "regular", id: "0" },
+            { label: "normal", value: "normal", id: "0" },
             { label: "italic", value: "italic", id: "1" },
             { label: "oblique", value: "oblique", id: "2" },
         ];
