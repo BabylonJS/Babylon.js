@@ -57,3 +57,5 @@ export * from "./voronoiNoiseBlock";
 export * from "./elbowBlock";
 export * from "./triPlanarBlock";
 export * from "./biPlanarBlock";
+export * from "./matrixDeterminantBlock";
+export * from "./matrixTransposeBlock";

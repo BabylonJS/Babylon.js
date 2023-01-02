@@ -630,7 +630,7 @@ export class Ray {
 /**
  * Type used to define predicate used to select faces when a mesh intersection is detected
  */
-export type TrianglePickingPredicate = (p0: Vector3, p1: Vector3, p2: Vector3, ray: Ray) => boolean;
+export type TrianglePickingPredicate = (p0: Vector3, p1: Vector3, p2: Vector3, ray: Ray, i0: number, i1: number, i2: number) => boolean;
 
 declare module "../scene" {
     export interface Scene {

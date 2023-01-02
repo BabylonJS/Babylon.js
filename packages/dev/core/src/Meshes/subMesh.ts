@@ -598,7 +598,7 @@ export class SubMesh implements ICullable {
                 continue;
             }
 
-            if (trianglePredicate && !trianglePredicate(p0, p1, p2, ray)) {
+            if (trianglePredicate && !trianglePredicate(p0, p1, p2, ray, indexA, indexB, indexC)) {
                 continue;
             }
 
@@ -639,7 +639,7 @@ export class SubMesh implements ICullable {
             const p1 = positions[index + 1];
             const p2 = positions[index + 2];
 
-            if (trianglePredicate && !trianglePredicate(p0, p1, p2, ray)) {
+            if (trianglePredicate && !trianglePredicate(p0, p1, p2, ray, -1, -1, -1)) {
                 continue;
             }
 

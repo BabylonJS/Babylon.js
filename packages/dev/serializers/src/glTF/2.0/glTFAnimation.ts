@@ -778,46 +778,40 @@ export class _GLTFAnimation {
         factor: number,
         babylonTransformNode: Node,
         animation: Animation,
-        animationType: number,
         animationChannelTargetPath: AnimationChannelTargetPath,
         convertToRightHandedSystem: boolean,
         useQuaternion: boolean
-    ): Nullable<Vector3 | Quaternion> {
-        let property: string[];
-        let componentName: string;
-        let value: Nullable<Quaternion | Vector3> = null;
+    ): Vector3 | Quaternion {
         const basePositionRotationOrScale = _GLTFAnimation._GetBasePositionRotationOrScale(
             babylonTransformNode,
             animationChannelTargetPath,
             convertToRightHandedSystem,
             useQuaternion
         );
-        if (animationType === Animation.ANIMATIONTYPE_FLOAT) {
-            // handles single component x, y, z or w component animation by using a base property and animating over a component.
-            property = animation.targetProperty.split(".");
-            componentName = property ? property[1] : ""; // x, y, or z component
-            value = useQuaternion ? Quaternion.FromArray(basePositionRotationOrScale).normalize() : Vector3.FromArray(basePositionRotationOrScale);
+        // handles single component x, y, z or w component animation by using a base property and animating over a component.
+        const property = animation.targetProperty.split(".");
+        const componentName = property ? property[1] : ""; // x, y, or z component
+        const value = useQuaternion ? Quaternion.FromArray(basePositionRotationOrScale).normalize() : Vector3.FromArray(basePositionRotationOrScale);
 
-            switch (componentName) {
-                case "x": {
-                    value[componentName] = convertToRightHandedSystem && useQuaternion && animationChannelTargetPath !== AnimationChannelTargetPath.SCALE ? -factor : factor;
-                    break;
-                }
-                case "y": {
-                    value[componentName] = convertToRightHandedSystem && useQuaternion && animationChannelTargetPath !== AnimationChannelTargetPath.SCALE ? -factor : factor;
-                    break;
-                }
-                case "z": {
-                    value[componentName] = convertToRightHandedSystem && !useQuaternion && animationChannelTargetPath !== AnimationChannelTargetPath.SCALE ? -factor : factor;
-                    break;
-                }
-                case "w": {
-                    (value as Quaternion).w = factor;
-                    break;
-                }
-                default: {
-                    Tools.Error(`glTFAnimation: Unsupported component type "${componentName}" for scale animation!`);
-                }
+        switch (componentName) {
+            case "x": {
+                value[componentName] = convertToRightHandedSystem && useQuaternion && animationChannelTargetPath !== AnimationChannelTargetPath.SCALE ? -factor : factor;
+                break;
+            }
+            case "y": {
+                value[componentName] = convertToRightHandedSystem && useQuaternion && animationChannelTargetPath !== AnimationChannelTargetPath.SCALE ? -factor : factor;
+                break;
+            }
+            case "z": {
+                value[componentName] = convertToRightHandedSystem && !useQuaternion && animationChannelTargetPath !== AnimationChannelTargetPath.SCALE ? -factor : factor;
+                break;
+            }
+            case "w": {
+                (value as Quaternion).w = factor;
+                break;
+            }
+            default: {
+                Tools.Error(`glTFAnimation: Unsupported component name "${componentName}"!`);
             }
         }
 
@@ -826,7 +820,7 @@ export class _GLTFAnimation {
 
     private static _SetInterpolatedValue(
         babylonTransformNode: Node,
-        value: Nullable<number | Vector3 | Quaternion>,
+        value: number | Vector3 | Quaternion,
         time: number,
         animation: Animation,
         animationChannelTargetPath: AnimationChannelTargetPath,
@@ -836,56 +830,52 @@ export class _GLTFAnimation {
         convertToRightHandedSystem: boolean,
         useQuaternion: boolean
     ) {
-        const animationType = animation.dataType;
         let cacheValue: Vector3 | Quaternion | number;
         inputs.push(time);
 
-        if (value) {
-            if (animationChannelTargetPath === AnimationChannelTargetPath.WEIGHTS) {
-                outputs.push([value as number]);
-                return;
-            }
+        if (animationChannelTargetPath === AnimationChannelTargetPath.WEIGHTS) {
+            outputs.push([value as number]);
+            return;
+        }
 
-            if (typeof value === "number") {
-                value = this._ConvertFactorToVector3OrQuaternion(
-                    value as number,
-                    babylonTransformNode,
-                    animation,
-                    animationType,
-                    animationChannelTargetPath,
-                    convertToRightHandedSystem,
-                    useQuaternion
-                );
-            }
+        if (animation.dataType === Animation.ANIMATIONTYPE_FLOAT) {
+            value = this._ConvertFactorToVector3OrQuaternion(
+                value as number,
+                babylonTransformNode,
+                animation,
+                animationChannelTargetPath,
+                convertToRightHandedSystem,
+                useQuaternion
+            );
+        }
 
-            if (animationChannelTargetPath === AnimationChannelTargetPath.ROTATION) {
-                if (useQuaternion) {
-                    quaternionCache = value as Quaternion;
-                } else {
-                    cacheValue = value as Vector3;
-                    Quaternion.RotationYawPitchRollToRef(cacheValue.y, cacheValue.x, cacheValue.z, quaternionCache);
-                }
-                if (convertToRightHandedSystem) {
-                    _GLTFUtilities._GetRightHandedQuaternionFromRef(quaternionCache);
-
-                    if (!babylonTransformNode.parent) {
-                        quaternionCache = Quaternion.FromArray([0, 1, 0, 0]).multiply(quaternionCache);
-                    }
-                }
-                outputs.push(quaternionCache.asArray());
+        if (animationChannelTargetPath === AnimationChannelTargetPath.ROTATION) {
+            if (useQuaternion) {
+                quaternionCache = value as Quaternion;
             } else {
-                // scaling and position animation
                 cacheValue = value as Vector3;
-                if (convertToRightHandedSystem && animationChannelTargetPath !== AnimationChannelTargetPath.SCALE) {
-                    _GLTFUtilities._GetRightHandedPositionVector3FromRef(cacheValue);
-                    if (!babylonTransformNode.parent) {
-                        cacheValue.x *= -1;
-                        cacheValue.z *= -1;
-                    }
-                }
-
-                outputs.push(cacheValue.asArray());
+                Quaternion.RotationYawPitchRollToRef(cacheValue.y, cacheValue.x, cacheValue.z, quaternionCache);
             }
+            if (convertToRightHandedSystem) {
+                _GLTFUtilities._GetRightHandedQuaternionFromRef(quaternionCache);
+
+                if (!babylonTransformNode.parent) {
+                    quaternionCache = Quaternion.FromArray([0, 1, 0, 0]).multiply(quaternionCache);
+                }
+            }
+            outputs.push(quaternionCache.asArray());
+        } else {
+            // scaling and position animation
+            cacheValue = value as Vector3;
+            if (convertToRightHandedSystem && animationChannelTargetPath !== AnimationChannelTargetPath.SCALE) {
+                _GLTFUtilities._GetRightHandedPositionVector3FromRef(cacheValue);
+                if (!babylonTransformNode.parent) {
+                    cacheValue.x *= -1;
+                    cacheValue.z *= -1;
+                }
+            }
+
+            outputs.push(cacheValue.asArray());
         }
     }
 
@@ -1056,7 +1046,6 @@ export class _GLTFAnimation {
                     keyFrame.value as number,
                     babylonTransformNode,
                     animation,
-                    animationType,
                     animationChannelTargetPath,
                     convertToRightHandedSystem,
                     useQuaternion

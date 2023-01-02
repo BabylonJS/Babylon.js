@@ -188,6 +188,7 @@ export function CreateScreenshotWithResizeAsync(engine: Engine, camera: Camera, 
  * @param fileName A name for for the downloaded file.
  * @param renderSprites Whether the sprites should be rendered or not (default: false)
  * @param enableStencilBuffer Whether the stencil buffer should be enabled or not (default: false)
+ * @param useLayerMask if the camera's layer mask should be used to filter what should be rendered (default: true)
  */
 export function CreateScreenshotUsingRenderTarget(
     engine: Engine,
@@ -199,7 +200,8 @@ export function CreateScreenshotUsingRenderTarget(
     antialiasing: boolean = false,
     fileName?: string,
     renderSprites: boolean = false,
-    enableStencilBuffer: boolean = false
+    enableStencilBuffer: boolean = false,
+    useLayerMask: boolean = true
 ): void {
     const { height, width } = _GetScreenshotSize(engine, camera, size);
     const targetTextureSize = { width, height };
@@ -235,6 +237,7 @@ export function CreateScreenshotUsingRenderTarget(
     texture.samples = samples;
     texture.renderSprites = renderSprites;
     texture.activeCamera = camera;
+    texture.forceLayerMaskCheck = useLayerMask;
 
     const renderToTexture = () => {
         engine.onEndFrameObservable.addOnce(() => {
@@ -293,6 +296,8 @@ export function CreateScreenshotUsingRenderTarget(
  * @param antialiasing Whether antialiasing should be turned on or not (default: false)
  * @param fileName A name for for the downloaded file.
  * @param renderSprites Whether the sprites should be rendered or not (default: false)
+ * @param enableStencilBuffer Whether the stencil buffer should be enabled or not (default: false)
+ * @param useLayerMask if the camera's layer mask should be used to filter what should be rendered (default: true)
  * @returns screenshot as a string of base64-encoded characters. This string can be assigned
  * to the src parameter of an <img> to display it
  */
@@ -304,7 +309,9 @@ export function CreateScreenshotUsingRenderTargetAsync(
     samples: number = 1,
     antialiasing: boolean = false,
     fileName?: string,
-    renderSprites: boolean = false
+    renderSprites: boolean = false,
+    enableStencilBuffer: boolean = false,
+    useLayerMask: boolean = true
 ): Promise<string> {
     return new Promise((resolve, reject) => {
         CreateScreenshotUsingRenderTarget(
@@ -322,7 +329,9 @@ export function CreateScreenshotUsingRenderTargetAsync(
             samples,
             antialiasing,
             fileName,
-            renderSprites
+            renderSprites,
+            enableStencilBuffer,
+            useLayerMask
         );
     });
 }
