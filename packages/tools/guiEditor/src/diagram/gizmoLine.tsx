@@ -5,7 +5,7 @@ import { GizmoScalePoint, ScalePointPosition } from "./gizmoScalePoint";
 import { Vector2 } from "core/Maths/math";
 import type { Line } from "gui/2D/controls/line";
 import { CoordinateHelper } from "./coordinateHelper";
-import { Matrix2D } from "gui/2d/math2D";
+import { Matrix2D, MathTools } from "gui/2d/math2D";
 
 interface IGizmoLineProps {
     globalState: GlobalState;
@@ -136,19 +136,19 @@ export function GizmoLine(props: IGizmoLineProps) {
 
         let x1 = control._x1.getValue(control._host);
         x1 += deltaX;
-        control.x1 = x1;
+        control.x1 = MathTools.Round(x1);
 
         let y1 = control._y1.getValue(control._host);
         y1 += deltaY;
-        control.y1 = y1;
+        control.y1 = MathTools.Round(y1);
 
         let x2 = control._x2.getValue(control._host);
         x2 += deltaX;
-        control.x2 = x2;
+        control.x2 = MathTools.Round(x2);
 
         let y2 = control._y2.getValue(control._host);
         y2 += deltaY;
-        control.y2 = y2;
+        control.y2 = MathTools.Round(y2);
 
         globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
     };
@@ -176,19 +176,19 @@ export function GizmoLine(props: IGizmoLineProps) {
             // Moved first point, (x1, y1)
             let x1 = control._x1.getValue(control._host);
             x1 += deltaX;
-            control.x1 = x1;
+            control.x1 = MathTools.Round(x1);
 
             let y1 = control._y1.getValue(control._host);
             y1 += deltaY;
-            control.y1 = y1;
+            control.y1 = MathTools.Round(y1);
         } else if (movedPointIndex === 2) {
             let x2 = control._x2.getValue(control._host);
             x2 += deltaX;
-            control.x2 = x2;
+            control.x2 = MathTools.Round(x2);
 
             let y2 = control._y2.getValue(control._host);
             y2 += deltaY;
-            control.y2 = y2;
+            control.y2 = MathTools.Round(y2);
         }
         globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
     };
@@ -206,6 +206,7 @@ export function GizmoLine(props: IGizmoLineProps) {
 
         if (!isNaN(angle)) {
             control.rotation += direction * angle;
+            control.rotation = MathTools.Round(control.rotation);
             globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
         }
     };
@@ -272,10 +273,10 @@ export function GizmoLine(props: IGizmoLineProps) {
                 finalTransform.transformCoordinates(v2.x, v2.y, p2);
 
                 control.rotation = 0;
-                control.x1 = p1.x;
-                control.y1 = p1.y;
-                control.x2 = p2.x;
-                control.y2 = p2.y;
+                control.x1 = MathTools.Round(p1.x);
+                control.y1 = MathTools.Round(p1.y);
+                control.x2 = MathTools.Round(p2.x);
+                control.y2 = MathTools.Round(p2.y);
                 globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
             }
             isDragging.current = true;
