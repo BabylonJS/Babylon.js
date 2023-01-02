@@ -29,11 +29,12 @@ function getPivot(x1: number, y1: number, x2: number, y2: number, centerX: numbe
 
 export function GizmoLine(props: IGizmoLineProps) {
     const { control, globalState } = props;
-    const lastCursor = React.useRef({ x: 0, y: 0 });
     const isPivotBeingMoved = React.useRef(false);
     const isDragging = React.useRef(false);
     const movedScalePoint = React.useRef<number>();
     const isRotating = React.useRef(false);
+    const lastCursor = React.useRef(new Vector2());
+    const pivot = React.useRef(new Vector2());
 
     const [scalePoints, setScalePoints] = React.useState<IScalePoint[]>([
         {
@@ -97,7 +98,7 @@ export function GizmoLine(props: IGizmoLineProps) {
         matrix.transformCoordinates(v2.x, v2.y, p2);
         matrix.transformCoordinates(vm.x, vm.y, pm);
 
-        // pivot.current = new Vector2(pm.x, pm.y);
+        pivot.current = new Vector2(pm.x, pm.y);
 
         const positions = [new Vector2(p1.x, p1.y), new Vector2(pm.x, pm.y), new Vector2(p2.x, p2.y)];
 
@@ -113,12 +114,15 @@ export function GizmoLine(props: IGizmoLineProps) {
         );
     };
 
-    const onMove = (pointerEvent: React.PointerEvent<HTMLCanvasElement>) => {
+    const onMove = () => {
+        const scene = globalState.workbench._scene;
+        console.log("on move", scene.pointerX, scene.pointerY);
+        const currentPointer = new Vector2(scene.pointerX, scene.pointerY);
         // Pivot movement corresponds to moving the control itself
         if (isDragging.current && isPivotBeingMoved.current) {
             // We have to compute the difference in movement in the local node
             // coordintes, so that it accounts for zoom
-            const rttClientCoords = CoordinateHelper.MousePointerToRTTSpace(control, pointerEvent.clientX, pointerEvent.clientY);
+            const rttClientCoords = CoordinateHelper.MousePointerToRTTSpace(control, currentPointer.x, currentPointer.y);
             const localClientCoords = CoordinateHelper.RttToLocalNodeSpace(control, rttClientCoords.x, rttClientCoords.y);
 
             const rttLastCoordinates = CoordinateHelper.MousePointerToRTTSpace(control, lastCursor.current.x, lastCursor.current.y);
@@ -151,7 +155,7 @@ export function GizmoLine(props: IGizmoLineProps) {
             globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
         } else if (isDragging.current) {
             // Moving the scale points
-            const rttClientCoords = CoordinateHelper.MousePointerToRTTSpace(control, pointerEvent.clientX, pointerEvent.clientY);
+            const rttClientCoords = CoordinateHelper.MousePointerToRTTSpace(control, currentPointer.x, currentPointer.y);
             const localClientCoords = CoordinateHelper.RttToLocalNodeSpace(control, rttClientCoords.x, rttClientCoords.y);
 
             const rttLastCoordinates = CoordinateHelper.MousePointerToRTTSpace(control, lastCursor.current.x, lastCursor.current.y);
@@ -189,8 +193,73 @@ export function GizmoLine(props: IGizmoLineProps) {
             globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
         } else if (isRotating.current) {
             // Rotation
+            // console.log("ROTATING");
+            // console.log("pointer event", pointerEvent.clientX, pointerEvent.clientY);
+            // console.log("last cursor", lastCursor.current.x, lastCursor.current.y);
+
+            // const node = control;
+
+            const line = control as Line;
+            const x1 = control._cachedParentMeasure.left + line._x1.getValue(line._host);
+            const y1 = control._cachedParentMeasure.top + line._y1.getValue(line._host);
+            const x2 = control._cachedParentMeasure.left + line._effectiveX2;
+            const y2 = control._cachedParentMeasure.top + line._effectiveY2;
+
+            const v1 = new Vector2(x1, y1);
+            const v2 = new Vector2(x2, y2);
+            const vm = getPivot(x1, y1, x2, y2, control.transformCenterX, control.transformCenterY);
+
+            const matrix = control._transformMatrix;
+
+            const p1 = new Vector2();
+            const p2 = new Vector2();
+            const pm = new Vector2();
+
+            matrix.transformCoordinates(v1.x, v1.y, p1);
+            matrix.transformCoordinates(v2.x, v2.y, p2);
+            matrix.transformCoordinates(vm.x, vm.y, pm);
+
+            console.log("pivot in ???  coords", pm.x, pm.y);
+
+            // const workspace = globalState.workbench;
+            // const transformMatrix = workspace.panAndZoomContainer._transformMatrix;
+
+            // const nodeSpace = new Vector2(node.transformCenterX, node.transformCenterY);
+            // console.log("nodeSpace", nodeSpace);
+            // const rtt = CoordinateHelper.NodeToRTTSpace(node, nodeSpace.x, nodeSpace.y, undefined);
+            // const rtt = new Vector2();
+            // transformMatrix.transformCoordinates(nodeSpace.x, nodeSpace.y, rtt);
+            // console.log("rtt", rtt);
+            // const canvas = CoordinateHelper.RttToCanvasSpace(rtt.x, rtt.y);
+            // const pivot = new Vector2(canvas.x, canvas.y);
+            const pivot = pm;
+            // console.log("pivot in canvas space", pivot);
+            // const pointerCurrent = new Vector2(pointerEvent.clientX, pointerEvent.clientY);
+            const pointerCurrent = new Vector2(currentPointer.x, currentPointer.y);
+            // console.log("pointer current", pointerCurrent);
+            const pointerLast = new Vector2(lastCursor.current.x, lastCursor.current.y);
+            // console.log("pointer last", pointerLast);
+
+            const currentToPivot = pointerCurrent.subtract(pivot);
+            currentToPivot.normalize();
+            const lastToPivot = pointerLast.subtract(pivot);
+            lastToPivot.normalize();
+
+            const dotProd = Vector2.Dot(currentToPivot, lastToPivot);
+            const angle = Math.acos(dotProd);
+
+            const direction = -Math.sign(currentToPivot.x * lastToPivot.y - currentToPivot.y * lastToPivot.x);
+            // console.log("direction", direction, "current to pivot x", currentToPivot.x, "last to pivot x", lastToPivot.x);
+            console.log("direction", direction);
+            if (isNaN(angle)) {
+                console.log("nan angle from prod", dotProd);
+            } else {
+                control.rotation += direction * angle;
+            }
+            globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
         }
-        lastCursor.current = { x: pointerEvent.clientX, y: pointerEvent.clientY };
+        // lastCursor.current = { x: pointerEvent.clientX, y: pointerEvent.clientY };
+        lastCursor.current = currentPointer;
     };
 
     const onUp = () => {
@@ -209,7 +278,9 @@ export function GizmoLine(props: IGizmoLineProps) {
 
     const onDrag = (event?: React.PointerEvent<HTMLDivElement>, scalePoint?: IScalePoint) => {
         if (event && scalePoint) {
-            lastCursor.current = { x: event.clientX, y: event.clientY };
+            const scene = globalState.workbench._scene;
+            // lastCursor.current = { x: event.clientX, y: event.clientY };
+            lastCursor.current = new Vector2(scene.pointerX, scene.pointerY);
             isPivotBeingMoved.current = scalePoint.isPivot;
             // If the control has any rotation, reset the
             // rotation, modifying the so the scale behave as expected
@@ -257,7 +328,9 @@ export function GizmoLine(props: IGizmoLineProps) {
         if (event) {
             isRotating.current = true;
             isDragging.current = false;
-            lastCursor.current = { x: event.clientX, y: event.clientY };
+
+            const scene = globalState.workbench._scene;
+            lastCursor.current = new Vector2(scene.pointerX, scene.pointerY);
         }
     };
 
