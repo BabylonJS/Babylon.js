@@ -111,7 +111,7 @@ export interface IPhysicsEnginePluginV2 {
     setGravity(gravity: Vector3): void;
     setTimeStep(timeStep: number): void;
     getTimeStep(): number;
-    executeStep(delta: number, bodies: Array<any>): void; //not forgetting pre and post events
+    executeStep(delta: number, bodies: Array<PhysicsBody>): void; //not forgetting pre and post events
     getPluginVersion(): number;
 
     // body
