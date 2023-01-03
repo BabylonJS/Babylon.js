@@ -1,4 +1,4 @@
-import type { IPhysicsEnginePlugin, MassProperties } from "./IPhysicsEnginePlugin";
+import type { IPhysicsEnginePluginV2, MassProperties } from "./IPhysicsEnginePlugin";
 import type { PhysicsShape } from "./physicsShape";
 import type { Vector3 } from "../../Maths/math.vector";
 import type { Scene } from "../../scene";
@@ -11,7 +11,7 @@ export class PhysicsBody {
     /** @internal */
     public _pluginData: any = undefined;
 
-    private _physicsPlugin: IPhysicsEnginePlugin;
+    private _physicsPlugin: IPhysicsEnginePluginV2;
 
     /**
      *
@@ -34,7 +34,7 @@ export class PhysicsBody {
             throw new Error("No Physics Plugin available.");
         }
 
-        this._physicsPlugin = physicsPlugin as IPhysicsEnginePlugin;
+        this._physicsPlugin = physicsPlugin as IPhysicsEnginePluginV2;
         this._physicsPlugin.initBody(this);
     }
     /**

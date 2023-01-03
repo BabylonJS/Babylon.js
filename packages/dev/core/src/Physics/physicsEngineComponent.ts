@@ -8,7 +8,7 @@ import { SceneComponentConstants } from "../sceneComponent";
 import { Scene } from "../scene";
 import type { IPhysicsEngine } from "./IPhysicsEngine";
 import type { IPhysicsEnginePlugin as IPhysicsEnginePluginV1 } from "./v1/IPhysicsEnginePlugin";
-import type { IPhysicsEnginePlugin as IPhysicsEnginePluginV2 } from "./v2/IPhysicsEnginePlugin";
+import type { IPhysicsEnginePluginV2 } from "./v2/IPhysicsEnginePlugin";
 import { PhysicsEngine as PhysicsEngineV1 } from "./v1/physicsEngine";
 import { PhysicsEngine as PhysicsEngineV2 } from "./v2/physicsEngine";
 
