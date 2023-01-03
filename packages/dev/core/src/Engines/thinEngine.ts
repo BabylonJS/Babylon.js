@@ -5859,24 +5859,23 @@ export class ThinEngine {
      */
     public static QueueNewFrame(func: () => void, requester?: any): number {
         if (!IsWindowObjectExist()) {
-            if (typeof requestAnimationFrame !== "undefined") {
+            if (typeof requestAnimationFrame === "function") {
                 return requestAnimationFrame(func);
             }
+        }
+        else {
+            const { requestPostAnimationFrame, requestAnimationFrame } = requester || window;
 
-            return setTimeout(func, 16) as unknown as number;
+            if (typeof requestPostAnimationFrame === 'function') {
+                return requestPostAnimationFrame(func);
+            }
+            if (typeof requestAnimationFrame === 'function') {
+                return requestAnimationFrame(func);
+            }
         }
 
-        if (!requester) {
-            requester = window;
-        }
-
-        if (requester.requestPostAnimationFrame) {
-            return requester.requestPostAnimationFrame(func);
-        } else if (requester.requestAnimationFrame) {
-            return requester.requestAnimationFrame(func);
-        } else {
-            return window.setTimeout(func, 16);
-        }
+        // fallback to the global setTimeout which is the same as window.setTimeout in the general case
+        return setTimeout(func, 16) as unknown as number;
     }
 
     /**

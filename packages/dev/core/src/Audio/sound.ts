@@ -355,7 +355,7 @@ export class Sound {
                             this._isReadyToPlay = true;
                             // Simulating a ready to play event to avoid breaking code path
                             if (this._readyToPlayCallback) {
-                                window.setTimeout(() => {
+                                setTimeout(() => {
                                     if (this._readyToPlayCallback) {
                                         this._readyToPlayCallback();
                                     }
@@ -377,7 +377,7 @@ export class Sound {
             }
             // Simulating a ready to play event to avoid breaking code for non web audio browsers
             if (this._readyToPlayCallback) {
-                window.setTimeout(() => {
+                setTimeout(() => {
                     if (this._readyToPlayCallback) {
                         this._readyToPlayCallback();
                     }
@@ -1050,7 +1050,7 @@ export class Sound {
                         clonedSound.play(0, this._offset, this._length);
                     }
                 } else {
-                    window.setTimeout(setBufferAndRun, 300);
+                    setTimeout(setBufferAndRun, 300);
                 }
             };
 
@@ -1199,7 +1199,7 @@ export class Sound {
                         newSound.play(0, newSound._offset, newSound._length);
                     }
                 } else {
-                    window.setTimeout(setBufferAndRun, 300);
+                    setTimeout(setBufferAndRun, 300);
                 }
             };
 

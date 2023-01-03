@@ -202,7 +202,7 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
         if (this._timer != null) {
             clearTimeout(this._timer);
         }
-        this._timer = window.setTimeout(() => {
+        this._timer = setTimeout(() => {
             this.props.onUpdate();
             this._timer = null;
         }, TextureEditorComponent._PREVIEW_UPDATE_DELAY_MS);
