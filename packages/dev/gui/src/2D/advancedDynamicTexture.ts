@@ -696,6 +696,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                     continue;
                 }
                 control.notRenderable = false;
+                if (this.useInvalidateRectOptimization) {
+                    control.invalidateRect();
+                }
 
                 control._moveToProjectedPosition(projectedPosition);
             }
