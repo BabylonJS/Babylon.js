@@ -102,55 +102,55 @@ export class SolidParticleSystem implements IDisposable {
      */
     public _bSphereRadiusFactor: number = 1.0;
 
-    private _scene: Scene;
-    private _positions: number[] = new Array<number>();
-    private _indices: number[] = new Array<number>();
-    private _normals: number[] = new Array<number>();
-    private _colors: number[] = new Array<number>();
-    private _uvs: number[] = new Array<number>();
-    private _indices32: IndicesArray; // used as depth sorted array if depth sort enabled, else used as typed indices
-    private _positions32: Float32Array; // updated positions for the VBO
-    private _normals32: Float32Array; // updated normals for the VBO
-    private _fixedNormal32: Float32Array; // initial normal references
-    private _colors32: Float32Array;
-    private _uvs32: Float32Array;
-    private _index: number = 0; // indices index
-    private _updatable: boolean = true;
-    private _pickable: boolean = false;
-    private _isVisibilityBoxLocked = false;
-    private _alwaysVisible: boolean = false;
-    private _depthSort: boolean = false;
-    private _expandable: boolean = false;
-    private _shapeCounter: number = 0;
-    private _copy: SolidParticle = new SolidParticle(0, 0, 0, 0, null, 0, 0, this);
-    private _color: Color4 = new Color4(0, 0, 0, 0);
-    private _computeParticleColor: boolean = true;
-    private _computeParticleTexture: boolean = true;
-    private _computeParticleRotation: boolean = true;
-    private _computeParticleVertex: boolean = false;
-    private _computeBoundingBox: boolean = false;
-    private _autoFixFaceOrientation: boolean = false;
-    private _depthSortParticles: boolean = true;
-    private _camera: TargetCamera;
-    private _mustUnrotateFixedNormals = false;
-    private _particlesIntersect: boolean = false;
-    private _needs32Bits: boolean = false;
-    private _isNotBuilt: boolean = true;
-    private _lastParticleId: number = 0;
-    private _idxOfId: number[] = []; // array : key = particle.id / value = particle.idx
-    private _multimaterialEnabled: boolean = false;
-    private _useModelMaterial: boolean = false;
-    private _indicesByMaterial: number[];
-    private _materialIndexes: number[];
-    private _depthSortFunction = (p1: DepthSortedParticle, p2: DepthSortedParticle) => p2.sqDistance - p1.sqDistance;
-    private _materialSortFunction = (p1: DepthSortedParticle, p2: DepthSortedParticle) => p1.materialIndex - p2.materialIndex;
-    private _materials: Material[];
-    private _multimaterial: MultiMaterial;
-    private _materialIndexesById: any;
-    private _defaultMaterial: Material;
-    private _autoUpdateSubMeshes: boolean = false;
-    private _tmpVertex: SolidParticleVertex;
-    private _recomputeInvisibles: boolean = false;
+    protected _scene: Scene;
+    protected _positions: number[] = new Array<number>();
+    protected _indices: number[] = new Array<number>();
+    protected _normals: number[] = new Array<number>();
+    protected _colors: number[] = new Array<number>();
+    protected _uvs: number[] = new Array<number>();
+    protected _indices32: IndicesArray; // used as depth sorted array if depth sort enabled, else used as typed indices
+    protected _positions32: Float32Array; // updated positions for the VBO
+    protected _normals32: Float32Array; // updated normals for the VBO
+    protected _fixedNormal32: Float32Array; // initial normal references
+    protected _colors32: Float32Array;
+    protected _uvs32: Float32Array;
+    protected _index: number = 0; // indices index
+    protected _updatable: boolean = true;
+    protected _pickable: boolean = false;
+    protected _isVisibilityBoxLocked = false;
+    protected _alwaysVisible: boolean = false;
+    protected _depthSort: boolean = false;
+    protected _expandable: boolean = false;
+    protected _shapeCounter: number = 0;
+    protected _copy: SolidParticle = new SolidParticle(0, 0, 0, 0, null, 0, 0, this);
+    protected _color: Color4 = new Color4(0, 0, 0, 0);
+    protected _computeParticleColor: boolean = true;
+    protected _computeParticleTexture: boolean = true;
+    protected _computeParticleRotation: boolean = true;
+    protected _computeParticleVertex: boolean = false;
+    protected _computeBoundingBox: boolean = false;
+    protected _autoFixFaceOrientation: boolean = false;
+    protected _depthSortParticles: boolean = true;
+    protected _camera: TargetCamera;
+    protected _mustUnrotateFixedNormals = false;
+    protected _particlesIntersect: boolean = false;
+    protected _needs32Bits: boolean = false;
+    protected _isNotBuilt: boolean = true;
+    protected _lastParticleId: number = 0;
+    protected _idxOfId: number[] = []; // array : key = particle.id / value = particle.idx
+    protected _multimaterialEnabled: boolean = false;
+    protected _useModelMaterial: boolean = false;
+    protected _indicesByMaterial: number[];
+    protected _materialIndexes: number[];
+    protected _depthSortFunction = (p1: DepthSortedParticle, p2: DepthSortedParticle) => p2.sqDistance - p1.sqDistance;
+    protected _materialSortFunction = (p1: DepthSortedParticle, p2: DepthSortedParticle) => p1.materialIndex - p2.materialIndex;
+    protected _materials: Material[];
+    protected _multimaterial: MultiMaterial;
+    protected _materialIndexesById: any;
+    protected _defaultMaterial: Material;
+    protected _autoUpdateSubMeshes: boolean = false;
+    protected _tmpVertex: SolidParticleVertex;
+    protected _recomputeInvisibles: boolean = false;
 
     /**
      * Creates a SPS (Solid Particle System) object.
@@ -477,7 +477,7 @@ export class SolidParticleSystem implements IDisposable {
      * Unrotate the fixed normals in case the mesh was built with pre-rotated particles, ex : use of positionFunction in addShape()
      * @internal
      */
-    private _unrotateFixedNormals() {
+    protected _unrotateFixedNormals() {
         let index = 0;
         let idx = 0;
         const tmpNormal = TmpVectors.Vector3[0];
@@ -511,7 +511,7 @@ export class SolidParticleSystem implements IDisposable {
      * Resets the temporary working copy particle
      * @internal
      */
-    private _resetCopy() {
+    protected _resetCopy() {
         const copy = this._copy;
         copy.position.setAll(0);
         copy.rotation.setAll(0);
@@ -545,7 +545,7 @@ export class SolidParticleSystem implements IDisposable {
      * @model the particle model
      * @internal
      */
-    private _meshBuilder(
+    protected _meshBuilder(
         p: number,
         ind: number,
         shape: Vector3[],
@@ -687,7 +687,7 @@ export class SolidParticleSystem implements IDisposable {
      * @returns a vector3 array
      * @internal
      */
-    private _posToShape(positions: number[] | Float32Array): Vector3[] {
+    protected _posToShape(positions: number[] | Float32Array): Vector3[] {
         const shape = [];
         for (let i = 0; i < positions.length; i += 3) {
             shape.push(Vector3.FromArray(positions, i));
@@ -701,7 +701,7 @@ export class SolidParticleSystem implements IDisposable {
      * @returns a shapeUV array
      * @internal
      */
-    private _uvsToShapeUV(uvs: number[] | Float32Array): number[] {
+    protected _uvsToShapeUV(uvs: number[] | Float32Array): number[] {
         const shapeUV = [];
         if (uvs) {
             for (let i = 0; i < uvs.length; i++) {
@@ -724,7 +724,7 @@ export class SolidParticleSystem implements IDisposable {
      * @param storage target storage array, if any
      * @internal
      */
-    private _addParticle(
+    protected _addParticle(
         idx: number,
         id: number,
         idxpos: number,
@@ -794,7 +794,7 @@ export class SolidParticleSystem implements IDisposable {
      * Rebuilds a particle back to its just built status : if needed, recomputes the custom positions and vertices
      * @internal
      */
-    private _rebuildParticle(particle: SolidParticle, reset: boolean = false): void {
+    protected _rebuildParticle(particle: SolidParticle, reset: boolean = false): void {
         this._resetCopy();
         const copy = this._copy;
         if (particle._model._positionFunction) {
@@ -988,7 +988,7 @@ export class SolidParticleSystem implements IDisposable {
      * @options addShape() passed options
      * @internal
      */
-    private _insertNewParticle(
+    protected _insertNewParticle(
         idx: number,
         i: number,
         modelShape: ModelShape,
@@ -1662,7 +1662,7 @@ export class SolidParticleSystem implements IDisposable {
      * @returns the SPS
      * @internal
      */
-    private _sortParticlesByMaterial(): SolidParticleSystem {
+    protected _sortParticlesByMaterial(): SolidParticleSystem {
         const indicesByMaterial = [0];
         this._indicesByMaterial = indicesByMaterial;
         const materialIndexes: number[] = [];
@@ -1727,7 +1727,7 @@ export class SolidParticleSystem implements IDisposable {
      * Sets the material indexes by id materialIndexesById[id] = materialIndex
      * @internal
      */
-    private _setMaterialIndexesById() {
+    protected _setMaterialIndexesById() {
         this._materialIndexesById = {};
         for (let i = 0; i < this._materials.length; i++) {
             const id = this._materials[i].uniqueId;
@@ -1739,7 +1739,7 @@ export class SolidParticleSystem implements IDisposable {
      * @param array the material array to be checked and filtered
      * @internal
      */
-    private _filterUniqueMaterialId(array: Material[]): Material[] {
+    protected _filterUniqueMaterialId(array: Material[]): Material[] {
         const filtered = array.filter(function (value, index, self) {
             return self.indexOf(value) === index;
         });
@@ -1749,7 +1749,7 @@ export class SolidParticleSystem implements IDisposable {
      * Sets a new Standard Material as _defaultMaterial if not already set.
      * @internal
      */
-    private _setDefaultMaterial(): Material {
+    protected _setDefaultMaterial(): Material {
         if (!this._defaultMaterial) {
             this._defaultMaterial = new StandardMaterial(this.name + "DefaultMaterial", this._scene);
         }

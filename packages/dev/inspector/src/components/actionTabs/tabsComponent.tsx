@@ -30,7 +30,7 @@ export class TabsComponent extends React.Component<ITabsComponentProps> {
 
     render() {
         return (
-            <div className="tabs" onContextMenu={(e) => e.preventDefault()}>
+            <div className="tabsMenu" onContextMenu={(e) => e.preventDefault()}>
                 <div className="labels">
                     {this.props.children.map((child: PaneComponent, index) => {
                         return this.renderLabel(child, index);

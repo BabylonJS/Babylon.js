@@ -93,6 +93,8 @@ import { FragDepthBlock } from "core/Materials/Node/Blocks/Fragment/fragDepthBlo
 import { ShadowMapBlock } from "core/Materials/Node/Blocks/Fragment/shadowMapBlock";
 import { TriPlanarBlock } from "core/Materials/Node/Blocks/triPlanarBlock";
 import { BiPlanarBlock } from "core/Materials/Node/Blocks/biPlanarBlock";
+import { MatrixDeterminantBlock } from "core/Materials/Node/Blocks/matrixDeterminantBlock";
+import { MatrixTransposeBlock } from "core/Materials/Node/Blocks/matrixTransposeBlock";
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
@@ -610,6 +612,10 @@ export class BlockTools {
                 return new TriPlanarBlock("TriPlanarTexture");
             case "BiPlanarBlock":
                 return new BiPlanarBlock("BiPlanarTexture");
+            case "MatrixTransposeBlock":
+                return new MatrixTransposeBlock("Transpose");
+            case "MatrixDeterminantBlock":
+                return new MatrixDeterminantBlock("Determinant");
         }
 
         return null;

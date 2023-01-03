@@ -63,20 +63,59 @@ export class TriPlanarBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets the textureY associated with the node
+     */
+    public get textureY(): Nullable<Texture> {
+        if (this.sourceY.isConnected) {
+            return (this.sourceY.connectedPoint?.ownerBlock as ImageSourceBlock).texture;
+        }
+        return null;
+    }
+
+    /**
+     * Gets the textureZ associated with the node
+     */
+    public get textureZ(): Nullable<Texture> {
+        if (this.sourceZ?.isConnected) {
+            return (this.sourceY.connectedPoint?.ownerBlock as ImageSourceBlock).texture;
+        }
+        return null;
+    }
+
+    protected _getImageSourceBlock(connectionPoint: Nullable<NodeMaterialConnectionPoint>): Nullable<ImageSourceBlock> {
+        return connectionPoint?.isConnected ? (connectionPoint.connectedPoint!.ownerBlock as ImageSourceBlock) : null;
+    }
+
+    /**
      * Gets the sampler name associated with this texture
      */
     public get samplerName(): string {
-        if (this._imageSource) {
-            return this._imageSource.samplerName;
+        const imageSourceBlock = this._getImageSourceBlock(this.source);
+        if (imageSourceBlock) {
+            return imageSourceBlock.samplerName;
         }
         return this._samplerName;
+    }
+
+    /**
+     * Gets the samplerY name associated with this texture
+     */
+    public get samplerYName(): Nullable<string> {
+        return this._getImageSourceBlock(this.sourceY)?.samplerName ?? null;
+    }
+
+    /**
+     * Gets the samplerZ name associated with this texture
+     */
+    public get samplerZName(): Nullable<string> {
+        return this._getImageSourceBlock(this.sourceZ)?.samplerName ?? null;
     }
 
     /**
      * Gets a boolean indicating that this block is linked to an ImageSourceBlock
      */
     public get hasImageSource(): boolean {
-        return !!this._imageSource;
+        return this.source.isConnected;
     }
 
     private _convertToGammaSpace = false;
@@ -130,7 +169,7 @@ export class TriPlanarBlock extends NodeMaterialBlock {
      * Create a new TriPlanarBlock
      * @param name defines the block name
      */
-    public constructor(name: string) {
+    public constructor(name: string, hideSourceZ = false) {
         super(name, NodeMaterialBlockTargets.Neutral);
 
         this.registerInput("position", NodeMaterialBlockConnectionPointTypes.AutoDetect, false);
@@ -143,6 +182,22 @@ export class TriPlanarBlock extends NodeMaterialBlock {
             NodeMaterialBlockTargets.VertexAndFragment,
             new NodeMaterialConnectionPointCustomObject("source", this, NodeMaterialConnectionPointDirection.Input, ImageSourceBlock, "ImageSourceBlock")
         );
+        this.registerInput(
+            "sourceY",
+            NodeMaterialBlockConnectionPointTypes.Object,
+            true,
+            NodeMaterialBlockTargets.VertexAndFragment,
+            new NodeMaterialConnectionPointCustomObject("sourceY", this, NodeMaterialConnectionPointDirection.Input, ImageSourceBlock, "ImageSourceBlock")
+        );
+        if (!hideSourceZ) {
+            this.registerInput(
+                "sourceZ",
+                NodeMaterialBlockConnectionPointTypes.Object,
+                true,
+                NodeMaterialBlockTargets.VertexAndFragment,
+                new NodeMaterialConnectionPointCustomObject("sourceZ", this, NodeMaterialConnectionPointDirection.Input, ImageSourceBlock, "ImageSourceBlock")
+            );
+        }
 
         this.registerOutput("rgba", NodeMaterialBlockConnectionPointTypes.Color4, NodeMaterialBlockTargets.Neutral);
         this.registerOutput("rgb", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Neutral);
@@ -195,6 +250,20 @@ export class TriPlanarBlock extends NodeMaterialBlock {
      */
     public get source(): NodeMaterialConnectionPoint {
         return this._inputs[3];
+    }
+
+    /**
+     * Gets the sourceY input component
+     */
+    public get sourceY(): NodeMaterialConnectionPoint {
+        return this._inputs[4];
+    }
+
+    /**
+     * Gets the sourceZ input component
+     */
+    public get sourceZ(): Nullable<NodeMaterialConnectionPoint> {
+        return this._inputs[5];
     }
 
     /**
@@ -281,6 +350,8 @@ export class TriPlanarBlock extends NodeMaterialBlock {
 
     protected _generateTextureLookup(state: NodeMaterialBuildState): void {
         const samplerName = this.samplerName;
+        const samplerYName = this.samplerYName ?? samplerName;
+        const samplerZName = this.samplerZName ?? samplerName;
 
         const sharpness = this.sharpness.isConnected ? this.sharpness.associatedVariableName : "1.0";
 
@@ -291,8 +362,8 @@ export class TriPlanarBlock extends NodeMaterialBlock {
 
         state.compilationString += `
             vec4 ${x} = texture2D(${samplerName}, ${this.position.associatedVariableName}.yz);
-            vec4 ${y} = texture2D(${samplerName}, ${this.position.associatedVariableName}.zx);
-            vec4 ${z} = texture2D(${samplerName}, ${this.position.associatedVariableName}.xy);
+            vec4 ${y} = texture2D(${samplerYName}, ${this.position.associatedVariableName}.zx);
+            vec4 ${z} = texture2D(${samplerZName}, ${this.position.associatedVariableName}.xy);
             
             // blend weights
             vec3 ${w} = pow(abs(${this.normal.associatedVariableName}.xyz), vec3(${sharpness}));

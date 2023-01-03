@@ -29,49 +29,49 @@ declare type Material = import("../material").Material;
  * Options for the RenderTargetTexture constructor
  */
 export interface RenderTargetTextureOptions {
-    /** True if mip maps need to be generated after render */
+    /** True (default: false) if mipmaps need to be generated after render */
     generateMipMaps?: boolean;
 
-    /** True to not change the aspect ratio of the scene in the RTT */
+    /** True (default) to not change the aspect ratio of the scene in the RTT */
     doNotChangeAspectRatio?: boolean;
 
-    /** The type of the buffer in the RTT (int, half float, float...) */
+    /** The type of the buffer in the RTT (byte (default), half float, float...) */
     type?: number;
 
-    /** True if a cube texture needs to be created */
+    /** True (default: false) if a cube texture needs to be created */
     isCube?: boolean;
 
-    /** The sampling mode to be usedwith the render target (Linear, Nearest...) */
+    /** The sampling mode to be used with the render target (Trilinear (default), Linear, Nearest...) */
     samplingMode?: number;
 
-    /** True to generate a depth buffer */
+    /** True (default) to generate a depth buffer */
     generateDepthBuffer?: boolean;
 
-    /** True to generate a stencil buffer */
+    /** True (default: false) to generate a stencil buffer */
     generateStencilBuffer?: boolean;
 
-    /** True if multiple textures need to be created (Draw Buffers) */
+    /** True (default: false) if multiple textures need to be created (Draw Buffers) */
     isMulti?: boolean;
 
-    /** The internal format of the buffer in the RTT (RED, RG, RGB, RGBA, ALPHA...) */
+    /** The internal format of the buffer in the RTT (RED, RG, RGB, RGBA (default), ALPHA...) */
     format?: number;
 
-    /** if the texture allocation should be delayed (default: false) */
+    /** True (default: false) if the texture allocation should be delayed */
     delayAllocation?: boolean;
 
-    /** sample count to use when creating the RTT */
+    /** Sample count to use when creating the RTT */
     samples?: number;
 
     /** specific flags to use when creating the texture (e.g., Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures) */
     creationFlags?: number;
 
-    /** True to indicate that no color target should be created. (e.g., if you only want to write to the depth buffer) */
+    /** True (default: false) to indicate that no color target should be created. (e.g., if you only want to write to the depth buffer) */
     noColorAttachment?: boolean;
 
     /** Specifies the internal texture to use directly instead of creating one (ignores `noColorAttachment` flag when set) **/
     colorAttachment?: InternalTexture;
 
-    /** True to create a SRGB texture */
+    /** True (default: false) to create a SRGB texture */
     useSRGBBuffer?: boolean;
 }
 
@@ -152,6 +152,11 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      * Define if sprites should be rendered in your texture.
      */
     public renderSprites = false;
+
+    /**
+     * Force checking the layerMask property even if a custom list of meshes is provided (ie. if renderList is not undefined)
+     */
+    public forceLayerMaskCheck = false;
 
     /**
      * Define the camera used to render the texture.
@@ -401,7 +406,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      * or used a shadow, depth texture...
      * @param name The friendly name of the texture
      * @param size The size of the RTT (number if square, or {width: number, height:number} or {ratio:} to define a ratio from the main scene)
-     * @param scene The scene the RTT belongs to. The latest created scene will be used if not precised.
+     * @param scene The scene the RTT belongs to. Default is the last created scene.
      * @param options The options for creating the render target texture.
      */
     constructor(name: string, size: number | { width: number; height: number; layers?: number } | { ratio: number }, scene?: Nullable<Scene>, options?: RenderTargetTextureOptions);
@@ -411,21 +416,21 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      * or used a shadow, depth texture...
      * @param name The friendly name of the texture
      * @param size The size of the RTT (number if square, or {width: number, height:number} or {ratio:} to define a ratio from the main scene)
-     * @param scene The scene the RTT belongs to. The latest created scene will be used if not precised.
-     * @param generateMipMaps True if mip maps need to be generated after render.
-     * @param doNotChangeAspectRatio True to not change the aspect ratio of the scene in the RTT
-     * @param type The type of the buffer in the RTT (int, half float, float...)
-     * @param isCube True if a cube texture needs to be created
-     * @param samplingMode The sampling mode to be usedwith the render target (Linear, Nearest...)
-     * @param generateDepthBuffer True to generate a depth buffer
-     * @param generateStencilBuffer True to generate a stencil buffer
-     * @param isMulti True if multiple textures need to be created (Draw Buffers)
-     * @param format The internal format of the buffer in the RTT (RED, RG, RGB, RGBA, ALPHA...)
-     * @param delayAllocation if the texture allocation should be delayed (default: false)
-     * @param samples sample count to use when creating the RTT
+     * @param scene The scene the RTT belongs to. Default is the last created scene
+     * @param generateMipMaps True (default: false) if mipmaps need to be generated after render
+     * @param doNotChangeAspectRatio True (default) to not change the aspect ratio of the scene in the RTT
+     * @param type The type of the buffer in the RTT (byte (default), half float, float...)
+     * @param isCube True (default: false) if a cube texture needs to be created
+     * @param samplingMode The sampling mode to be used with the render target (Trilinear (default), Linear, Nearest...)
+     * @param generateDepthBuffer True (default) to generate a depth buffer
+     * @param generateStencilBuffer True (default: false) to generate a stencil buffer
+     * @param isMulti True (default: false) if multiple textures need to be created (Draw Buffers)
+     * @param format The internal format of the buffer in the RTT (RED, RG, RGB, RGBA (default), ALPHA...)
+     * @param delayAllocation True (default: false) if the texture allocation should be delayed
+     * @param samples Sample count to use when creating the RTT
      * @param creationFlags specific flags to use when creating the texture (e.g., Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures)
-     * @param noColorAttachment True to indicate that no color target should be created. (e.g., if you only want to write to the depth buffer)
-     * @param useSRGBBuffer True to create a SRGB texture
+     * @param noColorAttachment True (default: false) to indicate that no color target should be created. (e.g., if you only want to write to the depth buffer)
+     * @param useSRGBBuffer True (default: false) to create a SRGB texture
      */
     constructor(
         name: string,
@@ -471,11 +476,11 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         if (typeof generateMipMaps === "object") {
             const options = generateMipMaps;
             generateMipMaps = !!options.generateMipMaps;
-            doNotChangeAspectRatio = !!options.doNotChangeAspectRatio;
-            type = options.type ?? Constants.TEXTURETYPE_UNSIGNED_INT;
+            doNotChangeAspectRatio = options.doNotChangeAspectRatio ?? true;
+            type = options.type ?? Constants.TEXTURETYPE_UNSIGNED_BYTE;
             isCube = !!options.isCube;
             samplingMode = options.samplingMode ?? Texture.TRILINEAR_SAMPLINGMODE;
-            generateDepthBuffer = !!options.generateDepthBuffer;
+            generateDepthBuffer = options.generateDepthBuffer ?? true;
             generateStencilBuffer = !!options.generateStencilBuffer;
             isMulti = !!options.isMulti;
             format = options.format ?? Constants.TEXTUREFORMAT_RGBA;
@@ -1185,13 +1190,13 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                 // No custom render list provided, we prepare the rendering for the default list, but check
                 // first if we did not already performed the preparation before so as to avoid re-doing it several times
                 if (!this._defaultRenderListPrepared) {
-                    this._prepareRenderingManager(defaultRenderList, defaultRenderListLength, camera, !this.renderList);
+                    this._prepareRenderingManager(defaultRenderList, defaultRenderListLength, camera, !this.renderList || this.forceLayerMaskCheck);
                     this._defaultRenderListPrepared = true;
                 }
                 currentRenderList = defaultRenderList;
             } else {
                 // Prepare the rendering for the custom render list provided
-                this._prepareRenderingManager(currentRenderList, currentRenderList.length, camera, false);
+                this._prepareRenderingManager(currentRenderList, currentRenderList.length, camera, this.forceLayerMaskCheck);
             }
 
             // Before clear

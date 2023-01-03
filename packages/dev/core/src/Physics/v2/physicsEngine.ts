@@ -1,7 +1,7 @@
 import type { Nullable } from "../../types";
 import { Vector3 } from "../../Maths/math.vector";
 import type { IPhysicsEngine } from "../IPhysicsEngine";
-import type { IPhysicsEnginePlugin } from "./IPhysicsEnginePlugin";
+import type { IPhysicsEnginePluginV2 } from "./IPhysicsEnginePlugin";
 import { PhysicsRaycastResult } from "../physicsRaycastResult";
 import { _WarnImport } from "../../Misc/devTools";
 import type { PhysicsBody } from "./physicsBody";
@@ -33,7 +33,7 @@ export class PhysicsEngine implements IPhysicsEngine {
      * Factory used to create the default physics plugin.
      * @returns The default physics plugin
      */
-    public static DefaultPluginFactory(): IPhysicsEnginePlugin {
+    public static DefaultPluginFactory(): IPhysicsEnginePluginV2 {
         throw _WarnImport("");
     }
 
@@ -42,7 +42,7 @@ export class PhysicsEngine implements IPhysicsEngine {
      * @param gravity defines the gravity vector used by the simulation
      * @param _physicsPlugin defines the plugin to use (CannonJS by default)
      */
-    constructor(gravity: Nullable<Vector3>, private _physicsPlugin: IPhysicsEnginePlugin = PhysicsEngine.DefaultPluginFactory()) {
+    constructor(gravity: Nullable<Vector3>, private _physicsPlugin: IPhysicsEnginePluginV2 = PhysicsEngine.DefaultPluginFactory()) {
         gravity = gravity || new Vector3(0, -9.807, 0);
         this.setGravity(gravity);
         this.setTimeStep();
@@ -157,7 +157,7 @@ export class PhysicsEngine implements IPhysicsEngine {
      * Gets the current plugin used to run the simulation
      * @returns current plugin
      */
-    public getPhysicsPlugin(): IPhysicsEnginePlugin {
+    public getPhysicsPlugin(): IPhysicsEnginePluginV2 {
         return this._physicsPlugin;
     }
 

@@ -2324,6 +2324,38 @@ export class Control implements IAnimatable {
     }
 
     /**
+     * Clones a control and its descendants
+     * @param host the texture where the control will be instantiated. Can be empty, in which case the control will be created on the same texture
+     * @returns the cloned control
+     */
+    public clone(host?: AdvancedDynamicTexture): Control {
+        const serialization: any = {};
+        this.serialize(serialization);
+
+        const controlType = Tools.Instantiate("BABYLON.GUI." + serialization.className);
+        const cloned = new controlType();
+        cloned.parse(serialization, host);
+
+        return cloned;
+    }
+
+    /**
+     * Parses a serialized object into this control
+     * @param serializedObject the object with the serialized properties
+     * @param host the texture where the control will be instantiated. Can be empty, in which case the control will be created on the same texture
+     * @returns this control
+     */
+    public parse(serializedObject: any, host?: AdvancedDynamicTexture): Control {
+        SerializationHelper.Parse(() => this, serializedObject, null);
+
+        this.name = serializedObject.name;
+
+        this._parseFromContent(serializedObject, host ?? this._host);
+
+        return this;
+    }
+
+    /**
      * Serializes the current control
      * @param serializationObject defined the JSON serialized object
      */

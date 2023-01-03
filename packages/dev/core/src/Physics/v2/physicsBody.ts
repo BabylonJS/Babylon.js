@@ -1,4 +1,4 @@
-import type { IPhysicsEnginePlugin, MassProperties } from "./IPhysicsEnginePlugin";
+import type { IPhysicsEnginePluginV2, MassProperties } from "./IPhysicsEnginePlugin";
 import type { PhysicsShape } from "./physicsShape";
 import type { Vector3 } from "../../Maths/math.vector";
 import { Quaternion } from "../../Maths/math.vector";
@@ -17,7 +17,7 @@ export class PhysicsBody {
      *
      */
     public _pluginDataInstances: Array<any> = [];
-    private _physicsPlugin: IPhysicsEnginePlugin;
+    private _physicsPlugin: IPhysicsEnginePluginV2;
     /**
      *
      */
@@ -43,7 +43,7 @@ export class PhysicsBody {
             throw new Error("No Physics Plugin available.");
         }
 
-        this._physicsPlugin = physicsPlugin as IPhysicsEnginePlugin;
+        this._physicsPlugin = physicsPlugin as IPhysicsEnginePluginV2;
         if (!node.rotationQuaternion) {
             node.rotationQuaternion = Quaternion.FromEulerAngles(node.rotation.x, node.rotation.y, node.rotation.z);
         }
