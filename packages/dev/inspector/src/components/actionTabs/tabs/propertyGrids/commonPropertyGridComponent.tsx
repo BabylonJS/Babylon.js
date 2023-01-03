@@ -11,7 +11,7 @@ import { IndentedTextLineComponent } from "shared-ui-components/lines/indentedTe
 
 interface ICommonPropertyGridComponentProps {
     globalState: GlobalState;
-    host: { _internalMetadata: any };
+    host: { metadata:any };
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
@@ -52,18 +52,18 @@ export class CommonPropertyGridComponent extends React.Component<ICommonProperty
     }
 
     render() {
-        if (!this.props.host._internalMetadata) {
+        if (!this.props.host.metadata) {
             return null;
         }
 
-        if (!this.props.host._internalMetadata.xmp) {
+        if (!this.props.host.metadata.xmp) {
             return null;
         }
 
         return (
             <div>
                 <LineContainerComponent title="XMP METADATA" selection={this.props.globalState}>
-                    {this.renderLevel(this.props.host._internalMetadata.xmp)}
+                    {this.renderLevel(this.props.host.metadata.xmp)}
                 </LineContainerComponent>
             </div>
         );
