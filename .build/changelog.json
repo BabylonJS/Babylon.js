@@ -1,6 +1,88 @@
 {
-    "fromTag": "5.39.0",
+    "fromTag": "5.40.0",
     "changelog": {
+        "5.40.1": [
+            {
+                "pr": "13395",
+                "title": "Allow loading unicode-based playgrounds in older versions",
+                "description": "There is sadly no way around it, as the function we are using was only introduced in 5.X, so 4.X playgrounds won't load correctly.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/playground/src/tools/loadManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13393",
+                "title": "Release 5.39.0 Has IPhysicsEnginePLugin Errors",
+                "description": "Fixes #13378\nThe UMD declaration combines all declarations in the core repo to a single file. The issue with that is that interfaces that have the same name collide.\nThis is a UMD-only issue.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Debug/physicsViewer.ts",
+                    "packages/dev/core/src/Physics/IPhysicsEngine.ts",
+                    "packages/dev/core/src/Physics/physicsEngineComponent.ts",
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts",
+                    "packages/dev/core/src/Physics/v2/physicsConstraint.ts",
+                    "packages/dev/core/src/Physics/v2/physicsEngine.ts",
+                    "packages/dev/core/src/Physics/v2/physicsMaterial.ts",
+                    "packages/dev/core/src/Physics/v2/physicsShape.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13392",
+                "title": "Fix font style options on gui editor.",
+                "description": "Font style should follow the CSS spec: https://developer.mozilla.org/en-US/docs/Web/CSS/font-style, so it should be \"normal\" instead of regular.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/guiEditor/src/components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "gui editor"
+                ]
+            },
+            {
+                "pr": "13385",
+                "title": "ShadowDepthWrapper: Remove unneeded code",
+                "description": "Closes #13381 ",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/shadowDepthWrapper.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13390",
+                "title": "TaskManager.addTextureTask: Fix doc",
+                "description": "See https://forum.babylonjs.com/t/texture-applies-incorrectly-but-refresh-button-helps/36984/2",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/assetsManager.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
         "5.40.0": [
             {
                 "pr": "13386",
