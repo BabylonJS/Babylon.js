@@ -1552,7 +1552,7 @@ export class Control implements IAnimatable {
 
     /** @internal */
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    protected invalidateRect() {
+    public invalidateRect() {
         this._transform();
         if (this.host && this.host.useInvalidateRectOptimization) {
             // Rotate by transform to get the measure transformed to global space
