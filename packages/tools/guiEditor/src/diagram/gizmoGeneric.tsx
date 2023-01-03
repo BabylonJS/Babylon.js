@@ -191,7 +191,6 @@ export class GizmoGeneric extends React.Component<IGuiGizmoProps, IGuiGizmoState
     }
 
     private _onUp = (evt?: React.PointerEvent | PointerEvent | null) => {
-        console.log("on up generic");
         // if left is still pressed, don't release
         if (evt && evt.buttons & 1) {
             return;

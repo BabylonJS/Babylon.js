@@ -14,9 +14,13 @@ import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
 /** Class used to render 2D lines */
 export class Line extends Control {
     private _lineWidth = 1;
+    /** @internal */
     public _x1 = new ValueAndUnit(0);
+    /** @internal */
     public _y1 = new ValueAndUnit(0);
+    /** @internal */
     public _x2 = new ValueAndUnit(0);
+    /** @internal */
     public _y2 = new ValueAndUnit(0);
     private _dash = new Array<number>();
     private _connectedControl: Control;
@@ -149,10 +153,12 @@ export class Line extends Control {
         return;
     }
 
+    /** @internal */
     public get _effectiveX2(): number {
         return (this._connectedControl ? this._connectedControl.centerX : 0) + this._x2.getValue(this._host);
     }
 
+    /** @internal */
     public get _effectiveY2(): number {
         return (this._connectedControl ? this._connectedControl.centerY : 0) + this._y2.getValue(this._host);
     }
