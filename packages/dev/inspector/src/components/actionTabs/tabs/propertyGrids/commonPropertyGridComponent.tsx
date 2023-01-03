@@ -11,7 +11,7 @@ import { IndentedTextLineComponent } from "shared-ui-components/lines/indentedTe
 
 interface ICommonPropertyGridComponentProps {
     globalState: GlobalState;
-    host: { metadata:any };
+    host: { metadata: any };
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
