@@ -2,6 +2,8 @@ import type { Behavior } from "../behavior";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import type { Mesh } from "../../Meshes/mesh";
 import type { Nullable } from "../../types";
+import { Observer } from "core/Misc";
+import { Scene } from "core/scene"
 
 /**
  * A behavior that when attached to a mesh will allow the mesh to fade in and out
@@ -26,7 +28,7 @@ export class FadeInOutBehavior implements Behavior<Mesh> {
     private _hovered = false;
     private _hoverValue = 0;
     private _ownerNode: Nullable<Mesh> = null;
-    private _timeoutHandle: Nullable<NodeJS.Timeout>;
+    private _onBeforeRenderObserver: Nullable<Observer<Scene>> | undefined;
 
     /**
      * Instantiates the FadeInOutBehavior
@@ -65,21 +67,22 @@ export class FadeInOutBehavior implements Behavior<Mesh> {
      * @param value if the object should fade in or out (true to fade in)
      */
     public fadeIn(value: boolean) {
-        // Otherwise the value has changed so abort the next update
-        if (this._timeoutHandle) {
-            // prevent any pending updates
-            clearTimeout(this._timeoutHandle);
-            this._timeoutHandle = null;
-        }
+        // Cancel any pending updates
+        this._detachObserver();
 
+        // If fading in and already visible or fading out and already not visible do nothing
         if (this._ownerNode && 
             ((value && this._ownerNode.visibility >= 1) || 
             (!value && this._ownerNode.visibility <= 0))) {
-            // If fading in and already visible or fading out and already not visible do nothing
             return;
         }
 
         this._hovered = value;
+        if (!this._hovered) {
+            // Make the delay the negative of fadeout delay so the hoverValue is kept above 1 until
+            // fadeOutDelay has elapsed
+            this.delay = -this.fadeOutDelay;
+        }
 
         // Reset the hoverValue.  This is neccessary becasue we may have been fading out, e.g. but not yet reached
         // the delay, so the hover value is greater than 1
@@ -95,26 +98,25 @@ export class FadeInOutBehavior implements Behavior<Mesh> {
         if (this._ownerNode) {
             this._hoverValue += this._hovered ? this._millisecondsPerFrame : -this._millisecondsPerFrame;
 
-            this._setAllVisibility(this._ownerNode, this._hovered ?
-                // Keep the visibility value less than 0 until delay has elapsed
-                (this._hoverValue - this.delay) / this.fadeInTime :
-                // keep the visibility value greater than 1 until delay has elapsed
-                (this._hoverValue + this.fadeOutDelay) / this.fadeInTime)
+            this._setAllVisibility(this._ownerNode, (this._hoverValue - this.delay) / this.fadeInTime);
 
             if (this._ownerNode.visibility > 1) {
                 this._setAllVisibility(this._ownerNode, 1);
                 if (this._hoverValue > this.fadeInTime) {
                     this._hoverValue = this.fadeInTime;
+                    this._detachObserver();
                     return;
                 }
             } else if (this._ownerNode.visibility < 0) {
                 this._setAllVisibility(this._ownerNode, 0);
                 if (this._hoverValue < 0) {
                     this._hoverValue = 0;
+                    this._detachObserver();
                     return;
                 }
             }
-            this._timeoutHandle = setTimeout(this._update, this._millisecondsPerFrame);
+            
+            this._attachObserver();
         }
     };
 
@@ -123,5 +125,20 @@ export class FadeInOutBehavior implements Behavior<Mesh> {
         mesh.getChildMeshes().forEach((c) => {
             this._setAllVisibility(c, value);
         });
+    }
+
+    private _attachObserver() {
+        if (!this._onBeforeRenderObserver) {
+            this._onBeforeRenderObserver = this._ownerNode?.getScene().onBeforeRenderObservable
+                .add(this._update);
+        }
+    }
+
+    private _detachObserver() {
+        if (this._onBeforeRenderObserver) {
+            this._ownerNode?.getScene().onBeforeRenderObservable
+                .remove(this._onBeforeRenderObserver);
+            this._onBeforeRenderObserver = null;
+        }
     }
 }
