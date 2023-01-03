@@ -119,6 +119,7 @@ export class GlobalState {
     isSaving = false;
     public lockObject = new LockObject();
     storeEditorData: (serializationObject: any) => void;
+    shiftKeyPressed: boolean = false;
 
     customSave?: { label: string; action: (data: string) => Promise<string> };
     customLoad?: { label: string; action: (data: string) => Promise<string> };

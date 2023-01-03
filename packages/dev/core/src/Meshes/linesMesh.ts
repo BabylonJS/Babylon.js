@@ -113,6 +113,7 @@ export class LinesMesh extends Mesh {
             this.material = material;
         } else {
             this.material = new ShaderMaterial("colorShader", this.getScene(), "color", options, false);
+            this.material.doNotSerialize = true;
         }
     }
 

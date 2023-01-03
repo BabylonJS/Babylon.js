@@ -172,6 +172,8 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         ShadowMapBlock: "Compute a depth value suitable for shadow map generation",
         TriPlanarBlock: "A node for reading a texture with triplanar mapping",
         BiPlanarBlock: "A node for reading a texture with biplanar mapping",
+        MatrixDeterminantBlock: "Compute the determinant of a matrix",
+        MatrixTransposeBlock: "Compute the transpose of a matrix",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -389,6 +391,8 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "ViewProjectionMatrixBlock",
                 "ProjectionMatrixBlock",
                 "MatrixBuilderBlock",
+                "MatrixDeterminantBlock",
+                "MatrixTransposeBlock",
             ],
             Misc: ["ElbowBlock", "ShadowMapBlock"],
             Mesh: [

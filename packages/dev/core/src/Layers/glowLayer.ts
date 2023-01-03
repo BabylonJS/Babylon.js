@@ -29,16 +29,16 @@ import "../Layers/effectLayerSceneComponent";
 declare module "../abstractScene" {
     export interface AbstractScene {
         /**
-         * Return a the first highlight layer of the scene with a given name.
-         * @param name The name of the highlight layer to look for.
-         * @returns The highlight layer if found otherwise null.
+         * Return the first glow layer of the scene with a given name.
+         * @param name The name of the glow layer to look for.
+         * @returns The glow layer if found otherwise null.
          */
         getGlowLayerByName(name: string): Nullable<GlowLayer>;
     }
 }
 
 AbstractScene.prototype.getGlowLayerByName = function (name: string): Nullable<GlowLayer> {
-    for (let index = 0; index < this.effectLayers.length; index++) {
+    for (let index = 0; index < this.effectLayers?.length; index++) {
         if (this.effectLayers[index].name === name && this.effectLayers[index].getEffectName() === GlowLayer.EffectName) {
             return (<any>this.effectLayers[index]) as GlowLayer;
         }
