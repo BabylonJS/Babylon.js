@@ -648,7 +648,7 @@ export class InputManager {
                     else {
                         // wait that no double click has been raised during the double click delay
                         this._previousDelayedSimpleClickTimeout = this._delayedSimpleClickTimeout;
-                        this._delayedSimpleClickTimeout = setTimeout(this._delayedSimpleClick.bind(this, btn, clickInfo, cb), InputManager.DoubleClickDelay);
+                        this._delayedSimpleClickTimeout = window.setTimeout(this._delayedSimpleClick.bind(this, btn, clickInfo, cb), InputManager.DoubleClickDelay);
                     }
 
                     let checkDoubleClick = obs1.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP) || obs2.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP);
