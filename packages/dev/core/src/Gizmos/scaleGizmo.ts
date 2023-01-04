@@ -43,6 +43,13 @@ export interface IScaleGizmo extends IGizmo {
      * @param cache Gizmo axis definition used for reactive gizmo UI
      */
     addToAxisCache(mesh: Mesh, cache: GizmoAxisCache): void;
+
+    /** Default material used to render when gizmo is not disabled or hovered */
+    coloredMaterial: StandardMaterial;
+    /** Material used to render when gizmo is hovered with mouse*/
+    hoverMaterial: StandardMaterial;
+    /** Material used to render when gizmo is disabled. typically grey.*/
+    disableMaterial: StandardMaterial;
 }
 
 /**
@@ -81,6 +88,20 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
     /** Node Caching for quick lookup */
     protected _gizmoAxisCache: Map<Mesh, GizmoAxisCache> = new Map();
 
+    /** Default material used to render when gizmo is not disabled or hovered */
+    public get coloredMaterial() {
+        return this._coloredMaterial;
+    }
+
+    /** Material used to render when gizmo is hovered with mouse*/
+    public get hoverMaterial() {
+        return this._hoverMaterial;
+    }
+
+    /** Material used to render when gizmo is disabled. typically grey.*/
+    public get disableMaterial() {
+        return this._disableMaterial;
+    }
     /** Fires an event when any of it's sub gizmos are dragged */
     public onDragStartObservable = new Observable();
     /** Fires an event when any of it's sub gizmos are released from dragging */
