@@ -4,6 +4,7 @@ import type { IPhysicsEngine } from "../IPhysicsEngine";
 import type { IPhysicsEnginePluginV2 } from "./IPhysicsEnginePlugin";
 import { PhysicsRaycastResult } from "../physicsRaycastResult";
 import { _WarnImport } from "../../Misc/devTools";
+import type { PhysicsBody } from "./physicsBody";
 
 /**
  * Class used to control physics engine
@@ -12,13 +13,7 @@ import { _WarnImport } from "../../Misc/devTools";
 /** @internal */
 export class PhysicsEngine implements IPhysicsEngine {
     /** @internal */
-    /**
-     * Global value used to control the smallest number supported by the simulation
-     */
-    public static Epsilon = 0.001;
-
-    //private _impostors: Array<PhysicsImpostor> = [];
-    //private _joints: Array<PhysicsImpostorJoint> = [];
+    private _physicsBodies: Array<PhysicsBody> = [];
     private _subTimeStep: number = 0;
     //private _uniqueIdCounter = 0;
 
@@ -27,6 +22,10 @@ export class PhysicsEngine implements IPhysicsEngine {
      */
     public gravity: Vector3;
 
+    /**
+     *
+     * @returns physics plugin version
+     */
     public getPluginVersion(): number {
         return this._physicsPlugin.getPluginVersion();
     }
@@ -134,7 +133,24 @@ export class PhysicsEngine implements IPhysicsEngine {
             delta = 1.0 / 60.0;
         }
 
-        this._physicsPlugin.executeStep(delta);
+        this._physicsPlugin.executeStep(delta, this._physicsBodies);
+    }
+
+    /**
+     *
+     * @param body
+     */
+    public addBody(physicsBody: PhysicsBody): void {
+        this._physicsBodies.push(physicsBody);
+    }
+    /**
+     *
+     */
+    public removeBody(physicsBody: PhysicsBody): void {
+        const index = this._physicsBodies.indexOf(physicsBody);
+        if (index > -1) {
+            /*const removed =*/ this._physicsBodies.splice(index, 1);
+        }
     }
 
     /**
