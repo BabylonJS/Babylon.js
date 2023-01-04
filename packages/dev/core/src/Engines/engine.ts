@@ -598,7 +598,7 @@ export class Engine extends ThinEngine {
 
             this._sharedInit(canvas, !!options.doNotHandleTouchAction, options.audioEngine!);
 
-            if (IsWindowObjectExist()) {
+            if (IsDocumentAvailable()) {
                 // Fullscreen
                 this._onFullscreenChange = () => {
                     this.isFullscreen = !!document.fullscreenElement;
