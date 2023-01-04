@@ -1514,6 +1514,10 @@
             "playgroundId": "#20OAV9#9228",
             "referenceImage": "exportGltfKHRTextureTransform.png",
             "renderCount": 5
+        },
+        {
+            "title": "GUI Input Text Area Inside ScrollViewer",
+            "playgroundId": "#NVAEWD#69"
         }
     ]
 }
