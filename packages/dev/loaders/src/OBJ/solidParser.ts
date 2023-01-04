@@ -1,15 +1,15 @@
-import type { AssetContainer } from "core/assetContainer";
-import { VertexBuffer } from "core/Buffers/buffer";
-import type { Material } from "core/Materials/material";
-import { StandardMaterial } from "core/Materials/standardMaterial";
-import { Color3, Color4 } from "core/Maths/math.color";
-import { Vector2, Vector3 } from "core/Maths/math.vector";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import { Geometry } from "core/Meshes/geometry";
-import { Mesh } from "core/Meshes/mesh";
-import { VertexData } from "core/Meshes/mesh.vertexData";
-import type { Scene } from "core/scene";
-import type { FloatArray, IndicesArray, Nullable } from "core/types";
+import type { AssetContainer } from "../../../core/src/assetContainer";
+import { VertexBuffer } from "../../../core/src/Buffers/buffer";
+import type { Material } from "../../../core/src/Materials/material";
+import { StandardMaterial } from "../../../core/src/Materials/standardMaterial";
+import { Color3, Color4 } from "../../../core/src/Maths/math.color";
+import { Vector2, Vector3 } from "../../../core/src/Maths/math.vector";
+import type { AbstractMesh } from "../../../core/src/Meshes/abstractMesh";
+import { Geometry } from "../../../core/src/Meshes/geometry";
+import { Mesh } from "../../../core/src/Meshes/mesh";
+import { VertexData } from "../../../core/src/Meshes/mesh.vertexData";
+import type { Scene } from "../../../core/src/scene";
+import type { FloatArray, IndicesArray, Nullable } from "../../../core/src/types";
 import type { OBJLoadingOptions } from "./objLoadingOptions";
 
 type MeshObject = {

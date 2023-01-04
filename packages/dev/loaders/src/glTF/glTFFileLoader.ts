@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/naming-convention */
 import type * as GLTF2 from "babylonjs-gltf2interface";
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
-import { Observable } from "core/Misc/observable";
-import { Tools } from "core/Misc/tools";
-import type { Camera } from "core/Cameras/camera";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { Material } from "core/Materials/material";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { Nullable } from "../../../core/src/types";
+import type { Observer } from "../../../core/src/Misc/observable";
+import { Observable } from "../../../core/src/Misc/observable";
+import { Tools } from "../../../core/src/Misc/tools";
+import type { Camera } from "../../../core/src/Cameras/camera";
+import type { BaseTexture } from "../../../core/src/Materials/Textures/baseTexture";
+import type { Material } from "../../../core/src/Materials/material";
+import type { AbstractMesh } from "../../../core/src/Meshes/abstractMesh";
 import type {
     ISceneLoaderPluginFactory,
     ISceneLoaderPlugin,
@@ -16,20 +16,20 @@ import type {
     ISceneLoaderProgressEvent,
     ISceneLoaderPluginExtensions,
     ISceneLoaderAsyncResult,
-} from "core/Loading/sceneLoader";
-import { SceneLoader } from "core/Loading/sceneLoader";
-import { AssetContainer } from "core/assetContainer";
-import type { Scene, IDisposable } from "core/scene";
-import type { WebRequest } from "core/Misc/webRequest";
-import type { IFileRequest } from "core/Misc/fileRequest";
-import { Logger } from "core/Misc/logger";
-import type { IDataBuffer } from "core/Misc/dataReader";
-import { DataReader } from "core/Misc/dataReader";
+} from "../../../core/src/Loading/sceneLoader";
+import { SceneLoader } from "../../../core/src/Loading/sceneLoader";
+import { AssetContainer } from "../../../core/src/assetContainer";
+import type { Scene, IDisposable } from "../../../core/src/scene";
+import type { WebRequest } from "../../../core/src/Misc/webRequest";
+import type { IFileRequest } from "../../../core/src/Misc/fileRequest";
+import { Logger } from "../../../core/src/Misc/logger";
+import type { IDataBuffer } from "../../../core/src/Misc/dataReader";
+import { DataReader } from "../../../core/src/Misc/dataReader";
 import { GLTFValidation } from "./glTFValidation";
-import type { LoadFileError } from "core/Misc/fileTools";
-import { DecodeBase64UrlToBinary } from "core/Misc/fileTools";
-import { RuntimeError, ErrorCodes } from "core/Misc/error";
-import type { TransformNode } from "core/Meshes/transformNode";
+import type { LoadFileError } from "../../../core/src/Misc/fileTools";
+import { DecodeBase64UrlToBinary } from "../../../core/src/Misc/fileTools";
+import { RuntimeError, ErrorCodes } from "../../../core/src/Misc/error";
+import type { TransformNode } from "../../../core/src/Meshes/transformNode";
 
 interface IFileRequestInfo extends IFileRequest {
     _lengthComputable?: boolean;

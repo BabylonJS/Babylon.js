@@ -1,14 +1,14 @@
-import { Vector3, Quaternion, Matrix, TmpVectors } from "core/Maths/math.vector";
-import type { Mesh } from "core/Meshes/mesh";
-import type { TransformNode } from "core/Meshes/transformNode";
-import type { Nullable } from "core/types";
+import { Vector3, Quaternion, Matrix, TmpVectors } from "../../../../../core/src/Maths/math.vector";
+import type { Mesh } from "../../../../../core/src/Meshes/mesh";
+import type { TransformNode } from "../../../../../core/src/Meshes/transformNode";
+import type { Nullable } from "../../../../../core/src/types";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import type { INode } from "../glTFLoaderInterfaces";
 
 import type { IEXTMeshGpuInstancing } from "babylonjs-gltf2interface";
 
-import "core/Meshes/thinInstanceMesh";
+import "../../../../../core/src/Meshes/thinInstanceMesh";
 
 const NAME = "EXT_mesh_gpu_instancing";
 

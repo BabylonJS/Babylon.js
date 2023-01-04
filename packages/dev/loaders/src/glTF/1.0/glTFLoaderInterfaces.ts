@@ -1,10 +1,10 @@
-import type { AssetContainer } from "core/assetContainer";
-import type { Bone } from "core/Bones/bone";
-import type { Skeleton } from "core/Bones/skeleton";
-import type { Texture } from "core/Materials/Textures/texture";
-import type { Node } from "core/node";
-import type { Scene } from "core/scene";
-import type { Nullable } from "core/types";
+import type { AssetContainer } from "../../../../core/src/assetContainer";
+import type { Bone } from "../../../../core/src/Bones/bone";
+import type { Skeleton } from "../../../../core/src/Bones/skeleton";
+import type { Texture } from "../../../../core/src/Materials/Textures/texture";
+import type { Node } from "../../../../core/src/node";
+import type { Scene } from "../../../../core/src/scene";
+import type { Nullable } from "../../../../core/src/types";
 
 /**
  * Enums

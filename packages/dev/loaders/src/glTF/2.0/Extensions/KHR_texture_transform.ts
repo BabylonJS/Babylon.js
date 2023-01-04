@@ -1,6 +1,6 @@
-import type { Nullable } from "core/types";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import { Texture } from "core/Materials/Textures/texture";
+import type { Nullable } from "../../../../../core/src/types";
+import type { BaseTexture } from "../../../../../core/src/Materials/Textures/baseTexture";
+import { Texture } from "../../../../../core/src/Materials/Textures/texture";
 
 import type { ITextureInfo } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";

@@ -1,11 +1,11 @@
-import type { Nullable } from "core/types";
-import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import type { Material } from "core/Materials/material";
+import type { Nullable } from "../../../../../core/src/types";
+import { PBRMaterial } from "../../../../../core/src/Materials/PBR/pbrMaterial";
+import type { Material } from "../../../../../core/src/Materials/material";
 
 import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
-import { Color3 } from "core/Maths/math.color";
+import { Color3 } from "../../../../../core/src/Maths/math.color";
 import type { IKHRMaterialsSpecular } from "babylonjs-gltf2interface";
 
 const NAME = "KHR_materials_specular";

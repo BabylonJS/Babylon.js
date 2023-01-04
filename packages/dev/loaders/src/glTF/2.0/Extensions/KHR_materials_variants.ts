@@ -1,11 +1,11 @@
-import type { Nullable } from "core/types";
+import type { Nullable } from "../../../../../core/src/types";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
 
-import type { Material } from "core/Materials/material";
-import { Mesh } from "core/Meshes/mesh";
-import type { Node } from "core/node";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { Material } from "../../../../../core/src/Materials/material";
+import { Mesh } from "../../../../../core/src/Meshes/mesh";
+import type { Node } from "../../../../../core/src/node";
+import type { AbstractMesh } from "../../../../../core/src/Meshes/abstractMesh";
 import type { INode, IMeshPrimitive, IMesh } from "../glTFLoaderInterfaces";
 import type { IKHRMaterialVariants_Mapping, IKHRMaterialVariants_Variant, IKHRMaterialVariants_Variants } from "babylonjs-gltf2interface";
 

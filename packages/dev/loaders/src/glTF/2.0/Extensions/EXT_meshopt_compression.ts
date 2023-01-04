@@ -1,9 +1,9 @@
-import type { Nullable } from "core/types";
+import type { Nullable } from "../../../../../core/src/types";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { ArrayItem, GLTFLoader } from "../glTFLoader";
 import type { IBufferView } from "../glTFLoaderInterfaces";
 import type { IEXTMeshoptCompression } from "babylonjs-gltf2interface";
-import { MeshoptCompression } from "core/Meshes/Compression/meshoptCompression";
+import { MeshoptCompression } from "../../../../../core/src/Meshes/Compression/meshoptCompression";
 
 const NAME = "EXT_meshopt_compression";
 

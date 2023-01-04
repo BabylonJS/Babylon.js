@@ -1,8 +1,8 @@
-import { DracoCompression } from "core/Meshes/Compression/dracoCompression";
-import type { Nullable } from "core/types";
-import { VertexBuffer } from "core/Buffers/buffer";
-import { Geometry } from "core/Meshes/geometry";
-import type { Mesh } from "core/Meshes/mesh";
+import { DracoCompression } from "../../../../../core/src/Meshes/Compression/dracoCompression";
+import type { Nullable } from "../../../../../core/src/types";
+import { VertexBuffer } from "../../../../../core/src/Buffers/buffer";
+import { Geometry } from "../../../../../core/src/Meshes/geometry";
+import type { Mesh } from "../../../../../core/src/Meshes/mesh";
 
 import { MeshPrimitiveMode, AccessorComponentType } from "babylonjs-gltf2interface";
 import type { IKHRDracoMeshCompression } from "babylonjs-gltf2interface";

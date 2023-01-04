@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
-import { Animation } from "core/Animations/animation";
+import { Animation } from "../../../../../core/src/Animations/animation";
 import type { ICamera, IKHRLightsPunctual_Light, IMaterial } from "../glTFLoaderInterfaces";
-import type { IAnimatable } from "core/Animations/animatable.interface";
+import type { IAnimatable } from "../../../../../core/src/Animations/animatable.interface";
 import { AnimationPropertyInfo, nodeAnimationData } from "../glTFLoaderAnimation";
-import { Color3 } from "core/Maths/math.color";
+import { Color3 } from "../../../../../core/src/Maths/math.color";
 
 function getColor3(_target: any, source: Float32Array, offset: number, scale: number): Color3 {
     return Color3.FromArray(source, offset).scale(scale);

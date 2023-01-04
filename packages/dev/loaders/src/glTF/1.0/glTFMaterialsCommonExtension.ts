@@ -2,15 +2,15 @@ import { GLTFLoaderExtension, GLTFLoaderBase, GLTFLoader } from "./glTFLoader";
 
 import type { IGLTFRuntime, IGLTFMaterial } from "./glTFLoaderInterfaces";
 
-import { Vector3 } from "core/Maths/math.vector";
-import { Color3 } from "core/Maths/math.color";
-import { Tools } from "core/Misc/tools";
-import { Material } from "core/Materials/material";
-import { StandardMaterial } from "core/Materials/standardMaterial";
-import { HemisphericLight } from "core/Lights/hemisphericLight";
-import { DirectionalLight } from "core/Lights/directionalLight";
-import { PointLight } from "core/Lights/pointLight";
-import { SpotLight } from "core/Lights/spotLight";
+import { Vector3 } from "../../../../core/src/Maths/math.vector";
+import { Color3 } from "../../../../core/src/Maths/math.color";
+import { Tools } from "../../../../core/src/Misc/tools";
+import { Material } from "../../../../core/src/Materials/material";
+import { StandardMaterial } from "../../../../core/src/Materials/standardMaterial";
+import { HemisphericLight } from "../../../../core/src/Lights/hemisphericLight";
+import { DirectionalLight } from "../../../../core/src/Lights/directionalLight";
+import { PointLight } from "../../../../core/src/Lights/pointLight";
+import { SpotLight } from "../../../../core/src/Lights/spotLight";
 
 interface IGLTFMaterialsCommonExtensionValues {
     ambient?: number[] | string;

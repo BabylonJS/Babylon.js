@@ -1,14 +1,14 @@
-﻿import type { Nullable } from "core/types";
-import type { Animation } from "core/Animations/animation";
-import type { AnimationGroup } from "core/Animations/animationGroup";
-import type { Material } from "core/Materials/material";
-import type { Camera } from "core/Cameras/camera";
-import type { Geometry } from "core/Meshes/geometry";
-import type { TransformNode } from "core/Meshes/transformNode";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { Mesh } from "core/Meshes/mesh";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import type { IDisposable } from "core/scene";
+﻿import type { Nullable } from "../../../../core/src/types";
+import type { Animation } from "../../../../core/src/Animations/animation";
+import type { AnimationGroup } from "../../../../core/src/Animations/animationGroup";
+import type { Material } from "../../../../core/src/Materials/material";
+import type { Camera } from "../../../../core/src/Cameras/camera";
+import type { Geometry } from "../../../../core/src/Meshes/geometry";
+import type { TransformNode } from "../../../../core/src/Meshes/transformNode";
+import type { BaseTexture } from "../../../../core/src/Materials/Textures/baseTexture";
+import type { Mesh } from "../../../../core/src/Meshes/mesh";
+import type { AbstractMesh } from "../../../../core/src/Meshes/abstractMesh";
+import type { IDisposable } from "../../../../core/src/scene";
 import type {
     IScene,
     INode,
@@ -26,7 +26,7 @@ import type {
 } from "./glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension as IGLTFBaseLoaderExtension } from "../glTFFileLoader";
 import type { IProperty } from "babylonjs-gltf2interface";
-import type { IAnimatable } from "core/Animations/animatable.interface";
+import type { IAnimatable } from "../../../../core/src/Animations/animatable.interface";
 
 /**
  * Interface for a glTF loader extension.

@@ -1,16 +1,16 @@
-import type { Nullable } from "core/types";
-import { Vector2 } from "core/Maths/math.vector";
-import { Tools } from "core/Misc/tools";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import type { ISceneLoaderPluginAsync, ISceneLoaderPluginFactory, ISceneLoaderPlugin, ISceneLoaderAsyncResult } from "core/Loading/sceneLoader";
-import { SceneLoader } from "core/Loading/sceneLoader";
-import { AssetContainer } from "core/assetContainer";
-import type { Scene } from "core/scene";
-import type { WebRequest } from "core/Misc/webRequest";
+import type { Nullable } from "../../../core/src/types";
+import { Vector2 } from "../../../core/src/Maths/math.vector";
+import { Tools } from "../../../core/src/Misc/tools";
+import type { AbstractMesh } from "../../../core/src/Meshes/abstractMesh";
+import type { ISceneLoaderPluginAsync, ISceneLoaderPluginFactory, ISceneLoaderPlugin, ISceneLoaderAsyncResult } from "../../../core/src/Loading/sceneLoader";
+import { SceneLoader } from "../../../core/src/Loading/sceneLoader";
+import { AssetContainer } from "../../../core/src/assetContainer";
+import type { Scene } from "../../../core/src/scene";
+import type { WebRequest } from "../../../core/src/Misc/webRequest";
 import { MTLFileLoader } from "./mtlFileLoader";
 import type { OBJLoadingOptions } from "./objLoadingOptions";
 import { SolidParser } from "./solidParser";
-import type { Mesh } from "core/Meshes/mesh";
+import type { Mesh } from "../../../core/src/Meshes/mesh";
 
 /**
  * OBJ file type loader.

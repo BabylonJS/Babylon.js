@@ -1,11 +1,11 @@
-import type { Nullable } from "core/types";
-import { Vector3 } from "core/Maths/math.vector";
-import { Tools } from "core/Misc/tools";
-import type { AnimationGroup } from "core/Animations/animationGroup";
-import { AnimationEvent } from "core/Animations/animationEvent";
-import type { TransformNode } from "core/Meshes/transformNode";
-import { Sound } from "core/Audio/sound";
-import { WeightedSound } from "core/Audio/weightedsound";
+import type { Nullable } from "../../../../../core/src/types";
+import { Vector3 } from "../../../../../core/src/Maths/math.vector";
+import { Tools } from "../../../../../core/src/Misc/tools";
+import type { AnimationGroup } from "../../../../../core/src/Animations/animationGroup";
+import { AnimationEvent } from "../../../../../core/src/Animations/animationEvent";
+import type { TransformNode } from "../../../../../core/src/Meshes/transformNode";
+import { Sound } from "../../../../../core/src/Audio/sound";
+import { WeightedSound } from "../../../../../core/src/Audio/weightedsound";
 
 import type { IArrayItem, IScene, INode, IAnimation } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";

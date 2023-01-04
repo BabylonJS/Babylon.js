@@ -1,7 +1,7 @@
-import { Animation } from "core/Animations/animation";
-import { Quaternion, Vector3 } from "core/Maths/math.vector";
+import { Animation } from "../../../../core/src/Animations/animation";
+import { Quaternion, Vector3 } from "../../../../core/src/Maths/math.vector";
 import type { INode } from "./glTFLoaderInterfaces";
-import type { IAnimatable } from "core/Animations/animatable.interface";
+import type { IAnimatable } from "../../../../core/src/Animations/animatable.interface";
 
 /** @internal */
 export type GetValueFn = (target: any, source: Float32Array, offset: number, scale: number) => any;

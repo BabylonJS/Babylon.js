@@ -1,13 +1,13 @@
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IAnimationTargetInfo } from "../glTFLoader";
-import type { Nullable } from "core/types";
-import type { Animation } from "core/Animations/animation";
-import type { IAnimatable } from "core/Animations/animatable.interface";
+import type { Nullable } from "../../../../../core/src/types";
+import type { Animation } from "../../../../../core/src/Animations/animation";
+import type { IAnimatable } from "../../../../../core/src/Animations/animatable.interface";
 import type { IAnimation, IAnimationChannel } from "../glTFLoaderInterfaces";
 import type { IKHRAnimationPointer } from "babylonjs-gltf2interface";
 import { AnimationChannelTargetPath } from "babylonjs-gltf2interface";
-import { Logger } from "core/Misc/logger";
+import { Logger } from "../../../../../core/src/Misc/logger";
 import { animationPointerTree } from "./KHR_animation_pointer.data";
 
 const NAME = "KHR_animation_pointer";

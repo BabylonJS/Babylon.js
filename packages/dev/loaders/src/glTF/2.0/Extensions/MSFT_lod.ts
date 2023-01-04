@@ -1,10 +1,10 @@
-import type { Nullable } from "core/types";
-import { Observable } from "core/Misc/observable";
-import { Deferred } from "core/Misc/deferred";
-import type { Material } from "core/Materials/material";
-import type { TransformNode } from "core/Meshes/transformNode";
-import type { Mesh } from "core/Meshes/mesh";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { Nullable } from "../../../../../core/src/types";
+import { Observable } from "../../../../../core/src/Misc/observable";
+import { Deferred } from "../../../../../core/src/Misc/deferred";
+import type { Material } from "../../../../../core/src/Materials/material";
+import type { TransformNode } from "../../../../../core/src/Meshes/transformNode";
+import type { Mesh } from "../../../../../core/src/Meshes/mesh";
+import type { BaseTexture } from "../../../../../core/src/Materials/Textures/baseTexture";
 import type { INode, IMaterial, IBuffer, IScene } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";

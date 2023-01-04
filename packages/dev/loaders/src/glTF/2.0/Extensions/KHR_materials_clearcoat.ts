@@ -1,6 +1,6 @@
-import type { Nullable } from "core/types";
-import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import type { Material } from "core/Materials/material";
+import type { Nullable } from "../../../../../core/src/types";
+import { PBRMaterial } from "../../../../../core/src/Materials/PBR/pbrMaterial";
+import type { Material } from "../../../../../core/src/Materials/material";
 
 import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";

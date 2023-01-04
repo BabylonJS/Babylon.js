@@ -1,9 +1,9 @@
-import type { Nullable } from "core/types";
-import { Scalar } from "core/Maths/math.scalar";
-import { SphericalHarmonics, SphericalPolynomial } from "core/Maths/sphericalPolynomial";
-import { Quaternion, Matrix } from "core/Maths/math.vector";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import { RawCubeTexture } from "core/Materials/Textures/rawCubeTexture";
+import type { Nullable } from "../../../../../core/src/types";
+import { Scalar } from "../../../../../core/src/Maths/math.scalar";
+import { SphericalHarmonics, SphericalPolynomial } from "../../../../../core/src/Maths/sphericalPolynomial";
+import { Quaternion, Matrix } from "../../../../../core/src/Maths/math.vector";
+import type { BaseTexture } from "../../../../../core/src/Materials/Textures/baseTexture";
+import { RawCubeTexture } from "../../../../../core/src/Materials/Textures/rawCubeTexture";
 
 import type { IEXTLightsImageBased_LightReferenceImageBased, IEXTLightsImageBased_LightImageBased, IEXTLightsImageBased } from "babylonjs-gltf2interface";
 import type { IScene } from "../glTFLoaderInterfaces";

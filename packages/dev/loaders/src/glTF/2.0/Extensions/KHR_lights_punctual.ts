@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Nullable } from "core/types";
-import { Vector3 } from "core/Maths/math.vector";
-import { Color3 } from "core/Maths/math.color";
-import { DirectionalLight } from "core/Lights/directionalLight";
-import { PointLight } from "core/Lights/pointLight";
-import { SpotLight } from "core/Lights/spotLight";
-import { Light } from "core/Lights/light";
-import type { TransformNode } from "core/Meshes/transformNode";
+import type { Nullable } from "../../../../../core/src/types";
+import { Vector3 } from "../../../../../core/src/Maths/math.vector";
+import { Color3 } from "../../../../../core/src/Maths/math.color";
+import { DirectionalLight } from "../../../../../core/src/Lights/directionalLight";
+import { PointLight } from "../../../../../core/src/Lights/pointLight";
+import { SpotLight } from "../../../../../core/src/Lights/spotLight";
+import { Light } from "../../../../../core/src/Lights/light";
+import type { TransformNode } from "../../../../../core/src/Meshes/transformNode";
 
 import type { IKHRLightsPunctual_LightReference } from "babylonjs-gltf2interface";
 import { KHRLightsPunctual_LightType } from "babylonjs-gltf2interface";

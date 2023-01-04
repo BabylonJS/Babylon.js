@@ -1,20 +1,20 @@
-import type { Nullable } from "core/types";
-import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import type { Material } from "core/Materials/material";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { Nullable } from "../../../../../core/src/types";
+import { PBRMaterial } from "../../../../../core/src/Materials/PBR/pbrMaterial";
+import type { Material } from "../../../../../core/src/Materials/material";
+import type { BaseTexture } from "../../../../../core/src/Materials/Textures/baseTexture";
 import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IKHRMaterialsTransmission } from "babylonjs-gltf2interface";
-import type { Scene } from "core/scene";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import type { Texture } from "core/Materials/Textures/texture";
-import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
-import type { Observer } from "core/Misc/observable";
-import { Observable } from "core/Misc/observable";
-import { Constants } from "core/Engines/constants";
-import { Tools } from "core/Misc/tools";
-import type { Color4 } from "core/Maths/math.color";
+import type { Scene } from "../../../../../core/src/scene";
+import type { AbstractMesh } from "../../../../../core/src/Meshes/abstractMesh";
+import type { Texture } from "../../../../../core/src/Materials/Textures/texture";
+import { RenderTargetTexture } from "../../../../../core/src/Materials/Textures/renderTargetTexture";
+import type { Observer } from "../../../../../core/src/Misc/observable";
+import { Observable } from "../../../../../core/src/Misc/observable";
+import { Constants } from "../../../../../core/src/Engines/constants";
+import { Tools } from "../../../../../core/src/Misc/tools";
+import type { Color4 } from "../../../../../core/src/Maths/math.color";
 
 interface ITransmissionHelperHolder {
     /**
