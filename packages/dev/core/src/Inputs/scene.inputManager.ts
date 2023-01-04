@@ -378,7 +378,7 @@ export class InputManager {
                 }
 
                 if (actionManager.hasSpecificTrigger(Constants.ACTION_OnLongPressTrigger)) {
-                    setTimeout(() => {
+                    window.setTimeout(() => {
                         const pickResult = scene.pick(
                             this._unTranslatedPointerX,
                             this._unTranslatedPointerY,
