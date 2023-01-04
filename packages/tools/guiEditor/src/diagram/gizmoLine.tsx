@@ -5,14 +5,16 @@ import { GizmoScalePoint, ScalePointPosition } from "./gizmoScalePoint";
 import { Vector2 } from "core/Maths/math";
 import type { Line } from "gui/2D/controls/line";
 import { CoordinateHelper } from "./coordinateHelper";
-import { Matrix2D, MathTools } from "gui/2d/math2D";
+import { Matrix2D, MathTools } from "gui/2D/math2D";
+import type { ValueAndUnit } from "gui/2D/valueAndUnit";
+import type { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
 
 interface IGizmoLineProps {
     globalState: GlobalState;
     control: Line;
 }
 
-function getPivot(x1: number, y1: number, x2: number, y2: number, centerX: number, centerY: number) {
+function getPivotToRef(x1: number, y1: number, x2: number, y2: number, centerX: number, centerY: number, ref: Vector2) {
     const minX = Math.min(x1, x2);
     const minY = Math.min(y1, y2);
     const maxX = Math.max(x1, x2);
@@ -24,7 +26,8 @@ function getPivot(x1: number, y1: number, x2: number, y2: number, centerX: numbe
     const xm = minX + width * centerX;
     const ym = minY + height * centerY;
 
-    return new Vector2(xm, ym);
+    ref.x = xm;
+    ref.y = ym;
 }
 
 /**
@@ -82,28 +85,25 @@ export function GizmoLine(props: IGizmoLineProps) {
 
     const update = () => {
         const line = control as Line;
-        const x1 = control._cachedParentMeasure.left + line._x1.getValue(line._host);
-        const y1 = control._cachedParentMeasure.top + line._y1.getValue(line._host);
-        const x2 = control._cachedParentMeasure.left + line._effectiveX2;
-        const y2 = control._cachedParentMeasure.top + line._effectiveY2;
+        const x1 = line._cachedParentMeasure.left + line._x1.getValue(line._host);
+        const y1 = line._cachedParentMeasure.top + line._y1.getValue(line._host);
+        const x2 = line._cachedParentMeasure.left + line._effectiveX2;
+        const y2 = line._cachedParentMeasure.top + line._effectiveY2;
 
         const v1 = new Vector2(x1, y1);
         const v2 = new Vector2(x2, y2);
-        const vm = getPivot(x1, y1, x2, y2, control.transformCenterX, control.transformCenterY);
+        const vm = new Vector2();
+        getPivotToRef(x1, y1, x2, y2, line.transformCenterX, line.transformCenterY, vm);
 
-        const matrix = control._transformMatrix;
+        const matrix = line._transformMatrix;
 
-        const p1 = new Vector2();
-        const p2 = new Vector2();
-        const pm = new Vector2();
+        matrix.transformCoordinates(v1.x, v1.y, v1);
+        matrix.transformCoordinates(v2.x, v2.y, v2);
+        matrix.transformCoordinates(vm.x, vm.y, vm);
 
-        matrix.transformCoordinates(v1.x, v1.y, p1);
-        matrix.transformCoordinates(v2.x, v2.y, p2);
-        matrix.transformCoordinates(vm.x, vm.y, pm);
+        pivot.current = vm;
 
-        pivot.current = new Vector2(pm.x, pm.y);
-
-        const positions = [new Vector2(p1.x, p1.y), new Vector2(pm.x, pm.y), new Vector2(p2.x, p2.y)];
+        const positions = [v1, vm, v2];
 
         setScalePoints(
             scalePoints.map((point, index) => {
@@ -111,10 +111,14 @@ export function GizmoLine(props: IGizmoLineProps) {
                 return {
                     ...point,
                     position,
-                    rotation: control.rotation,
+                    rotation: line.rotation,
                 };
             })
         );
+    };
+
+    const _getAddAndRound = (value: ValueAndUnit, host: AdvancedDynamicTexture, delta: number) => {
+        return MathTools.Round(value.getValue(host) + delta);
     };
 
     const _dragPivot = (currentPointer: Vector2) => {
@@ -126,7 +130,7 @@ export function GizmoLine(props: IGizmoLineProps) {
         const rttLastCoordinates = CoordinateHelper.MousePointerToRTTSpace(control, lastCursor.current.x, lastCursor.current.y);
         const localLastCoordinates = CoordinateHelper.RttToLocalNodeSpace(control, rttLastCoordinates.x, rttLastCoordinates.y);
 
-        const delta = new Vector2(localClientCoords.x - localLastCoordinates.x, localClientCoords.y - localLastCoordinates.y);
+        const delta = localClientCoords.subtract(localLastCoordinates);
 
         const rotatedDelta = new Vector2();
         delta.rotateToRef(control.rotation, rotatedDelta);
@@ -134,21 +138,10 @@ export function GizmoLine(props: IGizmoLineProps) {
         const deltaX = rotatedDelta.x;
         const deltaY = rotatedDelta.y;
 
-        let x1 = control._x1.getValue(control._host);
-        x1 += deltaX;
-        control.x1 = MathTools.Round(x1);
-
-        let y1 = control._y1.getValue(control._host);
-        y1 += deltaY;
-        control.y1 = MathTools.Round(y1);
-
-        let x2 = control._x2.getValue(control._host);
-        x2 += deltaX;
-        control.x2 = MathTools.Round(x2);
-
-        let y2 = control._y2.getValue(control._host);
-        y2 += deltaY;
-        control.y2 = MathTools.Round(y2);
+        control.x1 = _getAddAndRound(control._x1, control._host, deltaX);
+        control.y1 = _getAddAndRound(control._y1, control._host, deltaY);
+        control.x2 = _getAddAndRound(control._x2, control._host, deltaX);
+        control.y2 = _getAddAndRound(control._y2, control._host, deltaY);
 
         globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
     };
@@ -161,7 +154,7 @@ export function GizmoLine(props: IGizmoLineProps) {
         const rttLastCoordinates = CoordinateHelper.MousePointerToRTTSpace(control, lastCursor.current.x, lastCursor.current.y);
         const localLastCoordinates = CoordinateHelper.RttToLocalNodeSpace(control, rttLastCoordinates.x, rttLastCoordinates.y);
 
-        const delta = new Vector2(localClientCoords.x - localLastCoordinates.x, localClientCoords.y - localLastCoordinates.y);
+        const delta = localClientCoords.subtract(localLastCoordinates);
 
         const rotatedDelta = new Vector2();
         delta.rotateToRef(control.rotation, rotatedDelta);
@@ -174,21 +167,12 @@ export function GizmoLine(props: IGizmoLineProps) {
 
         if (movedPointIndex === 0) {
             // Moved first point, (x1, y1)
-            let x1 = control._x1.getValue(control._host);
-            x1 += deltaX;
-            control.x1 = MathTools.Round(x1);
-
-            let y1 = control._y1.getValue(control._host);
-            y1 += deltaY;
-            control.y1 = MathTools.Round(y1);
+            control.x1 = _getAddAndRound(control._x1, control._host, deltaX);
+            control.y1 = _getAddAndRound(control._y1, control._host, deltaY);
         } else if (movedPointIndex === 2) {
-            let x2 = control._x2.getValue(control._host);
-            x2 += deltaX;
-            control.x2 = MathTools.Round(x2);
-
-            let y2 = control._y2.getValue(control._host);
-            y2 += deltaY;
-            control.y2 = MathTools.Round(y2);
+            // Moved second point, (x2, y2)
+            control.x2 = _getAddAndRound(control._x2, control._host, deltaX);
+            control.y2 = _getAddAndRound(control._y2, control._host, deltaY);
         }
         globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
     };
@@ -254,8 +238,9 @@ export function GizmoLine(props: IGizmoLineProps) {
 
                 const v1 = new Vector2(x1, y1);
                 const v2 = new Vector2(x2, y2);
+                const vm = new Vector2();
 
-                const vm = getPivot(x1, y1, x2, y2, line.transformCenterX, line.transformCenterY);
+                getPivotToRef(x1, y1, x2, y2, line.transformCenterX, line.transformCenterY, vm);
 
                 const finalTransform = Matrix2D.Identity();
                 const currentTransform = Matrix2D.Identity();
@@ -266,17 +251,14 @@ export function GizmoLine(props: IGizmoLineProps) {
                 Matrix2D.TranslationToRef(vm.x, vm.y, currentTransform);
                 finalTransform.multiplyToRef(currentTransform, finalTransform);
 
-                const p1 = new Vector2();
-                const p2 = new Vector2();
-
-                finalTransform.transformCoordinates(v1.x, v1.y, p1);
-                finalTransform.transformCoordinates(v2.x, v2.y, p2);
+                finalTransform.transformCoordinates(v1.x, v1.y, v1);
+                finalTransform.transformCoordinates(v2.x, v2.y, v2);
 
                 control.rotation = 0;
-                control.x1 = MathTools.Round(p1.x);
-                control.y1 = MathTools.Round(p1.y);
-                control.x2 = MathTools.Round(p2.x);
-                control.y2 = MathTools.Round(p2.y);
+                control.x1 = MathTools.Round(v1.x);
+                control.y1 = MathTools.Round(v1.y);
+                control.x2 = MathTools.Round(v2.x);
+                control.y2 = MathTools.Round(v2.y);
                 globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
             }
             isDragging.current = true;
