@@ -2,7 +2,7 @@ import type { Behavior } from "../behavior";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import type { Mesh } from "../../Meshes/mesh";
 import type { Nullable } from "../../types";
-import type { Observer } from "core/Misc";
+import type { Observer } from "core/Misc/observable";
 import type { Scene } from "core/scene";
 
 /**
@@ -76,11 +76,6 @@ export class FadeInOutBehavior implements Behavior<Mesh> {
         }
 
         this._hovered = value;
-        if (!this._hovered) {
-            // Make the delay the negative of fadeout delay so the hoverValue is kept above 1 until
-            // fadeOutDelay has elapsed
-            this.delay = -this.fadeOutDelay;
-        }
 
         // Reset the hoverValue.  This is neccessary becasue we may have been fading out, e.g. but not yet reached
         // the delay, so the hover value is greater than 1
@@ -93,10 +88,16 @@ export class FadeInOutBehavior implements Behavior<Mesh> {
     }
 
     private _update = () => {
+        // Delay should be subtracted from the hover value when fading in to keep the visibility
+        // below 0 until the fade in delay has elpased.  Conversely, It should be added to the
+        // hover value when fading out to keep the visibility above 1 until the fadeOutDelay has
+        // elapsed
+        const delay = this._hovered ? this.delay : -this.fadeOutDelay;
+
         if (this._ownerNode) {
             this._hoverValue += this._hovered ? this._millisecondsPerFrame : -this._millisecondsPerFrame;
 
-            this._setAllVisibility(this._ownerNode, (this._hoverValue - this.delay) / this.fadeInTime);
+            this._setAllVisibility(this._ownerNode, (this._hoverValue - delay) / this.fadeInTime);
 
             if (this._ownerNode.visibility > 1) {
                 this._setAllVisibility(this._ownerNode, 1);
