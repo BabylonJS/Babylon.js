@@ -480,7 +480,7 @@ export class Tools {
                     resolve();
                 },
                 (message, exception) => {
-                    reject(exception);
+                    reject(exception || new Error(message));
                 }
             );
         });
