@@ -598,7 +598,7 @@ export class Engine extends ThinEngine {
 
             this._sharedInit(canvas, !!options.doNotHandleTouchAction, options.audioEngine!);
 
-            if (IsWindowObjectExist()) {
+            if (IsDocumentAvailable()) {
                 // Fullscreen
                 this._onFullscreenChange = () => {
                     this.isFullscreen = !!document.fullscreenElement;
@@ -697,12 +697,10 @@ export class Engine extends ThinEngine {
             }
         };
 
-        if (IsWindowObjectExist()) {
-            const hostWindow = this.getHostWindow();
-            if (hostWindow) {
-                hostWindow.addEventListener("blur", this._onBlur);
-                hostWindow.addEventListener("focus", this._onFocus);
-            }
+        const hostWindow = this.getHostWindow(); // it calls IsWindowObjectExist()
+        if (hostWindow && typeof hostWindow.addEventListener === "function") {
+            hostWindow.addEventListener("blur", this._onBlur);
+            hostWindow.addEventListener("focus", this._onFocus);
         }
 
         canvas.addEventListener("pointerout", this._onCanvasPointerOut);
@@ -1893,27 +1891,28 @@ export class Engine extends ThinEngine {
         this.disableVR();
 
         // Events
-        if (IsWindowObjectExist()) {
-            window.removeEventListener("blur", this._onBlur);
-            window.removeEventListener("focus", this._onFocus);
+        const hostWindow = this.getHostWindow(); // it calls IsWindowObjectExist()
+        if (hostWindow && typeof hostWindow.removeEventListener === "function") {
+            hostWindow.removeEventListener("blur", this._onBlur);
+            hostWindow.removeEventListener("focus", this._onFocus);
+        }
 
-            if (this._renderingCanvas) {
-                this._renderingCanvas.removeEventListener("focus", this._onCanvasFocus);
-                this._renderingCanvas.removeEventListener("blur", this._onCanvasBlur);
-                this._renderingCanvas.removeEventListener("pointerout", this._onCanvasPointerOut);
-                this._renderingCanvas.removeEventListener("contextmenu", this._onCanvasContextMenu);
-            }
+        if (this._renderingCanvas) {
+            this._renderingCanvas.removeEventListener("focus", this._onCanvasFocus);
+            this._renderingCanvas.removeEventListener("blur", this._onCanvasBlur);
+            this._renderingCanvas.removeEventListener("pointerout", this._onCanvasPointerOut);
+            this._renderingCanvas.removeEventListener("contextmenu", this._onCanvasContextMenu);
+        }
 
-            if (IsDocumentAvailable()) {
-                document.removeEventListener("fullscreenchange", this._onFullscreenChange);
-                document.removeEventListener("mozfullscreenchange", this._onFullscreenChange);
-                document.removeEventListener("webkitfullscreenchange", this._onFullscreenChange);
-                document.removeEventListener("msfullscreenchange", this._onFullscreenChange);
-                document.removeEventListener("pointerlockchange", this._onPointerLockChange);
-                document.removeEventListener("mspointerlockchange", this._onPointerLockChange);
-                document.removeEventListener("mozpointerlockchange", this._onPointerLockChange);
-                document.removeEventListener("webkitpointerlockchange", this._onPointerLockChange);
-            }
+        if (IsDocumentAvailable()) {
+            document.removeEventListener("fullscreenchange", this._onFullscreenChange);
+            document.removeEventListener("mozfullscreenchange", this._onFullscreenChange);
+            document.removeEventListener("webkitfullscreenchange", this._onFullscreenChange);
+            document.removeEventListener("msfullscreenchange", this._onFullscreenChange);
+            document.removeEventListener("pointerlockchange", this._onPointerLockChange);
+            document.removeEventListener("mspointerlockchange", this._onPointerLockChange);
+            document.removeEventListener("mozpointerlockchange", this._onPointerLockChange);
+            document.removeEventListener("webkitpointerlockchange", this._onPointerLockChange);
         }
 
         super.dispose();
