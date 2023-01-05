@@ -24,7 +24,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
      * Abstract mesh the behavior is set on
      */
     public attachedNode: AbstractMesh;
-    private _dragPlane: Mesh;
+    protected _dragPlane: Mesh;
     private _scene: Scene;
     private _pointerObserver: Nullable<Observer<PointerInfo>>;
     private _beforeRenderObserver: Nullable<Observer<Scene>>;
