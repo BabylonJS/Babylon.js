@@ -12,7 +12,7 @@ export class FadeInOutBehavior implements Behavior<Mesh> {
     /**
      * Time in milliseconds to delay before fading in (Default: 0)
      */
-    public delay = 0;
+    public fadeInDelay = 0;
 
     /**
      * Time in milliseconds to delay before fading out (Default: 0)
@@ -24,11 +24,31 @@ export class FadeInOutBehavior implements Behavior<Mesh> {
      */
     public fadeInTime = 300;
 
+    /**
+     * Time in milliseconds for the mesh to fade out (Default: 300)
+     */
+    public fadeOutTime = 300;
+
+    /**
+     * Time in milliseconds to delay before fading in (Default: 0)
+     * Will set both fade in and out delay to the same value
+     */
+    public get delay(): number {
+        return this.fadeInDelay;
+    }
+
+    public set delay(value: number) {
+        this.fadeInDelay = value;
+        this.fadeOutDelay = value;
+    }
+
     private _millisecondsPerFrame = 1000 / 60;
     private _hovered = false;
     private _hoverValue = 0;
     private _ownerNode: Nullable<Mesh> = null;
     private _onBeforeRenderObserver: Nullable<Observer<Scene>> | undefined;
+    private _delay: number = 0;
+    private _time: number = 300;
 
     /**
      * Instantiates the FadeInOutBehavior
@@ -63,45 +83,55 @@ export class FadeInOutBehavior implements Behavior<Mesh> {
     }
 
     /**
-     * Triggers the mesh to begin fading in or out
-     * @param value if the object should fade in or out (true to fade in)
+     * Triggers the mesh to begin fading in (or out)
+     * @param fadeIn if the object should fade in or out (true to fade in)
      */
-    public fadeIn(value: boolean) {
+    public fadeIn(fadeIn: boolean = true) {
+        this._delay = fadeIn ? this.fadeInDelay : this.fadeOutDelay;
+        this._time = fadeIn ? this.fadeInTime : this.fadeOutTime;
+
         // Cancel any pending updates
         this._detachObserver();
 
         // If fading in and already visible or fading out and already not visible do nothing
-        if (this._ownerNode && ((value && this._ownerNode.visibility >= 1) || (!value && this._ownerNode.visibility <= 0))) {
+        if (this._ownerNode && ((fadeIn && this._ownerNode.visibility >= 1) || (!fadeIn && this._ownerNode.visibility <= 0))) {
             return;
         }
 
-        this._hovered = value;
+        this._hovered = fadeIn;
         if (!this._hovered) {
             // Make the delay the negative of fadeout delay so the hoverValue is kept above 1 until
             // fadeOutDelay has elapsed
-            this.delay = -this.fadeOutDelay;
+            this._delay *= -1;
         }
 
-        // Reset the hoverValue.  This is neccessary becasue we may have been fading out, e.g. but not yet reached
+        // Reset the hoverValue.  This is necessary because we may have been fading out, e.g. but not yet reached
         // the delay, so the hover value is greater than 1
         if (this._ownerNode!.visibility >= 1) {
-            this._hoverValue = this.fadeInTime;
+            this._hoverValue = this._time;
         } else if (this._ownerNode!.visibility <= 0) {
             this._hoverValue = 0;
         }
         this._update();
     }
 
+    /**
+     * Triggers the mesh to begin fading out
+     */
+    public fadeOut() {
+        this.fadeIn(false);
+    }
+
     private _update = () => {
         if (this._ownerNode) {
             this._hoverValue += this._hovered ? this._millisecondsPerFrame : -this._millisecondsPerFrame;
 
-            this._setAllVisibility(this._ownerNode, (this._hoverValue - this.delay) / this.fadeInTime);
+            this._setAllVisibility(this._ownerNode, (this._hoverValue - this._delay) / this._time);
 
             if (this._ownerNode.visibility > 1) {
                 this._setAllVisibility(this._ownerNode, 1);
-                if (this._hoverValue > this.fadeInTime) {
-                    this._hoverValue = this.fadeInTime;
+                if (this._hoverValue > this._time) {
+                    this._hoverValue = this._time;
                     this._detachObserver();
                     return;
                 }
