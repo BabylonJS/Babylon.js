@@ -698,7 +698,7 @@ export class Engine extends ThinEngine {
         };
 
         const hostWindow = this.getHostWindow(); // it calls IsWindowObjectExist()
-        if (hostWindow && typeof hostWindow.addEventListener === 'function') {
+        if (hostWindow && typeof hostWindow.addEventListener === "function") {
             hostWindow.addEventListener("blur", this._onBlur);
             hostWindow.addEventListener("focus", this._onFocus);
         }
@@ -1892,7 +1892,7 @@ export class Engine extends ThinEngine {
 
         // Events
         const hostWindow = this.getHostWindow(); // it calls IsWindowObjectExist()
-        if (hostWindow && typeof hostWindow.removeEventListener === 'function') {
+        if (hostWindow && typeof hostWindow.removeEventListener === "function") {
             hostWindow.removeEventListener("blur", this._onBlur);
             hostWindow.removeEventListener("focus", this._onFocus);
         }
