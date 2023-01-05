@@ -794,6 +794,8 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         }
 
         this._options.teleportationTargetMesh = teleportationTarget;
+        // hide the teleportation target mesh right after creating it.
+        this._setTargetMeshVisibility(false);
     }
 
     private _detachController(xrControllerUniqueId: string) {

@@ -74,7 +74,7 @@ export class Control implements IAnimatable {
     /** @internal */
     public _prevCurrentMeasureTransformedIntoGlobalSpace = Measure.Empty();
     /** @internal */
-    protected _cachedParentMeasure = Measure.Empty();
+    public _cachedParentMeasure = Measure.Empty();
     private _descendantsOnlyPadding = false;
     private _paddingLeft = new ValueAndUnit(0);
     private _paddingRight = new ValueAndUnit(0);
@@ -1552,7 +1552,7 @@ export class Control implements IAnimatable {
 
     /** @internal */
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    protected invalidateRect() {
+    public invalidateRect() {
         this._transform();
         if (this.host && this.host.useInvalidateRectOptimization) {
             // Rotate by transform to get the measure transformed to global space

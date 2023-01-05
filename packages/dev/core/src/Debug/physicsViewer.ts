@@ -17,6 +17,8 @@ import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder";
 import type { ICreateCapsuleOptions } from "../Meshes/Builders/capsuleBuilder";
 import { CreateCapsule } from "../Meshes/Builders/capsuleBuilder";
 import { Logger } from "../Misc/logger";
+import type { PhysicsBody } from "../Physics/v2/physicsBody";
+import { VertexData } from "../Meshes/mesh.vertexData";
 
 /**
  * Used to show the physics impostor around the specific mesh
@@ -27,9 +29,15 @@ export class PhysicsViewer {
     /** @internal */
     protected _meshes: Array<Nullable<AbstractMesh>> = [];
     /** @internal */
+    protected _bodies: Array<Nullable<PhysicsBody>> = [];
+    /** @internal */
+    protected _bodyMeshes: Array<Nullable<AbstractMesh>> = [];
+    /** @internal */
     protected _scene: Nullable<Scene>;
     /** @internal */
     protected _numMeshes = 0;
+    /** @internal */
+    protected _numBodies = 0;
     /** @internal */
     protected _physicsEnginePlugin: IPhysicsEnginePluginV1 | IPhysicsEnginePluginV2 | null;
     private _renderFunction: () => void;
@@ -122,6 +130,36 @@ export class PhysicsViewer {
         return debugMesh;
     }
 
+    /**
+     *
+     */
+    public showBody(body: PhysicsBody): Nullable<AbstractMesh> {
+        if (!this._scene) {
+            return null;
+        }
+
+        for (let i = 0; i < this._numBodies; i++) {
+            if (this._bodies[i] == body) {
+                return null;
+            }
+        }
+
+        const debugMesh = this._getDebugBodyMesh(body);
+
+        if (debugMesh) {
+            this._bodies[this._numBodies] = body;
+            this._bodyMeshes[this._numBodies] = debugMesh;
+
+            if (this._numBodies === 0) {
+                this._renderFunction = this._updateDebugMeshes.bind(this);
+                this._scene.registerBeforeRender(this._renderFunction);
+            }
+
+            this._numBodies++;
+        }
+
+        return debugMesh;
+    }
     /**
      * Hides a specified physic impostor
      * @param impostor defines the impostor to hide
@@ -328,6 +366,23 @@ export class PhysicsViewer {
                 break;
             }
         }
+        return mesh;
+    }
+
+    private _getDebugBodyMesh(body: PhysicsBody): Nullable<AbstractMesh> {
+        if (!this._utilityLayer) {
+            return null;
+        }
+
+        const utilityLayerScene = this._utilityLayer.utilityLayerScene;
+
+        const mesh = new Mesh("custom", utilityLayerScene);
+        const vertexData = new VertexData();
+        const geometry = body.getGeometry() as any;
+        vertexData.positions = geometry.positions;
+        vertexData.indices = geometry.indices;
+        vertexData.applyToMesh(mesh);
+        mesh.material = this._getDebugMaterial(utilityLayerScene);
         return mesh;
     }
 

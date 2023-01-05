@@ -663,17 +663,9 @@ export class InputTextArea extends InputText {
         }
     }
 
-    /**
-     * Processing of child after the parent measurement update
-     *
-     * @param parentMeasure The parent measure
-     * @param context The rendering canvas
-     * @internal
-     */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void {
-        this._clipTextLeft = this._currentMeasure.left + this._margin.getValueInPixel(this._host, parentMeasure.width);
-        this._clipTextTop = this._currentMeasure.top + this._margin.getValueInPixel(this._host, parentMeasure.height);
+    private _computeScroll() {
+        this._clipTextLeft = this._currentMeasure.left + this._margin.getValueInPixel(this._host, this._cachedParentMeasure.width);
+        this._clipTextTop = this._currentMeasure.top + this._margin.getValueInPixel(this._host, this._cachedParentMeasure.height);
 
         if (this._isFocused && this._lines[this._cursorInfo.currentLineIndex].width > this._availableWidth) {
             const textLeft = this._clipTextLeft - this._lines[this._cursorInfo.currentLineIndex].width + this._availableWidth;
@@ -695,7 +687,14 @@ export class InputTextArea extends InputText {
         } else {
             this._scrollTop = this._clipTextTop;
         }
+    }
 
+    /**
+     * Processing of child after the parent measurement update
+     *
+     * @internal
+     */
+    protected _additionalProcessing(): void {
         // Flush the highlighted text each frame
         this.highlightedText = "";
 
@@ -795,6 +794,8 @@ export class InputTextArea extends InputText {
     }
 
     public _draw(context: ICanvasRenderingContext): void {
+        this._computeScroll();
+
         this._scrollLeft = this._scrollLeft ?? 0;
         this._scrollTop = this._scrollTop ?? 0;
 

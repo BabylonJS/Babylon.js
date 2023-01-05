@@ -254,6 +254,9 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     @serialize()
     public metadata: any = null;
 
+    /** @internal */
+    public _internalMetadata: any;
+
     /**
      * For internal use only. Please do not use.
      */
