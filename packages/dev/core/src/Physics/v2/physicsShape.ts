@@ -1,7 +1,7 @@
 import type { TransformNode } from "../../Meshes/transformNode";
 import type { BoundingBox } from "../../Culling/boundingBox";
 import { ShapeType } from "./IPhysicsEnginePlugin";
-import type { IPhysicsEnginePlugin, PhysicsShapeParameters } from "./IPhysicsEnginePlugin";
+import type { IPhysicsEnginePluginV2, PhysicsShapeParameters } from "./IPhysicsEnginePlugin";
 import type { PhysicsMaterial } from "./physicsMaterial";
 import type { Vector3 } from "../../Maths/math.vector";
 import type { Quaternion } from "../../Maths/math.vector";
@@ -16,7 +16,7 @@ export class PhysicsShape {
     /** @internal */
     public _pluginData: any = undefined;
 
-    private _physicsPlugin: IPhysicsEnginePlugin;
+    private _physicsPlugin: IPhysicsEnginePluginV2;
 
     private _type: ShapeType;
 
@@ -45,7 +45,7 @@ export class PhysicsShape {
             throw new Error("No Physics Plugin available.");
         }
 
-        this._physicsPlugin = physicsPlugin as IPhysicsEnginePlugin;
+        this._physicsPlugin = physicsPlugin as IPhysicsEnginePluginV2;
         this._physicsPlugin.initShape(this, type, options);
     }
 
@@ -76,8 +76,8 @@ export class PhysicsShape {
      *
      * @param materialId
      */
-    public setMaterial(materialId: PhysicsMaterial): void {
-        this._physicsPlugin.setMaterial(this, materialId);
+    public setMaterial(material: PhysicsMaterial): void {
+        this._physicsPlugin.setMaterial(this, material);
     }
 
     /**
@@ -156,7 +156,7 @@ export class PhysicsShapeSphere extends PhysicsShape {
      * @param scene
      */
     constructor(center: Vector3, radius: number, scene: Scene) {
-        super(ShapeType.BOX, { center: center, radius: radius }, scene);
+        super(ShapeType.SPHERE, { center: center, radius: radius }, scene);
     }
 }
 

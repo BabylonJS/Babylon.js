@@ -2,7 +2,7 @@ import type { Observer } from "../Misc/observable";
 import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
 import type { PointerInfo } from "../Events/pointerEvents";
-import { Vector3, Matrix } from "../Maths/math.vector";
+import type { Vector3 } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { Node } from "../node";
 import { Mesh } from "../Meshes/mesh";
@@ -17,6 +17,7 @@ import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import type { ScaleGizmo } from "./scaleGizmo";
 import { Color3 } from "../Maths/math.color";
 import type { TransformNode } from "../Meshes/transformNode";
+import { TmpVectors, Matrix } from "../Maths/math.vector";
 
 /**
  * Interface for axis scale gizmo
@@ -39,6 +40,13 @@ export interface IAxisScaleGizmo extends IGizmo {
     dragScale: number;
     /** If the gizmo is enabled */
     isEnabled: boolean;
+
+    /** Default material used to render when gizmo is not disabled or hovered */
+    coloredMaterial: StandardMaterial;
+    /** Material used to render when gizmo is hovered with mouse*/
+    hoverMaterial: StandardMaterial;
+    /** Material used to render when gizmo is disabled. typically grey.*/
+    disableMaterial: StandardMaterial;
 }
 
 /**
@@ -80,10 +88,21 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
     protected _hoverMaterial: StandardMaterial;
     protected _disableMaterial: StandardMaterial;
     protected _dragging: boolean = false;
-    protected _tmpVector = new Vector3();
-    protected _tmpMatrix = new Matrix();
-    protected _tmpMatrix2 = new Matrix();
 
+    /** Default material used to render when gizmo is not disabled or hovered */
+    public get coloredMaterial() {
+        return this._coloredMaterial;
+    }
+
+    /** Material used to render when gizmo is hovered with mouse*/
+    public get hoverMaterial() {
+        return this._hoverMaterial;
+    }
+
+    /** Material used to render when gizmo is disabled. typically grey.*/
+    public get disableMaterial() {
+        return this._disableMaterial;
+    }
     /**
      * Creates an AxisScaleGizmo
      * @param dragAxis The axis which the gizmo will be able to scale on
@@ -151,7 +170,7 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
         this._rootMesh.addBehavior(this.dragBehavior);
 
         let currentSnapDragDistance = 0;
-        const tmpVector = new Vector3();
+
         const tmpSnapEvent = { snapDistance: 0 };
         this.dragBehavior.onDragObservable.add((event) => {
             if (this.attachedNode) {
@@ -163,12 +182,12 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
                 let snapped = false;
                 let dragSteps = 0;
                 if (this.uniformScaling) {
-                    tmpVector.setAll(0.57735); // 1 / sqrt(3)
+                    TmpVectors.Vector3[0].setAll(0.57735); // 1 / sqrt(3)
                 } else {
-                    tmpVector.copyFrom(dragAxis);
+                    TmpVectors.Vector3[0].copyFrom(dragAxis);
                 }
                 if (this.snapDistance == 0) {
-                    tmpVector.scaleToRef(dragStrength, tmpVector);
+                    TmpVectors.Vector3[0].scaleToRef(dragStrength, TmpVectors.Vector3[0]);
                 } else {
                     currentSnapDragDistance += dragStrength;
                     if (Math.abs(currentSnapDragDistance) > this.snapDistance) {
@@ -177,22 +196,22 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
                             dragSteps *= -1;
                         }
                         currentSnapDragDistance = currentSnapDragDistance % this.snapDistance;
-                        tmpVector.scaleToRef(this.snapDistance * dragSteps, tmpVector);
+                        TmpVectors.Vector3[0].scaleToRef(this.snapDistance * dragSteps, TmpVectors.Vector3[0]);
                         snapped = true;
                     } else {
-                        tmpVector.scaleInPlace(0);
+                        TmpVectors.Vector3[0].scaleInPlace(0);
                     }
                 }
 
-                Matrix.ScalingToRef(1 + tmpVector.x, 1 + tmpVector.y, 1 + tmpVector.z, this._tmpMatrix2);
+                Matrix.ScalingToRef(1 + TmpVectors.Vector3[0].x, 1 + TmpVectors.Vector3[0].y, 1 + TmpVectors.Vector3[0].z, TmpVectors.Matrix[2]);
 
-                this._tmpMatrix2.multiplyToRef(this.attachedNode.getWorldMatrix(), this._tmpMatrix);
+                TmpVectors.Matrix[2].multiplyToRef(this.attachedNode.getWorldMatrix(), TmpVectors.Matrix[1]);
                 const transformNode = (<Mesh>this.attachedNode)._isMesh ? (this.attachedNode as TransformNode) : undefined;
-                this._tmpMatrix.decompose(this._tmpVector, undefined, undefined, Gizmo.PreserveScaling ? transformNode : undefined);
+                TmpVectors.Matrix[1].decompose(TmpVectors.Vector3[1], undefined, undefined, Gizmo.PreserveScaling ? transformNode : undefined);
 
                 const maxScale = 100000;
-                if (Math.abs(this._tmpVector.x) < maxScale && Math.abs(this._tmpVector.y) < maxScale && Math.abs(this._tmpVector.z) < maxScale) {
-                    this.attachedNode.getWorldMatrix().copyFrom(this._tmpMatrix);
+                if (Math.abs(TmpVectors.Vector3[1].x) < maxScale && Math.abs(TmpVectors.Vector3[1].y) < maxScale && Math.abs(TmpVectors.Vector3[1].z) < maxScale) {
+                    this.attachedNode.getWorldMatrix().copyFrom(TmpVectors.Matrix[1]);
                 }
 
                 if (snapped) {

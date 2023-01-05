@@ -104,7 +104,7 @@ export class Sound {
             return this._htmlAudioElement.currentTime;
         }
 
-        let currentTime: number = this._startOffset;
+        let currentTime: number = this._startOffset + (this._offset ? this._offset : 0);
         if (this.isPlaying && Engine.audioEngine?.audioContext) {
             currentTime += Engine.audioEngine.audioContext.currentTime - this._startTime;
         }
@@ -812,7 +812,10 @@ export class Sound {
                     const tryToPlay = () => {
                         if (Engine.audioEngine?.audioContext) {
                             length = length || this._length;
-                            offset = offset || this._offset;
+
+                            if (offset) {
+                                this._offset = offset;
+                            }
 
                             if (this._soundSource) {
                                 const oldSource = this._soundSource;
@@ -836,7 +839,7 @@ export class Sound {
                                     this._onended();
                                 };
                                 startTime = time ? Engine.audioEngine?.audioContext!.currentTime + time : Engine.audioEngine.audioContext!.currentTime;
-                                const actualOffset = this.isPaused ? this._startOffset % this._soundSource!.buffer!.duration : offset ? offset : 0;
+                                const actualOffset = ((this.isPaused ? this._startOffset : 0) + (this._offset ?? 0)) % this._soundSource!.buffer!.duration;
                                 this._soundSource!.start(startTime, actualOffset, this.loop ? undefined : length);
                             }
                         }

@@ -165,7 +165,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
     }
 
     private static _GetExtensionMetadata(rootMesh: Nullable<Mesh>): Nullable<IExtensionMetadata> {
-        return rootMesh?.metadata?.gltf?.[NAME] || null;
+        return rootMesh?._internalMetadata?.gltf?.[NAME] || null;
     }
 
     /** @internal */
@@ -198,7 +198,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
                         const babylonDrawMode = GLTFLoader._GetDrawMode(context, primitive.mode);
 
                         const root = this._loader.rootBabylonMesh;
-                        const metadata = root ? (root.metadata = root.metadata || {}) : {};
+                        const metadata = root ? (root._internalMetadata = root._internalMetadata || {}) : {};
                         const gltf = (metadata.gltf = metadata.gltf || {});
                         const extensionMetadata: IExtensionMetadata = (gltf[NAME] = gltf[NAME] || { lastSelected: null, original: [], variants: {} });
 
@@ -238,30 +238,30 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
                                             // Need to clone the metadata on the root (first time only)
                                             if (root && metadata === KHR_materials_variants._GetExtensionMetadata(root)) {
                                                 // Copy main metadata
-                                                newRoot.metadata = {};
-                                                for (const key in root.metadata) {
-                                                    newRoot.metadata[key] = root.metadata[key];
+                                                newRoot._internalMetadata = {};
+                                                for (const key in root._internalMetadata) {
+                                                    newRoot._internalMetadata[key] = root._internalMetadata[key];
                                                 }
 
                                                 // Copy the gltf metadata
-                                                newRoot.metadata.gltf = [];
-                                                for (const key in root.metadata.gltf) {
-                                                    newRoot.metadata.gltf[key] = root.metadata.gltf[key];
+                                                newRoot._internalMetadata.gltf = [];
+                                                for (const key in root._internalMetadata.gltf) {
+                                                    newRoot._internalMetadata.gltf[key] = root._internalMetadata.gltf[key];
                                                 }
 
                                                 // Duplicate the extension specific metadata
-                                                newRoot.metadata.gltf[NAME] = { lastSelected: null, original: [], variants: {} };
+                                                newRoot._internalMetadata.gltf[NAME] = { lastSelected: null, original: [], variants: {} };
                                                 for (const original of metadata.original) {
-                                                    newRoot.metadata.gltf[NAME].original.push({
+                                                    newRoot._internalMetadata.gltf[NAME].original.push({
                                                         mesh: original.mesh,
                                                         material: original.material,
                                                     });
                                                 }
                                                 for (const key in metadata.variants) {
                                                     if (Object.prototype.hasOwnProperty.call(metadata.variants, key)) {
-                                                        newRoot.metadata.gltf[NAME].variants[key] = [];
+                                                        newRoot._internalMetadata.gltf[NAME].variants[key] = [];
                                                         for (const variantEntry of metadata.variants[key]) {
-                                                            newRoot.metadata.gltf[NAME].variants[key].push({
+                                                            newRoot._internalMetadata.gltf[NAME].variants[key].push({
                                                                 mesh: variantEntry.mesh,
                                                                 material: variantEntry.material,
                                                             });
@@ -269,7 +269,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
                                                     }
                                                 }
 
-                                                metadata = newRoot.metadata.gltf[NAME];
+                                                metadata = newRoot._internalMetadata.gltf[NAME];
                                             }
 
                                             // Relocate
