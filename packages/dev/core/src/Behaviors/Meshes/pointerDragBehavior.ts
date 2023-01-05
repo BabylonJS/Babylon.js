@@ -411,6 +411,8 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
                     this._attachedToElement = false;
                 }
             }
+        } else {
+            this.releaseDrag();
         }
         PivotTools._RestorePivotPoint(this.attachedNode);
     }
