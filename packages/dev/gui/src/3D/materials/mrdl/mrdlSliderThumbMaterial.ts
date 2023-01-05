@@ -488,6 +488,9 @@ export class MRDLSliderThumbMaterial extends PushMaterial {
         this.alphaMode = Constants.ALPHA_DISABLE;
         this.backFaceCulling = false;
         this._blueGradientTexture = new Texture(MRDLSliderThumbMaterial.BLUE_GRADIENT_TEXTURE_URL, scene, true, false, Texture.NEAREST_SAMPLINGMODE);
+        this._decalTexture = new Texture("", this.getScene());
+        this._reflectionMapTexture = new Texture("", this.getScene());
+        this._indirectEnvTexture = new Texture("", this.getScene());
     }
 
     public needAlphaBlending(): boolean {
