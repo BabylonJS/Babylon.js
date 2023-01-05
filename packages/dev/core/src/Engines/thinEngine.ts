@@ -5866,13 +5866,12 @@ export class ThinEngine {
             if (typeof requestAnimationFrame === "function") {
                 return requestAnimationFrame(func);
             }
-        }
-        else {
+        } else {
             const { requestPostAnimationFrame, requestAnimationFrame } = requester || window;
-            if (typeof requestPostAnimationFrame === 'function') {
+            if (typeof requestPostAnimationFrame === "function") {
                 return requestPostAnimationFrame(func);
             }
-            if (typeof requestAnimationFrame === 'function') {
+            if (typeof requestAnimationFrame === "function") {
                 return requestAnimationFrame(func);
             }
         }
