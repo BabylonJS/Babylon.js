@@ -162,6 +162,11 @@
             "referenceImage": "clearCoat.png"
         },
         {
+            "title": "Dynamic Texture context clip",
+            "playgroundId": "#FU0ES5#36",
+            "referenceImage": "dynamicTextureClip.png"
+        },
+        {
             "title": "GUI Transform StackPanel",
             "renderCount": 5,
             "playgroundId": "#BS60AB#0",
