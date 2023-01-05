@@ -71,9 +71,7 @@ export class FadeInOutBehavior implements Behavior<Mesh> {
         this._detachObserver();
 
         // If fading in and already visible or fading out and already not visible do nothing
-        if (this._ownerNode && 
-            ((value && this._ownerNode.visibility >= 1) || 
-            (!value && this._ownerNode.visibility <= 0))) {
+        if (this._ownerNode && ((value && this._ownerNode.visibility >= 1) || (!value && this._ownerNode.visibility <= 0))) {
             return;
         }
 
@@ -115,7 +113,7 @@ export class FadeInOutBehavior implements Behavior<Mesh> {
                     return;
                 }
             }
-            
+
             this._attachObserver();
         }
     };
@@ -129,15 +127,13 @@ export class FadeInOutBehavior implements Behavior<Mesh> {
 
     private _attachObserver() {
         if (!this._onBeforeRenderObserver) {
-            this._onBeforeRenderObserver = this._ownerNode?.getScene().onBeforeRenderObservable
-                .add(this._update);
+            this._onBeforeRenderObserver = this._ownerNode?.getScene().onBeforeRenderObservable.add(this._update);
         }
     }
 
     private _detachObserver() {
         if (this._onBeforeRenderObserver) {
-            this._ownerNode?.getScene().onBeforeRenderObservable
-                .remove(this._onBeforeRenderObserver);
+            this._ownerNode?.getScene().onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
             this._onBeforeRenderObserver = null;
         }
     }
