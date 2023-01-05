@@ -5852,31 +5852,33 @@ export class ThinEngine {
     }
 
     /**
-     * Queue a new function into the requested animation frame pool (ie. this function will be executed byt the browser for the next frame)
+     * Queue a new function into the requested animation frame pool (ie. this function will be executed by the browser (or the javascript engine) for the next frame)
      * @param func - the function to be called
      * @param requester - the object that will request the next frame. Falls back to window.
      * @returns frame number
      */
     public static QueueNewFrame(func: () => void, requester?: any): number {
+        // Note that there is kind of a typing issue here, as `setTimeout` might return something else than a number (NodeJs returns a NodeJS.Timeout object).
+        // Also if the global `requestAnimationFrame`'s returnType is number, `requester.requestPostAnimationFrame` and `requester.requestAnimationFrame` types
+        // are `any`.
+
         if (!IsWindowObjectExist()) {
-            if (typeof requestAnimationFrame !== "undefined") {
+            if (typeof requestAnimationFrame === "function") {
                 return requestAnimationFrame(func);
             }
-
-            return setTimeout(func, 16) as unknown as number;
-        }
-
-        if (!requester) {
-            requester = window;
-        }
-
-        if (requester.requestPostAnimationFrame) {
-            return requester.requestPostAnimationFrame(func);
-        } else if (requester.requestAnimationFrame) {
-            return requester.requestAnimationFrame(func);
         } else {
-            return window.setTimeout(func, 16);
+            const { requestPostAnimationFrame, requestAnimationFrame } = requester || window;
+            if (typeof requestPostAnimationFrame === "function") {
+                return requestPostAnimationFrame(func);
+            }
+            if (typeof requestAnimationFrame === "function") {
+                return requestAnimationFrame(func);
+            }
         }
+
+        // fallback to the global `setTimeout`.
+        // In most cases (aka in the browser), `window` is the global object, so instead of calling `window.setTimeout` we could call the global `setTimeout`.
+        return setTimeout(func, 16) as unknown as number;
     }
 
     /**
