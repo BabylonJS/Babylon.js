@@ -15,6 +15,7 @@ import { Color3, Color4, TmpColors } from "../../../../Maths/math";
 import { AnimatedInputBlockTypes } from "./animatedInputBlockTypes";
 import { Observable } from "../../../../Misc/observable";
 import type { NodeMaterial } from "../../nodeMaterial";
+import { PrecisionDate } from "core/Misc/precisionDate";
 
 const remapAttributeName: { [name: string]: string } = {
     position2d: "position",
@@ -379,7 +380,7 @@ export class InputBlock extends NodeMaterialBlock {
             }
             case AnimatedInputBlockTypes.RealTime: {
                 if (this.type === NodeMaterialBlockConnectionPointTypes.Float) {
-                    this.value = (performance.now() - scene.getEngine().startTime) / 1000;
+                    this.value = (PrecisionDate.Now - scene.getEngine().startTime) / 1000;
                 }
                 break;
             }

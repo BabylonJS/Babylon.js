@@ -53,6 +53,7 @@ import type { RenderTargetTexture } from "../Materials/Textures/renderTargetText
 import type { WebRequest } from "../Misc/webRequest";
 import type { LoadFileError } from "../Misc/fileTools";
 import type { Texture } from "../Materials/Textures/texture";
+import { PrecisionDate } from "core/Misc/precisionDate";
 
 /**
  * Defines the interface used by objects working like Scene
@@ -764,7 +765,7 @@ export class ThinEngine {
         options?: EngineOptions,
         adaptToDeviceRatio?: boolean
     ) {
-        this.startTime = performance.now();
+        this.startTime = PrecisionDate.Now;
 
         let canvas: Nullable<HTMLCanvasElement> = null;
 
