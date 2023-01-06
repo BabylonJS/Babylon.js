@@ -53,6 +53,7 @@ import type { RenderTargetTexture } from "../Materials/Textures/renderTargetText
 import type { WebRequest } from "../Misc/webRequest";
 import type { LoadFileError } from "../Misc/fileTools";
 import type { Texture } from "../Materials/Textures/texture";
+import { PrecisionDate } from "core/Misc/precisionDate";
 
 /**
  * Defines the interface used by objects working like Scene
@@ -349,6 +350,11 @@ export class ThinEngine {
     public get frameId(): number {
         return this._frameId;
     }
+
+    /**
+     * The time (in milliseconds elapsed since the current page has been loaded) when the engine was initialized
+     */
+    public readonly startTime: number;
 
     /** @internal */
     public _uniformBuffers = new Array<UniformBuffer>();
@@ -759,6 +765,8 @@ export class ThinEngine {
         options?: EngineOptions,
         adaptToDeviceRatio?: boolean
     ) {
+        this.startTime = PrecisionDate.Now;
+
         let canvas: Nullable<HTMLCanvasElement> = null;
 
         options = options || {};
