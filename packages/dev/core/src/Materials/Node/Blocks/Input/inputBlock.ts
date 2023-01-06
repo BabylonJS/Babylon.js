@@ -377,6 +377,12 @@ export class InputBlock extends NodeMaterialBlock {
                 }
                 break;
             }
+            case AnimatedInputBlockTypes.RealTime: {
+                if (this.type === NodeMaterialBlockConnectionPointTypes.Float) {
+                    this.value = (Date.now() - scene.getEngine().startTime) / 1000;
+                }
+                break;
+            }
         }
     }
 

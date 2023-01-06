@@ -350,6 +350,11 @@ export class ThinEngine {
         return this._frameId;
     }
 
+    /**
+     * The time (in miiliseconds elapsed since midnight 1970/01/01) when the engine was initialized
+     */
+    public readonly startTime: number;
+
     /** @internal */
     public _uniformBuffers = new Array<UniformBuffer>();
     /** @internal */
@@ -759,6 +764,8 @@ export class ThinEngine {
         options?: EngineOptions,
         adaptToDeviceRatio?: boolean
     ) {
+        this.startTime = Date.now();
+
         let canvas: Nullable<HTMLCanvasElement> = null;
 
         options = options || {};
