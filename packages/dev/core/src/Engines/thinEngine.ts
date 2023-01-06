@@ -351,7 +351,7 @@ export class ThinEngine {
     }
 
     /**
-     * The time (in miiliseconds elapsed since midnight 1970/01/01) when the engine was initialized
+     * The time (in milliseconds elapsed since the current page has been loaded) when the engine was initialized
      */
     public readonly startTime: number;
 
@@ -764,7 +764,7 @@ export class ThinEngine {
         options?: EngineOptions,
         adaptToDeviceRatio?: boolean
     ) {
-        this.startTime = Date.now();
+        this.startTime = performance.now();
 
         let canvas: Nullable<HTMLCanvasElement> = null;
 
