@@ -34,7 +34,7 @@ class SkyMaterialDefines extends MaterialDefines {
     public VERTEXALPHA = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public SKIPFINALCOLORCLAMP = false;
-    public DITHER = true;
+    public DITHER = false;
 
     constructor() {
         super();
@@ -128,7 +128,7 @@ export class SkyMaterial extends PushMaterial {
      * Defines if sky should be dithered.
      */
     @serialize()
-    public dithering: boolean = true;
+    public dithering: boolean = false;
 
     // Private members
     private _cameraPosition: Vector3 = Vector3.Zero();
