@@ -431,12 +431,7 @@ export class ActionManager extends AbstractActionManager {
         // instanciate a new object
         const instanciate = (name: string, params: Array<any>): any => {
             const internalClassType = GetClass("BABYLON." + name);
-            if (internalClassType) {
-                const newInstance: Object = Object.create(internalClassType.prototype);
-                // eslint-disable-next-line prefer-spread
-                newInstance.constructor.apply(newInstance, params);
-                return newInstance;
-            }
+            return internalClassType && new internalClassType(...params);
         };
 
         const parseParameter = (name: string, value: string, target: any, propertyPath: Nullable<string>): any => {
@@ -524,8 +519,10 @@ export class ActionManager extends AbstractActionManager {
                     const targetType = parsedAction.properties[i].targetType;
 
                     if (name === "target") {
-                        if (targetType !== null && targetType === "SceneProperties") {
+                        if (targetType === "SceneProperties") {
                             value = target = scene;
+                        } else if (targetType === "MaterialProperties") {
+                            value = target = scene.getMaterialByName(value);
                         } else {
                             value = target = scene.getNodeByName(value);
                         }
