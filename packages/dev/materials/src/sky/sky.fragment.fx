@@ -88,6 +88,19 @@ vec3 Uncharted2Tonemap(vec3 x)
 	return ((x*(A*x+C*B)+D*EEE)/(x*(A*x+B)+D*F))-EEE/F;
 }
 
+#if DITHER
+float getRand(vec2 seed) {
+    return fract(sin(dot(seed.xy ,vec2(12.9898,78.233))) * 43758.5453);
+}
+
+float dither(vec2 seed, float varianceAmount) {
+    float rand = getRand(seed);
+    float dither = mix(-varianceAmount/255.0, varianceAmount/255.0, rand);
+
+    return dither;
+}
+#endif
+
 
 #define CUSTOM_FRAGMENT_DEFINITIONS
 
@@ -165,6 +178,10 @@ void main(void) {
 
 #if defined(VERTEXALPHA) || defined(INSTANCESCOLOR) && defined(INSTANCES)
 	alpha *= vColor.a;
+#endif
+
+#if DITHER
+	retColor.rgb += dither(gl_FragCoord.xy, 0.5);
 #endif
 
 	// Composition
