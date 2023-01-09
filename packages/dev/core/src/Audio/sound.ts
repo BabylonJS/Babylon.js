@@ -813,7 +813,7 @@ export class Sound {
                         if (Engine.audioEngine?.audioContext) {
                             length = length || this._length;
 
-                            if (offset) {
+                            if (offset !== undefined) {
                                 this._offset = offset;
                             }
 
