@@ -466,10 +466,11 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                 this.onDragStartObservable.notifyObservers({});
                 this._selectNode(sphere);
             });
-            _dragBehavior.onDragEndObservable.add(() => {
+            _dragBehavior.onDragEndObservable.add((event) => {
                 this.onRotationSphereDragEndObservable.notifyObservers({});
                 this._selectNode(null);
                 this._updateDummy();
+                this._unhoverMeshOnTouchUp(event.pointerId, sphere);
             });
 
             this._rotateSpheresParent.addChild(sphere);
@@ -551,10 +552,11 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                         this.onDragStartObservable.notifyObservers({});
                         this._selectNode(box);
                     });
-                    _dragBehavior.onDragEndObservable.add(() => {
+                    _dragBehavior.onDragEndObservable.add((event) => {
                         this.onScaleBoxDragEndObservable.notifyObservers({});
                         this._selectNode(null);
                         this._updateDummy();
+                        this._unhoverMeshOnTouchUp(event.pointerId, box);
                     });
 
                     this._scaleBoxesParent.addChild(box);
@@ -633,6 +635,17 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                 m.isVisible = !selectedMesh || m == selectedMesh;
             });
     }
+
+    protected _unhoverMeshOnTouchUp(pointerId: number, selectedMesh: AbstractMesh) {
+        const engine = this.gizmoLayer.originalScene.getEngine();
+        const isMobileSafari = engine._badOS || (engine._badDesktopOS && typeof document === "object" && "ontouchend" in document);
+
+        // force unhover mesh if not a mouse event
+        if (pointerId > 2 || isMobileSafari) {
+            selectedMesh.material = this._coloredMaterial;
+        }
+    }
+
     /**
      * returns an array containing all boxes used for scaling (in increasing x, y and z orders)
      */
