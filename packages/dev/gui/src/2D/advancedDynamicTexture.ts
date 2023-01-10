@@ -30,7 +30,6 @@ import type { IPointerEvent, IWheelEvent } from "core/Events/deviceInputEvents";
 import { RandomGUID } from "core/Misc/guid";
 import { GetClass } from "core/Misc/typeStore";
 import { DecodeBase64ToBinary } from "core/Misc/stringTools";
-import type { IImage } from "core/Engines/ICanvas";
 
 declare type StandardMaterial = import("core/Materials/standardMaterial").StandardMaterial;
 
@@ -59,7 +58,6 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private _canvasBlurObserver: Nullable<Observer<Engine>>;
     private _controlAddedObserver: Nullable<Observer<Nullable<Control>>>;
     private _background: string;
-    private _imgElementCache: Map<string, IImage> = new Map();
     /** @internal */
     public _rootContainer = new Container("root");
     /** @internal */
@@ -594,7 +592,6 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this.onEndRenderObservable.clear();
         this.onBeginLayoutObservable.clear();
         this.onEndLayoutObservable.clear();
-        this._imgElementCache.clear();
         super.dispose();
     }
     private _onResize(): void {
@@ -1197,23 +1194,6 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             this.focusedControl = null;
             this._lastControlDown = {};
         });
-    }
-
-    /** @internal */
-    public _getCanvasImage(src: Nullable<string>): { fromCache: boolean; img: IImage } {
-        if (src && this._imgElementCache.has(src)) {
-            return { fromCache: true, img: this._imgElementCache.get(src)! };
-        } else if (this._engine) {
-            const img = this._engine.createCanvasImage();
-
-            if (src) {
-                this._imgElementCache.set(src, img);
-            }
-
-            return { fromCache: false, img };
-        }
-
-        throw new Error("Invalid engine. Unable to create a canvas.");
     }
 
     /**

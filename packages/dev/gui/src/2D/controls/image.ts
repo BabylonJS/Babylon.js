@@ -53,6 +53,9 @@ export class Image extends Control {
         key: string;
     } = { data: null, key: "" };
 
+    public static SourceImgCache = new Map<string, { img: IImage; lastUsed: number }>();
+    public static SourceImgCacheMaxSize = 100;
+
     /**
      * Observable notified when the content is loaded
      */
@@ -525,34 +528,44 @@ export class Image extends Control {
         }
 
         // Should abstract platform instead of using LastCreatedEngine
+        const engine = this._host?.getScene()?.getEngine() || EngineStore.LastCreatedEngine;
+        if (!engine) {
+            throw new Error("Invalid engine. Unable to create a canvas.");
+        }
+        if (value && Image.SourceImgCache.has(value)) {
+            const cachedData = Image.SourceImgCache.get(value)!;
+            this._domImage = cachedData.img;
+            // Update the last used time
+            cachedData.lastUsed = Date.now();
+            this._onImageLoaded();
+            return;
+        }
+        this._domImage = engine.createCanvasImage();
+        if (value) {
+            if (Image.SourceImgCache.size > Image.SourceImgCacheMaxSize) {
+                // If the cache is at max capacity, delete the oldest image
+                let oldestKey = "";
+                let oldestTime = -Number.MAX_VALUE;
 
-        let fromCache, img;
-        if (this._host) {
-            const creationResult = this._host._getCanvasImage(value);
-            fromCache = creationResult.fromCache;
-            img = creationResult.img;
-        } else {
-            const engine = EngineStore.LastCreatedEngine;
-            if (!engine) {
-                throw new Error("Invalid engine. Unable to create a canvas.");
+                Image.SourceImgCache.forEach((value, key) => {
+                    if (value.lastUsed < oldestTime) {
+                        oldestTime = value.lastUsed;
+                        oldestKey = key;
+                    }
+                });
+
+                Image.SourceImgCache.delete(oldestKey);
             }
-            fromCache = false;
-            img = engine.createCanvasImage();
+            Image.SourceImgCache.set(value, { img: this._domImage, lastUsed: Date.now() });
         }
 
-        this._domImage = img;
-
-        if (fromCache) {
+        this._domImage.onload = () => {
             this._onImageLoaded();
-        } else {
-            this._domImage.onload = () => {
-                this._onImageLoaded();
-            };
-            if (value) {
-                Tools.SetCorsBehavior(value, this._domImage);
-                Tools.SetReferrerPolicyBehavior(this.referrerPolicy, this._domImage);
-                this._domImage.src = value;
-            }
+        };
+        if (value) {
+            Tools.SetCorsBehavior(value, this._domImage);
+            Tools.SetReferrerPolicyBehavior(this.referrerPolicy, this._domImage);
+            this._domImage.src = value;
         }
     }
 
