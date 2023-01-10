@@ -638,7 +638,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
 
     protected _unhoverMeshOnTouchUp(pointerId: number, selectedMesh: AbstractMesh) {
         const engine = this.gizmoLayer.originalScene.getEngine();
-        const isMobileSafari = engine._badOS || (engine._badDesktopOS && typeof document === "object" && "ontouchend" in document);
+        const isMobileSafari = engine._badOS || (engine._badDesktopOS && document && "ontouchend" in document);
 
         // force unhover mesh if not a mouse event
         if (pointerId > 2 || isMobileSafari) {
