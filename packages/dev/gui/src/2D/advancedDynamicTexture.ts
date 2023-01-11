@@ -676,7 +676,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         return new Vector3(projectedPosition.x, projectedPosition.y, projectedPosition.z);
     }
 
-    private _checkUpdate(camera: Camera): void {
+    private _checkUpdate(camera: Camera, skipUpdate?: boolean): void {
         if (this._layerToDispose) {
             if ((camera.layerMask & this._layerToDispose.layerMask) === 0) {
                 return;
@@ -717,13 +717,15 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             return;
         }
         this._isDirty = false;
-        this._render();
-        this.update(this.applyYInversionOnUpdate, this.premulAlpha, AdvancedDynamicTexture.AllowGPUOptimizations);
+        this._render(skipUpdate);
+        if (!skipUpdate) {
+            this.update(this.applyYInversionOnUpdate, this.premulAlpha, AdvancedDynamicTexture.AllowGPUOptimizations);
+        }
     }
 
     private _clearMeasure = new Measure(0, 0, 0, 0);
 
-    private _render(): void {
+    private _render(skipRender?: boolean): void {
         const textureSize = this.getSize();
         const renderWidth = textureSize.width;
         const renderHeight = textureSize.height;
@@ -736,7 +738,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             const camera = this.getScene()?.activeCamera;
             if (camera) {
                 this._controlListChanged = false;
-                this._checkUpdate(camera);
+                this._checkUpdate(camera, true);
             }
         }
 
@@ -747,6 +749,10 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this._rootContainer._layout(measure, context);
         this.onEndLayoutObservable.notifyObservers(this);
         this._isDirty = false; // Restoring the dirty state that could have been set by controls during layout processing
+
+        if (skipRender) {
+            return;
+        }
 
         // Clear
         if (this._invalidatedRectangle) {
