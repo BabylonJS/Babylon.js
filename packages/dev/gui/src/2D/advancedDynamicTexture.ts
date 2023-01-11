@@ -57,6 +57,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private _canvasPointerOutObserver: Nullable<Observer<PointerEvent>>;
     private _canvasBlurObserver: Nullable<Observer<Engine>>;
     private _controlAddedObserver: Nullable<Observer<Nullable<Control>>>;
+    private _controlRemovedObserver: Nullable<Observer<Nullable<Control>>>;
     private _background: string;
     /** @internal */
     public _rootContainer = new Container("root");
@@ -86,7 +87,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private _rootElement: Nullable<HTMLElement>;
     private _cursorChanged = false;
     private _defaultMousePointerId = 0;
-    private _addedControlsBeforeRender: boolean;
+    private _controlListChanged: boolean = false;
 
     /** @internal */
     public _capturedPointerIds = new Set<number>();
@@ -387,10 +388,13 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this._rootElement = scene.getEngine().getInputElement();
         this._renderObserver = scene.onBeforeCameraRenderObservable.add((camera: Camera) => this._checkUpdate(camera));
         this._controlAddedObserver = this._rootContainer.onControlAddedObservable.add((control) => {
-            // if (control && this._scene && this._scene.activeCamera) {
-            // this._checkUpdate(this._scene.activeCamera);
             if (control) {
-                this._addedControlsBeforeRender = true;
+                this._controlListChanged = true;
+            }
+        });
+        this._controlRemovedObserver = this._rootContainer.onControlRemovedObservable.add((control) => {
+            if (control) {
+                this._controlListChanged = true;
             }
         });
         this._preKeyboardObserver = scene.onPreKeyboardObservable.add((info) => {
@@ -583,6 +587,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         if (this._controlAddedObserver) {
             this._rootContainer.onControlAddedObservable.remove(this._controlAddedObserver);
         }
+        if (this._controlRemovedObserver) {
+            this._rootContainer.onControlRemovedObservable.remove(this._controlRemovedObserver);
+        }
         if (this._layerToDispose) {
             this._layerToDispose.texture = null;
             this._layerToDispose.dispose();
@@ -714,61 +721,6 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this.update(this.applyYInversionOnUpdate, this.premulAlpha, AdvancedDynamicTexture.AllowGPUOptimizations);
     }
 
-    private _checkUpdateNoRender(camera: Camera): void {
-        if (this._layerToDispose) {
-            if ((camera.layerMask & this._layerToDispose.layerMask) === 0) {
-                return;
-            }
-        }
-        if (this._isFullscreen && this._linkedControls.length) {
-            const scene = this.getScene();
-            if (!scene) {
-                return;
-            }
-            const globalViewport = this._getGlobalViewport();
-            for (const control of this._linkedControls) {
-                if (!control.isVisible) {
-                    continue;
-                }
-                const mesh = control._linkedMesh as AbstractMesh;
-                if (!mesh || mesh.isDisposed()) {
-                    Tools.SetImmediate(() => {
-                        control.linkWithMesh(null);
-                    });
-                    continue;
-                }
-                const position = mesh.getBoundingInfo ? mesh.getBoundingInfo().boundingSphere.center : (Vector3.ZeroReadOnly as Vector3);
-                const projectedPosition = Vector3.Project(position, mesh.getWorldMatrix(), scene.getTransformMatrix(), globalViewport);
-                if (projectedPosition.z < 0 || projectedPosition.z > 1) {
-                    control.notRenderable = true;
-                    continue;
-                }
-                control.notRenderable = false;
-                if (this.useInvalidateRectOptimization) {
-                    control.invalidateRect();
-                }
-
-                control._moveToProjectedPosition(projectedPosition);
-            }
-        }
-        if (!this._isDirty && !this._rootContainer.isDirty) {
-            return;
-        }
-        this._isDirty = false;
-        const textureSize = this.getSize();
-        const renderWidth = textureSize.width;
-        const renderHeight = textureSize.height;
-        const context = this.getContext();
-        this.onBeginLayoutObservable.notifyObservers(this);
-        const measure = new Measure(0, 0, renderWidth, renderHeight);
-        this._numLayoutCalls = 0;
-        this._rootContainer._layout(measure, context);
-        this.onEndLayoutObservable.notifyObservers(this);
-        this._isDirty = false; // Restoring the dirty state that could have been set by controls during layout processing
-        // this._render();
-        // this.update(this.applyYInversionOnUpdate, this.premulAlpha, AdvancedDynamicTexture.AllowGPUOptimizations);
-    }
-
     private _clearMeasure = new Measure(0, 0, 0, 0);
 
     private _render(): void {
@@ -780,12 +732,11 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         context.font = "18px Arial";
         context.strokeStyle = "white";
 
-        if (this._addedControlsBeforeRender) {
+        if (this._controlListChanged) {
             const camera = this.getScene()?.activeCamera;
             if (camera) {
-                this._addedControlsBeforeRender = false;
-                // this._checkUpdate(camera);
-                this._checkUpdateNoRender(camera);
+                this._controlListChanged = false;
+                this._checkUpdate(camera);
             }
         }
 
