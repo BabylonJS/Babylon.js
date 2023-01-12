@@ -87,7 +87,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private _rootElement: Nullable<HTMLElement>;
     private _cursorChanged = false;
     private _defaultMousePointerId = 0;
-    private _controlListChanged: boolean = false;
+    private _rootChildrenHaveChanged: boolean = false;
 
     /** @internal */
     public _capturedPointerIds = new Set<number>();
@@ -387,14 +387,16 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this.applyYInversionOnUpdate = invertY;
         this._rootElement = scene.getEngine().getInputElement();
         this._renderObserver = scene.onBeforeCameraRenderObservable.add((camera: Camera) => this._checkUpdate(camera));
+
+        /** Whenever a control is added or removed to the root, we have to recheck the camera projection as it can have changed  */
         this._controlAddedObserver = this._rootContainer.onControlAddedObservable.add((control) => {
             if (control) {
-                this._controlListChanged = true;
+                this._rootChildrenHaveChanged = true;
             }
         });
         this._controlRemovedObserver = this._rootContainer.onControlRemovedObservable.add((control) => {
             if (control) {
-                this._controlListChanged = true;
+                this._rootChildrenHaveChanged = true;
             }
         });
         this._preKeyboardObserver = scene.onPreKeyboardObservable.add((info) => {
@@ -734,10 +736,11 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         context.font = "18px Arial";
         context.strokeStyle = "white";
 
-        if (this._controlListChanged) {
+        /** We have to recheck the camera projection in the case the root control's children have changed  */
+        if (this._rootChildrenHaveChanged) {
             const camera = this.getScene()?.activeCamera;
             if (camera) {
-                this._controlListChanged = false;
+                this._rootChildrenHaveChanged = false;
                 this._checkUpdate(camera, true);
             }
         }
