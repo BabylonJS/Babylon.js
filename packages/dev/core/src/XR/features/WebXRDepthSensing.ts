@@ -22,15 +22,87 @@ export interface IWebXRDepthSensingOptions {
  * WebXR Feature for WebXR Depth Sensing Module
  */
 export class WebXRDepthSensing extends WebXRAbstractFeature {
+    private _cachedDepthInfo?: XRDepthInformation;
+
+    /**
+     * Width of depth data. If depth data is not exist, returns null.
+     */
+    public get width(): number | null {
+        if (!this._cachedDepthInfo) {
+            return null;
+        }
+        return this._cachedDepthInfo.width;
+    }
+
+    /**
+     * Height of depth data. If depth data is not exist, returns null.
+     */
+    public get height(): number | null {
+        if (!this._cachedDepthInfo) {
+            return null;
+        }
+        return this._cachedDepthInfo.height;
+    }
+
+    public get rawValueToMeters(): number | null {
+        if (!this._cachedDepthInfo) {
+            return null;
+        }
+
+        return this._cachedDepthInfo.rawValueToMeters;
+    }
+
+    public get normDepthBufferFromNormView(): XRRigidTransform | null {
+        if (!this._cachedDepthInfo) {
+            return null;
+        }
+
+        return this._cachedDepthInfo.normDepthBufferFromNormView;
+    }
+
+    public get depthUsage(): XRDepthUsage {
+        return this._xrSessionManager.session.depthUsage;
+    }
+
+    public get depthDataFormat(): XRDepthDataFormat {
+        return this._xrSessionManager.session.depthDataFormat;
+    }
+
+    public get latestWebGLTexture(): WebGLTexture | null {
+        if (!this._cachedDepthInfo) {
+            return null;
+        }
+
+        const webglDepthInfo = this._cachedDepthInfo as XRWebGLDepthInformation;
+        if (!webglDepthInfo.texture) {
+            return null;
+        }
+
+        return webglDepthInfo.texture;
+    }
+
+    public getDepthInMeters = (x: number, y: number): number | null => {
+        if (!this._cachedDepthInfo) {
+            return null;
+        }
+
+        const cpuDepthInfo = this._cachedDepthInfo as XRCPUDepthInformation;
+        if (!cpuDepthInfo.getDepthInMeters) {
+            return null;
+        }
+
+        return cpuDepthInfo.getDepthInMeters(x, y);
+    };
+
     /**
      * An observable which triggered when the CPU depth information is acquired from XRFrame
      */
-    public onCPUDepthInformationObservable: Observable<XRCPUDepthInformation> = new Observable();
+    public readonly onCPUDepthInformationObservable: Observable<XRCPUDepthInformation> = new Observable();
 
     /**
      *An observable which triggered when the WebGL depth information is acquired from XRFrame
      */
-    public onWebGLDepthInformationObservable: Observable<XRWebGLDepthInformation> = new Observable();
+    public readonly onWebGLDepthInformationObservable: Observable<XRWebGLDepthInformation> = new Observable();
 
     /**
      * XRWebGLBinding which is used for acquiring WebGLDepthInformation
@@ -164,3 +236,4 @@ WebXRFeaturesManager.AddWebXRFeature(
     WebXRDepthSensing.Version,
     false
 );
+
