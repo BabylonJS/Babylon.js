@@ -53,6 +53,8 @@ export class Image extends Control {
         key: string;
     } = { data: null, key: "" };
 
+    public static SourceImgCache = new Map<string, { img: IImage; timesUsed: number }>();
+
     /**
      * Observable notified when the content is loaded
      */
@@ -509,12 +511,32 @@ export class Image extends Control {
     }
 
     /**
+     * Resets the internal Image Element cache. Can reduce memory usage.
+     */
+    public static ResetImageCache() {
+        Image.SourceImgCache.clear();
+    }
+
+    private _removeCacheUsage(source: Nullable<string>) {
+        const value = source && Image.SourceImgCache.get(source);
+        if (value) {
+            value.timesUsed -= 1;
+            // Since the image isn't being used anymore, we can clean it from the cache
+            if (value.timesUsed === 0) {
+                Image.SourceImgCache.delete(source);
+            }
+        }
+    }
+
+    /**
      * Gets or sets image source url
      */
     public set source(value: Nullable<string>) {
         if (this._source === value) {
             return;
         }
+
+        this._removeCacheUsage(this._source);
 
         this._loaded = false;
         this._source = value;
@@ -529,7 +551,17 @@ export class Image extends Control {
         if (!engine) {
             throw new Error("Invalid engine. Unable to create a canvas.");
         }
+        if (value && Image.SourceImgCache.has(value)) {
+            const cachedData = Image.SourceImgCache.get(value)!;
+            this._domImage = cachedData.img;
+            cachedData.timesUsed += 1;
+            this._onImageLoaded();
+            return;
+        }
         this._domImage = engine.createCanvasImage();
+        if (value) {
+            Image.SourceImgCache.set(value, { img: this._domImage, timesUsed: 1 });
+        }
 
         this._domImage.onload = () => {
             this._onImageLoaded();
@@ -915,6 +947,7 @@ export class Image extends Control {
         super.dispose();
         this.onImageLoadedObservable.clear();
         this.onSVGAttributesComputedObservable.clear();
+        this._removeCacheUsage(this._source);
     }
 
     // Static
