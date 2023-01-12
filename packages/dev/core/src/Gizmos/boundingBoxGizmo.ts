@@ -470,7 +470,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                 this.onRotationSphereDragEndObservable.notifyObservers({});
                 this._selectNode(null);
                 this._updateDummy();
-                this._unhoverMeshOnTouchUp(event.pointerId, sphere);
+                this._unhoverMeshOnTouchUp(event.pointerInfo, sphere);
             });
 
             this._rotateSpheresParent.addChild(sphere);
@@ -556,7 +556,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                         this.onScaleBoxDragEndObservable.notifyObservers({});
                         this._selectNode(null);
                         this._updateDummy();
-                        this._unhoverMeshOnTouchUp(event.pointerId, box);
+                        this._unhoverMeshOnTouchUp(event.pointerInfo, box);
                     });
 
                     this._scaleBoxesParent.addChild(box);
@@ -636,12 +636,9 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
             });
     }
 
-    protected _unhoverMeshOnTouchUp(pointerId: number, selectedMesh: AbstractMesh) {
-        const engine = this.gizmoLayer.originalScene.getEngine();
-        const isMobileSafari = engine._badOS || (engine._badDesktopOS && document && "ontouchend" in document);
-
+    protected _unhoverMeshOnTouchUp(pointerInfo: Nullable<PointerInfo>, selectedMesh: AbstractMesh) {
         // force unhover mesh if not a mouse event
-        if (pointerId > 2 || isMobileSafari) {
+        if (pointerInfo?.event instanceof PointerEvent && pointerInfo?.event.pointerType === "touch") {
             selectedMesh.material = this._coloredMaterial;
         }
     }
