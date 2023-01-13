@@ -45,6 +45,9 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         return this._cachedDepthInfo.height;
     }
 
+    /**
+     * Scale factor by which the raw depth values must be multiplied in order to get the depths in meters.
+     */
     public get rawValueToMeters(): number | null {
         if (!this._cachedDepthInfo) {
             return null;
@@ -53,6 +56,9 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         return this._cachedDepthInfo.rawValueToMeters;
     }
 
+    /**
+     * An XRRigidTransform that needs to be applied when indexing into the depth buffer.
+     */
     public get normDepthBufferFromNormView(): XRRigidTransform | null {
         if (!this._cachedDepthInfo) {
             return null;
@@ -61,14 +67,25 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         return this._cachedDepthInfo.normDepthBufferFromNormView;
     }
 
+    /**
+     * Describes which depth-sensing usage ("cpu-optimized" or "gpu-optimized" is used.
+     *
+     */
     public get depthUsage(): XRDepthUsage {
         return this._xrSessionManager.session.depthUsage;
     }
 
+    /**
+     * Describes which depth sensing data format ("luminance-alpha" or "float32") is used.
+     */
     public get depthDataFormat(): XRDepthDataFormat {
         return this._xrSessionManager.session.depthDataFormat;
     }
 
+    /**
+     * Latest cached WebGLTexture which containing depth buffer information.
+     * This can be used when the depth usage is gpu-optimized.
+     */
     public get latestWebGLTexture(): WebGLTexture | null {
         if (!this._cachedDepthInfo) {
             return null;
@@ -82,6 +99,13 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         return webglDepthInfo.texture;
     }
 
+    /**
+     * Return the depth in meters at (x, y) in normalized view coordinates.
+     * This method can be used when the depth usage is cpu-optimized.
+     * @param x X coordinate (origin at the left, grows to the right).The value must be greater than 0.0 and less than 1.0
+     * @param y Y coordinate (origin at the top, grows downward). The value must be greater than 0.0 and less than 1.0
+     * @returns the depth value in meters
+     */
     public getDepthInMeters = (x: number, y: number): number | null => {
         if (!this._cachedDepthInfo) {
             return null;
@@ -97,6 +121,9 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
 
     private _latestDepthImageTexture?: BaseTexture;
 
+    /**
+     * Latest cached `BaseTexture` of depth image which is made from the depth buffer data.
+     */
     public get latestDepthImageTexture(): BaseTexture | null {
         if (!this._latestDepthImageTexture) {
             return null;
@@ -173,7 +200,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         for (const view of pose.views) {
             switch (this.depthUsage) {
                 case "cpu-optimized":
-                    this._processCPUDepthInformation(_xrFrame, view, this.depthDataFormat);
+                    this._updateDepthInformationAndTextureCPUDepthUsage(_xrFrame, view, this.depthDataFormat);
                     break;
 
                 case "gpu-optimized":
@@ -181,7 +208,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
                         break;
                     }
 
-                    this._processWebGLDepthInformation(this._glBinding, view);
+                    this._updateDepthInformationAndTextureWebGLDepthUsage(this._glBinding, view);
                     break;
 
                 default:
@@ -190,7 +217,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         }
     }
 
-    private _processCPUDepthInformation(frame: XRFrame, view: XRView, dataFormat: XRDepthDataFormat): void {
+    private _updateDepthInformationAndTextureCPUDepthUsage(frame: XRFrame, view: XRView, dataFormat: XRDepthDataFormat): void {
         const depthInfo = frame.getDepthInformation(view);
         if (depthInfo === null) {
             return;
@@ -218,7 +245,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         }
     }
 
-    private _processWebGLDepthInformation(webglBinding: XRWebGLBinding, view: XRView): void {
+    private _updateDepthInformationAndTextureWebGLDepthUsage(webglBinding: XRWebGLBinding, view: XRView): void {
         const depthInfo = webglBinding.getDepthInformation(view);
         if (depthInfo === null) {
             return;
