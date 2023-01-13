@@ -1,4 +1,4 @@
-import type { BaseTexture } from "./../../Materials/Textures";
+import { BaseTexture } from "./../../Materials/Textures";
 import { RawTexture } from "./../../Materials/Textures";
 import { WebXRFeatureName, WebXRFeaturesManager } from "./../webXRFeaturesManager";
 import type { WebXRSessionManager } from "../webXRSessionManager";
@@ -189,19 +189,29 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         }
     }
 
-    private _generateTextureFromCPUDepthBuffer(depthInfo: XRCPUDepthInformation, dataFormat: XRDepthDataFormat): void {
+    private _generateTextureFromCPUDepthInformation(depthInfo: XRCPUDepthInformation, dataFormat: XRDepthDataFormat): void {
+        const scene = this._xrSessionManager.scene;
+
         if (dataFormat === "luminance-alpha") {
             const uint16arraybuffer = new Uint16Array(depthInfo.data);
-            this._latestDepthImageTexture = RawTexture.CreateLuminanceAlphaTexture(uint16arraybuffer, depthInfo.width, depthInfo.height, null);
+            this._latestDepthImageTexture = RawTexture.CreateLuminanceAlphaTexture(uint16arraybuffer, depthInfo.width, depthInfo.height, scene);
             return;
         }
 
         if (dataFormat !== "float32") {
             Tools.Error("unknown data format");
+            return;
         }
 
         const float32arraybuffer = new Float32Array(depthInfo.data);
-        this._latestDepthImageTexture = RawTexture.CreateRGBATexture(float32arraybuffer, depthInfo.width, depthInfo.height, null);
+        this._latestDepthImageTexture = RawTexture.CreateRGBATexture(float32arraybuffer, depthInfo.width, depthInfo.height, scene);
+    }
+
+    private _generateTextureFromWebGLDepthInformation(depthInfo: XRWebGLDepthInformation): BaseTexture {
+        const engine = this._xrSessionManager.scene.getEngine();
+        const internalTexture = engine.wrapWebGLTexture(depthInfo.texture);
+        const baseTexture = new BaseTexture(engine, internalTexture);
+        return baseTexture;
     }
 
     /**
