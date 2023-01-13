@@ -111,6 +111,13 @@ export class UniformBuffer {
     public updateIntArray: (name: string, array: Int32Array) => void;
 
     /**
+     * Lambda to Update an array of number in a uniform buffer.
+     * This is dynamic to allow compat with webgl 1 and 2.
+     * You will need to pass the name of the uniform as well as the value.
+     */
+     public updateUIntArray: (name: string, array: Uint32Array) => void;
+
+    /**
      * Lambda to Update a 4x4 Matrix in a uniform buffer.
      * This is dynamic to allow compat with webgl 1 and 2.
      * You will need to pass the name of the uniform as well as the value.
@@ -186,6 +193,34 @@ export class UniformBuffer {
      * You will need to pass the name of the uniform as well as the value.
      */
     public updateInt4: (name: string, x: number, y: number, z: number, w: number, suffix?: string) => void;
+
+    /**
+     * Lambda to Update a unsigned int a uniform buffer.
+     * This is dynamic to allow compat with webgl 1 and 2.
+     * You will need to pass the name of the uniform as well as the value.
+     */
+     public updateUInt: (name: string, x: number, suffix?: string) => void;
+
+     /**
+      * Lambda to Update a vec2 of unsigned int in a uniform buffer.
+      * This is dynamic to allow compat with webgl 1 and 2.
+      * You will need to pass the name of the uniform as well as the value.
+      */
+     public updateUInt2: (name: string, x: number, y: number, suffix?: string) => void;
+
+     /**
+      * Lambda to Update a vec3 of unsigned int in a uniform buffer.
+      * This is dynamic to allow compat with webgl 1 and 2.
+      * You will need to pass the name of the uniform as well as the value.
+      */
+     public updateUInt3: (name: string, x: number, y: number, z: number, suffix?: string) => void;
+
+     /**
+      * Lambda to Update a vec4 of unsigned int in a uniform buffer.
+      * This is dynamic to allow compat with webgl 1 and 2.
+      * You will need to pass the name of the uniform as well as the value.
+      */
+     public updateUInt4: (name: string, x: number, y: number, z: number, w: number, suffix?: string) => void;
 
     /**
      * Instantiates a new Uniform buffer objects.
