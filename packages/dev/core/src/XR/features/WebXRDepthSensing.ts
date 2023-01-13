@@ -1,4 +1,5 @@
-import { BaseTexture, RawTexture } from "./../../Materials/Textures";
+import { BaseTexture } from "./../../Materials/Textures/baseTexture";
+import { RawTexture } from "./../../Materials/Textures/rawTexture";
 import { WebXRFeatureName, WebXRFeaturesManager } from "./../webXRFeaturesManager";
 import type { WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
