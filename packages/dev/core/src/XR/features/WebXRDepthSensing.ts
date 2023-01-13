@@ -192,19 +192,16 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
     private _generateTextureFromCPUDepthInformation(depthInfo: XRCPUDepthInformation, dataFormat: XRDepthDataFormat): void {
         const scene = this._xrSessionManager.scene;
 
-        if (dataFormat === "luminance-alpha") {
-            const uint16arraybuffer = new Uint16Array(depthInfo.data);
-            this._latestDepthImageTexture = RawTexture.CreateLuminanceAlphaTexture(uint16arraybuffer, depthInfo.width, depthInfo.height, scene);
-            return;
+        switch (dataFormat) {
+            case "luminance-alpha":
+                this._latestDepthImageTexture = RawTexture.CreateLuminanceAlphaTexture(new Uint16Array(depthInfo.data), depthInfo.width, depthInfo.height, scene);
+                break;
+            case "float32":
+                this._latestDepthImageTexture = RawTexture.CreateRGBATexture(new Float32Array(depthInfo.data), depthInfo.width, depthInfo.height, scene);
+                break;
+            default:
+                Tools.Error("unknown data format");
         }
-
-        if (dataFormat !== "float32") {
-            Tools.Error("unknown data format");
-            return;
-        }
-
-        const float32arraybuffer = new Float32Array(depthInfo.data);
-        this._latestDepthImageTexture = RawTexture.CreateRGBATexture(float32arraybuffer, depthInfo.width, depthInfo.height, scene);
     }
 
     private _generateTextureFromWebGLDepthInformation(depthInfo: XRWebGLDepthInformation): BaseTexture {
