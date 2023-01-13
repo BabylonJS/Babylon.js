@@ -104,7 +104,7 @@ export class Sound {
             return this._htmlAudioElement.currentTime;
         }
 
-        let currentTime: number = this._startOffset + (this._offset ? this._offset : 0);
+        let currentTime: number = this._startOffset;
         if (this.isPlaying && Engine.audioEngine?.audioContext) {
             currentTime += Engine.audioEngine.audioContext.currentTime - this._startTime;
         }
