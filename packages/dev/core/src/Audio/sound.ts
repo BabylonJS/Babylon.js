@@ -1232,7 +1232,6 @@ export class Sound {
         return newSound;
     }
 
-
     private _setOffset(value?: number) {
         if (this._offset === value) {
             return;
