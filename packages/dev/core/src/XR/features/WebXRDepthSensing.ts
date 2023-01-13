@@ -1,3 +1,5 @@
+import type { BaseTexture } from "./../../Materials/Textures";
+import { RawTexture } from "./../../Materials/Textures";
 import { WebXRFeatureName, WebXRFeaturesManager } from "./../webXRFeaturesManager";
 import type { WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
@@ -93,6 +95,14 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         return cpuDepthInfo.getDepthInMeters(x, y);
     };
 
+    private _latestDepthImageTexture?: BaseTexture;
+
+    public get latestDepthImageTexture(): BaseTexture | null {
+        if (!this._latestDepthImageTexture) {
+            return null;
+        }
+        return this._latestDepthImageTexture;
+    }
 
     /**
      * XRWebGLBinding which is used for acquiring WebGLDepthInformation
@@ -148,8 +158,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
     /**
      * Dispose this feature and all of the resources attached
      */
-    public dispose(): void {
-    }
+    public dispose(): void {}
 
     protected _onXRFrame(_xrFrame: XRFrame): void {
         const referenceSPace = this._xrSessionManager.referenceSpace;
@@ -180,6 +189,20 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         }
     }
 
+    private _generateTextureFromCPUDepthBuffer(depthInfo: XRCPUDepthInformation, dataFormat: XRDepthDataFormat): void {
+        if (dataFormat === "luminance-alpha") {
+            const uint16arraybuffer = new Uint16Array(depthInfo.data);
+            this._latestDepthImageTexture = RawTexture.CreateLuminanceAlphaTexture(uint16arraybuffer, depthInfo.width, depthInfo.height, null);
+            return;
+        }
+
+        if (dataFormat !== "float32") {
+            Tools.Error("unknown data format");
+        }
+
+        const float32arraybuffer = new Float32Array(depthInfo.data);
+        this._latestDepthImageTexture = RawTexture.CreateRGBATexture(float32arraybuffer, depthInfo.width, depthInfo.height, null);
+    }
 
     /**
      * Extends the session init object if needed
