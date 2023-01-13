@@ -1,9 +1,9 @@
-import { BaseTexture } from "./../../Materials/Textures";
-import { RawTexture } from "./../../Materials/Textures";
+import { BaseTexture, RawTexture } from "./../../Materials/Textures";
 import { WebXRFeatureName, WebXRFeaturesManager } from "./../webXRFeaturesManager";
 import type { WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { Tools } from "../../Misc/tools";
+import type { Scene } from "../../scene";
 
 /**
  * Options for Depth Sensing feature
@@ -145,8 +145,8 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
             return false;
         }
 
-        const isDepthUsageAndFormatNull = this._xrSessionManager.session.depthDataFormat == null || this._xrSessionManager.session.depthUsage == null;
-        if (isDepthUsageAndFormatNull) {
+        const isBothDepthUsageAndFormatNull = this._xrSessionManager.session.depthDataFormat == null || this._xrSessionManager.session.depthUsage == null;
+        if (isBothDepthUsageAndFormatNull) {
             return false;
         }
 
@@ -158,7 +158,9 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
     /**
      * Dispose this feature and all of the resources attached
      */
-    public dispose(): void {}
+    public dispose(): void {
+        this._latestDepthImageTexture?.dispose();
+    }
 
     protected _onXRFrame(_xrFrame: XRFrame): void {
         const referenceSPace = this._xrSessionManager.referenceSpace;
@@ -169,18 +171,17 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         }
 
         for (const view of pose.views) {
-            const depthUsage = this._xrSessionManager.session.depthUsage;
-            switch (depthUsage) {
+            switch (this.depthUsage) {
                 case "cpu-optimized":
-                    // todo: process depth buffers
+                    this._processCPUDepthInformation(_xrFrame, view, this.depthDataFormat);
                     break;
 
                 case "gpu-optimized":
-                    if (this._glBinding == null) {
-                        continue;
+                    if (!this._glBinding) {
+                        break;
                     }
 
-                    // todo: process depth buffers
+                    this._processWebGLDepthInformation(this._glBinding, view);
                     break;
 
                 default:
@@ -189,23 +190,49 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         }
     }
 
-    private _generateTextureFromCPUDepthInformation(depthInfo: XRCPUDepthInformation, dataFormat: XRDepthDataFormat): void {
-        const scene = this._xrSessionManager.scene;
+    private _processCPUDepthInformation(frame: XRFrame, view: XRView, dataFormat: XRDepthDataFormat): void {
+        const depthInfo = frame.getDepthInformation(view);
+        if (depthInfo === null) {
+            return;
+        }
 
+        const cpuDepthInfo = depthInfo as XRCPUDepthInformation;
+        const texture = WebXRDepthSensing._GenerateTextureFromCPUDepthInformation(cpuDepthInfo, dataFormat, this._xrSessionManager.scene);
+        if (texture === null) {
+            return;
+        }
+
+        this._cachedDepthInfo = cpuDepthInfo;
+        this._latestDepthImageTexture = texture;
+    }
+
+    private static _GenerateTextureFromCPUDepthInformation(depthInfo: XRCPUDepthInformation, dataFormat: XRDepthDataFormat, scene: Scene): RawTexture | null {
         switch (dataFormat) {
             case "luminance-alpha":
-                this._latestDepthImageTexture = RawTexture.CreateLuminanceAlphaTexture(new Uint16Array(depthInfo.data), depthInfo.width, depthInfo.height, scene);
-                break;
+                return RawTexture.CreateLuminanceAlphaTexture(new Uint16Array(depthInfo.data), depthInfo.width, depthInfo.height, scene);
             case "float32":
-                this._latestDepthImageTexture = RawTexture.CreateRGBATexture(new Float32Array(depthInfo.data), depthInfo.width, depthInfo.height, scene);
-                break;
+                return RawTexture.CreateRGBATexture(new Float32Array(depthInfo.data), depthInfo.width, depthInfo.height, scene);
             default:
                 Tools.Error("unknown data format");
+                return null;
         }
     }
 
-    private _generateTextureFromWebGLDepthInformation(depthInfo: XRWebGLDepthInformation): BaseTexture {
-        const engine = this._xrSessionManager.scene.getEngine();
+    private _processWebGLDepthInformation(webglBinding: XRWebGLBinding, view: XRView): void {
+        const depthInfo = webglBinding.getDepthInformation(view);
+        if (depthInfo === null) {
+            return;
+        }
+
+        const webglDepthInfo = depthInfo as XRWebGLDepthInformation;
+        const texture = WebXRDepthSensing._GenerateTextureFromWebGLDepthInformation(webglDepthInfo, this._xrSessionManager.scene);
+
+        this._latestDepthImageTexture = texture;
+        this._cachedDepthInfo = webglDepthInfo;
+    }
+
+    private static _GenerateTextureFromWebGLDepthInformation(depthInfo: XRWebGLDepthInformation, scene: Scene): BaseTexture {
+        const engine = scene.getEngine();
         const internalTexture = engine.wrapWebGLTexture(depthInfo.texture);
         const baseTexture = new BaseTexture(engine, internalTexture);
         return baseTexture;
