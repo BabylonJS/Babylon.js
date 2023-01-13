@@ -1,5 +1,4 @@
 import { WebXRFeatureName, WebXRFeaturesManager } from "./../webXRFeaturesManager";
-import { Observable } from "../../Misc/observable";
 import type { WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { Tools } from "../../Misc/tools";
@@ -94,15 +93,6 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         return cpuDepthInfo.getDepthInMeters(x, y);
     };
 
-    /**
-     * An observable which triggered when the CPU depth information is acquired from XRFrame
-     */
-    public readonly onCPUDepthInformationObservable: Observable<XRCPUDepthInformation> = new Observable();
-
-    /**
-     *An observable which triggered when the WebGL depth information is acquired from XRFrame
-     */
-    public readonly onWebGLDepthInformationObservable: Observable<XRWebGLDepthInformation> = new Observable();
 
     /**
      * XRWebGLBinding which is used for acquiring WebGLDepthInformation
@@ -159,8 +149,6 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
      * Dispose this feature and all of the resources attached
      */
     public dispose(): void {
-        this.onCPUDepthInformationObservable.clear();
-        this.onWebGLDepthInformationObservable.clear();
     }
 
     protected _onXRFrame(_xrFrame: XRFrame): void {
@@ -175,16 +163,15 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
             const depthUsage = this._xrSessionManager.session.depthUsage;
             switch (depthUsage) {
                 case "cpu-optimized":
-                    this._getAndNotifyCPUDepthInformation(_xrFrame, view);
+                    // todo: process depth buffers
                     break;
 
                 case "gpu-optimized":
                     if (this._glBinding == null) {
-                        const context = this._xrSessionManager.scene.getEngine()._gl;
-                        this._glBinding = new XRWebGLBinding(this._xrSessionManager.session, context);
+                        continue;
                     }
 
-                    this._getAndNotifyWebGLDepthInformation(_xrFrame, view, this._glBinding);
+                    // todo: process depth buffers
                     break;
 
                 default:
@@ -193,23 +180,6 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         }
     }
 
-    private _getAndNotifyCPUDepthInformation(frame: XRFrame, view: XRView): void {
-        const cpuDepthInfo = frame.getDepthInformation(view);
-        if (cpuDepthInfo == null) {
-            return;
-        }
-
-        this.onCPUDepthInformationObservable.notifyObservers(cpuDepthInfo);
-    }
-
-    private _getAndNotifyWebGLDepthInformation(frame: XRFrame, view: XRView, glBinding: XRWebGLBinding): void {
-        const webglDepthInfo = glBinding.getDepthInformation(view);
-        if (webglDepthInfo == null) {
-            return;
-        }
-
-        this.onWebGLDepthInformationObservable.notifyObservers(webglDepthInfo);
-    }
 
     /**
      * Extends the session init object if needed
