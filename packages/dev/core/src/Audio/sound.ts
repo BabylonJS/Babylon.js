@@ -104,7 +104,7 @@ export class Sound {
             return this._htmlAudioElement.currentTime;
         }
 
-        let currentTime: number = this._startOffset + (this._offset ? this._offset : 0);
+        let currentTime: number = this._startOffset;
         if (this.isPlaying && Engine.audioEngine?.audioContext) {
             currentTime += Engine.audioEngine.audioContext.currentTime - this._startTime;
         }
@@ -501,7 +501,7 @@ export class Sound {
             this.distanceModel = options.distanceModel ?? this.distanceModel;
             this._playbackRate = options.playbackRate ?? this._playbackRate;
             this._length = options.length ?? undefined;
-            this._offset = options.offset ?? undefined;
+            this._setOffset(options.offset ?? undefined);
             this.setVolume(options.volume ?? this._volume);
             this._updateSpatialParameters();
             if (this.isPlaying) {
@@ -814,7 +814,7 @@ export class Sound {
                             length = length || this._length;
 
                             if (offset !== undefined) {
-                                this._offset = offset;
+                                this._setOffset(offset);
                             }
 
                             if (this._soundSource) {
@@ -1230,5 +1230,16 @@ export class Sound {
         }
 
         return newSound;
+    }
+
+    private _setOffset(value?: number) {
+        if (this._offset === value) {
+            return;
+        }
+        if (this.isPaused) {
+            this.stop();
+            this.isPaused = false;
+        }
+        this._offset = value;
     }
 }
