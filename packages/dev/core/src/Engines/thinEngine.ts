@@ -3330,7 +3330,7 @@ export class ThinEngine {
      * @param value defines the unsigned int number to store
      * @returns true if the value was set
      */
-     public setUInt(uniform: Nullable<WebGLUniformLocation>, value: number): boolean {
+    public setUInt(uniform: Nullable<WebGLUniformLocation>, value: number): boolean {
         if (!uniform || this.webGLVersion === 1) {
             return false;
         }

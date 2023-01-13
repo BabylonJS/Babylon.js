@@ -308,7 +308,7 @@ export class ShaderMaterial extends PushMaterial {
      * @param value Define the value to give to the uniform
      * @return the material itself allowing "fluent" like uniform updates
      */
-     public setUInt(name: string, value: number): ShaderMaterial {
+    public setUInt(name: string, value: number): ShaderMaterial {
         this._checkUniform(name);
         this._uints[name] = value;
 

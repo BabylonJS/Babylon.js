@@ -283,7 +283,7 @@ export class NativePipelineContext implements IPipelineContext {
      * @param uniformName Name of the variable.
      * @param value Value to be set.
      */
-     public setUInt(uniformName: string, value: number): void {
+    public setUInt(uniformName: string, value: number): void {
         const cache = this._valueCache[uniformName];
         if (cache !== undefined && cache === value) {
             return;

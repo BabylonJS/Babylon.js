@@ -246,7 +246,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * @param uniformName Name of the variable.
      * @param value Value to be set.
      */
-     public setUInt(uniformName: string, value: number): void {
+    public setUInt(uniformName: string, value: number): void {
         if (!this.uniformBuffer || !this._leftOverUniformsByName[uniformName]) {
             return;
         }
