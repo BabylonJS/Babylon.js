@@ -468,10 +468,11 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                 this.onDragStartObservable.notifyObservers({});
                 this._selectNode(sphere);
             });
-            _dragBehavior.onDragEndObservable.add(() => {
+            _dragBehavior.onDragEndObservable.add((event) => {
                 this.onRotationSphereDragEndObservable.notifyObservers({});
                 this._selectNode(null);
                 this._updateDummy();
+                this._unhoverMeshOnTouchUp(event.pointerInfo, sphere);
             });
 
             this._rotateSpheresParent.addChild(sphere);
@@ -553,10 +554,11 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                         this.onDragStartObservable.notifyObservers({});
                         this._selectNode(box);
                     });
-                    _dragBehavior.onDragEndObservable.add(() => {
+                    _dragBehavior.onDragEndObservable.add((event) => {
                         this.onScaleBoxDragEndObservable.notifyObservers({});
                         this._selectNode(null);
                         this._updateDummy();
+                        this._unhoverMeshOnTouchUp(event.pointerInfo, box);
                     });
 
                     this._scaleBoxesParent.addChild(box);
@@ -635,6 +637,14 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                 m.isVisible = !selectedMesh || m == selectedMesh;
             });
     }
+
+    protected _unhoverMeshOnTouchUp(pointerInfo: Nullable<PointerInfo>, selectedMesh: AbstractMesh) {
+        // force unhover mesh if not a mouse event
+        if (pointerInfo?.event instanceof PointerEvent && pointerInfo?.event.pointerType === "touch") {
+            selectedMesh.material = this._coloredMaterial;
+        }
+    }
+
     /**
      * returns an array containing all boxes used for scaling (in increasing x, y and z orders)
      */
