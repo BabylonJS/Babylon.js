@@ -3331,7 +3331,7 @@ export class ThinEngine {
      * @returns true if the value was set
      */
     public setUInt(uniform: Nullable<WebGLUniformLocation>, value: number): boolean {
-        if (!uniform || this.webGLVersion === 1) {
+        if (!uniform) {
             return false;
         }
 
