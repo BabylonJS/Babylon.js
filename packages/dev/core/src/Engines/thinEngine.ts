@@ -1832,16 +1832,18 @@ export class ThinEngine {
         this._bindUnboundFramebuffer(webglRTWrapper._MSAAFramebuffer ? webglRTWrapper._MSAAFramebuffer : webglRTWrapper._framebuffer);
 
         const gl = this._gl;
-        if (texture.is2DArray) {
-            gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, texture.texture!._hardwareTexture?.underlyingResource, lodLevel, layer);
-        } else if (texture.isCube) {
-            gl.framebufferTexture2D(
-                gl.FRAMEBUFFER,
-                gl.COLOR_ATTACHMENT0,
-                gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex,
-                texture.texture!._hardwareTexture?.underlyingResource,
-                lodLevel
-            );
+        if (!texture.isMulti) {
+            if (texture.is2DArray) {
+                gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, texture.texture!._hardwareTexture?.underlyingResource, lodLevel, layer);
+            } else if (texture.isCube) {
+                gl.framebufferTexture2D(
+                    gl.FRAMEBUFFER,
+                    gl.COLOR_ATTACHMENT0,
+                    gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex,
+                    texture.texture!._hardwareTexture?.underlyingResource,
+                    lodLevel
+                );
+            }
         }
 
         const depthStencilTexture = texture._depthStencilTexture;

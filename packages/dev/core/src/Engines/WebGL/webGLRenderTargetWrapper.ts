@@ -75,23 +75,43 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
      * Binds a texture to this render target on a specific attachment
      * @param texture The texture to bind to the framebuffer
      * @param attachmentIndex Index of the attachment
-     * @param faceIndex The face of the texture to render to in case of cube texture
+     * @param faceIndexOrLayer The face or layer of the texture to render to in case of cube texture or array texture
      * @param lodLevel defines the lod level to bind to the frame buffer
      */
-    private _bindTextureRenderTarget(texture: InternalTexture, attachmentIndex: number = 0, faceIndex: number = -1, lodLevel: number = 0) {
+    private _bindTextureRenderTarget(texture: InternalTexture, attachmentIndex: number = 0, faceIndexOrLayer: number = -1, lodLevel: number = 0) {
         if (!texture._hardwareTexture) {
             return;
         }
 
-        const gl = this._context;
         const framebuffer = this._framebuffer;
-
+    
         const currentFB = this._engine._currentFramebuffer;
         this._engine._bindUnboundFramebuffer(framebuffer);
-        const attachment = (<any>gl)[this._engine.webGLVersion > 1 ? "COLOR_ATTACHMENT" + attachmentIndex : "COLOR_ATTACHMENT" + attachmentIndex + "_WEBGL"];
-        const target = faceIndex !== -1 ? gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex : gl.TEXTURE_2D;
 
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, target, texture._hardwareTexture.underlyingResource, lodLevel);
+        if (this._engine.webGLVersion > 1 || this._engine.isWebGPU) {
+            const gl = this._context as WebGL2RenderingContext;
+
+            const attachment = (<any>gl)["COLOR_ATTACHMENT" + attachmentIndex];
+            if (texture.is2DArray || texture.is3D) {
+                if (faceIndexOrLayer == -1) {
+                    return;
+                }
+                gl.framebufferTextureLayer(gl.FRAMEBUFFER, attachment, texture._hardwareTexture.underlyingResource, lodLevel, faceIndexOrLayer);
+            } else if (texture.isCube) {
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndexOrLayer, texture._hardwareTexture.underlyingResource, lodLevel);
+            } else {
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, gl.TEXTURE_2D, texture._hardwareTexture.underlyingResource, lodLevel);
+            }
+        } else {
+            // Default behavior
+            const gl = this._context;
+
+            const attachment = (<any>gl)["COLOR_ATTACHMENT" + attachmentIndex + "_WEBGL"];
+            const target = faceIndexOrLayer !== -1 ? gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndexOrLayer : gl.TEXTURE_2D;
+    
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, target, texture._hardwareTexture.underlyingResource, lodLevel);
+        }
+
         this._engine._bindUnboundFramebuffer(currentFB);
     }
 
@@ -101,9 +121,9 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
      * @param index the index in the textures array to set
      * @param disposePrevious If this function should dispose the previous texture
      */
-    public setTexture(texture: InternalTexture, index: number = 0, disposePrevious: boolean = true) {
+    public setTexture(texture: InternalTexture, index: number = 0, disposePrevious: boolean = true, faceIndexOrLayer: number = -1) {
         super.setTexture(texture, index, disposePrevious);
-        this._bindTextureRenderTarget(texture, index);
+        this._bindTextureRenderTarget(texture, index, faceIndexOrLayer);
     }
 
     public dispose(disposeOnlyFramebuffers = false): void {

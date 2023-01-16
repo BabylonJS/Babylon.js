@@ -169,12 +169,16 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
     const defaultType = Constants.TEXTURETYPE_UNSIGNED_INT;
     const defaultSamplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
     const defaultUseSRGBBuffer = false;
+    const defaultTarget = Constants.TEXTURE_2D;
 
     let types = new Array<number>();
     let samplingModes = new Array<number>();
     let useSRGBBuffers = new Array<boolean>();
+    let targets = new Array<number>();
+    let faceIndexOrLayer = new Array<number>();
 
     const rtWrapper = this._createHardwareRenderTargetWrapper(true, false, size) as WebGLRenderTargetWrapper;
+    console.log(rtWrapper);
 
     if (options !== undefined) {
         generateMipMaps = options.generateMipMaps === undefined ? false : options.generateMipMaps;
@@ -191,6 +195,12 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
         }
         if (options.useSRGBBuffers) {
             useSRGBBuffers = options.useSRGBBuffers;
+        }
+        if (options.targetTypes) {
+            targets = options.targetTypes;
+        }
+        if (options.faceIndexOrLayer) {
+            faceIndexOrLayer = options.faceIndexOrLayer;
         }
         if (
             this.webGLVersion > 1 &&
@@ -210,6 +220,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
 
     const width = (<{ width: number; height: number }>size).width || <number>size;
     const height = (<{ width: number; height: number }>size).height || <number>size;
+    const layers = (<{ width: number; height: number; layers?: number }>size).layers || 0;
 
     const textures: InternalTexture[] = [];
     const attachments: number[] = [];
@@ -232,6 +243,8 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
         let samplingMode = samplingModes[i] || defaultSamplingMode;
         let type = types[i] || defaultType;
         let useSRGBBuffer = useSRGBBuffers[i] || defaultUseSRGBBuffer;
+        let target = targets[i] || defaultTarget;
+        let faceOrLayer = faceIndexOrLayer[i] || 0;
 
         if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
             // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
@@ -249,31 +262,54 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
 
         useSRGBBuffer = useSRGBBuffer && this._caps.supportSRGBBuffers && (this.webGLVersion > 1 || this.isWebGPU);
 
+        const validVersion = this.webGLVersion > 1;
         const texture = new InternalTexture(this, InternalTextureSource.MultiRenderTarget);
-        const attachment = (<any>gl)[this.webGLVersion > 1 ? "COLOR_ATTACHMENT" + i : "COLOR_ATTACHMENT" + i + "_WEBGL"];
+        const attachment = (<any>gl)[validVersion ? "COLOR_ATTACHMENT" + i : "COLOR_ATTACHMENT" + i + "_WEBGL"];
 
         textures.push(texture);
         attachments.push(attachment);
 
         gl.activeTexture((<any>gl)["TEXTURE" + i]);
-        gl.bindTexture(gl.TEXTURE_2D, texture._hardwareTexture!.underlyingResource);
+        gl.bindTexture(target, texture._hardwareTexture!.underlyingResource);
 
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filters.min);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(target, gl.TEXTURE_MAG_FILTER, filters.mag);
+        gl.texParameteri(target, gl.TEXTURE_MIN_FILTER, filters.min);
+        gl.texParameteri(target, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(target, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
         const internalSizedFormat = this._getRGBABufferInternalSizedFormat(type, Constants.TEXTUREFORMAT_RGBA, useSRGBBuffer);
-        gl.texImage2D(gl.TEXTURE_2D, 0, internalSizedFormat, width, height, 0, gl.RGBA, this._getWebGLTextureType(type), null);
-
-        gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, attachment, gl.TEXTURE_2D, texture._hardwareTexture!.underlyingResource, 0);
+        const webGLTextureType = this._getWebGLTextureType(type);
+        
+        if (validVersion && (target == Constants.TEXTURE_2D_ARRAY || target == Constants.TEXTURE_3D)) {
+            if (target == Constants.TEXTURE_2D_ARRAY) {
+                texture.is2DArray = true;
+            } else {
+                texture.is3D = true;
+                type = Constants.TEXTURETYPE_UNSIGNED_INT;
+            }
+            
+            gl.texImage3D(target, 0, internalSizedFormat, width, height, layers, 0, gl.RGBA, webGLTextureType, null);
+            gl.framebufferTextureLayer(gl.DRAW_FRAMEBUFFER, attachment, texture._hardwareTexture!.underlyingResource, 0, faceOrLayer);
+        } else if (validVersion && target == Constants.TEXTURE_CUBE_MAP) {
+            // We have to generate all faces to complete the framebuffer
+            for (let i = 0; i < 6; i ++) {
+                gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internalSizedFormat, width, height, 0, gl.RGBA, webGLTextureType, null);
+            }
+            gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, attachment, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceOrLayer, texture._hardwareTexture!.underlyingResource, 0);
+            texture.isCube = true;
+        } else {
+            gl.texImage2D(gl.TEXTURE_2D, 0, internalSizedFormat, width, height, 0, gl.RGBA, webGLTextureType, null);
+            gl.framebufferTexture2D(gl.DRAW_FRAMEBUFFER, attachment, gl.TEXTURE_2D, texture._hardwareTexture!.underlyingResource, 0);
+        }
 
         if (generateMipMaps) {
-            this._gl.generateMipmap(this._gl.TEXTURE_2D);
+            // Is there a reason this used this._gl instead of the already defined gl object?
+            //this._gl.generateMipmap(this._gl.TEXTURE_2D);
+            gl.generateMipmap(target);
         }
 
         // Unbind
-        this._bindTextureDirectly(gl.TEXTURE_2D, null);
+        this._bindTextureDirectly(target, null);
 
         texture.baseWidth = width;
         texture.baseHeight = height;
