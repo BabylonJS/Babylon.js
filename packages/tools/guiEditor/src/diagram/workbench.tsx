@@ -1046,7 +1046,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
         const centerToRtt = CoordinateHelper.MousePointerToRTTSpace(this.trueRootContainer, this._engine.getRenderWidth() / 2, this._engine.getRenderHeight() / 2);
         const centerToLocal = CoordinateHelper.RttToLocalNodeSpace(this.trueRootContainer, centerToRtt.x, centerToRtt.y);
-        const panScale = Math.min(0, -delta / 1000);
+        const panScale = (delta * -Math.sign(delta)) / 1000;
 
         const deltaCenter = rttToLocal.subtract(centerToLocal).scale(panScale).multiplyByFloats(1, -1);
 
