@@ -53,7 +53,10 @@ export class Image extends Control {
         key: string;
     } = { data: null, key: "" };
 
-    public static SourceImgCache = new Map<string, { img: IImage; timesUsed: number }>();
+    /**
+     * Cache of images to avoid loading the same image multiple times
+     */
+    public static SourceImgCache = new Map<string, { img: IImage; timesUsed: number; loaded: boolean; waitingForLoad: Array<Image> }>();
 
     /**
      * Observable notified when the content is loaded
@@ -555,15 +558,30 @@ export class Image extends Control {
             const cachedData = Image.SourceImgCache.get(value)!;
             this._domImage = cachedData.img;
             cachedData.timesUsed += 1;
-            this._onImageLoaded();
+            if (cachedData.loaded) {
+                this._onImageLoaded();
+            } else {
+                cachedData.waitingForLoad.push(this);
+            }
             return;
         }
         this._domImage = engine.createCanvasImage();
         if (value) {
-            Image.SourceImgCache.set(value, { img: this._domImage, timesUsed: 1 });
+            Image.SourceImgCache.set(value, { img: this._domImage, timesUsed: 1, loaded: false, waitingForLoad: [this] });
         }
 
         this._domImage.onload = () => {
+            if (value) {
+                const cachedData = Image.SourceImgCache.get(value);
+                if (cachedData) {
+                    cachedData.loaded = true;
+                    for (const waitingImage of cachedData.waitingForLoad) {
+                        waitingImage._onImageLoaded();
+                    }
+                    cachedData.waitingForLoad = [];
+                    return;
+                }
+            }
             this._onImageLoaded();
         };
         if (value) {
