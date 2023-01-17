@@ -578,7 +578,7 @@ export class Image extends Control {
                     for (const waitingImage of cachedData.waitingForLoad) {
                         waitingImage._onImageLoaded();
                     }
-                    cachedData.waitingForLoad = [];
+                    cachedData.waitingForLoad.length = 0;
                     return;
                 }
             }
