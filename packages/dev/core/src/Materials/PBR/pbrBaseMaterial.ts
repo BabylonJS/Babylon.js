@@ -2007,7 +2007,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             this.bindOnlyNormalMatrix(this._normalMatrix);
         }
 
-        const mustRebind = effect._forceNextBinding || this._mustRebind(scene, effect, mesh.visibility);
+        const mustRebind = effect._forceRebindOnNextCall || this._mustRebind(scene, effect, mesh.visibility);
 
         // Bones
         MaterialHelper.BindBonesParameters(mesh, this._activeEffect, this.prePassConfiguration);
@@ -2018,7 +2018,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             this.bindViewProjection(effect);
             reflectionTexture = this._getReflectionTexture();
 
-            if (!ubo.useUbo || !this.isFrozen || !ubo.isSync || effect._forceNextBinding) {
+            if (!ubo.useUbo || !this.isFrozen || !ubo.isSync || effect._forceRebindOnNextCall) {
                 // Texture uniforms
                 if (scene.texturesEnabled) {
                     if (this._albedoTexture && MaterialFlags.DiffuseTextureEnabled) {

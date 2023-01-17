@@ -1560,14 +1560,14 @@ export class StandardMaterial extends PushMaterial {
             this.bindOnlyNormalMatrix(this._normalMatrix);
         }
 
-        const mustRebind = effect._forceNextBinding || this._mustRebind(scene, effect, mesh.visibility);
+        const mustRebind = effect._forceRebindOnNextCall || this._mustRebind(scene, effect, mesh.visibility);
 
         // Bones
         MaterialHelper.BindBonesParameters(mesh, effect);
         const ubo = this._uniformBuffer;
         if (mustRebind) {
             this.bindViewProjection(effect);
-            if (!ubo.useUbo || !this.isFrozen || !ubo.isSync || effect._forceNextBinding) {
+            if (!ubo.useUbo || !this.isFrozen || !ubo.isSync || effect._forceRebindOnNextCall) {
                 if (StandardMaterial.FresnelEnabled && defines.FRESNEL) {
                     // Fresnel
                     if (this.diffuseFresnelParameters && this.diffuseFresnelParameters.isEnabled) {

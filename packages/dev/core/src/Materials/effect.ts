@@ -146,8 +146,12 @@ export class Effect implements IDisposable {
      */
     public _wasPreviouslyReady = false;
 
-    /** @internal */
-    public _forceNextBinding = false;
+    /**
+     * @internal
+     * Forces the code from bindForSubMesh to be fully run the next time it is called
+     * It is used in frozen mode to make sure the effect is properly rebound when a new effect is created
+     */
+    public _forceRebindOnNextCall = false;
 
     /**
      * @internal

@@ -1144,7 +1144,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
 
                 subMesh.effect._wasPreviouslyReady = false;
                 subMesh.effect._wasPreviouslyUsingInstances = null;
-                subMesh.effect._forceNextBinding = forceDirtyfyAll;
+                subMesh.effect._forceRebindOnNextCall = forceDirtyfyAll;
             }
         }
 
@@ -1212,7 +1212,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
 
         this._eventInfo.subMesh = subMesh;
         this._callbackPluginEventBindForSubMesh(this._eventInfo);
-        effect._forceNextBinding = false;
+        effect._forceRebindOnNextCall = false;
     }
 
     /**
