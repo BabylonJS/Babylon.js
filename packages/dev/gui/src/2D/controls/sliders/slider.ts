@@ -63,7 +63,7 @@ export class Slider extends BaseSlider {
         this._markAsDirty();
     }
 
-    @serialize()
+    /** Gets or sets background gradient */
     public get backgroundGradient(): Nullable<BaseGradient> {
         return this._backgroundGradient;
     }

@@ -38,26 +38,32 @@ export class RadialGradient extends BaseGradient {
         return context.createRadialGradient(this._x0, this._y0, this._r0, this._x1, this._y1, this._r1);
     }
 
+    /** x coordinate of the first circle's center */
     public get x0() {
         return this._x0;
     }
 
+    /** x coordinate of the second circle's center */
     public get x1() {
         return this._x1;
     }
 
+    /** y coordinate of the first circle's center */
     public get y0() {
         return this._y0;
     }
 
+    /** y coordinate of the second circle's center */
     public get y1() {
         return this._y1;
     }
 
+    /** radius of the first circle */
     public get r0() {
         return this._r0;
     }
 
+    /** radius of the second circle */
     public get r1() {
         return this._r1;
     }

@@ -32,18 +32,22 @@ export class LinearGradient extends BaseGradient {
         return context.createLinearGradient(this._x0, this._y0, this._x1, this._y1);
     }
 
+    /** X axis coordinate of the starting point in the line */
     public get x0() {
         return this._x0;
     }
 
+    /** X axis coordinate of the ending point in the line */
     public get x1() {
         return this._x1;
     }
 
+    /** Y axis coordinate of the starting point in the line */
     public get y0() {
         return this._y0;
     }
 
+    /** Y axis coordinate of the ending point in the line */
     public get y1() {
         return this._y1;
     }

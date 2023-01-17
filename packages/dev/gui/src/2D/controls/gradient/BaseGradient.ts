@@ -34,6 +34,7 @@ export class BaseGradient {
         }
     }
 
+    /** Gets the CanvasGradient object for filling the canvas */
     public getCanvasGradient(context: ICanvasRenderingContext) {
         if (this._gradientDirty || this._context !== context) {
             this._context = context;
@@ -71,19 +72,23 @@ export class BaseGradient {
         this._gradientDirty = true;
     }
 
+    /** Color stops of the gradient */
     public get colorStops() {
         return this._colorStops;
     }
 
+    /** Type of the gradient */
     public getClassName() {
         return "BaseGradient";
     }
 
+    /** Serialize into a json object */
     public serialize(serializationObject: any) {
         serializationObject.colorStops = this._colorStops;
         serializationObject.className = this.getClassName();
     }
 
+    /** Parse from json object */
     public parse(serializationObject: any) {
         this._colorStops = serializationObject.colorStops;
     }

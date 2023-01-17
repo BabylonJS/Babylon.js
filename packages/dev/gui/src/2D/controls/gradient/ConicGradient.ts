@@ -29,14 +29,17 @@ export class ConicGradient extends BaseGradient {
         return context.createConicGradient(this._startAngle, this._x, this._y);
     }
 
+    /** Starting angle, in radians. Moves clockwise starting from above the center. */
     public get startAngle() {
         return this._startAngle;
     }
 
+    /** X axis coordinate of gradient center */
     public get x() {
         return this._x;
     }
 
+    /** Y axis coordinate of gradient center */
     public get y() {
         return this._y;
     }

@@ -51,7 +51,7 @@ export class ScrollBar extends BaseSlider {
         this._markAsDirty();
     }
 
-    @serialize()
+    /** Gets or sets background gradient. Takes precedence over gradient. */
     public get backgroundGradient(): Nullable<BaseGradient> {
         return this._backgroundGradient;
     }
