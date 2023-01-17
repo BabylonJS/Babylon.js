@@ -107,6 +107,7 @@ export class ShaderMaterial extends PushMaterial {
     private _externalTextures: { [name: string]: ExternalTexture } = {};
     private _floats: { [name: string]: number } = {};
     private _ints: { [name: string]: number } = {};
+    private _uints: { [name: string]: number } = {};
     private _floatsArrays: { [name: string]: number[] } = {};
     private _colors3: { [name: string]: Color3 } = {};
     private _colors3Arrays: { [name: string]: number[] } = {};
@@ -297,6 +298,19 @@ export class ShaderMaterial extends PushMaterial {
     public setInt(name: string, value: number): ShaderMaterial {
         this._checkUniform(name);
         this._ints[name] = value;
+
+        return this;
+    }
+
+    /**
+     * Set a unsigned int in the shader.
+     * @param name Define the name of the uniform as defined in the shader
+     * @param value Define the value to give to the uniform
+     * @return the material itself allowing "fluent" like uniform updates
+     */
+    public setUInt(name: string, value: number): ShaderMaterial {
+        this._checkUniform(name);
+        this._uints[name] = value;
 
         return this;
     }
@@ -989,6 +1003,11 @@ export class ShaderMaterial extends PushMaterial {
                 effect.setInt(name, this._ints[name]);
             }
 
+            // UInt
+            for (name in this._uints) {
+                effect.setUInt(name, this._uints[name]);
+            }
+
             // Float
             for (name in this._floats) {
                 effect.setFloat(name, this._floats[name]);
@@ -1214,6 +1233,11 @@ export class ShaderMaterial extends PushMaterial {
             result.setInt(key, this._ints[key]);
         }
 
+        // UInt
+        for (const key in this._uints) {
+            result.setUInt(key, this._uints[key]);
+        }
+
         // Float
         for (const key in this._floats) {
             result.setFloat(key, this._floats[key]);
@@ -1388,6 +1412,12 @@ export class ShaderMaterial extends PushMaterial {
             serializationObject.ints[name] = this._ints[name];
         }
 
+        // UInt
+        serializationObject.uints = {};
+        for (name in this._uints) {
+            serializationObject.uints[name] = this._uints[name];
+        }
+
         // Float
         serializationObject.floats = {};
         for (name in this._floats) {
@@ -1540,6 +1570,11 @@ export class ShaderMaterial extends PushMaterial {
         // Int
         for (name in source.ints) {
             material.setInt(name, source.ints[name]);
+        }
+
+        // UInt
+        for (name in source.uints) {
+            material.setUInt(name, source.uints[name]);
         }
 
         // Float
