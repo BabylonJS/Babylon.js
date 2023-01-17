@@ -147,13 +147,12 @@ export class AnimationBar extends React.Component<IAnimationBarProps, { groupInd
                     options={groupNames}
                     activeEntry={() => ""}
                     selectedOption={this._currentGroup.name}
-                    onOptionPicked={(option) => {
+                    onOptionPicked={(option, index) => {
                         this._currentGroup!.stop();
 
-                        const newIndex = groupNames.indexOf(option);
-                        this.setState({ groupIndex: newIndex });
+                        this.setState({ groupIndex: index });
 
-                        scene.animationGroups[newIndex].play(true);
+                        scene.animationGroups[index].play(true);
                     }}
                     enabled={true}
                     searchPlaceholder="Search animation"
