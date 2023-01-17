@@ -228,6 +228,7 @@ interface INativeEngineConstructor {
     readonly COMMAND_DRAW: NativeData;
     readonly COMMAND_CLEAR: NativeData;
     readonly COMMAND_SETSTENCIL: NativeData;
+    readonly COMMAND_SETVIEWPORT: NativeData;
 }
 
 /** @internal */
