@@ -1171,6 +1171,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         const lightDisposed = defines._areLightsDisposed;
         let effect = this._prepareEffect(mesh, defines, this.onCompiled, this.onError, useInstances, null, subMesh.getRenderingMesh().hasThinInstances);
 
+        let forceWasNotReadyPreviously = false;
+
         if (effect) {
             if (this._onEffectCreatedObservable) {
                 onCreatedEffectParameters.effect = effect;
@@ -1182,6 +1184,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             if (this.allowShaderHotSwapping && previousEffect && !effect.isReady()) {
                 effect = previousEffect;
                 defines.markAsUnprocessed();
+
+                forceWasNotReadyPreviously = this.isFrozen;
 
                 if (lightDisposed) {
                     // re register in case it takes more than one frame.
@@ -1199,7 +1203,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         defines._renderId = scene.getRenderId();
-        subMesh.effect._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyReady = forceWasNotReadyPreviously ? false : true;
         subMesh.effect._wasPreviouslyUsingInstances = !!useInstances;
 
         if (scene.performancePriority !== ScenePerformancePriority.BackwardCompatible) {
@@ -2003,7 +2007,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             this.bindOnlyNormalMatrix(this._normalMatrix);
         }
 
-        const mustRebind = this._mustRebind(scene, effect, mesh.visibility);
+        const mustRebind = effect._forceNextBinding || this._mustRebind(scene, effect, mesh.visibility);
 
         // Bones
         MaterialHelper.BindBonesParameters(mesh, this._activeEffect, this.prePassConfiguration);
@@ -2014,7 +2018,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             this.bindViewProjection(effect);
             reflectionTexture = this._getReflectionTexture();
 
-            if (!ubo.useUbo || !this.isFrozen || !ubo.isSync) {
+            if (!ubo.useUbo || !this.isFrozen || !ubo.isSync || effect._forceNextBinding) {
                 // Texture uniforms
                 if (scene.texturesEnabled) {
                     if (this._albedoTexture && MaterialFlags.DiffuseTextureEnabled) {

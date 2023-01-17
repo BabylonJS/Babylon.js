@@ -146,6 +146,9 @@ export class Effect implements IDisposable {
      */
     public _wasPreviouslyReady = false;
 
+    /** @internal */
+    public _forceNextBinding = false;
+
     /**
      * @internal
      * Specifies if the effect was previously using instances
