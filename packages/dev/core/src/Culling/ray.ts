@@ -319,7 +319,7 @@ export class Ray {
      * @param results array to store result in
      * @returns Array of picking infos
      */
-    public intersectsMeshes(meshes: Array<DeepImmutable<AbstractMesh>>, fastCheck?: boolean, results?: Array<PickingInfo>): Array<PickingInfo> {
+    public intersectsMeshes(meshes: DeepImmutable<Array<AbstractMesh>>, fastCheck?: boolean, results?: Array<PickingInfo>): Array<PickingInfo> {
         if (results) {
             results.length = 0;
         } else {
