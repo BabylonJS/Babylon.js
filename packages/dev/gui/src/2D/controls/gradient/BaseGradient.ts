@@ -7,10 +7,19 @@ import type { ICanvasGradient, ICanvasRenderingContext } from "core/Engines/ICan
 /**
  * Type that represents a single stop on the gradient.
  */
-export type ColorStop = { offset: number; color: string };
+export type GradientColorStop = {
+    /**
+     * Offset from the start where the color will be applied.
+     */
+    offset: number;
+    /**
+     * Color to be applied.
+     */
+    color: string;
+};
 
 export class BaseGradient {
-    private _colorStops: ColorStop[];
+    private _colorStops: GradientColorStop[];
 
     private _canvasGradient: CanvasGradient;
     private _context: ICanvasRenderingContext;
@@ -34,7 +43,10 @@ export class BaseGradient {
         }
     }
 
-    /** Gets the CanvasGradient object for filling the canvas */
+    /**
+     * If there are any changes or the context changed, regenerate the canvas gradient object. Else,
+     * reuse the existing gradient.
+     **/
     public getCanvasGradient(context: ICanvasRenderingContext) {
         if (this._gradientDirty || this._context !== context) {
             this._context = context;
