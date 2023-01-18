@@ -39,6 +39,26 @@ export class InstantiatedEntries {
      * List of new animation groups
      */
     public animationGroups: AnimationGroup[] = [];
+    
+     /**
+     * Disposes the instantiated entries from the scene
+     */
+    public removeFromScene() {
+        this.rootNodes.slice(0).forEach((o) => {
+            o.dispose();
+        });
+        this.rootNodes.length = 0;
+        
+        this.skeletons.slice(0).forEach((o) => {
+            o.dispose();
+        });
+        this.skeletons.length = 0;
+        
+        this.animationGroups.slice(0).forEach((o) => {
+            o.dispose();
+        });
+        this.animationGroups.length = 0;
+    }
 }
 
 /**
