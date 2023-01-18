@@ -1786,7 +1786,9 @@ export class Material implements IAnimatable, IClipPlanesHolder {
             this._onEffectCreatedObservable.clear();
         }
 
-        this._eventInfo = undefined as any;
+        if (this._eventInfo) {
+            this._eventInfo = {} as any;
+        }
     }
 
     /**
