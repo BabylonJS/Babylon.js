@@ -117,6 +117,8 @@ export interface IPhysicsEnginePluginV2 {
     // body
     initBody(body: PhysicsBody, position: Vector3, orientation: Quaternion): void;
     initBodyInstances(body: PhysicsBody, mesh: Mesh): void;
+    sync(body: PhysicsBody): void;
+    syncTransform(body: PhysicsBody, transformNode: TransformNode): void;
     setShape(body: PhysicsBody, shape: PhysicsShape): void;
     getShape(body: PhysicsBody): PhysicsShape;
     setFilterGroup(body: PhysicsBody, group: number): void;
