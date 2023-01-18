@@ -1130,9 +1130,9 @@ export class Material implements IAnimatable, IClipPlanesHolder {
 
     /**
      * Marks the material to indicate that it needs to be re-calculated
-     * @param forceDirtyfyAll - Forces the material to be marked as dirty for all components (same as this.markAsDirty(Material.AllDirtyFlag))
+     * @param forceMaterialDirty - Forces the material to be marked as dirty for all components (same as this.markAsDirty(Material.AllDirtyFlag)). You should use this flag if the material is frozen and you want to force a recompilation.
      */
-    public markDirty(forceDirtyfyAll = false): void {
+    public markDirty(forceMaterialDirty = false): void {
         const meshes = this.getScene().meshes;
         for (const mesh of meshes) {
             if (!mesh.subMeshes) {
@@ -1149,11 +1149,11 @@ export class Material implements IAnimatable, IClipPlanesHolder {
 
                 subMesh.effect._wasPreviouslyReady = false;
                 subMesh.effect._wasPreviouslyUsingInstances = null;
-                subMesh.effect._forceRebindOnNextCall = forceDirtyfyAll;
+                subMesh.effect._forceRebindOnNextCall = forceMaterialDirty;
             }
         }
 
-        if (forceDirtyfyAll) {
+        if (forceMaterialDirty) {
             this.markAsDirty(Material.AllDirtyFlag);
         }
     }
@@ -1785,6 +1785,8 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         if (this._onEffectCreatedObservable) {
             this._onEffectCreatedObservable.clear();
         }
+
+        this._eventInfo = undefined as any;
     }
 
     /**
