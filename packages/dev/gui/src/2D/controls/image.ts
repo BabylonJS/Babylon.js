@@ -561,13 +561,13 @@ export class Image extends Control {
             if (cachedData.loaded) {
                 this._onImageLoaded();
             } else {
-                cachedData.waitingForLoadCallback.push(this._onImageLoaded);
+                cachedData.waitingForLoadCallback.push(this._onImageLoaded.bind(this));
             }
             return;
         }
         this._domImage = engine.createCanvasImage();
         if (value) {
-            Image.SourceImgCache.set(value, { img: this._domImage, timesUsed: 1, loaded: false, waitingForLoadCallback: [this._onImageLoaded] });
+            Image.SourceImgCache.set(value, { img: this._domImage, timesUsed: 1, loaded: false, waitingForLoadCallback: [this._onImageLoaded.bind(this)] });
         }
 
         this._domImage.onload = () => {
