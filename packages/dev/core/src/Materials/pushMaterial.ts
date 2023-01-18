@@ -80,6 +80,9 @@ export class PushMaterial extends Material {
     protected _afterBind(mesh?: Mesh, effect: Nullable<Effect> = null): void {
         super._afterBind(mesh, effect);
         this.getScene()._cachedEffect = effect;
+        if (effect) {
+            effect._forceRebindOnNextCall = false;
+        }
     }
 
     protected _mustRebind(scene: Scene, effect: Effect, visibility: number = 1) {
