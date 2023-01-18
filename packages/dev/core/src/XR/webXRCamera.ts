@@ -159,8 +159,6 @@ export class WebXRCamera extends FreeCamera {
         this._lastXRViewerPose = undefined;
     }
 
-    private _rotate180 = new Quaternion(0, 1, 0, 0);
-
     private _updateFromXRSession() {
         const pose = this._xrSessionManager.currentFrame && this._xrSessionManager.currentFrame.getViewerPose(this._xrSessionManager.referenceSpace);
         this._lastXRViewerPose = pose || undefined;
@@ -246,8 +244,6 @@ export class WebXRCamera extends FreeCamera {
                 currentRig.position.z *= -1;
                 currentRig.rotationQuaternion.z *= -1;
                 currentRig.rotationQuaternion.w *= -1;
-            } else {
-                currentRig.rotationQuaternion.multiplyInPlace(this._rotate180);
             }
             Matrix.FromFloat32ArrayToRefScaled(view.projectionMatrix, 0, 1, currentRig._projectionMatrix);
 
