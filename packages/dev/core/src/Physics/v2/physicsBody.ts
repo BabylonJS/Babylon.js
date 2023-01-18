@@ -79,7 +79,6 @@ export class PhysicsBody {
     /**
      * Sets the shape of the physics body.
      * @param shape - The shape of the physics body.
-     * @returns void
      *
      * This method is useful for setting the shape of the physics body, which is necessary for the physics engine to accurately simulate the body's behavior.
      * The shape is used to calculate the body's mass, inertia, and other properties.
@@ -104,7 +103,6 @@ export class PhysicsBody {
     /**
      * Sets the filter group of the physics body.
      * @param group - The filter group of the physics body.
-     * @returns void
      *
      * This method is useful for setting the filter group of the physics body.
      * The filter group is used to determine which bodies should collide with each other.
@@ -131,7 +129,6 @@ export class PhysicsBody {
      * Sets the event mask for the physics engine.
      *
      * @param eventMask - A bitmask that determines which events will be sent to the physics engine.
-     * @returns void
      *
      * This method is useful for setting the event mask for the physics engine, which determines which events
      * will be sent to the physics engine. This allows the user to control which events the physics engine will respond to.
@@ -185,7 +182,6 @@ export class PhysicsBody {
      * Sets the linear damping of the physics body.
      *
      * @param damping - The linear damping value.
-     * @returns void
      *
      * This method is useful for controlling the linear damping of the physics body,
      * which is the rate at which the body's velocity decreases over time. This is useful for simulating
@@ -210,7 +206,6 @@ export class PhysicsBody {
     /**
      * Sets the angular damping of the physics body.
      * @param damping The angular damping of the body.
-     * @returns void
      *
      * This method is useful for controlling the angular velocity of a physics body.
      * By setting the damping, the body's angular velocity will be reduced over time, simulating the effect of friction.
@@ -236,7 +231,6 @@ export class PhysicsBody {
     /**
      * Sets the linear velocity of the physics object.
      * @param linVel - The linear velocity to set.
-     * @returns void
      *
      * This method is useful for setting the linear velocity of a physics object,
      * which is necessary for simulating realistic physics in a game engine.
@@ -260,7 +254,6 @@ export class PhysicsBody {
     /**
      * Sets the angular velocity of the physics object.
      * @param angVel - The angular velocity to set.
-     * @returns void
      *
      * This method is useful for setting the angular velocity of a physics object, which is necessary for
      * simulating realistic physics behavior. The angular velocity is used to determine the rate of rotation of the object,
@@ -286,7 +279,6 @@ export class PhysicsBody {
      *
      * @param location The location of the impulse.
      * @param impulse The impulse vector.
-     * @returns void
      *
      * This method is useful for applying an impulse to a physics object, which can be used to simulate physical forces such as gravity,
      * collisions, and explosions. This can be used to create realistic physics simulations in a game or other application.
@@ -308,7 +300,6 @@ export class PhysicsBody {
 
     /**
      * Disposes the body from the physics engine.
-     * @returns void
      *
      * This method is useful for cleaning up the physics engine when a body is no longer needed. Disposing the body will free up resources and prevent memory leaks.
      */

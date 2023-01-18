@@ -24,8 +24,8 @@ export class PhysicsConstraint {
      * @param type The type of constraint to create.
      * @param options The options for the constraint.
      * @param scene The scene the constraint belongs to.
-     * 
-     * This code is useful for creating a new constraint for the physics engine. It checks if the scene has a physics engine, and if the plugin version is correct. 
+     *
+     * This code is useful for creating a new constraint for the physics engine. It checks if the scene has a physics engine, and if the plugin version is correct.
      * If all checks pass, it initializes the constraint with the given type and options.
      */
     constructor(type: ConstraintType, options: PhysicsConstraintParameters, scene: Scene) {
@@ -51,10 +51,10 @@ export class PhysicsConstraint {
     /**
      * Sets the parent body of this body.
      * @param body - The parent body to set.
-     * 
+     *
      * This method is useful for setting the parent body of a physics body in a physics engine.
      * This allows the engine to accurately simulate the motion of the body in relation to its parent body.
-     * For example, if the parent body is a planet, the engine can accurately simulate the motion of the body in relation to the planet's gravity. 
+     * For example, if the parent body is a planet, the engine can accurately simulate the motion of the body in relation to the planet's gravity.
      */
     public setParentBody(body: PhysicsBody): void {
         this._physicsPlugin.setParentBody(this, body);
@@ -62,7 +62,7 @@ export class PhysicsConstraint {
 
     /**
      * Retrieves the parent body of the current physics constraint.
-     * 
+     *
      * @returns The parent body of the current physics constraint, or `undefined` if the
      * current constraint does not have a parent body.
      */
@@ -76,7 +76,7 @@ export class PhysicsConstraint {
      * @param body - The child body to set.
      *
      * This method is useful for setting the child body of the current body in a physics engine.
-     * This allows for the creation of complex structures of bodies that interact with each other in a realistic way. 
+     * This allows for the creation of complex structures of bodies that interact with each other in a realistic way.
      */
     public setChildBody(body: PhysicsBody): void {
         this._physicsPlugin.setChildBody(this, body);
@@ -84,7 +84,7 @@ export class PhysicsConstraint {
 
     /**
      * Retrieves the child body of the current physics constraint.
-     * 
+     *
      * @returns The child body of the current physics constraint, or `undefined` if no
      * child body is present.
      */
