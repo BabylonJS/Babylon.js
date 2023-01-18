@@ -201,14 +201,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.42.1";
+        return "babylonjs@5.42.2";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.42.1";
+        return "5.42.2";
     }
 
     /**
@@ -3321,6 +3321,137 @@ export class ThinEngine {
         }
 
         this._gl.uniform4iv(uniform, array);
+        return true;
+    }
+
+    /**
+     * Set the value of an uniform to a number (unsigned int)
+     * @param uniform defines the webGL uniform location where to store the value
+     * @param value defines the unsigned int number to store
+     * @returns true if the value was set
+     */
+    public setUInt(uniform: Nullable<WebGLUniformLocation>, value: number): boolean {
+        if (!uniform) {
+            return false;
+        }
+
+        this._gl.uniform1ui(uniform, value);
+
+        return true;
+    }
+
+    /**
+     * Set the value of an uniform to a unsigned int2
+     * @param uniform defines the webGL uniform location where to store the value
+     * @param x defines the 1st component of the value
+     * @param y defines the 2nd component of the value
+     * @returns true if the value was set
+     */
+    public setUInt2(uniform: Nullable<WebGLUniformLocation>, x: number, y: number): boolean {
+        if (!uniform) {
+            return false;
+        }
+
+        this._gl.uniform2ui(uniform, x, y);
+
+        return true;
+    }
+
+    /**
+     * Set the value of an uniform to a unsigned int3
+     * @param uniform defines the webGL uniform location where to store the value
+     * @param x defines the 1st component of the value
+     * @param y defines the 2nd component of the value
+     * @param z defines the 3rd component of the value
+     * @returns true if the value was set
+     */
+    public setUInt3(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number): boolean {
+        if (!uniform) {
+            return false;
+        }
+
+        this._gl.uniform3ui(uniform, x, y, z);
+
+        return true;
+    }
+
+    /**
+     * Set the value of an uniform to a unsigned int4
+     * @param uniform defines the webGL uniform location where to store the value
+     * @param x defines the 1st component of the value
+     * @param y defines the 2nd component of the value
+     * @param z defines the 3rd component of the value
+     * @param w defines the 4th component of the value
+     * @returns true if the value was set
+     */
+    public setUInt4(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number, w: number): boolean {
+        if (!uniform) {
+            return false;
+        }
+
+        this._gl.uniform4ui(uniform, x, y, z, w);
+
+        return true;
+    }
+
+    /**
+     * Set the value of an uniform to an array of unsigned int32
+     * @param uniform defines the webGL uniform location where to store the value
+     * @param array defines the array of unsigned int32 to store
+     * @returns true if the value was set
+     */
+    public setUIntArray(uniform: Nullable<WebGLUniformLocation>, array: Uint32Array): boolean {
+        if (!uniform) {
+            return false;
+        }
+
+        this._gl.uniform1uiv(uniform, array);
+
+        return true;
+    }
+
+    /**
+     * Set the value of an uniform to an array of unsigned int32 (stored as vec2)
+     * @param uniform defines the webGL uniform location where to store the value
+     * @param array defines the array of unsigned int32 to store
+     * @returns true if the value was set
+     */
+    public setUIntArray2(uniform: Nullable<WebGLUniformLocation>, array: Uint32Array): boolean {
+        if (!uniform || array.length % 2 !== 0) {
+            return false;
+        }
+
+        this._gl.uniform2uiv(uniform, array);
+        return true;
+    }
+
+    /**
+     * Set the value of an uniform to an array of unsigned int32 (stored as vec3)
+     * @param uniform defines the webGL uniform location where to store the value
+     * @param array defines the array of unsigned int32 to store
+     * @returns true if the value was set
+     */
+    public setUIntArray3(uniform: Nullable<WebGLUniformLocation>, array: Uint32Array): boolean {
+        if (!uniform || array.length % 3 !== 0) {
+            return false;
+        }
+
+        this._gl.uniform3uiv(uniform, array);
+        return true;
+    }
+
+    /**
+     * Set the value of an uniform to an array of unsigned int32 (stored as vec4)
+     * @param uniform defines the webGL uniform location where to store the value
+     * @param array defines the array of unsigned int32 to store
+     * @returns true if the value was set
+     */
+    public setUIntArray4(uniform: Nullable<WebGLUniformLocation>, array: Uint32Array): boolean {
+        if (!uniform || array.length % 4 !== 0) {
+            return false;
+        }
+
+        this._gl.uniform4uiv(uniform, array);
         return true;
     }
 

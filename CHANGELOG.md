@@ -1,5 +1,11 @@
 # Changelog
 
+## 5.42.2
+
+### Core
+
+- Fixed issue when setting ViewPort multiple times per frame in Native - by [SergioRZMasson](https://github.com/SergioRZMasson) ([#13367](https://github.com/BabylonJS/Babylon.js/pull/13367))
+
 ## 5.42.1
 
 ### Core

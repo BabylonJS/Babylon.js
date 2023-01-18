@@ -5,10 +5,14 @@ import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like
 import type { ThinEngine } from "../thinEngine";
 
 const floatNCache: string[] = [
-    "Int2",
     "Int",
+    "Int2",
     "Int3",
     "Int4",
+    "UInt",
+    "UInt2",
+    "UInt3",
+    "UInt4",
     "Vector2",
     "Vector3",
     "Vector4",
@@ -72,7 +76,7 @@ export class WebGLPipelineContext implements IPipelineContext {
                 };
             }
         };
-        ["Int?", "IntArray?", "Array?", "Float?", "Matrices", "Matrix3x3", "Matrix2x2"].forEach((functionName) => {
+        ["Int?", "UInt?", "IntArray?", "UIntArray?", "Array?", "Float?", "Matrices", "Matrix3x3", "Matrix2x2"].forEach((functionName) => {
             const name = `set${functionName}`;
             if (this[name as keyof this]) {
                 return;
@@ -278,6 +282,68 @@ export class WebGLPipelineContext implements IPipelineContext {
      * @param array array to be set.
      */
     public setIntArray4: (uniformName: string, array: Int32Array) => void;
+
+    /**
+     * Sets an unsigned integer value on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param value Value to be set.
+     */
+    public setUInt: (uniformName: string, value: number) => void;
+
+    /**
+     * Sets a unsigned int2 on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param x First unsigned int in uint2.
+     * @param y Second unsigned int in uint2.
+     */
+    public setUInt2: (uniformName: string, x: number, y: number) => void;
+
+    /**
+     * Sets a unsigned int3 on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param x First unsigned int in uint3.
+     * @param y Second unsigned int in uint3.
+     * @param z Third unsigned int in uint3.
+     */
+    public setUInt3: (uniformName: string, x: number, y: number, z: number) => void;
+
+    /**
+     * Sets a unsigned int4 on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param x First unsigned int in uint4.
+     * @param y Second unsigned int in uint4.
+     * @param z Third unsigned int in uint4.
+     * @param w Fourth unsigned int in uint4.
+     */
+    public setUInt4: (uniformName: string, x: number, y: number, z: number, w: number) => void;
+
+    /**
+     * Sets an unsigned int array on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param array array to be set.
+     */
+    public setUIntArray: (uniformName: string, array: Uint32Array) => void;
+
+    /**
+     * Sets an unsigned int array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
+     * @param uniformName Name of the variable.
+     * @param array array to be set.
+     */
+    public setUIntArray2: (uniformName: string, array: Uint32Array) => void;
+
+    /**
+     * Sets an unsigned int array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
+     * @param uniformName Name of the variable.
+     * @param array array to be set.
+     */
+    public setUIntArray3: (uniformName: string, array: Uint32Array) => void;
+
+    /**
+     * Sets an unsigned int array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
+     * @param uniformName Name of the variable.
+     * @param array array to be set.
+     */
+    public setUIntArray4: (uniformName: string, array: Uint32Array) => void;
 
     /**
      * Sets an array on a uniform variable.

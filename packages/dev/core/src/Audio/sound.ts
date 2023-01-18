@@ -905,14 +905,17 @@ export class Sound {
                 this._soundSource.stop(stopTime);
                 if (stopTime === undefined) {
                     this.isPlaying = false;
+                    this.isPaused = false;
+                    this._startOffset = 0;
+                    this._startTime = Engine.audioEngine!.audioContext!.currentTime;
                     this._soundSource.onended = () => void 0;
                 } else {
                     this._soundSource.onended = () => {
                         this.isPlaying = false;
+                        this.isPaused = false;
+                        this._startOffset = 0;
+                        this._startTime = Engine.audioEngine!.audioContext!.currentTime;
                     };
-                }
-                if (!this.isPaused) {
-                    this._startOffset = 0;
                 }
             }
         }
@@ -923,7 +926,6 @@ export class Sound {
      */
     public pause(): void {
         if (this.isPlaying) {
-            this.isPaused = true;
             if (this._streaming) {
                 if (this._htmlAudioElement) {
                     this._htmlAudioElement.pause();
@@ -931,8 +933,10 @@ export class Sound {
                     this._streamingSource.disconnect();
                 }
                 this.isPlaying = false;
+                this.isPaused = true;
             } else if (Engine.audioEngine?.audioContext) {
                 this.stop(0);
+                this.isPaused = true;
                 this._startOffset += Engine.audioEngine.audioContext.currentTime - this._startTime;
             }
         }

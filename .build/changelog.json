@@ -1,6 +1,24 @@
 {
-    "fromTag": "5.42.0",
+    "fromTag": "5.42.1",
     "changelog": {
+        "5.42.2": [
+            {
+                "pr": "13367",
+                "title": "Fixed issue when setting ViewPort multiple times per frame in Native",
+                "description": "## Overview\r\n\r\nThis PR fixes complements [this Babylon Native PR](https://github.com/BabylonJS/BabylonNative/pull/1183), it moves viewport update from been done immediately to be done using the command queue. The way this is currently been done on master, if multiple viewport updates are done in a single frame (like when you can more than one camera been rendered using different viewports) the viewport updates actually end up overriding each other and get lost by the time the command queue starts been processed. \r\n\r\n## Extra Information\r\n\r\nThis functionality started as a request in the forum:\r\n[Forum issue](https://forum.babylonjs.com/t/viewport-ignored-for-mutiple-cameras-in-react-native/36709/4)\r\n[Target web behaviour](https://playground.babylonjs.com/#H8VW0B)",
+                "author": {
+                    "name": "SergioRZMasson",
+                    "url": "https://github.com/SergioRZMasson"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                ],
+                "tags": [
+                    "native"
+                ]
+            }
+        ],
         "5.42.1": [
             {
                 "pr": "13428",

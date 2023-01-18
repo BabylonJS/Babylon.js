@@ -98,7 +98,7 @@ export class HtmlElementTexture extends BaseTexture {
 
         this.name = name;
         this.element = element;
-        this._isVideo = element instanceof HTMLVideoElement;
+        this._isVideo = !!(element as HTMLVideoElement).getVideoPlaybackQuality;
         this._externalTexture = this._isVideo ? this._engine?.createExternalTexture(element as HTMLVideoElement) ?? null : null;
 
         this.anisotropicFilteringLevel = 1;
