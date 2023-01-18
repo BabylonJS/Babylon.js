@@ -1,6 +1,7 @@
 import type { TransformNode } from "../../Meshes/transformNode";
 import type { Nullable } from "../../types";
-import { WebXRFeatureName, WebXRFeaturesManager } from "../../XR/webXRFeaturesManager";
+import { WebXRFeatureName } from "../../XR/webXRFeaturesManager";
+import type { WebXRFeaturesManager } from "../../XR/webXRFeaturesManager";
 import type { WebXREyeTracking } from "../../XR/features/WebXREyeTracking";
 import type { WebXRHandTracking } from "../../XR/features/WebXRHandTracking";
 import { WebXRHandJoint } from "../../XR/features/WebXRHandTracking";
@@ -343,7 +344,7 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
      * @param xr xr experience
      */
     public linkToXRExperience(xr: WebXRExperienceHelper | WebXRFeaturesManager) {
-        const featuresManager: WebXRFeaturesManager = (xr as WebXRExperienceHelper).featuresManager ? (xr as WebXRExperienceHelper).featuresManager : xr as WebXRFeaturesManager;
+        const featuresManager: WebXRFeaturesManager = (xr as WebXRExperienceHelper).featuresManager ? (xr as WebXRExperienceHelper).featuresManager : (xr as WebXRFeaturesManager);
         if (!featuresManager) {
             Tools.Error("XR features manager must be available or provided directly for the Hand Menu to work");
         } else {
