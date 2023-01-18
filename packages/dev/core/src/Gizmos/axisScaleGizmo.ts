@@ -2,7 +2,7 @@ import type { Observer } from "../Misc/observable";
 import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
 import type { PointerInfo } from "../Events/pointerEvents";
-import type { Vector3 } from "../Maths/math.vector";
+import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { Node } from "../node";
 import { Mesh } from "../Meshes/mesh";
@@ -17,7 +17,6 @@ import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import type { ScaleGizmo } from "./scaleGizmo";
 import { Color3 } from "../Maths/math.color";
 import type { TransformNode } from "../Meshes/transformNode";
-import { TmpVectors, Matrix } from "../Maths/math.vector";
 
 /**
  * Interface for axis scale gizmo
@@ -88,6 +87,7 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
     protected _hoverMaterial: StandardMaterial;
     protected _disableMaterial: StandardMaterial;
     protected _dragging: boolean = false;
+    private _tmpVector = new Vector3(0, 0, 0);
 
     /** Default material used to render when gizmo is not disabled or hovered */
     public get coloredMaterial() {
@@ -177,17 +177,17 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
                 this._handlePivot();
                 // Drag strength is modified by the scale of the gizmo (eg. for small objects like boombox the strength will be increased to match the behavior of larger objects)
                 const dragStrength = this.sensitivity * event.dragDistance * ((this.scaleRatio * 3) / this._rootMesh.scaling.length());
-
+                const tmpVector = this._tmpVector;
                 // Snapping logic
                 let snapped = false;
                 let dragSteps = 0;
                 if (this.uniformScaling) {
-                    TmpVectors.Vector3[0].setAll(0.57735); // 1 / sqrt(3)
+                    tmpVector.setAll(0.57735); // 1 / sqrt(3)
                 } else {
-                    TmpVectors.Vector3[0].copyFrom(dragAxis);
+                    tmpVector.copyFrom(dragAxis);
                 }
                 if (this.snapDistance == 0) {
-                    TmpVectors.Vector3[0].scaleToRef(dragStrength, TmpVectors.Vector3[0]);
+                    tmpVector.scaleToRef(dragStrength, tmpVector);
                 } else {
                     currentSnapDragDistance += dragStrength;
                     if (Math.abs(currentSnapDragDistance) > this.snapDistance) {
@@ -196,14 +196,14 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
                             dragSteps *= -1;
                         }
                         currentSnapDragDistance = currentSnapDragDistance % this.snapDistance;
-                        TmpVectors.Vector3[0].scaleToRef(this.snapDistance * dragSteps, TmpVectors.Vector3[0]);
+                        tmpVector.scaleToRef(this.snapDistance * dragSteps, tmpVector);
                         snapped = true;
                     } else {
-                        TmpVectors.Vector3[0].scaleInPlace(0);
+                        tmpVector.scaleInPlace(0);
                     }
                 }
 
-                Matrix.ScalingToRef(1 + TmpVectors.Vector3[0].x, 1 + TmpVectors.Vector3[0].y, 1 + TmpVectors.Vector3[0].z, TmpVectors.Matrix[2]);
+                Matrix.ScalingToRef(1 + tmpVector.x, 1 + tmpVector.y, 1 + tmpVector.z, TmpVectors.Matrix[2]);
 
                 TmpVectors.Matrix[2].multiplyToRef(this.attachedNode.getWorldMatrix(), TmpVectors.Matrix[1]);
                 const transformNode = (<Mesh>this.attachedNode)._isMesh ? (this.attachedNode as TransformNode) : undefined;

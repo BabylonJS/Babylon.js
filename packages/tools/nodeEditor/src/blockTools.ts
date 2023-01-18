@@ -437,6 +437,11 @@ export class BlockTools {
                 timeBlock.animationType = AnimatedInputBlockTypes.Time;
                 return timeBlock;
             }
+            case "RealTimeBlock": {
+                const realTimeBlock = new InputBlock("RealTime", undefined, NodeMaterialBlockConnectionPointTypes.Float);
+                realTimeBlock.animationType = AnimatedInputBlockTypes.RealTime;
+                return realTimeBlock;
+            }
             case "DeltaTimeBlock": {
                 const deltaTimeBlock = new InputBlock("Delta time");
                 deltaTimeBlock.setAsSystemValue(NodeMaterialSystemValues.DeltaTime);

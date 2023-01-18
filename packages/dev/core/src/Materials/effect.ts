@@ -409,16 +409,18 @@ export class Effect implements IDisposable {
                 return this;
             };
         };
-        ["Int?", "IntArray?", "Array?", "Color?", "Vector?", "Float?", "Matrices", "Matrix", "Matrix3x3", "Matrix2x2", "Quaternion", "DirectColor4"].forEach((functionName) => {
-            const name = `set${functionName}`;
-            if (name.endsWith("?")) {
-                ["", 2, 3, 4].forEach((n) => {
-                    this[(name.slice(0, -1) + n) as keyof this] = this[(name.slice(0, -1) + n) as keyof this] || proxyFunction(name.slice(0, -1) + n).bind(this);
-                });
-            } else {
-                this[name as keyof this] = this[name as keyof this] || proxyFunction(name).bind(this);
+        ["Int?", "UInt?", "IntArray?", "UIntArray?", "Array?", "Color?", "Vector?", "Float?", "Matrices", "Matrix", "Matrix3x3", "Matrix2x2", "Quaternion", "DirectColor4"].forEach(
+            (functionName) => {
+                const name = `set${functionName}`;
+                if (name.endsWith("?")) {
+                    ["", 2, 3, 4].forEach((n) => {
+                        this[(name.slice(0, -1) + n) as keyof this] = this[(name.slice(0, -1) + n) as keyof this] || proxyFunction(name.slice(0, -1) + n).bind(this);
+                    });
+                } else {
+                    this[name as keyof this] = this[name as keyof this] || proxyFunction(name).bind(this);
+                }
             }
-        });
+        );
     }
 
     private _useFinalCode(migratedVertexCode: string, migratedFragmentCode: string, baseName: any) {
@@ -1128,6 +1130,76 @@ export class Effect implements IDisposable {
      * @returns this effect.
      */
     public setIntArray4: (uniformName: string, array: Int32Array) => Effect;
+
+    /**
+     * Sets an unsigned integer value on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param value Value to be set.
+     * @returns this effect.
+     */
+    public setUInt: (uniformName: string, value: number) => Effect;
+
+    /**
+     * Sets an unsigned int2 value on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param x First unsigned int in uint2.
+     * @param y Second unsigned int in uint2.
+     * @returns this effect.
+     */
+    public setUInt2: (uniformName: string, x: number, y: number) => Effect;
+
+    /**
+     * Sets an unsigned int3 value on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param x First unsigned int in uint3.
+     * @param y Second unsigned int in uint3.
+     * @param z Third unsigned int in uint3.
+     * @returns this effect.
+     */
+    public setUInt3: (uniformName: string, x: number, y: number, z: number) => Effect;
+
+    /**
+     * Sets an unsigned int4 value on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param x First unsigned int in uint4.
+     * @param y Second unsigned int in uint4.
+     * @param z Third unsigned int in uint4.
+     * @param w Fourth unsigned int in uint4.
+     * @returns this effect.
+     */
+    public setUInt4: (uniformName: string, x: number, y: number, z: number, w: number) => Effect;
+
+    /**
+     * Sets an unsigned int array on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param array array to be set.
+     * @returns this effect.
+     */
+    public setUIntArray: (uniformName: string, array: Uint32Array) => Effect;
+
+    /**
+     * Sets an unsigned int array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
+     * @param uniformName Name of the variable.
+     * @param array array to be set.
+     * @returns this effect.
+     */
+    public setUIntArray2: (uniformName: string, array: Uint32Array) => Effect;
+
+    /**
+     * Sets an unsigned int array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
+     * @param uniformName Name of the variable.
+     * @param array array to be set.
+     * @returns this effect.
+     */
+    public setUIntArray3: (uniformName: string, array: Uint32Array) => Effect;
+
+    /**
+     * Sets an unsigned int array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
+     * @param uniformName Name of the variable.
+     * @param array array to be set.
+     * @returns this effect.
+     */
+    public setUIntArray4: (uniformName: string, array: Uint32Array) => Effect;
 
     /**
      * Sets an float array on a uniform variable.

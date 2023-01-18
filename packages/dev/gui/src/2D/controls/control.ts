@@ -1480,6 +1480,10 @@ export class Control implements IAnimatable {
             }
         }
 
+        if (oldLeft === newLeft && oldTop === newTop) {
+            return;
+        }
+
         this.left = newLeft + "px";
         this.top = newTop + "px";
 

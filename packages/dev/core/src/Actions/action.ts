@@ -5,6 +5,7 @@ import type { Condition } from "./condition";
 import { RegisterClass } from "../Misc/typeStore";
 import type { AbstractActionManager } from "./abstractActionManager";
 import type { Nullable } from "../types";
+import type { Material } from "../Materials/material";
 
 declare type Scene = import("../scene").Scene;
 declare type ActionManager = import("./actionManager").ActionManager;
@@ -302,7 +303,7 @@ export class Action implements IAction {
      * Internal only
      * @internal
      */
-    public static _GetTargetProperty = (target: Scene | Node) => {
+    public static _GetTargetProperty = (target: Scene | Node | Material) => {
         return {
             name: "target",
             targetType: (<Mesh>target)._isMesh
@@ -311,6 +312,8 @@ export class Action implements IAction {
                 ? "LightProperties"
                 : (<Camera>target)._isCamera
                 ? "CameraProperties"
+                : (<Material>target)._isMaterial
+                ? "MaterialProperties"
                 : "SceneProperties",
             value: (<Scene>target)._isScene ? "Scene" : (<Node>target).name,
         };

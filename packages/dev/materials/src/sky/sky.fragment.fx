@@ -88,6 +88,10 @@ vec3 Uncharted2Tonemap(vec3 x)
 	return ((x*(A*x+C*B)+D*EEE)/(x*(A*x+B)+D*F))-EEE/F;
 }
 
+#if DITHER
+#include<helperFunctions>
+#endif
+
 
 #define CUSTOM_FRAGMENT_DEFINITIONS
 
@@ -165,6 +169,10 @@ void main(void) {
 
 #if defined(VERTEXALPHA) || defined(INSTANCESCOLOR) && defined(INSTANCES)
 	alpha *= vColor.a;
+#endif
+
+#if DITHER
+	retColor.rgb += dither(gl_FragCoord.xy, 0.5);
 #endif
 
 	// Composition

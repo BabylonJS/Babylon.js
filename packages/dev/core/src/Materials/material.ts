@@ -947,6 +947,11 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         return "Material";
     }
 
+    /** @internal */
+    public get _isMaterial() {
+        return true;
+    }
+
     /**
      * Specifies if updates for the material been locked
      */
