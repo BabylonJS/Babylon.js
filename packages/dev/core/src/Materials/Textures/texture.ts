@@ -910,6 +910,7 @@ export class Texture extends BaseTexture {
 
         this._delayedOnLoad = null;
         this._delayedOnError = null;
+        this._buffer = null;
     }
 
     /**

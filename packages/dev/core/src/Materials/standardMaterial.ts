@@ -1430,6 +1430,8 @@ export class StandardMaterial extends PushMaterial {
                 engine
             );
 
+            this._eventInfo.customCode = undefined;
+
             if (effect) {
                 if (this._onEffectCreatedObservable) {
                     onCreatedEffectParameters.effect = effect;

@@ -1487,7 +1487,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         const join = defines.toString();
-        return engine.createEffect(
+        const effect = engine.createEffect(
             shaderName,
             <IEffectCreationOptions>{
                 attributes: attribs,
@@ -1505,6 +1505,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             },
             engine
         );
+
+        this._eventInfo.customCode = undefined;
+
+        return effect;
     }
 
     private _prepareDefines(
