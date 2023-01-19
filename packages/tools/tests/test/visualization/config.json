@@ -1523,6 +1523,11 @@
         {
             "title": "GUI Input Text Area Inside ScrollViewer",
             "playgroundId": "#NVAEWD#69"
+        },
+        {
+            "title": "GUI Images in Grid",
+            "playgroundId": "#8Y0XJL#1",
+            "renderCount": 10
         }
     ]
 }

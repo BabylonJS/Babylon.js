@@ -1041,7 +1041,16 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         } else if (event.detail) {
             delta = -event.detail;
         }
+        const mouseToRtt = CoordinateHelper.MousePointerToRTTSpace(this.trueRootContainer, this._scene.pointerX, this._scene.pointerY);
+        const rttToLocal = CoordinateHelper.RttToLocalNodeSpace(this.trueRootContainer, mouseToRtt.x, mouseToRtt.y);
 
+        const centerToRtt = CoordinateHelper.MousePointerToRTTSpace(this.trueRootContainer, this._engine.getRenderWidth() / 2, this._engine.getRenderHeight() / 2);
+        const centerToLocal = CoordinateHelper.RttToLocalNodeSpace(this.trueRootContainer, centerToRtt.x, centerToRtt.y);
+        const panScale = -delta / 1000;
+
+        const deltaCenter = rttToLocal.subtract(centerToLocal).scale(panScale).multiplyByFloats(1, -1);
+
+        this._panningOffset.addInPlace(deltaCenter);
         this.zooming(1 + delta / 1000);
     }
 

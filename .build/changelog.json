@@ -1,38 +1,54 @@
 {
-    "fromTag": "5.41.0",
+    "fromTag": "5.42.2",
     "changelog": {
-        "5.41.0": [
+        "5.42.2": [
             {
-                "pr": "13404",
-                "title": "Fix calculation of text height in InputTextArea",
-                "description": "The variables used to calculate where the text's y position would be in the InputTextArea were not using the most up-to-date measure of the control, so the position would be incorrect inside a scroll view:\r\n![image](https://user-images.githubusercontent.com/6002144/210601455-b4103773-7269-4be9-aaa0-7ad1dc01fc2b.png)\r\nWith the fix:\r\n![image](https://user-images.githubusercontent.com/6002144/210601500-6c873cf5-9035-439b-abf6-d3ebc7382dfd.png)\r\n",
+                "pr": "13367",
+                "title": "Fixed issue when setting ViewPort multiple times per frame in Native",
+                "description": "## Overview\r\n\r\nThis PR fixes complements [this Babylon Native PR](https://github.com/BabylonJS/BabylonNative/pull/1183), it moves viewport update from been done immediately to be done using the command queue. The way this is currently been done on master, if multiple viewport updates are done in a single frame (like when you can more than one camera been rendered using different viewports) the viewport updates actually end up overriding each other and get lost by the time the command queue starts been processed. \r\n\r\n## Extra Information\r\n\r\nThis functionality started as a request in the forum:\r\n[Forum issue](https://forum.babylonjs.com/t/viewport-ignored-for-mutiple-cameras-in-react-native/36709/4)\r\n[Target web behaviour](https://playground.babylonjs.com/#H8VW0B)",
                 "author": {
-                    "name": "carolhmj",
-                    "url": "https://github.com/carolhmj"
+                    "name": "SergioRZMasson",
+                    "url": "https://github.com/SergioRZMasson"
                 },
                 "files": [
-                    "packages/dev/gui/src/2D/controls/inputTextArea.ts",
-                    "packages/tools/tests/test/visualization/ReferenceImages/GUI Input Text Area Inside ScrollViewer.png",
-                    "packages/tools/tests/test/visualization/config.json"
+                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                ],
+                "tags": [
+                    "native"
+                ]
+            }
+        ],
+        "5.43.0": [
+            {
+                "pr": "13452",
+                "title": "Fix memory leaks",
+                "description": "Fix some memory leaks with texture buffers and material instances.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/Textures/texture.ts",
+                    "packages/dev/core/src/Materials/effect.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts"
                 ],
                 "tags": [
                     "bug",
-                    "gui"
+                    "memory leak"
                 ]
             },
             {
-                "pr": "13394",
-                "title": "GUI Editor Line Gizmo Improvements",
-                "description": "This PR introduces functionality to move, drag endpoints and rotate the Lines Gizmo on the GUI Editor.\r\n\r\nWithout the change:\r\n![current-line-gizmo-behavior](https://user-images.githubusercontent.com/6002144/210366143-6ca3a67d-551c-4d27-9be4-e2aba12ce248.gif)\r\n\r\nWith the change:\r\n![new-line-gizmo-behavior](https://user-images.githubusercontent.com/6002144/210366179-e61d460b-e181-4f92-9b15-5ffc36118cc4.gif)\r\n\r\n",
+                "pr": "13387",
+                "title": "Pan torwards cursor when zooming on GUI Editor",
+                "description": "Current behavior:\r\n![zoom-gui-current](https://user-images.githubusercontent.com/6002144/210845216-8f4f4719-fb77-4bc1-b562-8e44c1d4fc03.gif)\r\n\r\nNew behavior:\r\n![zoom-gui-new](https://user-images.githubusercontent.com/6002144/210845234-93f32031-83cb-42d2-bac7-a91c6eedef0d.gif)\r\n\r\n",
                 "author": {
                     "name": "carolhmj",
                     "url": "https://github.com/carolhmj"
                 },
                 "files": [
-                    "packages/dev/gui/src/2D/controls/control.ts",
-                    "packages/dev/gui/src/2D/controls/line.ts",
-                    "packages/tools/guiEditor/src/diagram/gizmoLine.tsx",
-                    "packages/tools/guiEditor/src/diagram/gizmoScalePoint.tsx"
+                    "packages/tools/guiEditor/src/diagram/workbench.tsx"
                 ],
                 "tags": [
                     "enhancement",
@@ -40,73 +56,198 @@
                 ]
             },
             {
-                "pr": "13403",
-                "title": "reference files correctly",
+                "pr": "13437",
+                "title": "Material: Make the frozen mode more user friendly",
+                "description": "See https://forum.babylonjs.com/t/how-to-rotate-texture-of-frozen-material/37430\r\n\r\nThe PR allows you to simply call `material.markDirty(true)` to update a material even when in frozen mode, and even if the mesh(es) using the material are out of view at the time of the call.\r\n\r\nCurrently, it is difficult to update a frozen material, even using the **call unfreeze / make changes / call freeze** paradigm, because the latter has be postponed after we are sure that the material is actually changed, i.e., until after the new effect (if a new effect is created) is ready, which can be difficult to determine: it may take several frames for the effect to be ready once compiling starts, and compiling won't start if all the meshes that use that material are out of sight.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/effect.ts",
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/Materials/pushMaterial.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts"
+                ],
+                "tags": [
+                    "materials",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13449",
+                "title": "Better error handling in XR Hand constraint behavior",
                 "description": null,
                 "author": {
                     "name": "RaananW",
                     "url": "https://github.com/RaananW"
                 },
                 "files": [
-                    "packages/tools/playground/public/index.html"
+                    "packages/dev/core/src/Behaviors/Meshes/handConstraintBehavior.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13448",
+                "title": "Remove a 180 degree flip (an old relic)",
+                "description": "Fixes #13447\n\nWhen initially implemented, right-handed scenes needed a 180 degrees flip because of the way teleportation was working. This code was revamped, but the 180 flip was never removed. I have tested it in different scenarios (and will continue testing it), but it does seem like this is an old relic and technically a bug that needs to be fixed.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/webXRCamera.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13444",
+                "title": "Fix Sound current time when stop is called while paused",
+                "description": "When stop is called while paused, the current time includes the start offset set by the pause function. This is not the case when stop is called while **not** paused. This is confusing. When stop is called, the current time should be the same, whether the sound is paused or not paused.\r\n\r\nThis change fixes the issue by always resetting the start offset when the sound is stopped, even if the sound is paused.\r\n\r\nReported on forum here: https://forum.babylonjs.com/t/pausing-and-playing-an-audio-with-offset-restarts-it-from-the-beginning-instead-of-the-current-position/36668/16",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/Audio/sound.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "audio"
+                ]
+            },
+            {
+                "pr": "13443",
+                "title": "Fix playing animations in Sandbox when they have the same name",
+                "description": "Fix #13441",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/sandbox/src/components/animationBar.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "sandbox"
+                ]
+            },
+            {
+                "pr": "13442",
+                "title": "`instanceof` will return false if element is created from a different window object than the global one",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/htmlElementTexture.ts"
                 ],
                 "tags": [
                     "skip changelog"
                 ]
             },
             {
-                "pr": "13402",
-                "title": "Gizmos use TmpVectors and exposed materials",
-                "description": "fixes #13396 \r\n\r\n- Use TmpVector\r\n- expose materials so user can tweak them\r\n",
+                "pr": "13439",
+                "title": "Add support for instanced meshes in STLEXPORT",
+                "description": "Related Forum Topic: https://forum.babylonjs.com/t/propose-to-remove-baking-transforms-during-stl-export-support-instanced-meshes/37210\r\n\r\nCreateSTL has a new param \"supportInstancedMeshes\" which when set to true exports Instances without baking transforms on source mesh. Exporting instances with supportInstancedMeshes=false and doNotBakeTransforms=false may cause them to change orientation/positions in the scene.",
                 "author": {
-                    "name": "CedricGuillemet",
-                    "url": "https://github.com/CedricGuillemet"
+                    "name": "d-0-s-t",
+                    "url": "https://github.com/d-0-s-t"
                 },
                 "files": [
-                    "packages/dev/core/src/Gizmos/axisDragGizmo.ts",
-                    "packages/dev/core/src/Gizmos/axisScaleGizmo.ts",
-                    "packages/dev/core/src/Gizmos/boundingBoxGizmo.ts",
-                    "packages/dev/core/src/Gizmos/gizmo.ts",
-                    "packages/dev/core/src/Gizmos/planeDragGizmo.ts",
-                    "packages/dev/core/src/Gizmos/planeRotationGizmo.ts",
-                    "packages/dev/core/src/Gizmos/scaleGizmo.ts"
+                    "packages/dev/serializers/src/stl/stlSerializer.ts"
                 ],
                 "tags": []
             },
             {
-                "pr": "13352",
-                "title": "Physics V2 plugin iteration",
-                "description": "Minor updates to the plugin interface, physics debug viewer and small fixes.",
+                "pr": "13433",
+                "title": "Add support for unsigned int uniform",
+                "description": "Current version can not pass unsigned int uniform to shader when using ShaderMaterial\r\n[Example](https://playground.babylonjs.com/#1OH09K#1727)\r\nThis PR add support for passing unsigned int uniform",
                 "author": {
-                    "name": "CedricGuillemet",
-                    "url": "https://github.com/CedricGuillemet"
+                    "name": "newbeea",
+                    "url": "https://github.com/newbeea"
                 },
                 "files": [
-                    "packages/dev/core/src/Debug/physicsViewer.ts",
-                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
-                    "packages/dev/core/src/Physics/v2/physicsBody.ts",
-                    "packages/dev/core/src/Physics/v2/physicsEngine.ts",
-                    "packages/dev/core/src/Physics/v2/physicsShape.ts"
+                    "packages/dev/core/src/Engines/IPipelineContext.ts",
+                    "packages/dev/core/src/Engines/Native/nativePipelineContext.ts",
+                    "packages/dev/core/src/Engines/WebGL/webGLPipelineContext.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuPipelineContext.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Materials/effect.ts",
+                    "packages/dev/core/src/Materials/shaderMaterial.ts",
+                    "packages/dev/core/src/Materials/uniformBuffer.ts"
                 ],
                 "tags": []
             },
             {
-                "pr": "13397",
-                "title": "Hide teleportation mesh on creation",
-                "description": "This makes sure it is invisible even if the next XR frame throws an exception for any reason.",
+                "pr": "13436",
+                "title": "Fix Action Deserialization",
+                "description": "https://forum.babylonjs.com/t/how-to-parse-actions-with-onkeydowntrigger-and-parameter/37350",
                 "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
                 },
                 "files": [
-                    "packages/dev/core/src/XR/features/WebXRControllerTeleportation.ts"
+                    "packages/dev/core/src/Actions/actionManager.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "loaders"
+                ]
+            }
+        ],
+        "5.42.1": [
+            {
+                "pr": "13428",
+                "title": "Add touch release detection to draggable parts of BoundingBoxGizmo",
+                "description": "As a followup from [this thread on the BabylonJS forums](https://forum.babylonjs.com/t/boundingboxgizmo-displays-unexpected-highlighting-behavior-on-touch-devices/37197), this PR adds touch release detection to the draggable components (scale boxes, rotation spheres) of the `BoundingBoxGizmo` such that those parts will now unhighlight correctly when releasing touch while dragging said parts.",
+                "author": {
+                    "name": "Hsifnus",
+                    "url": "https://github.com/Hsifnus"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/boundingBoxGizmo.ts"
                 ],
                 "tags": []
             },
             {
-                "pr": "13399",
-                "title": "Force the control's old rect position to be invalidated before moving",
-                "description": "This fixes an issue exposed by: https://github.com/BabylonJS/Babylon.js/pull/13372, where the control's previous rect was not invalidated and some remains of the rendering would be in the initial position:\r\n(Refer to https://playground.babylonjs.com/#FX4EEA#4) for an example\r\n![image](https://user-images.githubusercontent.com/6002144/210425124-332a9026-7105-49c6-a12a-a3a1debe87fd.png)\r\n",
+                "pr": "13431",
+                "title": "Fix broken sound offset backward compatibility",
+                "description": "Prior to my changes in PR https://github.com/BabylonJS/Babylon.js/pull/13373, when a sound's offset was set while paused, playback resumed from the given offset, not the time it was paused at.\r\n\r\nThis change fixes that break in backward compatibility while preserving the fix in PR https://github.com/BabylonJS/Babylon.js/pull/13373.\r\n\r\nThis change also reverts adding the offset in the currentTime property to preserve backward compatibility.\r\n\r\nReported on forum here: https://forum.babylonjs.com/t/sound-currenttime/37290",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/Audio/sound.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "audio"
+                ]
+            },
+            {
+                "pr": "13432",
+                "title": "GPUParticleSystem: Fix crash when update effect not ready",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/gpuParticleSystem.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "particles"
+                ]
+            },
+            {
+                "pr": "13430",
+                "title": "Fixes and performance improvement for linked GUI",
+                "description": "* Removing linked controls without moving the camera was causing glitching effects, this has been fixed.\r\n\r\n![linked-meshes-master](https://user-images.githubusercontent.com/6002144/211897255-6360b31f-ec50-4013-8364-2db3556ad90e.gif)\r\n\r\n* Instead of running the _checkControls function every time a mesh is added or removed, do it before rendering, so adding multiple linked controls on the same frame performs better.\r\n\r\n* When moving a control, only update and mark as dirty if the calculated new values have changed relative to the old ones.",
                 "author": {
                     "name": "carolhmj",
                     "url": "https://github.com/carolhmj"
@@ -118,42 +259,6 @@
                 "tags": [
                     "bug",
                     "gui"
-                ]
-            },
-            {
-                "pr": "13365",
-                "title": "Add a _internalMetadata to avoid side effects with metadata",
-                "description": "See https://forum.babylonjs.com/t/circular-dependency-issue-when-exporting-to-babylon-with-khr-materials-variants/35856\r\n\r\nThe glTF loader used to use `Node.metadata` / `BaseTexture.metadata` / `Material.metadata` for internal use, preventing serialization of corresponding objects in some cases.\r\n\r\nThere is now a new `_internalMetadata` property for `Node` / `BaseTexture` / `Material` for internal use only (this property is not serialized).",
-                "author": {
-                    "name": "Popov72",
-                    "url": "https://github.com/Popov72"
-                },
-                "files": [
-                    "packages/dev/core/src/Gizmos/boundingBoxGizmo.ts",
-                    "packages/dev/core/src/Materials/Textures/baseTexture.ts",
-                    "packages/dev/core/src/Materials/material.ts",
-                    "packages/dev/core/src/node.ts",
-                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_variants.ts",
-                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts"
-                ],
-                "tags": [
-                    "bug",
-                    "loaders"
-                ]
-            },
-            {
-                "pr": "13398",
-                "title": "Bump json5 from 1.0.1 to 1.0.2",
-                "description": "Bumps [json5](https://github.com/json5/json5) from 1.0.1 to 1.0.2.\n<details>\n<summary>Release notes</summary>\n<p><em>Sourced from <a href=\"https://github.com/json5/json5/releases\">json5's releases</a>.</em></p>\n<blockquote>\n<h2>v1.0.2</h2>\n<ul>\n<li>Fix: Properties with the name <code>__proto__</code> are added to objects and arrays. (<a href=\"https://github-redirect.dependabot.com/json5/json5/issues/199\">#199</a>) This also fixes a prototype pollution vulnerability reported by Jonathan Gregson! (<a href=\"https://github-redirect.dependabot.com/json5/json5/issues/295\">#295</a>). This has been backported to v1. (<a href=\"https://github-redirect.dependabot.com/json5/json5/issues/298\">#298</a>)</li>\n</ul>\n</blockquote>\n</details>\n<details>\n<summary>Changelog</summary>\n<p><em>Sourced from <a href=\"https://github.com/json5/json5/blob/main/CHANGELOG.md\">json5's changelog</a>.</em></p>\n<blockquote>\n<h3>Unreleased [<a href=\"https://github.com/json5/json5/tree/main\">code</a>, <a href=\"https://github.com/json5/json5/compare/v2.2.3...HEAD\">diff</a>]</h3>\n<h3>v2.2.3 [<a href=\"https://github.com/json5/json5/tree/v2.2.3\">code</a>, <a href=\"https://github.com/json5/json5/compare/v2.2.2...v2.2.3\">diff</a>]</h3>\n<ul>\n<li>Fix: json5@2.2.3 is now the 'latest' release according to npm instead of\nv1.0.2. (<a href=\"https://github-redirect.dependabot.com/json5/json5/issues/299\">#299</a>)</li>\n</ul>\n<h3>v2.2.2 [<a href=\"https://github.com/json5/json5/tree/v2.2.2\">code</a>, <a href=\"https://github.com/json5/json5/compare/v2.2.1...v2.2.2\">diff</a>]</h3>\n<ul>\n<li>Fix: Properties with the name <code>__proto__</code> are added to objects and arrays.\n(<a href=\"https://github-redirect.dependabot.com/json5/json5/issues/199\">#199</a>) This also fixes a prototype pollution vulnerability reported by\nJonathan Gregson! (<a href=\"https://github-redirect.dependabot.com/json5/json5/issues/295\">#295</a>).</li>\n</ul>\n<h3>v2.2.1 [<a href=\"https://github.com/json5/json5/tree/v2.2.1\">code</a>, <a href=\"https://github.com/json5/json5/compare/v2.2.0...v2.2.1\">diff</a>]</h3>\n<ul>\n<li>Fix: Removed dependence on minimist to patch CVE-2021-44906. (<a href=\"https://github-redirect.dependabot.com/json5/json5/issues/266\">#266</a>)</li>\n</ul>\n<h3>v2.2.0 [<a href=\"https://github.com/json5/json5/tree/v2.2.0\">code</a>, <a href=\"https://github.com/json5/json5/compare/v2.1.3...v2.2.0\">diff</a>]</h3>\n<ul>\n<li>New: Accurate and documented TypeScript declarations are now included. There\nis no need to install <code>@types/json5</code>. (<a href=\"https://github-redirect.dependabot.com/json5/json5/issues/236\">#236</a>, <a href=\"https://github-redirect.dependabot.com/json5/json5/issues/244\">#244</a>)</li>\n</ul>\n<h3>v2.1.3 [<a href=\"https://github.com/json5/json5/tree/v2.1.3\">code</a>, <a href=\"https://github.com/json5/json5/compare/v2.1.2...v2.1.3\">diff</a>]</h3>\n<ul>\n<li>Fix: An out of memory bug when parsing numbers has been fixed. (<a href=\"https://github-redirect.dependabot.com/json5/json5/issues/228\">#228</a>,\n<a href=\"https://github-redirect.dependabot.com/json5/json5/issues/229\">#229</a>)</li>\n</ul>\n<h3>v2.1.2 [<a href=\"https://github.com/json5/json5/tree/v2.1.2\">code</a>, <a href=\"https://github.com/json5/json5/compare/v2.1.1...v2.1.2\">diff</a>]</h3>\n<!-- raw HTML omitted -->\n</blockquote>\n<p>... (truncated)</p>\n</details>\n<details>\n<summary>Commits</summary>\n<ul>\n<li><a href=\"https://github.com/json5/json5/commit/a62db1e51e1031d92ac260f5bb38bbed1fdbc754\"><code>a62db1e</code></a> 1.0.2</li>\n<li><a href=\"https://github.com/json5/json5/commit/e0c23fe458a77c0b2cdb271376be5d8d0908133c\"><code>e0c23fe</code></a> docs: update CHANGELOG for v1.0.2</li>\n<li><a href=\"https://github.com/json5/json5/commit/62a65408408d40aeea14c7869ed327acead12972\"><code>62a6540</code></a> fix: add <strong>proto</strong> to objects and arrays</li>\n<li>See full diff in <a href=\"https://github.com/json5/json5/compare/v1.0.1...v1.0.2\">compare view</a></li>\n</ul>\n</details>\n<br />\n\n\n[![Dependabot compatibility score](https://dependabot-badges.githubapp.com/badges/compatibility_score?dependency-name=json5&package-manager=npm_and_yarn&previous-version=1.0.1&new-version=1.0.2)](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-compatibility-scores)\n\nDependabot will resolve any conflicts with this PR as long as you don't alter it yourself. You can also trigger a rebase manually by commenting `@dependabot rebase`.\n\n[//]: # (dependabot-automerge-start)\n[//]: # (dependabot-automerge-end)\n\n---\n\n<details>\n<summary>Dependabot commands and options</summary>\n<br />\n\nYou can trigger Dependabot actions by commenting on this PR:\n- `@dependabot rebase` will rebase this PR\n- `@dependabot recreate` will recreate this PR, overwriting any edits that have been made to it\n- `@dependabot merge` will merge this PR after your CI passes on it\n- `@dependabot squash and merge` will squash and merge this PR after your CI passes on it\n- `@dependabot cancel merge` will cancel a previously requested merge and block automerging\n- `@dependabot reopen` will reopen this PR if it is closed\n- `@dependabot close` will close this PR and stop Dependabot recreating it. You can achieve the same result by closing it manually\n- `@dependabot ignore this major version` will close this PR and stop Dependabot creating any more for this major version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this minor version` will close this PR and stop Dependabot creating any more for this minor version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this dependency` will close this PR and stop Dependabot creating any more for this dependency (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot use these labels` will set the current labels as the default for future PRs for this repo and language\n- `@dependabot use these reviewers` will set the current reviewers as the default for future PRs for this repo and language\n- `@dependabot use these assignees` will set the current assignees as the default for future PRs for this repo and language\n- `@dependabot use this milestone` will set the current milestone as the default for future PRs for this repo and language\n\nYou can disable automated security fix PRs for this repo from the [Security Alerts page](https://github.com/BabylonJS/Babylon.js/network/alerts).\n\n</details>",
-                "author": {
-                    "name": "dependabot[bot]",
-                    "url": "https://github.com/apps/dependabot"
-                },
-                "files": [
-                    "package-lock.json"
-                ],
-                "tags": [
-                    "dependencies"
                 ]
             }
         ],
@@ -471,6 +576,162 @@
                     "packages/dev/core/src/Materials/Node/Blocks/Dual/reflectionTextureBaseBlock.ts"
                 ],
                 "tags": []
+            }
+        ],
+        "5.41.0": [
+            {
+                "pr": "13404",
+                "title": "Fix calculation of text height in InputTextArea",
+                "description": "The variables used to calculate where the text's y position would be in the InputTextArea were not using the most up-to-date measure of the control, so the position would be incorrect inside a scroll view:\r\n![image](https://user-images.githubusercontent.com/6002144/210601455-b4103773-7269-4be9-aaa0-7ad1dc01fc2b.png)\r\nWith the fix:\r\n![image](https://user-images.githubusercontent.com/6002144/210601500-6c873cf5-9035-439b-abf6-d3ebc7382dfd.png)\r\n",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/inputTextArea.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/GUI Input Text Area Inside ScrollViewer.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug",
+                    "gui"
+                ]
+            },
+            {
+                "pr": "13394",
+                "title": "GUI Editor Line Gizmo Improvements",
+                "description": "This PR introduces functionality to move, drag endpoints and rotate the Lines Gizmo on the GUI Editor.\r\n\r\nWithout the change:\r\n![current-line-gizmo-behavior](https://user-images.githubusercontent.com/6002144/210366143-6ca3a67d-551c-4d27-9be4-e2aba12ce248.gif)\r\n\r\nWith the change:\r\n![new-line-gizmo-behavior](https://user-images.githubusercontent.com/6002144/210366179-e61d460b-e181-4f92-9b15-5ffc36118cc4.gif)\r\n\r\n",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/control.ts",
+                    "packages/dev/gui/src/2D/controls/line.ts",
+                    "packages/tools/guiEditor/src/diagram/gizmoLine.tsx",
+                    "packages/tools/guiEditor/src/diagram/gizmoScalePoint.tsx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "gui editor"
+                ]
+            },
+            {
+                "pr": "13403",
+                "title": "reference files correctly",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/playground/public/index.html"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13402",
+                "title": "Gizmos use TmpVectors and exposed materials",
+                "description": "fixes #13396 \r\n\r\n- Use TmpVector\r\n- expose materials so user can tweak them\r\n",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/axisDragGizmo.ts",
+                    "packages/dev/core/src/Gizmos/axisScaleGizmo.ts",
+                    "packages/dev/core/src/Gizmos/boundingBoxGizmo.ts",
+                    "packages/dev/core/src/Gizmos/gizmo.ts",
+                    "packages/dev/core/src/Gizmos/planeDragGizmo.ts",
+                    "packages/dev/core/src/Gizmos/planeRotationGizmo.ts",
+                    "packages/dev/core/src/Gizmos/scaleGizmo.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13352",
+                "title": "Physics V2 plugin iteration",
+                "description": "Minor updates to the plugin interface, physics debug viewer and small fixes.",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Debug/physicsViewer.ts",
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts",
+                    "packages/dev/core/src/Physics/v2/physicsEngine.ts",
+                    "packages/dev/core/src/Physics/v2/physicsShape.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13397",
+                "title": "Hide teleportation mesh on creation",
+                "description": "This makes sure it is invisible even if the next XR frame throws an exception for any reason.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRControllerTeleportation.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13399",
+                "title": "Force the control's old rect position to be invalidated before moving",
+                "description": "This fixes an issue exposed by: https://github.com/BabylonJS/Babylon.js/pull/13372, where the control's previous rect was not invalidated and some remains of the rendering would be in the initial position:\r\n(Refer to https://playground.babylonjs.com/#FX4EEA#4) for an example\r\n![image](https://user-images.githubusercontent.com/6002144/210425124-332a9026-7105-49c6-a12a-a3a1debe87fd.png)\r\n",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts",
+                    "packages/dev/gui/src/2D/controls/control.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "gui"
+                ]
+            },
+            {
+                "pr": "13365",
+                "title": "Add a _internalMetadata to avoid side effects with metadata",
+                "description": "See https://forum.babylonjs.com/t/circular-dependency-issue-when-exporting-to-babylon-with-khr-materials-variants/35856\r\n\r\nThe glTF loader used to use `Node.metadata` / `BaseTexture.metadata` / `Material.metadata` for internal use, preventing serialization of corresponding objects in some cases.\r\n\r\nThere is now a new `_internalMetadata` property for `Node` / `BaseTexture` / `Material` for internal use only (this property is not serialized).",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/boundingBoxGizmo.ts",
+                    "packages/dev/core/src/Materials/Textures/baseTexture.ts",
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/node.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_variants.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "loaders"
+                ]
+            },
+            {
+                "pr": "13398",
+                "title": "Bump json5 from 1.0.1 to 1.0.2",
+                "description": "Bumps [json5](https://github.com/json5/json5) from 1.0.1 to 1.0.2.\n<details>\n<summary>Release notes</summary>\n<p><em>Sourced from <a href=\"https://github.com/json5/json5/releases\">json5's releases</a>.</em></p>\n<blockquote>\n<h2>v1.0.2</h2>\n<ul>\n<li>Fix: Properties with the name <code>__proto__</code> are added to objects and arrays. (<a href=\"https://github-redirect.dependabot.com/json5/json5/issues/199\">#199</a>) This also fixes a prototype pollution vulnerability reported by Jonathan Gregson! (<a href=\"https://github-redirect.dependabot.com/json5/json5/issues/295\">#295</a>). This has been backported to v1. (<a href=\"https://github-redirect.dependabot.com/json5/json5/issues/298\">#298</a>)</li>\n</ul>\n</blockquote>\n</details>\n<details>\n<summary>Changelog</summary>\n<p><em>Sourced from <a href=\"https://github.com/json5/json5/blob/main/CHANGELOG.md\">json5's changelog</a>.</em></p>\n<blockquote>\n<h3>Unreleased [<a href=\"https://github.com/json5/json5/tree/main\">code</a>, <a href=\"https://github.com/json5/json5/compare/v2.2.3...HEAD\">diff</a>]</h3>\n<h3>v2.2.3 [<a href=\"https://github.com/json5/json5/tree/v2.2.3\">code</a>, <a href=\"https://github.com/json5/json5/compare/v2.2.2...v2.2.3\">diff</a>]</h3>\n<ul>\n<li>Fix: json5@2.2.3 is now the 'latest' release according to npm instead of\nv1.0.2. (<a href=\"https://github-redirect.dependabot.com/json5/json5/issues/299\">#299</a>)</li>\n</ul>\n<h3>v2.2.2 [<a href=\"https://github.com/json5/json5/tree/v2.2.2\">code</a>, <a href=\"https://github.com/json5/json5/compare/v2.2.1...v2.2.2\">diff</a>]</h3>\n<ul>\n<li>Fix: Properties with the name <code>__proto__</code> are added to objects and arrays.\n(<a href=\"https://github-redirect.dependabot.com/json5/json5/issues/199\">#199</a>) This also fixes a prototype pollution vulnerability reported by\nJonathan Gregson! (<a href=\"https://github-redirect.dependabot.com/json5/json5/issues/295\">#295</a>).</li>\n</ul>\n<h3>v2.2.1 [<a href=\"https://github.com/json5/json5/tree/v2.2.1\">code</a>, <a href=\"https://github.com/json5/json5/compare/v2.2.0...v2.2.1\">diff</a>]</h3>\n<ul>\n<li>Fix: Removed dependence on minimist to patch CVE-2021-44906. (<a href=\"https://github-redirect.dependabot.com/json5/json5/issues/266\">#266</a>)</li>\n</ul>\n<h3>v2.2.0 [<a href=\"https://github.com/json5/json5/tree/v2.2.0\">code</a>, <a href=\"https://github.com/json5/json5/compare/v2.1.3...v2.2.0\">diff</a>]</h3>\n<ul>\n<li>New: Accurate and documented TypeScript declarations are now included. There\nis no need to install <code>@types/json5</code>. (<a href=\"https://github-redirect.dependabot.com/json5/json5/issues/236\">#236</a>, <a href=\"https://github-redirect.dependabot.com/json5/json5/issues/244\">#244</a>)</li>\n</ul>\n<h3>v2.1.3 [<a href=\"https://github.com/json5/json5/tree/v2.1.3\">code</a>, <a href=\"https://github.com/json5/json5/compare/v2.1.2...v2.1.3\">diff</a>]</h3>\n<ul>\n<li>Fix: An out of memory bug when parsing numbers has been fixed. (<a href=\"https://github-redirect.dependabot.com/json5/json5/issues/228\">#228</a>,\n<a href=\"https://github-redirect.dependabot.com/json5/json5/issues/229\">#229</a>)</li>\n</ul>\n<h3>v2.1.2 [<a href=\"https://github.com/json5/json5/tree/v2.1.2\">code</a>, <a href=\"https://github.com/json5/json5/compare/v2.1.1...v2.1.2\">diff</a>]</h3>\n<!-- raw HTML omitted -->\n</blockquote>\n<p>... (truncated)</p>\n</details>\n<details>\n<summary>Commits</summary>\n<ul>\n<li><a href=\"https://github.com/json5/json5/commit/a62db1e51e1031d92ac260f5bb38bbed1fdbc754\"><code>a62db1e</code></a> 1.0.2</li>\n<li><a href=\"https://github.com/json5/json5/commit/e0c23fe458a77c0b2cdb271376be5d8d0908133c\"><code>e0c23fe</code></a> docs: update CHANGELOG for v1.0.2</li>\n<li><a href=\"https://github.com/json5/json5/commit/62a65408408d40aeea14c7869ed327acead12972\"><code>62a6540</code></a> fix: add <strong>proto</strong> to objects and arrays</li>\n<li>See full diff in <a href=\"https://github.com/json5/json5/compare/v1.0.1...v1.0.2\">compare view</a></li>\n</ul>\n</details>\n<br />\n\n\n[![Dependabot compatibility score](https://dependabot-badges.githubapp.com/badges/compatibility_score?dependency-name=json5&package-manager=npm_and_yarn&previous-version=1.0.1&new-version=1.0.2)](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-compatibility-scores)\n\nDependabot will resolve any conflicts with this PR as long as you don't alter it yourself. You can also trigger a rebase manually by commenting `@dependabot rebase`.\n\n[//]: # (dependabot-automerge-start)\n[//]: # (dependabot-automerge-end)\n\n---\n\n<details>\n<summary>Dependabot commands and options</summary>\n<br />\n\nYou can trigger Dependabot actions by commenting on this PR:\n- `@dependabot rebase` will rebase this PR\n- `@dependabot recreate` will recreate this PR, overwriting any edits that have been made to it\n- `@dependabot merge` will merge this PR after your CI passes on it\n- `@dependabot squash and merge` will squash and merge this PR after your CI passes on it\n- `@dependabot cancel merge` will cancel a previously requested merge and block automerging\n- `@dependabot reopen` will reopen this PR if it is closed\n- `@dependabot close` will close this PR and stop Dependabot recreating it. You can achieve the same result by closing it manually\n- `@dependabot ignore this major version` will close this PR and stop Dependabot creating any more for this major version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this minor version` will close this PR and stop Dependabot creating any more for this minor version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this dependency` will close this PR and stop Dependabot creating any more for this dependency (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot use these labels` will set the current labels as the default for future PRs for this repo and language\n- `@dependabot use these reviewers` will set the current reviewers as the default for future PRs for this repo and language\n- `@dependabot use these assignees` will set the current assignees as the default for future PRs for this repo and language\n- `@dependabot use this milestone` will set the current milestone as the default for future PRs for this repo and language\n\nYou can disable automated security fix PRs for this repo from the [Security Alerts page](https://github.com/BabylonJS/Babylon.js/network/alerts).\n\n</details>",
+                "author": {
+                    "name": "dependabot[bot]",
+                    "url": "https://github.com/apps/dependabot"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": [
+                    "dependencies"
+                ]
             }
         ],
         "5.40.1": [
