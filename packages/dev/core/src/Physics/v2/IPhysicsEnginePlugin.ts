@@ -64,7 +64,8 @@ export interface PhysicsShapeParameters {
     pointB?: Vector3;
     rotation?: Quaternion;
     extents?: Vector3;
-    mesh?: AbstractMesh;
+    mesh?: Mesh;
+    includeChildMeshes?: boolean;
 }
 
 /** @internal */
