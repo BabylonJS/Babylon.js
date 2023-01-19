@@ -340,7 +340,7 @@ export class Effect implements IDisposable {
 
         this._processingContext = this._engine._getShaderProcessingContext(this._shaderLanguage);
 
-        const processorOptions: ProcessingOptions = {
+        let processorOptions: ProcessingOptions = {
             defines: this.defines.split("\n"),
             indexParameters: this._indexParameters,
             isFragment: false,
@@ -399,6 +399,9 @@ export class Effect implements IDisposable {
             shaderCodes[1] = fragmentCode;
             shadersLoaded();
         });
+
+        processorOptions = null as any; // avoid some GC leaks because of code below (related to proxyFunction(name).bind(this))
+
         const proxyFunction = function (functionName: string) {
             // check if the function exists in the pipelineContext
             return function (this: Effect) {
