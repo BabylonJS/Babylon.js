@@ -5,6 +5,8 @@ import { AbstractMesh } from "../../Meshes/abstractMesh";
 import type { Node } from "../../node";
 import type { PhysicsBody } from "./physicsBody";
 
+import "../joinedPhysicsEngineComponent";
+
 declare module "../../Meshes/abstractMesh" {
     /**
      *
