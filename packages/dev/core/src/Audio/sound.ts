@@ -107,7 +107,7 @@ export class Sound {
         if (Engine.audioEngine?.audioContext && (this.isPlaying || this.isPaused)) {
             // The `_currentTime` member is only updated when the sound is paused. Add the time since the last start
             // to get the actual current time.
-            const timeSinceLastStart = this.isPaused ? 0 : (Engine.audioEngine.audioContext.currentTime - this._startTime);
+            const timeSinceLastStart = this.isPaused ? 0 : Engine.audioEngine.audioContext.currentTime - this._startTime;
             return this._currentTime + timeSinceLastStart;
         }
 
@@ -909,8 +909,7 @@ export class Sound {
                 };
                 this._stopSoundSource(stopTime);
             }
-        }
-        else if (this.isPaused) {
+        } else if (this.isPaused) {
             this.isPaused = false;
             this._startTime = 0;
             this._currentTime = 0;
