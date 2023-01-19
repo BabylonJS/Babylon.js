@@ -40,7 +40,7 @@ export class InstantiatedEntries {
      */
     public animationGroups: AnimationGroup[] = [];
 
-     /**
+    /**
      * Disposes the instantiated entries from the scene
      */
     public removeFromScene() {
