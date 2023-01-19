@@ -18,6 +18,10 @@ import { AnimationKeyInterpolation } from "core/Animations/animationKey";
 import { Camera } from "core/Cameras/camera";
 import { Light } from "core/Lights/light";
 
+import { CompactAnimation, FloatCompactAnimation } from "core/Animations/compactAnimation";
+import { buildDummyMorphTargetCompactAnimation, gltfAddCompactAnimation, mergeMorphTargetCompactAnimations } from "./glTFCompactAnimation";
+import { animationToCompactAnimation, compactAnimationToAnimation, rotationCompactAnimationToQuaternion } from "core/Animations/compactAnimationTools";
+
 /**
  * @internal
  * Interface to store animation data.
@@ -240,6 +244,146 @@ export class _GLTFAnimation {
     }
 
     /**
+     * Convert a CompactAnimation to right-handed.
+     * @internal
+     * @param animation
+     * @param babylonTransformNode
+     * @param animationInfo
+     * @returns a new CompactAnimation if needs to convert, original animation if not needed, null for fail
+     */
+    public static _CompactAnimationConvertToRightHandedSystem<T>(
+        animation: CompactAnimation<T>,
+        babylonTransformNode: Node,
+        animationInfo: _IAnimationInfo
+    ): Nullable<CompactAnimation<T>> {
+        switch (animation.dataType) {
+            case Animation.ANIMATIONTYPE_VECTOR3:
+                if (animationInfo.animationChannelTargetPath === "translation") {
+                    const values = animation.values;
+                    if (!values) {
+                        return null;
+                    }
+                    const stride = animation.stride;
+                    const newValues = values.slice();
+                    let readOffset = animation.valueOffset;
+                    for (; readOffset < values.length; readOffset += stride) {
+                        newValues[readOffset + 2] *= -1;
+                        if (!babylonTransformNode.parent) {
+                            newValues[readOffset] *= -1;
+                            newValues[readOffset + 2] *= -1;
+                        }
+                    }
+                    const newAnimation = animation.clone();
+                    newAnimation.values = newValues;
+                    return newAnimation;
+                } else {
+                    Tools.Error("glTFAnimation: Unsupported target path for CompactAnimation " + animation.name);
+                    return null;
+                }
+            case Animation.ANIMATIONTYPE_QUATERNION: {
+                const quaternion = Quaternion.Identity();
+                const multiplier = Quaternion.FromArray([0, 1, 0, 0]);
+                const values = animation.values;
+                if (!values) {
+                    return null;
+                }
+                const stride = animation.stride;
+                let readOffset = animation.valueOffset;
+                const newValues = new Float32Array(((values.length - readOffset) * 4) / stride);
+                let writeOffset = 0;
+                for (; readOffset < values.length; readOffset += stride) {
+                    Quaternion.FromArrayToRef(values, readOffset, quaternion);
+                    _GLTFUtilities._GetRightHandedQuaternionFromRef(quaternion);
+
+                    if (!babylonTransformNode.parent) {
+                        multiplier.multiplyToRef(quaternion, quaternion);
+                    }
+                    quaternion.toArray(newValues, writeOffset);
+                    writeOffset += 4;
+                }
+                const newAnimation = animation.clone();
+                newAnimation.values = newValues;
+                newAnimation.stride = 4;
+                return newAnimation;
+            }
+            case Animation.ANIMATIONTYPE_FLOAT:
+                if (animationInfo.animationChannelTargetPath === AnimationChannelTargetPath.WEIGHTS) {
+                    return animation;
+                }
+            // fall through
+            default:
+                Tools.Error("glTFAnimation: Unsupported type for CompactAnimation " + animation.name);
+                return null;
+        }
+    }
+
+    /**
+     * Export CompactAnimation for GLTF
+     * @internal
+     * @param animation - animation.
+     * @param babylonTransformNode - BabylonJS mesh.
+     * @param convertToRightHandedSystem - Specifies if the values should be converted to right-handed.
+     * @returns the exported data of CompactAnimation for {@link gltfAddCompactAnimation}, null for fail
+     */
+    public static _ExportCompactAnimation(
+        animation: CompactAnimation<any>,
+        babylonTransformNode: Node,
+        convertToRightHandedSystem: boolean
+    ): Nullable<ReturnType<typeof mergeMorphTargetCompactAnimations>> {
+        const animationInfo = _GLTFAnimation._DeduceAnimationInfo(animation);
+        if (!animationInfo) {
+            return null;
+        }
+        if (
+            !animationInfo.useQuaternion &&
+            animationInfo.animationChannelTargetPath === AnimationChannelTargetPath.ROTATION &&
+            animation.dataType === Animation.ANIMATIONTYPE_VECTOR3
+        ) {
+            const converted = rotationCompactAnimationToQuaternion(animation);
+            if (!converted) {
+                return null;
+            }
+            animation = converted;
+        } else if (!animation.isBuffersCompact()) {
+            animation = animation.clone();
+            animation.compactBuffers();
+        }
+        if (convertToRightHandedSystem) {
+            const converted = _GLTFAnimation._CompactAnimationConvertToRightHandedSystem(animation, babylonTransformNode, animationInfo);
+            if (!converted) {
+                return null;
+            }
+            animation = converted;
+        }
+        if (!animation || !animation.frames || !animation.values) {
+            return null;
+        }
+
+        const inputs = animation.frames;
+        let outputs = animation.values;
+        if (animation.valueOffset) {
+            outputs = outputs.subarray(animation.valueOffset);
+        }
+        let min = Infinity,
+            max = -Infinity;
+        for (let i = 0, length = inputs.length, input; i < length; i++) {
+            input = inputs[i];
+            min = Math.min(min, input);
+            max = Math.max(max, input);
+        }
+        return {
+            dataAccessorType: animationInfo.dataAccessorType,
+            animationChannelTargetPath: animationInfo.animationChannelTargetPath,
+            useQuaternion: animationInfo.useQuaternion,
+            samplerInterpolation: animation.interpolation === AnimationKeyInterpolation.NONE ? AnimationSamplerInterpolation.LINEAR : AnimationSamplerInterpolation.STEP,
+            inputs: inputs,
+            inputsMin: min,
+            inputsMax: max,
+            outputs: outputs,
+        };
+    }
+
+    /**
      * @ignore
      * Create node animations from the transform node animations
      * @param babylonNode
@@ -268,7 +412,38 @@ export class _GLTFAnimation {
         let glTFAnimation: IAnimation;
         if (_GLTFAnimation._IsTransformable(babylonNode)) {
             if (babylonNode.animations) {
-                for (const animation of babylonNode.animations) {
+                for (let animation of babylonNode.animations) {
+                    if (animation instanceof CompactAnimation) {
+                        const animationData = _GLTFAnimation._ExportCompactAnimation(animation, babylonNode, convertToRightHandedSystem);
+                        if (animationData) {
+                            glTFAnimation = {
+                                name: animation.name,
+                                samplers: [],
+                                channels: [],
+                            };
+                            gltfAddCompactAnimation(
+                                `${animation.name}`,
+                                animation.hasRunningRuntimeAnimations ? runtimeGLTFAnimation : glTFAnimation,
+                                babylonNode,
+                                animationData,
+                                nodeMap,
+                                binaryWriter,
+                                bufferViews,
+                                accessors
+                            );
+                            if (glTFAnimation.samplers.length && glTFAnimation.channels.length) {
+                                idleGLTFAnimations.push(glTFAnimation);
+                            }
+                            continue;
+                        }
+                    }
+                    if (animation instanceof CompactAnimation) {
+                        const converted = compactAnimationToAnimation(animation);
+                        if (!converted) {
+                            continue;
+                        }
+                        animation = converted;
+                    }
                     const animationInfo = _GLTFAnimation._DeduceAnimationInfo(animation);
                     if (animationInfo) {
                         glTFAnimation = {
@@ -332,7 +507,49 @@ export class _GLTFAnimation {
             if (morphTargetManager) {
                 for (let i = 0; i < morphTargetManager.numTargets; ++i) {
                     const morphTarget = morphTargetManager.getTarget(i);
-                    for (const animation of morphTarget.animations) {
+                    for (let animation of morphTarget.animations) {
+                        if (animation instanceof FloatCompactAnimation) {
+                            const animations = [];
+                            for (let k = 0; k < morphTargetManager.numTargets; ++k) {
+                                if (k === i) {
+                                    animations[k] = animation;
+                                } else {
+                                    animations[k] = buildDummyMorphTargetCompactAnimation(morphTarget, 0);
+                                    animations[k].framePerSecond = animation.framePerSecond;
+                                }
+                            }
+
+                            const animationData = mergeMorphTargetCompactAnimations(animations);
+                            if (animationData) {
+                                glTFAnimation = {
+                                    name: animation.name,
+                                    samplers: [],
+                                    channels: [],
+                                };
+                                gltfAddCompactAnimation(
+                                    animation.name,
+                                    animation.hasRunningRuntimeAnimations ? runtimeGLTFAnimation : glTFAnimation,
+                                    babylonNode,
+                                    animationData,
+                                    nodeMap,
+                                    binaryWriter,
+                                    bufferViews,
+                                    accessors
+                                );
+                                if (glTFAnimation.samplers.length && glTFAnimation.channels.length) {
+                                    idleGLTFAnimations.push(glTFAnimation);
+                                }
+                                continue;
+                            }
+                        }
+                        if (animation instanceof CompactAnimation) {
+                            const converted = compactAnimationToAnimation(animation);
+                            if (!converted) {
+                                continue;
+                            }
+                            animation = converted;
+                        }
+
                         const combinedAnimation = new Animation(
                             `${animation.name}`,
                             "influence",
@@ -428,13 +645,36 @@ export class _GLTFAnimation {
                 for (let i = 0; i < animationGroup.targetedAnimations.length; ++i) {
                     const targetAnimation = animationGroup.targetedAnimations[i];
                     const target = targetAnimation.target;
-                    const animation = targetAnimation.animation;
+                    let animation = targetAnimation.animation;
                     if (this._IsTransformable(target) || (target.length === 1 && this._IsTransformable(target[0]))) {
                         const animationInfo = _GLTFAnimation._DeduceAnimationInfo(targetAnimation.animation);
                         if (animationInfo) {
                             const babylonTransformNode = this._IsTransformable(target) ? target : this._IsTransformable(target[0]) ? target[0] : null;
                             if (babylonTransformNode) {
                                 const convertToRightHandedSystem = convertToRightHandedSystemMap[babylonTransformNode.uniqueId];
+                                if (animation instanceof CompactAnimation) {
+                                    const animationData = _GLTFAnimation._ExportCompactAnimation(animation, babylonTransformNode, convertToRightHandedSystem);
+                                    if (animationData) {
+                                        gltfAddCompactAnimation(
+                                            `${animation.name}`,
+                                            glTFAnimation,
+                                            babylonTransformNode,
+                                            animationData,
+                                            nodeMap,
+                                            binaryWriter,
+                                            bufferViews,
+                                            accessors
+                                        );
+                                        continue;
+                                    }
+                                }
+                                if (animation instanceof CompactAnimation) {
+                                    const converted = compactAnimationToAnimation(animation);
+                                    if (!converted) {
+                                        continue;
+                                    }
+                                    animation = converted;
+                                }
                                 _GLTFAnimation._AddAnimation(
                                     `${animation.name}`,
                                     glTFAnimation,
@@ -486,9 +726,58 @@ export class _GLTFAnimation {
                 }
                 morphAnimationMeshes.forEach((mesh) => {
                     const morphTargetManager = mesh.morphTargetManager!;
+                    const sampleAnimation = sampleAnimations.get(mesh)!;
+                    const animations = [];
+                    let canUseCompactAnimation = true;
+
+                    for (let j = 0; j < morphTargetManager.numTargets; ++j) {
+                        const morphTarget = morphTargetManager.getTarget(j);
+                        const animationsByMorphTarget = morphAnimations.get(mesh);
+                        if (animationsByMorphTarget) {
+                            const morphTargetAnimation = animationsByMorphTarget.get(morphTarget);
+                            let animation;
+                            if (morphTargetAnimation) {
+                                if (morphTargetAnimation instanceof FloatCompactAnimation) {
+                                    animation = morphTargetAnimation;
+                                } else if (morphTargetAnimation.dataType === Animation.ANIMATIONTYPE_FLOAT) {
+                                    animation = animationToCompactAnimation(morphTargetAnimation);
+                                    if (!animation) {
+                                        canUseCompactAnimation = false;
+                                        break;
+                                    }
+                                } else {
+                                    canUseCompactAnimation = false;
+                                    break;
+                                }
+                            }
+                            if (!animation) {
+                                animation = buildDummyMorphTargetCompactAnimation(morphTarget, sampleAnimation.getKeys()[0].frame);
+                                animation.framePerSecond = sampleAnimation.framePerSecond;
+                            }
+                            animations[j] = animation;
+                        }
+                    }
+                    if (canUseCompactAnimation) {
+                        const animationData = mergeMorphTargetCompactAnimations(animations);
+                        if (animationData) {
+                            gltfAddCompactAnimation(
+                                `${animationGroup.name}_${mesh.name}_MorphWeightAnimation`,
+                                glTFAnimation,
+                                mesh,
+                                animationData,
+                                nodeMap,
+                                binaryWriter,
+                                bufferViews,
+                                accessors
+                            );
+                        }
+                        return;
+                    }
+                    // can not use compact animation
+                    // clear this array to dereference memory early
+                    animations.length = 0;
                     let combinedAnimationGroup: Nullable<Animation> = null;
                     const animationKeys: IAnimationKey[] = [];
-                    const sampleAnimation = sampleAnimations.get(mesh)!;
                     const sampleAnimationKeys = sampleAnimation.getKeys();
                     const numAnimationKeys = sampleAnimationKeys.length;
                     /*
@@ -505,7 +794,10 @@ export class _GLTFAnimation {
                             const morphTarget = morphTargetManager.getTarget(j);
                             const animationsByMorphTarget = morphAnimations.get(mesh);
                             if (animationsByMorphTarget) {
-                                const morphTargetAnimation = animationsByMorphTarget.get(morphTarget);
+                                let morphTargetAnimation = animationsByMorphTarget.get(morphTarget);
+                                if (morphTargetAnimation instanceof CompactAnimation) {
+                                    morphTargetAnimation = compactAnimationToAnimation(morphTargetAnimation) || undefined;
+                                }
                                 if (morphTargetAnimation) {
                                     if (!combinedAnimationGroup) {
                                         combinedAnimationGroup = new Animation(

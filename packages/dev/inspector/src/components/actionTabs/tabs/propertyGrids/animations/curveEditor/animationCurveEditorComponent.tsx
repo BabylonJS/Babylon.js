@@ -9,6 +9,11 @@ import { CanvasComponent } from "./graph/canvasComponent";
 import { SideBarComponent } from "./sideBar/sideBarComponent";
 import type { Animation } from "core/Animations/animation";
 import type { TargetedAnimation } from "core/Animations/animationGroup";
+import type { IterateAnimationCallback } from "core/Animations/animationTools";
+import { replaceAnimations } from "core/Animations/animationTools";
+import type { IAnimatable } from "core/Animations/animatable.interface";
+import { CompactAnimation } from "core/Animations/compactAnimation";
+import { compactAnimationToAnimation } from "core/Animations/compactAnimationTools";
 
 import "./scss/curveEditor.scss";
 
@@ -105,12 +110,153 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         }
     }
 
+    /**
+     * Iterate all animations related to this.props.context
+     */
+    _iterateAnimationsInContext(callBack: IterateAnimationCallback): void {
+        const context = this.props.context;
+        let len: number | undefined = context.activeAnimations?.length;
+        if (len) {
+            for (let i = 0; i < len; i++) {
+                const animation = context.activeAnimations[i];
+                if (callBack(animation, i, context.activeAnimations) === false) {
+                    return;
+                }
+            }
+        }
+        len = context.animations?.length;
+        if (context.animations && len) {
+            for (let i = 0; i < len; i++) {
+                const animation = context.animations[i];
+                if ((animation as TargetedAnimation).animation) {
+                    if (callBack((animation as TargetedAnimation).animation, "animation", animation) === false) {
+                        return;
+                    }
+                } else {
+                    if (callBack(animation as Animation, i, context.animations) === false) {
+                        return;
+                    }
+                }
+            }
+        }
+        const animations = context.target?.animations;
+        len = animations?.length;
+        if (animations && len) {
+            for (let i = 0; i < len; i++) {
+                const animation = animations[i];
+                if (callBack(animation, i, animations) === false) {
+                    return;
+                }
+            }
+        }
+
+        const group = context.rootAnimationGroup;
+        const targetedAnimations = group?.targetedAnimations;
+        if (!targetedAnimations) {
+            return;
+        }
+        let length = targetedAnimations.length;
+        if (length) {
+            for (let j = 0; j < length; j++) {
+                const targetedAnimation = targetedAnimations[j];
+                const animation = targetedAnimation?.animation;
+                if (animation && callBack(animation, "animation", targetedAnimation)) {
+                    return;
+                }
+                const target = targetedAnimation.target;
+                if (target?.animations) {
+                    const iAnimatable = target as IAnimatable;
+                    const animations = iAnimatable.animations;
+                    const animationsLength = animations?.length;
+                    if (animations && animationsLength) {
+                        for (let k = 0; k < animationsLength; k++) {
+                            const animation = animations[k];
+                            if (animation && callBack(animation, k, animations) === false) {
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        const animatables = group?.animatables;
+        length = animatables?.length;
+        if (length) {
+            for (let j = 0; j < length; j++) {
+                const animatable = animatables[j];
+                const runtimeAnimations = animatable.getAnimations();
+                const length = runtimeAnimations?.length;
+                if (length) {
+                    for (let k = 0; k < length; k++) {
+                        const runtimeAnimation = runtimeAnimations[k];
+                        if (runtimeAnimation.animation && callBack(runtimeAnimation.animation, "_animation", runtimeAnimation) === false) {
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Check if this.props.context is currently holding any CompactAnimations
+     */
+    _hasCompactAnimation(): boolean {
+        let hasCompactAnimation = false;
+        this._iterateAnimationsInContext((animation) => {
+            if (animation instanceof CompactAnimation) {
+                hasCompactAnimation = true;
+                return false;
+            }
+            return true;
+        });
+        return hasCompactAnimation;
+    }
+
+    /**
+     * Convert all CompactAnimations holding by this.props.context to Animation
+     */
+    _convertCompactAnimationToAnimation(): void {
+        // Map of ES2015 is used, legacy browsers might need a polyfill for that
+        const map = new Map<CompactAnimation<any>, Animation>();
+
+        this._iterateAnimationsInContext((animation) => {
+            if (animation instanceof CompactAnimation) {
+                if (!map.has(animation)) {
+                    const converted = compactAnimationToAnimation(animation);
+                    map.set(animation, converted);
+                }
+            }
+        });
+
+        replaceAnimations(this.props.context.scene, map);
+
+        this._iterateAnimationsInContext((animation, key, context) => {
+            const replacement = map.get(animation as CompactAnimation<any>);
+            if (replacement) {
+                context[key] = replacement;
+            }
+        });
+    }
+
     public render() {
         return (
             <>
                 <ButtonLineComponent
                     label="Edit"
                     onClick={() => {
+                        if (this._hasCompactAnimation()) {
+                            const msg =
+                                "Can not edit CompactAnimation," +
+                                " convert CompactAnimation to regular animation to continue editing," +
+                                " which would consume much larger heap memory, continue?";
+                            if (confirm(msg)) {
+                                this._convertCompactAnimationToAnimation();
+                                this.props.context.onActiveAnimationChanged.notifyObservers({});
+                            } else {
+                                return;
+                            }
+                        }
                         this.setState({ isOpen: true });
                     }}
                 />

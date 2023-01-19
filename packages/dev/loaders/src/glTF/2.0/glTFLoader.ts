@@ -75,6 +75,7 @@ import { BoundingInfo } from "core/Culling/boundingInfo";
 import type { AssetContainer } from "core/assetContainer";
 import type { AnimationPropertyInfo } from "./glTFLoaderAnimation";
 import { nodeAnimationData } from "./glTFLoaderAnimation";
+import { compactAnimationTypeMap } from "core/Animations/compactAnimation";
 
 interface TypedArrayLike extends ArrayBufferView {
     readonly length: number;
@@ -192,6 +193,11 @@ export class GLTFLoader implements IGLTFLoader {
     private _rootBabylonMesh: Nullable<Mesh> = null;
     private _defaultBabylonMaterialData: { [drawMode: number]: Material } = {};
     private readonly _postSceneLoadActions = new Array<() => void>();
+    /**
+     * Whether to prefer {@link CompactAnimation} over {@link Animation} on parsing GLTF animations
+     * @internal
+     */
+    public _preferCompactAnimations = true;
 
     private static _RegisteredExtensions: { [name: string]: IRegisteredExtension } = {};
 
@@ -1652,6 +1658,10 @@ export class GLTFLoader implements IGLTFLoader {
         const invfps = 1 / fps;
 
         const sampler = ArrayItem.Get(`${context}/sampler`, animation.samplers, channel.sampler);
+
+        // normalized inputs is not supported in gltf spec
+        const outputAccessor = ArrayItem.Get(`${context}/output`, this._gltf.accessors, sampler.output);
+
         return this._loadAnimationSamplerAsync(`${animationContext}/samplers/${channel.sampler}`, sampler).then((data) => {
             let numAnimations = 0;
 
@@ -1664,62 +1674,140 @@ export class GLTFLoader implements IGLTFLoader {
                 const stride = property.getStride(targetInfo.target);
                 const input = data.input;
                 const output = data.output;
-                const keys = new Array<IAnimationKey>(input.length);
+                let keys: IAnimationKey[];
                 let outputOffset = 0;
+                const useCompact = this._preferCompactAnimations && data.interpolation !== AnimationSamplerInterpolation.CUBICSPLINE;
+                if (!useCompact) {
+                    keys = new Array(input.length);
 
-                switch (data.interpolation) {
-                    case AnimationSamplerInterpolation.STEP: {
-                        for (let index = 0; index < input.length; index++) {
-                            const value = property.getValue(targetInfo.target, output, outputOffset, 1);
-                            outputOffset += stride;
+                    switch (data.interpolation) {
+                        case AnimationSamplerInterpolation.STEP: {
+                            for (let index = 0; index < input.length; index++) {
+                                const value = property.getValue(targetInfo.target, output, outputOffset, 1);
+                                outputOffset += stride;
 
-                            keys[index] = {
-                                frame: input[index] * fps,
-                                value: value,
-                                interpolation: AnimationKeyInterpolation.STEP,
-                            };
+                                keys[index] = {
+                                    frame: input[index] * fps,
+                                    value: value,
+                                    interpolation: AnimationKeyInterpolation.STEP,
+                                };
+                            }
+                            break;
                         }
-                        break;
-                    }
-                    case AnimationSamplerInterpolation.CUBICSPLINE: {
-                        for (let index = 0; index < input.length; index++) {
-                            const inTangent = property.getValue(targetInfo.target, output, outputOffset, invfps);
-                            outputOffset += stride;
-                            const value = property.getValue(targetInfo.target, output, outputOffset, 1);
-                            outputOffset += stride;
-                            const outTangent = property.getValue(targetInfo.target, output, outputOffset, invfps);
-                            outputOffset += stride;
+                        case AnimationSamplerInterpolation.CUBICSPLINE: {
+                            for (let index = 0; index < input.length; index++) {
+                                const inTangent = property.getValue(targetInfo.target, output, outputOffset, invfps);
+                                outputOffset += stride;
+                                const value = property.getValue(targetInfo.target, output, outputOffset, 1);
+                                outputOffset += stride;
+                                const outTangent = property.getValue(targetInfo.target, output, outputOffset, invfps);
+                                outputOffset += stride;
 
-                            keys[index] = {
-                                frame: input[index] * fps,
-                                inTangent: inTangent,
-                                value: value,
-                                outTangent: outTangent,
-                            };
+                                keys[index] = {
+                                    frame: input[index] * fps,
+                                    inTangent: inTangent,
+                                    value: value,
+                                    outTangent: outTangent,
+                                };
+                            }
+                            break;
                         }
-                        break;
-                    }
-                    case AnimationSamplerInterpolation.LINEAR: {
-                        for (let index = 0; index < input.length; index++) {
-                            const value = property.getValue(targetInfo.target, output, outputOffset, 1);
-                            outputOffset += stride;
+                        case AnimationSamplerInterpolation.LINEAR: {
+                            for (let index = 0; index < input.length; index++) {
+                                const value = property.getValue(targetInfo.target, output, outputOffset, 1);
+                                outputOffset += stride;
 
-                            keys[index] = {
-                                frame: input[index] * fps,
-                                value: value,
-                            };
+                                keys[index] = {
+                                    frame: input[index] * fps,
+                                    value: value,
+                                };
+                            }
+                            break;
                         }
-                        break;
                     }
+
+                    if (outputOffset > 0) {
+                        const name = `${animation.name || `animation${animation.index}`}_channel${channel.index}_${numAnimations}`;
+                        property.buildAnimations(targetInfo.target, name, fps, keys, (babylonAnimatable, babylonAnimation) => {
+                            ++numAnimations;
+                            onLoad(babylonAnimatable, babylonAnimation);
+                        });
+                    }
+                    continue;
                 }
 
-                if (outputOffset > 0) {
-                    const name = `${animation.name || `animation${animation.index}`}_channel${channel.index}_${numAnimations}`;
-                    property.buildAnimations(targetInfo.target, name, fps, keys, (babylonAnimatable, babylonAnimation) => {
-                        ++numAnimations;
-                        onLoad(babylonAnimatable, babylonAnimation);
-                    });
+                if (input.length <= 0) {
+                    this.log(`${context}: Skipping empty animation for ${property.name}`);
+                    continue;
                 }
+                keys = [];
+
+                const name = `${animation.name || `animation${animation.index}`}_channel${channel.index}_${numAnimations}`;
+                if (property.type === 0 && property.name === "influence" && targetInfo.target?._numMorphTargets) {
+                    // WeightAnimationPropertyInfo
+                    const constructor = compactAnimationTypeMap[property.type];
+                    const target = targetInfo.target;
+                    for (let targetIndex = 0; targetIndex < target._numMorphTargets; targetIndex++) {
+                        const babylonAnimation = new constructor(`${name}_${targetIndex}`, property.name, fps, property.type);
+
+                        babylonAnimation.frames = input;
+                        babylonAnimation.values = output;
+                        babylonAnimation.stride = stride;
+                        babylonAnimation.valueOffset = targetIndex;
+                        babylonAnimation.recalculateKeys();
+                        if (target._primitiveBabylonMeshes) {
+                            for (const babylonMesh of target._primitiveBabylonMeshes) {
+                                if (babylonMesh.morphTargetManager) {
+                                    const morphTarget = babylonMesh.morphTargetManager.getTarget(targetIndex);
+                                    const babylonAnimationClone = babylonAnimation.clone();
+                                    morphTarget.animations.push(babylonAnimationClone);
+                                    ++numAnimations;
+                                    onLoad(morphTarget, babylonAnimationClone);
+                                }
+                            }
+                        }
+                    }
+                    return;
+                }
+                // Note: since property is singleton, clone it to avoid side effects
+                // this should not harm too much to performance
+                const patchedProperty = Object.create(property);
+                patchedProperty._buildAnimation = function (name: string, fps: number) {
+                    const constructor = compactAnimationTypeMap[property.type];
+                    const babylonAnimation = new constructor(name, this.name, fps, this.type);
+                    babylonAnimation.frames = input;
+                    babylonAnimation.values = output;
+                    babylonAnimation.stride = stride;
+                    babylonAnimation.recalculateKeys();
+                    if (data.interpolation === "STEP") {
+                        babylonAnimation.interpolation = AnimationKeyInterpolation.STEP;
+                    }
+                    let scalar = 0;
+                    if (outputAccessor.normalized && outputAccessor.componentType !== AccessorComponentType.FLOAT) {
+                        let divider = 0;
+                        switch (outputAccessor.componentType) {
+                            case AccessorComponentType.BYTE:
+                                divider = 127.0;
+                                break;
+                            case AccessorComponentType.UNSIGNED_BYTE:
+                                divider = 255.0;
+                                break;
+                            case AccessorComponentType.SHORT:
+                                divider = 32767.0;
+                                break;
+                            case AccessorComponentType.UNSIGNED_SHORT:
+                                divider = 65535.0;
+                                break;
+                        }
+                        scalar = divider ? 1 / divider : 0;
+                    }
+                    babylonAnimation.normalizeScalar = scalar;
+                    return babylonAnimation;
+                };
+                (patchedProperty as typeof property).buildAnimations(targetInfo.target, name, fps, keys, (babylonAnimatable, babylonAnimation) => {
+                    ++numAnimations;
+                    onLoad(babylonAnimatable, babylonAnimation);
+                });
             }
         });
     }

@@ -7,6 +7,7 @@ import type { Nullable } from "../types";
 import type { Scene } from "../scene";
 import { SerializationHelper } from "../Misc/decorators";
 import { RegisterClass } from "../Misc/typeStore";
+import { InstantiationTools } from "../Misc/instantiationTools";
 import type { IAnimationKey } from "./animationKey";
 import { AnimationKeyInterpolation } from "./animationKey";
 import { AnimationRange } from "./animationRange";
@@ -93,7 +94,7 @@ export class Animation {
     /**
      * Stores the animation ranges for the animation
      */
-    private _ranges: { [name: string]: Nullable<AnimationRange> } = {};
+    protected _ranges: { [name: string]: Nullable<AnimationRange> } = {};
 
     /**
      * @internal Internal use
@@ -1302,6 +1303,13 @@ export class Animation {
      * @returns Animation object
      */
     public static Parse(parsedAnimation: any): Animation {
+        if (parsedAnimation.customType) {
+            const customType = InstantiationTools.Instantiate(parsedAnimation.customType);
+            if (customType?.Parse) {
+                return customType.Parse(parsedAnimation);
+            }
+        }
+
         const animation = new Animation(parsedAnimation.name, parsedAnimation.property, parsedAnimation.framePerSecond, parsedAnimation.dataType, parsedAnimation.loopBehavior);
 
         const dataType = parsedAnimation.dataType;

@@ -9,3 +9,6 @@ export * from "./animationKey";
 export * from "./animationRange";
 export * from "./animatable.interface";
 export * from "./pathCursor";
+export * from "./animationTools";
+export * from "./compactAnimation";
+export * from "./compactAnimationTools";
