@@ -1,5 +1,5 @@
 {
-    "fromTag": "5.42.1",
+    "fromTag": "5.42.2",
     "changelog": {
         "5.42.2": [
             {
@@ -16,6 +16,185 @@
                 ],
                 "tags": [
                     "native"
+                ]
+            }
+        ],
+        "5.43.0": [
+            {
+                "pr": "13452",
+                "title": "Fix memory leaks",
+                "description": "Fix some memory leaks with texture buffers and material instances.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/Textures/texture.ts",
+                    "packages/dev/core/src/Materials/effect.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "memory leak"
+                ]
+            },
+            {
+                "pr": "13387",
+                "title": "Pan torwards cursor when zooming on GUI Editor",
+                "description": "Current behavior:\r\n![zoom-gui-current](https://user-images.githubusercontent.com/6002144/210845216-8f4f4719-fb77-4bc1-b562-8e44c1d4fc03.gif)\r\n\r\nNew behavior:\r\n![zoom-gui-new](https://user-images.githubusercontent.com/6002144/210845234-93f32031-83cb-42d2-bac7-a91c6eedef0d.gif)\r\n\r\n",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/guiEditor/src/diagram/workbench.tsx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "gui editor"
+                ]
+            },
+            {
+                "pr": "13437",
+                "title": "Material: Make the frozen mode more user friendly",
+                "description": "See https://forum.babylonjs.com/t/how-to-rotate-texture-of-frozen-material/37430\r\n\r\nThe PR allows you to simply call `material.markDirty(true)` to update a material even when in frozen mode, and even if the mesh(es) using the material are out of view at the time of the call.\r\n\r\nCurrently, it is difficult to update a frozen material, even using the **call unfreeze / make changes / call freeze** paradigm, because the latter has be postponed after we are sure that the material is actually changed, i.e., until after the new effect (if a new effect is created) is ready, which can be difficult to determine: it may take several frames for the effect to be ready once compiling starts, and compiling won't start if all the meshes that use that material are out of sight.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/effect.ts",
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/Materials/pushMaterial.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts"
+                ],
+                "tags": [
+                    "materials",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13449",
+                "title": "Better error handling in XR Hand constraint behavior",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Behaviors/Meshes/handConstraintBehavior.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13448",
+                "title": "Remove a 180 degree flip (an old relic)",
+                "description": "Fixes #13447\n\nWhen initially implemented, right-handed scenes needed a 180 degrees flip because of the way teleportation was working. This code was revamped, but the 180 flip was never removed. I have tested it in different scenarios (and will continue testing it), but it does seem like this is an old relic and technically a bug that needs to be fixed.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/webXRCamera.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13444",
+                "title": "Fix Sound current time when stop is called while paused",
+                "description": "When stop is called while paused, the current time includes the start offset set by the pause function. This is not the case when stop is called while **not** paused. This is confusing. When stop is called, the current time should be the same, whether the sound is paused or not paused.\r\n\r\nThis change fixes the issue by always resetting the start offset when the sound is stopped, even if the sound is paused.\r\n\r\nReported on forum here: https://forum.babylonjs.com/t/pausing-and-playing-an-audio-with-offset-restarts-it-from-the-beginning-instead-of-the-current-position/36668/16",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/Audio/sound.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "audio"
+                ]
+            },
+            {
+                "pr": "13443",
+                "title": "Fix playing animations in Sandbox when they have the same name",
+                "description": "Fix #13441",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/sandbox/src/components/animationBar.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "sandbox"
+                ]
+            },
+            {
+                "pr": "13442",
+                "title": "`instanceof` will return false if element is created from a different window object than the global one",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/htmlElementTexture.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13439",
+                "title": "Add support for instanced meshes in STLEXPORT",
+                "description": "Related Forum Topic: https://forum.babylonjs.com/t/propose-to-remove-baking-transforms-during-stl-export-support-instanced-meshes/37210\r\n\r\nCreateSTL has a new param \"supportInstancedMeshes\" which when set to true exports Instances without baking transforms on source mesh. Exporting instances with supportInstancedMeshes=false and doNotBakeTransforms=false may cause them to change orientation/positions in the scene.",
+                "author": {
+                    "name": "d-0-s-t",
+                    "url": "https://github.com/d-0-s-t"
+                },
+                "files": [
+                    "packages/dev/serializers/src/stl/stlSerializer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13433",
+                "title": "Add support for unsigned int uniform",
+                "description": "Current version can not pass unsigned int uniform to shader when using ShaderMaterial\r\n[Example](https://playground.babylonjs.com/#1OH09K#1727)\r\nThis PR add support for passing unsigned int uniform",
+                "author": {
+                    "name": "newbeea",
+                    "url": "https://github.com/newbeea"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/IPipelineContext.ts",
+                    "packages/dev/core/src/Engines/Native/nativePipelineContext.ts",
+                    "packages/dev/core/src/Engines/WebGL/webGLPipelineContext.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuPipelineContext.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Materials/effect.ts",
+                    "packages/dev/core/src/Materials/shaderMaterial.ts",
+                    "packages/dev/core/src/Materials/uniformBuffer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13436",
+                "title": "Fix Action Deserialization",
+                "description": "https://forum.babylonjs.com/t/how-to-parse-actions-with-onkeydowntrigger-and-parameter/37350",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Actions/actionManager.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "loaders"
                 ]
             }
         ],
