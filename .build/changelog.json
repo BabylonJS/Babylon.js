@@ -1,86 +1,581 @@
 {
-    "fromTag": "5.40.1",
+    "fromTag": "5.42.2",
     "changelog": {
-        "5.40.1": [
+        "5.42.2": [
             {
-                "pr": "13395",
-                "title": "Allow loading unicode-based playgrounds in older versions",
-                "description": "There is sadly no way around it, as the function we are using was only introduced in 5.X, so 4.X playgrounds won't load correctly.",
+                "pr": "13367",
+                "title": "Fixed issue when setting ViewPort multiple times per frame in Native",
+                "description": "## Overview\r\n\r\nThis PR fixes complements [this Babylon Native PR](https://github.com/BabylonJS/BabylonNative/pull/1183), it moves viewport update from been done immediately to be done using the command queue. The way this is currently been done on master, if multiple viewport updates are done in a single frame (like when you can more than one camera been rendered using different viewports) the viewport updates actually end up overriding each other and get lost by the time the command queue starts been processed. \r\n\r\n## Extra Information\r\n\r\nThis functionality started as a request in the forum:\r\n[Forum issue](https://forum.babylonjs.com/t/viewport-ignored-for-mutiple-cameras-in-react-native/36709/4)\r\n[Target web behaviour](https://playground.babylonjs.com/#H8VW0B)",
                 "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
+                    "name": "SergioRZMasson",
+                    "url": "https://github.com/SergioRZMasson"
                 },
                 "files": [
-                    "packages/tools/playground/src/tools/loadManager.ts"
+                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts"
                 ],
-                "tags": []
-            },
+                "tags": [
+                    "native"
+                ]
+            }
+        ],
+        "5.43.0": [
             {
-                "pr": "13393",
-                "title": "Release 5.39.0 Has IPhysicsEnginePLugin Errors",
-                "description": "Fixes #13378\nThe UMD declaration combines all declarations in the core repo to a single file. The issue with that is that interfaces that have the same name collide.\nThis is a UMD-only issue.",
+                "pr": "13452",
+                "title": "Fix memory leaks",
+                "description": "Fix some memory leaks with texture buffers and material instances.",
                 "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
                 },
                 "files": [
-                    "packages/dev/core/src/Debug/physicsViewer.ts",
-                    "packages/dev/core/src/Physics/IPhysicsEngine.ts",
-                    "packages/dev/core/src/Physics/physicsEngineComponent.ts",
-                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
-                    "packages/dev/core/src/Physics/v2/physicsBody.ts",
-                    "packages/dev/core/src/Physics/v2/physicsConstraint.ts",
-                    "packages/dev/core/src/Physics/v2/physicsEngine.ts",
-                    "packages/dev/core/src/Physics/v2/physicsMaterial.ts",
-                    "packages/dev/core/src/Physics/v2/physicsShape.ts"
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/Textures/texture.ts",
+                    "packages/dev/core/src/Materials/effect.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts"
                 ],
-                "tags": []
+                "tags": [
+                    "bug",
+                    "memory leak"
+                ]
             },
             {
-                "pr": "13392",
-                "title": "Fix font style options on gui editor.",
-                "description": "Font style should follow the CSS spec: https://developer.mozilla.org/en-US/docs/Web/CSS/font-style, so it should be \"normal\" instead of regular.",
+                "pr": "13387",
+                "title": "Pan torwards cursor when zooming on GUI Editor",
+                "description": "Current behavior:\r\n![zoom-gui-current](https://user-images.githubusercontent.com/6002144/210845216-8f4f4719-fb77-4bc1-b562-8e44c1d4fc03.gif)\r\n\r\nNew behavior:\r\n![zoom-gui-new](https://user-images.githubusercontent.com/6002144/210845234-93f32031-83cb-42d2-bac7-a91c6eedef0d.gif)\r\n\r\n",
                 "author": {
                     "name": "carolhmj",
                     "url": "https://github.com/carolhmj"
                 },
                 "files": [
-                    "packages/tools/guiEditor/src/components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent.tsx"
+                    "packages/tools/guiEditor/src/diagram/workbench.tsx"
                 ],
                 "tags": [
-                    "bug",
+                    "enhancement",
                     "gui editor"
                 ]
             },
             {
-                "pr": "13385",
-                "title": "ShadowDepthWrapper: Remove unneeded code",
-                "description": "Closes #13381 ",
+                "pr": "13437",
+                "title": "Material: Make the frozen mode more user friendly",
+                "description": "See https://forum.babylonjs.com/t/how-to-rotate-texture-of-frozen-material/37430\r\n\r\nThe PR allows you to simply call `material.markDirty(true)` to update a material even when in frozen mode, and even if the mesh(es) using the material are out of view at the time of the call.\r\n\r\nCurrently, it is difficult to update a frozen material, even using the **call unfreeze / make changes / call freeze** paradigm, because the latter has be postponed after we are sure that the material is actually changed, i.e., until after the new effect (if a new effect is created) is ready, which can be difficult to determine: it may take several frames for the effect to be ready once compiling starts, and compiling won't start if all the meshes that use that material are out of sight.",
                 "author": {
                     "name": "Popov72",
                     "url": "https://github.com/Popov72"
                 },
                 "files": [
-                    "packages/dev/core/src/Materials/shadowDepthWrapper.ts"
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/effect.ts",
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/Materials/pushMaterial.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts"
+                ],
+                "tags": [
+                    "materials",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13449",
+                "title": "Better error handling in XR Hand constraint behavior",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Behaviors/Meshes/handConstraintBehavior.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13448",
+                "title": "Remove a 180 degree flip (an old relic)",
+                "description": "Fixes #13447\n\nWhen initially implemented, right-handed scenes needed a 180 degrees flip because of the way teleportation was working. This code was revamped, but the 180 flip was never removed. I have tested it in different scenarios (and will continue testing it), but it does seem like this is an old relic and technically a bug that needs to be fixed.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/webXRCamera.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13444",
+                "title": "Fix Sound current time when stop is called while paused",
+                "description": "When stop is called while paused, the current time includes the start offset set by the pause function. This is not the case when stop is called while **not** paused. This is confusing. When stop is called, the current time should be the same, whether the sound is paused or not paused.\r\n\r\nThis change fixes the issue by always resetting the start offset when the sound is stopped, even if the sound is paused.\r\n\r\nReported on forum here: https://forum.babylonjs.com/t/pausing-and-playing-an-audio-with-offset-restarts-it-from-the-beginning-instead-of-the-current-position/36668/16",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/Audio/sound.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "audio"
+                ]
+            },
+            {
+                "pr": "13443",
+                "title": "Fix playing animations in Sandbox when they have the same name",
+                "description": "Fix #13441",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/sandbox/src/components/animationBar.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "sandbox"
+                ]
+            },
+            {
+                "pr": "13442",
+                "title": "`instanceof` will return false if element is created from a different window object than the global one",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/htmlElementTexture.ts"
                 ],
                 "tags": [
                     "skip changelog"
                 ]
             },
             {
-                "pr": "13390",
-                "title": "TaskManager.addTextureTask: Fix doc",
-                "description": "See https://forum.babylonjs.com/t/texture-applies-incorrectly-but-refresh-button-helps/36984/2",
+                "pr": "13439",
+                "title": "Add support for instanced meshes in STLEXPORT",
+                "description": "Related Forum Topic: https://forum.babylonjs.com/t/propose-to-remove-baking-transforms-during-stl-export-support-instanced-meshes/37210\r\n\r\nCreateSTL has a new param \"supportInstancedMeshes\" which when set to true exports Instances without baking transforms on source mesh. Exporting instances with supportInstancedMeshes=false and doNotBakeTransforms=false may cause them to change orientation/positions in the scene.",
+                "author": {
+                    "name": "d-0-s-t",
+                    "url": "https://github.com/d-0-s-t"
+                },
+                "files": [
+                    "packages/dev/serializers/src/stl/stlSerializer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13433",
+                "title": "Add support for unsigned int uniform",
+                "description": "Current version can not pass unsigned int uniform to shader when using ShaderMaterial\r\n[Example](https://playground.babylonjs.com/#1OH09K#1727)\r\nThis PR add support for passing unsigned int uniform",
+                "author": {
+                    "name": "newbeea",
+                    "url": "https://github.com/newbeea"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/IPipelineContext.ts",
+                    "packages/dev/core/src/Engines/Native/nativePipelineContext.ts",
+                    "packages/dev/core/src/Engines/WebGL/webGLPipelineContext.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuPipelineContext.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Materials/effect.ts",
+                    "packages/dev/core/src/Materials/shaderMaterial.ts",
+                    "packages/dev/core/src/Materials/uniformBuffer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13436",
+                "title": "Fix Action Deserialization",
+                "description": "https://forum.babylonjs.com/t/how-to-parse-actions-with-onkeydowntrigger-and-parameter/37350",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Actions/actionManager.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "loaders"
+                ]
+            }
+        ],
+        "5.42.1": [
+            {
+                "pr": "13428",
+                "title": "Add touch release detection to draggable parts of BoundingBoxGizmo",
+                "description": "As a followup from [this thread on the BabylonJS forums](https://forum.babylonjs.com/t/boundingboxgizmo-displays-unexpected-highlighting-behavior-on-touch-devices/37197), this PR adds touch release detection to the draggable components (scale boxes, rotation spheres) of the `BoundingBoxGizmo` such that those parts will now unhighlight correctly when releasing touch while dragging said parts.",
+                "author": {
+                    "name": "Hsifnus",
+                    "url": "https://github.com/Hsifnus"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/boundingBoxGizmo.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13431",
+                "title": "Fix broken sound offset backward compatibility",
+                "description": "Prior to my changes in PR https://github.com/BabylonJS/Babylon.js/pull/13373, when a sound's offset was set while paused, playback resumed from the given offset, not the time it was paused at.\r\n\r\nThis change fixes that break in backward compatibility while preserving the fix in PR https://github.com/BabylonJS/Babylon.js/pull/13373.\r\n\r\nThis change also reverts adding the offset in the currentTime property to preserve backward compatibility.\r\n\r\nReported on forum here: https://forum.babylonjs.com/t/sound-currenttime/37290",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/Audio/sound.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "audio"
+                ]
+            },
+            {
+                "pr": "13432",
+                "title": "GPUParticleSystem: Fix crash when update effect not ready",
+                "description": null,
                 "author": {
                     "name": "Popov72",
                     "url": "https://github.com/Popov72"
                 },
                 "files": [
-                    "packages/dev/core/src/Misc/assetsManager.ts"
+                    "packages/dev/core/src/Particles/gpuParticleSystem.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "particles"
+                ]
+            },
+            {
+                "pr": "13430",
+                "title": "Fixes and performance improvement for linked GUI",
+                "description": "* Removing linked controls without moving the camera was causing glitching effects, this has been fixed.\r\n\r\n![linked-meshes-master](https://user-images.githubusercontent.com/6002144/211897255-6360b31f-ec50-4013-8364-2db3556ad90e.gif)\r\n\r\n* Instead of running the _checkControls function every time a mesh is added or removed, do it before rendering, so adding multiple linked controls on the same frame performs better.\r\n\r\n* When moving a control, only update and mark as dirty if the calculated new values have changed relative to the old ones.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts",
+                    "packages/dev/gui/src/2D/controls/control.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "gui"
+                ]
+            }
+        ],
+        "5.42.0": [
+            {
+                "pr": "13429",
+                "title": "Fix broken use of TmpVectors in BoundingBoxGizmo",
+                "description": "Follow up https://forum.babylonjs.com/t/bounding-box-rotation-in-gizmo-is-not-working/37245\r\n\r\n",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/axisScaleGizmo.ts",
+                    "packages/dev/core/src/Gizmos/boundingBoxGizmo.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "gizmos"
+                ]
+            },
+            {
+                "pr": "13388",
+                "title": "Cache loaded dom images on Image class so the playground-editor doesn't have to reload them often",
+                "description": "Without the change:\r\n![ge-no-cache](https://user-images.githubusercontent.com/6002144/209851133-13453ef9-8178-423f-9721-4dd7bbd53ca0.gif)\r\nWith the change:\r\n![ge-cache](https://user-images.githubusercontent.com/6002144/209851145-ac34937f-d94b-4ca1-af94-dc758257f1a8.gif)\r\n",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/image.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "gui editor"
+                ]
+            },
+            {
+                "pr": "13427",
+                "title": "Add location to glFragColor in WebGL preprocessor",
+                "description": "To simplify some specific uses of MultiRenderTarget it would be handy to have `layout(location = 0) prepended to the glFragColor output. Without this you cannot declare another output buffer as in OpenGL ES 3 all output locations must be specified.\r\n\r\nThis change shouldn't have any impact on typical use but makes it easier for custom MRT/Deferred shading situations.",
+                "author": {
+                    "name": "OrigamiDev-Pete",
+                    "url": "https://github.com/OrigamiDev-Pete"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGL/webGL2ShaderProcessors.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13426",
+                "title": "Add dithering option to SkyMaterial",
+                "description": "Rel: https://forum.babylonjs.com/t/skymaterial-and-dithering/37221",
+                "author": {
+                    "name": "852Kerfunkle",
+                    "url": "https://github.com/852Kerfunkle"
+                },
+                "files": [
+                    "packages/dev/materials/src/sky/sky.fragment.fx",
+                    "packages/dev/materials/src/sky/skyMaterial.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13425",
+                "title": "Fix sound play function not accepting zero as a valid offset",
+                "description": "The `Sound.play` function is not accepting zero as a valid offset. This makes resetting the offset to zero not work after previously setting it to a non-zero value.\r\n\r\nReported on forum here: https://forum.babylonjs.com/t/pausing-and-playing-an-audio-with-offset-restarts-it-from-the-beginning-instead-of-the-current-position/36668/12\r\n\r\nThis change fixes the issue by comparing the given `offset` argument to `undefined` instead of using JavaScript truthy/falsey.\r\n\r\nThis bug was caused by the change I made in https://github.com/BabylonJS/Babylon.js/pull/13373.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/Audio/sound.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "audio"
+                ]
+            },
+            {
+                "pr": "13423",
+                "title": "ActionManager: Add support for Material in serialization and parsing",
+                "description": "See https://forum.babylonjs.com/t/how-to-parse-actions/37208",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Actions/action.ts",
+                    "packages/dev/core/src/Actions/actionManager.ts",
+                    "packages/dev/core/src/Actions/directActions.ts",
+                    "packages/dev/core/src/Materials/material.ts"
+                ],
+                "tags": [
+                    "materials",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13421",
+                "title": "PBR material: Fix typo with OBJECTSPACE_NORMALMAP define",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts"
                 ],
                 "tags": [
                     "skip changelog"
                 ]
+            },
+            {
+                "pr": "13419",
+                "title": "Export gltf scene level metadata",
+                "description": "Fix #13417 ",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "exporters",
+                    "glTF"
+                ]
+            },
+            {
+                "pr": "13418",
+                "title": "NME: Add a RealTime input",
+                "description": "See https://forum.babylonjs.com/t/node-material-animation-runs-slower-than-unity-shader-graph/37067/8",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Input/animatedInputBlockTypes.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Input/inputBlock.ts",
+                    "packages/tools/nodeEditor/src/blockTools.ts",
+                    "packages/tools/nodeEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/inputNodePropertyComponent.tsx"
+                ],
+                "tags": [
+                    "new feature",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "13415",
+                "title": "Fix LoadScriptAsync to reject with proper error",
+                "description": "See https://forum.babylonjs.com/t/importasyncmesh-on-server-side-without-scene/34151/39",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/tools.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "13414",
+                "title": "some API changes for fade in and out behavior",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Behaviors/Meshes/fadeInOutBehavior.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13401",
+                "title": "Prevent Uncaught Exception from `ThinEngine.runRenderLoop` when `window.SetTimeout` in not defined",
+                "description": "I am having an uncaught exception when using BaylonJs in a NodeJs environment because of a call to `window.setTimeout`.\r\n\r\nIt is not very clear in the code what is the standard, as sometime we call the global `setTimeout` and sometime we call `window.setTimeout`. \r\n\r\nMy take on this is that it should be ok to always call the globals `setTimeout`/ `clearTimeout` as they are bound to be defined and are the very same functions as `window.setTimeout`/ `window.clearTimeout` in most cases.\r\n\r\nThough this PR do not change them all. I just make some 2 files more consistent where we used to use a mix of both, and I updated the `ThinEngine.QueueNewFrame` to NOT call `window.setTimeout`, but to fall back on the global `setTimeout`.\r\n\r\n\r\nTo really be \"environment  independant\", we should never call a function that is \"environment  dependant\" directly, and put them all behind a configurable callback registry. This registry would be initialized with default values, and could be customizes by the user depending on its needs. But I'm not sure how it is doable, and anyway that's another story :)\r\n",
+                "author": {
+                    "name": "barroij",
+                    "url": "https://github.com/barroij"
+                },
+                "files": [
+                    "packages/dev/core/src/Audio/sound.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/textures/textureEditorComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13413",
+                "title": "Added test for Dynamic Texture canvas context clip operation",
+                "description": "## Overview\r\n\r\nAdded small test for Dynamic Texture canvas context clip operation. Babylon Native will add a similar test, I'm adding it to Babylon.js to keep tests consistent between both projects. ",
+                "author": {
+                    "name": "SergioRZMasson",
+                    "url": "https://github.com/SergioRZMasson"
+                },
+                "files": [
+                    "packages/tools/tests/test/visualization/ReferenceImages/dynamicTextureClip.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13407",
+                "title": "Update meshopt_decoder.js to 0.18",
+                "description": "This brings us up to the latest decoder module for meshopt contents which includes Wasm binary updates and the removal of experimental console.log message that is no longer relevant.\r\n\r\nThe update makes decoding a little faster (~5%), and the module itself a little bigger (~5%) due to the use of new LLVM toolchain.\r\n\r\nThe extra download size, however, is just 287 bytes (gzip delta).\r\n\r\nRaw numbers (Ryzen 5900X, node.js 18.12, Linux):\r\n\r\nbefore:\r\n- decodeVertex 3.54 GB/s\r\n- decodeIndex 2.05 GB/s\r\n- raw size 21781 bytes\r\n- gzip size 5868 bytes\r\n\r\nafter:\r\n- decodeVertex 3.77 GB/s\r\n- decodeIndex 2.16 GB/s\r\n- raw size 23379 bytes\r\n- gzip size 6155 bytes\r\n\r\nThe file is copied verbatim from https://github.com/zeux/meshoptimizer/blob/v0.18/js/meshopt_decoder.js",
+                "author": {
+                    "name": "zeux",
+                    "url": "https://github.com/zeux"
+                },
+                "files": [
+                    "packages/tools/babylonServer/public/meshopt_decoder.js"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13411",
+                "title": "Fix 2 slider3D issues",
+                "description": "The mesh used by the slider had meshes set to pickable that should not be pickable.\nThere was also an issue disposing the material as the textures were not created during construction.\n\nSee https://forum.babylonjs.com/t/xr-motion-controller-unwanted-picking-of-3d-buttons-meshes/36056/14",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/3D/controls/slider3D.ts",
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlSliderThumbMaterial.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "VR/AR/XR"
+                ]
+            },
+            {
+                "pr": "13389",
+                "title": "Add a fade out delay to FadeInOutBehavior",
+                "description": "Add a fade out delay and changes to make behavior work correctly when fadeIn is triggered while the mesh is already visible/invisible or in transition.",
+                "author": {
+                    "name": "ericwood73",
+                    "url": "https://github.com/ericwood73"
+                },
+                "files": [
+                    "packages/dev/core/src/Behaviors/Meshes/fadeInOutBehavior.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13406",
+                "title": "Prevent Uncaught Exception in NullEngine.dispose",
+                "description": "I am having an uncaught exception when using BaylonJs in a NodeJs environment because of a call to `window.removeEventListener` from NullEngine.dispose().\r\n\r\n\r\nThis PR adds extra checks to make that `addEventListener`/`removeEventListener` do exist and are functions before calling them.\r\n\r\nThis PR comes along with https://github.com/BabylonJS/Babylon.js/pull/13401 in order to improve BabylonJs usability in non-browser environment\r\n",
+                "author": {
+                    "name": "barroij",
+                    "url": "https://github.com/barroij"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/engine.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13408",
+                "title": "Improve pointerDragBehavior customization",
+                "description": "As the details in [Babylonjs forum](https://forum.babylonjs.com/t/change-accessibility-of-dragplane-in-pointerdragbehavior-class-to-protected-to-make-it-more-extendable/37082), I have a need to customize the `pointerDragBehavior` in such a way that will allow more customization in its inherited class and remove a pitfall on how  the dragging state was handled. In order to achieve that, there're a few changes I need to make:\r\n\r\n1. Change the visibility of `_dragPlane` field from private to protected to allow more customization in the inherited class.\r\n2. Force calling `releaseDrag` if the start dragging failed to prevent the freezing (not be able to drag) due to how the dragging state is handled\r\n3. Pass the information of the active pointer in the drag observables in addition to the `pointerId`, this is to let the user have  access to more information about the pointer and it especially useful when detecting the type of the event (e.g. click, touch)",
+                "author": {
+                    "name": "thongth",
+                    "url": "https://github.com/thongth"
+                },
+                "files": [
+                    "packages/dev/core/src/Behaviors/Meshes/pointerDragBehavior.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13410",
+                "title": "Properly notify textHighlightObservable",
+                "description": "Related issue: https://forum.babylonjs.com/t/gui-ontexthighlightobservable-callback-how-to/37128/2",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/inputText.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "gui"
+                ]
+            },
+            {
+                "pr": "13409",
+                "title": "NME : Use flag IgnoreTexturesAtLoadTime in ReflectionTextureBaseBlock",
+                "description": "When creating ReflectionTextureBaseBlock from a JSON NME material, if the flag NodeMaterial.IgnoreTexturesAtLoadTime is activated, this pull request prevents texture loading.\r\n\r\nThis new behavior is similar to the ones already existing in TextureBlock, ImageSourceBlock or TriPlanarBlock.",
+                "author": {
+                    "name": "GMM-Monumento",
+                    "url": "https://github.com/GMM-Monumento"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/reflectionTextureBaseBlock.ts"
+                ],
+                "tags": []
             }
         ],
         "5.41.0": [
@@ -236,6 +731,88 @@
                 ],
                 "tags": [
                     "dependencies"
+                ]
+            }
+        ],
+        "5.40.1": [
+            {
+                "pr": "13395",
+                "title": "Allow loading unicode-based playgrounds in older versions",
+                "description": "There is sadly no way around it, as the function we are using was only introduced in 5.X, so 4.X playgrounds won't load correctly.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/playground/src/tools/loadManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13393",
+                "title": "Release 5.39.0 Has IPhysicsEnginePLugin Errors",
+                "description": "Fixes #13378\nThe UMD declaration combines all declarations in the core repo to a single file. The issue with that is that interfaces that have the same name collide.\nThis is a UMD-only issue.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Debug/physicsViewer.ts",
+                    "packages/dev/core/src/Physics/IPhysicsEngine.ts",
+                    "packages/dev/core/src/Physics/physicsEngineComponent.ts",
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts",
+                    "packages/dev/core/src/Physics/v2/physicsConstraint.ts",
+                    "packages/dev/core/src/Physics/v2/physicsEngine.ts",
+                    "packages/dev/core/src/Physics/v2/physicsMaterial.ts",
+                    "packages/dev/core/src/Physics/v2/physicsShape.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13392",
+                "title": "Fix font style options on gui editor.",
+                "description": "Font style should follow the CSS spec: https://developer.mozilla.org/en-US/docs/Web/CSS/font-style, so it should be \"normal\" instead of regular.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/guiEditor/src/components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "gui editor"
+                ]
+            },
+            {
+                "pr": "13385",
+                "title": "ShadowDepthWrapper: Remove unneeded code",
+                "description": "Closes #13381 ",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/shadowDepthWrapper.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13390",
+                "title": "TaskManager.addTextureTask: Fix doc",
+                "description": "See https://forum.babylonjs.com/t/texture-applies-incorrectly-but-refresh-button-helps/36984/2",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/assetsManager.ts"
+                ],
+                "tags": [
+                    "skip changelog"
                 ]
             }
         ],

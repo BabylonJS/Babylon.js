@@ -121,7 +121,7 @@ export class ActionManager extends AbstractActionManager {
      * On key up
      * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
-    public static readonly OnKeyUpTrigger = 15;
+    public static readonly OnKeyUpTrigger = Constants.ACTION_OnKeyUpTrigger;
 
     // Members
     private _scene: Scene;
@@ -392,7 +392,7 @@ export class ActionManager extends AbstractActionManager {
             if (triggerOptions && typeof triggerOptions !== "number") {
                 if (triggerOptions.parameter instanceof Node) {
                     triggerObject.properties.push(Action._GetTargetProperty(triggerOptions.parameter));
-                } else {
+                } else if (typeof triggerOptions.parameter === "object") {
                     const parameter = <any>{};
                     DeepCopier.DeepCopy(triggerOptions.parameter, parameter, ["mesh"]);
 
@@ -401,6 +401,8 @@ export class ActionManager extends AbstractActionManager {
                     }
 
                     triggerObject.properties.push({ name: "parameter", targetType: null, value: parameter });
+                } else {
+                    triggerObject.properties.push({ name: "parameter", targetType: null, value: triggerOptions.parameter });
                 }
             }
 
@@ -428,15 +430,10 @@ export class ActionManager extends AbstractActionManager {
             object.actionManager = actionManager;
         }
 
-        // instanciate a new object
-        const instanciate = (name: string, params: Array<any>): any => {
+        // instantiate a new object
+        const instantiate = (name: string, params: Array<any>): any => {
             const internalClassType = GetClass("BABYLON." + name);
-            if (internalClassType) {
-                const newInstance: Object = Object.create(internalClassType.prototype);
-                // eslint-disable-next-line prefer-spread
-                newInstance.constructor.apply(newInstance, params);
-                return newInstance;
-            }
+            return internalClassType && new internalClassType(...params);
         };
 
         const parseParameter = (name: string, value: string, target: any, propertyPath: Nullable<string>): any => {
@@ -524,8 +521,10 @@ export class ActionManager extends AbstractActionManager {
                     const targetType = parsedAction.properties[i].targetType;
 
                     if (name === "target") {
-                        if (targetType !== null && targetType === "SceneProperties") {
+                        if (targetType === "SceneProperties") {
                             value = target = scene;
+                        } else if (targetType === "MaterialProperties") {
+                            value = target = scene.getMaterialByName(value);
                         } else {
                             value = target = scene.getNodeByName(value);
                         }
@@ -564,7 +563,7 @@ export class ActionManager extends AbstractActionManager {
             }
 
             // Action or condition(s) and not CombineAction
-            let newAction = instanciate(parsedAction.name, parameters);
+            let newAction = instantiate(parsedAction.name, parameters);
 
             if (newAction instanceof Condition && condition !== null) {
                 const nothing = new DoNothingAction(trigger, condition);
@@ -632,37 +631,39 @@ export class ActionManager extends AbstractActionManager {
      */
     public static GetTriggerName(trigger: number): string {
         switch (trigger) {
-            case 0:
+            case Constants.ACTION_NothingTrigger:
                 return "NothingTrigger";
-            case 1:
+            case Constants.ACTION_OnPickTrigger:
                 return "OnPickTrigger";
-            case 2:
+            case Constants.ACTION_OnLeftPickTrigger:
                 return "OnLeftPickTrigger";
-            case 3:
+            case Constants.ACTION_OnRightPickTrigger:
                 return "OnRightPickTrigger";
-            case 4:
+            case Constants.ACTION_OnCenterPickTrigger:
                 return "OnCenterPickTrigger";
-            case 5:
+            case Constants.ACTION_OnPickDownTrigger:
                 return "OnPickDownTrigger";
-            case 6:
+            case Constants.ACTION_OnDoublePickTrigger:
+                return "OnDoublePickTrigger"; // start;
+            case Constants.ACTION_OnPickUpTrigger:
                 return "OnPickUpTrigger";
-            case 7:
+            case Constants.ACTION_OnLongPressTrigger:
                 return "OnLongPressTrigger";
-            case 8:
+            case Constants.ACTION_OnPointerOverTrigger:
                 return "OnPointerOverTrigger";
-            case 9:
+            case Constants.ACTION_OnPointerOutTrigger:
                 return "OnPointerOutTrigger";
-            case 10:
+            case Constants.ACTION_OnEveryFrameTrigger:
                 return "OnEveryFrameTrigger";
-            case 11:
+            case Constants.ACTION_OnIntersectionEnterTrigger:
                 return "OnIntersectionEnterTrigger";
-            case 12:
+            case Constants.ACTION_OnIntersectionExitTrigger:
                 return "OnIntersectionExitTrigger";
-            case 13:
+            case Constants.ACTION_OnKeyDownTrigger:
                 return "OnKeyDownTrigger";
-            case 14:
+            case Constants.ACTION_OnKeyUpTrigger:
                 return "OnKeyUpTrigger";
-            case 15:
+            case Constants.ACTION_OnPickOutTrigger:
                 return "OnPickOutTrigger";
             default:
                 return "";

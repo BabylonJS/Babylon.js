@@ -1904,6 +1904,15 @@ export class _Exporter {
         this._convertToRightHandedSystem = !babylonScene.useRightHandedSystem;
         this._convertToRightHandedSystemMap = {};
 
+        // Scene metadata
+        if (babylonScene.metadata) {
+            if (this._options.metadataSelector) {
+                scene.extras = this._options.metadataSelector(babylonScene.metadata);
+            } else if (babylonScene.metadata.gltf) {
+                scene.extras = babylonScene.metadata.gltf.extras;
+            }
+        }
+
         // Set default values for all nodes
         babylonScene.rootNodes.forEach((rootNode) => {
             this._convertToRightHandedSystemMap[rootNode.uniqueId] = this._convertToRightHandedSystem;
