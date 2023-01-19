@@ -162,6 +162,11 @@
             "referenceImage": "clearCoat.png"
         },
         {
+            "title": "Dynamic Texture context clip",
+            "playgroundId": "#FU0ES5#37",
+            "referenceImage": "dynamicTextureClip.png"
+        },
+        {
             "title": "GUI Transform StackPanel",
             "renderCount": 5,
             "playgroundId": "#BS60AB#0",
@@ -1514,6 +1519,15 @@
             "playgroundId": "#20OAV9#9228",
             "referenceImage": "exportGltfKHRTextureTransform.png",
             "renderCount": 5
+        },
+        {
+            "title": "GUI Input Text Area Inside ScrollViewer",
+            "playgroundId": "#NVAEWD#69"
+        },
+        {
+            "title": "GUI Images in Grid",
+            "playgroundId": "#8Y0XJL#1",
+            "renderCount": 10
         }
     ]
 }

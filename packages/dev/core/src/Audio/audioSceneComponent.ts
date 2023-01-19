@@ -1,7 +1,6 @@
 import { Sound } from "./sound";
 import { SoundTrack } from "./soundTrack";
 import { Engine } from "../Engines/engine";
-import type { Camera } from "../Cameras/camera";
 import type { Nullable } from "../types";
 import { Matrix, Vector3 } from "../Maths/math.vector";
 import type { ISceneSerializableComponent } from "../sceneComponent";
@@ -94,6 +93,12 @@ declare module "../scene" {
          * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic
          */
         audioListenerPositionProvider: Nullable<() => Vector3>;
+
+        /**
+         * Gets or sets custom audio listener rotation provider
+         * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic
+         */
+        audioListenerRotationProvider: Nullable<() => Vector3>;
 
         /**
          * Gets or sets a refresh rate when using 3D audio positioning
@@ -222,6 +227,33 @@ Object.defineProperty(Scene.prototype, "audioListenerPositionProvider", {
     configurable: true,
 });
 
+Object.defineProperty(Scene.prototype, "audioListenerRotationProvider", {
+    get: function (this: Scene) {
+        let compo = this._getComponent(SceneComponentConstants.NAME_AUDIO) as AudioSceneComponent;
+        if (!compo) {
+            compo = new AudioSceneComponent(this);
+            this._addComponent(compo);
+        }
+
+        return compo.audioListenerRotationProvider;
+    },
+    set: function (this: Scene, value: () => Vector3) {
+        let compo = this._getComponent(SceneComponentConstants.NAME_AUDIO) as AudioSceneComponent;
+        if (!compo) {
+            compo = new AudioSceneComponent(this);
+            this._addComponent(compo);
+        }
+
+        if (typeof value !== "function") {
+            throw new Error("The value passed to [Scene.audioListenerRotationProvider] must be a function that returns a Vector3");
+        } else {
+            compo.audioListenerRotationProvider = value;
+        }
+    },
+    enumerable: true,
+    configurable: true,
+});
+
 Object.defineProperty(Scene.prototype, "audioPositioningRefreshRate", {
     get: function (this: Scene) {
         let compo = this._getComponent(SceneComponentConstants.NAME_AUDIO) as AudioSceneComponent;
@@ -285,20 +317,17 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
      */
     public audioPositioningRefreshRate = 500;
 
-    private _audioListenerPositionProvider: Nullable<() => Vector3> = null;
     /**
-     * Gets the current audio listener position provider
-     */
-    public get audioListenerPositionProvider(): Nullable<() => Vector3> {
-        return this._audioListenerPositionProvider;
-    }
-    /**
-     * Sets a custom listener position for all sounds in the scene
+     * Gets or Sets a custom listener position for all sounds in the scene
      * By default, this is the position of the first active camera
      */
-    public set audioListenerPositionProvider(value: Nullable<() => Vector3>) {
-        this._audioListenerPositionProvider = value;
-    }
+    public audioListenerPositionProvider: Nullable<() => Vector3> = null;
+
+    /**
+     * Gets or Sets a custom listener rotation for all sounds in the scene
+     * By default, this is the rotation of the first active camera
+     */
+    public audioListenerRotationProvider: Nullable<() => Vector3> = null;
 
     /**
      * Creates a new instance of the component for the given scene
@@ -507,53 +536,58 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
         }
 
         if (audioEngine.audioContext) {
+            let listeningCamera = scene.activeCamera;
+            if (scene.activeCameras && scene.activeCameras.length > 0) {
+                listeningCamera = scene.activeCameras[0];
+            }
+
             // A custom listener position provider was set
             // Use the users provided position instead of camera's
-            if (this._audioListenerPositionProvider) {
-                const position: Vector3 = this._audioListenerPositionProvider();
-                // Make sure all coordinates were provided
-                position.x = position.x || 0;
-                position.y = position.y || 0;
-                position.z = position.z || 0;
+            if (this.audioListenerPositionProvider) {
+                const position: Vector3 = this.audioListenerPositionProvider();
                 // Set the listener position
-                audioEngine.audioContext.listener.setPosition(position.x, position.y, position.z);
-            } else {
-                let listeningCamera: Nullable<Camera>;
-
-                if (scene.activeCameras && scene.activeCameras.length > 0) {
-                    listeningCamera = scene.activeCameras[0];
-                } else {
-                    listeningCamera = scene.activeCamera;
-                }
-
+                audioEngine.audioContext.listener.setPosition(position.x || 0, position.y || 0, position.z || 0);
                 // Check if there is a listening camera
-                if (listeningCamera) {
-                    // Set the listener position to the listening camera global position
-                    if (!this._cachedCameraPosition.equals(listeningCamera.globalPosition)) {
-                        this._cachedCameraPosition.copyFrom(listeningCamera.globalPosition);
-                        audioEngine.audioContext.listener.setPosition(listeningCamera.globalPosition.x, listeningCamera.globalPosition.y, listeningCamera.globalPosition.z);
-                    }
+            } else if (listeningCamera) {
+                // Set the listener position to the listening camera global position
+                if (!this._cachedCameraPosition.equals(listeningCamera.globalPosition)) {
+                    this._cachedCameraPosition.copyFrom(listeningCamera.globalPosition);
+                    audioEngine.audioContext.listener.setPosition(listeningCamera.globalPosition.x, listeningCamera.globalPosition.y, listeningCamera.globalPosition.z);
+                }
+            }
+            // Otherwise set the listener position to 0, 0 ,0
+            else {
+                // Set the listener position
+                audioEngine.audioContext.listener.setPosition(0, 0, 0);
+            }
 
-                    // for VR cameras
-                    if (listeningCamera.rigCameras && listeningCamera.rigCameras.length > 0) {
-                        listeningCamera = listeningCamera.rigCameras[0];
-                    }
-                    listeningCamera.getViewMatrix().invertToRef(this._invertMatrixTemp);
-                    Vector3.TransformNormalToRef(AudioSceneComponent._CameraDirection, this._invertMatrixTemp, this._cameraDirectionTemp);
-                    this._cameraDirectionTemp.normalize();
-                    // To avoid some errors on GearVR
-                    if (!isNaN(this._cameraDirectionTemp.x) && !isNaN(this._cameraDirectionTemp.y) && !isNaN(this._cameraDirectionTemp.z)) {
-                        if (!this._cachedCameraDirection.equals(this._cameraDirectionTemp)) {
-                            this._cachedCameraDirection.copyFrom(this._cameraDirectionTemp);
-                            audioEngine.audioContext.listener.setOrientation(this._cameraDirectionTemp.x, this._cameraDirectionTemp.y, this._cameraDirectionTemp.z, 0, 1, 0);
-                        }
+            // A custom listener rotation provider was set
+            // Use the users provided rotation instead of camera's
+            if (this.audioListenerRotationProvider) {
+                const rotation: Vector3 = this.audioListenerRotationProvider();
+                audioEngine.audioContext.listener.setOrientation(rotation.x || 0, rotation.y || 0, rotation.z || 0, 0, 1, 0);
+                // Check if there is a listening camera
+            } else if (listeningCamera) {
+                // for VR cameras
+                if (listeningCamera.rigCameras && listeningCamera.rigCameras.length > 0) {
+                    listeningCamera = listeningCamera.rigCameras[0];
+                }
+
+                listeningCamera.getViewMatrix().invertToRef(this._invertMatrixTemp);
+                Vector3.TransformNormalToRef(AudioSceneComponent._CameraDirection, this._invertMatrixTemp, this._cameraDirectionTemp);
+                this._cameraDirectionTemp.normalize();
+                // To avoid some errors on GearVR
+                if (!isNaN(this._cameraDirectionTemp.x) && !isNaN(this._cameraDirectionTemp.y) && !isNaN(this._cameraDirectionTemp.z)) {
+                    if (!this._cachedCameraDirection.equals(this._cameraDirectionTemp)) {
+                        this._cachedCameraDirection.copyFrom(this._cameraDirectionTemp);
+                        audioEngine.audioContext.listener.setOrientation(this._cameraDirectionTemp.x, this._cameraDirectionTemp.y, this._cameraDirectionTemp.z, 0, 1, 0);
                     }
                 }
-                // Otherwise set the listener position to 0, 0 ,0
-                else {
-                    // Set the listener position
-                    audioEngine.audioContext.listener.setPosition(0, 0, 0);
-                }
+            }
+            // Otherwise set the listener rotation to 0, 0 ,0
+            else {
+                // Set the listener position
+                audioEngine.audioContext.listener.setOrientation(0, 0, 0, 0, 1, 0);
             }
 
             let i: number;

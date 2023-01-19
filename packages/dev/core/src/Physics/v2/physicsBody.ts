@@ -1,7 +1,10 @@
-import type { IPhysicsEnginePlugin, MassProperties } from "./IPhysicsEnginePlugin";
+import type { IPhysicsEnginePluginV2, MassProperties } from "./IPhysicsEnginePlugin";
 import type { PhysicsShape } from "./physicsShape";
 import type { Vector3 } from "../../Maths/math.vector";
+import { Quaternion } from "../../Maths/math.vector";
 import type { Scene } from "../../scene";
+import type { PhysicsEngine } from "./physicsEngine";
+import type { Mesh, TransformNode } from "../../Meshes";
 
 /**
  *
@@ -10,19 +13,25 @@ import type { Scene } from "../../scene";
 export class PhysicsBody {
     /** @internal */
     public _pluginData: any = undefined;
-
-    private _physicsPlugin: IPhysicsEnginePlugin;
-
+    /**
+     *
+     */
+    public _pluginDataInstances: Array<any> = [];
+    private _physicsPlugin: IPhysicsEnginePluginV2;
+    /**
+     *
+     */
+    node: TransformNode;
     /**
      *
      * @param scene
      * @returns
      */
-    constructor(scene: Scene) {
+    constructor(node: TransformNode, scene: Scene) {
         if (!scene) {
             return;
         }
-        const physicsEngine = scene.getPhysicsEngine();
+        const physicsEngine = scene.getPhysicsEngine() as PhysicsEngine;
         if (!physicsEngine) {
             throw new Error("No Physics Engine available.");
         }
@@ -34,8 +43,20 @@ export class PhysicsBody {
             throw new Error("No Physics Plugin available.");
         }
 
-        this._physicsPlugin = physicsPlugin as IPhysicsEnginePlugin;
-        this._physicsPlugin.initBody(this);
+        this._physicsPlugin = physicsPlugin as IPhysicsEnginePluginV2;
+        if (!node.rotationQuaternion) {
+            node.rotationQuaternion = Quaternion.FromEulerAngles(node.rotation.x, node.rotation.y, node.rotation.z);
+        }
+        // instances?
+        const m = node as Mesh;
+        if (m.hasThinInstances) {
+            this._physicsPlugin.initBodyInstances(this, m);
+        } else {
+            // single instance
+            this._physicsPlugin.initBody(this, node.position, node.rotationQuaternion);
+        }
+        this.node = node;
+        physicsEngine.addBody(this);
     }
     /**
      *
@@ -172,6 +193,10 @@ export class PhysicsBody {
      */
     public applyImpulse(location: Vector3, impulse: Vector3): void {
         this._physicsPlugin.applyImpulse(this, location, impulse);
+    }
+
+    public getGeometry(): {} {
+        return this._physicsPlugin.getBodyGeometry(this);
     }
 
     /**

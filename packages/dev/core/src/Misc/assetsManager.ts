@@ -1056,7 +1056,7 @@ export class AssetsManager {
      * @param taskName defines the name of the new task
      * @param url defines the url of the file to load
      * @param noMipmap defines if the texture must not receive mipmaps (false by default)
-     * @param invertY defines if you want to invert Y axis of the loaded texture (false by default)
+     * @param invertY defines if you want to invert Y axis of the loaded texture (true by default)
      * @param samplingMode defines the sampling mode to use (Texture.TRILINEAR_SAMPLINGMODE by default)
      * @returns a new TextureAssetTask object
      */

@@ -355,7 +355,7 @@ export class Sound {
                             this._isReadyToPlay = true;
                             // Simulating a ready to play event to avoid breaking code path
                             if (this._readyToPlayCallback) {
-                                window.setTimeout(() => {
+                                setTimeout(() => {
                                     if (this._readyToPlayCallback) {
                                         this._readyToPlayCallback();
                                     }
@@ -377,7 +377,7 @@ export class Sound {
             }
             // Simulating a ready to play event to avoid breaking code for non web audio browsers
             if (this._readyToPlayCallback) {
-                window.setTimeout(() => {
+                setTimeout(() => {
                     if (this._readyToPlayCallback) {
                         this._readyToPlayCallback();
                     }
@@ -501,7 +501,7 @@ export class Sound {
             this.distanceModel = options.distanceModel ?? this.distanceModel;
             this._playbackRate = options.playbackRate ?? this._playbackRate;
             this._length = options.length ?? undefined;
-            this._offset = options.offset ?? undefined;
+            this._setOffset(options.offset ?? undefined);
             this.setVolume(options.volume ?? this._volume);
             this._updateSpatialParameters();
             if (this.isPlaying) {
@@ -812,7 +812,10 @@ export class Sound {
                     const tryToPlay = () => {
                         if (Engine.audioEngine?.audioContext) {
                             length = length || this._length;
-                            offset = offset || this._offset;
+
+                            if (offset !== undefined) {
+                                this._setOffset(offset);
+                            }
 
                             if (this._soundSource) {
                                 const oldSource = this._soundSource;
@@ -836,7 +839,7 @@ export class Sound {
                                     this._onended();
                                 };
                                 startTime = time ? Engine.audioEngine?.audioContext!.currentTime + time : Engine.audioEngine.audioContext!.currentTime;
-                                const actualOffset = this.isPaused ? this._startOffset % this._soundSource!.buffer!.duration : offset ? offset : 0;
+                                const actualOffset = ((this.isPaused ? this._startOffset : 0) + (this._offset ?? 0)) % this._soundSource!.buffer!.duration;
                                 this._soundSource!.start(startTime, actualOffset, this.loop ? undefined : length);
                             }
                         }
@@ -902,14 +905,17 @@ export class Sound {
                 this._soundSource.stop(stopTime);
                 if (stopTime === undefined) {
                     this.isPlaying = false;
+                    this.isPaused = false;
+                    this._startOffset = 0;
+                    this._startTime = Engine.audioEngine!.audioContext!.currentTime;
                     this._soundSource.onended = () => void 0;
                 } else {
                     this._soundSource.onended = () => {
                         this.isPlaying = false;
+                        this.isPaused = false;
+                        this._startOffset = 0;
+                        this._startTime = Engine.audioEngine!.audioContext!.currentTime;
                     };
-                }
-                if (!this.isPaused) {
-                    this._startOffset = 0;
                 }
             }
         }
@@ -920,7 +926,6 @@ export class Sound {
      */
     public pause(): void {
         if (this.isPlaying) {
-            this.isPaused = true;
             if (this._streaming) {
                 if (this._htmlAudioElement) {
                     this._htmlAudioElement.pause();
@@ -928,8 +933,10 @@ export class Sound {
                     this._streamingSource.disconnect();
                 }
                 this.isPlaying = false;
+                this.isPaused = true;
             } else if (Engine.audioEngine?.audioContext) {
                 this.stop(0);
+                this.isPaused = true;
                 this._startOffset += Engine.audioEngine.audioContext.currentTime - this._startTime;
             }
         }
@@ -1047,7 +1054,7 @@ export class Sound {
                         clonedSound.play(0, this._offset, this._length);
                     }
                 } else {
-                    window.setTimeout(setBufferAndRun, 300);
+                    setTimeout(setBufferAndRun, 300);
                 }
             };
 
@@ -1196,7 +1203,7 @@ export class Sound {
                         newSound.play(0, newSound._offset, newSound._length);
                     }
                 } else {
-                    window.setTimeout(setBufferAndRun, 300);
+                    setTimeout(setBufferAndRun, 300);
                 }
             };
 
@@ -1227,5 +1234,16 @@ export class Sound {
         }
 
         return newSound;
+    }
+
+    private _setOffset(value?: number) {
+        if (this._offset === value) {
+            return;
+        }
+        if (this.isPaused) {
+            this.stop();
+            this.isPaused = false;
+        }
+        this._offset = value;
     }
 }

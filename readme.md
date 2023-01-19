@@ -33,6 +33,8 @@ BabylonJS and its modules are published on npm with full typing support. To inst
 npm install babylonjs --save
 ```
 
+> alternatively, you can now rely on our [ES6 packages](https://doc.babylonjs.com/setup/frameworkPackages/npmSupport#es6). Using the ES6 version will allow tree shaking among other bundling benefits.
+
 This will allow you to import BabylonJS entirely using:
 
 ```javascript

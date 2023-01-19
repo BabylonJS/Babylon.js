@@ -180,7 +180,7 @@ class CommandBufferEncoder {
 /** @internal */
 export class NativeEngine extends Engine {
     // This must match the protocol version in NativeEngine.cpp
-    private static readonly PROTOCOL_VERSION = 7;
+    private static readonly PROTOCOL_VERSION = 8;
 
     private readonly _engine: INativeEngine = new _native.Engine();
     private readonly _camera: Nullable<INativeCamera> = _native.Camera ? new _native.Camera() : null;
@@ -759,7 +759,12 @@ export class NativeEngine extends Engine {
 
     public setViewport(viewport: IViewportLike, requiredWidth?: number, requiredHeight?: number): void {
         this._cachedViewport = viewport;
-        this._engine.setViewPort(viewport.x, viewport.y, viewport.width, viewport.height);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETVIEWPORT);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(viewport.x);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(viewport.y);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(viewport.width);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(viewport.height);
+        this._commandBufferEncoder.finishEncodingCommand();
     }
 
     public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false, cullBackFaces?: boolean, stencil?: IStencilState, zOffsetUnits: number = 0): void {
@@ -2103,7 +2108,7 @@ export class NativeEngine extends Engine {
         let colorAttachment: InternalTexture | undefined = undefined;
         //let samples = 1;
         if (options !== undefined && typeof options === "object") {
-            generateDepthBuffer = !!options.generateDepthBuffer;
+            generateDepthBuffer = options.generateDepthBuffer ?? true;
             generateStencilBuffer = !!options.generateStencilBuffer;
             noColorAttachment = !!options.noColorAttachment;
             colorAttachment = options.colorAttachment;

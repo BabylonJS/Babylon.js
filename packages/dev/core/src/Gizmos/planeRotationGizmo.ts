@@ -38,6 +38,13 @@ export interface IPlaneRotationGizmo extends IGizmo {
     angle: number;
     /** If the gizmo is enabled */
     isEnabled: boolean;
+
+    /** Default material used to render when gizmo is not disabled or hovered */
+    coloredMaterial: StandardMaterial;
+    /** Material used to render when gizmo is hovered with mouse*/
+    hoverMaterial: StandardMaterial;
+    /** Material used to render when gizmo is disabled. typically grey.*/
+    disableMaterial: StandardMaterial;
 }
 
 /**
@@ -71,6 +78,20 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
      */
     public angle: number = 0;
 
+    /** Default material used to render when gizmo is not disabled or hovered */
+    public get coloredMaterial() {
+        return this._coloredMaterial;
+    }
+
+    /** Material used to render when gizmo is hovered with mouse*/
+    public get hoverMaterial() {
+        return this._hoverMaterial;
+    }
+
+    /** Material used to render when gizmo is disabled. typically grey.*/
+    public get disableMaterial() {
+        return this._disableMaterial;
+    }
     protected _isEnabled: boolean = true;
     protected _parent: Nullable<RotationGizmo> = null;
     protected _coloredMaterial: StandardMaterial;

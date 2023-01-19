@@ -1171,6 +1171,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         const lightDisposed = defines._areLightsDisposed;
         let effect = this._prepareEffect(mesh, defines, this.onCompiled, this.onError, useInstances, null, subMesh.getRenderingMesh().hasThinInstances);
 
+        let forceWasNotReadyPreviously = false;
+
         if (effect) {
             if (this._onEffectCreatedObservable) {
                 onCreatedEffectParameters.effect = effect;
@@ -1182,6 +1184,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             if (this.allowShaderHotSwapping && previousEffect && !effect.isReady()) {
                 effect = previousEffect;
                 defines.markAsUnprocessed();
+
+                forceWasNotReadyPreviously = this.isFrozen;
 
                 if (lightDisposed) {
                     // re register in case it takes more than one frame.
@@ -1199,7 +1203,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         defines._renderId = scene.getRenderId();
-        subMesh.effect._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyReady = forceWasNotReadyPreviously ? false : true;
         subMesh.effect._wasPreviouslyUsingInstances = !!useInstances;
 
         if (scene.performancePriority !== ScenePerformancePriority.BackwardCompatible) {
@@ -1483,7 +1487,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         const join = defines.toString();
-        return engine.createEffect(
+        const effect = engine.createEffect(
             shaderName,
             <IEffectCreationOptions>{
                 attributes: attribs,
@@ -1501,6 +1505,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             },
             engine
         );
+
+        this._eventInfo.customCode = undefined;
+
+        return effect;
     }
 
     private _prepareDefines(
@@ -1763,7 +1771,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     defines.BUMP = false;
                     defines.PARALLAX = false;
                     defines.PARALLAXOCCLUSION = false;
-                    defines.PARALLAOBJECTSPACE_NORMALMAP = false;
+                    defines.OBJECTSPACE_NORMALMAP = false;
                 }
 
                 if (this._environmentBRDFTexture && MaterialFlags.ReflectionTextureEnabled) {
@@ -2003,7 +2011,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             this.bindOnlyNormalMatrix(this._normalMatrix);
         }
 
-        const mustRebind = this._mustRebind(scene, effect, mesh.visibility);
+        const mustRebind = effect._forceRebindOnNextCall || this._mustRebind(scene, effect, mesh.visibility);
 
         // Bones
         MaterialHelper.BindBonesParameters(mesh, this._activeEffect, this.prePassConfiguration);
@@ -2014,7 +2022,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             this.bindViewProjection(effect);
             reflectionTexture = this._getReflectionTexture();
 
-            if (!ubo.useUbo || !this.isFrozen || !ubo.isSync) {
+            if (!ubo.useUbo || !this.isFrozen || !ubo.isSync || effect._forceRebindOnNextCall) {
                 // Texture uniforms
                 if (scene.texturesEnabled) {
                     if (this._albedoTexture && MaterialFlags.DiffuseTextureEnabled) {

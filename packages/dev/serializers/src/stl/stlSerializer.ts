@@ -1,4 +1,5 @@
-import type { Mesh } from "core/Meshes/mesh";
+import { Mesh } from "core/Meshes/mesh";
+import { InstancedMesh } from "core/Meshes/instancedMesh";
 import { VertexBuffer } from "core/Buffers/buffer";
 import { Vector3 } from "core/Maths/math.vector";
 
@@ -14,15 +15,17 @@ export class STLExport {
      * @param binary changes the STL to a binary type.
      * @param isLittleEndian toggle for binary type exporter.
      * @param doNotBakeTransform toggle if meshes transforms should be baked or not.
+     * @param supportInstancedMeshes toggle to export instanced Meshes. Enabling support for instanced meshes will override doNoBakeTransform as true
      * @returns the STL as UTF8 string
      */
     public static CreateSTL(
-        meshes: Mesh[],
+        meshes: (Mesh | InstancedMesh)[],
         download: boolean = true,
         fileName: string = "stlmesh",
         binary: boolean = false,
         isLittleEndian: boolean = true,
-        doNotBakeTransform: boolean = false
+        doNotBakeTransform: boolean = false,
+        supportInstancedMeshes: boolean = false
     ): any {
         //Binary support adapted from https://gist.github.com/paulkaplan/6d5f0ab2c7e8fdc68a61
 
@@ -51,6 +54,29 @@ export class STLExport {
             return offset + 4;
         };
 
+        const getVerticesData = function (mesh: InstancedMesh | Mesh) {
+            if (supportInstancedMeshes) {
+                let sourceMesh = mesh;
+                if (mesh instanceof InstancedMesh) {
+                    sourceMesh = mesh.sourceMesh;
+                }
+                const data = sourceMesh.getVerticesData(VertexBuffer.PositionKind, true, true);
+                if (!data) return [];
+                const temp = Vector3.Zero();
+                let index;
+                for (index = 0; index < data.length; index += 3) {
+                    Vector3.TransformCoordinatesFromFloatsToRef(data[index], data[index + 1], data[index + 2], mesh.computeWorldMatrix(true), temp).toArray(data, index);
+                }
+                return data;
+            } else {
+                return mesh.getVerticesData(VertexBuffer.PositionKind) || [];
+            }
+        };
+
+        if (supportInstancedMeshes) {
+            doNotBakeTransform = true;
+        }
+
         let data;
 
         let faceCount = 0;
@@ -76,10 +102,10 @@ export class STLExport {
 
         for (let i = 0; i < meshes.length; i++) {
             const mesh = meshes[i];
-            if (!doNotBakeTransform) {
+            if (!doNotBakeTransform && mesh instanceof Mesh) {
                 mesh.bakeCurrentTransformIntoVertices();
             }
-            const vertices = mesh.getVerticesData(VertexBuffer.PositionKind) || [];
+            const vertices = getVerticesData(mesh);
             const indices = mesh.getIndices() || [];
 
             for (let i = 0; i < indices.length; i += 3) {

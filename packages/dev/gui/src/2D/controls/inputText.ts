@@ -511,10 +511,10 @@ export class InputText extends Control implements IFocusableControl {
             case 8: // BACKSPACE
                 if (this._textWrapper.text && this._textWrapper.length > 0) {
                     //delete the highlighted text
-                    if (this._isTextHighlightOn) {
+                    if (this.isTextHighlightOn) {
                         this._textWrapper.removePart(this._startHighlightIndex, this._endHighlightIndex);
                         this._textHasChanged();
-                        this._isTextHighlightOn = false;
+                        this.isTextHighlightOn = false;
                         this._cursorOffset = this._textWrapper.length - this._startHighlightIndex;
                         this._blinkIsEven = false;
                         if (evt) {
@@ -538,10 +538,10 @@ export class InputText extends Control implements IFocusableControl {
                 }
                 return;
             case 46: // DELETE
-                if (this._isTextHighlightOn) {
+                if (this.isTextHighlightOn) {
                     this._textWrapper.removePart(this._startHighlightIndex, this._endHighlightIndex);
                     this._textHasChanged();
-                    this._isTextHighlightOn = false;
+                    this.isTextHighlightOn = false;
                     this._cursorOffset = this._textWrapper.length - this._startHighlightIndex;
                     if (evt) {
                         evt.preventDefault();
@@ -560,18 +560,18 @@ export class InputText extends Control implements IFocusableControl {
                 return;
             case 13: // RETURN
                 this._host.focusedControl = null;
-                this._isTextHighlightOn = false;
+                this.isTextHighlightOn = false;
                 return;
             case 35: // END
                 this._cursorOffset = 0;
                 this._blinkIsEven = false;
-                this._isTextHighlightOn = false;
+                this.isTextHighlightOn = false;
                 this._markAsDirty();
                 return;
             case 36: // HOME
                 this._cursorOffset = this._textWrapper.length;
                 this._blinkIsEven = false;
-                this._isTextHighlightOn = false;
+                this.isTextHighlightOn = false;
                 this._markAsDirty();
                 return;
             case 37: // LEFT
@@ -585,7 +585,7 @@ export class InputText extends Control implements IFocusableControl {
                     this._blinkIsEven = false;
                     // shift + ctrl/cmd + <-
                     if (evt.ctrlKey || evt.metaKey) {
-                        if (!this._isTextHighlightOn) {
+                        if (!this.isTextHighlightOn) {
                             if (this._textWrapper.length === this._cursorOffset) {
                                 return;
                             } else {
@@ -595,13 +595,13 @@ export class InputText extends Control implements IFocusableControl {
                         this._startHighlightIndex = 0;
                         this._cursorIndex = this._textWrapper.length - this._endHighlightIndex;
                         this._cursorOffset = this._textWrapper.length;
-                        this._isTextHighlightOn = true;
+                        this.isTextHighlightOn = true;
                         this._markAsDirty();
                         return;
                     }
                     //store the starting point
-                    if (!this._isTextHighlightOn) {
-                        this._isTextHighlightOn = true;
+                    if (!this.isTextHighlightOn) {
+                        this.isTextHighlightOn = true;
                         this._cursorIndex = this._cursorOffset >= this._textWrapper.length ? this._textWrapper.length : this._cursorOffset - 1;
                     }
                     //if text is already highlighted
@@ -617,21 +617,21 @@ export class InputText extends Control implements IFocusableControl {
                         this._endHighlightIndex = this._textWrapper.length - this._cursorOffset;
                         this._startHighlightIndex = this._textWrapper.length - this._cursorIndex;
                     } else {
-                        this._isTextHighlightOn = false;
+                        this.isTextHighlightOn = false;
                     }
                     this._markAsDirty();
                     return;
                 }
-                if (this._isTextHighlightOn) {
+                if (this.isTextHighlightOn) {
                     this._cursorOffset = this._textWrapper.length - this._startHighlightIndex;
-                    this._isTextHighlightOn = false;
+                    this.isTextHighlightOn = false;
                 }
                 if (evt && (evt.ctrlKey || evt.metaKey)) {
                     this._cursorOffset = this._textWrapper.length;
                     evt.preventDefault();
                 }
                 this._blinkIsEven = false;
-                this._isTextHighlightOn = false;
+                this.isTextHighlightOn = false;
                 this._cursorIndex = -1;
                 this._markAsDirty();
                 return;
@@ -645,7 +645,7 @@ export class InputText extends Control implements IFocusableControl {
                     this._blinkIsEven = false;
                     //shift + ctrl/cmd + ->
                     if (evt.ctrlKey || evt.metaKey) {
-                        if (!this._isTextHighlightOn) {
+                        if (!this.isTextHighlightOn) {
                             if (this._cursorOffset === 0) {
                                 return;
                             } else {
@@ -653,15 +653,15 @@ export class InputText extends Control implements IFocusableControl {
                             }
                         }
                         this._endHighlightIndex = this._textWrapper.length;
-                        this._isTextHighlightOn = true;
+                        this.isTextHighlightOn = true;
                         this._cursorIndex = this._textWrapper.length - this._startHighlightIndex;
                         this._cursorOffset = 0;
                         this._markAsDirty();
                         return;
                     }
 
-                    if (!this._isTextHighlightOn) {
-                        this._isTextHighlightOn = true;
+                    if (!this.isTextHighlightOn) {
+                        this.isTextHighlightOn = true;
                         this._cursorIndex = this._cursorOffset <= 0 ? 0 : this._cursorOffset + 1;
                     }
                     //if text is already highlighted
@@ -677,14 +677,14 @@ export class InputText extends Control implements IFocusableControl {
                         this._endHighlightIndex = this._textWrapper.length - this._cursorOffset;
                         this._startHighlightIndex = this._textWrapper.length - this._cursorIndex;
                     } else {
-                        this._isTextHighlightOn = false;
+                        this.isTextHighlightOn = false;
                     }
                     this._markAsDirty();
                     return;
                 }
-                if (this._isTextHighlightOn) {
+                if (this.isTextHighlightOn) {
                     this._cursorOffset = this._textWrapper.length - this._endHighlightIndex;
-                    this._isTextHighlightOn = false;
+                    this.isTextHighlightOn = false;
                 }
                 //ctr + ->
                 if (evt && (evt.ctrlKey || evt.metaKey)) {
@@ -692,7 +692,7 @@ export class InputText extends Control implements IFocusableControl {
                     evt.preventDefault();
                 }
                 this._blinkIsEven = false;
-                this._isTextHighlightOn = false;
+                this.isTextHighlightOn = false;
                 this._cursorIndex = -1;
                 this._markAsDirty();
                 return;
@@ -719,11 +719,11 @@ export class InputText extends Control implements IFocusableControl {
             this.onBeforeKeyAddObservable.notifyObservers(this);
             key = this._currentKey;
             if (this._addKey && !this._deadKey) {
-                if (this._isTextHighlightOn) {
+                if (this.isTextHighlightOn) {
                     this._textWrapper.removePart(this._startHighlightIndex, this._endHighlightIndex, key);
                     this._textHasChanged();
                     this._cursorOffset = this._textWrapper.length - (this._startHighlightIndex + 1);
-                    this._isTextHighlightOn = false;
+                    this.isTextHighlightOn = false;
                     this._blinkIsEven = false;
                     this._markAsDirty();
                 } else if (this._cursorOffset === 0) {
@@ -754,12 +754,12 @@ export class InputText extends Control implements IFocusableControl {
                 this._endHighlightIndex = this._textWrapper.length - this._cursorOffset;
                 this._startHighlightIndex = this._textWrapper.length - this._cursorIndex;
             } else {
-                this._isTextHighlightOn = false;
+                this.isTextHighlightOn = false;
                 this._markAsDirty();
                 return;
             }
         }
-        this._isTextHighlightOn = true;
+        this.isTextHighlightOn = true;
         this._markAsDirty();
     }
     /**
@@ -777,9 +777,8 @@ export class InputText extends Control implements IFocusableControl {
         } while (moveLeft || moveRight);
 
         this._cursorOffset = this._textWrapper.length - this._startHighlightIndex;
-        this.onTextHighlightObservable.notifyObservers(this);
 
-        this._isTextHighlightOn = true;
+        this.isTextHighlightOn = true;
         this._clickedCoordinate = null;
         this._blinkIsEven = true;
         this._cursorIndex = -1;
@@ -788,7 +787,7 @@ export class InputText extends Control implements IFocusableControl {
     /** @internal */
     protected _selectAllText() {
         this._blinkIsEven = true;
-        this._isTextHighlightOn = true;
+        this.isTextHighlightOn = true;
 
         this._startHighlightIndex = 0;
         this._endHighlightIndex = this._textWrapper.length;
@@ -812,7 +811,7 @@ export class InputText extends Control implements IFocusableControl {
      * @internal
      */
     protected _onCopyText(ev: ClipboardEvent): void {
-        this._isTextHighlightOn = false;
+        this.isTextHighlightOn = false;
         //when write permission to clipbaord data is denied
         try {
             ev.clipboardData && ev.clipboardData.setData("text/plain", this._highlightedText);
@@ -828,7 +827,7 @@ export class InputText extends Control implements IFocusableControl {
         }
         this._textWrapper.removePart(this._startHighlightIndex, this._endHighlightIndex);
         this._textHasChanged();
-        this._isTextHighlightOn = false;
+        this.isTextHighlightOn = false;
         this._cursorOffset = this._textWrapper.length - this._startHighlightIndex;
         //when write permission to clipbaord data is denied
         try {
@@ -972,7 +971,7 @@ export class InputText extends Control implements IFocusableControl {
                     cursorLeft = clipTextLeft + availableWidth;
                     this._markAsDirty();
                 }
-                if (!this._isTextHighlightOn) {
+                if (!this.isTextHighlightOn) {
                     context.fillRect(cursorLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, 2, this._fontOffset.height);
                 }
             }
@@ -984,7 +983,7 @@ export class InputText extends Control implements IFocusableControl {
             }, 500);
 
             //show the highlighted text
-            if (this._isTextHighlightOn) {
+            if (this.isTextHighlightOn) {
                 clearTimeout(this._blinkTimeout);
                 const highlightCursorOffsetWidth = context.measureText(text.substring(this._startHighlightIndex)).width;
                 let highlightCursorLeft = this._scrollLeft + this._textWidth - highlightCursorOffsetWidth;
@@ -1043,7 +1042,7 @@ export class InputText extends Control implements IFocusableControl {
         }
 
         this._clickedCoordinate = coordinates.x;
-        this._isTextHighlightOn = false;
+        this.isTextHighlightOn = false;
         this._highlightedText = "";
         this._cursorIndex = -1;
         this._isPointerDown = true;
@@ -1079,6 +1078,22 @@ export class InputText extends Control implements IFocusableControl {
 
     protected _beforeRenderText(textWrapper: TextWrapper): TextWrapper {
         return textWrapper;
+    }
+
+    /** @internal */
+    private set isTextHighlightOn(value: boolean) {
+        if (this._isTextHighlightOn === value) {
+            return;
+        }
+        if (value) {
+            this.onTextHighlightObservable.notifyObservers(this);
+        }
+        this._isTextHighlightOn = value;
+    }
+
+    /** @internal */
+    private get isTextHighlightOn(): boolean {
+        return this._isTextHighlightOn;
     }
 
     public dispose() {

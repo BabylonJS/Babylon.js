@@ -197,6 +197,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                 animationOptions = [
                     { label: "None", value: AnimatedInputBlockTypes.None },
                     { label: "Time", value: AnimatedInputBlockTypes.Time },
+                    { label: "RealTime", value: AnimatedInputBlockTypes.RealTime },
                 ];
                 systemValuesOptions = [
                     { label: "Delta time", value: NodeMaterialSystemValues.DeltaTime },
