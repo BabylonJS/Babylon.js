@@ -1,5 +1,4 @@
 import type { Vector3, Quaternion } from "../../Maths/math.vector";
-import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import type { PhysicsRaycastResult } from "../physicsRaycastResult";
 import type { PhysicsBody } from "./physicsBody";
 import type { PhysicsShape } from "./physicsShape";

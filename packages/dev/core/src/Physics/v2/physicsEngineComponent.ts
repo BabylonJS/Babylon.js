@@ -5,7 +5,6 @@ import { TransformNode } from "../../Meshes/transformNode";
 import type { Node } from "../../node";
 import type { PhysicsBody } from "./physicsBody";
 
-
 import "../joinedPhysicsEngineComponent";
 
 declare module "../../Meshes/transformNode" {
