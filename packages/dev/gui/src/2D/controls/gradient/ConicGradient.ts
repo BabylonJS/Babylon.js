@@ -44,10 +44,18 @@ export class ConicGradient extends BaseGradient {
         return this._y;
     }
 
+    /**
+     * Class name of the gradient
+     * @returns the class name of the gradient
+     */
     public getClassName() {
         return "ConicGradient";
     }
 
+    /**
+     * Serializes this gradient
+     * @param serializationObject the object to serialize to
+     */
     public serialize(serializationObject: any) {
         super.serialize(serializationObject);
         serializationObject.startAngle = this._startAngle;
@@ -55,6 +63,10 @@ export class ConicGradient extends BaseGradient {
         serializationObject.y = this._y;
     }
 
+    /**
+     * Parses a gradient from a serialization object
+     * @param serializationObject the object to parse from
+     */
     public parse(serializationObject: any): void {
         super.parse(serializationObject);
         this._startAngle = serializationObject.startAngle;

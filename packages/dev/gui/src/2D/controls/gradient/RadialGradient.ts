@@ -68,10 +68,18 @@ export class RadialGradient extends BaseGradient {
         return this._r1;
     }
 
+    /**
+     * Class name of the gradient
+     * @returns the class name of the gradient
+     */
     public getClassName() {
         return "RadialGradient";
     }
 
+    /**
+     * Serializes this gradient
+     * @param serializationObject the object to serialize to
+     */
     public serialize(serializationObject: any): void {
         super.serialize(serializationObject);
         serializationObject.x0 = this._x0;
@@ -82,6 +90,10 @@ export class RadialGradient extends BaseGradient {
         serializationObject.r1 = this._r1;
     }
 
+    /**
+     * Parses a gradient from a serialization object
+     * @param serializationObject the object to parse from
+     */
     public parse(serializationObject: any): void {
         super.parse(serializationObject);
         this._x0 = serializationObject.x0;

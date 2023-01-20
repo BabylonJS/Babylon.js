@@ -353,7 +353,7 @@ export class Container extends Control {
      * @internal
      */
     protected _localDraw(context: ICanvasRenderingContext): void {
-        if (this._background) {
+        if (this._background || this._backgroundGradient) {
             context.save();
             if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
                 context.shadowColor = this.shadowColor;

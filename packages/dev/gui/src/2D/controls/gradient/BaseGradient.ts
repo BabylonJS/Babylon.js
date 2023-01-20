@@ -18,24 +18,21 @@ export type GradientColorStop = {
     color: string;
 };
 
-export class BaseGradient {
-    private _colorStops: GradientColorStop[];
+/**
+ * Class that serves as a base for all the gradients created from context.
+ */
+export abstract class BaseGradient {
+    private _colorStops: GradientColorStop[] = [];
 
     private _canvasGradient: CanvasGradient;
     private _context: ICanvasRenderingContext;
     private _gradientDirty: boolean = true;
 
-    constructor() {
-        this._colorStops = [];
-    }
-
     /**
      * Overwritten by child classes to create the canvas gradient.
      * @param context
      */
-    protected _createCanvasGradient(context: ICanvasRenderingContext): ICanvasGradient {
-        throw new Error("BaseGradient shouldn't be used directly.");
-    }
+    protected abstract _createCanvasGradient(context: ICanvasRenderingContext): ICanvasGradient;
 
     private _addColorStopsToCanvasGradient() {
         for (const stop of this._colorStops) {
