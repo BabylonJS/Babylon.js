@@ -8,6 +8,7 @@ import { Mesh } from "../Meshes/mesh";
 import { InstancedMesh } from "../Meshes/instancedMesh";
 import { Material } from "../Materials/material";
 import { ShaderMaterial } from "../Materials/shaderMaterial";
+import type { Effect } from "../Materials/effect";
 
 import "../Shaders/color.fragment";
 import "../Shaders/color.vertex";
@@ -161,11 +162,10 @@ export class LinesMesh extends Mesh {
     /**
      * @internal
      */
-    public _bind(): Mesh {
+    public _bind(_subMesh: SubMesh, colorEffect: Effect): Mesh {
         if (!this._geometry) {
             return this;
         }
-        const colorEffect = this._lineMaterial.getEffect();
 
         // VBOs
         const indexToBind = this.isUnIndexed ? null : this._geometry.getIndexBuffer();
