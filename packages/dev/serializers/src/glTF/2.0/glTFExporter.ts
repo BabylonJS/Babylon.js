@@ -2344,11 +2344,10 @@ export class _BinaryWriter {
      */
     private _resizeBuffer(byteLength: number): ArrayBuffer {
         const newBuffer = new ArrayBuffer(byteLength);
-        const oldUint8Array = new Uint8Array(this._arrayBuffer);
+        const copyOldBufferSize = Math.min(this._arrayBuffer.byteLength, byteLength);
+        const oldUint8Array = new Uint8Array(this._arrayBuffer, 0, copyOldBufferSize);
         const newUint8Array = new Uint8Array(newBuffer);
-        for (let i = 0, length = newUint8Array.byteLength; i < length; ++i) {
-            newUint8Array[i] = oldUint8Array[i];
-        }
+        newUint8Array.set(oldUint8Array, 0);
         this._arrayBuffer = newBuffer;
         this._dataView = new DataView(this._arrayBuffer);
 
