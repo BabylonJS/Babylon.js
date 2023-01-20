@@ -242,8 +242,6 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
             return;
         }
 
-        texture.update(new Uint16Array(cpuDepthInfo.data));
-
         this._cachedDepthInfo = cpuDepthInfo;
         this._latestDepthImageTexture = texture;
     }
@@ -254,9 +252,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
 
         switch (dataFormat) {
             case "luminance-alpha":
-                texture = RawTexture.CreateLuminanceAlphaTexture(new Uint16Array(length), depthInfo.width, depthInfo.height, scene);
-                texture.update(new Uint16Array(depthInfo.data));
-                return texture;
+                return RawTexture.CreateRGBATexture(new Uint8Array(depthInfo.data), depthInfo.width / 2, depthInfo.height, scene);
             case "float32":
                 texture = RawTexture.CreateRGBATexture(new Float32Array(length), depthInfo.width, depthInfo.height, scene);
                 texture.update(new Float32Array(depthInfo.data));
