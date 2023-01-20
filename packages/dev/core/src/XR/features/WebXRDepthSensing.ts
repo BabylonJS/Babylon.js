@@ -100,6 +100,15 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         return webglDepthInfo.texture;
     }
 
+    private _latestDepthBuffer: ArrayBufferView | null = null;
+
+    /**
+     * cached depth buffer
+     */
+    public get latestDepthBuffer(): ArrayBufferView | null {
+        return this._latestDepthBuffer;
+    }
+
     /**
      * Return the depth in meters at (x, y) in normalized view coordinates.
      * This method can be used when the depth usage is cpu-optimized.
@@ -225,23 +234,34 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         }
 
         const cpuDepthInfo = depthInfo as XRCPUDepthInformation;
+
+        this._latestDepthBuffer = this.depthDataFormat === "luminance-alpha" ? new Uint16Array(cpuDepthInfo.data) : new Float32Array(cpuDepthInfo.data);
+
         const texture = WebXRDepthSensing._GenerateTextureFromCPUDepthInformation(cpuDepthInfo, dataFormat, this._xrSessionManager.scene);
         if (texture === null) {
             return;
         }
+
+        texture.update(new Uint16Array(cpuDepthInfo.data));
 
         this._cachedDepthInfo = cpuDepthInfo;
         this._latestDepthImageTexture = texture;
     }
 
     private static _GenerateTextureFromCPUDepthInformation(depthInfo: XRCPUDepthInformation, dataFormat: XRDepthDataFormat, scene: Scene): RawTexture | null {
+        let texture: RawTexture | null;
+        const length = depthInfo.width * depthInfo.height;
+
         switch (dataFormat) {
             case "luminance-alpha":
-                return RawTexture.CreateLuminanceAlphaTexture(new Uint16Array(depthInfo.data), depthInfo.width, depthInfo.height, scene);
+                texture = RawTexture.CreateLuminanceAlphaTexture(new Uint16Array(length), depthInfo.width, depthInfo.height, scene);
+                texture.update(new Uint16Array(depthInfo.data));
+                return texture;
             case "float32":
-                return RawTexture.CreateRGBATexture(new Float32Array(depthInfo.data), depthInfo.width, depthInfo.height, scene);
+                texture = RawTexture.CreateRGBATexture(new Float32Array(length), depthInfo.width, depthInfo.height, scene);
+                texture.update(new Float32Array(depthInfo.data));
+                return texture;
             default:
-                Tools.Error("unknown data format");
                 return null;
         }
     }
