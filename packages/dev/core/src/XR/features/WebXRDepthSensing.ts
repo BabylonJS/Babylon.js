@@ -1,10 +1,13 @@
-import { BaseTexture } from "./../../Materials/Textures/baseTexture";
-import { RawTexture } from "./../../Materials/Textures/rawTexture";
-import { WebXRFeatureName, WebXRFeaturesManager } from "./../webXRFeaturesManager";
+import { BaseTexture } from "../../Materials/Textures/baseTexture";
+import { RawTexture } from "../../Materials/Textures/rawTexture";
+import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
 import type { WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { Tools } from "../../Misc/tools";
 import type { Scene } from "../../scene";
+import { Texture } from "../../Materials/Textures/texture";
+import type { Nullable } from "../../types";
+import type { ThinEngine } from "../../Engines";
 
 /**
  * Options for Depth Sensing feature
@@ -252,7 +255,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
 
         switch (dataFormat) {
             case "luminance-alpha":
-                return RawTexture.CreateRGBATexture(new Uint8Array(depthInfo.data), depthInfo.width / 2, depthInfo.height, scene);
+                return WebXRDepthSensing._CreateLuminanceTextureFromCpuDepthBuffer(depthInfo, scene);
             case "float32":
                 texture = RawTexture.CreateRGBATexture(new Float32Array(length), depthInfo.width, depthInfo.height, scene);
                 texture.update(new Float32Array(depthInfo.data));
@@ -260,6 +263,19 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
             default:
                 return null;
         }
+    }
+
+    private static _CreateLuminanceTextureFromCpuDepthBuffer(depthInfo: XRCPUDepthInformation, sceneOrEngine: Nullable<Scene | ThinEngine>): RawTexture {
+        const { width, height, data } = depthInfo;
+        const length = width * height;
+
+        const depthBuffer = new Uint16Array(data);
+        const enhancedDepthBuffer = new Uint8ClampedArray(length);
+        for (let i = 0; i < length; i++) {
+            enhancedDepthBuffer[i] = depthBuffer[i] / 20;
+        }
+        
+        return RawTexture.CreateLuminanceTexture(enhancedDepthBuffer, width, height, sceneOrEngine, false, false, Texture.NEAREST_SAMPLINGMODE);
     }
 
     private _updateDepthInformationAndTextureWebGLDepthUsage(webglBinding: XRWebGLBinding, view: XRView): void {
