@@ -6,7 +6,7 @@ uniform vec2 blurDir;
 varying vec2 vUV;
 
 void main(void) {
-    vec4 s = texture2D(textureSampler, vUV);
+    vec4 s = textureLod(textureSampler, vUV, 0.);
     if (s.r == 0.) {
         glFragColor = vec4(0., 0., 0., 1.);
         return;
@@ -20,7 +20,7 @@ void main(void) {
 
     for (int x = -filterSize; x <= filterSize; ++x) {
         vec2 coords = vec2(x);
-        vec4 sampl = texture2D(textureSampler, vUV + coords * blurDir);
+        vec4 sampl = textureLod(textureSampler, vUV + coords * blurDir, 0.);
 
         float w = exp(-coords.x * coords.x / twoSigma2);
 

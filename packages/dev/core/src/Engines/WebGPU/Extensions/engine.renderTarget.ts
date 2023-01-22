@@ -45,15 +45,16 @@ WebGPUEngine.prototype.createRenderTargetTexture = function (size: TextureSize, 
     if (rtWrapper._generateDepthBuffer || rtWrapper._generateStencilBuffer) {
         rtWrapper.createDepthStencilTexture(
             0,
-            fullOptions.samplingMode === undefined ||
-                fullOptions.samplingMode === Constants.TEXTURE_BILINEAR_SAMPLINGMODE ||
-                fullOptions.samplingMode === Constants.TEXTURE_LINEAR_LINEAR ||
-                fullOptions.samplingMode === Constants.TEXTURE_TRILINEAR_SAMPLINGMODE ||
-                fullOptions.samplingMode === Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR ||
-                fullOptions.samplingMode === Constants.TEXTURE_NEAREST_LINEAR_MIPNEAREST ||
-                fullOptions.samplingMode === Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR ||
-                fullOptions.samplingMode === Constants.TEXTURE_NEAREST_LINEAR ||
-                fullOptions.samplingMode === Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST,
+            this._caps.textureFloatLinearFiltering &&
+                (fullOptions.samplingMode === undefined ||
+                    fullOptions.samplingMode === Constants.TEXTURE_BILINEAR_SAMPLINGMODE ||
+                    fullOptions.samplingMode === Constants.TEXTURE_LINEAR_LINEAR ||
+                    fullOptions.samplingMode === Constants.TEXTURE_TRILINEAR_SAMPLINGMODE ||
+                    fullOptions.samplingMode === Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR ||
+                    fullOptions.samplingMode === Constants.TEXTURE_NEAREST_LINEAR_MIPNEAREST ||
+                    fullOptions.samplingMode === Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR ||
+                    fullOptions.samplingMode === Constants.TEXTURE_NEAREST_LINEAR ||
+                    fullOptions.samplingMode === Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST),
             rtWrapper._generateStencilBuffer,
             rtWrapper.samples
         );

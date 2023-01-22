@@ -56,7 +56,7 @@ vec3 computeViewPosFromUVDepth(vec2 texCoord, float depth) {
 }
 
 vec3 getViewPosFromTexCoord(vec2 texCoord) {
-    float depth = texture2D(depthSampler, texCoord).x;
+    float depth = textureLod(depthSampler, texCoord, 0.).x;
     return computeViewPosFromUVDepth(texCoord, depth);
 }
 
@@ -79,7 +79,7 @@ void main(void) {
     return;
 #endif
 
-    vec2 depthVel = texture2D(depthSampler, texCoord).rg;
+    vec2 depthVel = textureLod(depthSampler, texCoord, 0.).rg;
     float depth = depthVel.r;
 #ifndef FLUIDRENDERING_FIXED_THICKNESS
     float thickness = texture2D(thicknessSampler, texCoord).x;
