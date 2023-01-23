@@ -1528,6 +1528,18 @@
             "title": "GUI Images in Grid",
             "playgroundId": "#8Y0XJL#1",
             "renderCount": 10
+        },
+        {
+            "title": "GUI Gradient Linear",
+            "playgroundId": "#XCPP9Y#17227"
+        },
+        {
+            "title": "GUI Gradient Radial",
+            "playgroundId": "#4Z7EK3"
+        },
+        {
+            "title": "GUI Gradient Linear with transparency",
+            "playgroundId": "#PFK1Z5"
         }
     ]
 }

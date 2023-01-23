@@ -134,7 +134,7 @@ export interface ICanvasRenderingContext {
     /**
      * Color or style to use for the lines around shapes. Default #000 (black).
      */
-    strokeStyle: string;
+    strokeStyle: string | ICanvasGradient;
 
     /**
      * Color or style to use inside shapes. Default #000 (black).
