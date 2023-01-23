@@ -406,15 +406,6 @@ export interface ICanvasRenderingContext {
     createRadialGradient(x0: number, y0: number, r0: number, x1: number, y1: number, r1: number): ICanvasGradient;
 
     /**
-     * Creates a gradient around a point with given coordinates.
-     * @param startAngle The angle at which to begin the gradient, in radians. Angle measurements start vertically above the center and move around clockwise.
-     * @param x The x-axis coordinate of the center of the gradient.
-     * @param y The y-axis coordinate of the center of the gradient.
-     * @returns ICanvasGradient A conic CanvasGradient.
-     */
-    createConicGradient(startAngle: number, x: number, y: number): ICanvasGradient;
-
-    /**
      * Resets the current transform to matrix composed with a, b, c, d, e, f.
      * @param a Horizontal scaling. A value of 1 results in no scaling.
      * @param b Vertical skewing.

@@ -30,6 +30,5 @@ export * from "./sliders/scrollBar";
 export * from "./sliders/imageScrollBar";
 export * from "./statics";
 export * from "./gradient/BaseGradient";
-export * from "./gradient/ConicGradient";
 export * from "./gradient/LinearGradient";
 export * from "./gradient/RadialGradient";
