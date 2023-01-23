@@ -70,10 +70,32 @@ export class PhysicsViewer {
         this._utilityLayer.utilityLayerScene.autoClearDepthAndStencil = true;
     }
 
-    /** @internal */
+    /**
+     * Updates the debug meshes of the physics engine.
+     *
+     * This code is useful for synchronizing the debug meshes of the physics engine with the physics impostor and mesh.
+     * It checks if the impostor is disposed and if the plugin version is 1, then it syncs the mesh with the impostor.
+     * This ensures that the debug meshes are up to date with the physics engine.
+     */
     protected _updateDebugMeshes(): void {
         const plugin = this._physicsEnginePlugin;
 
+        if (plugin?.getPluginVersion() === 1) {
+            this._updateDebugMeshesV1();
+        } else {
+            this._updateDebugMeshesV2();
+        }
+    }
+
+    /**
+     * Updates the debug meshes of the physics engine.
+     *
+     * This method is useful for synchronizing the debug meshes with the physics impostors.
+     * It iterates through the impostors and meshes, and if the plugin version is 1, it syncs the mesh with the impostor.
+     * This ensures that the debug meshes accurately reflect the physics impostors, which is important for debugging the physics engine.
+     */
+    protected _updateDebugMeshesV1(): void {
+        const plugin = this._physicsEnginePlugin as IPhysicsEnginePluginV1;
         for (let i = 0; i < this._numMeshes; i++) {
             const impostor = this._impostors[i];
 
@@ -89,9 +111,27 @@ export class PhysicsViewer {
                 }
                 const mesh = this._meshes[i];
 
-                if (mesh && plugin && plugin.getPluginVersion() === 1) {
-                    (plugin as IPhysicsEnginePluginV1).syncMeshWithImpostor(mesh, impostor);
+                if (mesh && plugin) {
+                    plugin.syncMeshWithImpostor(mesh, impostor);
                 }
+            }
+        }
+    }
+
+    /**
+     * Updates the debug meshes of the physics engine for V2 plugin.
+     *
+     * This method is useful for synchronizing the debug meshes of the physics engine with the current state of the bodies.
+     * It iterates through the bodies array and updates the debug meshes with the current transform of each body.
+     * This ensures that the debug meshes accurately reflect the current state of the physics engine.
+     */
+    protected _updateDebugMeshesV2(): void {
+        const plugin = this._physicsEnginePlugin as IPhysicsEnginePluginV2;
+        for (let i = 0; i < this._numBodies; i++) {
+            const body = this._bodies[i];
+            const transform = this._bodyMeshes[i];
+            if (body && transform) {
+                plugin.syncTransform(body, transform);
             }
         }
     }
@@ -131,7 +171,13 @@ export class PhysicsViewer {
     }
 
     /**
+     * Shows a debug mesh for a given physics body.
+     * @param body The physics body to show.
+     * @returns The debug mesh, or null if the body is already shown.
      *
+     * This function is useful for visualizing the physics body in the scene.
+     * It creates a debug mesh for the given body and adds it to the scene.
+     * It also registers a before render function to update the debug mesh position and rotation.
      */
     public showBody(body: PhysicsBody): Nullable<AbstractMesh> {
         if (!this._scene) {
@@ -160,9 +206,15 @@ export class PhysicsViewer {
 
         return debugMesh;
     }
+
     /**
-     * Hides a specified physic impostor
-     * @param impostor defines the impostor to hide
+     * Hides an impostor from the scene.
+     * @param impostor - The impostor to hide.
+     *
+     * This method is useful for hiding an impostor from the scene. It removes the
+     * impostor from the utility layer scene, disposes the mesh, and removes the
+     * impostor from the list of impostors. If the impostor is the last one in the
+     * list, it also unregisters the render function.
      */
     public hideImpostor(impostor: Nullable<PhysicsImpostor>) {
         if (!impostor || !this._scene || !this._utilityLayer) {
@@ -204,6 +256,54 @@ export class PhysicsViewer {
         }
 
         if (removed && this._numMeshes === 0) {
+            this._scene.unregisterBeforeRender(this._renderFunction);
+        }
+    }
+
+    /**
+     * Hides a body from the physics engine.
+     * @param body - The body to hide.
+     *
+     * This function is useful for hiding a body from the physics engine.
+     * It removes the body from the utility layer scene and disposes the mesh associated with it.
+     * It also unregisters the render function if the number of bodies is 0.
+     * This is useful for hiding a body from the physics engine without deleting it.
+     */
+    public hideBody(body: Nullable<PhysicsBody>) {
+        if (!body || !this._scene || !this._utilityLayer) {
+            return;
+        }
+
+        let removed = false;
+        const utilityLayerScene = this._utilityLayer.utilityLayerScene;
+
+        for (let i = 0; i < this._numBodies; i++) {
+            if (this._bodies[i] === body) {
+                const mesh = this._bodyMeshes[i];
+
+                if (!mesh) {
+                    continue;
+                }
+
+                utilityLayerScene.removeMesh(mesh);
+                mesh.dispose();
+
+                this._numBodies--;
+                if (this._numBodies > 0) {
+                    this._bodyMeshes[i] = this._meshes[this._numBodies];
+                    this._bodies[i] = this._bodies[this._numBodies];
+                    this._bodyMeshes[this._numBodies] = null;
+                    this._bodies[this._numBodies] = null;
+                } else {
+                    this._bodyMeshes[0] = null;
+                    this._bodies[0] = null;
+                }
+                removed = true;
+                break;
+            }
+        }
+
+        if (removed && this._numBodies === 0) {
             this._scene.unregisterBeforeRender(this._renderFunction);
         }
     }
@@ -369,6 +469,16 @@ export class PhysicsViewer {
         return mesh;
     }
 
+    /**
+     * Creates a debug mesh for a given physics body
+     * @param body The physics body to create the debug mesh for
+     * @returns The created debug mesh or null if the utility layer is not available
+     *
+     * This code is useful for creating a debug mesh for a given physics body.
+     * It creates a Mesh object with a VertexData object containing the positions and indices
+     * of the geometry of the body. The mesh is then assigned a debug material from the utility layer scene.
+     * This allows for visualizing the physics body in the scene.
+     */
     private _getDebugBodyMesh(body: PhysicsBody): Nullable<AbstractMesh> {
         if (!this._utilityLayer) {
             return null;
@@ -386,11 +496,17 @@ export class PhysicsViewer {
         return mesh;
     }
 
-    /** Releases all resources */
+    /**
+     * Clean up physics debug display
+     */
     public dispose() {
-        const count = this._numMeshes;
-        for (let index = 0; index < count; index++) {
+        // impostors
+        for (let index = 0; index < this._numMeshes; index++) {
             this.hideImpostor(this._impostors[0]);
+        }
+        // bodies
+        for (let index = 0; index < this._numBodies; index++) {
+            this.hideBody(this._bodies[0]);
         }
 
         if (this._debugBoxMesh) {

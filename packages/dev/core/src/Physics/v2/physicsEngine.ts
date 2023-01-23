@@ -120,13 +120,6 @@ export class PhysicsEngine implements IPhysicsEngine {
      * @param delta defines the timespan between frames
      */
     public _step(delta: number) {
-        //check if any mesh has no body / requires an update
-        /*this._impostors.forEach((impostor) => {
-            if (impostor.isBodyInitRequired()) {
-                this._physicsPlugin.generatePhysicsBody(impostor);
-            }
-        });
-*/
         if (delta > 0.1) {
             delta = 0.1;
         } else if (delta <= 0) {

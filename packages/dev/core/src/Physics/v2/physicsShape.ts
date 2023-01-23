@@ -5,27 +5,35 @@ import type { IPhysicsEnginePluginV2, PhysicsShapeParameters } from "./IPhysicsE
 import type { PhysicsMaterial } from "./physicsMaterial";
 import type { Vector3 } from "../../Maths/math.vector";
 import type { Quaternion } from "../../Maths/math.vector";
-import type { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { Mesh } from "../../Meshes/mesh";
 import type { Scene } from "../../scene";
 
 /**
- *
+ * PhysicsShape class.
+ * This class is useful for creating a physics shape that can be used in a physics engine.
+ * A Physic Shape determine how collision are computed. It must be attached to a body.
  */
-/** @internal */
 export class PhysicsShape {
-    /** @internal */
+    /**
+     * V2 Physics plugin private data for single shape
+     */
     public _pluginData: any = undefined;
-
+    /**
+     * The V2 plugin used to create and manage this Physics Body
+     */
     private _physicsPlugin: IPhysicsEnginePluginV2;
 
     private _type: ShapeType;
 
     /**
+     * Constructs a new physics shape.
+     * @param type The type of the shape.
+     * @param options The options of the shape.
+     * @param scene The scene the shape belongs to.
      *
-     * @param type
-     * @param options
-     * @param scene
-     * @returns
+     * This code is useful for creating a new physics shape with the given type, options, and scene.
+     * It also checks that the physics engine and plugin version are correct.
+     * If not, it throws an error. This ensures that the shape is created with the correct parameters and is compatible with the physics engine.
      */
     constructor(type: number, options: PhysicsShapeParameters = {}, scene: Scene) {
         this._type = type;
@@ -200,7 +208,7 @@ export class PhysicsShapeCylinder extends PhysicsShape {
  *
  */
 /** @internal */
-export class PhysicsShapeShapeBox extends PhysicsShape {
+export class PhysicsShapeBox extends PhysicsShape {
     /** @internal */
     /**
      *
@@ -218,14 +226,14 @@ export class PhysicsShapeShapeBox extends PhysicsShape {
  *
  */
 /** @internal */
-export class PhysicsShapeShapeConvexHull extends PhysicsShape {
+export class PhysicsShapeConvexHull extends PhysicsShape {
     /** @internal */
     /**
      *
      * @param mesh
      * @param scene
      */
-    constructor(mesh: AbstractMesh, scene: Scene) {
+    constructor(mesh: Mesh, scene: Scene) {
         super(ShapeType.CONVEX_HULL, { mesh: mesh }, scene);
     }
 }
@@ -234,14 +242,14 @@ export class PhysicsShapeShapeConvexHull extends PhysicsShape {
  *
  */
 /** @internal */
-export class PhysicsShapeShapeMesh extends PhysicsShape {
+export class PhysicsShapeMesh extends PhysicsShape {
     /** @internal */
     /**
      *
      * @param mesh
      * @param scene
      */
-    constructor(mesh: AbstractMesh, scene: Scene) {
+    constructor(mesh: Mesh, scene: Scene) {
         super(ShapeType.MESH, { mesh: mesh }, scene);
     }
 }
@@ -250,14 +258,14 @@ export class PhysicsShapeShapeMesh extends PhysicsShape {
  *
  */
 /** @internal */
-export class PhysicsShapeShapeContainer extends PhysicsShape {
+export class PhysicsShapeContainer extends PhysicsShape {
     /** @internal */
     /**
      *
      * @param mesh
      * @param scene
      */
-    constructor(mesh: AbstractMesh, scene: Scene) {
+    constructor(mesh: Mesh, scene: Scene) {
         super(ShapeType.CONTAINER, {}, scene);
     }
 }

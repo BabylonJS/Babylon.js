@@ -9,17 +9,24 @@ import type { PhysicsBody } from "./physicsBody";
  * It holds a set of functions to control the underlying constraint
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
  */
-/** @internal */
 export class PhysicsConstraint {
-    /** @internal */
     /**
-     *
+     * V2 Physics plugin private data for a physics material
      */
     public _pluginData: any = undefined;
+    /**
+     * The V2 plugin used to create and manage this Physics Body
+     */
     protected _physicsPlugin: IPhysicsEnginePluginV2;
 
     /**
+     * Constructs a new constraint for the physics constraint.
+     * @param type The type of constraint to create.
+     * @param options The options for the constraint.
+     * @param scene The scene the constraint belongs to.
      *
+     * This code is useful for creating a new constraint for the physics engine. It checks if the scene has a physics engine, and if the plugin version is correct.
+     * If all checks pass, it initializes the constraint with the given type and options.
      */
     constructor(type: ConstraintType, options: PhysicsConstraintParameters, scene: Scene) {
         if (!scene) {
@@ -42,32 +49,44 @@ export class PhysicsConstraint {
     }
 
     /**
+     * Sets the parent body of this body.
+     * @param body - The parent body to set.
      *
-     * @param body
+     * This method is useful for setting the parent body of a physics body in a physics engine.
+     * This allows the engine to accurately simulate the motion of the body in relation to its parent body.
+     * For example, if the parent body is a planet, the engine can accurately simulate the motion of the body in relation to the planet's gravity.
      */
     public setParentBody(body: PhysicsBody): void {
         this._physicsPlugin.setParentBody(this, body);
     }
 
     /**
+     * Retrieves the parent body of the current physics constraint.
      *
-     * @returns
+     * @returns The parent body of the current physics constraint, or `undefined` if the
+     * current constraint does not have a parent body.
      */
     public getParentBody(): PhysicsBody | undefined {
         return this._physicsPlugin.getParentBody(this);
     }
 
     /**
+     * Sets the child body of the current body.
      *
-     * @param body
+     * @param body - The child body to set.
+     *
+     * This method is useful for setting the child body of the current body in a physics engine.
+     * This allows for the creation of complex structures of bodies that interact with each other in a realistic way.
      */
     public setChildBody(body: PhysicsBody): void {
         this._physicsPlugin.setChildBody(this, body);
     }
 
     /**
+     * Retrieves the child body of the current physics constraint.
      *
-     * @returns
+     * @returns The child body of the current physics constraint, or `undefined` if no
+     * child body is present.
      */
     public getChildBody(): PhysicsBody | undefined {
         return this._physicsPlugin.getChildBody(this);

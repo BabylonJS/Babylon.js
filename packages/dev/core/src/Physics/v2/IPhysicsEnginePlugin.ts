@@ -1,5 +1,4 @@
 import type { Vector3, Quaternion } from "../../Maths/math.vector";
-import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import type { PhysicsRaycastResult } from "../physicsRaycastResult";
 import type { PhysicsBody } from "./physicsBody";
 import type { PhysicsShape } from "./physicsShape";
@@ -64,7 +63,8 @@ export interface PhysicsShapeParameters {
     pointB?: Vector3;
     rotation?: Quaternion;
     extents?: Vector3;
-    mesh?: AbstractMesh;
+    mesh?: Mesh;
+    includeChildMeshes?: boolean;
 }
 
 /** @internal */
@@ -117,6 +117,8 @@ export interface IPhysicsEnginePluginV2 {
     // body
     initBody(body: PhysicsBody, position: Vector3, orientation: Quaternion): void;
     initBodyInstances(body: PhysicsBody, mesh: Mesh): void;
+    sync(body: PhysicsBody): void;
+    syncTransform(body: PhysicsBody, transformNode: TransformNode): void;
     setShape(body: PhysicsBody, shape: PhysicsShape): void;
     getShape(body: PhysicsBody): PhysicsShape;
     setFilterGroup(body: PhysicsBody, group: number): void;
