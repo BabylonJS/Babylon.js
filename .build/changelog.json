@@ -1,21 +1,106 @@
 {
-    "fromTag": "5.42.2",
+    "fromTag": "5.43.0",
     "changelog": {
-        "5.42.2": [
+        "5.43.1": [
             {
-                "pr": "13367",
-                "title": "Fixed issue when setting ViewPort multiple times per frame in Native",
-                "description": "## Overview\r\n\r\nThis PR fixes complements [this Babylon Native PR](https://github.com/BabylonJS/BabylonNative/pull/1183), it moves viewport update from been done immediately to be done using the command queue. The way this is currently been done on master, if multiple viewport updates are done in a single frame (like when you can more than one camera been rendered using different viewports) the viewport updates actually end up overriding each other and get lost by the time the command queue starts been processed. \r\n\r\n## Extra Information\r\n\r\nThis functionality started as a request in the forum:\r\n[Forum issue](https://forum.babylonjs.com/t/viewport-ignored-for-mutiple-cameras-in-react-native/36709/4)\r\n[Target web behaviour](https://playground.babylonjs.com/#H8VW0B)",
+                "pr": "13450",
+                "title": "Physics V2 Iteration 3",
+                "description": "Iteration 3 featuring:\r\n- More code documentation\r\n- Transform <-> Body synchronization\r\n- Typos \r\n- Engine Component using TransformNode instead of Mesh",
                 "author": {
-                    "name": "SergioRZMasson",
-                    "url": "https://github.com/SergioRZMasson"
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
                 },
                 "files": [
-                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
-                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                    "packages/dev/core/src/Debug/physicsViewer.ts",
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts",
+                    "packages/dev/core/src/Physics/v2/physicsConstraint.ts",
+                    "packages/dev/core/src/Physics/v2/physicsEngine.ts",
+                    "packages/dev/core/src/Physics/v2/physicsEngineComponent.ts",
+                    "packages/dev/core/src/Physics/v2/physicsMaterial.ts",
+                    "packages/dev/core/src/Physics/v2/physicsShape.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13457",
+                "title": "Fix Lines Mesh with Push Material",
+                "description": "https://forum.babylonjs.com/t/using-pbrmaterial-in-linesystem-console-warning-webgl-00002a080233e900/37341/7\r\n\r\nThe warning was thrown because on the first rendered frame bindForSubMesh has not been called so the effect would be undefined resulting in not bind the index buffer.",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/linesMesh.ts"
                 ],
                 "tags": [
-                    "native"
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "13456",
+                "title": "Optimizing performance of _BinaryWriter._resizeBuffer",
+                "description": "In class _BinaryWriter of the gltf exporter, a loop is used to copy contents in old buffer to new buffer, which is benchmarked to be slow. TypedArray.prototype.set() can be used for faster memory copying while having the same Browser compatibility of TypedArray.\r\n\r\nForum link:\r\nhttps://forum.babylonjs.com/t/optimizing-performance-of-binarywriter-resizebuffer/37516\r\n\r\nBenchmark before:\r\n[playground.babylonjs.com](https://playground.babylonjs.com/#VEC2SK%231)\r\n![image](https://user-images.githubusercontent.com/17702502/213600777-fc89c180-96ea-4581-94f4-330ba39508de.png)\r\n\r\nBenchmark after:\r\n[playground.babylonjs.com](https://playground.babylonjs.com/#2JZECM)\r\n![image](https://user-images.githubusercontent.com/17702502/213600783-4ff6186d-9116-4d36-8fe9-18f294ee9e8e.png)\r\n\r\n\r\n",
+                "author": {
+                    "name": "myfreeer",
+                    "url": "https://github.com/myfreeer"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts"
+                ],
+                "tags": [
+                    "optimizations",
+                    "loaders"
+                ]
+            },
+            {
+                "pr": "13455",
+                "title": "Fix Sound current time when pause is called, and refactor pause system",
+                "description": "When pause is called, the current time is being reset to zero.\r\n\r\nThis change fixes the issue and refactors the pause system to improve readability and make this fix work without breaking existing pause functionality.\r\n\r\nReported on forum here: https://forum.babylonjs.com/t/pausing-and-playing-an-audio-with-offset-restarts-it-from-the-beginning-instead-of-the-current-position/36668/16",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/Audio/sound.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "audio"
+                ]
+            },
+            {
+                "pr": "13453",
+                "title": "Fix back-compat issue in physics (es6)",
+                "description": "There is a back-compat issue in es6. Instead of loading the main physics engine component the devs need to load the v1 physics engine component as well.\n\nThis PR changes the architecture a little. The basic physics engine component  has moved to a new file that is not expected to be loaded individually. It is loaded by both the base physics engine component and the v2 physics engine component,m making sure that a dev importing the v2 physics engine component will still have access to the scene extensions.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/joinedPhysicsEngineComponent.ts",
+                    "packages/dev/core/src/Physics/physicsEngineComponent.ts",
+                    "packages/dev/core/src/Physics/v2/physicsEngineComponent.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13440",
+                "title": "Fix GUI Image caching to consider images that have been created but n…",
+                "description": "…ot fully loaded.\r\n\r\nRelated forum issue:  https://forum.babylonjs.com/t/gui-editor-bug-parse-from-snippet-with-external-image-from-dropbox-svg/37411/",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/image.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/GUI Images in Grid.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug",
+                    "gui"
                 ]
             }
         ],
@@ -195,6 +280,24 @@
                 "tags": [
                     "bug",
                     "loaders"
+                ]
+            }
+        ],
+        "5.42.2": [
+            {
+                "pr": "13367",
+                "title": "Fixed issue when setting ViewPort multiple times per frame in Native",
+                "description": "## Overview\r\n\r\nThis PR fixes complements [this Babylon Native PR](https://github.com/BabylonJS/BabylonNative/pull/1183), it moves viewport update from been done immediately to be done using the command queue. The way this is currently been done on master, if multiple viewport updates are done in a single frame (like when you can more than one camera been rendered using different viewports) the viewport updates actually end up overriding each other and get lost by the time the command queue starts been processed. \r\n\r\n## Extra Information\r\n\r\nThis functionality started as a request in the forum:\r\n[Forum issue](https://forum.babylonjs.com/t/viewport-ignored-for-mutiple-cameras-in-react-native/36709/4)\r\n[Target web behaviour](https://playground.babylonjs.com/#H8VW0B)",
+                "author": {
+                    "name": "SergioRZMasson",
+                    "url": "https://github.com/SergioRZMasson"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                ],
+                "tags": [
+                    "native"
                 ]
             }
         ],

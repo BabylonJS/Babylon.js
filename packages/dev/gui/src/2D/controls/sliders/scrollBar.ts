@@ -5,6 +5,11 @@ import { Measure } from "../../measure";
 import type { PointerInfoBase } from "core/Events/pointerEvents";
 import { serialize } from "core/Misc/decorators";
 import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import type { Nullable } from "core/types";
+import type { BaseGradient } from "../gradient/BaseGradient";
+import type { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
+import { Tools } from "core/Misc/tools";
+import { RegisterClass } from "core/Misc/typeStore";
 
 /**
  * Class used to create slider controls
@@ -14,6 +19,7 @@ export class ScrollBar extends BaseSlider {
     private _borderColor = "white";
     private _tempMeasure = new Measure(0, 0, 0, 0);
     private _invertScrollDirection = false;
+    private _backgroundGradient: Nullable<BaseGradient> = null;
 
     /** Gets or sets border color */
     @serialize()
@@ -42,6 +48,20 @@ export class ScrollBar extends BaseSlider {
         }
 
         this._background = value;
+        this._markAsDirty();
+    }
+
+    /** Gets or sets background gradient. Takes precedence over gradient. */
+    public get backgroundGradient(): Nullable<BaseGradient> {
+        return this._backgroundGradient;
+    }
+
+    public set backgroundGradient(value: Nullable<BaseGradient>) {
+        if (this._backgroundGradient === value) {
+            return;
+        }
+
+        this._backgroundGradient = value;
         this._markAsDirty();
     }
 
@@ -77,6 +97,10 @@ export class ScrollBar extends BaseSlider {
         return thumbThickness;
     }
 
+    private _getBackgroundColor(context: ICanvasRenderingContext) {
+        return this._backgroundGradient ? this._backgroundGradient.getCanvasGradient(context) : this._background;
+    }
+
     public _draw(context: ICanvasRenderingContext): void {
         context.save();
 
@@ -85,12 +109,12 @@ export class ScrollBar extends BaseSlider {
         const left = this._renderLeft;
 
         const thumbPosition = this._getThumbPosition();
-        context.fillStyle = this._background;
+        context.fillStyle = this._getBackgroundColor(context);
 
         context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
 
         // Value bar
-        context.fillStyle = this.color;
+        context.fillStyle = this._getColor(context);
 
         // Thumb
         if (this.isVertical) {
@@ -165,4 +189,24 @@ export class ScrollBar extends BaseSlider {
 
         return super._onPointerDown(target, coordinates, pointerId, buttonIndex, pi);
     }
+
+    public serialize(serializationObject: any) {
+        super.serialize(serializationObject);
+
+        if (this.backgroundGradient) {
+            serializationObject.backgroundGradient = {};
+            this.backgroundGradient.serialize(serializationObject.backgroundGradient);
+        }
+    }
+
+    public _parseFromContent(serializationObject: any, host: AdvancedDynamicTexture) {
+        super._parseFromContent(serializationObject, host);
+
+        if (serializationObject.backgroundGradient) {
+            const className = Tools.Instantiate("BABYLON.GUI." + serializationObject.backgroundGradient.className);
+            this.backgroundGradient = new className();
+            this.backgroundGradient!.parse(serializationObject.backgroundGradient);
+        }
+    }
 }
+RegisterClass("BABYLON.GUI.Scrollbar", ScrollBar);

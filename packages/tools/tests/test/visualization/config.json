@@ -1532,6 +1532,17 @@
         {
             "title": "GUI Force Resize Width",
             "playgroundId": "#XCPP9Y#17259"
+        },
+            "title": "GUI Gradient Linear",
+            "playgroundId": "#XCPP9Y#17227"
+        },
+        {
+            "title": "GUI Gradient Radial",
+            "playgroundId": "#4Z7EK3"
+        },
+        {
+            "title": "GUI Gradient Linear with transparency",
+            "playgroundId": "#PFK1Z5"
         }
     ]
 }
