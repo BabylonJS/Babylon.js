@@ -278,7 +278,7 @@ export class PhysicsViewer {
         const utilityLayerScene = this._utilityLayer.utilityLayerScene;
 
         for (let i = 0; i < this._numBodies; i++) {
-            if (this._bodies[i] == body) {
+            if (this._bodies[i] === body) {
                 const mesh = this._bodyMeshes[i];
 
                 if (!mesh) {
