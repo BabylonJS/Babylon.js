@@ -1528,6 +1528,10 @@
             "title": "GUI Images in Grid",
             "playgroundId": "#8Y0XJL#1",
             "renderCount": 10
+        },
+        {
+            "title": "GUI Force Resize Width",
+            "playgroundId": "#XCPP9Y#17254"
         }
     ]
 }
