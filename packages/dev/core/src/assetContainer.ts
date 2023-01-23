@@ -43,7 +43,7 @@ export class InstantiatedEntries {
     /**
      * Disposes the instantiated entries from the scene
      */
-    public removeFromScene() {
+    public dispose() {
         this.rootNodes.slice(0).forEach((o) => {
             o.dispose();
         });
