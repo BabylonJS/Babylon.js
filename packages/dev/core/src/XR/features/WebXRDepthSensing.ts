@@ -7,7 +7,8 @@ import { Tools } from "../../Misc/tools";
 import type { Scene } from "../../scene";
 import { Texture } from "../../Materials/Textures/texture";
 import type { Nullable } from "../../types";
-import type { ThinEngine } from "../../Engines";
+import type { ThinEngine } from "../../Engines/thinEngine";
+import { Engine } from "../../Engines/engine";
 
 /**
  * Options for Depth Sensing feature
@@ -267,15 +268,21 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
 
     private static _CreateLuminanceTextureFromCpuDepthBuffer(depthInfo: XRCPUDepthInformation, sceneOrEngine: Nullable<Scene | ThinEngine>): RawTexture {
         const { width, height, data } = depthInfo;
-        const length = width * height;
 
-        const depthBuffer = new Uint16Array(data);
-        const enhancedDepthBuffer = new Uint8ClampedArray(length);
-        for (let i = 0; i < length; i++) {
-            enhancedDepthBuffer[i] = depthBuffer[i] / 20;
-        }
-        
-        return RawTexture.CreateLuminanceTexture(enhancedDepthBuffer, width, height, sceneOrEngine, false, false, Texture.NEAREST_SAMPLINGMODE);
+        const depthBuffer = new Uint16Array(data).map((value) => value / 20);
+        const rgTexture = new RawTexture(
+            Uint8ClampedArray.from(depthBuffer),
+            width,
+            height,
+            Engine.TEXTUREFORMAT_R,
+            sceneOrEngine,
+            false,
+            false,
+            Texture.NEAREST_SAMPLINGMODE,
+            Engine.TEXTURETYPE_UNSIGNED_BYTE
+        );
+
+        return rgTexture;
     }
 
     private _updateDepthInformationAndTextureWebGLDepthUsage(webglBinding: XRWebGLBinding, view: XRView): void {
