@@ -259,7 +259,7 @@ export class Observable<T> {
 
     // This should only be called when not iterating over _observers to avoid callback skipping.
     // Removes an observer from the _observer Array.
-    private _remove(observer: Nullable<Observer<T>>): boolean {
+    private _remove(observer: Nullable<Observer<T>>, updateCounter = true): boolean {
         if (!observer) {
             return false;
         }
@@ -267,7 +267,9 @@ export class Observable<T> {
         const index = this._observers.indexOf(observer);
 
         if (index !== -1) {
-            this._numObserversMarkedAsDeleted--;
+            if (updateCounter) {
+                this._numObserversMarkedAsDeleted--;
+            }
             this._observers.splice(index, 1);
             return true;
         }
@@ -280,7 +282,7 @@ export class Observable<T> {
      * @param observer the observer to move
      */
     public makeObserverTopPriority(observer: Observer<T>) {
-        this._remove(observer);
+        this._remove(observer, false);
         this._observers.unshift(observer);
     }
 
@@ -289,7 +291,7 @@ export class Observable<T> {
      * @param observer the observer to move
      */
     public makeObserverBottomPriority(observer: Observer<T>) {
-        this._remove(observer);
+        this._remove(observer, false);
         this._observers.push(observer);
     }
 
@@ -375,6 +377,7 @@ export class Observable<T> {
     public clear(): void {
         this._observers = new Array<Observer<T>>();
         this._onObserverAdded = null;
+        this._numObserversMarkedAsDeleted = 0;
     }
 
     /**
