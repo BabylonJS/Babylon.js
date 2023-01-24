@@ -1530,6 +1530,10 @@
             "renderCount": 10
         },
         {
+            "title": "GUI Force Resize Width",
+            "playgroundId": "#XCPP9Y#17259"
+        },
+        {
             "title": "GUI Gradient Linear",
             "playgroundId": "#XCPP9Y#17227"
         },
