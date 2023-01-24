@@ -1,10 +1,8 @@
-import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { RawTexture } from "../../Materials/Textures/rawTexture";
 import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
 import type { WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { Tools } from "../../Misc/tools";
-import type { Scene } from "../../scene";
 import { Texture } from "../../Materials/Textures/texture";
 import { Engine } from "../../Engines/engine";
 
@@ -102,13 +100,20 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         return webglDepthInfo.texture;
     }
 
-    private _latestDepthBuffer: ArrayBufferView | null = null;
-
     /**
      * cached depth buffer
      */
     public get latestDepthBuffer(): ArrayBufferView | null {
-        return this._latestDepthBuffer;
+        if (!this._cachedDepthInfo) {
+            return null;
+        }
+
+        const { data } = this._cachedDepthInfo as XRCPUDepthInformation;
+        if (!data) {
+            return null;
+        }
+
+        return this.depthDataFormat === "luminance-alpha" ? new Uint16Array(data) : new Float32Array(data);
     }
 
     /**
@@ -131,12 +136,12 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         return cpuDepthInfo.getDepthInMeters(x, y);
     };
 
-    private _latestDepthImageTexture?: BaseTexture;
+    private _latestDepthImageTexture?: RawTexture;
 
     /**
      * Latest cached `BaseTexture` of depth image which is made from the depth buffer data.
      */
-    public get latestDepthImageTexture(): BaseTexture | null {
+    public get latestDepthImageTexture(): RawTexture | null {
         if (!this._latestDepthImageTexture) {
             return null;
         }
@@ -220,7 +225,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
                         break;
                     }
 
-                    this._updateDepthInformationAndTextureWebGLDepthUsage(this._glBinding, view);
+                    this._updateDepthInformationAndTextureWebGLDepthUsage(this._glBinding, view, this.depthDataFormat);
                     break;
 
                 default:
@@ -235,40 +240,31 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
             return;
         }
 
+        this._cachedDepthInfo = depthInfo;
+
         const { data, width, height } = depthInfo as XRCPUDepthInformation;
+
+        if (!this._latestDepthImageTexture) {
+            this._latestDepthImageTexture = RawTexture.CreateRTexture(
+                null,
+                width,
+                height,
+                this._xrSessionManager.scene,
+                false,
+                true,
+                Texture.NEAREST_SAMPLINGMODE,
+                dataFormat === "luminance-alpha" ? Engine.TEXTURETYPE_UNSIGNED_BYTE : Engine.TEXTURETYPE_FLOAT
+            );
+        }
 
         switch (dataFormat) {
             case "luminance-alpha":
-                this._latestDepthBuffer = new Uint16Array(data);
-                if (!this._latestDepthImageTexture) {
-                    this._latestDepthImageTexture = RawTexture.CreateRTexture(
-                        null,
-                        width,
-                        height,
-                        this._xrSessionManager.scene,
-                        false,
-                        true,
-                        Texture.NEAREST_SAMPLINGMODE,
-                        Engine.TEXTURETYPE_UNSIGNED_BYTE
-                    );
-                }
+                // todo: refactoring and remove magic number
                 (this._latestDepthImageTexture as RawTexture).update(Uint8ClampedArray.from(new Uint16Array(data).map((value) => value / 20)));
                 break;
 
             case "float32":
-                this._latestDepthBuffer = new Float32Array(data);
-                if (!this._latestDepthImageTexture) {
-                    this._latestDepthImageTexture = RawTexture.CreateRTexture(
-                        null,
-                        width,
-                        height,
-                        this._xrSessionManager.scene,
-                        false,
-                        true,
-                        Texture.NEAREST_SAMPLINGMODE,
-                        Engine.TEXTURETYPE_FLOAT
-                    );
-                }
+                // todo: refactoring and remove magic number
                 (this._latestDepthImageTexture as RawTexture).update(new Float32Array(data).map((value) => value / 20));
                 break;
 
@@ -277,24 +273,34 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         }
     }
 
-    private _updateDepthInformationAndTextureWebGLDepthUsage(webglBinding: XRWebGLBinding, view: XRView): void {
+    private _updateDepthInformationAndTextureWebGLDepthUsage(webglBinding: XRWebGLBinding, view: XRView, dataFormat: XRDepthDataFormat): void {
         const depthInfo = webglBinding.getDepthInformation(view);
         if (depthInfo === null) {
             return;
         }
 
-        const webglDepthInfo = depthInfo as XRWebGLDepthInformation;
-        const texture = WebXRDepthSensing._GenerateTextureFromWebGLDepthInformation(webglDepthInfo, this._xrSessionManager.scene);
+        this._cachedDepthInfo = depthInfo;
 
-        this._latestDepthImageTexture = texture;
-        this._cachedDepthInfo = webglDepthInfo;
-    }
+        const { texture, width, height } = depthInfo as XRWebGLDepthInformation;
 
-    private static _GenerateTextureFromWebGLDepthInformation(depthInfo: XRWebGLDepthInformation, scene: Scene): BaseTexture {
+        const scene = this._xrSessionManager.scene;
         const engine = scene.getEngine();
-        const internalTexture = engine.wrapWebGLTexture(depthInfo.texture);
-        const baseTexture = new BaseTexture(engine, internalTexture);
-        return baseTexture;
+        const internalTexture = engine.wrapWebGLTexture(texture);
+
+        if (!this._latestDepthImageTexture) {
+            this._latestDepthImageTexture = RawTexture.CreateRTexture(
+                null,
+                width,
+                height,
+                scene,
+                false,
+                true,
+                Texture.NEAREST_SAMPLINGMODE,
+                dataFormat === "luminance-alpha" ? Engine.TEXTURETYPE_UNSIGNED_BYTE : Engine.TEXTURETYPE_FLOAT
+            );
+        }
+
+        this._latestDepthImageTexture._texture = internalTexture;
     }
 
     /**
