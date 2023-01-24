@@ -6,8 +6,6 @@ import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { Tools } from "../../Misc/tools";
 import type { Scene } from "../../scene";
 import { Texture } from "../../Materials/Textures/texture";
-import type { Nullable } from "../../types";
-import type { ThinEngine } from "../../Engines/thinEngine";
 import { Engine } from "../../Engines/engine";
 
 /**
@@ -237,52 +235,46 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
             return;
         }
 
-        const cpuDepthInfo = depthInfo as XRCPUDepthInformation;
-
-        this._latestDepthBuffer = this.depthDataFormat === "luminance-alpha" ? new Uint16Array(cpuDepthInfo.data) : new Float32Array(cpuDepthInfo.data);
-
-        const texture = WebXRDepthSensing._GenerateTextureFromCPUDepthInformation(cpuDepthInfo, dataFormat, this._xrSessionManager.scene);
-        if (texture === null) {
-            return;
-        }
-
-        this._cachedDepthInfo = cpuDepthInfo;
-        this._latestDepthImageTexture = texture;
-    }
-
-    private static _GenerateTextureFromCPUDepthInformation(depthInfo: XRCPUDepthInformation, dataFormat: XRDepthDataFormat, scene: Scene): RawTexture | null {
-        let texture: RawTexture | null;
-        const length = depthInfo.width * depthInfo.height;
+        const { data, width, height } = depthInfo as XRCPUDepthInformation;
 
         switch (dataFormat) {
             case "luminance-alpha":
-                return WebXRDepthSensing._CreateLuminanceTextureFromCpuDepthBuffer(depthInfo, scene);
+                this._latestDepthBuffer = new Uint16Array(data);
+                if (!this._latestDepthImageTexture) {
+                    this._latestDepthImageTexture = RawTexture.CreateRTexture(
+                        null,
+                        width,
+                        height,
+                        this._xrSessionManager.scene,
+                        false,
+                        true,
+                        Texture.NEAREST_SAMPLINGMODE,
+                        Engine.TEXTURETYPE_UNSIGNED_BYTE
+                    );
+                }
+                (this._latestDepthImageTexture as RawTexture).update(Uint8ClampedArray.from(new Uint16Array(data).map((value) => value / 20)));
+                break;
+
             case "float32":
-                texture = RawTexture.CreateRGBATexture(new Float32Array(length), depthInfo.width, depthInfo.height, scene);
-                texture.update(new Float32Array(depthInfo.data));
-                return texture;
+                this._latestDepthBuffer = new Float32Array(data);
+                if (!this._latestDepthImageTexture) {
+                    this._latestDepthImageTexture = RawTexture.CreateRTexture(
+                        null,
+                        width,
+                        height,
+                        this._xrSessionManager.scene,
+                        false,
+                        true,
+                        Texture.NEAREST_SAMPLINGMODE,
+                        Engine.TEXTURETYPE_FLOAT
+                    );
+                }
+                (this._latestDepthImageTexture as RawTexture).update(new Float32Array(data).map((value) => value / 20));
+                break;
+
             default:
-                return null;
+                break;
         }
-    }
-
-    private static _CreateLuminanceTextureFromCpuDepthBuffer(depthInfo: XRCPUDepthInformation, sceneOrEngine: Nullable<Scene | ThinEngine>): RawTexture {
-        const { width, height, data } = depthInfo;
-
-        const depthBuffer = new Uint16Array(data).map((value) => value / 20);
-        const rgTexture = new RawTexture(
-            Uint8ClampedArray.from(depthBuffer),
-            width,
-            height,
-            Engine.TEXTUREFORMAT_R,
-            sceneOrEngine,
-            false,
-            false,
-            Texture.NEAREST_SAMPLINGMODE,
-            Engine.TEXTURETYPE_UNSIGNED_BYTE
-        );
-
-        return rgTexture;
     }
 
     private _updateDepthInformationAndTextureWebGLDepthUsage(webglBinding: XRWebGLBinding, view: XRView): void {
