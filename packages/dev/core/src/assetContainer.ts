@@ -281,13 +281,19 @@ export class AssetContainer extends AbstractScene {
         const idsOnSortList = new Set<number>();
 
         for (const transformNode of this.transformNodes) {
-            this._addNodeAndDescendantsToList(nodesToSort, idsOnSortList, transformNode, localOptions.predicate);
+            if (transformNode.parent === null) {
+                this._addNodeAndDescendantsToList(nodesToSort, idsOnSortList, transformNode, localOptions.predicate);
+            }
         }
 
         for (const mesh of this.meshes) {
-            this._addNodeAndDescendantsToList(nodesToSort, idsOnSortList, mesh, localOptions.predicate);
+            if (mesh.parent === null) {
+                this._addNodeAndDescendantsToList(nodesToSort, idsOnSortList, mesh, localOptions.predicate);
+            }
         }
 
+        // Topologically sort nodes by parenting/instancing relationships so that all resources are in place
+        // when a given node is instantiated.
         const sortedNodes = this._topologicalSort(nodesToSort);
 
         const onNewCreated = (source: TransformNode, clone: TransformNode) => {
@@ -354,67 +360,30 @@ export class AssetContainer extends AbstractScene {
                     }
                 }
             }
+
+            if (clone.parent === null) {
+                result.rootNodes.push(clone);
+            }
         };
 
-        // this.meshes.forEach((o, idx) => {
         sortedNodes.forEach((node) => {
             if (node.getClassName() === "InstancedMesh") {
                 const instancedNode = node as InstancedMesh;
                 const sourceMesh = instancedNode.sourceMesh;
                 const replicatedSourceId = conversionMap[sourceMesh.uniqueId];
                 const replicatedSource = replicatedSourceId ? storeMap[replicatedSourceId] : sourceMesh;
-                // if (!replicatedSource) {
-                //     console.error("Could not find replicated source mesh for instanced mesh", instancedNode.name);
-                //     return;
-                // }
                 const replicatedInstancedNode = replicatedSource.createInstance(instancedNode.name);
                 onNewCreated(instancedNode, replicatedInstancedNode);
-                // mappedEntitiesIndex.set(instancedNode.uniqueId, replicatedInstancedNode);
             } else {
                 // Mesh or TransformNode
                 const canInstance = !options?.doNotInstantiate && node.getClassName() === "Mesh" && (node as Mesh).getTotalVertices() > 0;
                 const replicatedNode = canInstance ? (node as Mesh).createInstance(node.name) : (node as TransformNode).clone(node.name, null, true);
                 if (!replicatedNode) {
-                    console.error("Could not clone node", node.name);
+                    console.error("Could not clone or instantiate node on Asset Container", node.name);
                     return;
                 }
                 onNewCreated(node as TransformNode, replicatedNode as TransformNode);
-                // mappedEntitiesIndex.set(node.uniqueId, replicatedNode);
             }
-            // if (localOptions.predicate && !localOptions.predicate(o)) {
-            //     return;
-            // }
-
-            // if (!o.parent) {
-            //     const isInstance = o.getClassName() === "InstancedMesh";
-            //     let sourceMap: Mesh | undefined = undefined;
-            //     if (isInstance) {
-            //         const oInstance = o as InstancedMesh;
-            //         // find the right index for the source mesh
-            //         const sourceMesh = oInstance.sourceMesh;
-            //         // const sourceMeshIndex = this.meshes.indexOf(sourceMesh);
-            //         // if (sourceMeshIndex !== -1 && instanceSourceMap[sourceMeshIndex]) {
-            //         //     sourceMap = instanceSourceMap[sourceMeshIndex] as Mesh;
-            //         // }
-            //     }
-            //     const newOne = isInstance
-            //         ? (o as InstancedMesh).instantiateHierarchy(
-            //               null,
-            //               {
-            //                   ...localOptions,
-            //                   newSourcedMesh: sourceMap,
-            //               },
-            //               onNewCreated
-            //           )
-            //         : o.instantiateHierarchy(null, localOptions, onNewCreated);
-
-            //     if (newOne) {
-            //         if (instancesExist && newOne.getClassName() !== "InstancedMesh") {
-            //             instanceSourceMap[idx] = newOne;
-            //         }
-            //         result.rootNodes.push(newOne);
-            //     }
-            // }
         });
 
         this.skeletons.forEach((s) => {
