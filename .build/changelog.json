@@ -1,6 +1,153 @@
 {
-    "fromTag": "5.43.0",
+    "fromTag": "5.43.1",
     "changelog": {
+        "5.43.2": [
+            {
+                "pr": "13465",
+                "title": "Observable: Fix single fire events not working sometimes",
+                "description": "See https://forum.babylonjs.com/t/scene-ready-observable-not-firing-with-v5-35-0/36166/23\r\n\r\nFix bug introduced by #13283 ",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/observable.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "design"
+                ]
+            },
+            {
+                "pr": "13464",
+                "title": "Effect: Fix crash when using an external shader file",
+                "description": "Fix bug introduced by #13452",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/effect.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13460",
+                "title": "Add forceResizeWidth on GUI Text Block to allow for width resize even…",
+                "description": "… if textWrap is not clip.\r\n\r\nRelated forum question: https://forum.babylonjs.com/t/gui-alignment-for-chat-bubbles/37573\r\n\r\nRelated PG link: https://playground.babylonjs.com/#XCPP9Y#17254",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/textBlock.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/GUI Force Resize Width.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "enhancement",
+                    "gui"
+                ]
+            },
+            {
+                "pr": "13463",
+                "title": "Fix webXRFeaturesManager test name",
+                "description": null,
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/test/unit/XR/webXRFeaturesManager.test.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13462",
+                "title": "Fixes to GUI Editor Zoom Behavior",
+                "description": "Fix https://github.com/BabylonJS/ThePirateCove/issues/321\r\n@PatrickRyanMS here are the fixes for the editor!",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/guiEditor/src/diagram/workbench.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "gui editor"
+                ]
+            },
+            {
+                "pr": "13361",
+                "title": "Gradients on GUI",
+                "description": "This PR adds additional parameters on 2D GUI elements to use a gradient instead of a color. Whenever a gradient background is set, it takes precedence over the plain color background. The possible gradients are Linear, Radial and Conic: https://developer.mozilla.org/en-US/docs/Web/API/CanvasGradient\r\n\r\nExample PGs: \r\nplayground.babylonjs.com/#XCPP9Y#16899\r\nplayground.babylonjs.com/#4Z7EK3\r\nplayground.babylonjs.com/#FWPJH0\r\n\r\nExample pictures:\r\n![image](https://user-images.githubusercontent.com/6002144/208747926-a634e2a1-ac82-4a1f-a30e-e770089581ba.png)\r\n![image](https://user-images.githubusercontent.com/6002144/208747962-9b28163e-ff26-4a3d-9b09-992bc5022657.png)\r\n![image](https://user-images.githubusercontent.com/6002144/208747994-4d85dd74-b6ef-4aad-a7e6-93706248c32b.png)\r\n",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/ICanvas.ts",
+                    "packages/dev/gui/src/2D/controls/button.ts",
+                    "packages/dev/gui/src/2D/controls/container.ts",
+                    "packages/dev/gui/src/2D/controls/control.ts",
+                    "packages/dev/gui/src/2D/controls/ellipse.ts",
+                    "packages/dev/gui/src/2D/controls/gradient/BaseGradient.ts",
+                    "packages/dev/gui/src/2D/controls/gradient/LinearGradient.ts",
+                    "packages/dev/gui/src/2D/controls/gradient/RadialGradient.ts",
+                    "packages/dev/gui/src/2D/controls/index.ts",
+                    "packages/dev/gui/src/2D/controls/line.ts",
+                    "packages/dev/gui/src/2D/controls/rectangle.ts",
+                    "packages/dev/gui/src/2D/controls/sliders/scrollBar.ts",
+                    "packages/dev/gui/src/2D/controls/sliders/slider.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/GUI Gradient Linear with transparency.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/GUI Gradient Linear.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/GUI Gradient Radial.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "enhancement",
+                    "gui"
+                ]
+            },
+            {
+                "pr": "13459",
+                "title": "Fluid Renderer: Fixes WebGPU support",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.renderTarget.ts",
+                    "packages/dev/core/src/Shaders/fluidRenderingBilateralBlur.fragment.fx",
+                    "packages/dev/core/src/Shaders/fluidRenderingRender.fragment.fx",
+                    "packages/dev/core/src/Shaders/fluidRenderingStandardBlur.fragment.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "13451",
+                "title": "Update assetContainer.ts",
+                "description": "Add \"dispose\" on InstantiatedEntries\r\nhttps://forum.babylonjs.com/t/dispose-function-on-instantiatedentries/37500\r\n\r\nDoc update; https://github.com/BabylonJS/Documentation/pull/756",
+                "author": {
+                    "name": "aWeirdo",
+                    "url": "https://github.com/aWeirdo"
+                },
+                "files": [
+                    "packages/dev/core/src/assetContainer.ts"
+                ],
+                "tags": []
+            }
+        ],
         "5.43.1": [
             {
                 "pr": "13450",
