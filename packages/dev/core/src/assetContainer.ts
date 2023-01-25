@@ -14,7 +14,7 @@ import type { Nullable } from "./types";
 import type { Node } from "./node";
 import type { Observer } from "./Misc/observable";
 import type { ThinEngine } from "./Engines/thinEngine";
-import type { InstancedMesh } from "./Meshes/instancedMesh";
+import { InstancedMesh } from "./Meshes/instancedMesh";
 
 /**
  * Set of assets to keep when moving a scene into an asset container.
@@ -117,6 +117,110 @@ export class AssetContainer extends AbstractScene {
     }
 
     /**
+     * Given a list of nodes, return a topological sorting of them.
+     * @param nodes
+     */
+    private _topologicalSort(nodes: Node[]) {
+        // const nodesUIdSet = new Set(nodes.map((n) => n.uniqueId));
+        const nodesUidMap = new Map<number, Node>();
+
+        for (const node of nodes) {
+            nodesUidMap.set(node.uniqueId, node);
+        }
+
+        const dependencyGraph = {
+            dependsOn: new Map<number, Set<number>>(), // given a node id, what are the ids of the nodes it depends on
+            dependedBy: new Map<number, Set<number>>(), // given a node id, what are the ids of the nodes that depend on it
+        };
+
+        // Build the dependency graph given the list of nodes
+
+        // First pass: Initialize the empty dependency graph
+        for (const node of nodes) {
+            const nodeId = node.uniqueId;
+            dependencyGraph.dependsOn.set(nodeId, new Set<number>());
+            dependencyGraph.dependedBy.set(nodeId, new Set<number>());
+        }
+
+        // Second pass: Populate the dependency graph. We assume that we
+        // don't need to check for cycles here, as the scene graph cannot
+        // contain cycles. Our graph also already contains all transitive
+        // dependencies because getDescendants returns the transitive
+        // dependencies by default.
+        for (const node of nodes) {
+            const nodeId = node.uniqueId;
+            const dependsOn = dependencyGraph.dependsOn.get(nodeId)!;
+            if (node instanceof InstancedMesh) {
+                const masterMesh = node.sourceMesh;
+                if (nodesUidMap.has(masterMesh.uniqueId)) {
+                    dependsOn.add(masterMesh.uniqueId);
+                    dependencyGraph.dependedBy.get(masterMesh.uniqueId)!.add(nodeId);
+                }
+            }
+            const dependedBy = dependencyGraph.dependedBy.get(nodeId)!;
+
+            for (const child of node.getDescendants()) {
+                const childId = child.uniqueId;
+                if (nodesUidMap.has(childId)) {
+                    dependedBy.add(childId);
+
+                    const childDependsOn = dependencyGraph.dependsOn.get(childId)!;
+                    childDependsOn.add(nodeId);
+                }
+            }
+        }
+
+        // Third pass: Topological sort
+        const sortedNodes: Node[] = [];
+        const nodesMarkedForVisit = new Set<number>();
+
+        // First: Find all nodes that have no dependencies
+        const leaves: Node[] = [];
+        for (const node of nodes) {
+            const nodeId = node.uniqueId;
+            if (dependencyGraph.dependsOn.get(nodeId)!.size === 0) {
+                leaves.push(node);
+            }
+        }
+
+        const visitList = leaves;
+        while (visitList.length > 0) {
+            const nodeToVisit = visitList.splice(0, 1)[0];
+
+            sortedNodes.push(nodeToVisit);
+
+            // Remove the node from the dependency graph
+            // When a node is visited, we know that dependsOn is empty.
+            // So we only need to remove the node from dependedBy.
+            const dependedByVisitedNode = dependencyGraph.dependedBy.get(nodeToVisit.uniqueId)!;
+            for (const dependedByVisitedNodeId of dependedByVisitedNode) {
+                const dependsOnDependedByVisitedNode = dependencyGraph.dependsOn.get(dependedByVisitedNodeId)!;
+                dependsOnDependedByVisitedNode.delete(nodeToVisit.uniqueId);
+
+                if (dependsOnDependedByVisitedNode.size === 0 && !nodesMarkedForVisit.has(dependedByVisitedNodeId)) {
+                    visitList.push(nodesUidMap.get(dependedByVisitedNodeId)!);
+                    nodesMarkedForVisit.add(dependedByVisitedNodeId);
+                }
+            }
+        }
+
+        return sortedNodes;
+    }
+
+    private _addNodeAndDescendantsToList(list: Node[], addedIds: Set<number>, rootNode: Node, predicate?: (entity: any) => boolean) {
+        if ((predicate && predicate(rootNode)) || addedIds.has(rootNode.uniqueId)) {
+            return;
+        }
+
+        list.push(rootNode);
+        addedIds.add(rootNode.uniqueId);
+
+        for (const child of rootNode.getDescendants(true)) {
+            this._addNodeAndDescendantsToList(list, addedIds, child, predicate);
+        }
+    }
+
+    /**
      * Instantiate or clone all meshes and add the new ones to the scene.
      * Skeletons and animation groups will all be cloned
      * @param nameFunction defines an optional function used to get new names for clones
@@ -173,28 +277,65 @@ export class AssetContainer extends AbstractScene {
             }
         };
 
-        this.transformNodes.forEach((o) => {
-            if (localOptions.predicate && !localOptions.predicate(o)) {
-                return;
-            }
+        const nodesToSort: Node[] = [];
+        const idsOnSortList = new Set<number>();
 
-            if (!o.parent) {
-                const newOne = o.instantiateHierarchy(null, localOptions, (source, clone) => {
-                    onClone(source, clone);
-                });
+        for (const transformNode of this.transformNodes) {
+            this._addNodeAndDescendantsToList(nodesToSort, idsOnSortList, transformNode, localOptions.predicate);
+        }
 
-                if (newOne) {
-                    result.rootNodes.push(newOne);
-                }
-            }
-        });
+        for (const mesh of this.meshes) {
+            this._addNodeAndDescendantsToList(nodesToSort, idsOnSortList, mesh, localOptions.predicate);
+        }
+
+        const sortedNodes = this._topologicalSort(nodesToSort);
+        console.log(
+            "sorted nodes names",
+            sortedNodes.map((n) => n.name)
+        );
 
         // check if there are instanced meshes in the array, to set their new source mesh
-        const instancesExist = this.meshes.some((m) => m.getClassName() === "InstancedMesh");
-        const instanceSourceMap: TransformNode[] = [];
+        // const instancesExist = this.meshes.some((m) => m.getClassName() === "InstancedMesh");
+        // const instanceSourceMap: TransformNode[] = [];
+        // const instanceSourceMap: Map<number, Mesh> = new Map();
+
+        // Given a uniqueId from the source scene, return the corresponding replicated node in the new scene.
+        const mappedEntitiesIndex = new Map<number, Node>();
+
+        // this.transformNodes.forEach((o) => {
+        //     if (localOptions.predicate && !localOptions.predicate(o)) {
+        //         return;
+        //     }
+
+        //     if (!o.parent) {
+        //         const newOne = o.instantiateHierarchy(null, localOptions, (source, clone) => {
+        //             onClone(source, clone);
+        //         });
+
+        //         if (newOne) {
+        //             result.rootNodes.push(newOne);
+        //         }
+        //     }
+        // });
 
         const onNewCreated = (source: TransformNode, clone: TransformNode) => {
             onClone(source, clone);
+
+            if (source.parent) {
+                const replicatedParent = mappedEntitiesIndex.get(source.parent.uniqueId);
+
+                if (replicatedParent) {
+                    // console.error("Clone hierarchy error: parent not found");
+                    // return;
+                    clone.parent = replicatedParent;
+                } else {
+                    clone.parent = source.parent;
+                }
+            }
+
+            clone.position = source.position.clone();
+            clone.rotation = source.rotation.clone();
+            clone.scaling = source.scaling.clone();
 
             if ((clone as any).material) {
                 const mesh = clone as AbstractMesh;
@@ -244,41 +385,64 @@ export class AssetContainer extends AbstractScene {
             }
         };
 
-        this.meshes.forEach((o, idx) => {
-            if (localOptions.predicate && !localOptions.predicate(o)) {
-                return;
-            }
-
-            if (!o.parent) {
-                const isInstance = o.getClassName() === "InstancedMesh";
-                let sourceMap: Mesh | undefined = undefined;
-                if (isInstance) {
-                    const oInstance = o as InstancedMesh;
-                    // find the right index for the source mesh
-                    const sourceMesh = oInstance.sourceMesh;
-                    const sourceMeshIndex = this.meshes.indexOf(sourceMesh);
-                    if (sourceMeshIndex !== -1 && instanceSourceMap[sourceMeshIndex]) {
-                        sourceMap = instanceSourceMap[sourceMeshIndex] as Mesh;
-                    }
+        // this.meshes.forEach((o, idx) => {
+        sortedNodes.forEach((node) => {
+            if (node.getClassName() === "InstancedMesh") {
+                const instancedNode = node as InstancedMesh;
+                const sourceMesh = instancedNode.sourceMesh;
+                const replicatedSource = (mappedEntitiesIndex.get(sourceMesh.uniqueId) as Mesh) ?? sourceMesh;
+                // if (!replicatedSource) {
+                //     console.error("Could not find replicated source mesh for instanced mesh", instancedNode.name);
+                //     return;
+                // }
+                const replicatedInstancedNode = replicatedSource.createInstance(instancedNode.name);
+                onNewCreated(instancedNode, replicatedInstancedNode);
+                mappedEntitiesIndex.set(instancedNode.uniqueId, replicatedInstancedNode);
+            } else {
+                // Mesh or TransformNode
+                const canInstance = !options?.doNotInstantiate && node.getClassName() === "Mesh" && (node as Mesh).getTotalVertices() > 0;
+                const replicatedNode = canInstance ? (node as Mesh).createInstance(node.name) : (node as TransformNode).clone(node.name, null, true);
+                if (!replicatedNode) {
+                    console.error("Could not clone node", node.name);
+                    return;
                 }
-                const newOne = isInstance
-                    ? (o as InstancedMesh).instantiateHierarchy(
-                          null,
-                          {
-                              ...localOptions,
-                              newSourcedMesh: sourceMap,
-                          },
-                          onNewCreated
-                      )
-                    : o.instantiateHierarchy(null, localOptions, onNewCreated);
-
-                if (newOne) {
-                    if (instancesExist && newOne.getClassName() !== "InstancedMesh") {
-                        instanceSourceMap[idx] = newOne;
-                    }
-                    result.rootNodes.push(newOne);
-                }
+                onNewCreated(node as TransformNode, replicatedNode as TransformNode);
+                mappedEntitiesIndex.set(node.uniqueId, replicatedNode);
             }
+            // if (localOptions.predicate && !localOptions.predicate(o)) {
+            //     return;
+            // }
+
+            // if (!o.parent) {
+            //     const isInstance = o.getClassName() === "InstancedMesh";
+            //     let sourceMap: Mesh | undefined = undefined;
+            //     if (isInstance) {
+            //         const oInstance = o as InstancedMesh;
+            //         // find the right index for the source mesh
+            //         const sourceMesh = oInstance.sourceMesh;
+            //         // const sourceMeshIndex = this.meshes.indexOf(sourceMesh);
+            //         // if (sourceMeshIndex !== -1 && instanceSourceMap[sourceMeshIndex]) {
+            //         //     sourceMap = instanceSourceMap[sourceMeshIndex] as Mesh;
+            //         // }
+            //     }
+            //     const newOne = isInstance
+            //         ? (o as InstancedMesh).instantiateHierarchy(
+            //               null,
+            //               {
+            //                   ...localOptions,
+            //                   newSourcedMesh: sourceMap,
+            //               },
+            //               onNewCreated
+            //           )
+            //         : o.instantiateHierarchy(null, localOptions, onNewCreated);
+
+            //     if (newOne) {
+            //         if (instancesExist && newOne.getClassName() !== "InstancedMesh") {
+            //             instanceSourceMap[idx] = newOne;
+            //         }
+            //         result.rootNodes.push(newOne);
+            //     }
+            // }
         });
 
         this.skeletons.forEach((s) => {
@@ -484,7 +648,7 @@ export class AssetContainer extends AbstractScene {
             if (predicate && !predicate(o)) {
                 return;
             }
-            this.scene.removeMesh(o);
+            this.scene.removeMesh(o, true);
         });
         this.skeletons.forEach((o) => {
             if (predicate && !predicate(o)) {
