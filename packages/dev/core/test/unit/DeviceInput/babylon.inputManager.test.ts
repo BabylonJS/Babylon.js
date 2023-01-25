@@ -423,4 +423,66 @@ describe("InputManager", () => {
         expect(tapCt).toBe(4);
         expect(dblTapCt).toBe(3);
     });
+
+    it("Does not fire POINTERTAP events during multi-touch gesture", () => {
+        let tapCt = 0;
+
+        scene?.onPointerObservable.add((eventData) => {
+            tapCt++;
+        }, PointerEventTypes.POINTERTAP);
+
+        if (deviceInputSystem) {
+            // Connect touches
+            deviceInputSystem.connectDevice(DeviceType.Touch, 0, TestDeviceInputSystem.MAX_POINTER_INPUTS);
+            deviceInputSystem.connectDevice(DeviceType.Touch, 1, TestDeviceInputSystem.MAX_POINTER_INPUTS);
+            // Perform Single Tap
+            deviceInputSystem.changeInput(DeviceType.Touch, 0, PointerInput.LeftClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Touch, 0, PointerInput.LeftClick, 0);
+
+            // Perform Multi-Touch Gesture (2 fingers; FIFO release order)
+            deviceInputSystem.changeInput(DeviceType.Touch, 0, PointerInput.LeftClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Touch, 1, PointerInput.LeftClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Touch, 0, PointerInput.LeftClick, 0);
+            deviceInputSystem.changeInput(DeviceType.Touch, 1, PointerInput.LeftClick, 0);
+
+            // Perform Single Tap
+            deviceInputSystem.changeInput(DeviceType.Touch, 0, PointerInput.LeftClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Touch, 0, PointerInput.LeftClick, 0);
+
+            // Perform Multi-Touch Gesture (2 fingers; LIFO release order)
+            deviceInputSystem.changeInput(DeviceType.Touch, 0, PointerInput.LeftClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Touch, 1, PointerInput.LeftClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Touch, 1, PointerInput.LeftClick, 0);
+            deviceInputSystem.changeInput(DeviceType.Touch, 0, PointerInput.LeftClick, 0);
+
+            // Perform Single Tap
+            deviceInputSystem.changeInput(DeviceType.Touch, 0, PointerInput.LeftClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Touch, 0, PointerInput.LeftClick, 0);
+
+            // Perform Single Touch Move (no tap)
+            deviceInputSystem.changeInput(DeviceType.Touch, 0, PointerInput.LeftClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Touch, 0, PointerInput.Horizontal, 64, false);
+            deviceInputSystem.changeInput(DeviceType.Touch, 0, PointerInput.Vertical, 64, false);
+            deviceInputSystem.changeInput(DeviceType.Touch, 0, PointerInput.Move, 1);
+            deviceInputSystem.changeInput(DeviceType.Touch, 0, PointerInput.LeftClick, 0);
+
+            // Perform Pinch Gesture
+            deviceInputSystem.changeInput(DeviceType.Touch, 0, PointerInput.LeftClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Touch, 1, PointerInput.LeftClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Touch, 0, PointerInput.Horizontal, 0, false);
+            deviceInputSystem.changeInput(DeviceType.Touch, 0, PointerInput.Vertical, 0, false);
+            deviceInputSystem.changeInput(DeviceType.Touch, 0, PointerInput.Horizontal, 63, false);
+            deviceInputSystem.changeInput(DeviceType.Touch, 0, PointerInput.Vertical, 63, false);
+            deviceInputSystem.changeInput(DeviceType.Touch, 0, PointerInput.Move, 1);
+            deviceInputSystem.changeInput(DeviceType.Touch, 1, PointerInput.Horizontal, 127, false);
+            deviceInputSystem.changeInput(DeviceType.Touch, 1, PointerInput.Vertical, 127, false);
+            deviceInputSystem.changeInput(DeviceType.Touch, 1, PointerInput.Horizontal, 64, false);
+            deviceInputSystem.changeInput(DeviceType.Touch, 1, PointerInput.Vertical, 64, false);
+            deviceInputSystem.changeInput(DeviceType.Touch, 1, PointerInput.Move, 1);
+            deviceInputSystem.changeInput(DeviceType.Touch, 0, PointerInput.LeftClick, 0);
+            deviceInputSystem.changeInput(DeviceType.Touch, 1, PointerInput.LeftClick, 0);
+        }
+
+        expect(tapCt).toBe(3);
+    });
 });
