@@ -7,6 +7,7 @@
  *  - KTX specification: https://www.khronos.org/registry/DataFormat/specs/1.3/dataformat.1.3.html
  *  - KTX-Software: https://github.com/KhronosGroup/KTX-Software
  */
+import * as KTX2 from "core/Materials/Textures/ktx2decoderTypes";
 
 import type { IKTX2_ImageDesc } from "./ktx2FileReader";
 import { KTX2FileReader, SupercompressionScheme } from "./ktx2FileReader";
@@ -18,61 +19,8 @@ import { LiteTranscoder_UASTC_RGBA_SRGB } from "./Transcoders/liteTranscoder_UAS
 import { LiteTranscoder_UASTC_R8_UNORM } from "./Transcoders/liteTranscoder_UASTC_R8_UNORM";
 import { LiteTranscoder_UASTC_RG8_UNORM } from "./Transcoders/liteTranscoder_UASTC_RG8_UNORM";
 import { MSCTranscoder } from "./Transcoders/mscTranscoder";
-import { transcodeTarget, sourceTextureFormat } from "./transcoder";
 import { ZSTDDecoder } from "./zstddec";
 import { TranscodeDecisionTree } from "./transcodeDecisionTree";
-
-export interface IDecodedData {
-    width: number;
-    height: number;
-    transcodedFormat: number;
-    mipmaps: Array<IMipmap>;
-    isInGammaSpace: boolean;
-    hasAlpha: boolean;
-    errors?: string;
-    transcoderName?: string;
-}
-
-export interface IMipmap {
-    data: Uint8Array | null;
-    width: number;
-    height: number;
-}
-
-export interface ICompressedFormatCapabilities {
-    astc?: boolean;
-    bptc?: boolean;
-    s3tc?: boolean;
-    pvrtc?: boolean;
-    etc2?: boolean;
-    etc1?: boolean;
-}
-
-export interface IKTX2DecoderOptions {
-    /** use RGBA format if ASTC and BC7 are not available as transcoded format */
-    useRGBAIfASTCBC7NotAvailableWhenUASTC?: boolean;
-
-    /** force to always use (uncompressed) RGBA for transcoded format */
-    forceRGBA?: boolean;
-
-    /** force to always use (uncompressed) R8 for transcoded format */
-    forceR8?: boolean;
-
-    /** force to always use (uncompressed) RG8 for transcoded format */
-    forceRG8?: boolean;
-
-    /**
-     * list of transcoders to bypass when looking for a suitable transcoder. The available transcoders are:
-     *      UniversalTranscoder_UASTC_ASTC
-     *      UniversalTranscoder_UASTC_BC7
-     *      UniversalTranscoder_UASTC_RGBA_UNORM
-     *      UniversalTranscoder_UASTC_RGBA_SRGB
-     *      UniversalTranscoder_UASTC_R8_UNORM
-     *      UniversalTranscoder_UASTC_RG8_UNORM
-     *      MSCTranscoder
-     */
-    bypassTranscoders?: string[];
-}
 
 const isPowerOfTwo = (value: number) => {
     return (value & (value - 1)) === 0 && value !== 0;
@@ -86,11 +34,15 @@ export class KTX2Decoder {
     private _transcoderMgr: TranscoderManager;
     private _zstdDecoder: ZSTDDecoder;
 
+    public static DefaultDecoderOptions: KTX2.IKTX2DecoderOptions = {};
+
     constructor() {
         this._transcoderMgr = new TranscoderManager();
     }
 
-    public decode(data: Uint8Array, caps: ICompressedFormatCapabilities, options?: IKTX2DecoderOptions): Promise<IDecodedData | null> {
+    public decode(data: Uint8Array, caps: KTX2.ICompressedFormatCapabilities, options?: KTX2.IKTX2DecoderOptions): Promise<KTX2.IDecodedData> {
+        const finalOptions = { ...options, ...KTX2Decoder.DefaultDecoderOptions };
+
         return Promise.resolve().then(() => {
             const kfr = new KTX2FileReader(data);
 
@@ -106,20 +58,24 @@ export class KTX2Decoder {
                 }
 
                 return this._zstdDecoder.init().then(() => {
-                    return this._decodeData(kfr, caps, options);
+                    return this._decodeData(kfr, caps, finalOptions);
                 });
             }
 
-            return this._decodeData(kfr, caps, options);
+            return this._decodeData(kfr, caps, finalOptions);
         });
     }
 
-    private _decodeData(kfr: KTX2FileReader, caps: ICompressedFormatCapabilities, options?: IKTX2DecoderOptions): Promise<IDecodedData> {
+    private _decodeData(kfr: KTX2FileReader, caps: KTX2.ICompressedFormatCapabilities, options?: KTX2.IKTX2DecoderOptions): Promise<KTX2.IDecodedData> {
         const width = kfr.header.pixelWidth;
         const height = kfr.header.pixelHeight;
         const srcTexFormat = kfr.textureFormat;
 
         const decisionTree = new TranscodeDecisionTree(srcTexFormat, kfr.hasAlpha, isPowerOfTwo(width) && isPowerOfTwo(height), caps, options);
+
+        if (options?.transcodeFormatDecisionTree) {
+            decisionTree.parseTree(options?.transcodeFormatDecisionTree);
+        }
 
         const transcodeFormat = decisionTree.transcodeFormat;
         const engineFormat = decisionTree.engineFormat;
@@ -128,12 +84,14 @@ export class KTX2Decoder {
         const transcoder = this._transcoderMgr.findTranscoder(srcTexFormat, transcodeFormat, kfr.isInGammaSpace, options?.bypassTranscoders);
 
         if (transcoder === null) {
-            throw new Error(`no transcoder found to transcode source texture format "${sourceTextureFormat[srcTexFormat]}" to format "${transcodeTarget[transcodeFormat]}"`);
+            throw new Error(
+                `no transcoder found to transcode source texture format "${KTX2.SourceTextureFormat[srcTexFormat]}" to format "${KTX2.TranscodeTarget[transcodeFormat]}"`
+            );
         }
 
-        const mipmaps: Array<IMipmap> = [];
+        const mipmaps: Array<KTX2.IMipmap> = [];
         const dataPromises: Array<Promise<Uint8Array | null>> = [];
-        const decodedData: IDecodedData = {
+        const decodedData: KTX2.IDecodedData = {
             width: 0,
             height: 0,
             transcodedFormat: engineFormat,
@@ -187,7 +145,7 @@ export class KTX2Decoder {
                     imageOffsetInLevel += levelImageByteLength;
                 }
 
-                const mipmap: IMipmap = {
+                const mipmap: KTX2.IMipmap = {
                     data: null,
                     width: levelWidth,
                     height: levelHeight,
