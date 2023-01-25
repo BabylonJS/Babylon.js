@@ -289,44 +289,15 @@ export class AssetContainer extends AbstractScene {
         }
 
         const sortedNodes = this._topologicalSort(nodesToSort);
-        console.log(
-            "sorted nodes names",
-            sortedNodes.map((n) => n.name)
-        );
-
-        // check if there are instanced meshes in the array, to set their new source mesh
-        // const instancesExist = this.meshes.some((m) => m.getClassName() === "InstancedMesh");
-        // const instanceSourceMap: TransformNode[] = [];
-        // const instanceSourceMap: Map<number, Mesh> = new Map();
-
-        // Given a uniqueId from the source scene, return the corresponding replicated node in the new scene.
-        const mappedEntitiesIndex = new Map<number, Node>();
-
-        // this.transformNodes.forEach((o) => {
-        //     if (localOptions.predicate && !localOptions.predicate(o)) {
-        //         return;
-        //     }
-
-        //     if (!o.parent) {
-        //         const newOne = o.instantiateHierarchy(null, localOptions, (source, clone) => {
-        //             onClone(source, clone);
-        //         });
-
-        //         if (newOne) {
-        //             result.rootNodes.push(newOne);
-        //         }
-        //     }
-        // });
 
         const onNewCreated = (source: TransformNode, clone: TransformNode) => {
             onClone(source, clone);
 
             if (source.parent) {
-                const replicatedParent = mappedEntitiesIndex.get(source.parent.uniqueId);
+                const replicatedParentId = conversionMap[source.parent.uniqueId];
+                const replicatedParent = storeMap[replicatedParentId];
 
                 if (replicatedParent) {
-                    // console.error("Clone hierarchy error: parent not found");
-                    // return;
                     clone.parent = replicatedParent;
                 } else {
                     clone.parent = source.parent;
@@ -390,14 +361,15 @@ export class AssetContainer extends AbstractScene {
             if (node.getClassName() === "InstancedMesh") {
                 const instancedNode = node as InstancedMesh;
                 const sourceMesh = instancedNode.sourceMesh;
-                const replicatedSource = (mappedEntitiesIndex.get(sourceMesh.uniqueId) as Mesh) ?? sourceMesh;
+                const replicatedSourceId = conversionMap[sourceMesh.uniqueId];
+                const replicatedSource = replicatedSourceId ? storeMap[replicatedSourceId] : sourceMesh;
                 // if (!replicatedSource) {
                 //     console.error("Could not find replicated source mesh for instanced mesh", instancedNode.name);
                 //     return;
                 // }
                 const replicatedInstancedNode = replicatedSource.createInstance(instancedNode.name);
                 onNewCreated(instancedNode, replicatedInstancedNode);
-                mappedEntitiesIndex.set(instancedNode.uniqueId, replicatedInstancedNode);
+                // mappedEntitiesIndex.set(instancedNode.uniqueId, replicatedInstancedNode);
             } else {
                 // Mesh or TransformNode
                 const canInstance = !options?.doNotInstantiate && node.getClassName() === "Mesh" && (node as Mesh).getTotalVertices() > 0;
@@ -407,7 +379,7 @@ export class AssetContainer extends AbstractScene {
                     return;
                 }
                 onNewCreated(node as TransformNode, replicatedNode as TransformNode);
-                mappedEntitiesIndex.set(node.uniqueId, replicatedNode);
+                // mappedEntitiesIndex.set(node.uniqueId, replicatedNode);
             }
             // if (localOptions.predicate && !localOptions.predicate(o)) {
             //     return;
@@ -540,7 +512,7 @@ export class AssetContainer extends AbstractScene {
             if (predicate && !predicate(o)) {
                 return;
             }
-            this.scene.addMesh(o);
+            this.scene.addMesh(o, true);
         });
         this.skeletons.forEach((o) => {
             if (predicate && !predicate(o)) {
