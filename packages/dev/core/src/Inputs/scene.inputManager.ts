@@ -92,7 +92,6 @@ export class InputManager {
     private _isSwiping: boolean = false;
     private _swipeButtonPressed: number = -1;
     private _skipPointerTap: boolean = false;
-    private _activeTouchCount: number = 0;
     private _isMultiTouchGesture: boolean = false;
 
     private _pointerOverMesh: Nullable<AbstractMesh>;
@@ -980,14 +979,12 @@ export class InputManager {
                     if (eventData.inputIndex === PointerInput.LeftClick) {
                         if (attachDown && deviceSource.getInput(eventData.inputIndex) === 1) {
                             this._onPointerDown(eventData);
-                            this._activeTouchCount++;
-                            if (this._activeTouchCount > 1) {
+                            if (this._totalPointersPressed > 1) {
                                 this._isMultiTouchGesture = true;
                             }
                         } else if (attachUp && deviceSource.getInput(eventData.inputIndex) === 0) {
                             this._onPointerUp(eventData);
-                            this._activeTouchCount = Math.max(0, this._activeTouchCount - 1);
-                            if (this._activeTouchCount === 0) {
+                            if (this._totalPointersPressed === 0) {
                                 this._isMultiTouchGesture = false;
                             }
                         }
