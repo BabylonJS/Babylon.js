@@ -91,6 +91,8 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                 this.onTouch(null, offsetX, offsetY);
                 this._pointA = null;
                 this._pointB = null;
+            } else if (p.type !== PointerEventTypes.POINTERDOWN && isTouch && this._pointA?.pointerId !== evt.pointerId && this._pointB?.pointerId !== evt.pointerId) {
+                return; // If we get a non-down event for a touch that we're not tracking, ignore it
             } else if (p.type === PointerEventTypes.POINTERDOWN && (this._currentActiveButton === -1 || isTouch)) {
                 try {
                     srcElement?.setPointerCapture(evt.pointerId);
@@ -112,6 +114,8 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                         pointerId: evt.pointerId,
                         type: evt.pointerType,
                     };
+                } else {
+                    return; // We are already tracking two pointers so ignore this one
                 }
 
                 if (this._currentActiveButton === -1 && !isTouch) {
