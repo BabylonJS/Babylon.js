@@ -120,9 +120,8 @@ export class AssetContainer extends AbstractScene {
      * Given a list of nodes, return a topological sorting of them.
      * @param nodes
      */
-    private _topologicalSort(nodes: Node[]) {
-        // const nodesUIdSet = new Set(nodes.map((n) => n.uniqueId));
-        const nodesUidMap = new Map<number, Node>();
+    private _topologicalSort(nodes: TransformNode[]): TransformNode[] {
+        const nodesUidMap = new Map<number, TransformNode>();
 
         for (const node of nodes) {
             nodesUidMap.set(node.uniqueId, node);
@@ -171,11 +170,10 @@ export class AssetContainer extends AbstractScene {
         }
 
         // Third pass: Topological sort
-        const sortedNodes: Node[] = [];
-        const nodesMarkedForVisit = new Set<number>();
+        const sortedNodes: TransformNode[] = [];
 
         // First: Find all nodes that have no dependencies
-        const leaves: Node[] = [];
+        const leaves: TransformNode[] = [];
         for (const node of nodes) {
             const nodeId = node.uniqueId;
             if (dependencyGraph.dependsOn.get(nodeId)!.size === 0) {
@@ -185,7 +183,7 @@ export class AssetContainer extends AbstractScene {
 
         const visitList = leaves;
         while (visitList.length > 0) {
-            const nodeToVisit = visitList.splice(0, 1)[0];
+            const nodeToVisit = visitList.shift()!;
 
             sortedNodes.push(nodeToVisit);
 
@@ -197,18 +195,23 @@ export class AssetContainer extends AbstractScene {
                 const dependsOnDependedByVisitedNode = dependencyGraph.dependsOn.get(dependedByVisitedNodeId)!;
                 dependsOnDependedByVisitedNode.delete(nodeToVisit.uniqueId);
 
-                if (dependsOnDependedByVisitedNode.size === 0 && !nodesMarkedForVisit.has(dependedByVisitedNodeId)) {
+                if (dependsOnDependedByVisitedNode.size === 0 && nodesUidMap.get(dependedByVisitedNodeId)) {
                     visitList.push(nodesUidMap.get(dependedByVisitedNodeId)!);
-                    nodesMarkedForVisit.add(dependedByVisitedNodeId);
+                    nodesUidMap.delete(dependedByVisitedNodeId);
                 }
             }
+        }
+
+        if (nodesUidMap.size > 0) {
+            console.error("SceneSerializer._topologicalSort: There were unvisited nodes:");
+            nodesUidMap.forEach((node) => console.error(node.name));
         }
 
         return sortedNodes;
     }
 
     private _addNodeAndDescendantsToList(list: Node[], addedIds: Set<number>, rootNode: Node, predicate?: (entity: any) => boolean) {
-        if ((predicate && predicate(rootNode)) || addedIds.has(rootNode.uniqueId)) {
+        if ((predicate && !predicate(rootNode)) || addedIds.has(rootNode.uniqueId)) {
             return;
         }
 
@@ -277,7 +280,7 @@ export class AssetContainer extends AbstractScene {
             }
         };
 
-        const nodesToSort: Node[] = [];
+        const nodesToSort: TransformNode[] = [];
         const idsOnSortList = new Set<number>();
 
         for (const transformNode of this.transformNodes) {
@@ -310,9 +313,9 @@ export class AssetContainer extends AbstractScene {
                 }
             }
 
-            clone.position = source.position.clone();
-            clone.rotation = source.rotation.clone();
-            clone.scaling = source.scaling.clone();
+            clone.position = source.position;
+            clone.rotation = source.rotation;
+            clone.scaling = source.scaling;
 
             if ((clone as any).material) {
                 const mesh = clone as AbstractMesh;
@@ -371,18 +374,18 @@ export class AssetContainer extends AbstractScene {
                 const instancedNode = node as InstancedMesh;
                 const sourceMesh = instancedNode.sourceMesh;
                 const replicatedSourceId = conversionMap[sourceMesh.uniqueId];
-                const replicatedSource = replicatedSourceId ? storeMap[replicatedSourceId] : sourceMesh;
+                const replicatedSource = replicatedSourceId !== undefined ? storeMap[replicatedSourceId] : sourceMesh;
                 const replicatedInstancedNode = replicatedSource.createInstance(instancedNode.name);
                 onNewCreated(instancedNode, replicatedInstancedNode);
             } else {
                 // Mesh or TransformNode
                 const canInstance = !options?.doNotInstantiate && node.getClassName() === "Mesh" && (node as Mesh).getTotalVertices() > 0;
-                const replicatedNode = canInstance ? (node as Mesh).createInstance(node.name) : (node as TransformNode).clone(node.name, null, true);
+                const replicatedNode = canInstance ? (node as Mesh).createInstance(node.name) : node.clone(node.name, null, true);
                 if (!replicatedNode) {
                     console.error("Could not clone or instantiate node on Asset Container", node.name);
                     return;
                 }
-                onNewCreated(node as TransformNode, replicatedNode as TransformNode);
+                onNewCreated(node, replicatedNode);
             }
         });
 
