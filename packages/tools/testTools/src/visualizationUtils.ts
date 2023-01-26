@@ -232,11 +232,16 @@ export const evaluateRenderSceneForVisualization = async (renderCount: number) =
             if (window.scene.activeCamera && (window.scene.activeCamera as any).useAutoRotationBehavior) {
                 (window.scene.activeCamera as any).useAutoRotationBehavior = false;
             }
+            const sceneAdts: any[] = window.scene!.textures.filter((t) => t.getClassName() === "AdvancedDynamicTexture");
+            const adtsAreReady = () => {
+                return sceneAdts.every((adt: any) => adt.guiIsReady());
+            };
+            console.log("scene adts", sceneAdts);
             window.engine.runRenderLoop(function () {
                 try {
-                    if (renderCount === 0) {
+                    if (renderCount <= 0 && adtsAreReady()) {
                         if (window.scene!.isReady()) {
-                            window.engine && window.engine.stopRenderLoop();
+                            // alert("Resolve! scene adt bvs is ready " + sceneAdts[0]!.guiIsReady());
                             return resolve(true);
                         } else {
                             console.error("Scene is not ready after rendering is done");

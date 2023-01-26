@@ -2585,5 +2585,14 @@ export class Control implements IAnimatable {
         context.scale(1 / width, 1 / height);
         context.translate(-x, -y);
     }
+
+    /**
+     * Returns true if the control is ready to be used
+     * @returns
+     */
+    public isReady(): boolean {
+        // Most controls are ready by default, so the default implementation is to return true
+        return true;
+    }
 }
 RegisterClass("BABYLON.GUI.Control", Control);

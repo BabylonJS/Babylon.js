@@ -670,5 +670,15 @@ export class Container extends Control {
             this.addControl(Control.Parse(childData, host));
         }
     }
+
+    public isReady(): boolean {
+        for (const child of this.children) {
+            if (!child.isReady()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }
 RegisterClass("BABYLON.GUI.Container", Container);

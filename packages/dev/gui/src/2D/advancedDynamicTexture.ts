@@ -47,6 +47,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     /** Snippet ID if the content was created from the snippet server */
     public snippetId: string;
 
+    /** Observable that fires when the GUI is ready */
+    public onGuiReadyObservable = new Observable<AdvancedDynamicTexture>();
+
     private _isDirty = false;
     private _renderObserver: Nullable<Observer<Camera>>;
     private _resizeObserver: Nullable<Observer<Engine>>;
@@ -735,6 +738,10 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         const context = this.getContext();
         context.font = "18px Arial";
         context.strokeStyle = "white";
+
+        if (this.onGuiReadyObservable.hasObservers()) {
+            this._checkGuiIsReady();
+        }
 
         /** We have to recheck the camera projection in the case the root control's children have changed  */
         if (this._rootChildrenHaveChanged) {
@@ -1515,5 +1522,21 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     public scaleTo(width: number, height: number): void {
         super.scaleTo(width, height);
         this.markAsDirty();
+    }
+
+    private _checkGuiIsReady() {
+        if (this.guiIsReady()) {
+            this.onGuiReadyObservable.notifyObservers(this);
+
+            this.onGuiReadyObservable.clear();
+        }
+    }
+
+    /**
+     * Returns true if all the GUI components are ready to render
+     */
+    public guiIsReady(): boolean {
+        debugger;
+        return this._rootContainer.isReady();
     }
 }
