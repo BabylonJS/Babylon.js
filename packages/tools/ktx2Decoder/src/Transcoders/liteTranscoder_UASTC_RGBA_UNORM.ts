@@ -1,4 +1,5 @@
-import { sourceTextureFormat, transcodeTarget } from "../transcoder";
+import * as KTX2 from "core/Materials/Textures/ktx2decoderTypes";
+
 import { LiteTranscoder } from "./liteTranscoder";
 import type { KTX2FileReader, IKTX2_ImageDesc } from "../ktx2FileReader";
 
@@ -12,8 +13,8 @@ export class LiteTranscoder_UASTC_RGBA_UNORM extends LiteTranscoder {
      */
     public static WasmModuleURL = "https://preview.babylonjs.com/ktx2Transcoders/1/uastc_rgba8_unorm_v2.wasm";
 
-    public static CanTranscode(src: sourceTextureFormat, dst: transcodeTarget, isInGammaSpace: boolean): boolean {
-        return src === sourceTextureFormat.UASTC4x4 && dst === transcodeTarget.RGBA32 && !isInGammaSpace;
+    public static CanTranscode(src: KTX2.SourceTextureFormat, dst: KTX2.TranscodeTarget, isInGammaSpace: boolean): boolean {
+        return src === KTX2.SourceTextureFormat.UASTC4x4 && dst === KTX2.TranscodeTarget.RGBA32 && !isInGammaSpace;
     }
 
     public static Name = "UniversalTranscoder_UASTC_RGBA_UNORM";
@@ -29,8 +30,8 @@ export class LiteTranscoder_UASTC_RGBA_UNORM extends LiteTranscoder {
     }
 
     public transcode(
-        src: sourceTextureFormat,
-        dst: transcodeTarget,
+        src: KTX2.SourceTextureFormat,
+        dst: KTX2.TranscodeTarget,
         level: number,
         width: number,
         height: number,
