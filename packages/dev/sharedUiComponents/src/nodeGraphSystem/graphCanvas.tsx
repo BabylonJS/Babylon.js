@@ -20,6 +20,7 @@ import commonStyles from "./common.modules.scss";
 
 import { TypeLedger } from "./typeLedger";
 import { RefreshNode } from "./tools";
+import { SearchBoxComponent } from "./searchBox";
 
 export interface IGraphCanvasComponentProps {
     stateManager: StateManager;
@@ -349,6 +350,11 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         dataGenerator: (nodeData: INodeData) => any,
         rootElement: HTMLDivElement
     ) {
+        if (evt.code === "Space") {
+            this.stateManager.modalIsDisplayed = true;
+            this.props.stateManager.onSearchBoxRequiredObservable.notifyObservers();
+            return;
+        }
         if ((evt.keyCode === 46 || evt.keyCode === 8) && !this.props.stateManager.lockObject.lock) {
             // Delete
             const selectedItems = this.selectedNodes;
@@ -844,6 +850,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     }
 
     onMove(evt: React.PointerEvent) {
+        if (this.stateManager.modalIsDisplayed) {
+            return;
+        }
+
         // Selection box
         if (this._selectionBox) {
             const rootRect = this.canvasContainer.getBoundingClientRect();
@@ -951,6 +961,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     }
 
     onDown(evt: React.PointerEvent<HTMLElement>) {
+        if (this.stateManager.modalIsDisplayed) {
+            return;
+        }
+
         this._rootContainer.setPointerCapture(evt.pointerId);
 
         // Port dragging
@@ -1029,6 +1043,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     }
 
     onUp(evt: React.PointerEvent) {
+        if (this.stateManager.modalIsDisplayed) {
+            return;
+        }
+
         this._mouseStartPointX = null;
         this._mouseStartPointY = null;
         this._rootContainer.releasePointerCapture(evt.pointerId);
@@ -1076,6 +1094,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     }
 
     onWheel(evt: React.WheelEvent) {
+        if (this.stateManager.modalIsDisplayed) {
+            return;
+        }
+
         const delta = evt.deltaY < 0 ? 0.1 : -0.1;
 
         const oldZoom = this.zoom;
@@ -1387,8 +1409,9 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                     <div id="graph-canvas-container" className={styles["graph-canvas-container"]} ref={this._graphCanvasRef}></div>
                     <div id="frame-container" className={styles["frame-container"]} ref={this._frameContainerRef}></div>
                     <svg id="graph-svg-container" className={styles["graph-svg-container"]} ref={this._svgCanvasRef}></svg>
-                    <div id="selection-container" className={styles["selection-container"]} ref={this._selectionContainerRef}></div>
+                    <div id="selection-container" className={styles["selection-container"]} ref={this._selectionContainerRef}></div>                    
                 </div>
+                <SearchBoxComponent stateManager={this.stateManager}/>
             </div>
         );
     }

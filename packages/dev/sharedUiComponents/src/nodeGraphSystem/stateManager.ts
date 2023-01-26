@@ -14,7 +14,9 @@ export class StateManager {
     data: any;
     hostDocument: Document;
     lockObject: any;
+    modalIsDisplayed: boolean;
 
+    onSearchBoxRequiredObservable = new Observable<Nullable<void>>();
     onSelectionChangedObservable = new Observable<Nullable<ISelectionChangedOptions>>();
     onFrameCreatedObservable = new Observable<GraphFrame>();
     onUpdateRequiredObservable = new Observable<Nullable<any>>();
