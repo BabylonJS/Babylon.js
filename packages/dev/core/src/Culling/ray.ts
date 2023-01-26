@@ -1,7 +1,7 @@
 import type { DeepImmutable, Nullable, float } from "../types";
 import { ArrayTools } from "../Misc/arrayTools";
 import { Matrix, Vector3, TmpVectors } from "../Maths/math.vector";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { AbstractMesh } from "../Meshes/abstractMesh";
 import { PickingInfo } from "../Collisions/pickingInfo";
 import { IntersectionInfo } from "../Collisions/intersectionInfo";
 import type { BoundingBox } from "./boundingBox";
@@ -787,6 +787,12 @@ Scene.prototype._internalPick = function (
 ): PickingInfo {
     let pickingInfo = null;
 
+    let oldCamera = null;
+    if (this.activeCamera !== this.cameraToUseForPointers) {
+        oldCamera = this.activeCamera;
+        this._activeCamera = this.cameraToUseForPointers;
+    }
+
     for (let meshIndex = 0; meshIndex < this.meshes.length; meshIndex++) {
         const mesh = this.meshes[meshIndex];
 
@@ -798,7 +804,8 @@ Scene.prototype._internalPick = function (
             continue;
         }
 
-        const world = mesh.getWorldMatrix();
+        const forceCompute: boolean = !!(mesh.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE && this.activeCameras && this.activeCameras.length > 1);
+        const world = mesh.computeWorldMatrix(forceCompute);
 
         if (mesh.hasThinInstances && (mesh as Mesh).thinInstanceEnablePicking) {
             // first check if the ray intersects the whole bounding box/sphere of the mesh
@@ -836,6 +843,10 @@ Scene.prototype._internalPick = function (
                 }
             }
         }
+    }
+
+    if (oldCamera) {
+        this._activeCamera = oldCamera;
     }
 
     return pickingInfo || new PickingInfo();
