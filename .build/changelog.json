@@ -1,6 +1,42 @@
 {
-    "fromTag": "5.43.1",
+    "fromTag": "5.43.2",
     "changelog": {
+        "5.44.0": [
+            {
+                "pr": "13466",
+                "title": "InputManager: Fix for POINTERTAP firing during multi-touch gesture",
+                "description": "A user found an issue on the forum where a POINTERTAP event was being fired after a pinch.  This issue appears to have been caused by code to check for swiping that didn't account for multi-touch.  This PR will fix that logic by checking if at any point from an initial touch to the last touch to be released in an interaction, there were multiple touches active.  If so, no TAPs will occur.  Furthermore, a test has been added to check for changes to this in the future.\r\n\r\nForum Post: https://forum.babylonjs.com/t/unexpected-pointertap-firing-in-touchscreen-when-zooming-by-two-finger-movement/36922",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Inputs/scene.inputManager.ts",
+                    "packages/dev/core/test/unit/DeviceInput/babylon.inputManager.test.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inputs"
+                ]
+            },
+            {
+                "pr": "13468",
+                "title": "BaseCameraPointerInputs: Fixed logic to ignore extra touches",
+                "description": "Recently, a forum user found that if a third touch occurred while there were two active ones, it could affect the pinching gesture.  This PR fixes this issue for all inputs that inherit from BaseCameraPointerInputs.  Addtionally, a test was added to verify this change for the ArcRotateCamera.\r\n\r\nForum Post: https://forum.babylonjs.com/t/basecamerapointersinput-doesnt-handle-3-touch-points-well/37604",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/Inputs/BaseCameraPointersInput.ts",
+                    "packages/dev/core/test/unit/Cameras/babylon.arcRotateCameraInputs.test.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inputs"
+                ]
+            }
+        ],
         "5.43.2": [
             {
                 "pr": "13465",
