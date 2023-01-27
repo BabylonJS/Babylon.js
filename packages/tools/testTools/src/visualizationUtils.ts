@@ -241,6 +241,7 @@ export const evaluateRenderSceneForVisualization = async (renderCount: number) =
                 try {
                     if (renderCount <= 0 && renderAfterGuiIsReadyCount <= 0) {
                         if (window.scene!.isReady()) {
+                            window.engine && window.engine.stopRenderLoop();
                             return resolve(true);
                         } else {
                             console.error("Scene is not ready after rendering is done");
