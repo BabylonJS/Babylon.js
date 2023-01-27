@@ -178,6 +178,7 @@ export class AssetContainer extends AbstractScene {
             const nodeId = node.uniqueId;
             if (dependencyGraph.dependsOn.get(nodeId)!.size === 0) {
                 leaves.push(node);
+                nodesUidMap.delete(nodeId);
             }
         }
 
@@ -379,7 +380,7 @@ export class AssetContainer extends AbstractScene {
                 onNewCreated(instancedNode, replicatedInstancedNode);
             } else {
                 // Mesh or TransformNode
-                const canInstance = !options?.doNotInstantiate && node.getClassName() === "Mesh" && (node as Mesh).getTotalVertices() > 0;
+                const canInstance = !options?.doNotInstantiate && (node as Mesh)._isMesh;
                 const replicatedNode = canInstance ? (node as Mesh).createInstance(node.name) : node.clone(node.name, null, true);
                 if (!replicatedNode) {
                     console.error("Could not clone or instantiate node on Asset Container", node.name);
@@ -484,7 +485,7 @@ export class AssetContainer extends AbstractScene {
             if (predicate && !predicate(o)) {
                 return;
             }
-            this.scene.addMesh(o, true);
+            this.scene.addMesh(o);
         });
         this.skeletons.forEach((o) => {
             if (predicate && !predicate(o)) {
@@ -592,7 +593,7 @@ export class AssetContainer extends AbstractScene {
             if (predicate && !predicate(o)) {
                 return;
             }
-            this.scene.removeMesh(o, true);
+            this.scene.removeMesh(o);
         });
         this.skeletons.forEach((o) => {
             if (predicate && !predicate(o)) {
