@@ -81,6 +81,10 @@ export class Image extends Control {
         return this._loaded;
     }
 
+    public isReady(): boolean {
+        return this.isLoaded;
+    }
+
     /**
      * Gets or sets a boolean indicating if pointers should only be validated on pixels with alpha > 0.
      * Beware using this as this will consume more memory as the image has to be stored twice
