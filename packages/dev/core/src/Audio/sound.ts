@@ -875,6 +875,8 @@ export class Sound {
 
     private _onended() {
         this.isPlaying = false;
+        this._startTime = 0;
+        this._currentTime = 0;
         if (this.onended) {
             this.onended();
         }
