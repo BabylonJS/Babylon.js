@@ -1035,9 +1035,10 @@ export class Vector3 {
      * @returns the current updated Vector3
      */
     public addInPlaceFromFloats(x: number, y: number, z: number): this {
-        this.x += x;
-        this.y += y;
-        this.z += z;
+        this._x += x;
+        this._y += y;
+        this._z += z;
+        this._isDirty = true;
         return this;
     }
 
@@ -1069,9 +1070,10 @@ export class Vector3 {
      * @returns the current updated Vector3
      */
     public subtractInPlace(otherVector: DeepImmutable<Vector3>): this {
-        this.x -= otherVector._x;
-        this.y -= otherVector._y;
-        this.z -= otherVector._z;
+        this._x -= otherVector._x;
+        this._y -= otherVector._y;
+        this._z -= otherVector._z;
+        this._isDirty = true;
         return this;
     }
 
@@ -1136,9 +1138,10 @@ export class Vector3 {
      * @returns this
      */
     public negateInPlace(): this {
-        this.x *= -1;
-        this.y *= -1;
-        this.z *= -1;
+        this._x *= -1;
+        this._y *= -1;
+        this._z *= -1;
+        this._isDirty = true;
         return this;
     }
 
@@ -1159,9 +1162,10 @@ export class Vector3 {
      * @returns the current updated Vector3
      */
     public scaleInPlace(scale: number): this {
-        this.x *= scale;
-        this.y *= scale;
-        this.z *= scale;
+        this._x *= scale;
+        this._y *= scale;
+        this._z *= scale;
+        this._isDirty = true;
         return this;
     }
 
@@ -1227,15 +1231,16 @@ export class Vector3 {
      * @returns the result
      */
     public applyRotationQuaternionToRef<T extends Vector3>(q: Quaternion, result: T): T {
-        const ix = q.w * this.x + q.y * this.z - q.z * this.y;
-        const iy = q.w * this.y + q.z * this.x - q.x * this.z;
-        const iz = q.w * this.z + q.x * this.y - q.y * this.x;
-        const iw = -q.x * this.x - q.y * this.y - q.z * this.z;
+        const ix = q._w * this._x + q._y * this._z - q._z * this._y;
+        const iy = q._w * this._y + q._z * this._x - q._x * this._z;
+        const iz = q._w * this._z + q._x * this._y - q._y * this._x;
+        const iw = -q._x * this._x - q._y * this._y - q._z * this._z;
 
-        result.x = ix * q.w + iw * -q.x + iy * -q.z - iz * -q.y;
-        result.y = iy * q.w + iw * -q.y + iz * -q.x - ix * -q.z;
-        result.z = iz * q.w + iw * -q.z + ix * -q.y - iy * -q.x;
+        result._x = ix * q._w + iw * -q._x + iy * -q._z - iz * -q._y;
+        result._y = iy * q._w + iw * -q._y + iz * -q._x - ix * -q._z;
+        result._z = iz * q._w + iw * -q._z + ix * -q._y - iy * -q._x;
 
+        result._isDirty = true;
         return result;
     }
 
@@ -1364,9 +1369,10 @@ export class Vector3 {
      * @returns the current updated Vector3
      */
     public multiplyInPlace(otherVector: DeepImmutable<Vector3>): this {
-        this.x *= otherVector._x;
-        this.y *= otherVector._y;
-        this.z *= otherVector._z;
+        this._x *= otherVector._x;
+        this._y *= otherVector._y;
+        this._z *= otherVector._z;
+        this._isDirty = true;
         return this;
     }
 
@@ -1721,9 +1727,10 @@ export class Vector3 {
      * @returns the current updated Vector3
      */
     public copyFromFloats(x: number, y: number, z: number): this {
-        this.x = x;
-        this.y = y;
-        this.z = z;
+        this._x = x;
+        this._y = y;
+        this._z = z;
+        this._isDirty = true;
         return this;
     }
 
@@ -1746,7 +1753,8 @@ export class Vector3 {
      * @returns the current updated Vector3
      */
     public setAll(v: number): this {
-        this.x = this.y = this.z = v;
+        this._x = this._y = this._z = v;
+        this._isDirty = true;
         return this;
     }
 
@@ -1836,9 +1844,10 @@ export class Vector3 {
     public static PitchYawRollToMoveBetweenPointsToRef<T extends Vector3>(start: Vector3, target: Vector3, ref: T): T {
         const diff = TmpVectors.Vector3[0];
         target.subtractToRef(start, diff);
-        ref.y = Math.atan2(diff.x, diff.z) || 0;
-        ref.x = Math.atan2(Math.sqrt(diff.x ** 2 + diff.z ** 2), diff.y) || 0;
-        ref.z = 0;
+        ref._y = Math.atan2(diff.x, diff.z) || 0;
+        ref._x = Math.atan2(Math.sqrt(diff.x ** 2 + diff.z ** 2), diff.y) || 0;
+        ref._z = 0;
+        ref._isDirty = true;
         return ref;
     }
 
@@ -1946,9 +1955,10 @@ export class Vector3 {
      * @returns result input
      */
     public static FromArrayToRef<T extends Vector3>(array: DeepImmutable<ArrayLike<number>>, offset: number, result: T): T {
-        result.x = array[offset];
-        result.y = array[offset + 1];
-        result.z = array[offset + 2];
+        result._x = array[offset];
+        result._y = array[offset + 1];
+        result._z = array[offset + 2];
+        result._isDirty = true;
         return result;
     }
 
@@ -2137,9 +2147,10 @@ export class Vector3 {
         const rz = x * m[2] + y * m[6] + z * m[10] + m[14];
         const rw = 1 / (x * m[3] + y * m[7] + z * m[11] + m[15]);
 
-        result.x = rx * rw;
-        result.y = ry * rw;
-        result.z = rz * rw;
+        result._x = rx * rw;
+        result._y = ry * rw;
+        result._z = rz * rw;
+        result._isDirty = true;
         return result;
     }
 
@@ -2184,9 +2195,10 @@ export class Vector3 {
      */
     public static TransformNormalFromFloatsToRef<T extends Vector3>(x: number, y: number, z: number, transformation: DeepImmutable<Matrix>, result: T): T {
         const m = transformation.m;
-        result.x = x * m[0] + y * m[4] + z * m[8];
-        result.y = x * m[1] + y * m[5] + z * m[9];
-        result.z = x * m[2] + y * m[6] + z * m[10];
+        result._x = x * m[0] + y * m[4] + z * m[8];
+        result._y = x * m[1] + y * m[5] + z * m[9];
+        result._z = x * m[2] + y * m[6] + z * m[10];
+        result._isDirty = true;
         return result;
     }
 
@@ -2364,9 +2376,10 @@ export class Vector3 {
     ): T {
         const t2 = time * time;
 
-        result.x = (t2 - time) * 6 * value1.x + (3 * t2 - 4 * time + 1) * tangent1.x + (-t2 + time) * 6 * value2.x + (3 * t2 - 2 * time) * tangent2.x;
-        result.y = (t2 - time) * 6 * value1.y + (3 * t2 - 4 * time + 1) * tangent1.y + (-t2 + time) * 6 * value2.y + (3 * t2 - 2 * time) * tangent2.y;
-        result.z = (t2 - time) * 6 * value1.z + (3 * t2 - 4 * time + 1) * tangent1.z + (-t2 + time) * 6 * value2.z + (3 * t2 - 2 * time) * tangent2.z;
+        result._x = (t2 - time) * 6 * value1._x + (3 * t2 - 4 * time + 1) * tangent1._x + (-t2 + time) * 6 * value2._x + (3 * t2 - 2 * time) * tangent2._x;
+        result._y = (t2 - time) * 6 * value1._y + (3 * t2 - 4 * time + 1) * tangent1._y + (-t2 + time) * 6 * value2._y + (3 * t2 - 2 * time) * tangent2._y;
+        result._z = (t2 - time) * 6 * value1._z + (3 * t2 - 4 * time + 1) * tangent1._z + (-t2 + time) * 6 * value2._z + (3 * t2 - 2 * time) * tangent2._z;
+        result._isDirty = true;
         return result;
     }
 
@@ -2394,9 +2407,10 @@ export class Vector3 {
      * @returns result input
      */
     public static LerpToRef<T extends Vector3>(start: DeepImmutable<Vector3>, end: DeepImmutable<Vector3>, amount: number, result: T): T {
-        result.x = start._x + (end._x - start._x) * amount;
-        result.y = start._y + (end._y - start._y) * amount;
-        result.z = start._z + (end._z - start._z) * amount;
+        result._x = start._x + (end._x - start._x) * amount;
+        result._y = start._y + (end._y - start._y) * amount;
+        result._z = start._z + (end._z - start._z) * amount;
+        result._isDirty = true;
         return result;
     }
 
@@ -3892,10 +3906,10 @@ export class Quaternion {
      * @returns the current Quaternion object
      */
     public toArray(array: FloatArray, index: number = 0): Quaternion {
-        array[index] = this.x;
-        array[index + 1] = this.y;
-        array[index + 2] = this.z;
-        array[index + 3] = this.w;
+        array[index] = this._x;
+        array[index + 1] = this._y;
+        array[index + 2] = this._z;
+        array[index + 3] = this._w;
         return this;
     }
 
@@ -3942,10 +3956,11 @@ export class Quaternion {
      * @returns the updated current quaternion
      */
     public copyFrom(other: DeepImmutable<Quaternion>): this {
-        this.x = other._x;
-        this.y = other._y;
-        this.z = other._z;
-        this.w = other._w;
+        this._x = other._x;
+        this._y = other._y;
+        this._z = other._z;
+        this._w = other._w;
+        this._isDirty = true;
         return this;
     }
 
@@ -3959,10 +3974,11 @@ export class Quaternion {
      * @returns the updated current quaternion
      */
     public copyFromFloats(x: number, y: number, z: number, w: number): this {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.w = w;
+        this._x = x;
+        this._y = y;
+        this._z = z;
+        this._w = w;
+        this._isDirty = true;
         return this;
     }
 
@@ -4000,6 +4016,7 @@ export class Quaternion {
         this._y += other._y;
         this._z += other._z;
         this._w += other._w;
+        this._isDirty = true;
         return this;
     }
 
@@ -4024,6 +4041,7 @@ export class Quaternion {
         this._y -= other._y;
         this._z -= other._z;
         this._w -= other._w;
+        this._isDirty = true;
         return this;
     }
 
@@ -4045,10 +4063,11 @@ export class Quaternion {
      * @returns result input
      */
     public scaleToRef<T extends Quaternion>(scale: number, result: T): T {
-        result.x = this._x * scale;
-        result.y = this._y * scale;
-        result.z = this._z * scale;
-        result.w = this._w * scale;
+        result._x = this._x * scale;
+        result._y = this._y * scale;
+        result._z = this._z * scale;
+        result._w = this._w * scale;
+        result._isDirty = true;
         return result;
     }
 
@@ -4059,10 +4078,11 @@ export class Quaternion {
      * @returns the current modified quaternion
      */
     public scaleInPlace(value: number): this {
-        this.x *= value;
-        this.y *= value;
-        this.z *= value;
-        this.w *= value;
+        this._x *= value;
+        this._y *= value;
+        this._z *= value;
+        this._w *= value;
+        this._isDirty = true;
 
         return this;
     }
@@ -4075,10 +4095,11 @@ export class Quaternion {
      * @returns result input
      */
     public scaleAndAddToRef<T extends Quaternion>(scale: number, result: T): T {
-        result.x += this._x * scale;
-        result.y += this._y * scale;
-        result.z += this._z * scale;
-        result.w += this._w * scale;
+        result._x += this._x * scale;
+        result._y += this._y * scale;
+        result._z += this._z * scale;
+        result._w += this._w * scale;
+        result._isDirty = true;
         return result;
     }
 
@@ -4138,9 +4159,10 @@ export class Quaternion {
      * @returns the current updated quaternion
      */
     public conjugateInPlace(): this {
-        this.x *= -1;
-        this.y *= -1;
-        this.z *= -1;
+        this._x *= -1;
+        this._y *= -1;
+        this._z *= -1;
+        this._isDirty = true;
         return this;
     }
 
@@ -4261,21 +4283,24 @@ export class Quaternion {
         const limit = 0.4999999;
 
         if (zAxisY < -limit) {
-            result.y = 2 * Math.atan2(qy, qw);
-            result.x = Math.PI / 2;
-            result.z = 0;
+            result._y = 2 * Math.atan2(qy, qw);
+            result._x = Math.PI / 2;
+            result._z = 0;
+            result._isDirty = true;
         } else if (zAxisY > limit) {
-            result.y = 2 * Math.atan2(qy, qw);
-            result.x = -Math.PI / 2;
-            result.z = 0;
+            result._y = 2 * Math.atan2(qy, qw);
+            result._x = -Math.PI / 2;
+            result._z = 0;
+            result._isDirty = true;
         } else {
             const sqw = qw * qw;
             const sqz = qz * qz;
             const sqx = qx * qx;
             const sqy = qy * qy;
-            result.z = Math.atan2(2.0 * (qx * qy + qz * qw), -sqz - sqx + sqy + sqw);
-            result.x = Math.asin(-2.0 * zAxisY);
-            result.y = Math.atan2(2.0 * (qz * qx + qy * qw), sqz - sqx - sqy + sqw);
+            result._z = Math.atan2(2.0 * (qx * qy + qz * qw), -sqz - sqx + sqy + sqw);
+            result._x = Math.asin(-2.0 * zAxisY);
+            result._y = Math.atan2(2.0 * (qz * qx + qy * qw), sqz - sqx - sqy + sqw);
+            result._isDirty = true;
         }
 
         return result;
@@ -4341,31 +4366,35 @@ export class Quaternion {
         if (trace > 0) {
             s = 0.5 / Math.sqrt(trace + 1.0);
 
-            result.w = 0.25 / s;
-            result.x = (m32 - m23) * s;
-            result.y = (m13 - m31) * s;
-            result.z = (m21 - m12) * s;
+            result._w = 0.25 / s;
+            result._x = (m32 - m23) * s;
+            result._y = (m13 - m31) * s;
+            result._z = (m21 - m12) * s;
+            result._isDirty = true;
         } else if (m11 > m22 && m11 > m33) {
             s = 2.0 * Math.sqrt(1.0 + m11 - m22 - m33);
 
-            result.w = (m32 - m23) / s;
-            result.x = 0.25 * s;
-            result.y = (m12 + m21) / s;
-            result.z = (m13 + m31) / s;
+            result._w = (m32 - m23) / s;
+            result._x = 0.25 * s;
+            result._y = (m12 + m21) / s;
+            result._z = (m13 + m31) / s;
+            result._isDirty = true;
         } else if (m22 > m33) {
             s = 2.0 * Math.sqrt(1.0 + m22 - m11 - m33);
 
-            result.w = (m13 - m31) / s;
-            result.x = (m12 + m21) / s;
-            result.y = 0.25 * s;
-            result.z = (m23 + m32) / s;
+            result._w = (m13 - m31) / s;
+            result._x = (m12 + m21) / s;
+            result._y = 0.25 * s;
+            result._z = (m23 + m32) / s;
+            result._isDirty = true;
         } else {
             s = 2.0 * Math.sqrt(1.0 + m33 - m11 - m22);
 
-            result.w = (m21 - m12) / s;
-            result.x = (m13 + m31) / s;
-            result.y = (m23 + m32) / s;
-            result.z = 0.25 * s;
+            result._w = (m21 - m12) / s;
+            result._x = (m13 + m31) / s;
+            result._y = (m23 + m32) / s;
+            result._z = 0.25 * s;
+            result._isDirty = true;
         }
         return result;
     }
@@ -4481,10 +4510,11 @@ export class Quaternion {
     public static RotationAxisToRef<T extends Quaternion>(axis: DeepImmutable<Vector3>, angle: number, result: T): T {
         const sin = Math.sin(angle / 2);
         axis.normalize();
-        result.w = Math.cos(angle / 2);
-        result.x = axis._x * sin;
-        result.y = axis._y * sin;
-        result.z = axis._z * sin;
+        result._w = Math.cos(angle / 2);
+        result._x = axis._x * sin;
+        result._y = axis._y * sin;
+        result._z = axis._z * sin;
+        result._isDirty = true;
         return result;
     }
 
@@ -4511,10 +4541,11 @@ export class Quaternion {
      * @returns result input
      */
     public static FromArrayToRef<T extends Quaternion>(array: DeepImmutable<ArrayLike<number>>, offset: number, result: T): T {
-        result.x = array[offset];
-        result.y = array[offset + 1];
-        result.z = array[offset + 2];
-        result.w = array[offset + 3];
+        result._x = array[offset];
+        result._y = array[offset + 1];
+        result._z = array[offset + 2];
+        result._w = array[offset + 3];
+        result._isDirty = true;
         return result;
     }
 
@@ -4631,10 +4662,11 @@ export class Quaternion {
         const sinYaw = Math.sin(halfYaw);
         const cosYaw = Math.cos(halfYaw);
 
-        result.x = cosYaw * sinPitch * cosRoll + sinYaw * cosPitch * sinRoll;
-        result.y = sinYaw * cosPitch * cosRoll - cosYaw * sinPitch * sinRoll;
-        result.z = cosYaw * cosPitch * sinRoll - sinYaw * sinPitch * cosRoll;
-        result.w = cosYaw * cosPitch * cosRoll + sinYaw * sinPitch * sinRoll;
+        result._x = cosYaw * sinPitch * cosRoll + sinYaw * cosPitch * sinRoll;
+        result._y = sinYaw * cosPitch * cosRoll - cosYaw * sinPitch * sinRoll;
+        result._z = cosYaw * cosPitch * sinRoll - sinYaw * sinPitch * cosRoll;
+        result._w = cosYaw * cosPitch * cosRoll + sinYaw * sinPitch * sinRoll;
+        result._isDirty = true;
         return result;
     }
 
@@ -4667,10 +4699,11 @@ export class Quaternion {
         const halfGammaMinusAlpha = (gamma - alpha) * 0.5;
         const halfBeta = beta * 0.5;
 
-        result.x = Math.cos(halfGammaMinusAlpha) * Math.sin(halfBeta);
-        result.y = Math.sin(halfGammaMinusAlpha) * Math.sin(halfBeta);
-        result.z = Math.sin(halfGammaPlusAlpha) * Math.cos(halfBeta);
-        result.w = Math.cos(halfGammaPlusAlpha) * Math.cos(halfBeta);
+        result._x = Math.cos(halfGammaMinusAlpha) * Math.sin(halfBeta);
+        result._y = Math.sin(halfGammaMinusAlpha) * Math.sin(halfBeta);
+        result._z = Math.sin(halfGammaPlusAlpha) * Math.cos(halfBeta);
+        result._w = Math.cos(halfGammaPlusAlpha) * Math.cos(halfBeta);
+        result._isDirty = true;
         return result;
     }
 
@@ -4809,10 +4842,11 @@ export class Quaternion {
             num2 = flag ? -Math.sin(amount * num5) * num6 : Math.sin(amount * num5) * num6;
         }
 
-        result.x = num3 * left._x + num2 * right._x;
-        result.y = num3 * left._y + num2 * right._y;
-        result.z = num3 * left._z + num2 * right._z;
-        result.w = num3 * left._w + num2 * right._w;
+        result._x = num3 * left._x + num2 * right._x;
+        result._y = num3 * left._y + num2 * right._y;
+        result._z = num3 * left._z + num2 * right._z;
+        result._w = num3 * left._w + num2 * right._w;
+        result._isDirty = true;
         return result;
     }
 
@@ -4893,10 +4927,11 @@ export class Quaternion {
     ): T {
         const t2 = time * time;
 
-        result.x = (t2 - time) * 6 * value1.x + (3 * t2 - 4 * time + 1) * tangent1.x + (-t2 + time) * 6 * value2.x + (3 * t2 - 2 * time) * tangent2.x;
-        result.y = (t2 - time) * 6 * value1.y + (3 * t2 - 4 * time + 1) * tangent1.y + (-t2 + time) * 6 * value2.y + (3 * t2 - 2 * time) * tangent2.y;
-        result.z = (t2 - time) * 6 * value1.z + (3 * t2 - 4 * time + 1) * tangent1.z + (-t2 + time) * 6 * value2.z + (3 * t2 - 2 * time) * tangent2.z;
-        result.w = (t2 - time) * 6 * value1.w + (3 * t2 - 4 * time + 1) * tangent1.w + (-t2 + time) * 6 * value2.w + (3 * t2 - 2 * time) * tangent2.w;
+        result._x = (t2 - time) * 6 * value1._x + (3 * t2 - 4 * time + 1) * tangent1._x + (-t2 + time) * 6 * value2._x + (3 * t2 - 2 * time) * tangent2._x;
+        result._y = (t2 - time) * 6 * value1._y + (3 * t2 - 4 * time + 1) * tangent1._y + (-t2 + time) * 6 * value2._y + (3 * t2 - 2 * time) * tangent2._y;
+        result._z = (t2 - time) * 6 * value1._z + (3 * t2 - 4 * time + 1) * tangent1._z + (-t2 + time) * 6 * value2._z + (3 * t2 - 2 * time) * tangent2._z;
+        result._w = (t2 - time) * 6 * value1._w + (3 * t2 - 4 * time + 1) * tangent1._w + (-t2 + time) * 6 * value2._w + (3 * t2 - 2 * time) * tangent2._w;
+        result._isDirty = true;
         return result;
     }
 }
