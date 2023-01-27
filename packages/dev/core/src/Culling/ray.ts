@@ -787,7 +787,7 @@ Scene.prototype._internalPick = function (
 ): PickingInfo {
     let pickingInfo = null;
 
-    const multiCamera = !!(this.activeCameras && this.activeCameras.length > 1);
+    const computeWorldMatrixForCamera = !!(this.activeCameras && this.activeCameras.length > 1 && this.cameraToUseForPointers !== this.activeCamera);
     const currentCamera = this.cameraToUseForPointers || this.activeCamera;
 
     for (let meshIndex = 0; meshIndex < this.meshes.length; meshIndex++) {
@@ -801,7 +801,7 @@ Scene.prototype._internalPick = function (
             continue;
         }
 
-        const forceCompute = multiCamera && mesh.isWorldMatrixCameraDependent();
+        const forceCompute = computeWorldMatrixForCamera && mesh.isWorldMatrixCameraDependent();
         const world = mesh.computeWorldMatrix(forceCompute, currentCamera);
 
         if (mesh.hasThinInstances && (mesh as Mesh).thinInstanceEnablePicking) {

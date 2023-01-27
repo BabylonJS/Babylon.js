@@ -1029,7 +1029,7 @@ export class TransformNode extends Node {
     /**
      * Computes the world matrix of the node
      * @param force defines if the cache version should be invalidated forcing the world matrix to be created from scratch
-     * @param camera defines the camera used if different from the scene active camera (This is used with modes like Billboard or )
+     * @param camera defines the camera used if different from the scene active camera (This is used with modes like Billboard or infinite distance)
      * @returns the world matrix
      */
     public computeWorldMatrix(force: boolean = false, camera: Nullable<Camera> = null): Matrix {
