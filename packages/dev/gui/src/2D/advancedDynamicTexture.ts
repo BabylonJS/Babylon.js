@@ -607,6 +607,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this.onEndRenderObservable.clear();
         this.onBeginLayoutObservable.clear();
         this.onEndLayoutObservable.clear();
+        this.onGuiReadyObservable.clear();
         super.dispose();
     }
     private _onResize(): void {
