@@ -237,13 +237,10 @@ export const evaluateRenderSceneForVisualization = async (renderCount: number) =
                 return sceneAdts.every((adt: any) => adt.guiIsReady());
             };
             let renderAfterGuiIsReadyCount = 1;
-            console.log("scene adts", sceneAdts);
             window.engine.runRenderLoop(function () {
                 try {
-                    // alert("render count is " + renderCount + " render after gui is ready count is " + renderAfterGuiIsReadyCount);
                     if (renderCount <= 0 && renderAfterGuiIsReadyCount <= 0) {
                         if (window.scene!.isReady()) {
-                            // alert("Resolve! scene adt bvs is ready " + sceneAdts[0]!.guiIsReady());
                             return resolve(true);
                         } else {
                             console.error("Scene is not ready after rendering is done");
@@ -253,7 +250,6 @@ export const evaluateRenderSceneForVisualization = async (renderCount: number) =
                         window.scene && window.scene.render();
                         renderCount--;
                         if (adtsAreReady()) {
-                            // alert("adts are ready! render after count is " + renderAfterGuiIsReadyCount);
                             renderAfterGuiIsReadyCount--;
                         }
                     }
