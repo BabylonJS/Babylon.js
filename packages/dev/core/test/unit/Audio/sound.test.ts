@@ -1,10 +1,3 @@
-/*
-Run the tests in this file with command:
-```
-npm run test -w @dev/core -- --selectProjects unit -i "sound.test.ts"
-```
-*/
-
 import { AudioEngine, Sound } from "core/Audio";
 import { Engine, NullEngine } from "core/Engines";
 import { Scene } from "core/scene";
@@ -22,8 +15,8 @@ const AudioContext = jest.fn().mockName("AudioContext").mockImplementation(() =>
                 stop: jest.fn().mockName("stop"),
                 buffer: {},
                 loop: false,
-                loopStart: 0,
                 loopEnd: 0,
+                loopStart: 0,
                 playbackRate: {
                     value: 1
                 }
@@ -129,6 +122,9 @@ describe("Sound", () => {
     });
 
     it("sets isPlaying to true when play() is called", () => {
+        // Note that the given ArrayBuffer is decoded using our mocked AudioContext, which returns one second of
+        // silence no matter what we pass in. This means the ArrayBuffer we pass in here is essentially ignored.
+        // Regardless, we still need one byte in it to get past the check in the Sound constructor.
         const sound = new Sound("test", new ArrayBuffer(1));
         sound.play();
         expect(sound.isPlaying).toBe(true);
