@@ -632,6 +632,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             } else {
                 this.metadata = source.metadata;
             }
+            this._internalMetadata = source._internalMetadata;
 
             // Tags
             if (Tags && Tags.HasTags(source)) {
