@@ -787,6 +787,9 @@ Scene.prototype._internalPick = function (
 ): PickingInfo {
     let pickingInfo = null;
 
+    const computeWorldMatrixForCamera = !!(this.activeCameras && this.activeCameras.length > 1 && this.cameraToUseForPointers !== this.activeCamera);
+    const currentCamera = this.cameraToUseForPointers || this.activeCamera;
+
     for (let meshIndex = 0; meshIndex < this.meshes.length; meshIndex++) {
         const mesh = this.meshes[meshIndex];
 
@@ -798,7 +801,8 @@ Scene.prototype._internalPick = function (
             continue;
         }
 
-        const world = mesh.getWorldMatrix();
+        const forceCompute = computeWorldMatrixForCamera && mesh.isWorldMatrixCameraDependent();
+        const world = mesh.computeWorldMatrix(forceCompute, currentCamera);
 
         if (mesh.hasThinInstances && (mesh as Mesh).thinInstanceEnablePicking) {
             // first check if the ray intersects the whole bounding box/sphere of the mesh
@@ -850,6 +854,8 @@ Scene.prototype._internalMultiPick = function (
         return null;
     }
     const pickingInfos = new Array<PickingInfo>();
+    const computeWorldMatrixForCamera = !!(this.activeCameras && this.activeCameras.length > 1 && this.cameraToUseForPointers !== this.activeCamera);
+    const currentCamera = this.cameraToUseForPointers || this.activeCamera;
 
     for (let meshIndex = 0; meshIndex < this.meshes.length; meshIndex++) {
         const mesh = this.meshes[meshIndex];
@@ -862,7 +868,8 @@ Scene.prototype._internalMultiPick = function (
             continue;
         }
 
-        const world = mesh.getWorldMatrix();
+        const forceCompute = computeWorldMatrixForCamera && mesh.isWorldMatrixCameraDependent();
+        const world = mesh.computeWorldMatrix(forceCompute, currentCamera);
 
         if (mesh.hasThinInstances && (mesh as Mesh).thinInstanceEnablePicking) {
             const result = this._internalPickForMesh(null, rayFunction, mesh, world, true, true, trianglePredicate);
