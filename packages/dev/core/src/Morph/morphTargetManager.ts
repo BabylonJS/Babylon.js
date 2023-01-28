@@ -18,6 +18,9 @@ export class MorphTargetManager implements IDisposable {
     /** Enable storing morph target data into textures when set to true (true by default) */
     public static EnableTextureStorage = true;
 
+    /** Maximum number of active morph targets supported in the "vertex attribute" mode (i.e., not the "texture" mode) */
+    public static MaxActiveMorphTargetsInVertexAttributeMode = 8;
+
     private _targets = new Array<MorphTarget>();
     private _targetInfluenceChangedObservers = new Array<Nullable<Observer<boolean>>>();
     private _targetDataLayoutChangedObservers = new Array<Nullable<Observer<void>>>();
@@ -289,6 +292,10 @@ export class MorphTargetManager implements IDisposable {
         this._supportsUVs = true;
         this._vertexCount = 0;
 
+        if (this._scene && this._targets.length > this._scene.getEngine().getCaps().texture2DArrayMaxLayerCount) {
+            this.useTextureToStoreTargets = false;
+        }
+
         if (!this._morphTargetTextureIndices || this._morphTargetTextureIndices.length !== this._targets.length) {
             this._morphTargetTextureIndices = new Float32Array(this._targets.length);
         }
@@ -298,6 +305,10 @@ export class MorphTargetManager implements IDisposable {
             targetIndex++;
             if (target.influence === 0 && this.optimizeInfluencers) {
                 continue;
+            }
+
+            if (this._activeTargets.length >= MorphTargetManager.MaxActiveMorphTargetsInVertexAttributeMode && !this.isUsingTextureForTargets) {
+                break;
             }
 
             this._activeTargets.push(target);
