@@ -32,6 +32,7 @@ const AudioContext = jest.fn().mockName("AudioContext").mockImplementation(() =>
         createGain: jest.fn().mockName("createGain").mockImplementation(() => {
             return {
                 connect: jest.fn().mockName("connect"),
+                disconnect: jest.fn().mockName("disconnect"),
                 gain: {
                     value: 1
                 }
@@ -86,9 +87,6 @@ const Window = jest.fn().mockName("Window").mockImplementation(() => {
     };
 });
 
-global.document = new Document;
-global.window = new Window;
-
 // Required for timers (eg. setTimeout) to work
 jest.useFakeTimers();
 
@@ -113,13 +111,21 @@ jest.mock("core/DeviceInput/webDeviceInputSystem", () => {
 
 describe("Sound", () => {
     let engine: Nullable<NullEngine> = null;
-    let audioContext: Nullable<AudioContext> = null;
+    let scene: Nullable<Scene> = null;
 
     beforeEach(() => {
+        global.document = new Document;
+        global.window = new Window;
         engine = new NullEngine;
-        new Scene(engine);
-        audioContext = new AudioContext;
-        Engine.audioEngine = new AudioEngine(null, audioContext, null);
+        scene = new Scene(engine);
+        Engine.audioEngine = new AudioEngine(null, new AudioContext, null);
+    });
+
+    afterEach(() => {
+        global.document = undefined;
+        global.window = undefined;
+        scene?.dispose();
+        engine?.dispose();
     });
 
     it("sets isPlaying to true when play() is called", () => {
