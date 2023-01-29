@@ -84,26 +84,41 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
         }
 
         const framebuffer = this._framebuffer;
-    
+
         const currentFB = this._engine._currentFramebuffer;
         this._engine._bindUnboundFramebuffer(framebuffer);
 
-        if (this._engine.webGLVersion > 1 || this._engine.isWebGPU) {
+        if (this._engine.webGLVersion > 1) {
             const gl = this._context as WebGL2RenderingContext;
 
             const attachment = (<any>gl)["COLOR_ATTACHMENT" + attachmentIndex];
             if (texture.is2DArray || texture.is3D) {
+                // if layer index is not specified, try to query it from layerIndices
+                // default is layer 0
                 if (faceIndexOrLayer == -1) {
-                    return;
+                    if (this.layerIndices && this.layerIndices[attachmentIndex]) {
+                        faceIndexOrLayer = this.layerIndices[attachmentIndex];
+                    } else {
+                        faceIndexOrLayer = 0;
+                    }
                 }
                 gl.framebufferTextureLayer(gl.FRAMEBUFFER, attachment, texture._hardwareTexture.underlyingResource, lodLevel, faceIndexOrLayer);
             } else if (texture.isCube) {
+                // if face index is not specified, try to query it from faceIndices
+                // default is face 0
+                if (faceIndexOrLayer == -1) {
+                    if (this.faceIndices && this.faceIndices[attachmentIndex]) {
+                        faceIndexOrLayer = this.faceIndices[attachmentIndex];
+                    } else {
+                        faceIndexOrLayer = 0;
+                    }
+                }
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndexOrLayer, texture._hardwareTexture.underlyingResource, lodLevel);
             } else {
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, gl.TEXTURE_2D, texture._hardwareTexture.underlyingResource, lodLevel);
             }
         } else {
-            // Default behavior
+            // Default behavior (WebGL)
             const gl = this._context;
 
             const attachment = (<any>gl)["COLOR_ATTACHMENT" + attachmentIndex + "_WEBGL"];
@@ -121,9 +136,50 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
      * @param index the index in the textures array to set
      * @param disposePrevious If this function should dispose the previous texture
      */
-    public setTexture(texture: InternalTexture, index: number = 0, disposePrevious: boolean = true, faceIndexOrLayer: number = -1) {
+    public setTexture(texture: InternalTexture, index: number = 0, disposePrevious: boolean = true) {
         super.setTexture(texture, index, disposePrevious);
-        this._bindTextureRenderTarget(texture, index, faceIndexOrLayer);
+        this._bindTextureRenderTarget(texture, index);
+    }
+
+    /**
+     * Sets the layer and face indices of every render target texture
+     * @param layers The layer of the texture to be set (make negative to not modify)
+     * @param faces The face of the texture to be set (make negative to not modify)
+     */
+    public setLayerAndFaceIndices(layers: number[], faces: number[]) {
+        super.setLayerAndFaceIndices(layers, faces);
+        // this.layerIndices and this.faceIndices should be defined, this just avoids issues
+        if (!this.textures || !this.layerIndices || !this.faceIndices) {
+            return;
+        }
+        for (let index = 0; index < this.textures.length; index ++) {
+            let texture = this.textures[index];
+            if (texture.is2DArray || texture.is3D) {
+                this._bindTextureRenderTarget(texture, index, this.layerIndices[index]);
+            } else if (texture.isCube) {
+                this._bindTextureRenderTarget(texture, index, this.faceIndices[index]);
+            }
+        }
+    }
+
+    /**
+     * Set the face and layer indices of a texture in the textures array
+     * @param index The index of the texture in the textures array to modify
+     * @param layer The layer of the texture to be set (make negative to not modify)
+     * @param face The face of the texture to be set (make negative to not modify)
+     */
+    public setLayerAndFaceIndex(index: number = 0, layer: number = -1, face: number = -1): void {
+        super.setLayerAndFaceIndex(index, layer, face);
+        // this.layerIndices and this.faceIndices should be defined, this just avoids issues
+        if (!this.textures || !this.layerIndices || !this.faceIndices) {
+            return;
+        }
+        let texture = this.textures[index];
+        if (texture.is2DArray || texture.is3D) {
+            this._bindTextureRenderTarget(this.textures[index], index, this.layerIndices[index]);
+        } else if (texture.isCube) {
+            this._bindTextureRenderTarget(this.textures[index], index, this.layerIndices[index]);
+        }
     }
 
     public dispose(disposeOnlyFramebuffers = false): void {
