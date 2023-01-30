@@ -301,21 +301,17 @@ export class PhysicsBody {
 
     /**
      * Register a collision callback that is called when the body collides
-     * 
+     *
      */
-    public registerOnCollide(
-        func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>) => void
-    ): void {
+    public registerOnCollide(func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>) => void): void {
         return this._physicsPlugin.registerOnBodyCollide(this, func);
     }
 
     /**
      * Unregister a collision callback that is called when the body collides
-     * 
+     *
      */
-    public unregisterOnCollide(
-        func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>) => void
-    ): void {
+    public unregisterOnCollide(func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>) => void): void {
         return this._physicsPlugin.unregisterOnBodyCollide(this, func);
     }
 
