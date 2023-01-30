@@ -5,6 +5,7 @@ import { Quaternion } from "../../Maths/math.vector";
 import type { Scene } from "../../scene";
 import type { PhysicsEngine } from "./physicsEngine";
 import type { Mesh, TransformNode } from "../../Meshes";
+import type { Nullable } from "core/types";
 
 /**
  * PhysicsBody is useful for creating a physics body that can be used in a physics engine. It allows
@@ -296,6 +297,26 @@ export class PhysicsBody {
      */
     public getGeometry(): {} {
         return this._physicsPlugin.getBodyGeometry(this);
+    }
+
+    /**
+     * Register a collision callback that is called when the body collides
+     * 
+     */
+    public registerOnCollide(
+        func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>) => void
+    ): void {
+        return this._physicsPlugin.registerOnBodyCollide(this, func);
+    }
+
+    /**
+     * Unregister a collision callback that is called when the body collides
+     * 
+     */
+    public unregisterOnCollide(
+        func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>) => void
+    ): void {
+        return this._physicsPlugin.unregisterOnBodyCollide(this, func);
     }
 
     /**
