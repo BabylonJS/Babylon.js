@@ -344,6 +344,15 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     }
 
     private _isCubeData: boolean;
+    protected _isMulti: boolean;
+
+    /**
+     * Define if the texture has multiple draw buffers or if false a single draw buffer.
+     */
+    public get isMulti(): boolean {
+        return this._isMulti;
+    }
+
     /**
      * Gets render target creation options that were used.
      */
@@ -508,6 +517,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         this._initialSizeParameter = size;
         this._renderPassIds = [];
         this._isCubeData = isCube;
+        this._isMulti = isMulti;
 
         this._processSizeParameter(size);
 
@@ -935,13 +945,13 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         let returnValue = checkReadiness;
 
         if (!checkReadiness) {
-            if (this.is2DArray) {
+            if (!this._isMulti && this.is2DArray) {
                 for (let layer = 0; layer < this.getRenderLayers(); layer++) {
                     this._renderToTarget(0, useCameraPostProcess, dumpForDebug, layer, camera);
                     scene.incrementRenderId();
                     scene.resetCachedMaterial();
                 }
-            } else if (this.isCube) {
+            } else if (!this._isMulti && this.isCube) {
                 for (let face = 0; face < 6; face++) {
                     this._renderToTarget(face, useCameraPostProcess, dumpForDebug, undefined, camera);
                     scene.incrementRenderId();

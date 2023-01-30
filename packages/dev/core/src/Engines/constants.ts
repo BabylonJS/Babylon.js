@@ -257,6 +257,17 @@ export class Constants {
     /** UNDEFINED */
     public static readonly TEXTURETYPE_UNDEFINED = 16;
 
+    /** 2D Texture target*/
+    public static readonly TEXTURE_2D = 3553;
+    /** 2D Array Texture target */
+    public static readonly TEXTURE_2D_ARRAY = 35866;
+    /** Cube Map Texture target */
+    public static readonly TEXTURE_CUBE_MAP = 34067;
+    /** Cube Map Array Texture target */
+    public static readonly TEXTURE_CUBE_MAP_ARRAY = 0xDEADBEEF;
+    /** 3D Texture target */
+    public static readonly TEXTURE_3D = 32879;
+
     /** nearest is mag = nearest and min = nearest and no mip */
     public static readonly TEXTURE_NEAREST_SAMPLINGMODE = 1;
     /** mag = nearest and min = nearest and mip = none */

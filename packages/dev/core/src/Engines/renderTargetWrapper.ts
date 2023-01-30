@@ -24,6 +24,9 @@ export class RenderTargetWrapper {
     private _isCube: boolean;
     private _isMulti: boolean;
     private _textures: Nullable<InternalTexture[]> = null;
+    private _faceIndices: Nullable<number[]> = null;
+    private _layerIndices: Nullable<number[]> = null;
+    private _layerCounts: Nullable<number[]> = null;
     /** @internal */
     public _samples = 1;
 
@@ -96,7 +99,7 @@ export class RenderTargetWrapper {
     }
 
     /**
-     * Gets the number of layers of the render target wrapper (only used if is2DArray is true)
+     * Gets the number of layers of the render target wrapper (only used if is2DArray is true and wrapper is not a multi render target. If it is, use the layer index getter instead)
      */
     public get layers(): number {
         return (<{ width: number; height: number; layers?: number }>this._size).layers || 0;
@@ -114,6 +117,27 @@ export class RenderTargetWrapper {
      */
     public get textures(): Nullable<InternalTexture[]> {
         return this._textures;
+    }
+
+    /**
+     * Gets the face indices that correspond to the list of render textures. If we are not in a multi render target, the list will be null
+     */
+    public get faceIndices(): Nullable<number[]> {
+        return this._faceIndices;
+    }
+
+    /**
+     * Gets the layer indices that correspond to the list of render textures. If we are not in a multi render target, the list will be null
+     */
+    public get layerIndices(): Nullable<number[]> {
+        return this._layerIndices;
+    }
+
+    /**
+     * Gets the number of layers in each texture of the list of render textures. If we are not in a multi render target, the list will be null
+     */
+    public get layerCounts(): Nullable<number[]> {
+        return this._layerCounts;
     }
 
     /**
@@ -173,8 +197,8 @@ export class RenderTargetWrapper {
 
     /**
      * Set a texture in the textures array
-     * @param texture the texture to set
-     * @param index the index in the textures array to set
+     * @param texture The texture to set
+     * @param index The index in the textures array to set
      * @param disposePrevious If this function should dispose the previous texture
      */
     public setTexture(texture: InternalTexture, index: number = 0, disposePrevious: boolean = true): void {
@@ -186,6 +210,47 @@ export class RenderTargetWrapper {
         }
 
         this._textures[index] = texture;
+    }
+    
+    /**
+     * Sets the layer and face indices of every render target texture bound to each color attachment
+     * @param layers The layers of each texture to be set
+     * @param faces The faces of each texture to be set
+     */
+    public setLayerAndFaceIndices(layers: number[], faces: number[]) {
+        this._layerIndices = layers;
+        this._faceIndices = faces;
+    }
+
+    /**
+     * Sets the layer and face indices of a texture in the textures array that should be bound to each color attachment
+     * @param index The index of the texture in the textures array to modify
+     * @param layer The layer of the texture to be set (make negative to not modify)
+     * @param face The face of the texture to be set (make negative to not modify)
+     */
+    public setLayerAndFaceIndex(index: number = 0, layer: number = -1, face: number = -1): void {
+        if (!this._layerIndices) {
+            this._layerIndices = [];
+        }
+        if (!this._faceIndices) {
+            this._faceIndices = [];
+        }
+
+        if (layer >= 0) {
+            this._layerIndices[index] = layer;
+        }
+        if (face >= 0) {
+            this._faceIndices[index] = face;
+        }
+    }
+
+    /**
+     * Sets the number of layers of each texture in the textures array
+     * @internal
+     * @param layerCount The number of layers in each respective texture
+     */
+    public _setLayerCount(layerCount: number[]) {
+        this._layerCounts = layerCount;
     }
 
     /**
@@ -267,12 +332,38 @@ export class RenderTargetWrapper {
 
                 const samplingModes: number[] = [];
                 const types: number[] = [];
+                const targetTypes: number[] = [];
+                const faceIndex: number[] = [];
+                const layerIndex: number[] = [];
+                const layerCounts: number[] = [];
 
                 for (let i = 0; i < textureCount; ++i) {
                     const texture = textureArray[i];
 
                     samplingModes.push(texture.samplingMode);
                     types.push(texture.type);
+
+                    if (texture.is2DArray) {
+                        targetTypes.push(Constants.TEXTURE_2D_ARRAY);
+                    } else if (texture.isCube) {
+                        targetTypes.push(Constants.TEXTURE_CUBE_MAP);
+                    } /*else if (texture.isCubeArray) {
+                        targetTypes.push(Constants.TEXTURE_CUBE_MAP_ARRAY);
+                    }*/ else if (texture.is3D) {
+                        targetTypes.push(Constants.TEXTURE_3D);
+                    } else {
+                        targetTypes.push(Constants.TEXTURE_2D);
+                    }
+
+                    if (this._faceIndices && this._faceIndices[i]) {
+                        faceIndex.push(this._faceIndices[i]);
+                    }
+                    if (this._layerIndices && this._layerIndices[i]) {
+                        layerIndex.push(this._layerIndices[i]);
+                    }
+                    if (this._layerCounts && this._layerCounts[i]) {
+                        layerCounts.push(this._layerCounts[i]);
+                    }
                 }
 
                 const optionsMRT = {
