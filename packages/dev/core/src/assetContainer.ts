@@ -192,7 +192,7 @@ export class AssetContainer extends AbstractScene {
             // When a node is visited, we know that dependsOn is empty.
             // So we only need to remove the node from dependedBy.
             const dependedByVisitedNode = dependencyGraph.dependedBy.get(nodeToVisit.uniqueId)!;
-            for (const dependedByVisitedNodeId of dependedByVisitedNode) {
+            for (const dependedByVisitedNodeId of dependedByVisitedNode.values()) {
                 const dependsOnDependedByVisitedNode = dependencyGraph.dependsOn.get(dependedByVisitedNodeId)!;
                 dependsOnDependedByVisitedNode.delete(nodeToVisit.uniqueId);
 
