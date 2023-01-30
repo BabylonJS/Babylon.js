@@ -314,9 +314,9 @@ export class AssetContainer extends AbstractScene {
                 }
             }
 
-            clone.position = source.position;
-            clone.rotation = source.rotation;
-            clone.scaling = source.scaling;
+            clone.position = source.position.clone();
+            clone.rotation = source.rotation.clone();
+            clone.scaling = source.scaling.clone();
 
             if ((clone as any).material) {
                 const mesh = clone as AbstractMesh;
@@ -381,7 +381,7 @@ export class AssetContainer extends AbstractScene {
             } else {
                 // Mesh or TransformNode
                 const canInstance = !options?.doNotInstantiate && (node as Mesh)._isMesh;
-                const replicatedNode = canInstance ? (node as Mesh).createInstance(node.name) : node.clone(node.name, null, true);
+                const replicatedNode = canInstance ? (node as Mesh).createInstance("instance of " + node.name) : node.clone("Clone of " + node.name, null, true);
                 if (!replicatedNode) {
                     console.error("Could not clone or instantiate node on Asset Container", node.name);
                     return;
