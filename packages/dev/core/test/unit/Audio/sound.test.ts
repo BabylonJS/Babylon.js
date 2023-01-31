@@ -173,6 +173,7 @@ describe("Sound", () => {
     it("constructor sets state correctly when given no options", () => {
         const audioSample = AudioSample.Get("silence, 1 second, 1 channel, 48000 kHz");
         const sound = new Sound("test", audioSample.arrayBuffer);
+
         expect(sound.autoplay).toBe(false);
         expect(sound.currentTime).toBe(0);
         expect(sound.directionalConeInnerAngle).toBe(360);
@@ -189,16 +190,17 @@ describe("Sound", () => {
         expect(sound.soundTrackId).toBe(-1); // Set by main SoundTrack when added to it.
         expect(sound.spatialSound).toBe(false);
         expect(sound.useCustomAttenuation).toBe(false);
-
         expect(sound.getAudioBuffer()).toBe(audioSample.audioBuffer);
         expect(sound.getPlaybackRate()).toBe(1);
-        expect(sound.getSoundGain()).toBe(AudioContext.mock.results[0].value.createGain.mock.results[1].value);
+        expect(sound.getSoundGain()).toBe(mockedAudioContext.createGain.mock.results[1].value);
         expect(sound.getVolume()).toBe(1);
     });
 
     it("sets isPlaying to true when play() is called", () => {
         const sound = new Sound("test", AudioSample.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"));
+        
         sound.play();
+        
         expect(sound.isPlaying).toBe(true);
     });
 
