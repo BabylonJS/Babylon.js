@@ -4,6 +4,7 @@ import type { RenderTargetCreationOptions, TextureSize } from "../Materials/Text
 import type { Nullable } from "../types";
 import { Constants } from "./constants";
 import type { ThinEngine } from "./thinEngine";
+import type { IMultiRenderTargetOptions } from "../Materials/Textures/multiRenderTarget";
 
 /**
  * An interface enforcing the renderTarget accessor to used by render target textures.
@@ -26,7 +27,6 @@ export class RenderTargetWrapper {
     private _textures: Nullable<InternalTexture[]> = null;
     private _faceIndices: Nullable<number[]> = null;
     private _layerIndices: Nullable<number[]> = null;
-    private _layerCounts: Nullable<number[]> = null;
     /** @internal */
     public _samples = 1;
 
@@ -99,7 +99,7 @@ export class RenderTargetWrapper {
     }
 
     /**
-     * Gets the number of layers of the render target wrapper (only used if is2DArray is true and wrapper is not a multi render target. If it is, use the layer index getter instead)
+     * Gets the number of layers of the render target wrapper (only used if is2DArray is true and wrapper is not a multi render target)
      */
     public get layers(): number {
         return (<{ width: number; height: number; layers?: number }>this._size).layers || 0;
@@ -131,13 +131,6 @@ export class RenderTargetWrapper {
      */
     public get layerIndices(): Nullable<number[]> {
         return this._layerIndices;
-    }
-
-    /**
-     * Gets the number of layers in each texture of the list of render textures. If we are not in a multi render target, the list will be null
-     */
-    public get layerCounts(): Nullable<number[]> {
-        return this._layerCounts;
     }
 
     /**
@@ -211,7 +204,7 @@ export class RenderTargetWrapper {
 
         this._textures[index] = texture;
     }
-    
+
     /**
      * Sets the layer and face indices of every render target texture bound to each color attachment
      * @param layers The layers of each texture to be set
@@ -242,15 +235,6 @@ export class RenderTargetWrapper {
         if (face >= 0) {
             this._faceIndices[index] = face;
         }
-    }
-
-    /**
-     * Sets the number of layers of each texture in the textures array
-     * @internal
-     * @param layerCount The number of layers in each respective texture
-     */
-    public _setLayerCount(layerCount: number[]) {
-        this._layerCounts = layerCount;
     }
 
     /**
@@ -336,6 +320,7 @@ export class RenderTargetWrapper {
                 const faceIndex: number[] = [];
                 const layerIndex: number[] = [];
                 const layerCounts: number[] = [];
+                const internalTexture2Index: { [id: number]: number } = {};
 
                 for (let i = 0; i < textureCount; ++i) {
                     const texture = textureArray[i];
@@ -343,30 +328,39 @@ export class RenderTargetWrapper {
                     samplingModes.push(texture.samplingMode);
                     types.push(texture.type);
 
-                    if (texture.is2DArray) {
-                        targetTypes.push(Constants.TEXTURE_2D_ARRAY);
-                    } else if (texture.isCube) {
-                        targetTypes.push(Constants.TEXTURE_CUBE_MAP);
-                    } /*else if (texture.isCubeArray) {
-                        targetTypes.push(Constants.TEXTURE_CUBE_MAP_ARRAY);
-                    }*/ else if (texture.is3D) {
-                        targetTypes.push(Constants.TEXTURE_3D);
+                    const index = internalTexture2Index[texture.uniqueId];
+                    if (index !== undefined) {
+                        targetTypes.push(-1);
+                        layerCounts.push(0);
                     } else {
-                        targetTypes.push(Constants.TEXTURE_2D);
+                        internalTexture2Index[texture.uniqueId] = i;
+                        if (texture.is2DArray) {
+                            targetTypes.push(Constants.TEXTURE_2D_ARRAY);
+                            layerCounts.push(texture.depth);
+                        } else if (texture.isCube) {
+                            targetTypes.push(Constants.TEXTURE_CUBE_MAP);
+                            layerCounts.push(0);
+                        } /*else if (texture.isCubeArray) {
+                            targetTypes.push(Constants.TEXTURE_CUBE_MAP_ARRAY);
+                            layerCounts.push(texture.depth);
+                        }*/ else if (texture.is3D) {
+                            targetTypes.push(Constants.TEXTURE_3D);
+                            layerCounts.push(texture.depth);
+                        } else {
+                            targetTypes.push(Constants.TEXTURE_2D);
+                            layerCounts.push(0);
+                        }
                     }
 
-                    if (this._faceIndices && this._faceIndices[i]) {
-                        faceIndex.push(this._faceIndices[i]);
+                    if (this._faceIndices) {
+                        faceIndex.push(this._faceIndices[i] ?? 0);
                     }
-                    if (this._layerIndices && this._layerIndices[i]) {
-                        layerIndex.push(this._layerIndices[i]);
-                    }
-                    if (this._layerCounts && this._layerCounts[i]) {
-                        layerCounts.push(this._layerCounts[i]);
+                    if (this._layerIndices) {
+                        layerIndex.push(this._layerIndices[i] ?? 0);
                     }
                 }
 
-                const optionsMRT = {
+                const optionsMRT: IMultiRenderTargetOptions = {
                     samplingModes,
                     generateMipMaps: textureArray[0].generateMipMaps,
                     generateDepthBuffer: this._generateDepthBuffer,
@@ -374,6 +368,10 @@ export class RenderTargetWrapper {
                     generateDepthTexture,
                     types,
                     textureCount,
+                    targetTypes,
+                    faceIndex,
+                    layerIndex,
+                    layerCounts,
                 };
                 const size = {
                     width: this.width,
@@ -381,6 +379,14 @@ export class RenderTargetWrapper {
                 };
 
                 rtw = this._engine.createMultipleRenderTarget(size, optionsMRT);
+
+                for (let i = 0; i < textureCount; ++i) {
+                    if (targetTypes[i] !== -1) {
+                        continue;
+                    }
+                    const index = internalTexture2Index[textureArray[i].uniqueId];
+                    rtw.setTexture(rtw.textures![index], i);
+                }
             }
         } else {
             const options: RenderTargetCreationOptions = {};

@@ -6,8 +6,9 @@ export class WebGLHardwareTexture implements HardwareTextureWrapper {
     private _webGLTexture: WebGLTexture;
     private _context: WebGLRenderingContext;
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    public _MSAARenderBuffer: Nullable<WebGLRenderbuffer> = null;
+    // There can be multiple buffers for a single WebGL texture because different layers of a 2DArrayTexture / 3DTexture
+    // or different faces of a cube texture can be bound to different render targets at the same time.
+    private _MSAARenderBuffer: Nullable<WebGLRenderbuffer[]> = null;
 
     public get underlyingResource(): Nullable<WebGLTexture> {
         return this._webGLTexture;
@@ -35,11 +36,24 @@ export class WebGLHardwareTexture implements HardwareTextureWrapper {
         this._MSAARenderBuffer = null;
     }
 
-    public release() {
+    public addMSAARenderBuffer(buffer: WebGLRenderbuffer) {
+        if (!this._MSAARenderBuffer) {
+            this._MSAARenderBuffer = [];
+        }
+        this._MSAARenderBuffer.push(buffer);
+    }
+
+    public releaseMSAARenderBuffers() {
         if (this._MSAARenderBuffer) {
-            this._context.deleteRenderbuffer(this._MSAARenderBuffer);
+            for (const buffer of this._MSAARenderBuffer) {
+                this._context.deleteRenderbuffer(buffer);
+            }
             this._MSAARenderBuffer = null;
         }
+    }
+
+    public release() {
+        this.releaseMSAARenderBuffers();
 
         if (this._webGLTexture) {
             this._context.deleteTexture(this._webGLTexture);

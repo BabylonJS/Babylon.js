@@ -78,7 +78,7 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
      * @param faceIndexOrLayer The face or layer of the texture to render to in case of cube texture or array texture
      * @param lodLevel defines the lod level to bind to the frame buffer
      */
-    private _bindTextureRenderTarget(texture: InternalTexture, attachmentIndex: number = 0, faceIndexOrLayer: number = -1, lodLevel: number = 0) {
+    private _bindTextureRenderTarget(texture: InternalTexture, attachmentIndex: number = 0, faceIndexOrLayer?: number, lodLevel: number = 0) {
         if (!texture._hardwareTexture) {
             return;
         }
@@ -93,26 +93,12 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
 
             const attachment = (<any>gl)["COLOR_ATTACHMENT" + attachmentIndex];
             if (texture.is2DArray || texture.is3D) {
-                // if layer index is not specified, try to query it from layerIndices
-                // default is layer 0
-                if (faceIndexOrLayer == -1) {
-                    if (this.layerIndices && this.layerIndices[attachmentIndex]) {
-                        faceIndexOrLayer = this.layerIndices[attachmentIndex];
-                    } else {
-                        faceIndexOrLayer = 0;
-                    }
-                }
+                faceIndexOrLayer = faceIndexOrLayer ?? this.layerIndices?.[attachmentIndex] ?? 0;
                 gl.framebufferTextureLayer(gl.FRAMEBUFFER, attachment, texture._hardwareTexture.underlyingResource, lodLevel, faceIndexOrLayer);
             } else if (texture.isCube) {
                 // if face index is not specified, try to query it from faceIndices
                 // default is face 0
-                if (faceIndexOrLayer == -1) {
-                    if (this.faceIndices && this.faceIndices[attachmentIndex]) {
-                        faceIndexOrLayer = this.faceIndices[attachmentIndex];
-                    } else {
-                        faceIndexOrLayer = 0;
-                    }
-                }
+                faceIndexOrLayer = faceIndexOrLayer ?? this.faceIndices?.[attachmentIndex] ?? 0;
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndexOrLayer, texture._hardwareTexture.underlyingResource, lodLevel);
             } else {
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, gl.TEXTURE_2D, texture._hardwareTexture.underlyingResource, lodLevel);
@@ -121,9 +107,11 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
             // Default behavior (WebGL)
             const gl = this._context;
 
+            faceIndexOrLayer = faceIndexOrLayer ?? 0;
+
             const attachment = (<any>gl)["COLOR_ATTACHMENT" + attachmentIndex + "_WEBGL"];
             const target = faceIndexOrLayer !== -1 ? gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndexOrLayer : gl.TEXTURE_2D;
-    
+
             gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, target, texture._hardwareTexture.underlyingResource, lodLevel);
         }
 
@@ -148,16 +136,22 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
      */
     public setLayerAndFaceIndices(layers: number[], faces: number[]) {
         super.setLayerAndFaceIndices(layers, faces);
-        // this.layerIndices and this.faceIndices should be defined, this just avoids issues
+        // this.layerIndices and this.faceIndices should be defined, this just avoids Typescript issues
         if (!this.textures || !this.layerIndices || !this.faceIndices) {
             return;
         }
-        for (let index = 0; index < this.textures.length; index ++) {
-            let texture = this.textures[index];
+        for (let index = 0; index < this.textures.length; index++) {
+            const texture = this.textures[index];
+            if (!texture) {
+                // The target type was probably -1 at creation time and setTexture has not been called yet for this index
+                continue;
+            }
             if (texture.is2DArray || texture.is3D) {
                 this._bindTextureRenderTarget(texture, index, this.layerIndices[index]);
             } else if (texture.isCube) {
                 this._bindTextureRenderTarget(texture, index, this.faceIndices[index]);
+            } else {
+                this._bindTextureRenderTarget(texture, index);
             }
         }
     }
@@ -174,7 +168,7 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
         if (!this.textures || !this.layerIndices || !this.faceIndices) {
             return;
         }
-        let texture = this.textures[index];
+        const texture = this.textures[index];
         if (texture.is2DArray || texture.is3D) {
             this._bindTextureRenderTarget(this.textures[index], index, this.layerIndices[index]);
         } else if (texture.isCube) {

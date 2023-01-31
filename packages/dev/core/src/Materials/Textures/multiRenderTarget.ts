@@ -60,19 +60,24 @@ export interface IMultiRenderTargetOptions {
      */
     drawOnlyOnFirstAttachmentByDefault?: boolean;
     /**
-     * Define the type of texture at each attahment index (of Constants.TEXTURE_2D, .TEXTURE_2D_ARRAY, .TEXTURE_CUBE_MAP, .TEXTURE_CUBE_MAP_ARRAY, .TEXTURE_3D)
+     * Define the type of texture at each attahment index (of Constants.TEXTURE_2D, .TEXTURE_2D_ARRAY, .TEXTURE_CUBE_MAP, .TEXTURE_CUBE_MAP_ARRAY, .TEXTURE_3D).
+     * You can also use the -1 value to indicate that no texture should be created but that you will assign a texture to that attachment index later.
+     * Can be useful when you want to attach several layers of the same 2DArrayTexture / 3DTexture or several faces of the same CubeMapTexture: Use the setInternalTexture
+     * method for that purpose, after the MultiRenderTarget has been created.
      */
     targetTypes?: number[];
     /**
-     * Define the face index of each texture in the textures array as necessary (for Constants.TEXTURE_CUBE_MAP and .TEXTURE_CUBE_MAP_ARRAY)
+     * Define the face index of each texture in the textures array (if applicable, given the corresponding targetType) at creation time (for Constants.TEXTURE_CUBE_MAP and .TEXTURE_CUBE_MAP_ARRAY).
+     * Can be changed at any time by calling setLayerAndFaceIndices or setLayerAndFaceIndex
      */
     faceIndex?: number[];
     /**
-     * Define the layer index of each texture in the textures array as necessary (for Constants.TEXTURE_3D, .TEXTURE_2D_ARRAY, and .TEXTURE_CUBE_MAP_ARRAY)
+     * Define the layer index of each texture in the textures array (if applicable, given the corresponding targetType) at creation time (for Constants.TEXTURE_3D, .TEXTURE_2D_ARRAY, and .TEXTURE_CUBE_MAP_ARRAY).
+     * Can be changed at any time by calling setLayerAndFaceIndices or setLayerAndFaceIndex
      */
     layerIndex?: number[];
     /**
-     * Define the number of layer of each texture in the textures array as necessary (for Constants.TEXTURE_3D, .TEXTURE_2D_ARRAY, and .TEXTURE_CUBE_MAP_ARRAY)
+     * Define the number of layer of each texture in the textures array (if applicable, given the corresponding targetType) (for Constants.TEXTURE_3D, .TEXTURE_2D_ARRAY, and .TEXTURE_CUBE_MAP_ARRAY)
      */
     layerCounts?: number[];
 }
@@ -88,6 +93,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
     private _multiRenderTargetOptions: IMultiRenderTargetOptions;
     private _count: number;
     private _drawOnlyOnFirstAttachmentByDefault: boolean;
+    private _textureNames?: string[];
 
     /**
      * Get if draw buffers are currently supported by the used hardware and browser.
@@ -167,6 +173,8 @@ export class MultiRenderTarget extends RenderTargetTexture {
             return;
         }
 
+        this._textureNames = textureNames;
+
         const types: number[] = [];
         const samplingModes: number[] = [];
         const useSRGBBuffers: boolean[] = [];
@@ -178,7 +186,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
 
         const generateDepthBuffer = !options || options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
         const generateStencilBuffer = !options || options.generateStencilBuffer === undefined ? false : options.generateStencilBuffer;
-        
+
         this._size = size;
         this._multiRenderTargetOptions = {
             samplingModes: samplingModes,
@@ -193,12 +201,11 @@ export class MultiRenderTarget extends RenderTargetTexture {
             targetTypes: targetTypes,
             faceIndex: faceIndex,
             layerIndex: layerIndex,
-            layerCounts: layerCounts
+            layerCounts: layerCounts,
         };
 
         this._count = count;
         this._drawOnlyOnFirstAttachmentByDefault = drawOnlyOnFirstAttachmentByDefault;
-        this._isMulti = true;
 
         if (count > 0) {
             this._createInternalTextures();
@@ -206,7 +213,17 @@ export class MultiRenderTarget extends RenderTargetTexture {
         }
     }
 
-    private _initTypes(count: number, types: number[], samplingModes: number[], useSRGBBuffers: boolean[], targets: number[], faceIndex: number[], layerIndex: number[], layerCounts: number[], options?: IMultiRenderTargetOptions) {
+    private _initTypes(
+        count: number,
+        types: number[],
+        samplingModes: number[],
+        useSRGBBuffers: boolean[],
+        targets: number[],
+        faceIndex: number[],
+        layerIndex: number[],
+        layerCounts: number[],
+        options?: IMultiRenderTargetOptions
+    ) {
         const gl = this._getEngine()!._gl;
         for (let i = 0; i < count; i++) {
             if (options && options.types && options.types[i] !== undefined) {
@@ -238,19 +255,40 @@ export class MultiRenderTarget extends RenderTargetTexture {
             } else {
                 faceIndex.push(0);
             }
-            
+
             if (options && options.layerIndex && options.layerIndex[i] !== undefined) {
                 layerIndex.push(options.layerIndex[i]);
             } else {
                 layerIndex.push(0);
             }
-            
+
             if (options && options.layerCounts && options.layerCounts[i] !== undefined) {
                 layerCounts.push(options.layerCounts[i]);
             } else {
                 layerCounts.push(1);
             }
         }
+    }
+
+    private _createInternaTextureIndexMapping() {
+        const mapMainInternalTexture2Index: { [key: number]: number } = {};
+        const mapInternalTexture2MainIndex: number[] = [];
+
+        const internalTextures = this._renderTarget!.textures!;
+        for (let i = 0; i < internalTextures.length; i++) {
+            const texture = internalTextures[i];
+            if (!texture) {
+                continue;
+            }
+            const mainIndex = mapMainInternalTexture2Index[texture.uniqueId];
+            if (mainIndex !== undefined) {
+                mapInternalTexture2MainIndex[i] = mainIndex;
+            } else {
+                mapMainInternalTexture2Index[texture.uniqueId] = i;
+            }
+        }
+
+        return mapInternalTexture2MainIndex;
     }
 
     /**
@@ -260,6 +298,8 @@ export class MultiRenderTarget extends RenderTargetTexture {
         if (this._count < 1) {
             return;
         }
+
+        const mapInternalTexture2MainIndex = this._createInternaTextureIndexMapping();
 
         this.releaseInternalTextures();
         this._createInternalTextures();
@@ -272,7 +312,14 @@ export class MultiRenderTarget extends RenderTargetTexture {
         const internalTextures = this._renderTarget!.textures!;
         for (let i = 0; i < internalTextures.length; i++) {
             const texture = this._textures[i];
+            if (mapInternalTexture2MainIndex[i] !== undefined) {
+                this._renderTarget!.setTexture(internalTextures[mapInternalTexture2MainIndex[i]], i);
+            }
             texture._texture = internalTextures[i];
+            if (texture._texture) {
+                texture._noMipmap = !texture._texture.useMipMaps;
+                texture._useSRGBBuffer = texture._texture._useSRGBBuffer;
+            }
         }
 
         if (this.samples !== 1) {
@@ -303,6 +350,10 @@ export class MultiRenderTarget extends RenderTargetTexture {
                 texture.name = textureNames[i];
             }
             texture._texture = internalTextures[i];
+            if (texture._texture) {
+                texture._noMipmap = !texture._texture.useMipMaps;
+                texture._useSRGBBuffer = texture._texture._useSRGBBuffer;
+            }
             this._textures.push(texture);
         }
     }
@@ -326,8 +377,11 @@ export class MultiRenderTarget extends RenderTargetTexture {
 
         if (!this.textures[index]) {
             this.textures[index] = new Texture(null, this.getScene());
+            this.textures[index].name = this._textureNames?.[index] ?? this.textures[index].name;
         }
         this.textures[index]._texture = texture;
+        this.textures[index]._noMipmap = !texture.useMipMaps;
+        this.textures[index]._useSRGBBuffer = texture._useSRGBBuffer;
 
         this._count = this.renderTarget.textures ? this.renderTarget.textures.length : 0;
 
@@ -340,7 +394,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
         if (this._multiRenderTargetOptions.useSRGBBuffers) {
             this._multiRenderTargetOptions.useSRGBBuffers[index] = texture._useSRGBBuffer;
         }
-        if (this._multiRenderTargetOptions.targetTypes) {
+        if (this._multiRenderTargetOptions.targetTypes && this._multiRenderTargetOptions.targetTypes[index] !== -1) {
             let target: number = 0;
             if (texture.is2DArray) {
                 target = Constants.TEXTURE_2D_ARRAY;
@@ -374,10 +428,10 @@ export class MultiRenderTarget extends RenderTargetTexture {
         if (this._multiRenderTargetOptions.faceIndex) {
             this._multiRenderTargetOptions.faceIndex[index] = faceIndex;
         }
-        
+
         this.renderTarget.setLayerAndFaceIndex(index, layerIndex, faceIndex);
     }
-    
+
     /**
      * Changes every attached texture's face index or layer.
      * @param layerIndices The layer indices of the texture to be attached to the framebuffer
@@ -390,7 +444,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
 
         this._multiRenderTargetOptions.layerIndex = layerIndices;
         this._multiRenderTargetOptions.faceIndex = faceIndices;
-        
+
         this.renderTarget.setLayerAndFaceIndices(layerIndices, faceIndices);
     }
 
@@ -417,7 +471,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
      */
     public resize(size: any) {
         this._size = size;
-        this._rebuild();
+        this._rebuild(undefined, this._textureNames);
     }
 
     /**
@@ -438,6 +492,8 @@ export class MultiRenderTarget extends RenderTargetTexture {
         const faceIndex: number[] = [];
         const layerIndex: number[] = [];
         const layerCounts: number[] = [];
+
+        this._textureNames = textureNames;
 
         this._initTypes(count, types, samplingModes, useSRGBBuffers, targetTypes, faceIndex, layerIndex, layerCounts, options);
         this._multiRenderTargetOptions.types = types;

@@ -273,7 +273,8 @@ export class Texture extends BaseTexture {
      */
     public inspectableCustomProperties: Nullable<IInspectable[]> = null;
 
-    private _noMipmap: boolean = false;
+    /** @internal */
+    public _noMipmap: boolean = false;
     /** @internal */
     public _invertY: boolean = false;
     private _rowGenerationMatrix: Nullable<Matrix> = null;
@@ -312,7 +313,8 @@ export class Texture extends BaseTexture {
     private _mimeType?: string;
     private _loaderOptions?: any;
     private _creationFlags?: number;
-    private _useSRGBBuffer?: boolean;
+    /** @internal */
+    public _useSRGBBuffer?: boolean;
     private _forcedExtension?: string;
 
     /** Returns the texture mime type if it was defined by a loader (undefined else) */
