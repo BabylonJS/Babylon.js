@@ -888,6 +888,10 @@ SceneLoader.RegisterPlugin({
                 }
             }
 
+            scene.geometries.forEach((g) => {
+                g._loadedUniqueId = "";
+            });
+
             return true;
         } catch (err) {
             const msg = logOperation("importMesh", parsedData ? parsedData.producer : "Unknown") + log;
