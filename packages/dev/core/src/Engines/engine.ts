@@ -2029,7 +2029,12 @@ export class Engine extends ThinEngine {
             // In some browsers, requestPointerLock returns a promise.
             // Handle possible rejections to avoid an unhandled top-level exception.
             const promise: unknown = element.requestPointerLock();
-            if (promise instanceof Promise) promise.then(() => { element.focus(); }).catch(() => {});
+            if (promise instanceof Promise)
+                promise
+                    .then(() => {
+                        element.focus();
+                    })
+                    .catch(() => {});
             else element.focus();
         }
     }
