@@ -561,6 +561,9 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                     ledger.push(...blocks);
                 }
             }
+            NodeLedger.NameFormatter = (name) => {
+                return name.replace("Block", "");
+            };
         }
 
         return (

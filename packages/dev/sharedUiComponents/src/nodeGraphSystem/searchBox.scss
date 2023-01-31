@@ -55,6 +55,10 @@
                 color: white;
                 margin-top: 4px;
                 margin-bottom: 4px;
+
+                &:hover {
+                    background: rgb(30, 30, 30);
+                }
             }
         }
     }

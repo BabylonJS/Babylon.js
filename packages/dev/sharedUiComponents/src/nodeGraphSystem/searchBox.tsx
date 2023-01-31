@@ -10,13 +10,16 @@ export interface ISearchBoxComponentProps {
 /**
  * The search box component.
  */
-export class SearchBoxComponent extends React.Component<ISearchBoxComponentProps, {isVisible: boolean}> {
+export class SearchBoxComponent extends React.Component<ISearchBoxComponentProps, {isVisible: boolean, filter: string}> {
     private _handleEscKey: (evt: KeyboardEvent) => void;
+    private _targetX: number;
+    private _targetY: number;
+    private _nodes: string[];
 
     constructor(props: ISearchBoxComponentProps) {
         super(props);
 
-        this.state = { isVisible: false };
+        this.state = { isVisible: false, filter: "" };
 
         this._handleEscKey = (evt: KeyboardEvent) => {
             if (evt.key === "Escape") {
@@ -24,8 +27,10 @@ export class SearchBoxComponent extends React.Component<ISearchBoxComponentProps
             }
         };
 
-        this.props.stateManager.onSearchBoxRequiredObservable.add(() => {
-            this.setState({ isVisible: true });
+        this.props.stateManager.onSearchBoxRequiredObservable.add((loc) => {
+            this._targetX = loc.x;
+            this._targetY = loc.y;
+            this.setState({ isVisible: true, filter: "" });
             this.props.stateManager.hostDocument!.addEventListener("keydown", this._handleEscKey);
         });
     }
@@ -36,13 +41,40 @@ export class SearchBoxComponent extends React.Component<ISearchBoxComponentProps
         this.props.stateManager.hostDocument!.removeEventListener("keydown", this._handleEscKey);
     }
 
+    onFilterChange(evt: React.ChangeEvent<HTMLInputElement>) {
+        this.setState({filter: evt.target.value});
+    }
+
+    onNewNodeRequested(name: string) {
+        this.props.stateManager.onNewBlockRequiredObservable.notifyObservers({
+            type: name,
+            targetX: this._targetX,
+            targetY: this._targetY,
+            needRepositioning: true,
+        });
+
+        this.hide();
+    }
+
+    onKeyDown(evt: React.KeyboardEvent) {
+        if (evt.code === "Enter" && this._nodes.length > 0) {
+            this.onNewNodeRequested(this._nodes[0]);
+            return;
+        }
+    }
+
     render() {
         if (!this.state.isVisible) {
             return null;
         }
 
         // Sort and deduplicate the node names.
-        const nodes = Array.from(new Set(NodeLedger.RegisteredNodeNames.sort()));
+        this._nodes = Array.from(new Set(NodeLedger.RegisteredNodeNames.sort()));
+
+        if (this.state.filter) {
+            const filter = this.state.filter.toLowerCase().trim();
+            this._nodes = this._nodes.filter((name) => NodeLedger.NameFormatter(name).toLowerCase().includes(filter));
+        }
 
         return (
             <div
@@ -51,12 +83,19 @@ export class SearchBoxComponent extends React.Component<ISearchBoxComponentProps
                 <div
                     id="graph-search-box">
                         <div className="graph-search-box-title">Add a node</div>
-                        <input type="text" placeholder="Search..." className="graph-search-box-filter"/>
+                        <input type="text" placeholder="Search..." 
+                            onChange={(evt) => this.onFilterChange(evt)}
+                            onKeyDown={(evt) => this.onKeyDown(evt)}
+                            value={this.state.filter}
+                            className="graph-search-box-filter" autoFocus={true} tabIndex={0}/>
                         <div className="graph-search-box-list">
                         {
-                            nodes.map((name) => {
+                            this._nodes.map((name) => {
                                 return (
-                                    <div className="graph-search-box-list-item " key={name}>{name}</div>
+                                    <div className="graph-search-box-list-item " 
+                                        onClick={() => this.onNewNodeRequested(name)}
+                                        key={name}>
+                                        {NodeLedger.NameFormatter(name)}</div>
                                 )
                             })
                         }

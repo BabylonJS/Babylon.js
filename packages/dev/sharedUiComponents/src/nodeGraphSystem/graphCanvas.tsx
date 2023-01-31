@@ -352,7 +352,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     ) {
         if (evt.code === "Space") {
             this.stateManager.modalIsDisplayed = true;
-            this.props.stateManager.onSearchBoxRequiredObservable.notifyObservers();
+            this.props.stateManager.onSearchBoxRequiredObservable.notifyObservers({x: mouseLocationX, y: mouseLocationY});
             return;
         }
         if ((evt.keyCode === 46 || evt.keyCode === 8) && !this.props.stateManager.lockObject.lock) {
