@@ -315,9 +315,9 @@ export class AssetContainer extends AbstractScene {
                 }
             }
 
-            clone.position = source.position.clone();
-            clone.rotation = source.rotation.clone();
-            clone.scaling = source.scaling.clone();
+            clone.position.copyFrom(source.position);
+            clone.rotation.copyFrom(source.rotation);
+            clone.scaling.copyFrom(source.scaling);
 
             if ((clone as any).material) {
                 const mesh = clone as AbstractMesh;
@@ -376,16 +376,15 @@ export class AssetContainer extends AbstractScene {
                 const instancedNode = node as InstancedMesh;
                 const sourceMesh = instancedNode.sourceMesh;
                 const replicatedSourceId = conversionMap[sourceMesh.uniqueId];
-                const replicatedSource = replicatedSourceId !== undefined ? storeMap[replicatedSourceId] : sourceMesh;
+                const replicatedSource = typeof replicatedSourceId === "number" ? storeMap[replicatedSourceId] : sourceMesh;
                 const replicatedInstancedNode = replicatedSource.createInstance(instancedNode.name);
                 onNewCreated(instancedNode, replicatedInstancedNode);
             } else {
                 // Mesh or TransformNode
                 const canInstance = !options?.doNotInstantiate && (node as Mesh)._isMesh;
-                const replicatedNode = canInstance ? (node as Mesh).createInstance("instance of " + node.name) : node.clone("Clone of " + node.name, null, true);
+                const replicatedNode = canInstance ? (node as Mesh).createInstance(`instance of ${node.name}`) : node.clone(`Clone of ${node.name}`, null, true);
                 if (!replicatedNode) {
-                    console.error("Could not clone or instantiate node on Asset Container", node.name);
-                    return;
+                    throw new Error(`Could not clone or instantiate node on Asset Container ${node.name}`);
                 }
                 onNewCreated(node, replicatedNode);
             }
