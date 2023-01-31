@@ -60,8 +60,12 @@ class AudioSample {
 
 AudioSample.Add("silence, 1 second, 1 channel, 48000 kHz", 1, 48000, new Float32Array(48000));
 
+let mockedAudioContext: any;
+
 const AudioContext = jest.fn().mockName("AudioContext").mockImplementation(() => {
-    return {
+    mockedAudioContext = {
+        currentTime: 0,
+        state: "running",
         createBufferSource: jest.fn().mockName("createBufferSource").mockImplementation(() => {
             return {
                 connect: jest.fn().mockName("connect"),
@@ -93,9 +97,9 @@ const AudioContext = jest.fn().mockName("AudioContext").mockImplementation(() =>
         }),
         decodeAudioData: jest.fn().mockName("decodeAudioData").mockImplementation((data: ArrayBuffer, success: (buffer: AudioBuffer) => void) => {
             success(AudioSample.GetAudioBuffer(data));
-        }),
-        state: "running",
+        })
     };
+    return mockedAudioContext;
 });
 
 const Document = jest.fn().mockName("Document").mockImplementation(() => {
@@ -196,5 +200,14 @@ describe("Sound", () => {
         const sound = new Sound("test", AudioSample.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"));
         sound.play();
         expect(sound.isPlaying).toBe(true);
+    });
+
+    it("updates currentTime when play() is called and audio context time advances", () => {
+        const sound = new Sound("test", AudioSample.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"));
+        
+        sound.play();
+        mockedAudioContext.currentTime += 0.1;
+
+        expect(sound.currentTime).toBe(mockedAudioContext.currentTime);
     });
 });
