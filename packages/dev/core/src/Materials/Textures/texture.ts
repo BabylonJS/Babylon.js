@@ -533,7 +533,12 @@ export class Texture extends BaseTexture {
      * @param onLoad callback called when the texture is loaded  (defaults to null)
      * @param forcedExtension defines the extension to use to pick the right loader
      */
-    public updateURL(url: string, buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null, onLoad?: () => void, forcedExtension?: string): void {
+    public updateURL(
+        url: string,
+        buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null,
+        onLoad?: () => void,
+        forcedExtension?: string
+    ): void {
         if (this.url) {
             this.releaseInternalTexture();
             this.getScene()!.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
