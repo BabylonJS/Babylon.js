@@ -3,6 +3,63 @@ import { Engine, NullEngine } from "core/Engines";
 import { Scene } from "core/scene";
 import type { Nullable } from "core/types";
 
+class AudioSample {
+    public static Add(name: string, channelCount: number, sampleRate: number, channelData: Float32Array) {
+        const sample = new AudioSample(channelCount, sampleRate, channelData);
+        AudioSample._Array.push(sample);
+        AudioSample._Map.set(name, sample);
+    }
+
+    public static Get(name: string): AudioSample {
+        return AudioSample._Map.get(name)!;
+    }
+
+    public static GetArrayBuffer(name: string): ArrayBuffer {
+        return AudioSample._Map.get(name)!.arrayBuffer;
+    }
+
+    public static GetAudioBuffer(arrayBuffer: ArrayBuffer): AudioBuffer {
+        const indexView = new Uint32Array(arrayBuffer);
+        const index = indexView[0];
+        return AudioSample._Array[index].audioBuffer;
+    }
+
+    public get arrayBuffer() {
+        return this._arrayBuffer;
+    }
+
+    public get audioBuffer() {
+        return this._audioBuffer;
+    }
+
+    private static _Array = new Array<AudioSample>();
+    private static _Map = new Map<string, AudioSample>();
+    private static _CurrentArrayBufferIndex = 0;
+
+    private static _CreateArrayBuffer = () => {
+        const arrayBuffer = new ArrayBuffer(4);
+        const arrayBufferView = new Uint32Array(arrayBuffer);
+        arrayBufferView[0] = AudioSample._CurrentArrayBufferIndex++;
+        return arrayBuffer;
+    }
+
+    private constructor(channelCount: number, sampleRate: number, channelData: Float32Array) {
+        this._arrayBuffer = AudioSample._CreateArrayBuffer();
+        this._audioBuffer = {
+            channels: channelCount,
+            duration: (channelData.length / channelCount) / sampleRate,
+            length: channelData.length / channelCount,
+            sampleRate: sampleRate,
+            getChannelData: () => channelData
+        } as unknown as AudioBuffer;
+    }
+
+    private _arrayBuffer: ArrayBuffer;
+    private _audioBuffer: AudioBuffer;
+}
+
+AudioSample.Add("silence, 1 second, 1 channel, 48000 kHz", 1, 48000, new Float32Array(48000));
+
 const AudioContext = jest.fn().mockName("AudioContext").mockImplementation(() => {
     return {
         createBufferSource: jest.fn().mockName("createBufferSource").mockImplementation(() => {
@@ -31,16 +88,7 @@ const AudioContext = jest.fn().mockName("AudioContext").mockImplementation(() =>
             };
         }),
         decodeAudioData: jest.fn().mockName("decodeAudioData").mockImplementation((data: ArrayBuffer, success: (buffer: AudioBuffer) => void) => {
-            // Call the success callback with a mock AudioBuffer filled with 1 second of silence.
-            success({
-                getChannelData: jest.fn().mockName("getChannelData").mockImplementation(() => {
-                    return new Float32Array(48000);
-                }),
-                channels: 1,
-                duration: 1,
-                length: 48000,
-                sampleRate: 48000,
-            } as unknown as AudioBuffer);
+            success(AudioSample.GetAudioBuffer(data));
         }),
         state: "running",
     };
@@ -115,10 +163,7 @@ describe("Sound", () => {
     });
 
     it("sets isPlaying to true when play() is called", () => {
-        // Note that the given ArrayBuffer is decoded using our mocked AudioContext, which returns one second of
-        // silence no matter what we pass in. This means the ArrayBuffer we pass in here is essentially ignored.
-        // Regardless, we still need one byte in it to get past the check in the Sound constructor.
-        const sound = new Sound("test", new ArrayBuffer(1));
+        const sound = new Sound("test", AudioSample.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"));
         sound.play();
         expect(sound.isPlaying).toBe(true);
     });
