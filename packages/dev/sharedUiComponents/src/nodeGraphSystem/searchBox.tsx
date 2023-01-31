@@ -68,6 +68,9 @@ export class SearchBoxComponent extends React.Component<ISearchBoxComponentProps
             return null;
         }
 
+        const expectedWidth = 300;
+        const expectedHeight = 400;
+
         // Sort and deduplicate the node names.
         this._nodes = Array.from(new Set(NodeLedger.RegisteredNodeNames.sort()));
 
@@ -76,12 +79,32 @@ export class SearchBoxComponent extends React.Component<ISearchBoxComponentProps
             this._nodes = this._nodes.filter((name) => NodeLedger.NameFormatter(name).toLowerCase().includes(filter));
         }
 
+        const containerRect = this.props.stateManager.hostDocument.getElementById("graph-canvas")!.getBoundingClientRect();
+        const targetX = this._targetX - (expectedWidth / 2 + containerRect.x);
+        const targetY = this._targetY - (expectedHeight / 2 + containerRect.y);
+        const locStyle = {
+            left: targetX + "px",
+            top: targetY + "px",
+        }
+ 
+        if (targetX + expectedWidth > containerRect.width) {
+            locStyle.left = (containerRect.width - expectedWidth - 10) + "px";
+        } else if (targetX < 10) {
+            locStyle.left = "10px";
+        }
+
+        if (targetY + expectedHeight > containerRect.height) {
+            locStyle.top = (containerRect.height - expectedHeight - 10) + "px";
+        } else if (targetY < 10) {
+            locStyle.top = "10px";
+        }
+
         return (
             <div
                 id="graph-search-container">
                 <div id="graph-search-picking-blocker" onClick={() => this.hide()}></div>
                 <div
-                    id="graph-search-box">
+                    id="graph-search-box" style= {locStyle}>
                         <div className="graph-search-box-title">Add a node</div>
                         <input type="text" placeholder="Search..." 
                             onChange={(evt) => this.onFilterChange(evt)}
