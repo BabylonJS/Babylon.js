@@ -79,6 +79,10 @@ const AudioContext = jest.fn().mockName("AudioContext").mockImplementation(() =>
             };
         }),
         createGain: jest.fn().mockName("createGain").mockImplementation(() => {
+            // When creating a single Sound object, createGain() is called three times:
+            // 1) from AudioEngine._initializeAudioContext() to create the master gain.
+            // 2) from Sound constructor.
+            // 3) from main SoundTrack._initializeSoundTrackAudioGraph().
             return {
                 connect: jest.fn().mockName("connect"),
                 disconnect: jest.fn().mockName("disconnect"),
@@ -160,6 +164,32 @@ describe("Sound", () => {
     afterEach(() => {
         scene?.dispose();
         engine?.dispose();
+    });
+
+    it("constructor sets state correctly when given no options", () => {
+        const audioSample = AudioSample.Get("silence, 1 second, 1 channel, 48000 kHz");
+        const sound = new Sound("test", audioSample.arrayBuffer);
+        expect(sound.autoplay).toBe(false);
+        expect(sound.currentTime).toBe(0);
+        expect(sound.directionalConeInnerAngle).toBe(360);
+        expect(sound.directionalConeOuterAngle).toBe(360);
+        expect(sound.distanceModel).toBe("linear");
+        expect(sound.isPaused).toBe(false);
+        expect(sound.isPlaying).toBe(false);
+        expect(sound.loop).toBe(false);
+        expect(sound.maxDistance).toBe(100);
+        expect(sound.metadata).toBe(null);
+        expect(sound.name).toBe("test");
+        expect(sound.refDistance).toBe(1);
+        expect(sound.rolloffFactor).toBe(1);
+        expect(sound.soundTrackId).toBe(-1); // Set by main SoundTrack when added to it.
+        expect(sound.spatialSound).toBe(false);
+        expect(sound.useCustomAttenuation).toBe(false);
+
+        expect(sound.getAudioBuffer()).toBe(audioSample.audioBuffer);
+        expect(sound.getPlaybackRate()).toBe(1);
+        expect(sound.getSoundGain()).toBe(AudioContext.mock.results[0].value.createGain.mock.results[1].value);
+        expect(sound.getVolume()).toBe(1);
     });
 
     it("sets isPlaying to true when play() is called", () => {
