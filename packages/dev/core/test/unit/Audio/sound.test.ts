@@ -1,5 +1,7 @@
 import { AudioEngine, Sound } from "core/Audio";
+import type { DeviceType } from "core/DeviceInput";
 import { Engine, NullEngine } from "core/Engines";
+import type { IUIEvent } from "core/Events";
 import { Scene } from "core/scene";
 import type { Nullable } from "core/types";
 import { TestDeviceInputSystem } from "../DeviceInput/testDeviceInputSystem";
@@ -31,7 +33,7 @@ const AudioContext = jest.fn().mockName("AudioContext").mockImplementation(() =>
                 }
             };
         }),
-        decodeAudioData: jest.fn().mockName("decodeAudioData").mockImplementation((data: ArrayBuffer, success: (buffer: AudioBuffer) => void, error: (error: any) => void) => {
+        decodeAudioData: jest.fn().mockName("decodeAudioData").mockImplementation((data: ArrayBuffer, success: (buffer: AudioBuffer) => void) => {
             // Call the success callback with a mock AudioBuffer filled with 1 second of silence.
             success({
                 getChannelData: jest.fn().mockName("getChannelData").mockImplementation(() => {
@@ -41,7 +43,7 @@ const AudioContext = jest.fn().mockName("AudioContext").mockImplementation(() =>
                 duration: 1,
                 length: 48000,
                 sampleRate: 48000,
-            });
+            } as unknown as AudioBuffer);
         }),
         state: "running",
     };
@@ -69,6 +71,7 @@ const Document = jest.fn().mockName("Document").mockImplementation(() => {
             }
             return {};
         }),
+        removeEventListener: jest.fn().mockName("removeEventListener")
     };
 });
 
@@ -76,7 +79,8 @@ const Document = jest.fn().mockName("Document").mockImplementation(() => {
 const Window = jest.fn().mockName("Window").mockImplementation(() => {
     return {
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        AudioContext: AudioContext
+        AudioContext: AudioContext,
+        removeEventListener: jest.fn().mockName("removeEventListener")
     };
 });
 
@@ -115,8 +119,6 @@ describe("Sound", () => {
     });
 
     afterEach(() => {
-        global.document = undefined;
-        global.window = undefined;
         scene?.dispose();
         engine?.dispose();
     });
