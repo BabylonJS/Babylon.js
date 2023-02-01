@@ -1,4 +1,5 @@
-import { Engine, Scene } from "../index"
+import { Engine } from "core/Engines/engine";
+import { Scene } from "core/scene";
 import { copyFramebufferToTexture } from "./frameBufferHelper";
 export class OpaqueObjectCopier {
     _engine: Engine;
