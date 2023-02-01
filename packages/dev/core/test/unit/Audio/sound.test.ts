@@ -61,13 +61,14 @@ class AudioSample {
 AudioSample.Add("silence, 1 second, 1 channel, 48000 kHz", 1, 48000, new Float32Array(48000));
 
 let mockedAudioContext: any;
+let mockedBufferSource: any;
 
 const AudioContext = jest.fn().mockName("AudioContext").mockImplementation(() => {
     mockedAudioContext = {
         currentTime: 0,
         state: "running",
         createBufferSource: jest.fn().mockName("createBufferSource").mockImplementation(() => {
-            return {
+            mockedBufferSource = {
                 connect: jest.fn().mockName("connect"),
                 disconnect: jest.fn().mockName("disconnect"),
                 onended: () => void 0,
@@ -81,6 +82,7 @@ const AudioContext = jest.fn().mockName("AudioContext").mockImplementation(() =>
                     value: 1
                 }
             };
+            return mockedBufferSource;
         }),
         createGain: jest.fn().mockName("createGain").mockImplementation(() => {
             // When creating a single Sound object, createGain() is called three times:
