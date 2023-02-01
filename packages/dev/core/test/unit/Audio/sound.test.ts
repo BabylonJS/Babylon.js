@@ -196,7 +196,7 @@ describe("Sound", () => {
         expect(sound.getVolume()).toBe(1);
     });
 
-    it("sets isPlaying to true when play() is called", () => {
+    it("sets isPlaying to true when play is called", () => {
         const sound = new Sound("test", AudioSample.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"));
         
         sound.play();
@@ -204,7 +204,7 @@ describe("Sound", () => {
         expect(sound.isPlaying).toBe(true);
     });
 
-    it("updates currentTime when play() is called and audio context time advances", () => {
+    it("updates currentTime when play is called and audio context time advances", () => {
         const sound = new Sound("test", AudioSample.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"));
         
         sound.play();
