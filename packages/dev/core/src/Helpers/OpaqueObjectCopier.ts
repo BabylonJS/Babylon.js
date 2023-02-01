@@ -1,16 +1,18 @@
 import { Engine } from "core/Engines/engine";
 import { Scene } from "core/scene";
-import { copyFramebufferToTexture } from "./frameBufferHelper";
+import { FrameBufferHelper } from "./frameBufferHelper";
 export class OpaqueObjectCopier {
     _engine: Engine;
     _scene: Scene;
     _texture: any;
+    _frameBufferHelper: any;
     constructor(engine: Engine, scene: Scene) {
         this._engine = engine;
         this._scene = scene;
-        // scene.onAfterRenderingGroupObservable = 
+        this._frameBufferHelper = new FrameBufferHelper();
         scene.renderingManager.getRenderingGroup(0).onBeforeTransparentRendering = ()=>{
-            this._texture = copyFramebufferToTexture(this._engine, this._scene);
+            this._texture = this._frameBufferHelper.copyFramebufferToTexture(this._engine, this._scene);
+            this._scene.refractionTexture = this._texture;
         }
     }
   
