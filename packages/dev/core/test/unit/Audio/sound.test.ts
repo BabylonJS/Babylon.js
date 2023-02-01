@@ -209,10 +209,11 @@ describe("Sound", () => {
     it("updates currentTime when play is called and audio context time advances", () => {
         const sound = new Sound("test", AudioSample.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"));
         
+        mockedAudioContext.currentTime = 0.1
         sound.play();
-        mockedAudioContext.currentTime += 0.1;
+        mockedAudioContext.currentTime += 0.2;
 
-        expect(sound.currentTime).toBe(mockedAudioContext.currentTime);
+        expect(sound.currentTime).toBeCloseTo(0.2);
     });
 
     it("starts the AudioBufferSourceNode at the constructor's given offset when play is called", () => {
@@ -235,12 +236,16 @@ describe("Sound", () => {
         };
         const sound = new Sound("test", audioSample.arrayBuffer, null, null, options);
         
+        mockedAudioContext.currentTime = 0.1
         sound.play();
-        mockedAudioContext.currentTime += 0.1;
+        mockedAudioContext.currentTime += 0.2;
         sound.pause();
-        sound.updateOptions({ offset: 0.2 });
+        sound.updateOptions({ offset: 0.4 });
         sound.play();
         
-        expect(mockedBufferSource.start).toBeCalledWith(0.1, 0.2, undefined);
+        const args = mockedBufferSource.start.mock.calls[0];
+        expect(args[0]).toBeCloseTo(0.3);
+        expect(args[1]).toBeCloseTo(0.4);
+        expect(args[2]).toBe(undefined);;
     });
 });
