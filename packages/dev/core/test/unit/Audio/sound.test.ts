@@ -214,4 +214,16 @@ describe("Sound", () => {
 
         expect(sound.currentTime).toBe(mockedAudioContext.currentTime);
     });
+
+    it("starts the AudioBufferSourceNode at the constructor's given offset when play is called", () => {
+        const audioSample = AudioSample.Get("silence, 1 second, 1 channel, 48000 kHz");
+        const options = {
+            offset: 0.1
+        };
+        const sound = new Sound("test", audioSample.arrayBuffer, null, null, options);
+        
+        sound.play();
+        
+        expect(mockedBufferSource.start).toBeCalledWith(0, 0.1, undefined);
+    });
 });
