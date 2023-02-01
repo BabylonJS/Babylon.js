@@ -211,6 +211,21 @@ export abstract class AbstractScene {
         this._environmentTexture = value;
     }
 
+    /** @internal */
+    protected _refractionTexture: Nullable<BaseTexture> = null;
+    /**
+     * Texture used in all pbr material as the reflection texture.
+     * As in the majority of the scene they are the same (exception for multi room and so on),
+     * this is easier to reference from here than from all the materials.
+     */
+    public get refractionTexture(): Nullable<BaseTexture> {
+        return this._refractionTexture;
+    }
+
+    public set refractionTexture(value: Nullable<BaseTexture>) {
+        this._refractionTexture = value;
+    }
+
     /**
      * The list of postprocesses added to the scene
      */
