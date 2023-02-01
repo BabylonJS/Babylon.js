@@ -138,6 +138,12 @@ export enum ScenePerformancePriority {
     Aggressive,
 }
 
+// Scene.prototype.refractionTexture = null;
+
+// BABYLON.Scene.prototype.registerAfterRender = function() {
+//   this.refractionTexture = this._opaqueObjectCopier.texture;
+// };
+
 /**
  * Represents a scene to be rendered by the engine.
  * @see https://doc.babylonjs.com/features/featuresDeepDive/scene
@@ -151,6 +157,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public static readonly FOGMODE_EXP2 = 2;
     /** The fog density is following a linear function. */
     public static readonly FOGMODE_LINEAR = 3;
+
+    public static RefractionTexture = null;
 
     /**
      * Gets or sets the minimum deltatime when deterministic lock step is enabled

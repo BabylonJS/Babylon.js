@@ -259,7 +259,8 @@ export class RenderingGroup {
             if (scene._activeMeshesFrozenButKeepClipping && !subMesh.isInFrustum(scene._frustumPlanes)) {
                 continue;
             }
-
+            //on before transparent rendering
+            onBeforeTransparentRendering();
             if (transparent) {
                 const material = subMesh.getMaterial();
 
@@ -487,3 +488,7 @@ export class RenderingGroup {
         this._scene.onAfterSpritesRenderingObservable.notifyObservers(this._scene);
     }
 }
+function onBeforeTransparentRendering() {
+    throw new Error("Function not implemented.");
+}
+
