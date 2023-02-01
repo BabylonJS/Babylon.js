@@ -15,9 +15,9 @@ import type { Node } from "./node";
 import type { Observer } from "./Misc/observable";
 import type { ThinEngine } from "./Engines/thinEngine";
 import { InstancedMesh } from "./Meshes/instancedMesh";
-import { Light } from "./Lights";
-import { Camera } from "./Cameras";
-import { Tools } from "./Misc";
+import { Light } from "./Lights/light";
+import { Camera } from "./Cameras/camera";
+import { Tools } from "./Misc/tools";
 
 /**
  * Set of assets to keep when moving a scene into an asset container.
