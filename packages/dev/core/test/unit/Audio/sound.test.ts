@@ -226,4 +226,21 @@ describe("Sound", () => {
         
         expect(mockedBufferSource.start).toBeCalledWith(0, 0.1, undefined);
     });
+
+    // See https://playground.babylonjs.com/#BTBJRV#7.
+    it("restarts the AudioBufferSourceNode at the given offset when play, pause, updateOptions, and play are called", () => {
+        const audioSample = AudioSample.Get("silence, 1 second, 1 channel, 48000 kHz");
+        const options = {
+            offset: 0.1
+        };
+        const sound = new Sound("test", audioSample.arrayBuffer, null, null, options);
+        
+        sound.play();
+        mockedAudioContext.currentTime += 0.1;
+        sound.pause();
+        sound.updateOptions({ offset: 0.2 });
+        sound.play();
+        
+        expect(mockedBufferSource.start).toBeCalledWith(0.1, 0.2, undefined);
+    });
 });
