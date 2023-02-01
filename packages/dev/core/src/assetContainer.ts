@@ -1,7 +1,7 @@
 import { AbstractScene } from "./abstractScene";
 import type { Scene } from "./scene";
 import { Mesh } from "./Meshes/mesh";
-import type { TransformNode } from "./Meshes/transformNode";
+import { TransformNode } from "./Meshes/transformNode";
 import type { Skeleton } from "./Bones/skeleton";
 import type { AnimationGroup } from "./Animations/animationGroup";
 import type { Animatable } from "./Animations/animatable";
@@ -15,6 +15,9 @@ import type { Node } from "./node";
 import type { Observer } from "./Misc/observable";
 import type { ThinEngine } from "./Engines/thinEngine";
 import { InstancedMesh } from "./Meshes/instancedMesh";
+import { Light } from "./Lights/light";
+import { Camera } from "./Cameras/camera";
+import { Tools } from "./Misc/tools";
 
 /**
  * Set of assets to keep when moving a scene into an asset container.
@@ -226,6 +229,57 @@ export class AssetContainer extends AbstractScene {
     }
 
     /**
+     * Check if a specific node is contained in this asset container.
+     * @param node
+     */
+    private _isNodeInContainer(node: Node) {
+        if (node instanceof Mesh && this.meshes.indexOf(node) !== -1) {
+            return true;
+        }
+        if (node instanceof TransformNode && this.transformNodes.indexOf(node) !== -1) {
+            return true;
+        }
+        if (node instanceof Light && this.lights.indexOf(node) !== -1) {
+            return true;
+        }
+        if (node instanceof Camera && this.cameras.indexOf(node) !== -1) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * For every node in the scene, check if its parent node is also in the scene.
+     */
+    private _isValidHierarchy() {
+        for (const node of this.meshes) {
+            if (node.parent && !this._isNodeInContainer(node.parent)) {
+                Logger.Warn(`Node ${node.name} has a parent that is not in the container.`);
+                return false;
+            }
+        }
+        for (const node of this.transformNodes) {
+            if (node.parent && !this._isNodeInContainer(node.parent)) {
+                Logger.Warn(`Node ${node.name} has a parent that is not in the container.`);
+                return false;
+            }
+        }
+        for (const node of this.lights) {
+            if (node.parent && !this._isNodeInContainer(node.parent)) {
+                Logger.Warn(`Node ${node.name} has a parent that is not in the container.`);
+                return false;
+            }
+        }
+        for (const node of this.cameras) {
+            if (node.parent && !this._isNodeInContainer(node.parent)) {
+                Logger.Warn(`Node ${node.name} has a parent that is not in the container.`);
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Instantiate or clone all meshes and add the new ones to the scene.
      * Skeletons and animation groups will all be cloned
      * @param nameFunction defines an optional function used to get new names for clones
@@ -240,6 +294,9 @@ export class AssetContainer extends AbstractScene {
         cloneMaterials = false,
         options?: { doNotInstantiate?: boolean | ((node: TransformNode) => boolean); predicate?: (entity: any) => boolean }
     ): InstantiatedEntries {
+        if (!this._isValidHierarchy()) {
+            Tools.Warn("SceneSerializer.InstantiateModelsToScene: The Asset Container hierarchy is not valid.");
+        }
         const conversionMap: { [key: number]: number } = {};
         const storeMap: { [key: number]: any } = {};
         const result = new InstantiatedEntries();
@@ -447,6 +504,9 @@ export class AssetContainer extends AbstractScene {
         if (this._wasAddedToScene) {
             return;
         }
+        if (!this._isValidHierarchy()) {
+            Tools.Warn("SceneSerializer.addAllToScene: The Asset Container hierarchy is not valid.");
+        }
 
         this._wasAddedToScene = true;
 
@@ -559,6 +619,10 @@ export class AssetContainer extends AbstractScene {
      * Removes all the assets in the container from the scene
      */
     public removeAllFromScene() {
+        if (!this._isValidHierarchy()) {
+            Tools.Warn("SceneSerializer.removeAllFromScene: The Asset Container hierarchy is not valid.");
+        }
+
         this._wasAddedToScene = false;
 
         this.removeFromScene(null);
