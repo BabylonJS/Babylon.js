@@ -489,6 +489,6 @@ export class RenderingGroup {
     }
 }
 function onBeforeTransparentRendering() {
-    throw new Error("Function not implemented.");
+    
 }
 
