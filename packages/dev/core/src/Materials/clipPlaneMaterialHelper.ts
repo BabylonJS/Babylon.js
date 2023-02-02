@@ -74,8 +74,7 @@ function addDefine(clipPlane: Nullable<Plane>, defines: string[] | Record<string
         alreadySet = defineIndex !== -1;
         if (!alreadySet && clipPlane) {
             defines.push(defineString);
-        }
-        else if (alreadySet && !clipPlane) {
+        } else if (alreadySet && !clipPlane) {
             defines.splice(defineIndex, 1);
         }
     } else {
