@@ -301,7 +301,8 @@ export class PhysicsBody {
 
     /**
      * Register a collision callback that is called when the body collides
-     *
+     * Filtering by body is inefficient. It's more preferable to register a collision callback for the entire world
+     * and do the filtering on the user side.
      */
     public registerOnCollide(func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>) => void): void {
         return this._physicsPlugin.registerOnBodyCollide(this, func);
@@ -309,7 +310,6 @@ export class PhysicsBody {
 
     /**
      * Unregister a collision callback that is called when the body collides
-     *
      */
     public unregisterOnCollide(func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>) => void): void {
         return this._physicsPlugin.unregisterOnBodyCollide(this, func);
