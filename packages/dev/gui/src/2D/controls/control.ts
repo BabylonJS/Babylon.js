@@ -19,12 +19,13 @@ import type { Style } from "../style";
 import { Matrix2D, Vector2WithInfo } from "../math2D";
 import { GetClass, RegisterClass } from "core/Misc/typeStore";
 import { SerializationHelper, serialize } from "core/Misc/decorators";
-import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import type { ICanvasGradient, ICanvasRenderingContext } from "core/Engines/ICanvas";
 import { EngineStore } from "core/Engines/engineStore";
 import type { IAccessibilityTag } from "core/IAccessibilityTag";
 import type { IPointerEvent } from "core/Events/deviceInputEvents";
 import type { IAnimatable } from "core/Animations/animatable.interface";
 import type { Animation } from "core/Animations/animation";
+import type { BaseGradient } from "./gradient/BaseGradient";
 
 /**
  * Root class used for all 2D controls
@@ -116,6 +117,7 @@ export class Control implements IAnimatable {
     protected _disabledColor = "#9a9a9a";
     protected _disabledColorItem = "#6a6a6a";
     protected _isReadOnly = false;
+    private _gradient: Nullable<BaseGradient> = null;
     /** @internal */
     protected _rebuildLayout = false;
 
@@ -778,6 +780,21 @@ export class Control implements IAnimatable {
         }
 
         this._color = value;
+        this._markAsDirty();
+    }
+
+    /** Gets or sets gradient. Setting a gradient will override the color */
+    @serialize()
+    public get gradient(): Nullable<BaseGradient> {
+        return this._gradient;
+    }
+
+    public set gradient(value: Nullable<BaseGradient>) {
+        if (this._gradient === value) {
+            return;
+        }
+
+        this._gradient = value;
         this._markAsDirty();
     }
 
@@ -1683,6 +1700,10 @@ export class Control implements IAnimatable {
         context.strokeRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
     }
 
+    protected _getColor(context: ICanvasRenderingContext): string | ICanvasGradient {
+        return this.gradient ? this.gradient.getCanvasGradient(context) : this.color;
+    }
+
     /**
      * @internal
      */
@@ -1704,8 +1725,8 @@ export class Control implements IAnimatable {
             context.font = this._font;
         }
 
-        if (this._color) {
-            context.fillStyle = this._color;
+        if (this._color || this.gradient) {
+            context.fillStyle = this._getColor(context);
         }
 
         if (Control.AllowAlphaInheritance) {
@@ -2375,6 +2396,11 @@ export class Control implements IAnimatable {
             serializationObject.fontStyle = this.fontStyle;
         }
 
+        if (this._gradient) {
+            serializationObject.gradient = {};
+            this._gradient.serialize(serializationObject.gradient);
+        }
+
         // Animations
         SerializationHelper.AppendSerializedAnimations(this, serializationObject);
     }
@@ -2397,6 +2423,13 @@ export class Control implements IAnimatable {
 
         if (serializedObject.fontStyle) {
             this.fontStyle = serializedObject.fontStyle;
+        }
+
+        // Gradient
+        if (serializedObject.gradient) {
+            const className = Tools.Instantiate("BABYLON.GUI." + serializedObject.gradient.className);
+            this._gradient = new className();
+            this._gradient?.parse(serializedObject.gradient);
         }
 
         // Animations
@@ -2551,6 +2584,15 @@ export class Control implements IAnimatable {
 
         context.scale(1 / width, 1 / height);
         context.translate(-x, -y);
+    }
+
+    /**
+     * Returns true if the control is ready to be used
+     * @returns
+     */
+    public isReady(): boolean {
+        // Most controls are ready by default, so the default implementation is to return true
+        return true;
     }
 }
 RegisterClass("BABYLON.GUI.Control", Control);

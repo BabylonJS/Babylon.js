@@ -28,3 +28,4 @@ export * from "./texture";
 export * from "./thinTexture";
 export * from "./thinRenderTargetTexture";
 export * from "./videoTexture";
+export * from "./ktx2decoderTypes";

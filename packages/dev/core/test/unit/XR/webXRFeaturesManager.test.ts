@@ -64,7 +64,7 @@ describe("Babylon WebXR Features Manager", function () {
             expect(subject.getEnabledFeatures()).toStrictEqual([WebXRMotionControllerTeleportation.Name]);
         });
 
-        it("Cannot enable Teleportation feature while Teleportation feature is enabled", () => {
+        it("Cannot enable Teleportation feature while Movement feature is enabled", () => {
             const teleportationFeature = subject.enableFeature(WebXRControllerMovement.Name, undefined, { xrInput: {} });
             expect(teleportationFeature).toBeDefined();
             expect(subject.getEnabledFeatures()).toStrictEqual([WebXRControllerMovement.Name]);

@@ -1526,8 +1526,35 @@
         },
         {
             "title": "GUI Images in Grid",
-            "playgroundId": "#8Y0XJL#1",
-            "renderCount": 10
+            "playgroundId": "#8Y0XJL#1"
+        },
+        {
+            "title": "GUI Force Resize Width",
+            "playgroundId": "#XCPP9Y#17259"
+        },
+        {
+            "title": "GUI Gradient Linear",
+            "playgroundId": "#XCPP9Y#17227"
+        },
+        {
+            "title": "GUI Gradient Radial",
+            "playgroundId": "#4Z7EK3"
+        },
+        {
+            "title": "GUI Gradient Linear with transparency",
+            "playgroundId": "#PFK1Z5"
+        },
+        {
+            "title": "Load babylon files with same geometry uniqueId",
+            "playgroundId": "#3UCFHS"
+        },
+        {
+            "title": "Asset Container Instantiate to Scene",
+            "playgroundId": "#5NFRVE#142"
+        },
+        {
+            "title": "Asset Container Instantiate to Scene 2",
+            "playgroundId": "#5NFRVE#161"
         }
     ]
 }

@@ -92,6 +92,8 @@ export class TransformNode extends Node {
             return;
         }
         this._billboardMode = value;
+        this._cache.useBillboardPosition = (this._billboardMode & TransformNode.BILLBOARDMODE_USE_POSITION) !== 0;
+        this._computeUseBillboardPath();
     }
 
     private _preserveParentRotationForBillboard = false;
@@ -108,6 +110,11 @@ export class TransformNode extends Node {
             return;
         }
         this._preserveParentRotationForBillboard = value;
+        this._computeUseBillboardPath();
+    }
+
+    private _computeUseBillboardPath(): void {
+        this._cache.useBillboardPath = this._billboardMode !== TransformNode.BILLBOARDMODE_NONE && !this.preserveParentRotationForBillboard;
     }
 
     /**
@@ -339,6 +346,8 @@ export class TransformNode extends Node {
         cache.localMatrixUpdated = false;
         cache.billboardMode = -1;
         cache.infiniteDistance = false;
+        cache.useBillboardPosition = false;
+        cache.useBillboardPath = false;
     }
 
     /**
@@ -1009,11 +1018,21 @@ export class TransformNode extends Node {
     }
 
     /**
+     * Returns whether the transform node world matrix computation needs the camera information to be computed.
+     * This is the case when the node is a billboard or has an infinite distance for instance.
+     * @returns true if the world matrix computation needs the camera information to be computed
+     */
+    public isWorldMatrixCameraDependent(): boolean {
+        return (this._infiniteDistance && !this.parent) || (this._billboardMode !== TransformNode.BILLBOARDMODE_NONE && !this.preserveParentRotationForBillboard);
+    }
+
+    /**
      * Computes the world matrix of the node
      * @param force defines if the cache version should be invalidated forcing the world matrix to be created from scratch
+     * @param camera defines the camera used if different from the scene active camera (This is used with modes like Billboard or infinite distance)
      * @returns the world matrix
      */
-    public computeWorldMatrix(force?: boolean): Matrix {
+    public computeWorldMatrix(force: boolean = false, camera: Nullable<Camera> = null): Matrix {
         if (this._isWorldMatrixFrozen && !this._isDirty) {
             return this._worldMatrix;
         }
@@ -1024,9 +1043,7 @@ export class TransformNode extends Node {
             return this._worldMatrix;
         }
 
-        const camera = <Camera>this.getScene().activeCamera;
-        const useBillboardPosition = (this._billboardMode & TransformNode.BILLBOARDMODE_USE_POSITION) !== 0;
-        const useBillboardPath = this._billboardMode !== TransformNode.BILLBOARDMODE_NONE && !this.preserveParentRotationForBillboard;
+        camera = camera || this.getScene().activeCamera;
 
         this._updateCache();
         const cache = this._cache;
@@ -1106,7 +1123,7 @@ export class TransformNode extends Node {
             if (force) {
                 parent.computeWorldMatrix(force);
             }
-            if (useBillboardPath) {
+            if (cache.useBillboardPath) {
                 if (this._transformToBoneReferal) {
                     parent.getWorldMatrix().multiplyToRef(this._transformToBoneReferal.getWorldMatrix(), TmpVectors.Matrix[7]);
                 } else {
@@ -1142,7 +1159,7 @@ export class TransformNode extends Node {
         }
 
         // Billboarding based on camera orientation (testing PG:http://www.babylonjs-playground.com/#UJEIL#13)
-        if (useBillboardPath && camera && this.billboardMode && !useBillboardPosition) {
+        if (cache.useBillboardPath && camera && this.billboardMode && !cache.useBillboardPosition) {
             const storedTranslation = TmpVectors.Vector3[0];
             this._worldMatrix.getTranslationToRef(storedTranslation); // Save translation
 
@@ -1177,7 +1194,7 @@ export class TransformNode extends Node {
             this._worldMatrix.setTranslation(TmpVectors.Vector3[0]);
         }
         // Billboarding based on camera position
-        else if (useBillboardPath && camera && this.billboardMode && useBillboardPosition) {
+        else if (cache.useBillboardPath && camera && cache.useBillboardPosition) {
             const storedTranslation = TmpVectors.Vector3[0];
             // Save translation
             this._worldMatrix.getTranslationToRef(storedTranslation);

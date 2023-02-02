@@ -371,6 +371,7 @@ export class Effect implements IDisposable {
                             migratedFragmentCode = processFinalCode("fragment", migratedFragmentCode);
                         }
                         const finalShaders = ShaderProcessor.Finalize(migratedVertexCode, migratedFragmentCode, processorOptions);
+                        processorOptions = null as any; // avoid some GC leaks because of code below (related to proxyFunction(name).bind(this))
                         this._useFinalCode(finalShaders.vertexCode, finalShaders.fragmentCode, baseName);
                     },
                     this._engine
@@ -399,8 +400,6 @@ export class Effect implements IDisposable {
             shaderCodes[1] = fragmentCode;
             shadersLoaded();
         });
-
-        processorOptions = null as any; // avoid some GC leaks because of code below (related to proxyFunction(name).bind(this))
 
         const proxyFunction = function (functionName: string) {
             // check if the function exists in the pipelineContext

@@ -201,14 +201,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.43.0";
+        return "babylonjs@5.45.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.43.0";
+        return "5.45.0";
     }
 
     /**
@@ -1202,7 +1202,7 @@ export class ThinEngine {
             supportSRGBBuffers: false,
             supportTransformFeedbacks: this._webGLVersion > 1,
             textureMaxLevel: this._webGLVersion > 1,
-            texture2DArrayMaxLayerCount: this._webGLVersion > 1 ? 256 : 128,
+            texture2DArrayMaxLayerCount: this._webGLVersion > 1 ? this._gl.getParameter(this._gl.MAX_ARRAY_TEXTURE_LAYERS) : 128,
         };
 
         // Infos

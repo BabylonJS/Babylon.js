@@ -1,16 +1,18 @@
 import type { Nullable } from "../../types";
 import type { Observer } from "../../Misc/observable";
 import type { Vector3 } from "../../Maths/math.vector";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
+import { TransformNode } from "../../Meshes/transformNode";
 import type { Node } from "../../node";
 import type { PhysicsBody } from "./physicsBody";
 
-declare module "../../Meshes/abstractMesh" {
+import "../joinedPhysicsEngineComponent";
+
+declare module "../../Meshes/transformNode" {
     /**
      *
      */
     /** @internal */
-    export interface AbstractMesh {
+    export interface TransformNode {
         /** @internal */
         _physicsBody: Nullable<PhysicsBody>;
 
@@ -29,18 +31,18 @@ declare module "../../Meshes/abstractMesh" {
          * @param contactPoint defines where to apply the force
          * @returns the current mesh
          */
-        applyImpulse(force: Vector3, contactPoint: Vector3): AbstractMesh;
+        applyImpulse(force: Vector3, contactPoint: Vector3): TransformNode;
 
         /** @internal */
         _disposePhysicsObserver: Nullable<Observer<Node>>;
     }
 }
 
-Object.defineProperty(AbstractMesh.prototype, "physicsBody", {
-    get: function (this: AbstractMesh) {
+Object.defineProperty(TransformNode.prototype, "physicsBody", {
+    get: function (this: TransformNode) {
         return this._physicsBody;
     },
-    set: function (this: AbstractMesh, value: Nullable<PhysicsBody>) {
+    set: function (this: TransformNode, value: Nullable<PhysicsBody>) {
         if (this._physicsBody === value) {
             return;
         }
@@ -69,7 +71,7 @@ Object.defineProperty(AbstractMesh.prototype, "physicsBody", {
  * @returns a physics body or null
  */
 /** @internal */
-AbstractMesh.prototype.getPhysicsBody = function (): Nullable<PhysicsBody> {
+TransformNode.prototype.getPhysicsBody = function (): Nullable<PhysicsBody> {
     return this.physicsBody;
 };
 
@@ -81,9 +83,9 @@ AbstractMesh.prototype.getPhysicsBody = function (): Nullable<PhysicsBody> {
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
  */
 /** @internal */
-AbstractMesh.prototype.applyImpulse = function (force: Vector3, contactPoint: Vector3): AbstractMesh {
+TransformNode.prototype.applyImpulse = function (force: Vector3, contactPoint: Vector3): TransformNode {
     if (!this.physicsBody) {
-        throw new Error("No Physics Body for AbstractMesh");
+        throw new Error("No Physics Body for TransformNode");
     }
     this.physicsBody.applyImpulse(force, contactPoint);
     return this;

@@ -232,9 +232,14 @@ export const evaluateRenderSceneForVisualization = async (renderCount: number) =
             if (window.scene.activeCamera && (window.scene.activeCamera as any).useAutoRotationBehavior) {
                 (window.scene.activeCamera as any).useAutoRotationBehavior = false;
             }
+            const sceneAdts: any[] = window.scene!.textures.filter((t: any) => t.getClassName() === "AdvancedDynamicTexture");
+            const adtsAreReady = () => {
+                return sceneAdts.every((adt: any) => adt.guiIsReady());
+            };
+            let renderAfterGuiIsReadyCount = 1;
             window.engine.runRenderLoop(function () {
                 try {
-                    if (renderCount === 0) {
+                    if (renderCount <= 0 && renderAfterGuiIsReadyCount <= 0) {
                         if (window.scene!.isReady()) {
                             window.engine && window.engine.stopRenderLoop();
                             return resolve(true);
@@ -245,6 +250,9 @@ export const evaluateRenderSceneForVisualization = async (renderCount: number) =
                     } else {
                         window.scene && window.scene.render();
                         renderCount--;
+                        if (adtsAreReady()) {
+                            renderAfterGuiIsReadyCount--;
+                        }
                     }
                 } catch (e) {
                     window.engine && window.engine.stopRenderLoop();
