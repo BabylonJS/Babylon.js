@@ -349,8 +349,12 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         mouseLocationY: number,
         dataGenerator: (nodeData: INodeData) => any,
         rootElement: HTMLDivElement
-    ) {
-        if (evt.code === "Space") {
+    ) { 
+        if (this.stateManager.modalIsDisplayed) {
+            return;
+        }
+
+        if (evt.code === "Space" && evt.target === this.props.stateManager.hostDocument!.body) {
             this.stateManager.modalIsDisplayed = true;
             this.props.stateManager.onSearchBoxRequiredObservable.notifyObservers({x: mouseLocationX, y: mouseLocationY});
             return;
@@ -360,8 +364,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             const selectedItems = this.selectedNodes;
             const inputs: Nullable<IPortData>[] = [];
             const outputs: Nullable<IPortData>[] = [];
+            let needRebuild = false;
 
             if (selectedItems.length > 0) {
+                needRebuild = true;
                 for (const selectedItem of selectedItems) {
                     if (evt.altKey) {
                         this.populateConnectedEntriesBeforeRemoval(selectedItem, selectedItems, inputs, outputs);
@@ -375,10 +381,12 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             }
 
             if (this.selectedLink) {
+                needRebuild = true;
                 this.selectedLink.dispose();
             }
 
             if (this.selectedFrames.length) {
+                needRebuild = true;
                 for (const frame of this.selectedFrames) {
                     if (frame.isCollapsed) {
                         while (frame.nodes.length > 0) {
@@ -394,6 +402,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                     }
                     frame.dispose();
                 }
+            }
+
+            if (!needRebuild) {
+                return;
             }
 
             // Reconnect if required
