@@ -68,21 +68,21 @@ function setClipPlane(effect: Effect, uniformName: string, clipPlane: Nullable<P
 function addDefine(clipPlane: Nullable<Plane>, defines: string[] | Record<string, any>, defineName: string, defineString: string): boolean {
     const defineClipPlane = clipPlane ? true : false;
 
-    let aleradySet: boolean;
+    let alreadySet: boolean;
     if (Array.isArray(defines)) {
         const defineIndex = defines.indexOf(defineString);
-        aleradySet = defineIndex !== -1;
-        if (!aleradySet && clipPlane) {
+        alreadySet = defineIndex !== -1;
+        if (!alreadySet && clipPlane) {
             defines.push(defineString);
         }
-        else if (aleradySet && !clipPlane) {
+        else if (alreadySet && !clipPlane) {
             defines.splice(defineIndex, 1);
         }
     } else {
-        aleradySet = defines[defineName];
+        alreadySet = defines[defineName];
         defines[defineName] = defineClipPlane;
     }
 
-    const changed = aleradySet !== defineClipPlane;
+    const changed = alreadySet !== defineClipPlane;
     return changed;
 }
