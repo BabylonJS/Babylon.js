@@ -10,7 +10,7 @@ export interface ISearchBoxComponentProps {
 /**
  * The search box component.
  */
-export class SearchBoxComponent extends React.Component<ISearchBoxComponentProps, {isVisible: boolean, filter: string}> {
+export class SearchBoxComponent extends React.Component<ISearchBoxComponentProps, { isVisible: boolean; filter: string }> {
     private _handleEscKey: (evt: KeyboardEvent) => void;
     private _targetX: number;
     private _targetY: number;
@@ -42,7 +42,7 @@ export class SearchBoxComponent extends React.Component<ISearchBoxComponentProps
     }
 
     onFilterChange(evt: React.ChangeEvent<HTMLInputElement>) {
-        this.setState({filter: evt.target.value});
+        this.setState({ filter: evt.target.value });
     }
 
     onNewNodeRequested(name: string) {
@@ -85,44 +85,44 @@ export class SearchBoxComponent extends React.Component<ISearchBoxComponentProps
         const locStyle = {
             left: targetX + "px",
             top: targetY + "px",
-        }
- 
+        };
+
         if (targetX + expectedWidth > containerRect.width) {
-            locStyle.left = (containerRect.width - expectedWidth - 10) + "px";
+            locStyle.left = containerRect.width - expectedWidth - 10 + "px";
         } else if (targetX < 10) {
             locStyle.left = "10px";
         }
 
         if (targetY + expectedHeight > containerRect.height) {
-            locStyle.top = (containerRect.height - expectedHeight - 10) + "px";
+            locStyle.top = containerRect.height - expectedHeight - 10 + "px";
         } else if (targetY < 10) {
             locStyle.top = "10px";
         }
 
         return (
-            <div
-                id="graph-search-container">
+            <div id="graph-search-container">
                 <div id="graph-search-picking-blocker" onClick={() => this.hide()}></div>
-                <div
-                    id="graph-search-box" style= {locStyle}>
-                        <div className="graph-search-box-title">Add a node</div>
-                        <input type="text" placeholder="Search..." 
-                            onChange={(evt) => this.onFilterChange(evt)}
-                            onKeyDown={(evt) => this.onKeyDown(evt)}
-                            value={this.state.filter}
-                            className="graph-search-box-filter" autoFocus={true} tabIndex={0}/>
-                        <div className="graph-search-box-list">
-                        {
-                            this._nodes.map((name) => {
-                                return (
-                                    <div className="graph-search-box-list-item " 
-                                        onClick={() => this.onNewNodeRequested(name)}
-                                        key={name}>
-                                        {NodeLedger.NameFormatter(name)}</div>
-                                )
-                            })
-                        }
-                        </div>
+                <div id="graph-search-box" style={locStyle}>
+                    <div className="graph-search-box-title">Add a node</div>
+                    <input
+                        type="text"
+                        placeholder="Search..."
+                        onChange={(evt) => this.onFilterChange(evt)}
+                        onKeyDown={(evt) => this.onKeyDown(evt)}
+                        value={this.state.filter}
+                        className="graph-search-box-filter"
+                        autoFocus={true}
+                        tabIndex={0}
+                    />
+                    <div className="graph-search-box-list">
+                        {this._nodes.map((name) => {
+                            return (
+                                <div className="graph-search-box-list-item " onClick={() => this.onNewNodeRequested(name)} key={name}>
+                                    {NodeLedger.NameFormatter(name)}
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
             </div>
         );

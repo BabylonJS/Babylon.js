@@ -349,14 +349,14 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         mouseLocationY: number,
         dataGenerator: (nodeData: INodeData) => any,
         rootElement: HTMLDivElement
-    ) { 
+    ) {
         if (this.stateManager.modalIsDisplayed) {
             return;
         }
 
         if (evt.code === "Space" && evt.target === this.props.stateManager.hostDocument!.body) {
             this.stateManager.modalIsDisplayed = true;
-            this.props.stateManager.onSearchBoxRequiredObservable.notifyObservers({x: mouseLocationX, y: mouseLocationY});
+            this.props.stateManager.onSearchBoxRequiredObservable.notifyObservers({ x: mouseLocationX, y: mouseLocationY });
             return;
         }
         if ((evt.keyCode === 46 || evt.keyCode === 8) && !this.props.stateManager.lockObject.lock) {
@@ -1421,9 +1421,9 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                     <div id="graph-canvas-container" className={styles["graph-canvas-container"]} ref={this._graphCanvasRef}></div>
                     <div id="frame-container" className={styles["frame-container"]} ref={this._frameContainerRef}></div>
                     <svg id="graph-svg-container" className={styles["graph-svg-container"]} ref={this._svgCanvasRef}></svg>
-                    <div id="selection-container" className={styles["selection-container"]} ref={this._selectionContainerRef}></div>                    
+                    <div id="selection-container" className={styles["selection-container"]} ref={this._selectionContainerRef}></div>
                 </div>
-                <SearchBoxComponent stateManager={this.stateManager}/>
+                <SearchBoxComponent stateManager={this.stateManager} />
             </div>
         );
     }
