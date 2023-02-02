@@ -20,6 +20,7 @@ import commonStyles from "./common.modules.scss";
 
 import { TypeLedger } from "./typeLedger";
 import { RefreshNode } from "./tools";
+import { SearchBoxComponent } from "./searchBox";
 
 export interface IGraphCanvasComponentProps {
     stateManager: StateManager;
@@ -349,13 +350,24 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         dataGenerator: (nodeData: INodeData) => any,
         rootElement: HTMLDivElement
     ) {
+        if (this.stateManager.modalIsDisplayed) {
+            return;
+        }
+
+        if (evt.code === "Space" && evt.target === this.props.stateManager.hostDocument!.body) {
+            this.stateManager.modalIsDisplayed = true;
+            this.props.stateManager.onSearchBoxRequiredObservable.notifyObservers({ x: mouseLocationX, y: mouseLocationY });
+            return;
+        }
         if ((evt.keyCode === 46 || evt.keyCode === 8) && !this.props.stateManager.lockObject.lock) {
             // Delete
             const selectedItems = this.selectedNodes;
             const inputs: Nullable<IPortData>[] = [];
             const outputs: Nullable<IPortData>[] = [];
+            let needRebuild = false;
 
             if (selectedItems.length > 0) {
+                needRebuild = true;
                 for (const selectedItem of selectedItems) {
                     if (evt.altKey) {
                         this.populateConnectedEntriesBeforeRemoval(selectedItem, selectedItems, inputs, outputs);
@@ -369,10 +381,12 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             }
 
             if (this.selectedLink) {
+                needRebuild = true;
                 this.selectedLink.dispose();
             }
 
             if (this.selectedFrames.length) {
+                needRebuild = true;
                 for (const frame of this.selectedFrames) {
                     if (frame.isCollapsed) {
                         while (frame.nodes.length > 0) {
@@ -388,6 +402,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                     }
                     frame.dispose();
                 }
+            }
+
+            if (!needRebuild) {
+                return;
             }
 
             // Reconnect if required
@@ -844,6 +862,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     }
 
     onMove(evt: React.PointerEvent) {
+        if (this.stateManager.modalIsDisplayed) {
+            return;
+        }
+
         // Selection box
         if (this._selectionBox) {
             const rootRect = this.canvasContainer.getBoundingClientRect();
@@ -951,6 +973,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     }
 
     onDown(evt: React.PointerEvent<HTMLElement>) {
+        if (this.stateManager.modalIsDisplayed) {
+            return;
+        }
+
         this._rootContainer.setPointerCapture(evt.pointerId);
 
         // Port dragging
@@ -1029,6 +1055,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     }
 
     onUp(evt: React.PointerEvent) {
+        if (this.stateManager.modalIsDisplayed) {
+            return;
+        }
+
         this._mouseStartPointX = null;
         this._mouseStartPointY = null;
         this._rootContainer.releasePointerCapture(evt.pointerId);
@@ -1076,6 +1106,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     }
 
     onWheel(evt: React.WheelEvent) {
+        if (this.stateManager.modalIsDisplayed) {
+            return;
+        }
+
         const delta = evt.deltaY < 0 ? 0.1 : -0.1;
 
         const oldZoom = this.zoom;
@@ -1389,6 +1423,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                     <svg id="graph-svg-container" className={styles["graph-svg-container"]} ref={this._svgCanvasRef}></svg>
                     <div id="selection-container" className={styles["selection-container"]} ref={this._selectionContainerRef}></div>
                 </div>
+                <SearchBoxComponent stateManager={this.stateManager} />
             </div>
         );
     }
