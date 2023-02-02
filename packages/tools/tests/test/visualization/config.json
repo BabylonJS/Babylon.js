@@ -1545,6 +1545,10 @@
             "playgroundId": "#PFK1Z5"
         },
         {
+            "title": "Load babylon files with same geometry uniqueId",
+            "playgroundId": "#3UCFHS"
+        },
+        {
             "title": "Asset Container Instantiate to Scene",
             "playgroundId": "#5NFRVE#142"
         },
