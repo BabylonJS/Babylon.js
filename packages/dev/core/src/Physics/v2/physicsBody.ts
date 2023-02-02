@@ -304,6 +304,7 @@ export class PhysicsBody {
      * This method is useful for cleaning up the physics engine when a body is no longer needed. Disposing the body will free up resources and prevent memory leaks.
      */
     public dispose() {
+        this._physicsPlugin.removeBody(this);
         this._physicsPlugin.disposeBody(this);
     }
 }
