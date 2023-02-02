@@ -152,16 +152,15 @@ export class PhysicsShape {
 }
 
 /**
- *
+ * Helper object to create a sphere shape
  */
-/** @internal */
 export class PhysicsShapeSphere extends PhysicsShape {
     /** @internal */
     /**
-     *
-     * @param center
-     * @param radius
-     * @param scene
+     * Constructor for the Sphere Shape
+     * @param center local center of the sphere
+     * @param radius radius
+     * @param scene scene to attach to
      */
     constructor(center: Vector3, radius: number, scene: Scene) {
         super(ShapeType.SPHERE, { center: center, radius: radius }, scene);
@@ -169,17 +168,15 @@ export class PhysicsShapeSphere extends PhysicsShape {
 }
 
 /***
- *
+ * Helper object to create a capsule shape
  */
-/** @internal */
 export class PhysicsShapeCapsule extends PhysicsShape {
-    /** @internal */
     /**
      *
-     * @param pointA
-     * @param pointB
-     * @param radius
-     * @param scene
+     * @param pointA Starting point that defines the capsule segment
+     * @param pointB ending point of that same segment
+     * @param radius radius
+     * @param scene scene to attach to
      */
     constructor(pointA: Vector3, pointB: Vector3, radius: number, scene: Scene) {
         super(ShapeType.CAPSULE, { pointA: pointA, pointB: pointB, radius: radius }, scene);
@@ -187,17 +184,15 @@ export class PhysicsShapeCapsule extends PhysicsShape {
 }
 
 /**
- *
+ * Helper object to create a cylinder shape
  */
-/** @internal */
 export class PhysicsShapeCylinder extends PhysicsShape {
-    /** @internal */
     /**
      *
-     * @param pointA
-     * @param pointB
-     * @param radius
-     * @param scene
+     * @param pointA Starting point that defines the cylinder segment
+     * @param pointB ending point of that same segment
+     * @param radius radius
+     * @param scene scene to attach to
      */
     constructor(pointA: Vector3, pointB: Vector3, radius: number, scene: Scene) {
         super(ShapeType.CYLINDER, { pointA: pointA, pointB: pointB, radius: radius }, scene);
@@ -205,17 +200,15 @@ export class PhysicsShapeCylinder extends PhysicsShape {
 }
 
 /**
- *
+ * Helper object to create a box shape
  */
-/** @internal */
 export class PhysicsShapeBox extends PhysicsShape {
-    /** @internal */
     /**
      *
-     * @param center
-     * @param rotation
-     * @param extents
-     * @param scene
+     * @param center local center of the sphere
+     * @param rotation local orientation
+     * @param extents size of the box in each direction
+     * @param scene scene to attach to
      */
     constructor(center: Vector3, rotation: Quaternion, extents: Vector3, scene: Scene) {
         super(ShapeType.BOX, { center: center, rotation: rotation, extents: extents }, scene);
@@ -223,15 +216,13 @@ export class PhysicsShapeBox extends PhysicsShape {
 }
 
 /**
- *
+ * Helper object to create a convex hull shape
  */
-/** @internal */
 export class PhysicsShapeConvexHull extends PhysicsShape {
-    /** @internal */
     /**
      *
-     * @param mesh
-     * @param scene
+     * @param mesh the mesh to be used as topology infos for the convex hull
+     * @param scene scene to attach to
      */
     constructor(mesh: Mesh, scene: Scene) {
         super(ShapeType.CONVEX_HULL, { mesh: mesh }, scene);
@@ -239,15 +230,13 @@ export class PhysicsShapeConvexHull extends PhysicsShape {
 }
 
 /**
- *
+ * Helper object to create a mesh shape
  */
-/** @internal */
 export class PhysicsShapeMesh extends PhysicsShape {
-    /** @internal */
     /**
      *
-     * @param mesh
-     * @param scene
+     * @param mesh the mesh topology that will be used to create the shape
+     * @param scene scene to attach to
      */
     constructor(mesh: Mesh, scene: Scene) {
         super(ShapeType.MESH, { mesh: mesh }, scene);
@@ -255,17 +244,14 @@ export class PhysicsShapeMesh extends PhysicsShape {
 }
 
 /**
- *
+ * A shape container holds a variable number of shapes. Use AddChild to append to newly created parent container.
  */
-/** @internal */
 export class PhysicsShapeContainer extends PhysicsShape {
-    /** @internal */
     /**
-     *
-     * @param mesh
-     * @param scene
+     * Constructor of the Shape container
+     * @param scene scene to attach to
      */
-    constructor(mesh: Mesh, scene: Scene) {
+    constructor(scene: Scene) {
         super(ShapeType.CONTAINER, {}, scene);
     }
 }
