@@ -1,5 +1,5 @@
 {
-    "fromTag": "5.43.2",
+    "fromTag": "5.44.0",
     "changelog": {
         "5.44.0": [
             {
@@ -34,6 +34,318 @@
                 "tags": [
                     "bug",
                     "inputs"
+                ]
+            }
+        ],
+        "5.45.0": [
+            {
+                "pr": "13490",
+                "title": "Check for invalid hierarchies in the asset container and warn the user",
+                "description": "Fix #13477\r\n",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/assetContainer.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "assets"
+                ]
+            },
+            {
+                "pr": "13487",
+                "title": "Handle pointerlock rejections, if promise based",
+                "description": "This should get rid of the unhandled top-level exception if requesting pointer lock fails.\r\n\r\nI think the intended way to use pointer lock in Babylon is to sub to `onCanvasBlurObservable` and `onCanvasFocusObservable`, so `element.focus()` probably belongs into the resolved handler.\r\n\r\nThe alternative would be to focus regardless, but this is probably not desired:\r\n```js\r\nif (promise instanceof Promise) promise.catch(() => {});\r\nelement.focus();\r\n```\r\n\r\nA good way to try this behaviour is to enter and exit pointerlock in quick succession on a chromium based browser.",
+                "author": {
+                    "name": "852Kerfunkle",
+                    "url": "https://github.com/852Kerfunkle"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/engine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13489",
+                "title": "Fix ImportMesh of babylon files that share a geometry uniqueId",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/imported-meshes-appear-broken-if-they-have-the-same-geometry-uniqueid/33567/8",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Loading/Plugins/babylonFileLoader.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Load babylon files with same geometry uniqueId.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug",
+                    "loaders"
+                ]
+            },
+            {
+                "pr": "13467",
+                "title": "Fix asset container instantiation with parented instanced nodes",
+                "description": "Fix #13454\r\n\r\nI don't think there's any way around using some kind of dependency graph to instantiate nodes in the correct order but if anyone has a simpler idea I'd love to hear it :D ",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/assetContainer.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Asset Container Instantiate to Scene 2.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Asset Container Instantiate to Scene.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "13486",
+                "title": "Texture: Allow ImageBitmap for the buffer parameter of updateURL",
+                "description": "See https://forum.babylonjs.com/t/texture-updateurl-should-accept-imagebitmap/37762",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/texture.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "13484",
+                "title": "WebGPU: Fix stencil buffer creation with RTT",
+                "description": "See https://forum.babylonjs.com/t/webgpu-higlightlayer-and-fxaa-issue/37730",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.renderTarget.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "13482",
+                "title": "Get Sound play test working",
+                "description": null,
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/test/unit/Audio/sound.test.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13483",
+                "title": "Fix a typo in contributing.md",
+                "description": "It's my intent to fix this oversight. I don't think it was intended :yum:\r\n\r\nEdit: I don't have permissions to assign a \"skip changelog\" label.",
+                "author": {
+                    "name": "pdresselm",
+                    "url": "https://github.com/pdresselm"
+                },
+                "files": [
+                    "contributing.md"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13480",
+                "title": "MorphTargetMgr: Fallback to vertex attribute mode if too many targets",
+                "description": "As we store the morph targets in the depth dimension of a 2DArrayTexture, we should revert to the \"non texture\" mode (i.e. use vertex attributes) if there are too many targets.\r\n\r\nAlso, limit the max number of vertex attributes to 8 by default.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Morph/morphTargetManager.ts"
+                ],
+                "tags": [
+                    "rendering engine",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13481",
+                "title": "Fix GLTF Variants Clone",
+                "description": "https://forum.babylonjs.com/t/khr-materials-variants-got-lost-during-clone-of-mesh/37611/2",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "glTF"
+                ]
+            },
+            {
+                "pr": "13479",
+                "title": "Fix hit detection in a multi-cam scenario with billboarded meshes.",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/mutliple-cameras-affect-billboard-meshes/37496\r\nRelated PG: https://www.babylonjs-playground.com/#1WROZH%23266\r\n\r\nSuperseed https://github.com/BabylonJS/Babylon.js/pull/13471",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/ray.ts",
+                    "packages/dev/core/src/Meshes/transformNode.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "picking"
+                ]
+            },
+            {
+                "pr": "13478",
+                "title": "Fix sound current time after it ends on its own",
+                "description": "The sound pause function assumes the start time and current time are reset to zero when the sound stops, but they are currently only being reset when the stop function is called. If the sound stops on its own when reaching the end of the sound source, the start time and current time are not reset. This causes the `currentTime` property to report the wrong time when the sound is restarted after stopping on its own, and then being paused.\r\n\r\nThis change fixes the issue by resetting the start time and current time when the sound source ends on its own.\r\n\r\nReported on forum here: https://forum.babylonjs.com/t/sound-currenttime-exceeds-total-duration-in-some-cases/37668",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/Audio/sound.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "audio"
+                ]
+            },
+            {
+                "pr": "13476",
+                "title": "clearOnGuiReadyObservable",
+                "description": null,
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13472",
+                "title": "Fix sound source `onended` handling",
+                "description": "When pause is called the `onEndedObservable` is being fired, but it should only be fired when stop is called.\r\n\r\nThis change fixes the issue.\r\n\r\nReported on forum here: https://forum.babylonjs.com/t/pausing-and-playing-an-audio-with-offset-restarts-it-from-the-beginning-instead-of-the-current-position/36668/23",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/Audio/sound.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "audio"
+                ]
+            },
+            {
+                "pr": "13474",
+                "title": "Performance optimization for vector methods",
+                "description": "In vector functions like Vector3.FromArrayToRef and Quaternion.FromArrayToRef, values are assigned to properties like x, y, z, w, which are internally setter functions which sets things like _x and _isDirty, so in FromArrayToRef where all these setters called, the _isDirty is set multiple times, which is possibly optimizable.\r\n\r\nIt should be possible to directly set internal properties like _x, _y, _z, and _w in FromArrayToRef and set _isDirty to true to be compatible with existing code depending on _isDirty, which should result in better performance.\r\n\r\nForum link:\r\nhttps://forum.babylonjs.com/t/optimizing-performance-of-fromarraytoref/37513",
+                "author": {
+                    "name": "myfreeer",
+                    "url": "https://github.com/myfreeer"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13475",
+                "title": "Add GUI is ready function and add it on visualization tests",
+                "description": "This should avoid the tests with GUI failing because it hasn't loaded yet.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    ".vscode/launch.json",
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts",
+                    "packages/dev/gui/src/2D/controls/container.ts",
+                    "packages/dev/gui/src/2D/controls/control.ts",
+                    "packages/dev/gui/src/2D/controls/image.ts",
+                    "packages/tools/testTools/src/visualizationUtils.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "enhancement",
+                    "gui",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13469",
+                "title": "KTX2 decoding: Add default KTX2 decoder configuration",
+                "description": "See https://forum.babylonjs.com/t/supporting-bc5-and-bc7-device-specific-compression-formats/35045/31\r\n\r\nWith this PR, the new object `KhronosTextureContainer2.DefaultKTX2DecoderOptions` can be used to set global options for the KTX2 decoder process. The options defined in this way have priority over those passed when creating a KTX2 texture with `new Texture(...)`. This way you can easily force certain behaviors for the decoder without altering the way KTX2 textures are created.\r\n\r\nTo resolve the issue raised in the forum thread linked above, proceed as follows:\r\n```javascript\r\nBABYLON.KhronosTextureContainer2.DefaultKTX2DecoderOptions.useRGBAIfOnlyBC1BC3AvailableWhenUASTC = true;\r\n```\r\nwhich will force the use of uncompressed RGBA if only BC1 and BC3 are available as compressed formats.\r\n\r\n[EDIT] Note that `useRGBAIfOnlyBC1BC3AvailableWhenUASTC = true` is the default, for performance reason (see comments in code) [/EDIT]\r\n\r\nNote that `ktx2decoderTypes.ts` is defined in the core and not in the **ktx2Decoder** package to avoid an external dependency for the core and I'm not sure that `Materials/Textures/` is the best location for this file...",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/webpackTools.ts",
+                    "packages/dev/core/src/Materials/Textures/index.ts",
+                    "packages/dev/core/src/Materials/Textures/ktx2decoderTypes.ts",
+                    "packages/dev/core/src/Misc/khronosTextureContainer2.ts",
+                    "packages/public/umd/babylonjs-ktx2decoder/webpack.config.js",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_ASTC.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_BC7.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_R8_UNORM.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_RG8_UNORM.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_RGBA_SRGB.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_RGBA_UNORM.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/mscTranscoder.ts",
+                    "packages/tools/ktx2Decoder/src/ktx2Decoder.ts",
+                    "packages/tools/ktx2Decoder/src/ktx2FileReader.ts",
+                    "packages/tools/ktx2Decoder/src/transcodeDecisionTree.ts",
+                    "packages/tools/ktx2Decoder/src/transcoder.ts",
+                    "packages/tools/ktx2Decoder/src/transcoderManager.ts",
+                    "packages/tools/ktx2Decoder/webpack.config.js"
+                ],
+                "tags": [
+                    "new feature",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "13470",
+                "title": "Babylon serializer: Serialize actions for instances",
+                "description": "See https://forum.babylonjs.com/t/babylon-file-format-missing-actions-on-instances/37645",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": [
+                    "loaders",
+                    "new feature"
                 ]
             }
         ],
