@@ -170,7 +170,7 @@ describe("Sound", () => {
         expect(sound.currentTime).toBeCloseTo(0.2);
     });
 
-    it("starts the AudioBufferSourceNode at the constructor's given offset when play is called", () => {
+    it("starts the buffer source at the constructor's given offset when play is called", () => {
         const audioSample = AudioSample.Get("silence, 1 second, 1 channel, 48000 kHz");
         const options = {
             offset: 0.1
@@ -182,8 +182,10 @@ describe("Sound", () => {
         expect(mockedBufferSource.start).toBeCalledWith(0, 0.1, undefined);
     });
 
-    // See https://playground.babylonjs.com/#BTBJRV#7.
-    it("restarts the AudioBufferSourceNode at the given offset when play, pause, updateOptions, and play are called", () => {
+    // See https://forum.babylonjs.com/t/sound-currenttime/37290.
+    // Based on manual test at https://playground.babylonjs.com/#BTBJRV#7.
+    //
+    it("restarts the buffer source at the given offset when play, pause, updateOptions, and play are called", () => {
         const audioSample = AudioSample.Get("silence, 1 second, 1 channel, 48000 kHz");
         const options = {
             offset: 0.1
