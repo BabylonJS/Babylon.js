@@ -1,3 +1,7 @@
+/**
+ * @jest-environment jsdom
+ */
+
 import { AudioEngine, Sound } from "core/Audio";
 import { Engine, NullEngine } from "core/Engines";
 import { Scene } from "core/scene";
@@ -63,7 +67,7 @@ AudioSample.Add("silence, 1 second, 1 channel, 48000 kHz", 1, 48000, new Float32
 let mockedAudioContext: any;
 let mockedBufferSource: any;
 
-const AudioContext = jest.fn().mockName("AudioContext").mockImplementation(() => {
+window.AudioContext = jest.fn().mockName("AudioContext").mockImplementation(() => {
     mockedAudioContext = {
         currentTime: 0,
         state: "running",
@@ -103,56 +107,6 @@ const AudioContext = jest.fn().mockName("AudioContext").mockImplementation(() =>
     };
     return mockedAudioContext;
 });
-
-const Document = jest.fn().mockName("Document").mockImplementation(() => {
-    return {
-        // Mock document.createElement so the AudioEngine sets itself up correctly.
-        createElement: jest.fn().mockName("createElement").mockImplementation((type: string) => {
-            if (type === "audio") {
-                return {
-                    canPlayType: jest.fn()
-                        .mockName("canPlayType")
-                        .mockImplementation((type: string) => {
-                            if (type === 'audio/mpeg; codecs="mp3"') {
-                                return "probably";
-                            }
-                            if (type === 'audio/ogg; codecs="vorbis"') {
-                                return "probably";
-                            }
-                            return "";
-                        }),
-                    play: jest.fn().mockName("play")
-                };
-            }
-            return {};
-        }),
-
-        // Mock window.removeEventListener so NullEngine can be disposed correctly.
-        removeEventListener: jest.fn().mockName("removeEventListener")
-    };
-});
-
-const Navigator = jest.fn().mockName("Navigator").mockImplementation(() => {
-    return {
-        // Mock navigator.platform so WebDeviceInputSystem sets itself up correctly.
-        platform: ""
-    }
-});
-
-const Window = jest.fn().mockName("Window").mockImplementation(() => {
-    return {
-        // Mock window.AudioContext so the AudioEngine sets itself up correctly.
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        AudioContext: AudioContext,
-
-        // Mock window.removeEventListener so NullEngine can be disposed correctly.
-        removeEventListener: jest.fn().mockName("removeEventListener")
-    };
-});
-
-global.document = new Document;
-global.navigator = new Navigator;
-global.window = new Window;
 
 // Required for timers (eg. setTimeout) to work
 jest.useFakeTimers();
