@@ -130,20 +130,26 @@ export class PhysicsEngine implements IPhysicsEngine {
     }
 
     /**
-     *
+     * Add a body as an active component of this engine
      * @param body
      */
     public addBody(physicsBody: PhysicsBody): void {
         this._physicsBodies.push(physicsBody);
     }
     /**
-     *
+     * Removes a particular body from this engine
      */
     public removeBody(physicsBody: PhysicsBody): void {
         const index = this._physicsBodies.indexOf(physicsBody);
         if (index > -1) {
             /*const removed =*/ this._physicsBodies.splice(index, 1);
         }
+    }
+    /**
+     * Rturns an array of bodies added to this engine
+     */
+    public getBodies(): Array<PhysicsBody> {
+        return this._physicsBodies;
     }
 
     /**

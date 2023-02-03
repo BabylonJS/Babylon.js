@@ -1,6 +1,6 @@
 import type { IPhysicsEnginePluginV2, MassProperties } from "./IPhysicsEnginePlugin";
 import type { PhysicsShape } from "./physicsShape";
-import type { Vector3 } from "../../Maths/math.vector";
+import { Vector3 } from "../../Maths/math.vector";
 import { Quaternion } from "../../Maths/math.vector";
 import type { Scene } from "../../scene";
 import type { PhysicsEngine } from "./physicsEngine";
@@ -289,6 +289,19 @@ export class PhysicsBody {
     }
 
     /**
+     * Applies a force to the physics object.
+     *
+     * @param location The location of the force.
+     * @param force The force vector.
+     *
+     * This method is useful for applying a force to a physics object, which can be used to simulate physical forces such as gravity,
+     * collisions, and explosions. This can be used to create realistic physics simulations in a game or other application.
+     */
+    public applyForce(location: Vector3, force: Vector3): void {
+        this._physicsPlugin.applyImpulse(this, location, force);
+    }
+
+    /**
      * Retrieves the geometry of the body from the physics plugin.
      *
      * @returns The geometry of the body.
@@ -313,6 +326,14 @@ export class PhysicsBody {
      */
     public unregisterOnCollide(func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>) => void): void {
         return this._physicsPlugin.unregisterOnBodyCollide(this, func);
+    }
+
+    /**
+     * return geometric center of the associated mesh
+     */
+    public getObjectCenter(): Vector3 {
+        // TODO
+        return new Vector3(0, 0, 0);
     }
 
     /**
