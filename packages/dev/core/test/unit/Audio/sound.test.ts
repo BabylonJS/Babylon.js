@@ -220,9 +220,6 @@ describe("Sound", () => {
         sound.updateOptions({ offset: 0.4 });
         sound.play();
         
-        const args = mockedBufferSource.start.mock.calls[0];
-        expect(args[0]).toBeCloseTo(0.3);
-        expect(args[1]).toBeCloseTo(0.4);
-        expect(args[2]).toBe(undefined);;
+        expect(mockedBufferSource.start).toBeCalledWith(mockedAudioContext.currentTime, 0.4, undefined);
     });
 });
