@@ -185,7 +185,7 @@ describe("Sound", () => {
     // See https://forum.babylonjs.com/t/pausing-and-playing-an-audio-with-offset-restarts-it-from-the-beginning-instead-of-the-current-position/36668.
     // Based on manual test at https://playground.babylonjs.com/#BTBJRV#2.
     //
-    it("restarts the buffer source at the given offset when play, stop, play, pause, and play are called", () => {
+    it("restarts the buffer source at the given positive offset when play, stop, play, pause, and play are called", () => {
         const audioSample = AudioSample.Get("silence, 1 second, 1 channel, 48000 kHz");
         const sound = new Sound("test", audioSample.arrayBuffer);
 
@@ -201,6 +201,27 @@ describe("Sound", () => {
         sound.play(0, 0.9);
 
         expect(mockedBufferSource.start).toBeCalledWith(mockedAudioContext.currentTime, 0.9, undefined);
+    });
+
+    // See https://forum.babylonjs.com/t/pausing-and-playing-an-audio-with-offset-restarts-it-from-the-beginning-instead-of-the-current-position/36668/12.
+    // Based on manual test at https://playground.babylonjs.com/#BTBJRV#3.
+    //
+    it("restarts the buffer source at the given zero offset when play, stop, play, pause, and play are called", () => {
+        const audioSample = AudioSample.Get("silence, 1 second, 1 channel, 48000 kHz");
+        const sound = new Sound("test", audioSample.arrayBuffer);
+
+        mockedAudioContext.currentTime = 0.1;
+        sound.play();
+        mockedAudioContext.currentTime += 0.1;
+        sound.stop();
+        mockedAudioContext.currentTime += 0.1;
+        sound.play(0.9);
+        mockedAudioContext.currentTime += 0.1;
+        sound.pause();
+        mockedAudioContext.currentTime += 0.1;
+        sound.play(0, 0);
+
+        expect(mockedBufferSource.start).toBeCalledWith(mockedAudioContext.currentTime, 0, undefined);
     });
 
     // See https://forum.babylonjs.com/t/sound-currenttime/37290.
