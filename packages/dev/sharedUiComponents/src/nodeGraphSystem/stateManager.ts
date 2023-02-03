@@ -29,7 +29,7 @@ export class StateManager {
     onErrorMessageDialogRequiredObservable = new Observable<string>();
     onExposePortOnFrameObservable = new Observable<GraphNode>();
     onGridSizeChanged = new Observable<void>();
-    onNewBlockRequiredObservable = new Observable<{ type: string; targetX: number; targetY: number; needRepositioning?: boolean }>();
+    onNewBlockRequiredObservable = new Observable<{ type: string; targetX: number; targetY: number; needRepositioning?: boolean; smartAdd?: boolean }>();
 
     exportData: (data: any, frame?: Nullable<GraphFrame>) => string;
     isElbowConnectionAllowed: (nodeA: FrameNodePort | NodePort, nodeB: FrameNodePort | NodePort) => boolean;

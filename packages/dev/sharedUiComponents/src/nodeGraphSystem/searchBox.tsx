@@ -51,6 +51,7 @@ export class SearchBoxComponent extends React.Component<ISearchBoxComponentProps
             targetX: this._targetX,
             targetY: this._targetY,
             needRepositioning: true,
+            smartAdd: true,
         });
 
         this.hide();

@@ -342,6 +342,104 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         }
     }
 
+    smartAddOverLink(node: GraphNode, link: NodeLink) {
+        // Connect the ports
+        const inputs: Nullable<IPortData>[] = [];
+        const outputs: Nullable<IPortData>[] = [];
+        const availableNodeInputs: Nullable<IPortData>[] = [];
+        const availableNodeOutputs: Nullable<IPortData>[] = [];
+        const leftNode = link.nodeA;
+        const rightNode = link.nodeB!;
+
+        // Delete previous
+        link.dispose();
+
+        // Get the ports
+        availableNodeInputs.push(...node.content.inputs.filter((i) => !i.isConnected));
+
+        availableNodeOutputs.push(...node.content.outputs);
+
+        inputs.push(...leftNode.content.outputs);
+
+        outputs.push(...rightNode.content.inputs.filter((i) => !i.isConnected));
+
+        // Reconnect
+        this.automaticRewire(inputs, availableNodeInputs, true);
+        this.automaticRewire(availableNodeOutputs, outputs, true);
+        this.props.stateManager.onRebuildRequiredObservable.notifyObservers(false);
+    }
+
+    smartAddOverNode(node: GraphNode, source: GraphNode) {
+        // Connect the ports
+        const inputs: Nullable<IPortData>[] = [];
+        const availableNodeInputs: Nullable<IPortData>[] = [];
+
+        // Get the ports
+        availableNodeInputs.push(...node.content.inputs.filter((i) => !i.isConnected));
+
+        inputs.push(...source.content.outputs);
+
+        // Reconnect
+        this.automaticRewire(inputs, availableNodeInputs, true);
+        this.props.stateManager.onRebuildRequiredObservable.notifyObservers(false);
+    }
+
+    deleteSelection(onRemove: (nodeData: INodeData) => void, autoReconnect = false) {
+        // Delete
+        const selectedItems = this.selectedNodes;
+        const inputs: Nullable<IPortData>[] = [];
+        const outputs: Nullable<IPortData>[] = [];
+        let needRebuild = false;
+
+        if (selectedItems.length > 0) {
+            needRebuild = true;
+            for (const selectedItem of selectedItems) {
+                if (autoReconnect) {
+                    this.populateConnectedEntriesBeforeRemoval(selectedItem, selectedItems, inputs, outputs);
+                }
+
+                selectedItem.dispose();
+
+                onRemove(selectedItem.content);
+                this.removeDataFromCache(selectedItem.content.data);
+            }
+        }
+
+        if (this.selectedLink) {
+            needRebuild = true;
+            this.selectedLink.dispose();
+        }
+
+        if (this.selectedFrames.length) {
+            needRebuild = true;
+            for (const frame of this.selectedFrames) {
+                if (frame.isCollapsed) {
+                    while (frame.nodes.length > 0) {
+                        onRemove(frame.nodes[0].content);
+                        this.removeDataFromCache(frame.nodes[0].content.data);
+                        frame.nodes[0].dispose();
+                    }
+                    frame.isCollapsed = false;
+                } else {
+                    frame.nodes.forEach((node) => {
+                        node.enclosingFrameId = -1;
+                    });
+                }
+                frame.dispose();
+            }
+        }
+
+        if (!needRebuild) {
+            return;
+        }
+
+        // Reconnect if required
+        this.automaticRewire(inputs, outputs);
+
+        this.props.stateManager.onSelectionChangedObservable.notifyObservers(null);
+        this.props.stateManager.onRebuildRequiredObservable.notifyObservers(false);
+    }
+
     handleKeyDown(
         evt: KeyboardEvent,
         onRemove: (nodeData: INodeData) => void,
@@ -360,59 +458,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             return;
         }
         if ((evt.keyCode === 46 || evt.keyCode === 8) && !this.props.stateManager.lockObject.lock) {
-            // Delete
-            const selectedItems = this.selectedNodes;
-            const inputs: Nullable<IPortData>[] = [];
-            const outputs: Nullable<IPortData>[] = [];
-            let needRebuild = false;
-
-            if (selectedItems.length > 0) {
-                needRebuild = true;
-                for (const selectedItem of selectedItems) {
-                    if (evt.altKey) {
-                        this.populateConnectedEntriesBeforeRemoval(selectedItem, selectedItems, inputs, outputs);
-                    }
-
-                    selectedItem.dispose();
-
-                    onRemove(selectedItem.content);
-                    this.removeDataFromCache(selectedItem.content.data);
-                }
-            }
-
-            if (this.selectedLink) {
-                needRebuild = true;
-                this.selectedLink.dispose();
-            }
-
-            if (this.selectedFrames.length) {
-                needRebuild = true;
-                for (const frame of this.selectedFrames) {
-                    if (frame.isCollapsed) {
-                        while (frame.nodes.length > 0) {
-                            onRemove(frame.nodes[0].content);
-                            this.removeDataFromCache(frame.nodes[0].content.data);
-                            frame.nodes[0].dispose();
-                        }
-                        frame.isCollapsed = false;
-                    } else {
-                        frame.nodes.forEach((node) => {
-                            node.enclosingFrameId = -1;
-                        });
-                    }
-                    frame.dispose();
-                }
-            }
-
-            if (!needRebuild) {
-                return;
-            }
-
-            // Reconnect if required
-            this.automaticRewire(inputs, outputs);
-
-            this.props.stateManager.onSelectionChangedObservable.notifyObservers(null);
-            this.props.stateManager.onRebuildRequiredObservable.notifyObservers(false);
+            this.deleteSelection(onRemove, evt.altKey);
             return;
         }
 
