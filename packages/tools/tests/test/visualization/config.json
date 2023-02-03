@@ -1555,6 +1555,11 @@
         {
             "title": "Asset Container Instantiate to Scene 2",
             "playgroundId": "#5NFRVE#161"
+        },
+        {
+            "title": "Loading glTF model with KTX2 textures",
+            "playgroundId": "#YD2TXP#35",
+            "excludeFromAutomaticTesting": true
         }
     ]
 }
