@@ -182,6 +182,27 @@ describe("Sound", () => {
         expect(mockedBufferSource.start).toBeCalledWith(0, 0.1, undefined);
     });
 
+    // Based on manual test at https://playground.babylonjs.com/#BTBJRV#5.
+    //
+    it("resumes the buffer source node at the time it was paused at after playing from the constructor's given offset", () => {
+        const pausedAtTime = 0.2;
+        const audioSample = AudioSample.Get("silence, 1 second, 1 channel, 48000 kHz");
+        const options = {
+            offset: 0.1
+        };
+        const sound = new Sound("test", audioSample.arrayBuffer, null, null, options);
+
+        mockedAudioContext.currentTime = 0.1;
+        sound.play();
+        mockedAudioContext.currentTime += pausedAtTime;
+        sound.pause();
+        mockedAudioContext.currentTime += 0.2;
+        sound.play();
+
+        const args = mockedBufferSource.start.mock.calls[0];
+        expect(args[1]).toBeCloseTo(options.offset + pausedAtTime);
+    });
+
     // See https://forum.babylonjs.com/t/pausing-and-playing-an-audio-with-offset-restarts-it-from-the-beginning-instead-of-the-current-position/36668.
     // Based on manual test at https://playground.babylonjs.com/#BTBJRV#2.
     //
