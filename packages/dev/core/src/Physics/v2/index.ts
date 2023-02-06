@@ -5,5 +5,4 @@ export * from "./physicsShape";
 export * from "./physicsConstraint";
 export * from "./physicsMaterial";
 export * from "./physicsAggregate";
-export * from "./Plugins";
 export * from "./IPhysicsEnginePlugin";

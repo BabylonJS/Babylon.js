@@ -1,6 +1,6 @@
 import { PhysicsBody } from "./physicsBody";
 import { PhysicsMaterial } from "./physicsMaterial";
-import { PhysicsShape, PhysicsShapeConvexHull } from "./physicsShape";
+import { PhysicsShape } from "./physicsShape";
 import { Logger } from "../../Misc/logger";
 import type { Scene } from "../../scene";
 import type { TransformNode } from "../../Meshes/transformNode";
