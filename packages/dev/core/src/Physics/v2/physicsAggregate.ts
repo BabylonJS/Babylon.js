@@ -176,9 +176,9 @@ export class PhysicsAggregate {
             case ShapeType.CAPSULE:
                 {
                     const capRadius = impostorExtents.x / 2;
-                    this._options.radius = this._options.radius ? this._options.radius : capRadius;
-                    this._options.pointA = this._options.pointA ? this._options.pointA : new Vector3(0, -impostorExtents.y * 0.5 + capRadius, 0);
-                    this._options.pointB = this._options.pointB ? this._options.pointB : new Vector3(0, impostorExtents.y * 0.5 - capRadius, 0);
+                    this._options.radius = this._options.radius ?? capRadius;
+                    this._options.pointA = this._options.pointA ?? new Vector3(0, -impostorExtents.y * 0.5 + capRadius, 0);
+                    this._options.pointB = this._options.pointB ?? new Vector3(0, impostorExtents.y * 0.5 - capRadius, 0);
                 }
                 break;
             case ShapeType.CYLINDER:
