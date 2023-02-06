@@ -306,9 +306,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
                 { search: /texture2D\(bumpSampler,vBumpUV\)/g, replace: `${uvForPerturbNormal}` },
                 {
                     search: /#define CUSTOM_FRAGMENT_BUMP_FRAGMENT/g,
-                    replace: `mat4 normalMatrix = toNormalMatrix(${
-                        this.world.isConnected ? this.world.associatedVariableName : this._worldMatrixName
-                    });`
+                    replace: `mat4 normalMatrix = toNormalMatrix(${this.world.isConnected ? this.world.associatedVariableName : this._worldMatrixName});`,
                 },
                 { search: /perturbNormal\(TBN,texture2D\(bumpSampler,vBumpUV\+uvOffset\).xyz,vBumpInfos.y\)/g, replace: `perturbNormal(TBN, ${uvForPerturbNormal}, vBumpInfos.y)` },
                 {
