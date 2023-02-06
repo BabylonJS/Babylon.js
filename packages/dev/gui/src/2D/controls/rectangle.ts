@@ -73,7 +73,7 @@ export class Rectangle extends Container {
         return 0;
     }
 
-    protected _getRectangleFill(context: ICanvasRenderingContext): string | ICanvasGradient {
+    protected _getRectangleFill(context: ICanvasRenderingContext) {
         return this._getBackgroundColor(context);
     }
 
