@@ -5,6 +5,17 @@
 
 	#ifdef OBJECTSPACE_NORMALMAP
 		uniform mat4 normalMatrix;
+
+		mat4 toNormalMatrix(mat4 wMatrix)
+		{
+			mat4 ret = inverse(wMatrix);
+			ret = transpose(ret);
+			ret[0][3] = 0.;
+			ret[1][3] = 0.;
+			ret[2][3] = 0.;
+			ret[3] = vec4(0., 0., 0., 1.);
+			return ret;
+		}
 	#endif
 
 	vec3 perturbNormalBase(mat3 cotangentFrame, vec3 normal, float scale)
