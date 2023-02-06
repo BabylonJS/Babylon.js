@@ -23,7 +23,7 @@ describe("FreeCameraMouseInput", () => {
             deterministicLockstep: false,
             lockstepMaxSteps: 1,
         });
-        //engine!._deviceSourceManager = new InternalDeviceSourceManager(engine!);
+
         scene = new Scene(engine);
         camera = new FreeCamera("camera", new Vector3(0, 0, -10), scene);
         camera.setTarget(Vector3.Zero());
