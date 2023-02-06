@@ -1,9 +1,11 @@
 import { PhysicsBody } from "./physicsBody";
 import { PhysicsMaterial } from "./physicsMaterial";
-import { PhysicsShape } from "./physicsShape";
+import { PhysicsShape, PhysicsShapeConvexHull } from "./physicsShape";
 import { Logger } from "../../Misc/logger";
 import type { Scene } from "../../scene";
 import type { TransformNode } from "../../Meshes/transformNode";
+import { Quaternion, Scalar, Vector3 } from "core/Maths";
+import { ShapeType } from "./IPhysicsEnginePlugin";
 
 /**
  * The interface for the physics aggregate parameters
@@ -71,6 +73,26 @@ export interface PhysicsAggregateParameters {
      * The shape of an extrusion used for a rope based on an extrusion
      */
     shape?: any;
+
+    /**
+     * Radius for sphere, cylinder and capsule
+     */
+    radius?: number;
+
+    /**
+     * Starting point for cylinder/capsule
+     */
+    pointA?: Vector3;
+
+    /**
+     * Ending point for cylinder/capsule
+     */
+    pointB?: Vector3;
+
+    /**
+     * Extents for box
+     */
+    extents?: Vector3;
 }
 /**
  * Helper class to create and interact with a PhysicsAggregate.
@@ -129,11 +151,52 @@ export class PhysicsAggregate {
         this._options.mass = _options.mass === void 0 ? 0 : _options.mass;
         this._options.friction = _options.friction === void 0 ? 0.2 : _options.friction;
         this._options.restitution = _options.restitution === void 0 ? 0.2 : _options.restitution;
-        this.shape = new PhysicsShape(type, this._options as any, this._scene);
+
         this.body = new PhysicsBody(transformNode, this._scene);
-        this.material = new PhysicsMaterial(this._options.friction ? this._options.friction : 0, this._options.restitution ? this._options.restitution : 0, this._scene);
+        this._addSizeOptions();
+        this.shape = new PhysicsShape(type, this._options as any, this._scene);
+
+        this.material = new PhysicsMaterial(this._options.friction, this._options.restitution, this._scene);
         this.body.setShape(this.shape);
         this.shape.setMaterial(this.material);
+        this.body.setMassProperties({ centerOfMass: new Vector3(0, 0, 0), mass: this._options.mass, inertia: new Vector3(1, 1, 1), inertiaOrientation: Quaternion.Identity() });
+    }
+
+    private _addSizeOptions(): void {
+        const impostorExtents = this.body.getObjectExtents();
+
+        switch (this.type) {
+            case ShapeType.SPHERE:
+                if (Scalar.WithinEpsilon(impostorExtents.x, impostorExtents.y, 0.0001) && Scalar.WithinEpsilon(impostorExtents.x, impostorExtents.z, 0.0001)) {
+                    this._options.radius = this._options.radius ? this._options.radius : impostorExtents.x / 2;
+                } else {
+                    Logger.Warn("Non uniform scaling is unsupported for sphere shapes.");
+                }
+                break;
+            case ShapeType.CAPSULE:
+                {
+                    const capRadius = impostorExtents.x / 2;
+                    this._options.radius = this._options.radius ? this._options.radius : capRadius;
+                    this._options.pointA = this._options.pointA ? this._options.pointA : new Vector3(0, -impostorExtents.y * 0.5 + capRadius, 0);
+                    this._options.pointB = this._options.pointB ? this._options.pointB : new Vector3(0, impostorExtents.y * 0.5 - capRadius, 0);
+                }
+                break;
+            case ShapeType.CYLINDER:
+                {
+                    const capRadius = impostorExtents.x / 2;
+                    this._options.radius = this._options.radius ? this._options.radius : capRadius;
+                    this._options.pointA = this._options.pointA ? this._options.pointA : new Vector3(0, -impostorExtents.y * 0.5, 0);
+                    this._options.pointB = this._options.pointB ? this._options.pointB : new Vector3(0, impostorExtents.y * 0.5, 0);
+                }
+                break;
+            case ShapeType.BOX:
+                this._options.extents = this._options.extents ? this._options.extents : new Vector3(impostorExtents.x, impostorExtents.y, impostorExtents.z);
+                break;
+            case ShapeType.MESH:
+            case ShapeType.CONVEX_HULL: {
+                break;
+            }
+        }
     }
 
     /**

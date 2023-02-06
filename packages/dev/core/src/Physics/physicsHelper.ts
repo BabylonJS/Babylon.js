@@ -54,13 +54,11 @@ export class PhysicsHelper {
             return null;
         }
 
-        const impostors = (<PhysicsEngineV1>this._physicsEngine).getImpostors();
-        if (this._physicsEngine.getPluginVersion() === 1 && impostors.length === 0) {
+        if (this._physicsEngine.getPluginVersion() === 1 && (<PhysicsEngineV1>this._physicsEngine).getImpostors().length === 0) {
             return null;
         }
 
-        const bodies = (<PhysicsEngineV2>this._physicsEngine).getBodies();
-        if (this._physicsEngine.getPluginVersion() === 2 && bodies.length === 0) {
+        if (this._physicsEngine.getPluginVersion() === 2 && (<PhysicsEngineV2>this._physicsEngine).getBodies().length === 0) {
             return null;
         }
 
@@ -75,6 +73,7 @@ export class PhysicsHelper {
 
         if (this._physicsEngine.getPluginVersion() === 1) {
             const affectedImpostorsWithData = Array<PhysicsAffectedImpostorWithData>();
+            const impostors = (<PhysicsEngineV1>this._physicsEngine).getImpostors();
             impostors.forEach((impostor: PhysicsImpostor) => {
                 const impostorHitData = event.getImpostorHitData(impostor, origin);
                 if (!impostorHitData) {
@@ -92,6 +91,7 @@ export class PhysicsHelper {
             event.triggerAffectedImpostorsCallback(affectedImpostorsWithData);
         } else {
             const affectedBodiesWithData = Array<PhysicsAffectedBodyWithData>();
+            const bodies = (<PhysicsEngineV2>this._physicsEngine).getBodies();
             bodies.forEach((body: PhysicsBody) => {
                 const bodyHitData = event.getBodyHitData(body, origin);
                 if (!bodyHitData) {
@@ -133,13 +133,11 @@ export class PhysicsHelper {
             return null;
         }
 
-        const impostors = (<PhysicsEngineV1>this._physicsEngine).getImpostors();
-        if (this._physicsEngine.getPluginVersion() === 1 && impostors.length === 0) {
+        if (this._physicsEngine.getPluginVersion() === 1 && (<PhysicsEngineV1>this._physicsEngine).getImpostors().length === 0) {
             return null;
         }
 
-        const bodies = (<PhysicsEngineV2>this._physicsEngine).getBodies();
-        if (this._physicsEngine.getPluginVersion() === 2 && bodies.length === 0) {
+        if (this._physicsEngine.getPluginVersion() === 2 && (<PhysicsEngineV2>this._physicsEngine).getBodies().length === 0) {
             return null;
         }
 
@@ -154,7 +152,7 @@ export class PhysicsHelper {
 
         if (this._physicsEngine.getPluginVersion() === 1) {
             const affectedImpostorsWithData = Array<PhysicsAffectedImpostorWithData>();
-
+            const impostors = (<PhysicsEngineV1>this._physicsEngine).getImpostors();
             impostors.forEach((impostor: PhysicsImpostor) => {
                 const impostorHitData = event.getImpostorHitData(impostor, origin);
                 if (!impostorHitData) {
@@ -172,7 +170,7 @@ export class PhysicsHelper {
             event.triggerAffectedImpostorsCallback(affectedImpostorsWithData);
         } else {
             const affectedBodiesWithData = Array<PhysicsAffectedBodyWithData>();
-
+            const bodies = (<PhysicsEngineV2>this._physicsEngine).getBodies();
             bodies.forEach((body: PhysicsBody) => {
                 const bodyHitData = event.getBodyHitData(body, origin);
                 if (!bodyHitData) {
@@ -214,13 +212,11 @@ export class PhysicsHelper {
             return null;
         }
 
-        const impostors = (<PhysicsEngineV1>this._physicsEngine).getImpostors();
-        if (this._physicsEngine.getPluginVersion() === 1 && impostors.length === 0) {
+        if (this._physicsEngine.getPluginVersion() === 1 && (<PhysicsEngineV1>this._physicsEngine).getImpostors().length === 0) {
             return null;
         }
 
-        const bodies = (<PhysicsEngineV2>this._physicsEngine).getBodies();
-        if (this._physicsEngine.getPluginVersion() === 2 && bodies.length === 0) {
+        if (this._physicsEngine.getPluginVersion() === 2 && (<PhysicsEngineV2>this._physicsEngine).getBodies().length === 0) {
             return null;
         }
 
@@ -377,7 +373,7 @@ class PhysicsRadialExplosionEvent {
      * Returns the force and contact point of the body or false, if the body is not affected by the force/impulse.
      * @param body A physics body
      * @param origin the origin of the explosion
-     * @returns {Nullable<PhysicsHitData>} A physics force and contact point, or null
+     * @returns A physics force and contact point, or null
      */
     public getBodyHitData(body: PhysicsBody, origin: Vector3): Nullable<PhysicsHitData> {
         if (body.transformNode.getClassName() !== "Mesh" && body.transformNode.getClassName() !== "InstancedMesh") {
@@ -396,7 +392,7 @@ class PhysicsRadialExplosionEvent {
      * Returns the force and contact point of the impostor or false, if the impostor is not affected by the force/impulse.
      * @param impostor A physics imposter
      * @param origin the origin of the explosion
-     * @returns {Nullable<PhysicsHitData>} A physics force and contact point, or null
+     * @returns A physics force and contact point, or null
      */
     public getImpostorHitData(impostor: PhysicsImpostor, origin: Vector3): Nullable<PhysicsHitData> {
         if (impostor.mass === 0) {
