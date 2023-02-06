@@ -146,7 +146,8 @@ export class PhysicsEngine implements IPhysicsEngine {
         }
     }
     /**
-     * Rturns an array of bodies added to this engine
+     * Returns an array of bodies added to this engine
+
      */
     public getBodies(): Array<PhysicsBody> {
         return this._physicsBodies;
