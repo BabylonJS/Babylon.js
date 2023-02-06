@@ -17,8 +17,10 @@ void main(void) {
 #define CUSTOM_FRAGMENT_MAIN_BEGIN
 
 	vec4 color = texture2D(diffuseSampler, vUV);
+	// Fix for ios14 and lower
+	float fAlphaTest = float(alphaTest);
 
-	if (float(alphaTest) != 0.)
+	if (fAlphaTest != 0.)
 	{
 		if (color.a < 0.95)
 			discard;
