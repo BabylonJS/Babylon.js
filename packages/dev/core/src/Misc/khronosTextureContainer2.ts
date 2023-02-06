@@ -405,12 +405,12 @@ export class KhronosTextureContainer2 {
                         worker.addEventListener("error", onError);
                         worker.addEventListener("message", onMessage);
 
-                        const dataCopy = new Uint8Array(data.byteLength);
-                        dataCopy.set(new Uint8Array(data.buffer, data.byteOffset, data.byteLength));
-
                         if (KhronosTextureContainer2.DefaultDecoderOptions.isDirty) {
                             worker.postMessage({ action: "setDefaultDecoderOptions", options: KhronosTextureContainer2.DefaultDecoderOptions._getKTX2DecoderOptions() });
                         }
+
+                        const dataCopy = new Uint8Array(data.byteLength);
+                        dataCopy.set(new Uint8Array(data.buffer, data.byteOffset, data.byteLength));
 
                         worker.postMessage({ action: "decode", data: dataCopy, caps: compressedTexturesCaps, options }, [dataCopy.buffer]);
                     });
