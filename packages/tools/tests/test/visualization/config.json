@@ -15,7 +15,7 @@
             "title": "Iridescence NME",
             "playgroundId": "#2FDQT5#1507",
             "referenceImage": "iridescence_nme.png",
-            "renderCount": 5,
+            "excludedEngines": ["webgl1"],
             "excludeFromAutomaticTesting": true
         },
         {
