@@ -7,7 +7,7 @@ import type { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 import { RegisterClass } from "core/Misc/typeStore";
 import type { PointerInfoBase } from "core/Events/pointerEvents";
 import { serialize } from "core/Misc/decorators";
-import type { ICanvasGradient, ICanvasRenderingContext } from "core/Engines/ICanvas";
+import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
 import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { Constants } from "core/Engines/constants";
@@ -345,7 +345,7 @@ export class Container extends Control {
         }
     }
 
-    protected _getBackgroundColor(context: ICanvasRenderingContext): string | ICanvasGradient {
+    protected _getBackgroundColor(context: ICanvasRenderingContext) {
         return this._backgroundGradient ? this._backgroundGradient.getCanvasGradient(context) : this._background;
     }
 
