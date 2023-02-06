@@ -11,7 +11,6 @@ import type { PhysicsEngine as PhysicsEngineV1 } from "./physicsEngine";
 import type { PhysicsEngine as PhysicsEngineV2 } from "./v2/physicsEngine";
 import type { PhysicsImpostor } from "./v1/physicsImpostor";
 import type { PhysicsBody } from "./v2/physicsBody";
-//import type { TransformNode } from "../Meshes/transformNode";
 
 /**
  * A helper for physics simulations
