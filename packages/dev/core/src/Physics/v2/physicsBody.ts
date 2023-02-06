@@ -26,6 +26,10 @@ export class PhysicsBody {
      */
     private _physicsPlugin: IPhysicsEnginePluginV2;
     /**
+     * The engine used to create and manage this Physics Body
+     */
+    private _physicsEngine: PhysicsEngine;
+    /**
      * The transform node associated with this Physics Body
      */
     transformNode: TransformNode;
@@ -52,6 +56,7 @@ export class PhysicsBody {
         if (!physicsEngine) {
             throw new Error("No Physics Engine available.");
         }
+        this._physicsEngine = physicsEngine;
         if (physicsEngine.getPluginVersion() != 2) {
             throw new Error("Plugin version is incorrect. Expected version 2.");
         }
@@ -321,6 +326,7 @@ export class PhysicsBody {
      * This method is useful for cleaning up the physics engine when a body is no longer needed. Disposing the body will free up resources and prevent memory leaks.
      */
     public dispose() {
+        this._physicsEngine.removeBody(this);
         this._physicsPlugin.removeBody(this);
         this._physicsPlugin.disposeBody(this);
     }
