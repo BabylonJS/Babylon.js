@@ -14,7 +14,8 @@
         {
             "title": "Iridescence NME",
             "playgroundId": "#2FDQT5#1507",
-            "referenceImage": "iridescence_nme.png"
+            "referenceImage": "iridescence_nme.png",
+            "renderCount": 20
         },
         {
             "title": "Iridescence GLTF",
