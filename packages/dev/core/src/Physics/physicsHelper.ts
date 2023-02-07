@@ -151,10 +151,11 @@ export class PhysicsHelper {
 
         let useCallback = false;
         if (typeof radiusOrEventOptions === "number") {
+            const r = radiusOrEventOptions;
             radiusOrEventOptions = new PhysicsRadialExplosionEventOptions();
-            radiusOrEventOptions.radius = <number>(<any>radiusOrEventOptions);
-            radiusOrEventOptions.strength = strength || radiusOrEventOptions.strength;
-            radiusOrEventOptions.falloff = falloff || radiusOrEventOptions.falloff;
+            radiusOrEventOptions.radius = r;
+            radiusOrEventOptions.strength = strength ?? radiusOrEventOptions.strength;
+            radiusOrEventOptions.falloff = falloff ?? radiusOrEventOptions.falloff;
         } else {
             useCallback = !!(radiusOrEventOptions.affectedImpostorsCallback || radiusOrEventOptions.affectedBodiesCallback);
         }
@@ -235,10 +236,11 @@ export class PhysicsHelper {
         }
 
         if (typeof radiusOrEventOptions === "number") {
+            const r = radiusOrEventOptions;
             radiusOrEventOptions = new PhysicsRadialExplosionEventOptions();
-            radiusOrEventOptions.radius = <number>(<any>radiusOrEventOptions);
-            radiusOrEventOptions.strength = strength || radiusOrEventOptions.strength;
-            radiusOrEventOptions.falloff = falloff || radiusOrEventOptions.falloff;
+            radiusOrEventOptions.radius = r;
+            radiusOrEventOptions.strength = strength ?? radiusOrEventOptions.strength;
+            radiusOrEventOptions.falloff = falloff ?? radiusOrEventOptions.falloff;
         }
 
         const event = new PhysicsGravitationalFieldEvent(this, this._scene, origin, radiusOrEventOptions);
@@ -278,11 +280,12 @@ export class PhysicsHelper {
         }
 
         if (typeof radiusOrEventOptions === "number") {
+            const r = radiusOrEventOptions;
             radiusOrEventOptions = new PhysicsUpdraftEventOptions();
-            radiusOrEventOptions.radius = <number>(<any>radiusOrEventOptions);
-            radiusOrEventOptions.strength = strength || radiusOrEventOptions.strength;
-            radiusOrEventOptions.height = height || radiusOrEventOptions.height;
-            radiusOrEventOptions.updraftMode = updraftMode || radiusOrEventOptions.updraftMode;
+            radiusOrEventOptions.radius = r;
+            radiusOrEventOptions.strength = strength ?? radiusOrEventOptions.strength;
+            radiusOrEventOptions.height = height ?? radiusOrEventOptions.height;
+            radiusOrEventOptions.updraftMode = updraftMode ?? radiusOrEventOptions.updraftMode;
         }
 
         const event = new PhysicsUpdraftEvent(this._scene, origin, radiusOrEventOptions);
@@ -316,10 +319,11 @@ export class PhysicsHelper {
         }
 
         if (typeof radiusOrEventOptions === "number") {
+            const r = radiusOrEventOptions;
             radiusOrEventOptions = new PhysicsVortexEventOptions();
-            radiusOrEventOptions.radius = <number>(<any>radiusOrEventOptions);
-            radiusOrEventOptions.strength = strength || radiusOrEventOptions.strength;
-            radiusOrEventOptions.height = height || radiusOrEventOptions.height;
+            radiusOrEventOptions.radius = r;
+            radiusOrEventOptions.strength = strength ?? radiusOrEventOptions.strength;
+            radiusOrEventOptions.height = height ?? radiusOrEventOptions.height;
         }
 
         const event = new PhysicsVortexEvent(this._scene, origin, radiusOrEventOptions);
