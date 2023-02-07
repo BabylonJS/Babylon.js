@@ -396,7 +396,7 @@ ThinEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function (
         rtWrapper._MSAAFramebuffer = null;
     }
 
-    if (samples > 1 && gl.renderbufferStorageMultisample) {
+    if (samples > 1 && typeof gl.renderbufferStorageMultisample === "function") {
         const framebuffer = gl.createFramebuffer();
 
         if (!framebuffer) {
