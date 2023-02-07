@@ -14,7 +14,7 @@ import {
  * @param engineType name of the engine (webgl1, webgl2, webgpu)
  * @param testFileName name of the .json file (without the .json extension) containing the tests
  */
- export const evaluateTests = async (engineType = "webgl2", testFileName = "config", debug = false, debugWait = false, logToConsole = true, logToFile = false) => {
+export const evaluateTests = async (engineType = "webgl2", testFileName = "config", debug = false, debugWait = false, logToConsole = true, logToFile = false) => {
     // jest doesn't support cutstom CLI variables
     // const engineType = buildTools.checkArgs("--engine", false, true) || "webgl2";
     // const debug = buildTools.checkArgs("--debug", true);
@@ -27,9 +27,13 @@ import {
     // load the config
     const rawJsonData = fs.readFileSync(configPath, "utf8");
     // console.log(data);
-    const config = JSON.parse(rawJsonData.replace(/^\uFEFF/, ''));
+    const config = JSON.parse(rawJsonData.replace(/^\uFEFF/, ""));
 
     const logPath = path.resolve(__dirname, `${testFileName}_${engineType}_log.txt`);
+
+    const tests: any[] = config.tests.filter((test: any) => {
+        return !(test.excludeFromAutomaticTesting || (test.excludedEngines && test.excludedEngines.includes(engineType)));
+    });
 
     // 2% error rate
 
@@ -120,40 +124,45 @@ import {
     // });
 
     test /*.concurrent*/
-        .each(config.tests.filter((test: any) => !test.excludeFromAutomaticTesting && !(test.excludedEngines && test.excludedEngines.includes(engineType))))(
+        .each(
+            tests
+        )(
         "$title",
         async (test) => {
             log(`Running - ${test.title}`);
             try {
                 // set the screenshot fail rate
                 expect(await page.evaluate(evaluatePrepareScene, test, getGlobalConfig({ root: config.root }))).toBeTruthy();
-            
+
                 const renderCount = /*getGlobalConfig().qs && getGlobalConfig().qs.checkresourcecreation ? 50 : */ test.renderCount || 1;
-            
+
                 const renderResult = await page.evaluate(evaluateRenderSceneForVisualization, renderCount);
-                debugWait && await jestPuppeteer.debug();
+                debugWait && (await jestPuppeteer.debug());
                 expect(renderResult).toBeTruthy();
-            
+
                 if (engineType.startsWith("webgl")) {
                     const glError = await page.evaluate(evaluateIsGLError);
                     expect(glError).toBe(false);
                 }
                 // Take screenshot
                 const screenshot = await page.screenshot();
-            
+
                 jestScreenshot.setupJestScreenshot({
                     pixelThresholdRelative: (test.errorRatio || 2.5) / 100,
                 });
                 // Test screenshot (also save this new screenshot if -u is set)
                 expect(screenshot).toMatchImageSnapshot({
-                    path: path.resolve(__dirname, `./ReferenceImages/${useStandardTestList ? "" : testFileName}/${test.referenceImage ? test.referenceImage : test.title + ".png"}`),
+                    path: path.resolve(
+                        __dirname,
+                        `./ReferenceImages/${useStandardTestList ? "" : testFileName}/${test.referenceImage ? test.referenceImage : test.title + ".png"}`
+                    ),
                 });
             } finally {
                 // dispose the scene
                 const disposeResult = await page.evaluate(evaluateDisposeSceneForVisualization, engineFlags);
                 expect(disposeResult).toBe(true);
             }
-                    },
+        },
         debug ? 1000000 : 40000
     );
 };
