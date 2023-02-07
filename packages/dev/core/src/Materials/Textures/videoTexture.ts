@@ -201,6 +201,7 @@ export class VideoTexture extends Texture {
             this.video.addEventListener("paused", this._updateInternalTexture);
             this.video.addEventListener("seeked", this._updateInternalTexture);
             this.video.addEventListener("emptied", this._reset);
+            this.video.addEventListener("resize", this._videoResizeEventListener)
 
             if (this._settings.autoPlay) {
                 this._handlePlay();
@@ -267,15 +268,13 @@ export class VideoTexture extends Texture {
 
         return video;
     }
+    private _videoResizeEventListener = (): void => {
+        this._resizeInternalTexture(false /* skipDispose */);
+    }
 
-    private _createInternalTexture = (): void => {
-        if (this._texture != null) {
-            if (this._displayingPosterTexture) {
-                this._texture.dispose();
-                this._displayingPosterTexture = false;
-            } else {
-                return;
-            }
+    private _resizeInternalTexture = (skipDispose: boolean): void => {
+        if (this._texture != null && !skipDispose) {
+            this._texture.dispose();
         }
 
         if (!this._getEngine()!.needPOTTextures || (Tools.IsExponentOfTwo(this.video.videoWidth) && Tools.IsExponentOfTwo(this.video.videoHeight))) {
@@ -289,6 +288,19 @@ export class VideoTexture extends Texture {
 
         this._texture = this._getEngine()!.createDynamicTexture(this.video.videoWidth, this.video.videoHeight, this._generateMipMaps, this.samplingMode);
         this._texture.format = this._format ?? Constants.TEXTUREFORMAT_RGBA;
+    }
+
+    private _createInternalTexture = (): void => {
+        if (this._texture != null) {
+            if (this._displayingPosterTexture) {
+                this._texture.dispose();
+                this._displayingPosterTexture = false;
+            } else {
+                return;
+            }
+        }
+
+        this._resizeInternalTexture(true /* skipDispose */);
 
         if (!this.video.autoplay && !this._settings.poster && !this._settings.independentVideoSource) {
             const oldHandler = this.video.onplaying;
@@ -415,6 +427,7 @@ export class VideoTexture extends Texture {
             this.video.removeEventListener("paused", this._updateInternalTexture);
             this.video.removeEventListener("seeked", this._updateInternalTexture);
             this.video.removeEventListener("emptied", this._reset);
+            this.video.removeEventListener("resize", this._videoResizeEventListener);
             this.video.pause();
         }
 
