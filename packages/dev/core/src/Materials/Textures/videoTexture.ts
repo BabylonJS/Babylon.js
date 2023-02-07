@@ -291,9 +291,7 @@ export class VideoTexture extends Texture {
     private _createInternalTexture = (): void => {
         if (this._texture != null) {
             if (this._displayingPosterTexture) {
-                this._texture.dispose();
                 this._displayingPosterTexture = false;
-                this._texture = null;
             } else {
                 return;
             }
