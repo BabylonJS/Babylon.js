@@ -9,6 +9,7 @@ import { Ray } from "../Culling/ray";
 import type { Scene } from "../scene";
 import type { PhysicsEngine as PhysicsEngineV1 } from "./physicsEngine";
 import type { PhysicsEngine as PhysicsEngineV2 } from "./v2/physicsEngine";
+import type { IPhysicsEngine } from "./IPhysicsEngine";
 import type { PhysicsImpostor } from "./v1/physicsImpostor";
 import type { PhysicsBody } from "./v2/physicsBody";
 
@@ -18,7 +19,8 @@ import type { PhysicsBody } from "./v2/physicsBody";
  */
 export class PhysicsHelper {
     private _scene: Scene;
-    private _physicsEngine: Nullable<PhysicsEngineV1 | PhysicsEngineV2>;
+    private _physicsEngine: Nullable<IPhysicsEngine>;
+    private _hitData: PhysicsHitData = { force: new Vector3(), contactPoint: new Vector3(), distanceFromOrigin: 0 };
 
     /**
      * Initializes the Physics helper
@@ -26,7 +28,7 @@ export class PhysicsHelper {
      */
     constructor(scene: Scene) {
         this._scene = scene;
-        this._physicsEngine = this._scene.getPhysicsEngine() as any;
+        this._physicsEngine = this._scene.getPhysicsEngine();
 
         if (!this._physicsEngine) {
             Logger.Warn("Physics engine not enabled. Please enable the physics before you can use the methods.");
@@ -62,28 +64,29 @@ export class PhysicsHelper {
         }
 
         if (typeof radiusOrEventOptions === "number") {
+            const r = radiusOrEventOptions;
             radiusOrEventOptions = new PhysicsRadialExplosionEventOptions();
-            radiusOrEventOptions.radius = <number>(<any>radiusOrEventOptions);
-            radiusOrEventOptions.strength = strength || radiusOrEventOptions.strength;
-            radiusOrEventOptions.falloff = falloff || radiusOrEventOptions.falloff;
+            radiusOrEventOptions.radius = r;
+            radiusOrEventOptions.strength = strength ?? radiusOrEventOptions.strength;
+            radiusOrEventOptions.falloff = falloff ?? radiusOrEventOptions.falloff;
         }
 
         const event = new PhysicsRadialExplosionEvent(this._scene, radiusOrEventOptions);
 
+        const hitData = this._hitData;
         if (this._physicsEngine.getPluginVersion() === 1) {
             const affectedImpostorsWithData = Array<PhysicsAffectedImpostorWithData>();
             const impostors = (<PhysicsEngineV1>this._physicsEngine).getImpostors();
             impostors.forEach((impostor: PhysicsImpostor) => {
-                const impostorHitData = event.getImpostorHitData(impostor, origin);
-                if (!impostorHitData) {
+                if (!event.getImpostorHitData(impostor, origin, hitData)) {
                     return;
                 }
 
-                impostor.applyImpulse(impostorHitData.force, impostorHitData.contactPoint);
+                impostor.applyImpulse(hitData.force, hitData.contactPoint);
 
                 affectedImpostorsWithData.push({
                     impostor: impostor,
-                    hitData: impostorHitData,
+                    hitData: this._copyPhysicsHitData(hitData),
                 });
             });
 
@@ -92,16 +95,15 @@ export class PhysicsHelper {
             const affectedBodiesWithData = Array<PhysicsAffectedBodyWithData>();
             const bodies = (<PhysicsEngineV2>this._physicsEngine).getBodies();
             bodies.forEach((body: PhysicsBody) => {
-                const bodyHitData = event.getBodyHitData(body, origin);
-                if (!bodyHitData) {
+                if (!event.getBodyHitData(body, origin, hitData)) {
                     return;
                 }
 
-                body.applyImpulse(bodyHitData.force, bodyHitData.contactPoint);
+                body.applyImpulse(hitData.force, hitData.contactPoint);
 
                 affectedBodiesWithData.push({
                     body: body,
-                    hitData: bodyHitData,
+                    hitData: this._copyPhysicsHitData(hitData),
                 });
             });
 
@@ -149,20 +151,20 @@ export class PhysicsHelper {
 
         const event = new PhysicsRadialExplosionEvent(this._scene, radiusOrEventOptions);
 
+        const hitData = this._hitData;
         if (this._physicsEngine.getPluginVersion() === 1) {
             const affectedImpostorsWithData = Array<PhysicsAffectedImpostorWithData>();
             const impostors = (<PhysicsEngineV1>this._physicsEngine).getImpostors();
             impostors.forEach((impostor: PhysicsImpostor) => {
-                const impostorHitData = event.getImpostorHitData(impostor, origin);
-                if (!impostorHitData) {
+                if (!event.getImpostorHitData(impostor, origin, hitData)) {
                     return;
                 }
 
-                impostor.applyForce(impostorHitData.force, impostorHitData.contactPoint);
+                impostor.applyForce(hitData.force, hitData.contactPoint);
 
                 affectedImpostorsWithData.push({
                     impostor: impostor,
-                    hitData: impostorHitData,
+                    hitData: this._copyPhysicsHitData(hitData),
                 });
             });
 
@@ -171,16 +173,15 @@ export class PhysicsHelper {
             const affectedBodiesWithData = Array<PhysicsAffectedBodyWithData>();
             const bodies = (<PhysicsEngineV2>this._physicsEngine).getBodies();
             bodies.forEach((body: PhysicsBody) => {
-                const bodyHitData = event.getBodyHitData(body, origin);
-                if (!bodyHitData) {
+                if (!event.getBodyHitData(body, origin, hitData)) {
                     return;
                 }
 
-                body.applyForce(bodyHitData.force, bodyHitData.contactPoint);
+                body.applyForce(hitData.force, hitData.contactPoint);
 
                 affectedBodiesWithData.push({
                     body: body,
-                    hitData: bodyHitData,
+                    hitData: this._copyPhysicsHitData(hitData),
                 });
             });
 
@@ -194,9 +195,9 @@ export class PhysicsHelper {
 
     /**
      * Creates a gravitational field
-     * @param origin the origin of the explosion
-     * @param radiusOrEventOptions the radius or the options of radial explosion
-     * @param strength the explosion strength
+     * @param origin the origin of the gravitational field
+     * @param radiusOrEventOptions the radius or the options of radial gravitational field
+     * @param strength the gravitational field strength
      * @param falloff possible options: Constant & Linear. Defaults to Constant
      * @returns A physics gravitational field event, or null
      */
@@ -313,6 +314,10 @@ export class PhysicsHelper {
 
         return event;
     }
+
+    private _copyPhysicsHitData(data: PhysicsHitData): PhysicsHitData {
+        return { force: data.force.clone(), contactPoint: data.contactPoint.clone(), distanceFromOrigin: data.distanceFromOrigin };
+    }
 }
 
 /**
@@ -343,7 +348,7 @@ class PhysicsRadialExplosionEvent {
         };
     }
 
-    private _getHitData(mesh: AbstractMesh, center: Vector3, origin: Vector3): Nullable<PhysicsHitData> {
+    private _getHitData(mesh: AbstractMesh, center: Vector3, origin: Vector3, data: PhysicsHitData): boolean {
         const direction = center.subtract(origin);
 
         const ray = new Ray(origin, direction, this._options.radius);
@@ -351,13 +356,13 @@ class PhysicsRadialExplosionEvent {
 
         const contactPoint = hit.pickedPoint;
         if (!contactPoint) {
-            return null;
+            return false;
         }
 
         const distanceFromOrigin = Vector3.Distance(origin, contactPoint);
 
         if (distanceFromOrigin > this._options.radius) {
-            return null;
+            return false;
         }
 
         const multiplier =
@@ -365,7 +370,10 @@ class PhysicsRadialExplosionEvent {
 
         const force = direction.multiplyByFloats(multiplier, multiplier, multiplier);
 
-        return { force: force, contactPoint: contactPoint, distanceFromOrigin: distanceFromOrigin };
+        data.force = force;
+        data.contactPoint = contactPoint;
+        data.distanceFromOrigin = distanceFromOrigin;
+        return true;
     }
 
     /**
@@ -374,18 +382,19 @@ class PhysicsRadialExplosionEvent {
      * @param origin the origin of the explosion
      * @returns A physics force and contact point, or null
      */
-    public getBodyHitData(body: PhysicsBody, origin: Vector3): Nullable<PhysicsHitData> {
+    public getBodyHitData(body: PhysicsBody, origin: Vector3, data: PhysicsHitData): boolean {
         if (body.transformNode.getClassName() !== "Mesh" && body.transformNode.getClassName() !== "InstancedMesh") {
-            return null;
+            return false;
         }
 
         const mesh = body.transformNode as AbstractMesh;
         if (!this._intersectsWithSphere(mesh, origin, this._options.radius)) {
-            return null;
+            return false;
         }
 
         const bodyObjectCenter = body.getObjectCenter();
-        return this._getHitData(mesh, bodyObjectCenter, origin);
+        this._getHitData(mesh, bodyObjectCenter, origin, data);
+        return true;
     }
     /**
      * Returns the force and contact point of the impostor or false, if the impostor is not affected by the force/impulse.
@@ -393,23 +402,24 @@ class PhysicsRadialExplosionEvent {
      * @param origin the origin of the explosion
      * @returns A physics force and contact point, or null
      */
-    public getImpostorHitData(impostor: PhysicsImpostor, origin: Vector3): Nullable<PhysicsHitData> {
+    public getImpostorHitData(impostor: PhysicsImpostor, origin: Vector3, data: PhysicsHitData): boolean {
         if (impostor.mass === 0) {
-            return null;
+            return false;
         }
 
         if (impostor.object.getClassName() !== "Mesh" && impostor.object.getClassName() !== "InstancedMesh") {
-            return null;
+            return false;
         }
 
         const mesh = impostor.object as AbstractMesh;
         if (!this._intersectsWithSphere(mesh, origin, this._options.radius)) {
-            return null;
+            return false;
         }
 
         const impostorObjectCenter = impostor.getObjectCenter();
 
-        return this._getHitData(mesh, impostorObjectCenter, origin);
+        this._getHitData(mesh, impostorObjectCenter, origin, data);
+        return true;
     }
 
     /**
@@ -460,7 +470,7 @@ class PhysicsRadialExplosionEvent {
         this._prepareSphere();
 
         this._sphere.position = origin;
-        this._sphere.scaling = new Vector3(radius * 2, radius * 2, radius * 2);
+        this._sphere.scaling.setAll(radius * 2);
         this._sphere._updateBoundingInfo();
         this._sphere.computeWorldMatrix(true);
 
@@ -558,7 +568,7 @@ class PhysicsUpdraftEvent {
     private _cylinder: Mesh;
     private _cylinderPosition: Vector3 = Vector3.Zero(); // to keep the cylinders position, because normally the origin is in the center and not on the bottom
     private _dataFetched: boolean = false; // check if the has been fetched the data. If not, do cleanup
-
+    private static hitData: PhysicsHitData = { force: new Vector3(), contactPoint: new Vector3(), distanceFromOrigin: 0 };
     /**
      * Initializes the physics updraft event
      * @param _scene BabylonJS scene
@@ -627,7 +637,7 @@ class PhysicsUpdraftEvent {
         }
     }
 
-    private _getHitData(center: Vector3): Nullable<PhysicsHitData> {
+    private _getHitData(center: Vector3, data: PhysicsHitData): void {
         let direction: Vector3;
         if (this._options.updraftMode === PhysicsUpdraftMode.Perpendicular) {
             direction = this._originDirection;
@@ -641,52 +651,58 @@ class PhysicsUpdraftEvent {
 
         const force = direction.multiplyByFloats(multiplier, multiplier, multiplier);
 
-        return { force: force, contactPoint: center, distanceFromOrigin: distanceFromOrigin };
+        data.force = force;
+        data.contactPoint = center;
+        data.distanceFromOrigin = distanceFromOrigin;
     }
 
-    private _getBodyHitData(body: PhysicsBody): Nullable<PhysicsHitData> {
+    private _getBodyHitData(body: PhysicsBody, data: PhysicsHitData): boolean {
+        if (body.transformNode.getClassName() !== "Mesh" && body.transformNode.getClassName() !== "InstancedMesh") {
+            return false;
+        }
         const bodyObject = body.transformNode as AbstractMesh;
         if (!this._intersectsWithCylinder(bodyObject)) {
-            return null;
+            return false;
         }
 
         const center = body.getObjectCenter();
-        return this._getHitData(center);
+        this._getHitData(center, data);
+        return true;
     }
 
-    private _getImpostorHitData(impostor: PhysicsImpostor): Nullable<PhysicsHitData> {
+    private _getImpostorHitData(impostor: PhysicsImpostor, data: PhysicsHitData): boolean {
         if (impostor.mass === 0) {
-            return null;
+            return false;
         }
 
         const impostorObject = <AbstractMesh>impostor.object;
         if (!this._intersectsWithCylinder(impostorObject)) {
-            return null;
+            return false;
         }
 
         const center = impostor.getObjectCenter();
-        return this._getHitData(center);
+        this._getHitData(center, data);
+        return true;
     }
 
     private _tick() {
+        const hitData = PhysicsUpdraftEvent.hitData;
         if (this._physicsEngine.getPluginVersion() === 1) {
             (<PhysicsEngineV1>this._physicsEngine).getImpostors().forEach((impostor: PhysicsImpostor) => {
-                const impostorHitData = this._getImpostorHitData(impostor);
-                if (!impostorHitData) {
+                if (!this._getImpostorHitData(impostor, hitData)) {
                     return;
                 }
 
-                impostor.applyForce(impostorHitData.force, impostorHitData.contactPoint);
+                impostor.applyForce(hitData.force, hitData.contactPoint);
             });
         } else {
             // V2
             (<PhysicsEngineV2>this._physicsEngine).getBodies().forEach((body: PhysicsBody) => {
-                const bodyHitData = this._getBodyHitData(body);
-                if (!bodyHitData) {
+                if (!this._getBodyHitData(body, hitData)) {
                     return;
                 }
 
-                body.applyForce(bodyHitData.force, bodyHitData.contactPoint);
+                body.applyForce(hitData.force, hitData.contactPoint);
             });
         }
     }
@@ -723,6 +739,8 @@ class PhysicsVortexEvent {
     private _cylinder: Mesh;
     private _cylinderPosition: Vector3 = Vector3.Zero(); // to keep the cylinders position, because normally the origin is in the center and not on the bottom
     private _dataFetched: boolean = false; // check if the has been fetched the data. If not, do cleanup
+    private static originOnPlane: Vector3 = Vector3.Zero();
+    private static hitData: PhysicsHitData = { force: new Vector3(), contactPoint: new Vector3(), distanceFromOrigin: 0 };
 
     /**
      * Initializes the physics vortex event
@@ -785,15 +803,16 @@ class PhysicsVortexEvent {
         }
     }
 
-    private _getHitData(mesh: AbstractMesh, center: Vector3): Nullable<PhysicsHitData> {
-        const originOnPlane = new Vector3(this._origin.x, center.y, this._origin.z); // the distance to the origin as if both objects were on a plane (Y-axis)
+    private _getHitData(mesh: AbstractMesh, center: Vector3, data: PhysicsHitData): boolean {
+        const originOnPlane = PhysicsVortexEvent.originOnPlane;
+        originOnPlane.set(this._origin.x, center.y, this._origin.z); // the distance to the origin as if both objects were on a plane (Y-axis)
         const originToImpostorDirection = center.subtract(originOnPlane);
 
         const ray = new Ray(originOnPlane, originToImpostorDirection, this._options.radius);
         const hit = ray.intersectsMesh(mesh);
         const contactPoint = hit.pickedPoint;
         if (!contactPoint) {
-            return null;
+            return false;
         }
         const absoluteDistanceFromOrigin = hit.distance / this._options.radius;
 
@@ -821,60 +840,64 @@ class PhysicsVortexEvent {
         let force = new Vector3(forceX, forceY, forceZ);
         force = force.multiplyByFloats(this._options.strength, this._options.strength, this._options.strength);
 
-        return { force: force, contactPoint: center, distanceFromOrigin: absoluteDistanceFromOrigin };
+        data.force = force;
+        data.contactPoint = center;
+        data.distanceFromOrigin = absoluteDistanceFromOrigin;
+        return true;
     }
 
-    private _getBodyHitData(body: PhysicsBody): Nullable<PhysicsHitData> {
+    private _getBodyHitData(body: PhysicsBody, data: PhysicsHitData): boolean {
         if (body.transformNode.getClassName() !== "Mesh" && body.transformNode.getClassName() !== "InstancedMesh") {
-            return null;
+            return false;
         }
 
         const bodyObject = body.transformNode as AbstractMesh;
 
         if (!this._intersectsWithCylinder(bodyObject)) {
-            return null;
+            return false;
         }
 
         const bodyCenter = body.getObjectCenter();
-        return this._getHitData(bodyObject, bodyCenter);
+        this._getHitData(bodyObject, bodyCenter, data);
+        return true;
     }
 
-    private _getImpostorHitData(impostor: PhysicsImpostor): Nullable<PhysicsHitData> {
+    private _getImpostorHitData(impostor: PhysicsImpostor, data: PhysicsHitData): boolean {
         if (impostor.mass === 0) {
-            return null;
+            return false;
         }
 
         if (impostor.object.getClassName() !== "Mesh" && impostor.object.getClassName() !== "InstancedMesh") {
-            return null;
+            return false;
         }
 
         const impostorObject = impostor.object as AbstractMesh;
         if (!this._intersectsWithCylinder(impostorObject)) {
-            return null;
+            return false;
         }
 
         const impostorObjectCenter = impostor.getObjectCenter();
-        return this._getHitData(impostorObject, impostorObjectCenter);
+        this._getHitData(impostorObject, impostorObjectCenter, data);
+        return true;
     }
 
     private _tick() {
+        const hitData = PhysicsVortexEvent.hitData;
         if (this._physicsEngine.getPluginVersion() === 1) {
             (<PhysicsEngineV1>this._physicsEngine).getImpostors().forEach((impostor: PhysicsImpostor) => {
-                const impostorHitData = this._getImpostorHitData(impostor);
-                if (!impostorHitData) {
+                if (!this._getImpostorHitData(impostor, hitData)) {
                     return;
                 }
 
-                impostor.applyForce(impostorHitData.force, impostorHitData.contactPoint);
+                impostor.applyForce(hitData.force, hitData.contactPoint);
             });
         } else {
             (<PhysicsEngineV2>this._physicsEngine).getBodies().forEach((body: PhysicsBody) => {
-                const bodyHitData = this._getBodyHitData(body);
-                if (!bodyHitData) {
+                if (!this._getBodyHitData(body, hitData)) {
                     return;
                 }
 
-                body.applyForce(bodyHitData.force, bodyHitData.contactPoint);
+                body.applyForce(hitData.force, hitData.contactPoint);
             });
         }
     }
