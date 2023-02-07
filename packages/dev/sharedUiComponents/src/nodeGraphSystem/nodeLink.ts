@@ -82,13 +82,14 @@ export class NodeLink {
             return false;
         }
 
+        const zoom = this._graphCanvas.zoom;
         const svg = this._graphCanvas.svgCanvas as any as SVGSVGElement;
         const rootRect = svg.getBoundingClientRect();
 
-        const left = rect.x - rootRect.x;
-        const top = rect.y - rootRect.y;
-        const right = left + rect.width;
-        const bottom = top + rect.height;
+        const left = (rect.x - rootRect.x) / zoom;
+        const top = (rect.y - rootRect.y) / zoom;
+        const right = left + rect.width / zoom;
+        const bottom = top + rect.height / zoom;
 
         const sampleRate = 10; // Checking 10 times on the path should be enough
 
