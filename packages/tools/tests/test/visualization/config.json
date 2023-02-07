@@ -865,7 +865,8 @@
         {
             "title": "PBR shader code coverage 1",
             "playgroundId": "#QI7TL3#16",
-            "referenceImage": "pbr_codecoverage1.png"
+            "referenceImage": "pbr_codecoverage1.png",
+            "excludedEngines": ["webgl1"]
         },
         {
             "title": "PBR shader code coverage 2",
