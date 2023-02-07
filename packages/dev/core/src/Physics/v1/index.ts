@@ -5,4 +5,3 @@ export * from "./physicsEngineComponent";
 export * from "./physicsImpostor";
 export * from "./physicsJoint";
 export * from "./Plugins/index";
-export * from "./physicsHelper";
