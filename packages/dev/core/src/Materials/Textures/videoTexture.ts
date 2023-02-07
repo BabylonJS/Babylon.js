@@ -201,7 +201,7 @@ export class VideoTexture extends Texture {
             this.video.addEventListener("paused", this._updateInternalTexture);
             this.video.addEventListener("seeked", this._updateInternalTexture);
             this.video.addEventListener("emptied", this._reset);
-            this.video.addEventListener("resize", this._resizeInternalTexture)
+            this.video.addEventListener("resize", this._resizeInternalTexture);
 
             if (this._settings.autoPlay) {
                 this._handlePlay();
@@ -286,7 +286,7 @@ export class VideoTexture extends Texture {
 
         this._texture = this._getEngine()!.createDynamicTexture(this.video.videoWidth, this.video.videoHeight, this._generateMipMaps, this.samplingMode);
         this._texture.format = this._format ?? Constants.TEXTUREFORMAT_RGBA;
-    }
+    };
 
     private _createInternalTexture = (): void => {
         if (this._texture != null) {
