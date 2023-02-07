@@ -269,14 +269,14 @@ export class VideoTexture extends Texture {
         return video;
     }
     private _videoResizeEventListener = (): void => {
-        this._resizeInternalTexture(false /* skipDispose */);
-    }
-
-    private _resizeInternalTexture = (skipDispose: boolean): void => {
-        if (this._texture != null && !skipDispose) {
+        if (this._texture != null) {
             this._texture.dispose();
         }
 
+        this._resizeInternalTexture();
+    }
+
+    private _resizeInternalTexture = (): void => {
         if (!this._getEngine()!.needPOTTextures || (Tools.IsExponentOfTwo(this.video.videoWidth) && Tools.IsExponentOfTwo(this.video.videoHeight))) {
             this.wrapU = Texture.WRAP_ADDRESSMODE;
             this.wrapV = Texture.WRAP_ADDRESSMODE;
@@ -300,7 +300,7 @@ export class VideoTexture extends Texture {
             }
         }
 
-        this._resizeInternalTexture(true /* skipDispose */);
+        this._resizeInternalTexture();
 
         if (!this.video.autoplay && !this._settings.poster && !this._settings.independentVideoSource) {
             const oldHandler = this.video.onplaying;
