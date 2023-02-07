@@ -95,7 +95,7 @@
         "start": "concurrently --kill-others -m 2 -n dev-watch,cdn-server \"npm run watch:dev:skip-compile\" \"npm run serve -w @tools/babylon-server\""
     },
     "engines": {
-        "node": ">=12.0.0 <17.0.0",
+        "node": ">=14.0.0 <=18.0.0",
         "npm": ">=7.0.0"
     },
     "changelog": {

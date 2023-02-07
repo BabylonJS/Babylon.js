@@ -12,6 +12,7 @@ import type { IPointerEvent, IUIEvent } from "core/Events";
 import { PointerEventTypes } from "core/Events";
 import { Vector3 } from "core/Maths/math.vector";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
+import { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
 import { Scene } from "core/scene";
 import type { Nullable } from "core/types";
 import type { ITestDeviceInputSystem } from "./testDeviceInputSystem";
@@ -484,5 +485,44 @@ describe("InputManager", () => {
         }
 
         expect(tapCt).toBe(3);
+    });
+
+    it("Doesn't let TAPs pass through utility layer", () => {
+        let tapCt = 0;
+
+        // Move camera to overhead so that sphere is guaranteed to be over ground
+        // If there's a pass thru issue, any click will also hit the ground
+        camera!.position = new Vector3(0, 10, 0);
+        camera!.setTarget(Vector3.Zero());
+
+        if (scene) {
+            const utilityLayer = new UtilityLayerRenderer(scene);
+            const ground = MeshBuilder.CreateGround("ground", { width: 6, height: 6 }, scene);
+            const sphere = MeshBuilder.CreateSphere("sphere", { diameter: 2, segments: 32 }, utilityLayer.utilityLayerScene);
+            sphere.position.y = 1;
+
+            scene.onPointerObservable.add((eventData) => {
+                if (eventData.pickInfo?.hit && eventData.pickInfo.pickedMesh === ground) {
+                    tapCt++;
+                }
+            }, PointerEventTypes.POINTERTAP);
+
+            if (deviceInputSystem) {
+                deviceInputSystem.connectDevice(DeviceType.Mouse, 0, TestDeviceInputSystem.MAX_POINTER_INPUTS);
+
+                // Move mouse over sphere and tap, expect no increment of tapCt
+                deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Horizontal, 64, false);
+                deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Vertical, 64, false);
+                deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 1);
+                deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
+
+                // Move mouse over ground and tap, should increment tapCt once
+                deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Horizontal, 50, false);
+                deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Vertical, 50, false);
+                deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 1);
+                deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
+            }
+        }
+        expect(tapCt).toBe(1);
     });
 });

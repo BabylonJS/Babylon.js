@@ -870,7 +870,19 @@ export class InputManager {
                     }
                 }
 
-                this._pointerCaptures[evt.pointerId] = false;
+                // There should be a pointer captured at this point so if there isn't we should reset and return
+                if (!this._pointerCaptures[evt.pointerId]) {
+                    if (this._swipeButtonPressed === evt.button) {
+                        this._isSwiping = false;
+                        this._swipeButtonPressed = -1;
+                    }
+                    return;
+                }
+
+                // Only release capture if all buttons are released
+                if (evt.buttons === 0) {
+                    this._pointerCaptures[evt.pointerId] = false;
+                }
                 if (!scene.cameraToUseForPointers && !scene.activeCamera) {
                     return;
                 }
