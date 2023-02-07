@@ -63,12 +63,15 @@ export class PhysicsHelper {
             return null;
         }
 
+        let useCallback = false;
         if (typeof radiusOrEventOptions === "number") {
             const r = radiusOrEventOptions;
             radiusOrEventOptions = new PhysicsRadialExplosionEventOptions();
             radiusOrEventOptions.radius = r;
             radiusOrEventOptions.strength = strength ?? radiusOrEventOptions.strength;
             radiusOrEventOptions.falloff = falloff ?? radiusOrEventOptions.falloff;
+        } else {
+            useCallback = !!(radiusOrEventOptions.affectedImpostorsCallback || radiusOrEventOptions.affectedBodiesCallback);
         }
 
         const event = new PhysicsRadialExplosionEvent(this._scene, radiusOrEventOptions);
@@ -84,10 +87,12 @@ export class PhysicsHelper {
 
                 impostor.applyImpulse(hitData.force, hitData.contactPoint);
 
-                affectedImpostorsWithData.push({
-                    impostor: impostor,
-                    hitData: this._copyPhysicsHitData(hitData),
-                });
+                if (useCallback) {
+                    affectedImpostorsWithData.push({
+                        impostor: impostor,
+                        hitData: this._copyPhysicsHitData(hitData),
+                    });
+                }
             });
 
             event.triggerAffectedImpostorsCallback(affectedImpostorsWithData);
@@ -101,10 +106,12 @@ export class PhysicsHelper {
 
                 body.applyImpulse(hitData.force, hitData.contactPoint);
 
-                affectedBodiesWithData.push({
-                    body: body,
-                    hitData: this._copyPhysicsHitData(hitData),
-                });
+                if (useCallback) {
+                    affectedBodiesWithData.push({
+                        body: body,
+                        hitData: this._copyPhysicsHitData(hitData),
+                    });
+                }
             });
 
             event.triggerAffectedBodiesCallback(affectedBodiesWithData);
@@ -142,11 +149,14 @@ export class PhysicsHelper {
             return null;
         }
 
+        let useCallback = false;
         if (typeof radiusOrEventOptions === "number") {
             radiusOrEventOptions = new PhysicsRadialExplosionEventOptions();
             radiusOrEventOptions.radius = <number>(<any>radiusOrEventOptions);
             radiusOrEventOptions.strength = strength || radiusOrEventOptions.strength;
             radiusOrEventOptions.falloff = falloff || radiusOrEventOptions.falloff;
+        } else {
+            useCallback = !!(radiusOrEventOptions.affectedImpostorsCallback || radiusOrEventOptions.affectedBodiesCallback);
         }
 
         const event = new PhysicsRadialExplosionEvent(this._scene, radiusOrEventOptions);
@@ -162,10 +172,12 @@ export class PhysicsHelper {
 
                 impostor.applyForce(hitData.force, hitData.contactPoint);
 
-                affectedImpostorsWithData.push({
-                    impostor: impostor,
-                    hitData: this._copyPhysicsHitData(hitData),
-                });
+                if (useCallback) {
+                    affectedImpostorsWithData.push({
+                        impostor: impostor,
+                        hitData: this._copyPhysicsHitData(hitData),
+                    });
+                }
             });
 
             event.triggerAffectedImpostorsCallback(affectedImpostorsWithData);
@@ -179,10 +191,12 @@ export class PhysicsHelper {
 
                 body.applyForce(hitData.force, hitData.contactPoint);
 
-                affectedBodiesWithData.push({
-                    body: body,
-                    hitData: this._copyPhysicsHitData(hitData),
-                });
+                if (useCallback) {
+                    affectedBodiesWithData.push({
+                        body: body,
+                        hitData: this._copyPhysicsHitData(hitData),
+                    });
+                }
             });
 
             event.triggerAffectedBodiesCallback(affectedBodiesWithData);
