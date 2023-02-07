@@ -201,7 +201,7 @@ export class VideoTexture extends Texture {
             this.video.addEventListener("paused", this._updateInternalTexture);
             this.video.addEventListener("seeked", this._updateInternalTexture);
             this.video.addEventListener("emptied", this._reset);
-            this.video.addEventListener("resize", this._videoResizeEventListener)
+            this.video.addEventListener("resize", this._resizeInternalTexture)
 
             if (this._settings.autoPlay) {
                 this._handlePlay();
@@ -268,15 +268,13 @@ export class VideoTexture extends Texture {
 
         return video;
     }
-    private _videoResizeEventListener = (): void => {
+
+    private _resizeInternalTexture = (): void => {
+        // Cleanup the old texture before replacing it
         if (this._texture != null) {
             this._texture.dispose();
         }
 
-        this._resizeInternalTexture();
-    }
-
-    private _resizeInternalTexture = (): void => {
         if (!this._getEngine()!.needPOTTextures || (Tools.IsExponentOfTwo(this.video.videoWidth) && Tools.IsExponentOfTwo(this.video.videoHeight))) {
             this.wrapU = Texture.WRAP_ADDRESSMODE;
             this.wrapV = Texture.WRAP_ADDRESSMODE;
@@ -295,6 +293,7 @@ export class VideoTexture extends Texture {
             if (this._displayingPosterTexture) {
                 this._texture.dispose();
                 this._displayingPosterTexture = false;
+                this._texture = null;
             } else {
                 return;
             }
@@ -427,7 +426,7 @@ export class VideoTexture extends Texture {
             this.video.removeEventListener("paused", this._updateInternalTexture);
             this.video.removeEventListener("seeked", this._updateInternalTexture);
             this.video.removeEventListener("emptied", this._reset);
-            this.video.removeEventListener("resize", this._videoResizeEventListener);
+            this.video.removeEventListener("resize", this._resizeInternalTexture);
             this.video.pause();
         }
 
