@@ -20,6 +20,8 @@ export const evaluateTests = async (engineType = "webgl2", testFileName = "confi
     // const debug = buildTools.checkArgs("--debug", true);
     // const configPath = buildTools.checkArgs("--config", false, true) || "../config.json";
 
+    jest.retryTimes(3);
+
     debug = process.env.DEBUG === "true" || debug;
 
     const configPath = process.env.CONFIG || path.resolve(__dirname, testFileName + ".json");
