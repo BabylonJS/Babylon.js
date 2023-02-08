@@ -1063,7 +1063,7 @@ export class SceneManager {
                     options.groundSize = groundSize;
                 }
 
-                options.enableGroundShadow = groundConfig === true || groundConfig.receiveShadows;
+                options.enableGroundShadow = groundConfiguration === true || groundConfig.receiveShadows;
                 if (groundConfig.shadowLevel !== undefined) {
                     options.groundShadowLevel = groundConfig.shadowLevel;
                 }
