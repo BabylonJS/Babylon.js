@@ -286,6 +286,10 @@ export class VideoTexture extends Texture {
 
         this._texture = this._getEngine()!.createDynamicTexture(this.video.videoWidth, this.video.videoHeight, this._generateMipMaps, this.samplingMode);
         this._texture.format = this._format ?? Constants.TEXTUREFORMAT_RGBA;
+
+        // Reset the frame ID and update the new texture to ensure it pulls in the current video frame
+        this._frameId = -1;
+        this._updateInternalTexture();
     };
 
     private _createInternalTexture = (): void => {
