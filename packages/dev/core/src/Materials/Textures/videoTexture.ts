@@ -201,7 +201,6 @@ export class VideoTexture extends Texture {
             this.video.addEventListener("paused", this._updateInternalTexture);
             this.video.addEventListener("seeked", this._updateInternalTexture);
             this.video.addEventListener("emptied", this._reset);
-            this.video.addEventListener("resize", this._resizeInternalTexture);
 
             if (this._settings.autoPlay) {
                 this._handlePlay();
@@ -301,6 +300,7 @@ export class VideoTexture extends Texture {
             }
         }
 
+        this.video.addEventListener("resize", this._resizeInternalTexture);
         this._resizeInternalTexture();
 
         if (!this.video.autoplay && !this._settings.poster && !this._settings.independentVideoSource) {
