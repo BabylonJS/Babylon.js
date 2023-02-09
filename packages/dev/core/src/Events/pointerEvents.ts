@@ -142,7 +142,7 @@ export class PointerInfo extends PointerInfoBase {
     /** @internal */
     public _generatePickInfo(): void {
         if (this._inputManager) {
-            this._pickInfo = this._inputManager._pickMove((this.event as IPointerEvent).pointerId);
+            this._pickInfo = this._inputManager._pickMove(this.event as IPointerEvent);
             this._inputManager._setRayOnPointerInfo(this._pickInfo, this.event);
             this._inputManager = null;
         }
