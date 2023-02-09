@@ -20,6 +20,7 @@ import commonStyles from "./common.modules.scss";
 
 import { TypeLedger } from "./typeLedger";
 import { RefreshNode } from "./tools";
+import { SearchBoxComponent } from "./searchBox";
 
 export interface IGraphCanvasComponentProps {
     stateManager: StateManager;
@@ -341,6 +342,104 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         }
     }
 
+    smartAddOverLink(node: GraphNode, link: NodeLink) {
+        // Connect the ports
+        const inputs: Nullable<IPortData>[] = [];
+        const outputs: Nullable<IPortData>[] = [];
+        const availableNodeInputs: Nullable<IPortData>[] = [];
+        const availableNodeOutputs: Nullable<IPortData>[] = [];
+        const leftNode = link.nodeA;
+        const rightNode = link.nodeB!;
+
+        // Delete previous
+        link.dispose();
+
+        // Get the ports
+        availableNodeInputs.push(...node.content.inputs.filter((i) => !i.isConnected));
+
+        availableNodeOutputs.push(...node.content.outputs);
+
+        inputs.push(...leftNode.content.outputs);
+
+        outputs.push(...rightNode.content.inputs.filter((i) => !i.isConnected));
+
+        // Reconnect
+        this.automaticRewire(inputs, availableNodeInputs, true);
+        this.automaticRewire(availableNodeOutputs, outputs, true);
+        this.props.stateManager.onRebuildRequiredObservable.notifyObservers(false);
+    }
+
+    smartAddOverNode(node: GraphNode, source: GraphNode) {
+        // Connect the ports
+        const inputs: Nullable<IPortData>[] = [];
+        const availableNodeInputs: Nullable<IPortData>[] = [];
+
+        // Get the ports
+        availableNodeInputs.push(...node.content.inputs.filter((i) => !i.isConnected));
+
+        inputs.push(...source.content.outputs);
+
+        // Reconnect
+        this.automaticRewire(inputs, availableNodeInputs, true);
+        this.props.stateManager.onRebuildRequiredObservable.notifyObservers(false);
+    }
+
+    deleteSelection(onRemove: (nodeData: INodeData) => void, autoReconnect = false) {
+        // Delete
+        const selectedItems = this.selectedNodes;
+        const inputs: Nullable<IPortData>[] = [];
+        const outputs: Nullable<IPortData>[] = [];
+        let needRebuild = false;
+
+        if (selectedItems.length > 0) {
+            needRebuild = true;
+            for (const selectedItem of selectedItems) {
+                if (autoReconnect) {
+                    this.populateConnectedEntriesBeforeRemoval(selectedItem, selectedItems, inputs, outputs);
+                }
+
+                selectedItem.dispose();
+
+                onRemove(selectedItem.content);
+                this.removeDataFromCache(selectedItem.content.data);
+            }
+        }
+
+        if (this.selectedLink) {
+            needRebuild = true;
+            this.selectedLink.dispose();
+        }
+
+        if (this.selectedFrames.length) {
+            needRebuild = true;
+            for (const frame of this.selectedFrames) {
+                if (frame.isCollapsed) {
+                    while (frame.nodes.length > 0) {
+                        onRemove(frame.nodes[0].content);
+                        this.removeDataFromCache(frame.nodes[0].content.data);
+                        frame.nodes[0].dispose();
+                    }
+                    frame.isCollapsed = false;
+                } else {
+                    frame.nodes.forEach((node) => {
+                        node.enclosingFrameId = -1;
+                    });
+                }
+                frame.dispose();
+            }
+        }
+
+        if (!needRebuild) {
+            return;
+        }
+
+        // Reconnect if required
+        this.automaticRewire(inputs, outputs);
+
+        this.props.stateManager.onSelectionChangedObservable.notifyObservers(null);
+        this.props.stateManager.onRebuildRequiredObservable.notifyObservers(false);
+    }
+
     handleKeyDown(
         evt: KeyboardEvent,
         onRemove: (nodeData: INodeData) => void,
@@ -349,52 +448,17 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         dataGenerator: (nodeData: INodeData) => any,
         rootElement: HTMLDivElement
     ) {
+        if (this.stateManager.modalIsDisplayed) {
+            return;
+        }
+
+        if (evt.code === "Space" && evt.target === this.props.stateManager.hostDocument!.body) {
+            this.stateManager.modalIsDisplayed = true;
+            this.props.stateManager.onSearchBoxRequiredObservable.notifyObservers({ x: mouseLocationX, y: mouseLocationY });
+            return;
+        }
         if ((evt.keyCode === 46 || evt.keyCode === 8) && !this.props.stateManager.lockObject.lock) {
-            // Delete
-            const selectedItems = this.selectedNodes;
-            const inputs: Nullable<IPortData>[] = [];
-            const outputs: Nullable<IPortData>[] = [];
-
-            if (selectedItems.length > 0) {
-                for (const selectedItem of selectedItems) {
-                    if (evt.altKey) {
-                        this.populateConnectedEntriesBeforeRemoval(selectedItem, selectedItems, inputs, outputs);
-                    }
-
-                    selectedItem.dispose();
-
-                    onRemove(selectedItem.content);
-                    this.removeDataFromCache(selectedItem.content.data);
-                }
-            }
-
-            if (this.selectedLink) {
-                this.selectedLink.dispose();
-            }
-
-            if (this.selectedFrames.length) {
-                for (const frame of this.selectedFrames) {
-                    if (frame.isCollapsed) {
-                        while (frame.nodes.length > 0) {
-                            onRemove(frame.nodes[0].content);
-                            this.removeDataFromCache(frame.nodes[0].content.data);
-                            frame.nodes[0].dispose();
-                        }
-                        frame.isCollapsed = false;
-                    } else {
-                        frame.nodes.forEach((node) => {
-                            node.enclosingFrameId = -1;
-                        });
-                    }
-                    frame.dispose();
-                }
-            }
-
-            // Reconnect if required
-            this.automaticRewire(inputs, outputs);
-
-            this.props.stateManager.onSelectionChangedObservable.notifyObservers(null);
-            this.props.stateManager.onRebuildRequiredObservable.notifyObservers(false);
+            this.deleteSelection(onRemove, evt.altKey);
             return;
         }
 
@@ -844,6 +908,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     }
 
     onMove(evt: React.PointerEvent) {
+        if (this.stateManager.modalIsDisplayed) {
+            return;
+        }
+
         // Selection box
         if (this._selectionBox) {
             const rootRect = this.canvasContainer.getBoundingClientRect();
@@ -951,6 +1019,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     }
 
     onDown(evt: React.PointerEvent<HTMLElement>) {
+        if (this.stateManager.modalIsDisplayed) {
+            return;
+        }
+
         this._rootContainer.setPointerCapture(evt.pointerId);
 
         // Port dragging
@@ -1029,6 +1101,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     }
 
     onUp(evt: React.PointerEvent) {
+        if (this.stateManager.modalIsDisplayed) {
+            return;
+        }
+
         this._mouseStartPointX = null;
         this._mouseStartPointY = null;
         this._rootContainer.releasePointerCapture(evt.pointerId);
@@ -1076,6 +1152,10 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     }
 
     onWheel(evt: React.WheelEvent) {
+        if (this.stateManager.modalIsDisplayed) {
+            return;
+        }
+
         const delta = evt.deltaY < 0 ? 0.1 : -0.1;
 
         const oldZoom = this.zoom;
@@ -1389,6 +1469,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                     <svg id="graph-svg-container" className={styles["graph-svg-container"]} ref={this._svgCanvasRef}></svg>
                     <div id="selection-container" className={styles["selection-container"]} ref={this._selectionContainerRef}></div>
                 </div>
+                <SearchBoxComponent stateManager={this.stateManager} />
             </div>
         );
     }

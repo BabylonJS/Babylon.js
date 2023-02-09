@@ -9,8 +9,7 @@ import { RegisterClass } from "../Misc/typeStore";
 import type { Plane } from "./math.plane";
 import { PerformanceConfigurator } from "../Engines/performanceConfigurator";
 import { EngineStore } from "../Engines/engineStore";
-
-type TransformNode = import("../Meshes/transformNode").TransformNode;
+import type { TransformNode } from "../Meshes/transformNode";
 
 export type Vector2Constructor<T extends Vector2> = new (...args: ConstructorParameters<typeof Vector2>) => T;
 export type Vector3Constructor<T extends Vector3> = new (...args: ConstructorParameters<typeof Vector3>) => T;

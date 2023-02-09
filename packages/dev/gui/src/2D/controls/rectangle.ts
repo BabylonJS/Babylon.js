@@ -2,7 +2,7 @@ import { Container } from "./container";
 import type { Measure } from "../measure";
 import { RegisterClass } from "core/Misc/typeStore";
 import { serialize } from "core/Misc/decorators";
-import type { ICanvasGradient, ICanvasRenderingContext } from "core/Engines/ICanvas";
+import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
 
 /** Class used to create rectangle container */
 export class Rectangle extends Container {
@@ -73,7 +73,7 @@ export class Rectangle extends Container {
         return 0;
     }
 
-    protected _getRectangleFill(context: ICanvasRenderingContext): string | ICanvasGradient {
+    protected _getRectangleFill(context: ICanvasRenderingContext) {
         return this._getBackgroundColor(context);
     }
 

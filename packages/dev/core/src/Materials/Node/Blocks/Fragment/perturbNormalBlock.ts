@@ -26,6 +26,7 @@ import "../../../../Shaders/ShadersInclude/bumpFragment";
 export class PerturbNormalBlock extends NodeMaterialBlock {
     private _tangentSpaceParameterName = "";
     private _tangentCorrectionFactorName = "";
+    private _worldMatrixName = "";
 
     /** Gets or sets a boolean indicating that normal should be inverted on X axis */
     @editableInPropertyPage("Invert X axis", PropertyTypeForEdition.Boolean, "PROPERTIES", { notifiers: { update: false } })
@@ -36,6 +37,9 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
     /** Gets or sets a boolean indicating that parallax occlusion should be enabled */
     @editableInPropertyPage("Use parallax occlusion", PropertyTypeForEdition.Boolean)
     public useParallaxOcclusion = false;
+    /** Gets or sets a boolean indicating that sampling mode is in Object space */
+    @editableInPropertyPage("Object Space Mode", PropertyTypeForEdition.Boolean, "PROPERTIES", { notifiers: { update: false } })
+    public useObjectSpaceNormalMap = false;
 
     /**
      * Create a new PerturbNormalBlock
@@ -63,6 +67,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
             NodeMaterialBlockTargets.VertexAndFragment,
             new NodeMaterialConnectionPointCustomObject("TBN", this, NodeMaterialConnectionPointDirection.Input, TBNBlock, "TBNBlock")
         );
+        this.registerInput("world", NodeMaterialBlockConnectionPointTypes.Matrix, true);
 
         // Fragment
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Vector4);
@@ -149,6 +154,13 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets the World input component
+     */
+    public get world(): NodeMaterialConnectionPoint {
+        return this._inputs[10];
+    }
+
+    /**
      * Gets the output component
      */
     public get output(): NodeMaterialConnectionPoint {
@@ -169,6 +181,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         defines.setValue("BUMP", true);
         defines.setValue("PARALLAX", useParallax, true);
         defines.setValue("PARALLAXOCCLUSION", this.useParallaxOcclusion, true);
+        defines.setValue("OBJECTSPACE_NORMALMAP", this.useObjectSpaceNormalMap, true);
     }
 
     public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
@@ -177,8 +190,14 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         } else {
             effect.setFloat2(this._tangentSpaceParameterName, this.invertX ? -1.0 : 1.0, this.invertY ? -1.0 : 1.0);
         }
+
         if (mesh) {
             effect.setFloat(this._tangentCorrectionFactorName, mesh.getWorldMatrix().determinant() < 0 ? -1 : 1);
+
+            if (this.useObjectSpaceNormalMap && !this.world.isConnected) {
+                // World default to the mesh world matrix
+                effect.setMatrix(this._worldMatrixName, mesh.getWorldMatrix());
+            }
         }
     }
 
@@ -220,6 +239,10 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
 
         state._emitUniformFromString(this._tangentCorrectionFactorName, "float");
 
+        this._worldMatrixName = state._getFreeDefineName("perturbNormalWorldMatrix");
+
+        state._emitUniformFromString(this._worldMatrixName, "mat4");
+
         let normalSamplerName = null;
         if (this.normalMapColor.connectedPoint) {
             normalSamplerName = (this.normalMapColor.connectedPoint!._ownerBlock as TextureBlock).samplerName;
@@ -241,6 +264,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
 
         const tangentReplaceString = { search: /defined\(TANGENT\)/g, replace: worldTangent.isConnected ? "defined(TANGENT)" : "defined(IGNORE)" };
         const tbnVarying = { search: /varying mat3 vTBN/g, replace: "" };
+        const normalMatrixReplaceString = { search: /uniform mat4 normalMatrix;/g, replace: "" };
 
         const TBN = this.TBN;
         if (TBN.isConnected) {
@@ -257,7 +281,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         }
 
         state._emitFunctionFromInclude("bumpFragmentMainFunctions", comments, {
-            replaceStrings: [tangentReplaceString, tbnVarying],
+            replaceStrings: [tangentReplaceString, tbnVarying, normalMatrixReplaceString],
         });
 
         state._emitFunctionFromInclude("bumpFragmentFunctions", comments, {
@@ -279,6 +303,11 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         state.compilationString += this._declareOutput(this.output, state) + " = vec4(0.);\r\n";
         state.compilationString += state._emitCodeFromInclude("bumpFragment", comments, {
             replaceStrings: [
+                { search: /texture2D\(bumpSampler,vBumpUV\)/g, replace: `${uvForPerturbNormal}` },
+                {
+                    search: /#define CUSTOM_FRAGMENT_BUMP_FRAGMENT/g,
+                    replace: `mat4 normalMatrix = toNormalMatrix(${this.world.isConnected ? this.world.associatedVariableName : this._worldMatrixName});`,
+                },
                 { search: /perturbNormal\(TBN,texture2D\(bumpSampler,vBumpUV\+uvOffset\).xyz,vBumpInfos.y\)/g, replace: `perturbNormal(TBN, ${uvForPerturbNormal}, vBumpInfos.y)` },
                 {
                     search: /parallaxOcclusion\(invTBN\*-viewDirectionW,invTBN\*normalW,vBumpUV,vBumpInfos.z\)/g,
@@ -311,6 +340,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
 
         codeString += `${this._codeVariableName}.invertY = ${this.invertY};\r\n`;
         codeString += `${this._codeVariableName}.useParallaxOcclusion = ${this.useParallaxOcclusion};\r\n`;
+        codeString += `${this._codeVariableName}.useObjectSpaceNormalMap = ${this.useObjectSpaceNormalMap};\r\n`;
 
         return codeString;
     }
@@ -321,6 +351,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         serializationObject.invertX = this.invertX;
         serializationObject.invertY = this.invertY;
         serializationObject.useParallaxOcclusion = this.useParallaxOcclusion;
+        serializationObject.useObjectSpaceNormalMap = this.useObjectSpaceNormalMap;
 
         return serializationObject;
     }
@@ -331,6 +362,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         this.invertX = serializationObject.invertX;
         this.invertY = serializationObject.invertY;
         this.useParallaxOcclusion = !!serializationObject.useParallaxOcclusion;
+        this.useObjectSpaceNormalMap = !!serializationObject.useObjectSpaceNormalMap;
     }
 }
 

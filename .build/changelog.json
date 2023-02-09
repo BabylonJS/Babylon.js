@@ -1,17 +1,121 @@
 {
-    "fromTag": "5.44.0",
+    "fromTag": "5.45.2",
     "changelog": {
-        "5.44.0": [
+        "5.46.0": [
             {
-                "pr": "13466",
-                "title": "InputManager: Fix for POINTERTAP firing during multi-touch gesture",
-                "description": "A user found an issue on the forum where a POINTERTAP event was being fired after a pinch.  This issue appears to have been caused by code to check for swiping that didn't account for multi-touch.  This PR will fix that logic by checking if at any point from an initial touch to the last touch to be released in an interaction, there were multiple touches active.  If so, no TAPs will occur.  Furthermore, a test has been added to check for changes to this in the future.\r\n\r\nForum Post: https://forum.babylonjs.com/t/unexpected-pointertap-firing-in-touchscreen-when-zooming-by-two-finger-movement/36922",
+                "pr": "13515",
+                "title": "fix type issue",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13512",
+                "title": "Move to TypeScript 4.9.5",
+                "description": "There are small improvements (mainly to type safety).\nThis PR is öpen for discussions\", as this is not 100% needed. We will move to TS 5.X when it's out. This is just another small step towards that goal.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/buildTools/src/ltsTransformer.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.multiRender.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.renderTarget.ts",
+                    "packages/tools/tests/src/umdCompile.ts",
+                    "packages/tools/tests/webpack.config.js",
+                    "packages/tools/viewer/src/managers/sceneManager.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            }
+        ],
+        "5.45.2": [
+            {
+                "pr": "13514",
+                "title": "VideoTexture - Fix texture refresh bug",
+                "description": "My last PR: #13513 introduced logic to refresh the the VideoTexture's internal texture when the underlying video changed sizes.\r\n\r\nI missed an edge case where the resize event can occur on the same frame that the texture was already updated from. When that happens the new texture was not getting hooked up to the video feed because of a no-op condition that avoids updating the texture twice in one frame. This change ensures that when swapping out the internal texture it also gets re-registered with the video feed.",
+                "author": {
+                    "name": "CoPrez",
+                    "url": "https://github.com/CoPrez"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/videoTexture.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13513",
+                "title": "VideoTexture - Resize the internal texture when the video size changes",
+                "description": "This PR updates VideoTexture to listen for the [VideoElement resize event](https://developer.mozilla.org/en-US/docs/Web/API/HTMLVideoElement/videoHeight#examples) and resize the texture to match. For a URL video the scenario would not be common, but when creating a video from a camera stream you can use the media constraints to change the resolution/aspect ratio on the fly. Another camera example is when on mobile and you rotate the phone the video stream also resizes from portrait to landscape orientation.\r\n\r\nI created this Playground example to demonstrate the current issue (and to test my PR changes):\r\n[https://playground.babylonjs.com/#4W5WYX](https://playground.babylonjs.com/#4W5WYX)\r\n\r\nIn the playground app the camera's aspect ratio is updated ever 3 seconds to go between 16:9 and 1:1 aspect ratios. Without these changes the video just gets squashed when the aspect ratio changes, additionally if the end user tried to readPixels from the texture they would not get the full image due to a missmatch between the internal texture and the actual video frames.\r\n\r\nWith these changes the plane that the VideoTexture is placed on is able to respond to the change in aspect ratio so the video does not become distorted. Additionally readPixels is able to pull the full frame of the camera and match the native video resolution.\r\n\r\nThis issue is mentioned in the BabylonNative repo here:\r\n[https://github.com/BabylonJS/BabylonNative/issues/1107](https://github.com/BabylonJS/BabylonNative/issues/1107)\r\n",
+                "author": {
+                    "name": "CoPrez",
+                    "url": "https://github.com/CoPrez"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/videoTexture.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "13511",
+                "title": "better UI for title + bug fix for auto link",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.modules.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodeLink.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13493",
+                "title": "Add support for node 18 by updating node-sass",
+                "description": "And drop support for node 12.\r\n\r\nIt's probably time, it's the next LTS :)\r\n\r\nI have not fully tested it (too reliant on CI maybe), but it works in dev. It's possible it'll also work with node 19, but I did not try.",
+                "author": {
+                    "name": "852Kerfunkle",
+                    "url": "https://github.com/852Kerfunkle"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/inspector/package.json",
+                    "packages/dev/sharedUiComponents/package.json",
+                    "packages/tools/accessibility/package.json",
+                    "packages/tools/tests/package.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13507",
+                "title": "InputManager: Refine logic for handling non-captured pointerup events",
+                "description": "A user has found an issue where clicking events were erroneously passing through the utility layer to the main scene when they weren't supposed to.  Some of the logic that handles when a pointer is captured was incorrectly set up so this PR fixes that issue.  A test was added to verify this fix in the future.\r\n\r\nForum Link: https://forum.babylonjs.com/t/utility-layer-events-propagated-into-the-scene/32574",
                 "author": {
                     "name": "PolygonalSun",
                     "url": "https://github.com/PolygonalSun"
                 },
                 "files": [
                     "packages/dev/core/src/Inputs/scene.inputManager.ts",
+                    "packages/dev/core/test/unit/Cameras/babylon.arcRotateCameraInputs.test.ts",
+                    "packages/dev/core/test/unit/Cameras/babylon.freeCameraInputs.test.ts",
                     "packages/dev/core/test/unit/DeviceInput/babylon.inputManager.test.ts"
                 ],
                 "tags": [
@@ -20,20 +124,293 @@
                 ]
             },
             {
-                "pr": "13468",
-                "title": "BaseCameraPointerInputs: Fixed logic to ignore extra touches",
-                "description": "Recently, a forum user found that if a third touch occurred while there were two active ones, it could affect the pinching gesture.  This PR fixes this issue for all inputs that inherit from BaseCameraPointerInputs.  Addtionally, a test was added to verify this change for the ArcRotateCamera.\r\n\r\nForum Post: https://forum.babylonjs.com/t/basecamerapointersinput-doesnt-handle-3-touch-points-well/37604",
+                "pr": "13498",
+                "title": "Physics Iteration 5",
+                "description": "There is an issue with impulse/force that will be fixed in next iteration.\r\nAggregate is starting working just like impostors\r\nPhysicsHelper moved from V1 to parent path",
                 "author": {
-                    "name": "PolygonalSun",
-                    "url": "https://github.com/PolygonalSun"
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
                 },
                 "files": [
-                    "packages/dev/core/src/Cameras/Inputs/BaseCameraPointersInput.ts",
-                    "packages/dev/core/test/unit/Cameras/babylon.arcRotateCameraInputs.test.ts"
+                    "packages/dev/core/src/Physics/index.ts",
+                    "packages/dev/core/src/Physics/physicsHelper.ts",
+                    "packages/dev/core/src/Physics/v1/index.ts",
+                    "packages/dev/core/src/Physics/v1/physicsHelper.ts",
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/index.ts",
+                    "packages/dev/core/src/Physics/v2/physicsAggregate.ts",
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts",
+                    "packages/dev/core/src/Physics/v2/physicsEngine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13510",
+                "title": "Shader Fix",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/bumpFragmentMainFunctions.fx",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13509",
+                "title": "improve readability and running of vis tests",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/tests/test/visualization/config.json",
+                    "packages/tools/tests/test/visualization/visualization.utils.ts",
+                    "packages/tools/tests/test/visualization/visualization.webgl1.test.ts",
+                    "packages/tools/tests/test/visualization/visualization.webgl2.test.ts",
+                    "packages/tools/tests/test/visualization/visualization.webgpu.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13508",
+                "title": "WebGL2 Visualization tests: Log to the console by default, not to a file",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/tools/tests/test/visualization/visualization.webgl2.test.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
+        "5.45.1": [
+            {
+                "pr": "13501",
+                "title": "Add Object Space mapping to NME PerturbNormal block",
+                "description": "Fix #13420 ",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/perturbNormalBlock.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/bumpFragment.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/bumpFragmentMainFunctions.fx",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "new feature",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "13503",
+                "title": "Fix gui declaration",
+                "description": "Fixes #13502",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/container.ts",
+                    "packages/dev/gui/src/2D/controls/rectangle.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13505",
+                "title": "Physics iteration 6",
+                "description": "Proper disposing of Physics Bodies",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts"
+                ],
+                "tags": [
+                    "physics",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13506",
+                "title": "KhronosTextureContainer2: minor code formating",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/khronosTextureContainer2.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13504",
+                "title": "Fix for sprite rendering for ios 14 and lower",
+                "description": "Fixes https://forum.babylonjs.com/t/sprites-are-not-being-rendered-for-ios14-and-lower/37973",
+                "author": {
+                    "name": "Vlad160",
+                    "url": "https://github.com/Vlad160"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/sprites.fragment.fx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13500",
+                "title": "KTXDecoder: Fix crash with \"buffer already detached\"",
+                "description": "See https://forum.babylonjs.com/t/full-html-does-not-work-on-some-playgrounds/9908/9\r\n\r\nCopy/paste + auto formatting is bad...",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/khronosTextureContainer2.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Loading glTF model with KTX2 textures.png",
+                    "packages/tools/tests/test/visualization/config.json"
                 ],
                 "tags": [
                     "bug",
-                    "inputs"
+                    "glTF"
+                ]
+            },
+            {
+                "pr": "13499",
+                "title": "Texture: Fix doc for sampling modes",
+                "description": "See https://forum.babylonjs.com/t/bilinear-sample-mode-and-mip/37907",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/texture.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13495",
+                "title": "Nme updates part 2",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/searchBox.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/stateManager.ts",
+                    "packages/tools/nodeEditor/src/graphEditor.tsx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "new feature",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "13497",
+                "title": "Fix ClipPlane being unset",
+                "description": "https://forum.babylonjs.com/t/clipping-plane-potential-bug/37851",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/clipPlaneMaterialHelper.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13496",
+                "title": "Fix conditions for clone vs instance in AssetContainer.instantiateHie…",
+                "description": "…rarchy\r\n\r\nForum issue: https://forum.babylonjs.com/t/instances-should-only-created-for-meshes-with-geometry/37873",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/assetContainer.ts"
+                ],
+                "tags": [
+                    "assets",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13491",
+                "title": "Nme updates",
+                "description": "Associated with  #12148",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.modules.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodeLedger.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/searchBox.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/searchBox.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/stateManager.ts",
+                    "packages/tools/nodeEditor/src/components/nodeList/nodeListComponent.tsx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "13485",
+                "title": "Physics Iteration 4",
+                "description": "A small one with WIP Aggregate and more documentation.",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsAggregate.ts",
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts",
+                    "packages/dev/core/src/Physics/v2/physicsShape.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13494",
+                "title": "Bump http-cache-semantics from 4.1.0 to 4.1.1",
+                "description": "Bumps [http-cache-semantics](https://github.com/kornelski/http-cache-semantics) from 4.1.0 to 4.1.1.\n<details>\n<summary>Commits</summary>\n<ul>\n<li>See full diff in <a href=\"https://github.com/kornelski/http-cache-semantics/commits\">compare view</a></li>\n</ul>\n</details>\n<br />\n\n\n[![Dependabot compatibility score](https://dependabot-badges.githubapp.com/badges/compatibility_score?dependency-name=http-cache-semantics&package-manager=npm_and_yarn&previous-version=4.1.0&new-version=4.1.1)](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-compatibility-scores)\n\nDependabot will resolve any conflicts with this PR as long as you don't alter it yourself. You can also trigger a rebase manually by commenting `@dependabot rebase`.\n\n[//]: # (dependabot-automerge-start)\n[//]: # (dependabot-automerge-end)\n\n---\n\n<details>\n<summary>Dependabot commands and options</summary>\n<br />\n\nYou can trigger Dependabot actions by commenting on this PR:\n- `@dependabot rebase` will rebase this PR\n- `@dependabot recreate` will recreate this PR, overwriting any edits that have been made to it\n- `@dependabot merge` will merge this PR after your CI passes on it\n- `@dependabot squash and merge` will squash and merge this PR after your CI passes on it\n- `@dependabot cancel merge` will cancel a previously requested merge and block automerging\n- `@dependabot reopen` will reopen this PR if it is closed\n- `@dependabot close` will close this PR and stop Dependabot recreating it. You can achieve the same result by closing it manually\n- `@dependabot ignore this major version` will close this PR and stop Dependabot creating any more for this major version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this minor version` will close this PR and stop Dependabot creating any more for this minor version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this dependency` will close this PR and stop Dependabot creating any more for this dependency (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot use these labels` will set the current labels as the default for future PRs for this repo and language\n- `@dependabot use these reviewers` will set the current reviewers as the default for future PRs for this repo and language\n- `@dependabot use these assignees` will set the current assignees as the default for future PRs for this repo and language\n- `@dependabot use this milestone` will set the current milestone as the default for future PRs for this repo and language\n\nYou can disable automated security fix PRs for this repo from the [Security Alerts page](https://github.com/BabylonJS/Babylon.js/network/alerts).\n\n</details>",
+                "author": {
+                    "name": "dependabot[bot]",
+                    "url": "https://github.com/apps/dependabot"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": [
+                    "dependencies"
                 ]
             }
         ],
@@ -346,6 +723,42 @@
                 "tags": [
                     "loaders",
                     "new feature"
+                ]
+            }
+        ],
+        "5.44.0": [
+            {
+                "pr": "13466",
+                "title": "InputManager: Fix for POINTERTAP firing during multi-touch gesture",
+                "description": "A user found an issue on the forum where a POINTERTAP event was being fired after a pinch.  This issue appears to have been caused by code to check for swiping that didn't account for multi-touch.  This PR will fix that logic by checking if at any point from an initial touch to the last touch to be released in an interaction, there were multiple touches active.  If so, no TAPs will occur.  Furthermore, a test has been added to check for changes to this in the future.\r\n\r\nForum Post: https://forum.babylonjs.com/t/unexpected-pointertap-firing-in-touchscreen-when-zooming-by-two-finger-movement/36922",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Inputs/scene.inputManager.ts",
+                    "packages/dev/core/test/unit/DeviceInput/babylon.inputManager.test.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inputs"
+                ]
+            },
+            {
+                "pr": "13468",
+                "title": "BaseCameraPointerInputs: Fixed logic to ignore extra touches",
+                "description": "Recently, a forum user found that if a third touch occurred while there were two active ones, it could affect the pinching gesture.  This PR fixes this issue for all inputs that inherit from BaseCameraPointerInputs.  Addtionally, a test was added to verify this change for the ArcRotateCamera.\r\n\r\nForum Post: https://forum.babylonjs.com/t/basecamerapointersinput-doesnt-handle-3-touch-points-well/37604",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/Inputs/BaseCameraPointersInput.ts",
+                    "packages/dev/core/test/unit/Cameras/babylon.arcRotateCameraInputs.test.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inputs"
                 ]
             }
         ],

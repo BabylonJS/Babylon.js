@@ -11,6 +11,7 @@ import { LineWithFileButtonComponent } from "../../sharedComponents/lineWithFile
 import { Tools } from "core/Misc/tools";
 import addButton from "../../imgs/add.svg";
 import deleteButton from "../../imgs/delete.svg";
+import { NodeLedger } from "shared-ui-components/nodeGraphSystem/nodeLedger";
 
 import "./nodeList.scss";
 
@@ -551,6 +552,18 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                     </LineContainerComponent>
                 );
             }
+
+            // Register blocks
+            const ledger = NodeLedger.RegisteredNodeNames;
+            for (const key in allBlocks) {
+                const blocks = allBlocks[key] as string[];
+                if (blocks.length) {
+                    ledger.push(...blocks);
+                }
+            }
+            NodeLedger.NameFormatter = (name) => {
+                return name.replace("Block", "");
+            };
         }
 
         return (

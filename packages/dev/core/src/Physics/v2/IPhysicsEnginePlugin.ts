@@ -7,6 +7,7 @@ import type { BoundingBox } from "../../Culling/boundingBox";
 import type { TransformNode } from "../../Meshes/transformNode";
 import type { PhysicsMaterial } from "./physicsMaterial";
 import type { Mesh } from "../../Meshes/mesh";
+import type { Nullable } from "core/types";
 
 /** @internal */
 export enum ConstraintAxisLimitMode {
@@ -91,7 +92,7 @@ export interface MassProperties {
     /**
      *
      */
-    intertia: Vector3;
+    inertia: Vector3;
     /**
      *
      */
@@ -113,10 +114,13 @@ export interface IPhysicsEnginePluginV2 {
     getTimeStep(): number;
     executeStep(delta: number, bodies: Array<PhysicsBody>): void; //not forgetting pre and post events
     getPluginVersion(): number;
+    registerOnCollide(func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>) => void): void;
+    unregisterOnCollide(func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>) => void): void;
 
     // body
     initBody(body: PhysicsBody, position: Vector3, orientation: Quaternion): void;
     initBodyInstances(body: PhysicsBody, mesh: Mesh): void;
+    removeBody(body: PhysicsBody): void;
     sync(body: PhysicsBody): void;
     syncTransform(body: PhysicsBody, transformNode: TransformNode): void;
     setShape(body: PhysicsBody, shape: PhysicsShape): void;
@@ -134,10 +138,13 @@ export interface IPhysicsEnginePluginV2 {
     setLinearVelocity(body: PhysicsBody, linVel: Vector3): void;
     getLinearVelocityToRef(body: PhysicsBody, linVel: Vector3): void;
     applyImpulse(body: PhysicsBody, location: Vector3, impulse: Vector3): void;
+    applyForce(body: PhysicsBody, location: Vector3, force: Vector3): void;
     setAngularVelocity(body: PhysicsBody, angVel: Vector3): void;
     getAngularVelocityToRef(body: PhysicsBody, angVel: Vector3): void;
     getBodyGeometry(body: PhysicsBody): {};
     disposeBody(body: PhysicsBody): void;
+    registerOnBodyCollide(body: PhysicsBody, func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>) => void): void;
+    unregisterOnBodyCollide(body: PhysicsBody, func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>) => void): void;
 
     // shape
     initShape(shape: PhysicsShape, type: ShapeType, options: PhysicsShapeParameters): void;

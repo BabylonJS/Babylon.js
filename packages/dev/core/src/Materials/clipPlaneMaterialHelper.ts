@@ -29,17 +29,17 @@ export function addClipPlaneUniforms(uniforms: string[]): void {
 export function prepareDefinesForClipPlanes(primaryHolder: IClipPlanesHolder, secondaryHolder: IClipPlanesHolder, defines: string[] | Record<string, any>): boolean {
     let changed = false;
     let clipPlane = primaryHolder.clipPlane ?? secondaryHolder.clipPlane;
-    changed = addDefine(clipPlane, defines, "CLIPPLANE") || changed;
+    changed = addDefine(clipPlane, defines, "CLIPPLANE", "#define CLIPPLANE") || changed;
     clipPlane = primaryHolder.clipPlane2 ?? secondaryHolder.clipPlane2;
-    changed = addDefine(clipPlane, defines, "CLIPPLANE2") || changed;
+    changed = addDefine(clipPlane, defines, "CLIPPLANE2", "#define CLIPPLANE2") || changed;
     clipPlane = primaryHolder.clipPlane3 ?? secondaryHolder.clipPlane3;
-    changed = addDefine(clipPlane, defines, "CLIPPLANE3") || changed;
+    changed = addDefine(clipPlane, defines, "CLIPPLANE3", "#define CLIPPLANE3") || changed;
     clipPlane = primaryHolder.clipPlane4 ?? secondaryHolder.clipPlane4;
-    changed = addDefine(clipPlane, defines, "CLIPPLANE4") || changed;
+    changed = addDefine(clipPlane, defines, "CLIPPLANE4", "#define CLIPPLANE4") || changed;
     clipPlane = primaryHolder.clipPlane5 ?? secondaryHolder.clipPlane5;
-    changed = addDefine(clipPlane, defines, "CLIPPLANE5") || changed;
+    changed = addDefine(clipPlane, defines, "CLIPPLANE5", "#define CLIPPLANE5") || changed;
     clipPlane = primaryHolder.clipPlane6 ?? secondaryHolder.clipPlane6;
-    changed = addDefine(clipPlane, defines, "CLIPPLANE6") || changed;
+    changed = addDefine(clipPlane, defines, "CLIPPLANE6", "#define CLIPPLANE6") || changed;
     return changed;
 }
 
@@ -65,19 +65,23 @@ function setClipPlane(effect: Effect, uniformName: string, clipPlane: Nullable<P
     }
 }
 
-function addDefine(clipPlane: Nullable<Plane>, defines: string[] | Record<string, any>, defineName: string): boolean {
-    let isSet = true;
-    if (clipPlane) {
-        if (Array.isArray(defines)) {
-            const defineString = "#define " + defineName;
-            isSet = defines.indexOf(defineString) !== -1;
-            if (!isSet) {
-                defines.push(defineString);
-            }
-        } else {
-            isSet = defines[defineName];
-            defines[defineName] = true;
+function addDefine(clipPlane: Nullable<Plane>, defines: string[] | Record<string, any>, defineName: string, defineString: string): boolean {
+    const defineClipPlane = clipPlane ? true : false;
+
+    let alreadySet: boolean;
+    if (Array.isArray(defines)) {
+        const defineIndex = defines.indexOf(defineString);
+        alreadySet = defineIndex !== -1;
+        if (!alreadySet && clipPlane) {
+            defines.push(defineString);
+        } else if (alreadySet && !clipPlane) {
+            defines.splice(defineIndex, 1);
         }
+    } else {
+        alreadySet = defines[defineName];
+        defines[defineName] = defineClipPlane;
     }
-    return !isSet;
+
+    const changed = alreadySet !== defineClipPlane;
+    return changed;
 }

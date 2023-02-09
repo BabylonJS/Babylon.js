@@ -438,7 +438,7 @@ export class AssetContainer extends AbstractScene {
                 onNewCreated(instancedNode, replicatedInstancedNode);
             } else {
                 // Mesh or TransformNode
-                const canInstance = !options?.doNotInstantiate && (node as Mesh)._isMesh;
+                const canInstance = !localOptions?.doNotInstantiate && (node as Mesh).getTotalVertices() > 0;
                 const replicatedNode = canInstance ? (node as Mesh).createInstance(`instance of ${node.name}`) : node.clone(`Clone of ${node.name}`, null, true);
                 if (!replicatedNode) {
                     throw new Error(`Could not clone or instantiate node on Asset Container ${node.name}`);

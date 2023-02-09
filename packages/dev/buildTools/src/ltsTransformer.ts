@@ -118,7 +118,7 @@ const processSourceFile = (packageName: string, relativeLTSFile: any, program: {
                     if (
                         symbol.getName().includes('"') ||
                         symbol.getName().includes("'") ||
-                        (node.decorators && node.decorators.find((c: { kind: any }) => c.kind === ts.SyntaxKind.DeclareKeyword))
+                        (ts.canHaveDecorators(node) && ts.getDecorators(node)?.find((c: { kind: any }) => c.kind === ts.SyntaxKind.DeclareKeyword))
                     ) {
                         const transformed = transformLocation(packageName, node.name.text, true);
                         if (transformed) {

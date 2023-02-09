@@ -1,10 +1,10 @@
 import type { IPhysicsEnginePluginV2, MassProperties } from "./IPhysicsEnginePlugin";
 import type { PhysicsShape } from "./physicsShape";
-import type { Vector3 } from "../../Maths/math.vector";
-import { Quaternion } from "../../Maths/math.vector";
+import { Vector3, Quaternion } from "../../Maths/math.vector";
 import type { Scene } from "../../scene";
 import type { PhysicsEngine } from "./physicsEngine";
-import type { Mesh, TransformNode } from "../../Meshes";
+import type { Mesh, TransformNode, AbstractMesh } from "../../Meshes";
+import type { Nullable } from "core/types";
 
 /**
  * PhysicsBody is useful for creating a physics body that can be used in a physics engine. It allows
@@ -25,6 +25,10 @@ export class PhysicsBody {
      */
     private _physicsPlugin: IPhysicsEnginePluginV2;
     /**
+     * The engine used to create and manage this Physics Body
+     */
+    private _physicsEngine: PhysicsEngine;
+    /**
      * The transform node associated with this Physics Body
      */
     transformNode: TransformNode;
@@ -33,6 +37,9 @@ export class PhysicsBody {
      * True by default for maximum performance.
      */
     disablePreStep: boolean = true;
+
+    private static _DEFAULT_OBJECT_SIZE: Vector3 = new Vector3(1, 1, 1);
+    private static _IDENTITY_QUATERNION = Quaternion.Identity();
 
     /**
      * Constructs a new physics body for the given node.
@@ -51,6 +58,7 @@ export class PhysicsBody {
         if (!physicsEngine) {
             throw new Error("No Physics Engine available.");
         }
+        this._physicsEngine = physicsEngine;
         if (physicsEngine.getPluginVersion() != 2) {
             throw new Error("Plugin version is incorrect. Expected version 2.");
         }
@@ -288,6 +296,19 @@ export class PhysicsBody {
     }
 
     /**
+     * Applies a force to the physics object.
+     *
+     * @param location The location of the force.
+     * @param force The force vector.
+     *
+     * This method is useful for applying a force to a physics object, which can be used to simulate physical forces such as gravity,
+     * collisions, and explosions. This can be used to create realistic physics simulations in a game or other application.
+     */
+    public applyForce(location: Vector3, force: Vector3): void {
+        this._physicsPlugin.applyForce(this, location, force);
+    }
+
+    /**
      * Retrieves the geometry of the body from the physics plugin.
      *
      * @returns The geometry of the body.
@@ -299,11 +320,69 @@ export class PhysicsBody {
     }
 
     /**
+     * Register a collision callback that is called when the body collides
+     * Filtering by body is inefficient. It's more preferable to register a collision callback for the entire world
+     * and do the filtering on the user side.
+     */
+    public registerOnCollide(func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>) => void): void {
+        return this._physicsPlugin.registerOnBodyCollide(this, func);
+    }
+
+    /**
+     * Unregister a collision callback that is called when the body collides
+     */
+    public unregisterOnCollide(func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>) => void): void {
+        return this._physicsPlugin.unregisterOnBodyCollide(this, func);
+    }
+
+    /**
+     * Gets the object extents
+     * @returns the object extents
+     */
+    public getObjectExtents(): Vector3 {
+        const tmAbstractMesh = this.transformNode as AbstractMesh;
+        if (tmAbstractMesh.getBoundingInfo) {
+            const q = this.transformNode.rotationQuaternion;
+            const scaling = this.transformNode.scaling.clone();
+            //reset rotation
+            this.transformNode.rotationQuaternion = PhysicsBody._IDENTITY_QUATERNION;
+            //calculate the world matrix with no rotation
+            const worldMatrix = this.transformNode.computeWorldMatrix && this.transformNode.computeWorldMatrix(true);
+            if (worldMatrix) {
+                worldMatrix.decompose(scaling, undefined, undefined);
+            }
+            const boundingInfo = tmAbstractMesh.getBoundingInfo();
+            // get the global scaling of the object
+            const size = boundingInfo.boundingBox.extendSize.scale(2).multiplyInPlace(scaling);
+            size.x = Math.abs(size.x);
+            size.y = Math.abs(size.y);
+            size.z = Math.abs(size.z);
+            //bring back the rotation
+            this.transformNode.rotationQuaternion = q;
+            //calculate the world matrix with the new rotation
+            this.transformNode.computeWorldMatrix && this.transformNode.computeWorldMatrix(true);
+            return size;
+        } else {
+            return PhysicsBody._DEFAULT_OBJECT_SIZE;
+        }
+    }
+
+    /**
+     * return geometric center of the associated mesh
+     */
+    public getObjectCenter(): Vector3 {
+        // TODO
+        return new Vector3(0, 0, 0);
+    }
+
+    /**
      * Disposes the body from the physics engine.
      *
      * This method is useful for cleaning up the physics engine when a body is no longer needed. Disposing the body will free up resources and prevent memory leaks.
      */
     public dispose() {
+        this._physicsEngine.removeBody(this);
+        this._physicsPlugin.removeBody(this);
         this._physicsPlugin.disposeBody(this);
     }
 }

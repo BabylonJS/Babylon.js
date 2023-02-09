@@ -49,6 +49,9 @@
 
 #ifdef BUMP
 	#ifdef OBJECTSPACE_NORMALMAP
+
+		#define CUSTOM_FRAGMENT_BUMP_FRAGMENT
+
 		normalW = normalize(texture2D(bumpSampler, vBumpUV).xyz  * 2.0 - 1.0);
 		normalW = normalize(mat3(normalMatrix) * normalW);
 	#elif !defined(DETAIL)

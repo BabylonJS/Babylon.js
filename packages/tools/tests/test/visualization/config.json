@@ -14,7 +14,9 @@
         {
             "title": "Iridescence NME",
             "playgroundId": "#2FDQT5#1507",
-            "referenceImage": "iridescence_nme.png"
+            "referenceImage": "iridescence_nme.png",
+            "excludedEngines": ["webgl1"],
+            "excludeFromAutomaticTesting": true
         },
         {
             "title": "Iridescence GLTF",
@@ -1555,6 +1557,11 @@
         {
             "title": "Asset Container Instantiate to Scene 2",
             "playgroundId": "#5NFRVE#161"
+        },
+        {
+            "title": "Loading glTF model with KTX2 textures",
+            "playgroundId": "#YD2TXP#35",
+            "excludeFromAutomaticTesting": true
         }
     ]
 }
