@@ -1,6 +1,45 @@
 {
-    "fromTag": "5.45.1",
+    "fromTag": "5.45.2",
     "changelog": {
+        "5.46.0": [
+            {
+                "pr": "13515",
+                "title": "fix type issue",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13512",
+                "title": "Move to TypeScript 4.9.5",
+                "description": "There are small improvements (mainly to type safety).\nThis PR is öpen for discussions\", as this is not 100% needed. We will move to TS 5.X when it's out. This is just another small step towards that goal.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/buildTools/src/ltsTransformer.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.multiRender.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.renderTarget.ts",
+                    "packages/tools/tests/src/umdCompile.ts",
+                    "packages/tools/tests/webpack.config.js",
+                    "packages/tools/viewer/src/managers/sceneManager.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            }
+        ],
         "5.45.2": [
             {
                 "pr": "13514",

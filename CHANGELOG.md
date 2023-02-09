@@ -1,5 +1,15 @@
 # Changelog
 
+## 5.46.0
+
+### Core
+
+- Move to TypeScript 4.9.5 - [_New Feature_] by [RaananW](https://github.com/RaananW) ([#13512](https://github.com/BabylonJS/Babylon.js/pull/13512))
+
+### Viewer
+
+- Move to TypeScript 4.9.5 - [_New Feature_] by [RaananW](https://github.com/RaananW) ([#13512](https://github.com/BabylonJS/Babylon.js/pull/13512))
+
 ## 5.45.2
 
 ### Core
