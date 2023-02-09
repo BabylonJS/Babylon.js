@@ -290,7 +290,7 @@ export class InputManager {
     }
 
     /** @internal */
-    public _pickMove(evt: IMouseEvent): PickingInfo {
+    public _pickMove(evt: IPointerEvent): PickingInfo {
         const scene = this._scene;
         const pickResult = scene.pick(
             this._unTranslatedPointerX,
@@ -306,12 +306,12 @@ export class InputManager {
         return pickResult;
     }
 
-    private _setCursorAndPointerOverMesh(pickResult: Nullable<PickingInfo>, evt: IMouseEvent, scene: Scene) {
+    private _setCursorAndPointerOverMesh(pickResult: Nullable<PickingInfo>, evt: IPointerEvent, scene: Scene) {
         const engine = scene.getEngine();
         const canvas = engine.getInputElement();
 
         if (pickResult?.pickedMesh) {
-            this.setPointerOverMesh(pickResult.pickedMesh, (evt as IPointerEvent).pointerId, pickResult, evt as IPointerEvent);
+            this.setPointerOverMesh(pickResult.pickedMesh, evt.pointerId, pickResult, evt);
 
             if (!scene.doNotHandleCursors && canvas && this._pointerOverMesh) {
                 const actionManager = this._pointerOverMesh._getActionManagerForTrigger();
@@ -320,7 +320,7 @@ export class InputManager {
                 }
             }
         } else {
-            this.setPointerOverMesh(null, (evt as IPointerEvent).pointerId, pickResult, evt as IPointerEvent);
+            this.setPointerOverMesh(null, (evt).pointerId, pickResult, evt);
         }
     }
 
@@ -756,7 +756,7 @@ export class InputManager {
                     (!scene.cameraToUseForPointers || (scene.cameraToUseForPointers.layerMask & mesh.layerMask) !== 0);
             }
 
-            const pickResult = scene._registeredActions > 0 ? this._pickMove(evt) : null;
+            const pickResult = scene._registeredActions > 0 ? this._pickMove(evt as IPointerEvent) : null;
             this._processPointerMove(pickResult, evt as IPointerEvent);
         };
 
