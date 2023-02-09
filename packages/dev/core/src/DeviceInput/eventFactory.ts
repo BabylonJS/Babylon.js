@@ -72,7 +72,7 @@ export class DeviceEventFactory {
             evt.pointerType = "mouse";
         } else {
             evt.deviceType = DeviceType.Touch;
-            evt.pointerId = pointerId || deviceSlot;
+            evt.pointerId = pointerId ?? deviceSlot;
             evt.pointerType = "touch";
         }
 
