@@ -312,7 +312,7 @@ export class InputManager {
 
         if (pickResult?.pickedMesh) {
             this.setPointerOverMesh(pickResult.pickedMesh, (evt as IPointerEvent).pointerId, pickResult, evt as IPointerEvent);
-            
+
             if (!scene.doNotHandleCursors && canvas && this._pointerOverMesh) {
                 const actionManager = this._pointerOverMesh._getActionManagerForTrigger();
                 if (actionManager && actionManager.hasPointerTriggers) {
