@@ -320,7 +320,7 @@ export class InputManager {
                 }
             }
         } else {
-            this.setPointerOverMesh(null, (evt).pointerId, pickResult, evt);
+            this.setPointerOverMesh(null, evt.pointerId, pickResult, evt);
         }
     }
 
