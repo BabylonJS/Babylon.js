@@ -1,10 +1,9 @@
 import type { IPhysicsEnginePluginV2, MassProperties } from "./IPhysicsEnginePlugin";
 import type { PhysicsShape } from "./physicsShape";
-import type { Vector3 } from "../../Maths/math.vector";
-import { Quaternion } from "../../Maths/math.vector";
+import { Vector3, Quaternion } from "../../Maths/math.vector";
 import type { Scene } from "../../scene";
 import type { PhysicsEngine } from "./physicsEngine";
-import type { Mesh, TransformNode } from "../../Meshes";
+import type { Mesh, TransformNode, AbstractMesh } from "../../Meshes";
 import type { Nullable } from "core/types";
 
 /**
@@ -38,6 +37,9 @@ export class PhysicsBody {
      * True by default for maximum performance.
      */
     disablePreStep: boolean = true;
+
+    private static _DEFAULT_OBJECT_SIZE: Vector3 = new Vector3(1, 1, 1);
+    private static _IDENTITY_QUATERNION = Quaternion.Identity();
 
     /**
      * Constructs a new physics body for the given node.
@@ -294,6 +296,19 @@ export class PhysicsBody {
     }
 
     /**
+     * Applies a force to the physics object.
+     *
+     * @param location The location of the force.
+     * @param force The force vector.
+     *
+     * This method is useful for applying a force to a physics object, which can be used to simulate physical forces such as gravity,
+     * collisions, and explosions. This can be used to create realistic physics simulations in a game or other application.
+     */
+    public applyForce(location: Vector3, force: Vector3): void {
+        this._physicsPlugin.applyForce(this, location, force);
+    }
+
+    /**
      * Retrieves the geometry of the body from the physics plugin.
      *
      * @returns The geometry of the body.
@@ -318,6 +333,46 @@ export class PhysicsBody {
      */
     public unregisterOnCollide(func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>) => void): void {
         return this._physicsPlugin.unregisterOnBodyCollide(this, func);
+    }
+
+    /**
+     * Gets the object extents
+     * @returns the object extents
+     */
+    public getObjectExtents(): Vector3 {
+        const tmAbstractMesh = this.transformNode as AbstractMesh;
+        if (tmAbstractMesh.getBoundingInfo) {
+            const q = this.transformNode.rotationQuaternion;
+            const scaling = this.transformNode.scaling.clone();
+            //reset rotation
+            this.transformNode.rotationQuaternion = PhysicsBody._IDENTITY_QUATERNION;
+            //calculate the world matrix with no rotation
+            const worldMatrix = this.transformNode.computeWorldMatrix && this.transformNode.computeWorldMatrix(true);
+            if (worldMatrix) {
+                worldMatrix.decompose(scaling, undefined, undefined);
+            }
+            const boundingInfo = tmAbstractMesh.getBoundingInfo();
+            // get the global scaling of the object
+            const size = boundingInfo.boundingBox.extendSize.scale(2).multiplyInPlace(scaling);
+            size.x = Math.abs(size.x);
+            size.y = Math.abs(size.y);
+            size.z = Math.abs(size.z);
+            //bring back the rotation
+            this.transformNode.rotationQuaternion = q;
+            //calculate the world matrix with the new rotation
+            this.transformNode.computeWorldMatrix && this.transformNode.computeWorldMatrix(true);
+            return size;
+        } else {
+            return PhysicsBody._DEFAULT_OBJECT_SIZE;
+        }
+    }
+
+    /**
+     * return geometric center of the associated mesh
+     */
+    public getObjectCenter(): Vector3 {
+        // TODO
+        return new Vector3(0, 0, 0);
     }
 
     /**

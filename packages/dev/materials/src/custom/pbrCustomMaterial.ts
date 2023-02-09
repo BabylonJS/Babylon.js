@@ -96,14 +96,14 @@ export class PBRCustomMaterial extends PBRMaterial {
         if (name == "uniform" && this._newUniforms) {
             for (let ind = 0; ind < this._newUniforms.length; ind++) {
                 if (this._customUniform[ind].indexOf("sampler") == -1) {
-                    arr.push(this._newUniforms[ind]);
+                    arr.push(this._newUniforms[ind].replace(/\[\d*\]/g, ""));
                 }
             }
         }
         if (name == "sampler" && this._newUniforms) {
             for (let ind = 0; ind < this._newUniforms.length; ind++) {
                 if (this._customUniform[ind].indexOf("sampler") != -1) {
-                    arr.push(this._newUniforms[ind]);
+                    arr.push(this._newUniforms[ind].replace(/\[\d*\]/g, ""));
                 }
             }
         }

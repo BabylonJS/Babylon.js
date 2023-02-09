@@ -214,7 +214,7 @@ export class InputManager {
             }
         }
 
-        this._setCursorAndPointerOverMesh(pickResult, evt.pointerId, scene);
+        this._setCursorAndPointerOverMesh(pickResult, evt, scene);
 
         for (const step of scene._pointerMoveStage) {
             const isMeshPicked = pickResult?.pickedMesh ? true : false;
@@ -225,7 +225,7 @@ export class InputManager {
 
         if (scene.onPointerMove) {
             // Because of lazy picking, we need to force a pick to update the pickResult
-            pickResult = pickResult || this._pickMove(evt.pointerId);
+            pickResult = pickResult || this._pickMove(evt);
             scene.onPointerMove(evt, pickResult, type);
         }
 
@@ -290,7 +290,7 @@ export class InputManager {
     }
 
     /** @internal */
-    public _pickMove(pointerId: number): PickingInfo {
+    public _pickMove(evt: IMouseEvent): PickingInfo {
         const scene = this._scene;
         const pickResult = scene.pick(
             this._unTranslatedPointerX,
@@ -301,17 +301,17 @@ export class InputManager {
             scene.pointerMoveTrianglePredicate
         );
 
-        this._setCursorAndPointerOverMesh(pickResult, pointerId, scene);
+        this._setCursorAndPointerOverMesh(pickResult, evt, scene);
 
         return pickResult;
     }
 
-    private _setCursorAndPointerOverMesh(pickResult: Nullable<PickingInfo>, pointerId: number, scene: Scene) {
+    private _setCursorAndPointerOverMesh(pickResult: Nullable<PickingInfo>, evt: IMouseEvent, scene: Scene) {
         const engine = scene.getEngine();
         const canvas = engine.getInputElement();
 
         if (pickResult?.pickedMesh) {
-            this.setPointerOverMesh(pickResult.pickedMesh, pointerId, pickResult);
+            this.setPointerOverMesh(pickResult.pickedMesh, (evt as IPointerEvent).pointerId, pickResult, evt as IPointerEvent);
 
             if (!scene.doNotHandleCursors && canvas && this._pointerOverMesh) {
                 const actionManager = this._pointerOverMesh._getActionManagerForTrigger();
@@ -320,7 +320,7 @@ export class InputManager {
                 }
             }
         } else {
-            this.setPointerOverMesh(null, pointerId, pickResult);
+            this.setPointerOverMesh(null, (evt as IPointerEvent).pointerId, pickResult, evt as IPointerEvent);
         }
     }
 
@@ -756,7 +756,7 @@ export class InputManager {
                     (!scene.cameraToUseForPointers || (scene.cameraToUseForPointers.layerMask & mesh.layerMask) !== 0);
             }
 
-            const pickResult = scene._registeredActions > 0 ? this._pickMove((evt as IPointerEvent).pointerId) : null;
+            const pickResult = scene._registeredActions > 0 ? this._pickMove(evt) : null;
             this._processPointerMove(pickResult, evt as IPointerEvent);
         };
 
@@ -870,7 +870,19 @@ export class InputManager {
                     }
                 }
 
-                this._pointerCaptures[evt.pointerId] = false;
+                // There should be a pointer captured at this point so if there isn't we should reset and return
+                if (!this._pointerCaptures[evt.pointerId]) {
+                    if (this._swipeButtonPressed === evt.button) {
+                        this._isSwiping = false;
+                        this._swipeButtonPressed = -1;
+                    }
+                    return;
+                }
+
+                // Only release capture if all buttons are released
+                if (evt.buttons === 0) {
+                    this._pointerCaptures[evt.pointerId] = false;
+                }
                 if (!scene.cameraToUseForPointers && !scene.activeCamera) {
                     return;
                 }
@@ -1031,8 +1043,9 @@ export class InputManager {
      * @param mesh - defines the mesh to use
      * @param pointerId - optional pointer id when using more than one pointer. Defaults to 0
      * @param pickResult - optional pickingInfo data used to find mesh
+     * @param evt - optional pointer event
      */
-    public setPointerOverMesh(mesh: Nullable<AbstractMesh>, pointerId: number = 0, pickResult?: Nullable<PickingInfo>): void {
+    public setPointerOverMesh(mesh: Nullable<AbstractMesh>, pointerId: number = 0, pickResult?: Nullable<PickingInfo>, evt?: IPointerEvent): void {
         if (this._meshUnderPointerId[pointerId] === mesh && (!mesh || !mesh._internalAbstractMeshDataInfo._pointerOverDisableMeshTesting)) {
             return;
         }
@@ -1043,7 +1056,7 @@ export class InputManager {
         if (underPointerMesh) {
             actionManager = underPointerMesh._getActionManagerForTrigger(Constants.ACTION_OnPointerOutTrigger);
             if (actionManager) {
-                actionManager.processTrigger(Constants.ACTION_OnPointerOutTrigger, ActionEvent.CreateNew(underPointerMesh, undefined, { pointerId }));
+                actionManager.processTrigger(Constants.ACTION_OnPointerOutTrigger, ActionEvent.CreateNew(underPointerMesh, evt, { pointerId }));
             }
         }
 
@@ -1053,7 +1066,7 @@ export class InputManager {
 
             actionManager = mesh._getActionManagerForTrigger(Constants.ACTION_OnPointerOverTrigger);
             if (actionManager) {
-                actionManager.processTrigger(Constants.ACTION_OnPointerOverTrigger, ActionEvent.CreateNew(mesh, undefined, { pointerId, pickResult }));
+                actionManager.processTrigger(Constants.ACTION_OnPointerOverTrigger, ActionEvent.CreateNew(mesh, evt, { pointerId, pickResult }));
             }
         } else {
             delete this._meshUnderPointerId[pointerId];

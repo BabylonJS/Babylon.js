@@ -52,7 +52,7 @@
         "@storybook/cli": "^7.0.0-alpha.47",
         "@storybook/testing-library": "^0.0.11",
         "babel-loader": "^8.2.5",
-        "node-sass": "^7.0.1",
+        "node-sass": "^8.0.0",
         "rimraf": "^3.0.2",
         "rollup": "^2.58.3",
         "rollup-plugin-scss": "^3.0.0",

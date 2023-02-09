@@ -12,6 +12,7 @@ module.exports = (env) => {
             sceneOnly: "./src/sceneOnly.ts",
             thinEngineOnly: "./src/thinEngineOnly.ts",
             sceneWithInspector: "./src/sceneWithInspector.ts",
+            umdCOmpile: "./src/umdCompile.ts",
         },
         devtool: production ? false : "eval-cheap-module-source-map",
         output: {

@@ -23,7 +23,7 @@ describe("ArcRotateCameraMouseInput", () => {
             deterministicLockstep: false,
             lockstepMaxSteps: 1,
         });
-        //engine!._deviceSourceManager = new InternalDeviceSourceManager(engine!);
+
         scene = new Scene(engine);
         camera = new ArcRotateCamera("camera", 0, 0, 10, Vector3.Zero(), scene);
         camera.setTarget(Vector3.Zero());
