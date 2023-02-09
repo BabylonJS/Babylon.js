@@ -591,7 +591,15 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
                 this._inputs[DeviceType.Touch][deviceSlot][PointerInput.LeftClick] = 0;
 
-                const deviceEvent: IUIEvent = DeviceEventFactory.CreateDeviceEvent(DeviceType.Touch, deviceSlot, PointerInput.LeftClick, 0, this, this._elementToAttachTo);
+                const deviceEvent: IUIEvent = DeviceEventFactory.CreateDeviceEvent(
+                    DeviceType.Touch,
+                    deviceSlot,
+                    PointerInput.LeftClick,
+                    0,
+                    this,
+                    this._elementToAttachTo,
+                    evt.pointerId
+                );
 
                 this._onInputChanged(DeviceType.Touch, deviceSlot, deviceEvent);
 
@@ -662,7 +670,15 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                     if (pointerId !== -1 && pointer[deviceSlot]?.[PointerInput.LeftClick] === 1) {
                         pointer[deviceSlot][PointerInput.LeftClick] = 0;
 
-                        const deviceEvent: IUIEvent = DeviceEventFactory.CreateDeviceEvent(DeviceType.Touch, deviceSlot, PointerInput.LeftClick, 0, this, this._elementToAttachTo);
+                        const deviceEvent: IUIEvent = DeviceEventFactory.CreateDeviceEvent(
+                            DeviceType.Touch,
+                            deviceSlot,
+                            PointerInput.LeftClick,
+                            0,
+                            this,
+                            this._elementToAttachTo,
+                            pointerId
+                        );
 
                         this._onInputChanged(DeviceType.Touch, deviceSlot, deviceEvent);
 
