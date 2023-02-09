@@ -136,16 +136,16 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         return cpuDepthInfo.getDepthInMeters(x, y);
     };
 
-    private _latestDepthImageTexture?: RawTexture;
+    private _cachedDepthImageTexture?: RawTexture;
 
     /**
      * Latest cached `BaseTexture` of depth image which is made from the depth buffer data.
      */
     public get latestDepthImageTexture(): RawTexture | null {
-        if (!this._latestDepthImageTexture) {
+        if (!this._cachedDepthImageTexture) {
             return null;
         }
-        return this._latestDepthImageTexture;
+        return this._cachedDepthImageTexture;
     }
 
     /**
@@ -203,7 +203,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
      * Dispose this feature and all of the resources attached
      */
     public dispose(): void {
-        this._latestDepthImageTexture?.dispose();
+        this._cachedDepthImageTexture?.dispose();
     }
 
     protected _onXRFrame(_xrFrame: XRFrame): void {
@@ -244,8 +244,8 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
 
         const { data, width, height } = depthInfo as XRCPUDepthInformation;
 
-        if (!this._latestDepthImageTexture) {
-            this._latestDepthImageTexture = RawTexture.CreateRTexture(
+        if (!this._cachedDepthImageTexture) {
+            this._cachedDepthImageTexture = RawTexture.CreateRTexture(
                 null,
                 width,
                 height,
@@ -260,12 +260,12 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         switch (dataFormat) {
             case "luminance-alpha":
                 // todo: refactoring and remove magic number
-                (this._latestDepthImageTexture as RawTexture).update(Uint8ClampedArray.from(new Uint16Array(data).map((value) => value / 20)));
+                (this._cachedDepthImageTexture as RawTexture).update(Uint8ClampedArray.from(new Uint16Array(data).map((value) => value / 20)));
                 break;
 
             case "float32":
                 // todo: refactoring and remove magic number
-                (this._latestDepthImageTexture as RawTexture).update(new Float32Array(data).map((value) => value / 20));
+                (this._cachedDepthImageTexture as RawTexture).update(new Float32Array(data).map((value) => value / 20));
                 break;
 
             default:
@@ -287,8 +287,8 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         const engine = scene.getEngine();
         const internalTexture = engine.wrapWebGLTexture(texture);
 
-        if (!this._latestDepthImageTexture) {
-            this._latestDepthImageTexture = RawTexture.CreateRTexture(
+        if (!this._cachedDepthImageTexture) {
+            this._cachedDepthImageTexture = RawTexture.CreateRTexture(
                 null,
                 width,
                 height,
@@ -300,7 +300,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
             );
         }
 
-        this._latestDepthImageTexture._texture = internalTexture;
+        this._cachedDepthImageTexture._texture = internalTexture;
     }
 
     /**
