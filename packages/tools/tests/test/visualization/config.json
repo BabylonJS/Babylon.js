@@ -1562,6 +1562,10 @@
             "title": "Loading glTF model with KTX2 textures",
             "playgroundId": "#YD2TXP#35",
             "excludeFromAutomaticTesting": true
+        },
+        {
+            "title": "Instantiate Hierarchy", 
+            "playgroundId": "#BET11L"
         }
     ]
 }
