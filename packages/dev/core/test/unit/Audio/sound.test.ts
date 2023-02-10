@@ -205,30 +205,64 @@ describe("Sound", () => {
         expect(sound.useCustomAttenuation).toBe(true);
     });
 
-    // TODO: Add coverage for skipCodecCheck option.
-
     it("constructor sets number options correctly", () => {
         const audioSample = AudioSample.Get("silence, 1 second, 1 channel, 48000 kHz");
         const sound = new Sound("test", audioSample.arrayBuffer, null, null, {
             length: 1,
-            maxDistance: 1,
-            offset: 1,
-            playbackRate: 2,
-            refDistance: 1,
-            rolloffFactor: 1,
-            volume: 1
+            maxDistance: 2,
+            offset: 3,
+            playbackRate: 4,
+            refDistance: 5,
+            rolloffFactor: 6,
+            volume: 7
         });
 
         expect(sound._length).toBe(1);
-        expect(sound.maxDistance).toBe(1);
-        expect(sound._offset).toBe(1);
-        expect(sound._playbackRate).toBe(2);
-        expect(sound.refDistance).toBe(1);
-        expect(sound.rolloffFactor).toBe(1);
-        expect(sound.getVolume()).toBe(1);
+        expect(sound.maxDistance).toBe(2);
+        expect(sound._offset).toBe(3);
+        expect(sound._playbackRate).toBe(4);
+        expect(sound.refDistance).toBe(5);
+        expect(sound.rolloffFactor).toBe(6);
+        expect(sound.getVolume()).toBe(7);
     });
 
-    // TODO: Add coverage for distanceModel option.
+    it("constructor sets string options correctly", () => {
+        const audioSample = AudioSample.Get("silence, 1 second, 1 channel, 48000 kHz");
+        const sound1 = new Sound("test", audioSample.arrayBuffer, null, null, { distanceModel: "linear" });
+        const sound2 = new Sound("test", audioSample.arrayBuffer, null, null, { distanceModel: "inverse" });
+        const sound3 = new Sound("test", audioSample.arrayBuffer, null, null, { distanceModel: "exponential" });
+
+        expect(sound1.distanceModel).toBe("linear");
+        expect(sound2.distanceModel).toBe("inverse");
+        expect(sound3.distanceModel).toBe("exponential");
+    });
+
+    it("constructor does codec check when no options are given", () => {
+        expect(Engine.audioEngine?.isMP3supported).toBe(false);
+        const loadFileFunction = jest.spyOn(scene, "_loadFile");
+
+        new Sound("test", "dummy-url.mp3");
+
+        expect(loadFileFunction.mock.calls.length).toBe(0);
+    });
+
+    it("constructor does codec check when skipCodecCheck option is false", () => {
+        expect(Engine.audioEngine?.isMP3supported).toBe(false);
+        const loadFileFunction = jest.spyOn(scene, "_loadFile");
+
+        new Sound("test", "dummy-url.mp3", null, null, { skipCodecCheck: false });
+
+        expect(loadFileFunction.mock.calls.length).toBe(0);
+    });
+
+    it("constructor skips codec check when skipCodecCheck option is true", () => {
+        expect(Engine.audioEngine?.isMP3supported).toBe(false);
+        const loadFileFunction = jest.spyOn(scene, "_loadFile");
+
+        new Sound("test", "dummy-url.mp3", null, null, { skipCodecCheck: true });
+
+        expect(loadFileFunction.mock.calls.length).toBe(1);
+    });
 
     it("sets isPlaying to true when play is called", () => {
         const sound = new Sound("test", AudioSample.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"));
