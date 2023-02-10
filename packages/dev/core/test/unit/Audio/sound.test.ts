@@ -67,6 +67,13 @@ AudioSample.Add("silence, 1 second, 1 channel, 48000 kHz", 1, 48000, new Float32
 let mockedAudioContext: any;
 let mockedBufferSource: any;
 
+const incrementCurrentTime = (seconds: number) => {
+    mockedAudioContext.currentTime += seconds;
+    if (mockedBufferSource._startTime + mockedBufferSource.buffer.duration <= mockedAudioContext.currentTime) {
+        mockedBufferSource.stop();
+    }
+}
+
 window.AudioContext = jest.fn().mockName("AudioContext").mockImplementation(() => {
     mockedAudioContext = {
         currentTime: 0,
@@ -76,15 +83,21 @@ window.AudioContext = jest.fn().mockName("AudioContext").mockImplementation(() =
                 connect: jest.fn().mockName("connect"),
                 disconnect: jest.fn().mockName("disconnect"),
                 onended: () => void 0,
-                start: jest.fn().mockName("start"),
-                stop: jest.fn().mockName("stop"),
+                start: jest.fn().mockName("start").mockImplementation(() => {
+                    mockedBufferSource._startTime = mockedAudioContext.currentTime;
+                }),
+                stop: jest.fn().mockName("stop").mockImplementation(() => {
+                    mockedBufferSource.onended();
+                }),
                 buffer: {},
                 loop: false,
                 loopEnd: 0,
                 loopStart: 0,
                 playbackRate: {
                     value: 1
-                }
+                },
+
+                _startTime: 0
             };
             return mockedBufferSource;
         }),
@@ -263,5 +276,83 @@ describe("Sound", () => {
         sound.play();
         
         expect(mockedBufferSource.start).toBeCalledWith(mockedAudioContext.currentTime, 0.4, undefined);
+    });
+
+    it("resets current time to zero when stopped while playing", () => {
+        const audioSample = AudioSample.Get("silence, 1 second, 1 channel, 48000 kHz");
+        const sound = new Sound("test", audioSample.arrayBuffer);
+        mockedAudioContext.currentTime = 0.1
+
+        sound.play();
+        incrementCurrentTime(0.2);
+        sound.stop();
+
+        expect(sound.currentTime).toBe(0);
+    });
+
+    it("resets current time to zero when stopped while paused", () => {
+        const audioSample = AudioSample.Get("silence, 1 second, 1 channel, 48000 kHz");
+        const sound = new Sound("test", audioSample.arrayBuffer);
+        mockedAudioContext.currentTime = 0.1
+
+        sound.play();
+        incrementCurrentTime(0.2);
+        sound.pause();
+        sound.stop();
+
+        expect(sound.currentTime).toBe(0);
+    });
+
+    it("sets current time to time it was paused at", () => {
+        const audioSample = AudioSample.Get("silence, 1 second, 1 channel, 48000 kHz");
+        const sound = new Sound("test", audioSample.arrayBuffer);
+        mockedAudioContext.currentTime = 0.1
+
+        sound.play();
+        incrementCurrentTime(0.2);
+        sound.pause();
+
+        expect(sound.currentTime).toBeCloseTo(0.2);
+    });
+
+    it("calls onended when stopped", () => {
+        const audioSample = AudioSample.Get("silence, 1 second, 1 channel, 48000 kHz");
+        const sound = new Sound("test", audioSample.arrayBuffer);
+        mockedAudioContext.currentTime = 0.1
+        const onended = jest.fn().mockName("onended");
+        sound.onended = onended;
+
+        sound.play();
+        incrementCurrentTime(0.2);
+        sound.stop();
+
+        expect(onended.mock.calls.length).toBe(1);
+    });
+
+    it("calls onended when sound buffer reaches end", () => {
+        const audioSample = AudioSample.Get("silence, 1 second, 1 channel, 48000 kHz");
+        const sound = new Sound("test", audioSample.arrayBuffer);
+        mockedAudioContext.currentTime = 0.1
+        const onended = jest.fn().mockName("onended");
+        sound.onended = onended;
+
+        sound.play();
+        incrementCurrentTime(1);
+
+        expect(onended.mock.calls.length).toBe(1);
+    });
+
+    it("does not call onended when paused", () => {
+        const audioSample = AudioSample.Get("silence, 1 second, 1 channel, 48000 kHz");
+        const sound = new Sound("test", audioSample.arrayBuffer);
+        mockedAudioContext.currentTime = 0.1
+        const onended = jest.fn().mockName("onended");
+        sound.onended = onended;
+
+        sound.play();
+        incrementCurrentTime(0.2);
+        sound.pause();
+
+        expect(onended.mock.calls.length).toBe(0);
     });
 });
