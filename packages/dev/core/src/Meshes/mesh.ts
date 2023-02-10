@@ -756,7 +756,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         for (const child of this.getChildTransformNodes(true)) {
             // instancedMesh should have a different sourced mesh
-            if (child.getClassName() === "InstancedMesh" && instance.getClassName() === "Mesh") {
+            if (child.getClassName() === "InstancedMesh" && instance.getClassName() === "Mesh" && (child as InstancedMesh).sourceMesh === this) {
                 (child as InstancedMesh).instantiateHierarchy(
                     instance,
                     {
