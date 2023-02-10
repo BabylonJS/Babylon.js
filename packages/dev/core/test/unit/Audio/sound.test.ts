@@ -114,6 +114,12 @@ window.AudioContext = jest.fn().mockName("AudioContext").mockImplementation(() =
                 }
             };
         }),
+        createPanner: jest.fn().mockName("createPanner").mockImplementation(() => {
+            return {
+                connect: jest.fn().mockName("connect"),
+                disconnect: jest.fn().mockName("disconnect")
+            }
+        }),
         decodeAudioData: jest.fn().mockName("decodeAudioData").mockImplementation((data: ArrayBuffer, success: (buffer: AudioBuffer) => void) => {
             success(AudioSample.GetAudioBuffer(data));
         })
@@ -164,6 +170,65 @@ describe("Sound", () => {
         expect(sound.getSoundGain()).toBe(mockedAudioContext.createGain.mock.results[1].value);
         expect(sound.getVolume()).toBe(1);
     });
+
+    it("constructor sets boolean options correctly when given false", () => {
+        const audioSample = AudioSample.Get("silence, 1 second, 1 channel, 48000 kHz");
+        const sound = new Sound("test", audioSample.arrayBuffer, null, null, {
+            autoplay: false,
+            loop: false,
+            spatialSound: false,
+            streaming: false,
+            useCustomAttenuation: false
+        });
+
+        expect(sound.autoplay).toBe(false);
+        expect(sound.loop).toBe(false);
+        expect(sound.spatialSound).toBe(false);
+        expect(sound._streaming).toBe(false);
+        expect(sound.useCustomAttenuation).toBe(false);
+    });
+
+    it("constructor sets boolean options correctly when given true", () => {
+        const audioSample = AudioSample.Get("silence, 1 second, 1 channel, 48000 kHz");
+        const sound = new Sound("test", audioSample.arrayBuffer, null, null, {
+            autoplay: true,
+            loop: true,
+            spatialSound: true,
+            streaming: true,
+            useCustomAttenuation: true
+        });
+
+        expect(sound.autoplay).toBe(true);
+        expect(sound.loop).toBe(true);
+        expect(sound.spatialSound).toBe(true);
+        expect(sound._streaming).toBe(true);
+        expect(sound.useCustomAttenuation).toBe(true);
+    });
+
+    // TODO: Add coverage for skipCodecCheck option.
+
+    it("constructor sets number options correctly", () => {
+        const audioSample = AudioSample.Get("silence, 1 second, 1 channel, 48000 kHz");
+        const sound = new Sound("test", audioSample.arrayBuffer, null, null, {
+            length: 1,
+            maxDistance: 1,
+            offset: 1,
+            playbackRate: 2,
+            refDistance: 1,
+            rolloffFactor: 1,
+            volume: 1
+        });
+
+        expect(sound._length).toBe(1);
+        expect(sound.maxDistance).toBe(1);
+        expect(sound._offset).toBe(1);
+        expect(sound._playbackRate).toBe(2);
+        expect(sound.refDistance).toBe(1);
+        expect(sound.rolloffFactor).toBe(1);
+        expect(sound.getVolume()).toBe(1);
+    });
+
+    // TODO: Add coverage for distanceModel option.
 
     it("sets isPlaying to true when play is called", () => {
         const sound = new Sound("test", AudioSample.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"));
