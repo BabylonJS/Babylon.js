@@ -384,5 +384,7 @@ export class PhysicsBody {
         this._physicsEngine.removeBody(this);
         this._physicsPlugin.removeBody(this);
         this._physicsPlugin.disposeBody(this);
+        this._pluginData = null;
+        this._pluginDataInstances.length = 0;
     }
 }
