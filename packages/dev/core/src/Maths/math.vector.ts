@@ -494,6 +494,14 @@ export class Vector2 {
         return new Vector2(1, 1);
     }
 
+	/**
+	 * Returns a new Vector2 with random values
+	 * @returns a Vector2 with random values
+	 */
+	public static Random(): Vector2 {
+		return new Vector2(Math.random(), Math.random());
+	}
+
     /**
      * Gets a zero Vector2 that must not be updated
      */
@@ -2100,6 +2108,14 @@ export class Vector3 {
         return new Vector3(-1.0, 0.0, 0.0);
     }
 
+	/**
+	 * Returns a new Vector3 with random values
+	 * @returns a Vector3 with random values
+	 */
+	public static Random(): Vector3 {
+		return new Vector3(Math.random(), Math.random(), Math.random());
+	}
+
     /**
      * Returns a new Vector3 set with the result of the transformation by the given matrix of the given vector.
      * This method computes transformed coordinates only, not transformed direction vectors (ie. it takes translation in account)
@@ -3566,6 +3582,15 @@ export class Vector4 {
     public static One(): Vector4 {
         return new Vector4(1.0, 1.0, 1.0, 1.0);
     }
+
+	/**
+	 * Returns a new Vector4 with random values
+	 * @returns a Vector4 with random values
+	 */
+	public static Random(): Vector4 {
+		return new Vector4(Math.random(), Math.random(), Math.random(), Math.random());
+	}
+
     /**
      * Gets a zero Vector4 that must not be updated
      */
