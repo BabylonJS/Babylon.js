@@ -93,6 +93,12 @@ Engine.prototype.createEffectForParticles = function (
         defines += "\n#define BILLBOARD\n";
     }
 
+    if (particleSystem?.isAnimationSheetEnabled) {
+        if (defines.indexOf(" ANIMATESHEET") === -1) {
+            defines += "\n#define ANIMATESHEET\n";
+        }
+    }
+
     if (samplers.indexOf("diffuseSampler") === -1) {
         samplers.push("diffuseSampler");
     }
