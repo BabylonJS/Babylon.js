@@ -22,7 +22,7 @@ import type { ShaderProcessingContext } from "./Processors/shaderProcessingOptio
 import { WebGPUShaderProcessingContext } from "./WebGPU/webgpuShaderProcessingContext";
 import { Tools } from "../Misc/tools";
 import { WebGPUTextureHelper } from "./WebGPU/webgpuTextureHelper";
-import type { ISceneLike } from "./thinEngine";
+import type { ISceneLike, ThinEngineOptions } from "./thinEngine";
 import { WebGPUBufferManager } from "./WebGPU/webgpuBufferManager";
 import type { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
 import { WebGPUHardwareTexture } from "./WebGPU/webgpuHardwareTexture";
@@ -55,7 +55,6 @@ import type { InternalTextureCreationOptions, TextureSize } from "../Materials/T
 import { WebGPUSnapshotRendering } from "./WebGPU/webgpuSnapshotRendering";
 import type { WebGPUDataBuffer } from "../Meshes/WebGPU/webgpuDataBuffer";
 import type { WebGPURenderTargetWrapper } from "./WebGPU/webgpuRenderTargetWrapper";
-import { PerformanceConfigurator } from "./performanceConfigurator";
 
 declare function importScripts(...urls: string[]): void;
 
@@ -84,42 +83,7 @@ export interface GlslangOptions {
 /**
  * Options to create the WebGPU engine
  */
-export interface WebGPUEngineOptions extends GPURequestAdapterOptions {
-    /**
-     * If delta time between frames should be constant
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#deterministic-lockstep
-     */
-    deterministicLockstep?: boolean;
-
-    /**
-     * Maximum about of steps between frames (Default: 4)
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#deterministic-lockstep
-     */
-    lockstepMaxSteps?: number;
-
-    /**
-     * Defines the seconds between each deterministic lock step
-     */
-    timeStep?: number;
-
-    /**
-     * Defines that engine should ignore context lost events
-     * If this event happens when this parameter is true, you will have to reload the page to restore rendering
-     */
-    doNotHandleContextLost?: boolean;
-
-    /**
-     * Defines that engine should ignore modifying touch action attribute and style
-     * If not handle, you might need to set it up on your side for expected touch devices behavior.
-     */
-    doNotHandleTouchAction?: boolean;
-
-    /**
-     * Defines if webaudio should be initialized as well
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic
-     */
-    audioEngine?: boolean;
-
+export interface WebGPUEngineOptions extends ThinEngineOptions, GPURequestAdapterOptions {
     /**
      * Defines the category of adapter to use.
      * Is it the discrete or integrated device.
@@ -137,16 +101,6 @@ export interface WebGPUEngineOptions extends GPURequestAdapterOptions {
     swapChainFormat?: GPUTextureFormat;
 
     /**
-     * Defines whether MSAA is enabled on the canvas.
-     */
-    antialiasing?: boolean;
-
-    /**
-     * Defines whether the stencil buffer should be enabled.
-     */
-    stencil?: boolean;
-
-    /**
      * Defines whether we should generate debug markers in the gpu command lists (can be seen with PIX for eg)
      */
     enableGPUDebugMarkers?: boolean;
@@ -160,27 +114,6 @@ export interface WebGPUEngineOptions extends GPURequestAdapterOptions {
      * Options to load the associated Twgsl library
      */
     twgslOptions?: TwgslOptions;
-
-    /**
-     * Defines if the engine should no exceed a specified device ratio
-     * @see https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio
-     */
-    limitDeviceRatio?: number;
-
-    /**
-     * Defines whether to adapt to the device's viewport characteristics (default: false)
-     */
-    adaptToDeviceRatio?: boolean;
-
-    /**
-     * Defines whether the canvas should be created in "premultiplied" mode (if false, the canvas is created in the "opaque" mode) (true by default)
-     */
-    premultipliedAlpha?: boolean;
-
-    /**
-     * Make the matrix computations to be performed in 64 bits instead of 32 bits. False by default
-     */
-    useHighPrecisionMatrix?: boolean;
 }
 
 /**
@@ -511,23 +444,26 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
+     * Indicates if the z range in NDC space is 0..1 (value: true) or -1..1 (value: false)
+     */
+    public readonly isNDCHalfZRange: boolean = true;
+
+    /**
+     * Indicates that the origin of the texture/framebuffer space is the bottom left corner. If false, the origin is top left
+     */
+    public readonly hasOriginBottomLeft: boolean = false;
+
+    /**
      * Create a new instance of the gpu engine.
      * @param canvas Defines the canvas to use to display the result
      * @param options Defines the options passed to the engine to create the GPU context dependencies
      */
     public constructor(canvas: HTMLCanvasElement, options: WebGPUEngineOptions = {}) {
-        super(null);
+        super(null, options.antialias ?? true, options);
         this._name = "WebGPU";
 
-        (this.isNDCHalfZRange as any) = true;
-        (this.hasOriginBottomLeft as any) = false;
-
         options.deviceDescriptor = options.deviceDescriptor || {};
-        options.antialiasing = options.antialiasing === undefined ? true : options.antialiasing;
-        options.stencil = options.stencil ?? true;
         options.enableGPUDebugMarkers = options.enableGPUDebugMarkers ?? false;
-
-        PerformanceConfigurator.SetMatrixPrecision(!!options.useHighPrecisionMatrix);
 
         Logger.Log(`Babylon.js v${Engine.Version} - ${this.description} engine`);
         if (!navigator.gpu) {
@@ -540,37 +476,14 @@ export class WebGPUEngine extends Engine {
         this._isWebGPU = true;
         this._shaderPlatformName = "WEBGPU";
 
-        if (options.deterministicLockstep === undefined) {
-            options.deterministicLockstep = false;
-        }
-
-        if (options.lockstepMaxSteps === undefined) {
-            options.lockstepMaxSteps = 4;
-        }
-
-        if (options.audioEngine === undefined) {
-            options.audioEngine = true;
-        }
-
-        this._deterministicLockstep = options.deterministicLockstep;
-        this._lockstepMaxSteps = options.lockstepMaxSteps;
-        this._timeStep = options.timeStep || 1 / 60;
-
-        this._doNotHandleContextLost = !!options.doNotHandleContextLost;
-
         this._canvas = canvas;
         this._options = options;
-        this.premultipliedAlpha = options.premultipliedAlpha ?? true;
 
-        const devicePixelRatio = IsWindowObjectExist() ? window.devicePixelRatio || 1.0 : 1.0;
-        const limitDeviceRatio = options.limitDeviceRatio || devicePixelRatio;
-        const adaptToDeviceRatio = options.adaptToDeviceRatio ?? false;
+        this._mainPassSampleCount = options.antialias ? this._defaultSampleCount : 1;
 
-        this._hardwareScalingLevel = adaptToDeviceRatio ? 1.0 / Math.min(limitDeviceRatio, devicePixelRatio) : 1.0;
-        this._mainPassSampleCount = options.antialiasing ? this._defaultSampleCount : 1;
-        this._isStencilEnable = options.stencil;
+        this._setupMobileChecks();
 
-        this._sharedInit(canvas, !!options.doNotHandleTouchAction, options.audioEngine);
+        this._sharedInit(canvas);
 
         this._shaderProcessor = new WebGPUShaderProcessorGLSL();
         this._shaderProcessorWGSL = new WebGPUShaderProcessorWGSL();
@@ -871,7 +784,7 @@ export class WebGPUEngine extends Engine {
 
         let mainColorAttachments: GPURenderPassColorAttachment[];
 
-        if (this._options.antialiasing) {
+        if (this._options.antialias) {
             const mainTextureDescriptor: GPUTextureDescriptor = {
                 label: "Texture_MainColor_antialiasing",
                 size: this._mainTextureExtends,
@@ -2875,7 +2788,7 @@ export class WebGPUEngine extends Engine {
         this._mainRenderPassWrapper.colorAttachmentGPUTextures[0]!.set(swapChainTexture);
 
         // Resolve in case of MSAA
-        if (this._options.antialiasing) {
+        if (this._options.antialias) {
             this._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0]!.resolveTarget = swapChainTexture.createView();
         } else {
             this._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0]!.view = swapChainTexture.createView();
