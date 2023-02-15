@@ -495,11 +495,13 @@ export class Vector2 {
     }
 
 	/**
-	 * Returns a new Vector2 with random values
-	 * @returns a Vector2 with random values
+	 * Returns a new Vector2 with random values between min and max
+	 * @param min the minimum random value
+	 * @param max the maximum random value
+	 * @returns a Vector2 with random values between min and max
 	 */
-	public static Random(): Vector2 {
-		return new Vector2(Math.random(), Math.random());
+	public static Random(min: number = 0, max: number = 1): Vector2 {
+		return new Vector2(Scalar.RandomRange(min, max), Scalar.RandomRange(min, max));
 	}
 
     /**
@@ -2109,11 +2111,13 @@ export class Vector3 {
     }
 
 	/**
-	 * Returns a new Vector3 with random values
-	 * @returns a Vector3 with random values
+	 * Returns a new Vector3 with random values between min and max
+	 * @param min the minimum random value
+	 * @param max the maximum random value
+	 * @returns a Vector3 with random values between min and max
 	 */
-	public static Random(): Vector3 {
-		return new Vector3(Math.random(), Math.random(), Math.random());
+	public static Random(min: number = 0, max: number = 1): Vector3 {
+		return new Vector3(Scalar.RandomRange(min, max), Scalar.RandomRange(min, max), Scalar.RandomRange(min, max));
 	}
 
     /**
@@ -3584,11 +3588,13 @@ export class Vector4 {
     }
 
 	/**
-	 * Returns a new Vector4 with random values
-	 * @returns a Vector4 with random values
+	 * Returns a new Vector4 with random values between min and max
+	 * @param min the minimum random value
+	 * @param max the maximum random value
+	 * @returns a Vector4 with random values between min and max
 	 */
-	public static Random(): Vector4 {
-		return new Vector4(Math.random(), Math.random(), Math.random(), Math.random());
+	public static Random(min: number = 0, max: number = 1): Vector4 {
+		return new Vector4(Scalar.RandomRange(min, max), Scalar.RandomRange(min, max), Scalar.RandomRange(min, max), Scalar.RandomRange(min, max));
 	}
 
     /**
