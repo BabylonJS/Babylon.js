@@ -9,6 +9,8 @@ precision highp float;
 #include<instancesDeclaration>
 #include<__decl__geometryVertex>
 
+#include<clipPlaneVertexDeclaration>
+
 attribute vec3 position;
 attribute vec3 normal;
 
@@ -85,7 +87,7 @@ void main(void)
 
 #include<bonesVertex>
 #include<bakedVertexAnimation>
-	vec4 pos = vec4(finalWorld * vec4(positionUpdated, 1.0));
+	vec4 worldPos = vec4(finalWorld * vec4(positionUpdated, 1.0));
 
 	#ifdef BUMP
 	vWorldView = view * finalWorld;
@@ -94,7 +96,7 @@ void main(void)
 	vNormalV = normalize(vec3((view * finalWorld) * vec4(normalUpdated, 0.0)));
 	#endif
 
-	vViewPos = view * pos;
+	vViewPos = view * worldPos;
 
 	#if defined(VELOCITY) && defined(BONES_VELOCITY_ENABLED)
 		vCurrentPosition = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
@@ -132,10 +134,12 @@ void main(void)
 	#endif
 
 	#if defined(POSITION) || defined(BUMP)
-	vPositionW = pos.xyz / pos.w;
+	vPositionW = worldPos.xyz / worldPos.w;
 	#endif
 
 	gl_Position = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
+
+	#include<clipPlaneVertex>
 
 	#ifdef NEED_UV
 		#ifdef UV1
