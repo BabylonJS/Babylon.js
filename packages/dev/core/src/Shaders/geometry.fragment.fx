@@ -60,12 +60,16 @@ uniform vec2 vTangentSpaceParams;
 uniform sampler2D diffuseSampler;
 #endif
 
+#include<clipPlaneFragmentDeclaration>
+
 #include<mrtFragmentDeclaration>[RENDER_TARGET_COUNT]
 #include<bumpFragmentMainFunctions>
 #include<bumpFragmentFunctions>
 #include<helperFunctions>
 
 void main() {
+    #include<clipPlaneFragment>
+
     #ifdef ALPHATEST
     if (texture2D(diffuseSampler, vUV).a < 0.4)
         discard;

@@ -35,6 +35,7 @@ export enum ConstraintType {
     HINGE,
     SLIDER,
     LOCK,
+    PRISMATIC,
 }
 
 /** @internal */
@@ -74,6 +75,8 @@ export interface PhysicsConstraintParameters {
     pivotB?: Vector3;
     axisA?: Vector3;
     axisB?: Vector3;
+    maxDistance?: number;
+    collision?: boolean;
 }
 
 /**
@@ -145,6 +148,7 @@ export interface IPhysicsEnginePluginV2 {
     disposeBody(body: PhysicsBody): void;
     registerOnBodyCollide(body: PhysicsBody, func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>) => void): void;
     unregisterOnBodyCollide(body: PhysicsBody, func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>) => void): void;
+    addConstraint(body: PhysicsBody, childBody: PhysicsBody, constraint: PhysicsConstraint): void;
 
     // shape
     initShape(shape: PhysicsShape, type: ShapeType, options: PhysicsShapeParameters): void;
@@ -169,13 +173,7 @@ export interface IPhysicsEnginePluginV2 {
     disposeMaterial(material: PhysicsMaterial): void;
 
     // constraint
-    initConstraint(constraint: PhysicsConstraint, type: ConstraintType, options: PhysicsConstraintParameters): void;
-    setParentBody(constraint: PhysicsConstraint, body: PhysicsBody): void;
-    getParentBody(constraint: PhysicsConstraint): PhysicsBody;
-    setChildBody(constraint: PhysicsConstraint, body: PhysicsBody): void;
-    getChildBody(constraint: PhysicsConstraint): PhysicsBody;
-    setAnchorInParent(constraint: PhysicsConstraint, pivot: Vector3, axisX: Vector3, axisY: Vector3): void;
-    setAnchorInChild(constraint: PhysicsConstraint, pivot: Vector3, axisX: Vector3, axisY: Vector3): void;
+    initConstraint(constraint: PhysicsConstraint, body: PhysicsBody, childBody: PhysicsBody): void;
     setEnabled(constraint: PhysicsConstraint, isEnabled: boolean): void;
     getEnabled(constraint: PhysicsConstraint): boolean;
     setCollisionsEnabled(constraint: PhysicsConstraint, isEnabled: boolean): void;
