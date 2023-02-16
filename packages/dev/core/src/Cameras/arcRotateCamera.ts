@@ -1210,6 +1210,13 @@ export class ArcRotateCamera extends TargetCamera {
     public zoomOn(meshes?: AbstractMesh[], doNotUpdateMaxZ = false): void {
         meshes = meshes || this.getScene().meshes;
 
+        // Verify that mesh data is sync'd and force a compute if it's not so that we can get the correct bounding info.
+        for (let i = 0; i < meshes.length; i++) {
+            if (!meshes[i].isSynchronized()) {
+                meshes[i].computeWorldMatrix(true);
+            }
+        }
+
         const minMaxVector = Mesh.MinMax(meshes);
         const distance = Vector3.Distance(minMaxVector.min, minMaxVector.max);
 
