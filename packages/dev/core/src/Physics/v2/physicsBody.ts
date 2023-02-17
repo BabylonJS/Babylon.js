@@ -5,7 +5,7 @@ import type { Scene } from "../../scene";
 import type { PhysicsEngine } from "./physicsEngine";
 import type { Mesh, TransformNode, AbstractMesh } from "../../Meshes";
 import type { Nullable } from "core/types";
-
+import type { PhysicsConstraint } from "./physicsConstraint";
 /**
  * PhysicsBody is useful for creating a physics body that can be used in a physics engine. It allows
  * the user to set the mass and velocity of the body, which can then be used to calculate the
@@ -368,11 +368,22 @@ export class PhysicsBody {
     }
 
     /**
-     * return geometric center of the associated mesh
+     * @returns geometric center of the associated mesh
      */
     public getObjectCenter(): Vector3 {
         // TODO
         return new Vector3(0, 0, 0);
+    }
+
+    /**
+     * Adds a constraint to the physics engine.
+     *
+     * @param childBody - The body to which the constraint will be applied.
+     * @param constraint - The constraint to be applied.
+     *
+     */
+    public addConstraint(childBody: PhysicsBody, constraint: PhysicsConstraint): void {
+        this._physicsPlugin.addConstraint(this, childBody, constraint);
     }
 
     /**
@@ -384,5 +395,7 @@ export class PhysicsBody {
         this._physicsEngine.removeBody(this);
         this._physicsPlugin.removeBody(this);
         this._physicsPlugin.disposeBody(this);
+        this._pluginData = null;
+        this._pluginDataInstances.length = 0;
     }
 }

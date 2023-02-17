@@ -26,7 +26,8 @@ export class DeviceEventFactory {
         inputIndex: number,
         currentState: Nullable<number>,
         deviceInputSystem: IDeviceInputSystem,
-        elementToAttachTo?: any
+        elementToAttachTo?: any,
+        pointerId?: number
     ): IUIEvent {
         switch (deviceType) {
             case DeviceType.Keyboard:
@@ -37,7 +38,7 @@ export class DeviceEventFactory {
                 }
             // eslint-disable-next-line no-fallthrough
             case DeviceType.Touch:
-                return this._CreatePointerEvent(deviceType, deviceSlot, inputIndex, currentState, deviceInputSystem, elementToAttachTo);
+                return this._CreatePointerEvent(deviceType, deviceSlot, inputIndex, currentState, deviceInputSystem, elementToAttachTo, pointerId);
             default:
                 throw `Unable to generate event for device ${DeviceType[deviceType]}`;
         }
@@ -60,7 +61,8 @@ export class DeviceEventFactory {
         inputIndex: number,
         currentState: Nullable<number>,
         deviceInputSystem: IDeviceInputSystem,
-        elementToAttachTo?: any
+        elementToAttachTo?: any,
+        pointerId?: number
     ): any {
         const evt = this._CreateMouseEvent(deviceType, deviceSlot, inputIndex, currentState, deviceInputSystem, elementToAttachTo);
 
@@ -70,7 +72,7 @@ export class DeviceEventFactory {
             evt.pointerType = "mouse";
         } else {
             evt.deviceType = DeviceType.Touch;
-            evt.pointerId = deviceSlot;
+            evt.pointerId = pointerId ?? deviceSlot;
             evt.pointerType = "touch";
         }
 

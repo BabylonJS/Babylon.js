@@ -4,3 +4,4 @@ export * from "./v2/index";
 export * from "./physicsEngineComponent";
 export * from "./v1/physicsEngineComponent";
 export * from "./physicsHelper";
+export * from "./physicsRaycastResult";

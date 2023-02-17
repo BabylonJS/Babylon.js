@@ -322,7 +322,11 @@ export class ActionManager extends AbstractActionManager {
                     if (trigger === ActionManager.OnKeyUpTrigger || trigger === ActionManager.OnKeyDownTrigger) {
                         const parameter = action.getTriggerParameter();
 
-                        if (parameter && parameter !== evt.sourceEvent.keyCode) {
+                        if (typeof parameter === "function") {
+                            if (!parameter(evt)) {
+                                continue;
+                            }
+                        } else if (parameter && parameter !== evt.sourceEvent.keyCode) {
                             if (!parameter.toLowerCase) {
                                 continue;
                             }
