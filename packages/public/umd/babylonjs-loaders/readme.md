@@ -20,6 +20,8 @@ To install using npm :
 npm install --save babylonjs babylonjs-loaders
 ```
 
+Make sure that babylonjs and babylonjs-loaders both have the same version.
+
 If using TypeScript, the typing needs to be added to tsconfig.json:
 
 ```
