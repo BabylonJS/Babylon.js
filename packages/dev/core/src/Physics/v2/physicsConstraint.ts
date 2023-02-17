@@ -31,7 +31,7 @@ export class PhysicsConstraint {
      */
     constructor(type: ConstraintType, options: PhysicsConstraintParameters, scene: Scene) {
         if (!scene) {
-            return;
+            throw new Error("Missing scene parameter for constraint constructor.");
         }
         const physicsEngine = scene.getPhysicsEngine();
         if (!physicsEngine) {
