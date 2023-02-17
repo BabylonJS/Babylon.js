@@ -452,6 +452,7 @@ export class DepthRenderer {
                 "mBones",
                 "boneTextureWidth",
                 "viewProjection",
+                "view",
                 "diffuseMatrix",
                 "depthValues",
                 "morphTargetInfluences",

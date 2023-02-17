@@ -430,7 +430,7 @@ export class ScreenSpaceReflection2PostProcess extends PostProcess {
 
             this._resizeDepthRenderer();
 
-            this._scene.customRenderTargets.push(this._depthRenderer.getDepthMap());
+            this.getCamera()?.customRenderTargets.push(this._depthRenderer.getDepthMap());
 
             this._resizeObserver = this._scene.getEngine().onResizeObservable.add(this._resizeDepthRenderer.bind(this));
         }
@@ -470,9 +470,10 @@ export class ScreenSpaceReflection2PostProcess extends PostProcess {
 
     private _disposeDepthRenderer() {
         if (this._depthRenderer) {
-            const idx = this._scene.customRenderTargets.indexOf(this._depthRenderer.getDepthMap());
+            const camera = this.getCamera();
+            const idx = camera?.customRenderTargets.indexOf(this._depthRenderer.getDepthMap()) ?? -1;
             if (idx !== -1) {
-                this._scene.customRenderTargets.splice(idx, 1);
+                camera.customRenderTargets.splice(idx, 1);
             }
             this._depthRenderer.getDepthMap().dispose();
         }
@@ -628,6 +629,10 @@ export class ScreenSpaceReflection2PostProcess extends PostProcess {
             const camera = scene.activeCamera;
             if (!camera) {
                 return;
+            }
+
+            if (this._depthRenderer && camera.customRenderTargets.indexOf(this._depthRenderer.getDepthMap()) < 0) {
+                camera.customRenderTargets.push(this._depthRenderer.getDepthMap());
             }
 
             const viewMatrix = camera.getViewMatrix(true);
