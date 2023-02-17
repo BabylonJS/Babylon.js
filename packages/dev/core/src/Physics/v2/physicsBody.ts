@@ -298,7 +298,7 @@ export class PhysicsBody {
     /**
      * Applies a force to the physics object.
      *
-     * @param force The force vector. 
+     * @param force The force vector.
      * @param location The location of the force.
      *
      * This method is useful for applying a force to a physics object, which can be used to simulate physical forces such as gravity,
