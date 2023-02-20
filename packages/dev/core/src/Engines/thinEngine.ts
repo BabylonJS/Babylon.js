@@ -89,23 +89,13 @@ export interface HostInformation {
     isMobile: boolean;
 }
 
-/** Interface defining initialization parameters for Engine class */
-export interface EngineOptions extends WebGLContextAttributes {
+/** Interface defining initialization parameters for ThinEngine class */
+export interface ThinEngineOptions {
     /**
      * Defines if the engine should no exceed a specified device ratio
      * @see https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio
      */
     limitDeviceRatio?: number;
-    /**
-     * Defines if webvr should be enabled automatically
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/webVRCamera
-     */
-    autoEnableWebVR?: boolean;
-    /**
-     * Defines if webgl2 should be turned off even if supported
-     * @see https://doc.babylonjs.com/setup/support/webGL2
-     */
-    disableWebGL2Support?: boolean;
     /**
      * Defines if webaudio should be initialized as well
      * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic
@@ -135,6 +125,52 @@ export interface EngineOptions extends WebGLContextAttributes {
      * If not handle, you might need to set it up on your side for expected touch devices behavior.
      */
     doNotHandleTouchAction?: boolean;
+
+    /**
+     * Make the matrix computations to be performed in 64 bits instead of 32 bits. False by default
+     */
+    useHighPrecisionMatrix?: boolean;
+
+    /**
+     * Defines whether to adapt to the device's viewport characteristics (default: false)
+     */
+    adaptToDeviceRatio?: boolean;
+
+    /**
+     * True if the more expensive but exact conversions should be used for transforming colors to and from linear space within shaders.
+     * Otherwise, the default is to use a cheaper approximation.
+     */
+    useExactSrgbConversions?: boolean;
+
+    /**
+     * Defines whether MSAA is enabled on the canvas.
+     */
+    antialias?: boolean;
+
+    /**
+     * Defines whether the stencil buffer should be enabled.
+     */
+    stencil?: boolean;
+
+    /**
+     * Defines whether the canvas should be created in "premultiplied" mode (if false, the canvas is created in the "opaque" mode) (true by default)
+     */
+    premultipliedAlpha?: boolean;
+}
+
+/** Interface defining initialization parameters for Engine class */
+export interface EngineOptions extends ThinEngineOptions, WebGLContextAttributes {
+    /**
+     * Defines if webvr should be enabled automatically
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/webVRCamera
+     */
+    autoEnableWebVR?: boolean;
+    /**
+     * Defines if webgl2 should be turned off even if supported
+     * @see https://doc.babylonjs.com/setup/support/webGL2
+     */
+    disableWebGL2Support?: boolean;
+
     /**
      * Defines that engine should compile shaders with high precision floats (if supported). True by default
      */
@@ -145,19 +181,9 @@ export interface EngineOptions extends WebGLContextAttributes {
     xrCompatible?: boolean;
 
     /**
-     * Make the matrix computations to be performed in 64 bits instead of 32 bits. False by default
-     */
-    useHighPrecisionMatrix?: boolean;
-
-    /**
      * Will prevent the system from falling back to software implementation if a hardware device cannot be created
      */
     failIfMajorPerformanceCaveat?: boolean;
-
-    /**
-     * Defines whether to adapt to the device's viewport characteristics (default: false)
-     */
-    adaptToDeviceRatio?: boolean;
 
     /**
      * If sRGB Buffer support is not set during construction, use this value to force a specific state
@@ -165,11 +191,6 @@ export interface EngineOptions extends WebGLContextAttributes {
      * This will not influence NativeEngine and WebGPUEngine which set the behavior to true during construction.
      */
     forceSRGBBufferSupportState?: boolean;
-    /**
-     * True if the more expensive but exact conversions should be used for transforming colors to and from linear space within shaders.
-     * Otherwise, the default is to use a cheaper approximation.
-     */
-    useExactSrgbConversions?: boolean;
 }
 
 /**
@@ -201,14 +222,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.46.0";
+        return "babylonjs@5.47.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.46.0";
+        return "5.47.0";
     }
 
     /**
@@ -326,12 +347,12 @@ export class ThinEngine {
     /**
      * Indicates if the z range in NDC space is 0..1 (value: true) or -1..1 (value: false)
      */
-    public readonly isNDCHalfZRange = false;
+    public readonly isNDCHalfZRange: boolean = false;
 
     /**
      * Indicates that the origin of the texture/framebuffer space is the bottom left corner. If false, the origin is top left
      */
-    public readonly hasOriginBottomLeft = true;
+    public readonly hasOriginBottomLeft: boolean = true;
 
     /**
      * Gets or sets a boolean indicating that uniform buffers must be disabled even if they are supported
@@ -780,84 +801,48 @@ export class ThinEngine {
 
         PerformanceConfigurator.SetMatrixPrecision(!!options.useHighPrecisionMatrix);
 
+        options.antialias = antialias ?? options.antialias;
+        options.deterministicLockstep = options.deterministicLockstep ?? false;
+        options.lockstepMaxSteps = options.lockstepMaxSteps ?? 4;
+        options.timeStep = options.timeStep ?? 1 / 60;
+        options.audioEngine = options.audioEngine ?? true;
+        options.stencil = options.stencil ?? true;
+
+        this._audioContext = options.audioEngineOptions?.audioContext ?? null;
+        this._audioDestination = options.audioEngineOptions?.audioDestination ?? null;
+        this.premultipliedAlpha = options.premultipliedAlpha ?? true;
+        this._useExactSrgbConversions = options.useExactSrgbConversions ?? false;
+        this._doNotHandleContextLost = !!options.doNotHandleContextLost;
+        this._isStencilEnable = options.stencil ? true : false;
+
+        // Viewport
+        adaptToDeviceRatio = adaptToDeviceRatio || options.adaptToDeviceRatio || false;
+
+        const devicePixelRatio = IsWindowObjectExist() ? window.devicePixelRatio || 1.0 : 1.0;
+
+        const limitDeviceRatio = options.limitDeviceRatio || devicePixelRatio;
+        this._hardwareScalingLevel = adaptToDeviceRatio ? 1.0 / Math.min(limitDeviceRatio, devicePixelRatio) : 1.0;
+        this._lastDevicePixelRatio = devicePixelRatio;
+
         if (!canvasOrContext) {
             return;
         }
-
-        adaptToDeviceRatio = adaptToDeviceRatio || options.adaptToDeviceRatio || false;
 
         if ((canvasOrContext as any).getContext) {
             canvas = <HTMLCanvasElement>canvasOrContext;
             this._renderingCanvas = canvas;
 
-            if (antialias !== undefined) {
-                options.antialias = antialias;
-            }
-
-            if (options.deterministicLockstep === undefined) {
-                options.deterministicLockstep = false;
-            }
-
-            if (options.lockstepMaxSteps === undefined) {
-                options.lockstepMaxSteps = 4;
-            }
-
-            if (options.timeStep === undefined) {
-                options.timeStep = 1 / 60;
-            }
-
             if (options.preserveDrawingBuffer === undefined) {
                 options.preserveDrawingBuffer = false;
-            }
-
-            if (options.audioEngine === undefined) {
-                options.audioEngine = true;
-            }
-
-            if (options.audioEngineOptions !== undefined && options.audioEngineOptions.audioContext !== undefined) {
-                this._audioContext = options.audioEngineOptions.audioContext;
-            }
-
-            if (options.audioEngineOptions !== undefined && options.audioEngineOptions.audioDestination !== undefined) {
-                this._audioDestination = options.audioEngineOptions.audioDestination;
-            }
-
-            if (options.stencil === undefined) {
-                options.stencil = true;
-            }
-
-            if (options.premultipliedAlpha === false) {
-                this.premultipliedAlpha = false;
             }
 
             if (options.xrCompatible === undefined) {
                 options.xrCompatible = true;
             }
 
-            if (options.useExactSrgbConversions !== undefined) {
-                this._useExactSrgbConversions = options.useExactSrgbConversions;
-            }
-
-            this._doNotHandleContextLost = options.doNotHandleContextLost ? true : false;
-
             // Exceptions
             if (navigator && navigator.userAgent) {
-                // Function to check if running on mobile device
-                this._checkForMobile = () => {
-                    const currentUA = navigator.userAgent;
-                    this.hostInformation.isMobile =
-                        currentUA.indexOf("Mobile") !== -1 ||
-                        // Needed for iOS 13+ detection on iPad (inspired by solution from https://stackoverflow.com/questions/9038625/detect-if-device-is-ios)
-                        (currentUA.indexOf("Mac") !== -1 && IsDocumentAvailable() && "ontouchend" in document);
-                };
-
-                // Set initial isMobile value
-                this._checkForMobile();
-
-                // Set up event listener to check when window is resized (used to get emulator activation to work properly)
-                if (IsWindowObjectExist()) {
-                    window.addEventListener("resize", this._checkForMobile);
-                }
+                this._setupMobileChecks();
 
                 const ua = navigator.userAgent;
                 for (const exception of ThinEngine.ExceptionList) {
@@ -984,15 +969,8 @@ export class ThinEngine {
             this._highPrecisionShadersAllowed = options.useHighPrecisionFloats;
         }
 
-        // Viewport
-        const devicePixelRatio = IsWindowObjectExist() ? window.devicePixelRatio || 1.0 : 1.0;
-
-        const limitDeviceRatio = options.limitDeviceRatio || devicePixelRatio;
-        this._hardwareScalingLevel = adaptToDeviceRatio ? 1.0 / Math.min(limitDeviceRatio, devicePixelRatio) : 1.0;
-        this._lastDevicePixelRatio = devicePixelRatio;
         this.resize();
 
-        this._isStencilEnable = options.stencil ? true : false;
         this._initGLContext();
         this._initFeatures();
 
@@ -1022,6 +1000,29 @@ export class ThinEngine {
         // Check setAttribute in case of workers
         if (this._renderingCanvas && this._renderingCanvas.setAttribute) {
             this._renderingCanvas.setAttribute("data-engine", versionToLog);
+        }
+    }
+
+    protected _setupMobileChecks(): void {
+        if (!(navigator && navigator.userAgent)) {
+            return;
+        }
+
+        // Function to check if running on mobile device
+        this._checkForMobile = () => {
+            const currentUA = navigator.userAgent;
+            this.hostInformation.isMobile =
+                currentUA.indexOf("Mobile") !== -1 ||
+                // Needed for iOS 13+ detection on iPad (inspired by solution from https://stackoverflow.com/questions/9038625/detect-if-device-is-ios)
+                (currentUA.indexOf("Mac") !== -1 && IsDocumentAvailable() && "ontouchend" in document);
+        };
+
+        // Set initial isMobile value
+        this._checkForMobile();
+
+        // Set up event listener to check when window is resized (used to get emulator activation to work properly)
+        if (IsWindowObjectExist()) {
+            window.addEventListener("resize", this._checkForMobile);
         }
     }
 
@@ -1073,10 +1074,8 @@ export class ThinEngine {
     /**
      * Shared initialization across engines types.
      * @param canvas The canvas associated with this instance of the engine.
-     * @param doNotHandleTouchAction Defines that engine should ignore modifying touch action attribute and style
-     * @param audioEngine Defines if an audio engine should be created by default
      */
-    protected _sharedInit(canvas: HTMLCanvasElement, doNotHandleTouchAction: boolean, audioEngine: boolean) {
+    protected _sharedInit(canvas: HTMLCanvasElement) {
         this._renderingCanvas = canvas;
     }
 

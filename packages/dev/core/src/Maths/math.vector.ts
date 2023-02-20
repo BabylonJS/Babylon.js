@@ -495,6 +495,16 @@ export class Vector2 {
     }
 
     /**
+     * Returns a new Vector2 with random values between min and max
+     * @param min the minimum random value
+     * @param max the maximum random value
+     * @returns a Vector2 with random values between min and max
+     */
+    public static Random(min: number = 0, max: number = 1): Vector2 {
+        return new Vector2(Scalar.RandomRange(min, max), Scalar.RandomRange(min, max));
+    }
+
+    /**
      * Gets a zero Vector2 that must not be updated
      */
     public static get ZeroReadOnly(): DeepImmutable<Vector2> {
@@ -2101,6 +2111,16 @@ export class Vector3 {
     }
 
     /**
+     * Returns a new Vector3 with random values between min and max
+     * @param min the minimum random value
+     * @param max the maximum random value
+     * @returns a Vector3 with random values between min and max
+     */
+    public static Random(min: number = 0, max: number = 1): Vector3 {
+        return new Vector3(Scalar.RandomRange(min, max), Scalar.RandomRange(min, max), Scalar.RandomRange(min, max));
+    }
+
+    /**
      * Returns a new Vector3 set with the result of the transformation by the given matrix of the given vector.
      * This method computes transformed coordinates only, not transformed direction vectors (ie. it takes translation in account)
      * Example Playground https://playground.babylonjs.com/#R1F8YU#111
@@ -3566,6 +3586,17 @@ export class Vector4 {
     public static One(): Vector4 {
         return new Vector4(1.0, 1.0, 1.0, 1.0);
     }
+
+    /**
+     * Returns a new Vector4 with random values between min and max
+     * @param min the minimum random value
+     * @param max the maximum random value
+     * @returns a Vector4 with random values between min and max
+     */
+    public static Random(min: number = 0, max: number = 1): Vector4 {
+        return new Vector4(Scalar.RandomRange(min, max), Scalar.RandomRange(min, max), Scalar.RandomRange(min, max), Scalar.RandomRange(min, max));
+    }
+
     /**
      * Gets a zero Vector4 that must not be updated
      */

@@ -1,5 +1,5 @@
 {
-    "fromTag": "5.45.2",
+    "fromTag": "5.46.0",
     "changelog": {
         "5.46.0": [
             {
@@ -37,6 +37,343 @@
                 ],
                 "tags": [
                     "new feature"
+                ]
+            }
+        ],
+        "5.47.0": [
+            {
+                "pr": "13532",
+                "title": "Add VectorN.Random functions",
+                "description": "Adds functions for Vector2, Vector3, and Vector4 to get a vector with random values",
+                "author": {
+                    "name": "dr-vortex",
+                    "url": "https://github.com/dr-vortex"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13538",
+                "title": "Added ability to pass callback as key trigger parameter.",
+                "description": "This PR makes it possible to add key up/down triggers with more control than using just lowercase letters, by allowing the use of a callback function as 'parameter' value.",
+                "author": {
+                    "name": "reimund",
+                    "url": "https://github.com/reimund"
+                },
+                "files": [
+                    "packages/dev/core/src/Actions/actionManager.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13540",
+                "title": "PBR: Fix realtime filtering for refraction",
+                "description": "See https://forum.babylonjs.com/t/es6-import-of-babylonjs-core-ignoring-side-effects-required-for-khr-materials-transmission/38198\r\n\r\nRealtime filtering can only work if the refraction texture is a cube (the `radiance` function is expecting a `CubeSampler`). So, we should disable realtime filtering when the refraction texture is a 2D texture.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockSubSurface.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "13539",
+                "title": "Physics Iteration 8",
+                "description": "This 1 is about constraints and documentation",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts",
+                    "packages/dev/core/src/Physics/v2/physicsConstraint.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13537",
+                "title": "Add Clip plane support in Geometry Buffer",
+                "description": "https://forum.babylonjs.com/t/screenspacecurvature-post-process-doesnt-seem-to-respect-clip-planes/38231",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/geometryBufferRenderer.ts",
+                    "packages/dev/core/src/Shaders/geometry.fragment.fx",
+                    "packages/dev/core/src/Shaders/geometry.vertex.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13535",
+                "title": "DefaultRenderingPipeline: Fix image processing not being reset in some cases",
+                "description": "See https://forum.babylonjs.com/t/how-to-correctly-dispose-a-defaultrenderingpipeline/38196",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "post-process"
+                ]
+            },
+            {
+                "pr": "13533",
+                "title": "Fix ANIMATESHEET for custom particle effect",
+                "description": "https://forum.babylonjs.com/t/cpu-particlesystem-with-custom-fragmentshader/38090/4",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/particleSystemComponent.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "particles"
+                ]
+            },
+            {
+                "pr": "13531",
+                "title": "Fluid renderer: Fix rendering in right handed system",
+                "description": "See https://forum.babylonjs.com/t/fluid-cannot-be-rendered-when-using-right-hand-system/38095",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingObject.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingTargetRenderer.ts",
+                    "packages/dev/core/src/Shaders/fluidRenderingParticleDepth.fragment.fx",
+                    "packages/dev/core/src/Shaders/fluidRenderingRender.fragment.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13529",
+                "title": "Fix option properties in InputNodePropertyComponent",
+                "description": "Fix #13522",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/src/graphSystem/properties/inputNodePropertyComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "13530",
+                "title": "Physics Iteration 7",
+                "description": "Some fixes to disposal on PhysicsViewer and PhysicsBody",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Debug/physicsViewer.ts",
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts"
+                ],
+                "tags": [
+                    "physics"
+                ]
+            },
+            {
+                "pr": "13528",
+                "title": "PBRMaterial: Fix INVERTCUBICMAP not being reset",
+                "description": "See https://forum.babylonjs.com/t/changing-reflectiontexture-to-probe-then-revert-causes-inverted-reflectiontexture/38160",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "13525",
+                "title": "Bump cacheable-request from 10.2.3 to 10.2.7",
+                "description": "Bumps [cacheable-request](https://github.com/jaredwray/cacheable-request) from 10.2.3 to 10.2.7.\n<details>\n<summary>Release notes</summary>\n<p><em>Sourced from <a href=\"https://github.com/jaredwray/cacheable-request/releases\">cacheable-request's releases</a>.</em></p>\n<blockquote>\n<h2>v10.2.6</h2>\n<h1>Fix for memory leak on Listeners</h1>\n<p>The listener was not being removed on <code>response</code> and just error but new handlers were being added causing a memory leak.</p>\n<p><a href=\"https://github.com/jaredwray/cacheable-request/blob/c4815689be40854a3d748a3927959354c09b0ebb/src/index.ts#L220-L225\">line 220 in src/index.ts was modified to remove the listener on response also </a></p>\n<pre><code>\t\t\tif (this.cache instanceof Keyv) {\n\t\t\t\tconst cachek = this.cache;\n\t\t\t\tcachek.once('error', errorHandler);\n\t\t\t\tee.on('error', () =&gt; cachek.removeListener('error', errorHandler));\n\t\t\t\tee.on('response', () =&gt; cachek.removeListener('error', errorHandler));\n\t\t\t}\n</code></pre>\n<h2>What's Changed</h2>\n<ul>\n<li>upgrading jest and components to latest by <a href=\"https://github.com/jaredwray\"><code>@​jaredwray</code></a> in <a href=\"https://github-redirect.dependabot.com/jaredwray/cacheable-request/pull/220\">jaredwray/cacheable-request#220</a></li>\n<li>upgrading <code>@​types/jest</code> to 29.2.6 by <a href=\"https://github.com/jaredwray\"><code>@​jaredwray</code></a> in <a href=\"https://github-redirect.dependabot.com/jaredwray/cacheable-request/pull/221\">jaredwray/cacheable-request#221</a></li>\n<li>fixing listener memory leak - issue <a href=\"https://github-redirect.dependabot.com/jaredwray/cacheable-request/issues/222\">#222</a> by <a href=\"https://github.com/jaredwray\"><code>@​jaredwray</code></a> in <a href=\"https://github-redirect.dependabot.com/jaredwray/cacheable-request/pull/223\">jaredwray/cacheable-request#223</a></li>\n</ul>\n<p><strong>Full Changelog</strong>: <a href=\"https://github.com/jaredwray/cacheable-request/compare/v10.2.5...v10.2.6\">https://github.com/jaredwray/cacheable-request/compare/v10.2.5...v10.2.6</a></p>\n<h2>v10.2.5</h2>\n<p>Types definition issue with http-cache-sematics as that type definition needs to be in dependencies. Thanks <a href=\"https://github.com/Maxim-Mazurok\"><code>@​Maxim-Mazurok</code></a></p>\n<h2>What's Changed</h2>\n<ul>\n<li>Move <code>@​types/http-cache-semantics</code> from dev to deps by <a href=\"https://github.com/Maxim-Mazurok\"><code>@​Maxim-Mazurok</code></a> in <a href=\"https://github-redirect.dependabot.com/jaredwray/cacheable-request/pull/219\">jaredwray/cacheable-request#219</a></li>\n</ul>\n<p><strong>Full Changelog</strong>: <a href=\"https://github.com/jaredwray/cacheable-request/compare/v10.2.4...v10.2.5\">https://github.com/jaredwray/cacheable-request/compare/v10.2.4...v10.2.5</a></p>\n<h1>v10.2.4</h1>\n<p>Minor updates with one exception is that we removed <code>@types/http-cache-semantics</code> from the main dependencies as it does not look to be needed.</p>\n<h2>What's Changed</h2>\n<ul>\n<li>upgrading typescript to 4.9.4 by <a href=\"https://github.com/jaredwray\"><code>@​jaredwray</code></a> in <a href=\"https://github-redirect.dependabot.com/jaredwray/cacheable-request/pull/214\">jaredwray/cacheable-request#214</a></li>\n<li>upgrading jest types and eslint for jest to latest by <a href=\"https://github.com/jaredwray\"><code>@​jaredwray</code></a> in <a href=\"https://github-redirect.dependabot.com/jaredwray/cacheable-request/pull/215\">jaredwray/cacheable-request#215</a></li>\n<li>upgrading sqlite3 to 5.1.4 by <a href=\"https://github.com/jaredwray\"><code>@​jaredwray</code></a> in <a href=\"https://github-redirect.dependabot.com/jaredwray/cacheable-request/pull/216\">jaredwray/cacheable-request#216</a></li>\n<li>removing <code>@​types/http-cache-semantics</code> from the dependencies and moving… by <a href=\"https://github.com/jaredwray\"><code>@​jaredwray</code></a> in <a href=\"https://github-redirect.dependabot.com/jaredwray/cacheable-request/pull/217\">jaredwray/cacheable-request#217</a></li>\n</ul>\n<p><strong>Full Changelog</strong>: <a href=\"https://github.com/jaredwray/cacheable-request/compare/v10.2.3...v10.2.4\">https://github.com/jaredwray/cacheable-request/compare/v10.2.3...v10.2.4</a></p>\n</blockquote>\n</details>\n<details>\n<summary>Commits</summary>\n<ul>\n<li>See full diff in <a href=\"https://github.com/jaredwray/cacheable-request/commits\">compare view</a></li>\n</ul>\n</details>\n<br />\n\n\n[![Dependabot compatibility score](https://dependabot-badges.githubapp.com/badges/compatibility_score?dependency-name=cacheable-request&package-manager=npm_and_yarn&previous-version=10.2.3&new-version=10.2.7)](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-compatibility-scores)\n\nDependabot will resolve any conflicts with this PR as long as you don't alter it yourself. You can also trigger a rebase manually by commenting `@dependabot rebase`.\n\n[//]: # (dependabot-automerge-start)\n[//]: # (dependabot-automerge-end)\n\n---\n\n<details>\n<summary>Dependabot commands and options</summary>\n<br />\n\nYou can trigger Dependabot actions by commenting on this PR:\n- `@dependabot rebase` will rebase this PR\n- `@dependabot recreate` will recreate this PR, overwriting any edits that have been made to it\n- `@dependabot merge` will merge this PR after your CI passes on it\n- `@dependabot squash and merge` will squash and merge this PR after your CI passes on it\n- `@dependabot cancel merge` will cancel a previously requested merge and block automerging\n- `@dependabot reopen` will reopen this PR if it is closed\n- `@dependabot close` will close this PR and stop Dependabot recreating it. You can achieve the same result by closing it manually\n- `@dependabot ignore this major version` will close this PR and stop Dependabot creating any more for this major version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this minor version` will close this PR and stop Dependabot creating any more for this minor version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this dependency` will close this PR and stop Dependabot creating any more for this dependency (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot use these labels` will set the current labels as the default for future PRs for this repo and language\n- `@dependabot use these reviewers` will set the current reviewers as the default for future PRs for this repo and language\n- `@dependabot use these assignees` will set the current assignees as the default for future PRs for this repo and language\n- `@dependabot use this milestone` will set the current milestone as the default for future PRs for this repo and language\n\nYou can disable automated security fix PRs for this repo from the [Security Alerts page](https://github.com/BabylonJS/Babylon.js/network/alerts).\n\n</details>",
+                "author": {
+                    "name": "dependabot[bot]",
+                    "url": "https://github.com/apps/dependabot"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": [
+                    "dependencies"
+                ]
+            },
+            {
+                "pr": "13526",
+                "title": "Add more unit tests for the Sound class",
+                "description": null,
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/test/unit/Audio/sound.test.ts"
+                ],
+                "tags": [
+                    "audio",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13524",
+                "title": "Fix to instantiate hierarchy",
+                "description": "This is a fix for the case where the child mesh is NOT an instance of the parent mesh: https://forum.babylonjs.com/t/instantiatehierarchy-throws-errors-for-empty-meshes/38069/7",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Instantiate Hierarchy.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "13523",
+                "title": "Missing raycast export",
+                "description": null,
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/index.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13516",
+                "title": "DeviceInputSystem: Use correct pointerId for touch inputs on blur and pointercancel event",
+                "description": "A forum user recently found an issue where the pointerId was incorrect for `blur` and `pointercancel` events fired from a touch input.  This PR adds a small change to the DeviceEventFactory to use the pointerId, if available.\r\n\r\nForum Link: https://forum.babylonjs.com/t/distinguish-between-onbuttonup-events-in-basecamerapointersinput/37985/1",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/DeviceInput/eventFactory.ts",
+                    "packages/dev/core/src/DeviceInput/webDeviceInputSystem.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inputs"
+                ]
+            },
+            {
+                "pr": "13521",
+                "title": "Change InputManager._pickMove arg type to reduce number of casts needed",
+                "description": null,
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/Inputs/scene.inputManager.ts"
+                ],
+                "tags": [
+                    "inputs",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13520",
+                "title": "Delay resize event listener to after video internal texture is created.",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/issue-with-video-texture-loading-onloadobservable-not-called/38052\r\n\r\nThe issue happens for videos with autoplay. Example PG: https://playground.babylonjs.com/#ZMCFYA#83",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/videoTexture.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "13518",
+                "title": "Set event.sourceEvent in ExecuteCodeAction callback for pointer triggers",
+                "description": "When an ExecuteCodeAction is created with a pointer trigger, the callback's ActionEvent.sourceEvent member is set to undefined.\r\n\r\nThis change sets the callback's ActionEvent.sourceEvent member to the original event causing the action to be triggered.\r\n\r\nRequested on forum: https://forum.babylonjs.com/t/action-enhancements/38043.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/Events/pointerEvents.ts",
+                    "packages/dev/core/src/Inputs/scene.inputManager.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "inputs"
+                ]
+            },
+            {
+                "pr": "13519",
+                "title": "CustomMaterial: Don't prevent support for uniform arrays",
+                "description": "See https://forum.babylonjs.com/t/how-to-sampler-texturearray-with-a-index-from-attribute/38049",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/materials/src/custom/customMaterial.ts",
+                    "packages/dev/materials/src/custom/pbrCustomMaterial.ts"
+                ],
+                "tags": [
+                    "materials",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13517",
+                "title": "Bump @sideway/formula from 3.0.0 to 3.0.1",
+                "description": "Bumps [@sideway/formula](https://github.com/sideway/formula) from 3.0.0 to 3.0.1.\n<details>\n<summary>Commits</summary>\n<ul>\n<li><a href=\"https://github.com/hapijs/formula/commit/5b44c1bffc38135616fb91d5ad46eaf64f03d23b\"><code>5b44c1b</code></a> 3.0.1</li>\n<li><a href=\"https://github.com/hapijs/formula/commit/9fbc20a02d75ae809c37a610a57802cd1b41b3fe\"><code>9fbc20a</code></a> chore: better number regex</li>\n<li><a href=\"https://github.com/hapijs/formula/commit/41ae98e0421913b100886adb0107a25d552d9e1a\"><code>41ae98e</code></a> Cleanup</li>\n<li><a href=\"https://github.com/hapijs/formula/commit/c59f35ec401e18cead10e0cedfb44291517610b1\"><code>c59f35e</code></a> Move to Sideway</li>\n<li>See full diff in <a href=\"https://github.com/sideway/formula/compare/v3.0.0...v3.0.1\">compare view</a></li>\n</ul>\n</details>\n<details>\n<summary>Maintainer changes</summary>\n<p>This version was pushed to npm by <a href=\"https://www.npmjs.com/~marsup\">marsup</a>, a new releaser for <code>@​sideway/formula</code> since your current version.</p>\n</details>\n<br />\n\n\n[![Dependabot compatibility score](https://dependabot-badges.githubapp.com/badges/compatibility_score?dependency-name=@sideway/formula&package-manager=npm_and_yarn&previous-version=3.0.0&new-version=3.0.1)](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-compatibility-scores)\n\nDependabot will resolve any conflicts with this PR as long as you don't alter it yourself. You can also trigger a rebase manually by commenting `@dependabot rebase`.\n\n[//]: # (dependabot-automerge-start)\n[//]: # (dependabot-automerge-end)\n\n---\n\n<details>\n<summary>Dependabot commands and options</summary>\n<br />\n\nYou can trigger Dependabot actions by commenting on this PR:\n- `@dependabot rebase` will rebase this PR\n- `@dependabot recreate` will recreate this PR, overwriting any edits that have been made to it\n- `@dependabot merge` will merge this PR after your CI passes on it\n- `@dependabot squash and merge` will squash and merge this PR after your CI passes on it\n- `@dependabot cancel merge` will cancel a previously requested merge and block automerging\n- `@dependabot reopen` will reopen this PR if it is closed\n- `@dependabot close` will close this PR and stop Dependabot recreating it. You can achieve the same result by closing it manually\n- `@dependabot ignore this major version` will close this PR and stop Dependabot creating any more for this major version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this minor version` will close this PR and stop Dependabot creating any more for this minor version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this dependency` will close this PR and stop Dependabot creating any more for this dependency (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot use these labels` will set the current labels as the default for future PRs for this repo and language\n- `@dependabot use these reviewers` will set the current reviewers as the default for future PRs for this repo and language\n- `@dependabot use these assignees` will set the current assignees as the default for future PRs for this repo and language\n- `@dependabot use this milestone` will set the current milestone as the default for future PRs for this repo and language\n\nYou can disable automated security fix PRs for this repo from the [Security Alerts page](https://github.com/BabylonJS/Babylon.js/network/alerts).\n\n</details>",
+                "author": {
+                    "name": "dependabot[bot]",
+                    "url": "https://github.com/apps/dependabot"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": [
+                    "dependencies"
                 ]
             }
         ],
