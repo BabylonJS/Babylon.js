@@ -669,7 +669,7 @@ export class Engine extends ThinEngine {
 
         canvas.addEventListener("pointerout", this._onCanvasPointerOut);
 
-        if (this._creationOptions.doNotHandleTouchAction) {
+        if (!this._creationOptions.doNotHandleTouchAction) {
             this._disableTouchAction();
         }
 
