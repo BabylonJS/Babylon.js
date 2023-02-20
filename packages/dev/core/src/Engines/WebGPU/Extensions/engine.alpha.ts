@@ -4,6 +4,14 @@ import { WebGPUEngine } from "../../webgpuEngine";
 
 WebGPUEngine.prototype.setAlphaMode = function (mode: number, noDepthWriteChange: boolean = false): void {
     if (this._alphaMode === mode && ((mode === Constants.ALPHA_DISABLE && !this._alphaState.alphaBlend) || (mode !== Constants.ALPHA_DISABLE && this._alphaState.alphaBlend))) {
+        if (!noDepthWriteChange) {
+            // Make sure we still have the correct depth mask according to the alpha mode (a transparent material could have forced writting to the depth buffer, for instance)
+            const depthMask = mode === Constants.ALPHA_DISABLE;
+            if (this.depthCullingState.depthMask !== depthMask) {
+                this.setDepthWrite(depthMask);
+                this._cacheRenderPipeline.setDepthWriteEnabled(depthMask);
+            }
+        }
         return;
     }
 
