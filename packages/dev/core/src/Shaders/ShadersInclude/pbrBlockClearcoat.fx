@@ -281,11 +281,6 @@ struct clearcoatOutParams
             #if defined(ENVIRONMENTBRDF) && !defined(REFLECTIONMAP_SKYBOX)
                 vec3 clearCoatEnvironmentReflectance = getReflectanceFromBRDFLookup(vec3(vClearCoatRefractionParams.x), environmentClearCoatBrdf);
 
-                #ifdef RADIANCEOCCLUSION
-                    float clearCoatSeo = environmentRadianceOcclusion(ambientMonochrome, clearCoatNdotVUnclamped);
-                    clearCoatEnvironmentReflectance *= clearCoatSeo;
-                #endif
-
                 #ifdef HORIZONOCCLUSION
                     #ifdef BUMP
                         #ifdef REFLECTIONMAP_3D
