@@ -48,7 +48,7 @@ bool traceScreenSpaceRay1(
     mat4        projectToPixelMatrix,
     sampler2D   csZBuffer,
     vec2        csZBufferSize,
-#ifdef USE_BACK_DEPTHBUFFER
+#ifdef SSRAYTRACE_USE_BACK_DEPTHBUFFER
     sampler2D   csZBackBuffer,
     float       csZBackSizeFactor,
 #endif
@@ -62,7 +62,9 @@ bool traceScreenSpaceRay1(
     out vec2    startPixel,
     out vec2    hitPixel, 
     out vec3    csHitPoint
-    //,out vec3   debugColor
+#ifdef SSRAYTRACE_DEBUG
+    ,out vec3   debugColor
+#endif
 )
 {
     // Clip ray to a near plane in 3D (doesn't have to be *the* near plane, although that would be a good idea)
@@ -99,7 +101,7 @@ bool traceScreenSpaceRay1(
     vec2 P0 = H0.xy * k0;
     vec2 P1 = H1.xy * k1;
 
-#ifdef CLIP_TO_FRUSTUM
+#ifdef SSRAYTRACE_CLIP_TO_FRUSTUM
     float xMax = csZBufferSize.x - 0.5, xMin = 0.5, yMax = csZBufferSize.y - 0.5, yMin = 0.5;
     float alpha = 0.0;
 
@@ -203,15 +205,15 @@ bool traceScreenSpaceRay1(
         // Camera-space z of the scene
         sceneZMax = texelFetch(csZBuffer, ivec2(hitPixel), 0).r;
 
-    #ifdef RIGHT_HANDED_SCENE
-        #ifdef USE_BACK_DEPTHBUFFER
+    #ifdef SSRAYTRACE_RIGHT_HANDED_SCENE
+        #ifdef SSRAYTRACE_USE_BACK_DEPTHBUFFER
             float sceneBackZ = texelFetch(csZBackBuffer, ivec2(hitPixel / csZBackSizeFactor), 0).r;
             hit = (rayZMax >= sceneBackZ - csZThickness) && (rayZMin <= sceneZMax);
         #else
             hit = (rayZMax >= sceneZMax - csZThickness) && (rayZMin <= sceneZMax);
         #endif
     #else
-        #ifdef USE_BACK_DEPTHBUFFER
+        #ifdef SSRAYTRACE_USE_BACK_DEPTHBUFFER
             float sceneBackZ = texelFetch(csZBackBuffer, ivec2(hitPixel / csZBackSizeFactor), 0).r;
             hit = (rayZMin <= sceneBackZ + csZThickness) && (rayZMax >= sceneZMax) && (sceneZMax != 0.0);
         #else
@@ -225,7 +227,7 @@ bool traceScreenSpaceRay1(
     pqk -= dPQK;
     stepCount -= 1.0;
 
-#ifdef ENABLE_REFINEMENT
+#ifdef SSRAYTRACE_ENABLE_REFINEMENT
     if (stride > 1.0 && hit) {
         // Refine the hit point within the last large-stride step
         
@@ -278,7 +280,6 @@ bool traceScreenSpaceRay1(
         // Count the refinement steps as fractions of the original stride. Save a register
         // by not retaining invStride until here
         stepCount += refinementStepCount / stride;
-      //  debugColor = vec3(refinementStepCount / stride);
     }
 #endif
 
@@ -287,7 +288,8 @@ bool traceScreenSpaceRay1(
 
     csHitPoint = Q0 / pqk.w;
 
-    /*if (((pqk.x + dPQK.x) * stepDirection) > end) {
+#ifdef SSRAYTRACE_DEBUG
+    if (((pqk.x + dPQK.x) * stepDirection) > end) {
         // Hit the max ray distance -> blue
         debugColor = vec3(0,0,1);
     } else if ((stepCount + 1.0) >= maxSteps) {
@@ -298,9 +300,9 @@ bool traceScreenSpaceRay1(
         debugColor = vec3(1,1,0);
     } else {
         // Encountered a valid hit -> green
-        debugColor = vec3(0,1,0);
-    }*/
+        debugColor = vec3(0, stepCount / maxSteps, 0);
+    }
+#endif
 
     return hit;
 }
-

@@ -12,11 +12,11 @@ varying vec2 vUV;
 uniform sampler2D reflectivitySampler;
 uniform sampler2D normalSampler;
 uniform sampler2D depthSampler;
-#ifdef USE_BACK_DEPTHBUFFER
+#ifdef SSRAYTRACE_USE_BACK_DEPTHBUFFER
     uniform sampler2D backDepthSampler;
     uniform float backSizeFactor;
 #endif
-#ifdef USE_ENVIRONMENT_CUBE
+#ifdef SSR_USE_ENVIRONMENT_CUBE
     uniform samplerCube envCubeSampler;
     #ifdef USE_LOCAL_REFLECTIONMAP_CUBIC
         uniform vec3 vReflectionPosition;
@@ -59,7 +59,7 @@ vec3 computeViewPosFromUVDepth(vec2 texCoord, float depth) {
     vec4 ndc;
     
     ndc.xy = texCoord * 2.0 - 1.0;
-#ifdef RIGHT_HANDED_SCENE
+#ifdef SSRAYTRACE_RIGHT_HANDED_SCENE
     ndc.z = -projection[2].z - projection[3].z / depth;
 #else
     ndc.z = projection[2].z + projection[3].z / depth;
@@ -75,19 +75,19 @@ vec3 computeViewPosFromUVDepth(vec2 texCoord, float depth) {
 float computeAttenuationForIntersection(ivec2 hitPixel, vec2 hitUV, vec3 vsRayOrigin, vec3 vsHitPoint, vec3 reflectionVector, float maxRayDistance) {
     float attenuation = 1.0;
     
-#ifdef ATTENUATE_SCREEN_BORDERS
+#ifdef SSR_ATTENUATE_SCREEN_BORDERS
     // Attenuation against the border of the screen
     vec2 dCoords = smoothstep(0.2, 0.6, abs(vec2(0.5, 0.5) - hitUV.xy));
     
     attenuation *= clamp(1.0 - (dCoords.x + dCoords.y), 0.0, 1.0);
 #endif
 
-#ifdef ATTENUATE_INTERSECTION_DISTANCE
+#ifdef SSR_ATTENUATE_INTERSECTION_DISTANCE
     // Attenuation based on the distance between the origin of the reflection ray and the intersection point
     attenuation *= 1.0 - clamp(distance(vsRayOrigin, vsHitPoint) / maxRayDistance, 0.0, 1.0);
 #endif
 
-#ifdef ATTENUATE_BACKFACE_REFLECTION
+#ifdef SSR_ATTENUATE_BACKFACE_REFLECTION
     // This will check the direction of the normal of the reflection sample with the
     // direction of the reflection vector, and if they are pointing in the same direction,
     // it will drown out those reflections since backward facing pixels are not available 
@@ -114,7 +114,7 @@ void main()
         #ifdef USE_BLUR
             gl_FragColor = vec4(0.);
         #else
-            gl_FragColor = vec4(toGammaSpace(color.rgb), 1.0);
+            gl_FragColor = vec4(colorFull.rgb, 1.0);
         #endif
         return;
     }
@@ -130,16 +130,16 @@ void main()
     vec3 csReflectedVector = reflect(csViewDirection, csNormal);
 
     // Get the environment color if an enviroment cube is defined
-#ifdef USE_ENVIRONMENT_CUBE
+#ifdef SSR_USE_ENVIRONMENT_CUBE
     vec3 wReflectedVector = vec3(invView * vec4(csReflectedVector, 0.0));
-    #ifdef USE_LOCAL_REFLECTIONMAP_CUBIC
+    #ifdef SSR_USE_LOCAL_REFLECTIONMAP_CUBIC
         vec4 worldPos = invView * vec4(csPosition, 1.0);
 	    wReflectedVector = parallaxCorrectNormal(worldPos.xyz, normalize(wReflectedVector), vReflectionSize, vReflectionPosition);
     #endif
-    #ifdef INVERTCUBICMAP
+    #ifdef SSR_INVERTCUBICMAP
         wReflectedVector.y *= -1.0;
     #endif
-    #ifdef RIGHT_HANDED_SCENE
+    #ifdef SSRAYTRACE_RIGHT_HANDED_SCENE
         wReflectedVector.z *= -1.0;
     #endif
 
@@ -154,9 +154,11 @@ void main()
     vec2 startPixel;
     vec2 hitPixel;
     vec3 hitPoint;
-    //vec3 debugColor;
+#ifdef SSRAYTRACE_DEBUG
+    vec3 debugColor;
+#endif
 
-#ifdef ATTENUATE_FACING_CAMERA
+#ifdef SSR_ATTENUATE_FACING_CAMERA
     // This will check the direction of the reflection vector with the view direction,
     // and if they are pointing in the same direction, it will drown out those reflections 
     // since we are limited to pixels visible on screen. Attenuate reflections for angles between 
@@ -164,7 +166,7 @@ void main()
     reflectionAttenuation *= 1.0 - smoothstep(0.25, 0.5, dot(-csViewDirection, csReflectedVector));
 #endif
     if (reflectionAttenuation > 0.0) {
-        #ifdef USE_BLUR
+        #ifdef SSR_USE_BLUR
             vec3 jitt = vec3(0.);
         #else
             float roughness = 1.0 - reflectivity.a;
@@ -181,7 +183,7 @@ void main()
             projectionPixel,
             depthSampler,
             texSize,
-        #ifdef USE_BACK_DEPTHBUFFER
+        #ifdef SSRAYTRACE_USE_BACK_DEPTHBUFFER
             backDepthSampler,
             backSizeFactor,
         #endif
@@ -195,9 +197,16 @@ void main()
             startPixel,
             hitPixel,
             hitPoint
-            //,debugColor
+#ifdef SSRAYTRACE_DEBUG
+            ,debugColor
+#endif
             );
     }
+
+#ifdef SSRAYTRACE_DEBUG
+    gl_FragColor = vec4(debugColor, 1.);
+    return;
+#endif
 
     // Fresnel
     vec3 F0 = reflectivity.rgb;
@@ -213,7 +222,7 @@ void main()
 
     SSR *= fresnel;
 
-    #ifdef USE_BLUR
+    #ifdef SSR_USE_BLUR
         // from https://github.com/godotengine/godot/blob/master/servers/rendering/renderer_rd/shaders/effects/screen_space_reflection.glsl
         float blur_radius = 0.0;
         float roughness = 1.0 - reflectivity.a * (1.0 - roughnessFactor);
