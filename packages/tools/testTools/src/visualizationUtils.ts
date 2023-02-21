@@ -68,7 +68,7 @@ export const evaluateInitEngineForVisualization = async (engineName: string, use
                     "indirect-first-instance",
                 ],
             },
-            antialiasing: false,
+            antialias: false,
         };
 
         const engine = new BABYLON.WebGPUEngine(window.canvas, options);

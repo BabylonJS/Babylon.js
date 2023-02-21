@@ -69,7 +69,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                         "indirect-first-instance",
                     ],
                 },
-                antialiasing: antialias,
+                antialias,
                 useHighPrecisionMatrix: true,
             });
             await (this._engine as WebGPUEngine).initAsync();
