@@ -320,6 +320,13 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         this._buildPipeline();
     }
 
+    /**
+     * Gets the depth renderer used to render the back faces of the scene to a depth texture.
+     */
+    public get backfaceDepthRenderer(): Nullable<DepthRenderer> {
+        return this._depthRenderer;
+    }
+
     @serialize("backfaceDepthTextureSizeFactor")
     private _backfaceDepthTextureSizeFactor = 1;
 
