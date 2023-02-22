@@ -4112,6 +4112,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             if (camera._renderingMultiview && camera.outputRenderTarget) {
                 skipInitialClear = camera.outputRenderTarget.skipInitialClear;
                 if (this.autoClear) {
+                    this._defaultFrameBufferCleared = false;
                     camera.outputRenderTarget.skipInitialClear = false;
                 }
             }
