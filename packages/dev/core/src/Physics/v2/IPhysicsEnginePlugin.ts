@@ -30,11 +30,12 @@ export enum ConstraintAxis {
 
 /** @internal */
 export enum ConstraintType {
-    BALL_AND_SOCKET,
-    DISTANCE,
-    HINGE,
-    SLIDER,
-    LOCK,
+    BALL_AND_SOCKET = 1,
+    DISTANCE = 2,
+    HINGE = 3,
+    SLIDER = 4,
+    LOCK = 5,
+    PRISMATIC = 6,
 }
 
 /** @internal */
@@ -74,6 +75,8 @@ export interface PhysicsConstraintParameters {
     pivotB?: Vector3;
     axisA?: Vector3;
     axisB?: Vector3;
+    maxDistance?: number;
+    collision?: boolean;
 }
 
 /**
@@ -137,14 +140,15 @@ export interface IPhysicsEnginePluginV2 {
     getAngularDamping(body: PhysicsBody): number;
     setLinearVelocity(body: PhysicsBody, linVel: Vector3): void;
     getLinearVelocityToRef(body: PhysicsBody, linVel: Vector3): void;
-    applyImpulse(body: PhysicsBody, location: Vector3, impulse: Vector3): void;
-    applyForce(body: PhysicsBody, location: Vector3, force: Vector3): void;
+    applyImpulse(body: PhysicsBody, impulse: Vector3, location: Vector3): void;
+    applyForce(body: PhysicsBody, force: Vector3, location: Vector3): void;
     setAngularVelocity(body: PhysicsBody, angVel: Vector3): void;
     getAngularVelocityToRef(body: PhysicsBody, angVel: Vector3): void;
     getBodyGeometry(body: PhysicsBody): {};
     disposeBody(body: PhysicsBody): void;
     registerOnBodyCollide(body: PhysicsBody, func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>) => void): void;
     unregisterOnBodyCollide(body: PhysicsBody, func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>) => void): void;
+    addConstraint(body: PhysicsBody, childBody: PhysicsBody, constraint: PhysicsConstraint): void;
 
     // shape
     initShape(shape: PhysicsShape, type: ShapeType, options: PhysicsShapeParameters): void;
@@ -169,13 +173,7 @@ export interface IPhysicsEnginePluginV2 {
     disposeMaterial(material: PhysicsMaterial): void;
 
     // constraint
-    initConstraint(constraint: PhysicsConstraint, type: ConstraintType, options: PhysicsConstraintParameters): void;
-    setParentBody(constraint: PhysicsConstraint, body: PhysicsBody): void;
-    getParentBody(constraint: PhysicsConstraint): PhysicsBody;
-    setChildBody(constraint: PhysicsConstraint, body: PhysicsBody): void;
-    getChildBody(constraint: PhysicsConstraint): PhysicsBody;
-    setAnchorInParent(constraint: PhysicsConstraint, pivot: Vector3, axisX: Vector3, axisY: Vector3): void;
-    setAnchorInChild(constraint: PhysicsConstraint, pivot: Vector3, axisX: Vector3, axisY: Vector3): void;
+    initConstraint(constraint: PhysicsConstraint, body: PhysicsBody, childBody: PhysicsBody): void;
     setEnabled(constraint: PhysicsConstraint, isEnabled: boolean): void;
     getEnabled(constraint: PhysicsConstraint): boolean;
     setCollisionsEnabled(constraint: PhysicsConstraint, isEnabled: boolean): void;

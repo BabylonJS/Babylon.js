@@ -37,6 +37,10 @@ declare module "../abstractScene" {
 
 declare module "../Materials/Textures/renderTargetTexture" {
     export interface RenderTargetTexture {
+        /**
+         * Gets or sets a boolean indicating that the prepass renderer should not be used with this render target
+         */
+        noPrePassRenderer: boolean;
         /** @internal */
         _prePassRenderTarget: Nullable<PrePassRenderTarget>;
     }
@@ -119,20 +123,20 @@ export class PrePassRendererSceneComponent implements ISceneComponent {
     }
 
     private _beforeRenderTargetDraw(renderTarget: RenderTargetTexture, faceIndex?: number, layer?: number) {
-        if (this.scene.prePassRenderer) {
+        if (this.scene.prePassRenderer && !renderTarget.noPrePassRenderer) {
             this.scene.prePassRenderer._setRenderTarget(renderTarget._prePassRenderTarget);
             this.scene.prePassRenderer._beforeDraw(undefined, faceIndex, layer);
         }
     }
 
     private _afterRenderTargetDraw(renderTarget: RenderTargetTexture, faceIndex?: number, layer?: number) {
-        if (this.scene.prePassRenderer) {
+        if (this.scene.prePassRenderer && !renderTarget.noPrePassRenderer) {
             this.scene.prePassRenderer._afterDraw(faceIndex, layer);
         }
     }
 
     private _beforeRenderTargetClearStage(renderTarget: RenderTargetTexture) {
-        if (this.scene.prePassRenderer) {
+        if (this.scene.prePassRenderer && !renderTarget.noPrePassRenderer) {
             if (!renderTarget._prePassRenderTarget) {
                 renderTarget._prePassRenderTarget = this.scene.prePassRenderer._createRenderTarget(renderTarget.name + "_prePassRTT", renderTarget);
             }

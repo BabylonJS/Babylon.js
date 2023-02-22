@@ -5,7 +5,7 @@ import type { Scene } from "../../scene";
 import type { PhysicsEngine } from "./physicsEngine";
 import type { Mesh, TransformNode, AbstractMesh } from "../../Meshes";
 import type { Nullable } from "core/types";
-
+import type { PhysicsConstraint } from "./physicsConstraint";
 /**
  * PhysicsBody is useful for creating a physics body that can be used in a physics engine. It allows
  * the user to set the mass and velocity of the body, which can then be used to calculate the
@@ -285,27 +285,27 @@ export class PhysicsBody {
     /**
      * Applies an impulse to the physics object.
      *
-     * @param location The location of the impulse.
      * @param impulse The impulse vector.
+     * @param location The location of the impulse.
      *
      * This method is useful for applying an impulse to a physics object, which can be used to simulate physical forces such as gravity,
      * collisions, and explosions. This can be used to create realistic physics simulations in a game or other application.
      */
-    public applyImpulse(location: Vector3, impulse: Vector3): void {
-        this._physicsPlugin.applyImpulse(this, location, impulse);
+    public applyImpulse(impulse: Vector3, location: Vector3): void {
+        this._physicsPlugin.applyImpulse(this, impulse, location);
     }
 
     /**
      * Applies a force to the physics object.
      *
-     * @param location The location of the force.
      * @param force The force vector.
+     * @param location The location of the force.
      *
      * This method is useful for applying a force to a physics object, which can be used to simulate physical forces such as gravity,
      * collisions, and explosions. This can be used to create realistic physics simulations in a game or other application.
      */
-    public applyForce(location: Vector3, force: Vector3): void {
-        this._physicsPlugin.applyForce(this, location, force);
+    public applyForce(force: Vector3, location: Vector3): void {
+        this._physicsPlugin.applyForce(this, force, location);
     }
 
     /**
@@ -368,11 +368,22 @@ export class PhysicsBody {
     }
 
     /**
-     * return geometric center of the associated mesh
+     * @returns geometric center of the associated mesh
      */
     public getObjectCenter(): Vector3 {
         // TODO
         return new Vector3(0, 0, 0);
+    }
+
+    /**
+     * Adds a constraint to the physics engine.
+     *
+     * @param childBody - The body to which the constraint will be applied.
+     * @param constraint - The constraint to be applied.
+     *
+     */
+    public addConstraint(childBody: PhysicsBody, constraint: PhysicsConstraint): void {
+        this._physicsPlugin.addConstraint(this, childBody, constraint);
     }
 
     /**
