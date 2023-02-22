@@ -420,7 +420,6 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
 
     private _scene: Scene;
     private _isDirty = false;
-    private _isSceneRightHanded: boolean;
     private _camerasToBeAttached: Array<Camera> = [];
     private _textureType: number;
     private _ssrPostProcess: Nullable<PostProcess>;
@@ -550,7 +549,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         if (this._enableSmoothReflections) {
             defines.push("#define SSRAYTRACE_ENABLE_REFINEMENT");
         }
-        if (this._isSceneRightHanded) {
+        if (this._scene.useRightHandedSystem) {
             defines.push("#define SSRAYTRACE_RIGHT_HANDED_SCENE");
         }
         if (this._environmentTexture) {

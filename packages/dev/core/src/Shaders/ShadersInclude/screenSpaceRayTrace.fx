@@ -68,7 +68,7 @@ bool traceScreenSpaceRay1(
 )
 {
     // Clip ray to a near plane in 3D (doesn't have to be *the* near plane, although that would be a good idea)
-    #ifdef RIGHT_HANDED_SCENE
+    #ifdef SSRAYTRACE_RIGHT_HANDED_SCENE
         float rayLength = (csOrigin.z + csDirection.z * maxRayTraceDistance) > -nearPlaneZ ? (-nearPlaneZ - csOrigin.z) / csDirection.z : maxRayTraceDistance;
     #else
         float rayLength = (csOrigin.z + csDirection.z * maxRayTraceDistance) < nearPlaneZ ? (nearPlaneZ - csOrigin.z) / csDirection.z : maxRayTraceDistance;
