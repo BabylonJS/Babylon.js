@@ -265,7 +265,7 @@ class TransmissionHelper {
             this._scene.environmentIntensity = 1.0;
             sceneImageProcessingapplyByPostProcess = this._scene.imageProcessingConfiguration.applyByPostProcess;
             if (!this._options.clearColor) {
-                this._scene.clearColor.toLinearSpaceToRef(opaqueRenderTarget.clearColor);
+                this._scene.clearColor.toLinearSpaceToRef(opaqueRenderTarget.clearColor, this._scene.getEngine().useExactSrgbConversions);
             } else {
                 opaqueRenderTarget.clearColor.copyFrom(this._options.clearColor);
             }

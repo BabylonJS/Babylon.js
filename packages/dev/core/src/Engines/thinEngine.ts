@@ -728,13 +728,10 @@ export class ThinEngine {
         this._snapshotRenderingMode = mode;
     }
 
-    protected _useExactSrgbConversions = false;
     /**
      * Gets a boolean indicating if the exact sRGB conversions or faster approximations are used for converting to and from linear space.
      */
-    public get useExactSrgbConversions(): boolean {
-        return this._useExactSrgbConversions;
-    }
+    public readonly useExactSrgbConversions: boolean;
 
     /**
      * Creates a new snapshot at the next frame using the current snapshotRenderingMode
@@ -811,7 +808,7 @@ export class ThinEngine {
         this._audioContext = options.audioEngineOptions?.audioContext ?? null;
         this._audioDestination = options.audioEngineOptions?.audioDestination ?? null;
         this.premultipliedAlpha = options.premultipliedAlpha ?? true;
-        this._useExactSrgbConversions = options.useExactSrgbConversions ?? false;
+        this.useExactSrgbConversions = options.useExactSrgbConversions ?? false;
         this._doNotHandleContextLost = !!options.doNotHandleContextLost;
         this._isStencilEnable = options.stencil ? true : false;
 
