@@ -676,6 +676,12 @@ export class Camera extends Node {
         if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
             this._updateRigCameras();
         }
+
+        // Attempt to update the camera's view and projection matrices.
+        // This call is being made because these matrices are no longer being updated
+        // as a part of the picking ray process (in addition to scene.render).
+        this.getViewMatrix();
+        this.getProjectionMatrix();
     }
 
     /** @internal */
