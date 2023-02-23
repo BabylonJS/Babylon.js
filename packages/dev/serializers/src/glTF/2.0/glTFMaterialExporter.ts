@@ -254,7 +254,7 @@ export class _GLTFMaterialExporter {
             return cubicBezierCurve(t, P0.y, P1.y, P2.y, P3.y);
         }
 
-        const diffuse = babylonStandardMaterial.diffuseColor.toLinearSpace().scale(0.5);
+        const diffuse = babylonStandardMaterial.diffuseColor.toLinearSpace(babylonStandardMaterial.getScene().getEngine().useExactSrgbConversions).scale(0.5);
         const opacity = babylonStandardMaterial.alpha;
         const specularPower = Scalar.Clamp(babylonStandardMaterial.specularPower, 0, _GLTFMaterialExporter._MaxSpecularPower);
 
@@ -579,9 +579,11 @@ export class _GLTFMaterialExporter {
                 for (let w = 0; w < width; ++w) {
                     const offset = (width * h + w) * strideSize;
 
-                    const diffuseColor = new Color3(diffuseBuffer[offset], diffuseBuffer[offset + 1], diffuseBuffer[offset + 2]).toLinearSpace().multiply(factors.diffuseColor);
+                    const diffuseColor = new Color3(diffuseBuffer[offset], diffuseBuffer[offset + 1], diffuseBuffer[offset + 2])
+                        .toLinearSpace(scene.getEngine().useExactSrgbConversions)
+                        .multiply(factors.diffuseColor);
                     const specularColor = new Color3(specularGlossinessBuffer[offset], specularGlossinessBuffer[offset + 1], specularGlossinessBuffer[offset + 2])
-                        .toLinearSpace()
+                        .toLinearSpace(scene.getEngine().useExactSrgbConversions)
                         .multiply(factors.specularColor);
                     const glossiness = specularGlossinessBuffer[offset + 3] * factors.glossiness;
 
@@ -633,7 +635,7 @@ export class _GLTFMaterialExporter {
                         baseColorBuffer[destinationOffset + 1],
                         baseColorBuffer[destinationOffset + 2]
                     );
-                    const sRGBBaseColorPixel = linearBaseColorPixel.toGammaSpace();
+                    const sRGBBaseColorPixel = linearBaseColorPixel.toGammaSpace(scene.getEngine().useExactSrgbConversions);
                     baseColorBuffer[destinationOffset] = sRGBBaseColorPixel.r * 255;
                     baseColorBuffer[destinationOffset + 1] = sRGBBaseColorPixel.g * 255;
                     baseColorBuffer[destinationOffset + 2] = sRGBBaseColorPixel.b * 255;
