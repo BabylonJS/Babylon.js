@@ -47,7 +47,7 @@ export class PhysicsShape {
      * Constructs a new physics shape.
      * @param options The options for the physics shape. These are:
      *  * type: The type of the shape. This can be one of the following: SPHERE, BOX, CAPSULE, CYLINDER, CONVEX_HULL, MESH, HEIGHTFIELD, CONTAINER
-     *  * parameters: The parameters of the shape. 
+     *  * parameters: The parameters of the shape.
      *  * pluginData: The plugin data of the shape. This is used if you already have a reference to the object on the plugin side.
      * You need to specify either type or pluginData.
      * @param scene The scene the shape belongs to.
@@ -189,7 +189,7 @@ export class PhysicsShapeSphere extends PhysicsShape {
      * @param scene scene to attach to
      */
     constructor(center: Vector3, radius: number, scene: Scene) {
-        super({type: ShapeType.SPHERE, parameters: { center: center, radius: radius }}, scene);
+        super({ type: ShapeType.SPHERE, parameters: { center: center, radius: radius } }, scene);
     }
 }
 
@@ -205,7 +205,7 @@ export class PhysicsShapeCapsule extends PhysicsShape {
      * @param scene scene to attach to
      */
     constructor(pointA: Vector3, pointB: Vector3, radius: number, scene: Scene) {
-        super({type: ShapeType.CAPSULE, parameters: { pointA: pointA, pointB: pointB, radius: radius }}, scene);
+        super({ type: ShapeType.CAPSULE, parameters: { pointA: pointA, pointB: pointB, radius: radius } }, scene);
     }
 }
 
@@ -221,7 +221,7 @@ export class PhysicsShapeCylinder extends PhysicsShape {
      * @param scene scene to attach to
      */
     constructor(pointA: Vector3, pointB: Vector3, radius: number, scene: Scene) {
-        super({type: ShapeType.CYLINDER, parameters: { pointA: pointA, pointB: pointB, radius: radius }}, scene);
+        super({ type: ShapeType.CYLINDER, parameters: { pointA: pointA, pointB: pointB, radius: radius } }, scene);
     }
 }
 
@@ -237,7 +237,7 @@ export class PhysicsShapeBox extends PhysicsShape {
      * @param scene scene to attach to
      */
     constructor(center: Vector3, rotation: Quaternion, extents: Vector3, scene: Scene) {
-        super({type: ShapeType.BOX, parameters: { center: center, rotation: rotation, extents: extents }}, scene);
+        super({ type: ShapeType.BOX, parameters: { center: center, rotation: rotation, extents: extents } }, scene);
     }
 }
 
@@ -251,7 +251,7 @@ export class PhysicsShapeConvexHull extends PhysicsShape {
      * @param scene scene to attach to
      */
     constructor(mesh: Mesh, scene: Scene) {
-        super({type: ShapeType.CONVEX_HULL, parameters: { mesh: mesh }}, scene);
+        super({ type: ShapeType.CONVEX_HULL, parameters: { mesh: mesh } }, scene);
     }
 }
 
@@ -265,7 +265,7 @@ export class PhysicsShapeMesh extends PhysicsShape {
      * @param scene scene to attach to
      */
     constructor(mesh: Mesh, scene: Scene) {
-        super({type: ShapeType.MESH, parameters: { mesh: mesh }}, scene);
+        super({ type: ShapeType.MESH, parameters: { mesh: mesh } }, scene);
     }
 }
 
@@ -278,6 +278,6 @@ export class PhysicsShapeContainer extends PhysicsShape {
      * @param scene scene to attach to
      */
     constructor(scene: Scene) {
-        super({type: ShapeType.CONTAINER, parameters: {}}, scene);
+        super({ type: ShapeType.CONTAINER, parameters: {} }, scene);
     }
 }
