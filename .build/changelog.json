@@ -1,6 +1,101 @@
 {
-    "fromTag": "5.47.0",
+    "fromTag": "5.47.1",
     "changelog": {
+        "5.48.0": [
+            {
+                "pr": "13336",
+                "title": "SSR improvements",
+                "description": "Re-creation of PR #12728 which was closed because of the re-creation of the Babylon.js repo.\r\n\r\n~~Do not review it, it is not ready yet!~~\r\n\r\n[EDIT]\r\n\r\nOk, it is ready now!\r\n\r\nOne of the PG I used to test: http://localhost:1338/#PIZ1GK#973\r\n\r\nStill todo:\r\n* update the inspector\r\n* documentation\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/index.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssrRenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/screenSpaceReflectionPostProcess.ts",
+                    "packages/dev/core/src/Rendering/depthRenderer.ts",
+                    "packages/dev/core/src/Rendering/geometryBufferRenderer.ts",
+                    "packages/dev/core/src/Rendering/prePassRendererSceneComponent.ts",
+                    "packages/dev/core/src/Rendering/screenSpaceReflections2Configuration.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/screenSpaceRayTrace.fx",
+                    "packages/dev/core/src/Shaders/default.fragment.fx",
+                    "packages/dev/core/src/Shaders/depth.fragment.fx",
+                    "packages/dev/core/src/Shaders/depth.vertex.fx",
+                    "packages/dev/core/src/Shaders/geometry.fragment.fx",
+                    "packages/dev/core/src/Shaders/pbr.fragment.fx",
+                    "packages/dev/core/src/Shaders/screenSpaceReflection2.fragment.fx",
+                    "packages/dev/core/src/Shaders/screenSpaceReflection2Blur.fragment.fx",
+                    "packages/dev/core/src/Shaders/screenSpaceReflection2BlurCombiner.fragment.fx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Screen Space Reflections 2.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13552",
+                "title": "Camera: Add code to update View and Projection Matrices in update function",
+                "description": "A user on the forums had recently found an issue when performing input while using an on-demand rendering loop.  The issue was that the `onViewMatrixChangedObservable` wasn't firing as a part of pointer input.  This behavior was present in previous versions.  It was determined that the Lazy Picking changes may have caused this change because the aforementioned observable only fires during `getViewMatrix()` calls.  Before the Lazy Picking implementation, this function was called as a part of the creation and assignment of the picking ray for a PickingInfo object.  Since this ray is only created when picking happens, a pointer event that doesn't require picking info won't ever get to the point where `getViewMatrix` is called.  Technically, these get functions should be called as a part of the camera's update function so the fix is to do just that.\r\n\r\nTests have been added to verify that `onViewMatrixObservable` and `onProjectionMatrixObservable` are firing properly.\r\n\r\nForum Link: https://forum.babylonjs.com/t/on-demand-rendering-solution-broken-since-5-29/36379/1\r\nIssue Link: https://github.com/BabylonJS/Babylon.js/issues/13551",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/camera.ts",
+                    "packages/dev/core/test/unit/DeviceInput/babylon.inputManager.test.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inputs"
+                ]
+            },
+            {
+                "pr": "13553",
+                "title": "make sure setTarget works as expected in WebXR.",
+                "description": "This will calculate the new rotation in the Y axis and apply it to the already-existing rotation to avoid losing the up-direction when using setTarget.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/webXRCamera.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13554",
+                "title": "Scene clearColor is not used in WebXR with multiview enabled",
+                "description": "Fixes #13546",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13550",
+                "title": "Fix an issue building the sandbox",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/sandbox/src/components/renderingZone.tsx",
+                    "packages/tools/testTools/src/utils.ts",
+                    "packages/tools/testTools/src/visualizationUtils.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
         "5.47.1": [
             {
                 "pr": "13549",
