@@ -9,6 +9,24 @@ import type { Mesh } from "../../Meshes/mesh";
 import type { Scene } from "../../scene";
 
 /**
+ * Options for creating a physics shape
+ */
+export interface PhysicShapeOptions {
+    /**
+     * The type of the shape. This can be one of the following: SPHERE, BOX, CAPSULE, CYLINDER, CONVEX_HULL, MESH, HEIGHTFIELD, CONTAINER
+     */
+    type?: ShapeType;
+    /**
+     * The parameters of the shape. Varies depending of the shape type.
+     */
+    parameters?: PhysicsShapeParameters;
+    /**
+     * Reference to an already existing physics shape in the plugin.
+     */
+    pluginData?: any;
+}
+
+/**
  * PhysicsShape class.
  * This class is useful for creating a physics shape that can be used in a physics engine.
  * A Physic Shape determine how collision are computed. It must be attached to a body.
@@ -27,20 +45,21 @@ export class PhysicsShape {
 
     /**
      * Constructs a new physics shape.
-     * @param type The type of the shape.
-     * @param options The options of the shape.
+     * @param options The options for the physics shape. These are:
+     *  * type: The type of the shape. This can be one of the following: SPHERE, BOX, CAPSULE, CYLINDER, CONVEX_HULL, MESH, HEIGHTFIELD, CONTAINER
+     *  * parameters: The parameters of the shape. 
+     *  * pluginData: The plugin data of the shape. This is used if you already have a reference to the object on the plugin side.
+     * You need to specify either type or pluginData.
      * @param scene The scene the shape belongs to.
      *
      * This code is useful for creating a new physics shape with the given type, options, and scene.
      * It also checks that the physics engine and plugin version are correct.
      * If not, it throws an error. This ensures that the shape is created with the correct parameters and is compatible with the physics engine.
      */
-    constructor(type: number, options: PhysicsShapeParameters = {}, scene: Scene) {
-        this._type = type;
+    constructor(options: PhysicShapeOptions, scene: Scene) {
         if (!scene) {
             return;
         }
-
         const physicsEngine = scene.getPhysicsEngine();
         if (!physicsEngine) {
             throw new Error("No Physics Engine available.");
@@ -52,9 +71,16 @@ export class PhysicsShape {
         if (!physicsPlugin) {
             throw new Error("No Physics Plugin available.");
         }
-
         this._physicsPlugin = physicsPlugin as IPhysicsEnginePluginV2;
-        this._physicsPlugin.initShape(this, type, options);
+
+        if (options.pluginData !== undefined && options.pluginData !== null) {
+            this._pluginData = options.pluginData;
+            this._type = this._physicsPlugin.getShapeType(this);
+        } else if (options.type !== undefined && options.type !== null) {
+            this._type = options.type;
+            const parameters = options.parameters ?? {};
+            this._physicsPlugin.initShape(this, options.type, parameters);
+        }
     }
 
     /**
@@ -163,11 +189,11 @@ export class PhysicsShapeSphere extends PhysicsShape {
      * @param scene scene to attach to
      */
     constructor(center: Vector3, radius: number, scene: Scene) {
-        super(ShapeType.SPHERE, { center: center, radius: radius }, scene);
+        super({type: ShapeType.SPHERE, parameters: { center: center, radius: radius }}, scene);
     }
 }
 
-/***
+/**
  * Helper object to create a capsule shape
  */
 export class PhysicsShapeCapsule extends PhysicsShape {
@@ -179,7 +205,7 @@ export class PhysicsShapeCapsule extends PhysicsShape {
      * @param scene scene to attach to
      */
     constructor(pointA: Vector3, pointB: Vector3, radius: number, scene: Scene) {
-        super(ShapeType.CAPSULE, { pointA: pointA, pointB: pointB, radius: radius }, scene);
+        super({type: ShapeType.CAPSULE, parameters: { pointA: pointA, pointB: pointB, radius: radius }}, scene);
     }
 }
 
@@ -195,7 +221,7 @@ export class PhysicsShapeCylinder extends PhysicsShape {
      * @param scene scene to attach to
      */
     constructor(pointA: Vector3, pointB: Vector3, radius: number, scene: Scene) {
-        super(ShapeType.CYLINDER, { pointA: pointA, pointB: pointB, radius: radius }, scene);
+        super({type: ShapeType.CYLINDER, parameters: { pointA: pointA, pointB: pointB, radius: radius }}, scene);
     }
 }
 
@@ -211,7 +237,7 @@ export class PhysicsShapeBox extends PhysicsShape {
      * @param scene scene to attach to
      */
     constructor(center: Vector3, rotation: Quaternion, extents: Vector3, scene: Scene) {
-        super(ShapeType.BOX, { center: center, rotation: rotation, extents: extents }, scene);
+        super({type: ShapeType.BOX, parameters: { center: center, rotation: rotation, extents: extents }}, scene);
     }
 }
 
@@ -225,7 +251,7 @@ export class PhysicsShapeConvexHull extends PhysicsShape {
      * @param scene scene to attach to
      */
     constructor(mesh: Mesh, scene: Scene) {
-        super(ShapeType.CONVEX_HULL, { mesh: mesh }, scene);
+        super({type: ShapeType.CONVEX_HULL, parameters: { mesh: mesh }}, scene);
     }
 }
 
@@ -239,7 +265,7 @@ export class PhysicsShapeMesh extends PhysicsShape {
      * @param scene scene to attach to
      */
     constructor(mesh: Mesh, scene: Scene) {
-        super(ShapeType.MESH, { mesh: mesh }, scene);
+        super({type: ShapeType.MESH, parameters: { mesh: mesh }}, scene);
     }
 }
 
@@ -252,6 +278,6 @@ export class PhysicsShapeContainer extends PhysicsShape {
      * @param scene scene to attach to
      */
     constructor(scene: Scene) {
-        super(ShapeType.CONTAINER, {}, scene);
+        super({type: ShapeType.CONTAINER, parameters: {}}, scene);
     }
 }
