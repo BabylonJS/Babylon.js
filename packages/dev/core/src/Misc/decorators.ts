@@ -22,8 +22,8 @@ const _copySource = function <T>(creationFunction: () => T, source: T, instancia
     const destination = creationFunction();
 
     // Tags
-    if (Tags) {
-        Tags.AddTagsTo(destination, (<any>source).tags);
+    if (Tags && Tags.HasTags(source)) {
+        Tags.AddTagsTo(destination, Tags.GetTags(source, true));
     }
 
     const classStore = getMergedStore(destination);
