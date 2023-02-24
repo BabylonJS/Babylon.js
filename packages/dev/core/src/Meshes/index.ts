@@ -1,6 +1,7 @@
 /* eslint-disable import/export */
 /* eslint-disable import/no-internal-modules */
 export * from "./abstractMesh";
+export * from "./abstractMesh.decalMap";
 export * from "./Compression/index";
 export * from "./csg";
 export * from "./decalMapGenerator";
