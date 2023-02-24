@@ -189,6 +189,10 @@ export class Skeleton implements IAnimatable {
             this.prepare();
         }
 
+        if (this._isDirty) {
+            this.prepare();
+        }
+
         return this._transformMatrices;
     }
 
