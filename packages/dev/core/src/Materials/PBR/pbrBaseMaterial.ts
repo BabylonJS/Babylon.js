@@ -1595,10 +1595,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                         defines.REALTIME_FILTERING = false;
                     }
 
-                    if (reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE) {
-                        defines.INVERTCUBICMAP = true;
-                    }
-
+                    defines.INVERTCUBICMAP = reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE;
                     defines.REFLECTIONMAP_3D = reflectionTexture.isCube;
                     defines.REFLECTIONMAP_OPPOSITEZ = defines.REFLECTIONMAP_3D && this.getScene().useRightHandedSystem ? !reflectionTexture.invertZ : reflectionTexture.invertZ;
 

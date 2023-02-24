@@ -651,6 +651,10 @@ export class FluidRenderingTargetRenderer {
         const texture = this._depthRenderTarget!.enableBlur ? this._depthRenderTarget!.textureBlur! : this._depthRenderTarget!.texture!;
         const texelSize = new Vector2(1 / texture.getSize().width, 1 / texture.getSize().height);
 
+        if (this._scene.useRightHandedSystem) {
+            defines.push("#define FLUIDRENDERING_RHS");
+        }
+
         if (this._environmentMap !== null) {
             const envMap = this._environmentMap ?? this._scene.environmentTexture;
             if (envMap) {

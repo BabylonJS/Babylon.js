@@ -56,7 +56,8 @@ WebGPUEngine.prototype.createRenderTargetTexture = function (size: TextureSize, 
                     fullOptions.samplingMode === Constants.TEXTURE_NEAREST_LINEAR ||
                     fullOptions.samplingMode === Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST),
             rtWrapper._generateStencilBuffer,
-            rtWrapper.samples
+            rtWrapper.samples,
+            fullOptions.generateStencilBuffer ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT
         );
     }
 

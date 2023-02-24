@@ -111,6 +111,10 @@ export abstract class FluidRenderingObject {
             defines.push("#define FLUIDRENDERING_VELOCITY");
         }
 
+        if (this._scene.useRightHandedSystem) {
+            defines.push("#define FLUIDRENDERING_RHS");
+        }
+
         this._depthEffectWrapper = new EffectWrapper({
             engine: this._engine,
             useShaderStore: true,

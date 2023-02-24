@@ -14,7 +14,9 @@
         {
             "title": "Iridescence NME",
             "playgroundId": "#2FDQT5#1507",
-            "referenceImage": "iridescence_nme.png"
+            "referenceImage": "iridescence_nme.png",
+            "excludedEngines": ["webgl1"],
+            "excludeFromAutomaticTesting": true
         },
         {
             "title": "Iridescence GLTF",
@@ -1526,8 +1528,7 @@
         },
         {
             "title": "GUI Images in Grid",
-            "playgroundId": "#8Y0XJL#1",
-            "renderCount": 10
+            "playgroundId": "#8Y0XJL#1"
         },
         {
             "title": "GUI Force Resize Width",
@@ -1544,6 +1545,32 @@
         {
             "title": "GUI Gradient Linear with transparency",
             "playgroundId": "#PFK1Z5"
+        },
+        {
+            "title": "Load babylon files with same geometry uniqueId",
+            "playgroundId": "#3UCFHS"
+        },
+        {
+            "title": "Asset Container Instantiate to Scene",
+            "playgroundId": "#5NFRVE#142"
+        },
+        {
+            "title": "Asset Container Instantiate to Scene 2",
+            "playgroundId": "#5NFRVE#161"
+        },
+        {
+            "title": "Loading glTF model with KTX2 textures",
+            "playgroundId": "#YD2TXP#35",
+            "excludeFromAutomaticTesting": true
+        },
+        {
+            "title": "Instantiate Hierarchy", 
+            "playgroundId": "#BET11L"
+        },
+        {
+            "title": "Screen Space Reflections 2",
+            "playgroundId": "#PIZ1GK#977",
+            "excludedEngines": ["webgl1"]
         }
     ]
 }

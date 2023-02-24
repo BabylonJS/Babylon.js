@@ -248,7 +248,7 @@ ThinEngine.prototype.updateRenderTargetTextureSampleCount = function (rtWrapper:
     const hardwareTexture = rtWrapper.texture._hardwareTexture as WebGLHardwareTexture;
     hardwareTexture.releaseMSAARenderBuffers();
 
-    if (samples > 1 && gl.renderbufferStorageMultisample) {
+    if (samples > 1 && typeof gl.renderbufferStorageMultisample === "function") {
         const framebuffer = gl.createFramebuffer();
 
         if (!framebuffer) {

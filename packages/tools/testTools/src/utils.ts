@@ -93,7 +93,7 @@ export const evaluateInitEngine = async (engineName: string, baseUrl: string, pa
         };
 
         const options = {
-            antialiasing: false,
+            antialias: false,
         };
 
         const engine = new BABYLON.WebGPUEngine(canvas, options);

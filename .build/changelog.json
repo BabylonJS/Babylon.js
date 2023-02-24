@@ -1,6 +1,1244 @@
 {
-    "fromTag": "5.43.2",
+    "fromTag": "5.47.1",
     "changelog": {
+        "5.48.0": [
+            {
+                "pr": "13336",
+                "title": "SSR improvements",
+                "description": "Re-creation of PR #12728 which was closed because of the re-creation of the Babylon.js repo.\r\n\r\n~~Do not review it, it is not ready yet!~~\r\n\r\n[EDIT]\r\n\r\nOk, it is ready now!\r\n\r\nOne of the PG I used to test: http://localhost:1338/#PIZ1GK#973\r\n\r\nStill todo:\r\n* update the inspector\r\n* documentation\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/index.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssrRenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/screenSpaceReflectionPostProcess.ts",
+                    "packages/dev/core/src/Rendering/depthRenderer.ts",
+                    "packages/dev/core/src/Rendering/geometryBufferRenderer.ts",
+                    "packages/dev/core/src/Rendering/prePassRendererSceneComponent.ts",
+                    "packages/dev/core/src/Rendering/screenSpaceReflections2Configuration.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/screenSpaceRayTrace.fx",
+                    "packages/dev/core/src/Shaders/default.fragment.fx",
+                    "packages/dev/core/src/Shaders/depth.fragment.fx",
+                    "packages/dev/core/src/Shaders/depth.vertex.fx",
+                    "packages/dev/core/src/Shaders/geometry.fragment.fx",
+                    "packages/dev/core/src/Shaders/pbr.fragment.fx",
+                    "packages/dev/core/src/Shaders/screenSpaceReflection2.fragment.fx",
+                    "packages/dev/core/src/Shaders/screenSpaceReflection2Blur.fragment.fx",
+                    "packages/dev/core/src/Shaders/screenSpaceReflection2BlurCombiner.fragment.fx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Screen Space Reflections 2.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13552",
+                "title": "Camera: Add code to update View and Projection Matrices in update function",
+                "description": "A user on the forums had recently found an issue when performing input while using an on-demand rendering loop.  The issue was that the `onViewMatrixChangedObservable` wasn't firing as a part of pointer input.  This behavior was present in previous versions.  It was determined that the Lazy Picking changes may have caused this change because the aforementioned observable only fires during `getViewMatrix()` calls.  Before the Lazy Picking implementation, this function was called as a part of the creation and assignment of the picking ray for a PickingInfo object.  Since this ray is only created when picking happens, a pointer event that doesn't require picking info won't ever get to the point where `getViewMatrix` is called.  Technically, these get functions should be called as a part of the camera's update function so the fix is to do just that.\r\n\r\nTests have been added to verify that `onViewMatrixObservable` and `onProjectionMatrixObservable` are firing properly.\r\n\r\nForum Link: https://forum.babylonjs.com/t/on-demand-rendering-solution-broken-since-5-29/36379/1\r\nIssue Link: https://github.com/BabylonJS/Babylon.js/issues/13551",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/camera.ts",
+                    "packages/dev/core/test/unit/DeviceInput/babylon.inputManager.test.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inputs"
+                ]
+            },
+            {
+                "pr": "13553",
+                "title": "make sure setTarget works as expected in WebXR.",
+                "description": "This will calculate the new rotation in the Y axis and apply it to the already-existing rotation to avoid losing the up-direction when using setTarget.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/webXRCamera.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13554",
+                "title": "Scene clearColor is not used in WebXR with multiview enabled",
+                "description": "Fixes #13546",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13550",
+                "title": "Fix an issue building the sandbox",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/sandbox/src/components/renderingZone.tsx",
+                    "packages/tools/testTools/src/utils.ts",
+                    "packages/tools/testTools/src/visualizationUtils.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
+        "5.47.1": [
+            {
+                "pr": "13549",
+                "title": "Touch init was reversed",
+                "description": "Fix this issue - https://forum.babylonjs.com/t/broken-cameras-in-touch-devices/38336",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/engine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13548",
+                "title": "PBR: Don't apply radiance occlusion to clearcoat",
+                "description": "See https://forum.babylonjs.com/t/radiance-occlusion-with-clearcoat/38346",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockClearcoat.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "13547",
+                "title": "Materials: Fix depth state not set correctly with transparent meshes",
+                "description": "See https://forum.babylonjs.com/t/flag-depth-writemask-not-reset-after-draw-mesh/38377\r\n\r\nThe depth write mask was not reset correctly when a transparent material was forcing depth writting.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.alpha.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.alpha.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "13545",
+                "title": "Physics Iteration 9",
+                "description": "Small bug fixes",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts",
+                    "packages/dev/core/src/Physics/v2/physicsConstraint.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13541",
+                "title": "WebGPU: Fix engine initialization",
+                "description": "Close #13488.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            }
+        ],
+        "5.47.0": [
+            {
+                "pr": "13532",
+                "title": "Add VectorN.Random functions",
+                "description": "Adds functions for Vector2, Vector3, and Vector4 to get a vector with random values",
+                "author": {
+                    "name": "dr-vortex",
+                    "url": "https://github.com/dr-vortex"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13538",
+                "title": "Added ability to pass callback as key trigger parameter.",
+                "description": "This PR makes it possible to add key up/down triggers with more control than using just lowercase letters, by allowing the use of a callback function as 'parameter' value.",
+                "author": {
+                    "name": "reimund",
+                    "url": "https://github.com/reimund"
+                },
+                "files": [
+                    "packages/dev/core/src/Actions/actionManager.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13540",
+                "title": "PBR: Fix realtime filtering for refraction",
+                "description": "See https://forum.babylonjs.com/t/es6-import-of-babylonjs-core-ignoring-side-effects-required-for-khr-materials-transmission/38198\r\n\r\nRealtime filtering can only work if the refraction texture is a cube (the `radiance` function is expecting a `CubeSampler`). So, we should disable realtime filtering when the refraction texture is a 2D texture.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockSubSurface.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "13539",
+                "title": "Physics Iteration 8",
+                "description": "This 1 is about constraints and documentation",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts",
+                    "packages/dev/core/src/Physics/v2/physicsConstraint.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13537",
+                "title": "Add Clip plane support in Geometry Buffer",
+                "description": "https://forum.babylonjs.com/t/screenspacecurvature-post-process-doesnt-seem-to-respect-clip-planes/38231",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/geometryBufferRenderer.ts",
+                    "packages/dev/core/src/Shaders/geometry.fragment.fx",
+                    "packages/dev/core/src/Shaders/geometry.vertex.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13535",
+                "title": "DefaultRenderingPipeline: Fix image processing not being reset in some cases",
+                "description": "See https://forum.babylonjs.com/t/how-to-correctly-dispose-a-defaultrenderingpipeline/38196",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "post-process"
+                ]
+            },
+            {
+                "pr": "13533",
+                "title": "Fix ANIMATESHEET for custom particle effect",
+                "description": "https://forum.babylonjs.com/t/cpu-particlesystem-with-custom-fragmentshader/38090/4",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/particleSystemComponent.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "particles"
+                ]
+            },
+            {
+                "pr": "13531",
+                "title": "Fluid renderer: Fix rendering in right handed system",
+                "description": "See https://forum.babylonjs.com/t/fluid-cannot-be-rendered-when-using-right-hand-system/38095",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingObject.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingTargetRenderer.ts",
+                    "packages/dev/core/src/Shaders/fluidRenderingParticleDepth.fragment.fx",
+                    "packages/dev/core/src/Shaders/fluidRenderingRender.fragment.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13529",
+                "title": "Fix option properties in InputNodePropertyComponent",
+                "description": "Fix #13522",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/src/graphSystem/properties/inputNodePropertyComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "13530",
+                "title": "Physics Iteration 7",
+                "description": "Some fixes to disposal on PhysicsViewer and PhysicsBody",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Debug/physicsViewer.ts",
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts"
+                ],
+                "tags": [
+                    "physics"
+                ]
+            },
+            {
+                "pr": "13528",
+                "title": "PBRMaterial: Fix INVERTCUBICMAP not being reset",
+                "description": "See https://forum.babylonjs.com/t/changing-reflectiontexture-to-probe-then-revert-causes-inverted-reflectiontexture/38160",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "13525",
+                "title": "Bump cacheable-request from 10.2.3 to 10.2.7",
+                "description": "Bumps [cacheable-request](https://github.com/jaredwray/cacheable-request) from 10.2.3 to 10.2.7.\n<details>\n<summary>Release notes</summary>\n<p><em>Sourced from <a href=\"https://github.com/jaredwray/cacheable-request/releases\">cacheable-request's releases</a>.</em></p>\n<blockquote>\n<h2>v10.2.6</h2>\n<h1>Fix for memory leak on Listeners</h1>\n<p>The listener was not being removed on <code>response</code> and just error but new handlers were being added causing a memory leak.</p>\n<p><a href=\"https://github.com/jaredwray/cacheable-request/blob/c4815689be40854a3d748a3927959354c09b0ebb/src/index.ts#L220-L225\">line 220 in src/index.ts was modified to remove the listener on response also </a></p>\n<pre><code>\t\t\tif (this.cache instanceof Keyv) {\n\t\t\t\tconst cachek = this.cache;\n\t\t\t\tcachek.once('error', errorHandler);\n\t\t\t\tee.on('error', () =&gt; cachek.removeListener('error', errorHandler));\n\t\t\t\tee.on('response', () =&gt; cachek.removeListener('error', errorHandler));\n\t\t\t}\n</code></pre>\n<h2>What's Changed</h2>\n<ul>\n<li>upgrading jest and components to latest by <a href=\"https://github.com/jaredwray\"><code>@​jaredwray</code></a> in <a href=\"https://github-redirect.dependabot.com/jaredwray/cacheable-request/pull/220\">jaredwray/cacheable-request#220</a></li>\n<li>upgrading <code>@​types/jest</code> to 29.2.6 by <a href=\"https://github.com/jaredwray\"><code>@​jaredwray</code></a> in <a href=\"https://github-redirect.dependabot.com/jaredwray/cacheable-request/pull/221\">jaredwray/cacheable-request#221</a></li>\n<li>fixing listener memory leak - issue <a href=\"https://github-redirect.dependabot.com/jaredwray/cacheable-request/issues/222\">#222</a> by <a href=\"https://github.com/jaredwray\"><code>@​jaredwray</code></a> in <a href=\"https://github-redirect.dependabot.com/jaredwray/cacheable-request/pull/223\">jaredwray/cacheable-request#223</a></li>\n</ul>\n<p><strong>Full Changelog</strong>: <a href=\"https://github.com/jaredwray/cacheable-request/compare/v10.2.5...v10.2.6\">https://github.com/jaredwray/cacheable-request/compare/v10.2.5...v10.2.6</a></p>\n<h2>v10.2.5</h2>\n<p>Types definition issue with http-cache-sematics as that type definition needs to be in dependencies. Thanks <a href=\"https://github.com/Maxim-Mazurok\"><code>@​Maxim-Mazurok</code></a></p>\n<h2>What's Changed</h2>\n<ul>\n<li>Move <code>@​types/http-cache-semantics</code> from dev to deps by <a href=\"https://github.com/Maxim-Mazurok\"><code>@​Maxim-Mazurok</code></a> in <a href=\"https://github-redirect.dependabot.com/jaredwray/cacheable-request/pull/219\">jaredwray/cacheable-request#219</a></li>\n</ul>\n<p><strong>Full Changelog</strong>: <a href=\"https://github.com/jaredwray/cacheable-request/compare/v10.2.4...v10.2.5\">https://github.com/jaredwray/cacheable-request/compare/v10.2.4...v10.2.5</a></p>\n<h1>v10.2.4</h1>\n<p>Minor updates with one exception is that we removed <code>@types/http-cache-semantics</code> from the main dependencies as it does not look to be needed.</p>\n<h2>What's Changed</h2>\n<ul>\n<li>upgrading typescript to 4.9.4 by <a href=\"https://github.com/jaredwray\"><code>@​jaredwray</code></a> in <a href=\"https://github-redirect.dependabot.com/jaredwray/cacheable-request/pull/214\">jaredwray/cacheable-request#214</a></li>\n<li>upgrading jest types and eslint for jest to latest by <a href=\"https://github.com/jaredwray\"><code>@​jaredwray</code></a> in <a href=\"https://github-redirect.dependabot.com/jaredwray/cacheable-request/pull/215\">jaredwray/cacheable-request#215</a></li>\n<li>upgrading sqlite3 to 5.1.4 by <a href=\"https://github.com/jaredwray\"><code>@​jaredwray</code></a> in <a href=\"https://github-redirect.dependabot.com/jaredwray/cacheable-request/pull/216\">jaredwray/cacheable-request#216</a></li>\n<li>removing <code>@​types/http-cache-semantics</code> from the dependencies and moving… by <a href=\"https://github.com/jaredwray\"><code>@​jaredwray</code></a> in <a href=\"https://github-redirect.dependabot.com/jaredwray/cacheable-request/pull/217\">jaredwray/cacheable-request#217</a></li>\n</ul>\n<p><strong>Full Changelog</strong>: <a href=\"https://github.com/jaredwray/cacheable-request/compare/v10.2.3...v10.2.4\">https://github.com/jaredwray/cacheable-request/compare/v10.2.3...v10.2.4</a></p>\n</blockquote>\n</details>\n<details>\n<summary>Commits</summary>\n<ul>\n<li>See full diff in <a href=\"https://github.com/jaredwray/cacheable-request/commits\">compare view</a></li>\n</ul>\n</details>\n<br />\n\n\n[![Dependabot compatibility score](https://dependabot-badges.githubapp.com/badges/compatibility_score?dependency-name=cacheable-request&package-manager=npm_and_yarn&previous-version=10.2.3&new-version=10.2.7)](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-compatibility-scores)\n\nDependabot will resolve any conflicts with this PR as long as you don't alter it yourself. You can also trigger a rebase manually by commenting `@dependabot rebase`.\n\n[//]: # (dependabot-automerge-start)\n[//]: # (dependabot-automerge-end)\n\n---\n\n<details>\n<summary>Dependabot commands and options</summary>\n<br />\n\nYou can trigger Dependabot actions by commenting on this PR:\n- `@dependabot rebase` will rebase this PR\n- `@dependabot recreate` will recreate this PR, overwriting any edits that have been made to it\n- `@dependabot merge` will merge this PR after your CI passes on it\n- `@dependabot squash and merge` will squash and merge this PR after your CI passes on it\n- `@dependabot cancel merge` will cancel a previously requested merge and block automerging\n- `@dependabot reopen` will reopen this PR if it is closed\n- `@dependabot close` will close this PR and stop Dependabot recreating it. You can achieve the same result by closing it manually\n- `@dependabot ignore this major version` will close this PR and stop Dependabot creating any more for this major version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this minor version` will close this PR and stop Dependabot creating any more for this minor version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this dependency` will close this PR and stop Dependabot creating any more for this dependency (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot use these labels` will set the current labels as the default for future PRs for this repo and language\n- `@dependabot use these reviewers` will set the current reviewers as the default for future PRs for this repo and language\n- `@dependabot use these assignees` will set the current assignees as the default for future PRs for this repo and language\n- `@dependabot use this milestone` will set the current milestone as the default for future PRs for this repo and language\n\nYou can disable automated security fix PRs for this repo from the [Security Alerts page](https://github.com/BabylonJS/Babylon.js/network/alerts).\n\n</details>",
+                "author": {
+                    "name": "dependabot[bot]",
+                    "url": "https://github.com/apps/dependabot"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": [
+                    "dependencies"
+                ]
+            },
+            {
+                "pr": "13526",
+                "title": "Add more unit tests for the Sound class",
+                "description": null,
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/test/unit/Audio/sound.test.ts"
+                ],
+                "tags": [
+                    "audio",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13524",
+                "title": "Fix to instantiate hierarchy",
+                "description": "This is a fix for the case where the child mesh is NOT an instance of the parent mesh: https://forum.babylonjs.com/t/instantiatehierarchy-throws-errors-for-empty-meshes/38069/7",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Instantiate Hierarchy.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "13523",
+                "title": "Missing raycast export",
+                "description": null,
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/index.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13516",
+                "title": "DeviceInputSystem: Use correct pointerId for touch inputs on blur and pointercancel event",
+                "description": "A forum user recently found an issue where the pointerId was incorrect for `blur` and `pointercancel` events fired from a touch input.  This PR adds a small change to the DeviceEventFactory to use the pointerId, if available.\r\n\r\nForum Link: https://forum.babylonjs.com/t/distinguish-between-onbuttonup-events-in-basecamerapointersinput/37985/1",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/DeviceInput/eventFactory.ts",
+                    "packages/dev/core/src/DeviceInput/webDeviceInputSystem.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inputs"
+                ]
+            },
+            {
+                "pr": "13521",
+                "title": "Change InputManager._pickMove arg type to reduce number of casts needed",
+                "description": null,
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/Inputs/scene.inputManager.ts"
+                ],
+                "tags": [
+                    "inputs",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13520",
+                "title": "Delay resize event listener to after video internal texture is created.",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/issue-with-video-texture-loading-onloadobservable-not-called/38052\r\n\r\nThe issue happens for videos with autoplay. Example PG: https://playground.babylonjs.com/#ZMCFYA#83",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/videoTexture.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "13518",
+                "title": "Set event.sourceEvent in ExecuteCodeAction callback for pointer triggers",
+                "description": "When an ExecuteCodeAction is created with a pointer trigger, the callback's ActionEvent.sourceEvent member is set to undefined.\r\n\r\nThis change sets the callback's ActionEvent.sourceEvent member to the original event causing the action to be triggered.\r\n\r\nRequested on forum: https://forum.babylonjs.com/t/action-enhancements/38043.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/Events/pointerEvents.ts",
+                    "packages/dev/core/src/Inputs/scene.inputManager.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "inputs"
+                ]
+            },
+            {
+                "pr": "13519",
+                "title": "CustomMaterial: Don't prevent support for uniform arrays",
+                "description": "See https://forum.babylonjs.com/t/how-to-sampler-texturearray-with-a-index-from-attribute/38049",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/materials/src/custom/customMaterial.ts",
+                    "packages/dev/materials/src/custom/pbrCustomMaterial.ts"
+                ],
+                "tags": [
+                    "materials",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13517",
+                "title": "Bump @sideway/formula from 3.0.0 to 3.0.1",
+                "description": "Bumps [@sideway/formula](https://github.com/sideway/formula) from 3.0.0 to 3.0.1.\n<details>\n<summary>Commits</summary>\n<ul>\n<li><a href=\"https://github.com/hapijs/formula/commit/5b44c1bffc38135616fb91d5ad46eaf64f03d23b\"><code>5b44c1b</code></a> 3.0.1</li>\n<li><a href=\"https://github.com/hapijs/formula/commit/9fbc20a02d75ae809c37a610a57802cd1b41b3fe\"><code>9fbc20a</code></a> chore: better number regex</li>\n<li><a href=\"https://github.com/hapijs/formula/commit/41ae98e0421913b100886adb0107a25d552d9e1a\"><code>41ae98e</code></a> Cleanup</li>\n<li><a href=\"https://github.com/hapijs/formula/commit/c59f35ec401e18cead10e0cedfb44291517610b1\"><code>c59f35e</code></a> Move to Sideway</li>\n<li>See full diff in <a href=\"https://github.com/sideway/formula/compare/v3.0.0...v3.0.1\">compare view</a></li>\n</ul>\n</details>\n<details>\n<summary>Maintainer changes</summary>\n<p>This version was pushed to npm by <a href=\"https://www.npmjs.com/~marsup\">marsup</a>, a new releaser for <code>@​sideway/formula</code> since your current version.</p>\n</details>\n<br />\n\n\n[![Dependabot compatibility score](https://dependabot-badges.githubapp.com/badges/compatibility_score?dependency-name=@sideway/formula&package-manager=npm_and_yarn&previous-version=3.0.0&new-version=3.0.1)](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-compatibility-scores)\n\nDependabot will resolve any conflicts with this PR as long as you don't alter it yourself. You can also trigger a rebase manually by commenting `@dependabot rebase`.\n\n[//]: # (dependabot-automerge-start)\n[//]: # (dependabot-automerge-end)\n\n---\n\n<details>\n<summary>Dependabot commands and options</summary>\n<br />\n\nYou can trigger Dependabot actions by commenting on this PR:\n- `@dependabot rebase` will rebase this PR\n- `@dependabot recreate` will recreate this PR, overwriting any edits that have been made to it\n- `@dependabot merge` will merge this PR after your CI passes on it\n- `@dependabot squash and merge` will squash and merge this PR after your CI passes on it\n- `@dependabot cancel merge` will cancel a previously requested merge and block automerging\n- `@dependabot reopen` will reopen this PR if it is closed\n- `@dependabot close` will close this PR and stop Dependabot recreating it. You can achieve the same result by closing it manually\n- `@dependabot ignore this major version` will close this PR and stop Dependabot creating any more for this major version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this minor version` will close this PR and stop Dependabot creating any more for this minor version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this dependency` will close this PR and stop Dependabot creating any more for this dependency (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot use these labels` will set the current labels as the default for future PRs for this repo and language\n- `@dependabot use these reviewers` will set the current reviewers as the default for future PRs for this repo and language\n- `@dependabot use these assignees` will set the current assignees as the default for future PRs for this repo and language\n- `@dependabot use this milestone` will set the current milestone as the default for future PRs for this repo and language\n\nYou can disable automated security fix PRs for this repo from the [Security Alerts page](https://github.com/BabylonJS/Babylon.js/network/alerts).\n\n</details>",
+                "author": {
+                    "name": "dependabot[bot]",
+                    "url": "https://github.com/apps/dependabot"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": [
+                    "dependencies"
+                ]
+            }
+        ],
+        "5.46.0": [
+            {
+                "pr": "13515",
+                "title": "fix type issue",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13512",
+                "title": "Move to TypeScript 4.9.5",
+                "description": "There are small improvements (mainly to type safety).\nThis PR is öpen for discussions\", as this is not 100% needed. We will move to TS 5.X when it's out. This is just another small step towards that goal.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/buildTools/src/ltsTransformer.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.multiRender.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.renderTarget.ts",
+                    "packages/tools/tests/src/umdCompile.ts",
+                    "packages/tools/tests/webpack.config.js",
+                    "packages/tools/viewer/src/managers/sceneManager.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            }
+        ],
+        "5.45.2": [
+            {
+                "pr": "13514",
+                "title": "VideoTexture - Fix texture refresh bug",
+                "description": "My last PR: #13513 introduced logic to refresh the the VideoTexture's internal texture when the underlying video changed sizes.\r\n\r\nI missed an edge case where the resize event can occur on the same frame that the texture was already updated from. When that happens the new texture was not getting hooked up to the video feed because of a no-op condition that avoids updating the texture twice in one frame. This change ensures that when swapping out the internal texture it also gets re-registered with the video feed.",
+                "author": {
+                    "name": "CoPrez",
+                    "url": "https://github.com/CoPrez"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/videoTexture.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13513",
+                "title": "VideoTexture - Resize the internal texture when the video size changes",
+                "description": "This PR updates VideoTexture to listen for the [VideoElement resize event](https://developer.mozilla.org/en-US/docs/Web/API/HTMLVideoElement/videoHeight#examples) and resize the texture to match. For a URL video the scenario would not be common, but when creating a video from a camera stream you can use the media constraints to change the resolution/aspect ratio on the fly. Another camera example is when on mobile and you rotate the phone the video stream also resizes from portrait to landscape orientation.\r\n\r\nI created this Playground example to demonstrate the current issue (and to test my PR changes):\r\n[https://playground.babylonjs.com/#4W5WYX](https://playground.babylonjs.com/#4W5WYX)\r\n\r\nIn the playground app the camera's aspect ratio is updated ever 3 seconds to go between 16:9 and 1:1 aspect ratios. Without these changes the video just gets squashed when the aspect ratio changes, additionally if the end user tried to readPixels from the texture they would not get the full image due to a missmatch between the internal texture and the actual video frames.\r\n\r\nWith these changes the plane that the VideoTexture is placed on is able to respond to the change in aspect ratio so the video does not become distorted. Additionally readPixels is able to pull the full frame of the camera and match the native video resolution.\r\n\r\nThis issue is mentioned in the BabylonNative repo here:\r\n[https://github.com/BabylonJS/BabylonNative/issues/1107](https://github.com/BabylonJS/BabylonNative/issues/1107)\r\n",
+                "author": {
+                    "name": "CoPrez",
+                    "url": "https://github.com/CoPrez"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/videoTexture.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "13511",
+                "title": "better UI for title + bug fix for auto link",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.modules.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodeLink.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13493",
+                "title": "Add support for node 18 by updating node-sass",
+                "description": "And drop support for node 12.\r\n\r\nIt's probably time, it's the next LTS :)\r\n\r\nI have not fully tested it (too reliant on CI maybe), but it works in dev. It's possible it'll also work with node 19, but I did not try.",
+                "author": {
+                    "name": "852Kerfunkle",
+                    "url": "https://github.com/852Kerfunkle"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/inspector/package.json",
+                    "packages/dev/sharedUiComponents/package.json",
+                    "packages/tools/accessibility/package.json",
+                    "packages/tools/tests/package.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13507",
+                "title": "InputManager: Refine logic for handling non-captured pointerup events",
+                "description": "A user has found an issue where clicking events were erroneously passing through the utility layer to the main scene when they weren't supposed to.  Some of the logic that handles when a pointer is captured was incorrectly set up so this PR fixes that issue.  A test was added to verify this fix in the future.\r\n\r\nForum Link: https://forum.babylonjs.com/t/utility-layer-events-propagated-into-the-scene/32574",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Inputs/scene.inputManager.ts",
+                    "packages/dev/core/test/unit/Cameras/babylon.arcRotateCameraInputs.test.ts",
+                    "packages/dev/core/test/unit/Cameras/babylon.freeCameraInputs.test.ts",
+                    "packages/dev/core/test/unit/DeviceInput/babylon.inputManager.test.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inputs"
+                ]
+            },
+            {
+                "pr": "13498",
+                "title": "Physics Iteration 5",
+                "description": "There is an issue with impulse/force that will be fixed in next iteration.\r\nAggregate is starting working just like impostors\r\nPhysicsHelper moved from V1 to parent path",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/index.ts",
+                    "packages/dev/core/src/Physics/physicsHelper.ts",
+                    "packages/dev/core/src/Physics/v1/index.ts",
+                    "packages/dev/core/src/Physics/v1/physicsHelper.ts",
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/index.ts",
+                    "packages/dev/core/src/Physics/v2/physicsAggregate.ts",
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts",
+                    "packages/dev/core/src/Physics/v2/physicsEngine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13510",
+                "title": "Shader Fix",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/bumpFragmentMainFunctions.fx",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13509",
+                "title": "improve readability and running of vis tests",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/tests/test/visualization/config.json",
+                    "packages/tools/tests/test/visualization/visualization.utils.ts",
+                    "packages/tools/tests/test/visualization/visualization.webgl1.test.ts",
+                    "packages/tools/tests/test/visualization/visualization.webgl2.test.ts",
+                    "packages/tools/tests/test/visualization/visualization.webgpu.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13508",
+                "title": "WebGL2 Visualization tests: Log to the console by default, not to a file",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/tools/tests/test/visualization/visualization.webgl2.test.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
+        "5.45.1": [
+            {
+                "pr": "13501",
+                "title": "Add Object Space mapping to NME PerturbNormal block",
+                "description": "Fix #13420 ",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/perturbNormalBlock.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/bumpFragment.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/bumpFragmentMainFunctions.fx",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "new feature",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "13503",
+                "title": "Fix gui declaration",
+                "description": "Fixes #13502",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/container.ts",
+                    "packages/dev/gui/src/2D/controls/rectangle.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13505",
+                "title": "Physics iteration 6",
+                "description": "Proper disposing of Physics Bodies",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts"
+                ],
+                "tags": [
+                    "physics",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13506",
+                "title": "KhronosTextureContainer2: minor code formating",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/khronosTextureContainer2.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13504",
+                "title": "Fix for sprite rendering for ios 14 and lower",
+                "description": "Fixes https://forum.babylonjs.com/t/sprites-are-not-being-rendered-for-ios14-and-lower/37973",
+                "author": {
+                    "name": "Vlad160",
+                    "url": "https://github.com/Vlad160"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/sprites.fragment.fx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13500",
+                "title": "KTXDecoder: Fix crash with \"buffer already detached\"",
+                "description": "See https://forum.babylonjs.com/t/full-html-does-not-work-on-some-playgrounds/9908/9\r\n\r\nCopy/paste + auto formatting is bad...",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/khronosTextureContainer2.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Loading glTF model with KTX2 textures.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug",
+                    "glTF"
+                ]
+            },
+            {
+                "pr": "13499",
+                "title": "Texture: Fix doc for sampling modes",
+                "description": "See https://forum.babylonjs.com/t/bilinear-sample-mode-and-mip/37907",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/texture.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13495",
+                "title": "Nme updates part 2",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/searchBox.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/stateManager.ts",
+                    "packages/tools/nodeEditor/src/graphEditor.tsx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "new feature",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "13497",
+                "title": "Fix ClipPlane being unset",
+                "description": "https://forum.babylonjs.com/t/clipping-plane-potential-bug/37851",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/clipPlaneMaterialHelper.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13496",
+                "title": "Fix conditions for clone vs instance in AssetContainer.instantiateHie…",
+                "description": "…rarchy\r\n\r\nForum issue: https://forum.babylonjs.com/t/instances-should-only-created-for-meshes-with-geometry/37873",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/assetContainer.ts"
+                ],
+                "tags": [
+                    "assets",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13491",
+                "title": "Nme updates",
+                "description": "Associated with  #12148",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.modules.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodeLedger.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/searchBox.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/searchBox.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/stateManager.ts",
+                    "packages/tools/nodeEditor/src/components/nodeList/nodeListComponent.tsx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "13485",
+                "title": "Physics Iteration 4",
+                "description": "A small one with WIP Aggregate and more documentation.",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsAggregate.ts",
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts",
+                    "packages/dev/core/src/Physics/v2/physicsShape.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13494",
+                "title": "Bump http-cache-semantics from 4.1.0 to 4.1.1",
+                "description": "Bumps [http-cache-semantics](https://github.com/kornelski/http-cache-semantics) from 4.1.0 to 4.1.1.\n<details>\n<summary>Commits</summary>\n<ul>\n<li>See full diff in <a href=\"https://github.com/kornelski/http-cache-semantics/commits\">compare view</a></li>\n</ul>\n</details>\n<br />\n\n\n[![Dependabot compatibility score](https://dependabot-badges.githubapp.com/badges/compatibility_score?dependency-name=http-cache-semantics&package-manager=npm_and_yarn&previous-version=4.1.0&new-version=4.1.1)](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-compatibility-scores)\n\nDependabot will resolve any conflicts with this PR as long as you don't alter it yourself. You can also trigger a rebase manually by commenting `@dependabot rebase`.\n\n[//]: # (dependabot-automerge-start)\n[//]: # (dependabot-automerge-end)\n\n---\n\n<details>\n<summary>Dependabot commands and options</summary>\n<br />\n\nYou can trigger Dependabot actions by commenting on this PR:\n- `@dependabot rebase` will rebase this PR\n- `@dependabot recreate` will recreate this PR, overwriting any edits that have been made to it\n- `@dependabot merge` will merge this PR after your CI passes on it\n- `@dependabot squash and merge` will squash and merge this PR after your CI passes on it\n- `@dependabot cancel merge` will cancel a previously requested merge and block automerging\n- `@dependabot reopen` will reopen this PR if it is closed\n- `@dependabot close` will close this PR and stop Dependabot recreating it. You can achieve the same result by closing it manually\n- `@dependabot ignore this major version` will close this PR and stop Dependabot creating any more for this major version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this minor version` will close this PR and stop Dependabot creating any more for this minor version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this dependency` will close this PR and stop Dependabot creating any more for this dependency (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot use these labels` will set the current labels as the default for future PRs for this repo and language\n- `@dependabot use these reviewers` will set the current reviewers as the default for future PRs for this repo and language\n- `@dependabot use these assignees` will set the current assignees as the default for future PRs for this repo and language\n- `@dependabot use this milestone` will set the current milestone as the default for future PRs for this repo and language\n\nYou can disable automated security fix PRs for this repo from the [Security Alerts page](https://github.com/BabylonJS/Babylon.js/network/alerts).\n\n</details>",
+                "author": {
+                    "name": "dependabot[bot]",
+                    "url": "https://github.com/apps/dependabot"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": [
+                    "dependencies"
+                ]
+            }
+        ],
+        "5.45.0": [
+            {
+                "pr": "13490",
+                "title": "Check for invalid hierarchies in the asset container and warn the user",
+                "description": "Fix #13477\r\n",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/assetContainer.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "assets"
+                ]
+            },
+            {
+                "pr": "13487",
+                "title": "Handle pointerlock rejections, if promise based",
+                "description": "This should get rid of the unhandled top-level exception if requesting pointer lock fails.\r\n\r\nI think the intended way to use pointer lock in Babylon is to sub to `onCanvasBlurObservable` and `onCanvasFocusObservable`, so `element.focus()` probably belongs into the resolved handler.\r\n\r\nThe alternative would be to focus regardless, but this is probably not desired:\r\n```js\r\nif (promise instanceof Promise) promise.catch(() => {});\r\nelement.focus();\r\n```\r\n\r\nA good way to try this behaviour is to enter and exit pointerlock in quick succession on a chromium based browser.",
+                "author": {
+                    "name": "852Kerfunkle",
+                    "url": "https://github.com/852Kerfunkle"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/engine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13489",
+                "title": "Fix ImportMesh of babylon files that share a geometry uniqueId",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/imported-meshes-appear-broken-if-they-have-the-same-geometry-uniqueid/33567/8",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Loading/Plugins/babylonFileLoader.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Load babylon files with same geometry uniqueId.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug",
+                    "loaders"
+                ]
+            },
+            {
+                "pr": "13467",
+                "title": "Fix asset container instantiation with parented instanced nodes",
+                "description": "Fix #13454\r\n\r\nI don't think there's any way around using some kind of dependency graph to instantiate nodes in the correct order but if anyone has a simpler idea I'd love to hear it :D ",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/assetContainer.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Asset Container Instantiate to Scene 2.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Asset Container Instantiate to Scene.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "13486",
+                "title": "Texture: Allow ImageBitmap for the buffer parameter of updateURL",
+                "description": "See https://forum.babylonjs.com/t/texture-updateurl-should-accept-imagebitmap/37762",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/texture.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "13484",
+                "title": "WebGPU: Fix stencil buffer creation with RTT",
+                "description": "See https://forum.babylonjs.com/t/webgpu-higlightlayer-and-fxaa-issue/37730",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.renderTarget.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "13482",
+                "title": "Get Sound play test working",
+                "description": null,
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/test/unit/Audio/sound.test.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13483",
+                "title": "Fix a typo in contributing.md",
+                "description": "It's my intent to fix this oversight. I don't think it was intended :yum:\r\n\r\nEdit: I don't have permissions to assign a \"skip changelog\" label.",
+                "author": {
+                    "name": "pdresselm",
+                    "url": "https://github.com/pdresselm"
+                },
+                "files": [
+                    "contributing.md"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13480",
+                "title": "MorphTargetMgr: Fallback to vertex attribute mode if too many targets",
+                "description": "As we store the morph targets in the depth dimension of a 2DArrayTexture, we should revert to the \"non texture\" mode (i.e. use vertex attributes) if there are too many targets.\r\n\r\nAlso, limit the max number of vertex attributes to 8 by default.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Morph/morphTargetManager.ts"
+                ],
+                "tags": [
+                    "rendering engine",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13481",
+                "title": "Fix GLTF Variants Clone",
+                "description": "https://forum.babylonjs.com/t/khr-materials-variants-got-lost-during-clone-of-mesh/37611/2",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "glTF"
+                ]
+            },
+            {
+                "pr": "13479",
+                "title": "Fix hit detection in a multi-cam scenario with billboarded meshes.",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/mutliple-cameras-affect-billboard-meshes/37496\r\nRelated PG: https://www.babylonjs-playground.com/#1WROZH%23266\r\n\r\nSuperseed https://github.com/BabylonJS/Babylon.js/pull/13471",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/ray.ts",
+                    "packages/dev/core/src/Meshes/transformNode.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "picking"
+                ]
+            },
+            {
+                "pr": "13478",
+                "title": "Fix sound current time after it ends on its own",
+                "description": "The sound pause function assumes the start time and current time are reset to zero when the sound stops, but they are currently only being reset when the stop function is called. If the sound stops on its own when reaching the end of the sound source, the start time and current time are not reset. This causes the `currentTime` property to report the wrong time when the sound is restarted after stopping on its own, and then being paused.\r\n\r\nThis change fixes the issue by resetting the start time and current time when the sound source ends on its own.\r\n\r\nReported on forum here: https://forum.babylonjs.com/t/sound-currenttime-exceeds-total-duration-in-some-cases/37668",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/Audio/sound.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "audio"
+                ]
+            },
+            {
+                "pr": "13476",
+                "title": "clearOnGuiReadyObservable",
+                "description": null,
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13472",
+                "title": "Fix sound source `onended` handling",
+                "description": "When pause is called the `onEndedObservable` is being fired, but it should only be fired when stop is called.\r\n\r\nThis change fixes the issue.\r\n\r\nReported on forum here: https://forum.babylonjs.com/t/pausing-and-playing-an-audio-with-offset-restarts-it-from-the-beginning-instead-of-the-current-position/36668/23",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/Audio/sound.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "audio"
+                ]
+            },
+            {
+                "pr": "13474",
+                "title": "Performance optimization for vector methods",
+                "description": "In vector functions like Vector3.FromArrayToRef and Quaternion.FromArrayToRef, values are assigned to properties like x, y, z, w, which are internally setter functions which sets things like _x and _isDirty, so in FromArrayToRef where all these setters called, the _isDirty is set multiple times, which is possibly optimizable.\r\n\r\nIt should be possible to directly set internal properties like _x, _y, _z, and _w in FromArrayToRef and set _isDirty to true to be compatible with existing code depending on _isDirty, which should result in better performance.\r\n\r\nForum link:\r\nhttps://forum.babylonjs.com/t/optimizing-performance-of-fromarraytoref/37513",
+                "author": {
+                    "name": "myfreeer",
+                    "url": "https://github.com/myfreeer"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13475",
+                "title": "Add GUI is ready function and add it on visualization tests",
+                "description": "This should avoid the tests with GUI failing because it hasn't loaded yet.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    ".vscode/launch.json",
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts",
+                    "packages/dev/gui/src/2D/controls/container.ts",
+                    "packages/dev/gui/src/2D/controls/control.ts",
+                    "packages/dev/gui/src/2D/controls/image.ts",
+                    "packages/tools/testTools/src/visualizationUtils.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "enhancement",
+                    "gui",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13469",
+                "title": "KTX2 decoding: Add default KTX2 decoder configuration",
+                "description": "See https://forum.babylonjs.com/t/supporting-bc5-and-bc7-device-specific-compression-formats/35045/31\r\n\r\nWith this PR, the new object `KhronosTextureContainer2.DefaultKTX2DecoderOptions` can be used to set global options for the KTX2 decoder process. The options defined in this way have priority over those passed when creating a KTX2 texture with `new Texture(...)`. This way you can easily force certain behaviors for the decoder without altering the way KTX2 textures are created.\r\n\r\nTo resolve the issue raised in the forum thread linked above, proceed as follows:\r\n```javascript\r\nBABYLON.KhronosTextureContainer2.DefaultKTX2DecoderOptions.useRGBAIfOnlyBC1BC3AvailableWhenUASTC = true;\r\n```\r\nwhich will force the use of uncompressed RGBA if only BC1 and BC3 are available as compressed formats.\r\n\r\n[EDIT] Note that `useRGBAIfOnlyBC1BC3AvailableWhenUASTC = true` is the default, for performance reason (see comments in code) [/EDIT]\r\n\r\nNote that `ktx2decoderTypes.ts` is defined in the core and not in the **ktx2Decoder** package to avoid an external dependency for the core and I'm not sure that `Materials/Textures/` is the best location for this file...",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/webpackTools.ts",
+                    "packages/dev/core/src/Materials/Textures/index.ts",
+                    "packages/dev/core/src/Materials/Textures/ktx2decoderTypes.ts",
+                    "packages/dev/core/src/Misc/khronosTextureContainer2.ts",
+                    "packages/public/umd/babylonjs-ktx2decoder/webpack.config.js",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_ASTC.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_BC7.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_R8_UNORM.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_RG8_UNORM.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_RGBA_SRGB.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_RGBA_UNORM.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/mscTranscoder.ts",
+                    "packages/tools/ktx2Decoder/src/ktx2Decoder.ts",
+                    "packages/tools/ktx2Decoder/src/ktx2FileReader.ts",
+                    "packages/tools/ktx2Decoder/src/transcodeDecisionTree.ts",
+                    "packages/tools/ktx2Decoder/src/transcoder.ts",
+                    "packages/tools/ktx2Decoder/src/transcoderManager.ts",
+                    "packages/tools/ktx2Decoder/webpack.config.js"
+                ],
+                "tags": [
+                    "new feature",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "13470",
+                "title": "Babylon serializer: Serialize actions for instances",
+                "description": "See https://forum.babylonjs.com/t/babylon-file-format-missing-actions-on-instances/37645",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": [
+                    "loaders",
+                    "new feature"
+                ]
+            }
+        ],
         "5.44.0": [
             {
                 "pr": "13466",

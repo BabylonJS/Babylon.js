@@ -1,3 +1,3 @@
-import { evaluateTests } from "./visualization.utils.test";
+import { evaluateTests } from "./visualization.utils";
 
-evaluateTests("webgl2", "config", false, false, false, true);
+evaluateTests("webgl2", "config", false, false, true, false);

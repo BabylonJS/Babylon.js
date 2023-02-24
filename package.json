@@ -42,9 +42,9 @@
         "selenium-webdriver": "^4.3.1",
         "ts-jest": "~27.1.3",
         "ts-node": "~10.7.0",
-        "ts-patch": "~2.0.1",
+        "ts-patch": "~2.1.0",
         "tslib": "^2.4.0",
-        "typescript": "~4.6.2",
+        "typescript": "~4.9.4",
         "webpack": "^5.73.0",
         "webpack-cli": "^4.10.0"
     },
@@ -59,8 +59,8 @@
         "build:lts": "npm run build:assets && npm run build:source:lts",
         "build:source": "tsc -b ./tsconfig.devpackages.json",
         "build:source:lts": "npx nx run-many --target=compile --projects=@lts/core,@lts/gui,@lts/loaders,@lts/materials,@lts/post-processes,@lts/procedural-textures,@lts/serializers --parallel=1",
-        "build:umd": "nx run-many --target=build --parallel=3 --projects=babylonjs,babylonjs-gui,babylonjs-inspector,babylonjs-loaders,babylonjs-materials,babylonjs-serializers,babylonjs-post-process,babylonjs-procedural-textures,babylonjs-node-editor,babylonjs-gui-editor,babylonjs-ktx2decoder,babylonjs-viewer-assets,babylonjs-viewer,babylonjs-accessibility",
-        "build:es6": "nx run-many --target=build --parallel=3 --projects=core,gui,loaders,materials,serializers,post-processes,procedural-textures,node-editor,inspector,gui-editor,viewer,shared-ui-components,accessibility",
+        "build:umd": "nx run-many --target=build --parallel --maxParallel=6 --projects=babylonjs,babylonjs-gui,babylonjs-inspector,babylonjs-loaders,babylonjs-materials,babylonjs-serializers,babylonjs-post-process,babylonjs-procedural-textures,babylonjs-node-editor,babylonjs-gui-editor,babylonjs-ktx2decoder,babylonjs-viewer-assets,babylonjs-viewer,babylonjs-accessibility",
+        "build:es6": "nx run-many --target=build --parallel --maxParallel=6 --projects=core,gui,loaders,materials,serializers,post-processes,procedural-textures,node-editor,inspector,gui-editor,viewer,shared-ui-components,accessibility",
         "watch:shaders": "build-tools -c build-shaders --global --watch",
         "watch:assets": "build-tools -c pa --global --watch",
         "watch:source:dev": "tsc -b ./tsconfig.devpackages.json -w",
@@ -95,8 +95,8 @@
         "start": "concurrently --kill-others -m 2 -n dev-watch,cdn-server \"npm run watch:dev:skip-compile\" \"npm run serve -w @tools/babylon-server\""
     },
     "engines": {
-        "node": ">=12.0.0 <17.0.0",
-        "npm": ">=7.0.0"
+        "node": ">=14.0.0 <20.0.0",
+        "npm": ">=8.0.0"
     },
     "changelog": {
         "nextVersion": "Unreleased",

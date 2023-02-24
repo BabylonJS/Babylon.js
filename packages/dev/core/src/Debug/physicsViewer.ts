@@ -290,7 +290,7 @@ export class PhysicsViewer {
 
                 this._numBodies--;
                 if (this._numBodies > 0) {
-                    this._bodyMeshes[i] = this._meshes[this._numBodies];
+                    this._bodyMeshes[i] = this._bodyMeshes[this._numBodies];
                     this._bodies[i] = this._bodies[this._numBodies];
                     this._bodyMeshes[this._numBodies] = null;
                     this._bodies[this._numBodies] = null;
@@ -501,11 +501,11 @@ export class PhysicsViewer {
      */
     public dispose() {
         // impostors
-        for (let index = 0; index < this._numMeshes; index++) {
+        for (let index = this._numMeshes - 1; index >= 0; index--) {
             this.hideImpostor(this._impostors[0]);
         }
         // bodies
-        for (let index = 0; index < this._numBodies; index++) {
+        for (let index = this._numBodies - 1; index >= 0; index--) {
             this.hideBody(this._bodies[0]);
         }
 

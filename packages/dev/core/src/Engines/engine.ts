@@ -596,43 +596,9 @@ export class Engine extends ThinEngine {
         if ((<any>canvasOrContext).getContext) {
             const canvas = <HTMLCanvasElement>canvasOrContext;
 
-            this._sharedInit(canvas, !!options.doNotHandleTouchAction, options.audioEngine!);
-
-            if (IsDocumentAvailable()) {
-                // Fullscreen
-                this._onFullscreenChange = () => {
-                    this.isFullscreen = !!document.fullscreenElement;
-
-                    // Pointer lock
-                    if (this.isFullscreen && this._pointerLockRequested && canvas) {
-                        Engine._RequestPointerlock(canvas);
-                    }
-                };
-
-                document.addEventListener("fullscreenchange", this._onFullscreenChange, false);
-                document.addEventListener("webkitfullscreenchange", this._onFullscreenChange, false);
-
-                // Pointer lock
-                this._onPointerLockChange = () => {
-                    this.isPointerLock = document.pointerLockElement === canvas;
-                };
-
-                document.addEventListener("pointerlockchange", this._onPointerLockChange, false);
-                document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
-
-                // Create Audio Engine if needed.
-                if (!Engine.audioEngine && options.audioEngine && Engine.AudioEngineFactory) {
-                    Engine.audioEngine = Engine.AudioEngineFactory(this.getRenderingCanvas(), this.getAudioContext(), this.getAudioDestination());
-                }
-            }
+            this._sharedInit(canvas);
 
             this._connectVREvents();
-
-            this.enableOfflineSupport = Engine.OfflineProviderFactory !== undefined;
-
-            this._deterministicLockstep = !!options.deterministicLockstep;
-            this._lockstepMaxSteps = options.lockstepMaxSteps || 0;
-            this._timeStep = options.timeStep || 1 / 60;
         }
 
         // Load WebVR Devices
@@ -651,11 +617,9 @@ export class Engine extends ThinEngine {
     /**
      * Shared initialization across engines types.
      * @param canvas The canvas associated with this instance of the engine.
-     * @param doNotHandleTouchAction Defines that engine should ignore modifying touch action attribute and style
-     * @param audioEngine Defines if an audio engine should be created by default
      */
-    protected _sharedInit(canvas: HTMLCanvasElement, doNotHandleTouchAction: boolean, audioEngine: boolean) {
-        super._sharedInit(canvas, doNotHandleTouchAction, audioEngine);
+    protected _sharedInit(canvas: HTMLCanvasElement) {
+        super._sharedInit(canvas);
 
         this._onCanvasFocus = () => {
             this.onCanvasFocusObservable.notifyObservers(this);
@@ -705,14 +669,42 @@ export class Engine extends ThinEngine {
 
         canvas.addEventListener("pointerout", this._onCanvasPointerOut);
 
-        if (!doNotHandleTouchAction) {
+        if (!this._creationOptions.doNotHandleTouchAction) {
             this._disableTouchAction();
         }
 
         // Create Audio Engine if needed.
-        if (!Engine.audioEngine && audioEngine && Engine.AudioEngineFactory) {
+        if (!Engine.audioEngine && this._creationOptions.audioEngine && Engine.AudioEngineFactory) {
             Engine.audioEngine = Engine.AudioEngineFactory(this.getRenderingCanvas(), this.getAudioContext(), this.getAudioDestination());
         }
+        if (IsDocumentAvailable()) {
+            // Fullscreen
+            this._onFullscreenChange = () => {
+                this.isFullscreen = !!document.fullscreenElement;
+
+                // Pointer lock
+                if (this.isFullscreen && this._pointerLockRequested && canvas) {
+                    Engine._RequestPointerlock(canvas);
+                }
+            };
+
+            document.addEventListener("fullscreenchange", this._onFullscreenChange, false);
+            document.addEventListener("webkitfullscreenchange", this._onFullscreenChange, false);
+
+            // Pointer lock
+            this._onPointerLockChange = () => {
+                this.isPointerLock = document.pointerLockElement === canvas;
+            };
+
+            document.addEventListener("pointerlockchange", this._onPointerLockChange, false);
+            document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
+        }
+
+        this.enableOfflineSupport = Engine.OfflineProviderFactory !== undefined;
+
+        this._deterministicLockstep = !!this._creationOptions.deterministicLockstep;
+        this._lockstepMaxSteps = this._creationOptions.lockstepMaxSteps || 0;
+        this._timeStep = this._creationOptions.timeStep || 1 / 60;
     }
 
     /**
@@ -2026,8 +2018,16 @@ export class Engine extends ThinEngine {
      */
     static _RequestPointerlock(element: HTMLElement): void {
         if (element.requestPointerLock) {
-            element.requestPointerLock();
-            element.focus();
+            // In some browsers, requestPointerLock returns a promise.
+            // Handle possible rejections to avoid an unhandled top-level exception.
+            const promise: unknown = element.requestPointerLock();
+            if (promise instanceof Promise)
+                promise
+                    .then(() => {
+                        element.focus();
+                    })
+                    .catch(() => {});
+            else element.focus();
         }
     }
 

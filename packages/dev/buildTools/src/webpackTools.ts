@@ -33,6 +33,9 @@ export const externalsFunction = (excludePackages: string[] = [], type: BuildTyp
             if (directoryToExpect && context.replace(/\\/g, "/").includes("/" + directoryToExpect + "/")) {
                 return callback(null);
             }
+            if (request.indexOf("ktx2decoderTypes") !== -1) {
+                return callback(null);
+            }
             if (type === "umd" || type === "es6") {
                 return callback(null, {
                     root: namespaceName.indexOf(".") !== -1 ? namespaceName.split(".") : namespaceName,

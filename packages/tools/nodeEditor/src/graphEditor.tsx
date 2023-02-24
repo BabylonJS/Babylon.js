@@ -144,7 +144,17 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 targetY = targetY - this._diagramContainer.offsetTop;
             }
 
-            this.emitNewBlock(eventData.type, targetX, targetY);
+            const selectedLink = this._graphCanvas.selectedLink;
+            const selectedNode = this._graphCanvas.selectedNodes.length ? this._graphCanvas.selectedNodes[0] : null;
+            const newNode = this.emitNewBlock(eventData.type, targetX, targetY);
+
+            if (newNode && eventData.smartAdd) {
+                if (selectedLink) {
+                    this._graphCanvas.smartAddOverLink(newNode, selectedLink);
+                } else if (selectedNode) {
+                    this._graphCanvas.smartAddOverNode(newNode, selectedNode);
+                }
+            }
         });
 
         this.props.globalState.stateManager.onRebuildRequiredObservable.add((autoConfigure) => {
@@ -443,6 +453,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         this._graphCanvas.drop(newNode, targetX, targetY, offsetX, offsetY);
 
         this.forceUpdate();
+
+        return newNode;
     }
 
     dropNewBlock(event: React.DragEvent<HTMLDivElement>) {

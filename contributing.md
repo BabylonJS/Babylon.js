@@ -54,7 +54,7 @@ Before submitting your PR, just check that everything goes well by [creating the
 
 You should read the [how to contribute documentation](https://doc.babylonjs.com/divingDeeper/developWithBjs/howToStart) before working on your PR.
 
-If you intent to only update the doc, this [documentation](https://doc.babylonjs.com/divingDeeper/developWithBjs/contributeToDocs) would detail the process.
+If you intend to only update the doc, this [documentation](https://doc.babylonjs.com/divingDeeper/developWithBjs/contributeToDocs) would detail the process.
 
 To validate your PR, please follow these steps:
 

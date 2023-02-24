@@ -1,7 +1,7 @@
 import { AbstractScene } from "./abstractScene";
 import type { Scene } from "./scene";
 import { Mesh } from "./Meshes/mesh";
-import type { TransformNode } from "./Meshes/transformNode";
+import { TransformNode } from "./Meshes/transformNode";
 import type { Skeleton } from "./Bones/skeleton";
 import type { AnimationGroup } from "./Animations/animationGroup";
 import type { Animatable } from "./Animations/animatable";
@@ -14,7 +14,10 @@ import type { Nullable } from "./types";
 import type { Node } from "./node";
 import type { Observer } from "./Misc/observable";
 import type { ThinEngine } from "./Engines/thinEngine";
-import type { InstancedMesh } from "./Meshes/instancedMesh";
+import { InstancedMesh } from "./Meshes/instancedMesh";
+import { Light } from "./Lights/light";
+import { Camera } from "./Cameras/camera";
+import { Tools } from "./Misc/tools";
 
 /**
  * Set of assets to keep when moving a scene into an asset container.
@@ -117,6 +120,166 @@ export class AssetContainer extends AbstractScene {
     }
 
     /**
+     * Given a list of nodes, return a topological sorting of them.
+     * @param nodes
+     */
+    private _topologicalSort(nodes: TransformNode[]): TransformNode[] {
+        const nodesUidMap = new Map<number, TransformNode>();
+
+        for (const node of nodes) {
+            nodesUidMap.set(node.uniqueId, node);
+        }
+
+        const dependencyGraph = {
+            dependsOn: new Map<number, Set<number>>(), // given a node id, what are the ids of the nodes it depends on
+            dependedBy: new Map<number, Set<number>>(), // given a node id, what are the ids of the nodes that depend on it
+        };
+
+        // Build the dependency graph given the list of nodes
+
+        // First pass: Initialize the empty dependency graph
+        for (const node of nodes) {
+            const nodeId = node.uniqueId;
+            dependencyGraph.dependsOn.set(nodeId, new Set<number>());
+            dependencyGraph.dependedBy.set(nodeId, new Set<number>());
+        }
+
+        // Second pass: Populate the dependency graph. We assume that we
+        // don't need to check for cycles here, as the scene graph cannot
+        // contain cycles. Our graph also already contains all transitive
+        // dependencies because getDescendants returns the transitive
+        // dependencies by default.
+        for (const node of nodes) {
+            const nodeId = node.uniqueId;
+            const dependsOn = dependencyGraph.dependsOn.get(nodeId)!;
+            if (node instanceof InstancedMesh) {
+                const masterMesh = node.sourceMesh;
+                if (nodesUidMap.has(masterMesh.uniqueId)) {
+                    dependsOn.add(masterMesh.uniqueId);
+                    dependencyGraph.dependedBy.get(masterMesh.uniqueId)!.add(nodeId);
+                }
+            }
+            const dependedBy = dependencyGraph.dependedBy.get(nodeId)!;
+
+            for (const child of node.getDescendants()) {
+                const childId = child.uniqueId;
+                if (nodesUidMap.has(childId)) {
+                    dependedBy.add(childId);
+
+                    const childDependsOn = dependencyGraph.dependsOn.get(childId)!;
+                    childDependsOn.add(nodeId);
+                }
+            }
+        }
+
+        // Third pass: Topological sort
+        const sortedNodes: TransformNode[] = [];
+
+        // First: Find all nodes that have no dependencies
+        const leaves: TransformNode[] = [];
+        for (const node of nodes) {
+            const nodeId = node.uniqueId;
+            if (dependencyGraph.dependsOn.get(nodeId)!.size === 0) {
+                leaves.push(node);
+                nodesUidMap.delete(nodeId);
+            }
+        }
+
+        const visitList = leaves;
+        while (visitList.length > 0) {
+            const nodeToVisit = visitList.shift()!;
+
+            sortedNodes.push(nodeToVisit);
+
+            // Remove the node from the dependency graph
+            // When a node is visited, we know that dependsOn is empty.
+            // So we only need to remove the node from dependedBy.
+            const dependedByVisitedNode = dependencyGraph.dependedBy.get(nodeToVisit.uniqueId)!;
+            // Array.from(x.values()) is to make the TS compiler happy
+            for (const dependedByVisitedNodeId of Array.from(dependedByVisitedNode.values())) {
+                const dependsOnDependedByVisitedNode = dependencyGraph.dependsOn.get(dependedByVisitedNodeId)!;
+                dependsOnDependedByVisitedNode.delete(nodeToVisit.uniqueId);
+
+                if (dependsOnDependedByVisitedNode.size === 0 && nodesUidMap.get(dependedByVisitedNodeId)) {
+                    visitList.push(nodesUidMap.get(dependedByVisitedNodeId)!);
+                    nodesUidMap.delete(dependedByVisitedNodeId);
+                }
+            }
+        }
+
+        if (nodesUidMap.size > 0) {
+            console.error("SceneSerializer._topologicalSort: There were unvisited nodes:");
+            nodesUidMap.forEach((node) => console.error(node.name));
+        }
+
+        return sortedNodes;
+    }
+
+    private _addNodeAndDescendantsToList(list: Node[], addedIds: Set<number>, rootNode: Node, predicate?: (entity: any) => boolean) {
+        if ((predicate && !predicate(rootNode)) || addedIds.has(rootNode.uniqueId)) {
+            return;
+        }
+
+        list.push(rootNode);
+        addedIds.add(rootNode.uniqueId);
+
+        for (const child of rootNode.getDescendants(true)) {
+            this._addNodeAndDescendantsToList(list, addedIds, child, predicate);
+        }
+    }
+
+    /**
+     * Check if a specific node is contained in this asset container.
+     * @param node
+     */
+    private _isNodeInContainer(node: Node) {
+        if (node instanceof Mesh && this.meshes.indexOf(node) !== -1) {
+            return true;
+        }
+        if (node instanceof TransformNode && this.transformNodes.indexOf(node) !== -1) {
+            return true;
+        }
+        if (node instanceof Light && this.lights.indexOf(node) !== -1) {
+            return true;
+        }
+        if (node instanceof Camera && this.cameras.indexOf(node) !== -1) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * For every node in the scene, check if its parent node is also in the scene.
+     */
+    private _isValidHierarchy() {
+        for (const node of this.meshes) {
+            if (node.parent && !this._isNodeInContainer(node.parent)) {
+                Logger.Warn(`Node ${node.name} has a parent that is not in the container.`);
+                return false;
+            }
+        }
+        for (const node of this.transformNodes) {
+            if (node.parent && !this._isNodeInContainer(node.parent)) {
+                Logger.Warn(`Node ${node.name} has a parent that is not in the container.`);
+                return false;
+            }
+        }
+        for (const node of this.lights) {
+            if (node.parent && !this._isNodeInContainer(node.parent)) {
+                Logger.Warn(`Node ${node.name} has a parent that is not in the container.`);
+                return false;
+            }
+        }
+        for (const node of this.cameras) {
+            if (node.parent && !this._isNodeInContainer(node.parent)) {
+                Logger.Warn(`Node ${node.name} has a parent that is not in the container.`);
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Instantiate or clone all meshes and add the new ones to the scene.
      * Skeletons and animation groups will all be cloned
      * @param nameFunction defines an optional function used to get new names for clones
@@ -131,6 +294,9 @@ export class AssetContainer extends AbstractScene {
         cloneMaterials = false,
         options?: { doNotInstantiate?: boolean | ((node: TransformNode) => boolean); predicate?: (entity: any) => boolean }
     ): InstantiatedEntries {
+        if (!this._isValidHierarchy()) {
+            Tools.Warn("SceneSerializer.InstantiateModelsToScene: The Asset Container hierarchy is not valid.");
+        }
         const conversionMap: { [key: number]: number } = {};
         const storeMap: { [key: number]: any } = {};
         const result = new InstantiatedEntries();
@@ -173,28 +339,42 @@ export class AssetContainer extends AbstractScene {
             }
         };
 
-        this.transformNodes.forEach((o) => {
-            if (localOptions.predicate && !localOptions.predicate(o)) {
-                return;
+        const nodesToSort: TransformNode[] = [];
+        const idsOnSortList = new Set<number>();
+
+        for (const transformNode of this.transformNodes) {
+            if (transformNode.parent === null) {
+                this._addNodeAndDescendantsToList(nodesToSort, idsOnSortList, transformNode, localOptions.predicate);
             }
+        }
 
-            if (!o.parent) {
-                const newOne = o.instantiateHierarchy(null, localOptions, (source, clone) => {
-                    onClone(source, clone);
-                });
-
-                if (newOne) {
-                    result.rootNodes.push(newOne);
-                }
+        for (const mesh of this.meshes) {
+            if (mesh.parent === null) {
+                this._addNodeAndDescendantsToList(nodesToSort, idsOnSortList, mesh, localOptions.predicate);
             }
-        });
+        }
 
-        // check if there are instanced meshes in the array, to set their new source mesh
-        const instancesExist = this.meshes.some((m) => m.getClassName() === "InstancedMesh");
-        const instanceSourceMap: TransformNode[] = [];
+        // Topologically sort nodes by parenting/instancing relationships so that all resources are in place
+        // when a given node is instantiated.
+        const sortedNodes = this._topologicalSort(nodesToSort);
 
         const onNewCreated = (source: TransformNode, clone: TransformNode) => {
             onClone(source, clone);
+
+            if (source.parent) {
+                const replicatedParentId = conversionMap[source.parent.uniqueId];
+                const replicatedParent = storeMap[replicatedParentId];
+
+                if (replicatedParent) {
+                    clone.parent = replicatedParent;
+                } else {
+                    clone.parent = source.parent;
+                }
+            }
+
+            clone.position.copyFrom(source.position);
+            clone.rotation.copyFrom(source.rotation);
+            clone.scaling.copyFrom(source.scaling);
 
             if ((clone as any).material) {
                 const mesh = clone as AbstractMesh;
@@ -242,42 +422,28 @@ export class AssetContainer extends AbstractScene {
                     }
                 }
             }
+
+            if (clone.parent === null) {
+                result.rootNodes.push(clone);
+            }
         };
 
-        this.meshes.forEach((o, idx) => {
-            if (localOptions.predicate && !localOptions.predicate(o)) {
-                return;
-            }
-
-            if (!o.parent) {
-                const isInstance = o.getClassName() === "InstancedMesh";
-                let sourceMap: Mesh | undefined = undefined;
-                if (isInstance) {
-                    const oInstance = o as InstancedMesh;
-                    // find the right index for the source mesh
-                    const sourceMesh = oInstance.sourceMesh;
-                    const sourceMeshIndex = this.meshes.indexOf(sourceMesh);
-                    if (sourceMeshIndex !== -1 && instanceSourceMap[sourceMeshIndex]) {
-                        sourceMap = instanceSourceMap[sourceMeshIndex] as Mesh;
-                    }
+        sortedNodes.forEach((node) => {
+            if (node.getClassName() === "InstancedMesh") {
+                const instancedNode = node as InstancedMesh;
+                const sourceMesh = instancedNode.sourceMesh;
+                const replicatedSourceId = conversionMap[sourceMesh.uniqueId];
+                const replicatedSource = typeof replicatedSourceId === "number" ? storeMap[replicatedSourceId] : sourceMesh;
+                const replicatedInstancedNode = replicatedSource.createInstance(instancedNode.name);
+                onNewCreated(instancedNode, replicatedInstancedNode);
+            } else {
+                // Mesh or TransformNode
+                const canInstance = !localOptions?.doNotInstantiate && (node as Mesh).getTotalVertices() > 0;
+                const replicatedNode = canInstance ? (node as Mesh).createInstance(`instance of ${node.name}`) : node.clone(`Clone of ${node.name}`, null, true);
+                if (!replicatedNode) {
+                    throw new Error(`Could not clone or instantiate node on Asset Container ${node.name}`);
                 }
-                const newOne = isInstance
-                    ? (o as InstancedMesh).instantiateHierarchy(
-                          null,
-                          {
-                              ...localOptions,
-                              newSourcedMesh: sourceMap,
-                          },
-                          onNewCreated
-                      )
-                    : o.instantiateHierarchy(null, localOptions, onNewCreated);
-
-                if (newOne) {
-                    if (instancesExist && newOne.getClassName() !== "InstancedMesh") {
-                        instanceSourceMap[idx] = newOne;
-                    }
-                    result.rootNodes.push(newOne);
-                }
+                onNewCreated(node, replicatedNode);
             }
         });
 
@@ -337,6 +503,9 @@ export class AssetContainer extends AbstractScene {
     public addAllToScene() {
         if (this._wasAddedToScene) {
             return;
+        }
+        if (!this._isValidHierarchy()) {
+            Tools.Warn("SceneSerializer.addAllToScene: The Asset Container hierarchy is not valid.");
         }
 
         this._wasAddedToScene = true;
@@ -450,6 +619,10 @@ export class AssetContainer extends AbstractScene {
      * Removes all the assets in the container from the scene
      */
     public removeAllFromScene() {
+        if (!this._isValidHierarchy()) {
+            Tools.Warn("SceneSerializer.removeAllFromScene: The Asset Container hierarchy is not valid.");
+        }
+
         this._wasAddedToScene = false;
 
         this.removeFromScene(null);

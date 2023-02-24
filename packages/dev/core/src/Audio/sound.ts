@@ -875,6 +875,8 @@ export class Sound {
 
     private _onended() {
         this.isPlaying = false;
+        this._startTime = 0;
+        this._currentTime = 0;
         if (this.onended) {
             this.onended();
         }
@@ -905,9 +907,12 @@ export class Sound {
                     this.isPaused = false;
                     this._startTime = 0;
                     this._currentTime = 0;
-                    this._soundSource!.onended = () => void 0;
+                    if (this._soundSource) {
+                        this._soundSource.onended = () => void 0;
+                    }
+                    this._onended();
                 };
-                this._stopSoundSource(stopTime);
+                this._soundSource.stop(stopTime);
             }
         } else if (this.isPaused) {
             this.isPaused = false;
@@ -929,8 +934,9 @@ export class Sound {
                 }
                 this.isPlaying = false;
                 this.isPaused = true;
-            } else if (Engine.audioEngine?.audioContext) {
-                this._stopSoundSource();
+            } else if (Engine.audioEngine?.audioContext && this._soundSource) {
+                this._soundSource.onended = () => void 0;
+                this._soundSource.stop();
                 this.isPlaying = false;
                 this.isPaused = true;
                 this._currentTime += Engine.audioEngine.audioContext.currentTime - this._startTime;
@@ -1241,12 +1247,5 @@ export class Sound {
             this.isPaused = false;
         }
         this._offset = value;
-    }
-
-    private _stopSoundSource(stopTime?: number) {
-        if (this._soundSource) {
-            this._soundSource.stop(stopTime);
-            this._soundSource.disconnect();
-        }
     }
 }

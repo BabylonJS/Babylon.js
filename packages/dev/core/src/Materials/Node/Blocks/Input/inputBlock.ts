@@ -441,19 +441,19 @@ export class InputBlock extends NodeMaterialBlock {
             case NodeMaterialBlockConnectionPointTypes.Color3:
                 TmpColors.Color3[0].set(this.value.r, this.value.g, this.value.b);
                 if (this.convertToGammaSpace) {
-                    TmpColors.Color3[0].toGammaSpaceToRef(TmpColors.Color3[0]);
+                    TmpColors.Color3[0].toGammaSpaceToRef(TmpColors.Color3[0], state.sharedData.scene.getEngine().useExactSrgbConversions);
                 }
                 if (this.convertToLinearSpace) {
-                    TmpColors.Color3[0].toLinearSpaceToRef(TmpColors.Color3[0]);
+                    TmpColors.Color3[0].toLinearSpaceToRef(TmpColors.Color3[0], state.sharedData.scene.getEngine().useExactSrgbConversions);
                 }
                 return `vec3(${TmpColors.Color3[0].r}, ${TmpColors.Color3[0].g}, ${TmpColors.Color3[0].b})`;
             case NodeMaterialBlockConnectionPointTypes.Color4:
                 TmpColors.Color4[0].set(this.value.r, this.value.g, this.value.b, this.value.a);
                 if (this.convertToGammaSpace) {
-                    TmpColors.Color4[0].toGammaSpaceToRef(TmpColors.Color4[0]);
+                    TmpColors.Color4[0].toGammaSpaceToRef(TmpColors.Color4[0], state.sharedData.scene.getEngine().useExactSrgbConversions);
                 }
                 if (this.convertToLinearSpace) {
-                    TmpColors.Color4[0].toLinearSpaceToRef(TmpColors.Color4[0]);
+                    TmpColors.Color4[0].toLinearSpaceToRef(TmpColors.Color4[0], state.sharedData.scene.getEngine().useExactSrgbConversions);
                 }
                 return `vec4(${TmpColors.Color4[0].r}, ${TmpColors.Color4[0].g}, ${TmpColors.Color4[0].b}, ${TmpColors.Color4[0].a})`;
         }
@@ -646,20 +646,20 @@ export class InputBlock extends NodeMaterialBlock {
             case NodeMaterialBlockConnectionPointTypes.Color3:
                 TmpColors.Color3[0].set(this.value.r, this.value.g, this.value.b);
                 if (this.convertToGammaSpace) {
-                    TmpColors.Color3[0].toGammaSpaceToRef(TmpColors.Color3[0]);
+                    TmpColors.Color3[0].toGammaSpaceToRef(TmpColors.Color3[0], scene.getEngine().useExactSrgbConversions);
                 }
                 if (this.convertToLinearSpace) {
-                    TmpColors.Color3[0].toLinearSpaceToRef(TmpColors.Color3[0]);
+                    TmpColors.Color3[0].toLinearSpaceToRef(TmpColors.Color3[0], scene.getEngine().useExactSrgbConversions);
                 }
                 effect.setColor3(variableName, TmpColors.Color3[0]);
                 break;
             case NodeMaterialBlockConnectionPointTypes.Color4:
                 TmpColors.Color4[0].set(this.value.r, this.value.g, this.value.b, this.value.a);
                 if (this.convertToGammaSpace) {
-                    TmpColors.Color4[0].toGammaSpaceToRef(TmpColors.Color4[0]);
+                    TmpColors.Color4[0].toGammaSpaceToRef(TmpColors.Color4[0], scene.getEngine().useExactSrgbConversions);
                 }
                 if (this.convertToLinearSpace) {
-                    TmpColors.Color4[0].toLinearSpaceToRef(TmpColors.Color4[0]);
+                    TmpColors.Color4[0].toLinearSpaceToRef(TmpColors.Color4[0], scene.getEngine().useExactSrgbConversions);
                 }
                 effect.setDirectColor4(variableName, TmpColors.Color4[0]);
                 break;

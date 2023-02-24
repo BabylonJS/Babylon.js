@@ -632,6 +632,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             } else {
                 this.metadata = source.metadata;
             }
+            this._internalMetadata = source._internalMetadata;
 
             // Tags
             if (Tags && Tags.HasTags(source)) {
@@ -755,7 +756,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         for (const child of this.getChildTransformNodes(true)) {
             // instancedMesh should have a different sourced mesh
-            if (child.getClassName() === "InstancedMesh" && instance.getClassName() === "Mesh") {
+            if (child.getClassName() === "InstancedMesh" && instance.getClassName() === "Mesh" && (child as InstancedMesh).sourceMesh === this) {
                 (child as InstancedMesh).instantiateHierarchy(
                     instance,
                     {
@@ -3722,6 +3723,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 serializationInstance.metadata = instance.metadata;
             }
 
+            // Action Manager
+            if (instance.actionManager) {
+                serializationInstance.actions = instance.actionManager.serialize(instance.name);
+            }
+
             serializationObject.instances.push(serializationInstance);
 
             // Animations
@@ -4177,6 +4183,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 // Physics
                 if (parsedInstance.physicsImpostor) {
                     Mesh._PhysicsImpostorParser(scene, instance, parsedInstance);
+                }
+
+                // Actions
+                if (parsedInstance.actions !== undefined) {
+                    instance._waitingData.actions = parsedInstance.actions;
                 }
 
                 // Animation

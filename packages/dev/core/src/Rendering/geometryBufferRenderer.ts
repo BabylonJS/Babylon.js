@@ -11,7 +11,7 @@ import type { PrePassRenderer } from "../Rendering/prePassRenderer";
 import { MaterialHelper } from "../Materials/materialHelper";
 import type { Scene } from "../scene";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
-import { Color4 } from "../Maths/math.color";
+import { Color3, Color4 } from "../Maths/math.color";
 import { _WarnImport } from "../Misc/devTools";
 import type { Observer } from "../Misc/observable";
 import type { Engine } from "../Engines/engine";
@@ -21,12 +21,38 @@ import { Material } from "../Materials/material";
 import "../Shaders/geometry.fragment";
 import "../Shaders/geometry.vertex";
 import { MaterialFlags } from "../Materials/materialFlags";
+import { addClipPlaneUniforms, bindClipPlane, prepareDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
 
 /** @internal */
 interface ISavedTransformationMatrix {
     world: Matrix;
     viewProjection: Matrix;
 }
+
+/** list the uniforms used by the geometry renderer */
+const uniforms = [
+    "world",
+    "mBones",
+    "viewProjection",
+    "diffuseMatrix",
+    "view",
+    "previousWorld",
+    "previousViewProjection",
+    "mPreviousBones",
+    "bumpMatrix",
+    "reflectivityMatrix",
+    "albedoMatrix",
+    "reflectivityColor",
+    "albedoColor",
+    "metallic",
+    "glossiness",
+    "vTangentSpaceParams",
+    "vBumpInfos",
+    "morphTargetInfluences",
+    "morphTargetTextureInfo",
+    "morphTargetTextureIndices",
+];
+addClipPlaneUniforms(uniforms);
 
 /**
  * This renderer is helpful to fill one of the render target with a geometry buffer.
@@ -98,6 +124,7 @@ export class GeometryBufferRenderer {
     private _prePassRenderer: PrePassRenderer;
     private _attachments: number[];
     private _useUbo: boolean;
+    private _specularColorLinear = new Color3();
 
     protected _cachedDefines: string;
 
@@ -568,6 +595,8 @@ export class GeometryBufferRenderer {
             defines.push("#define RENDER_TARGET_COUNT " + this._multiRenderTarget.textures.length);
         }
 
+        prepareDefinesForClipPlanes(material, this._scene, defines);
+
         // Get correct effect
         const engine = this._scene.getEngine();
         const drawWrapper = subMesh._getDrawWrapper(undefined, true)!;
@@ -579,28 +608,7 @@ export class GeometryBufferRenderer {
                     "geometry",
                     {
                         attributes: attribs,
-                        uniformsNames: [
-                            "world",
-                            "mBones",
-                            "viewProjection",
-                            "diffuseMatrix",
-                            "view",
-                            "previousWorld",
-                            "previousViewProjection",
-                            "mPreviousBones",
-                            "bumpMatrix",
-                            "reflectivityMatrix",
-                            "albedoMatrix",
-                            "reflectivityColor",
-                            "albedoColor",
-                            "metallic",
-                            "glossiness",
-                            "vTangentSpaceParams",
-                            "vBumpInfos",
-                            "morphTargetInfluences",
-                            "morphTargetTextureInfo",
-                            "morphTargetTextureIndices",
-                        ],
+                        uniformsNames: uniforms,
                         samplers: ["diffuseSampler", "bumpSampler", "reflectivitySampler", "albedoSampler", "morphTargets"],
                         defines: join,
                         onCompiled: null,
@@ -780,124 +788,126 @@ export class GeometryBufferRenderer {
                     this._scene.finalizeSceneUbo();
                 }
 
-                if (material) {
-                    let sideOrientation: Nullable<number>;
-                    const instanceDataStorage = (renderingMesh as Mesh)._instanceDataStorage;
+                let sideOrientation: Nullable<number>;
+                const instanceDataStorage = (renderingMesh as Mesh)._instanceDataStorage;
 
-                    if (!instanceDataStorage.isFrozen && (material.backFaceCulling || renderingMesh.overrideMaterialSideOrientation !== null)) {
-                        const mainDeterminant = effectiveMesh._getWorldMatrixDeterminant();
-                        sideOrientation = renderingMesh.overrideMaterialSideOrientation;
-                        if (sideOrientation === null) {
-                            sideOrientation = material.sideOrientation;
-                        }
-                        if (mainDeterminant < 0) {
-                            sideOrientation = sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
-                        }
-                    } else {
-                        sideOrientation = instanceDataStorage.sideOrientation;
+                if (!instanceDataStorage.isFrozen && (material.backFaceCulling || renderingMesh.overrideMaterialSideOrientation !== null)) {
+                    const mainDeterminant = effectiveMesh._getWorldMatrixDeterminant();
+                    sideOrientation = renderingMesh.overrideMaterialSideOrientation;
+                    if (sideOrientation === null) {
+                        sideOrientation = material.sideOrientation;
                     }
+                    if (mainDeterminant < 0) {
+                        sideOrientation = sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
+                    }
+                } else {
+                    sideOrientation = instanceDataStorage.sideOrientation;
+                }
 
-                    material._preBind(drawWrapper, sideOrientation);
+                material._preBind(drawWrapper, sideOrientation);
 
-                    // Alpha test
-                    if (material.needAlphaTesting()) {
-                        const alphaTexture = material.getAlphaTestTexture();
-                        if (alphaTexture) {
-                            effect.setTexture("diffuseSampler", alphaTexture);
-                            effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                // Alpha test
+                if (material.needAlphaTesting()) {
+                    const alphaTexture = material.getAlphaTestTexture();
+                    if (alphaTexture) {
+                        effect.setTexture("diffuseSampler", alphaTexture);
+                        effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                    }
+                }
+
+                // Bump
+                if (material.bumpTexture && scene.getEngine().getCaps().standardDerivatives && MaterialFlags.BumpTextureEnabled) {
+                    effect.setFloat3("vBumpInfos", material.bumpTexture.coordinatesIndex, 1.0 / material.bumpTexture.level, material.parallaxScaleBias);
+                    effect.setMatrix("bumpMatrix", material.bumpTexture.getTextureMatrix());
+                    effect.setTexture("bumpSampler", material.bumpTexture);
+                    effect.setFloat2("vTangentSpaceParams", material.invertNormalMapX ? -1.0 : 1.0, material.invertNormalMapY ? -1.0 : 1.0);
+                }
+
+                // Reflectivity
+                if (this._enableReflectivity) {
+                    // for PBR materials: cf. https://doc.babylonjs.com/features/featuresDeepDive/materials/using/masterPBR
+                    if (material.getClassName() === "PBRMetallicRoughnessMaterial") {
+                        // if it is a PBR material in MetallicRoughness Mode:
+                        if (material.metallicRoughnessTexture !== null) {
+                            effect.setTexture("reflectivitySampler", material.metallicRoughnessTexture);
+                            effect.setMatrix("reflectivityMatrix", material.metallicRoughnessTexture.getTextureMatrix());
                         }
-                    }
-
-                    // Bump
-                    if (material.bumpTexture && scene.getEngine().getCaps().standardDerivatives && MaterialFlags.BumpTextureEnabled) {
-                        effect.setFloat3("vBumpInfos", material.bumpTexture.coordinatesIndex, 1.0 / material.bumpTexture.level, material.parallaxScaleBias);
-                        effect.setMatrix("bumpMatrix", material.bumpTexture.getTextureMatrix());
-                        effect.setTexture("bumpSampler", material.bumpTexture);
-                        effect.setFloat2("vTangentSpaceParams", material.invertNormalMapX ? -1.0 : 1.0, material.invertNormalMapY ? -1.0 : 1.0);
-                    }
-
-                    // Reflectivity
-                    if (this._enableReflectivity) {
-                        // for PBR materials: cf. https://doc.babylonjs.com/features/featuresDeepDive/materials/using/masterPBR
-                        if (material.getClassName() === "PBRMetallicRoughnessMaterial") {
-                            // if it is a PBR material in MetallicRoughness Mode:
-                            if (material.metallicRoughnessTexture !== null) {
-                                effect.setTexture("reflectivitySampler", material.metallicRoughnessTexture);
-                                effect.setMatrix("reflectivityMatrix", material.metallicRoughnessTexture.getTextureMatrix());
-                            }
-                            if (material.metallic !== null) {
-                                effect.setFloat("metallic", material.metallic);
-                            }
-                            if (material.roughness !== null) {
-                                effect.setFloat("glossiness", 1.0 - material.roughness);
-                            }
-                            if (material.baseTexture !== null) {
-                                effect.setTexture("albedoSampler", material.baseTexture);
-                                effect.setMatrix("albedoMatrix", material.baseTexture.getTextureMatrix());
-                            }
-                            if (material.baseColor !== null) {
-                                effect.setColor3("albedoColor", material.baseColor);
-                            }
-                        } else if (material.getClassName() === "PBRSpecularGlossinessMaterial") {
-                            // if it is a PBR material in Specular/Glossiness Mode:
-                            if (material.specularGlossinessTexture !== null) {
-                                effect.setTexture("reflectivitySampler", material.specularGlossinessTexture);
-                                effect.setMatrix("reflectivityMatrix", material.specularGlossinessTexture.getTextureMatrix());
-                            } else {
-                                if (material.specularColor !== null) {
-                                    effect.setColor3("reflectivityColor", material.specularColor);
-                                }
-                            }
-                            if (material.glossiness !== null) {
-                                effect.setFloat("glossiness", material.glossiness);
-                            }
-                        } else if (material.getClassName() === "PBRMaterial") {
-                            // if it is the bigger PBRMaterial
-                            if (material.metallicTexture !== null) {
-                                effect.setTexture("reflectivitySampler", material.metallicTexture);
-                                effect.setMatrix("reflectivityMatrix", material.metallicTexture.getTextureMatrix());
-                            }
-                            if (material.metallic !== null) {
-                                effect.setFloat("metallic", material.metallic);
-                            }
-
-                            if (material.roughness !== null) {
-                                effect.setFloat("glossiness", 1.0 - material.roughness);
-                            }
-
-                            if (material.roughness !== null || material.metallic !== null || material.metallicTexture !== null) {
-                                // MetallicRoughness Model
-                                if (material.albedoTexture !== null) {
-                                    effect.setTexture("albedoSampler", material.albedoTexture);
-                                    effect.setMatrix("albedoMatrix", material.albedoTexture.getTextureMatrix());
-                                }
-                                if (material.albedoColor !== null) {
-                                    effect.setColor3("albedoColor", material.albedoColor);
-                                }
-                            } else {
-                                // SpecularGlossiness Model
-                                if (material.reflectivityTexture !== null) {
-                                    effect.setTexture("reflectivitySampler", material.reflectivityTexture);
-                                    effect.setMatrix("reflectivityMatrix", material.reflectivityTexture.getTextureMatrix());
-                                } else if (material.reflectivityColor !== null) {
-                                    effect.setColor3("reflectivityColor", material.reflectivityColor);
-                                }
-                                if (material.microSurface !== null) {
-                                    effect.setFloat("glossiness", material.microSurface);
-                                }
-                            }
-                        } else if (material.getClassName() === "StandardMaterial") {
-                            // if StandardMaterial:
-                            if (material.specularTexture !== null) {
-                                effect.setTexture("reflectivitySampler", material.specularTexture);
-                                effect.setMatrix("reflectivityMatrix", material.specularTexture.getTextureMatrix());
-                            }
+                        if (material.metallic !== null) {
+                            effect.setFloat("metallic", material.metallic);
+                        }
+                        if (material.roughness !== null) {
+                            effect.setFloat("glossiness", 1.0 - material.roughness);
+                        }
+                        if (material.baseTexture !== null) {
+                            effect.setTexture("albedoSampler", material.baseTexture);
+                            effect.setMatrix("albedoMatrix", material.baseTexture.getTextureMatrix());
+                        }
+                        if (material.baseColor !== null) {
+                            effect.setColor3("albedoColor", material.baseColor);
+                        }
+                    } else if (material.getClassName() === "PBRSpecularGlossinessMaterial") {
+                        // if it is a PBR material in Specular/Glossiness Mode:
+                        if (material.specularGlossinessTexture !== null) {
+                            effect.setTexture("reflectivitySampler", material.specularGlossinessTexture);
+                            effect.setMatrix("reflectivityMatrix", material.specularGlossinessTexture.getTextureMatrix());
+                        } else {
                             if (material.specularColor !== null) {
-                                effect.setColor3("reflectivityColor", material.specularColor);
+                                material.specularColor.toLinearSpaceToRef(this._specularColorLinear);
+                                effect.setColor3("reflectivityColor", this._specularColorLinear);
                             }
+                        }
+                        if (material.glossiness !== null) {
+                            effect.setFloat("glossiness", material.glossiness);
+                        }
+                    } else if (material.getClassName() === "PBRMaterial") {
+                        // if it is the bigger PBRMaterial
+                        if (material.metallicTexture !== null) {
+                            effect.setTexture("reflectivitySampler", material.metallicTexture);
+                            effect.setMatrix("reflectivityMatrix", material.metallicTexture.getTextureMatrix());
+                        }
+                        if (material.metallic !== null) {
+                            effect.setFloat("metallic", material.metallic);
+                        }
+
+                        if (material.roughness !== null) {
+                            effect.setFloat("glossiness", 1.0 - material.roughness);
+                        }
+
+                        if (material.roughness !== null || material.metallic !== null || material.metallicTexture !== null) {
+                            // MetallicRoughness Model
+                            if (material.albedoTexture !== null) {
+                                effect.setTexture("albedoSampler", material.albedoTexture);
+                                effect.setMatrix("albedoMatrix", material.albedoTexture.getTextureMatrix());
+                            }
+                            if (material.albedoColor !== null) {
+                                effect.setColor3("albedoColor", material.albedoColor);
+                            }
+                        } else {
+                            // SpecularGlossiness Model
+                            if (material.reflectivityTexture !== null) {
+                                effect.setTexture("reflectivitySampler", material.reflectivityTexture);
+                                effect.setMatrix("reflectivityMatrix", material.reflectivityTexture.getTextureMatrix());
+                            } else if (material.reflectivityColor !== null) {
+                                effect.setColor3("reflectivityColor", material.reflectivityColor);
+                            }
+                            if (material.microSurface !== null) {
+                                effect.setFloat("glossiness", material.microSurface);
+                            }
+                        }
+                    } else if (material.getClassName() === "StandardMaterial") {
+                        // if StandardMaterial:
+                        if (material.specularTexture !== null) {
+                            effect.setTexture("reflectivitySampler", material.specularTexture);
+                            effect.setMatrix("reflectivityMatrix", material.specularTexture.getTextureMatrix());
+                        }
+                        if (material.specularColor !== null) {
+                            effect.setColor3("reflectivityColor", material.specularColor);
                         }
                     }
                 }
+
+                // Clip plane
+                bindClipPlane(effect, material, this._scene);
 
                 // Bones
                 if (renderingMesh.useBones && renderingMesh.computeBonesUsingShaders && renderingMesh.skeleton) {

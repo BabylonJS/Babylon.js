@@ -928,7 +928,7 @@ export class MaterialHelper {
             effect.setFloat4("vFogInfos", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
             // Convert fog color to linear space if used in a linear space computed shader.
             if (linearSpace) {
-                scene.fogColor.toLinearSpaceToRef(this._TempFogColor);
+                scene.fogColor.toLinearSpaceToRef(this._TempFogColor, scene.getEngine().useExactSrgbConversions);
                 effect.setColor3("vFogColor", this._TempFogColor);
             } else {
                 effect.setColor3("vFogColor", scene.fogColor);

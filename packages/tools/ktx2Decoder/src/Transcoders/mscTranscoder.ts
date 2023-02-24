@@ -1,4 +1,6 @@
-import { Transcoder, sourceTextureFormat, transcodeTarget } from "../transcoder";
+import * as KTX2 from "core/Materials/Textures/ktx2decoderTypes";
+
+import { Transcoder } from "../transcoder";
 import type { KTX2FileReader, IKTX2_ImageDesc } from "../ktx2FileReader";
 import { WASMMemoryManager } from "../wasmMemoryManager";
 
@@ -76,13 +78,13 @@ export class MSCTranscoder extends Transcoder {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public static CanTranscode(src: sourceTextureFormat, dst: transcodeTarget, isInGammaSpace: boolean): boolean {
+    public static CanTranscode(src: KTX2.SourceTextureFormat, dst: KTX2.TranscodeTarget, isInGammaSpace: boolean): boolean {
         return true;
     }
 
     public transcode(
-        src: sourceTextureFormat,
-        dst: transcodeTarget,
+        src: KTX2.SourceTextureFormat,
+        dst: KTX2.TranscodeTarget,
         level: number,
         width: number,
         height: number,
@@ -102,18 +104,20 @@ export class MSCTranscoder extends Transcoder {
             let textureData: any = null;
 
             try {
-                transcoder = src === sourceTextureFormat.UASTC4x4 ? new basisModule.UastcImageTranscoder() : new basisModule.BasisLzEtc1sImageTranscoder();
-                const texFormat = src === sourceTextureFormat.UASTC4x4 ? basisModule.TextureFormat.UASTC4x4 : basisModule.TextureFormat.ETC1S;
+                transcoder = src === KTX2.SourceTextureFormat.UASTC4x4 ? new basisModule.UastcImageTranscoder() : new basisModule.BasisLzEtc1sImageTranscoder();
+                const texFormat = src === KTX2.SourceTextureFormat.UASTC4x4 ? basisModule.TextureFormat.UASTC4x4 : basisModule.TextureFormat.ETC1S;
 
                 imageInfo = new basisModule.ImageInfo(texFormat, width, height, level);
 
-                const targetFormat = basisModule.TranscodeTarget[transcodeTarget[dst]]; // works because the labels of the sourceTextureFormat enum are the same as the property names used in TranscodeTarget!
+                const targetFormat = basisModule.TranscodeTarget[KTX2.TranscodeTarget[dst]]; // works because the labels of the sourceTextureFormat enum are the same as the property names used in TranscodeTarget!
 
                 if (!basisModule.isFormatSupported(targetFormat, texFormat)) {
-                    throw new Error(`MSCTranscoder: Transcoding from "${sourceTextureFormat[src]}" to "${transcodeTarget[dst]}" not supported by current transcoder build.`);
+                    throw new Error(
+                        `MSCTranscoder: Transcoding from "${KTX2.SourceTextureFormat[src]}" to "${KTX2.TranscodeTarget[dst]}" not supported by current transcoder build.`
+                    );
                 }
 
-                if (src === sourceTextureFormat.ETC1S) {
+                if (src === KTX2.SourceTextureFormat.ETC1S) {
                     const sgd = ktx2Reader.supercompressionGlobalData;
 
                     transcoder.decodePalettes(sgd.endpointCount, sgd.endpointsData, sgd.selectorCount, sgd.selectorsData);

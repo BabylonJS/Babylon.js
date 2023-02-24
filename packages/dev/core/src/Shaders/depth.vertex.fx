@@ -25,6 +25,11 @@ attribute vec2 uv2;
 #endif
 #endif
 
+#ifdef STORE_CAMERASPACE_Z
+	uniform mat4 view;
+	varying vec4 vViewPos;
+#endif
+
 varying float vDepthMetric;
 
 
@@ -49,11 +54,15 @@ void main(void)
 	#include<clipPlaneVertex>
 	gl_Position = viewProjection * worldPos;
 
-    #ifdef USE_REVERSE_DEPTHBUFFER
-	    vDepthMetric = ((-gl_Position.z + depthValues.x) / (depthValues.y));
-    #else
-	    vDepthMetric = ((gl_Position.z + depthValues.x) / (depthValues.y));
-    #endif
+	#ifdef STORE_CAMERASPACE_Z
+		vViewPos = view * worldPos;
+	#else
+		#ifdef USE_REVERSE_DEPTHBUFFER
+			vDepthMetric = ((-gl_Position.z + depthValues.x) / (depthValues.y));
+		#else
+			vDepthMetric = ((gl_Position.z + depthValues.x) / (depthValues.y));
+		#endif
+	#endif
 
 #if defined(ALPHATEST) || defined(BASIC_RENDER)
 #ifdef UV1
