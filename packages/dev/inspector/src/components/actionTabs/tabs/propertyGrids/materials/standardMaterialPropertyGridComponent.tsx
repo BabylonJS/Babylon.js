@@ -128,6 +128,12 @@ export class StandardMaterialPropertyGridComponent extends React.Component<IStan
                     propertyName="isEnabled"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
+                <CheckBoxLineComponent
+                    label="Use decalmap"
+                    target={material.decalMap}
+                    propertyName="isEnabled"
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                />
             </LineContainerComponent>
         );
     }
