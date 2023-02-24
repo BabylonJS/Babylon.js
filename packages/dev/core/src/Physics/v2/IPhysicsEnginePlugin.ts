@@ -128,6 +128,7 @@ export interface IPhysicsEnginePluginV2 {
     syncTransform(body: PhysicsBody, transformNode: TransformNode): void;
     setShape(body: PhysicsBody, shape: PhysicsShape): void;
     getShape(body: PhysicsBody): PhysicsShape;
+    getShapeType(shape: PhysicsShape): ShapeType;
     setFilterGroup(body: PhysicsBody, group: number): void;
     getFilterGroup(body: PhysicsBody): number;
     setEventMask(body: PhysicsBody, eventMask: number): void;
