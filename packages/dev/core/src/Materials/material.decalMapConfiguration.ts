@@ -72,7 +72,7 @@ export class DecalMapConfiguration extends MaterialPluginBase {
             return true;
         }
 
-        return decalMapGenerator.texture.isReady();
+        return decalMapGenerator.isReady();
     }
 
     public prepareDefines(defines: DecalMapDefines, scene: Scene, mesh: AbstractMesh): void {

@@ -126,6 +126,14 @@ export class DecalMapGenerator {
     }
 
     /**
+     * Checks if the decal map is ready to be used
+     * @returns true if the decal map is ready to be used
+     */
+    public isReady(): boolean {
+        return DecalMapGenerator._GetShader(this._scene).isReady() && (this.texture?.isReady() ?? true);
+    }
+
+    /**
      * Adds a decal to the decal map
      * @param texture The texture decal
      * @param position The position of the decal (world space coordinates)
