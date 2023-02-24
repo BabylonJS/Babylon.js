@@ -107,7 +107,7 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
             // Default behavior (WebGL)
             const gl = this._context;
 
-            faceIndexOrLayer = faceIndexOrLayer ?? 0;
+            faceIndexOrLayer = faceIndexOrLayer ?? -1;
 
             const attachment = (<any>gl)["COLOR_ATTACHMENT" + attachmentIndex + "_WEBGL"];
             const target = faceIndexOrLayer !== -1 ? gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndexOrLayer : gl.TEXTURE_2D;
@@ -172,7 +172,7 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
         if (texture.is2DArray || texture.is3D) {
             this._bindTextureRenderTarget(this.textures[index], index, this.layerIndices[index]);
         } else if (texture.isCube) {
-            this._bindTextureRenderTarget(this.textures[index], index, this.layerIndices[index]);
+            this._bindTextureRenderTarget(this.textures[index], index, this.faceIndices[index]);
         }
     }
 
