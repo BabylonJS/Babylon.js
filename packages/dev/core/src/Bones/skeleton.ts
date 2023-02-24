@@ -185,11 +185,7 @@ export class Skeleton implements IAnimatable {
             return mesh._bonesTransformMatrices!;
         }
 
-        if (!this._transformMatrices) {
-            this.prepare();
-        }
-
-        if (this._isDirty) {
+        if (!this._transformMatrices || this._isDirty) {
             this.prepare();
         }
 
