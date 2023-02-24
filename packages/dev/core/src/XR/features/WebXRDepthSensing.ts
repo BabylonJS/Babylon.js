@@ -253,19 +253,17 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
                 false,
                 true,
                 Texture.NEAREST_SAMPLINGMODE,
-                dataFormat === "luminance-alpha" ? Engine.TEXTURETYPE_UNSIGNED_BYTE : Engine.TEXTURETYPE_FLOAT
+                Engine.TEXTURETYPE_FLOAT
             );
         }
 
         switch (dataFormat) {
             case "luminance-alpha":
-                // todo: refactoring and remove magic number
-                (this._cachedDepthImageTexture as RawTexture).update(Uint8ClampedArray.from(new Uint16Array(data).map((value) => value / 20)));
+                this._cachedDepthImageTexture.update(Float32Array.from(new Uint16Array(data)).map((value) => value * depthInfo.rawValueToMeters));
                 break;
 
             case "float32":
-                // todo: refactoring and remove magic number
-                (this._cachedDepthImageTexture as RawTexture).update(new Float32Array(data).map((value) => value / 20));
+                this._cachedDepthImageTexture.update(new Float32Array(data).map((value) => value * depthInfo.rawValueToMeters));
                 break;
 
             default:
