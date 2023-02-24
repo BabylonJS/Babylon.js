@@ -4,7 +4,7 @@ attribute vec3 position;
 attribute vec3 normal;
 attribute vec2 uv;
 
-uniform mat4 decalMatrix;
+uniform mat4 projMatrix;
 
 varying vec2 vDecalTC;
 
@@ -44,9 +44,9 @@ void main(void) {
         vNormalW = normalize(normWorldSM * normalUpdated);
     #endif
 
-    vec3 normalView = normalize((decalMatrix * vec4(vNormalW, 0.0)).xyz);
+    vec3 normalView = normalize((projMatrix * vec4(vNormalW, 0.0)).xyz);
 
-    vec3 decalTC = (decalMatrix * worldPos).xyz;
+    vec3 decalTC = (projMatrix * worldPos).xyz;
     vDecalTC = decalTC.xy;
 
     gl_Position = vec4(uv * 2.0 - 1.0, normalView.z > 0.0 ? 2. : decalTC.z, 1.0);

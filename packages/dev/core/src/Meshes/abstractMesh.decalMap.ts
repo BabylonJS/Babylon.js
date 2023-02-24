@@ -1,25 +1,25 @@
 import type { Nullable } from "../types";
 import { AbstractMesh } from "../Meshes/abstractMesh";
-import type { DecalMapGenerator } from "./decalMapGenerator";
+import type { MeshUVSpaceRenderer } from "./meshUVSpaceRenderer";
 
 declare module "./abstractMesh" {
     export interface AbstractMesh {
         /** @internal */
-        _decalMapGenerator: Nullable<DecalMapGenerator>;
+        _decalMap: Nullable<MeshUVSpaceRenderer>;
 
         /**
-         * Gets or sets the decal map generator for this mesh
+         * Gets or sets the decal map for this mesh
          */
-        decalMapGenerator: Nullable<DecalMapGenerator>;
+        decalMap: Nullable<MeshUVSpaceRenderer>;
     }
 }
 
-Object.defineProperty(AbstractMesh.prototype, "decalMapGenerator", {
+Object.defineProperty(AbstractMesh.prototype, "decalMap", {
     get: function (this: AbstractMesh) {
-        return this._decalMapGenerator;
+        return this._decalMap;
     },
-    set: function (this: AbstractMesh, generator: Nullable<DecalMapGenerator>) {
-        this._decalMapGenerator = generator;
+    set: function (this: AbstractMesh, decalMap: Nullable<MeshUVSpaceRenderer>) {
+        this._decalMap = decalMap;
     },
     enumerable: true,
     configurable: true,

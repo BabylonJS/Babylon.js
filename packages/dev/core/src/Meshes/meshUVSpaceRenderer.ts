@@ -11,20 +11,20 @@ import { ShaderMaterial } from "core/Materials/shaderMaterial";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { Color4 } from "core/Maths/math.color";
 
-import "../Shaders/decalMapGenerator.vertex";
-import "../Shaders/decalMapGenerator.fragment";
+import "../Shaders/meshUVSpaceRenderer.vertex";
+import "../Shaders/meshUVSpaceRenderer.fragment";
 
 /**
- * Options for the DecalMapGenerator
+ * Options for the MeshUVSpaceRenderer
  * @since
  */
-export interface IDecalMapGeneratorOptions {
+export interface IMeshUVSpaceRendererOptions {
     /**
-     * Width of the decal map. Default: 1024
+     * Width of the texture. Default: 1024
      */
     width?: number;
     /**
-     * Height of the decal map. Default: 1024
+     * Height of the texture. Default: 1024
      */
     height?: number;
     /**
@@ -37,31 +37,31 @@ export interface IDecalMapGeneratorOptions {
     generateMipMaps?: boolean;
     /**
      * Optimize UV allocation. Default: true
-     * If you plan to rotate / offset the decal map, you should set this to false
+     * If you plan to use the texture as a decal map and rotate / offset the texture, you should set this to false
      */
     optimizeUVAllocation?: boolean;
 }
 
 /**
- * Class used to generate a decal map
+ * Class used to render in the mesh UV space
  * @since
  */
-export class DecalMapGenerator {
+export class MeshUVSpaceRenderer {
     private static _Shader: Nullable<ShaderMaterial> = null;
 
     private _mesh: AbstractMesh;
     private _scene: Scene;
-    private _options: Required<IDecalMapGeneratorOptions>;
+    private _options: Required<IMeshUVSpaceRendererOptions>;
     private _textureCreatedInternally = false;
 
     private static _GetShader(scene: Scene): ShaderMaterial {
-        if (!DecalMapGenerator._Shader) {
+        if (!MeshUVSpaceRenderer._Shader) {
             const shader = new ShaderMaterial(
-                "decalMapGeneratorShader",
+                "meshUVSpaceRendererShader",
                 scene,
                 {
-                    vertex: "decalMapGenerator",
-                    fragment: "decalMapGenerator",
+                    vertex: "meshUVSpaceRenderer",
+                    fragment: "meshUVSpaceRenderer",
                 },
                 {
                     attributes: ["position", "normal", "uv"],
@@ -72,10 +72,10 @@ export class DecalMapGenerator {
             shader.backFaceCulling = false;
             shader.alphaMode = Constants.ALPHA_COMBINE;
 
-            DecalMapGenerator._Shader = shader;
+            MeshUVSpaceRenderer._Shader = shader;
         }
 
-        return DecalMapGenerator._Shader;
+        return MeshUVSpaceRenderer._Shader;
     }
 
     private static _IsRenderTargetTexture(texture: ThinTexture | RenderTargetTexture): texture is RenderTargetTexture {
@@ -83,36 +83,34 @@ export class DecalMapGenerator {
     }
 
     /**
-     * Disposes of the global resources created by the DecalMapGenerator class
+     * Disposes of the global resources created by the MeshUVSpaceRenderer class
      */
     public static Dispose(): void {
-        if (DecalMapGenerator._Shader) {
-            DecalMapGenerator._Shader.dispose();
-            DecalMapGenerator._Shader = null;
+        if (MeshUVSpaceRenderer._Shader) {
+            MeshUVSpaceRenderer._Shader.dispose();
+            MeshUVSpaceRenderer._Shader = null;
         }
     }
 
     /**
-     * Clear color of the decal map
+     * Clear color of the texture
      */
     public clearColor = new Color4(0, 0, 0, 0);
 
     /**
-     * Texture used to store the decal map
+     * Target texture used for rendering
      * If you don't set the property, a RenderTargetTexture will be created internally given the options provided to the constructor.
      * If you provide a RenderTargetTexture, it will be used directly.
-     * You can also provide a regular texture, in which case it will simply be used as an additional layer to the diffuse/albedo texture of the material
-     * and addDecal will do nothing.
      */
     public texture: Texture;
 
     /**
-     * Creates a new DecalMapGenerator
-     * @param mesh The mesh to generate the decal map for
+     * Creates a new MeshUVSpaceRenderer
+     * @param mesh The mesh used for the source UV space
      * @param scene The scene the mesh belongs to
-     * @param options The options to use when creating the decal map
+     * @param options The options to use when creating the texture
      */
-    constructor(mesh: AbstractMesh, scene: Scene, options?: IDecalMapGeneratorOptions) {
+    constructor(mesh: AbstractMesh, scene: Scene, options?: IMeshUVSpaceRendererOptions) {
         this._mesh = mesh;
         this._scene = scene;
         this._options = {
@@ -126,42 +124,42 @@ export class DecalMapGenerator {
     }
 
     /**
-     * Checks if the decal map is ready to be used
-     * @returns true if the decal map is ready to be used
+     * Checks if the texture is ready to be used
+     * @returns true if the texture is ready to be used
      */
     public isReady(): boolean {
-        return DecalMapGenerator._GetShader(this._scene).isReady() && (this.texture?.isReady() ?? true);
+        return MeshUVSpaceRenderer._GetShader(this._scene).isReady() && (this.texture?.isReady() ?? true);
     }
 
     /**
-     * Adds a decal to the decal map
-     * @param texture The texture decal
-     * @param position The position of the decal (world space coordinates)
-     * @param normal The direction of the decal projection (world space coordinates)
-     * @param size The size of the decal
-     * @param angle The angle of the decal around the direction of the projection
+     * Projects and renders a texture in the mesh UV space
+     * @param texture The texture
+     * @param position The position of the center of projection (world space coordinates)
+     * @param normal The direction of the projection (world space coordinates)
+     * @param size The size of the projection
+     * @param angle The rotation angle around the direction of the projection
      */
-    public addDecal(texture: BaseTexture, position: Vector3, normal: Vector3, size: Vector3, angle = 0): void {
+    public renderTexture(texture: BaseTexture, position: Vector3, normal: Vector3, size: Vector3, angle = 0): void {
         if (!this.texture) {
             this._createDiffuseRTT();
         }
 
-        if (DecalMapGenerator._IsRenderTargetTexture(this.texture)) {
-            const decalMatrix = this._createDecalMatrix(position, normal, size, angle);
-            const shader = DecalMapGenerator._GetShader(this._scene);
+        if (MeshUVSpaceRenderer._IsRenderTargetTexture(this.texture)) {
+            const matrix = this._createProjectionMatrix(position, normal, size, angle);
+            const shader = MeshUVSpaceRenderer._GetShader(this._scene);
 
             shader.setTexture("textureSampler", texture);
-            shader.setMatrix("decalMatrix", decalMatrix);
+            shader.setMatrix("projMatrix", matrix);
 
             this.texture.render();
         }
     }
 
     /**
-     * Clears the decal map
+     * Clears the texture map
      */
     public clear(): void {
-        if (DecalMapGenerator._IsRenderTargetTexture(this.texture) && this.texture.renderTarget) {
+        if (MeshUVSpaceRenderer._IsRenderTargetTexture(this.texture) && this.texture.renderTarget) {
             const engine = this._scene.getEngine();
 
             engine.bindFramebuffer(this.texture.renderTarget);
@@ -171,7 +169,7 @@ export class DecalMapGenerator {
     }
 
     /**
-     * Disposes of the decal map generator
+     * Disposes of the ressources
      */
     public dispose() {
         if (this._textureCreatedInternally) {
@@ -185,14 +183,14 @@ export class DecalMapGenerator {
 
         const texture = this._createRenderTargetTexture(this._options.width, this._options.height);
 
-        texture.setMaterialForRendering(this._mesh, DecalMapGenerator._GetShader(this._scene));
+        texture.setMaterialForRendering(this._mesh, MeshUVSpaceRenderer._GetShader(this._scene));
 
         this.texture = texture;
     }
 
     private _createRenderTargetTexture(width: number, height: number): RenderTargetTexture {
         const rtt = new RenderTargetTexture(
-            this._mesh.name + "_decalTexture",
+            this._mesh.name + "_uvspaceTexture",
             { width, height },
             this._scene,
             this._options.generateMipMaps,
@@ -218,20 +216,20 @@ export class DecalMapGenerator {
         return rtt;
     }
 
-    private _createDecalMatrix(position: Vector3, normal: Vector3, size: Vector3, angle = 0): Matrix {
+    private _createProjectionMatrix(position: Vector3, normal: Vector3, size: Vector3, angle = 0): Matrix {
         const yaw = -Math.atan2(normal.z, normal.x) - Math.PI / 2;
         const len = Math.sqrt(normal.x * normal.x + normal.z * normal.z);
         const pitch = Math.atan2(normal.y, len);
 
         const p = position.add(normal.scale(size.z * 0.5));
 
-        const decalWorldMatrix = Matrix.RotationYawPitchRoll(yaw, pitch, angle).multiply(Matrix.Translation(p.x, p.y, p.z));
-        const inverseDecalWorldMatrix = Matrix.Invert(decalWorldMatrix);
+        const projWorldMatrix = Matrix.RotationYawPitchRoll(yaw, pitch, angle).multiply(Matrix.Translation(p.x, p.y, p.z));
+        const inverseProjWorldMatrix = Matrix.Invert(projWorldMatrix);
 
         const projMatrix = Matrix.FromArray([2 / size.x, 0, 0, 0, 0, 2 / size.y, 0, 0, 0, 0, 1 / size.z, 0, 0, 0, 0, 1]);
 
         const screenMatrix = Matrix.FromArray([0.5, 0, 0, 0, 0, 0.5, 0, 0, 0, 0, 1, 0, 0.5, 0.5, 0.0, 1]);
 
-        return inverseDecalWorldMatrix.multiply(projMatrix).multiply(screenMatrix);
+        return inverseProjWorldMatrix.multiply(projMatrix).multiply(screenMatrix);
     }
 }

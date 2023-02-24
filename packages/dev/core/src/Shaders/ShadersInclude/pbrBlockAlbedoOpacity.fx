@@ -44,15 +44,7 @@ void albedoOpacityBlock(
         surfaceAlbedo *= albedoInfos.y;
     #endif
 
-    #ifdef DECAL
-        #ifdef GAMMADECAL
-            decalColor.rgb = toLinearSpace(decalColor.rgb);
-        #endif
-        #ifdef DECAL_SMOOTHALPHA
-            decalColor.a *= decalColor.a;
-        #endif
-	    surfaceAlbedo.rgb = mix(surfaceAlbedo.rgb, decalColor.rgb, decalColor.a);
-    #endif
+    #include<decalFragment>
 
     #if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR) && defined(INSTANCES)
         surfaceAlbedo *= vColor.rgb;

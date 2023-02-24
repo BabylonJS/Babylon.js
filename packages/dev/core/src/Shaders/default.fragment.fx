@@ -147,10 +147,7 @@ void main(void) {
 
 #ifdef DECAL
 	vec4 decalColor = texture2D(decalSampler, vDecalUV + uvOffset);
-	#ifdef DECAL_SMOOTHALPHA
-		decalColor.a *= decalColor.a;
-	#endif
-	baseColor.rgb = mix(baseColor.rgb, decalColor.rgb, decalColor.a);
+	#include<decalFragment>(surfaceAlbedo, baseColor, GAMMADECAL, _GAMMADECAL_NOTUSED_)
 #endif
 
 #include<depthPrePass>

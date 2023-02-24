@@ -66,50 +66,50 @@ export class DecalMapConfiguration extends MaterialPluginBase {
     }
 
     public isReadyForSubMesh(defines: DecalMapDefines, scene: Scene, engine: Engine, subMesh: SubMesh): boolean {
-        const decalMapGenerator = subMesh.getMesh().decalMapGenerator;
+        const decalMap = subMesh.getMesh().decalMap;
 
-        if (!this._isEnabled || !decalMapGenerator?.texture || !MaterialFlags.DecalMapEnabled || !scene.texturesEnabled) {
+        if (!this._isEnabled || !decalMap?.texture || !MaterialFlags.DecalMapEnabled || !scene.texturesEnabled) {
             return true;
         }
 
-        return decalMapGenerator.isReady();
+        return decalMap.isReady();
     }
 
     public prepareDefines(defines: DecalMapDefines, scene: Scene, mesh: AbstractMesh): void {
-        const decalMapGenerator = mesh.decalMapGenerator;
+        const decalMap = mesh.decalMap;
 
-        if (!this._isEnabled || !decalMapGenerator?.texture || !MaterialFlags.DecalMapEnabled || !scene.texturesEnabled) {
+        if (!this._isEnabled || !decalMap?.texture || !MaterialFlags.DecalMapEnabled || !scene.texturesEnabled) {
             const isDirty = defines.DECAL;
             if (isDirty) {
                 defines.markAsTexturesDirty();
             }
             defines.DECAL = false;
         } else {
-            const isDirty = !defines.DECAL || defines.GAMMADECAL !== decalMapGenerator.texture.gammaSpace;
+            const isDirty = !defines.DECAL || defines.GAMMADECAL !== decalMap.texture.gammaSpace;
             if (isDirty) {
                 defines.markAsTexturesDirty();
             }
             defines.DECAL = true;
-            defines.GAMMADECAL = decalMapGenerator.texture.gammaSpace;
+            defines.GAMMADECAL = decalMap.texture.gammaSpace;
             defines.DECAL_SMOOTHALPHA = this._smoothAlpha;
-            MaterialHelper.PrepareDefinesForMergedUV(decalMapGenerator.texture, defines, "DECAL");
+            MaterialHelper.PrepareDefinesForMergedUV(decalMap.texture, defines, "DECAL");
         }
     }
 
     /**
      * Note that we override hardBindForSubMesh and not bindForSubMesh because the material can be shared by multiple meshes,
      * in which case mustRebind could return false even though the decal map is different for each mesh: that's because the decal map
-     * is not part of the material but hosted by the decalMapGenerator of the mesh instead.
+     * is not part of the material but hosted by the decalMap of the mesh instead.
      */
     public hardBindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, _engine: Engine, subMesh: SubMesh): void {
-        const decalMapGenerator = subMesh.getMesh().decalMapGenerator;
+        const decalMap = subMesh.getMesh().decalMap;
 
-        if (!this._isEnabled || !decalMapGenerator?.texture || !MaterialFlags.DecalMapEnabled || !scene.texturesEnabled) {
+        if (!this._isEnabled || !decalMap?.texture || !MaterialFlags.DecalMapEnabled || !scene.texturesEnabled) {
             return;
         }
 
         const isFrozen = this._material.isFrozen;
-        const texture = decalMapGenerator.texture;
+        const texture = decalMap.texture;
 
         if (!uniformBuffer.useUbo || !isFrozen || !uniformBuffer.isSync) {
             uniformBuffer.updateFloat4("vDecalInfos", texture.coordinatesIndex, 0, 0, 0);

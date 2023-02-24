@@ -4,7 +4,7 @@ export * from "./abstractMesh";
 export * from "./abstractMesh.decalMap";
 export * from "./Compression/index";
 export * from "./csg";
-export * from "./decalMapGenerator";
+export * from "./meshUVSpaceRenderer";
 export * from "./geometry";
 export * from "./groundMesh";
 export * from "./goldbergMesh";
