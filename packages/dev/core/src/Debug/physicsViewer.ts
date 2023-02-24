@@ -492,6 +492,10 @@ export class PhysicsViewer {
         vertexData.positions = geometry.positions;
         vertexData.indices = geometry.indices;
         vertexData.applyToMesh(mesh);
+        if (body._pluginDataInstances) {
+            const instanceBuffer = new Float32Array(body._pluginDataInstances.length * 16);
+            mesh.thinInstanceSetBuffer("matrix", instanceBuffer, 16);
+        }
         mesh.material = this._getDebugMaterial(utilityLayerScene);
         return mesh;
     }

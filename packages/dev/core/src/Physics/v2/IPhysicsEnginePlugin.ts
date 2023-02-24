@@ -30,12 +30,12 @@ export enum ConstraintAxis {
 
 /** @internal */
 export enum ConstraintType {
-    BALL_AND_SOCKET,
-    DISTANCE,
-    HINGE,
-    SLIDER,
-    LOCK,
-    PRISMATIC,
+    BALL_AND_SOCKET = 1,
+    DISTANCE = 2,
+    HINGE = 3,
+    SLIDER = 4,
+    LOCK = 5,
+    PRISMATIC = 6,
 }
 
 /** @internal */
@@ -128,6 +128,7 @@ export interface IPhysicsEnginePluginV2 {
     syncTransform(body: PhysicsBody, transformNode: TransformNode): void;
     setShape(body: PhysicsBody, shape: PhysicsShape): void;
     getShape(body: PhysicsBody): PhysicsShape;
+    getShapeType(shape: PhysicsShape): ShapeType;
     setFilterGroup(body: PhysicsBody, group: number): void;
     getFilterGroup(body: PhysicsBody): number;
     setEventMask(body: PhysicsBody, eventMask: number): void;
@@ -140,8 +141,8 @@ export interface IPhysicsEnginePluginV2 {
     getAngularDamping(body: PhysicsBody): number;
     setLinearVelocity(body: PhysicsBody, linVel: Vector3): void;
     getLinearVelocityToRef(body: PhysicsBody, linVel: Vector3): void;
-    applyImpulse(body: PhysicsBody, location: Vector3, impulse: Vector3): void;
-    applyForce(body: PhysicsBody, location: Vector3, force: Vector3): void;
+    applyImpulse(body: PhysicsBody, impulse: Vector3, location: Vector3): void;
+    applyForce(body: PhysicsBody, force: Vector3, location: Vector3): void;
     setAngularVelocity(body: PhysicsBody, angVel: Vector3): void;
     getAngularVelocityToRef(body: PhysicsBody, angVel: Vector3): void;
     getBodyGeometry(body: PhysicsBody): {};

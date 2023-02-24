@@ -288,11 +288,15 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                         <div>
                             <ButtonLineComponent
                                 label="Convert clear color to linear"
-                                onClick={() => (renderPipeline.scene.clearColor = renderPipeline.scene.clearColor.toLinearSpace())}
+                                onClick={() =>
+                                    (renderPipeline.scene.clearColor = renderPipeline.scene.clearColor.toLinearSpace(renderPipeline.scene.getEngine().useExactSrgbConversions))
+                                }
                             />
                             <ButtonLineComponent
                                 label="Convert clear color to gamma"
-                                onClick={() => (renderPipeline.scene.clearColor = renderPipeline.scene.clearColor.toGammaSpace())}
+                                onClick={() =>
+                                    (renderPipeline.scene.clearColor = renderPipeline.scene.clearColor.toGammaSpace(renderPipeline.scene.getEngine().useExactSrgbConversions))
+                                }
                             />
                             <SliderLineComponent
                                 lockObject={this.props.lockObject}

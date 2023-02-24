@@ -155,7 +155,7 @@ export class PhysicsAggregate {
 
         this.body = new PhysicsBody(transformNode, this._scene);
         this._addSizeOptions();
-        this.shape = new PhysicsShape(type, this._options as any, this._scene);
+        this.shape = new PhysicsShape({ type, parameters: this._options as any }, this._scene);
 
         this.material = new PhysicsMaterial(this._options.friction, this._options.restitution, this._scene);
         this.body.setShape(this.shape);

@@ -11,7 +11,7 @@ import type { PrePassRenderer } from "../Rendering/prePassRenderer";
 import { MaterialHelper } from "../Materials/materialHelper";
 import type { Scene } from "../scene";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
-import { Color4 } from "../Maths/math.color";
+import { Color3, Color4 } from "../Maths/math.color";
 import { _WarnImport } from "../Misc/devTools";
 import type { Observer } from "../Misc/observable";
 import type { Engine } from "../Engines/engine";
@@ -124,6 +124,7 @@ export class GeometryBufferRenderer {
     private _prePassRenderer: PrePassRenderer;
     private _attachments: number[];
     private _useUbo: boolean;
+    private _specularColorLinear = new Color3();
 
     protected _cachedDefines: string;
 
@@ -851,7 +852,8 @@ export class GeometryBufferRenderer {
                             effect.setMatrix("reflectivityMatrix", material.specularGlossinessTexture.getTextureMatrix());
                         } else {
                             if (material.specularColor !== null) {
-                                effect.setColor3("reflectivityColor", material.specularColor);
+                                material.specularColor.toLinearSpaceToRef(this._specularColorLinear);
+                                effect.setColor3("reflectivityColor", this._specularColorLinear);
                             }
                         }
                         if (material.glossiness !== null) {

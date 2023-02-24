@@ -849,17 +849,18 @@ export class _Exporter {
                 const meshMaterial = (babylonTransformNode as Mesh).material;
                 const convertToLinear = meshMaterial ? meshMaterial.getClassName() === "StandardMaterial" : true;
                 const vertexData: Color3 | Color4 = stride === 3 ? new Color3() : new Color4();
+                const useExactSrgbConversions = this._babylonScene.getEngine().useExactSrgbConversions;
                 for (let k = 0, length = meshAttributeArray.length / stride; k < length; ++k) {
                     index = k * stride;
                     if (stride === 3) {
                         Color3.FromArrayToRef(meshAttributeArray, index, vertexData as Color3);
                         if (convertToLinear) {
-                            (vertexData as Color3).toLinearSpaceToRef(vertexData as Color3);
+                            (vertexData as Color3).toLinearSpaceToRef(vertexData as Color3, useExactSrgbConversions);
                         }
                     } else {
                         Color4.FromArrayToRef(meshAttributeArray, index, vertexData as Color4);
                         if (convertToLinear) {
-                            (vertexData as Color4).toLinearSpaceToRef(vertexData as Color4);
+                            (vertexData as Color4).toLinearSpaceToRef(vertexData as Color4, useExactSrgbConversions);
                         }
                     }
                     vertexAttributes.push(vertexData.asArray());
