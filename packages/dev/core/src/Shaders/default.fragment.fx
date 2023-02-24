@@ -44,6 +44,7 @@ varying vec4 vColor;
 #include<samplerFragmentDeclaration>(_DEFINENAME_,OPACITY,_VARYINGNAME_,Opacity,_SAMPLERNAME_,opacity)
 #include<samplerFragmentDeclaration>(_DEFINENAME_,EMISSIVE,_VARYINGNAME_,Emissive,_SAMPLERNAME_,emissive)
 #include<samplerFragmentDeclaration>(_DEFINENAME_,LIGHTMAP,_VARYINGNAME_,Lightmap,_SAMPLERNAME_,lightmap)
+#include<samplerFragmentDeclaration>(_DEFINENAME_,DECAL,_VARYINGNAME_,Decal,_SAMPLERNAME_,decal)
 
 #ifdef REFRACTION
 
@@ -144,7 +145,13 @@ void main(void) {
 	baseColor.rgb *= vDiffuseInfos.y;
 #endif
 
-
+#ifdef DECAL
+	vec4 decalColor = texture2D(decalSampler, vDecalUV + uvOffset);
+	#ifdef DECAL_SMOOTHALPHA
+		decalColor.a *= decalColor.a;
+	#endif
+	baseColor.rgb = mix(baseColor.rgb, decalColor.rgb, decalColor.a);
+#endif
 
 #include<depthPrePass>
 

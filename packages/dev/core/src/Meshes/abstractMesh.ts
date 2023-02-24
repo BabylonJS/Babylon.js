@@ -37,6 +37,7 @@ import type { Plane } from "../Maths/math.plane";
 import { Axis } from "../Maths/math.axis";
 import type { IParticleSystem } from "../Particles/IParticleSystem";
 import { RegisterClass } from "../Misc/typeStore";
+import type { DecalMapGenerator } from "./decalMapGenerator";
 
 declare type Ray = import("../Culling/ray").Ray;
 declare type Collider = import("../Collisions/collider").Collider;
@@ -109,6 +110,7 @@ class _InternalAbstractMeshDataInfo {
     public _materialForRenderPass: Array<Material | undefined>; // map a render pass id (index in the array) to a Material
     public _positions: Nullable<Vector3[]> = null;
     public _pointerOverDisableMeshTesting: boolean = false;
+    public _decalMapGenerator: Nullable<DecalMapGenerator> = null;
     // Collisions
     public _meshCollisionData = new _MeshCollisionData();
     public _enableDistantPicking = false;
@@ -722,6 +724,21 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     public set surroundingMeshes(meshes: Nullable<AbstractMesh[]>) {
         this._internalAbstractMeshDataInfo._meshCollisionData._surroundingMeshes = meshes;
+    }
+
+    /**
+     * Gets or sets the decal map generator for this mesh
+     */
+    public get decalMapGenerator() {
+        return this._internalAbstractMeshDataInfo._decalMapGenerator;
+    }
+
+    public set decalMapGenerator(generator: Nullable<DecalMapGenerator>) {
+        if (generator === this._internalAbstractMeshDataInfo._decalMapGenerator) {
+            return;
+        }
+
+        this._internalAbstractMeshDataInfo._decalMapGenerator = generator;
     }
 
     // Edges

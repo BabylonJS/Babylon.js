@@ -3,6 +3,7 @@
 export * from "./abstractMesh";
 export * from "./Compression/index";
 export * from "./csg";
+export * from "./decalMapGenerator";
 export * from "./geometry";
 export * from "./groundMesh";
 export * from "./goldbergMesh";

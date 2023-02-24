@@ -201,6 +201,10 @@ uniform mat4 view;
     uniform vec4 vDetailInfos;
 #endif
 
+#ifdef DECAL
+    uniform vec4 vDecalInfos;
+#endif
+
 #ifdef USESPHERICALFROMREFLECTIONMAP
     #ifdef SPHERICAL_HARMONICS
         uniform vec3 vSphericalL00;
