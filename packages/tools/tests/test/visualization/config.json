@@ -1571,6 +1571,11 @@
             "title": "Screen Space Reflections 2",
             "playgroundId": "#PIZ1GK#977",
             "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "MultiRenderTarget with different texture types",
+            "playgroundId": "#XSNYAU#1",
+            "excludedEngines": ["webgpu"]
         }
     ]
 }
