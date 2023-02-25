@@ -242,7 +242,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
 
         this._cachedDepthInfo = depthInfo;
 
-        const { data, width, height } = depthInfo as XRCPUDepthInformation;
+        const { data, width, height, rawValueToMeters } = depthInfo as XRCPUDepthInformation;
 
         if (!this._cachedDepthImageTexture) {
             this._cachedDepthImageTexture = RawTexture.CreateRTexture(
@@ -259,11 +259,11 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
 
         switch (dataFormat) {
             case "luminance-alpha":
-                this._cachedDepthImageTexture.update(Float32Array.from(new Uint16Array(data)).map((value) => value * depthInfo.rawValueToMeters));
+                this._cachedDepthImageTexture.update(Float32Array.from(new Uint16Array(data)).map((value) => value * rawValueToMeters));
                 break;
 
             case "float32":
-                this._cachedDepthImageTexture.update(new Float32Array(data).map((value) => value * depthInfo.rawValueToMeters));
+                this._cachedDepthImageTexture.update(new Float32Array(data).map((value) => value * rawValueToMeters));
                 break;
 
             default:
