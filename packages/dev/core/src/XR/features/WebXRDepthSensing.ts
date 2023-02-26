@@ -5,6 +5,7 @@ import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { Tools } from "../../Misc/tools";
 import { Texture } from "../../Materials/Textures/texture";
 import { Engine } from "../../Engines/engine";
+import { Observable } from "../../Misc/observable";
 
 /**
  * Options for Depth Sensing feature
@@ -19,6 +20,8 @@ export interface IWebXRDepthSensingOptions {
      */
     dataFormatPreference: XRDepthDataFormat[];
 }
+
+type GetDepthInMetersType = (x: number, y: number) => number;
 
 /**
  * WebXR Feature for WebXR Depth Sensing Module
@@ -117,24 +120,10 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
     }
 
     /**
-     * Return the depth in meters at (x, y) in normalized view coordinates.
-     * This method can be used when the depth usage is cpu-optimized.
-     * @param x X coordinate (origin at the left, grows to the right).The value must be greater than 0.0 and less than 1.0
-     * @param y Y coordinate (origin at the top, grows downward). The value must be greater than 0.0 and less than 1.0
-     * @returns the depth value in meters
+     * Event that notify when `DepthInformation.getDepthInMeters` is available.
+     * `getDepthInMeters` method needs active XRFrame (not available for cached XRFrame)
      */
-    public getDepthInMeters = (x: number, y: number): number | null => {
-        if (!this._cachedDepthInfo) {
-            return null;
-        }
-
-        const cpuDepthInfo = this._cachedDepthInfo as XRCPUDepthInformation;
-        if (!cpuDepthInfo.getDepthInMeters) {
-            return null;
-        }
-
-        return cpuDepthInfo.getDepthInMeters(x, y);
-    };
+    public onGetDepthInMetersAvailable: Observable<GetDepthInMetersType> = new Observable<GetDepthInMetersType>();
 
     private _cachedDepthImageTexture?: RawTexture;
 
@@ -242,7 +231,10 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
 
         this._cachedDepthInfo = depthInfo;
 
-        const { data, width, height, rawValueToMeters } = depthInfo as XRCPUDepthInformation;
+        const { data, width, height, rawValueToMeters, getDepthInMeters } = depthInfo as XRCPUDepthInformation;
+
+        // to avoid Illegal Invocation error, bind `this`
+        this.onGetDepthInMetersAvailable.notifyObservers(getDepthInMeters.bind(depthInfo));
 
         if (!this._cachedDepthImageTexture) {
             this._cachedDepthImageTexture = RawTexture.CreateRTexture(
