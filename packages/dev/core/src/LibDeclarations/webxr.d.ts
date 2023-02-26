@@ -1147,7 +1147,7 @@ interface XRLightProbe extends EventTarget {
  */
 
 /**
- * BEGIN WebXR Depth Sensing Moudle
+ * BEGIN: WebXR Depth Sensing Moudle
  * https://www.w3.org/TR/webxr-depth-sensing-1/
  */
 
@@ -1195,6 +1195,6 @@ interface XRWebGLBinding {
 }
 
 /**
- * BEGIN WebXR Depth Sensing Moudle
+ * END: WebXR Depth Sensing Moudle
  * https://www.w3.org/TR/webxr-depth-sensing-1/
  */
