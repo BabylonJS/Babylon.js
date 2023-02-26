@@ -318,4 +318,3 @@ WebXRFeaturesManager.AddWebXRFeature(
     WebXRDepthSensing.Version,
     false
 );
-
