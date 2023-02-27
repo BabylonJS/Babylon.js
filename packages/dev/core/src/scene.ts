@@ -4715,6 +4715,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this.onMeshImportedObservable.clear();
         this.onBeforeCameraRenderObservable.clear();
         this.onAfterCameraRenderObservable.clear();
+        this.onAfterRenderCameraObservable.clear();
         this.onReadyObservable.clear();
         this.onNewCameraAddedObservable.clear();
         this.onCameraRemovedObservable.clear();
