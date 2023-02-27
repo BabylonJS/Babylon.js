@@ -453,7 +453,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * An event triggered when the scene is disposed.
      */
-    public onDisposeObservable = new Observable<Scene>(undefined, true);
+    public onDisposeObservable = new Observable<Scene>();
 
     private _onDisposeObserver: Nullable<Observer<Scene>> = null;
     /** Sets a function to be executed when this scene is disposed. */
@@ -526,7 +526,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * An event triggered when the scene is ready
      */
-    public onReadyObservable = new Observable<Scene>(undefined, true);
+    public onReadyObservable = new Observable<Scene>();
 
     /**
      * An event triggered before rendering a camera
