@@ -107,6 +107,8 @@ export class Observer<T> {
 export class Observable<T> {
     private _observers = new Array<Observer<T>>();
     private _numObserversMarkedAsDeleted = 0;
+    private _hasNotified = false;
+    private _lastNotifiedValue?: T;
 
     /**
      * @internal
@@ -150,8 +152,16 @@ export class Observable<T> {
     /**
      * Creates a new observable
      * @param onObserverAdded defines a callback to call when a new observer is added
+     * @param notifyIfTriggered If set to true the observable will notify when an observer was added if the observable was already triggered.
      */
-    constructor(onObserverAdded?: (observer: Observer<T>) => void) {
+    constructor(
+        onObserverAdded?: (observer: Observer<T>) => void,
+        /**
+         * If set to true the observable will notify when an observer was added if the observable was already triggered.
+         * This is helpful to single-state observables like the scene onReady or the dispose observable.
+         */
+        public notifyIfTriggered = false
+    ) {
         this._eventState = new EventState(0);
 
         if (onObserverAdded) {
@@ -190,6 +200,13 @@ export class Observable<T> {
 
         if (this._onObserverAdded) {
             this._onObserverAdded(observer);
+        }
+
+        // If the observable was already triggered and the observable is set to notify if triggered, notify the new observer
+        if (this._hasNotified && this.notifyIfTriggered) {
+            if (this._lastNotifiedValue !== undefined) {
+                this.notifyObserver(observer, this._lastNotifiedValue);
+            }
         }
 
         return observer;
@@ -306,6 +323,8 @@ export class Observable<T> {
      * @returns false if the complete observer chain was not processed (because one observer set the skipNextObservers to true)
      */
     public notifyObservers(eventData: T, mask: number = -1, target?: any, currentTarget?: any, userInfo?: any): boolean {
+        this._hasNotified = true;
+        this._lastNotifiedValue = eventData;
         if (!this._observers.length) {
             return true;
         }
@@ -348,6 +367,8 @@ export class Observable<T> {
      * @param mask is used to filter observers defaults to -1
      */
     public notifyObserver(observer: Observer<T>, eventData: T, mask: number = -1): void {
+        this._hasNotified = true;
+        this._lastNotifiedValue = eventData;
         if (observer._willBeUnregistered) {
             return;
         }

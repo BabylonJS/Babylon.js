@@ -314,7 +314,7 @@ export class Node implements IBehaviorAware<Node> {
     /**
      * An event triggered when the mesh is disposed
      */
-    public onDisposeObservable = new Observable<Node>();
+    public onDisposeObservable = new Observable<Node>(undefined, true);
 
     private _onDisposeObserver: Nullable<Observer<Node>> = null;
     /**
