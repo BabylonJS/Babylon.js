@@ -418,6 +418,9 @@ export class KhronosTextureContainer2 {
             });
         } else if (KhronosTextureContainer2._DecoderModulePromise) {
             return KhronosTextureContainer2._DecoderModulePromise.then((decoder) => {
+                if (KhronosTextureContainer2.DefaultDecoderOptions.isDirty) {
+                    KTX2DECODER.KTX2Decoder.DefaultDecoderOptions = KhronosTextureContainer2.DefaultDecoderOptions._getKTX2DecoderOptions();
+                }
                 return new Promise((resolve, reject) => {
                     decoder
                         .decode(data, caps)
