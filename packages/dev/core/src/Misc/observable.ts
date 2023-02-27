@@ -396,9 +396,11 @@ export class Observable<T> {
      * Clear the list of observers
      */
     public clear(): void {
-        this._observers = new Array<Observer<T>>();
+        this._observers.length = 0;
         this._onObserverAdded = null;
         this._numObserversMarkedAsDeleted = 0;
+        this._hasNotified = false;
+        this._lastNotifiedValue = undefined;
     }
 
     /**
