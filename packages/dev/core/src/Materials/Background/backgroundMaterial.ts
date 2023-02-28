@@ -1057,7 +1057,7 @@ export class BackgroundMaterial extends PushMaterial {
      * @param world The world matrix to bind.
      */
     public bindOnlyWorldMatrix(world: Matrix): void {
-        this._activeEffect.setMatrix("world", world);
+        this._activeEffect!.setMatrix("world", world);
     }
 
     /**
