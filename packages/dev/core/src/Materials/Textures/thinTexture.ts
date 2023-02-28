@@ -158,7 +158,7 @@ export class ThinTexture {
      * @param internalTexture Define the internalTexture to wrap. You can also pass a RenderTargetWrapper, in which case the texture will be the render target's texture
      */
     constructor(internalTexture: Nullable<InternalTexture | RenderTargetWrapper>) {
-        this._texture = ThinTexture._IsRenderTargetWrapper(internalTexture) ? internalTexture.texture : internalTexture;
+        this._texture = ThinTexture._IsRenderTargetWrapper(internalTexture) ? internalTexture.texture : internalTexture as Nullable<InternalTexture>;
         this._texture = internalTexture;
         if (this._texture) {
             this._engine = this._texture.getEngine();
