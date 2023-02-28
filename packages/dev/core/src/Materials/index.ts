@@ -29,4 +29,5 @@ export * from "./materialPluginManager";
 export * from "./materialPluginEvent";
 export * from "./material.detailMapConfiguration";
 export * from "./material.decalMapConfiguration";
+import "./standardMaterial.decalMap";
 export * from "./materialPluginFactoryExport";

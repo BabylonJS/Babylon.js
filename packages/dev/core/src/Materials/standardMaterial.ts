@@ -39,7 +39,6 @@ import { EffectFallbacks } from "./effectFallbacks";
 import type { Effect, IEffectCreationOptions } from "./effect";
 import { DetailMapConfiguration } from "./material.detailMapConfiguration";
 import { addClipPlaneUniforms, bindClipPlane } from "./clipPlaneMaterialHelper";
-import { DecalMapConfiguration } from "./material.decalMapConfiguration";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -749,11 +748,6 @@ export class StandardMaterial extends PushMaterial {
      */
     public readonly detailMap: DetailMapConfiguration;
 
-    /**
-     * Defines the decal map parameters for the material.
-     */
-    public readonly decalMap: DecalMapConfiguration;
-
     protected _renderTargets = new SmartArray<RenderTargetTexture>(16);
     protected _worldViewProjectionMatrix = Matrix.Zero();
     protected _globalAmbientColor = new Color3(0, 0, 0);
@@ -772,7 +766,6 @@ export class StandardMaterial extends PushMaterial {
         super(name, scene);
 
         this.detailMap = new DetailMapConfiguration(this);
-        this.decalMap = new DecalMapConfiguration(this);
 
         // Setup the default processing configuration to the scene.
         this._attachImageProcessingConfiguration(null);

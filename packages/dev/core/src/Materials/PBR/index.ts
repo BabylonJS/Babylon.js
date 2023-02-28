@@ -8,3 +8,4 @@ export * from "./pbrMetallicRoughnessMaterial";
 export * from "./pbrSpecularGlossinessMaterial";
 export * from "./pbrSheenConfiguration";
 export * from "./pbrSubSurfaceConfiguration";
+import "./pbrMaterial.decalMap";

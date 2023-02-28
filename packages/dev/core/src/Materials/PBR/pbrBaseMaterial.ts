@@ -48,7 +48,6 @@ import { PBRSheenConfiguration } from "./pbrSheenConfiguration";
 import { PBRSubSurfaceConfiguration } from "./pbrSubSurfaceConfiguration";
 import { DetailMapConfiguration } from "../material.detailMapConfiguration";
 import { addClipPlaneUniforms, bindClipPlane } from "../clipPlaneMaterialHelper";
-import { DecalMapConfiguration } from "../material.decalMapConfiguration";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -890,11 +889,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      */
     public readonly detailMap: DetailMapConfiguration;
 
-    /**
-     * Defines the decal map parameters for the material.
-     */
-    public readonly decalMap: DecalMapConfiguration;
-
     protected _cacheHasRenderTargetTextures = false;
 
     /**
@@ -913,7 +907,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this.sheen = new PBRSheenConfiguration(this);
         this.subSurface = new PBRSubSurfaceConfiguration(this);
         this.detailMap = new DetailMapConfiguration(this);
-        this.decalMap = new DecalMapConfiguration(this);
 
         // Setup the default processing configuration to the scene.
         this._attachImageProcessingConfiguration(null);
