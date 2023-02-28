@@ -8,6 +8,7 @@ export class NativePipelineContext implements IPipelineContext {
     // TODO: async should be true?
     public isAsync = false;
     public isReady = false;
+    public onCompiled?: () => void;
 
     public _getVertexShaderCode(): string | null {
         return null;

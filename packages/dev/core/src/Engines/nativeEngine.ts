@@ -650,23 +650,40 @@ export class NativeEngine extends Engine {
      * @internal
      */
     public _isRenderingStateCompiled(pipelineContext: IPipelineContext): boolean {
-        // TODO: support async shader compilcation
-        return true;
+        const nativePipelineContext = pipelineContext as NativePipelineContext;
+        return nativePipelineContext.isReady;
     }
 
     /**
      * @internal
      */
     public _executeWhenRenderingStateIsCompiled(pipelineContext: IPipelineContext, action: () => void) {
-        // TODO: support async shader compilcation
-        action();
+        const nativePipelineContext = pipelineContext as NativePipelineContext;
+
+        if (!nativePipelineContext.isAsync) {
+            action();
+            return;
+        }
+
+        const oldHandler = nativePipelineContext.onCompiled;
+
+        if (oldHandler) {
+            nativePipelineContext.onCompiled = () => {
+                oldHandler!();
+                action();
+            };
+        } else {
+            nativePipelineContext.onCompiled = action;
+        }
     }
 
     public createRawShaderProgram(): WebGLProgram {
         throw new Error("Not Supported");
     }
 
-    public createShaderProgram(_pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: Nullable<string>): WebGLProgram {
+    public createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: Nullable<string>): WebGLProgram {
+        const nativePipelineContext = pipelineContext as NativePipelineContext;
+
         this.onBeforeShaderCompilationObservable.notifyObservers(this);
 
         const vertexInliner = new ShaderCodeInliner(vertexCode);
@@ -680,7 +697,16 @@ export class NativeEngine extends Engine {
         vertexCode = ThinEngine._ConcatenateShader(vertexCode, defines);
         fragmentCode = ThinEngine._ConcatenateShader(fragmentCode, defines);
 
-        const program = this._engine.createProgram(vertexCode, fragmentCode);
+        const program = this._engine.createProgram(
+            vertexCode,
+            fragmentCode,
+            pipelineContext.isAsync,
+            () => {
+                nativePipelineContext.isReady = true;
+                nativePipelineContext.onCompiled?.();
+            },
+            () => {}
+        );
         this.onAfterShaderCompilationObservable.notifyObservers(this);
         return program as WebGLProgram;
     }
