@@ -336,6 +336,16 @@ export class PhysicsBody {
     }
 
     /**
+     * Enable or disable collision callback for this PhysicsBody.
+     * `registerOnCollide` method will enable collision callback and `unregisterOnCollide` will disable them.
+     * Registering a collision callback on the plugin and enabling collision per body is faster than
+     * registering callback per PhysicsBody.
+     */
+    public setCollisionCallbackEnabled(enabled: boolean): void {
+        return this._physicsPlugin.setCollisionCallbackEnabled(this, enabled);
+    }
+
+    /**
      * Gets the object extents
      * @returns the object extents
      */
