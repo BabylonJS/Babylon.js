@@ -83,7 +83,7 @@ export class DefaultKTX2DecoderOptions {
         this._isDirty = true;
     }
 
-    private _useRGBAIfOnlyBC1BC3AvailableWhenUASTC = true;
+    private _useRGBAIfOnlyBC1BC3AvailableWhenUASTC?: boolean = true;
     /**
      * force a (uncompressed) RGBA transcoded format if transcoding a UASTC source format and only BC1 or BC3 are available as a compressed transcoded format.
      * This property is true by default to favor speed over memory, because currently transcoding from UASTC to BC1/3 is slow because the transcoder transcodes
@@ -93,7 +93,7 @@ export class DefaultKTX2DecoderOptions {
         return this._useRGBAIfOnlyBC1BC3AvailableWhenUASTC;
     }
 
-    public set useRGBAIfOnlyBC1BC3AvailableWhenUASTC(value: boolean) {
+    public set useRGBAIfOnlyBC1BC3AvailableWhenUASTC(value: boolean | undefined) {
         if (this._useRGBAIfOnlyBC1BC3AvailableWhenUASTC === value) {
             return;
         }
