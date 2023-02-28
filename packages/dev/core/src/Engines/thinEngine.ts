@@ -1535,7 +1535,6 @@ export class ThinEngine {
      */
     public stopRenderLoop(renderFunction?: () => void): void {
         if (!renderFunction) {
-            cancelAnimationFrame(this._boundRenderFunction);
             this._activeRenderLoops.length = 0;
             return;
         }
