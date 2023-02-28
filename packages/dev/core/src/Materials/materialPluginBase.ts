@@ -72,7 +72,7 @@ export class MaterialPluginBase {
             material.pluginManager = new MaterialPluginManager(material);
             material.onDisposeObservable.add(() => {
                 material.pluginManager = undefined;
-            })
+            });
         }
 
         this._pluginDefineNames = defines;
