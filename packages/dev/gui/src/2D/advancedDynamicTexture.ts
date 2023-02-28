@@ -38,7 +38,7 @@ declare type StandardMaterial = import("core/Materials/standardMaterial").Standa
  * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui
  */
 export class AdvancedDynamicTexture extends DynamicTexture {
-    /** Define the Uurl to load snippets */
+    /** Define the url to load snippets */
     public static SnippetUrl = Constants.SnippetUrl;
 
     /** Indicates if some optimizations can be performed in GUI GPU management (the downside is additional memory/GPU texture memory used) */
@@ -1076,7 +1076,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     /**
      * Connect the texture to a hosting mesh to enable interactions
      * @param mesh defines the mesh to attach to
-     * @param supportPointerMove defines a boolean indicating if pointer move events must be catched as well
+     * @param supportPointerMove defines a boolean indicating if pointer move events must be caught as well
      */
     public attachToMesh(mesh: AbstractMesh, supportPointerMove = true): void {
         const scene = this.getScene();

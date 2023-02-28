@@ -11,7 +11,7 @@ import { CommandButtonComponent } from "../../../commandButtonComponent";
 import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
 import { ContainerPropertyGridComponent } from "./containerPropertyGridComponent";
 
-import cornerRadiusIcon from "shared-ui-components/imgs/conerRadiusIcon.svg";
+import cornerRadiusIcon from "shared-ui-components/imgs/cornerRadiusIcon.svg";
 import strokeWeightIcon from "shared-ui-components/imgs/strokeWeightIcon.svg";
 import addImageButtonIcon from "shared-ui-components/imgs/addImageButtonIcon.svg";
 import addTextButtonIcon from "shared-ui-components/imgs/addTextButtonIcon.svg";

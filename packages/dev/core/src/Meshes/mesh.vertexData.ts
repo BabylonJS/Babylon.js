@@ -1810,7 +1810,7 @@ export class VertexData {
 
             if (computeFacetPartitioning && options) {
                 // store the facet indexes in arrays in the main facetPartitioning array :
-                // compute each facet vertex (+ facet barycenter) index in the partiniong array
+                // compute each facet vertex (+ facet barycenter) index in the partitioning array
                 const ox = Math.floor((options.facetPositions[index].x - options.bInfo.minimum.x * ratio) * xSubRatio);
                 const oy = Math.floor((options.facetPositions[index].y - options.bInfo.minimum.y * ratio) * ySubRatio);
                 const oz = Math.floor((options.facetPositions[index].z - options.bInfo.minimum.z * ratio) * zSubRatio);

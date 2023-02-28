@@ -36,7 +36,7 @@ export class DigitalRainFontTexture extends BaseTexture {
      * Create a new instance of the Digital Rain FontTexture class
      * @param name the name of the texture
      * @param font the font to use, use the W3C CSS notation
-     * @param text the caracter set to use in the rendering.
+     * @param text the character set to use in the rendering.
      * @param scene the scene that owns the texture
      */
     constructor(name: string, font: string, text: string, scene: Nullable<Scene> = null) {
@@ -172,7 +172,7 @@ export interface IDigitalRainPostProcessOptions {
     font?: string;
 
     /**
-     * This defines the amount you want to mix the "tile" or caracter space colored in the digital rain.
+     * This defines the amount you want to mix the "tile" or character space colored in the digital rain.
      * This number is defined between 0 and 1;
      */
     mixToTile?: number;
@@ -185,9 +185,9 @@ export interface IDigitalRainPostProcessOptions {
 }
 
 /**
- * DigitalRainPostProcess helps rendering everithing in digital rain.
+ * DigitalRainPostProcess helps rendering everything in digital rain.
  *
- * Simmply add it to your scene and let the nerd that lives in you have fun.
+ * Simply add it to your scene and let the nerd that lives in you have fun.
  * Example usage: var pp = new DigitalRainPostProcess("digitalRain", "20px Monospace", camera);
  */
 export class DigitalRainPostProcess extends PostProcess {
@@ -197,7 +197,7 @@ export class DigitalRainPostProcess extends PostProcess {
     private _digitalRainFontTexture: DigitalRainFontTexture;
 
     /**
-     * This defines the amount you want to mix the "tile" or caracter space colored in the digital rain.
+     * This defines the amount you want to mix the "tile" or character space colored in the digital rain.
      * This number is defined between 0 and 1;
      */
     public mixToTile: number = 0;

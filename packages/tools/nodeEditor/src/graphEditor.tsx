@@ -251,7 +251,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
     build(ignoreEditorData = false) {
         let editorData = ignoreEditorData ? null : this.props.globalState.nodeMaterial.editorData;
-        this._graphCanvas._isLoading = true; // Will help loading large graphes
+        this._graphCanvas._isLoading = true; // Will help loading large graphs
 
         if (editorData instanceof Array) {
             editorData = {
@@ -306,7 +306,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
     reOrganize(editorData: Nullable<IEditorData> = null, isImportingAFrame = false) {
         this.showWaitScreen();
-        this._graphCanvas._isLoading = true; // Will help loading large graphes
+        this._graphCanvas._isLoading = true; // Will help loading large graphs
 
         setTimeout(() => {
             this._graphCanvas.reOrganize(editorData, isImportingAFrame);

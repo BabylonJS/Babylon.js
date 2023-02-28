@@ -173,7 +173,7 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
         if (gizmoManager) {
             gizmoManager.addToAxisCache(this._gizmoAxisCache);
         } else {
-            // Only subscribe to pointer event if gizmoManager isnt
+            // Only subscribe to pointer event if gizmoManager isn't
             Gizmo.GizmoAxisPointerObserver(gizmoLayer, this._gizmoAxisCache);
         }
     }

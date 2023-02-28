@@ -151,7 +151,7 @@ export class ParticleSystemSet implements IDisposable {
      * @param data defines a JSON compatible representation of the set
      * @param scene defines the hosting scene
      * @param gpu defines if we want GPU particles or CPU particles
-     * @param capacity defines the system capacity (if null or undefined the sotred capacity will be used)
+     * @param capacity defines the system capacity (if null or undefined the stored capacity will be used)
      * @returns a new ParticleSystemSet
      */
     public static Parse(data: any, scene: Scene, gpu = false, capacity?: number): ParticleSystemSet {

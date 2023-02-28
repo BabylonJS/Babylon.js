@@ -558,7 +558,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
 
     // Static methods
     /**
-     * Creates a default mesh for the Volumeric Light Scattering post-process
+     * Creates a default mesh for the Volumetric Light Scattering post-process
      * @param name The mesh name
      * @param scene The scene where to create the mesh
      * @returns the default mesh

@@ -1252,7 +1252,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
             Constants.TEXTURETYPE_UNSIGNED_INT
         );
 
-        let outputLiminance = 1;
+        let outputLuminance = 1;
         let time = 0;
         let lastTime = 0;
 
@@ -1261,25 +1261,25 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
 
             time += scene.getEngine().getDeltaTime();
 
-            if (outputLiminance < 0) {
-                outputLiminance = this._hdrCurrentLuminance;
+            if (outputLuminance < 0) {
+                outputLuminance = this._hdrCurrentLuminance;
             } else {
                 const dt = (lastTime - time) / 1000.0;
 
-                if (this._hdrCurrentLuminance < outputLiminance + this.hdrDecreaseRate * dt) {
-                    outputLiminance += this.hdrDecreaseRate * dt;
-                } else if (this._hdrCurrentLuminance > outputLiminance - this.hdrIncreaseRate * dt) {
-                    outputLiminance -= this.hdrIncreaseRate * dt;
+                if (this._hdrCurrentLuminance < outputLuminance + this.hdrDecreaseRate * dt) {
+                    outputLuminance += this.hdrDecreaseRate * dt;
+                } else if (this._hdrCurrentLuminance > outputLuminance - this.hdrIncreaseRate * dt) {
+                    outputLuminance -= this.hdrIncreaseRate * dt;
                 } else {
-                    outputLiminance = this._hdrCurrentLuminance;
+                    outputLuminance = this._hdrCurrentLuminance;
                 }
             }
 
             if (this.hdrAutoExposure) {
-                this._currentExposure = this._fixedExposure / outputLiminance;
+                this._currentExposure = this._fixedExposure / outputLuminance;
             } else {
-                outputLiminance = Scalar.Clamp(outputLiminance, this.hdrMinimumLuminance, 1e20);
-                effect.setFloat("averageLuminance", outputLiminance);
+                outputLuminance = Scalar.Clamp(outputLuminance, this.hdrMinimumLuminance, 1e20);
+                effect.setFloat("averageLuminance", outputLuminance);
             }
 
             lastTime = time;

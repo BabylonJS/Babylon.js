@@ -461,7 +461,7 @@ export class MRDLSliderThumbMaterial extends PushMaterial {
     /**
      * @internal
      */
-    public globaRightIndexTipPosition = new Vector4(0.0, 0.0, 0.0, 1.0);
+    public globalRightIndexTipPosition = new Vector4(0.0, 0.0, 0.0, 1.0);
 
     /**
      * @internal
@@ -831,7 +831,7 @@ export class MRDLSliderThumbMaterial extends PushMaterial {
         this._activeEffect.setFloat("Use_Global_Right_Index", this.useGlobalRightIndex);
 
         this._activeEffect.setVector4("Global_Left_Index_Tip_Position", this.globalLeftIndexTipPosition);
-        this._activeEffect.setVector4("Global_Right_Index_Tip_Position", this.globaRightIndexTipPosition);
+        this._activeEffect.setVector4("Global_Right_Index_Tip_Position", this.globalRightIndexTipPosition);
 
         this._activeEffect.setVector4("Global_Left_Thumb_Tip_Position", this.globalLeftThumbTipPosition);
         this._activeEffect.setVector4("Global_Right_Thumb_Tip_Position", this.globalRightThumbTipPosition);

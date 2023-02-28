@@ -801,7 +801,7 @@ export class PhysicsImpostor {
         let index = -1;
         const found = this._onPhysicsCollideCallbacks.some((cbDef, idx) => {
             if (cbDef.callback === func && cbDef.otherImpostors.length === collidedAgainstList.length) {
-                // chcek the arrays match
+                // check the arrays match
                 const sameList = cbDef.otherImpostors.every((impostor) => {
                     return collidedAgainstList.indexOf(impostor) > -1;
                 });

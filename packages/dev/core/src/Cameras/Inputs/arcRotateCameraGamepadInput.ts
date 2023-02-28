@@ -118,7 +118,7 @@ export class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera
     }
 
     /**
-     * Gets the class name of the current intput.
+     * Gets the class name of the current input.
      * @returns the class name
      */
     public getClassName(): string {

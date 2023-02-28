@@ -251,7 +251,7 @@ export interface IGLTFTexture extends IGLTFChildRootProperty {
 }
 
 /** @internal */
-export interface IGLTFAmbienLight {
+export interface IGLTFAmbientLight {
     color?: number[];
 }
 

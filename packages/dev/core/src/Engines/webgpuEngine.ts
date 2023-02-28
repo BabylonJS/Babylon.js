@@ -3385,7 +3385,7 @@ export class WebGPUEngine extends Engine {
     }
 
     /** @internal */
-    public _getUnpackAlignement(): number {
+    public _getUnpackAlignment(): number {
         return 1;
     }
 
@@ -3398,7 +3398,7 @@ export class WebGPUEngine extends Engine {
      * @internal
      */
     public _bindUnboundFramebuffer() {
-        throw "_bindUnboundFramebuffer is not implementedin WebGPU! You probably want to use restoreDefaultFramebuffer or unBindFramebuffer instead";
+        throw "_bindUnboundFramebuffer is not implemented in WebGPU! You probably want to use restoreDefaultFramebuffer or unBindFramebuffer instead";
     }
 
     // TODO WEBGPU. All of the below should go once engine split with baseEngine.

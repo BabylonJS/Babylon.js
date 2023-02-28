@@ -28,7 +28,7 @@ import "core/Lights/Shadows/shadowGeneratorSceneComponent";
  */
 export class DefaultViewer extends AbstractViewerWithTemplate {
     /**
-     * The corresponsing template manager of this viewer.
+     * The corresponding template manager of this viewer.
      */
     public templateManager: TemplateManager;
 
@@ -159,7 +159,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
         if (navbar) {
             this.onFrameRenderedObservable.add(this._updateProgressBar);
             this.templateManager.eventManager.registerCallback("navBar", this._handlePointerClick, "click");
-            // an example how to trigger the help button. publiclly available
+            // an example how to trigger the help button. Publicly available
             this.templateManager.eventManager.registerCallback(
                 "navBar",
                 () => {
@@ -420,7 +420,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
             }
         });
         if (this.sceneManager.vrHelper) {
-            // due to the way the experience helper is exisintg VR, this must be added.
+            // due to the way the experience helper is existing VR, this must be added.
             this.sceneManager.vrHelper.onExitingVR.add(() => {
                 const viewerTemplate = this.templateManager.getTemplate("viewer");
                 const viewerElement = viewerTemplate && viewerTemplate.parent;

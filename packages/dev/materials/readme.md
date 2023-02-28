@@ -2,7 +2,7 @@
 
 To get a detailed tutorial, please read the [documentation](https://doc.babylonjs.com/divingDeeper/developWithBjs/matForMatLibrary)
 
-For every material, you can find a detailled documentation [here](https://doc.babylonjs.com/extensions) under **materials library** tag.
+For every material, you can find a detailed documentation [here](https://doc.babylonjs.com/extensions) under **materials library** tag.
 
 ## Using a material from the library
 

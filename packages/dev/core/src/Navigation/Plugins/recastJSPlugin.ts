@@ -136,9 +136,9 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      */
     createNavMesh(meshes: Array<Mesh>, parameters: INavMeshParameters, completion?: (navmeshData: Uint8Array) => void): void {
         if (this._worker && !completion) {
-            console.warn("A worker is avaible but no completion callback. Defaulting to blocking navmesh creation");
+            console.warn("A worker is available but no completion callback. Defaulting to blocking navmesh creation");
         } else if (!this._worker && completion) {
-            console.warn("A completion callback is avaible but no worker. Defaulting to blocking navmesh creation");
+            console.warn("A completion callback is available but no worker. Defaulting to blocking navmesh creation");
         }
 
         this.navMesh = new this.bjsRECAST.NavMesh();

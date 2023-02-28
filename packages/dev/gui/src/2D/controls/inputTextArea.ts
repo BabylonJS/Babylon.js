@@ -737,7 +737,7 @@ export class InputTextArea extends InputText {
      */
     protected _onCopyText(ev: ClipboardEvent): void {
         this._isTextHighlightOn = false;
-        //when write permission to clipbaord data is denied
+        //when write permission to clipboard data is denied
         try {
             ev.clipboardData && ev.clipboardData.setData("text/plain", this._highlightedText);
         } catch {} //pass
@@ -754,7 +754,7 @@ export class InputTextArea extends InputText {
         if (!this._highlightedText) {
             return;
         }
-        //when write permission to clipbaord data is denied
+        //when write permission to clipboard data is denied
         try {
             ev.clipboardData && ev.clipboardData.setData("text/plain", this._highlightedText);
         } catch {} //pass
@@ -853,7 +853,7 @@ export class InputTextArea extends InputText {
         context.beginPath();
         context.fillStyle = this.fontStyle;
 
-        // here we define the visible reactangle to clip it in next line
+        // here we define the visible rectangle to clip it in next line
         context.rect(this._clipTextLeft, this._clipTextTop, this._availableWidth + 2, this._availableHeight + 2);
         context.clip();
 
@@ -918,7 +918,7 @@ export class InputTextArea extends InputText {
 
                 this._highlightedText = this.text.substring(this._cursorInfo.globalStartIndex, this._cursorInfo.globalEndIndex);
 
-                context.globalAlpha = this._highligherOpacity;
+                context.globalAlpha = this._highlighterOpacity;
                 context.fillStyle = this._textHighlightColor;
 
                 const startLineIndex = Math.min(this._cursorInfo.currentLineIndex, this._highlightCursorInfo.initialLineIndex);
@@ -947,9 +947,9 @@ export class InputTextArea extends InputText {
 
                     const leftOffsetWidth = context.measureText(line.text.substr(0, begin)).width;
                     const selectedText = line.text.substring(begin, end);
-                    const hightlightWidth = context.measureText(selectedText).width;
+                    const highlightWidth = context.measureText(selectedText).width;
 
-                    context.fillRect(highlightRootX + leftOffsetWidth, highlightRootY, hightlightWidth, this._fontOffset.height);
+                    context.fillRect(highlightRootX + leftOffsetWidth, highlightRootY, highlightWidth, this._fontOffset.height);
 
                     highlightRootY += this._fontOffset.height;
                 }
@@ -1029,7 +1029,7 @@ export class InputTextArea extends InputText {
 
     // for textselection
     public _onPointerMove(target: Control, coordinates: Vector2, pointerId: number, pi: PointerInfoBase): void {
-        // Avoid Chromium-like beahavior when this event is fired right after onPointerDown
+        // Avoid Chromium-like behavior when this event is fired right after onPointerDown
         if (pi.event.movementX === 0 && pi.event.movementY === 0) {
             return;
         }
@@ -1175,7 +1175,7 @@ export class InputTextArea extends InputText {
     }
 
     /**
-     * Select the word immediatly under the cursor on double click
+     * Select the word immediately under the cursor on double click
      *
      * @param _evt Pointer informations of double click
      * @internal

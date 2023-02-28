@@ -44,7 +44,7 @@ interface ISceneExplorerComponentProps {
 
 export class SceneExplorerComponent extends React.Component<ISceneExplorerComponentProps, { filter: Nullable<string>; selectedEntity: any; scene: Nullable<Scene> }> {
     private _onSelectionChangeObserver: Nullable<Observer<any>>;
-    private _onParrentingChangeObserver: Nullable<Observer<any>>;
+    private _onParentingChangeObserver: Nullable<Observer<any>>;
     private _onNewSceneObserver: Nullable<Observer<Nullable<Scene>>>;
     private _onPropertyChangedObservable: Nullable<Observer<PropertyChangedEvent>>;
     private _onUpdateRequiredObserver: Nullable<Observer<void>>;
@@ -79,7 +79,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             this.forceUpdate();
         });
 
-        this._onParrentingChangeObserver = this.props.globalState.onParentingChangeObservable.add(() => {
+        this._onParentingChangeObserver = this.props.globalState.onParentingChangeObservable.add(() => {
             this.forceUpdate();
         });
     }
@@ -93,8 +93,8 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             this.props.globalState.onNewSceneObservable.remove(this._onNewSceneObserver);
         }
 
-        if (this._onParrentingChangeObserver) {
-            this.props.globalState.onParentingChangeObservable.remove(this._onParrentingChangeObserver);
+        if (this._onParentingChangeObserver) {
+            this.props.globalState.onParentingChangeObservable.remove(this._onParentingChangeObserver);
         }
 
         if (this._onPropertyChangedObservable) {

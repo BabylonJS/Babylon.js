@@ -78,7 +78,7 @@ export class BoneLookController {
     private _transformYawPitchInv: Matrix;
     private _firstFrameSkipped = false;
     private _yawRange: number;
-    private _fowardAxis: Vector3 = Vector3.Forward();
+    private _forwardAxis: Vector3 = Vector3.Forward();
 
     /**
      * Gets or sets the minimum yaw angle that the bone can look to
@@ -326,7 +326,7 @@ export class BoneLookController {
                 spaceMat.copyFrom(mesh.getWorldMatrix());
             } else {
                 let forwardAxis = BoneLookController._TmpVecs[2];
-                forwardAxis.copyFrom(this._fowardAxis);
+                forwardAxis.copyFrom(this._forwardAxis);
 
                 if (this._transformYawPitch) {
                     Vector3.TransformCoordinatesToRef(forwardAxis, this._transformYawPitchInv, forwardAxis);

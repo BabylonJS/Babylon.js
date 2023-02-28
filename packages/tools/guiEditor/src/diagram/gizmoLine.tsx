@@ -125,7 +125,7 @@ export function GizmoLine(props: IGizmoLineProps) {
 
     const _getDeltasToRef = (currentPointer: Vector2, ref: Vector2) => {
         // We have to compute the difference in movement in the local node
-        // coordintes, so that it accounts for zoom
+        // coordinates, so that it accounts for zoom
         const rttClientCoords = CoordinateHelper.MousePointerToRTTSpace(control, currentPointer.x, currentPointer.y);
         const localClientCoords = CoordinateHelper.RttToLocalNodeSpace(control, rttClientCoords.x, rttClientCoords.y);
 

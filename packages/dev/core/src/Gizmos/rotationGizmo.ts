@@ -199,7 +199,7 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
         if (gizmoManager) {
             gizmoManager.addToAxisCache(this._gizmoAxisCache);
         } else {
-            // Only subscribe to pointer event if gizmoManager isnt
+            // Only subscribe to pointer event if gizmoManager isn't
             Gizmo.GizmoAxisPointerObserver(gizmoLayer, this._gizmoAxisCache);
         }
     }

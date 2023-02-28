@@ -677,7 +677,7 @@ export class PrePassRenderer {
     }
 
     /**
-     * Internal, gets the first post proces.
+     * Internal, gets the first post process.
      * @param postProcesses
      * @returns the first post process to be run on this camera.
      */

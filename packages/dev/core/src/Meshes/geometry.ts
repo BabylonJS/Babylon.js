@@ -1219,8 +1219,8 @@ export class Geometry implements IGetSetVerticesData {
                 mesh.setVerticesData(VertexBuffer.NormalKind, normalsData, false);
             }
 
-            if (binaryInfo.tangetsAttrDesc && binaryInfo.tangetsAttrDesc.count > 0) {
-                const tangentsData = new Float32Array(parsedGeometry, binaryInfo.tangetsAttrDesc.offset, binaryInfo.tangetsAttrDesc.count);
+            if (binaryInfo.tangentsAttrDesc && binaryInfo.tangentsAttrDesc.count > 0) {
+                const tangentsData = new Float32Array(parsedGeometry, binaryInfo.tangentsAttrDesc.offset, binaryInfo.tangentsAttrDesc.count);
                 mesh.setVerticesData(VertexBuffer.TangentKind, tangentsData, false);
             }
 

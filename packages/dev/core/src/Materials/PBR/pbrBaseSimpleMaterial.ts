@@ -55,14 +55,14 @@ export abstract class PBRBaseSimpleMaterial extends PBRBaseMaterial {
     public normalTexture: Nullable<BaseTexture>;
 
     /**
-     * Emissivie color used to self-illuminate the model.
+     * Emissive color used to self-illuminate the model.
      */
     @serializeAsColor3("emissive")
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public emissiveColor = new Color3(0, 0, 0);
 
     /**
-     * Emissivie texture used to self-illuminate the model.
+     * Emissive texture used to self-illuminate the model.
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")

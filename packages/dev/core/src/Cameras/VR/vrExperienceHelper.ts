@@ -1182,7 +1182,7 @@ export class VRExperienceHelper {
             // make sure that we return to the last active camera
             this._existingCamera = this._scene.activeCamera;
 
-            // Remove and cache angular sensability to avoid camera rotation when in VR
+            // Remove and cache angular sensibility to avoid camera rotation when in VR
             if ((<any>this._existingCamera).angularSensibilityX) {
                 this._cachedAngularSensibility.angularSensibilityX = (<any>this._existingCamera).angularSensibilityX;
                 (<any>this._existingCamera).angularSensibilityX = Number.MAX_VALUE;

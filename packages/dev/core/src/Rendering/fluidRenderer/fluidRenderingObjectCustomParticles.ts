@@ -142,7 +142,7 @@ export class FluidRenderingObjectCustomParticles extends FluidRenderingObject {
     }
 
     /**
-     * Releases the ressources used by the class
+     * Releases the resources used by the class
      */
     public dispose(): void {
         super.dispose();

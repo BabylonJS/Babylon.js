@@ -448,7 +448,7 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
                 this._betaTransition = Animation.CreateAnimation("beta", Animation.ANIMATIONTYPE_FLOAT, 60, FramingBehavior.EasingFunction);
             }
 
-            const animatabe = Animation.TransitionTo(
+            const animatable = Animation.TransitionTo(
                 "beta",
                 defaultBeta,
                 this._attachedCamera,
@@ -462,8 +462,8 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
                 }
             );
 
-            if (animatabe) {
-                this._animatables.push(animatabe);
+            if (animatable) {
+                this._animatables.push(animatable);
             }
         }
     }

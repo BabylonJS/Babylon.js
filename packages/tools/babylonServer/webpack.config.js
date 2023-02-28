@@ -107,7 +107,7 @@ module.exports = (env) => {
                 "procedural-textures": path.resolve(basePathForSources, "proceduralTextures", outputDirectoryForAliases),
                 "node-editor": path.resolve(basePathForTools, "nodeEditor", outputDirectoryForAliases),
                 "gui-editor": path.resolve(basePathForTools, "guiEditor", outputDirectoryForAliases),
-                "accesibility": path.resolve(basePathForTools, "accessibility", outputDirectoryForAliases),
+                "accessibility": path.resolve(basePathForTools, "accessibility", outputDirectoryForAliases),
             },
             symlinks: false,
             // modules: [path.resolve(__dirname, "../../dev/"), 'node_modules'],

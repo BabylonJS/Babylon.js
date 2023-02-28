@@ -11,7 +11,7 @@ import type {
     IGLTFMesh,
     IGLTFAccessor,
     IGLTFLight,
-    IGLTFAmbienLight,
+    IGLTFAmbientLight,
     IGLTFDirectionalLight,
     IGLTFPointLight,
     IGLTFSpotLight,
@@ -920,12 +920,12 @@ const importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string): Nul
 
         if (light) {
             if (light.type === "ambient") {
-                const ambienLight: IGLTFAmbienLight = (<any>light)[light.type];
+                const ambientLight: IGLTFAmbientLight = (<any>light)[light.type];
                 const hemiLight = new HemisphericLight(node.light, Vector3.Zero(), gltfRuntime.scene);
                 hemiLight.name = node.name || "";
 
-                if (ambienLight.color) {
-                    hemiLight.diffuse = Color3.FromArray(ambienLight.color);
+                if (ambientLight.color) {
+                    hemiLight.diffuse = Color3.FromArray(ambientLight.color);
                 }
 
                 lastNode = hemiLight;
@@ -1110,7 +1110,7 @@ const postLoad = (gltfRuntime: IGLTFRuntime) => {
 };
 
 /**
- * onBind shaderrs callback to set uniforms and matrices
+ * onBind shaders callback to set uniforms and matrices
  * @param mesh
  * @param gltfRuntime
  * @param unTreatedUniforms
@@ -1844,8 +1844,8 @@ export class GLTFLoader implements IGLTFLoader {
      * @param assetContainer defines the asset container to use (can be null)
      * @param data gltf data containing information of the meshes in a loaded file
      * @param rootUrl root url to load from
-     * @param onProgress event that fires when loading progress has occured
-     * @returns a promise containg the loaded meshes, particles, skeletons and animations
+     * @param onProgress event that fires when loading progress has occurred
+     * @returns a promise containing the loaded meshes, particles, skeletons and animations
      */
     public importMeshAsync(
         meshesNames: any,
@@ -1896,7 +1896,7 @@ export class GLTFLoader implements IGLTFLoader {
             data,
             rootUrl,
             (gltfRuntime) => {
-                // Load runtime extensios
+                // Load runtime extensions
                 GLTFLoaderExtension.LoadRuntimeExtensionsAsync(
                     gltfRuntime,
                     () => {
@@ -1931,7 +1931,7 @@ export class GLTFLoader implements IGLTFLoader {
      * @param scene the scene the objects should be added to
      * @param data gltf data containing information of the meshes in a loaded file
      * @param rootUrl root url to load from
-     * @param onProgress event that fires when loading progress has occured
+     * @param onProgress event that fires when loading progress has occurred
      * @returns a promise which completes when objects have been loaded to the scene
      */
     public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void): Promise<void> {
@@ -2086,7 +2086,7 @@ export abstract class GLTFLoaderExtension {
     }
 
     /**
-     * Defines an onverride for creating gltf runtime
+     * Defines an override for creating gltf runtime
      * Return true to stop further extensions from creating the runtime
      * @param gltfRuntime
      * @param onSuccess

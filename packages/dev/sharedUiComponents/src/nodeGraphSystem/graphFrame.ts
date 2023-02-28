@@ -854,7 +854,7 @@ export class GraphFrame {
             [this._exposedInPorts[indexInContainer - 1], this._exposedInPorts[indexInContainer]] = [
                 this._exposedInPorts[indexInContainer],
                 this._exposedInPorts[indexInContainer - 1],
-            ]; // swap idicies
+            ]; // swap indices
             this._movePortUp(elementsArray, nodePort, this._frameInPorts);
         } else {
             if (this._outputPortContainer.children.length < 2) {
@@ -865,7 +865,7 @@ export class GraphFrame {
             [this._exposedOutPorts[indexInContainer - 1], this._exposedOutPorts[indexInContainer]] = [
                 this._exposedOutPorts[indexInContainer],
                 this._exposedOutPorts[indexInContainer - 1],
-            ]; // swap idicies
+            ]; // swap indices
             this._movePortUp(elementsArray, nodePort, this._frameOutPorts);
         }
         this.ports.forEach((framePort: FrameNodePort) => framePort.node._refreshLinks());
@@ -883,7 +883,7 @@ export class GraphFrame {
 
         // update Frame Port Container
         const indexInContainer = framePortList.findIndex((framePort) => framePort === nodePort);
-        [framePortList[indexInContainer - 1], framePortList[indexInContainer]] = [framePortList[indexInContainer], framePortList[indexInContainer - 1]]; // swap idicies
+        [framePortList[indexInContainer - 1], framePortList[indexInContainer]] = [framePortList[indexInContainer], framePortList[indexInContainer - 1]]; // swap indices
 
         //special case framePortList.length == 2
         if (framePortList.length == 2) {
@@ -914,7 +914,7 @@ export class GraphFrame {
             [this._exposedInPorts[indexInContainer], this._exposedInPorts[indexInContainer + 1]] = [
                 this._exposedInPorts[indexInContainer + 1],
                 this._exposedInPorts[indexInContainer],
-            ]; // swap idicies
+            ]; // swap indices
             this._movePortDown(elementsArray, nodePort, this._frameInPorts);
         } else {
             if (this._outputPortContainer.children.length < 2) {
@@ -925,7 +925,7 @@ export class GraphFrame {
             [this._exposedOutPorts[indexInContainer], this._exposedOutPorts[indexInContainer + 1]] = [
                 this._exposedOutPorts[indexInContainer + 1],
                 this._exposedOutPorts[indexInContainer],
-            ]; // swap idicies
+            ]; // swap indices
             this._movePortDown(elementsArray, nodePort, this._frameOutPorts);
         }
 
@@ -944,7 +944,7 @@ export class GraphFrame {
 
         // update Frame Port Container
         const indexInContainer = framePortList.findIndex((framePort) => framePort === nodePort);
-        [framePortList[indexInContainer], framePortList[indexInContainer + 1]] = [framePortList[indexInContainer + 1], framePortList[indexInContainer]]; // swap idicies
+        [framePortList[indexInContainer], framePortList[indexInContainer + 1]] = [framePortList[indexInContainer + 1], framePortList[indexInContainer]]; // swap indices
 
         // notify nodePort if it is now at bottom (indexInContainer === elementsArray.length-2)
         if (framePortList.length == 2) {

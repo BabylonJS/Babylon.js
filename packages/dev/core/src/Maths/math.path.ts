@@ -290,7 +290,7 @@ export class Path2 {
     }
 
     /**
-     * Retreives the point at the distance aways from the starting point
+     * Retrieves the point at the distance aways from the starting point
      * @param normalizedLengthPosition the length along the path to retrieve the point from
      * @returns a new Vector2 located at a percentage of the Path2 total length on this path.
      */

@@ -85,7 +85,7 @@ function IsParticleSystemObject(obj: FluidRenderingObject): obj is FluidRenderin
  */
 export class FluidRendererSceneComponent implements ISceneComponent {
     /**
-     * The component name helpful to identify the component in the list of scene components.
+     * The component name, helpful for identifying the component in the list of scene components.
      */
     public readonly name = SceneComponentConstants.NAME_FLUIDRENDERER;
 
@@ -528,7 +528,7 @@ export class FluidRenderer {
     }
 
     /**
-     * Disposes of all the ressources used by the class
+     * Disposes of all the resources used by the class
      */
     public dispose(): void {
         this._engine.onResizeObservable.remove(this._onEngineResizeObserver);

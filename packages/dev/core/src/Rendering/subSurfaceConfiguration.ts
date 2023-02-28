@@ -110,7 +110,7 @@ export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
      */
     public addDiffusionProfile(color: Color3): number {
         if (this.ssDiffusionD.length >= 5) {
-            // We only suppport 5 diffusion profiles
+            // We only support 5 diffusion profiles
             Logger.Error("You already reached the maximum number of diffusion profiles.");
             return 0; // default profile
         }

@@ -642,7 +642,7 @@ export class CanvasGraphService {
     }
 
     /**
-     * Nice number algorithm based on psueudo code defined in "Graphics Gems" by Andrew S. Glassner.
+     * Nice number algorithm based on pseudo code defined in "Graphics Gems" by Andrew S. Glassner.
      * This will find a "nice" number approximately equal to num.
      *
      * @param num The number we want to get close to.
@@ -930,7 +930,7 @@ export class CanvasGraphService {
                 adjustedYPos
             );
 
-            // get the shortest distance between the point and the line segment infront, and line segment behind, store the shorter distance (if shorter than distance between closest data point and mouse).
+            // get the shortest distance between the point and the line segment in front, and line segment behind, store the shorter distance (if shorter than distance between closest data point and mouse).
             if (
                 closestIndex + 1 < this.datasets.data.itemLength &&
                 this.datasets.data.at(this.datasets.startingIndices.at(closestIndex + 1) + PerformanceViewerCollector.NumberOfPointsOffset) > idOffset

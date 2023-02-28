@@ -208,7 +208,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     // @see http://www.bulletphysics.org/mediawiki-1.5.8/index.php/Stepping_The_World
     //
     // When maxSteps is 0 do the entire simulation in one step
-    // When maxSteps is > 0, run up to maxStep times, if on the last step the (remaining step - fixedTimeStep) is < fixedTimeStep, the remainder will be used for the step. (eg. if remainder is 1.001 and fixedTimeStep is 1 the last step will be 1.001, if instead it did 2 steps (1, 0.001) issues occuered when having a tiny step in ammo)
+    // When maxSteps is > 0, run up to maxStep times, if on the last step the (remaining step - fixedTimeStep) is < fixedTimeStep, the remainder will be used for the step. (eg. if remainder is 1.001 and fixedTimeStep is 1 the last step will be 1.001, if instead it did 2 steps (1, 0.001) issues occurred when having a tiny step in ammo)
     // Note: To get deterministic physics, timeStep would always need to be divisible by fixedTimeStep
     private _stepSimulation(timeStep: number = 1 / 60, maxSteps: number = 10, fixedTimeStep: number = 1 / 60) {
         if (maxSteps == 0) {
@@ -436,7 +436,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * @param impostor the imposter to create the physics body on
      */
     public generatePhysicsBody(impostor: PhysicsImpostor) {
-        // Note: this method will not be called on child imposotrs for compound impostors
+        // Note: this method will not be called on child impostors for compound impostors
 
         impostor._pluginData.toDispose = [];
 
@@ -633,7 +633,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         }
     }
 
-    // adds all verticies (including child verticies) to the triangle mesh
+    // adds all vertices (including child vertices) to the triangle mesh
     private _addMeshVerts(btTriangleMesh: any, topLevelObject: IPhysicsEnabledObject, object: IPhysicsEnabledObject) {
         let triangleCount = 0;
         if (object && object.getIndices && object.getWorldMatrix && object.getChildMeshes) {
@@ -919,7 +919,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         return returnValue;
     }
 
-    // adds all verticies (including child verticies) to the convex hull shape
+    // adds all vertices (including child vertices) to the convex hull shape
     private _addHullVerts(btConvexHullShape: any, topLevelObject: IPhysicsEnabledObject, object: IPhysicsEnabledObject) {
         let triangleCount = 0;
         if (object && object.getIndices && object.getWorldMatrix && object.getChildMeshes) {
@@ -1324,8 +1324,8 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
 
     /**
      * Sets restitution of the impostor
-     * @param impostor impostor to set resitution on
-     * @param restitution resitution value
+     * @param impostor impostor to set restitution on
+     * @param restitution restitution value
      */
     public setBodyRestitution(impostor: PhysicsImpostor, restitution: number) {
         impostor.physicsBody.setRestitution(restitution);

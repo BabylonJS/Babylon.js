@@ -163,12 +163,12 @@ export class ComputeEffect {
             ShaderProcessor.PreProcess(
                 computeCode,
                 processorOptions,
-                (migratedCommputeCode) => {
+                (migratedComputeCode) => {
                     this._rawComputeSourceCode = computeCode;
                     if (options.processFinalCode) {
-                        migratedCommputeCode = options.processFinalCode(migratedCommputeCode);
+                        migratedComputeCode = options.processFinalCode(migratedComputeCode);
                     }
-                    const finalShaders = ShaderProcessor.Finalize(migratedCommputeCode, "", processorOptions);
+                    const finalShaders = ShaderProcessor.Finalize(migratedComputeCode, "", processorOptions);
                     this._useFinalCode(finalShaders.vertexCode, baseName);
                 },
                 this._engine
@@ -176,13 +176,13 @@ export class ComputeEffect {
         });
     }
 
-    private _useFinalCode(migratedCommputeCode: string, baseName: any) {
+    private _useFinalCode(migratedComputeCode: string, baseName: any) {
         if (baseName) {
             const compute = baseName.computeElement || baseName.compute || baseName.spectorName || baseName;
 
-            this._computeSourceCode = "//#define SHADER_NAME compute:" + compute + "\n" + migratedCommputeCode;
+            this._computeSourceCode = "//#define SHADER_NAME compute:" + compute + "\n" + migratedComputeCode;
         } else {
-            this._computeSourceCode = migratedCommputeCode;
+            this._computeSourceCode = migratedComputeCode;
         }
         this._prepareEffect();
     }

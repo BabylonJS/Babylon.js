@@ -75,7 +75,7 @@ Scene.prototype.disableDepthRenderer = function (camera?: Nullable<Camera>): voi
  */
 export class DepthRendererSceneComponent implements ISceneComponent {
     /**
-     * The component name helpful to identify the component in the list of scene components.
+     * The component name, helpful for identifying the component in the list of scene components.
      */
     public readonly name = SceneComponentConstants.NAME_DEPTHRENDERER;
 

@@ -74,7 +74,7 @@ class _InstanceDataStorage {
     public instancesPreviousBuffer: Nullable<Buffer>;
     public instancesData: Float32Array;
     public instancesPreviousData: Float32Array;
-    public overridenInstanceCount: number;
+    public overriddenInstanceCount: number;
     public isFrozen: boolean;
     public forceMatrixUpdates: boolean;
     public previousBatch: Nullable<_InstancesBatch>;
@@ -326,7 +326,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
-     * An event triggeredbetween rendering pass when using separateCullingPass = true
+     * An event triggered between rendering pass when using separateCullingPass = true
      */
     public get onBetweenPassObservable(): Observable<SubMesh> {
         if (!this._internalMeshDataInfo._onBetweenPassObservable) {
@@ -378,7 +378,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /**
      * Gets the list of instances created from this mesh
      * it is not supposed to be modified manually.
-     * Note also that the order of the InstancedMesh wihin the array is not significant and might change.
+     * Note also that the order of the InstancedMesh within the array is not significant and might change.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/copies/instances
      */
     public instances = new Array<InstancedMesh>();
@@ -1145,7 +1145,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * Returns a positive integer : the total number of indices in this mesh geometry.
-     * @returns the numner of indices or zero if the mesh has no geometry.
+     * @returns the number of indices or zero if the mesh has no geometry.
      */
     public getTotalIndices(): number {
         if (!this._geometry) {
@@ -1287,10 +1287,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
-     * Sets a value overriding the instance count. Only applicable when custom instanced InterleavedVertexBuffer are used rather than InstancedMeshs
+     * Sets a value overriding the instance count. Only applicable when custom instanced InterleavedVertexBuffer are used rather than InstancedMeshes
      */
-    public set overridenInstanceCount(count: number) {
-        this._instanceDataStorage.overridenInstanceCount = count;
+    public set overriddenInstanceCount(count: number) {
+        this._instanceDataStorage.overriddenInstanceCount = count;
     }
 
     // Methods
@@ -1618,7 +1618,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
-     * Creates a un-shared specific occurence of the geometry for the mesh.
+     * Creates a un-shared specific occurrence of the geometry for the mesh.
      * @returns the current mesh
      */
     public makeGeometryUnique(): Mesh {
@@ -2076,7 +2076,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 }
                 instanceCount++;
 
-                this._draw(subMesh, fillMode, this._instanceDataStorage.overridenInstanceCount);
+                this._draw(subMesh, fillMode, this._instanceDataStorage.overriddenInstanceCount);
             }
 
             const visibleInstancesForSubMesh = batch.visibleInstances[subMesh._id];

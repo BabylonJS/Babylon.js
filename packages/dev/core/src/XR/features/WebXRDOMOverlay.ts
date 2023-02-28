@@ -15,7 +15,7 @@ export interface IWebXRDomOverlayOptions {
      */
     element: Element | string;
     /**
-     * Supress XR Select events on container element (DOM blocks interaction to scene).
+     * Suppress XR Select events on container element (DOM blocks interaction to scene).
      */
     supressXRSelectEvents?: boolean;
 }
@@ -49,7 +49,7 @@ export class WebXRDomOverlay extends WebXRAbstractFeature {
     private _domOverlayType: Nullable<WebXRDomOverlayType> = null;
 
     /**
-     * Event Listener to supress "beforexrselect" events.
+     * Event Listener to suppress "beforexrselect" events.
      */
     private _beforeXRSelectListener: Nullable<EventListenerOrEventListenerObject> = null;
 

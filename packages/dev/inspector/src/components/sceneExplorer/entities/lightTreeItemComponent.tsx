@@ -3,7 +3,7 @@ import type { Light } from "core/Lights/light";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLightbulb, faEye } from "@fortawesome/free-solid-svg-icons";
-import { faLightbulb as faLightbubRegular } from "@fortawesome/free-regular-svg-icons";
+import { faLightbulb as faLightbulbRegular } from "@fortawesome/free-regular-svg-icons";
 import { TreeItemLabelComponent } from "../treeItemLabelComponent";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
@@ -48,7 +48,7 @@ export class LightTreeItemComponent extends React.Component<ILightTreeItemCompon
     }
 
     render() {
-        const isEnabledElement = this.state.isEnabled ? <FontAwesomeIcon icon={faLightbubRegular} /> : <FontAwesomeIcon icon={faLightbubRegular} className="isNotActive" />;
+        const isEnabledElement = this.state.isEnabled ? <FontAwesomeIcon icon={faLightbulbRegular} /> : <FontAwesomeIcon icon={faLightbulbRegular} className="isNotActive" />;
         const isGizmoEnabled =
             this.state.isGizmoEnabled || (this.props.light && this.props.light.reservedDataStore && this.props.light.reservedDataStore.lightGizmo) ? (
                 <FontAwesomeIcon icon={faEye} />

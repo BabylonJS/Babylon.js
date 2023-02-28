@@ -119,7 +119,7 @@ export interface DDSInfo {
      */
     isRGB: boolean;
     /**
-     * If the texture is a lumincance format
+     * If the texture is a luminance format
      */
     isLuminance: boolean;
     /**
@@ -141,7 +141,7 @@ export interface DDSInfo {
      */
     textureType: number;
     /**
-     * Sphericle polynomial created for the dds texture
+     * Spherical polynomial created for the dds texture
      */
     sphericalPolynomial?: SphericalPolynomial;
 }
@@ -492,7 +492,7 @@ export class DDSTools {
                     bpp = 128;
                     break;
                 case FOURCC_DX10: {
-                    // There is an additionnal header so dataOffset need to be changed
+                    // There is an additional header so dataOffset need to be changed
                     dataOffset += 5 * 4; // 5 uints
 
                     let supported = false;
@@ -656,7 +656,7 @@ export class DDSTools {
                             engine._uploadDataToTextureDirectly(texture, byteArray, face, i);
                         }
                     } else if (info.isLuminance) {
-                        const unpackAlignment = engine._getUnpackAlignement();
+                        const unpackAlignment = engine._getUnpackAlignment();
                         const unpaddedRowSize = width;
                         const paddedRowSize = Math.floor((width + unpackAlignment - 1) / unpackAlignment) * unpackAlignment;
                         dataLength = paddedRowSize * (height - 1) + unpaddedRowSize;
@@ -718,7 +718,7 @@ declare module "../Engines/thinEngine" {
          * @param onError defines an optional callback raised if there is an issue to load the texture
          * @param format defines the format of the data
          * @param forcedExtension defines the extension to use to pick the right loader
-         * @param createPolynomials defines wheter or not to create polynomails harmonics for the texture
+         * @param createPolynomials defines whether or not to create polynomials harmonics for the texture
          * @returns the cube texture as an InternalTexture
          */
         createPrefilteredCubeTexture(
@@ -745,7 +745,7 @@ declare module "../Engines/thinEngine" {
  * @param onError defines an optional callback raised if there is an issue to load the texture
  * @param format defines the format of the data
  * @param forcedExtension defines the extension to use to pick the right loader
- * @param createPolynomials defines wheter or not to create polynomails harmonics for the texture
+ * @param createPolynomials defines whether or not to create polynomials harmonics for the texture
  * @returns the cube texture as an InternalTexture
  */
 ThinEngine.prototype.createPrefilteredCubeTexture = function (

@@ -389,7 +389,7 @@ export class UniformBuffer {
 
     /**
      * Adds an uniform in the buffer.
-     * Warning : the subsequents calls of this function must be in the same order as declared in the shader
+     * Warning : the subsequent calls of this function must be in the same order as declared in the shader
      * for the layout to be correct ! The addUniform function only handles types like float, vec2, vec3, vec4, mat4,
      * meaning size=1,2,3,4 or 16. It does not handle struct types.
      * @param name Name of the uniform, as used in the uniform block in the shader.
@@ -1112,7 +1112,7 @@ export class UniformBuffer {
 
     /**
      * Sets the current state of the class (_bufferIndex, _buffer) to point to the data buffer passed in parameter if this buffer is one of the buffers handled by the class (meaning if it can be found in the _buffers array)
-     * This method is meant to be able to update a buffer at any time: just call setDataBuffer to set the class in the right state, call some updateXXX methods and then call udpate() => that will update the GPU buffer on the graphic card
+     * This method is meant to be able to update a buffer at any time: just call setDataBuffer to set the class in the right state, call some updateXXX methods and then call update() => that will update the GPU buffer on the graphic card
      * @param dataBuffer buffer to look for
      * @returns true if the buffer has been found and the class internal state points to it, else false
      */

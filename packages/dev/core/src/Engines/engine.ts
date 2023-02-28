@@ -95,7 +95,7 @@ export class Engine extends ThinEngine {
     /** Defines that the resource is delayed and has not started loading */
     public static readonly DELAYLOADSTATE_NOTLOADED = Constants.DELAYLOADSTATE_NOTLOADED;
 
-    // Depht or Stencil test Constants.
+    // Depth or Stencil test Constants.
     /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will never pass. i.e. Nothing will be drawn */
     public static readonly NEVER = Constants.NEVER;
     /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn */
@@ -1489,7 +1489,7 @@ export class Engine extends ThinEngine {
             const transformFeedback = this.createTransformFeedback();
 
             this.bindTransformFeedback(transformFeedback);
-            this.setTranformFeedbackVaryings(shaderProgram, transformFeedbackVaryings);
+            this.setTransformFeedbackVaryings(shaderProgram, transformFeedbackVaryings);
             pipelineContext.transformFeedback = transformFeedback;
         }
 

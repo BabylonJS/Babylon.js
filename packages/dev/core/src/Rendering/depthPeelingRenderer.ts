@@ -45,8 +45,8 @@ class DepthPeelingEffectConfiguration implements PrePassEffectConfiguration {
 
 /**
  * The depth peeling renderer that performs
- * Order independant transparency (OIT).
- * This should not be instanciated directly, as it is part of a scene component
+ * Order independent transparency (OIT).
+ * This should not be instantiated directly, as it is part of a scene component
  */
 export class DepthPeelingRenderer {
     private _scene: Scene;
@@ -137,7 +137,7 @@ export class DepthPeelingRenderer {
     }
 
     /**
-     * Instanciates the depth peeling renderer
+     * Instantiates the depth peeling renderer
      * @param scene Scene to attach to
      * @param passCount Number of depth layers to peel
      * @returns The depth peeling renderer
@@ -149,7 +149,7 @@ export class DepthPeelingRenderer {
 
         //  We need a depth texture for opaque
         if (!scene.enablePrePassRenderer()) {
-            Logger.Warn("Depth peeling for order independant transparency could not enable PrePass, aborting.");
+            Logger.Warn("Depth peeling for order independent transparency could not enable PrePass, aborting.");
             return;
         }
 
@@ -558,7 +558,7 @@ export class DepthPeelingRenderer {
     }
 
     /**
-     * Disposes the depth peeling renderer and associated ressources
+     * Disposes the depth peeling renderer and associated resources
      */
     public dispose() {
         this._disposeTextures();

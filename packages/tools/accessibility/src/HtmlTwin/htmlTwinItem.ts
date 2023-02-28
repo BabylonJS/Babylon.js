@@ -60,7 +60,7 @@ export class HTMLTwinItem {
     public focus(): void {}
 
     /**
-     * Callback when the HTML element is blured. Dismiss visual indication on BabylonJS entity.
+     * Callback when the HTML element is blurred. Dismiss visual indication on BabylonJS entity.
      * Implemented by child classes
      */
     public blur(): void {}

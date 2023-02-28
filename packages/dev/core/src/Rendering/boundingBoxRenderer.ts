@@ -48,7 +48,7 @@ Object.defineProperty(Scene.prototype, "forceShowBoundingBoxes", {
     },
     set: function (this: Scene, value: boolean) {
         this._forceShowBoundingBoxes = value;
-        // Lazyly creates a BB renderer if needed.
+        // Lazily creates a BB renderer if needed.
         if (value) {
             this.getBoundingBoxRenderer();
         }
@@ -83,7 +83,7 @@ Object.defineProperty(AbstractMesh.prototype, "showBoundingBox", {
     },
     set: function (this: AbstractMesh, value: boolean) {
         this._showBoundingBox = value;
-        // Lazyly creates a BB renderer if needed.
+        // Lazily creates a BB renderer if needed.
         if (value) {
             this.getScene().getBoundingBoxRenderer();
         }
@@ -98,7 +98,7 @@ Object.defineProperty(AbstractMesh.prototype, "showBoundingBox", {
  */
 export class BoundingBoxRenderer implements ISceneComponent {
     /**
-     * The component name helpful to identify the component in the list of scene components.
+     * The component name, helpful for identifying the component in the list of scene components.
      */
     public readonly name = SceneComponentConstants.NAME_BOUNDINGBOXRENDERER;
 

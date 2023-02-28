@@ -292,7 +292,7 @@ export class SceneManager {
      * Should shadows be rendered every frame, or only once and stop.
      * This can be used to optimize a scene.
      *
-     * Not that the shadows will NOT disapear but will remain in place.
+     * Not that the shadows will NOT disappear but will remain in place.
      * @param process if true shadows will be updated once every frame. if false they will stop being updated.
      */
     public set processShadows(process: boolean) {
@@ -871,8 +871,8 @@ export class SceneManager {
 
         //sanity check
         if (this.scene.environmentTexture) {
-            const rotatquatRotationionY = Quaternion.RotationAxis(Axis.Y, environmentMapConfiguration.rotationY || 0);
-            Matrix.FromQuaternionToRef(rotatquatRotationionY, this.scene.environmentTexture.getReflectionTextureMatrix());
+            const rotatquatRotationY = Quaternion.RotationAxis(Axis.Y, environmentMapConfiguration.rotationY || 0);
+            Matrix.FromQuaternionToRef(rotatquatRotationY, this.scene.environmentTexture.getReflectionTextureMatrix());
         }
 
         // process mainColor changes:
@@ -1019,9 +1019,9 @@ export class SceneManager {
         this.camera.beta = (this._globalConfiguration.camera && this._globalConfiguration.camera.beta) || this.camera.beta;
         this.camera.radius = (this._globalConfiguration.camera && this._globalConfiguration.camera.radius) || this.camera.radius;
 
-        const sceneDiagonalLenght = sizeVec.length();
-        if (isFinite(sceneDiagonalLenght)) {
-            this.camera.upperRadiusLimit = sceneDiagonalLenght * 4;
+        const sceneDiagonalLength = sizeVec.length();
+        if (isFinite(sceneDiagonalLength)) {
+            this.camera.upperRadiusLimit = sceneDiagonalLength * 4;
         }
 
         if (this._configurationContainer.configuration) {
@@ -1033,8 +1033,8 @@ export class SceneManager {
         });*/
     };
 
-    protected _configureEnvironment(skyboxConifguration?: ISkyboxConfiguration | boolean, groundConfiguration?: IGroundConfiguration | boolean) {
-        if (!skyboxConifguration && !groundConfiguration) {
+    protected _configureEnvironment(skyboxConfiguration?: ISkyboxConfiguration | boolean, groundConfiguration?: IGroundConfiguration | boolean) {
+        if (!skyboxConfiguration && !groundConfiguration) {
             if (this.environmentHelper) {
                 this.environmentHelper.dispose();
                 this.environmentHelper = undefined;
@@ -1042,7 +1042,7 @@ export class SceneManager {
         } else {
             const options: Partial<IEnvironmentHelperOptions> = {
                 createGround: !!groundConfiguration && this._groundEnabled,
-                createSkybox: !!skyboxConifguration,
+                createSkybox: !!skyboxConfiguration,
                 setupImageProcessing: false, // will be done at the scene level!,
             };
 
@@ -1058,7 +1058,7 @@ export class SceneManager {
             if (groundConfiguration) {
                 const groundConfig = typeof groundConfiguration === "boolean" ? {} : groundConfiguration;
 
-                const groundSize = groundConfig.size || (typeof skyboxConifguration === "object" && skyboxConifguration.scale);
+                const groundSize = groundConfig.size || (typeof skyboxConfiguration === "object" && skyboxConfiguration.scale);
                 if (groundSize) {
                     options.groundSize = groundSize;
                 }
@@ -1106,8 +1106,8 @@ export class SceneManager {
             }
 
             let postInitSkyboxMaterial = false;
-            if (skyboxConifguration) {
-                const conf = skyboxConifguration === true ? {} : skyboxConifguration;
+            if (skyboxConfiguration) {
+                const conf = skyboxConfiguration === true ? {} : skyboxConfiguration;
                 if (conf.material && conf.material.imageProcessingConfiguration) {
                     options.setupImageProcessing = false; // will be configured later manually.
                 }
@@ -1196,8 +1196,8 @@ export class SceneManager {
                 skyboxMaterial._perceptualColor = this.mainColor;
 
                 if (postInitSkyboxMaterial) {
-                    if (typeof skyboxConifguration === "object" && skyboxConifguration.material) {
-                        extendClassWithConfig(skyboxMaterial, skyboxConifguration.material);
+                    if (typeof skyboxConfiguration === "object" && skyboxConfiguration.material) {
+                        extendClassWithConfig(skyboxMaterial, skyboxConfiguration.material);
                     }
                 }
             }
@@ -1212,7 +1212,7 @@ export class SceneManager {
             sceneManager: this,
             object: this.environmentHelper!,
             newConfiguration: {
-                skybox: skyboxConifguration,
+                skybox: skyboxConfiguration,
                 ground: groundConfiguration,
             },
         });

@@ -16,7 +16,7 @@ export const macOSSafariCapabilities = {
     browserVersion: "latest",
 };
 
-// Take Playgorund Id and Selenium webdriver and load snippet info into test page
+// Take Playground Id and Selenium webdriver and load snippet info into test page
 export const LoadPlayground = async (
     driver: ThenableWebDriver,
     pgId: string,

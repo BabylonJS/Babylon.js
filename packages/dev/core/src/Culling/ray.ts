@@ -51,12 +51,12 @@ export class Ray {
      * This does not account for the ray length by design to improve perfs.
      * @param minimum bound of the box
      * @param maximum bound of the box
-     * @param intersectionTreshold extra extend to be added to the box in all direction
+     * @param intersectionThreshold extra extend to be added to the box in all direction
      * @returns if the box was hit
      */
-    public intersectsBoxMinMax(minimum: DeepImmutable<Vector3>, maximum: DeepImmutable<Vector3>, intersectionTreshold: number = 0): boolean {
-        const newMinimum = Ray._TmpVector3[0].copyFromFloats(minimum.x - intersectionTreshold, minimum.y - intersectionTreshold, minimum.z - intersectionTreshold);
-        const newMaximum = Ray._TmpVector3[1].copyFromFloats(maximum.x + intersectionTreshold, maximum.y + intersectionTreshold, maximum.z + intersectionTreshold);
+    public intersectsBoxMinMax(minimum: DeepImmutable<Vector3>, maximum: DeepImmutable<Vector3>, intersectionThreshold: number = 0): boolean {
+        const newMinimum = Ray._TmpVector3[0].copyFromFloats(minimum.x - intersectionThreshold, minimum.y - intersectionThreshold, minimum.z - intersectionThreshold);
+        const newMaximum = Ray._TmpVector3[1].copyFromFloats(maximum.x + intersectionThreshold, maximum.y + intersectionThreshold, maximum.z + intersectionThreshold);
         let d = 0.0;
         let maxValue = Number.MAX_VALUE;
         let inv: number;
@@ -147,27 +147,27 @@ export class Ray {
 
     /**
      * Checks if the ray intersects a box
-     * This does not account for the ray lenght by design to improve perfs.
+     * This does not account for the ray length by design to improve perfs.
      * @param box the bounding box to check
-     * @param intersectionTreshold extra extend to be added to the BoundingBox in all direction
+     * @param intersectionThreshold extra extend to be added to the BoundingBox in all direction
      * @returns if the box was hit
      */
-    public intersectsBox(box: DeepImmutable<BoundingBox>, intersectionTreshold: number = 0): boolean {
-        return this.intersectsBoxMinMax(box.minimum, box.maximum, intersectionTreshold);
+    public intersectsBox(box: DeepImmutable<BoundingBox>, intersectionThreshold: number = 0): boolean {
+        return this.intersectsBoxMinMax(box.minimum, box.maximum, intersectionThreshold);
     }
 
     /**
      * If the ray hits a sphere
      * @param sphere the bounding sphere to check
-     * @param intersectionTreshold extra extend to be added to the BoundingSphere in all direction
+     * @param intersectionThreshold extra extend to be added to the BoundingSphere in all direction
      * @returns true if it hits the sphere
      */
-    public intersectsSphere(sphere: DeepImmutable<BoundingSphere>, intersectionTreshold: number = 0): boolean {
+    public intersectsSphere(sphere: DeepImmutable<BoundingSphere>, intersectionThreshold: number = 0): boolean {
         const x = sphere.center.x - this.origin.x;
         const y = sphere.center.y - this.origin.y;
         const z = sphere.center.z - this.origin.z;
         const pyth = x * x + y * y + z * z;
-        const radius = sphere.radius + intersectionTreshold;
+        const radius = sphere.radius + intersectionThreshold;
         const rr = radius * radius;
 
         if (pyth <= rr) {
@@ -185,7 +185,7 @@ export class Ray {
     }
 
     /**
-     * If the ray hits a triange
+     * If the ray hits a triangle
      * @param vertex0 triangle vertex
      * @param vertex1 triangle vertex
      * @param vertex2 triangle vertex

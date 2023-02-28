@@ -1453,7 +1453,7 @@ export class Control implements IAnimatable {
     }
 
     /**
-     * Shorthand funtion to set the top, right, bottom, and left padding values in pixels on the control.
+     * Shorthand function to set the top, right, bottom, and left padding values in pixels on the control.
      * @param { number} paddingTop - The value in pixels of the top padding.
      * @param { number} paddingRight - The value in pixels of the right padding. If omitted, top is used.
      * @param { number} paddingBottom - The value in pixels of the bottom padding. If omitted, top is used.
@@ -1562,12 +1562,12 @@ export class Control implements IAnimatable {
     }
 
     /** @internal */
-    protected _computeAdditionnalOffsetX() {
+    protected _computeAdditionalOffsetX() {
         return 0;
     }
 
     /** @internal */
-    protected _computeAdditionnalOffsetY() {
+    protected _computeAdditionalOffsetY() {
         return 0;
     }
 
@@ -1578,7 +1578,7 @@ export class Control implements IAnimatable {
         if (this.host && this.host.useInvalidateRectOptimization) {
             // Rotate by transform to get the measure transformed to global space
             this._currentMeasure.transformToRef(this._transformMatrix, this._tmpMeasureA);
-            // get the boudning box of the current measure and last frames measure in global space and invalidate it
+            // get the bounding box of the current measure and last frames measure in global space and invalidate it
             // the previous measure is used to properly clear a control that is scaled down
             Measure.CombineToRef(this._tmpMeasureA, this._prevCurrentMeasureTransformedIntoGlobalSpace, this._tmpMeasureA);
 
@@ -1592,8 +1592,8 @@ export class Control implements IAnimatable {
             const topShadowOffset = Math.min(Math.min(shadowOffsetY, 0) - shadowBlur * 2, 0);
             const bottomShadowOffset = Math.max(Math.max(shadowOffsetY, 0) + shadowBlur * 2, 0);
 
-            const offsetX = this._computeAdditionnalOffsetX();
-            const offsetY = this._computeAdditionnalOffsetY();
+            const offsetX = this._computeAdditionalOffsetX();
+            const offsetY = this._computeAdditionalOffsetY();
 
             this.host.invalidateRect(
                 Math.floor(this._tmpMeasureA.left + leftShadowOffset - offsetX),

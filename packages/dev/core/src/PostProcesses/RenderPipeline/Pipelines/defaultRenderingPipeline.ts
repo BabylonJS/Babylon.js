@@ -363,7 +363,7 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
     }
 
     /**
-     * If glow layer is enabled. (Adds a glow effect to emmissive materials)
+     * If glow layer is enabled. (Adds a glow effect to emissive materials)
      */
     public set glowLayerEnabled(enabled: boolean) {
         if (enabled && !this._glowLayer) {
@@ -597,7 +597,7 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
         this._hasCleared = false;
 
         if (this.depthOfFieldEnabled) {
-            // Multi camera suport
+            // Multi camera support
             if (this._cameras.length > 1) {
                 for (const camera of this._cameras) {
                     const depthRenderer = this._scene.enableDepthRenderer(camera);

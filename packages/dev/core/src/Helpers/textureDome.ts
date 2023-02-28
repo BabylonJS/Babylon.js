@@ -164,7 +164,7 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
     }
 
     /**
-     * Oberserver used in Stereoscopic VR Mode.
+     * Observer used in Stereoscopic VR Mode.
      */
     private _onBeforeCameraRenderObserver: Nullable<Observer<Camera>> = null;
     /**

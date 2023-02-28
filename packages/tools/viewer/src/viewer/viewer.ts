@@ -783,7 +783,7 @@ export abstract class AbstractViewer {
     public loadModel(modelConfig: string | File | IModelConfiguration, clearScene: boolean = true): Promise<ViewerModel> {
         if (this._isLoading) {
             // We can decide here whether or not to cancel the lst load, but the developer can do that.
-            return Promise.reject("another model is curently being loaded.");
+            return Promise.reject("another model is currently being loaded.");
         }
 
         return Promise.resolve(this.sceneManager.scene)

@@ -158,7 +158,7 @@ export class TemplateManager {
 
     /**
      * Get the canvas in the template tree.
-     * There must be one and only one canvas inthe template.
+     * There must be one and only one canvas in the template.
      */
     public getCanvas(): HTMLCanvasElement | null {
         return this.containerElement.querySelector("canvas");
@@ -424,7 +424,7 @@ export class Template {
      * Appending the template to a parent HTML element.
      * If a parent is already set and you wish to replace the old HTML with new one, forceRemove should be true.
      * @param parent the parent to which the template is added
-     * @param forceRemove if the parent already exists, shoud the template be removed from it?
+     * @param forceRemove if the parent already exists, should the template be removed from it?
      */
     public appendTo(parent: HTMLElement, forceRemove?: boolean) {
         if (this.parent) {

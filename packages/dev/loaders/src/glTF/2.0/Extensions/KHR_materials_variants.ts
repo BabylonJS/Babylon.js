@@ -226,7 +226,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
                                             let metadata: Nullable<IExtensionMetadata> = null;
                                             let newRoot: Nullable<Node> = newMesh;
 
-                                            // Find root to get medata
+                                            // Find root to get metadata
                                             do {
                                                 newRoot = newRoot!.parent;
                                                 if (!newRoot) {

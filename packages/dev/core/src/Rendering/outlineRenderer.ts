@@ -162,7 +162,7 @@ export class OutlineRenderer implements ISceneComponent {
 
     /**
      * Renders the outline in the canvas.
-     * @param subMesh Defines the sumesh to render
+     * @param subMesh Defines the submesh to render
      * @param batch Defines the batch of meshes in case of instances
      * @param useOverlay Defines if the rendering is for the overlay or the outline
      * @param renderPassId Render pass id to use to render the mesh

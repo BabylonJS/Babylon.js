@@ -500,7 +500,7 @@ export class VideoTexture extends Texture {
      * Creates a video texture straight from your WebCam video feed.
      * @param scene Define the scene the texture should be created in
      * @param constraints Define the constraints to use to create the web cam feed from WebRTC
-     * @param audioConstaints Define the audio constraints to use to create the web cam feed from WebRTC
+     * @param audioConstraints Define the audio constraints to use to create the web cam feed from WebRTC
      * @param invertY Defines if the video should be stored with invert Y set to true (true by default)
      * @returns The created video texture as a promise
      */
@@ -513,13 +513,13 @@ export class VideoTexture extends Texture {
             maxHeight: number;
             deviceId: string;
         } & MediaTrackConstraints,
-        audioConstaints: boolean | MediaTrackConstraints = false,
+        audioConstraints: boolean | MediaTrackConstraints = false,
         invertY = true
     ): Promise<VideoTexture> {
         if (navigator.mediaDevices) {
             const stream = await navigator.mediaDevices.getUserMedia({
                 video: constraints,
-                audio: audioConstaints,
+                audio: audioConstraints,
             });
 
             const videoTexture = await this.CreateFromStreamAsync(scene, stream, constraints, invertY);
@@ -540,7 +540,7 @@ export class VideoTexture extends Texture {
      * @param scene Defines the scene the texture should be created in
      * @param onReady Defines a callback to triggered once the texture will be ready
      * @param constraints Defines the constraints to use to create the web cam feed from WebRTC
-     * @param audioConstaints Defines the audio constraints to use to create the web cam feed from WebRTC
+     * @param audioConstraints Defines the audio constraints to use to create the web cam feed from WebRTC
      * @param invertY Defines if the video should be stored with invert Y set to true (true by default)
      */
     public static CreateFromWebCam(
@@ -553,10 +553,10 @@ export class VideoTexture extends Texture {
             maxHeight: number;
             deviceId: string;
         } & MediaTrackConstraints,
-        audioConstaints: boolean | MediaTrackConstraints = false,
+        audioConstraints: boolean | MediaTrackConstraints = false,
         invertY = true
     ): void {
-        this.CreateFromWebCamAsync(scene, constraints, audioConstaints, invertY)
+        this.CreateFromWebCamAsync(scene, constraints, audioConstraints, invertY)
             .then(function (videoTexture) {
                 if (onReady) {
                     onReady(videoTexture);

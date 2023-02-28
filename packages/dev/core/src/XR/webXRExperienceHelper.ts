@@ -237,7 +237,7 @@ export class WebXRExperienceHelper implements IDisposable {
      * display the first rig camera's view on the desktop canvas.
      * Please note that this will degrade performance, as it requires another camera render.
      * It is also not recommended to enable this in devices like the quest, as it brings no benefit there.
-     * @param options giving WebXRSpectatorModeOption for specutator camera to setup when the spectator mode is enabled.
+     * @param options giving WebXRSpectatorModeOption for spectator camera to setup when the spectator mode is enabled.
      */
     public enableSpectatorMode(options?: WebXRSpectatorModeOption): void {
         if (!this._spectatorMode) {

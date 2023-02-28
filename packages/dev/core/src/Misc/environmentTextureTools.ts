@@ -371,23 +371,23 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
  * @returns the JSON representation of the spherical info
  */
 function _CreateEnvTextureIrradiance(texture: BaseTexture): Nullable<EnvironmentTextureIrradianceInfoV1> {
-    const polynmials = texture.sphericalPolynomial;
-    if (polynmials == null) {
+    const polynomials = texture.sphericalPolynomial;
+    if (polynomials == null) {
         return null;
     }
 
     return {
-        x: [polynmials.x.x, polynmials.x.y, polynmials.x.z],
-        y: [polynmials.y.x, polynmials.y.y, polynmials.y.z],
-        z: [polynmials.z.x, polynmials.z.y, polynmials.z.z],
+        x: [polynomials.x.x, polynomials.x.y, polynomials.x.z],
+        y: [polynomials.y.x, polynomials.y.y, polynomials.y.z],
+        z: [polynomials.z.x, polynomials.z.y, polynomials.z.z],
 
-        xx: [polynmials.xx.x, polynmials.xx.y, polynmials.xx.z],
-        yy: [polynmials.yy.x, polynmials.yy.y, polynmials.yy.z],
-        zz: [polynmials.zz.x, polynmials.zz.y, polynmials.zz.z],
+        xx: [polynomials.xx.x, polynomials.xx.y, polynomials.xx.z],
+        yy: [polynomials.yy.x, polynomials.yy.y, polynomials.yy.z],
+        zz: [polynomials.zz.x, polynomials.zz.y, polynomials.zz.z],
 
-        yz: [polynmials.yz.x, polynmials.yz.y, polynmials.yz.z],
-        zx: [polynmials.zx.x, polynmials.zx.y, polynmials.zx.z],
-        xy: [polynmials.xy.x, polynmials.xy.y, polynmials.xy.z],
+        yz: [polynomials.yz.x, polynomials.yz.y, polynomials.yz.z],
+        zx: [polynomials.zx.x, polynomials.zx.y, polynomials.zx.z],
+        xy: [polynomials.xy.x, polynomials.xy.y, polynomials.xy.z],
     } as any;
 }
 

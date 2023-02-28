@@ -82,7 +82,7 @@ export class MTLFileLoader {
                 //value  = "r g b"
                 color = <number[]>value.split(delimiter_pattern, 3).map(parseFloat);
                 //color = [r,g,b]
-                //Set tghe color into the material
+                //Set the color into the material
                 material.diffuseColor = Color3.FromArray(color);
             } else if (key === "ka" && material) {
                 // Ambient color (color under shadow) using RGB values
@@ -90,7 +90,7 @@ export class MTLFileLoader {
                 //value = "r g b"
                 color = <number[]>value.split(delimiter_pattern, 3).map(parseFloat);
                 //color = [r,g,b]
-                //Set tghe color into the material
+                //Set the color into the material
                 material.ambientColor = Color3.FromArray(color);
             } else if (key === "ks" && material) {
                 // Specular color (color when light is reflected from shiny surface) using RGB values

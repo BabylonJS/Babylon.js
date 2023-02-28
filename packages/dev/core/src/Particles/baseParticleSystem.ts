@@ -271,7 +271,7 @@ export class BaseParticleSystem implements IClipPlanesHolder {
      */
     public spriteCellHeight = 0;
     /**
-     * If using a spritesheet (isAnimationSheetEnabled), defines wether the sprite animation is looping
+     * If using a spritesheet (isAnimationSheetEnabled), defines whether the sprite animation is looping
      */
     public spriteCellLoop = true;
     /**
@@ -513,7 +513,7 @@ export class BaseParticleSystem implements IClipPlanesHolder {
 
     /**
      * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
-     * This only works when particleEmitterTyps is a BoxParticleEmitter
+     * This only works when particleEmitterTypes is a BoxParticleEmitter
      */
     public get direction1(): Vector3 {
         if ((<BoxParticleEmitter>this.particleEmitterType).direction1) {
@@ -531,7 +531,7 @@ export class BaseParticleSystem implements IClipPlanesHolder {
 
     /**
      * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
-     * This only works when particleEmitterTyps is a BoxParticleEmitter
+     * This only works when particleEmitterTypes is a BoxParticleEmitter
      */
     public get direction2(): Vector3 {
         if ((<BoxParticleEmitter>this.particleEmitterType).direction2) {
@@ -549,7 +549,7 @@ export class BaseParticleSystem implements IClipPlanesHolder {
 
     /**
      * Minimum box point around our emitter. Our emitter is the center of particles source, but if you want your particles to emit from more than one point, then you can tell it to do so.
-     * This only works when particleEmitterTyps is a BoxParticleEmitter
+     * This only works when particleEmitterTypes is a BoxParticleEmitter
      */
     public get minEmitBox(): Vector3 {
         if ((<BoxParticleEmitter>this.particleEmitterType).minEmitBox) {
@@ -567,7 +567,7 @@ export class BaseParticleSystem implements IClipPlanesHolder {
 
     /**
      * Maximum box point around our emitter. Our emitter is the center of particles source, but if you want your particles to emit from more than one point, then you can tell it to do so.
-     * This only works when particleEmitterTyps is a BoxParticleEmitter
+     * This only works when particleEmitterTypes is a BoxParticleEmitter
      */
     public get maxEmitBox(): Vector3 {
         if ((<BoxParticleEmitter>this.particleEmitterType).maxEmitBox) {

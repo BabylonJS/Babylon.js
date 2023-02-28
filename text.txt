@@ -1,0 +1,17 @@
+SimplicationQueueSceneComponent,
+recordChunckSize,
+volumetricLightMergePostProces,
+supressXRSelectEvents
+disableSpecatatorMode
+dipose
+diffuseTexturY,
+locatRect,
+surexposed
+rewrited
+Wwves
+onFullcreenRequiredObservable
+onEditorFullcreenRequiredObservable
+shadown
+shadowSpotlLightConfiguration
+SphericalPolynomalCoefficients
+rotatquatRotationY

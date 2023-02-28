@@ -473,7 +473,7 @@ export class WindowsMotionController extends WebVRController {
             if (axisMeshInfo.value && axisMeshInfo.min && axisMeshInfo.max) {
                 loadedMeshInfo.axisMeshes[i] = axisMeshInfo;
             } else {
-                // If we didn't find the mesh, it simply means thit axis won't have transforms applied as mapped axis values change.
+                // If we didn't find the mesh, it simply means this axis won't have transforms applied as mapped axis values change.
                 Logger.Warn(
                     "Missing axis submesh under mesh with name: " +
                         axisMeshName +

@@ -504,7 +504,7 @@ export class Constants {
      */
     public static readonly PARTICLES_BILLBOARDMODE_ALL = 7;
     /**
-     * Special billboard mode where the particle will be biilboard to the camera but rotated to align with direction
+     * Special billboard mode where the particle will be billboard to the camera but rotated to align with direction
      */
     public static readonly PARTICLES_BILLBOARDMODE_STRETCHED = 8;
     /**
@@ -712,11 +712,11 @@ export class Constants {
      */
     public static readonly RIG_MODE_STEREOSCOPIC_INTERLACED = 14;
     /**
-     * Defines that both eyes of the camera should be renderered in a VR mode (carbox).
+     * Defines that both eyes of the camera should be rendered in a VR mode (carbox).
      */
     public static readonly RIG_MODE_VR = 20;
     /**
-     * Defines that both eyes of the camera should be renderered in a VR mode (webVR).
+     * Defines that both eyes of the camera should be rendered in a VR mode (webVR).
      */
     public static readonly RIG_MODE_WEBVR = 21;
     /**

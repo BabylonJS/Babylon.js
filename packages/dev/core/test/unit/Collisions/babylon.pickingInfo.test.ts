@@ -229,7 +229,7 @@ describe("PickingInfo", () => {
             expect(pickingInfo.getTextureCoordinates()).toBeNull();
         });
 
-        it("should return null when indicies are not present", () => {
+        it("should return null when indices are not present", () => {
             const pickingInfo = new PickingInfo();
             pickingInfo.pickedMesh = box;
 

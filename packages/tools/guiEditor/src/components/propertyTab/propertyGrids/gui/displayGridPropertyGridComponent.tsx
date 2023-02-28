@@ -80,14 +80,14 @@ export class DisplayGridPropertyGridComponent extends React.Component<IDisplayGr
                 {proxy._displayMinorLines && (
                     <>
                         <div className="ge-divider double">
-                            <IconComponent icon={strokeWeightIcon} label="Minor Line Tickness" />
+                            <IconComponent icon={strokeWeightIcon} label="Minor Line Thickness" />
                             <FloatLineComponent
                                 min={1}
                                 isInteger={true}
                                 lockObject={lockObject}
                                 label=""
                                 target={proxy}
-                                propertyName="minorLineTickness"
+                                propertyName="minorLineThickness"
                                 onPropertyChangedObservable={onPropertyChangedObservable}
                                 unit={<UnitButton locked unit="PX" />}
                                 arrows
@@ -112,14 +112,14 @@ export class DisplayGridPropertyGridComponent extends React.Component<IDisplayGr
                 {proxy._displayMajorLines && (
                     <>
                         <div className="ge-divider double">
-                            <IconComponent icon={strokeWeightIcon} label="Major Line Tickness" />
+                            <IconComponent icon={strokeWeightIcon} label="Major Line Thickness" />
                             <FloatLineComponent
                                 min={1}
                                 isInteger={true}
                                 lockObject={lockObject}
                                 label=""
                                 target={proxy}
-                                propertyName="majorLineTickness"
+                                propertyName="majorLineThickness"
                                 onPropertyChangedObservable={onPropertyChangedObservable}
                                 unit={<UnitButton locked unit="PX" />}
                                 arrows

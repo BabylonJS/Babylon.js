@@ -453,7 +453,7 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
         }
         speed *= -1;
 
-        //TODO separate rotational and transational motors.
+        //TODO separate rotational and transactional motors.
         const motor = motorIndex
             ? joint.physicsJoint.rotationalLimitMotor2
             : joint.physicsJoint.rotationalLimitMotor1 || joint.physicsJoint.rotationalLimitMotor || joint.physicsJoint.limitMotor;
@@ -463,7 +463,7 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
     }
 
     public setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number) {
-        //TODO separate rotational and transational motors.
+        //TODO separate rotational and transactional motors.
         const motor = motorIndex
             ? joint.physicsJoint.rotationalLimitMotor2
             : joint.physicsJoint.rotationalLimitMotor1 || joint.physicsJoint.rotationalLimitMotor || joint.physicsJoint.limitMotor;

@@ -1414,7 +1414,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         };
 
         const scene = this.getScene();
-        const currentHotSwapingState = this.allowShaderHotSwapping;
+        const currentHotSwappingState = this.allowShaderHotSwapping;
         this.allowShaderHotSwapping = false; // Turned off to let us evaluate the real compilation state
 
         const checkReady = () => {
@@ -1446,7 +1446,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
                     }
                 }
                 if (allDone) {
-                    this.allowShaderHotSwapping = currentHotSwapingState;
+                    this.allowShaderHotSwapping = currentHotSwappingState;
                     if (lastError) {
                         if (onError) {
                             onError(lastError);
@@ -1458,7 +1458,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
                 }
             } else {
                 if (this.isReady()) {
-                    this.allowShaderHotSwapping = currentHotSwapingState;
+                    this.allowShaderHotSwapping = currentHotSwappingState;
                     if (onCompiled) {
                         onCompiled(this);
                     }

@@ -10,7 +10,7 @@ import { Axis } from "core/Maths/math.axis";
 /**
  * The ViewerLabs class will hold functions that are not (!) backwards compatible.
  * The APIs in all labs-related classes and configuration  might change.
- * Once stable, lab features will be moved to the publis API and configuration object.
+ * Once stable, lab features will be moved to the public API and configuration object.
  */
 export class ViewerLabs {
     constructor(private _scene: Scene) {}
@@ -126,7 +126,7 @@ export class ViewerLabs {
         }
 
         //set orientation
-        const rotatquatRotationionY = Quaternion.RotationAxis(Axis.Y, rotationY || 0);
+        const rotatquatRotationY = Quaternion.RotationAxis(Axis.Y, rotationY || 0);
 
         // Add env texture to the scene.
         if (this.environment.specularTexture) {
@@ -152,7 +152,7 @@ export class ViewerLabs {
                 this._scene.environmentTexture.sphericalPolynomial = poly;
 
                 //set orientation
-                Matrix.FromQuaternionToRef(rotatquatRotationionY, this._scene.environmentTexture.getReflectionTextureMatrix());
+                Matrix.FromQuaternionToRef(rotatquatRotationY, this._scene.environmentTexture.getReflectionTextureMatrix());
             }
         }
     }

@@ -287,7 +287,7 @@ export class EdgesRenderer implements IEdgesRenderer {
             this._drawWrapper = new DrawWrapper(source.getEngine());
         }
 
-        this._prepareRessources();
+        this._prepareresources();
         if (generateEdgesLines) {
             if (options?.useAlternateEdgeFinder ?? true) {
                 this._generateEdgesLinesAlternate();
@@ -305,7 +305,7 @@ export class EdgesRenderer implements IEdgesRenderer {
         });
     }
 
-    protected _prepareRessources(): void {
+    protected _prepareresources(): void {
         if (this._lineShader) {
             return;
         }
@@ -543,7 +543,7 @@ export class EdgesRenderer implements IEdgesRenderer {
         }
 
         /**
-         * Find all vertices that are at the same location (with an epsilon) and remapp them on the same vertex
+         * Find all vertices that are at the same location (with an epsilon) and remap them on the same vertex
          */
         const useFastVertexMerger = this._options?.useFastVertexMerger ?? true;
         const epsVertexMerge = useFastVertexMerger ? Math.round(-Math.log(this._options?.epsilonVertexMerge ?? 1e-6) / Math.log(10)) : this._options?.epsilonVertexMerge ?? 1e-6;
@@ -616,7 +616,7 @@ export class EdgesRenderer implements IEdgesRenderer {
 
             // First step: collect the triangles to tessellate
             const epsVertexAligned = this._options?.epsilonVertexAligned ?? 1e-6;
-            const mustTesselate: Array<{ index: number; edgesPoints: Array<Array<[number, number]>> }> = []; // liste of triangles that must be tessellated
+            const mustTesselate: Array<{ index: number; edgesPoints: Array<Array<[number, number]>> }> = []; // list of triangles that must be tessellated
 
             for (let index = 0; index < indices.length; index += 3) {
                 // loop over all triangles
@@ -764,7 +764,7 @@ export class EdgesRenderer implements IEdgesRenderer {
     }
 
     /**
-     * Generates lines edges from adjacencjes
+     * Generates lines edges from adjacencies
      * @private
      */
     _generateEdgesLines(): void {

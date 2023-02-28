@@ -51,7 +51,7 @@ import cursor_rotate6 from "../imgs/cursor_rotate6.svg";
 import cursor_rotate7 from "../imgs/cursor_rotate7.svg";
 
 // load in custom cursor icons
-const cursorScaleDiagonaLeft: string = `url("${cursor_scaleDiagonalLeft}") 12 12, nwse-resize`;
+const cursorScaleDiagonalLeft: string = `url("${cursor_scaleDiagonalLeft}") 12 12, nwse-resize`;
 const cursorScaleDiagonalRight: string = `url("${cursor_scaleDiagonalRight}") 12 12, nesw-resize`;
 const cursorScaleHorizontal: string = `url("${cursor_scaleHorizontal}") 12 12, pointer`;
 const cursorScaleVertical: string = `url("${cursor_scaleVertical}") 12 12, ns-resize`;
@@ -59,11 +59,11 @@ const scalePointCursors = [
     cursorScaleVertical,
     cursorScaleDiagonalRight,
     cursorScaleHorizontal,
-    cursorScaleDiagonaLeft,
+    cursorScaleDiagonalLeft,
     cursorScaleVertical,
     cursorScaleDiagonalRight,
     cursorScaleHorizontal,
-    cursorScaleDiagonaLeft,
+    cursorScaleDiagonalLeft,
 ];
 const rotateCursors = [cursor_rotate0, cursor_rotate1, cursor_rotate2, cursor_rotate3, cursor_rotate4, cursor_rotate5, cursor_rotate6, cursor_rotate7].map(
     (cursor) => `url("${cursor}") 12 12, pointer`

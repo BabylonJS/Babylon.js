@@ -425,7 +425,7 @@ export class Tools {
     /**
      * Load a script (identified by an url). When the url returns, the
      * content of this file is added into a new script element, attached to the DOM (body element)
-     * @param scriptUrl defines the url of the script to laod
+     * @param scriptUrl defines the url of the script to load
      * @param onSuccess defines the callback called when the script is loaded
      * @param onError defines the callback to call if an error occurs
      * @param scriptId defines the id of the script element
@@ -469,7 +469,7 @@ export class Tools {
     /**
      * Load an asynchronous script (identified by an url). When the url returns, the
      * content of this file is added into a new script element, attached to the DOM (body element)
-     * @param scriptUrl defines the url of the script to laod
+     * @param scriptUrl defines the url of the script to load
      * @returns a promise request object
      */
     public static LoadScriptAsync(scriptUrl: string): Promise<void> {

@@ -43,7 +43,7 @@ declare module "../../Engines/engine" {
          * @param program defines the associated webGL program
          * @param value defines the list of strings representing the varying names
          */
-        setTranformFeedbackVaryings(program: WebGLProgram, value: string[]): void;
+        setTransformFeedbackVaryings(program: WebGLProgram, value: string[]): void;
 
         /**
          * Bind a webGL buffer for a transform feedback operation
@@ -77,7 +77,7 @@ Engine.prototype.endTransformFeedback = function (): void {
     this._gl.endTransformFeedback();
 };
 
-Engine.prototype.setTranformFeedbackVaryings = function (program: WebGLProgram, value: string[]): void {
+Engine.prototype.setTransformFeedbackVaryings = function (program: WebGLProgram, value: string[]): void {
     this._gl.transformFeedbackVaryings(program, value, this._gl.INTERLEAVED_ATTRIBS);
 };
 

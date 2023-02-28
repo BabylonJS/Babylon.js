@@ -678,7 +678,7 @@ export class BackgroundMaterial extends PushMaterial {
      * Checks whether the material is ready to be rendered for a given mesh.
      * @param mesh The mesh to render
      * @param subMesh The submesh to check against
-     * @param useInstances Specify wether or not the material is used with instances
+     * @param useInstances Specify whether or not the material is used with instances
      * @returns true if all the dependencies are ready (Textures, Effects...)
      */
     public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances: boolean = false): boolean {
@@ -1061,7 +1061,7 @@ export class BackgroundMaterial extends PushMaterial {
     }
 
     /**
-     * Bind the material for a dedicated submeh (every used meshes will be considered opaque).
+     * Bind the material for a dedicated submesh (every used meshes will be considered opaque).
      * @param world The world matrix to bind.
      * @param mesh
      * @param subMesh The submesh to bind for.

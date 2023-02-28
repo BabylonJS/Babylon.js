@@ -325,7 +325,7 @@ export class QuadraticErrorSimplification implements ISimplifier {
     /** Gets or sets the number of allowed iterations for decimation */
     public decimationIterations: number;
 
-    /** Gets or sets the espilon to use for bounding box computation */
+    /** Gets or sets the epsilon to use for bounding box computation */
     public boundingBoxEpsilon: number;
 
     /**

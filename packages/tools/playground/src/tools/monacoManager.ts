@@ -624,7 +624,7 @@ declare var canvas: HTMLCanvasElement;
         return "";
     }
 
-    // This is our hook in the Monaco suggest adapter, we are called everytime a completion UI is displayed
+    // This is our hook in the Monaco suggest adapter, we are called every time a completion UI is displayed
     // So we need to be super fast.
     private async _hookMonacoCompletionProvider() {
         const oldProvideCompletionItems = languageFeatures.SuggestAdapter.prototype.provideCompletionItems;

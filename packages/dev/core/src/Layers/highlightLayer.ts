@@ -879,26 +879,26 @@ export class HighlightLayer extends EffectLayer {
 
     /**
      * Creates a Highlight layer from parsed Highlight layer data
-     * @param parsedHightlightLayer defines the Highlight layer data
+     * @param parsedHighlightLayer defines the Highlight layer data
      * @param scene defines the current scene
      * @param rootUrl defines the root URL containing the Highlight layer information
      * @returns a parsed Highlight layer
      */
-    public static Parse(parsedHightlightLayer: any, scene: Scene, rootUrl: string): HighlightLayer {
-        const hl = SerializationHelper.Parse(() => new HighlightLayer(parsedHightlightLayer.name, scene, parsedHightlightLayer.options), parsedHightlightLayer, scene, rootUrl);
+    public static Parse(parsedHighlightLayer: any, scene: Scene, rootUrl: string): HighlightLayer {
+        const hl = SerializationHelper.Parse(() => new HighlightLayer(parsedHighlightLayer.name, scene, parsedHighlightLayer.options), parsedHighlightLayer, scene, rootUrl);
         let index;
 
         // Excluded meshes
-        for (index = 0; index < parsedHightlightLayer.excludedMeshes.length; index++) {
-            const mesh = scene.getMeshById(parsedHightlightLayer.excludedMeshes[index]);
+        for (index = 0; index < parsedHighlightLayer.excludedMeshes.length; index++) {
+            const mesh = scene.getMeshById(parsedHighlightLayer.excludedMeshes[index]);
             if (mesh) {
                 hl.addExcludedMesh(<Mesh>mesh);
             }
         }
 
         // Included meshes
-        for (index = 0; index < parsedHightlightLayer.meshes.length; index++) {
-            const highlightedMesh = parsedHightlightLayer.meshes[index];
+        for (index = 0; index < parsedHighlightLayer.meshes.length; index++) {
+            const highlightedMesh = parsedHighlightLayer.meshes[index];
             const mesh = scene.getMeshById(highlightedMesh.meshId);
 
             if (mesh) {

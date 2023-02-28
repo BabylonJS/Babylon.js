@@ -202,7 +202,7 @@ export class KeyPointComponent extends React.Component<IKeyPointComponentProps, 
                 return;
             }
             if (this.state.selectedState !== SelectionState.None && this.props.keyId !== 0) {
-                // Move frame for every selected or siblins
+                // Move frame for every selected or sibling
                 const newFrameValue = mainKeyPoint.state.x + this._offsetXToMain;
                 this.setState({ x: newFrameValue });
                 this.props.onFrameValueChanged(this.props.invertX(newFrameValue));

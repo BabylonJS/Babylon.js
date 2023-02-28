@@ -346,7 +346,7 @@ export class SerializationHelper {
 
     /**
      * Creates a new entity from a serialization data object
-     * @param creationFunction defines a function used to instanciated the new entity
+     * @param creationFunction defines a function used to instantiated the new entity
      * @param source defines the source serialization data
      * @param scene defines the hosting scene
      * @param rootUrl defines the root url for resources
@@ -438,7 +438,7 @@ export class SerializationHelper {
     }
 
     /**
-     * Instanciates a new object based on a source one (some data will be shared between both object)
+     * Instantiates a new object based on a source one (some data will be shared between both object)
      * @param creationFunction defines the function used to instanciate the new object
      * @param source defines the source object
      * @returns the new object

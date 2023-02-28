@@ -217,7 +217,7 @@ export class ColorPicker extends Control {
     }
 
     private _createColorWheelCanvas(radius: number, thickness: number): ICanvas {
-        // Shoudl abstract platform instead of using LastCreatedEngine
+        // Should abstract platform instead of using LastCreatedEngine
         const engine = EngineStore.LastCreatedEngine;
         if (!engine) {
             throw new Error("Invalid engine. Unable to create a canvas.");
@@ -676,7 +676,7 @@ export class ColorPicker extends Control {
             });
             pickerGrid.addControl(picker, 0, 0);
 
-            // Picker body right quarant
+            // Picker body right quadrant
             const pickerBodyRight: Grid = new Grid();
             pickerBodyRight.name = "Dialogue Right Half";
             pickerBodyRight.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
@@ -697,11 +697,11 @@ export class ColorPicker extends Control {
             // Picker Swatches quadrant
             const pickerSwatches: Grid = new Grid();
             pickerSwatches.name = "New and Current Swatches";
-            const pickeSwatchesRows: number[] = [0.04, 0.16, 0.64, 0.16];
-            pickerSwatches.addRowDefinition(pickeSwatchesRows[0], false);
-            pickerSwatches.addRowDefinition(pickeSwatchesRows[1], false);
-            pickerSwatches.addRowDefinition(pickeSwatchesRows[2], false);
-            pickerSwatches.addRowDefinition(pickeSwatchesRows[3], false);
+            const pickerSwatchesRows: number[] = [0.04, 0.16, 0.64, 0.16];
+            pickerSwatches.addRowDefinition(pickerSwatchesRows[0], false);
+            pickerSwatches.addRowDefinition(pickerSwatchesRows[1], false);
+            pickerSwatches.addRowDefinition(pickerSwatchesRows[2], false);
+            pickerSwatches.addRowDefinition(pickerSwatchesRows[3], false);
             pickerSwatchesButtons.addControl(pickerSwatches, 0, 0);
 
             // Active swatches
@@ -713,7 +713,7 @@ export class ColorPicker extends Control {
             pickerSwatches.addControl(activeSwatches, 2, 0);
 
             const labelWidth: number = Math.floor(parseInt(options.pickerWidth) * dialogBodyCols[1] * pickerButtonsCol[0] * 0.11);
-            const labelHeight: number = Math.floor(parseInt(options.pickerHeight) * pickerPanelRows[1] * pickerBodyRightRows[0] * pickeSwatchesRows[1] * 0.5);
+            const labelHeight: number = Math.floor(parseInt(options.pickerHeight) * pickerPanelRows[1] * pickerBodyRightRows[0] * pickerSwatchesRows[1] * 0.5);
 
             let labelTextSize: number;
             if (options.pickerWidth > options.pickerHeight) {
@@ -1314,10 +1314,10 @@ export class ColorPicker extends Control {
                     const swatch: Button = Button.CreateSimpleButton("Swatch_" + swatchNumber, icon);
                     swatch.fontFamily = "coreglyphs";
                     const swatchColor: Color3 = Color3.FromHexString(options.savedColors[swatchNumber]);
-                    const swatchLuminence: number = swatchColor.r + swatchColor.g + swatchColor.b;
+                    const swatchLuminance: number = swatchColor.r + swatchColor.g + swatchColor.b;
 
                     // Set color of outline and textBlock based on luminance of the color swatch so feedback always visible
-                    if (swatchLuminence > luminanceLimit) {
+                    if (swatchLuminance > luminanceLimit) {
                         swatch.color = iconColorDark;
                     } else {
                         swatch.color = iconColorLight;

@@ -15,7 +15,7 @@ import {
  * @param testFileName name of the .json file (without the .json extension) containing the tests
  */
 export const evaluateTests = async (engineType = "webgl2", testFileName = "config", debug = false, debugWait = false, logToConsole = true, logToFile = false) => {
-    // jest doesn't support cutstom CLI variables
+    // jest doesn't support custom CLI variables
     // const engineType = buildTools.checkArgs("--engine", false, true) || "webgl2";
     // const debug = buildTools.checkArgs("--debug", true);
     // const configPath = buildTools.checkArgs("--config", false, true) || "../config.json";

@@ -54,7 +54,7 @@ export enum ModelState {
 }
 
 /**
- * The viewer model is a container for all assets representing a sngle loaded model.
+ * The viewer model is a container for all assets representing a single loaded model.
  */
 export class ViewerModel implements IDisposable {
     /**
@@ -403,7 +403,7 @@ export class ViewerModel implements IDisposable {
     /**
      * Choose an initialized animation using its name and start playing it
      * @param name the name of the animation to play
-     * @returns The model aniamtion to be played.
+     * @returns The model animation to be played.
      */
     public playAnimation(name: string): IModelAnimation {
         const animation = this.setCurrentAnimationByName(name);
@@ -702,8 +702,8 @@ export class ViewerModel implements IDisposable {
     }
 
     /**
-     * Creates and returns a Babylon easing funtion object based on a string representing the Easing function
-     * @param easingFunctionID The enum of the easing funtion to create
+     * Creates and returns a Babylon easing function object based on a string representing the Easing function
+     * @param easingFunctionID The enum of the easing function to create
      * @returns The newly created Babylon easing function object
      */
     private _createEasingFunction(easingFunctionID?: number): any {

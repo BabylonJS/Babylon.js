@@ -480,7 +480,7 @@ export class InternalTexture extends TextureSampler {
                 break;
 
             case InternalTextureSource.CubeRawRGBD:
-                // This case is being handeled by the environment texture tools and is not a part of the rebuild process.
+                // This case is being handled by the environment texture tools and is not a part of the rebuild process.
                 // To use CubeRawRGBD use updateRGBDAsync on the cube texture.
                 return;
 

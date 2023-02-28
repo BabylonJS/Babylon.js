@@ -115,7 +115,7 @@ function StubCameraInput() {
     cameraInput.reset();
 
     /**
-     * Stub out all mothods we want to test as part of the BaseCameraPointersInput testing.
+     * Stub out all methods we want to test as part of the BaseCameraPointersInput testing.
      * These stubs keep track of how many times they were called and
      */
     cameraInput.onTouch = (point: Nullable<PointerTouch>, offsetX: number, offsetY: number) => {

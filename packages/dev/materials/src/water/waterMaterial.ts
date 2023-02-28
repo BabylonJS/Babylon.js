@@ -132,7 +132,7 @@ export class WaterMaterial extends PushMaterial {
     @serialize()
     public bumpHeight: number = 0.4;
     /**
-     * Defines wether or not: to add a smaller moving bump to less steady waves.
+     * Defines whether or not: to add a smaller moving bump to less steady waves.
      */
     @serialize("bumpSuperimpose")
     private _bumpSuperimpose = false;
@@ -140,7 +140,7 @@ export class WaterMaterial extends PushMaterial {
     public bumpSuperimpose: boolean;
 
     /**
-     * Defines wether or not color refraction and reflection differently with .waterColor2 and .colorBlendFactor2. Non-linear (physically correct) fresnel.
+     * Defines whether or not color refraction and reflection differently with .waterColor2 and .colorBlendFactor2. Non-linear (physically correct) fresnel.
      */
     @serialize("fresnelSeparate")
     private _fresnelSeparate = false;
@@ -148,7 +148,7 @@ export class WaterMaterial extends PushMaterial {
     public fresnelSeparate: boolean;
 
     /**
-     * Defines wether or not bump Wwves modify the reflection.
+     * Defines whether or not bump Wwves modify the reflection.
      */
     @serialize("bumpAffectsReflection")
     private _bumpAffectsReflection = false;

@@ -320,7 +320,7 @@ export class MaterialHelper {
     }
 
     /**
-     * Prepares the defines related to order independant transparency
+     * Prepares the defines related to order independent transparency
      * @param scene The scene we are intending to draw
      * @param defines The defines to update
      * @param needAlphaBlending Determines if the material needs alpha blending
@@ -527,7 +527,7 @@ export class MaterialHelper {
      * @param mesh The mesh the effect is compiling for
      * @param defines The defines to update
      * @param specularSupported Specifies whether specular is supported or not (override lights data)
-     * @param maxSimultaneousLights Specifies how manuy lights can be added to the effect at max
+     * @param maxSimultaneousLights Specifies how many lights can be added to the effect at max
      * @param disableLighting Specifies whether the lighting is disabled (override scene and light)
      * @returns true if normals will be required for the rest of the effect
      */

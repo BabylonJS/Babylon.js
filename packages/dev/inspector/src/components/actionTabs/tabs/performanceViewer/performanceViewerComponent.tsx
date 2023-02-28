@@ -122,7 +122,7 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
             performanceCollector?.stop();
             const isValid = performanceCollector?.loadFromFileData(data);
             if (!isValid) {
-                // if our data isnt valid we close the window.
+                // if our data isn't valid we close the window.
                 setIsOpen(false);
                 performanceCollector?.start(true);
             } else {

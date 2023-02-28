@@ -283,7 +283,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
 
         const guiElements = scene.textures.filter((t) => t.getClassName() === "AdvancedDynamicTexture");
         const textures = scene.textures.filter((t) => t.getClassName() !== "AdvancedDynamicTexture");
-        const postProcessses = scene.postProcesses;
+        const postProcesses = scene.postProcesses;
         const pipelines = scene.postProcessRenderPipelineManager.supportedPipelines;
 
         // Context menus
@@ -490,12 +490,12 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                     offset={1}
                     filter={this.state.filter}
                 />
-                {postProcessses.length > 0 && (
+                {postProcesses.length > 0 && (
                     <TreeItemComponent
                         globalState={this.props.globalState}
                         extensibilityGroups={this.props.extensibilityGroups}
                         selectedEntity={this.state.selectedEntity}
-                        items={postProcessses}
+                        items={postProcesses}
                         label="Post-processes"
                         offset={1}
                         filter={this.state.filter}

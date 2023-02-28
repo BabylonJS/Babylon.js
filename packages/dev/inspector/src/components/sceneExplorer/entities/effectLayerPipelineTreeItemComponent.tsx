@@ -5,14 +5,14 @@ import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
 import type { EffectLayer } from "core/Layers/effectLayer";
 
-interface IEffectLayerItemComponenttProps {
+interface IEffectLayerItemComponentProps {
     layer: EffectLayer;
     extensibilityGroups?: IExplorerExtensibilityGroup[];
     onClick: () => void;
 }
 
-export class EffectLayerItemComponent extends React.Component<IEffectLayerItemComponenttProps> {
-    constructor(props: IEffectLayerItemComponenttProps) {
+export class EffectLayerItemComponent extends React.Component<IEffectLayerItemComponentProps> {
+    constructor(props: IEffectLayerItemComponentProps) {
         super(props);
     }
 

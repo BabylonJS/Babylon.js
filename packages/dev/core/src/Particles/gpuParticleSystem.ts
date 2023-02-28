@@ -1375,7 +1375,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
     /**
      * Animates the particle system for the current frame by emitting new particles and or animating the living ones.
-     * @param preWarm defines if we are in the pre-warmimg phase
+     * @param preWarm defines if we are in the pre-warming phase
      */
     public animate(preWarm = false): void {
         this._timeDelta = this.updateSpeed * (preWarm ? this.preWarmStepOffset : this._scene?.getAnimationRatio() || 1);
@@ -1724,7 +1724,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
     /**
      * Disposes the particle system and free the associated resources
-     * @param disposeTexture defines if the particule texture must be disposed as well (true by default)
+     * @param disposeTexture defines if the particle texture must be disposed as well (true by default)
      */
     public dispose(disposeTexture = true): void {
         for (const blendMode in this._drawWrappers) {
@@ -1878,7 +1878,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @param sceneOrEngine The scene or the engine to create the particle system in
      * @param rootUrl The root url to use to load external dependencies like texture
      * @param doNotStart Ignore the preventAutoStart attribute and does not start
-     * @param capacity defines the system capacity (if null or undefined the sotred capacity will be used)
+     * @param capacity defines the system capacity (if null or undefined the stored capacity will be used)
      * @returns the parsed GPU particle system
      */
     public static Parse(parsedParticleSystem: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string, doNotStart = false, capacity?: number): GPUParticleSystem {

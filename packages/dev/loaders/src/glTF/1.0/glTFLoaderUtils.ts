@@ -118,7 +118,7 @@ export class GLTFUtils {
      * @param accessor the GLTF accessor objet
      */
     public static GetByteStrideFromType(accessor: IGLTFAccessor): number {
-        // Needs this function since "byteStride" isn't requiered in glTF format
+        // Needs this function since "byteStride" isn't required in glTF format
         const type = accessor.type;
 
         switch (type) {

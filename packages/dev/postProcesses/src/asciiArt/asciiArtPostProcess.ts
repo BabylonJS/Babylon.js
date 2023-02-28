@@ -35,7 +35,7 @@ export class AsciiArtFontTexture extends BaseTexture {
      * Create a new instance of the Ascii Art FontTexture class
      * @param name the name of the texture
      * @param font the font to use, use the W3C CSS notation
-     * @param text the caracter set to use in the rendering.
+     * @param text the character set to use in the rendering.
      * @param scene the scene that owns the texture
      */
     constructor(name: string, font: string, text: string, scene: Nullable<Scene> = null) {
@@ -178,7 +178,7 @@ export interface IAsciiArtPostProcessOptions {
     characterSet?: string;
 
     /**
-     * This defines the amount you want to mix the "tile" or caracter space colored in the ascii art.
+     * This defines the amount you want to mix the "tile" or character space colored in the ascii art.
      * This number is defined between 0 and 1;
      */
     mixToTile?: number;
@@ -191,9 +191,9 @@ export interface IAsciiArtPostProcessOptions {
 }
 
 /**
- * AsciiArtPostProcess helps rendering everithing in Ascii Art.
+ * AsciiArtPostProcess helps rendering everything in Ascii Art.
  *
- * Simmply add it to your scene and let the nerd that lives in you have fun.
+ * Simply add it to your scene and let the nerd that lives in you have fun.
  * Example usage: var pp = new AsciiArtPostProcess("myAscii", "20px Monospace", camera);
  */
 export class AsciiArtPostProcess extends PostProcess {
@@ -203,7 +203,7 @@ export class AsciiArtPostProcess extends PostProcess {
     private _asciiArtFontTexture: AsciiArtFontTexture;
 
     /**
-     * This defines the amount you want to mix the "tile" or caracter space colored in the ascii art.
+     * This defines the amount you want to mix the "tile" or character space colored in the ascii art.
      * This number is defined between 0 and 1;
      */
     public mixToTile: number = 0;

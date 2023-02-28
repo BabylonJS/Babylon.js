@@ -286,7 +286,7 @@ export class AssetContainer extends AbstractScene {
      * @param cloneMaterials defines an optional boolean that defines if materials must be cloned as well (false by default)
      * @param options defines an optional list of options to control how to instantiate / clone models
      * @param options.doNotInstantiate defines if the model must be instantiated or just cloned
-     * @param options.predicate defines a predicate used to filter whih mesh to instantiate/clone
+     * @param options.predicate defines a predicate used to filter which mesh to instantiate/clone
      * @returns a list of rootNodes, skeletons and animation groups that were duplicated
      */
     public instantiateModelsToScene(

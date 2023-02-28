@@ -390,7 +390,7 @@ export class MRDLSliderBarMaterial extends PushMaterial {
     public rightIndexMiddlePosition = new Vector3(0, 0, 0);
 
     /**
-     * Gets or sets the Decal Scle for XY.
+     * Gets or sets the Decal Scale for XY.
      */
     @serialize()
     public decalScaleXY = new Vector2(1.5, 1.5);
@@ -460,7 +460,7 @@ export class MRDLSliderBarMaterial extends PushMaterial {
     /**
      * @internal
      */
-    public globaRightIndexTipPosition = new Vector4(0.0, 0.0, 0.0, 1.0);
+    public globalRightIndexTipPosition = new Vector4(0.0, 0.0, 0.0, 1.0);
 
     /**
      * @internal
@@ -831,7 +831,7 @@ export class MRDLSliderBarMaterial extends PushMaterial {
         this._activeEffect.setFloat("Use_Global_Right_Index", this.useGlobalRightIndex);
 
         this._activeEffect.setVector4("Global_Left_Index_Tip_Position", this.globalLeftIndexTipPosition);
-        this._activeEffect.setVector4("Global_Right_Index_Tip_Position", this.globaRightIndexTipPosition);
+        this._activeEffect.setVector4("Global_Right_Index_Tip_Position", this.globalRightIndexTipPosition);
 
         this._activeEffect.setVector4("Global_Left_Thumb_Tip_Position", this.globalLeftThumbTipPosition);
         this._activeEffect.setVector4("Global_Right_Thumb_Tip_Position", this.globalRightThumbTipPosition);

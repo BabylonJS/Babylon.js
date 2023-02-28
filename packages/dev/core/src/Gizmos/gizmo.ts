@@ -103,7 +103,7 @@ export class Gizmo implements IGizmo {
     protected _isHovered = false;
 
     /**
-     * When enabled, any gizmo operation will perserve scaling sign. Default is off.
+     * When enabled, any gizmo operation will preserve scaling sign. Default is off.
      * Only valid for TransformNode derived classes (Mesh, AbstractMesh, ...)
      */
     public static PreserveScaling = false;

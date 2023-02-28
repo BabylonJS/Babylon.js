@@ -1532,7 +1532,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         const oit = this.needAlphaBlendingForMesh(mesh) && this.getScene().useOrderIndependentTransparency;
         MaterialHelper.PrepareDefinesForPrePass(scene, defines, this.canRenderToMRT && !oit);
 
-        // Order independant transparency
+        // Order independent transparency
         MaterialHelper.PrepareDefinesForOIT(scene, defines, oit);
 
         // Textures

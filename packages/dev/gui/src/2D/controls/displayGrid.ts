@@ -8,10 +8,10 @@ export class DisplayGrid extends Control {
     private _cellWidth = 20;
     private _cellHeight = 20;
 
-    private _minorLineTickness = 1;
+    private _minorLineThickness = 1;
     private _minorLineColor = "DarkGray";
 
-    private _majorLineTickness = 2;
+    private _majorLineThickness = 2;
     private _majorLineColor = "White";
 
     private _majorLineFrequency = 5;
@@ -90,14 +90,14 @@ export class DisplayGrid extends Control {
         this._markAsDirty();
     }
 
-    /** Gets or sets the tickness of minor lines (1 by default) */
+    /** Gets or sets the thickness of minor lines (1 by default) */
     @serialize()
-    public get minorLineTickness(): number {
-        return this._minorLineTickness;
+    public get minorLineThickness(): number {
+        return this._minorLineThickness;
     }
 
-    public set minorLineTickness(value: number) {
-        this._minorLineTickness = value;
+    public set minorLineThickness(value: number) {
+        this._minorLineThickness = value;
 
         this._markAsDirty();
     }
@@ -114,14 +114,14 @@ export class DisplayGrid extends Control {
         this._markAsDirty();
     }
 
-    /** Gets or sets the tickness of major lines (2 by default) */
+    /** Gets or sets the thickness of major lines (2 by default) */
     @serialize()
-    public get majorLineTickness(): number {
-        return this._majorLineTickness;
+    public get majorLineThickness(): number {
+        return this._majorLineThickness;
     }
 
-    public set majorLineTickness(value: number) {
-        this._majorLineTickness = value;
+    public set majorLineThickness(value: number) {
+        this._majorLineThickness = value;
 
         this._markAsDirty();
     }
@@ -178,7 +178,7 @@ export class DisplayGrid extends Control {
 
             if (this._displayMinorLines) {
                 context.strokeStyle = this._minorLineColor;
-                context.lineWidth = this._minorLineTickness;
+                context.lineWidth = this._minorLineThickness;
 
                 for (let x = -cellCountX / 2 + 1; x < cellCountX / 2; x++) {
                     const cellX = left + x * this.cellWidth;
@@ -203,7 +203,7 @@ export class DisplayGrid extends Control {
             // Major lines
             if (this._displayMajorLines) {
                 context.strokeStyle = this._majorLineColor;
-                context.lineWidth = this._majorLineTickness;
+                context.lineWidth = this._majorLineThickness;
 
                 for (let x = -cellCountX / 2 + this._majorLineFrequency; x < cellCountX / 2; x += this._majorLineFrequency) {
                     const cellX = left + x * this.cellWidth;

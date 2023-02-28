@@ -72,7 +72,7 @@ export interface IEffectLayerOptions {
  *
  * This can be for instance use to generate glow or highlight effects on the scene.
  *
- * The effect layer class can not be used directly and is intented to inherited from to be
+ * The effect layer class can not be used directly and is intended to inherited from to be
  * customized per effects.
  */
 export abstract class EffectLayer {

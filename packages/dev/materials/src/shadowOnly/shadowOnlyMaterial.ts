@@ -264,7 +264,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
             if (light) {
                 // Make sure the uniforms for this light will be rebound for other materials using this light when rendering the current frame.
                 // Indeed, there is an optimization in Light that binds the light uniforms only once per frame for a given light (if using ubo).
-                // Doing this way assumes that all uses of this light are the same, meaning all parameters passed to Light._bindLlight
+                // Doing this way assumes that all uses of this light are the same, meaning all parameters passed to Light._bindLight
                 // are the same, notably useSpecular. However, isReadyForSubMesh (see above) is passing false for this parameter, which may not be
                 // the value the other materials may pass.
                 light._renderId = -1;

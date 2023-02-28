@@ -432,7 +432,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
 
                     this.onDragObservable.notifyObservers({ delta: this._tmpVector, position: virtualMeshesInfo.pivotMesh.position, pickInfo: pointerInfo.pickInfo });
 
-                    // Notify herited methods and observables
+                    // Notify inherited methods and observables
                     this._targetDrag(this._tmpVector, this._tmpQuaternion, pointerId);
                     virtualMeshesInfo.lastDragPosition.copyFrom(virtualMeshesInfo.dragMesh.absolutePosition);
 
@@ -452,15 +452,15 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _targetDragStart(worldPosition: Vector3, worldRotation: Quaternion, pointerId: number) {
-        // Herited classes can override that
+        // Inherited classes can override that
     }
 
     protected _targetDrag(worldDeltaPosition: Vector3, worldDeltaRotation: Quaternion, pointerId: number) {
-        // Herited classes can override that
+        // Inherited classes can override that
     }
 
     protected _targetDragEnd(pointerId: number) {
-        // Herited classes can override that
+        // Inherited classes can override that
     }
 
     protected _reattachCameraControls() {

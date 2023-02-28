@@ -64,7 +64,7 @@ export class TransformNode extends Node {
 
     @serializeAsVector3("scaling")
     protected _scaling = Vector3.One();
-    private _transformToBoneReferal: Nullable<TransformNode> = null;
+    private _transformToBoneReferral: Nullable<TransformNode> = null;
     private _currentParentWhenAttachingToBone: Nullable<Node>;
     private _isAbsoluteSynced = false;
 
@@ -844,7 +844,7 @@ export class TransformNode extends Node {
      */
     public attachToBone(bone: Bone, affectedTransformNode: TransformNode): TransformNode {
         this._currentParentWhenAttachingToBone = this.parent;
-        this._transformToBoneReferal = affectedTransformNode;
+        this._transformToBoneReferral = affectedTransformNode;
         this.parent = bone;
 
         bone.getSkeleton().prepare();
@@ -871,7 +871,7 @@ export class TransformNode extends Node {
         if (this.parent.getWorldMatrix().determinant() < 0) {
             this.scalingDeterminant *= -1;
         }
-        this._transformToBoneReferal = null;
+        this._transformToBoneReferral = null;
         if (resetToPreviousParent) {
             this.parent = this._currentParentWhenAttachingToBone;
         } else {
@@ -1124,8 +1124,8 @@ export class TransformNode extends Node {
                 parent.computeWorldMatrix(force);
             }
             if (cache.useBillboardPath) {
-                if (this._transformToBoneReferal) {
-                    parent.getWorldMatrix().multiplyToRef(this._transformToBoneReferal.getWorldMatrix(), TmpVectors.Matrix[7]);
+                if (this._transformToBoneReferral) {
+                    parent.getWorldMatrix().multiplyToRef(this._transformToBoneReferral.getWorldMatrix(), TmpVectors.Matrix[7]);
                 } else {
                     TmpVectors.Matrix[7].copyFrom(parent.getWorldMatrix());
                 }
@@ -1146,9 +1146,9 @@ export class TransformNode extends Node {
 
                 this._localMatrix.multiplyToRef(TmpVectors.Matrix[7], this._worldMatrix);
             } else {
-                if (this._transformToBoneReferal) {
+                if (this._transformToBoneReferral) {
                     this._localMatrix.multiplyToRef(parent.getWorldMatrix(), TmpVectors.Matrix[6]);
-                    TmpVectors.Matrix[6].multiplyToRef(this._transformToBoneReferal.getWorldMatrix(), this._worldMatrix);
+                    TmpVectors.Matrix[6].multiplyToRef(this._transformToBoneReferral.getWorldMatrix(), this._worldMatrix);
                 } else {
                     this._localMatrix.multiplyToRef(parent.getWorldMatrix(), this._worldMatrix);
                 }

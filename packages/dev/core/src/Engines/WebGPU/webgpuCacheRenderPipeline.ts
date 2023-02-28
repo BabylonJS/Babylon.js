@@ -492,7 +492,7 @@ export abstract class WebGPUCacheRenderPipeline {
         }
     }
 
-    private static _GetAphaBlendOperation(operation: Nullable<number>): GPUBlendOperation {
+    private static _GetAlphaBlendOperation(operation: Nullable<number>): GPUBlendOperation {
         switch (operation) {
             case Constants.GL_ALPHA_EQUATION_ADD:
                 return WebGPUConstants.BlendOperation.Add;
@@ -509,7 +509,7 @@ export abstract class WebGPUCacheRenderPipeline {
         }
     }
 
-    private static _GetAphaBlendFactor(factor: Nullable<number>): GPUBlendFactor {
+    private static _GetAlphaBlendFactor(factor: Nullable<number>): GPUBlendFactor {
         switch (factor) {
             case 0:
                 return WebGPUConstants.BlendFactor.Zero;
@@ -677,15 +677,15 @@ export abstract class WebGPUCacheRenderPipeline {
         throw new Error(`Invalid Format '${vertexBuffer.getKind()}' - type=${type}, normalized=${normalized}, size=${size}`);
     }
 
-    private _getAphaBlendState(): Nullable<GPUBlendComponent> {
+    private _getAlphaBlendState(): Nullable<GPUBlendComponent> {
         if (!this._alphaBlendEnabled) {
             return null;
         }
 
         return {
-            srcFactor: WebGPUCacheRenderPipeline._GetAphaBlendFactor(this._alphaBlendFuncParams[2]),
-            dstFactor: WebGPUCacheRenderPipeline._GetAphaBlendFactor(this._alphaBlendFuncParams[3]),
-            operation: WebGPUCacheRenderPipeline._GetAphaBlendOperation(this._alphaBlendEqParams[1]),
+            srcFactor: WebGPUCacheRenderPipeline._GetAlphaBlendFactor(this._alphaBlendFuncParams[2]),
+            dstFactor: WebGPUCacheRenderPipeline._GetAlphaBlendFactor(this._alphaBlendFuncParams[3]),
+            operation: WebGPUCacheRenderPipeline._GetAlphaBlendOperation(this._alphaBlendEqParams[1]),
         };
     }
 
@@ -695,9 +695,9 @@ export abstract class WebGPUCacheRenderPipeline {
         }
 
         return {
-            srcFactor: WebGPUCacheRenderPipeline._GetAphaBlendFactor(this._alphaBlendFuncParams[0]),
-            dstFactor: WebGPUCacheRenderPipeline._GetAphaBlendFactor(this._alphaBlendFuncParams[1]),
-            operation: WebGPUCacheRenderPipeline._GetAphaBlendOperation(this._alphaBlendEqParams[0]),
+            srcFactor: WebGPUCacheRenderPipeline._GetAlphaBlendFactor(this._alphaBlendFuncParams[0]),
+            dstFactor: WebGPUCacheRenderPipeline._GetAlphaBlendFactor(this._alphaBlendFuncParams[1]),
+            operation: WebGPUCacheRenderPipeline._GetAlphaBlendOperation(this._alphaBlendEqParams[0]),
         };
     }
 
@@ -951,7 +951,7 @@ export abstract class WebGPUCacheRenderPipeline {
         const pipelineLayout = this._createPipelineLayout(webgpuPipelineContext);
 
         const colorStates: Array<GPUColorTargetState | null> = [];
-        const alphaBlend = this._getAphaBlendState();
+        const alphaBlend = this._getAlphaBlendState();
         const colorBlend = this._getColorBlendState();
 
         if (this._mrtAttachments1 > 0) {

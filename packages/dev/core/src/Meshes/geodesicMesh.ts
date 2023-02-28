@@ -400,7 +400,7 @@ export class _PrimaryIsoTriangle {
         const B: _IsoVector = new _IsoVector(-n, m + n);
         vertices.push(O, A, B);
 
-        //max internal isoceles triangle vertices
+        //max internal isosceles triangle vertices
         for (let y = n; y < m + 1; y++) {
             for (let x = 0; x < m + 1 - y; x++) {
                 vertices.push(new _IsoVector(x, y));

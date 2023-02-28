@@ -27,7 +27,7 @@ interface Navigator {
 }
 
 /**
- * WebGL Context Compatability
+ * WebGL Context Compatibility
  *
  * ref: https://immersive-web.github.io/webxr/#contextcompatibility
  */

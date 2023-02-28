@@ -1397,7 +1397,7 @@ export class SolidParticleSystem implements IDisposable {
                     bBox.reConstruct(tempMin, tempMax, mesh._worldMatrix);
                 }
 
-                // place and scale the particle bouding sphere in the SPS local system, then update it
+                // place and scale the particle bounding sphere in the SPS local system, then update it
                 const minBbox = modelBoundingInfo.minimum.multiplyToRef(particleScaling, tempVectors[1]);
                 const maxBbox = modelBoundingInfo.maximum.multiplyToRef(particleScaling, tempVectors[2]);
 

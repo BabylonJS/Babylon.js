@@ -15,7 +15,7 @@ export class BaseTrigger {
     }
 
     public condition(scene: Scene) {
-        /** Overriden in child classes */
+        /** Overridden in child classes */
         return false;
     }
 

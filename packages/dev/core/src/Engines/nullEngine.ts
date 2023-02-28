@@ -282,7 +282,7 @@ export class NullEngine extends Engine {
     }
 
     /**
-     * Gets the lsit of active attributes for a given webGL program
+     * Gets the list of active attributes for a given webGL program
      * @param pipelineContext defines the pipeline context to use
      * @param attributesNames defines the list of attribute names to get
      * @returns an array of indices indicating the offset of each attribute
@@ -961,7 +961,7 @@ export class NullEngine extends Engine {
     }
 
     /** @internal */
-    public _getUnpackAlignement(): number {
+    public _getUnpackAlignment(): number {
         return 1;
     }
 

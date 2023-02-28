@@ -424,7 +424,7 @@ export class RuntimeAnimation {
     }
 
     /**
-     * Gets the loop pmode of the runtime animation
+     * Gets the loop mode of the runtime animation
      * @returns Loop Mode
      */
     private _getCorrectLoopMode(): number | undefined {

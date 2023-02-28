@@ -227,7 +227,7 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
 
     protected _targetDragEnd() {
         if (this.currentDraggingPointerIds.length === 1) {
-            // We still have 1 active pointer, we must simulate a dragstart with a reseted position/orientation
+            // We still have 1 active pointer, we must simulate a dragstart with a reset position/orientation
             this._resetVirtualMeshesPosition();
             const previousFaceCameraFlag = this.faceCameraOnDragStart;
             this.faceCameraOnDragStart = false;

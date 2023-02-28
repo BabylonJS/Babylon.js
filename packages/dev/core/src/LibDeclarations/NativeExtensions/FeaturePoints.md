@@ -45,7 +45,7 @@ class WebXRFeaturePointSystem extends WebXRAbstractFeature {
   */
   public onFeaturePointsUpdatedObservable: Observable<number[]> = new Observable();
   /**
-   * The currrent feature point cloud maintained across frames.
+   * The current feature point cloud maintained across frames.
    */
   public featurePointCloud: Array<IWebXRFeaturePoint> = [];
 

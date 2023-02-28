@@ -111,7 +111,7 @@ export class PrePassRenderTarget extends MultiRenderTarget {
     }
 
     /**
-     * Diposes this render target
+     * Disposes this render target
      */
     public dispose() {
         const scene = this._scene;

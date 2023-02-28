@@ -58,12 +58,12 @@ export class InputTextPropertyGridComponent extends React.Component<IInputTextPr
                     />
                     <SliderLineComponent
                         lockObject={this.props.lockObject}
-                        label="Highligher opacity"
+                        label="Highlighter opacity"
                         minimum={0}
                         maximum={1}
                         step={0.01}
                         target={inputText}
-                        propertyName="highligherOpacity"
+                        propertyName="highlighterOpacity"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <CheckBoxLineComponent

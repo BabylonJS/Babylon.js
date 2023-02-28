@@ -582,7 +582,7 @@ export class SelectionPanel extends Rectangle {
 
     /** Change selector label to the one given
      * @param label is the new selector label
-     * @param groupNb is the number of the groupcontaining the selector
+     * @param groupNb is the number of the group containing the selector
      * @param selectorNb is the number of the selector within a group to relabel
      * */
     public relabel(label: string, groupNb: number, selectorNb: number): void {

@@ -56,7 +56,7 @@ export class Rectangle extends Container {
     }
 
     /** @internal */
-    protected _computeAdditionnalOffsetX() {
+    protected _computeAdditionalOffsetX() {
         if (this._cornerRadius) {
             // Take in account the aliasing
             return 1;
@@ -65,7 +65,7 @@ export class Rectangle extends Container {
     }
 
     /** @internal */
-    protected _computeAdditionnalOffsetY() {
+    protected _computeAdditionalOffsetY() {
         if (this._cornerRadius) {
             // Take in account the aliasing
             return 1;

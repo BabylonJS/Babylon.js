@@ -132,7 +132,7 @@ export class CubeTexture extends BaseTexture {
     }
 
     /**
-     * Creates and return a texture created from prefilterd data by tools like IBL Baker or Lys.
+     * Creates and return a texture created from prefiltered data by tools like IBL Baker or Lys.
      * @param url defines the url of the prefiltered texture
      * @param scene defines the scene the texture is attached to
      * @param forcedExtension defines the extension of the file if different from the url

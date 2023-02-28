@@ -143,7 +143,7 @@ export class TextureSampler {
     /**
      * Compares this sampler with another one
      * @param other sampler to compare with
-     * @returns true if the samplers have the same parametres, else false
+     * @returns true if the samplers have the same parameters, else false
      */
     public compareSampler(other: TextureSampler): boolean {
         return (

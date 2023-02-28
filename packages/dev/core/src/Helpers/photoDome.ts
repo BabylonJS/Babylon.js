@@ -65,7 +65,7 @@ export class PhotoDome extends TextureDome<Texture> {
                 this.onLoadObservable.notifyObservers();
             },
             (message, exception) => {
-                this.onLoadErrorObservable.notifyObservers(message || "Unknown error occured");
+                this.onLoadErrorObservable.notifyObservers(message || "Unknown error occurred");
 
                 if (this.onError) {
                     this.onError(message, exception);

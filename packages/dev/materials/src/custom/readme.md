@@ -11,9 +11,9 @@
 >
 > [ Begin ]
 >
-> . // includes extensions varyng uniforms attributes special functions
+> . // includes extensions varying uniforms attributes special functions
 >
-> [ Definations ]
+> [ Definitions ]
 >
 > void main(){
 >
@@ -35,7 +35,7 @@ method : SelectVersion(ver:string)
 method : AddUniform(name:string,kind:string,param:any):CustomMaterial
 
 > for append dynamic setting and manage </br>
-> this method Add Unforn in bouth of shaders(Fragment and Vertex) </br>
+> this method Add Uniform in both of shaders(Fragment and Vertex) </br>
 > usage : new CustomMaterial(...).AddUniform('time','float') </br>
 > : new CustomMaterial(...).AddUniform('direction','vec3',new BABYLON.Vector3(0.,0.,0.)) </br>
 > : new CustomMaterial(...).AddUniform('txt1','sampler2D', new BABYLON.Texture("path",scene))
@@ -45,11 +45,11 @@ method : Fragment_Begin(shaderPart:string):CustomMaterial
 > shaderPart is Shader Structure append in start of main function in fragment shader </br>
 > usage : new CustomMaterial(...).Fragment_Begin('vec3 direction = vec3(0.);')
 
-method : Fragment_Definations(shaderPart:string):CustomMaterial
+method : Fragment_Definitions(shaderPart:string):CustomMaterial
 
-> shaderPart is Shader Structure append in befor of the main function in fragment shader </br>
-> you can define your varyng and functions from this </br>
-> usage : new CustomMaterial(...).Fragment_Definations('float func1(vec4 param1){ return param1.x;}') </br>
+> shaderPart is Shader Structure append in before of the main function in fragment shader </br>
+> you can define your varying and functions from this </br>
+> usage : new CustomMaterial(...).Fragment_Definitions('float func1(vec4 param1){ return param1.x;}') </br>
 >
 > -   dont try use uniform with this function because uniforms need to add buffers
 
@@ -94,11 +94,11 @@ method : Vertex_Begin(shaderPart:string):CustomMaterial
 > shaderPart is Shader Structure append in start of main function in vertex shader </br>
 > usage : new CustomMaterial(...).Vertex_Begin('vec3 direction = vec3(0.);')
 
-method : Vertex_Definations(shaderPart:string):CustomMaterial
+method : Vertex_Definitions(shaderPart:string):CustomMaterial
 
-> shaderPart is Shader Structure append in befor of the main function in vertex shader </br>
-> you can define your varyng and functions from this </br>
-> usage : new CustomMaterial(...).Vertex_Definations('float func1(vec4 param1){ return param1.x;}') </br>
+> shaderPart is Shader Structure append in before of the main function in vertex shader </br>
+> you can define your varying and functions from this </br>
+> usage : new CustomMaterial(...).Vertex_Definitions('float func1(vec4 param1){ return param1.x;}') </br>
 >
 > -   dont try use uniform with this function because uniforms need to add buffers </br>
 > -   for connect any information between vertex and fragment part in shader you can define varying you need make that in both of definition part
@@ -107,21 +107,21 @@ method : Vertex_MainBegin(shaderPart:string):CustomMaterial
 
 > shaderPart is Shader Structure append in start place of the main function in vertex shader
 
-method : Vertex_Befor_PositionUpdated(shaderPart:string):CustomMaterial{
+method : Vertex_Before_PositionUpdated(shaderPart:string):CustomMaterial{
 
 > shaderPart is Shader Structure append after positionUpdated is defined of the main function in vertex shader </br>
-> usage : new CustomMaterial(...).Vertex_Befor_PositionUpdated('positionUpdated = positionUpdated;') </br>
-> : new CustomMaterial(...).Vertex_Befor_PositionUpdated('result = positionUpdated \* 1.5 ;') </br>
+> usage : new CustomMaterial(...).Vertex_Before_PositionUpdated('positionUpdated = positionUpdated;') </br>
+> : new CustomMaterial(...).Vertex_Before_PositionUpdated('result = positionUpdated \* 1.5 ;') </br>
 >
 > -   positionUpdated is vec3 variable </br>
 > -   you can use result (vec3) too that replaced by positionUpdated
 > -   you can use 'normal' attribute in this part too
 
-method : Vertex_Befor_NormalUpdated(shaderPart:string):CustomMaterial
+method : Vertex_Before_NormalUpdated(shaderPart:string):CustomMaterial
 
 > shaderPart is Shader Structure append after normalUpdated is defined of the main function in vertex shader </br>
-> usage : new CustomMaterial(...).Vertex_Befor_NormalUpdated('normalUpdated = normalUpdated;') </br>
-> : new CustomMaterial(...).Vertex_Befor_NormalUpdated('result = normalUpdated ;') </br>
+> usage : new CustomMaterial(...).Vertex_Before_NormalUpdated('normalUpdated = normalUpdated;') </br>
+> : new CustomMaterial(...).Vertex_Before_NormalUpdated('result = normalUpdated ;') </br>
 >
 > -   normalUpdated is vec3 variable </br>
 > -   you can use result (vec3) too that replaced by normalUpdated

@@ -169,7 +169,7 @@ export class PerformanceViewerCollector {
 
     /**
      * Lets the perf collector handle an event, occurences or event value depending on if the event.value params is set.
-     * @param event the event to handle an occurence for
+     * @param event the event to handle an occurrence for
      */
     public sendEvent(event: IPerfCustomEvent) {
         this._customEventObservable.notifyObservers(event);

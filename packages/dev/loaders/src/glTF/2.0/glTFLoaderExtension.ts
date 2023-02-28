@@ -160,7 +160,7 @@ export interface IGLTFLoaderExtension extends IGLTFBaseLoaderExtension, IDisposa
 
     /**
      * @internal
-     * Define this method to modify the default behvaior when loading animation channels.
+     * Define this method to modify the default behavior when loading animation channels.
      * @param context The context when loading the asset
      * @param animationContext The context of the animation when loading the asset
      * @param animation The glTF animation property

@@ -140,7 +140,7 @@ export class SmartArrayNoDuplicate<T> extends SmartArray<T> {
 
     /**
      * Pushes a value at the end of the active data.
-     * THIS DOES NOT PREVENT DUPPLICATE DATA
+     * THIS DOES NOT PREVENT DUPLICATE DATA
      * @param value defines the object to push in the array.
      */
     public push(value: T): void {

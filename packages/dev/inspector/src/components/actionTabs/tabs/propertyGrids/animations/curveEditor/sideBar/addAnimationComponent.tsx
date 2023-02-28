@@ -21,7 +21,7 @@ export class AddAnimationComponent extends React.Component<IAddAnimationComponen
     private _displayName: React.RefObject<HTMLInputElement>;
     private _property: React.RefObject<HTMLInputElement>;
     private _typeElement: React.RefObject<HTMLSelectElement>;
-    private _propertylement: React.RefObject<HTMLSelectElement>;
+    private _propertyElement: React.RefObject<HTMLSelectElement>;
     private _loopModeElement: React.RefObject<HTMLSelectElement>;
 
     constructor(props: IAddAnimationComponentProps) {
@@ -34,14 +34,14 @@ export class AddAnimationComponent extends React.Component<IAddAnimationComponen
         this._property = React.createRef();
         this._typeElement = React.createRef();
         this._loopModeElement = React.createRef();
-        this._propertylement = React.createRef();
+        this._propertyElement = React.createRef();
     }
 
     public createNew() {
         const context = this.props.context;
         const document = this._displayName.current!.ownerDocument;
         const displayName = this._displayName.current!.value;
-        const property = this._property.current ? this._property.current.value : this._propertylement.current!.value;
+        const property = this._property.current ? this._property.current.value : this._propertyElement.current!.value;
         const type = this._typeElement.current ? this._typeElement.current.value : this.getInferredType();
         const loopModeValue = this._loopModeElement.current!.value;
 
@@ -196,8 +196,8 @@ export class AddAnimationComponent extends React.Component<IAddAnimationComponen
 
     public getInferredType(activeProperty: string = "") {
         const source = this.props.context.target as any;
-        if (this._propertylement.current) {
-            activeProperty = this._propertylement.current.value;
+        if (this._propertyElement.current) {
+            activeProperty = this._propertyElement.current.value;
         }
         const value = source[activeProperty];
 
@@ -258,7 +258,7 @@ export class AddAnimationComponent extends React.Component<IAddAnimationComponen
                 properties.splice(0, 0, mainProperty);
             }
 
-            if (this._propertylement.current) {
+            if (this._propertyElement.current) {
                 inferredType = this.getInferredType();
             } else {
                 inferredType = this.getInferredType(properties[0]);
@@ -310,7 +310,7 @@ export class AddAnimationComponent extends React.Component<IAddAnimationComponen
                         <select
                             id="add-animation-property"
                             className="option"
-                            ref={this._propertylement}
+                            ref={this._propertyElement}
                             onClick={() => {
                                 this.forceUpdate();
                             }}

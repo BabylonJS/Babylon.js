@@ -144,7 +144,7 @@ class Plane {
      * @param coplanarFront Will contain polygons coplanar with the plane that are oriented to the front of the plane
      * @param coplanarBack Will contain polygons coplanar with the plane that are oriented to the back of the plane
      * @param front Will contain the polygons in front of the plane
-     * @param back Will contain the polygons begind the plane
+     * @param back Will contain the polygons behind the plane
      */
     public splitPolygon(polygon: Polygon, coplanarFront: Polygon[], coplanarBack: Polygon[], front: Polygon[], back: Polygon[]): void {
         const COPLANAR = 0;

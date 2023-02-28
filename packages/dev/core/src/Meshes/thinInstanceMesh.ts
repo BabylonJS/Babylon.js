@@ -262,7 +262,7 @@ Mesh.prototype.thinInstanceSetBuffer = function (kind: string, buffer: Nullable<
             this._thinInstanceDataStorage.previousMatrixBuffer = this._thinInstanceCreateMatrixBuffer("previousWorld", buffer, staticBuffer);
         }
     } else {
-        // color for instanced mesh is ColorInstanceKind and not ColorKind because of native that needs to do the differenciation
+        // color for instanced mesh is ColorInstanceKind and not ColorKind because of native that needs to do the differentiation
         // hot switching kind here to preserve backward compatibility
         if (kind === VertexBuffer.ColorKind) {
             kind = VertexBuffer.ColorInstanceKind;

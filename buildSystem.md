@@ -911,7 +911,7 @@ For example:
 npm run test:visualization -- -i "webgl2" -t "Particle subemitters"
 ```
 
-## Changlog
+## Changelog
 
 The changelog is generated automatically based on a script in the ./scripts/ directory and the `changelog.json` file located in the `.build` directory. It is generated on every npm publish (once a week).
 
@@ -957,7 +957,7 @@ This is an example of the config structure:
 }
 ```
 
-Version definition can either be a complete version (i.e. `5.0.0-rc.6`) or one of the versiuon modifiers of `npm version`:
+Version definition can either be a complete version (i.e. `5.0.0-rc.6`) or one of the version modifiers of `npm version`:
 
 ` major | minor | patch | prerelease `
 

@@ -14,7 +14,7 @@ export class _GLTFUtilities {
      * @param bufferIndex index value of the specified buffer
      * @param byteOffset byte offset value
      * @param byteLength byte length of the bufferView
-     * @param byteStride byte distance between conequential elements
+     * @param byteStride byte distance between consequential elements
      * @param name name of the buffer view
      * @returns bufferView for glTF
      */

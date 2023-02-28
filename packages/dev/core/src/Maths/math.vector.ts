@@ -1224,7 +1224,7 @@ export class Vector3 {
         } else {
             theta += Math.PI / 2;
         }
-        //Calculates resutant normal vector from spherical coordinate of perpendicular vector
+        //Calculates resultant normal vector from spherical coordinate of perpendicular vector
         const x = radius * Math.sin(theta) * Math.cos(phi);
         const y = radius * Math.cos(theta);
         const z = radius * Math.sin(theta) * Math.sin(phi);
@@ -3250,7 +3250,7 @@ export class Vector4 {
     }
 
     /**
-     * Boolean : True if the current Vector4 coordinates are stricly equal to the given ones.
+     * Boolean : True if the current Vector4 coordinates are strictly equal to the given ones.
      * @param otherVector the vector to compare against
      * @returns true if they are equal
      */
@@ -3333,7 +3333,7 @@ export class Vector4 {
     }
     /**
      * Returns a new Vector4 set with the division result of the current Vector4 by the given one.
-     * @param otherVector vector to devide with
+     * @param otherVector vector to divide with
      * @returns resulting new vector
      */
     public divide(otherVector: DeepImmutable<Vector4>): this {
@@ -3341,7 +3341,7 @@ export class Vector4 {
     }
     /**
      * Updates the given vector "result" with the division result of the current Vector4 by the given one.
-     * @param otherVector vector to devide with
+     * @param otherVector vector to divide with
      * @param result vector to store the result
      * @returns result input
      */
@@ -3355,7 +3355,7 @@ export class Vector4 {
 
     /**
      * Divides the current Vector3 coordinates by the given ones.
-     * @param otherVector vector to devide with
+     * @param otherVector vector to divide with
      * @returns the updated Vector3.
      */
     public divideInPlace(otherVector: DeepImmutable<Vector4>): this {
@@ -3652,8 +3652,8 @@ export class Vector4 {
     }
     /**
      * Returns the distance (float) between the vectors "value1" and "value2".
-     * @param value1 value to calulate the distance between
-     * @param value2 value to calulate the distance between
+     * @param value1 value to calculate the distance between
+     * @param value2 value to calculate the distance between
      * @returns the distance between the two vectors
      */
     public static Distance(value1: DeepImmutable<Vector4>, value2: DeepImmutable<Vector4>): number {
@@ -3661,8 +3661,8 @@ export class Vector4 {
     }
     /**
      * Returns the squared distance (float) between the vectors "value1" and "value2".
-     * @param value1 value to calulate the distance between
-     * @param value2 value to calulate the distance between
+     * @param value1 value to calculate the distance between
+     * @param value2 value to calculate the distance between
      * @returns the distance between the two vectors squared
      */
     public static DistanceSquared(value1: DeepImmutable<Vector4>, value2: DeepImmutable<Vector4>): number {
@@ -3675,8 +3675,8 @@ export class Vector4 {
     }
     /**
      * Returns a new Vector4 located at the center between the vectors "value1" and "value2".
-     * @param value1 value to calulate the center between
-     * @param value2 value to calulate the center between
+     * @param value1 value to calculate the center between
+     * @param value2 value to calculate the center between
      * @returns the center between the two vectors
      */
     public static Center(value1: DeepImmutable<Vector4>, value2: DeepImmutable<Vector4>): Vector4 {
@@ -3696,7 +3696,7 @@ export class Vector4 {
 
     /**
      * Returns a new Vector4 set with the result of the transformation by the given matrix of the given vector.
-     * This method computes tranformed coordinates only, not transformed direction vectors (ie. it takes translation in account)
+     * This method computes transformed coordinates only, not transformed direction vectors (ie. it takes translation in account)
      * The difference with Vector3.TransformCoordinates is that the w component is not used to divide the other coordinates but is returned in the w coordinate instead
      * @param vector defines the Vector3 to transform
      * @param transformation defines the transformation matrix
@@ -3710,7 +3710,7 @@ export class Vector4 {
 
     /**
      * Sets the given vector "result" coordinates with the result of the transformation by the given matrix of the given vector
-     * This method computes tranformed coordinates only, not transformed direction vectors (ie. it takes translation in account)
+     * This method computes transformed coordinates only, not transformed direction vectors (ie. it takes translation in account)
      * The difference with Vector3.TransformCoordinatesToRef is that the w component is not used to divide the other coordinates but is returned in the w coordinate instead
      * @param vector defines the Vector3 to transform
      * @param transformation defines the transformation matrix
@@ -3724,7 +3724,7 @@ export class Vector4 {
 
     /**
      * Sets the given vector "result" coordinates with the result of the transformation by the given matrix of the given floats (x, y, z)
-     * This method computes tranformed coordinates only, not transformed direction vectors
+     * This method computes transformed coordinates only, not transformed direction vectors
      * The difference with Vector3.TransformCoordinatesFromFloatsToRef is that the w component is not used to divide the other coordinates but is returned in the w coordinate instead
      * @param x define the x coordinate of the source vector
      * @param y define the y coordinate of the source vector
@@ -4165,7 +4165,7 @@ export class Quaternion {
      * Updates the current quaternion with the multiplication of itself with the given one "q1"
      * Example Playground https://playground.babylonjs.com/#L49EJ7#46
      * @param q1 defines the second operand
-     * @returns the currentupdated quaternion
+     * @returns the current updated quaternion
      */
     public multiplyInPlace(q1: DeepImmutable<Quaternion>): this {
         this.multiplyToRef(q1, this);
@@ -5143,7 +5143,7 @@ export class Matrix {
             m32 = m[14],
             m33 = m[15];
         // https://en.wikipedia.org/wiki/Laplace_expansion
-        // to compute the deterrminant of a 4x4 Matrix we compute the cofactors of any row or column,
+        // to compute the determinant of a 4x4 Matrix we compute the cofactors of any row or column,
         // then we multiply each Cofactor by its corresponding matrix value and sum them all to get the determinant
         // Cofactor(i, j) = sign(i,j) * det(Minor(i, j))
         // where
@@ -5366,7 +5366,7 @@ export class Matrix {
     }
 
     /**
-     * mutiply the specified position in the current Matrix by a value
+     * multiply the specified position in the current Matrix by a value
      * @param index the index of the value within the matrix. between 0 and 15.
      * @param value the value to be added
      * @returns the current updated matrix
@@ -6502,7 +6502,7 @@ export class Matrix {
      * Example Playground - https://playground.babylonjs.com/#AV9X17#109
      * @param x defines the translation on X axis
      * @param y defines the translation on Y axis
-     * @param z defines the translationon Z axis
+     * @param z defines the translation on Z axis
      * @returns the new matrix
      */
     public static Translation(x: number, y: number, z: number): Matrix {
@@ -6516,7 +6516,7 @@ export class Matrix {
      * Example Playground - https://playground.babylonjs.com/#AV9X17#110
      * @param x defines the translation on X axis
      * @param y defines the translation on Y axis
-     * @param z defines the translationon Z axis
+     * @param z defines the translation on Z axis
      * @param result defines the target matrix
      * @returns result input
      */

@@ -5,11 +5,11 @@ export class BaseAction {
     public constructor() {}
 
     public execute() {
-        /** Overriden in child classes */
+        /** Overridden in child classes */
     }
 
     public actionName(): string {
-        /** Overriden in child classes */
+        /** Overridden in child classes */
         return "BaseAction";
     }
 }

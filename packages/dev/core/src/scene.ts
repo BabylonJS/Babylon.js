@@ -710,14 +710,14 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * This Observable will be triggered before rendering each renderingGroup of each rendered camera.
      * The RenderingGroupInfo class contains all the information about the context in which the observable is called
-     * If you wish to register an Observer only for a given set of renderingGroup, use the mask with a combination of the renderingGroup index elevated to the power of two (1 for renderingGroup 0, 2 for renderingrOup1, 4 for 2 and 8 for 3)
+     * If you wish to register an Observer only for a given set of renderingGroup, use the mask with a combination of the renderingGroup index elevated to the power of two (1 for renderingGroup 0, 2 for renderingGroup1, 4 for 2 and 8 for 3)
      */
     public onBeforeRenderingGroupObservable = new Observable<RenderingGroupInfo>();
 
     /**
      * This Observable will be triggered after rendering each renderingGroup of each rendered camera.
      * The RenderingGroupInfo class contains all the information about the context in which the observable is called
-     * If you wish to register an Observer only for a given set of renderingGroup, use the mask with a combination of the renderingGroup index elevated to the power of two (1 for renderingGroup 0, 2 for renderingrOup1, 4 for 2 and 8 for 3)
+     * If you wish to register an Observer only for a given set of renderingGroup, use the mask with a combination of the renderingGroup index elevated to the power of two (1 for renderingGroup 0, 2 for renderingGroup1, 4 for 2 and 8 for 3)
      */
     public onAfterRenderingGroupObservable = new Observable<RenderingGroupInfo>();
 
@@ -732,7 +732,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public onAnimationFileImportedObservable = new Observable<Scene>();
 
     /**
-     * Gets or sets a user defined funtion to select LOD from a mesh and a camera.
+     * Gets or sets a user defined function to select LOD from a mesh and a camera.
      * By default this function is undefined and Babylon.js will select LOD based on distance to camera
      */
     public customLODSelector: (mesh: AbstractMesh, camera: Camera) => Nullable<AbstractMesh>;
@@ -787,7 +787,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public pointerMoveTrianglePredicate: ((p0: Vector3, p1: Vector3, p2: Vector3, ray: Ray) => boolean) | undefined;
 
     /**
-     * This observable event is triggered when any ponter event is triggered. It is registered during Scene.attachControl() and it is called BEFORE the 3D engine process anything (mesh/sprite picking for instance).
+     * This observable event is triggered when any pointer event is triggered. It is registered during Scene.attachControl() and it is called BEFORE the 3D engine process anything (mesh/sprite picking for instance).
      * You have the possibility to skip the process and the call to onPointerObservable by setting PointerInfoPre.skipOnPointerObservable to true
      */
     public onPrePointerObservable = new Observable<PointerInfoPre>();
@@ -1363,7 +1363,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /**
      * Gets or sets a boolean indicating if lights must be sorted by priority (off by default)
-     * This is useful if there are more lights that the maximum simulteanous authorized
+     * This is useful if there are more lights that the maximum simultaneous authorized
      */
     public requireLightSorting = false;
 
@@ -1408,7 +1408,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * @internal
      * Add a component to the scene.
-     * Note that the ccomponent could be registered on th next frame if this is called after
+     * Note that the component could be registered on th next frame if this is called after
      * the register component stage.
      * @param component Defines the component to add to the scene
      */
@@ -2094,7 +2094,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * The provided function will run before render once and will be disposed afterwards.
      * A timeout delay can be provided so that the function will be executed in N ms.
-     * The timeout is using the browser's native setTimeout so time percision cannot be guaranteed.
+     * The timeout is using the browser's native setTimeout so time precision cannot be guaranteed.
      * @param func The function to be executed.
      * @param timeout optional delay in ms
      */
@@ -5172,7 +5172,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /**
      * Overrides the default sort function applied in the rendering group to prepare the meshes.
-     * This allowed control for front to back rendering or reversly depending of the special needs.
+     * This allowed control for front to back rendering or reversely depending of the special needs.
      *
      * @param renderingGroupId The rendering group id corresponding to its index
      * @param opaqueSortCompareFn The opaque queue comparison function use to sort.

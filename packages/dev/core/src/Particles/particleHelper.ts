@@ -71,7 +71,7 @@ export class ParticleHelper {
      * @param type This string represents the type to the particle system to create
      * @param scene The scene where the particle system should live
      * @param gpu If the system will use gpu
-     * @param capacity defines the system capacity (if null or undefined the sotred capacity will be used)
+     * @param capacity defines the system capacity (if null or undefined the stored capacity will be used)
      * @returns the ParticleSystemSet created
      */
     public static CreateAsync(type: string, scene: Nullable<Scene>, gpu: boolean = false, capacity?: number): Promise<ParticleSystemSet> {
@@ -130,7 +130,7 @@ export class ParticleHelper {
      * @param scene defines the hosting scene
      * @param gpu If the system will use gpu
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
-     * @param capacity defines the system capacity (if null or undefined the sotred capacity will be used)
+     * @param capacity defines the system capacity (if null or undefined the stored capacity will be used)
      * @returns a promise that will resolve to the new particle system
      */
     public static ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, gpu: boolean = false, rootUrl: string = "", capacity?: number): Promise<IParticleSystem> {
@@ -170,7 +170,7 @@ export class ParticleHelper {
      * @param scene defines the hosting scene
      * @param gpu If the system will use gpu
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
-     * @param capacity defines the system capacity (if null or undefined the sotred capacity will be used)
+     * @param capacity defines the system capacity (if null or undefined the stored capacity will be used)
      * @returns a promise that will resolve to the new particle system
      */
     public static ParseFromSnippetAsync(snippetId: string, scene: Scene, gpu: boolean = false, rootUrl: string = "", capacity?: number): Promise<IParticleSystem> {
@@ -215,7 +215,7 @@ export class ParticleHelper {
      * @param scene defines the hosting scene
      * @param gpu If the system will use gpu
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
-     * @param capacity defines the system capacity (if null or undefined the sotred capacity will be used)
+     * @param capacity defines the system capacity (if null or undefined the stored capacity will be used)
      * @returns a promise that will resolve to the new particle system
      */
     public static CreateFromSnippetAsync = ParticleHelper.ParseFromSnippetAsync;

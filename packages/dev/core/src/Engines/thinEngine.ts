@@ -4499,7 +4499,7 @@ export class ThinEngine {
     }
 
     /** @internal */
-    public _getUnpackAlignement(): number {
+    public _getUnpackAlignment(): number {
         return this._gl.getParameter(this._gl.UNPACK_ALIGNMENT);
     }
 
@@ -4608,7 +4608,7 @@ export class ThinEngine {
         gl.texParameteri(target, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(target, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-        // TEXTURE_COMPARE_FUNC/MODE are only availble in WebGL2.
+        // TEXTURE_COMPARE_FUNC/MODE are only available in WebGL2.
         if (this.webGLVersion > 1) {
             if (comparisonFunction === 0) {
                 gl.texParameteri(target, gl.TEXTURE_COMPARE_FUNC, Constants.LEQUAL);

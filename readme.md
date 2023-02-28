@@ -117,7 +117,7 @@ Please see the [Contributing Guidelines](./contributing.md).
 ## Useful links
 
 - Official web site: [www.babylonjs.com](https://www.babylonjs.com/)
-- Online [playground](https://playground.babylonjs.com/) to learn by experimentating
+- Online [playground](https://playground.babylonjs.com/) to learn by experimenting
 - Online [sandbox](https://www.babylonjs.com/sandbox) where you can test your .babylon and glTF scenes with a simple drag'n'drop
 - Online [shader creation tool](https://cyos.babylonjs.com/) where you can learn how to create GLSL shaders
 - 3DS Max [exporter](https://github.com/BabylonJS/Exporters/tree/master/3ds%20Max) can be used to generate a .babylon file from 3DS Max

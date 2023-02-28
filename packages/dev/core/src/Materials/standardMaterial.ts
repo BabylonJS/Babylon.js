@@ -376,7 +376,7 @@ export class StandardMaterial extends PushMaterial {
     private _useSpecularOverAlpha = false;
     /**
      * Specifies that the material will keep the specular highlights over a transparent surface (only the most luminous ones).
-     * A car glass is a good exemple of that. When sun reflects on it you can not see what is behind.
+     * A car glass is a good example of that. When sun reflects on it you can not see what is behind.
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public useSpecularOverAlpha: boolean;
@@ -385,7 +385,7 @@ export class StandardMaterial extends PushMaterial {
     private _useReflectionOverAlpha = false;
     /**
      * Specifies that the material will keeps the reflection highlights over a transparent surface (only the most luminous ones).
-     * A car glass is a good exemple of that. When the street lights reflects on it you can not see what is behind.
+     * A car glass is a good example of that. When the street lights reflects on it you can not see what is behind.
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public useReflectionOverAlpha: boolean;
@@ -420,14 +420,14 @@ export class StandardMaterial extends PushMaterial {
     private _useParallaxOcclusion = false;
     /**
      * Is parallax occlusion enabled or not.
-     * If true, the outcome is way more realistic than traditional Parallax but you can expect a performance hit that worthes consideration.
+     * If true, the outcome is way more realistic than traditional Parallax but you can expect a performance hit that is worth considering.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/parallaxMapping
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public useParallaxOcclusion: boolean;
 
     /**
-     * Apply a scaling factor that determine which "depth" the height map should reprensent. A value between 0.05 and 0.1 is reasonnable in Parallax, you can reach 0.2 using Parallax Occlusion.
+     * Apply a scaling factor that determine which "depth" the height map should represent. A value between 0.05 and 0.1 is reasonable in Parallax, you can reach 0.2 using Parallax Occlusion.
      */
     @serialize()
     public parallaxScaleBias = 0.05;
@@ -718,7 +718,7 @@ export class StandardMaterial extends PushMaterial {
     }
 
     /**
-     * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
+     * The color grading curves provide additional color adjustment that is applied after any color grading transform (3D LUT).
      * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
      * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
      * corresponding to low luminance, medium luminance, and high luminance areas respectively.
@@ -922,7 +922,7 @@ export class StandardMaterial extends PushMaterial {
         const oit = this.needAlphaBlendingForMesh(mesh) && this.getScene().useOrderIndependentTransparency;
         MaterialHelper.PrepareDefinesForPrePass(scene, defines, this.canRenderToMRT && !oit);
 
-        // Order independant transparency
+        // Order independent transparency
         MaterialHelper.PrepareDefinesForOIT(scene, defines, oit);
 
         // Textures

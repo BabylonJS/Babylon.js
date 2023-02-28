@@ -88,7 +88,7 @@ export class InputManager {
     private _currentPickResult: Nullable<PickingInfo> = null;
     private _previousPickResult: Nullable<PickingInfo> = null;
     private _totalPointersPressed = 0;
-    private _doubleClickOccured = false;
+    private _doubleClickOccurred = false;
     private _isSwiping: boolean = false;
     private _swipeButtonPressed: number = -1;
     private _skipPointerTap: boolean = false;
@@ -585,8 +585,8 @@ export class InputManager {
 
         this._delayedSimpleClick = (btn: number, clickInfo: _ClickInfo, cb: (clickInfo: _ClickInfo, pickResult: Nullable<PickingInfo>) => void) => {
             // double click delay is over and that no double click has been raised since, or the 2 consecutive keys pressed are different
-            if ((Date.now() - this._previousStartingPointerTime > InputManager.DoubleClickDelay && !this._doubleClickOccured) || btn !== this._previousButtonPressed) {
-                this._doubleClickOccured = false;
+            if ((Date.now() - this._previousStartingPointerTime > InputManager.DoubleClickDelay && !this._doubleClickOccurred) || btn !== this._previousButtonPressed) {
+                this._doubleClickOccurred = false;
                 clickInfo.singleClick = true;
                 clickInfo.ignore = false;
                 cb(clickInfo, this._currentPickResult);
@@ -661,11 +661,11 @@ export class InputManager {
                     }
                     if (checkDoubleClick) {
                         // two successive keys pressed are equal, double click delay is not over and double click has not just occurred
-                        if (btn === this._previousButtonPressed && Date.now() - this._previousStartingPointerTime < InputManager.DoubleClickDelay && !this._doubleClickOccured) {
+                        if (btn === this._previousButtonPressed && Date.now() - this._previousStartingPointerTime < InputManager.DoubleClickDelay && !this._doubleClickOccurred) {
                             // pointer has not moved for 2 clicks, it's a double click
                             if (!clickInfo.hasSwiped && !this._isPointerSwiping()) {
                                 this._previousStartingPointerTime = 0;
-                                this._doubleClickOccured = true;
+                                this._doubleClickOccurred = true;
                                 clickInfo.doubleClick = true;
                                 clickInfo.ignore = false;
                                 if (InputManager.ExclusiveDoubleClickMode && this._previousDelayedSimpleClickTimeout) {
@@ -676,7 +676,7 @@ export class InputManager {
                             }
                             // if the two successive clicks are too far, it's just two simple clicks
                             else {
-                                this._doubleClickOccured = false;
+                                this._doubleClickOccurred = false;
                                 this._previousStartingPointerTime = this._startingPointerTime;
                                 this._previousStartingPointerPosition.x = this._startingPointerPosition.x;
                                 this._previousStartingPointerPosition.y = this._startingPointerPosition.y;
@@ -696,7 +696,7 @@ export class InputManager {
                         }
                         // just the first click of the double has been raised
                         else {
-                            this._doubleClickOccured = false;
+                            this._doubleClickOccurred = false;
                             this._previousStartingPointerTime = this._startingPointerTime;
                             this._previousStartingPointerPosition.x = this._startingPointerPosition.x;
                             this._previousStartingPointerPosition.y = this._startingPointerPosition.y;

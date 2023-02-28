@@ -12,7 +12,7 @@ import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
 import colorIcon from "shared-ui-components/imgs/colorIcon.svg";
 import fillColorIcon from "shared-ui-components/imgs/fillColorIcon.svg";
 import widthIcon from "shared-ui-components/imgs/widthIcon.svg"; // TODO: replace
-import cornerRadiusIcon from "shared-ui-components/imgs/conerRadiusIcon.svg";
+import cornerRadiusIcon from "shared-ui-components/imgs/cornerRadiusIcon.svg";
 import strokeWeightIcon from "shared-ui-components/imgs/strokeWeightIcon.svg";
 import scrollViewerPrecisionIcon from "shared-ui-components/imgs/scrollViewerPrecisionIcon.svg"; // TODO: replace
 import { IconComponent } from "shared-ui-components/lines/iconComponent";

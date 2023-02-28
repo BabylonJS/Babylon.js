@@ -37,7 +37,7 @@ export class Polar {
 
     /**
      * Converts the current polar to an array
-     * @reutrns the current polar as an array
+     * @returns the current polar as an array
      */
     public asArray() {
         return [this.radius, this.theta];
@@ -390,7 +390,7 @@ export class Spherical {
 
     /**
      * Converts the current spherical to an array
-     * @reutrns the current spherical as an array
+     * @returns the current spherical as an array
      */
     public asArray() {
         return [this.radius, this.theta, this.phi];

@@ -407,9 +407,9 @@ export class FlyCamera extends TargetCamera {
         const z = this.rotation.z; // Current Roll.
         const delta = limit - z; // Difference in Roll.
 
-        const minRad = 0.001; // Tenth of a radian is a barely noticable difference.
+        const minRad = 0.001; // Tenth of a radian is a barely noticeable difference.
 
-        // If the difference is noticable, restore the Roll.
+        // If the difference is noticeable, restore the Roll.
         if (Math.abs(delta) >= minRad) {
             // Change Z rotation towards the target Roll.
             this.rotation.z += delta / rate;

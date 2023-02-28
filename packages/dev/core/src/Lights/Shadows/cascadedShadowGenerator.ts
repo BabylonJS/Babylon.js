@@ -919,7 +919,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
      * Binds the shadow related information inside of an effect (information like near, far, darkness...
      * defined in the generator but impacting the effect).
      * @param lightIndex Index of the light in the enabled light list of the material owning the effect
-     * @param effect The effect we are binfing the information for
+     * @param effect The effect we are binding the information for
      */
     public bindShadowLight(lightIndex: string, effect: Effect): void {
         const light = this._light;

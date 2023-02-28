@@ -70,6 +70,6 @@ export {
 };
 // eslint-disable-next-line import/no-internal-modules
 export { GLTF2 } from "loaders/glTF/index";
-// export publicliy all configuration interfaces
+// export publicly all configuration interfaces
 // eslint-disable-next-line import/no-internal-modules
 export * from "./configuration/index";

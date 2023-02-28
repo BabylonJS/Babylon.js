@@ -180,7 +180,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         }}
                     />
                 )}
-                {system.isStopping() && <TextLineComponent label="System is stoppping..." ignoreValue={true} />}
+                {system.isStopping() && <TextLineComponent label="System is stopping..." ignoreValue={true} />}
             </>
         );
     }
@@ -768,7 +768,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                     />
                     {system instanceof ParticleSystem && (
                         <>
-                            <CheckBoxLineComponent label="Enable ramp grandients" target={system} propertyName="useRampGradients" />
+                            <CheckBoxLineComponent label="Enable ramp gradients" target={system} propertyName="useRampGradients" />
                             {system.useRampGradients && (
                                 <>
                                     <ValueGradientGridComponent

@@ -186,7 +186,7 @@ export class InstancedMesh extends AbstractMesh {
 
     /**
      * Returns an array of integers or a typed array (Int32Array, Uint32Array, Uint16Array) populated with the mesh indices.
-     * @param kind kind of verticies to retrieve (eg. positions, normals, uvs, etc.)
+     * @param kind kind of vertices to retrieve (eg. positions, normals, uvs, etc.)
      * @param copyWhenShared If true (default false) and and if the mesh geometry is shared among some other meshes, the returned array is a copy of the internal one.
      * @returns a float array or a Float32Array of the requested kind of data : positions, normals, uvs, etc.
      */

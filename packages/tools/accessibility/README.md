@@ -38,7 +38,7 @@ The accessibility package basically generates HTML elements for your scene, base
 ACCESSIBILITY.HTMLTwinRenderer.Render(scene);
 ```
 
-This will generate a `<div id="accessibility-host">` HTML element right after the Babylon.js scene's canvas element. Inside this div element, the renderer generates HTML twin elementss for each of your accessible contents in the scene. These HTML twin elements are internally connected with Babylon.js objects, so the screen reader user can also interact with the Babylon.js objects through their HTML twin.
+This will generate a `<div id="accessibility-host">` HTML element right after the Babylon.js scene's canvas element. Inside this div element, the renderer generates HTML twin elements for each of your accessible contents in the scene. These HTML twin elements are internally connected with Babylon.js objects, so the screen reader user can also interact with the Babylon.js objects through their HTML twin.
 
 ### Interaction
 

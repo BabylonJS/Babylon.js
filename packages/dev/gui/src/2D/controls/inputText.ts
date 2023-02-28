@@ -45,7 +45,7 @@ export class InputText extends Control implements IFocusableControl {
     protected _currentKey = "";
     protected _isTextHighlightOn = false;
     protected _textHighlightColor = "#d5e0ff";
-    protected _highligherOpacity = 0.4;
+    protected _highlighterOpacity = 0.4;
     protected _highlightedText = "";
     private _startHighlightIndex = 0;
     private _endHighlightIndex = 0;
@@ -107,15 +107,15 @@ export class InputText extends Control implements IFocusableControl {
 
     /** Gets or sets the text highlighter transparency; default: 0.4 */
     @serialize()
-    public get highligherOpacity(): number {
-        return this._highligherOpacity;
+    public get highlighterOpacity(): number {
+        return this._highlighterOpacity;
     }
 
-    public set highligherOpacity(value: number) {
-        if (this._highligherOpacity === value) {
+    public set highlighterOpacity(value: number) {
+        if (this._highlighterOpacity === value) {
             return;
         }
-        this._highligherOpacity = value;
+        this._highlighterOpacity = value;
         this._markAsDirty();
     }
     /** Gets or sets a boolean indicating whether to select complete text by default on input focus */
@@ -133,7 +133,7 @@ export class InputText extends Control implements IFocusableControl {
         this._markAsDirty();
     }
 
-    /** Gets or sets the text hightlight color */
+    /** Gets or sets the text highlight color */
     @serialize()
     public get textHighlightColor(): string {
         return this._textHighlightColor;
@@ -319,7 +319,7 @@ export class InputText extends Control implements IFocusableControl {
     }
 
     public set text(value: string) {
-        const valueAsString = value.toString(); // Forcing convertion
+        const valueAsString = value.toString(); // Forcing conversion
 
         if (!this._textWrapper) {
             this._textWrapper = new TextWrapper();
@@ -812,7 +812,7 @@ export class InputText extends Control implements IFocusableControl {
      */
     protected _onCopyText(ev: ClipboardEvent): void {
         this.isTextHighlightOn = false;
-        //when write permission to clipbaord data is denied
+        //when write permission to clipboard data is denied
         try {
             ev.clipboardData && ev.clipboardData.setData("text/plain", this._highlightedText);
         } catch {} //pass
@@ -829,7 +829,7 @@ export class InputText extends Control implements IFocusableControl {
         this._textHasChanged();
         this.isTextHighlightOn = false;
         this._cursorOffset = this._textWrapper.length - this._startHighlightIndex;
-        //when write permission to clipbaord data is denied
+        //when write permission to clipboard data is denied
         try {
             ev.clipboardData && ev.clipboardData.setData("text/plain", this._highlightedText);
         } catch {} //pass
@@ -998,8 +998,8 @@ export class InputText extends Control implements IFocusableControl {
                     }
                     highlightCursorLeft = clipTextLeft;
                 }
-                //for transparancy
-                context.globalAlpha = this._highligherOpacity;
+                //for transparency
+                context.globalAlpha = this._highlighterOpacity;
                 context.fillStyle = this._textHighlightColor;
                 context.fillRect(highlightCursorLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, width, this._fontOffset.height);
                 context.globalAlpha = 1.0;

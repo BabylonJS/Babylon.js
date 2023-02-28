@@ -285,7 +285,7 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
     private static _CameraDirection = new Vector3(0, 0, -1);
 
     /**
-     * The component name helpful to identify the component in the list of scene components.
+     * The component name, helpful for identifying the component in the list of scene components.
      */
     public readonly name = SceneComponentConstants.NAME_AUDIO;
 

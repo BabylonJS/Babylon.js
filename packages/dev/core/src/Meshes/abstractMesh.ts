@@ -612,7 +612,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         this._markSubMeshesAsMiscDirty();
     }
 
-    /** When enabled, decompose picking matrices for better precision with large values for mesh position and scling */
+    /** When enabled, decompose picking matrices for better precision with large values for mesh position and scaling */
     public get enableDistantPicking(): boolean {
         return this._internalAbstractMeshDataInfo._enableDistantPicking;
     }
@@ -907,7 +907,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         }
         if (fullDetails) {
             ret += ", billboard mode: " + ["NONE", "X", "Y", null, "Z", null, null, "ALL"][this.billboardMode];
-            ret += ", freeze wrld mat: " + (this._isWorldMatrixFrozen || this._waitingData.freezeWorldMatrix ? "YES" : "NO");
+            ret += ", freeze world mat: " + (this._isWorldMatrixFrozen || this._waitingData.freezeWorldMatrix ? "YES" : "NO");
         }
         return ret;
     }
@@ -2290,7 +2290,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
     /**
      * Returns the facetLocalNormals array.
-     * The normals are expressed in the mesh local spac
+     * The normals are expressed in the mesh local space
      * @returns an array of Vector3
      * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/facetData
      */

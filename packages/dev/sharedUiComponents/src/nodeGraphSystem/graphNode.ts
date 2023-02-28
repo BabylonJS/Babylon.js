@@ -66,7 +66,7 @@ export class GraphNode {
             this._visual.classList.add(commonStyles["hidden"]);
         } else {
             this._visual.classList.remove(commonStyles["hidden"]);
-            this._upateNodePortNames();
+            this._updateNodePortNames();
         }
 
         for (const link of this._links) {
@@ -76,7 +76,7 @@ export class GraphNode {
         this._refreshLinks();
     }
 
-    private _upateNodePortNames() {
+    private _updateNodePortNames() {
         for (const port of this._inputPorts.concat(this._outputPorts)) {
             if (port.hasLabel()) {
                 port.portName = port.portData.name;

@@ -37,7 +37,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
      */
     public maxDragAngle = 0;
     /**
-     * Butttons that can be used to initiate a drag
+     * Buttons that can be used to initiate a drag
      */
     public dragButtons = [0, 1, 2];
     /**
@@ -412,7 +412,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
             this.onDragStartObservable.notifyObservers({ dragPlanePoint: pickedPoint, pointerId: this.currentDraggingPointerId, pointerInfo: this._activePointerInfo });
             this._targetPosition.copyFrom(this.attachedNode.getAbsolutePosition());
 
-            // Detatch camera controls
+            // Detach camera controls
             if (this.detachCameraControls && this._scene.activeCamera && this._scene.activeCamera.inputs && !this._scene.activeCamera.leftCamera) {
                 if (this._scene.activeCamera.inputs.attachedToElement) {
                     this._scene.activeCamera.detachControl();
@@ -476,7 +476,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
 
         // Calculate angle between plane normal and ray
         let angle = Math.acos(Vector3.Dot(this._dragPlane.forward, ray.direction));
-        // Correct if ray is casted from oposite side
+        // Correct if ray is casted from opposite side
         if (angle > Math.PI / 2) {
             angle = Math.PI - angle;
         }

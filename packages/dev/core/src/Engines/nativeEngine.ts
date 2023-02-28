@@ -650,7 +650,7 @@ export class NativeEngine extends Engine {
      * @internal
      */
     public _isRenderingStateCompiled(pipelineContext: IPipelineContext): boolean {
-        // TODO: support async shader compilcation
+        // TODO: support async shader complication
         return true;
     }
 
@@ -658,7 +658,7 @@ export class NativeEngine extends Engine {
      * @internal
      */
     public _executeWhenRenderingStateIsCompiled(pipelineContext: IPipelineContext, action: () => void) {
-        // TODO: support async shader compilcation
+        // TODO: support async shader complication
         action();
     }
 
@@ -2199,9 +2199,9 @@ export class NativeEngine extends Engine {
         this._engine.updateDynamicIndexBuffer(buffer.nativeIndexBuffer!, data.buffer, data.byteOffset, data.byteLength, offset);
     }
 
-    public updateDynamicVertexBuffer(vertexBuffer: DataBuffer, verticies: DataArray, byteOffset?: number, byteLength?: number): void {
+    public updateDynamicVertexBuffer(vertexBuffer: DataBuffer, vertices: DataArray, byteOffset?: number, byteLength?: number): void {
         const buffer = vertexBuffer as NativeDataBuffer;
-        const data = ArrayBuffer.isView(verticies) ? verticies : new Float32Array(verticies);
+        const data = ArrayBuffer.isView(vertices) ? vertices : new Float32Array(vertices);
         this._engine.updateDynamicVertexBuffer(buffer.nativeVertexBuffer!, data.buffer, data.byteOffset + (byteOffset ?? 0), byteLength ?? data.byteLength);
     }
 

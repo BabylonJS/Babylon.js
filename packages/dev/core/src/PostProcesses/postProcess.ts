@@ -349,7 +349,7 @@ export class PostProcess {
     /**
      * A function that is added to the onAfterRenderObservable
      */
-    public set onAfterRender(callback: (efect: Effect) => void) {
+    public set onAfterRender(callback: (effect: Effect) => void) {
         if (this._onAfterRenderObserver) {
             this.onAfterRenderObservable.remove(this._onAfterRenderObserver);
         }
@@ -418,7 +418,7 @@ export class PostProcess {
      * @param textureType Type of textures used when performing the post process. (default: 0)
      * @param vertexUrl The url of the vertex shader to be used. (default: "postprocess")
      * @param indexParameters The index parameters to be used for babylons include syntax "#include<kernelBlurVaryingDeclaration>[0..varyingCount]". (default: undefined) See usage in babylon.blurPostProcess.ts and kernelBlur.vertex.fx
-     * @param blockCompilation If the shader should not be compiled immediatly. (default: false)
+     * @param blockCompilation If the shader should not be compiled immediately. (default: false)
      * @param textureFormat Format of textures used when performing the post process. (default: TEXTUREFORMAT_RGBA)
      */
     constructor(
@@ -675,7 +675,7 @@ export class PostProcess {
     }
 
     /**
-     * Activates the post process by intializing the textures to be used when executed. Notifies onActivateObservable.
+     * Activates the post process by initializing the textures to be used when executed. Notifies onActivateObservable.
      * When this post process is used in a pipeline, this is call will bind the input texture of this post process to the output of the previous.
      * @param camera The camera that will be used in the post process. This camera will be used when calling onActivateObservable.
      * @param sourceTexture The source texture to be inspected to get the width and height if not specified in the post process constructor. (default: null)
@@ -840,7 +840,7 @@ export class PostProcess {
             this.getEngine().setAlphaConstants(this.alphaConstants.r, this.alphaConstants.g, this.alphaConstants.b, this.alphaConstants.a);
         }
 
-        // Bind the output texture of the preivous post process as the input to this post process.
+        // Bind the output texture of the previous post process as the input to this post process.
         let source: RenderTargetWrapper;
         if (this._shareOutputWithPostProcess) {
             source = this._shareOutputWithPostProcess.inputTexture;

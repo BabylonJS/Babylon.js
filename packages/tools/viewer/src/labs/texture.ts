@@ -163,7 +163,7 @@ export class TextureCube {
 }
 
 /**
- * A static class providing methods to aid working with Bablyon textures.
+ * A static class providing methods to aid working with Babylon textures.
  */
 export class TextureUtils {
     /**

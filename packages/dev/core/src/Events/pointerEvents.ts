@@ -95,8 +95,8 @@ export class PointerInfoPre extends PointerInfoBase {
      * Instantiates a PointerInfoPre to store pointer related info to the onPrePointerObservable event.
      * @param type Defines the type of event (PointerEventTypes)
      * @param event Defines the related dom event
-     * @param localX Defines the local x coordinates of the pointer when the event occured
-     * @param localY Defines the local y coordinates of the pointer when the event occured
+     * @param localX Defines the local x coordinates of the pointer when the event occurred
+     * @param localY Defines the local y coordinates of the pointer when the event occurred
      */
     constructor(type: number, event: IMouseEvent, localX: number, localY: number) {
         super(type, event);

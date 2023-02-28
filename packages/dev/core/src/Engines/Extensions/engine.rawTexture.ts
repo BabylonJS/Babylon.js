@@ -300,8 +300,8 @@ ThinEngine.prototype.updateRawTexture = function (
     if (!texture) {
         return;
     }
-    // Babylon's internalSizedFomat but gl's texImage2D internalFormat
-    const internalSizedFomat = this._getRGBABufferInternalSizedFormat(type, format, useSRGBBuffer);
+    // Babylon's internalSizedFormat but gl's texImage2D internalFormat
+    const internalSizedFormat = this._getRGBABufferInternalSizedFormat(type, format, useSRGBBuffer);
 
     // Babylon's internalFormat but gl's texImage2D format
     const internalFormat = this._getInternalFormat(format);
@@ -324,7 +324,7 @@ ThinEngine.prototype.updateRawTexture = function (
     if (compression && data) {
         this._gl.compressedTexImage2D(this._gl.TEXTURE_2D, 0, (<any>this.getCaps().s3tc)[compression], texture.width, texture.height, 0, <DataView>data);
     } else {
-        this._gl.texImage2D(this._gl.TEXTURE_2D, 0, internalSizedFomat, texture.width, texture.height, 0, internalFormat, textureType, data);
+        this._gl.texImage2D(this._gl.TEXTURE_2D, 0, internalSizedFormat, texture.width, texture.height, 0, internalFormat, textureType, data);
     }
 
     if (texture.generateMipMaps) {
@@ -447,7 +447,7 @@ ThinEngine.prototype.createRawCubeTexture = function (
     if (data) {
         this.updateRawCubeTexture(texture, data, format, type, invertY, compression);
     } else {
-        const internalSizedFomat = this._getRGBABufferInternalSizedFormat(type);
+        const internalSizedFormat = this._getRGBABufferInternalSizedFormat(type);
         const level = 0;
 
         this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
@@ -464,7 +464,7 @@ ThinEngine.prototype.createRawCubeTexture = function (
                     undefined as any
                 );
             } else {
-                gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, level, internalSizedFomat, texture.width, texture.height, 0, internalFormat, textureType, null);
+                gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, level, internalSizedFormat, texture.width, texture.height, 0, internalFormat, textureType, null);
             }
         }
 
@@ -511,7 +511,7 @@ ThinEngine.prototype.updateRawCubeTexture = function (
     const gl = this._gl;
     const textureType = this._getWebGLTextureType(type);
     let internalFormat = this._getInternalFormat(format);
-    const internalSizedFomat = this._getRGBABufferInternalSizedFormat(type);
+    const internalSizedFormat = this._getRGBABufferInternalSizedFormat(type);
 
     let needConversion = false;
     if (internalFormat === gl.RGB) {
@@ -544,7 +544,7 @@ ThinEngine.prototype.updateRawCubeTexture = function (
             if (needConversion) {
                 faceData = _convertRGBtoRGBATextureData(faceData, texture.width, texture.height, type);
             }
-            gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, level, internalSizedFomat, texture.width, texture.height, 0, internalFormat, textureType, faceData);
+            gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, level, internalSizedFormat, texture.width, texture.height, 0, internalFormat, textureType, faceData);
         }
     }
 
@@ -596,7 +596,7 @@ ThinEngine.prototype.createRawCubeTextureFromUrl = function (
         if (mipmapGenerator) {
             const textureType = this._getWebGLTextureType(type);
             let internalFormat = this._getInternalFormat(format);
-            const internalSizedFomat = this._getRGBABufferInternalSizedFormat(type);
+            const internalSizedFormat = this._getRGBABufferInternalSizedFormat(type);
 
             let needConversion = false;
             if (internalFormat === gl.RGB) {
@@ -616,7 +616,7 @@ ThinEngine.prototype.createRawCubeTextureFromUrl = function (
                     if (needConversion) {
                         mipFaceData = _convertRGBtoRGBATextureData(mipFaceData, mipSize, mipSize, type);
                     }
-                    gl.texImage2D(faceIndex, level, internalSizedFomat, mipSize, mipSize, 0, internalFormat, textureType, mipFaceData);
+                    gl.texImage2D(faceIndex, level, internalSizedFormat, mipSize, mipSize, 0, internalFormat, textureType, mipFaceData);
                 }
             }
 
@@ -779,7 +779,7 @@ function _makeUpdateRawTextureFunction(is3D: boolean) {
         const target = is3D ? this._gl.TEXTURE_3D : this._gl.TEXTURE_2D_ARRAY;
         const internalType = this._getWebGLTextureType(textureType);
         const internalFormat = this._getInternalFormat(format);
-        const internalSizedFomat = this._getRGBABufferInternalSizedFormat(textureType, format);
+        const internalSizedFormat = this._getRGBABufferInternalSizedFormat(textureType, format);
 
         this._bindTextureDirectly(target, texture, true);
         this._unpackFlipY(invertY === undefined ? true : invertY ? true : false);
@@ -798,7 +798,7 @@ function _makeUpdateRawTextureFunction(is3D: boolean) {
         if (compression && data) {
             this._gl.compressedTexImage3D(target, 0, (<any>this.getCaps().s3tc)[compression], texture.width, texture.height, texture.depth, 0, data);
         } else {
-            this._gl.texImage3D(target, 0, internalSizedFomat, texture.width, texture.height, texture.depth, 0, internalFormat, internalType, data);
+            this._gl.texImage3D(target, 0, internalSizedFormat, texture.width, texture.height, texture.depth, 0, internalFormat, internalType, data);
         }
 
         if (texture.generateMipMaps) {

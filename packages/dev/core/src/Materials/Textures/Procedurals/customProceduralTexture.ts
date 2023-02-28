@@ -28,7 +28,7 @@ export class CustomProceduralTexture extends ProceduralTexture {
      * @param scene Define the scene the texture belongs to
      * @param fallbackTexture Define a fallback texture in case there were issues to create the custom texture
      * @param generateMipMaps Define if the texture should creates mip maps or not
-     * @param skipJson Define a boolena indicating that there is no json config file to load
+     * @param skipJson Define a boolean indicating that there is no json config file to load
      */
     constructor(name: string, texturePath: string, size: TextureSize, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean, skipJson?: boolean) {
         super(name, size, null, scene, fallbackTexture, generateMipMaps);

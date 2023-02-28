@@ -261,7 +261,7 @@ export class PoseEnabledController extends Gamepad implements PoseControlled {
                 // Find the radian distance away that the headset is from the controllers rotation
                 const distanceAway = Math.atan2(Math.sin(TmpVectors.Vector3[0].y - this._draggedRoomRotation), Math.cos(TmpVectors.Vector3[0].y - this._draggedRoomRotation));
                 if (Math.abs(distanceAway) > this._maxRotationDistFromHeadset) {
-                    // Only rotate enouph to be within the _maxRotationDistFromHeadset
+                    // Only rotate enough to be within the _maxRotationDistFromHeadset
                     const rotationAmount = distanceAway - (distanceAway < 0 ? -this._maxRotationDistFromHeadset : this._maxRotationDistFromHeadset);
                     this._draggedRoomRotation += rotationAmount;
 
@@ -289,8 +289,8 @@ export class PoseEnabledController extends Gamepad implements PoseControlled {
     }
 
     /**
-     * Updates the state of the pose enbaled controller based on the raw pose data from the device
-     * @param poseData raw pose fromthe device
+     * Updates the state of the pose enabled controller based on the raw pose data from the device
+     * @param poseData raw pose from the device
      */
     updateFromDevice(poseData: DevicePose) {
         if (this.isXR) {

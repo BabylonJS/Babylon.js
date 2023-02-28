@@ -257,7 +257,7 @@ export const LoadTextureFromTranscodeResult = (texture: InternalTexture, transco
         const rootImage = transcodeResult.fileInfo.images[i].levels[0];
         texture._invertVScale = texture.invertY;
         if (transcodeResult.format === -1 || transcodeResult.format === BASIS_FORMATS.cTFRGB565) {
-            // No compatable compressed format found, fallback to RGB
+            // No compatible compressed format found, fallback to RGB
             texture.type = Constants.TEXTURETYPE_UNSIGNED_SHORT_5_6_5;
             texture.format = Constants.TEXTUREFORMAT_RGB;
 
@@ -467,7 +467,7 @@ function workerFunc(): void {
      * Detects the supported transcode format for the file
      * @param config transcode config
      * @param fileInfo info about the file
-     * @returns the chosed format or null if none are supported
+     * @returns the chosen format or null if none are supported
      */
     function GetSupportedTranscodeFormat(config: BasisTranscodeConfiguration, fileInfo: BasisFileInfo): Nullable<number> {
         let format = null;

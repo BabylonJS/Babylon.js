@@ -10,7 +10,7 @@ interface MediaRecorder {
     /** Stops recording */
     stop(): void;
 
-    /** Event raised when an error arised. */
+    /** Event raised when an error arises. */
     onerror: (event: ErrorEvent) => void;
     /** Event raised when the recording stops. */
     onstop: (event: Event) => void;

@@ -18,10 +18,10 @@ To add a new post process, you have to create your own folder in *postProcesses/
 To build all post processes and generate the *dist* folder, just run from the tools/gulp folder:
 
 ```
-gulp postProcesLibrary
+gulp postProcessLibrary
 ```
 
-To integrate your new post process to the build process, you have to edit the config.json file in the tools/config folder and add an entry in the "postProcessLibray/libraries" section of the file:
+To integrate your new post process to the build process, you have to edit the config.json file in the tools/config folder and add an entry in the "postProcessLibrary/libraries" section of the file:
 
 ```
   "libraries": [   

@@ -1338,7 +1338,7 @@ export class ShaderMaterial extends PushMaterial {
             result.setTextureSampler(key, this._textureSamplers[key]);
         }
 
-        // Storag buffers
+        // Storage buffers
         for (const key in this._storageBuffers) {
             result.setStorageBuffer(key, this._storageBuffers[key]);
         }

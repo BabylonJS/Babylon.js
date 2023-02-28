@@ -242,7 +242,7 @@ export class _GLTFMaterialExporter {
         /**
          * Evaluates a specified specular power value to determine the appropriate roughness value,
          * based on a pre-defined cubic bezier curve with specular on the abscissa axis (x-axis)
-         * and roughness on the ordinant axis (y-axis)
+         * and roughness on the ordinate axis (y-axis)
          * @param specularPower specular power of standard material
          * @returns Number representing the roughness value
          */

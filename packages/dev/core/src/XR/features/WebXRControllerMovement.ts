@@ -40,7 +40,7 @@ export interface IWebXRControllerMovementOptions {
      */
     rotationEnabled?: boolean;
     /**
-     * Minimum threshold the controller's thumstick/touchpad must pass before being recognized for rotation (avoids jitter/unintentional rotation)
+     * Minimum threshold the controller's thumbstick/touchpad must pass before being recognized for rotation (avoids jitter/unintentional rotation)
      */
     rotationThreshold?: number;
     /**
@@ -142,7 +142,7 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
     } = {};
 
     private _currentRegistrationConfigurations: WebXRControllerMovementRegistrationConfiguration[] = [];
-    // Feature configuration is syncronized - this is passed to all handlers (reduce GC pressure).
+    // Feature configuration is synchronized - this is passed to all handlers (reduce GC pressure).
     private _featureContext: WebXRControllerMovementFeatureContext;
     // forward direction for movement, which may differ from viewer pose.
     private _movementDirection: Nullable<Quaternion> = null;

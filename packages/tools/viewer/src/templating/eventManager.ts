@@ -1,7 +1,7 @@
 import type { EventCallback, TemplateManager } from "./templateManager";
 
 /**
- * The EventManager is in charge of registering user interctions with the viewer.
+ * The EventManager is in charge of registering user interactions with the viewer.
  * It is used in the TemplateManager
  */
 export class EventManager {

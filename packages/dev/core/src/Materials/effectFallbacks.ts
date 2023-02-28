@@ -25,7 +25,7 @@ export class EffectFallbacks implements IEffectFallbacks {
 
     /**
      * Adds a fallback on the specified property.
-     * @param rank The rank of the fallback (Lower ranks will be fallbacked to first)
+     * @param rank The rank of the fallback (Lower ranks will fallback to first)
      * @param define The name of the define in the shader
      */
     public addFallback(rank: number, define: string): void {
@@ -46,7 +46,7 @@ export class EffectFallbacks implements IEffectFallbacks {
 
     /**
      * Sets the mesh to use CPU skinning when needing to fallback.
-     * @param rank The rank of the fallback (Lower ranks will be fallbacked to first)
+     * @param rank The rank of the fallback (Lower ranks will fallback to first)
      * @param mesh The mesh to use the fallbacks.
      */
     public addCPUSkinningFallback(rank: number, mesh: AbstractMesh) {

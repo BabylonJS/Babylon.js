@@ -124,7 +124,7 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
             blockCompilation
         );
 
-        // Create a pyramid of blurred images (eg. fullSize 1/4 blur, half size 1/2 blur, quarter size 3/4 blur, eith size 4/4 blur)
+        // Create a pyramid of blurred images (eg. fullSize 1/4 blur, half size 1/2 blur, quarter size 3/4 blur, eighth size 4/4 blur)
         // Blur the image but do not blur on sharp far to near distance changes to avoid bleeding artifacts
         // See section 2.6.2 http://fileadmin.cs.lth.se/cs/education/edan35/lectures/12dof.pdf
         this._depthOfFieldBlurY = [];

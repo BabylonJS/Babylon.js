@@ -86,11 +86,11 @@ export class Camera extends Node {
      */
     public static readonly RIG_MODE_STEREOSCOPIC_INTERLACED = Constants.RIG_MODE_STEREOSCOPIC_INTERLACED;
     /**
-     * Defines that both eyes of the camera should be renderered in a VR mode (carbox).
+     * Defines that both eyes of the camera should be rendered in a VR mode (carbox).
      */
     public static readonly RIG_MODE_VR = Constants.RIG_MODE_VR;
     /**
-     * Defines that both eyes of the camera should be renderered in a VR mode (webVR).
+     * Defines that both eyes of the camera should be rendered in a VR mode (webVR).
      */
     public static readonly RIG_MODE_WEBVR = Constants.RIG_MODE_WEBVR;
     /**
@@ -523,7 +523,7 @@ export class Camera extends Node {
 
     /**
      * Gets the list of active meshes this frame (meshes no culled or excluded by lod s in the frame)
-     * @returns the active meshe list
+     * @returns the active mesh list
      */
     public getActiveMeshes(): SmartArray<AbstractMesh> {
         return this._activeMeshes;
@@ -1023,7 +1023,7 @@ export class Camera extends Node {
     /**
      * Gets a ray in the forward direction from the camera.
      * @param length Defines the length of the ray to create
-     * @param transform Defines the transform to apply to the ray, by default the world matrix is used to create a workd space ray
+     * @param transform Defines the transform to apply to the ray, by default the world matrix is used to create a world space ray
      * @param origin Defines the start point of the ray which defaults to the camera position
      * @returns the forward ray
      */
@@ -1036,7 +1036,7 @@ export class Camera extends Node {
      * Gets a ray in the forward direction from the camera.
      * @param refRay the ray to (re)use when setting the values
      * @param length Defines the length of the ray to create
-     * @param transform Defines the transform to apply to the ray, by default the world matrx is used to create a workd space ray
+     * @param transform Defines the transform to apply to the ray, by default the world matrix is used to create a world space ray
      * @param origin Defines the start point of the ray which defaults to the camera position
      * @returns the forward ray
      */
@@ -1192,7 +1192,7 @@ export class Camera extends Node {
         }
         this.cameraRigMode = mode;
         this._cameraRigParams = {};
-        //we have to implement stereo camera calcultating left and right viewpoints from interaxialDistance and target,
+        //we have to implement stereo camera calculating left and right viewpoints from interaxialDistance and target,
         //not from a given angle as it is now, but until that complete code rewriting provisional stereoHalfAngle value is introduced
         this._cameraRigParams.interaxialDistance = rigParams.interaxialDistance || 0.0637;
         this._cameraRigParams.stereoHalfAngle = Tools.ToRadians(this._cameraRigParams.interaxialDistance / 0.0637);
@@ -1273,7 +1273,7 @@ export class Camera extends Node {
             this._cameraRigParams = {};
         }
         this._cameraRigParams[name] = value;
-        //provisionnally:
+        //provisionally:
         if (name === "interaxialDistance") {
             this._cameraRigParams.stereoHalfAngle = Tools.ToRadians(value / 0.0637);
         }
@@ -1310,7 +1310,7 @@ export class Camera extends Node {
     public _setupInputs() {}
 
     /**
-     * Serialiaze the camera setup to a json representation
+     * Serialize the camera setup to a json representation
      * @returns the JSON representation
      */
     public serialize(): any {
@@ -1393,7 +1393,7 @@ export class Camera extends Node {
      * @param name The name of the camera the result will be able to instantiate
      * @param scene The scene the result will construct the camera in
      * @param interaxial_distance In case of stereoscopic setup, the distance between both eyes
-     * @param isStereoscopicSideBySide In case of stereoscopic setup, should the sereo be side b side
+     * @param isStereoscopicSideBySide In case of stereoscopic setup, should the stereo be side b side
      * @returns a factory method to construct the camera
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention

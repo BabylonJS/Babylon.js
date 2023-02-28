@@ -56,7 +56,7 @@ export class RenderOnlyConfigurationLoader {
      * The viewer configuration can extend different types of configuration objects and have an extra configuration defined.
      *
      * @param initConfig the initial configuration that has the definitions of further configuration to load.
-     * @param callback an optional callback that will be called sync, if noconfiguration needs to be loaded or configuration is payload-only
+     * @param callback an optional callback that will be called sync, if no configuration needs to be loaded or configuration is payload-only
      * @returns A promise that delivers the extended viewer configuration, when done.
      */
     public loadConfiguration(initConfig: ViewerConfiguration = {}, callback?: (config: ViewerConfiguration) => void): Promise<ViewerConfiguration> {

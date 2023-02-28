@@ -6,14 +6,14 @@ import { TreeItemLabelComponent } from "../treeItemLabelComponent";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
 
-interface IRenderPipelineItemComponenttProps {
+interface IRenderPipelineItemComponentProps {
     renderPipeline: PostProcessRenderPipeline;
     extensibilityGroups?: IExplorerExtensibilityGroup[];
     onClick: () => void;
 }
 
-export class RenderingPipelineItemComponent extends React.Component<IRenderPipelineItemComponenttProps> {
-    constructor(props: IRenderPipelineItemComponenttProps) {
+export class RenderingPipelineItemComponent extends React.Component<IRenderPipelineItemComponentProps> {
+    constructor(props: IRenderPipelineItemComponentProps) {
         super(props);
     }
 

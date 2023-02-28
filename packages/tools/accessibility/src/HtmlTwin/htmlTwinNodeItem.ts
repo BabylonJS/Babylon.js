@@ -75,7 +75,7 @@ export class HTMLTwinNodeItem extends HTMLTwinItem {
     }
 
     /**
-     * Callback when the HTML element is blured. Dismiss visual indication on BabylonJS entity.
+     * Callback when the HTML element is blurred. Dismiss visual indication on BabylonJS entity.
      */
     public override blur(): void {
         // If defined eventHandler, override default.

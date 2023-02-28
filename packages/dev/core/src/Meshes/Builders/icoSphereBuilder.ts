@@ -90,7 +90,7 @@ export function CreateIcoSphereVertexData(options: {
         -1, // v8-11
     ];
 
-    // index of 3 vertex makes a face of icopshere
+    // index of 3 vertex makes a face of icosphere
     const ico_indices = [
         0, 11, 5, 0, 5, 1, 0, 1, 7, 0, 7, 10, 12, 22, 23, 1, 5, 20, 5, 11, 4, 23, 22, 13, 22, 18, 6, 7, 1, 8, 14, 21, 4, 14, 4, 2, 16, 13, 6, 15, 6, 19, 3, 8, 9, 4, 21, 5, 13, 17,
         23, 6, 13, 22, 19, 6, 18, 9, 8, 1,

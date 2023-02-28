@@ -249,49 +249,49 @@ export class EnvironmentDeserializer {
     /**
      * Convert spherical harmonics to spherical polynomial coefficients
      * @param harmonics Spherical harmonic coefficients (9)
-     * @param outPolynomialCoefficents Polynomial coefficients (9) object to store result
+     * @param outPolynomialCoefficients Polynomial coefficients (9) object to store result
      */
-    private static _ConvertSHToSP(harmonics: any, outPolynomialCoefficents: SphericalPolynomalCoefficients) {
+    private static _ConvertSHToSP(harmonics: any, outPolynomialCoefficients: SphericalPolynomalCoefficients) {
         const rPi = 1 / Math.PI;
 
         //x
-        outPolynomialCoefficents.x.x = 1.02333 * harmonics.l11[0] * rPi;
-        outPolynomialCoefficents.x.y = 1.02333 * harmonics.l11[1] * rPi;
-        outPolynomialCoefficents.x.z = 1.02333 * harmonics.l11[2] * rPi;
+        outPolynomialCoefficients.x.x = 1.02333 * harmonics.l11[0] * rPi;
+        outPolynomialCoefficients.x.y = 1.02333 * harmonics.l11[1] * rPi;
+        outPolynomialCoefficients.x.z = 1.02333 * harmonics.l11[2] * rPi;
 
-        outPolynomialCoefficents.y.x = 1.02333 * harmonics.l1_1[0] * rPi;
-        outPolynomialCoefficents.y.y = 1.02333 * harmonics.l1_1[1] * rPi;
-        outPolynomialCoefficents.y.z = 1.02333 * harmonics.l1_1[2] * rPi;
+        outPolynomialCoefficients.y.x = 1.02333 * harmonics.l1_1[0] * rPi;
+        outPolynomialCoefficients.y.y = 1.02333 * harmonics.l1_1[1] * rPi;
+        outPolynomialCoefficients.y.z = 1.02333 * harmonics.l1_1[2] * rPi;
 
-        outPolynomialCoefficents.z.x = 1.02333 * harmonics.l10[0] * rPi;
-        outPolynomialCoefficents.z.y = 1.02333 * harmonics.l10[1] * rPi;
-        outPolynomialCoefficents.z.z = 1.02333 * harmonics.l10[2] * rPi;
+        outPolynomialCoefficients.z.x = 1.02333 * harmonics.l10[0] * rPi;
+        outPolynomialCoefficients.z.y = 1.02333 * harmonics.l10[1] * rPi;
+        outPolynomialCoefficients.z.z = 1.02333 * harmonics.l10[2] * rPi;
 
         //xx
-        outPolynomialCoefficents.xx.x = (0.886277 * harmonics.l00[0] - 0.247708 * harmonics.l20[0] + 0.429043 * harmonics.l22[0]) * rPi;
-        outPolynomialCoefficents.xx.y = (0.886277 * harmonics.l00[1] - 0.247708 * harmonics.l20[1] + 0.429043 * harmonics.l22[1]) * rPi;
-        outPolynomialCoefficents.xx.z = (0.886277 * harmonics.l00[2] - 0.247708 * harmonics.l20[2] + 0.429043 * harmonics.l22[2]) * rPi;
+        outPolynomialCoefficients.xx.x = (0.886277 * harmonics.l00[0] - 0.247708 * harmonics.l20[0] + 0.429043 * harmonics.l22[0]) * rPi;
+        outPolynomialCoefficients.xx.y = (0.886277 * harmonics.l00[1] - 0.247708 * harmonics.l20[1] + 0.429043 * harmonics.l22[1]) * rPi;
+        outPolynomialCoefficients.xx.z = (0.886277 * harmonics.l00[2] - 0.247708 * harmonics.l20[2] + 0.429043 * harmonics.l22[2]) * rPi;
 
-        outPolynomialCoefficents.yy.x = (0.886277 * harmonics.l00[0] - 0.247708 * harmonics.l20[0] - 0.429043 * harmonics.l22[0]) * rPi;
-        outPolynomialCoefficents.yy.y = (0.886277 * harmonics.l00[1] - 0.247708 * harmonics.l20[1] - 0.429043 * harmonics.l22[1]) * rPi;
-        outPolynomialCoefficents.yy.z = (0.886277 * harmonics.l00[2] - 0.247708 * harmonics.l20[2] - 0.429043 * harmonics.l22[2]) * rPi;
+        outPolynomialCoefficients.yy.x = (0.886277 * harmonics.l00[0] - 0.247708 * harmonics.l20[0] - 0.429043 * harmonics.l22[0]) * rPi;
+        outPolynomialCoefficients.yy.y = (0.886277 * harmonics.l00[1] - 0.247708 * harmonics.l20[1] - 0.429043 * harmonics.l22[1]) * rPi;
+        outPolynomialCoefficients.yy.z = (0.886277 * harmonics.l00[2] - 0.247708 * harmonics.l20[2] - 0.429043 * harmonics.l22[2]) * rPi;
 
-        outPolynomialCoefficents.zz.x = (0.886277 * harmonics.l00[0] + 0.495417 * harmonics.l20[0]) * rPi;
-        outPolynomialCoefficents.zz.y = (0.886277 * harmonics.l00[1] + 0.495417 * harmonics.l20[1]) * rPi;
-        outPolynomialCoefficents.zz.z = (0.886277 * harmonics.l00[2] + 0.495417 * harmonics.l20[2]) * rPi;
+        outPolynomialCoefficients.zz.x = (0.886277 * harmonics.l00[0] + 0.495417 * harmonics.l20[0]) * rPi;
+        outPolynomialCoefficients.zz.y = (0.886277 * harmonics.l00[1] + 0.495417 * harmonics.l20[1]) * rPi;
+        outPolynomialCoefficients.zz.z = (0.886277 * harmonics.l00[2] + 0.495417 * harmonics.l20[2]) * rPi;
 
         //yz
-        outPolynomialCoefficents.yz.x = 0.858086 * harmonics.l2_1[0] * rPi;
-        outPolynomialCoefficents.yz.y = 0.858086 * harmonics.l2_1[1] * rPi;
-        outPolynomialCoefficents.yz.z = 0.858086 * harmonics.l2_1[2] * rPi;
+        outPolynomialCoefficients.yz.x = 0.858086 * harmonics.l2_1[0] * rPi;
+        outPolynomialCoefficients.yz.y = 0.858086 * harmonics.l2_1[1] * rPi;
+        outPolynomialCoefficients.yz.z = 0.858086 * harmonics.l2_1[2] * rPi;
 
-        outPolynomialCoefficents.zx.x = 0.858086 * harmonics.l21[0] * rPi;
-        outPolynomialCoefficents.zx.y = 0.858086 * harmonics.l21[1] * rPi;
-        outPolynomialCoefficents.zx.z = 0.858086 * harmonics.l21[2] * rPi;
+        outPolynomialCoefficients.zx.x = 0.858086 * harmonics.l21[0] * rPi;
+        outPolynomialCoefficients.zx.y = 0.858086 * harmonics.l21[1] * rPi;
+        outPolynomialCoefficients.zx.z = 0.858086 * harmonics.l21[2] * rPi;
 
-        outPolynomialCoefficents.xy.x = 0.858086 * harmonics.l2_2[0] * rPi;
-        outPolynomialCoefficents.xy.y = 0.858086 * harmonics.l2_2[1] * rPi;
-        outPolynomialCoefficents.xy.z = 0.858086 * harmonics.l2_2[2] * rPi;
+        outPolynomialCoefficients.xy.x = 0.858086 * harmonics.l2_2[0] * rPi;
+        outPolynomialCoefficients.xy.y = 0.858086 * harmonics.l2_2[1] * rPi;
+        outPolynomialCoefficients.xy.z = 0.858086 * harmonics.l2_2[2] * rPi;
     }
 
     /**

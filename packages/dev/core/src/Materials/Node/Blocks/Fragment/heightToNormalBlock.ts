@@ -32,7 +32,7 @@ export class HeightToNormalBlock extends NodeMaterialBlock {
 
     /**
      * Defines if the output should be generated in world or tangent space.
-     * Note that in tangent space the result is also scaled by 0.5 and offsetted by 0.5 so that it can directly be used as a PerturbNormal.normalMapColor input
+     * Note that in tangent space the result is also scaled by 0.5 and offset by 0.5 so that it can directly be used as a PerturbNormal.normalMapColor input
      */
     @editableInPropertyPage("Generate in world space instead of tangent space", PropertyTypeForEdition.Boolean, "PROPERTIES", { notifiers: { update: true } })
     public generateInWorldSpace: boolean = false;

@@ -456,7 +456,7 @@ export interface INavMeshParameters {
     detailSampleMaxError: number;
 
     /**
-     * If using obstacles, the navmesh must be subdivided internaly by tiles.
+     * If using obstacles, the navmesh must be subdivided internally by tiles.
      * This member defines the tile cube side length in world units.
      * If no obstacles are needed, leave it undefined or 0.
      */

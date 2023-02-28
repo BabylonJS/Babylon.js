@@ -67,7 +67,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      */
     public static readonly BILLBOARDMODE_ALL = Constants.PARTICLES_BILLBOARDMODE_ALL;
     /**
-     * Special billboard mode where the particle will be biilboard to the camera but rotated to align with direction
+     * Special billboard mode where the particle will be billboard to the camera but rotated to align with direction
      */
     public static readonly BILLBOARDMODE_STRETCHED = Constants.PARTICLES_BILLBOARDMODE_STRETCHED;
     /**
@@ -2921,7 +2921,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      * @param sceneOrEngine The scene or the engine to create the particle system in
      * @param rootUrl The root url to use to load external dependencies like texture
      * @param doNotStart Ignore the preventAutoStart attribute and does not start
-     * @param capacity defines the system capacity (if null or undefined the sotred capacity will be used)
+     * @param capacity defines the system capacity (if null or undefined the stored capacity will be used)
      * @returns the Parsed particle system
      */
     public static Parse(parsedParticleSystem: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string, doNotStart = false, capacity?: number): ParticleSystem {

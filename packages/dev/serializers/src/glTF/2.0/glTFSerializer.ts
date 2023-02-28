@@ -83,7 +83,7 @@ export class GLTF2Export {
     }
 
     /**
-     * Exports the geometry of the scene to .glb file format asychronously
+     * Exports the geometry of the scene to .glb file format asynchronously
      * @param scene Babylon scene with scene hierarchy information
      * @param filePrefix File prefix to use when generating glb file
      * @param options Exporter options

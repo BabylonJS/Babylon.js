@@ -24,7 +24,7 @@ export class KHR_materials_emissive_strength implements IGLTFExporterExtensionV2
 
     public dispose() {}
 
-    /** @interal */
+    /** @internal */
     public get wasUsed() {
         return this._wasUsed;
     }

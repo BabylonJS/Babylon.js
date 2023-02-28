@@ -5,7 +5,7 @@ import { WebGPUEngine } from "../../webgpuEngine";
 WebGPUEngine.prototype.setAlphaMode = function (mode: number, noDepthWriteChange: boolean = false): void {
     if (this._alphaMode === mode && ((mode === Constants.ALPHA_DISABLE && !this._alphaState.alphaBlend) || (mode !== Constants.ALPHA_DISABLE && this._alphaState.alphaBlend))) {
         if (!noDepthWriteChange) {
-            // Make sure we still have the correct depth mask according to the alpha mode (a transparent material could have forced writting to the depth buffer, for instance)
+            // Make sure we still have the correct depth mask according to the alpha mode (a transparent material could have forced writing to the depth buffer, for instance)
             const depthMask = mode === Constants.ALPHA_DISABLE;
             if (this.depthCullingState.depthMask !== depthMask) {
                 this.setDepthWrite(depthMask);
@@ -94,7 +94,7 @@ WebGPUEngine.prototype.setAlphaMode = function (mode: number, noDepthWriteChange
             this._alphaState.alphaBlend = true;
             break;
         case Constants.ALPHA_LAYER_ACCUMULATE:
-            // Same as ALPHA_COMBINE but accumulates (1 - alpha) values in the alpha channel for a later readout in order independant transparency
+            // Same as ALPHA_COMBINE but accumulates (1 - alpha) values in the alpha channel for a later readout in order independent transparency
             this._alphaState.setAlphaBlendFunctionParameters(
                 Constants.GL_ALPHA_FUNCTION_SRC_ALPHA,
                 Constants.GL_ALPHA_FUNCTION_ONE_MINUS_SRC_ALPHA,

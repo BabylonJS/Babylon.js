@@ -193,7 +193,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
         });
         namedGroups.sort();
 
-        const gradiantNodeMaterialBlocks = this.props.material.attachedBlocks
+        const gradientNodeMaterialBlocks = this.props.material.attachedBlocks
             .filter((block) => {
                 return block.visibleInInspector && block.getClassName() === "GradientBlock";
             })
@@ -227,7 +227,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
                         </LineContainerComponent>
                     );
                 })}
-                {gradiantNodeMaterialBlocks.map((block, i) => {
+                {gradientNodeMaterialBlocks.map((block, i) => {
                     return (
                         <LineContainerComponent key={block.name + i} title={block.name.toUpperCase()} selection={this.props.globalState}>
                             {<GradientPropertyTabComponent globalState={this.props.globalState} block={block} />}
