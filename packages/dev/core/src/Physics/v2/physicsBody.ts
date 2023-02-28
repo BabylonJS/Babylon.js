@@ -340,6 +340,7 @@ export class PhysicsBody {
      * `registerOnCollide` method will enable collision callback and `unregisterOnCollide` will disable them.
      * Registering a collision callback on the plugin and enabling collision per body is faster than
      * registering callback per PhysicsBody.
+     * @param enabled true if PhysicsBody's collision will rise a collision event and call the callback
      */
     public setCollisionCallbackEnabled(enabled: boolean): void {
         return this._physicsPlugin.setCollisionCallbackEnabled(this, enabled);
