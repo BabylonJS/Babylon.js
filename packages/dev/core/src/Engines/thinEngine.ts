@@ -579,7 +579,7 @@ export class ThinEngine {
      */
     public adaptToDeviceRatio: boolean = false;
     /** @internal */
-    private _lastDevicePixelRatio: number = 1.0;
+    protected _lastDevicePixelRatio: number = 1.0;
 
     /** @internal */
     public _transformTextureUrl: Nullable<(url: string) => string> = null;
@@ -4522,7 +4522,7 @@ export class ThinEngine {
      */
     public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture, generateMipMaps: boolean = false): void {
         const target = this._getTextureTarget(texture);
-        const filters = this._getSamplingParameters(samplingMode, texture.generateMipMaps || generateMipMaps);
+        const filters = this._getSamplingParameters(samplingMode, texture.useMipMaps || generateMipMaps);
 
         this._setTextureParameterInteger(target, this._gl.TEXTURE_MAG_FILTER, filters.mag, texture);
         this._setTextureParameterInteger(target, this._gl.TEXTURE_MIN_FILTER, filters.min);

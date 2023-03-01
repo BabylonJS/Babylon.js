@@ -201,11 +201,8 @@ export class NativeEngine extends Engine {
     private _zOffsetUnits: number = 0;
     private _depthWrite: boolean = true;
 
-    public getHardwareScalingLevel(): number {
-        return this._engine.getHardwareScalingLevel();
-    }
-
     public setHardwareScalingLevel(level: number): void {
+        super.setHardwareScalingLevel(level);
         this._engine.setHardwareScalingLevel(level);
     }
 
@@ -357,10 +354,13 @@ export class NativeEngine extends Engine {
                 writable: true,
             });
         }
+
         // Currently we do not fully configure the ThinEngine on construction of NativeEngine.
         // Setup resolution scaling based on display settings.
         const devicePixelRatio = window ? window.devicePixelRatio || 1.0 : 1.0;
-        this._hardwareScalingLevel = options.adaptToDeviceRatio ? devicePixelRatio : 1.0;
+        this._hardwareScalingLevel = options.adaptToDeviceRatio ? 1.0 / devicePixelRatio : 1.0;
+        this._engine.setHardwareScalingLevel(this._hardwareScalingLevel);
+        this._lastDevicePixelRatio = devicePixelRatio;
         this.resize();
 
         const currentDepthFunction = this.getDepthFunction();
