@@ -1688,11 +1688,13 @@ export class Engine extends ThinEngine {
      * @param texture defines the external texture
      * @returns the babylon internal texture
      */
-    public wrapWebGLTexture(texture: WebGLTexture): InternalTexture {
+    public wrapWebGLTexture(texture: WebGLTexture, hasMipMaps: boolean = false, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE): InternalTexture {
         const hardwareTexture = new WebGLHardwareTexture(texture, this._gl);
         const internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
         internalTexture._hardwareTexture = hardwareTexture;
         internalTexture.isReady = true;
+        internalTexture.useMipMaps = hasMipMaps;
+        this.updateTextureSamplingMode(samplingMode, internalTexture);
         return internalTexture;
     }
 
