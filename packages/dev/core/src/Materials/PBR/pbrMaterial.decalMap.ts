@@ -1,7 +1,7 @@
 import { DecalMapConfiguration } from "../material.decalMapConfiguration";
 import { PBRBaseMaterial } from "./pbrBaseMaterial";
 
-declare module "./PBRBaseMaterial" {
+declare module "./pbrBaseMaterial" {
     export interface PBRBaseMaterial {
         /** @internal */
         _decalMap: DecalMapConfiguration;
