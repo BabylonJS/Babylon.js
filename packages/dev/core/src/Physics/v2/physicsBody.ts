@@ -85,6 +85,16 @@ export class PhysicsBody {
     }
 
     /**
+     * If a physics body is connected to an instanced node, update the number physic instances to match the number of node instances.
+     */
+    public updateBodyInstances() {
+        const m = this.transformNode as Mesh;
+        if (m.hasThinInstances) {
+            this._physicsPlugin.updateBodyInstances(this, m);
+        }
+    }
+
+    /**
      * Sets the shape of the physics body.
      * @param shape - The shape of the physics body.
      *

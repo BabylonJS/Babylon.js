@@ -123,6 +123,7 @@ export interface IPhysicsEnginePluginV2 {
     // body
     initBody(body: PhysicsBody, position: Vector3, orientation: Quaternion): void;
     initBodyInstances(body: PhysicsBody, mesh: Mesh): void;
+    updateBodyInstances(body: PhysicsBody, mesh: Mesh): void;
     removeBody(body: PhysicsBody): void;
     sync(body: PhysicsBody): void;
     syncTransform(body: PhysicsBody, transformNode: TransformNode): void;
