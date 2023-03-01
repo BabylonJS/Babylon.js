@@ -716,6 +716,7 @@ export class FluidRenderingTargetRenderer {
             true,
             undefined
         );
+        this._renderPostProcess.forceStencil = true;
         this._renderPostProcess.updateEffect(defines.join("\n"));
 
         this._renderPostProcess.samples = this._samples;

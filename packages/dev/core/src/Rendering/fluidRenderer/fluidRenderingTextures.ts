@@ -166,7 +166,7 @@ export class FluidRenderingTextures {
                 format: this._textureFormat,
                 samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
                 generateDepthBuffer: this._generateDepthBuffer,
-                generateStencilBuffer: false,
+                generateStencilBuffer: true,
                 samples: this._samples,
             }
         );
