@@ -10,6 +10,7 @@ import { NullEngine } from "core/Engines";
 import type { Engine } from "core/Engines/engine";
 import type { IPointerEvent, IUIEvent } from "core/Events";
 import { PointerEventTypes } from "core/Events";
+import { InputManager } from "core/Inputs/scene.inputManager";
 import { Vector3 } from "core/Maths/math.vector";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
@@ -524,6 +525,39 @@ describe("InputManager", () => {
             }
         }
         expect(tapCt).toBe(1);
+    });
+
+    it("Doesn't fire onPointerOberservable for POINTERTAP when ExclusiveDoubleClickMode is enabled", () => {
+        let tapCt = 0;
+        let dblTapCt = 0;
+
+        scene!.onPointerObservable.add(() => {
+            tapCt++;
+        }, PointerEventTypes.POINTERTAP);
+
+        scene!.onPointerObservable.add(() => {
+            dblTapCt++;
+        }, PointerEventTypes.POINTERDOUBLETAP);
+
+        if (deviceInputSystem) {
+            // Expect a single tap and double tap
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
+
+            // Expect only a double tap
+            InputManager.ExclusiveDoubleClickMode = true;
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
+        }
+        // Since this is static, we should reset it to false for other tests
+        InputManager.ExclusiveDoubleClickMode = false;
+
+        expect(tapCt).toBe(1);
+        expect(dblTapCt).toBe(2);
     });
 
     it("can fire onViewMatrixObservable on camera.update", () => {
