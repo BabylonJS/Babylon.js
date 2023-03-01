@@ -1,6 +1,259 @@
 {
-    "fromTag": "5.47.1",
+    "fromTag": "5.48.0",
     "changelog": {
+        "5.48.1": [
+            {
+                "pr": "13574",
+                "title": "Update wrapNativeTexture and wrapWebGLTexture with explicit hasMipMaps and samplingMode",
+                "description": "This is necessary so that the sampling mode will default to something as opposed to some arbitrary default behavior of the underlying rendering API.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13570",
+                "title": "Add URL filter to the securitypolicyviolation event handler",
+                "description": "Discussion originally in https://forum.babylonjs.com/t/38591.\r\nShould fix issue shown in this playground script: https://playground.babylonjs.com/#YMWYF6",
+                "author": {
+                    "name": "kv-bh",
+                    "url": "https://github.com/kv-bh"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/fileTools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13575",
+                "title": "Fix adaptToDeviceRatio for native engine",
+                "description": "Setting `adaptToDeviceRatio` is broken in Babylon Native. This change fixes the problem.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "native"
+                ]
+            },
+            {
+                "pr": "13565",
+                "title": "Notify added observer if observable was triggered.",
+                "description": "This is done to avoid the pattern of adding an observer after checking if the state requires that.\nAs an example let's take the scene's onReadyObservable which has a simple state - it will only notify once when the scene is ready. If a new observer will be added after the observable was triggered (and has notified existing observers) it will not be possible to trigger new observers that were added to is.\nIf `notifyIfTriggered` is set to true and the observable has already triggered it will automatically trigger newly added observers whenever they are added.\n\nIt's also recommended to add that to onDispose observables, which are the same.\nA different solution would be to define an onObserverAdded function, but that would require setting this function to every observable that requires it. Instead - this is a more generic solution.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Engines/engineStore.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Loading/Plugins/babylonFileLoader.ts",
+                    "packages/dev/core/src/Materials/Background/backgroundMaterial.ts",
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/Materials/materialPluginBase.ts",
+                    "packages/dev/core/src/Materials/pushMaterial.ts",
+                    "packages/dev/core/src/Misc/observable.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13576",
+                "title": "Add function \"updateBodyInstances\" to synchronize mesh instances with…",
+                "description": "… physics body instances.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts"
+                ],
+                "tags": [
+                    "physics",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13572",
+                "title": "Adding 1 method for fast collisioncallback",
+                "description": null,
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13569",
+                "title": "ThinTexture: Allow to pass a RenderTargetWrapper to the constructor",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/thinTexture.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13568",
+                "title": "Always pass default KTX2 decoder options",
+                "description": "There is more discussion about this in the topic on the forum: https://forum.babylonjs.com/t/banding-when-viewing-uastc-ktx2-in-babylon-js-sandbox/38540\r\n\r\nThe long story short is that on second invocation of the worker, the default options are no longer being set, as the `isDirty` on the main thread that is being relied on for setting those options, is no longer `true`, due to the first time those options are sent over in: https://github.com/BabylonJS/Babylon.js/blob/master/packages/dev/core/src/Misc/khronosTextureContainer2.ts#L408\r\n\r\nThe worker, however, no longer contains these options on second invocation, since, if I'm reading this correctly, it gets created anew for each job: https://github.com/BabylonJS/Babylon.js/blob/master/packages/dev/core/src/Misc/khronosTextureContainer2.ts#L309\r\n\r\nThis results in a wrongly transcoded texture the second time, for example this is how it should look:\r\n![image](https://user-images.githubusercontent.com/238667/221824322-a493eb4b-b2f0-48c1-8195-0fd48721fdd2.png)\r\nBut this is how it looks (notice the extreme banding, flipped Y too?):\r\n![image](https://user-images.githubusercontent.com/238667/221824399-6afb9862-21c8-499a-b953-4df4bd029fec.png)\r\n\r\nIf there are no workers, i.e. `numWorkers = 0`, the same issue appears, since in the second `if` branch, we never set the default options of the decoder: https://github.com/BabylonJS/Babylon.js/blob/master/packages/dev/core/src/Misc/khronosTextureContainer2.ts#L421\r\n\r\nThis PR fixes both of those situations.\r\n\r\nThe issue was reproduced only on macOS running either Chrome, Firefox or Edge, but not on Safari or other platforms, namely Windows. The reason for this is that by default, the capabilities of e.g. Safari include ASTC, so the ASTC transcoder is selected even without the default options, e.g.:\r\n```js\r\n> console.log(gl.getExtension('WEBGL_compressed_texture_astc'))\r\n[Log] WebGLCompressedTextureASTC {getSupportedProfiles: function, COMPRESSED_RGBA_ASTC_4x4_KHR: 37808, COMPRESSED_RGBA_ASTC_5x4_KHR: 37809, COMPRESSED_RGBA_ASTC_5x5_KHR: 37810, COMPRESSED_RGBA_ASTC_6x5_KHR: 37811, …}\r\n```\r\nBut in Chrome, for example, this extension does not exist (that's weird, no?), so the caps of the engine do not have `astc` set:\r\n```js\r\nconsole.log(gl.getExtension('WEBGL_compressed_texture_astc'));\r\nnull\r\n```\r\n\r\nThis resolves my issue, but I'm not familiar with the inner workings of this subsystem and the potential other implications of these changes, so I would like to ask for comments & feedback. Thank you!",
+                "author": {
+                    "name": "jure",
+                    "url": "https://github.com/jure"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/khronosTextureContainer2.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "13566",
+                "title": "Prevent NME Crash with old light block",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/src/graphSystem/properties/lightInformationPropertyTabComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "13561",
+                "title": "Fix Skeleton Bounding Box Timing issue",
+                "description": "https://forum.babylonjs.com/t/bounding-box-does-not-compute-correctly/38448/4",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Bones/skeleton.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "animations"
+                ]
+            },
+            {
+                "pr": "13559",
+                "title": "Physics iteration 10",
+                "description": "* Visualize instanced bodies\r\n* Update PhysicsShape creation to allow for using an already existing reference",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Debug/physicsViewer.ts",
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsAggregate.ts",
+                    "packages/dev/core/src/Physics/v2/physicsShape.ts"
+                ],
+                "tags": [
+                    "physics",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13560",
+                "title": "Fix Inspector Additional Nodes",
+                "description": "https://forum.babylonjs.com/t/additional-nodes-in-inspector-only-works-in-embedded-mode/38464\r\n\r\nFix #13558 ",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/inspector/src/inspector.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "13557",
+                "title": "auto-parallel tasks",
+                "description": "Should accelerate build. In my tests, build (of the entire umd/es6 process) is 15% faster when fully parallel.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13556",
+                "title": "Add CPU side exact srgb conversions",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Helpers/environmentHelper.ts",
+                    "packages/dev/core/src/Materials/Background/backgroundMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Input/inputBlock.ts",
+                    "packages/dev/core/src/Materials/materialHelper.ts",
+                    "packages/dev/core/src/Maths/math.color.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/postProcesses/defaultRenderingPipelinePropertyGridComponent.tsx",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_transmission.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/MSFT_sRGBFactors.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFMaterialExporter.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13555",
+                "title": "fix tag assignment when copying",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/decorators.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            }
+        ],
         "5.48.0": [
             {
                 "pr": "13336",
