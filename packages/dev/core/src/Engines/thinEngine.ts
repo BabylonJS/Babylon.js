@@ -266,6 +266,12 @@ export class ThinEngine {
         return this._webGLVersion;
     }
 
+    private _isDisposed = false;
+
+    public get isDisposed(): boolean {
+        return this._isDisposed;
+    }
+
     // Updatable statics so stick with vars here
 
     /**
@@ -1529,7 +1535,7 @@ export class ThinEngine {
      */
     public stopRenderLoop(renderFunction?: () => void): void {
         if (!renderFunction) {
-            this._activeRenderLoops = [];
+            this._activeRenderLoops.length = 0;
             return;
         }
 
@@ -1544,7 +1550,7 @@ export class ThinEngine {
     public _renderLoop(): void {
         if (!this._contextWasLost) {
             let shouldRender = true;
-            if (!this.renderEvenInBackground && this._windowIsBackground) {
+            if (this._isDisposed || (!this.renderEvenInBackground && this._windowIsBackground)) {
                 shouldRender = false;
             }
 
@@ -5346,6 +5352,7 @@ export class ThinEngine {
      * Dispose and release all associated resources
      */
     public dispose(): void {
+        this._isDisposed = true;
         this.stopRenderLoop();
 
         // Clear observables

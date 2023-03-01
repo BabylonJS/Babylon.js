@@ -2150,7 +2150,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /**
      * Registers a function to be executed when the scene is ready
-     * @param {Function} func - the function to be executed
+     * @param func - the function to be executed
      * @param checkRenderTargets true to also check that the meshes rendered as part of a render target are ready (default: false)
      */
     public executeWhenReady(func: () => void, checkRenderTargets = false): void {
@@ -4694,52 +4694,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             console.error("An error occurred while calling onDisposeObservable!", e);
         }
 
-        this.onDisposeObservable.clear();
-        this.onBeforeRenderObservable.clear();
-        this.onAfterRenderObservable.clear();
-        this.onBeforeRenderTargetsRenderObservable.clear();
-        this.onAfterRenderTargetsRenderObservable.clear();
-        this.onAfterStepObservable.clear();
-        this.onBeforeStepObservable.clear();
-        this.onBeforeActiveMeshesEvaluationObservable.clear();
-        this.onAfterActiveMeshesEvaluationObservable.clear();
-        this.onBeforeParticlesRenderingObservable.clear();
-        this.onAfterParticlesRenderingObservable.clear();
-        this.onBeforeDrawPhaseObservable.clear();
-        this.onAfterDrawPhaseObservable.clear();
-        this.onBeforeAnimationsObservable.clear();
-        this.onAfterAnimationsObservable.clear();
-        this.onDataLoadedObservable.clear();
-        this.onBeforeRenderingGroupObservable.clear();
-        this.onAfterRenderingGroupObservable.clear();
-        this.onMeshImportedObservable.clear();
-        this.onBeforeCameraRenderObservable.clear();
-        this.onAfterCameraRenderObservable.clear();
-        this.onReadyObservable.clear();
-        this.onNewCameraAddedObservable.clear();
-        this.onCameraRemovedObservable.clear();
-        this.onNewLightAddedObservable.clear();
-        this.onLightRemovedObservable.clear();
-        this.onNewGeometryAddedObservable.clear();
-        this.onGeometryRemovedObservable.clear();
-        this.onNewTransformNodeAddedObservable.clear();
-        this.onTransformNodeRemovedObservable.clear();
-        this.onNewMeshAddedObservable.clear();
-        this.onMeshRemovedObservable.clear();
-        this.onNewSkeletonAddedObservable.clear();
-        this.onSkeletonRemovedObservable.clear();
-        this.onNewMaterialAddedObservable.clear();
-        this.onNewMultiMaterialAddedObservable.clear();
-        this.onMaterialRemovedObservable.clear();
-        this.onMultiMaterialRemovedObservable.clear();
-        this.onNewTextureAddedObservable.clear();
-        this.onTextureRemovedObservable.clear();
-        this.onPrePointerObservable.clear();
-        this.onPointerObservable.clear();
-        this.onPreKeyboardObservable.clear();
-        this.onKeyboardObservable.clear();
-        this.onActiveCameraChanged.clear();
-
         this.detachControl();
 
         // Detach cameras
@@ -4819,6 +4773,52 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         this._engine.wipeCaches(true);
+        this.onDisposeObservable.clear();
+        this.onBeforeRenderObservable.clear();
+        this.onAfterRenderObservable.clear();
+        this.onBeforeRenderTargetsRenderObservable.clear();
+        this.onAfterRenderTargetsRenderObservable.clear();
+        this.onAfterStepObservable.clear();
+        this.onBeforeStepObservable.clear();
+        this.onBeforeActiveMeshesEvaluationObservable.clear();
+        this.onAfterActiveMeshesEvaluationObservable.clear();
+        this.onBeforeParticlesRenderingObservable.clear();
+        this.onAfterParticlesRenderingObservable.clear();
+        this.onBeforeDrawPhaseObservable.clear();
+        this.onAfterDrawPhaseObservable.clear();
+        this.onBeforeAnimationsObservable.clear();
+        this.onAfterAnimationsObservable.clear();
+        this.onDataLoadedObservable.clear();
+        this.onBeforeRenderingGroupObservable.clear();
+        this.onAfterRenderingGroupObservable.clear();
+        this.onMeshImportedObservable.clear();
+        this.onBeforeCameraRenderObservable.clear();
+        this.onAfterCameraRenderObservable.clear();
+        this.onAfterRenderCameraObservable.clear();
+        this.onReadyObservable.clear();
+        this.onNewCameraAddedObservable.clear();
+        this.onCameraRemovedObservable.clear();
+        this.onNewLightAddedObservable.clear();
+        this.onLightRemovedObservable.clear();
+        this.onNewGeometryAddedObservable.clear();
+        this.onGeometryRemovedObservable.clear();
+        this.onNewTransformNodeAddedObservable.clear();
+        this.onTransformNodeRemovedObservable.clear();
+        this.onNewMeshAddedObservable.clear();
+        this.onMeshRemovedObservable.clear();
+        this.onNewSkeletonAddedObservable.clear();
+        this.onSkeletonRemovedObservable.clear();
+        this.onNewMaterialAddedObservable.clear();
+        this.onNewMultiMaterialAddedObservable.clear();
+        this.onMaterialRemovedObservable.clear();
+        this.onMultiMaterialRemovedObservable.clear();
+        this.onNewTextureAddedObservable.clear();
+        this.onTextureRemovedObservable.clear();
+        this.onPrePointerObservable.clear();
+        this.onPointerObservable.clear();
+        this.onPreKeyboardObservable.clear();
+        this.onKeyboardObservable.clear();
+        this.onActiveCameraChanged.clear();
         this._isDisposed = true;
     }
 

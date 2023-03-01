@@ -1279,7 +1279,7 @@ export class Engine extends ThinEngine {
     public _renderLoop(): void {
         if (!this._contextWasLost) {
             let shouldRender = true;
-            if (!this.renderEvenInBackground && this._windowIsBackground) {
+            if (this.isDisposed || (!this.renderEvenInBackground && this._windowIsBackground)) {
                 shouldRender = false;
             }
 
@@ -1874,7 +1874,7 @@ export class Engine extends ThinEngine {
         }
 
         // Release audio engine
-        if (Engine.Instances.length === 1 && Engine.audioEngine) {
+        if (EngineStore.Instances.length === 1 && Engine.audioEngine) {
             Engine.audioEngine.dispose();
             Engine.audioEngine = null;
         }
@@ -1910,10 +1910,16 @@ export class Engine extends ThinEngine {
         super.dispose();
 
         // Remove from Instances
-        const index = Engine.Instances.indexOf(this);
+        const index = EngineStore.Instances.indexOf(this);
 
         if (index >= 0) {
-            Engine.Instances.splice(index, 1);
+            EngineStore.Instances.splice(index, 1);
+        }
+
+        // no more engines left in the engine store? Notify!
+        if (!Engine.Instances.length) {
+            EngineStore.OnEnginesDisposedObservable.notifyObservers(this);
+            EngineStore.OnEnginesDisposedObservable.clear();
         }
 
         // Observables
