@@ -5,8 +5,7 @@ import type { IPipelineContext } from "../IPipelineContext";
 import type { NativeEngine } from "../nativeEngine";
 
 export class NativePipelineContext implements IPipelineContext {
-    // TODO: async should be true?
-    public isAsync = false;
+    public isAsync = true;
     public isReady = false;
     public onCompiled?: () => void;
 
