@@ -399,6 +399,13 @@ export class Observable<T> {
         this._observers.length = 0;
         this._onObserverAdded = null;
         this._numObserversMarkedAsDeleted = 0;
+        this.cleanLastNotifiedState();
+    }
+
+    /**
+     * Clean the last notified state - both the internal last value and the has-notified flag
+     */
+    public cleanLastNotifiedState(): void {
         this._hasNotified = false;
         this._lastNotifiedValue = undefined;
     }
