@@ -606,9 +606,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 }
             });
             liveRoot.clearControls();
+            const originalToCloneMap = new Map<Control, Control>();
             const updatedRootChildren = this.trueRootContainer.children.slice(0);
             for (const child of updatedRootChildren) {
                 const clone = child.clone(this.props.globalState.liveGuiTexture!);
+                originalToCloneMap.set(child, clone);
                 liveRoot.addControl(clone);
             }
 
@@ -621,6 +623,8 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                     }
                 }
             });
+
+            this._syncConnectedLines(updatedRootChildren, originalToCloneMap);
         }
     }
 
@@ -850,6 +854,22 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         }
     }
 
+    private _syncConnectedLines(controlList: Control[], originalToCloneMap: Map<Control, Control>) {
+        for (const control of controlList) {
+            if (control.getClassName() === "Line") {
+                const lineControl = control as Line;
+                if (lineControl.connectedControl) {
+                    const connectedControl = lineControl.connectedControl;
+                    const clonedLine = originalToCloneMap.get(lineControl) as Line;
+                    const clonedConnectedControl = originalToCloneMap.get(connectedControl);
+                    if (clonedLine && clonedConnectedControl) {
+                        clonedLine.connectedControl = clonedConnectedControl;
+                    }
+                }
+            }
+        }
+    }
+
     private _copyLiveGUIToEditorGUI() {
         if (this.props.globalState.liveGuiTexture && this.trueRootContainer) {
             // Create special IDs that will allow us to know which cloned control corresponds to its original
@@ -857,10 +877,14 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 control.metadata = { ...(control.metadata ?? {}), editorUniqueId: RandomGUID() };
             });
             this.trueRootContainer.clearControls();
+            const originalToCloneMap = new Map<Control, Control>();
             for (const control of this.props.globalState.liveGuiTexture.rootContainer.children) {
                 const cloned = control.clone(this.props.globalState.guiTexture);
+                originalToCloneMap.set(control, cloned);
                 this.appendBlock(cloned);
             }
+            // Synchronize existing connectedControls
+            this._syncConnectedLines(this.props.globalState.liveGuiTexture.rootContainer.children, originalToCloneMap);
         }
     }
 
