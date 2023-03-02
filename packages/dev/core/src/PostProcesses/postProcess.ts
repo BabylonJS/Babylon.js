@@ -211,8 +211,6 @@ export class PostProcess {
     @serialize()
     public adaptScaleToCurrentViewport = false;
 
-    public forceStencil = false;
-
     private _camera: Camera;
     protected _scene: Scene;
     private _engine: Engine;
@@ -658,7 +656,7 @@ export class PostProcess {
         const textureOptions = {
             generateMipMaps: needMipMaps,
             generateDepthBuffer: forceDepthStencil || firstPP === this,
-            generateStencilBuffer: (forceDepthStencil || firstPP === this || this.forceStencil || true) && this._engine.isStencilEnable,
+            generateStencilBuffer: (forceDepthStencil || firstPP === this) && this._engine.isStencilEnable,
             samplingMode: this.renderTargetSamplingMode,
             type: this._textureType,
             format: this._textureFormat,

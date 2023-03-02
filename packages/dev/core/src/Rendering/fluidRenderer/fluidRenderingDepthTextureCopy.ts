@@ -26,7 +26,7 @@ export class FluidRenderingDepthTextureCopy {
                 format: Constants.TEXTUREFORMAT_R,
                 samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
                 generateDepthBuffer: true,
-                generateStencilBuffer: true,
+                generateStencilBuffer: false,
                 samples,
                 noColorAttachment: true,
             }
