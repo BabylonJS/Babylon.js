@@ -7,9 +7,12 @@ import { Texture } from "../../Materials/Textures/texture";
 import { Engine } from "../../Engines/engine";
 import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
-import { Constants} from "../../Engines/constants";
+import { Constants } from "../../Engines/constants";
 import { WebGLHardwareTexture } from "../../Engines/WebGL/webGLHardwareTexture";
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
+
+export type WebXRDepthUsage = "cpu" | "gpu";
+export type WebXRDepthDataFormat = "ushort" | "float";
 
 /**
  * Options for Depth Sensing feature
@@ -18,11 +21,11 @@ export interface IWebXRDepthSensingOptions {
     /**
      *  The desired depth sensing usage for the session
      */
-    usagePreference: XRDepthUsage[];
+    usagePreference: WebXRDepthUsage[];
     /**
      * The desired depth sensing data format for the session
      */
-    dataFormatPreference: XRDepthDataFormat[];
+    dataFormatPreference: WebXRDepthDataFormat[];
 }
 
 type GetDepthInMetersType = (x: number, y: number) => number;
@@ -79,15 +82,25 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
      * Describes which depth-sensing usage ("cpu-optimized" or "gpu-optimized" is used.
      *
      */
-    public get depthUsage(): XRDepthUsage {
-        return this._xrSessionManager.session.depthUsage;
+    public get depthUsage(): WebXRDepthUsage {
+        switch (this._xrSessionManager.session.depthUsage) {
+            case "cpu-optimized":
+                return "cpu";
+            case "gpu-optimized":
+                return "gpu";
+        }
     }
 
     /**
      * Describes which depth sensing data format ("luminance-alpha" or "float32") is used.
      */
-    public get depthDataFormat(): XRDepthDataFormat {
-        return this._xrSessionManager.session.depthDataFormat;
+    public get depthDataFormat(): WebXRDepthDataFormat {
+        switch (this._xrSessionManager.session.depthDataFormat) {
+            case "luminance-alpha":
+                return "ushort";
+            case "float32":
+                return "float";
+        }
     }
 
     /**
@@ -109,9 +122,9 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         internalTexture.isCube = false;
         internalTexture.invertY = false;
         internalTexture._useSRGBBuffer = false;
-        internalTexture.format = this.depthDataFormat === "luminance-alpha" ? Constants.TEXTUREFORMAT_LUMINANCE_ALPHA : Constants.TEXTUREFORMAT_RGBA;
+        internalTexture.format = this.depthDataFormat === "ushort" ? Constants.TEXTUREFORMAT_LUMINANCE_ALPHA : Constants.TEXTUREFORMAT_RGBA;
         internalTexture.generateMipMaps = false;
-        internalTexture.type = this.depthDataFormat === "luminance-alpha" ? Constants.TEXTURETYPE_UNSIGNED_SHORT : Constants.TEXTURETYPE_FLOAT;
+        internalTexture.type = this.depthDataFormat === "ushort" ? Constants.TEXTURETYPE_UNSIGNED_SHORT : Constants.TEXTURETYPE_FLOAT;
         internalTexture.samplingMode = Constants.TEXTURE_NEAREST_LINEAR;
         internalTexture.width = this.width ?? 0;
         internalTexture.height = this.height ?? 0;
@@ -135,7 +148,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
             return null;
         }
 
-        return this.depthDataFormat === "luminance-alpha" ? new Uint16Array(data) : new Float32Array(data);
+        return this.depthDataFormat === "ushort" ? new Uint16Array(data) : new Float32Array(data);
     }
 
     /**
@@ -224,11 +237,11 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
 
         for (const view of pose.views) {
             switch (this.depthUsage) {
-                case "cpu-optimized":
+                case "cpu":
                     this._updateDepthInformationAndTextureCPUDepthUsage(_xrFrame, view, this.depthDataFormat);
                     break;
 
-                case "gpu-optimized":
+                case "gpu":
                     if (!this._glBinding) {
                         break;
                     }
@@ -242,7 +255,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         }
     }
 
-    private _updateDepthInformationAndTextureCPUDepthUsage(frame: XRFrame, view: XRView, dataFormat: XRDepthDataFormat): void {
+    private _updateDepthInformationAndTextureCPUDepthUsage(frame: XRFrame, view: XRView, dataFormat: WebXRDepthDataFormat): void {
         const depthInfo = frame.getDepthInformation(view);
         if (depthInfo === null) {
             return;
@@ -269,11 +282,11 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         }
 
         switch (dataFormat) {
-            case "luminance-alpha":
+            case "ushort":
                 this._cachedDepthImageTexture.update(Float32Array.from(new Uint16Array(data)).map((value) => value * rawValueToMeters));
                 break;
 
-            case "float32":
+            case "float":
                 this._cachedDepthImageTexture.update(new Float32Array(data).map((value) => value * rawValueToMeters));
                 break;
 
@@ -282,7 +295,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         }
     }
 
-    private _updateDepthInformationAndTextureWebGLDepthUsage(webglBinding: XRWebGLBinding, view: XRView, dataFormat: XRDepthDataFormat): void {
+    private _updateDepthInformationAndTextureWebGLDepthUsage(webglBinding: XRWebGLBinding, view: XRView, dataFormat: WebXRDepthDataFormat): void {
         const depthInfo = webglBinding.getDepthInformation(view);
         if (depthInfo === null) {
             return;
@@ -305,7 +318,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
                 false,
                 true,
                 Texture.NEAREST_SAMPLINGMODE,
-                dataFormat === "luminance-alpha" ? Engine.TEXTURETYPE_UNSIGNED_BYTE : Engine.TEXTURETYPE_FLOAT
+                dataFormat === "ushort" ? Engine.TEXTURETYPE_UNSIGNED_BYTE : Engine.TEXTURETYPE_FLOAT
             );
         }
 
@@ -319,9 +332,32 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
     public getXRSessionInitExtension(): Promise<Partial<XRSessionInit>> {
         const isDepthUsageDeclared = this.options.usagePreference != null && this.options.usagePreference.length !== 0;
         const isDataFormatDeclared = this.options.dataFormatPreference != null && this.options.dataFormatPreference.length !== 0;
+
         return new Promise((resolve) => {
             if (isDepthUsageDeclared && isDataFormatDeclared) {
-                resolve({ depthSensing: this.options });
+                const usages: XRDepthUsage[] = this.options.usagePreference.map((usage) => {
+                    switch (usage) {
+                        case "cpu":
+                            return "cpu-optimized";
+                        case "gpu":
+                            return "gpu-optimized";
+                    }
+                });
+                const dataFormats: XRDepthDataFormat[] = this.options.dataFormatPreference.map((format) => {
+                    switch (format) {
+                        case "ushort":
+                            return "luminance-alpha";
+                        case "float":
+                            return "float32";
+                    }
+                });
+                
+                resolve({
+                    depthSensing: {
+                        usagePreference: usages,
+                        dataFormatPreference: dataFormats,
+                    },
+                });
             } else {
                 resolve({});
             }
