@@ -32,6 +32,7 @@ type GetDepthInMetersType = (x: number, y: number) => number;
 
 /**
  * WebXR Feature for WebXR Depth Sensing Module
+ * @since
  */
 export class WebXRDepthSensing extends WebXRAbstractFeature {
     private _width: Nullable<number> = null;
