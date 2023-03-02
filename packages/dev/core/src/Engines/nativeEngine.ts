@@ -697,16 +697,18 @@ export class NativeEngine extends Engine {
         vertexCode = ThinEngine._ConcatenateShader(vertexCode, defines);
         fragmentCode = ThinEngine._ConcatenateShader(fragmentCode, defines);
 
-        const program = this._engine.createProgram(
-            vertexCode,
-            fragmentCode,
-            pipelineContext.isAsync,
-            () => {
-                nativePipelineContext.isReady = true;
-                nativePipelineContext.onCompiled?.();
-            },
-            () => {}
-        );
+        const program =
+            pipelineContext.isAsync && this._engine.createProgramAsync
+                ? this._engine.createProgramAsync(
+                      vertexCode,
+                      fragmentCode,
+                      () => {
+                          nativePipelineContext.isReady = true;
+                          nativePipelineContext.onCompiled?.();
+                      },
+                      () => {}
+                  )
+                : this._engine.createProgram(vertexCode, fragmentCode);
         this.onAfterShaderCompilationObservable.notifyObservers(this);
         return program as WebGLProgram;
     }
