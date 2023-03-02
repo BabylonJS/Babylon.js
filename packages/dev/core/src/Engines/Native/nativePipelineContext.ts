@@ -5,8 +5,23 @@ import type { IPipelineContext } from "../IPipelineContext";
 import type { NativeEngine } from "../nativeEngine";
 
 export class NativePipelineContext implements IPipelineContext {
-    public isAsync = true;
-    public isReady = false;
+    public isParallelCompiled: boolean;
+
+    public get isAsync(): boolean {
+        return this.isParallelCompiled;
+    }
+
+    public get isReady(): boolean {
+        if (this.nativeProgram) {
+            if (this.isParallelCompiled) {
+                return this._engine._isRenderingStateCompiled(this);
+            }
+            return true;
+        }
+
+        return false;
+    }
+
     public onCompiled?: () => void;
 
     public _getVertexShaderCode(): string | null {
@@ -30,6 +45,7 @@ export class NativePipelineContext implements IPipelineContext {
 
     constructor(engine: NativeEngine) {
         this._engine = engine;
+        this.isParallelCompiled = true;
     }
 
     public _fillEffectInformation(

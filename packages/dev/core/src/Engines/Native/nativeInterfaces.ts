@@ -40,6 +40,7 @@ export interface INativeEngine {
 
     createProgram(vertexShader: string, fragmentShader: string): NativeProgram;
     createProgramAsync(vertexShader: string, fragmentShader: string, onSuccess: () => void, onError: () => void): NativeProgram;
+    isProgramReady(program: NativeProgram): boolean;
     getUniforms(shaderProgram: NativeProgram, uniformsNames: string[]): WebGLUniformLocation[];
     getAttributes(shaderProgram: NativeProgram, attributeNames: string[]): number[];
 

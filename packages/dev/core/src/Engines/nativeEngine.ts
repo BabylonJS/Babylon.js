@@ -650,8 +650,7 @@ export class NativeEngine extends Engine {
      * @internal
      */
     public _isRenderingStateCompiled(pipelineContext: IPipelineContext): boolean {
-        const nativePipelineContext = pipelineContext as NativePipelineContext;
-        return nativePipelineContext.isReady;
+        return this._engine.isProgramReady((pipelineContext as NativePipelineContext).nativeProgram);
     }
 
     /**
@@ -684,6 +683,10 @@ export class NativeEngine extends Engine {
     public createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: Nullable<string>): WebGLProgram {
         const nativePipelineContext = pipelineContext as NativePipelineContext;
 
+        if (nativePipelineContext.nativeProgram) {
+            throw new Error("Tried to create a second program in the same NativePipelineContext");
+        }
+
         this.onBeforeShaderCompilationObservable.notifyObservers(this);
 
         const vertexInliner = new ShaderCodeInliner(vertexCode);
@@ -697,20 +700,18 @@ export class NativeEngine extends Engine {
         vertexCode = ThinEngine._ConcatenateShader(vertexCode, defines);
         fragmentCode = ThinEngine._ConcatenateShader(fragmentCode, defines);
 
-        const program =
-            pipelineContext.isAsync && this._engine.createProgramAsync
-                ? this._engine.createProgramAsync(
-                      vertexCode,
-                      fragmentCode,
-                      () => {
-                          nativePipelineContext.isReady = true;
-                          nativePipelineContext.onCompiled?.();
-                      },
-                      () => {}
-                  )
-                : this._engine.createProgram(vertexCode, fragmentCode);
-        this.onAfterShaderCompilationObservable.notifyObservers(this);
-        return program as WebGLProgram;
+        const onSuccess = () => {
+            nativePipelineContext.onCompiled?.();
+            this.onAfterShaderCompilationObservable.notifyObservers(this);
+        };
+
+        if (pipelineContext.isAsync && this._engine.createProgramAsync) {
+            return this._engine.createProgramAsync(vertexCode, fragmentCode, onSuccess, () => {}) as WebGLProgram;
+        } else {
+            const program = (nativePipelineContext.nativeProgram = this._engine.createProgram(vertexCode, fragmentCode));
+            onSuccess();
+            return program as WebGLProgram;
+        }
     }
 
     /**
