@@ -518,7 +518,7 @@ export class InputManager {
 
             if (!clickInfo.hasSwiped && !this._skipPointerTap && !this._isMultiTouchGesture) {
                 let type = 0;
-                if (clickInfo.singleClick) {
+                if (clickInfo.singleClick && !InputManager.ExclusiveDoubleClickMode) {
                     type = PointerEventTypes.POINTERTAP;
                 } else if (clickInfo.doubleClick) {
                     type = PointerEventTypes.POINTERDOUBLETAP;

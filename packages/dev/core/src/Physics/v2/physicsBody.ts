@@ -85,6 +85,16 @@ export class PhysicsBody {
     }
 
     /**
+     * If a physics body is connected to an instanced node, update the number physic instances to match the number of node instances.
+     */
+    public updateBodyInstances() {
+        const m = this.transformNode as Mesh;
+        if (m.hasThinInstances) {
+            this._physicsPlugin.updateBodyInstances(this, m);
+        }
+    }
+
+    /**
      * Sets the shape of the physics body.
      * @param shape - The shape of the physics body.
      *
@@ -333,6 +343,17 @@ export class PhysicsBody {
      */
     public unregisterOnCollide(func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>) => void): void {
         return this._physicsPlugin.unregisterOnBodyCollide(this, func);
+    }
+
+    /**
+     * Enable or disable collision callback for this PhysicsBody.
+     * `registerOnCollide` method will enable collision callback and `unregisterOnCollide` will disable them.
+     * Registering a collision callback on the plugin and enabling collision per body is faster than
+     * registering callback per PhysicsBody.
+     * @param enabled true if PhysicsBody's collision will rise a collision event and call the callback
+     */
+    public setCollisionCallbackEnabled(enabled: boolean): void {
+        return this._physicsPlugin.setCollisionCallbackEnabled(this, enabled);
     }
 
     /**

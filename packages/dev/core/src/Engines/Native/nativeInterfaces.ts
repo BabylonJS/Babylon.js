@@ -81,7 +81,7 @@ export interface INativeEngine {
 
     getRenderWidth(): number;
     getRenderHeight(): number;
-    getHardwareScalingLevel(): number;
+
     setHardwareScalingLevel(level: number): void;
 
     setViewPort(x: number, y: number, width: number, height: number): void;

@@ -123,6 +123,7 @@ export interface IPhysicsEnginePluginV2 {
     // body
     initBody(body: PhysicsBody, position: Vector3, orientation: Quaternion): void;
     initBodyInstances(body: PhysicsBody, mesh: Mesh): void;
+    updateBodyInstances(body: PhysicsBody, mesh: Mesh): void;
     removeBody(body: PhysicsBody): void;
     sync(body: PhysicsBody): void;
     syncTransform(body: PhysicsBody, transformNode: TransformNode): void;
@@ -149,6 +150,7 @@ export interface IPhysicsEnginePluginV2 {
     disposeBody(body: PhysicsBody): void;
     registerOnBodyCollide(body: PhysicsBody, func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>) => void): void;
     unregisterOnBodyCollide(body: PhysicsBody, func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>) => void): void;
+    setCollisionCallbackEnabled(body: PhysicsBody, enabled: boolean): void;
     addConstraint(body: PhysicsBody, childBody: PhysicsBody, constraint: PhysicsConstraint): void;
 
     // shape
