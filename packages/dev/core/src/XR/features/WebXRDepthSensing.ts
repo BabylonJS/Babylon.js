@@ -7,6 +7,9 @@ import { Texture } from "../../Materials/Textures/texture";
 import { Engine } from "../../Engines/engine";
 import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
+import { Constants} from "../../Engines/constants";
+import { WebGLHardwareTexture } from "../../Engines/WebGL/webGLHardwareTexture";
+import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
 
 /**
  * Options for Depth Sensing feature
@@ -91,7 +94,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
      * Latest cached WebGLTexture which containing depth buffer information.
      * This can be used when the depth usage is gpu-optimized.
      */
-    public get latestWebGLTexture(): Nullable<WebGLTexture> {
+    public get latestInternalTexture(): Nullable<InternalTexture> {
         if (!this._cachedDepthInfo) {
             return null;
         }
@@ -101,7 +104,22 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
             return null;
         }
 
-        return webglDepthInfo.texture;
+        const engine = this._xrSessionManager.scene.getEngine();
+        const internalTexture = new InternalTexture(engine, InternalTextureSource.Unknown);
+        internalTexture.isCube = false;
+        internalTexture.invertY = false;
+        internalTexture._useSRGBBuffer = false;
+        internalTexture.format = this.depthDataFormat === "luminance-alpha" ? Constants.TEXTUREFORMAT_LUMINANCE_ALPHA : Constants.TEXTUREFORMAT_RGBA;
+        internalTexture.generateMipMaps = false;
+        internalTexture.type = this.depthDataFormat === "luminance-alpha" ? Constants.TEXTURETYPE_UNSIGNED_SHORT : Constants.TEXTURETYPE_FLOAT;
+        internalTexture.samplingMode = Constants.TEXTURE_NEAREST_LINEAR;
+        internalTexture.width = this.width ?? 0;
+        internalTexture.height = this.height ?? 0;
+        internalTexture._cachedWrapU = Constants.TEXTURE_WRAP_ADDRESSMODE;
+        internalTexture._cachedWrapV = Constants.TEXTURE_WRAP_ADDRESSMODE;
+        internalTexture._hardwareTexture = new WebGLHardwareTexture(webglDepthInfo.texture, engine._gl);
+
+        return internalTexture;
     }
 
     /**
