@@ -92,6 +92,10 @@ void main(void) {
     vec4 opacityMap = texture2D(opacitySampler, vOpacityUV + uvOffset);
 #endif
 
+#ifdef DECAL
+    vec4 decalColor = texture2D(decalSampler, vDecalUV + uvOffset);
+#endif
+
     albedoOpacityBlock(
         vAlbedoColor,
     #ifdef ALBEDO
@@ -105,6 +109,10 @@ void main(void) {
     #ifdef DETAIL
         detailColor,
         vDetailInfos,
+    #endif
+    #ifdef DECAL
+        decalColor,
+        vDecalInfos,
     #endif
         albedoOpacityOut
     );

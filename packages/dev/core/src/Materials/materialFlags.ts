@@ -38,6 +38,22 @@ export class MaterialFlags {
         Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
+    private static _DecalMapEnabled = true;
+    /**
+     * Are decal maps enabled in the application.
+     */
+    public static get DecalMapEnabled(): boolean {
+        return this._DecalMapEnabled;
+    }
+    public static set DecalMapEnabled(value: boolean) {
+        if (this._DecalMapEnabled === value) {
+            return;
+        }
+
+        this._DecalMapEnabled = value;
+        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+    }
+
     private static _AmbientTextureEnabled = true;
     /**
      * Are ambient textures enabled in the application.

@@ -1123,6 +1123,7 @@ export class StandardMaterial extends PushMaterial {
 
         this._eventInfo.isReadyForSubMesh = true;
         this._eventInfo.defines = defines;
+        this._eventInfo.subMesh = subMesh;
         this._callbackPluginEventIsReadyForSubMesh(this._eventInfo);
 
         if (!this._eventInfo.isReadyForSubMesh) {

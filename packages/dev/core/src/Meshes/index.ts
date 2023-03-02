@@ -1,8 +1,10 @@
 /* eslint-disable import/export */
 /* eslint-disable import/no-internal-modules */
 export * from "./abstractMesh";
+import "./abstractMesh.decalMap";
 export * from "./Compression/index";
 export * from "./csg";
+export * from "./meshUVSpaceRenderer";
 export * from "./geometry";
 export * from "./groundMesh";
 export * from "./goldbergMesh";

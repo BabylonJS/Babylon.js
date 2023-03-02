@@ -7,6 +7,7 @@ import { RenderGridPropertyGridComponent } from "./propertyGrids/renderGridPrope
 import { PhysicsViewer } from "core/Debug/physicsViewer";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import type { Mesh } from "core/Meshes/mesh";
+import { MaterialFlags } from "core/Materials/materialFlags";
 
 import "core/Physics/physicsEngineComponent";
 import "core/Physics/v1/physicsEngineComponent";
@@ -123,6 +124,16 @@ export class DebugTabComponent extends PaneComponent {
                         label="Fresnel"
                         isSelected={() => StandardMaterial.FresnelEnabled}
                         onSelect={() => (StandardMaterial.FresnelEnabled = !StandardMaterial.FresnelEnabled)}
+                    />
+                    <CheckBoxLineComponent
+                        label="Detail"
+                        isSelected={() => MaterialFlags.DetailTextureEnabled}
+                        onSelect={() => (MaterialFlags.DetailTextureEnabled = !MaterialFlags.DetailTextureEnabled)}
+                    />
+                    <CheckBoxLineComponent
+                        label="Decal"
+                        isSelected={() => MaterialFlags.DecalMapEnabled}
+                        onSelect={() => (MaterialFlags.DecalMapEnabled = !MaterialFlags.DecalMapEnabled)}
                     />
                 </LineContainerComponent>
                 <LineContainerComponent title="FEATURES" selection={this.props.globalState}>
