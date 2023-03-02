@@ -153,14 +153,14 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     propertyName="isEnabled"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
-                { material.decalMap &&
+                {material.decalMap && (
                     <CheckBoxLineComponent
                         label="Use decalmap"
                         target={material.decalMap}
                         propertyName="isEnabled"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
-                }
+                )}
             </LineContainerComponent>
         );
     }
