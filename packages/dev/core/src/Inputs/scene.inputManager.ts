@@ -60,7 +60,11 @@ export class InputManager {
     public static LongPressDelay = 500; // in milliseconds
     /** Time in milliseconds with two consecutive clicks will be considered as a double click */
     public static DoubleClickDelay = 300; // in milliseconds
-    /** If you need to check double click without raising a single click at first click, enable this flag */
+    /**
+     * This flag will modify the behavior so that, when true, a click will happen if and only if
+     * another click DOES NOT happen within the DoubleClickDelay time frame.  If another click does
+     * happen within that time frame, the first click will not fire an event and and a double click will occur.
+     */
     public static ExclusiveDoubleClickMode = false;
 
     /** This is a defensive check to not allow control attachment prior to an already active one. If already attached, previous control is unattached before attaching the new one. */
@@ -518,7 +522,7 @@ export class InputManager {
 
             if (!clickInfo.hasSwiped && !this._skipPointerTap && !this._isMultiTouchGesture) {
                 let type = 0;
-                if (clickInfo.singleClick && !InputManager.ExclusiveDoubleClickMode) {
+                if (clickInfo.singleClick) {
                     type = PointerEventTypes.POINTERTAP;
                 } else if (clickInfo.doubleClick) {
                     type = PointerEventTypes.POINTERDOUBLETAP;
@@ -706,7 +710,10 @@ export class InputManager {
                 }
             }
 
-            if (!needToIgnoreNext) {
+            // The follow callback should only be executed when needToIgnoreNext is false
+            // and when ExclusiveDoubleClickMode is false.  This is because the
+            // callback is already executed in the double click case when true
+            if (!needToIgnoreNext && !InputManager.ExclusiveDoubleClickMode) {
                 cb(clickInfo, this._currentPickResult);
             }
         };
