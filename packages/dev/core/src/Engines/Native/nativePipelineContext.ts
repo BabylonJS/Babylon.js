@@ -5,7 +5,7 @@ import type { IPipelineContext } from "../IPipelineContext";
 import type { NativeEngine } from "../nativeEngine";
 
 export class NativePipelineContext implements IPipelineContext {
-    public isParallelCompiled: boolean;
+    public isParallelCompiled: boolean = true;
 
     public get isAsync(): boolean {
         return this.isParallelCompiled;
@@ -45,7 +45,6 @@ export class NativePipelineContext implements IPipelineContext {
 
     constructor(engine: NativeEngine) {
         this._engine = engine;
-        this.isParallelCompiled = true;
     }
 
     public _fillEffectInformation(
