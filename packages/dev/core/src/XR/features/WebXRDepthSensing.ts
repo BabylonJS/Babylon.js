@@ -6,6 +6,7 @@ import { Tools } from "../../Misc/tools";
 import { Texture } from "../../Materials/Textures/texture";
 import { Engine } from "../../Engines/engine";
 import { Observable } from "../../Misc/observable";
+import type { Nullable } from "../../types";
 
 /**
  * Options for Depth Sensing feature
@@ -32,7 +33,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
     /**
      * Width of depth data. If depth data is not exist, returns null.
      */
-    public get width(): number | null {
+    public get width(): Nullable<number> {
         if (!this._cachedDepthInfo) {
             return null;
         }
@@ -42,7 +43,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
     /**
      * Height of depth data. If depth data is not exist, returns null.
      */
-    public get height(): number | null {
+    public get height(): Nullable<number> {
         if (!this._cachedDepthInfo) {
             return null;
         }
@@ -52,7 +53,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
     /**
      * Scale factor by which the raw depth values must be multiplied in order to get the depths in meters.
      */
-    public get rawValueToMeters(): number | null {
+    public get rawValueToMeters(): Nullable<number> {
         if (!this._cachedDepthInfo) {
             return null;
         }
@@ -63,7 +64,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
     /**
      * An XRRigidTransform that needs to be applied when indexing into the depth buffer.
      */
-    public get normDepthBufferFromNormView(): XRRigidTransform | null {
+    public get normDepthBufferFromNormView(): Nullable<XRRigidTransform> {
         if (!this._cachedDepthInfo) {
             return null;
         }
@@ -90,7 +91,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
      * Latest cached WebGLTexture which containing depth buffer information.
      * This can be used when the depth usage is gpu-optimized.
      */
-    public get latestWebGLTexture(): WebGLTexture | null {
+    public get latestWebGLTexture(): Nullable<WebGLTexture> {
         if (!this._cachedDepthInfo) {
             return null;
         }
@@ -106,7 +107,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
     /**
      * cached depth buffer
      */
-    public get latestDepthBuffer(): ArrayBufferView | null {
+    public get latestDepthBuffer(): Nullable<ArrayBufferView> {
         if (!this._cachedDepthInfo) {
             return null;
         }
@@ -130,7 +131,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
     /**
      * Latest cached `BaseTexture` of depth image which is made from the depth buffer data.
      */
-    public get latestDepthImageTexture(): RawTexture | null {
+    public get latestDepthImageTexture(): Nullable<RawTexture> {
         if (!this._cachedDepthImageTexture) {
             return null;
         }
