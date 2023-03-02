@@ -1,6 +1,41 @@
 {
-    "fromTag": "5.48.0",
+    "fromTag": "5.48.1",
     "changelog": {
+        "5.49.0": [
+            {
+                "pr": "13577",
+                "title": "InputManager: Fix scenario where click can occur when ExclusiveDoubleClickMode = true",
+                "description": "A user in the forum found an issue where clicks could occur ExclusiveDoubleClickMode was set to true.  This PR adds a change to the logic to prevent this from happening.  A test was also added to prevent this in the future.\r\n\r\nForum Link: https://forum.babylonjs.com/t/bug-with-babylon-scene-exclusivedoubleclickmode/38541/",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Inputs/scene.inputManager.ts",
+                    "packages/dev/core/test/unit/DeviceInput/babylon.inputManager.test.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inputs"
+                ]
+            },
+            {
+                "pr": "13578",
+                "title": "PointerDragBehavior: Added check to force releaseDrag to fire when no active button is present",
+                "description": "A user on the forum found an issue where if a user programmatically started a drag event, they could not release it with a click.  Using their provided solution, this PR contains the following fix.  A check was added to the POINTERUP section to just force the release if there is no active button (thanks to mattdmorgan for the fix recommendation).\r\n\r\nForum Link: https://forum.babylonjs.com/t/programmatically-started-drags-can-no-longer-be-completed-by-clicking/38228",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Behaviors/Meshes/pointerDragBehavior.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inputs"
+                ]
+            }
+        ],
         "5.48.1": [
             {
                 "pr": "13574",

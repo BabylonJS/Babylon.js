@@ -1,5 +1,12 @@
 # Changelog
 
+## 5.49.0
+
+### Core
+
+- InputManager: Fix scenario where click can occur when ExclusiveDoubleClickMode = true - [_Bug Fix_] by [PolygonalSun](https://github.com/PolygonalSun) ([#13577](https://github.com/BabylonJS/Babylon.js/pull/13577))
+- PointerDragBehavior: Added check to force releaseDrag to fire when no active button is present - [_Bug Fix_] by [PolygonalSun](https://github.com/PolygonalSun) ([#13578](https://github.com/BabylonJS/Babylon.js/pull/13578))
+
 ## 5.48.1
 
 ### Core
