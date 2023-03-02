@@ -34,48 +34,40 @@ type GetDepthInMetersType = (x: number, y: number) => number;
  * WebXR Feature for WebXR Depth Sensing Module
  */
 export class WebXRDepthSensing extends WebXRAbstractFeature {
-    private _cachedDepthInfo?: XRDepthInformation;
+    private _width: Nullable<number> = null;
+    private _height: Nullable<number> = null;
+    private _rawValueToMeters: Nullable<number> = null;
+    private _normDepthBufferFromNormView: Nullable<XRRigidTransform> = null;
+    private _cachedDepthBuffer: Nullable<ArrayBuffer> = null;
+    private _cachedWebGLTexture: Nullable<WebGLTexture> = null;
+    private _cachedDepthImageTexture: Nullable<RawTexture> = null;
 
     /**
      * Width of depth data. If depth data is not exist, returns null.
      */
     public get width(): Nullable<number> {
-        if (!this._cachedDepthInfo) {
-            return null;
-        }
-        return this._cachedDepthInfo.width;
+        return this._width;
     }
 
     /**
      * Height of depth data. If depth data is not exist, returns null.
      */
     public get height(): Nullable<number> {
-        if (!this._cachedDepthInfo) {
-            return null;
-        }
-        return this._cachedDepthInfo.height;
+        return this._height;
     }
 
     /**
      * Scale factor by which the raw depth values must be multiplied in order to get the depths in meters.
      */
     public get rawValueToMeters(): Nullable<number> {
-        if (!this._cachedDepthInfo) {
-            return null;
-        }
-
-        return this._cachedDepthInfo.rawValueToMeters;
+        return this._rawValueToMeters;
     }
 
     /**
      * An XRRigidTransform that needs to be applied when indexing into the depth buffer.
      */
     public get normDepthBufferFromNormView(): Nullable<XRRigidTransform> {
-        if (!this._cachedDepthInfo) {
-            return null;
-        }
-
-        return this._cachedDepthInfo.normDepthBufferFromNormView;
+        return this._normDepthBufferFromNormView;
     }
 
     /**
@@ -108,12 +100,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
      * This can be used when the depth usage is gpu-optimized.
      */
     public get latestInternalTexture(): Nullable<InternalTexture> {
-        if (!this._cachedDepthInfo) {
-            return null;
-        }
-
-        const webglDepthInfo = this._cachedDepthInfo as XRWebGLDepthInformation;
-        if (!webglDepthInfo.texture) {
+        if (!this._cachedWebGLTexture) {
             return null;
         }
 
@@ -130,7 +117,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         internalTexture.height = this.height ?? 0;
         internalTexture._cachedWrapU = Constants.TEXTURE_WRAP_ADDRESSMODE;
         internalTexture._cachedWrapV = Constants.TEXTURE_WRAP_ADDRESSMODE;
-        internalTexture._hardwareTexture = new WebGLHardwareTexture(webglDepthInfo.texture, engine._gl);
+        internalTexture._hardwareTexture = new WebGLHardwareTexture(this._cachedWebGLTexture, engine._gl);
 
         return internalTexture;
     }
@@ -139,16 +126,11 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
      * cached depth buffer
      */
     public get latestDepthBuffer(): Nullable<ArrayBufferView> {
-        if (!this._cachedDepthInfo) {
+        if (!this._cachedDepthBuffer) {
             return null;
         }
 
-        const { data } = this._cachedDepthInfo as XRCPUDepthInformation;
-        if (!data) {
-            return null;
-        }
-
-        return this.depthDataFormat === "ushort" ? new Uint16Array(data) : new Float32Array(data);
+        return this.depthDataFormat === "ushort" ? new Uint16Array(this._cachedDepthBuffer) : new Float32Array(this._cachedDepthBuffer);
     }
 
     /**
@@ -157,15 +139,10 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
      */
     public onGetDepthInMetersAvailable: Observable<GetDepthInMetersType> = new Observable<GetDepthInMetersType>();
 
-    private _cachedDepthImageTexture?: RawTexture;
-
     /**
      * Latest cached `BaseTexture` of depth image which is made from the depth buffer data.
      */
     public get latestDepthImageTexture(): Nullable<RawTexture> {
-        if (!this._cachedDepthImageTexture) {
-            return null;
-        }
         return this._cachedDepthImageTexture;
     }
 
@@ -261,9 +238,12 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
             return;
         }
 
-        this._cachedDepthInfo = depthInfo;
-
         const { data, width, height, rawValueToMeters, getDepthInMeters } = depthInfo as XRCPUDepthInformation;
+
+        this._width = width;
+        this._height = height;
+        this._rawValueToMeters = rawValueToMeters;
+        this._cachedDepthBuffer = data;
 
         // to avoid Illegal Invocation error, bind `this`
         this.onGetDepthInMetersAvailable.notifyObservers(getDepthInMeters.bind(depthInfo));
@@ -301,9 +281,11 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
             return;
         }
 
-        this._cachedDepthInfo = depthInfo;
-
         const { texture, width, height } = depthInfo as XRWebGLDepthInformation;
+
+        this._width = width;
+        this._height = height;
+        this._cachedWebGLTexture = texture;
 
         const scene = this._xrSessionManager.scene;
         const engine = scene.getEngine();
@@ -351,7 +333,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
                             return "float32";
                     }
                 });
-                
+
                 resolve({
                     depthSensing: {
                         usagePreference: usages,
