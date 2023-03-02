@@ -229,6 +229,8 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
 
                 default:
                     Tools.Error("Unknown depth usage");
+                    this.detach();
+                    break;
             }
         }
     }
