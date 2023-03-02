@@ -8,6 +8,7 @@ import type { ISceneComponent } from "core/sceneComponent";
 import { SceneComponentConstants } from "core/sceneComponent";
 import type { SmartArrayNoDuplicate } from "core/Misc/smartArray";
 import type { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
+import { Constants } from "core/Engines/constants";
 
 import type { FluidRenderingObject } from "./fluidRenderingObject";
 import { FluidRenderingObjectParticleSystem } from "./fluidRenderingObjectParticleSystem";
@@ -406,7 +407,13 @@ export class FluidRenderer {
 
             firstPostProcess.onSizeChangedObservable.add(() => {
                 if (!firstPostProcess.inputTexture.depthStencilTexture) {
-                    firstPostProcess.inputTexture.createDepthStencilTexture(0, true, this._engine.isStencilEnable, targetRenderers[0].samples);
+                    firstPostProcess.inputTexture.createDepthStencilTexture(
+                        0,
+                        true,
+                        this._engine.isStencilEnable,
+                        targetRenderers[0].samples,
+                        this._engine.isStencilEnable ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT
+                    );
                 }
                 for (const targetRenderer of targetRenderers) {
                     const thicknessRT = targetRenderer._thicknessRenderTarget?.renderTarget;
