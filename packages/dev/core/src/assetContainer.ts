@@ -440,8 +440,8 @@ export class AssetContainer extends AbstractScene {
                     (node as Mesh).getTotalVertices() === 0) {
                     // Transform nodes, skinned meshes, and meshes with no vertices can never be instanced!
                     canInstance = false;
-                } else if (localOptions?.doNotInstantiate) {
-                    if (localOptions.doNotInstantiate instanceof Function) {
+                } else if (localOptions.doNotInstantiate) {
+                    if (typeof localOptions.doNotInstantiate === "function") {
                         canInstance = !localOptions.doNotInstantiate(node);
                     } else {
                         canInstance = !localOptions.doNotInstantiate;
