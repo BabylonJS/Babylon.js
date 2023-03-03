@@ -434,10 +434,7 @@ export class AssetContainer extends AbstractScene {
             } else {
                 // Mesh or TransformNode
                 let canInstance = true;
-                if (
-                    node.getClassName() === "TransformNode" || 
-                    (node as Mesh).skeleton || 
-                    (node as Mesh).getTotalVertices() === 0) {
+                if (node.getClassName() === "TransformNode" || (node as Mesh).skeleton || (node as Mesh).getTotalVertices() === 0) {
                     // Transform nodes, skinned meshes, and meshes with no vertices can never be instanced!
                     canInstance = false;
                 } else if (localOptions.doNotInstantiate) {
