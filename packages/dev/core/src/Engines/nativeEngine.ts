@@ -646,13 +646,17 @@ export class NativeEngine extends Engine {
         }
     }
 
+    public isAsync(pipelineContext: IPipelineContext): boolean {
+        return !!(pipelineContext.isAsync && this._engine.createProgramAsync);
+    }
+
     /**
      * @internal
      */
     public _executeWhenRenderingStateIsCompiled(pipelineContext: IPipelineContext, action: () => void) {
         const nativePipelineContext = pipelineContext as NativePipelineContext;
 
-        if (!nativePipelineContext.isAsync) {
+        if (!this.isAsync(pipelineContext)) {
             action();
             return;
         }
@@ -699,7 +703,7 @@ export class NativeEngine extends Engine {
             this.onAfterShaderCompilationObservable.notifyObservers(this);
         };
 
-        if (pipelineContext.isAsync && this._engine.createProgramAsync) {
+        if (this.isAsync(pipelineContext)) {
             return this._engine.createProgramAsync(vertexCode, fragmentCode, onSuccess, () => {}) as WebGLProgram;
         } else {
             const program = (nativePipelineContext.nativeProgram = this._engine.createProgram(vertexCode, fragmentCode));
