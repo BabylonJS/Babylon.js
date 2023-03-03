@@ -6,20 +6,14 @@ import type { NativeEngine } from "../nativeEngine";
 
 export class NativePipelineContext implements IPipelineContext {
     public isParallelCompiled: boolean = true;
+    public isCompilationComplete: boolean = false;
 
     public get isAsync(): boolean {
         return this.isParallelCompiled;
     }
 
     public get isReady(): boolean {
-        if (this.nativeProgram) {
-            if (this.isParallelCompiled) {
-                return this._engine._isRenderingStateCompiled(this);
-            }
-            return true;
-        }
-
-        return false;
+        return this.isCompilationComplete;
     }
 
     public onCompiled?: () => void;

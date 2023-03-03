@@ -649,13 +649,6 @@ export class NativeEngine extends Engine {
     /**
      * @internal
      */
-    public _isRenderingStateCompiled(pipelineContext: IPipelineContext): boolean {
-        return this._engine.isProgramReady((pipelineContext as NativePipelineContext).nativeProgram);
-    }
-
-    /**
-     * @internal
-     */
     public _executeWhenRenderingStateIsCompiled(pipelineContext: IPipelineContext, action: () => void) {
         const nativePipelineContext = pipelineContext as NativePipelineContext;
 
@@ -701,6 +694,7 @@ export class NativeEngine extends Engine {
         fragmentCode = ThinEngine._ConcatenateShader(fragmentCode, defines);
 
         const onSuccess = () => {
+            nativePipelineContext.isCompilationComplete = true;
             nativePipelineContext.onCompiled?.();
             this.onAfterShaderCompilationObservable.notifyObservers(this);
         };
