@@ -82,7 +82,8 @@ export class NativeXRFrame implements XRFrame {
     };
 
     public getDepthInformation(view: XRView): XRCPUDepthInformation | null {
-        return this._nativeImpl.getDepthInformation(view);
+        throw new Error("This function is not available in Babylon Native");
+        // return this._nativeImpl.getDepthInformation(view);
     }
 }
 
