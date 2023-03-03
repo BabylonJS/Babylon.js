@@ -72,8 +72,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
     }
 
     /**
-     * Describes which depth-sensing usage ("cpu-optimized" or "gpu-optimized" is used.
-     *
+     * Describes which depth-sensing usage ("cpu" or "gpu") is used.
      */
     public get depthUsage(): WebXRDepthUsage {
         switch (this._xrSessionManager.session.depthUsage) {
@@ -85,7 +84,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
     }
 
     /**
-     * Describes which depth sensing data format ("luminance-alpha" or "float32") is used.
+     * Describes which depth sensing data format ("ushort" or "float") is used.
      */
     public get depthDataFormat(): WebXRDepthDataFormat {
         switch (this._xrSessionManager.session.depthDataFormat) {
@@ -97,8 +96,8 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
     }
 
     /**
-     * Latest cached WebGLTexture which containing depth buffer information.
-     * This can be used when the depth usage is gpu-optimized.
+     * Latest cached InternalTexture which containing depth buffer information.
+     * This can be used when the depth usage is "gpu".
      */
     public get latestInternalTexture(): Nullable<InternalTexture> {
         if (!this._cachedWebGLTexture) {
@@ -141,7 +140,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
     public onGetDepthInMetersAvailable: Observable<GetDepthInMetersType> = new Observable<GetDepthInMetersType>();
 
     /**
-     * Latest cached `BaseTexture` of depth image which is made from the depth buffer data.
+     * Latest cached Texture of depth image which is made from the depth buffer data.
      */
     public get latestDepthImageTexture(): Nullable<RawTexture> {
         return this._cachedDepthImageTexture;
