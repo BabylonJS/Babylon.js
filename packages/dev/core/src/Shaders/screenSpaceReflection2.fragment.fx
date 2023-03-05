@@ -18,7 +18,7 @@ uniform sampler2D depthSampler;
 #endif
 #ifdef SSR_USE_ENVIRONMENT_CUBE
     uniform samplerCube envCubeSampler;
-    #ifdef USE_LOCAL_REFLECTIONMAP_CUBIC
+    #ifdef SSR_USE_LOCAL_REFLECTIONMAP_CUBIC
         uniform vec3 vReflectionPosition;
         uniform vec3 vReflectionSize;
     #endif
