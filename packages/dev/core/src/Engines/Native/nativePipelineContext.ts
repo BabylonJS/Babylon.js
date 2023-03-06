@@ -21,7 +21,8 @@ export class NativePipelineContext implements IPipelineContext {
 
     public get isReady(): boolean {
         if (this.compilationState === CompilationState.error) {
-            throw new Error("SHADER ERROR" + (this.compilationError?.message ? " " + this.compilationError.message : ""));
+            const message = this.compilationError?.message;
+            throw new Error("SHADER ERROR" + (typeof message === "string" ? "\n" + message : ""));
         }
         return this.compilationState === CompilationState.compiled;
     }

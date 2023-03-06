@@ -709,9 +709,14 @@ export class NativeEngine extends Engine {
                 nativePipelineContext.compilationError = error;
             }) as WebGLProgram;
         } else {
-            const program = (nativePipelineContext.nativeProgram = this._engine.createProgram(vertexCode, fragmentCode));
-            onSuccess();
-            return program as WebGLProgram;
+            try {
+                const program = (nativePipelineContext.nativeProgram = this._engine.createProgram(vertexCode, fragmentCode));
+                onSuccess();
+                return program as WebGLProgram;
+            } catch (e: any) {
+                const message = e?.message;
+                throw new Error("SHADER ERROR" + (typeof message === "string" ? "\n" + message : ""));
+            }
         }
     }
 
