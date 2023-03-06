@@ -1103,13 +1103,12 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             const particleSystem = scene.particleSystems[particleIndex];
 
             const emitter: any = particleSystem.emitter;
-            if (!particleSystem.isStarted() || !emitter || !emitter.position || !emitter.isEnabled()) {
+
+            if (!particleSystem.isStarted() || !emitter || (emitter.position && !emitter.isEnabled())) {
                 continue;
             }
 
-            if (currentRenderList.indexOf(emitter) >= 0) {
-                this._renderingManager.dispatchParticles(particleSystem);
-            }
+            this._renderingManager.dispatchParticles(particleSystem);
         }
     }
 
