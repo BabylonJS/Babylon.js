@@ -67,6 +67,6 @@ export class WebGPUTintWASM {
             console.log(ccode);
             console.log("***********************************************");
         }
-        return ccode;
+        return "diagnostic(off, derivative_uniformity);\n" + ccode;
     }
 }
