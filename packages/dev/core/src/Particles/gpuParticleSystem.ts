@@ -1540,7 +1540,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
     /** @internal */
     public _update(emitterWM?: Matrix): void {
-        if (!this.emitter) {
+        if (!this.emitter || !this._targetBuffer) {
             return;
         }
 
