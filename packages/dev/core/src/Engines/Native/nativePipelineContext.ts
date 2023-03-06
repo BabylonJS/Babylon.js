@@ -4,16 +4,26 @@ import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like
 import type { IPipelineContext } from "../IPipelineContext";
 import type { NativeEngine } from "../nativeEngine";
 
+export enum CompilationState {
+    uncompiled,
+    compiled,
+    error,
+}
+
 export class NativePipelineContext implements IPipelineContext {
     public isParallelCompiled: boolean = true;
-    public isCompilationComplete: boolean = false;
+    public compilationState: CompilationState = CompilationState.uncompiled;
+    public compilationError?: Error;
 
     public get isAsync(): boolean {
         return this.isParallelCompiled;
     }
 
     public get isReady(): boolean {
-        return this.isCompilationComplete;
+        if (this.compilationState === CompilationState.error) {
+            throw new Error("SHADER ERROR" + (this.compilationError?.message ? " " + this.compilationError.message : ""));
+        }
+        return this.compilationState === CompilationState.compiled;
     }
 
     public onCompiled?: () => void;
