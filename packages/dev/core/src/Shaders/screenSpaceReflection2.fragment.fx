@@ -39,6 +39,7 @@ uniform float roughnessFactor;
 uniform float reflectionSpecularFalloffExponent;
 uniform float maxDistance;
 uniform float selfCollisionNumSkip;
+uniform float reflectivityThreshold;
 
 #include<helperFunctions>
 #include<screenSpaceRayTrace>
@@ -110,8 +111,8 @@ void main()
     vec4 colorFull = texture2D(textureSampler, vUV);
     vec3 color = toLinearSpace(colorFull.rgb);
     vec4 reflectivity = texture2D(reflectivitySampler, vUV);
-    if (dot(reflectivity.rgb, vec3(1.)) <= 0.0) {
-        #ifdef USE_BLUR
+    if (max(reflectivity.r, max(reflectivity.g, reflectivity.b)) <= reflectivityThreshold) {
+        #ifdef SSR_USE_BLUR
             gl_FragColor = vec4(0.);
         #else
             gl_FragColor = vec4(colorFull.rgb, 1.0);

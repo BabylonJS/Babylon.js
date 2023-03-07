@@ -120,8 +120,15 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
     @serialize()
     public selfCollisionNumSkip = 1;
 
+    /**
+     * Gets or sets the minimum value for one of the reflectivity component of the material to consider it for SSR (default: 0.04).
+     * If all r/g/b components of the reflectivity is below or equal this value, the pixel will not be considered reflective and SSR won't be applied.
+     */
+    @serialize()
+    public reflectivityThreshold = 0.04;
+
     @serialize("blurDispersionStrength")
-    private _blurDispersionStrength = 1 / 20;
+    private _blurDispersionStrength = 0.03;
 
     /**
      * Gets or sets the blur dispersion strength. Set this value to 0 to disable blurring (default: 0.05)
@@ -748,6 +755,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
                 "vReflectionPosition",
                 "vReflectionSize",
                 "backSizeFactor",
+                "reflectivityThreshold",
             ],
             ["textureSampler", "normalSampler", "reflectivitySampler", "depthSampler", "envCubeSampler", "backDepthSampler"],
             1.0,
@@ -816,6 +824,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
             effect.setFloat("nearPlaneZ", camera.minZ);
             effect.setFloat("maxDistance", this.maxDistance);
             effect.setFloat("selfCollisionNumSkip", this.selfCollisionNumSkip);
+            effect.setFloat("reflectivityThreshold", this.reflectivityThreshold);
 
             const textureSize = this._getTextureSize();
 
@@ -912,6 +921,12 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
             effect.setFloat2("texelOffsetScale", 0, this._blurDispersionStrength / height);
         });
 
+        let defines = "";
+
+        if (this._debug) {
+            defines += "#define SSRAYTRACE_DEBUG\n";
+        }
+
         this._blurCombinerPostProcess = new PostProcess(
             "SSRblurCombiner",
             "screenSpaceReflection2BlurCombiner",
@@ -922,7 +937,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
             Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             engine,
             false,
-            "",
+            defines,
             this._textureType
         );
         this._blurCombinerPostProcess.autoClear = false;
