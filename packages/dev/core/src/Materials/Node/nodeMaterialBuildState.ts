@@ -120,7 +120,7 @@ export class NodeMaterialBuildState {
         }
 
         this.compilationString = "precision highp float;\r\n" + this.compilationString;
-        this.compilationString = "precision highp sampler2DArray;\r\n" + this.compilationString;
+        this.compilationString = "#if defined(WEBGL2) || defines(WEBGPU)\r\nprecision highp sampler2DArray;\r\n#endif\r\n" + this.compilationString;
 
         for (const extensionName in this.extensions) {
             const extension = this.extensions[extensionName];
