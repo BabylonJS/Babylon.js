@@ -98,7 +98,7 @@ export interface PhysicsAggregateParameters {
     /**
      * mesh local center
      */
-     center?: Vector3;
+    center?: Vector3;
 }
 /**
  * Helper class to create and interact with a PhysicsAggregate.
