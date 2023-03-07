@@ -281,6 +281,7 @@ export class NativeEngine extends Engine {
             needTypeSuffixInShaderConstants: false,
             supportMSAA: false,
             supportSSAO2: false,
+            supportSSR: false,
             supportExtendedTextureFormats: false,
             supportSwitchCaseInShader: false,
             supportSyncTextureRead: false,

@@ -444,6 +444,13 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
     }
 
     /**
+     * Returns true if SSR is supported by the running hardware
+     */
+    public get isSupported(): boolean {
+        return this._scene.getEngine()._features.supportSSR;
+    }
+
+    /**
      * Constructor of the SSR rendering pipeline
      * @param name The rendering pipeline name
      * @param scene The scene linked to this pipeline
@@ -462,24 +469,21 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         this._textureType = textureType;
         this._forceGeometryBuffer = forceGeometryBuffer;
 
-        if (!this.isSupported) {
-            Logger.Error("The current engine does not support SSR.");
-            return;
-        }
+        if (this.isSupported) {
+            scene.postProcessRenderPipelineManager.addPipeline(this);
 
-        scene.postProcessRenderPipelineManager.addPipeline(this);
-
-        if (this._forceGeometryBuffer) {
-            const geometryBufferRenderer = scene.enableGeometryBufferRenderer();
-            if (geometryBufferRenderer) {
-                geometryBufferRenderer.enableReflectivity = true;
+            if (this._forceGeometryBuffer) {
+                const geometryBufferRenderer = scene.enableGeometryBufferRenderer();
+                if (geometryBufferRenderer) {
+                    geometryBufferRenderer.enableReflectivity = true;
+                }
+            } else {
+                const prePassRenderer = scene.enablePrePassRenderer();
+                prePassRenderer?.markAsDirty();
             }
-        } else {
-            const prePassRenderer = scene.enablePrePassRenderer();
-            prePassRenderer?.markAsDirty();
-        }
 
-        this._buildPipeline();
+            this._buildPipeline();
+        }
     }
 
     /**
@@ -597,6 +601,10 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
     }
 
     private _buildPipeline() {
+        if (!this.isSupported) {
+            return;
+        }
+
         if (!this._isEnabled) {
             this._isDirty = true;
             return;
