@@ -372,6 +372,7 @@ export class PhysicsBody {
             if (worldMatrix) {
                 worldMatrix.decompose(scaling, undefined, undefined);
             }
+            tmAbstractMesh.refreshBoundingInfo();
             const boundingInfo = tmAbstractMesh.getBoundingInfo();
             // get the global scaling of the object
             const size = boundingInfo.boundingBox.extendSize.scale(2).multiplyInPlace(scaling);
@@ -385,6 +386,28 @@ export class PhysicsBody {
             return size;
         } else {
             return PhysicsBody._DEFAULT_OBJECT_SIZE;
+        }
+    }
+
+    /**
+     * returns the delta between the object bounding box center and the mesh origin
+     * @returns delta between object bounding box center and origin
+     */
+    public getObjectCenterDelta(): Vector3 {
+        const tmAbstractMesh = this.transformNode as AbstractMesh;
+        if (tmAbstractMesh.getBoundingInfo) {
+            const delta = new Vector3();
+            const boundingInfo = tmAbstractMesh.getBoundingInfo();
+            this.transformNode.computeWorldMatrix(true);
+            tmAbstractMesh.refreshBoundingInfo();
+            delta.copyFrom(boundingInfo.boundingBox.centerWorld);
+            delta.subtractInPlace(tmAbstractMesh.getAbsolutePosition());
+            delta.x /= tmAbstractMesh.scaling.x;
+            delta.y /= tmAbstractMesh.scaling.y;
+            delta.z /= tmAbstractMesh.scaling.z;
+            return delta;
+        } else {
+            return Vector3.Zero();
         }
     }
 
