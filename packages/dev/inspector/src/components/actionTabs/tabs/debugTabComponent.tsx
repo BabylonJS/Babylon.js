@@ -11,7 +11,7 @@ import { MaterialFlags } from "core/Materials/materialFlags";
 
 import "core/Physics/physicsEngineComponent";
 import "core/Physics/v1/physicsEngineComponent";
-import "core/Physics/v1/physicsEngineComponent";
+import "core/Physics/v2/physicsEngineComponent";
 
 export class DebugTabComponent extends PaneComponent {
     private _physicsViewersEnabled = false;
@@ -43,6 +43,24 @@ export class DebugTabComponent extends PaneComponent {
             for (const mesh of scene.meshes) {
                 if (mesh.physicsImpostor) {
                     const debugMesh = physicsViewer.showImpostor(mesh.physicsImpostor, mesh as Mesh);
+
+                    if (debugMesh) {
+                        debugMesh.reservedDataStore = { hidden: true };
+                        debugMesh.material!.reservedDataStore = { hidden: true };
+                    }
+                } else if (mesh.physicsBody) {
+                    const debugMesh = physicsViewer.showBody(mesh.physicsBody);
+
+                    if (debugMesh) {
+                        debugMesh.reservedDataStore = { hidden: true };
+                        debugMesh.material!.reservedDataStore = { hidden: true };
+                    }
+                }
+            }
+
+            for (const transformNode of scene.transformNodes) {
+                if (transformNode.physicsBody) {
+                    const debugMesh = physicsViewer.showBody(transformNode.physicsBody);
 
                     if (debugMesh) {
                         debugMesh.reservedDataStore = { hidden: true };

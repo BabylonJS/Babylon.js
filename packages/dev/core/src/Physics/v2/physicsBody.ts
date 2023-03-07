@@ -1,11 +1,13 @@
 import type { IPhysicsEnginePluginV2, MassProperties } from "./IPhysicsEnginePlugin";
 import type { PhysicsShape } from "./physicsShape";
-import { Vector3, Quaternion } from "../../Maths/math.vector";
+import { Vector3, Quaternion, TmpVectors } from "../../Maths/math.vector";
 import type { Scene } from "../../scene";
 import type { PhysicsEngine } from "./physicsEngine";
 import type { Mesh, TransformNode, AbstractMesh } from "../../Meshes";
 import type { Nullable } from "core/types";
 import type { PhysicsConstraint } from "./physicsConstraint";
+import type { Bone } from "core/Bones/bone";
+import { Space } from "core/Maths/math.axis";
 /**
  * PhysicsBody is useful for creating a physics body that can be used in a physics engine. It allows
  * the user to set the mass and velocity of the body, which can then be used to calculate the
@@ -428,6 +430,54 @@ export class PhysicsBody {
      */
     public addConstraint(childBody: PhysicsBody, constraint: PhysicsConstraint): void {
         this._physicsPlugin.addConstraint(this, childBody, constraint);
+    }
+
+    /**
+     * Sync with a bone
+     * @param bone The bone that the impostor will be synced to.
+     * @param boneMesh The mesh that the bone is influencing.
+     * @param jointPivot The pivot of the joint / bone in local space.
+     * @param distToJoint Optional distance from the impostor to the joint.
+     * @param adjustRotation Optional quaternion for adjusting the local rotation of the bone.
+     * @param boneAxis Optional vector3 axis the bone is aligned with
+     */
+    public syncWithBone(bone: Bone, boneMesh: AbstractMesh, jointPivot: Vector3, distToJoint?: number, adjustRotation?: Quaternion, boneAxis?: Vector3) {
+        const mesh = this.transformNode;
+
+        if (mesh.rotationQuaternion) {
+            if (adjustRotation) {
+                const tempQuat = TmpVectors.Quaternion[0];
+                bone.getRotationQuaternionToRef(Space.WORLD, boneMesh, tempQuat);
+                tempQuat.multiplyToRef(adjustRotation, mesh.rotationQuaternion);
+            } else {
+                bone.getRotationQuaternionToRef(Space.WORLD, boneMesh, mesh.rotationQuaternion);
+            }
+        }
+
+        const pos = TmpVectors.Vector3[0];
+        const boneDir = TmpVectors.Vector3[1];
+
+        if (!boneAxis) {
+            boneAxis = TmpVectors.Vector3[2];
+            boneAxis.x = 0;
+            boneAxis.y = 1;
+            boneAxis.z = 0;
+        }
+
+        bone.getDirectionToRef(boneAxis, boneMesh, boneDir);
+        bone.getAbsolutePositionToRef(boneMesh, pos);
+
+        if ((distToJoint === undefined || distToJoint === null) && jointPivot) {
+            distToJoint = jointPivot.length();
+        }
+
+        if (distToJoint !== undefined && distToJoint !== null) {
+            pos.x += boneDir.x * distToJoint;
+            pos.y += boneDir.y * distToJoint;
+            pos.z += boneDir.z * distToJoint;
+        }
+
+        mesh.setAbsolutePosition(pos);
     }
 
     /**
