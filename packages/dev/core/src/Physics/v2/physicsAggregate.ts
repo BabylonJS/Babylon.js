@@ -94,6 +94,11 @@ export interface PhysicsAggregateParameters {
      * Extents for box
      */
     extents?: Vector3;
+
+    /**
+     * mesh local center
+     */
+     center?: Vector3;
 }
 /**
  * Helper class to create and interact with a PhysicsAggregate.
@@ -155,6 +160,7 @@ export class PhysicsAggregate {
 
         this.body = new PhysicsBody(transformNode, this._scene);
         this._addSizeOptions();
+        this._options.center = _options.center ?? this.body.getObjectCenterDelta();
         this.shape = new PhysicsShape({ type, parameters: this._options as any }, this._scene);
 
         this.material = new PhysicsMaterial(this._options.friction, this._options.restitution, this._scene);
@@ -190,13 +196,11 @@ export class PhysicsAggregate {
                     this._options.pointB = this._options.pointB ? this._options.pointB : new Vector3(0, impostorExtents.y * 0.5, 0);
                 }
                 break;
+            case ShapeType.MESH:
+            case ShapeType.CONVEX_HULL:
             case ShapeType.BOX:
                 this._options.extents = this._options.extents ? this._options.extents : new Vector3(impostorExtents.x, impostorExtents.y, impostorExtents.z);
                 break;
-            case ShapeType.MESH:
-            case ShapeType.CONVEX_HULL: {
-                break;
-            }
         }
     }
 
