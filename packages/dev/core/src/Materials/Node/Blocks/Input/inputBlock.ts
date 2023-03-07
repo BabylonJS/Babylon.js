@@ -129,6 +129,8 @@ export class InputBlock extends NodeMaterialBlock {
                         return this._type;
                     case "matricesIndices":
                     case "matricesWeights":
+                    case "matricesIndicesExtra":
+                    case "matricesWeightsExtra":
                     case "world0":
                     case "world1":
                     case "world2":
