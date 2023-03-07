@@ -78,7 +78,10 @@ export class PrePassRenderer {
         this.defaultRT.samples = n;
     }
 
-    private static _TextureFormats = [
+    /**
+     * Describes the types and formats of the textures used by the pre-pass renderer
+     */
+    public static TextureFormats = [
         {
             type: Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,
             format: Constants.TEXTURETYPE_HALF_FLOAT,
@@ -308,14 +311,14 @@ export class PrePassRenderer {
     }
 
     private _resetLayout() {
-        for (let i = 0; i < PrePassRenderer._TextureFormats.length; i++) {
-            this._textureIndices[PrePassRenderer._TextureFormats[i].type] = -1;
+        for (let i = 0; i < PrePassRenderer.TextureFormats.length; i++) {
+            this._textureIndices[PrePassRenderer.TextureFormats[i].type] = -1;
         }
 
         this._textureIndices[Constants.PREPASS_COLOR_TEXTURE_TYPE] = 0;
         this._mrtLayout = [Constants.PREPASS_COLOR_TEXTURE_TYPE];
-        this._mrtFormats = [PrePassRenderer._TextureFormats[Constants.PREPASS_COLOR_TEXTURE_TYPE].format];
-        this._mrtNames = [PrePassRenderer._TextureFormats[Constants.PREPASS_COLOR_TEXTURE_TYPE].name];
+        this._mrtFormats = [PrePassRenderer.TextureFormats[Constants.PREPASS_COLOR_TEXTURE_TYPE].format];
+        this._mrtNames = [PrePassRenderer.TextureFormats[Constants.PREPASS_COLOR_TEXTURE_TYPE].name];
         this.mrtCount = 1;
     }
 
@@ -712,8 +715,8 @@ export class PrePassRenderer {
                 this._textureIndices[type] = this._mrtLayout.length;
                 this._mrtLayout.push(type);
 
-                this._mrtFormats.push(PrePassRenderer._TextureFormats[type].format);
-                this._mrtNames.push(PrePassRenderer._TextureFormats[type].name);
+                this._mrtFormats.push(PrePassRenderer.TextureFormats[type].format);
+                this._mrtNames.push(PrePassRenderer.TextureFormats[type].name);
                 this.mrtCount++;
             }
 
