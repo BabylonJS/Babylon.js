@@ -294,7 +294,7 @@ export class SpriteManager implements ISpriteManager {
             return;
         }
 
-        this._scene.spriteManagers.push(this);
+        this._scene.spriteManagers && this._scene.spriteManagers.push(this);
         this.uniqueId = this.scene.getUniqueId();
 
         if (imgUrl) {
@@ -628,8 +628,10 @@ export class SpriteManager implements ISpriteManager {
         this._textureContent = null;
 
         // Remove from scene
-        const index = this._scene.spriteManagers.indexOf(this);
-        this._scene.spriteManagers.splice(index, 1);
+        if (this._scene.spriteManagers) {
+            const index = this._scene.spriteManagers.indexOf(this);
+            this._scene.spriteManagers.splice(index, 1);
+        }
 
         // Callback
         this.onDisposeObservable.notifyObservers(this);
