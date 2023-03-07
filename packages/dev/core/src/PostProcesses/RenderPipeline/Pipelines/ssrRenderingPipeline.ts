@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Logger } from "../../../Misc/logger";
 import { serialize, SerializationHelper } from "../../../Misc/decorators";
 import { Vector3, Matrix, Quaternion, TmpVectors } from "../../../Maths/math.vector";
 import type { Camera } from "../../../Cameras/camera";
