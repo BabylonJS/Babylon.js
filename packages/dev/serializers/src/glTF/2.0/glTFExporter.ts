@@ -2271,40 +2271,42 @@ export class _Exporter {
                 inverseBindMatrices.push(bone.getInvertedAbsoluteTransform());
 
                 const transformNode = bone.getTransformNode();
-                if (transformNode) {
+                if (transformNode && nodeMap[transformNode.uniqueId] !== null && nodeMap[transformNode.uniqueId] !== undefined) {
                     skin.joints.push(nodeMap[transformNode.uniqueId]);
                 } else {
                     Tools.Warn("Exporting a bone without a linked transform node is currently unsupported");
                 }
             }
 
-            // create buffer view for inverse bind matrices
-            const byteStride = 64; // 4 x 4 matrix of 32 bit float
-            const byteLength = inverseBindMatrices.length * byteStride;
-            const bufferViewOffset = binaryWriter.getByteOffset();
-            const bufferView = _GLTFUtilities._CreateBufferView(0, bufferViewOffset, byteLength, undefined, "InverseBindMatrices" + " - " + skeleton.name);
-            this._bufferViews.push(bufferView);
-            const bufferViewIndex = this._bufferViews.length - 1;
-            const bindMatrixAccessor = _GLTFUtilities._CreateAccessor(
-                bufferViewIndex,
-                "InverseBindMatrices" + " - " + skeleton.name,
-                AccessorType.MAT4,
-                AccessorComponentType.FLOAT,
-                inverseBindMatrices.length,
-                null,
-                null,
-                null
-            );
-            const inverseBindAccessorIndex = this._accessors.push(bindMatrixAccessor) - 1;
-            skin.inverseBindMatrices = inverseBindAccessorIndex;
-            this._skins.push(skin);
-            skinMap[skeleton.uniqueId] = this._skins.length - 1;
+            if (skin.joints.length > 0) {
+                // create buffer view for inverse bind matrices
+                const byteStride = 64; // 4 x 4 matrix of 32 bit float
+                const byteLength = inverseBindMatrices.length * byteStride;
+                const bufferViewOffset = binaryWriter.getByteOffset();
+                const bufferView = _GLTFUtilities._CreateBufferView(0, bufferViewOffset, byteLength, undefined, "InverseBindMatrices" + " - " + skeleton.name);
+                this._bufferViews.push(bufferView);
+                const bufferViewIndex = this._bufferViews.length - 1;
+                const bindMatrixAccessor = _GLTFUtilities._CreateAccessor(
+                    bufferViewIndex,
+                    "InverseBindMatrices" + " - " + skeleton.name,
+                    AccessorType.MAT4,
+                    AccessorComponentType.FLOAT,
+                    inverseBindMatrices.length,
+                    null,
+                    null,
+                    null
+                );
+                const inverseBindAccessorIndex = this._accessors.push(bindMatrixAccessor) - 1;
+                skin.inverseBindMatrices = inverseBindAccessorIndex;
+                this._skins.push(skin);
+                skinMap[skeleton.uniqueId] = this._skins.length - 1;
 
-            inverseBindMatrices.forEach((mat) => {
-                mat.m.forEach((cell: number) => {
-                    binaryWriter.setFloat32(cell);
+                inverseBindMatrices.forEach((mat) => {
+                    mat.m.forEach((cell: number) => {
+                        binaryWriter.setFloat32(cell);
+                    });
                 });
-            });
+            }
         }
         return promiseChain.then(() => {
             return skinMap;
