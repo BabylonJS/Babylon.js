@@ -112,7 +112,7 @@ void main() {
     #endif
 
     #ifdef REFLECTIVITY
-        vec4 reflectivity = vec4(1.0, 1.0, 1.0, 1.0);
+        vec4 reflectivity = vec4(0.0, 0.0, 0.0, 1.0);
 
         #ifdef METALLICWORKFLOW
             // Reflectivity calculus for metallic-roughness model based on:
@@ -166,9 +166,6 @@ void main() {
                 #ifdef REFLECTIVITYCOLOR
                     reflectivity.rgb = toLinearSpace(reflectivityColor.xyz);
                     reflectivity.a = 1.0;
-                // #else
-                    // We never reach this case since even if the reflectivity color is not defined
-                    // by the user, there is a default reflectivity/specular color set to (1.0, 1.0, 1.0)
                 #endif
             #endif
             #ifdef GLOSSINESSS
