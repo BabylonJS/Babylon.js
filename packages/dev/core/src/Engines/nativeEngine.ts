@@ -36,7 +36,7 @@ import type { NativeData } from "./Native/nativeDataStream";
 import { NativeDataStream } from "./Native/nativeDataStream";
 import type { INative, INativeCamera, INativeEngine, NativeFramebuffer, NativeProgram, NativeTexture, NativeUniform, NativeVertexArrayObject } from "./Native/nativeInterfaces";
 import { RuntimeError, ErrorCodes } from "../Misc/error";
-import { CompilationState, NativePipelineContext } from "./Native/nativePipelineContext";
+import { NativePipelineContext } from "./Native/nativePipelineContext";
 import { NativeRenderTargetWrapper } from "./Native/nativeRenderTargetWrapper";
 import { NativeHardwareTexture } from "./Native/nativeHardwareTexture";
 import type { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
@@ -698,14 +698,13 @@ export class NativeEngine extends Engine {
         fragmentCode = ThinEngine._ConcatenateShader(fragmentCode, defines);
 
         const onSuccess = () => {
-            nativePipelineContext.compilationState = CompilationState.compiled;
+            nativePipelineContext.isCompiled = true;
             nativePipelineContext.onCompiled?.();
             this.onAfterShaderCompilationObservable.notifyObservers(this);
         };
 
         if (this.isAsync(pipelineContext)) {
             return this._engine.createProgramAsync(vertexCode, fragmentCode, onSuccess, (error: Error) => {
-                nativePipelineContext.compilationState = CompilationState.error;
                 nativePipelineContext.compilationError = error;
             }) as WebGLProgram;
         } else {
