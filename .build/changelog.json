@@ -1,5 +1,5 @@
 {
-    "fromTag": "5.48.1",
+    "fromTag": "5.49.0",
     "changelog": {
         "5.49.0": [
             {
@@ -33,6 +33,440 @@
                 "tags": [
                     "bug",
                     "inputs"
+                ]
+            }
+        ],
+        "5.49.1": [
+            {
+                "pr": "13604",
+                "title": "Don't export bones of nodes that are not exported.",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/how-to-exclude-all-disabled-nodes-from-export/38780/8\r\n \r\nIt can be tested with the playground: https://playground.babylonjs.com/#8IMNBM#724, get the generated GLB and open it in the Sandbox. Currently, it will show validation errors. With the PR, these errors are removed.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "glTF"
+                ]
+            },
+            {
+                "pr": "13601",
+                "title": "add debug view on inspector and add method to sync physics body with …",
+                "description": "…bone",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/debugTabComponent.tsx"
+                ],
+                "tags": [
+                    "physics",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13603",
+                "title": "spriteManagers array is optional",
+                "description": "The `scene.spriteManagers` array is only initialized if a psrite manager is being constructor (using the dedicated scene component). This causes an exception when changing the `maintainStateBetweenFrames` flag in the rendering manager to true and then false.\n\nIn many places in the framework there is already a check to see if it is initialized or not - this PR forces the typings to be correct and adds checks to see if the sprite manager array exists.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/renderingManager.ts",
+                    "packages/dev/core/src/Sprites/spriteManager.ts",
+                    "packages/dev/core/src/Sprites/spriteSceneComponent.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "13602",
+                "title": "Center/Extent fix for aggregates",
+                "description": null,
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/physicsAggregate.ts",
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts"
+                ],
+                "tags": [
+                    "physics",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13596",
+                "title": "correct rotation application in RHS",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/webXRCamera.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13599",
+                "title": "Inspector: Add missing support for inspectableCustomProperties",
+                "description": "See https://forum.babylonjs.com/t/light-scan-postprocess/38816/5\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/postProcesses/commonPostProcessPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/postProcesses/commonRenderingPipelinePropertyGridComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "13588",
+                "title": "RTT: Use same logic for particle systems than in the main path",
+                "description": "See https://forum.babylonjs.com/t/rendertargettexture-problems-rendering-a-scene-to-a-texture/25908/10\r\n\r\nIn the past, we have had several problems with the rendering of particle systems in RTT (see https://forum.babylonjs.com/t/rain-effect-causes-screenshots-to-fail/18003/4 for eg).\r\n\r\nThe code in the scene to dispatch a particle system is:\r\n```typescript\r\nif (!particleSystem.isStarted() || !particleSystem.emitter) {\r\n    continue;\r\n}\r\n\r\nconst emitter = <any>particleSystem.emitter;\r\nif (!emitter.position || emitter.isEnabled()) {\r\n    this._activeParticleSystems.push(particleSystem);\r\n    particleSystem.animate();\r\n    this._renderingManager.dispatchParticles(particleSystem);\r\n}\r\n```\r\nwhereas in `RenderTargetTexture` it is:\r\n```typescript\r\nconst emitter: any = particleSystem.emitter;\r\nif (!particleSystem.isStarted() || !emitter || !emitter.position || !emitter.isEnabled()) {\r\n    continue;\r\n}\r\n\r\nif (currentRenderList.indexOf(emitter) >= 0) {\r\n    this._renderingManager.dispatchParticles(particleSystem);\r\n}\r\n```\r\nI don't understand why the checks/conditions are not the same, so this PR is to align the code in RTT with the code in the scene:\r\n```typescript\r\nif (!particleSystem.isStarted() || !emitter || emitter.position && !emitter.isEnabled()) {\r\n    continue;\r\n}\r\n\r\nthis._renderingManager.dispatchParticles(particleSystem);\r\n```\r\nIt's a breaking change, in a w ay, but I think it's more of a bug fix than anything else.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13589",
+                "title": "Particle systems: Fix crash when setting updateInAnimate to true",
+                "description": "https://forum.babylonjs.com/t/rendertargettexture-problems-rendering-a-scene-to-a-texture/25908/10",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/gpuParticleSystem.ts",
+                    "packages/dev/core/src/ShadersWGSL/gpuUpdateParticles.compute.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "particles"
+                ]
+            },
+            {
+                "pr": "13592",
+                "title": "SSR2: Fix local cubemap support",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/screenSpaceReflection2.fragment.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13593",
+                "title": "Geometry Buffer Renderer: Fix specular color not in linear space",
+                "description": "That was forgotten as part of #13336.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/geometry.fragment.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13594",
+                "title": "WebGPU: Fix crashes after latest spec changes",
+                "description": "See https://forum.babylonjs.com/t/webgpu-playground-examples-broken/38766",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureHelper.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTintWASM.ts",
+                    "packages/tools/babylonServer/public/twgsl/twgsl.js",
+                    "packages/tools/babylonServer/public/twgsl/twgsl.wasm"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13586",
+                "title": "Add Left/RightHandedBackwardReadOnly vectors",
+                "description": "Adds Left and Right handed backwards readonly vectors. These are simply the reverse of what `Left/RightHandedForwardReadOnly` are, but they allow for expressing the intent of something being forward/backwards vs something being right/left handed. ",
+                "author": {
+                    "name": "kv-ep",
+                    "url": "https://github.com/kv-ep"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13584",
+                "title": "Clean up and improve logic for instantiating nodes in AssetContainer.…",
+                "description": "…instantiateModelsToScene\r\n\r\nRelated forum issue: https://forum.babylonjs.com/t/instantiatemodelstoscene-doesnt-instantiate-whatever-argument-is-passed/38681",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/assetContainer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "assets"
+                ]
+            },
+            {
+                "pr": "13585",
+                "title": "Decal maps: Don't throw an error if the decal map plugin can't be instantiated",
+                "description": "See https://forum.babylonjs.com/t/sandbox-inspector-not-opening-for-textures/38711/5\r\n\r\nFix #13562 ",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrMaterial.decalMap.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.decalMap.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13159",
+                "title": "Implementation of WebXR Depth Sensing Feature",
+                "description": "Add a WebXR Feature of [Depth Sensing Module](https://www.w3.org/TR/webxr-depth-sensing-1/).\r\n\r\nRelated issue is #11876 \r\n\r\nRelated forum page is [here](https://forum.babylonjs.com/t/webar-demo-of-creating-depth-image-of-real-world-using-depth-sensing/34745).",
+                "author": {
+                    "name": "drumath2237",
+                    "url": "https://github.com/drumath2237"
+                },
+                "files": [
+                    ".build/changelog.json",
+                    ".build/config.json",
+                    ".editorconfig",
+                    ".eslintignore",
+                    ".eslintrc",
+                    ".gitattributes",
+                    ".github/ISSUE_TEMPLATE.md",
+                    ".github/ISSUE_TEMPLATE/bug_report.md",
+                    ".github/ISSUE_TEMPLATE/feature_request.md",
+                    ".gitignore",
+                    ".hintrc",
+                    ".prettierignore",
+                    ".prettierrc",
+                    ".vscode/extensions.json",
+                    ".vscode/launch.json",
+                    ".vscode/settings.json",
+                    ".vscode/tasks.json",
+                    "Animations/babylon.animatable.js",
+                    "Animations/babylon.animation.js",
+                    "CHANGELOG.md",
+                    "CNAME",
+                    "CNAME.txt",
+                    "CODE_OF_CONDUCT.md",
+                    "Cameras/babylon.arcRotateCamera.js",
+                    "Cameras/babylon.camera.js",
+                    "Cameras/babylon.freeCamera.js",
+                    "Cameras/babylon.touchCamera.js",
+                    "Collisions/babylon.collider.js",
+                    "Collisions/babylon.collisionPlane.js",
+                    "Culling/babylon.boundingBox.js",
+                    "Culling/babylon.boundingInfo.js",
+                    "Culling/babylon.boundingSphere.js",
+                    "Layer/babylon.layer.js",
+                    "Lights/babylon.directionalLight.js",
+                    "Lights/babylon.light.js",
+                    "Lights/babylon.pointLight.js",
+                    "Materials/babylon.effect.js",
+                    "Materials/babylon.material.js",
+                    "Materials/babylon.multiMaterial.js",
+                    "Materials/babylon.standardMaterial.js",
+                    "Materials/textures/babylon.baseTexture.js",
+                    "Materials/textures/babylon.cubeTexture.js",
+                    "Materials/textures/babylon.dynamicTexture.js",
+                    "Materials/textures/babylon.mirrorTexture.js",
+                    "Materials/textures/babylon.renderTargetTexture.js",
+                    "Materials/textures/babylon.texture.js",
+                    "Mesh/babylon.mesh.js",
+                    "Mesh/babylon.subMesh.js",
+                    "NOTICE.md",
+                    "Particles/babylon.particle.js",
+                    "Particles/babylon.particleSystem.js",
+                    "Shaders/default.fragment.fx",
+                    "Shaders/default.vertex.fx",
+                    "Shaders/iedefault.fragment.fx",
+                    "Shaders/iedefault.vertex.fx",
+                    "Shaders/layer.fragment.fx",
+                    "Shaders/layer.vertex.fx",
+                    "Shaders/particles.fragment.fx",
+                    "Shaders/particles.vertex.fx",
+                    "Shaders/sprites.fragment.fx",
+                    "Shaders/sprites.vertex.fx",
+                    "Sprites/babylon.sprite.js",
+                    "Sprites/babylon.spriteManager.js",
+                    "Tools/babylon.math.js",
+                    "Tools/babylon.sceneLoader.js",
+                    "Tools/babylon.tools.dds.js",
+                    "Tools/babylon.tools.js",
+                    "babylon.engine.js",
+                    "babylon.scene.js",
+                    "buildSystem.md",
+                    "contributing.md",
+                    "debug.log",
+                    "jest-puppeteer.config.js",
+                    "jest.config.ts",
+                    "jest.visualization.setup.afterEnv.ts",
+                    "lerna.json",
+                    "license.md",
+                    "nx.json",
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/buildTools/package.json",
+                    "packages/dev/buildTools/src/addJSToCompiledFiles.ts",
+                    "packages/dev/buildTools/src/buildShaders.ts",
+                    "packages/dev/buildTools/src/copyAssets.ts",
+                    "packages/dev/buildTools/src/declarationsEs6.ts",
+                    "packages/dev/buildTools/src/devWatcher.ts",
+                    "packages/dev/buildTools/src/generateDeclaration.ts",
+                    "packages/dev/buildTools/src/index.ts",
+                    "packages/dev/buildTools/src/ltsTransformer.ts",
+                    "packages/dev/buildTools/src/packageMapping.ts",
+                    "packages/dev/buildTools/src/pathTransform.ts",
+                    "packages/dev/buildTools/src/prepareEs6Build.ts",
+                    "packages/dev/buildTools/src/prepareSnapshot.ts",
+                    "packages/dev/buildTools/src/updateEngineVersion.ts",
+                    "packages/dev/buildTools/src/utils.ts",
+                    "packages/dev/buildTools/src/webpackTools.ts",
+                    "packages/dev/buildTools/tsconfig.build.json",
+                    "packages/dev/buildTools/tsconfig.json",
+                    "packages/dev/core/package.json",
+                    "packages/dev/core/readme.md"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13563",
+                "title": "Implementation of WebXR Depth Sensing Feature",
+                "description": "Re-open PR of #13159 \r\nSorry for not having reopend this for over two months.\r\nI want some reviews and disscussions for my API specification.\r\n\r\n=============\r\n\r\nAdd a WebXR Feature of [Depth Sensing Module](https://www.w3.org/TR/webxr-depth-sensing-1/).\r\n\r\nRelated issue is https://github.com/BabylonJS/Babylon.js/issues/11876\r\n\r\nRelated forum page is [here](https://forum.babylonjs.com/t/webar-demo-of-creating-depth-image-of-real-world-using-depth-sensing/34745).",
+                "author": {
+                    "name": "drumath2237",
+                    "url": "https://github.com/drumath2237"
+                },
+                "files": [
+                    "packages/dev/core/src/LibDeclarations/webxr.d.ts",
+                    "packages/dev/core/src/XR/features/WebXRDepthSensing.ts",
+                    "packages/dev/core/src/XR/features/index.ts",
+                    "packages/dev/core/src/XR/native/nativeXRFrame.ts",
+                    "packages/dev/core/src/XR/webXRFeaturesManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13580",
+                "title": "Fix connected controls being unset when opening the editor",
+                "description": "Example PG: http://playground.babylon.com/#XCPP9Y#20\r\nIf the editor is opened in this PG, the line is disconnected from the rectangle. This PR adds this connection back.\r\n",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/guiEditor/src/diagram/workbench.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "gui editor"
+                ]
+            },
+            {
+                "pr": "13562",
+                "title": "Decals: Add Decal Map support",
+                "description": "There are two sides to the implementation:\r\n* Mesh side:\r\n  * `MeshUVSpaceRenderer`. A class that let's you generate decals in a texture with `MeshUVSpaceRenderer.renderTexture(texture, position, normal, size, angle)`. The texture creation and the rendering of the decal is handled by the class.\r\n  * Assign a `MeshUVSpaceRenderer` instance to `mesh.decalMap` to enable the feature for the mesh\r\n* Material side:\r\n  * `DecalMapConfiguration`. A material plugin, implemented much like `DetailMapConfiguration` for the detail map feature.\r\n  * Enable the decal map rendering with `material.decalMap.isEnabled = true`.\r\n  * This class will automatically bind the texture from `mesh.decalMap`, which means a single material with decal map enabled can be used for multiple meshes, one does not have to create a material instance per mesh that needs to support decal map.\r\n\r\nTest PG: http://localhost:1338/#9BVW2S#48\r\n\r\nI will also update the docs.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrMaterial.decalMap.ts",
+                    "packages/dev/core/src/Materials/index.ts",
+                    "packages/dev/core/src/Materials/material.decalMap.ts",
+                    "packages/dev/core/src/Materials/material.decalMapConfiguration.ts",
+                    "packages/dev/core/src/Materials/materialFlags.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.decalMap.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.decalMap.ts",
+                    "packages/dev/core/src/Meshes/index.ts",
+                    "packages/dev/core/src/Meshes/meshUVSpaceRenderer.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/decalFragment.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/decalFragmentDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/decalVertexDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/defaultFragmentDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/defaultVertexDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockAlbedoOpacity.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrFragmentDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrFragmentSamplersDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrVertexDeclaration.fx",
+                    "packages/dev/core/src/Shaders/default.fragment.fx",
+                    "packages/dev/core/src/Shaders/default.vertex.fx",
+                    "packages/dev/core/src/Shaders/meshUVSpaceRenderer.fragment.fx",
+                    "packages/dev/core/src/Shaders/meshUVSpaceRenderer.vertex.fx",
+                    "packages/dev/core/src/Shaders/pbr.fragment.fx",
+                    "packages/dev/core/src/Shaders/pbr.vertex.fx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/debugTabComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/pbrMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/standardMaterialPropertyGridComponent.tsx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Decal Map.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "materials",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13579",
+                "title": "Fluid renderer: Fix stencil usage",
+                "description": "See https://forum.babylonjs.com/t/unexpected-hightlightlayer-effect-when-using-fluid-rendering/38648",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
                 ]
             }
         ],

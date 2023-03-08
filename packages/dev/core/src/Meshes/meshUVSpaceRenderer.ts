@@ -16,7 +16,7 @@ import "../Shaders/meshUVSpaceRenderer.fragment";
 
 /**
  * Options for the MeshUVSpaceRenderer
- * @since
+ * @since 5.49.1
  */
 export interface IMeshUVSpaceRendererOptions {
     /**
@@ -44,7 +44,7 @@ export interface IMeshUVSpaceRendererOptions {
 
 /**
  * Class used to render in the mesh UV space
- * @since
+ * @since 5.49.1
  */
 export class MeshUVSpaceRenderer {
     private static _Shader: Nullable<ShaderMaterial> = null;

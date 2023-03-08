@@ -24,7 +24,7 @@ export class DecalMapDefines extends MaterialDefines {
 
 /**
  * Plugin that implements the decal map component of a material
- * @since
+ * @since 5.49.1
  */
 export class DecalMapConfiguration extends MaterialPluginBase {
     private _isEnabled = false;
