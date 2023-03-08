@@ -5,9 +5,23 @@ import type { IPipelineContext } from "../IPipelineContext";
 import type { NativeEngine } from "../nativeEngine";
 
 export class NativePipelineContext implements IPipelineContext {
-    // TODO: async should be true?
-    public isAsync = false;
-    public isReady = false;
+    public isParallelCompiled: boolean = true;
+    public isCompiled: boolean = false;
+    public compilationError?: Error;
+
+    public get isAsync(): boolean {
+        return this.isParallelCompiled;
+    }
+
+    public get isReady(): boolean {
+        if (this.compilationError) {
+            const message = this.compilationError.message;
+            throw new Error("SHADER ERROR" + (typeof message === "string" ? "\n" + message : ""));
+        }
+        return this.isCompiled;
+    }
+
+    public onCompiled?: () => void;
 
     public _getVertexShaderCode(): string | null {
         return null;

@@ -39,6 +39,7 @@ export interface INativeEngine {
     updateDynamicVertexBuffer(vertexBuffer: NativeData, bytes: ArrayBuffer, byteOffset: number, byteLength: number): void;
 
     createProgram(vertexShader: string, fragmentShader: string): NativeProgram;
+    createProgramAsync(vertexShader: string, fragmentShader: string, onSuccess: () => void, onError: (error: Error) => void): NativeProgram;
     getUniforms(shaderProgram: NativeProgram, uniformsNames: string[]): WebGLUniformLocation[];
     getAttributes(shaderProgram: NativeProgram, attributeNames: string[]): number[];
 
