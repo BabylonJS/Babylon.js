@@ -432,6 +432,16 @@ export class BlockTools {
                 meshMatrixWeights.setAsAttribute("matricesWeights");
                 return meshMatrixWeights;
             }
+            case "MatrixIndicesExtraBlock": {
+                const meshMatrixIndices = new InputBlock("matricesIndicesExtra");
+                meshMatrixIndices.setAsAttribute("matricesIndicesExtra");
+                return meshMatrixIndices;
+            }
+            case "MatrixWeightsExtraBlock": {
+                const meshMatrixWeights = new InputBlock("matricesWeightsExtra");
+                meshMatrixWeights.setAsAttribute("matricesWeightsExtra");
+                return meshMatrixWeights;
+            }
             case "TimeBlock": {
                 const timeBlock = new InputBlock("Time", undefined, NodeMaterialBlockConnectionPointTypes.Float);
                 timeBlock.animationType = AnimatedInputBlockTypes.Time;

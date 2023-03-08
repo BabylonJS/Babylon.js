@@ -244,6 +244,8 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                 attributeOptions = [
                     { label: "matricesIndices", value: "matricesIndices" },
                     { label: "matricesWeights", value: "matricesWeights" },
+                    { label: "matricesIndicesExtra", value: "matricesIndicesExtra" },
+                    { label: "matricesWeightsExtra", value: "matricesWeightsExtra" },
                     { label: "tangent", value: "tangent" },
                 ];
                 systemValuesOptions = [{ label: "Camera parameters", value: NodeMaterialSystemValues.CameraParameters }];
