@@ -50,6 +50,13 @@ class _ClickInfo {
     }
 }
 
+/** @internal */
+class _ClickEvent {
+    public clickInfo: _ClickInfo;
+    public evt: IPointerEvent;
+    public timeoutId: number;
+}
+
 /**
  * Class used to manage all inputs for the scene.
  */
@@ -84,8 +91,6 @@ export class InputManager {
     ) => void;
     private _initActionManager: (act: Nullable<AbstractActionManager>, clickInfo: _ClickInfo) => Nullable<AbstractActionManager>;
     private _delayedSimpleClick: (btn: number, clickInfo: _ClickInfo, cb: (clickInfo: _ClickInfo, pickResult: Nullable<PickingInfo>) => void) => void;
-    private _delayedSimpleClickTimeout: number;
-    private _previousDelayedSimpleClickTimeout: number;
     private _meshPickProceed = false;
 
     private _previousButtonPressed: number;
@@ -115,6 +120,7 @@ export class InputManager {
     private _meshUnderPointerId: { [pointerId: number]: Nullable<AbstractMesh> } = {};
     private _movePointerInfo: Nullable<PointerInfo> = null;
     private _cameraObserverCount = 0;
+    private _delayedClicks: Array<Nullable<_ClickEvent>> = [null, null, null, null, null];
 
     // Keyboard
     private _onKeyDown: (evt: IKeyboardEvent) => void;
@@ -593,7 +599,19 @@ export class InputManager {
                 this._doubleClickOccured = false;
                 clickInfo.singleClick = true;
                 clickInfo.ignore = false;
-                cb(clickInfo, this._currentPickResult);
+
+                // If we have a delayed click, we need to resolve the TAP event
+                if (this._delayedClicks[btn]) {
+                    const evt = this._delayedClicks[btn]!.evt;
+                    const type = PointerEventTypes.POINTERTAP;
+                    const pi = new PointerInfo(type, evt, this._currentPickResult);
+                    if (scene.onPointerObservable.hasObservers() && scene.onPointerObservable.hasSpecificMask(type)) {
+                        scene.onPointerObservable.notifyObservers(pi, type);
+                    }
+
+                    // Clear the delayed click
+                    this._delayedClicks[btn] = null;
+                }
             }
         };
 
@@ -651,9 +669,12 @@ export class InputManager {
                     }
                     // at least one double click is required to be check and exclusive double click is enabled
                     else {
-                        // wait that no double click has been raised during the double click delay
-                        this._previousDelayedSimpleClickTimeout = this._delayedSimpleClickTimeout;
-                        this._delayedSimpleClickTimeout = window.setTimeout(this._delayedSimpleClick.bind(this, btn, clickInfo, cb), InputManager.DoubleClickDelay);
+                        // Queue up a delayed click, just in case this isn't a double click
+                        const delayedClick = new _ClickEvent();
+                        delayedClick.evt = evt;
+                        delayedClick.clickInfo = clickInfo;
+                        delayedClick.timeoutId = window.setTimeout(this._delayedSimpleClick.bind(this, btn, clickInfo, cb), InputManager.DoubleClickDelay);
+                        this._delayedClicks[btn] = delayedClick;
                     }
 
                     let checkDoubleClick = obs1.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP) || obs2.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP);
@@ -672,10 +693,12 @@ export class InputManager {
                                 this._doubleClickOccured = true;
                                 clickInfo.doubleClick = true;
                                 clickInfo.ignore = false;
-                                if (InputManager.ExclusiveDoubleClickMode && this._previousDelayedSimpleClickTimeout) {
-                                    clearTimeout(this._previousDelayedSimpleClickTimeout);
+                                // If we have a pending click, we need to cancel it
+                                if (InputManager.ExclusiveDoubleClickMode && this._delayedClicks[btn]) {
+                                    clearTimeout(this._delayedClicks[btn]?.timeoutId);
+                                    this._delayedClicks[btn] = null;
                                 }
-                                this._previousDelayedSimpleClickTimeout = this._delayedSimpleClickTimeout;
+
                                 cb(clickInfo, this._currentPickResult);
                             }
                             // if the two successive clicks are too far, it's just two simple clicks
@@ -686,11 +709,11 @@ export class InputManager {
                                 this._previousStartingPointerPosition.y = this._startingPointerPosition.y;
                                 this._previousButtonPressed = btn;
                                 if (InputManager.ExclusiveDoubleClickMode) {
-                                    if (this._previousDelayedSimpleClickTimeout) {
-                                        clearTimeout(this._previousDelayedSimpleClickTimeout);
+                                    // If we have a delayed click, we need to cancel it
+                                    if (this._delayedClicks[btn]) {
+                                        clearTimeout(this._delayedClicks[btn]?.timeoutId);
+                                        this._delayedClicks[btn] = null;
                                     }
-                                    this._previousDelayedSimpleClickTimeout = this._delayedSimpleClickTimeout;
-
                                     cb(clickInfo, this._previousPickResult);
                                 } else {
                                     cb(clickInfo, this._currentPickResult);
@@ -710,10 +733,9 @@ export class InputManager {
                 }
             }
 
-            // The follow callback should only be executed when needToIgnoreNext is false
-            // and when ExclusiveDoubleClickMode is false.  This is because the
-            // callback is already executed in the double click case when true
-            if (!needToIgnoreNext && !InputManager.ExclusiveDoubleClickMode) {
+            // Even if ExclusiveDoubleClickMode is true, we need to always handle
+            // up events at time of execution, unless we're explicitly ignoring them.
+            if (!needToIgnoreNext) {
                 cb(clickInfo, this._currentPickResult);
             }
         };
@@ -775,6 +797,35 @@ export class InputManager {
             // preserve compatibility with Safari when pointerId is not present
             if (evt.pointerId === undefined) {
                 (evt as any).pointerId = 0;
+            }
+
+            // If ExclusiveDoubleClickMode is true, we need to resolve any pending delayed clicks
+            if (InputManager.ExclusiveDoubleClickMode) {
+                for (let i = 0; i < this._delayedClicks.length; i++) {
+                    if (this._delayedClicks[i]) {
+                        // If the button that was pressed is the same as the one that was released,
+                        // just clear the timer.  This will be resolved in the up event.
+                        if (evt.button === i) {
+                            clearTimeout(this._delayedClicks[i]?.timeoutId);
+                        } else {
+                            // Otherwise, we need to resolve the click
+                            const clickInfo = this._delayedClicks[i]!.clickInfo;
+                            this._doubleClickOccured = false;
+                            clickInfo.singleClick = true;
+                            clickInfo.ignore = false;
+
+                            const prevEvt = this._delayedClicks[i]!.evt;
+                            const type = PointerEventTypes.POINTERTAP;
+                            const pi = new PointerInfo(type, prevEvt, this._currentPickResult);
+                            if (scene.onPointerObservable.hasObservers() && scene.onPointerObservable.hasSpecificMask(type)) {
+                                scene.onPointerObservable.notifyObservers(pi, type);
+                            }
+
+                            // Clear the delayed click
+                            this._delayedClicks[i] = null;
+                        }
+                    }
+                }
             }
 
             this._updatePointerPosition(evt);
