@@ -1,5 +1,12 @@
 # Changelog
 
+## 5.49.2
+
+### Core
+
+- Fix weird linting issues that slipped past CI - by [bghgary](https://github.com/bghgary) ([#13606](https://github.com/BabylonJS/Babylon.js/pull/13606))
+- Asynchronous shader compilation in Babylon Native - by [glangstonb](https://github.com/glangstonb) ([#13587](https://github.com/BabylonJS/Babylon.js/pull/13587))
+
 ## 5.49.1
 
 ### Core
