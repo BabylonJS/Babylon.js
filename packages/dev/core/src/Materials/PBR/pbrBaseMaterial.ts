@@ -839,7 +839,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * It helps with side by side comparison against the final render
      * This defaults to -1
      */
-    private _debugLimit = -1;
+    public debugLimit = -1;
 
     /**
      * @internal
@@ -847,7 +847,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * As the default viewing range might not be enough (if the ambient is really small for instance)
      * You can use the factor to better multiply the final value.
      */
-    private _debugFactor = 1;
+    public debugFactor = 1;
 
     /**
      * Defines the clear coat layer parameters for the material.
@@ -2202,7 +2202,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                 ubo.updateColor3("vAmbientColor", this._globalAmbientColor);
 
-                ubo.updateFloat2("vDebugMode", this._debugLimit, this._debugFactor);
+                ubo.updateFloat2("vDebugMode", this.debugLimit, this.debugFactor);
             }
 
             // Textures
