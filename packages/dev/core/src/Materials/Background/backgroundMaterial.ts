@@ -970,6 +970,9 @@ export class BackgroundMaterial extends PushMaterial {
 
         if (scene.performancePriority !== ScenePerformancePriority.BackwardCompatible) {
             this.checkReadyOnlyOnce = true;
+            scene.onScenePerformancePriorityChangedObservable.addOnce(() => {
+                this.checkReadyOnlyOnce = false;
+            });
         }
 
         return true;
