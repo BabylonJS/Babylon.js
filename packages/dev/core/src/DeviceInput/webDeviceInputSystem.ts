@@ -1,6 +1,6 @@
 import type { Engine } from "../Engines/engine";
 import type { IPointerEvent, IUIEvent } from "../Events/deviceInputEvents";
-import { DomManagement } from "../Misc/domManagement";
+import { DomManagement, IsNavigatorAvailable } from "../Misc/domManagement";
 import type { Observer } from "../Misc/observable";
 import { Tools } from "../Misc/tools";
 import type { Nullable } from "../types";
@@ -26,7 +26,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     private readonly _usingSafari: boolean = Tools.IsSafari();
     // Found solution for determining if MacOS is being used here:
     // https://stackoverflow.com/questions/10527983/best-way-to-detect-mac-os-x-or-windows-computers-with-javascript-or-jquery
-    private readonly _usingMacOS: boolean = /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform);
+    private readonly _usingMacOS: boolean = IsNavigatorAvailable() && /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform);
 
     private _onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void;
     private _onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void;
