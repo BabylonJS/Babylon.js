@@ -126,12 +126,34 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
     @serialize()
     public reflectivityThreshold = 0.04;
 
+    @serialize("_ssrDownsample")
+    private _ssrDownsample = 0;
+
+    /**
+     * Gets or sets the downsample factor used to reduce the size of the texture used to compute the SSR contribution (default: 0).
+     * Use 0 to render the SSR contribution at full resolution, 1 to render at half resolution, 2 to render at 1/4 resolution, etc.
+     * Note that it is used only when blurring is enabled (blurDispersionStrength \> 0), because in that mode the SSR contribution is generated in a separate texture.
+     */
+    @serialize()
+    public get ssrDownsample() {
+        return this._ssrDownsample;
+    }
+
+    public set ssrDownsample(downsample: number) {
+        if (downsample === this._ssrDownsample) {
+            return;
+        }
+
+        this._ssrDownsample = downsample;
+        this._buildPipeline();
+    }
+
     @serialize("blurDispersionStrength")
     private _blurDispersionStrength = 0.03;
 
     /**
      * Gets or sets the blur dispersion strength. Set this value to 0 to disable blurring (default: 0.05)
-     * The reflections are blurred based on the distance between the pixel shaded and the reflected pixel: the higher the distance the more blurry the reflection is.
+     * The reflections are blurred based on the roughness of the surface and the distance between the pixel shaded and the reflected pixel: the higher the distance the more blurry the reflection is.
      * blurDispersionStrength allows to increase or decrease this effect.
      */
     public get blurDispersionStrength() {
@@ -152,12 +174,36 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         }
     }
 
+    private _useBlur() {
+        return this._blurDispersionStrength > 0;
+    }
+
     /**
      * Apply different weighting when blurring.
      * Must be a value between 2 and 5
      */
     @serialize()
     public blurQuality = 2;
+
+    @serialize("blurDownsample")
+    private _blurDownsample = 0;
+
+    /**
+     * Gets or sets the downsample factor used to reduce the size of the textures used to blur the reflection effect (default: 0).
+     * Use 0 to blur at full resolution, 1 to render at half resolution, 2 to render at 1/4 resolution, etc.
+     */
+    public get blurDownsample() {
+        return this._blurDownsample;
+    }
+
+    public set blurDownsample(downsample: number) {
+        if (downsample === this._blurDownsample) {
+            return;
+        }
+
+        this._blurDownsample = downsample;
+        this._buildPipeline();
+    }
 
     @serialize("enableSmoothReflections")
     private _enableSmoothReflections: boolean = false;
@@ -333,24 +379,24 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         return this._depthRenderer;
     }
 
-    @serialize("backfaceDepthTextureSizeFactor")
-    private _backfaceDepthTextureSizeFactor = 1;
+    @serialize("backfaceDepthTextureDownsample")
+    private _backfaceDepthTextureDownsample = 0;
 
     /**
-     * Gets or sets the size factor used to create the backface depth texture, used only if enableAutomaticThicknessComputation = true (default: 1).
-     * This factor is used as a divisor of the full screen size (so, 2 means that the backface depth texture will be created at half the screen size, meaning better performances).
-     * Note that you will get rendering artefacts when using a value different from 1: it's a tradeoff between image quality and performances.
+     * Gets or sets the downsample factor (default: 0) used to create the backface depth texture - used only if enableAutomaticThicknessComputation = true.
+     * Use 0 to render the depth at full resolution, 1 to render at half resolution, 2 to render at 1/4 resolution, etc.
+     * Note that you will get rendering artefacts when using a value different from 0: it's a tradeoff between image quality and performances.
      */
-    public get backfaceDepthTextureSizeFactor() {
-        return this._backfaceDepthTextureSizeFactor;
+    public get backfaceDepthTextureDownsample() {
+        return this._backfaceDepthTextureDownsample;
     }
 
-    public set backfaceDepthTextureSizeFactor(factor: number) {
-        if (this._backfaceDepthTextureSizeFactor === factor) {
+    public set backfaceDepthTextureDownsample(factor: number) {
+        if (this._backfaceDepthTextureDownsample === factor) {
             return;
         }
 
-        this._backfaceDepthTextureSizeFactor = factor;
+        this._backfaceDepthTextureDownsample = factor;
         this._resizeDepthRenderer();
     }
 
@@ -538,20 +584,20 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
 
     private _getTextureSize() {
         const engine = this._scene.getEngine();
-        const geometryBufferRenderer = this._geometryBufferRenderer;
         const prePassRenderer = this._prePassRenderer;
 
         let textureSize: ISize = { width: engine.getRenderWidth(), height: engine.getRenderHeight() };
 
-        if (geometryBufferRenderer) {
-            textureSize = geometryBufferRenderer.getGBuffer().textures[0].getSize();
-        } else if (prePassRenderer) {
+        if (prePassRenderer) {
             const depthIndex = prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
             const renderTarget = prePassRenderer.getRenderTarget();
 
             if (renderTarget && renderTarget.textures) {
                 textureSize = renderTarget.textures[depthIndex].getSize();
             }
+        } else if (this._ssrPostProcess?.inputTexture) {
+            textureSize.width = this._ssrPostProcess.inputTexture.width;
+            textureSize.height = this._ssrPostProcess.inputTexture.height;
         }
 
         return textureSize;
@@ -596,7 +642,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         if (this._clipToFrustum) {
             defines.push("#define SSRAYTRACE_CLIP_TO_FRUSTUM");
         }
-        if (this._blurDispersionStrength > 0) {
+        if (this._useBlur()) {
             defines.push("#define SSR_USE_BLUR");
         }
         if (this._debug) {
@@ -657,7 +703,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
             )
         );
 
-        if (this._blurDispersionStrength > 0) {
+        if (this._useBlur()) {
             this._createBlurAndCombinerPostProcesses();
             this.addEffect(
                 new PostProcessRenderEffect(
@@ -694,8 +740,8 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         const textureSize = this._getTextureSize();
         const depthRendererSize = this._depthRenderer.getDepthMap().getSize();
 
-        const width = Math.floor(textureSize.width / this._backfaceDepthTextureSizeFactor);
-        const height = Math.floor(textureSize.height / this._backfaceDepthTextureSizeFactor);
+        const width = Math.floor(textureSize.width / (this._backfaceDepthTextureDownsample + 1));
+        const height = Math.floor(textureSize.height / (this._backfaceDepthTextureDownsample + 1));
 
         if (depthRendererSize.width !== width || depthRendererSize.height !== height) {
             this._depthRenderer.getDepthMap().resize({ width, height });
@@ -796,7 +842,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
 
             if (this._enableAutomaticThicknessComputation && this._depthRenderer) {
                 effect.setTexture("backDepthSampler", this._depthRenderer.getDepthMap());
-                effect.setFloat("backSizeFactor", this._backfaceDepthTextureSizeFactor);
+                effect.setFloat("backSizeFactor", this._backfaceDepthTextureDownsample + 1);
             }
 
             const camera = this._scene.activeCamera;
@@ -859,7 +905,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
             "screenSpaceReflection2Blur",
             ["blurQuality", "texelOffsetScale"],
             ["textureSampler"],
-            1,
+            this._useBlur() ? 1 / (this._ssrDownsample + 1) : 1,
             null,
             Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
             engine,
@@ -870,18 +916,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         this._blurPostProcessX.autoClear = false;
 
         this._blurPostProcessX.onApplyObservable.add((effect) => {
-            let width = this._scene.getEngine().getRenderWidth();
-
-            if (this._prePassRenderer) {
-                const colorIndex = this._prePassRenderer.getIndex(Constants.PREPASS_COLOR_TEXTURE_TYPE);
-                const renderTarget = this._prePassRenderer.getRenderTarget();
-
-                if (renderTarget && renderTarget.textures) {
-                    width = renderTarget.textures[colorIndex].getSize().width;
-                }
-            } else {
-                width = this._ssrPostProcess?.inputTexture.width ?? width;
-            }
+            const width = this._blurPostProcessX?.inputTexture.width ?? this._scene.getEngine().getRenderWidth();
 
             effect.setFloat("blurQuality", this.blurQuality);
             effect.setFloat2("texelOffsetScale", this._blurDispersionStrength / width, 0);
@@ -892,7 +927,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
             "screenSpaceReflection2Blur",
             ["blurQuality", "texelOffsetScale"],
             ["textureSampler"],
-            1,
+            this._useBlur() ? 1 / (this._blurDownsample + 1) : 1,
             null,
             Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
             engine,
@@ -903,18 +938,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         this._blurPostProcessY.autoClear = false;
 
         this._blurPostProcessY.onApplyObservable.add((effect) => {
-            let height = this._scene.getEngine().getRenderHeight();
-
-            if (this._prePassRenderer) {
-                const colorIndex = this._prePassRenderer.getIndex(Constants.PREPASS_COLOR_TEXTURE_TYPE);
-                const renderTarget = this._prePassRenderer.getRenderTarget();
-
-                if (renderTarget && renderTarget.textures) {
-                    height = renderTarget.textures[colorIndex].getSize().height;
-                }
-            } else {
-                height = this._ssrPostProcess?.inputTexture.height ?? height;
-            }
+            const height = this._blurPostProcessY?.inputTexture.height ?? this._scene.getEngine().getRenderHeight();
 
             effect.setFloat("blurQuality", this.blurQuality);
             effect.setFloat2("texelOffsetScale", 0, this._blurDispersionStrength / height);
@@ -929,9 +953,9 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         this._blurCombinerPostProcess = new PostProcess(
             "SSRblurCombiner",
             "screenSpaceReflection2BlurCombiner",
-            ["strength", "reflectionSpecularFalloffExponent"],
+            ["strength", "reflectionSpecularFalloffExponent", "reflectivityThreshold"],
             ["textureSampler", "mainSampler", "reflectivitySampler"],
-            1,
+            this._useBlur() ? 1 / (this._blurDownsample + 1) : 1,
             null,
             Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             engine,
@@ -970,6 +994,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
 
             effect.setFloat("strength", this.strength);
             effect.setFloat("reflectionSpecularFalloffExponent", this.reflectionSpecularFalloffExponent);
+            effect.setFloat("reflectivityThreshold", this.reflectivityThreshold);
         });
     }
 
