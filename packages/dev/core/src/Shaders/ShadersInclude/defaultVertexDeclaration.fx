@@ -50,4 +50,6 @@ uniform vec4 vDetailInfos;
 uniform mat4 detailMatrix;
 #endif
 
+#include<decalVertexDeclaration>
+
 #define ADDITIONAL_VERTEX_DECLARATION

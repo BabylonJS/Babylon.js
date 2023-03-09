@@ -201,11 +201,8 @@ export class NativeEngine extends Engine {
     private _zOffsetUnits: number = 0;
     private _depthWrite: boolean = true;
 
-    public getHardwareScalingLevel(): number {
-        return this._engine.getHardwareScalingLevel();
-    }
-
     public setHardwareScalingLevel(level: number): void {
+        super.setHardwareScalingLevel(level);
         this._engine.setHardwareScalingLevel(level);
     }
 
@@ -357,10 +354,13 @@ export class NativeEngine extends Engine {
                 writable: true,
             });
         }
+
         // Currently we do not fully configure the ThinEngine on construction of NativeEngine.
         // Setup resolution scaling based on display settings.
         const devicePixelRatio = window ? window.devicePixelRatio || 1.0 : 1.0;
-        this._hardwareScalingLevel = options.adaptToDeviceRatio ? devicePixelRatio : 1.0;
+        this._hardwareScalingLevel = options.adaptToDeviceRatio ? 1.0 / devicePixelRatio : 1.0;
+        this._engine.setHardwareScalingLevel(this._hardwareScalingLevel);
+        this._lastDevicePixelRatio = devicePixelRatio;
         this.resize();
 
         const currentDepthFunction = this.getDepthFunction();
@@ -646,27 +646,44 @@ export class NativeEngine extends Engine {
         }
     }
 
-    /**
-     * @internal
-     */
-    public _isRenderingStateCompiled(pipelineContext: IPipelineContext): boolean {
-        // TODO: support async shader compilcation
-        return true;
+    public isAsync(pipelineContext: IPipelineContext): boolean {
+        return !!(pipelineContext.isAsync && this._engine.createProgramAsync);
     }
 
     /**
      * @internal
      */
     public _executeWhenRenderingStateIsCompiled(pipelineContext: IPipelineContext, action: () => void) {
-        // TODO: support async shader compilcation
-        action();
+        const nativePipelineContext = pipelineContext as NativePipelineContext;
+
+        if (!this.isAsync(pipelineContext)) {
+            action();
+            return;
+        }
+
+        const oldHandler = nativePipelineContext.onCompiled;
+
+        if (oldHandler) {
+            nativePipelineContext.onCompiled = () => {
+                oldHandler!();
+                action();
+            };
+        } else {
+            nativePipelineContext.onCompiled = action;
+        }
     }
 
     public createRawShaderProgram(): WebGLProgram {
         throw new Error("Not Supported");
     }
 
-    public createShaderProgram(_pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: Nullable<string>): WebGLProgram {
+    public createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: Nullable<string>): WebGLProgram {
+        const nativePipelineContext = pipelineContext as NativePipelineContext;
+
+        if (nativePipelineContext.nativeProgram) {
+            throw new Error("Tried to create a second program in the same NativePipelineContext");
+        }
+
         this.onBeforeShaderCompilationObservable.notifyObservers(this);
 
         const vertexInliner = new ShaderCodeInliner(vertexCode);
@@ -680,9 +697,26 @@ export class NativeEngine extends Engine {
         vertexCode = ThinEngine._ConcatenateShader(vertexCode, defines);
         fragmentCode = ThinEngine._ConcatenateShader(fragmentCode, defines);
 
-        const program = this._engine.createProgram(vertexCode, fragmentCode);
-        this.onAfterShaderCompilationObservable.notifyObservers(this);
-        return program as WebGLProgram;
+        const onSuccess = () => {
+            nativePipelineContext.isCompiled = true;
+            nativePipelineContext.onCompiled?.();
+            this.onAfterShaderCompilationObservable.notifyObservers(this);
+        };
+
+        if (this.isAsync(pipelineContext)) {
+            return this._engine.createProgramAsync(vertexCode, fragmentCode, onSuccess, (error: Error) => {
+                nativePipelineContext.compilationError = error;
+            }) as WebGLProgram;
+        } else {
+            try {
+                const program = (nativePipelineContext.nativeProgram = this._engine.createProgram(vertexCode, fragmentCode));
+                onSuccess();
+                return program as WebGLProgram;
+            } catch (e: any) {
+                const message = e?.message;
+                throw new Error("SHADER ERROR" + (typeof message === "string" ? "\n" + message : ""));
+            }
+        }
     }
 
     /**
@@ -1779,13 +1813,17 @@ export class NativeEngine extends Engine {
     /**
      * Wraps an external native texture in a Babylon texture.
      * @param texture defines the external texture
+     * @param hasMipMaps defines whether the external texture has mip maps
+     * @param samplingMode defines the sampling mode for the external texture (default: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE)
      * @returns the babylon internal texture
      */
-    public wrapNativeTexture(texture: any): InternalTexture {
+    public wrapNativeTexture(texture: any, hasMipMaps: boolean = false, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE): InternalTexture {
         const hardwareTexture = new NativeHardwareTexture(texture, this._engine);
         const internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
         internalTexture._hardwareTexture = hardwareTexture;
         internalTexture.isReady = true;
+        internalTexture.useMipMaps = hasMipMaps;
+        this.updateTextureSamplingMode(samplingMode, internalTexture);
         return internalTexture;
     }
 

@@ -120,6 +120,7 @@ export class NodeMaterialBuildState {
         }
 
         this.compilationString = "precision highp float;\r\n" + this.compilationString;
+        this.compilationString = "#if defined(WEBGL2) || defines(WEBGPU)\r\nprecision highp sampler2DArray;\r\n#endif\r\n" + this.compilationString;
 
         for (const extensionName in this.extensions) {
             const extension = this.extensions[extensionName];
@@ -182,6 +183,16 @@ export class NodeMaterialBuildState {
     public _emit2DSampler(name: string) {
         if (this.samplers.indexOf(name) < 0) {
             this._samplerDeclaration += `uniform sampler2D ${name};\r\n`;
+            this.samplers.push(name);
+        }
+    }
+
+    /**
+     * @internal
+     */
+    public _emit2DArraySampler(name: string) {
+        if (this.samplers.indexOf(name) < 0) {
+            this._samplerDeclaration += `uniform sampler2DArray ${name};\r\n`;
             this.samplers.push(name);
         }
     }

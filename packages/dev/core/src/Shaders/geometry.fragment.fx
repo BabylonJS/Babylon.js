@@ -164,7 +164,7 @@ void main() {
                 #endif
             #else 
                 #ifdef REFLECTIVITYCOLOR
-                    reflectivity.rgb = reflectivityColor.xyz;
+                    reflectivity.rgb = toLinearSpace(reflectivityColor.xyz);
                     reflectivity.a = 1.0;
                 // #else
                     // We never reach this case since even if the reflectivity color is not defined

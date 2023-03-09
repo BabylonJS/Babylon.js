@@ -1576,6 +1576,18 @@
             "title": "MultiRenderTarget with different texture types",
             "playgroundId": "#XSNYAU#1",
             "excludedEngines": ["webgpu"]
+        },
+        {
+            "title": "Decal Map", 
+            "playgroundId": "#9BVW2S#43"
+        },
+        {
+            "title": "GUI Text Block with resizeToFit and forceResizeWidth",
+            "playgroundId": "#XCPP9Y#17810"
+        },
+        {
+            "title": "GUI Horizontal Stack Panel and Text Block with resizeToFit and forceResizeWidth",
+            "playgroundId": "#XCPP9Y#17811"
         }
     ]
 }

@@ -136,6 +136,10 @@ export class WebXRFeatureName {
      * The name of the composition layers feature
      */
     public static readonly LAYERS = "xr-layers";
+    /**
+     * The name of the depth sensing feature
+     */
+    public static readonly DEPTH_SENSING = "xr-depth-sensing";
 }
 
 /**

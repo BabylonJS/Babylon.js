@@ -1689,7 +1689,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /**
      * @internal
      */
-    public _bind(subMesh: SubMesh, effect: Effect, fillMode: number): Mesh {
+    public _bind(subMesh: SubMesh, effect: Effect, fillMode: number, allowInstancedRendering = true): Mesh {
         if (!this._geometry) {
             return this;
         }
@@ -1722,7 +1722,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // VBOs
-        if (!this._userInstancedBuffersStorage || this.hasThinInstances) {
+        if (!allowInstancedRendering || !this._userInstancedBuffersStorage || this.hasThinInstances) {
             this._geometry._bind(effect, indexToBind);
         } else {
             this._geometry._bind(effect, indexToBind, this._userInstancedBuffersStorage.vertexBuffers, this._userInstancedBuffersStorage.vertexArrayObjects);
@@ -2311,7 +2311,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         if (!hardwareInstancedRendering) {
             // Binding will be done later because we need to add more info to the VB
-            this._bind(subMesh, effect, fillMode);
+            this._bind(subMesh, effect, fillMode, false);
         }
 
         const effectiveMaterial = this._internalMeshDataInfo._effectiveMaterial;

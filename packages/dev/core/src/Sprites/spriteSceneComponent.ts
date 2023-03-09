@@ -27,7 +27,7 @@ declare module "../scene" {
          * All of the sprite managers added to this scene
          * @see https://doc.babylonjs.com/features/featuresDeepDive/sprites
          */
-        spriteManagers: Array<ISpriteManager>;
+        spriteManagers?: Array<ISpriteManager>;
 
         /**
          * An event triggered when sprites rendering is about to start
@@ -111,7 +111,7 @@ Scene.prototype._internalPickSprites = function (ray: Ray, predicate?: (sprite: 
         camera = this.activeCamera;
     }
 
-    if (this.spriteManagers.length > 0) {
+    if (this.spriteManagers && this.spriteManagers.length > 0) {
         for (let spriteIndex = 0; spriteIndex < this.spriteManagers.length; spriteIndex++) {
             const spriteManager = this.spriteManagers[spriteIndex];
 
@@ -153,7 +153,7 @@ Scene.prototype._internalMultiPickSprites = function (ray: Ray, predicate?: (spr
         camera = this.activeCamera;
     }
 
-    if (this.spriteManagers.length > 0) {
+    if (this.spriteManagers && this.spriteManagers.length > 0) {
         for (let spriteIndex = 0; spriteIndex < this.spriteManagers.length; spriteIndex++) {
             const spriteManager = this.spriteManagers[spriteIndex];
 
@@ -312,6 +312,9 @@ export class SpriteSceneComponent implements ISceneComponent {
         this.scene.onAfterSpritesRenderingObservable.clear();
 
         const spriteManagers = this.scene.spriteManagers;
+        if (!spriteManagers) {
+            return;
+        }
         while (spriteManagers.length) {
             spriteManagers[0].dispose();
         }
@@ -358,7 +361,7 @@ export class SpriteSceneComponent implements ISceneComponent {
     private _pointerDown(unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, evt: IPointerEvent): Nullable<PickingInfo> {
         const scene = this.scene;
         scene._pickedDownSprite = null;
-        if (scene.spriteManagers.length > 0) {
+        if (scene.spriteManagers && scene.spriteManagers.length > 0) {
             pickResult = scene.pickSprite(unTranslatedPointerX, unTranslatedPointerY, this._spritePredicate, false, scene.cameraToUseForPointers || undefined);
 
             if (pickResult && pickResult.hit && pickResult.pickedSprite) {
@@ -405,7 +408,7 @@ export class SpriteSceneComponent implements ISceneComponent {
         doubleClick: boolean
     ): Nullable<PickingInfo> {
         const scene = this.scene;
-        if (scene.spriteManagers.length > 0) {
+        if (scene.spriteManagers && scene.spriteManagers.length > 0) {
             const spritePickResult = scene.pickSprite(unTranslatedPointerX, unTranslatedPointerY, this._spritePredicate, false, scene.cameraToUseForPointers || undefined);
 
             if (spritePickResult) {

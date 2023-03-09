@@ -351,7 +351,7 @@ export class TextBlock extends Control {
 
         if (this._resizeToFit) {
             if (this._textWrapping === TextWrapping.Clip || this._forceResizeWidth) {
-                const newWidth = Math.ceil(this._paddingLeftInPixels + this._paddingRightInPixels + maxLineWidth);
+                const newWidth = Math.ceil(this._paddingLeftInPixels) + Math.ceil(this._paddingRightInPixels) + Math.ceil(maxLineWidth);
                 if (newWidth !== this._width.getValueInPixel(this._host, this._tempParentMeasure.width)) {
                     this._width.updateInPlace(newWidth, ValueAndUnit.UNITMODE_PIXEL);
                     this._rebuildLayout = true;

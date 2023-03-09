@@ -1,11 +1,13 @@
 import type { IPhysicsEnginePluginV2, MassProperties } from "./IPhysicsEnginePlugin";
 import type { PhysicsShape } from "./physicsShape";
-import { Vector3, Quaternion } from "../../Maths/math.vector";
+import { Vector3, Quaternion, TmpVectors } from "../../Maths/math.vector";
 import type { Scene } from "../../scene";
 import type { PhysicsEngine } from "./physicsEngine";
 import type { Mesh, TransformNode, AbstractMesh } from "../../Meshes";
 import type { Nullable } from "core/types";
 import type { PhysicsConstraint } from "./physicsConstraint";
+import type { Bone } from "core/Bones/bone";
+import { Space } from "core/Maths/math.axis";
 /**
  * PhysicsBody is useful for creating a physics body that can be used in a physics engine. It allows
  * the user to set the mass and velocity of the body, which can then be used to calculate the
@@ -82,6 +84,16 @@ export class PhysicsBody {
         this.transformNode = transformNode;
         transformNode.physicsBody = this;
         physicsEngine.addBody(this);
+    }
+
+    /**
+     * If a physics body is connected to an instanced node, update the number physic instances to match the number of node instances.
+     */
+    public updateBodyInstances() {
+        const m = this.transformNode as Mesh;
+        if (m.hasThinInstances) {
+            this._physicsPlugin.updateBodyInstances(this, m);
+        }
     }
 
     /**
@@ -336,6 +348,17 @@ export class PhysicsBody {
     }
 
     /**
+     * Enable or disable collision callback for this PhysicsBody.
+     * `registerOnCollide` method will enable collision callback and `unregisterOnCollide` will disable them.
+     * Registering a collision callback on the plugin and enabling collision per body is faster than
+     * registering callback per PhysicsBody.
+     * @param enabled true if PhysicsBody's collision will rise a collision event and call the callback
+     */
+    public setCollisionCallbackEnabled(enabled: boolean): void {
+        return this._physicsPlugin.setCollisionCallbackEnabled(this, enabled);
+    }
+
+    /**
      * Gets the object extents
      * @returns the object extents
      */
@@ -351,6 +374,7 @@ export class PhysicsBody {
             if (worldMatrix) {
                 worldMatrix.decompose(scaling, undefined, undefined);
             }
+            tmAbstractMesh.refreshBoundingInfo();
             const boundingInfo = tmAbstractMesh.getBoundingInfo();
             // get the global scaling of the object
             const size = boundingInfo.boundingBox.extendSize.scale(2).multiplyInPlace(scaling);
@@ -364,6 +388,28 @@ export class PhysicsBody {
             return size;
         } else {
             return PhysicsBody._DEFAULT_OBJECT_SIZE;
+        }
+    }
+
+    /**
+     * returns the delta between the object bounding box center and the mesh origin
+     * @returns delta between object bounding box center and origin
+     */
+    public getObjectCenterDelta(): Vector3 {
+        const tmAbstractMesh = this.transformNode as AbstractMesh;
+        if (tmAbstractMesh.getBoundingInfo) {
+            const delta = new Vector3();
+            const boundingInfo = tmAbstractMesh.getBoundingInfo();
+            this.transformNode.computeWorldMatrix(true);
+            tmAbstractMesh.refreshBoundingInfo();
+            delta.copyFrom(boundingInfo.boundingBox.centerWorld);
+            delta.subtractInPlace(tmAbstractMesh.getAbsolutePosition());
+            delta.x /= tmAbstractMesh.scaling.x;
+            delta.y /= tmAbstractMesh.scaling.y;
+            delta.z /= tmAbstractMesh.scaling.z;
+            return delta;
+        } else {
+            return Vector3.Zero();
         }
     }
 
@@ -384,6 +430,54 @@ export class PhysicsBody {
      */
     public addConstraint(childBody: PhysicsBody, constraint: PhysicsConstraint): void {
         this._physicsPlugin.addConstraint(this, childBody, constraint);
+    }
+
+    /**
+     * Sync with a bone
+     * @param bone The bone that the impostor will be synced to.
+     * @param boneMesh The mesh that the bone is influencing.
+     * @param jointPivot The pivot of the joint / bone in local space.
+     * @param distToJoint Optional distance from the impostor to the joint.
+     * @param adjustRotation Optional quaternion for adjusting the local rotation of the bone.
+     * @param boneAxis Optional vector3 axis the bone is aligned with
+     */
+    public syncWithBone(bone: Bone, boneMesh: AbstractMesh, jointPivot: Vector3, distToJoint?: number, adjustRotation?: Quaternion, boneAxis?: Vector3) {
+        const mesh = this.transformNode;
+
+        if (mesh.rotationQuaternion) {
+            if (adjustRotation) {
+                const tempQuat = TmpVectors.Quaternion[0];
+                bone.getRotationQuaternionToRef(Space.WORLD, boneMesh, tempQuat);
+                tempQuat.multiplyToRef(adjustRotation, mesh.rotationQuaternion);
+            } else {
+                bone.getRotationQuaternionToRef(Space.WORLD, boneMesh, mesh.rotationQuaternion);
+            }
+        }
+
+        const pos = TmpVectors.Vector3[0];
+        const boneDir = TmpVectors.Vector3[1];
+
+        if (!boneAxis) {
+            boneAxis = TmpVectors.Vector3[2];
+            boneAxis.x = 0;
+            boneAxis.y = 1;
+            boneAxis.z = 0;
+        }
+
+        bone.getDirectionToRef(boneAxis, boneMesh, boneDir);
+        bone.getAbsolutePositionToRef(boneMesh, pos);
+
+        if ((distToJoint === undefined || distToJoint === null) && jointPivot) {
+            distToJoint = jointPivot.length();
+        }
+
+        if (distToJoint !== undefined && distToJoint !== null) {
+            pos.x += boneDir.x * distToJoint;
+            pos.y += boneDir.y * distToJoint;
+            pos.z += boneDir.z * distToJoint;
+        }
+
+        mesh.setAbsolutePosition(pos);
     }
 
     /**

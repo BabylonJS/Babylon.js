@@ -222,14 +222,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.48.0";
+        return "babylonjs@5.50.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.48.0";
+        return "5.50.0";
     }
 
     /**
@@ -264,6 +264,12 @@ export class ThinEngine {
      */
     public get version(): number {
         return this._webGLVersion;
+    }
+
+    private _isDisposed = false;
+
+    public get isDisposed(): boolean {
+        return this._isDisposed;
     }
 
     // Updatable statics so stick with vars here
@@ -579,7 +585,7 @@ export class ThinEngine {
      */
     public adaptToDeviceRatio: boolean = false;
     /** @internal */
-    private _lastDevicePixelRatio: number = 1.0;
+    protected _lastDevicePixelRatio: number = 1.0;
 
     /** @internal */
     public _transformTextureUrl: Nullable<(url: string) => string> = null;
@@ -1529,7 +1535,7 @@ export class ThinEngine {
      */
     public stopRenderLoop(renderFunction?: () => void): void {
         if (!renderFunction) {
-            this._activeRenderLoops = [];
+            this._activeRenderLoops.length = 0;
             return;
         }
 
@@ -1544,7 +1550,7 @@ export class ThinEngine {
     public _renderLoop(): void {
         if (!this._contextWasLost) {
             let shouldRender = true;
-            if (!this.renderEvenInBackground && this._windowIsBackground) {
+            if (this._isDisposed || (!this.renderEvenInBackground && this._windowIsBackground)) {
                 shouldRender = false;
             }
 
@@ -4524,7 +4530,7 @@ export class ThinEngine {
      */
     public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture, generateMipMaps: boolean = false): void {
         const target = this._getTextureTarget(texture);
-        const filters = this._getSamplingParameters(samplingMode, texture.generateMipMaps || generateMipMaps);
+        const filters = this._getSamplingParameters(samplingMode, texture.useMipMaps || generateMipMaps);
 
         this._setTextureParameterInteger(target, this._gl.TEXTURE_MAG_FILTER, filters.mag, texture);
         this._setTextureParameterInteger(target, this._gl.TEXTURE_MIN_FILTER, filters.min);
@@ -5348,6 +5354,7 @@ export class ThinEngine {
      * Dispose and release all associated resources
      */
     public dispose(): void {
+        this._isDisposed = true;
         this.stopRenderLoop();
 
         // Clear observables

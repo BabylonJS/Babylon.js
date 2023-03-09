@@ -308,11 +308,6 @@ export class AssetContainer extends AbstractScene {
             ...options,
         };
 
-        if (!localOptions.doNotInstantiate) {
-            // Always clone skinned meshes.
-            localOptions.doNotInstantiate = (node) => !!(node as AbstractMesh).skeleton;
-        }
-
         const onClone = (source: TransformNode, clone: TransformNode) => {
             conversionMap[source.uniqueId] = clone.uniqueId;
             storeMap[clone.uniqueId] = clone;
@@ -438,7 +433,17 @@ export class AssetContainer extends AbstractScene {
                 onNewCreated(instancedNode, replicatedInstancedNode);
             } else {
                 // Mesh or TransformNode
-                const canInstance = !localOptions?.doNotInstantiate && (node as Mesh).getTotalVertices() > 0;
+                let canInstance = true;
+                if (node.getClassName() === "TransformNode" || (node as Mesh).skeleton || (node as Mesh).getTotalVertices() === 0) {
+                    // Transform nodes, skinned meshes, and meshes with no vertices can never be instanced!
+                    canInstance = false;
+                } else if (localOptions.doNotInstantiate) {
+                    if (typeof localOptions.doNotInstantiate === "function") {
+                        canInstance = !localOptions.doNotInstantiate(node);
+                    } else {
+                        canInstance = !localOptions.doNotInstantiate;
+                    }
+                }
                 const replicatedNode = canInstance ? (node as Mesh).createInstance(`instance of ${node.name}`) : node.clone(`Clone of ${node.name}`, null, true);
                 if (!replicatedNode) {
                     throw new Error(`Could not clone or instantiate node on Asset Container ${node.name}`);

@@ -887,6 +887,8 @@ export class Vector3 {
     private static _DownReadOnly = Vector3.Down() as DeepImmutable<Vector3>;
     private static _LeftHandedForwardReadOnly = Vector3.Forward(false) as DeepImmutable<Vector3>;
     private static _RightHandedForwardReadOnly = Vector3.Forward(true) as DeepImmutable<Vector3>;
+    private static _LeftHandedBackwardReadOnly = Vector3.Backward(false) as DeepImmutable<Vector3>;
+    private static _RightHandedBackwardReadOnly = Vector3.Backward(true) as DeepImmutable<Vector3>;
     private static _RightReadOnly = Vector3.Right() as DeepImmutable<Vector3>;
     private static _LeftReadOnly = Vector3.Left() as DeepImmutable<Vector3>;
     private static _ZeroReadOnly = Vector3.Zero() as DeepImmutable<Vector3>;
@@ -2058,6 +2060,20 @@ export class Vector3 {
      */
     public static get RightHandedForwardReadOnly(): DeepImmutable<Vector3> {
         return Vector3._RightHandedForwardReadOnly;
+    }
+
+    /**
+     * Gets a backward Vector3 that must not be updated
+     */
+    public static get LeftHandedBackwardReadOnly(): DeepImmutable<Vector3> {
+        return Vector3._LeftHandedBackwardReadOnly;
+    }
+
+    /**
+     * Gets a backward Vector3 that must not be updated
+     */
+    public static get RightHandedBackwardReadOnly(): DeepImmutable<Vector3> {
+        return Vector3._RightHandedBackwardReadOnly;
     }
 
     /**

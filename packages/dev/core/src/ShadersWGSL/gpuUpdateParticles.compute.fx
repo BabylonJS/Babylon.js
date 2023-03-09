@@ -169,7 +169,7 @@ fn getRandomVec4(offset : f32, vertexID : f32) -> vec4<f32> {
     return textureLoad(randomTexture, vec2<i32>(i32(vertexID * offset / params.currentCount * f32(params.randomTextureSize)) % params.randomTextureSize, 0), 0);
 }
 
-@stage(compute) @workgroup_size(64)
+@compute @workgroup_size(64)
 fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
     let index : u32 = GlobalInvocationID.x;
     let vertexID : f32 = f32(index);

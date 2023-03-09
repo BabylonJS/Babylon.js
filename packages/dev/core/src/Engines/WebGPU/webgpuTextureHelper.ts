@@ -1676,7 +1676,7 @@ export class WebGPUTextureHelper {
                     baseArrayLayer: 0,
                     baseMipLevel: 0,
                     arrayLayerCount: 6,
-                    aspect: WebGPUTextureHelper.HasDepthAndStencilAspects(gpuTextureWrapper.format) ? WebGPUConstants.TextureAspect.DepthOnly : WebGPUConstants.TextureAspect.All,
+                    aspect: WebGPUConstants.TextureAspect.All,
                 },
                 isStorageTexture
             );
@@ -1708,7 +1708,7 @@ export class WebGPUTextureHelper {
                     baseArrayLayer: 0,
                     baseMipLevel: 0,
                     arrayLayerCount: texture.is3D ? 1 : layerCount,
-                    aspect: WebGPUTextureHelper.HasDepthAndStencilAspects(gpuTextureWrapper.format) ? WebGPUConstants.TextureAspect.DepthOnly : WebGPUConstants.TextureAspect.All,
+                    aspect: WebGPUConstants.TextureAspect.All,
                 },
                 isStorageTexture
             );

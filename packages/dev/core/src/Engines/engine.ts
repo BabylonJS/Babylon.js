@@ -1279,7 +1279,7 @@ export class Engine extends ThinEngine {
     public _renderLoop(): void {
         if (!this._contextWasLost) {
             let shouldRender = true;
-            if (!this.renderEvenInBackground && this._windowIsBackground) {
+            if (this.isDisposed || (!this.renderEvenInBackground && this._windowIsBackground)) {
                 shouldRender = false;
             }
 
@@ -1686,13 +1686,17 @@ export class Engine extends ThinEngine {
     /**
      * Wraps an external web gl texture in a Babylon texture.
      * @param texture defines the external texture
+     * @param hasMipMaps defines whether the external texture has mip maps (default: false)
+     * @param samplingMode defines the sampling mode for the external texture (default: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE)
      * @returns the babylon internal texture
      */
-    public wrapWebGLTexture(texture: WebGLTexture): InternalTexture {
+    public wrapWebGLTexture(texture: WebGLTexture, hasMipMaps: boolean = false, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE): InternalTexture {
         const hardwareTexture = new WebGLHardwareTexture(texture, this._gl);
         const internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
         internalTexture._hardwareTexture = hardwareTexture;
         internalTexture.isReady = true;
+        internalTexture.useMipMaps = hasMipMaps;
+        this.updateTextureSamplingMode(samplingMode, internalTexture);
         return internalTexture;
     }
 
@@ -1874,7 +1878,7 @@ export class Engine extends ThinEngine {
         }
 
         // Release audio engine
-        if (Engine.Instances.length === 1 && Engine.audioEngine) {
+        if (EngineStore.Instances.length === 1 && Engine.audioEngine) {
             Engine.audioEngine.dispose();
             Engine.audioEngine = null;
         }
@@ -1910,10 +1914,16 @@ export class Engine extends ThinEngine {
         super.dispose();
 
         // Remove from Instances
-        const index = Engine.Instances.indexOf(this);
+        const index = EngineStore.Instances.indexOf(this);
 
         if (index >= 0) {
-            Engine.Instances.splice(index, 1);
+            EngineStore.Instances.splice(index, 1);
+        }
+
+        // no more engines left in the engine store? Notify!
+        if (!Engine.Instances.length) {
+            EngineStore.OnEnginesDisposedObservable.notifyObservers(this);
+            EngineStore.OnEnginesDisposedObservable.clear();
         }
 
         // Observables

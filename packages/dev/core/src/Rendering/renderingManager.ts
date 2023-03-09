@@ -113,8 +113,10 @@ export class RenderingManager {
                 }
             }
 
-            for (const spriteManager of this._scene.spriteManagers) {
-                spriteManager._wasDispatched = false;
+            if (this._scene.spriteManagers) {
+                for (const spriteManager of this._scene.spriteManagers) {
+                    spriteManager._wasDispatched = false;
+                }
             }
 
             for (const particleSystem of this._scene.particleSystems) {
