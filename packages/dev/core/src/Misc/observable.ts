@@ -323,8 +323,11 @@ export class Observable<T> {
      * @returns false if the complete observer chain was not processed (because one observer set the skipNextObservers to true)
      */
     public notifyObservers(eventData: T, mask: number = -1, target?: any, currentTarget?: any, userInfo?: any): boolean {
-        this._hasNotified = true;
-        this._lastNotifiedValue = eventData;
+        // this prevents potential memory leaks - if an object is disposed but the observable doesn't get cleared.
+        if (this.notifyIfTriggered) {
+            this._hasNotified = true;
+            this._lastNotifiedValue = eventData;
+        }
         if (!this._observers.length) {
             return true;
         }
@@ -367,8 +370,11 @@ export class Observable<T> {
      * @param mask is used to filter observers defaults to -1
      */
     public notifyObserver(observer: Observer<T>, eventData: T, mask: number = -1): void {
-        this._hasNotified = true;
-        this._lastNotifiedValue = eventData;
+        // this prevents potential memory leaks - if an object is disposed but the observable doesn't get cleared.
+        if (this.notifyIfTriggered) {
+            this._hasNotified = true;
+            this._lastNotifiedValue = eventData;
+        }
         if (observer._willBeUnregistered) {
             return;
         }
