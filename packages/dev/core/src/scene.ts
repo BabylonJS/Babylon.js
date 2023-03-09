@@ -266,6 +266,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     private _performancePriority = ScenePerformancePriority.BackwardCompatible;
+
+    /**
+     * Observable triggered when the performance priority is changed
+     */
+    public onScenePerformancePriorityChangedObservable = new Observable<ScenePerformancePriority>();
     /**
      * Gets or sets a value indicating how to treat performance relatively to ease of use and backward compatibility
      */
@@ -300,6 +305,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
                 this.autoClear = false;
                 break;
         }
+
+        this.onScenePerformancePriorityChangedObservable.notifyObservers(value);
     }
 
     private _forceWireframe = false;
@@ -4819,6 +4826,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this.onPreKeyboardObservable.clear();
         this.onKeyboardObservable.clear();
         this.onActiveCameraChanged.clear();
+        this.onScenePerformancePriorityChangedObservable.clear();
         this._isDisposed = true;
     }
 

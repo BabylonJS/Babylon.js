@@ -5,7 +5,7 @@ import { SmartArray } from "../Misc/smartArray";
 import type { IAnimatable } from "../Animations/animatable.interface";
 
 import type { Nullable } from "../types";
-import { Scene, ScenePerformancePriority } from "../scene";
+import { Scene } from "../scene";
 import { Matrix } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
 import { VertexBuffer } from "../Buffers/buffer";
@@ -1467,9 +1467,7 @@ export class StandardMaterial extends PushMaterial {
         subMesh.effect._wasPreviouslyReady = forceWasNotReadyPreviously ? false : true;
         subMesh.effect._wasPreviouslyUsingInstances = useInstances;
 
-        if (scene.performancePriority !== ScenePerformancePriority.BackwardCompatible) {
-            this.checkReadyOnlyOnce = true;
-        }
+        this._checkScenePerformancePriority();
 
         return true;
     }
