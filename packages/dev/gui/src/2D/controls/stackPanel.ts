@@ -7,6 +7,8 @@ import { RegisterClass } from "core/Misc/typeStore";
 import { serialize } from "core/Misc/decorators";
 import type { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import type { TextBlock } from "./textBlock";
+import { TextWrapping } from "./textBlock";
 
 /**
  * Class used to create a 2D stack panel container
@@ -177,7 +179,13 @@ export class StackPanel extends Container {
                     child._left.ignoreAdaptiveScaling = true;
                 }
 
-                if (child._width.isPercentage && !child._automaticSize) {
+                if (
+                    child._width.isPercentage &&
+                    !child._automaticSize &&
+                    child.getClassName() === "TextBlock" &&
+                    (child as TextBlock).textWrapping !== TextWrapping.Clip &&
+                    !(child as TextBlock).forceResizeWidth
+                ) {
                     if (!this.ignoreLayoutWarnings) {
                         Tools.Warn(`Control (Name:${child.name}, UniqueId:${child.uniqueId}) is using width in percentage mode inside a horizontal StackPanel`);
                     }
