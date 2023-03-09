@@ -4826,6 +4826,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this.onPreKeyboardObservable.clear();
         this.onKeyboardObservable.clear();
         this.onActiveCameraChanged.clear();
+        this.onScenePerformancePriorityChangedObservable.clear();
         this._isDisposed = true;
     }
 

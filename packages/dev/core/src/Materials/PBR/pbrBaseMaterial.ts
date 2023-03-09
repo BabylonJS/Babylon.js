@@ -1207,12 +1207,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         subMesh.effect._wasPreviouslyReady = forceWasNotReadyPreviously ? false : true;
         subMesh.effect._wasPreviouslyUsingInstances = !!useInstances;
 
-        if (scene.performancePriority !== ScenePerformancePriority.BackwardCompatible) {
-            this.checkReadyOnlyOnce = true;
-            scene.onScenePerformancePriorityChangedObservable.addOnce(() => {
-                this.checkReadyOnlyOnce = false;
-            });
-        }
+        this._checkScenePerformancePriority();
 
         return true;
     }

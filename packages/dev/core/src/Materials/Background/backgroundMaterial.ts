@@ -968,12 +968,7 @@ export class BackgroundMaterial extends PushMaterial {
         subMesh.effect._wasPreviouslyReady = true;
         subMesh.effect._wasPreviouslyUsingInstances = useInstances;
 
-        if (scene.performancePriority !== ScenePerformancePriority.BackwardCompatible) {
-            this.checkReadyOnlyOnce = true;
-            scene.onScenePerformancePriorityChangedObservable.addOnce(() => {
-                this.checkReadyOnlyOnce = false;
-            });
-        }
+        this._checkScenePerformancePriority();
 
         return true;
     }
