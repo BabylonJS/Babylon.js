@@ -1,36 +1,102 @@
 {
-    "fromTag": "5.49.2",
+    "fromTag": "5.50.0",
     "changelog": {
-        "5.49.2": [
+        "5.50.1": [
             {
-                "pr": "13606",
-                "title": "Fix weird linting issues that slipped past CI",
-                "description": null,
+                "pr": "13615",
+                "title": "Fix nullengine",
+                "description": "Refer to https://github.com/BabylonJS/Babylon.js/pull/12693#issuecomment-1462684174",
                 "author": {
-                    "name": "bghgary",
-                    "url": "https://github.com/bghgary"
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
                 },
                 "files": [
-                    "packages/dev/core/src/Materials/material.decalMapConfiguration.ts",
-                    "packages/dev/core/src/Meshes/meshUVSpaceRenderer.ts",
-                    "packages/dev/core/src/XR/features/WebXRDepthSensing.ts"
+                    "packages/dev/core/src/DeviceInput/webDeviceInputSystem.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13613",
+                "title": "Only set last notified value if the feature is on",
+                "description": "prevents petoential memory leaks",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/observable.ts"
                 ],
                 "tags": []
             },
             {
-                "pr": "13587",
-                "title": "Asynchronous shader compilation in Babylon Native",
-                "description": "This code supports interfacing with a feature I wrote for Babylon Native allowing asynchronous shader compilation. It's intended to be reverse-compatible with Babylon Native as of commit [08cec4cacf4d187eb839b6318a7414860f8fde77](https://github.com/BabylonJS/BabylonNative/commit/08cec4cacf4d187eb839b6318a7414860f8fde77) on master, but that version of Babylon Native doesn't have the asynchronous shader compilation yet; I will make another PR into Babylon Native with the necessary C++ code to support asynchronous shader compilation, and the shader compilation will be asynchronous only when both updates are used together.\r\n\r\nHere's the issue on the Babylon Native side for this feature:\r\nhttps://github.com/BabylonJS/BabylonNative/issues/402\r\n\r\nThe PR for the Babylon Native side has now been opened:\r\nhttps://github.com/BabylonJS/BabylonNative/pull/1209",
+                "pr": "13614",
+                "title": "fix declaration",
+                "description": null,
                 "author": {
-                    "name": "glangstonb",
-                    "url": "https://github.com/glangstonb"
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
                 },
                 "files": [
-                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
-                    "packages/dev/core/src/Engines/Native/nativePipelineContext.ts",
-                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                    "packages/dev/core/src/LibDeclarations/webxr.d.ts",
+                    "packages/dev/core/src/XR/native/nativeXRFrame.ts"
                 ],
                 "tags": []
+            },
+            {
+                "pr": "13612",
+                "title": "Set back the checkReadyOnlyOnce when reverting performance mode",
+                "description": "The idea behind this PR is to reset the material state when going back to backward compatibility mode.\nAt the moment, setting the performance mode to advanced and gong back to backwards will keep the material frozen. The observable was added to make sure only materials that were set due to the performance change mode will revert back to their older state.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Background/backgroundMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13610",
+                "title": "Fix horizontal StackPanel width calculation when a child has forceRes…",
+                "description": "…izeWidth true and fix text block line width calculation rounding.\r\n\r\nThis deals with two cases:\r\n1. Removes the warning appearing in https://playground.babylonjs.com/#XCPP9Y#17811 when a text block with resizeToFit and forceResizeWidth is inside an horizontal Stack Panel\r\n2. Fixes the layout cycle error and ellipsis wrapping in the example where a text block is sized down and sized up inside an horizontal Stack Panel: https://playground.babylonjs.com/#XCPP9Y#17810",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/stackPanel.ts",
+                    "packages/dev/gui/src/2D/controls/textBlock.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/GUI Horizontal Stack Panel and Text Block with resizeToFit and forceResizeWidth.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/GUI Text Block with resizeToFit and forceResizeWidth.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug",
+                    "gui"
+                ]
+            },
+            {
+                "pr": "13611",
+                "title": "PBR material in Inspector: Fix debug split and factor",
+                "description": "See https://forum.babylonjs.com/t/babylon-js-sandbox-debug-split-position/38864",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inspector"
+                ]
             }
         ],
         "5.50.0": [
@@ -104,6 +170,38 @@
                     "new feature",
                     "nme"
                 ]
+            }
+        ],
+        "5.49.2": [
+            {
+                "pr": "13606",
+                "title": "Fix weird linting issues that slipped past CI",
+                "description": null,
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/material.decalMapConfiguration.ts",
+                    "packages/dev/core/src/Meshes/meshUVSpaceRenderer.ts",
+                    "packages/dev/core/src/XR/features/WebXRDepthSensing.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13587",
+                "title": "Asynchronous shader compilation in Babylon Native",
+                "description": "This code supports interfacing with a feature I wrote for Babylon Native allowing asynchronous shader compilation. It's intended to be reverse-compatible with Babylon Native as of commit [08cec4cacf4d187eb839b6318a7414860f8fde77](https://github.com/BabylonJS/BabylonNative/commit/08cec4cacf4d187eb839b6318a7414860f8fde77) on master, but that version of Babylon Native doesn't have the asynchronous shader compilation yet; I will make another PR into Babylon Native with the necessary C++ code to support asynchronous shader compilation, and the shader compilation will be asynchronous only when both updates are used together.\r\n\r\nHere's the issue on the Babylon Native side for this feature:\r\nhttps://github.com/BabylonJS/BabylonNative/issues/402\r\n\r\nThe PR for the Babylon Native side has now been opened:\r\nhttps://github.com/BabylonJS/BabylonNative/pull/1209",
+                "author": {
+                    "name": "glangstonb",
+                    "url": "https://github.com/glangstonb"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
+                    "packages/dev/core/src/Engines/Native/nativePipelineContext.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                ],
+                "tags": []
             }
         ],
         "5.49.1": [
