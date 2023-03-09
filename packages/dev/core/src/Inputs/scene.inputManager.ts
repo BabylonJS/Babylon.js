@@ -51,10 +51,10 @@ class _ClickInfo {
 }
 
 /** @internal */
-class _ClickEvent {
-    public clickInfo: _ClickInfo;
-    public evt: IPointerEvent;
-    public timeoutId: number;
+interface _IClickEvent {
+    clickInfo: _ClickInfo;
+    evt: IPointerEvent;
+    timeoutId: number;
 }
 
 /**
@@ -120,7 +120,7 @@ export class InputManager {
     private _meshUnderPointerId: { [pointerId: number]: Nullable<AbstractMesh> } = {};
     private _movePointerInfo: Nullable<PointerInfo> = null;
     private _cameraObserverCount = 0;
-    private _delayedClicks: Array<Nullable<_ClickEvent>> = [null, null, null, null, null];
+    private _delayedClicks: Array<Nullable<_IClickEvent>> = [null, null, null, null, null];
 
     // Keyboard
     private _onKeyDown: (evt: IKeyboardEvent) => void;
@@ -670,10 +670,15 @@ export class InputManager {
                     // at least one double click is required to be check and exclusive double click is enabled
                     else {
                         // Queue up a delayed click, just in case this isn't a double click
-                        const delayedClick = new _ClickEvent();
-                        delayedClick.evt = evt;
-                        delayedClick.clickInfo = clickInfo;
-                        delayedClick.timeoutId = window.setTimeout(this._delayedSimpleClick.bind(this, btn, clickInfo, cb), InputManager.DoubleClickDelay);
+                        // It should be noted that while this delayed event happens
+                        // because of user input, it shouldn't be considered as a direct,
+                        // timing-dependent result of that input.  It's meant to just fire the TAP event
+                        const delayedClick = {
+                            evt: evt,
+                            clickInfo: clickInfo,
+                            timeoutId: window.setTimeout(this._delayedSimpleClick.bind(this, btn, clickInfo, cb), InputManager.DoubleClickDelay),
+                        };
+
                         this._delayedClicks[btn] = delayedClick;
                     }
 
