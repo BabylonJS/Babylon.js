@@ -1,5 +1,5 @@
 {
-    "fromTag": "5.49.1",
+    "fromTag": "5.49.2",
     "changelog": {
         "5.49.2": [
             {
@@ -31,6 +31,79 @@
                     "packages/dev/core/src/Engines/nativeEngine.ts"
                 ],
                 "tags": []
+            }
+        ],
+        "5.50.0": [
+            {
+                "pr": "13600",
+                "title": "NME: Add missing extra indice and weight matrices blocks",
+                "description": "See https://forum.babylonjs.com/t/morph-target-and-bones-with-animation-issue-using-nme/38765\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Input/inputBlock.ts",
+                    "packages/tools/nodeEditor/src/blockTools.ts",
+                    "packages/tools/nodeEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/inputNodePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/main.scss"
+                ],
+                "tags": [
+                    "new feature",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "13609",
+                "title": "update recast.js with lower memory usage",
+                "description": "Follow up https://forum.babylonjs.com/t/memory-leak-of-crowd-navigation/38452/15\r\nUpdate recast.js to the latest (from NPM 1.6.2) and fix huge memory consumption.",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/tools/babylonServer/public/recast.js"
+                ],
+                "tags": [
+                    "bug",
+                    "memory leak",
+                    "navigation"
+                ]
+            },
+            {
+                "pr": "13608",
+                "title": "Mesh: Fix crash with instanced rendering",
+                "description": "See https://forum.babylonjs.com/t/changing-visibility-for-individual-instances/38820\r\n\r\nThis PG is crashing: https://playground.babylonjs.com/#WGZLGJ#7983\r\n\r\nIt is creating an instance of the boombox with a color instance buffer.\r\n\r\nIt is crashing because:\r\n* the instance is considered as a regular mesh (`_internalAbstractMeshDataInfo._actAsRegularMesh = true`) because the sign of its determinant is different from the sign of the determinant of its source mesh\r\n* we are calling `this._geometry._bind(effect, indexToBind, this._userInstancedBuffersStorage.vertexBuffers, this._userInstancedBuffersStorage.vertexArrayObjects)` in `Mesh._bind`, but `this._userInstancedBuffersStorage.vertexBuffers` only contains the `color` buffer and not the `world0/.../world3` buffers because the mesh is managed as an instance in this case\r\n\r\nThe PG would work if we don't create the color instance buffer, because in that case we take the `this._geometry._bind(effect, indexToBind)` branch.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13598",
+                "title": "NME Texture block: Add support for 2DArrayTexture",
+                "description": "See https://forum.babylonjs.com/t/how-can-i-load-rawtexture2darray-in-nme/38809\r\n\r\nThis PR adds a layer **input** to the `Texture` block:\r\n\r\n![image](https://user-images.githubusercontent.com/4152247/223408971-e80368b9-9aeb-424f-a3a7-37890bc1b3bb.png)\r\n\r\nThe input is not used if the texture is not a **2DArrayTexture**. If it is, the layer value is read from the **layer** input if provided, else a default value of 0 is used.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/textureBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildState.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/textureDisplayManager.modules.scss"
+                ],
+                "tags": [
+                    "new feature",
+                    "nme"
+                ]
             }
         ],
         "5.49.1": [
