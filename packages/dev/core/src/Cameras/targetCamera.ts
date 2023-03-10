@@ -5,6 +5,7 @@ import type { Scene } from "../scene";
 import { Quaternion, Matrix, Vector3, Vector2, TmpVectors } from "../Maths/math.vector";
 import { Epsilon } from "../Maths/math.constants";
 import { Axis } from "../Maths/math.axis";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 /**
  * A target camera takes a mesh or position as a target and continues to look at it while it moves.
  * This is the base of the follow, arc rotate cameras and Free camera
@@ -133,7 +134,10 @@ export class TargetCamera extends Camera {
         }
 
         if (this.lockedTarget.absolutePosition) {
-            this.lockedTarget.computeWorldMatrix();
+            const lockedTarget = this.lockedTarget as AbstractMesh;
+            const m = lockedTarget.computeWorldMatrix();
+            // in some cases the absolute position resets externally, but doesn't update since the matrix is cached.
+            m.getTranslationToRef(lockedTarget.absolutePosition);
         }
 
         return this.lockedTarget.absolutePosition || this.lockedTarget;
