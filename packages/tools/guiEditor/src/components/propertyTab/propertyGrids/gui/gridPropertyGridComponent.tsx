@@ -187,14 +187,14 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
             const magnitudeRemainingPercentage = Math.abs(absoluteRemainingPercentage);
             const unmodifiedEntriesPercentage = percentageTotal - modifiedEntriesPercentageTotal;
 
-            const resizeModifiedEntries = this.isCloseTo(magnitudeRemainingPercentage, 0, 0.001);
+            const resizeModifiedEntries = this.isCloseTo(unmodifiedEntriesPercentage, 0, 0.001);
             for (let i = 0; i < rowValues.length; ++i) {
                 const value = rowValues[i];
                 const percent = this.checkPercentage(value);
                 if (percent && !this._rowEditFlags[i] || (this._rowEditFlags[i] && resizeModifiedEntries)) {
                     const parsedValue = this.parsePercentage(value);
-                    const entryWeight = parsedValue / (resizeModifiedEntries ? magnitudeRemainingPercentage : unmodifiedEntriesPercentage);
-                    const newEntryValue = entryWeight * magnitudeRemainingPercentage;
+                    const entryWeight = parsedValue / (resizeModifiedEntries ? percentageTotal : unmodifiedEntriesPercentage);
+                    const newEntryValue = entryWeight * (resizeModifiedEntries ? 1 : magnitudeRemainingPercentage);
                     modifiedRowValues.push(`${newEntryValue * 100}%`);
                 } else {
                     modifiedRowValues.push(value);
@@ -202,7 +202,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
             }
         }
 
-        for (let i = 0; i < this._columnDefinitions.length; ++i) {
+        for (let i = 0; i < modifiedRowValues.length; ++i) {
             grid.setRowDefinition(i, this.parsePercentage(modifiedRowValues[i]), !this.checkPercentage(modifiedRowValues[i]));
         }
 
