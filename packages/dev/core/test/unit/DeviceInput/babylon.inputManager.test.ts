@@ -429,7 +429,7 @@ describe("InputManager", () => {
     it("Does not fire POINTERTAP events during multi-touch gesture", () => {
         let tapCt = 0;
 
-        scene?.onPointerObservable.add((eventData) => {
+        scene?.onPointerObservable.add(() => {
             tapCt++;
         }, PointerEventTypes.POINTERTAP);
 
@@ -527,7 +527,7 @@ describe("InputManager", () => {
         expect(tapCt).toBe(1);
     });
 
-    it("Doesn't fire onPointerOberservable for POINTERTAP when ExclusiveDoubleClickMode is enabled", () => {
+    it("Doesn't fire onPointerOberservable for POINTERTAP when ExclusiveDoubleClickMode is enabled", async () => {
         let tapCt = 0;
         let dblTapCt = 0;
 
@@ -552,12 +552,66 @@ describe("InputManager", () => {
             deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
             deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 1);
             deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
+
+            // Because the input manager uses the system clock, we need to use real timers
+            // and wait for the double click delay to pass so that we can work with a clean slate
+            jest.useRealTimers();
+            await new Promise((resolve) => setTimeout(resolve, InputManager.DoubleClickDelay + 1));
+
+            // Expect a single tap only
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
+
+            // Wait for the double click delay to pass again
+            await new Promise((resolve) => setTimeout(resolve, InputManager.DoubleClickDelay + 1));
+
+            // Expect two single taps
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.RightClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.RightClick, 0);
+
+            await new Promise((resolve) => setTimeout(resolve, InputManager.DoubleClickDelay + 1));
+
+            // Double click, immediately followed by a single click, should still fire a double click and a single click
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.RightClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.RightClick, 0);
+
+            await new Promise((resolve) => setTimeout(resolve, InputManager.DoubleClickDelay + 1));
+
+            // Single click, immediately followed by a double click, should still fire a single click and a double click
+            // With no additional clicks
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.RightClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.RightClick, 0);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
+
+            await new Promise((resolve) => setTimeout(resolve, InputManager.DoubleClickDelay + 1));
+
+            // Three single clicks alternating between left and right
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.RightClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.RightClick, 0);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
+
+            await new Promise((resolve) => setTimeout(resolve, InputManager.DoubleClickDelay + 1));
+
+            // Reset to fake timers
+            jest.useFakeTimers();
         }
         // Since this is static, we should reset it to false for other tests
         InputManager.ExclusiveDoubleClickMode = false;
 
-        expect(tapCt).toBe(1);
-        expect(dblTapCt).toBe(2);
+        expect(tapCt).toBe(9);
+        expect(dblTapCt).toBe(4);
     });
 
     it("can fire onViewMatrixObservable on camera.update", () => {
