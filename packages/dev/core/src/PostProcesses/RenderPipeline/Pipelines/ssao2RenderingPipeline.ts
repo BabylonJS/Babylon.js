@@ -144,11 +144,9 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
      * If bilateral blur should be used
      */
     public set expensiveBlur(b: boolean) {
-        this._blurHPostProcess.updateEffect("#define BILATERAL_BLUR\n#define BILATERAL_BLUR_H\n#define SAMPLES 16\n#define EXPENSIVE " + (b ? "1" : "0") + "\n", null, [
-            "textureSampler",
-            "depthSampler",
-        ]);
-        this._blurVPostProcess.updateEffect("#define BILATERAL_BLUR\n#define SAMPLES 16\n#define EXPENSIVE " + (b ? "1" : "0") + "\n", null, ["textureSampler", "depthSampler"]);
+        const expensive = b ? "#define EXPENSIVE\n" : "";
+        this._blurHPostProcess.updateEffect(`#define BILATERAL_BLUR\n#define BILATERAL_BLUR_H\n#define SAMPLES 16\n${expensive}`, null, ["textureSampler", "depthSampler"]);
+        this._blurVPostProcess.updateEffect(`#define BILATERAL_BLUR\n#define SAMPLES 16\n${expensive}`, null, ["textureSampler", "depthSampler"]);
         this._expensiveBlur = b;
     }
 
