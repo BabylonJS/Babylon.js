@@ -796,6 +796,11 @@ export class AssetContainer extends AbstractScene {
         });
         this.reflectionProbes.length = 0;
 
+        this.morphTargetManagers.slice(0).forEach((o) => {
+            o.dispose();
+        });
+        this.morphTargetManagers.length = 0;
+
         if (this.environmentTexture) {
             this.environmentTexture.dispose();
             this.environmentTexture = null;

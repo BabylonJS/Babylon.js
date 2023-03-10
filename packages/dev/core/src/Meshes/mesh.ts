@@ -4604,15 +4604,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         const getVertexDataFromMesh = (mesh: Mesh) => {
             const wm = mesh.computeWorldMatrix(true);
             const vertexData = VertexData.ExtractFromMesh(mesh, false, false);
-            return [vertexData, wm] as const;
+            return { vertexData, transform: wm };
         };
 
-        const [sourceVertexData, sourceTransform] = getVertexDataFromMesh(source);
+        const { vertexData: sourceVertexData, transform: sourceTransform } = getVertexDataFromMesh(source);
         if (isAsync) {
             yield;
         }
 
-        const meshVertexDatas = new Array<readonly [VertexData, Matrix]>(meshes.length - 1);
+        const meshVertexDatas = new Array<{ vertexData: VertexData; transform?: Matrix }>(meshes.length - 1);
         for (let i = 1; i < meshes.length; i++) {
             meshVertexDatas[i - 1] = getVertexDataFromMesh(meshes[i]);
             if (isAsync) {

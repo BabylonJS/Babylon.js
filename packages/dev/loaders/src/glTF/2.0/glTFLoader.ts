@@ -1146,7 +1146,11 @@ export class GLTFLoader implements IGLTFLoader {
 
         const targetNames = mesh.extras ? mesh.extras.targetNames : null;
 
-        babylonMesh.morphTargetManager = new MorphTargetManager(babylonMesh.getScene());
+        this._babylonScene._blockEntityCollection = !!this._assetContainer;
+        babylonMesh.morphTargetManager = new MorphTargetManager(this._babylonScene);
+        babylonMesh.morphTargetManager._parentContainer = this._assetContainer;
+        this._babylonScene._blockEntityCollection = false;
+
         babylonMesh.morphTargetManager.areUpdatesFrozen = true;
 
         for (let index = 0; index < primitive.targets.length; index++) {
