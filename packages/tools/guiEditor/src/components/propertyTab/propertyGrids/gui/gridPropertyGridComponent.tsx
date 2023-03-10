@@ -47,13 +47,16 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
     renderRows() {
         return this._rowDefinitions.map((rd, i) => {
             return (
-                <div key={`r${i}`} className={this._removingRow && i === this._rowEditFlags.length - 1 ? "ge-grid-remove" : this._rowEditFlags[i] ? "ge-grid-edit" : "ge-grid"}>
+                <div 
+                    key={`r${i}`} 
+                    className={this._removingRow && i === this._rowEditFlags.length - 1 ? "ge-grid-remove" : this._rowEditFlags[i] ? "ge-grid-edit" : "ge-grid"}
+                >
                     <div className="ge-grid-divider">
                         <TextInputLineComponent
                             lockObject={this.props.lockObject}
                             key={`rText${i}`}
                             label=""
-                            icon={gridColumnIconDark}
+                            icon={gridRowIconDark}
                             iconLabel={`Row ${i}`}
                             value={rd}
                             numbersOnly={true}
@@ -117,7 +120,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                             lockObject={this.props.lockObject}
                             key={`ctext${i}`}
                             label=""
-                            icon={gridRowIconDark}
+                            icon={gridColumnIconDark}
                             iconLabel={`Column ${i}`}
                             value={cd}
                             numbersOnly={true}
@@ -141,64 +144,66 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
         });
     }
 
+    parsePercentage(value: string) {
+        return parseFloat(value.replace("%", "")) / 100;
+    }
+
+    isCloseTo(value: number, expected: number, epsilon: number) {
+        return Math.abs(value - expected) < epsilon;
+    }
+
     resizeRow() {
         const grid = this.props.grids[0];
-        let total = 0;
-        let editCount = 0;
-        let percentCount = 0;
-        const rowValues: number[] = [];
+        // _rowDefinitions where the edited values are and _rowEditFlags where the edited flags are
+        
+        let percentageTotal = 0;
+        let modifiedEntriesPercentageTotal = 0;
+
+        const rowValues: string[] = [];
+
         for (let i = 0; i < this._rowDefinitions.length; ++i) {
             let value = this._rowDefinitions[i];
             const percent = this.checkPercentage(value);
             if (this._rowEditFlags[i]) {
                 value = this.checkValue(value, percent);
-                if (percent) {
-                    editCount++;
-                }
             }
-
             if (percent) {
-                percentCount++;
-                const valueAsInt = parseInt(value.substring(0, value.length - 1));
-                total += valueAsInt / 100;
-                rowValues.push(valueAsInt / 100);
-            } else {
-                const valueAsInt = parseInt(value.substring(0, value.length - 2));
-                rowValues.push(valueAsInt);
+                percentageTotal += this.parsePercentage(value);
+                if (this._rowEditFlags[i]) {
+                    modifiedEntriesPercentageTotal += this.parsePercentage(value);
+                }
             }
+            rowValues.push(value);
         }
 
-        const allEdited = editCount === percentCount;
+        let modifiedRowValues = [];
+        
+        // If the total percentage is not 100% we need to adjust the values based on the remaining percentage that was not modified by the user;
+        // If the remaining percentage is 0% we need to resize the modified entries to fit the remaining space
+        if (this.isCloseTo(percentageTotal, 1, 0.001)) {
+            modifiedRowValues = rowValues;
+        } else {
+            const absoluteRemainingPercentage = 1 - modifiedEntriesPercentageTotal;
+            const magnitudeRemainingPercentage = Math.abs(absoluteRemainingPercentage);
+            const unmodifiedEntriesPercentage = percentageTotal - modifiedEntriesPercentageTotal;
 
-        if (total > 1.0 || allEdited) {
-            const difference = total - 1.0;
-            const diff = Math.abs(difference);
-            for (let i = 0; i < grid.rowCount; ++i) {
-                if (this.checkPercentage(this._rowDefinitions[i])) {
-                    const value = rowValues[i];
-                    const weighted = diff * (value / total);
-                    rowValues[i] = difference > 0 ? value - weighted : value + weighted;
-                }
-            }
-        } else if (total < 1.0) {
-            const difference = 1.0 - total;
-            for (let i = 0; i < grid.rowCount; ++i) {
-                if (this.checkPercentage(this._rowDefinitions[i]) && this._rowEditFlags[i]) {
-                    const value = rowValues[i];
-                    total -= value;
-                }
-            }
-            for (let i = 0; i < grid.rowCount; ++i) {
-                if (this.checkPercentage(this._rowDefinitions[i]) && !this._rowEditFlags[i]) {
-                    const value = rowValues[i];
-                    const weighted = difference * (value / total);
-                    rowValues[i] = value + weighted;
+            const resizeModifiedEntries = this.isCloseTo(magnitudeRemainingPercentage, 0, 0.001);
+            for (let i = 0; i < rowValues.length; ++i) {
+                const value = rowValues[i];
+                const percent = this.checkPercentage(value);
+                if (percent && !this._rowEditFlags[i] || (this._rowEditFlags[i] && resizeModifiedEntries)) {
+                    const parsedValue = this.parsePercentage(value);
+                    const entryWeight = parsedValue / (resizeModifiedEntries ? magnitudeRemainingPercentage : unmodifiedEntriesPercentage);
+                    const newEntryValue = entryWeight * magnitudeRemainingPercentage;
+                    modifiedRowValues.push(`${newEntryValue * 100}%`);
+                } else {
+                    modifiedRowValues.push(value);
                 }
             }
         }
 
-        for (let i = 0; i < this._rowDefinitions.length; ++i) {
-            grid.setRowDefinition(i, rowValues[i], !this.checkPercentage(this._rowDefinitions[i]));
+        for (let i = 0; i < this._columnDefinitions.length; ++i) {
+            grid.setRowDefinition(i, this.parsePercentage(modifiedRowValues[i]), !this.checkPercentage(modifiedRowValues[i]));
         }
 
         this.setRowValues();
@@ -323,6 +328,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                     icon={addGridElementDark}
                                     shortcut=""
                                     isActive={false}
+                                    disabled={this._removingRow}
                                     onClick={() => {
                                         let total = 0;
                                         let count = 0;
@@ -343,8 +349,8 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                     tooltip="Remove Row"
                                     icon={subtractGridElementDark}
                                     shortcut=""
-                                    isActive={this._removingRow}
-                                    disabled={grid.rowCount <= 1}
+                                    isActive={false}
+                                    disabled={this._removingRow || grid.rowCount <= 1}
                                     onClick={() => {
                                         let hasChild = false;
                                         for (let i = 0; i < grid.columnCount; ++i) {
