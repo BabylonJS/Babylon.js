@@ -505,7 +505,7 @@ export class PrePassRenderer {
             this._engine.clear(this._clearColor, true, false, false);
             if (this._useSpecificClearForDepthTexture) {
                 this._engine.bindAttachments(this._clearDepthAttachments);
-                this._clearDepthColor.r = this._engine.useReverseDepthBuffer ? 0 : 1;
+                this._clearDepthColor.r = this._scene.activeCamera?.maxZ ?? 1e8; // depth in the depth texture is view.z, not a 0..1 value!
                 this._engine.clear(this._clearDepthColor, true, false, false);
             }
             // Regular clear color with the scene clear color of the 1st attachment
