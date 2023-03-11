@@ -69,7 +69,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     public maxZ: number = 100.0;
 
     /**
-     * In order to save performances, SSAO radius is clamped on close geometry. This ratio changes by how much
+     * In order to save performances, SSAO radius is clamped on close geometry. This ratio changes by how much.
      */
     @serialize()
     public minZAspect: number = 0.2;
@@ -77,7 +77,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     @serialize("samples")
     private _samples: number = 8;
     /**
-     * Number of samples used for the SSAO calculations. Default value is 8
+     * Number of samples used for the SSAO calculations. Default value is 8.
      */
     public set samples(n: number) {
         this._samples = n;
@@ -91,7 +91,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     @serialize("textureSamples")
     private _textureSamples: number = 1;
     /**
-     * Number of samples to use for antialiasing
+     * Number of samples to use for antialiasing.
      */
     public set textureSamples(n: number) {
         this._textureSamples = n;
@@ -107,7 +107,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     }
 
     /**
-     * Force rendering the geometry through geometry buffer
+     * Force rendering the geometry through geometry buffer.
      */
     private _forceGeometryBuffer: boolean = false;
     private get _geometryBufferRenderer(): Nullable<GeometryBufferRenderer> {
@@ -133,26 +133,75 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
      */
     private _sampleSphere: number[];
 
-    /**
-     * Blur filter offsets
-     */
-    private _samplerOffsets: number[];
-
     @serialize("expensiveBlur")
     private _expensiveBlur: boolean = true;
     /**
-     * If bilateral blur should be used
+     * Enables the configurable bilateral denoising (blurring) filter. Default is true.
+     * Set to false to instead use a legacy bilateral filter that can't be configured.
+     *
+     * The denoising filter runs after the SSAO calculations and is a very important step. Both options results in a so called bilateral being used, but the "expensive" one can be
+     * configured in several ways to fit your scene.
      */
     public set expensiveBlur(b: boolean) {
-        const expensive = b ? "#define EXPENSIVE\n" : "";
-        this._blurHPostProcess.updateEffect(`#define BILATERAL_BLUR\n#define BILATERAL_BLUR_H\n#define SAMPLES 16\n${expensive}`, null, ["textureSampler", "depthSampler"]);
-        this._blurVPostProcess.updateEffect(`#define BILATERAL_BLUR\n#define SAMPLES 16\n${expensive}`, null, ["textureSampler", "depthSampler"]);
+        const defines = this._getDefinesForBlur(b, this._bypassBlur);
+        this._blurHPostProcess.updateEffect(defines.h);
+        this._blurVPostProcess.updateEffect(defines.v);
         this._expensiveBlur = b;
     }
 
     public get expensiveBlur(): boolean {
         return this._expensiveBlur;
     }
+
+    private _bypassBlur: boolean = false;
+    /**
+     * Skips the denoising (blur) stage of the SSAO calculations.
+     *
+     * Useful to temporarily set while experimenting with the other SSAO2 settings.
+     */
+    public set bypassBlur(b: boolean) {
+        const defines = this._getDefinesForBlur(this.expensiveBlur, b);
+        const samplers = this._getSamplersForBlur(b);
+        this._blurHPostProcess.updateEffect(defines.h, null, samplers);
+        this._blurVPostProcess.updateEffect(defines.v, null, samplers);
+        this._bypassBlur = b;
+    }
+
+    public get bypassBlur(): boolean {
+        return this._bypassBlur;
+    }
+
+    /**
+     * The number of samples the bilateral filter uses in both dimensions when denoising the SSAO calculations. Default value is 16.
+     *
+     * A higher value should result in smoother shadows but will use more processing time in the shaders.
+     *
+     * Too high value can cause the shadows to get to blurry or visible artifacts (bands) near shard details in the geometry. The artifacts can sometimes be countered with increasing the bilateralSoften setting.
+     */
+    @serialize()
+    public bilateralSamples: number = 16;
+
+    /**
+     * Controls the shape of the denoising kernel used by the bilateral filter. Default value is 0, which results in a box-filter.
+     *
+     * By default the bilateral filter acts like a box-filter, treating all samples with equal weights. This is effective to maximize the denoising effect given a limited set of samples. However, it also often results in visible ghosting around sharp shadow regions and can spread out lines over large areas so they are no longer visible.
+     *
+     * Increasing this setting will make the filter pay less attention to samples further away from the center, reducing many artifacts but at the same time increasing noise.
+     *
+     * Useful value range is [0..1].
+     */
+    @serialize()
+    public bilateralSoften: number = 0;
+
+    /**
+     * How forgiving the bilateral denoiser should be when rejecting samples. Default value is 0.
+     *
+     * A higher value results in the bilateral filter being more forgiving and thus doing a better job at denoising slanted and curved surfaces, but can lead to shadows spreading out around corners or between objects that are close to each other.
+     *
+     * Useful value range is normally [0..1], but higher values are allowed.
+     */
+    @serialize()
+    public bilateralTolerance: number = 0;
 
     /**
      * The radius around the analyzed pixel used by the SSAO post-process. Default value is 2.0
@@ -328,81 +377,75 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     }
 
     // Private Methods
-    private _createBlurPostProcess(ssaoRatio: number, blurRatio: number, textureType: number): void {
-        this._samplerOffsets = [];
-        const expensive = this.expensiveBlur;
-
-        for (let i = -8; i < 8; i++) {
-            this._samplerOffsets.push(i * 2 + 0.5);
-        }
-
-        this._blurHPostProcess = new PostProcess(
-            "BlurH",
-            "ssao2",
-            ["outSize", "samplerOffsets", "near", "far", "radius"],
-            ["depthSampler"],
-            ssaoRatio,
-            null,
-            Texture.TRILINEAR_SAMPLINGMODE,
-            this._scene.getEngine(),
-            false,
-            "#define BILATERAL_BLUR\n#define BILATERAL_BLUR_H\n#define SAMPLES 16\n#define EXPENSIVE " + (expensive ? "1" : "0") + "\n",
-            textureType
-        );
-        this._blurHPostProcess.onApply = (effect: Effect) => {
-            if (!this._scene.activeCamera) {
-                return;
-            }
-
-            effect.setFloat("outSize", this._ssaoCombinePostProcess.width > 0 ? this._ssaoCombinePostProcess.width : this._originalColorPostProcess.width);
-            effect.setFloat("near", this._scene.activeCamera.minZ);
-            effect.setFloat("far", this._scene.activeCamera.maxZ);
-            effect.setFloat("radius", this.radius);
-            if (this._geometryBufferRenderer) {
-                effect.setTexture("depthSampler", this._geometryBufferRenderer.getGBuffer().textures[0]);
-            } else if (this._prePassRenderer) {
-                effect.setTexture("depthSampler", this._prePassRenderer.getRenderTarget().textures[this._prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE)]);
-            }
-            effect.setArray("samplerOffsets", this._samplerOffsets);
-        };
-
-        this._blurVPostProcess = new PostProcess(
-            "BlurV",
-            "ssao2",
-            ["outSize", "samplerOffsets", "near", "far", "radius"],
-            ["depthSampler"],
-            blurRatio,
-            null,
-            Texture.TRILINEAR_SAMPLINGMODE,
-            this._scene.getEngine(),
-            false,
-            "#define BILATERAL_BLUR\n#define BILATERAL_BLUR_V\n#define SAMPLES 16\n#define EXPENSIVE " + (expensive ? "1" : "0") + "\n",
-            textureType
-        );
-        this._blurVPostProcess.onApply = (effect: Effect) => {
-            if (!this._scene.activeCamera) {
-                return;
-            }
-
-            effect.setFloat("outSize", this._ssaoCombinePostProcess.height > 0 ? this._ssaoCombinePostProcess.height : this._originalColorPostProcess.height);
-            effect.setFloat("near", this._scene.activeCamera.minZ);
-            effect.setFloat("far", this._scene.activeCamera.maxZ);
-            effect.setFloat("radius", this.radius);
-            if (this._geometryBufferRenderer) {
-                effect.setTexture("depthSampler", this._geometryBufferRenderer.getGBuffer().textures[0]);
-            } else if (this._prePassRenderer) {
-                effect.setTexture("depthSampler", this._prePassRenderer.getRenderTarget().textures[this._prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE)]);
-            }
-            effect.setArray("samplerOffsets", this._samplerOffsets);
-        };
-
-        this._blurHPostProcess.samples = this.textureSamples;
-        this._blurVPostProcess.samples = this.textureSamples;
-    }
 
     /** @internal */
     public _rebuild() {
         super._rebuild();
+    }
+
+    private _getSamplersForBlur(disabled: boolean): Array<string> {
+        return disabled ? ["textureSampler"] : ["textureSampler", "depthSampler"];
+    }
+
+    private _getDefinesForBlur(bilateral: boolean, disabled: boolean): { h: string; v: string } {
+        let define = "#define BLUR\n";
+        if (disabled) {
+            define += "#define BLUR_BYPASS\n";
+        }
+        if (!bilateral) {
+            define += "#define BLUR_LEGACY\n";
+        }
+        return { h: define + "#define BLUR_H\n", v: define };
+    }
+
+    private _createBlurPostProcess(ssaoRatio: number, blurRatio: number, textureType: number): void {
+        const defines = this._getDefinesForBlur(this.expensiveBlur, this.bypassBlur);
+        const samplers = this._getSamplersForBlur(this.bypassBlur);
+
+        this._blurHPostProcess = this._createBlurFilter("BlurH", samplers, ssaoRatio, defines.h, textureType, true);
+        this._blurVPostProcess = this._createBlurFilter("BlurV", samplers, blurRatio, defines.v, textureType, false);
+    }
+
+    private _createBlurFilter(name: string, samplers: Array<string>, ratio: number, defines: string, textureType: number, vertical: boolean): PostProcess {
+        const blurFilter = new PostProcess(
+            name,
+            "ssao2",
+            ["outSize", "near", "far", "radius", "samples", "soften", "tolerance"],
+            samplers,
+            ratio,
+            null,
+            Texture.BILINEAR_SAMPLINGMODE,
+            this._scene.getEngine(),
+            false,
+            defines,
+            textureType
+        );
+
+        blurFilter.onApply = (effect: Effect) => {
+            if (!this._scene.activeCamera) {
+                return;
+            }
+
+            const ssaoCombineSize = vertical ? this._ssaoCombinePostProcess.width : this._ssaoCombinePostProcess.height;
+            const originalColorSize = vertical ? this._originalColorPostProcess.width : this._originalColorPostProcess.height;
+
+            // TODO!
+            effect.setFloat("outSize", ssaoCombineSize > 0 ? ssaoCombineSize : originalColorSize);
+            effect.setFloat("near", this._scene.activeCamera.minZ);
+            effect.setFloat("far", this._scene.activeCamera.maxZ);
+            effect.setFloat("radius", this.radius);
+            effect.setInt("samples", this.bilateralSamples);
+            effect.setFloat("soften", this.bilateralSoften);
+            effect.setFloat("tolerance", this.bilateralTolerance);
+            if (this._geometryBufferRenderer) {
+                effect.setTexture("depthSampler", this._geometryBufferRenderer.getGBuffer().textures[0]);
+            } else if (this._prePassRenderer) {
+                effect.setTexture("depthSampler", this._prePassRenderer.getRenderTarget().textures[this._prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE)]);
+            }
+        };
+
+        blurFilter.samples = this.textureSamples;
+        return blurFilter;
     }
 
     private _bits = new Uint32Array(1);
