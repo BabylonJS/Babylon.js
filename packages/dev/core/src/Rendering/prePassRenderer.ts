@@ -57,6 +57,7 @@ export class PrePassRenderer {
     private _multiRenderAttachments: number[];
     private _defaultAttachments: number[];
     private _clearAttachments: number[];
+    private _clearDepthAttachments: number[];
 
     /**
      * Returns the index of a texture in the multi render target texture array.
@@ -76,6 +77,25 @@ export class PrePassRenderer {
 
     public set samples(n: number) {
         this.defaultRT.samples = n;
+    }
+
+    private _useSpecificClearForDepthTexture = false;
+
+    /**
+     * If set to true (default: false), the depth texture will be cleared with the depth value corresponding to the far plane (1 in normal mode, 0 in reverse depth buffer mode)
+     * If set to false, the depth texture is always cleared with 0.
+     */
+    public get useSpecificClearForDepthTexture() {
+        return this._useSpecificClearForDepthTexture;
+    }
+
+    public set useSpecificClearForDepthTexture(value: boolean) {
+        if (this._useSpecificClearForDepthTexture === value) {
+            return;
+        }
+
+        this._useSpecificClearForDepthTexture = value;
+        this._isDirty = true;
     }
 
     /**
@@ -202,6 +222,7 @@ export class PrePassRenderer {
     public renderTargets: PrePassRenderTarget[] = [];
 
     private readonly _clearColor = new Color4(0, 0, 0, 0);
+    private readonly _clearDepthColor = new Color4(1, 0, 0, 1);
 
     private _enabled: boolean = false;
 
@@ -294,19 +315,27 @@ export class PrePassRenderer {
     private _reinitializeAttachments() {
         const multiRenderLayout = [];
         const clearLayout = [false];
+        const clearDepthLayout = [false];
         const defaultLayout = [true];
 
         for (let i = 0; i < this.mrtCount; i++) {
             multiRenderLayout.push(true);
 
             if (i > 0) {
-                clearLayout.push(true);
+                if (this._useSpecificClearForDepthTexture && this._mrtLayout[i] === Constants.PREPASS_DEPTH_TEXTURE_TYPE) {
+                    clearLayout.push(false);
+                    clearDepthLayout.push(true);
+                } else {
+                    clearLayout.push(true);
+                    clearDepthLayout.push(false);
+                }
                 defaultLayout.push(false);
             }
         }
 
         this._multiRenderAttachments = this._engine.buildTextureLayout(multiRenderLayout);
         this._clearAttachments = this._engine.buildTextureLayout(clearLayout);
+        this._clearDepthAttachments = this._engine.buildTextureLayout(clearDepthLayout);
         this._defaultAttachments = this._engine.buildTextureLayout(defaultLayout);
     }
 
@@ -474,6 +503,11 @@ export class PrePassRenderer {
             // Clearing other attachment with 0 on all other attachments
             this._engine.bindAttachments(this._clearAttachments);
             this._engine.clear(this._clearColor, true, false, false);
+            if (this._useSpecificClearForDepthTexture) {
+                this._engine.bindAttachments(this._clearDepthAttachments);
+                this._clearDepthColor.r = this._engine.useReverseDepthBuffer ? 0 : 1;
+                this._engine.clear(this._clearDepthColor, true, false, false);
+            }
             // Regular clear color with the scene clear color of the 1st attachment
             this._engine.bindAttachments(this._defaultAttachments);
         }

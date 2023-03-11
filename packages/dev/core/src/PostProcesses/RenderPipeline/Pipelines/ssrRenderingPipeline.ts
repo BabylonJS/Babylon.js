@@ -528,10 +528,14 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
                 const geometryBufferRenderer = scene.enableGeometryBufferRenderer();
                 if (geometryBufferRenderer) {
                     geometryBufferRenderer.enableReflectivity = true;
+                    geometryBufferRenderer.useSpecificClearForDepthTexture = true;
                 }
             } else {
                 const prePassRenderer = scene.enablePrePassRenderer();
-                prePassRenderer?.markAsDirty();
+                if (prePassRenderer) {
+                    prePassRenderer.useSpecificClearForDepthTexture = true;
+                    prePassRenderer.markAsDirty();
+                }
             }
 
             this._buildPipeline();
