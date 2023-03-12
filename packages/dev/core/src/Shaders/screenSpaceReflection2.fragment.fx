@@ -73,7 +73,7 @@ vec3 computeViewPosFromUVDepth(vec2 texCoord, float depth) {
     return eyePos.xyz;
 }
 
-float computeAttenuationForIntersection(ivec2 hitPixel, vec2 hitUV, vec3 vsRayOrigin, vec3 vsHitPoint, vec3 reflectionVector, float maxRayDistance) {
+float computeAttenuationForIntersection(ivec2 hitPixel, vec2 hitUV, vec3 vsRayOrigin, vec3 vsHitPoint, vec3 reflectionVector, float maxRayDistance, float numIterations) {
     float attenuation = 1.0;
     
 #ifdef SSR_ATTENUATE_SCREEN_BORDERS
@@ -86,6 +86,11 @@ float computeAttenuationForIntersection(ivec2 hitPixel, vec2 hitUV, vec3 vsRayOr
 #ifdef SSR_ATTENUATE_INTERSECTION_DISTANCE
     // Attenuation based on the distance between the origin of the reflection ray and the intersection point
     attenuation *= 1.0 - clamp(distance(vsRayOrigin, vsHitPoint) / maxRayDistance, 0.0, 1.0);
+#endif
+
+#ifdef SSR_ATTENUATE_INTERSECTION_NUMITERATIONS
+    // Attenuation based on the number of iterations performed to find the intersection
+    attenuation *= 1.0 - (numIterations / maxSteps);
 #endif
 
 #ifdef SSR_ATTENUATE_BACKFACE_REFLECTION
@@ -155,6 +160,7 @@ void main()
     vec2 startPixel;
     vec2 hitPixel;
     vec3 hitPoint;
+    float numIterations;
 #ifdef SSRAYTRACE_DEBUG
     vec3 debugColor;
 #endif
@@ -197,7 +203,8 @@ void main()
             selfCollisionNumSkip,
             startPixel,
             hitPixel,
-            hitPoint
+            hitPoint,
+            numIterations
 #ifdef SSRAYTRACE_DEBUG
             ,debugColor
 #endif
@@ -216,9 +223,9 @@ void main()
     // SSR color
     vec3 SSR = envColor;
     if (rayHasHit) {
-        vec3 color = toLinearSpace(texelFetch(textureSampler, ivec2(hitPixel), 0).rgb);
-        reflectionAttenuation *= computeAttenuationForIntersection(ivec2(hitPixel), hitPixel / texSize, csPosition, hitPoint, csReflectedVector, maxDistance);
-        SSR = color * reflectionAttenuation + (1.0 - reflectionAttenuation) * envColor;
+        vec3 reflectedColor = toLinearSpace(texelFetch(textureSampler, ivec2(hitPixel), 0).rgb);
+        reflectionAttenuation *= computeAttenuationForIntersection(ivec2(hitPixel), hitPixel / texSize, csPosition, hitPoint, csReflectedVector, maxDistance, numIterations);
+        SSR = reflectedColor * reflectionAttenuation + (1.0 - reflectionAttenuation) * envColor;
     }
 
     SSR *= fresnel;

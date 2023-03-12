@@ -76,42 +76,43 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
      * Note that this value is a view (camera) space distance (not pixels!).
      */
     @serialize()
-    public maxDistance: number = 1000.0;
+    public maxDistance = 1000.0;
     /**
      * Gets or sets the step size used to iterate until the effect finds the color of the reflection's pixel. Should be an integer \>= 1 as it is the number of pixels we advance at each step (default: 1).
      * Use higher values to improve performances (but at the expense of quality).
      */
     @serialize()
-    public step: number = 1.0;
+    public step = 1.0;
     /**
      * Gets or sets the thickness value used as tolerance when computing the intersection between the reflected ray and the scene (default: 0.5).
      * If setting "enableAutomaticThicknessComputation" to true, you can use lower values for "thickness" (even 0), as the geometry thickness
      * is automatically computed thank to the regular depth buffer + the backface depth buffer
      */
     @serialize()
-    public thickness: number = 0.5;
+    public thickness = 0.5;
     /**
      * Gets or sets the current reflection strength. 1.0 is an ideal value but can be increased/decreased for particular results (default: 1).
      */
     @serialize()
-    public strength: number = 1;
+    public strength = 1;
     /**
      * Gets or sets the falloff exponent used to compute the reflection strength. Higher values lead to fainter reflections (default: 1).
      */
     @serialize()
-    public reflectionSpecularFalloffExponent: number = 1;
+    public reflectionSpecularFalloffExponent = 1;
     /**
-     * Maximum number of steps during the ray marching process after which we consider an intersection could not be found (default: 1000)
+     * Maximum number of steps during the ray marching process after which we consider an intersection could not be found (default: 1000).
+     * Should be an integer value.
      */
     @serialize()
-    public maxSteps: number = 1000.0;
+    public maxSteps = 1000.0;
     /**
      * Gets or sets the factor applied when computing roughness. Default value is 0.2.
      * When blurring based on roughness is enabled (meaning blurDispersionStrength \> 0), roughnessFactor is used as a global roughness factor applied on all objects.
      * If you want to disable this global roughness set it to 0.
      */
     @serialize()
-    public roughnessFactor: number = 0.2;
+    public roughnessFactor = 0.2;
     /**
      * Number of steps to skip at start when marching the ray to avoid self collisions (default: 1)
      * 1 should normally be a good value, depending on the scene you may need to use a higher value (2 or 3)
@@ -206,7 +207,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
     }
 
     @serialize("enableSmoothReflections")
-    private _enableSmoothReflections: boolean = false;
+    private _enableSmoothReflections = false;
 
     /**
      * Gets or sets whether or not smoothing reflections is enabled.
@@ -242,7 +243,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
     }
 
     @serialize("environmentTextureIsProbe")
-    private _environmentTextureIsProbe: boolean = false;
+    private _environmentTextureIsProbe = false;
 
     /**
      * Gets or sets the boolean defining if the environment texture is a standard cubemap (false) or a probe (true). Default value is false.
@@ -290,6 +291,24 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
             return;
         }
         this._attenuateIntersectionDistance = attenuate;
+        this._updateEffectDefines();
+    }
+
+    @serialize("attenuateIntersectionIterations")
+    private _attenuateIntersectionIterations = true;
+
+    /**
+     * Gets or sets a boolean indicating if the reflections should be attenuated according to the number of iterations performed to find the intersection (default: true).
+     */
+    public get attenuateIntersectionIterations() {
+        return this._attenuateIntersectionIterations;
+    }
+
+    public set attenuateIntersectionIterations(attenuate: boolean) {
+        if (this._attenuateIntersectionIterations === attenuate) {
+            return;
+        }
+        this._attenuateIntersectionIterations = attenuate;
         this._updateEffectDefines();
     }
 
@@ -349,7 +368,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
     }
 
     @serialize("enableAutomaticThicknessComputation")
-    private _enableAutomaticThicknessComputation: boolean = false;
+    private _enableAutomaticThicknessComputation = false;
 
     /**
      * Gets or sets a boolean defining if geometry thickness should be computed automatically (default: false).
@@ -398,6 +417,28 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
 
         this._backfaceDepthTextureDownsample = factor;
         this._resizeDepthRenderer();
+    }
+
+    @serialize("backfaceForceDepthWriteTransparentMeshes")
+    private _backfaceForceDepthWriteTransparentMeshes = true;
+
+    /**
+     * Gets or sets a boolean (default: true) indicating if the depth of transparent meshes should be written to the backface depth texture (when automatic thickness computation is enabled).
+     */
+    public get backfaceForceDepthWriteTransparentMeshes() {
+        return this._backfaceForceDepthWriteTransparentMeshes;
+    }
+
+    public set backfaceForceDepthWriteTransparentMeshes(force: boolean) {
+        if (this._backfaceForceDepthWriteTransparentMeshes === force) {
+            return;
+        }
+
+        this._backfaceForceDepthWriteTransparentMeshes = force;
+
+        if (this._depthRenderer) {
+            this._depthRenderer.forceDepthWriteTransparentMeshes = force;
+        }
     }
 
     @serialize("isEnabled")
@@ -460,7 +501,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         this._buildPipeline();
     }
 
-    private _forceGeometryBuffer: boolean = false;
+    private _forceGeometryBuffer = false;
     private get _geometryBufferRenderer(): Nullable<GeometryBufferRenderer> {
         if (!this._forceGeometryBuffer) {
             return null;
@@ -637,6 +678,9 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         if (this._attenuateIntersectionDistance) {
             defines.push("#define SSR_ATTENUATE_INTERSECTION_DISTANCE");
         }
+        if (this._attenuateIntersectionIterations) {
+            defines.push("#define SSR_ATTENUATE_INTERSECTION_NUMITERATIONS");
+        }
         if (this._attenuateFacingCamera) {
             defines.push("#define SSR_ATTENUATE_FACING_CAMERA");
         }
@@ -685,9 +729,10 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
             if (camera) {
                 this._depthRendererCamera = camera;
                 this._depthRenderer = new DepthRenderer(this._scene, undefined, undefined, undefined, Constants.TEXTURE_NEAREST_SAMPLINGMODE, true, "SSRBackDepth");
-                this._depthRenderer.clearColor.r = 1e8; // put a big value because we use the storeCameraSpaceZ mode
+                this._depthRenderer.clearColor.r = 1e8; // "infinity": put a big value because we use the storeCameraSpaceZ mode
                 this._depthRenderer.reverseCulling = true; // we generate depth for the back faces
                 this._depthRenderer.getDepthMap().noPrePassRenderer = true; // we don't want the prepass renderer to attach to our depth buffer!
+                this._depthRenderer.forceDepthWriteTransparentMeshes = this._backfaceForceDepthWriteTransparentMeshes;
 
                 this._resizeDepthRenderer();
 

@@ -743,7 +743,7 @@ export class GeometryBufferRenderer {
             engine.clear(this._clearColor, true, true, true);
             if (this.useSpecificClearForDepthTexture) {
                 engine.bindAttachments(attachmentsDepthOnly);
-                this._clearDepthColor.r = this._scene.activeCamera?.maxZ ?? 1e8; // depth in the depth texture is view.z, not a 0..1 value!
+                this._clearDepthColor.r = 1e8; // "infinity" value - depth in the depth texture is view.z, not a 0..1 value!
                 engine.clear(this._clearDepthColor, true, true, true);
             }
             engine.bindAttachments(attachmentsAll);
