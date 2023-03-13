@@ -149,7 +149,10 @@ void main()
         wReflectedVector.z *= -1.0;
     #endif
 
-    vec3 envColor = toLinearSpace(textureCube(envCubeSampler, wReflectedVector).xyz);
+    vec3 envColor = textureCube(envCubeSampler, wReflectedVector).xyz;
+    #ifdef SSR_ENVIRONMENT_CUBE_IS_GAMMASPACE
+        envColor = toLinearSpace(envColor);
+    #endif
 #else
     vec3 envColor = color;
 #endif

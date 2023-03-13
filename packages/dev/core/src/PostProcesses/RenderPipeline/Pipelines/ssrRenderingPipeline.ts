@@ -665,6 +665,9 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
             if (this._environmentTexture.boundingBoxSize) {
                 defines.push("#define SSR_USE_LOCAL_REFLECTIONMAP_CUBIC");
             }
+            if (this._environmentTexture.gammaSpace) {
+                defines.push("#define SSR_ENVIRONMENT_CUBE_IS_GAMMASPACE");
+            }
         }
         if (this._environmentTextureIsProbe) {
             defines.push("#define SSR_INVERTCUBICMAP");
