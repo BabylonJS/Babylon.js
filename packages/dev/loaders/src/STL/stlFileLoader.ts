@@ -84,7 +84,7 @@ export class STLFileLoader implements ISceneLoaderPlugin {
         while ((matches = this.solidPattern.exec(data))) {
             let meshName = matches[1];
             const meshNameFromEnd = matches[3];
-            if (meshName != meshNameFromEnd) {
+            if (meshNameFromEnd && meshName != meshNameFromEnd) {
                 Tools.Error("Error in STL, solid name != endsolid name");
                 return false;
             }
