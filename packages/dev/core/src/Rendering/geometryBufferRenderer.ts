@@ -114,7 +114,7 @@ export class GeometryBufferRenderer {
     private _enableReflectivity: boolean = false;
     private _depthFormat: number;
     private _clearColor = new Color4(0, 0, 0, 0);
-    private _clearDepthColor = new Color4(1, 0, 0, 1);
+    private _clearDepthColor = new Color4(1e8, 0, 0, 1); // "infinity" value - depth in the depth texture is view.z, not a 0..1 value!
 
     private _positionIndex: number = -1;
     private _velocityIndex: number = -1;
@@ -743,7 +743,6 @@ export class GeometryBufferRenderer {
             engine.clear(this._clearColor, true, true, true);
             if (this.useSpecificClearForDepthTexture) {
                 engine.bindAttachments(attachmentsDepthOnly);
-                this._clearDepthColor.r = 1e8; // "infinity" value - depth in the depth texture is view.z, not a 0..1 value!
                 engine.clear(this._clearDepthColor, true, true, true);
             }
             engine.bindAttachments(attachmentsAll);
