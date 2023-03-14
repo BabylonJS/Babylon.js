@@ -114,16 +114,20 @@ void main()
 #ifdef SSR_SUPPORTED
     // Get color and reflectivity
     vec4 colorFull = texture2D(textureSampler, vUV);
-    vec3 color = toLinearSpace(colorFull.rgb);
+    vec3 color = colorFull.rgb;
     vec4 reflectivity = texture2D(reflectivitySampler, vUV);
     if (max(reflectivity.r, max(reflectivity.g, reflectivity.b)) <= reflectivityThreshold) {
         #ifdef SSR_USE_BLUR
             gl_FragColor = vec4(0.);
         #else
-            gl_FragColor = vec4(colorFull.rgb, 1.0);
+            gl_FragColor = colorFull;
         #endif
         return;
     }
+
+#ifdef SSR_INPUT_IS_GAMMA_SPACE
+    color = toLinearSpace(color);
+#endif
 
     vec2 texSize = vec2(textureSize(depthSampler, 0));
 
@@ -226,7 +230,10 @@ void main()
     // SSR color
     vec3 SSR = envColor;
     if (rayHasHit) {
-        vec3 reflectedColor = toLinearSpace(texelFetch(textureSampler, ivec2(hitPixel), 0).rgb);
+        vec3 reflectedColor = texelFetch(textureSampler, ivec2(hitPixel), 0).rgb;
+        #ifdef SSR_INPUT_IS_GAMMA_SPACE
+            reflectedColor = toLinearSpace(reflectedColor);
+        #endif
         reflectionAttenuation *= computeAttenuationForIntersection(ivec2(hitPixel), hitPixel / texSize, csPosition, hitPoint, csReflectedVector, maxDistance, numIterations);
         SSR = reflectedColor * reflectionAttenuation + (1.0 - reflectionAttenuation) * envColor;
     }
@@ -262,7 +269,12 @@ void main()
         vec3 reflectionMultiplier = clamp(pow(reflectivity.rgb * strength, vec3(reflectionSpecularFalloffExponent)), 0.0, 1.0);
         vec3 colorMultiplier = 1.0 - reflectionMultiplier;
 
-        gl_FragColor = vec4(toGammaSpace((color * colorMultiplier) + (SSR * reflectionMultiplier)), colorFull.a);
+        vec3 finalColor = (color * colorMultiplier) + (SSR * reflectionMultiplier);
+        #ifdef SSR_OUTPUT_IS_GAMMA_SPACE
+            finalColor = toGammaSpace(finalColor);
+        #endif
+
+        gl_FragColor = vec4(finalColor, colorFull.a);
     #endif
 #else
     gl_FragColor = texture2D(textureSampler, vUV);

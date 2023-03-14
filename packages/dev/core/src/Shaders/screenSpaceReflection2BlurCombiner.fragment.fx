@@ -24,11 +24,18 @@ void main()
         return;
     }
 
-    color = toLinearSpace(color);
+    #ifdef SSR_INPUT_IS_GAMMA_SPACE
+        color = toLinearSpace(color);
+    #endif
 
     vec3 reflectionMultiplier = clamp(pow(reflectivity.rgb * strength, vec3(reflectionSpecularFalloffExponent)), 0.0, 1.0);
     vec3 colorMultiplier = 1.0 - reflectionMultiplier;
 
-    gl_FragColor = vec4(toGammaSpace((color.rgb * colorMultiplier) + (SSR * reflectionMultiplier)), color.a);
+    vec3 finalColor = (color.rgb * colorMultiplier) + (SSR * reflectionMultiplier);
+    #ifdef SSR_OUTPUT_IS_GAMMA_SPACE
+        finalColor = toGammaSpace(finalColor);
+    #endif
+
+    gl_FragColor = vec4(finalColor, color.a);
 #endif
 }
