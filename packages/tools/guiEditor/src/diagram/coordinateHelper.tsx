@@ -7,6 +7,7 @@ import { Vector2 } from "core/Maths/math.vector";
 import type { Observable } from "core/Misc/observable";
 import type { GlobalState } from "../globalState";
 import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import { Measure } from "gui/2D/measure";
 
 export type DimensionProperties =
     | "width"
@@ -288,7 +289,17 @@ export class CoordinateHelper {
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>
     ) {
         // make sure we are using the latest measures for the control
-        (guiControl as any)._processMeasures(guiControl.parent?._currentMeasure, guiControl.host);
+        const parentMeasure = new Measure(0, 0, 0, 0);
+        if (guiControl.parent) {
+            parentMeasure.copyFrom(guiControl.parent._currentMeasure);
+            if (guiControl.parent.typeName === "Grid") {
+                const cellInfo = (guiControl.parent as Grid).getChildCellInfo(guiControl);
+                const cell = (guiControl.parent as Grid).cells[cellInfo];
+                parentMeasure.width = cell.widthInPixels;
+                parentMeasure.height = cell.heightInPixels;
+            }
+        }
+        (guiControl as any)._processMeasures(parentMeasure, guiControl.host);
         for (const property of properties) {
             const initialValue = guiControl[property];
             guiControl[`_${property}`] = new ValueAndUnit(this.Round(guiControl[`${property}InPixels`]), ValueAndUnit.UNITMODE_PIXEL);

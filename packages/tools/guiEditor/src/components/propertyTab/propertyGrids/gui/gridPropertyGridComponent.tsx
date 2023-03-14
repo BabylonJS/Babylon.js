@@ -145,62 +145,71 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
     }
 
     parsePercentage(value: string) {
-        return parseFloat(value.replace("%", "")) / 100;
+        if (value.indexOf("%") !== -1) {
+            return parseFloat(value.replace("%", "")) / 100;
+        } else {
+            return parseFloat(value);
+        }
     }
 
     isCloseTo(value: number, expected: number, epsilon: number) {
         return Math.abs(value - expected) < epsilon;
     }
 
-    resizeRow() {
-        const grid = this.props.grids[0];
-        // _rowDefinitions where the edited values are and _rowEditFlags where the edited flags are
-        
+    adjustPercentages(definitions: string[], editFlags: boolean[]): string[] {
         let percentageTotal = 0;
         let modifiedEntriesPercentageTotal = 0;
 
-        const rowValues: string[] = [];
+        const cellValues: string[] = [];
 
-        for (let i = 0; i < this._rowDefinitions.length; ++i) {
-            let value = this._rowDefinitions[i];
+        for (let i = 0; i < definitions.length; ++i) {
+            let value = definitions[i];
             const percent = this.checkPercentage(value);
-            if (this._rowEditFlags[i]) {
+            if (editFlags[i]) {
                 value = this.checkValue(value, percent);
             }
             if (percent) {
                 percentageTotal += this.parsePercentage(value);
-                if (this._rowEditFlags[i]) {
+                if (editFlags[i]) {
                     modifiedEntriesPercentageTotal += this.parsePercentage(value);
                 }
             }
-            rowValues.push(value);
+            cellValues.push(value);
         }
 
-        let modifiedRowValues = [];
+        let modifiedCellValues = [];
         
         // If the total percentage is not 100% we need to adjust the values based on the remaining percentage that was not modified by the user;
         // If the remaining percentage is 0% we need to resize the modified entries to fit the remaining space
         if (this.isCloseTo(percentageTotal, 1, 0.001)) {
-            modifiedRowValues = rowValues;
+            modifiedCellValues = cellValues;
         } else {
             const absoluteRemainingPercentage = 1 - modifiedEntriesPercentageTotal;
             const magnitudeRemainingPercentage = Math.abs(absoluteRemainingPercentage);
             const unmodifiedEntriesPercentage = percentageTotal - modifiedEntriesPercentageTotal;
 
             const resizeModifiedEntries = this.isCloseTo(unmodifiedEntriesPercentage, 0, 0.001);
-            for (let i = 0; i < rowValues.length; ++i) {
-                const value = rowValues[i];
+            for (let i = 0; i < cellValues.length; ++i) {
+                const value = cellValues[i];
                 const percent = this.checkPercentage(value);
-                if (percent && !this._rowEditFlags[i] || (this._rowEditFlags[i] && resizeModifiedEntries)) {
+                if (percent && !editFlags[i] || (editFlags[i] && resizeModifiedEntries)) {
                     const parsedValue = this.parsePercentage(value);
                     const entryWeight = parsedValue / (resizeModifiedEntries ? percentageTotal : unmodifiedEntriesPercentage);
                     const newEntryValue = entryWeight * (resizeModifiedEntries ? 1 : magnitudeRemainingPercentage);
-                    modifiedRowValues.push(`${newEntryValue * 100}%`);
+                    modifiedCellValues.push(`${newEntryValue * 100}%`);
                 } else {
-                    modifiedRowValues.push(value);
+                    modifiedCellValues.push(value);
                 }
             }
         }
+
+        return modifiedCellValues;
+    }
+
+    resizeRow() {
+        const grid = this.props.grids[0];
+        
+        const modifiedRowValues = this.adjustPercentages(this._rowDefinitions, this._rowEditFlags);
 
         for (let i = 0; i < modifiedRowValues.length; ++i) {
             grid.setRowDefinition(i, this.parsePercentage(modifiedRowValues[i]), !this.checkPercentage(modifiedRowValues[i]));
@@ -211,62 +220,11 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
 
     resizeColumn() {
         const grid = this.props.grids[0];
-        let total = 0;
-        let editCount = 0;
-        let percentCount = 0;
-        const columnValues: number[] = [];
-        for (let i = 0; i < this._columnDefinitions.length; ++i) {
-            let value = this._columnDefinitions[i];
-            const percent = this.checkPercentage(value);
-            if (this._columnEditFlags[i]) {
-                value = this.checkValue(value, percent);
-                if (percent) {
-                    editCount++;
-                }
-            }
+        
+        const columnValues = this.adjustPercentages(this._columnDefinitions, this._columnEditFlags);
 
-            if (percent) {
-                percentCount++;
-                const valueAsInt = parseInt(value.substring(0, value.length - 1));
-                total += valueAsInt / 100;
-                columnValues.push(valueAsInt / 100);
-            } else {
-                const valueAsInt = parseInt(value.substring(0, value.length - 2));
-                columnValues.push(valueAsInt);
-            }
-        }
-
-        const allEdited = editCount === percentCount;
-
-        if (total > 1.0 || allEdited) {
-            const difference = total - 1.0;
-            const diff = Math.abs(difference);
-            for (let i = 0; i < grid.columnCount; ++i) {
-                if (this.checkPercentage(this._columnDefinitions[i])) {
-                    const value = columnValues[i];
-                    const weighted = diff * (value / total);
-                    columnValues[i] = difference > 0 ? value - weighted : value + weighted;
-                }
-            }
-        } else if (total < 1.0) {
-            const difference = 1.0 - total;
-            for (let i = 0; i < grid.columnCount; ++i) {
-                if (this.checkPercentage(this._columnDefinitions[i]) && this._columnEditFlags[i]) {
-                    const value = columnValues[i];
-                    total -= value;
-                }
-            }
-            for (let i = 0; i < grid.columnCount; ++i) {
-                if (this.checkPercentage(this._columnDefinitions[i]) && !this._columnEditFlags[i]) {
-                    const value = columnValues[i];
-                    const weighted = difference * (value / total);
-                    columnValues[i] = value + weighted;
-                }
-            }
-        }
-
-        for (let i = 0; i < this._columnDefinitions.length; ++i) {
-            grid.setColumnDefinition(i, columnValues[i], !this.checkPercentage(this._columnDefinitions[i]));
+        for (let i = 0; i < columnValues.length; ++i) {
+            grid.setColumnDefinition(i, this.parsePercentage(columnValues[i]), !this.checkPercentage(this._columnDefinitions[i]));
         }
 
         this.setColumnValues();
