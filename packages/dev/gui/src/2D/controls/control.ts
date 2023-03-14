@@ -1576,11 +1576,9 @@ export class Control implements IAnimatable {
     public invalidateRect() {
         this._transform();
         if (this.host && this.host.useInvalidateRectOptimization) {
-            // Rotate by transform to get the measure transformed to global space
-            this._currentMeasure.transformToRef(this._transformMatrix, this._tmpMeasureA);
             // get the boudning box of the current measure and last frames measure in global space and invalidate it
             // the previous measure is used to properly clear a control that is scaled down
-            Measure.CombineToRef(this._tmpMeasureA, this._prevCurrentMeasureTransformedIntoGlobalSpace, this._tmpMeasureA);
+            Measure.CombineToRef(this._currentMeasure, this._prevCurrentMeasureTransformedIntoGlobalSpace, this._tmpMeasureA);
 
             // Expand rect based on shadows
             const shadowOffsetX = this.shadowOffsetX;
