@@ -251,6 +251,21 @@ export class PrePassRenderer {
         this._scene = scene;
         this._engine = scene.getEngine();
 
+        let type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+        if (this._engine._caps.textureFloat && this._engine._caps.textureFloatLinearFiltering) {
+            type = Constants.TEXTURETYPE_FLOAT;
+        } else if (this._engine._caps.textureHalfFloat && this._engine._caps.textureHalfFloatLinearFiltering) {
+            type = Constants.TEXTURETYPE_HALF_FLOAT;
+        }
+
+        if (type !== Constants.TEXTURETYPE_FLOAT) {
+            for (let i = 0; i < PrePassRenderer.TextureFormats.length; ++i) {
+                if (PrePassRenderer.TextureFormats[i].type === Constants.TEXTURETYPE_FLOAT) {
+                    PrePassRenderer.TextureFormats[Constants.PREPASS_DEPTH_TEXTURE_TYPE].type = type;
+                }
+            }
+        }
+
         PrePassRenderer._SceneComponentInitialization(this._scene);
         this.defaultRT = this._createRenderTarget("sceneprePassRT", null);
         this._currentTarget = this.defaultRT;
