@@ -3,11 +3,13 @@ import type { PhysicsShape } from "./physicsShape";
 import { Vector3, Quaternion, TmpVectors } from "../../Maths/math.vector";
 import type { Scene } from "../../scene";
 import type { PhysicsEngine } from "./physicsEngine";
-import type { Mesh, TransformNode, AbstractMesh } from "../../Meshes";
 import type { Nullable } from "core/types";
 import type { PhysicsConstraint } from "./physicsConstraint";
 import type { Bone } from "core/Bones/bone";
 import { Space } from "core/Maths/math.axis";
+import type { TransformNode } from "core/Meshes/transformNode";
+import type { Mesh } from "core/Meshes/mesh";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
 /**
  * PhysicsBody is useful for creating a physics body that can be used in a physics engine. It allows
  * the user to set the mass and velocity of the body, which can then be used to calculate the
