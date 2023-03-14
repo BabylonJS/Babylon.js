@@ -14,6 +14,7 @@ import { Constants } from "core/Engines/constants";
 import { Observable } from "core/Misc/observable";
 import type { BaseGradient } from "./gradient/BaseGradient";
 import { Tools } from "core/Misc/tools";
+import { Matrix2D } from "../math2D";
 
 /**
  * Root class for 2D containers
@@ -502,6 +503,9 @@ export class Container extends Control {
         // Do nothing by default
     }
 
+    private _inverseTransformMatrix = Matrix2D.Identity();
+    private _inverseMeasure = new Measure(0, 0, 0, 0);
+
     /**
      * @internal
      */
@@ -513,7 +517,9 @@ export class Container extends Control {
             contextToDrawTo.save();
             contextToDrawTo.translate(-this._currentMeasure.left, -this._currentMeasure.top);
             if (invalidatedRectangle) {
-                contextToDrawTo.clearRect(invalidatedRectangle.left, invalidatedRectangle.top, invalidatedRectangle.width, invalidatedRectangle.height);
+                this._transformMatrix.invertToRef(this._inverseTransformMatrix);
+                invalidatedRectangle.transformToRef(this._inverseTransformMatrix, this._inverseMeasure);
+                contextToDrawTo.clearRect(this._inverseMeasure.left, this._inverseMeasure.top, this._inverseMeasure.width, this._inverseMeasure.height);
             } else {
                 contextToDrawTo.clearRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
             }
