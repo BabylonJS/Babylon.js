@@ -301,7 +301,10 @@ export class SceneRecorder {
                 const targetEntity = finder(source.__state.id);
 
                 if (targetEntity) {
+                    // This first pass applies properties that aren't on the serialization list
                     this._ApplyPropertiesToEntity(source, targetEntity);
+                    // The second pass applies the serializable properties
+                    SerializationHelper.ParseProperties(source, targetEntity, scene, null);
                 }
             } else if (source.__state && source.__state.deleteId !== undefined) {
                 const target = finder(source.__state.deleteId);

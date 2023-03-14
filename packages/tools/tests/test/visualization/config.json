@@ -1583,6 +1583,10 @@
         {
             "title": "GUI Horizontal Stack Panel and Text Block with resizeToFit and forceResizeWidth",
             "playgroundId": "#XCPP9Y#17811"
+        },
+        {
+            "title": "Scene Recorder Apply Delta",
+            "playgroundId": "#9ZS92P#9"
         }
     ]
 }
