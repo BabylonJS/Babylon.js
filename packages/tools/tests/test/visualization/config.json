@@ -1054,11 +1054,9 @@
         },
         {
             "title": "Screen space reflections",
-            "playgroundId": "#PIZ1GK#172",
+            "playgroundId": "#PIZ1GK#1059",
             "referenceImage": "ssr.png",
-            "renderCount": 10,
-            "excludedEngines": ["webgl1"],
-            "excludeFromAutomaticTesting": true
+            "excludedEngines": ["webgl1"]
         },
         {
             "title": "Geometry buffer renderer",
