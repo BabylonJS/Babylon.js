@@ -126,7 +126,6 @@ export class GeometryBufferRenderer {
     private _prePassRenderer: PrePassRenderer;
     private _attachmentsFromPrePass: number[];
     private _useUbo: boolean;
-    private _specularColorLinear = new Color3();
 
     protected _cachedDefines: string;
 
@@ -880,8 +879,7 @@ export class GeometryBufferRenderer {
                             effect.setMatrix("reflectivityMatrix", material.specularGlossinessTexture.getTextureMatrix());
                         } else {
                             if (material.specularColor !== null) {
-                                material.specularColor.toLinearSpaceToRef(this._specularColorLinear);
-                                effect.setColor3("reflectivityColor", this._specularColorLinear);
+                                effect.setColor3("reflectivityColor", material.specularColor);
                             }
                         }
                         if (material.glossiness !== null) {

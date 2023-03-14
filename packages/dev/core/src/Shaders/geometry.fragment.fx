@@ -51,7 +51,7 @@ uniform vec2 vTangentSpaceParams;
     #ifdef METALLIC
         uniform float metallic;
     #endif
-    #ifdef ROUGHNESS
+    #if defined(ROUGHNESS) || defined(GLOSSINESS)
         uniform float glossiness;
     #endif
 #endif
@@ -156,7 +156,7 @@ void main() {
         
             reflectivity.rgb = mix(vec3(0.04), color, metal);
         #else
-            // SpecularGlossiness Model
+            // SpecularGlossiness Model + standard material
             #if defined(SPECULARGLOSSINESSTEXTURE) || defined(REFLECTIVITYTEXTURE)
                 reflectivity = texture2D(reflectivitySampler, vReflectivityUV);
                 #ifdef GAMMAREFLECTIVITYTEXTURE
