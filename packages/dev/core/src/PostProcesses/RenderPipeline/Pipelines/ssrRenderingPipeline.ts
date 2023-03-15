@@ -1079,16 +1079,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
                 return;
             }
 
-            if (prePassRenderer) {
-                const colorIndex = prePassRenderer.getIndex(Constants.PREPASS_COLOR_TEXTURE_TYPE);
-                const renderTarget = prePassRenderer.getRenderTarget();
-
-                if (renderTarget && renderTarget.textures) {
-                    effect.setTexture("mainSampler", renderTarget.textures[colorIndex]);
-                }
-            } else {
-                effect._bindTexture("mainSampler", this._ssrPostProcess!.inputTexture.texture);
-            }
+            effect.setTextureFromPostProcess("mainSampler", this._ssrPostProcess);
 
             if (geometryBufferRenderer) {
                 const roughnessIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.REFLECTIVITY_TEXTURE_TYPE);
