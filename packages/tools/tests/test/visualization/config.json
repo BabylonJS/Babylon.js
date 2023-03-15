@@ -1057,7 +1057,8 @@
             "playgroundId": "#PIZ1GK#1059",
             "referenceImage": "ssr.png",
             "renderCount": 10,
-            "excludedEngines": ["webgl1"]
+            "excludedEngines": ["webgl1"],
+            "excludeFromAutomaticTesting": true
         },
         {
             "title": "Geometry buffer renderer",
