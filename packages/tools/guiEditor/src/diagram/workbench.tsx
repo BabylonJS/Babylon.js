@@ -308,8 +308,15 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._pasteDisabled = false;
         const controlList: any[] = [];
         for (const control of this.props.globalState.selectedControls) {
+            // For grid controls, have to save current position in it
+            if (control.parent?.getClassName() === "Grid") {
+                const cellInfo = (control.parent as Grid).getChildCellInfo(control);
+                const [row, column] = cellInfo.split(":");
+                control.metadata = { ...control.metadata, "_cellInfo": {row, column} };
+            }
             const obj = {};
             control.serialize(obj);
+
             controlList.push(obj);
             this._currLeft = control.leftInPixels;
             this._currTop = control.topInPixels;
@@ -346,6 +353,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 newSelection[0].topInPixels = this._currTop;
 
                 const newGuiNode = this.props.globalState.workbench.appendBlock(newSelection[0]);
+                if (newGuiNode.parent?.typeName === "Grid" && newGuiNode.metadata?._cellInfo) {
+                    const {row, column} = newGuiNode.metadata._cellInfo;
+                    const gridParent = newGuiNode.parent as Grid;
+                    gridParent.removeControl(newGuiNode);
+                    gridParent.addControl(newGuiNode, parseInt(row), parseInt(column));
+                }                
                 this.props.globalState.setSelection([newGuiNode]);
 
                 return true;

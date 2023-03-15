@@ -94,6 +94,22 @@ export class CoordinateHelper {
         return rotation;
     }
 
+    public static GetParentSizes(guiControl: Control): Measure {
+        const parentMeasure = new Measure(0, 0, 0, 0);
+        if (guiControl.parent) {
+            parentMeasure.copyFrom(guiControl.parent._currentMeasure);
+            if (guiControl.parent.typeName === "Grid") {
+                const cellInfo = (guiControl.parent as Grid).getChildCellInfo(guiControl);
+                const cell = (guiControl.parent as Grid).cells[cellInfo];
+                if (cell) {
+                    parentMeasure.width = cell.widthInPixels;
+                    parentMeasure.height = cell.heightInPixels;
+                }
+            }
+        }
+        return parentMeasure;
+    }
+
     /**
      * This function calculates a local matrix for a node, including it's full transformation and pivot point
      *
@@ -104,8 +120,16 @@ export class CoordinateHelper {
     public static GetNodeMatrix(node: Control, storedValues?: Rect): Matrix2D {
         const size = this.GlobalState.guiTexture.getSize();
         // parent should always be defined, but stay safe
-        const parentWidth = node.parent ? node.parent._currentMeasure.width : size.width;
-        const parentHeight = node.parent ? node.parent._currentMeasure.height : size.height;
+        let parentWidth, parentHeight;
+        if (node.parent) {
+            const parentSizes = CoordinateHelper.GetParentSizes(node);
+            parentWidth = parentSizes.width;
+            parentHeight = parentSizes.height;
+
+        } else {
+            parentWidth = size.width;
+            parentHeight = size.height;
+        }
         let x = 0;
         let y = 0;
 
@@ -289,16 +313,7 @@ export class CoordinateHelper {
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>
     ) {
         // make sure we are using the latest measures for the control
-        const parentMeasure = new Measure(0, 0, 0, 0);
-        if (guiControl.parent) {
-            parentMeasure.copyFrom(guiControl.parent._currentMeasure);
-            if (guiControl.parent.typeName === "Grid") {
-                const cellInfo = (guiControl.parent as Grid).getChildCellInfo(guiControl);
-                const cell = (guiControl.parent as Grid).cells[cellInfo];
-                parentMeasure.width = cell.widthInPixels;
-                parentMeasure.height = cell.heightInPixels;
-            }
-        }
+        const parentMeasure = CoordinateHelper.GetParentSizes(guiControl);
         (guiControl as any)._processMeasures(parentMeasure, guiControl.host);
         for (const property of properties) {
             const initialValue = guiControl[property];
