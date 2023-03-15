@@ -704,6 +704,7 @@ export class WebGPUEngine extends Engine {
             textureHalfFloatLinearFiltering: true,
             textureHalfFloatRender: true,
             textureLOD: true,
+            texelFetch: true,
             drawBuffersExtension: true,
             depthTextureExtension: true,
             vertexArrayObject: false,

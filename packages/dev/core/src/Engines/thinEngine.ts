@@ -1194,6 +1194,7 @@ export class ThinEngine {
             vertexArrayObject: false,
             instancedArrays: false,
             textureLOD: this._webGLVersion > 1 || this._gl.getExtension("EXT_shader_texture_lod") ? true : false,
+            texelFetch: this._webGLVersion !== 1,
             blendMinMax: false,
             multiview: this._gl.getExtension("OVR_multiview2"),
             oculusMultiview: this._gl.getExtension("OCULUS_multiview"),

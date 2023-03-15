@@ -51,7 +51,7 @@ uniform vec2 vTangentSpaceParams;
     #ifdef METALLIC
         uniform float metallic;
     #endif
-    #ifdef ROUGHNESS
+    #if defined(ROUGHNESS) || defined(GLOSSINESS)
         uniform float glossiness;
     #endif
 #endif
@@ -112,7 +112,7 @@ void main() {
     #endif
 
     #ifdef REFLECTIVITY
-        vec4 reflectivity = vec4(1.0, 1.0, 1.0, 1.0);
+        vec4 reflectivity = vec4(0.0, 0.0, 0.0, 1.0);
 
         #ifdef METALLICWORKFLOW
             // Reflectivity calculus for metallic-roughness model based on:
@@ -156,7 +156,7 @@ void main() {
         
             reflectivity.rgb = mix(vec3(0.04), color, metal);
         #else
-            // SpecularGlossiness Model
+            // SpecularGlossiness Model + standard material
             #if defined(SPECULARGLOSSINESSTEXTURE) || defined(REFLECTIVITYTEXTURE)
                 reflectivity = texture2D(reflectivitySampler, vReflectivityUV);
                 #ifdef GAMMAREFLECTIVITYTEXTURE
@@ -166,9 +166,6 @@ void main() {
                 #ifdef REFLECTIVITYCOLOR
                     reflectivity.rgb = toLinearSpace(reflectivityColor.xyz);
                     reflectivity.a = 1.0;
-                // #else
-                    // We never reach this case since even if the reflectivity color is not defined
-                    // by the user, there is a default reflectivity/specular color set to (1.0, 1.0, 1.0)
                 #endif
             #endif
             #ifdef GLOSSINESSS

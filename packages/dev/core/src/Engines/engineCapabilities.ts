@@ -69,6 +69,8 @@ export interface EngineCapabilities {
     textureHalfFloatRender: boolean;
     /** Defines if textureLOD shader command is supported */
     textureLOD: boolean;
+    /** Defines if texelFetch shader command is supported */
+    texelFetch: boolean;
     /** Defines if draw buffers extension is supported */
     drawBuffersExtension: boolean;
     /** Defines if depth textures are supported */

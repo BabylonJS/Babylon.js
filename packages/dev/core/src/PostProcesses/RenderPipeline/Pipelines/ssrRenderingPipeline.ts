@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Logger } from "../../../Misc/logger";
 import { serialize, SerializationHelper } from "../../../Misc/decorators";
 import { Vector3, Matrix, Quaternion, TmpVectors } from "../../../Maths/math.vector";
 import type { Camera } from "../../../Cameras/camera";
@@ -77,42 +76,43 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
      * Note that this value is a view (camera) space distance (not pixels!).
      */
     @serialize()
-    public maxDistance: number = 1000.0;
+    public maxDistance = 1000.0;
     /**
      * Gets or sets the step size used to iterate until the effect finds the color of the reflection's pixel. Should be an integer \>= 1 as it is the number of pixels we advance at each step (default: 1).
      * Use higher values to improve performances (but at the expense of quality).
      */
     @serialize()
-    public step: number = 1.0;
+    public step = 1.0;
     /**
      * Gets or sets the thickness value used as tolerance when computing the intersection between the reflected ray and the scene (default: 0.5).
      * If setting "enableAutomaticThicknessComputation" to true, you can use lower values for "thickness" (even 0), as the geometry thickness
      * is automatically computed thank to the regular depth buffer + the backface depth buffer
      */
     @serialize()
-    public thickness: number = 0.5;
+    public thickness = 0.5;
     /**
      * Gets or sets the current reflection strength. 1.0 is an ideal value but can be increased/decreased for particular results (default: 1).
      */
     @serialize()
-    public strength: number = 1;
+    public strength = 1;
     /**
      * Gets or sets the falloff exponent used to compute the reflection strength. Higher values lead to fainter reflections (default: 1).
      */
     @serialize()
-    public reflectionSpecularFalloffExponent: number = 1;
+    public reflectionSpecularFalloffExponent = 1;
     /**
-     * Maximum number of steps during the ray marching process after which we consider an intersection could not be found (default: 1000)
+     * Maximum number of steps during the ray marching process after which we consider an intersection could not be found (default: 1000).
+     * Should be an integer value.
      */
     @serialize()
-    public maxSteps: number = 1000.0;
+    public maxSteps = 1000.0;
     /**
      * Gets or sets the factor applied when computing roughness. Default value is 0.2.
      * When blurring based on roughness is enabled (meaning blurDispersionStrength \> 0), roughnessFactor is used as a global roughness factor applied on all objects.
      * If you want to disable this global roughness set it to 0.
      */
     @serialize()
-    public roughnessFactor: number = 0.2;
+    public roughnessFactor = 0.2;
     /**
      * Number of steps to skip at start when marching the ray to avoid self collisions (default: 1)
      * 1 should normally be a good value, depending on the scene you may need to use a higher value (2 or 3)
@@ -120,12 +120,41 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
     @serialize()
     public selfCollisionNumSkip = 1;
 
+    /**
+     * Gets or sets the minimum value for one of the reflectivity component of the material to consider it for SSR (default: 0.04).
+     * If all r/g/b components of the reflectivity is below or equal this value, the pixel will not be considered reflective and SSR won't be applied.
+     */
+    @serialize()
+    public reflectivityThreshold = 0.04;
+
+    @serialize("_ssrDownsample")
+    private _ssrDownsample = 0;
+
+    /**
+     * Gets or sets the downsample factor used to reduce the size of the texture used to compute the SSR contribution (default: 0).
+     * Use 0 to render the SSR contribution at full resolution, 1 to render at half resolution, 2 to render at 1/3 resolution, etc.
+     * Note that it is used only when blurring is enabled (blurDispersionStrength \> 0), because in that mode the SSR contribution is generated in a separate texture.
+     */
+    @serialize()
+    public get ssrDownsample() {
+        return this._ssrDownsample;
+    }
+
+    public set ssrDownsample(downsample: number) {
+        if (downsample === this._ssrDownsample) {
+            return;
+        }
+
+        this._ssrDownsample = downsample;
+        this._buildPipeline();
+    }
+
     @serialize("blurDispersionStrength")
-    private _blurDispersionStrength = 1 / 20;
+    private _blurDispersionStrength = 0.03;
 
     /**
      * Gets or sets the blur dispersion strength. Set this value to 0 to disable blurring (default: 0.05)
-     * The reflections are blurred based on the distance between the pixel shaded and the reflected pixel: the higher the distance the more blurry the reflection is.
+     * The reflections are blurred based on the roughness of the surface and the distance between the pixel shaded and the reflected pixel: the higher the distance the more blurry the reflection is.
      * blurDispersionStrength allows to increase or decrease this effect.
      */
     public get blurDispersionStrength() {
@@ -146,19 +175,36 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         }
     }
 
+    private _useBlur() {
+        return this._blurDispersionStrength > 0;
+    }
+
+    @serialize("blurDownsample")
+    private _blurDownsample = 0;
+
     /**
-     * Apply different weighting when blurring.
-     * Must be a value between 2 and 5
+     * Gets or sets the downsample factor used to reduce the size of the textures used to blur the reflection effect (default: 0).
+     * Use 0 to blur at full resolution, 1 to render at half resolution, 2 to render at 1/3 resolution, etc.
      */
-    @serialize()
-    public blurQuality = 2;
+    public get blurDownsample() {
+        return this._blurDownsample;
+    }
+
+    public set blurDownsample(downsample: number) {
+        if (downsample === this._blurDownsample) {
+            return;
+        }
+
+        this._blurDownsample = downsample;
+        this._buildPipeline();
+    }
 
     @serialize("enableSmoothReflections")
-    private _enableSmoothReflections: boolean = false;
+    private _enableSmoothReflections = false;
 
     /**
-     * Gets or sets whether or not smoothing reflections is enabled.
-     * Enabling smoothing will require more GPU power and can generate a drop in FPS.
+     * Gets or sets whether or not smoothing reflections is enabled (default: false)
+     * Enabling smoothing will require more GPU power.
      * Note that this setting has no effect if step = 1: it's only used if step \> 1.
      */
     public get enableSmoothReflections(): boolean {
@@ -190,7 +236,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
     }
 
     @serialize("environmentTextureIsProbe")
-    private _environmentTextureIsProbe: boolean = false;
+    private _environmentTextureIsProbe = false;
 
     /**
      * Gets or sets the boolean defining if the environment texture is a standard cubemap (false) or a probe (true). Default value is false.
@@ -238,6 +284,24 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
             return;
         }
         this._attenuateIntersectionDistance = attenuate;
+        this._updateEffectDefines();
+    }
+
+    @serialize("attenuateIntersectionIterations")
+    private _attenuateIntersectionIterations = true;
+
+    /**
+     * Gets or sets a boolean indicating if the reflections should be attenuated according to the number of iterations performed to find the intersection (default: true).
+     */
+    public get attenuateIntersectionIterations() {
+        return this._attenuateIntersectionIterations;
+    }
+
+    public set attenuateIntersectionIterations(attenuate: boolean) {
+        if (this._attenuateIntersectionIterations === attenuate) {
+            return;
+        }
+        this._attenuateIntersectionIterations = attenuate;
         this._updateEffectDefines();
     }
 
@@ -297,7 +361,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
     }
 
     @serialize("enableAutomaticThicknessComputation")
-    private _enableAutomaticThicknessComputation: boolean = false;
+    private _enableAutomaticThicknessComputation = false;
 
     /**
      * Gets or sets a boolean defining if geometry thickness should be computed automatically (default: false).
@@ -327,25 +391,47 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         return this._depthRenderer;
     }
 
-    @serialize("backfaceDepthTextureSizeFactor")
-    private _backfaceDepthTextureSizeFactor = 1;
+    @serialize("backfaceDepthTextureDownsample")
+    private _backfaceDepthTextureDownsample = 0;
 
     /**
-     * Gets or sets the size factor used to create the backface depth texture, used only if enableAutomaticThicknessComputation = true (default: 1).
-     * This factor is used as a divisor of the full screen size (so, 2 means that the backface depth texture will be created at half the screen size, meaning better performances).
-     * Note that you will get rendering artefacts when using a value different from 1: it's a tradeoff between image quality and performances.
+     * Gets or sets the downsample factor (default: 0) used to create the backface depth texture - used only if enableAutomaticThicknessComputation = true.
+     * Use 0 to render the depth at full resolution, 1 to render at half resolution, 2 to render at 1/4 resolution, etc.
+     * Note that you will get rendering artefacts when using a value different from 0: it's a tradeoff between image quality and performances.
      */
-    public get backfaceDepthTextureSizeFactor() {
-        return this._backfaceDepthTextureSizeFactor;
+    public get backfaceDepthTextureDownsample() {
+        return this._backfaceDepthTextureDownsample;
     }
 
-    public set backfaceDepthTextureSizeFactor(factor: number) {
-        if (this._backfaceDepthTextureSizeFactor === factor) {
+    public set backfaceDepthTextureDownsample(factor: number) {
+        if (this._backfaceDepthTextureDownsample === factor) {
             return;
         }
 
-        this._backfaceDepthTextureSizeFactor = factor;
+        this._backfaceDepthTextureDownsample = factor;
         this._resizeDepthRenderer();
+    }
+
+    @serialize("backfaceForceDepthWriteTransparentMeshes")
+    private _backfaceForceDepthWriteTransparentMeshes = true;
+
+    /**
+     * Gets or sets a boolean (default: true) indicating if the depth of transparent meshes should be written to the backface depth texture (when automatic thickness computation is enabled).
+     */
+    public get backfaceForceDepthWriteTransparentMeshes() {
+        return this._backfaceForceDepthWriteTransparentMeshes;
+    }
+
+    public set backfaceForceDepthWriteTransparentMeshes(force: boolean) {
+        if (this._backfaceForceDepthWriteTransparentMeshes === force) {
+            return;
+        }
+
+        this._backfaceForceDepthWriteTransparentMeshes = force;
+
+        if (this._depthRenderer) {
+            this._depthRenderer.forceDepthWriteTransparentMeshes = force;
+        }
     }
 
     @serialize("isEnabled")
@@ -381,6 +467,48 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         }
     }
 
+    @serialize("inputTextureColorIsInGammaSpace")
+    private _inputTextureColorIsInGammaSpace = true;
+
+    /**
+     * Gets or sets a boolean defining if the input color texture is in gamma space (default: true)
+     * The SSR effect works in linear space, so if the input texture is in gamma space, we must convert the texture to linear space before applying the effect
+     */
+    public get inputTextureColorIsInGammaSpace(): boolean {
+        return this._inputTextureColorIsInGammaSpace;
+    }
+
+    public set inputTextureColorIsInGammaSpace(gammaSpace: boolean) {
+        if (this._inputTextureColorIsInGammaSpace === gammaSpace) {
+            return;
+        }
+
+        this._inputTextureColorIsInGammaSpace = gammaSpace;
+
+        this._buildPipeline();
+    }
+
+    @serialize("generateOutputInGammaSpace")
+    private _generateOutputInGammaSpace = true;
+
+    /**
+     * Gets or sets a boolean defining if the output color texture generated by the SSR pipeline should be in gamma space (default: true)
+     * If you have a post-process that comes after the SSR and that post-process needs the input to be in a linear space, you must disable generateOutputInGammaSpace
+     */
+    public get generateOutputInGammaSpace(): boolean {
+        return this._generateOutputInGammaSpace;
+    }
+
+    public set generateOutputInGammaSpace(gammaSpace: boolean) {
+        if (this._generateOutputInGammaSpace === gammaSpace) {
+            return;
+        }
+
+        this._generateOutputInGammaSpace = gammaSpace;
+
+        this._buildPipeline();
+    }
+
     @serialize("debug")
     private _debug = false;
 
@@ -408,7 +536,15 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         this._buildPipeline();
     }
 
-    private _forceGeometryBuffer: boolean = false;
+    /**
+     * Gets the scene the effect belongs to.
+     * @returns the scene the effect belongs to.
+     */
+    public getScene() {
+        return this._scene;
+    }
+
+    private _forceGeometryBuffer = false;
     private get _geometryBufferRenderer(): Nullable<GeometryBufferRenderer> {
         if (!this._forceGeometryBuffer) {
             return null;
@@ -444,6 +580,15 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
     }
 
     /**
+     * Returns true if SSR is supported by the running hardware
+     */
+    public get isSupported(): boolean {
+        const caps = this._scene.getEngine().getCaps();
+
+        return caps.drawBuffersExtension && caps.texelFetch;
+    }
+
+    /**
      * Constructor of the SSR rendering pipeline
      * @param name The rendering pipeline name
      * @param scene The scene linked to this pipeline
@@ -462,24 +607,25 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         this._textureType = textureType;
         this._forceGeometryBuffer = forceGeometryBuffer;
 
-        if (!this.isSupported) {
-            Logger.Error("The current engine does not support SSR.");
-            return;
-        }
+        if (this.isSupported) {
+            scene.postProcessRenderPipelineManager.addPipeline(this);
 
-        scene.postProcessRenderPipelineManager.addPipeline(this);
-
-        if (this._forceGeometryBuffer) {
-            const geometryBufferRenderer = scene.enableGeometryBufferRenderer();
-            if (geometryBufferRenderer) {
-                geometryBufferRenderer.enableReflectivity = true;
+            if (this._forceGeometryBuffer) {
+                const geometryBufferRenderer = scene.enableGeometryBufferRenderer();
+                if (geometryBufferRenderer) {
+                    geometryBufferRenderer.enableReflectivity = true;
+                    geometryBufferRenderer.useSpecificClearForDepthTexture = true;
+                }
+            } else {
+                const prePassRenderer = scene.enablePrePassRenderer();
+                if (prePassRenderer) {
+                    prePassRenderer.useSpecificClearForDepthTexture = true;
+                    prePassRenderer.markAsDirty();
+                }
             }
-        } else {
-            const prePassRenderer = scene.enablePrePassRenderer();
-            prePassRenderer?.markAsDirty();
-        }
 
-        this._buildPipeline();
+            this._buildPipeline();
+        }
     }
 
     /**
@@ -528,20 +674,19 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
 
     private _getTextureSize() {
         const engine = this._scene.getEngine();
-        const geometryBufferRenderer = this._geometryBufferRenderer;
         const prePassRenderer = this._prePassRenderer;
 
         let textureSize: ISize = { width: engine.getRenderWidth(), height: engine.getRenderHeight() };
 
-        if (geometryBufferRenderer) {
-            textureSize = geometryBufferRenderer.getGBuffer().textures[0].getSize();
-        } else if (prePassRenderer) {
-            const depthIndex = prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
+        if (prePassRenderer && this._scene.activeCamera?._getFirstPostProcess() === this._ssrPostProcess) {
             const renderTarget = prePassRenderer.getRenderTarget();
 
             if (renderTarget && renderTarget.textures) {
-                textureSize = renderTarget.textures[depthIndex].getSize();
+                textureSize = renderTarget.textures[prePassRenderer.getIndex(Constants.PREPASS_COLOR_TEXTURE_TYPE)].getSize();
             }
+        } else if (this._ssrPostProcess?.inputTexture) {
+            textureSize.width = this._ssrPostProcess.inputTexture.width;
+            textureSize.height = this._ssrPostProcess.inputTexture.height;
         }
 
         return textureSize;
@@ -564,6 +709,9 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
             if (this._environmentTexture.boundingBoxSize) {
                 defines.push("#define SSR_USE_LOCAL_REFLECTIONMAP_CUBIC");
             }
+            if (this._environmentTexture.gammaSpace) {
+                defines.push("#define SSR_ENVIRONMENT_CUBE_IS_GAMMASPACE");
+            }
         }
         if (this._environmentTextureIsProbe) {
             defines.push("#define SSR_INVERTCUBICMAP");
@@ -577,6 +725,9 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         if (this._attenuateIntersectionDistance) {
             defines.push("#define SSR_ATTENUATE_INTERSECTION_DISTANCE");
         }
+        if (this._attenuateIntersectionIterations) {
+            defines.push("#define SSR_ATTENUATE_INTERSECTION_NUMITERATIONS");
+        }
         if (this._attenuateFacingCamera) {
             defines.push("#define SSR_ATTENUATE_FACING_CAMERA");
         }
@@ -586,17 +737,27 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         if (this._clipToFrustum) {
             defines.push("#define SSRAYTRACE_CLIP_TO_FRUSTUM");
         }
-        if (this._blurDispersionStrength > 0) {
+        if (this._useBlur()) {
             defines.push("#define SSR_USE_BLUR");
         }
         if (this._debug) {
             defines.push("#define SSRAYTRACE_DEBUG");
+        }
+        if (this._inputTextureColorIsInGammaSpace) {
+            defines.push("#define SSR_INPUT_IS_GAMMA_SPACE");
+        }
+        if (this._generateOutputInGammaSpace) {
+            defines.push("#define SSR_OUTPUT_IS_GAMMA_SPACE");
         }
 
         this._ssrPostProcess?.updateEffect(defines.join("\n"));
     }
 
     private _buildPipeline() {
+        if (!this.isSupported) {
+            return;
+        }
+
         if (!this._isEnabled) {
             this._isDirty = true;
             return;
@@ -621,9 +782,10 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
             if (camera) {
                 this._depthRendererCamera = camera;
                 this._depthRenderer = new DepthRenderer(this._scene, undefined, undefined, undefined, Constants.TEXTURE_NEAREST_SAMPLINGMODE, true, "SSRBackDepth");
-                this._depthRenderer.clearColor.r = 1e8; // put a big value because we use the storeCameraSpaceZ mode
+                this._depthRenderer.clearColor.r = 1e8; // "infinity": put a big value because we use the storeCameraSpaceZ mode
                 this._depthRenderer.reverseCulling = true; // we generate depth for the back faces
                 this._depthRenderer.getDepthMap().noPrePassRenderer = true; // we don't want the prepass renderer to attach to our depth buffer!
+                this._depthRenderer.forceDepthWriteTransparentMeshes = this._backfaceForceDepthWriteTransparentMeshes;
 
                 this._resizeDepthRenderer();
 
@@ -643,7 +805,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
             )
         );
 
-        if (this._blurDispersionStrength > 0) {
+        if (this._useBlur()) {
             this._createBlurAndCombinerPostProcesses();
             this.addEffect(
                 new PostProcessRenderEffect(
@@ -680,8 +842,8 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         const textureSize = this._getTextureSize();
         const depthRendererSize = this._depthRenderer.getDepthMap().getSize();
 
-        const width = Math.floor(textureSize.width / this._backfaceDepthTextureSizeFactor);
-        const height = Math.floor(textureSize.height / this._backfaceDepthTextureSizeFactor);
+        const width = Math.floor(textureSize.width / (this._backfaceDepthTextureDownsample + 1));
+        const height = Math.floor(textureSize.height / (this._backfaceDepthTextureDownsample + 1));
 
         if (depthRendererSize.width !== width || depthRendererSize.height !== height) {
             this._depthRenderer.getDepthMap().resize({ width, height });
@@ -740,6 +902,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
                 "vReflectionPosition",
                 "vReflectionSize",
                 "backSizeFactor",
+                "reflectivityThreshold",
             ],
             ["textureSampler", "normalSampler", "reflectivitySampler", "depthSampler", "envCubeSampler", "backDepthSampler"],
             1.0,
@@ -781,7 +944,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
 
             if (this._enableAutomaticThicknessComputation && this._depthRenderer) {
                 effect.setTexture("backDepthSampler", this._depthRenderer.getDepthMap());
-                effect.setFloat("backSizeFactor", this._backfaceDepthTextureSizeFactor);
+                effect.setFloat("backSizeFactor", this._backfaceDepthTextureDownsample + 1);
             }
 
             const camera = this._scene.activeCamera;
@@ -808,6 +971,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
             effect.setFloat("nearPlaneZ", camera.minZ);
             effect.setFloat("maxDistance", this.maxDistance);
             effect.setFloat("selfCollisionNumSkip", this.selfCollisionNumSkip);
+            effect.setFloat("reflectivityThreshold", this.reflectivityThreshold);
 
             const textureSize = this._getTextureSize();
 
@@ -841,9 +1005,9 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         this._blurPostProcessX = new PostProcess(
             "SSRblurX",
             "screenSpaceReflection2Blur",
-            ["blurQuality", "texelOffsetScale"],
+            ["texelOffsetScale"],
             ["textureSampler"],
-            1,
+            this._useBlur() ? 1 / (this._ssrDownsample + 1) : 1,
             null,
             Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
             engine,
@@ -854,29 +1018,17 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         this._blurPostProcessX.autoClear = false;
 
         this._blurPostProcessX.onApplyObservable.add((effect) => {
-            let width = this._scene.getEngine().getRenderWidth();
+            const width = this._blurPostProcessX?.inputTexture.width ?? this._scene.getEngine().getRenderWidth();
 
-            if (this._prePassRenderer) {
-                const colorIndex = this._prePassRenderer.getIndex(Constants.PREPASS_COLOR_TEXTURE_TYPE);
-                const renderTarget = this._prePassRenderer.getRenderTarget();
-
-                if (renderTarget && renderTarget.textures) {
-                    width = renderTarget.textures[colorIndex].getSize().width;
-                }
-            } else {
-                width = this._ssrPostProcess?.inputTexture.width ?? width;
-            }
-
-            effect.setFloat("blurQuality", this.blurQuality);
             effect.setFloat2("texelOffsetScale", this._blurDispersionStrength / width, 0);
         });
 
         this._blurPostProcessY = new PostProcess(
             "SSRblurY",
             "screenSpaceReflection2Blur",
-            ["blurQuality", "texelOffsetScale"],
+            ["texelOffsetScale"],
             ["textureSampler"],
-            1,
+            this._useBlur() ? 1 / (this._blurDownsample + 1) : 1,
             null,
             Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
             engine,
@@ -887,34 +1039,34 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         this._blurPostProcessY.autoClear = false;
 
         this._blurPostProcessY.onApplyObservable.add((effect) => {
-            let height = this._scene.getEngine().getRenderHeight();
+            const height = this._blurPostProcessY?.inputTexture.height ?? this._scene.getEngine().getRenderHeight();
 
-            if (this._prePassRenderer) {
-                const colorIndex = this._prePassRenderer.getIndex(Constants.PREPASS_COLOR_TEXTURE_TYPE);
-                const renderTarget = this._prePassRenderer.getRenderTarget();
-
-                if (renderTarget && renderTarget.textures) {
-                    height = renderTarget.textures[colorIndex].getSize().height;
-                }
-            } else {
-                height = this._ssrPostProcess?.inputTexture.height ?? height;
-            }
-
-            effect.setFloat("blurQuality", this.blurQuality);
             effect.setFloat2("texelOffsetScale", 0, this._blurDispersionStrength / height);
         });
+
+        let defines = "";
+
+        if (this._debug) {
+            defines += "#define SSRAYTRACE_DEBUG\n";
+        }
+        if (this._inputTextureColorIsInGammaSpace) {
+            defines += "#define SSR_INPUT_IS_GAMMA_SPACE\n";
+        }
+        if (this._generateOutputInGammaSpace) {
+            defines += "#define SSR_OUTPUT_IS_GAMMA_SPACE\n";
+        }
 
         this._blurCombinerPostProcess = new PostProcess(
             "SSRblurCombiner",
             "screenSpaceReflection2BlurCombiner",
-            ["strength", "reflectionSpecularFalloffExponent"],
+            ["strength", "reflectionSpecularFalloffExponent", "reflectivityThreshold"],
             ["textureSampler", "mainSampler", "reflectivitySampler"],
-            1,
+            this._useBlur() ? 1 / (this._blurDownsample + 1) : 1,
             null,
             Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             engine,
             false,
-            "",
+            defines,
             this._textureType
         );
         this._blurCombinerPostProcess.autoClear = false;
@@ -927,15 +1079,14 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
                 return;
             }
 
-            if (prePassRenderer) {
-                const colorIndex = prePassRenderer.getIndex(Constants.PREPASS_COLOR_TEXTURE_TYPE);
+            if (prePassRenderer && this._scene.activeCamera?._getFirstPostProcess() === this._ssrPostProcess) {
                 const renderTarget = prePassRenderer.getRenderTarget();
 
                 if (renderTarget && renderTarget.textures) {
-                    effect.setTexture("mainSampler", renderTarget.textures[colorIndex]);
+                    effect.setTexture("mainSampler", renderTarget.textures[prePassRenderer.getIndex(Constants.PREPASS_COLOR_TEXTURE_TYPE)]);
                 }
             } else {
-                effect._bindTexture("mainSampler", this._ssrPostProcess!.inputTexture.texture);
+                effect.setTextureFromPostProcess("mainSampler", this._ssrPostProcess);
             }
 
             if (geometryBufferRenderer) {
@@ -948,6 +1099,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
 
             effect.setFloat("strength", this.strength);
             effect.setFloat("reflectionSpecularFalloffExponent", this.reflectionSpecularFalloffExponent);
+            effect.setFloat("reflectivityThreshold", this.reflectivityThreshold);
         });
     }
 

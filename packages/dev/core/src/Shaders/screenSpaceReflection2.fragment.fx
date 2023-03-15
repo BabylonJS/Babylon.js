@@ -39,6 +39,7 @@ uniform float roughnessFactor;
 uniform float reflectionSpecularFalloffExponent;
 uniform float maxDistance;
 uniform float selfCollisionNumSkip;
+uniform float reflectivityThreshold;
 
 #include<helperFunctions>
 #include<screenSpaceRayTrace>
@@ -72,7 +73,7 @@ vec3 computeViewPosFromUVDepth(vec2 texCoord, float depth) {
     return eyePos.xyz;
 }
 
-float computeAttenuationForIntersection(ivec2 hitPixel, vec2 hitUV, vec3 vsRayOrigin, vec3 vsHitPoint, vec3 reflectionVector, float maxRayDistance) {
+float computeAttenuationForIntersection(ivec2 hitPixel, vec2 hitUV, vec3 vsRayOrigin, vec3 vsHitPoint, vec3 reflectionVector, float maxRayDistance, float numIterations) {
     float attenuation = 1.0;
     
 #ifdef SSR_ATTENUATE_SCREEN_BORDERS
@@ -85,6 +86,11 @@ float computeAttenuationForIntersection(ivec2 hitPixel, vec2 hitUV, vec3 vsRayOr
 #ifdef SSR_ATTENUATE_INTERSECTION_DISTANCE
     // Attenuation based on the distance between the origin of the reflection ray and the intersection point
     attenuation *= 1.0 - clamp(distance(vsRayOrigin, vsHitPoint) / maxRayDistance, 0.0, 1.0);
+#endif
+
+#ifdef SSR_ATTENUATE_INTERSECTION_NUMITERATIONS
+    // Attenuation based on the number of iterations performed to find the intersection
+    attenuation *= 1.0 - (numIterations / maxSteps);
 #endif
 
 #ifdef SSR_ATTENUATE_BACKFACE_REFLECTION
@@ -108,16 +114,20 @@ void main()
 #ifdef SSR_SUPPORTED
     // Get color and reflectivity
     vec4 colorFull = texture2D(textureSampler, vUV);
-    vec3 color = toLinearSpace(colorFull.rgb);
+    vec3 color = colorFull.rgb;
     vec4 reflectivity = texture2D(reflectivitySampler, vUV);
-    if (dot(reflectivity.rgb, vec3(1.)) <= 0.0) {
-        #ifdef USE_BLUR
+    if (max(reflectivity.r, max(reflectivity.g, reflectivity.b)) <= reflectivityThreshold) {
+        #ifdef SSR_USE_BLUR
             gl_FragColor = vec4(0.);
         #else
-            gl_FragColor = vec4(colorFull.rgb, 1.0);
+            gl_FragColor = colorFull;
         #endif
         return;
     }
+
+#ifdef SSR_INPUT_IS_GAMMA_SPACE
+    color = toLinearSpace(color);
+#endif
 
     vec2 texSize = vec2(textureSize(depthSampler, 0));
 
@@ -143,7 +153,10 @@ void main()
         wReflectedVector.z *= -1.0;
     #endif
 
-    vec3 envColor = toLinearSpace(textureCube(envCubeSampler, wReflectedVector).xyz);
+    vec3 envColor = textureCube(envCubeSampler, wReflectedVector).xyz;
+    #ifdef SSR_ENVIRONMENT_CUBE_IS_GAMMASPACE
+        envColor = toLinearSpace(envColor);
+    #endif
 #else
     vec3 envColor = color;
 #endif
@@ -154,6 +167,7 @@ void main()
     vec2 startPixel;
     vec2 hitPixel;
     vec3 hitPoint;
+    float numIterations;
 #ifdef SSRAYTRACE_DEBUG
     vec3 debugColor;
 #endif
@@ -196,7 +210,8 @@ void main()
             selfCollisionNumSkip,
             startPixel,
             hitPixel,
-            hitPoint
+            hitPoint,
+            numIterations
 #ifdef SSRAYTRACE_DEBUG
             ,debugColor
 #endif
@@ -215,9 +230,12 @@ void main()
     // SSR color
     vec3 SSR = envColor;
     if (rayHasHit) {
-        vec3 color = toLinearSpace(texelFetch(textureSampler, ivec2(hitPixel), 0).rgb);
-        reflectionAttenuation *= computeAttenuationForIntersection(ivec2(hitPixel), hitPixel / texSize, csPosition, hitPoint, csReflectedVector, maxDistance);
-        SSR = color * reflectionAttenuation + (1.0 - reflectionAttenuation) * envColor;
+        vec3 reflectedColor = texelFetch(textureSampler, ivec2(hitPixel), 0).rgb;
+        #ifdef SSR_INPUT_IS_GAMMA_SPACE
+            reflectedColor = toLinearSpace(reflectedColor);
+        #endif
+        reflectionAttenuation *= computeAttenuationForIntersection(ivec2(hitPixel), hitPixel / texSize, csPosition, hitPoint, csReflectedVector, maxDistance, numIterations);
+        SSR = reflectedColor * reflectionAttenuation + (1.0 - reflectionAttenuation) * envColor;
     }
 
     SSR *= fresnel;
@@ -251,7 +269,12 @@ void main()
         vec3 reflectionMultiplier = clamp(pow(reflectivity.rgb * strength, vec3(reflectionSpecularFalloffExponent)), 0.0, 1.0);
         vec3 colorMultiplier = 1.0 - reflectionMultiplier;
 
-        gl_FragColor = vec4(toGammaSpace((color * colorMultiplier) + (SSR * reflectionMultiplier)), colorFull.a);
+        vec3 finalColor = (color * colorMultiplier) + (SSR * reflectionMultiplier);
+        #ifdef SSR_OUTPUT_IS_GAMMA_SPACE
+            finalColor = toGammaSpace(finalColor);
+        #endif
+
+        gl_FragColor = vec4(finalColor, colorFull.a);
     #endif
 #else
     gl_FragColor = texture2D(textureSampler, vUV);

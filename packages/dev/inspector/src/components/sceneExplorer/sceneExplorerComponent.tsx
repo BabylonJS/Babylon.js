@@ -22,6 +22,7 @@ import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
 import { ParticleHelper } from "core/Particles/particleHelper";
 import { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
 import { SSAO2RenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline";
+import { SSRRenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/ssrRenderingPipeline";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { SpriteManager } from "core/Sprites/spriteManager";
@@ -315,6 +316,16 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                     label: "Add new SSAO2 Rendering Pipeline",
                     action: () => {
                         const newPipeline = new SSAO2RenderingPipeline("SSAO2 rendering pipeline", scene, 1, scene.cameras);
+                        this.props.globalState.onSelectionChangedObservable.notifyObservers(newPipeline);
+                    },
+                });
+            }
+
+            if (scene.getEngine().getCaps().drawBuffersExtension && scene.getEngine().getCaps().texelFetch && !pipelines.some((p) => p.getClassName() === "SSRRenderingPipeline")) {
+                pipelineContextMenus.push({
+                    label: "Add new SSR Rendering Pipeline",
+                    action: () => {
+                        const newPipeline = new SSRRenderingPipeline("SSR rendering pipeline", scene, scene.cameras);
                         this.props.globalState.onSelectionChangedObservable.notifyObservers(newPipeline);
                     },
                 });

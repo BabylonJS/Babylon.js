@@ -11,7 +11,7 @@ import type { PrePassRenderer } from "../Rendering/prePassRenderer";
 import { MaterialHelper } from "../Materials/materialHelper";
 import type { Scene } from "../scene";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
-import { Color3, Color4 } from "../Maths/math.color";
+import { Color4 } from "../Maths/math.color";
 import { _WarnImport } from "../Misc/devTools";
 import type { Observer } from "../Misc/observable";
 import type { Engine } from "../Engines/engine";
@@ -113,6 +113,8 @@ export class GeometryBufferRenderer {
     private _enableVelocity: boolean = false;
     private _enableReflectivity: boolean = false;
     private _depthFormat: number;
+    private _clearColor = new Color4(0, 0, 0, 0);
+    private _clearDepthColor = new Color4(1e8, 0, 0, 1); // "infinity" value - depth in the depth texture is view.z, not a 0..1 value!
 
     private _positionIndex: number = -1;
     private _velocityIndex: number = -1;
@@ -122,9 +124,8 @@ export class GeometryBufferRenderer {
 
     private _linkedWithPrePass: boolean = false;
     private _prePassRenderer: PrePassRenderer;
-    private _attachments: number[];
+    private _attachmentsFromPrePass: number[];
     private _useUbo: boolean;
-    private _specularColorLinear = new Color3();
 
     protected _cachedDefines: string;
 
@@ -164,7 +165,7 @@ export class GeometryBufferRenderer {
         this._enablePosition = false;
         this._enableReflectivity = false;
         this._enableVelocity = false;
-        this._attachments = [];
+        this._attachmentsFromPrePass = [];
     }
 
     /**
@@ -195,7 +196,7 @@ export class GeometryBufferRenderer {
      * Useful when linking textures of the prepass renderer
      */
     public _setAttachments(attachments: number[]) {
-        this._attachments = attachments;
+        this._attachmentsFromPrePass = attachments;
     }
 
     /**
@@ -314,6 +315,12 @@ export class GeometryBufferRenderer {
             this._createRenderTargets();
         }
     }
+
+    /**
+     * If set to true (default: false), the depth texture will be cleared with the depth value corresponding to the far plane (1 in normal mode, 0 in reverse depth buffer mode)
+     * If set to false, the depth texture is always cleared with 0.
+     */
+    public useSpecificClearForDepthTexture = false;
 
     /**
      * Gets the scene associated with the buffer.
@@ -590,7 +597,7 @@ export class GeometryBufferRenderer {
 
         // Setup textures count
         if (this._linkedWithPrePass) {
-            defines.push("#define RENDER_TARGET_COUNT " + this._attachments.length);
+            defines.push("#define RENDER_TARGET_COUNT " + this._attachmentsFromPrePass.length);
         } else {
             defines.push("#define RENDER_TARGET_COUNT " + this._multiRenderTarget.textures.length);
         }
@@ -715,9 +722,29 @@ export class GeometryBufferRenderer {
         this._multiRenderTarget.renderParticles = false;
         this._multiRenderTarget.renderList = null;
 
-        // set default depth value to 1.0 (far away)
+        // Depth is always the first texture in the geometry buffer renderer!
+        const layoutAttachmentsAll = [true];
+        const layoutAttachmentsAllButDepth = [false];
+        const layoutAttachmentsDepthOnly = [true];
+
+        for (let i = 1; i < count; ++i) {
+            layoutAttachmentsAll.push(true);
+            layoutAttachmentsDepthOnly.push(false);
+            layoutAttachmentsAllButDepth.push(true);
+        }
+
+        const attachmentsAll = engine.buildTextureLayout(layoutAttachmentsAll);
+        const attachmentsAllButDepth = engine.buildTextureLayout(layoutAttachmentsAllButDepth);
+        const attachmentsDepthOnly = engine.buildTextureLayout(layoutAttachmentsDepthOnly);
+
         this._multiRenderTarget.onClearObservable.add((engine) => {
-            engine.clear(new Color4(0.0, 0.0, 0.0, 0.0), true, true, true);
+            engine.bindAttachments(this.useSpecificClearForDepthTexture ? attachmentsAllButDepth : attachmentsAll);
+            engine.clear(this._clearColor, true, true, true);
+            if (this.useSpecificClearForDepthTexture) {
+                engine.bindAttachments(attachmentsDepthOnly);
+                engine.clear(this._clearDepthColor, true, true, true);
+            }
+            engine.bindAttachments(attachmentsAll);
         });
 
         this._resizeObserver = engine.onResizeObservable.add(() => {
@@ -852,8 +879,7 @@ export class GeometryBufferRenderer {
                             effect.setMatrix("reflectivityMatrix", material.specularGlossinessTexture.getTextureMatrix());
                         } else {
                             if (material.specularColor !== null) {
-                                material.specularColor.toLinearSpaceToRef(this._specularColorLinear);
-                                effect.setColor3("reflectivityColor", this._specularColorLinear);
+                                effect.setColor3("reflectivityColor", material.specularColor);
                             }
                         }
                         if (material.glossiness !== null) {
@@ -989,7 +1015,7 @@ export class GeometryBufferRenderer {
                 if (!this._prePassRenderer.enabled) {
                     return;
                 }
-                this._scene.getEngine().bindAttachments(this._attachments);
+                this._scene.getEngine().bindAttachments(this._attachmentsFromPrePass);
             }
 
             if (depthOnlySubMeshes.length) {

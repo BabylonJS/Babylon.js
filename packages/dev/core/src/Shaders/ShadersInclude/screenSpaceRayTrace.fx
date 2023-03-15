@@ -39,6 +39,8 @@ float distanceSquared(vec2 a, vec2 b) { a -= b; return dot(a, a); }
 
     \param hitPixel Pixel coordinates of the first intersection with the scene
 
+    \param numIterations number of iterations performed
+
     \param csHitPoint Camera space location of the ray hit
  */
 #define inline
@@ -61,7 +63,8 @@ bool traceScreenSpaceRay1(
     float       selfCollisionNumSkip,
     out vec2    startPixel,
     out vec2    hitPixel, 
-    out vec3    csHitPoint
+    out vec3    csHitPoint,
+    out float   numIterations
 #ifdef SSRAYTRACE_DEBUG
     ,out vec3   debugColor
 #endif
@@ -287,6 +290,8 @@ bool traceScreenSpaceRay1(
     Q0.z = pqk.z;
 
     csHitPoint = Q0 / pqk.w;
+
+    numIterations = stepCount + 1.0;
 
 #ifdef SSRAYTRACE_DEBUG
     if (((pqk.x + dPQK.x) * stepDirection) > end) {

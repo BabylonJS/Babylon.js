@@ -138,6 +138,7 @@ export class NullEngine extends Engine {
             textureHalfFloatLinearFiltering: false,
             textureHalfFloatRender: false,
             textureLOD: false,
+            texelFetch: false,
             drawBuffersExtension: false,
             depthTextureExtension: false,
             vertexArrayObject: false,
