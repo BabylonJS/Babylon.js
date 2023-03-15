@@ -321,7 +321,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 });
             }
 
-            if (scene.getEngine().getCaps().drawBuffersExtension && scene.getEngine().getCaps().texelFetch && !pipelines.some((p) => p.getClassName() === "SSRenderingPipeline")) {
+            if (scene.getEngine().getCaps().drawBuffersExtension && scene.getEngine().getCaps().texelFetch && !pipelines.some((p) => p.getClassName() === "SSRRenderingPipeline")) {
                 pipelineContextMenus.push({
                     label: "Add new SSR Rendering Pipeline",
                     action: () => {
