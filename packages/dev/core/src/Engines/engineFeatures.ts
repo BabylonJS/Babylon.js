@@ -42,9 +42,6 @@ export interface EngineFeatures {
     /** Indicates that SSAO2 is supported */
     supportSSAO2: boolean;
 
-    /** Indicates that SSR Rendering Pipeline is supported */
-    supportSSR: boolean;
-
     /** Indicates that some additional texture formats are supported (like TEXTUREFORMAT_R for eg) */
     supportExtendedTextureFormats: boolean;
 

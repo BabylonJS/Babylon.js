@@ -583,7 +583,9 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
      * Returns true if SSR is supported by the running hardware
      */
     public get isSupported(): boolean {
-        return this._scene.getEngine()._features.supportSSR;
+        const caps = this._scene.getEngine().getCaps();
+
+        return caps.drawBuffersExtension && caps.texelFetch;
     }
 
     /**
