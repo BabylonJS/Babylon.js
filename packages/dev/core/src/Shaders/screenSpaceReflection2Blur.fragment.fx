@@ -5,7 +5,6 @@ uniform sampler2D textureSampler;
 
 varying vec2 vUV;
 
-uniform float blurQuality;
 uniform vec2 texelOffsetScale;
 
 const float weights[8] = float[8] (0.071303, 0.131514, 0.189879, 0.321392, 0.452906,  0.584419, 0.715932, 0.847445);
@@ -13,7 +12,7 @@ const float weights[8] = float[8] (0.071303, 0.131514, 0.189879, 0.321392, 0.452
 void processSample(vec2 uv, float i, vec2 stepSize, out vec4 accumulator, out float denominator)
 {
     vec2 offsetUV = stepSize * i + uv;
-    float coefficient = weights[int(blurQuality - abs(i))];
+    float coefficient = weights[int(2.0 - abs(i))];
     accumulator += texture2D(textureSampler, offsetUV) * coefficient;
     denominator += coefficient;
 }

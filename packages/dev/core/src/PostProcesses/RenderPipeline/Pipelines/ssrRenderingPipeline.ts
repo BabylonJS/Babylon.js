@@ -179,13 +179,6 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         return this._blurDispersionStrength > 0;
     }
 
-    /**
-     * Apply different weighting when blurring.
-     * Must be a value between 2 and 5
-     */
-    @serialize()
-    public blurQuality = 2;
-
     @serialize("blurDownsample")
     private _blurDownsample = 0;
 
@@ -1003,7 +996,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         this._blurPostProcessX = new PostProcess(
             "SSRblurX",
             "screenSpaceReflection2Blur",
-            ["blurQuality", "texelOffsetScale"],
+            ["texelOffsetScale"],
             ["textureSampler"],
             this._useBlur() ? 1 / (this._ssrDownsample + 1) : 1,
             null,
@@ -1018,14 +1011,13 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         this._blurPostProcessX.onApplyObservable.add((effect) => {
             const width = this._blurPostProcessX?.inputTexture.width ?? this._scene.getEngine().getRenderWidth();
 
-            effect.setFloat("blurQuality", this.blurQuality);
             effect.setFloat2("texelOffsetScale", this._blurDispersionStrength / width, 0);
         });
 
         this._blurPostProcessY = new PostProcess(
             "SSRblurY",
             "screenSpaceReflection2Blur",
-            ["blurQuality", "texelOffsetScale"],
+            ["texelOffsetScale"],
             ["textureSampler"],
             this._useBlur() ? 1 / (this._blurDownsample + 1) : 1,
             null,
@@ -1040,7 +1032,6 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         this._blurPostProcessY.onApplyObservable.add((effect) => {
             const height = this._blurPostProcessY?.inputTexture.height ?? this._scene.getEngine().getRenderHeight();
 
-            effect.setFloat("blurQuality", this.blurQuality);
             effect.setFloat2("texelOffsetScale", 0, this._blurDispersionStrength / height);
         });
 
