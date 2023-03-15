@@ -536,6 +536,14 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         this._buildPipeline();
     }
 
+    /**
+     * Gets the scene the effect belongs to.
+     * @returns the scene the effect belongs to.
+     */
+    public getScene() {
+        return this._scene;
+    }
+
     private _forceGeometryBuffer = false;
     private get _geometryBufferRenderer(): Nullable<GeometryBufferRenderer> {
         if (!this._forceGeometryBuffer) {
@@ -668,12 +676,11 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
 
         let textureSize: ISize = { width: engine.getRenderWidth(), height: engine.getRenderHeight() };
 
-        if (prePassRenderer) {
-            const depthIndex = prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
+        if (prePassRenderer && this._scene.activeCamera?._getFirstPostProcess() === this._ssrPostProcess) {
             const renderTarget = prePassRenderer.getRenderTarget();
 
             if (renderTarget && renderTarget.textures) {
-                textureSize = renderTarget.textures[depthIndex].getSize();
+                textureSize = renderTarget.textures[prePassRenderer.getIndex(Constants.PREPASS_COLOR_TEXTURE_TYPE)].getSize();
             }
         } else if (this._ssrPostProcess?.inputTexture) {
             textureSize.width = this._ssrPostProcess.inputTexture.width;
@@ -1070,7 +1077,15 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
                 return;
             }
 
-            effect.setTextureFromPostProcess("mainSampler", this._ssrPostProcess);
+            if (prePassRenderer && this._scene.activeCamera?._getFirstPostProcess() === this._ssrPostProcess) {
+                const renderTarget = prePassRenderer.getRenderTarget();
+
+                if (renderTarget && renderTarget.textures) {
+                    effect.setTexture("mainSampler", renderTarget.textures[prePassRenderer.getIndex(Constants.PREPASS_COLOR_TEXTURE_TYPE)]);
+                }
+            } else {
+                effect.setTextureFromPostProcess("mainSampler", this._ssrPostProcess);
+            }
 
             if (geometryBufferRenderer) {
                 const roughnessIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.REFLECTIVITY_TEXTURE_TYPE);
