@@ -1,6 +1,262 @@
 {
-    "fromTag": "5.50.0",
+    "fromTag": "5.50.1",
     "changelog": {
+        "5.51.0": [
+            {
+                "pr": "13631",
+                "title": "SSR2: more improvements",
+                "description": "Add new features and fix some bugs.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/engineCapabilities.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Engines/nullEngine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssrRenderingPipeline.ts",
+                    "packages/dev/core/src/Rendering/geometryBufferRenderer.ts",
+                    "packages/dev/core/src/Rendering/prePassRenderer.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/screenSpaceRayTrace.fx",
+                    "packages/dev/core/src/Shaders/geometry.fragment.fx",
+                    "packages/dev/core/src/Shaders/screenSpaceReflection2.fragment.fx",
+                    "packages/dev/core/src/Shaders/screenSpaceReflection2Blur.fragment.fx",
+                    "packages/dev/core/src/Shaders/screenSpaceReflection2BlurCombiner.fragment.fx",
+                    "packages/dev/inspector/src/components/actionTabs/lines/textureLinkLineComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGridTabComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/postProcesses/ssrRenderingPipelinePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/sceneExplorerComponent.tsx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Screen Space Reflections 2.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/ssr.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13632",
+                "title": "Bump webpack from 5.75.0 to 5.76.0",
+                "description": "Bumps [webpack](https://github.com/webpack/webpack) from 5.75.0 to 5.76.0.\n<details>\n<summary>Release notes</summary>\n<p><em>Sourced from <a href=\"https://github.com/webpack/webpack/releases\">webpack's releases</a>.</em></p>\n<blockquote>\n<h2>v5.76.0</h2>\n<h2>Bugfixes</h2>\n<ul>\n<li>Avoid cross-realm object access by <a href=\"https://github.com/Jack-Works\"><code>@​Jack-Works</code></a> in <a href=\"https://redirect.github.com/webpack/webpack/pull/16500\">webpack/webpack#16500</a></li>\n<li>Improve hash performance via conditional initialization by <a href=\"https://github.com/lvivski\"><code>@​lvivski</code></a> in <a href=\"https://redirect.github.com/webpack/webpack/pull/16491\">webpack/webpack#16491</a></li>\n<li>Serialize <code>generatedCode</code> info to fix bug in asset module cache restoration by <a href=\"https://github.com/ryanwilsonperkin\"><code>@​ryanwilsonperkin</code></a> in <a href=\"https://redirect.github.com/webpack/webpack/pull/16703\">webpack/webpack#16703</a></li>\n<li>Improve performance of <code>hashRegExp</code> lookup by <a href=\"https://github.com/ryanwilsonperkin\"><code>@​ryanwilsonperkin</code></a> in <a href=\"https://redirect.github.com/webpack/webpack/pull/16759\">webpack/webpack#16759</a></li>\n</ul>\n<h2>Features</h2>\n<ul>\n<li>add <code>target</code> to <code>LoaderContext</code> type by <a href=\"https://github.com/askoufis\"><code>@​askoufis</code></a> in <a href=\"https://redirect.github.com/webpack/webpack/pull/16781\">webpack/webpack#16781</a></li>\n</ul>\n<h2>Security</h2>\n<ul>\n<li><a href=\"https://github.com/advisories/GHSA-3rfm-jhwj-7488\">CVE-2022-37603</a> fixed by <a href=\"https://github.com/akhilgkrishnan\"><code>@​akhilgkrishnan</code></a> in <a href=\"https://redirect.github.com/webpack/webpack/pull/16446\">webpack/webpack#16446</a></li>\n</ul>\n<h2>Repo Changes</h2>\n<ul>\n<li>Fix HTML5 logo in README by <a href=\"https://github.com/jakebailey\"><code>@​jakebailey</code></a> in <a href=\"https://redirect.github.com/webpack/webpack/pull/16614\">webpack/webpack#16614</a></li>\n<li>Replace TypeScript logo in README by <a href=\"https://github.com/jakebailey\"><code>@​jakebailey</code></a> in <a href=\"https://redirect.github.com/webpack/webpack/pull/16613\">webpack/webpack#16613</a></li>\n<li>Update actions/cache dependencies by <a href=\"https://github.com/piwysocki\"><code>@​piwysocki</code></a> in <a href=\"https://redirect.github.com/webpack/webpack/pull/16493\">webpack/webpack#16493</a></li>\n</ul>\n<h2>New Contributors</h2>\n<ul>\n<li><a href=\"https://github.com/Jack-Works\"><code>@​Jack-Works</code></a> made their first contribution in <a href=\"https://redirect.github.com/webpack/webpack/pull/16500\">webpack/webpack#16500</a></li>\n<li><a href=\"https://github.com/lvivski\"><code>@​lvivski</code></a> made their first contribution in <a href=\"https://redirect.github.com/webpack/webpack/pull/16491\">webpack/webpack#16491</a></li>\n<li><a href=\"https://github.com/jakebailey\"><code>@​jakebailey</code></a> made their first contribution in <a href=\"https://redirect.github.com/webpack/webpack/pull/16614\">webpack/webpack#16614</a></li>\n<li><a href=\"https://github.com/akhilgkrishnan\"><code>@​akhilgkrishnan</code></a> made their first contribution in <a href=\"https://redirect.github.com/webpack/webpack/pull/16446\">webpack/webpack#16446</a></li>\n<li><a href=\"https://github.com/ryanwilsonperkin\"><code>@​ryanwilsonperkin</code></a> made their first contribution in <a href=\"https://redirect.github.com/webpack/webpack/pull/16703\">webpack/webpack#16703</a></li>\n<li><a href=\"https://github.com/piwysocki\"><code>@​piwysocki</code></a> made their first contribution in <a href=\"https://redirect.github.com/webpack/webpack/pull/16493\">webpack/webpack#16493</a></li>\n<li><a href=\"https://github.com/askoufis\"><code>@​askoufis</code></a> made their first contribution in <a href=\"https://redirect.github.com/webpack/webpack/pull/16781\">webpack/webpack#16781</a></li>\n</ul>\n<p><strong>Full Changelog</strong>: <a href=\"https://github.com/webpack/webpack/compare/v5.75.0...v5.76.0\">https://github.com/webpack/webpack/compare/v5.75.0...v5.76.0</a></p>\n</blockquote>\n</details>\n<details>\n<summary>Commits</summary>\n<ul>\n<li><a href=\"https://github.com/webpack/webpack/commit/97b1718720c33f1b17302a74c5284b01e02ec001\"><code>97b1718</code></a> Merge pull request <a href=\"https://redirect.github.com/webpack/webpack/issues/16781\">#16781</a> from askoufis/loader-context-target-type</li>\n<li><a href=\"https://github.com/webpack/webpack/commit/b84efe6224b276bf72e4c5e2f4e76acddfaeef07\"><code>b84efe6</code></a> Merge pull request <a href=\"https://redirect.github.com/webpack/webpack/issues/16759\">#16759</a> from ryanwilsonperkin/real-content-hash-regex-perf</li>\n<li><a href=\"https://github.com/webpack/webpack/commit/c98e9e001441b165c7ed4845700839730b505833\"><code>c98e9e0</code></a> Merge pull request <a href=\"https://redirect.github.com/webpack/webpack/issues/16493\">#16493</a> from piwysocki/patch-1</li>\n<li><a href=\"https://github.com/webpack/webpack/commit/5f34acfbc074da6cc09f48944d7f2b4273ffb3f8\"><code>5f34acf</code></a> feat: Add <code>target</code> to <code>LoaderContext</code> type</li>\n<li><a href=\"https://github.com/webpack/webpack/commit/b7fc4d876deb958d7ee81ecc00a312e39a354a44\"><code>b7fc4d8</code></a> Merge pull request <a href=\"https://redirect.github.com/webpack/webpack/issues/16703\">#16703</a> from ryanwilsonperkin/ryanwilsonperkin/fix-16160</li>\n<li><a href=\"https://github.com/webpack/webpack/commit/63ea82da4d4e4242b6a6285fc937f0684f264fe8\"><code>63ea82d</code></a> Merge branch 'webpack:main' into patch-1</li>\n<li><a href=\"https://github.com/webpack/webpack/commit/4ba225225b1348c8776ca5b5fe53468519413bc0\"><code>4ba2252</code></a> Merge pull request <a href=\"https://redirect.github.com/webpack/webpack/issues/16446\">#16446</a> from akhilgkrishnan/patch-1</li>\n<li><a href=\"https://github.com/webpack/webpack/commit/1acd6350be3d74d4ac70b64cbbc60f27724b618b\"><code>1acd635</code></a> Merge pull request <a href=\"https://redirect.github.com/webpack/webpack/issues/16613\">#16613</a> from jakebailey/ts-logo</li>\n<li><a href=\"https://github.com/webpack/webpack/commit/302eb37fe19ed7ca60eaf895aca4f9da9dfd7931\"><code>302eb37</code></a> Merge pull request <a href=\"https://redirect.github.com/webpack/webpack/issues/16614\">#16614</a> from jakebailey/html5-logo</li>\n<li><a href=\"https://github.com/webpack/webpack/commit/cfdb1dfe59b33bf7441b8a8e4fc58d75e4f54cee\"><code>cfdb1df</code></a> Improve performance of hashRegExp lookup</li>\n<li>Additional commits viewable in <a href=\"https://github.com/webpack/webpack/compare/v5.75.0...v5.76.0\">compare view</a></li>\n</ul>\n</details>\n<details>\n<summary>Maintainer changes</summary>\n<p>This version was pushed to npm by <a href=\"https://www.npmjs.com/~evilebottnawi\">evilebottnawi</a>, a new releaser for webpack since your current version.</p>\n</details>\n<br />\n\n\n[![Dependabot compatibility score](https://dependabot-badges.githubapp.com/badges/compatibility_score?dependency-name=webpack&package-manager=npm_and_yarn&previous-version=5.75.0&new-version=5.76.0)](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-compatibility-scores)\n\nDependabot will resolve any conflicts with this PR as long as you don't alter it yourself. You can also trigger a rebase manually by commenting `@dependabot rebase`.\n\n[//]: # (dependabot-automerge-start)\n[//]: # (dependabot-automerge-end)\n\n---\n\n<details>\n<summary>Dependabot commands and options</summary>\n<br />\n\nYou can trigger Dependabot actions by commenting on this PR:\n- `@dependabot rebase` will rebase this PR\n- `@dependabot recreate` will recreate this PR, overwriting any edits that have been made to it\n- `@dependabot merge` will merge this PR after your CI passes on it\n- `@dependabot squash and merge` will squash and merge this PR after your CI passes on it\n- `@dependabot cancel merge` will cancel a previously requested merge and block automerging\n- `@dependabot reopen` will reopen this PR if it is closed\n- `@dependabot close` will close this PR and stop Dependabot recreating it. You can achieve the same result by closing it manually\n- `@dependabot ignore this major version` will close this PR and stop Dependabot creating any more for this major version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this minor version` will close this PR and stop Dependabot creating any more for this minor version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this dependency` will close this PR and stop Dependabot creating any more for this dependency (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot use these labels` will set the current labels as the default for future PRs for this repo and language\n- `@dependabot use these reviewers` will set the current reviewers as the default for future PRs for this repo and language\n- `@dependabot use these assignees` will set the current assignees as the default for future PRs for this repo and language\n- `@dependabot use this milestone` will set the current milestone as the default for future PRs for this repo and language\n\nYou can disable automated security fix PRs for this repo from the [Security Alerts page](https://github.com/BabylonJS/Babylon.js/network/alerts).\n\n</details>",
+                "author": {
+                    "name": "dependabot[bot]",
+                    "url": "https://github.com/apps/dependabot"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": [
+                    "dependencies"
+                ]
+            },
+            {
+                "pr": "13627",
+                "title": "adt.useInvalidateRectOptimization using scale incorrectly when toggling visibility and redrawing invalidated parts of canvas",
+                "description": "Fixes #13622\nCurrent measure already has the right measure. when applying the transform again it applies scale twice.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/container.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13625",
+                "title": "Fix pointer out event on 3D GUI in XR (mobile ar)",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/3D/gui3DManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13626",
+                "title": "On SceneRecorder, use the same parsing method as the decorators to en…",
+                "description": "…sure that it accounts for properties serialized with different names.\r\n\r\nRelated forum issue: https://forum.babylonjs.com/t/scenerecorder-not-applying-every-change/19120/9",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/decorators.ts",
+                    "packages/dev/core/src/Misc/sceneRecorder.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Scene Recorder Apply Delta.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13628",
+                "title": "Adds: keysRotateUp/keysRotateDown (Free Camera)",
+                "description": "Possibility to rotate Free Camera up and down using the keyboard. \r\n\r\nhttps://forum.babylonjs.com/t/free-camera-rotation-keys-cameras-feature-reques/38891",
+                "author": {
+                    "name": "Nawarius",
+                    "url": "https://github.com/Nawarius"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/Inputs/freeCameraKeyboardMoveInput.ts",
+                    "packages/dev/core/src/Cameras/freeCamera.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "inputs"
+                ]
+            },
+            {
+                "pr": "13629",
+                "title": "Disable Flaky ExclusiveDoubleClickMode test",
+                "description": "The \"Doesn't fire onPointerOberservable for POINTERTAP when ExclusiveDoubleClickMode is enabled\" is acting flaky.  Since the test coverage for this is unrelated to most scenarios, this test will temporarily be disabled until it can be fixed so that other PRs aren't blocked.",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/test/unit/DeviceInput/babylon.inputManager.test.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13630",
+                "title": "Dragging a port and dropping on the same port throws a console error …",
+                "description": "…on the NME",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/src/graphSystem/connectionPointPortData.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "13624",
+                "title": "Import fix for UMD modules typing",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13623",
+                "title": "Stl Loader Less Restrictive",
+                "description": "https://forum.babylonjs.com/t/error-with-loading-only-certain-stl-meshes/38984",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/loaders/src/STL/stlFileLoader.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "loaders"
+                ]
+            },
+            {
+                "pr": "13620",
+                "title": "KTX container: Improve error handling when texture format not supported",
+                "description": "Fix https://github.com/BabylonJS/Babylon.js/issues/13619",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/khronosTextureContainer.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "13617",
+                "title": "SSAO2: Fix expensive blur that could not be disabled",
+                "description": "See https://forum.babylonjs.com/t/ssao2-blur-shader-issues/38924/3",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "post-process"
+                ]
+            },
+            {
+                "pr": "13618",
+                "title": "Fixing an issue with follow camera and physics",
+                "description": "In certain cases the absolute position is re-set, but the world matrix is cached, so it doesn't update when calling computeWorldMatrix.\nThis force-updates the absolutePosition vector\n\nThis solves this PG - https://playground.babylonjs.com/#0V7KM3#10 . Pressing \"w\" will present the issue",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/targetCamera.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "physics"
+                ]
+            },
+            {
+                "pr": "13582",
+                "title": "InputManager: Modified Logic for ExclusiveDoubleClickMode For Click/DoubleClick Mutual Exclusivity",
+                "description": "In a previous PR, there was a fix done to the logic for handling the ExclusiveDoubleClickMode flag to omit single clicks when this flag was active.  This fix was done in error based off of a misinterpretation of the original comment for the flag.  This PR fixes the logic and further clarifies the full behavior when this flag is active.  Test has also been updated to properly test this.\r\n\r\nPrevious PR: https://github.com/BabylonJS/Babylon.js/pull/13577",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Inputs/scene.inputManager.ts",
+                    "packages/dev/core/test/unit/DeviceInput/babylon.inputManager.test.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inputs"
+                ]
+            },
+            {
+                "pr": "13616",
+                "title": "Leak Fix",
+                "description": "https://forum.babylonjs.com/t/assetcontainer-memory-leak/38843/5",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/Meshes/mesh.vertexData.ts",
+                    "packages/dev/core/src/Morph/morphTargetManager.ts",
+                    "packages/dev/core/src/assetContainer.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts",
+                    "packages/dev/loaders/src/glTF/glTFFileLoader.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "memory leak"
+                ]
+            }
+        ],
         "5.50.1": [
             {
                 "pr": "13615",
