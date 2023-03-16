@@ -317,12 +317,8 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                 <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
                     <TextLineComponent label="Width" value={texture.getSize().width.toString()} />
                     <TextLineComponent label="Height" value={texture.getSize().height.toString()} />
-                    {texture.is2DArray && (
-                        <TextLineComponent label="Layers" value={texture._texture?.depth.toString() ?? "?"} />
-                    )}
-                    {texture.is3D && (
-                        <TextLineComponent label="Depth" value={texture._texture?.depth.toString() ?? "?"} />
-                    )}
+                    {texture.is2DArray && <TextLineComponent label="Layers" value={texture._texture?.depth.toString() ?? "?"} />}
+                    {texture.is3D && <TextLineComponent label="Depth" value={texture._texture?.depth.toString() ?? "?"} />}
                     {texture.isRenderTarget && (
                         <ButtonLineComponent
                             label="Scale up"

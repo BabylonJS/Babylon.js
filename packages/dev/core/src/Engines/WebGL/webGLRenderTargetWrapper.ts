@@ -136,11 +136,14 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
      */
     public setLayerAndFaceIndices(layers: number[], faces: number[]) {
         super.setLayerAndFaceIndices(layers, faces);
-        // this.layerIndices and this.faceIndices should be defined, this just avoids Typescript issues
+
         if (!this.textures || !this.layerIndices || !this.faceIndices) {
             return;
         }
-        for (let index = 0; index < this.textures.length; index++) {
+
+        // the length of this._attachments is the right one as it does not count the depth texture, in case we generated it
+        const textureCount = this._attachments?.length ?? this.textures.length;
+        for (let index = 0; index < textureCount; index++) {
             const texture = this.textures[index];
             if (!texture) {
                 // The target type was probably -1 at creation time and setTexture has not been called yet for this index
@@ -164,10 +167,11 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
      */
     public setLayerAndFaceIndex(index: number = 0, layer: number = -1, face: number = -1): void {
         super.setLayerAndFaceIndex(index, layer, face);
-        // this.layerIndices and this.faceIndices should be defined, this just avoids issues
+
         if (!this.textures || !this.layerIndices || !this.faceIndices) {
             return;
         }
+
         const texture = this.textures[index];
         if (texture.is2DArray || texture.is3D) {
             this._bindTextureRenderTarget(this.textures[index], index, this.layerIndices[index]);

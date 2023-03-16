@@ -224,7 +224,6 @@ export class MultiRenderTarget extends RenderTargetTexture {
         layerCounts: number[],
         options?: IMultiRenderTargetOptions
     ) {
-        const gl = this._getEngine()!._gl;
         for (let i = 0; i < count; i++) {
             if (options && options.types && options.types[i] !== undefined) {
                 types.push(options.types[i]);
@@ -247,7 +246,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
             if (options && options.targetTypes && options.targetTypes[i] !== undefined) {
                 targets.push(options.targetTypes[i]);
             } else {
-                targets.push(gl.TEXTURE_2D);
+                targets.push(Constants.TEXTURE_2D);
             }
 
             if (options && options.faceIndex && options.faceIndex[i] !== undefined) {
@@ -273,6 +272,10 @@ export class MultiRenderTarget extends RenderTargetTexture {
     private _createInternaTextureIndexMapping() {
         const mapMainInternalTexture2Index: { [key: number]: number } = {};
         const mapInternalTexture2MainIndex: number[] = [];
+
+        if (!this._renderTarget) {
+            return mapInternalTexture2MainIndex;
+        }
 
         const internalTextures = this._renderTarget!.textures!;
         for (let i = 0; i < internalTextures.length; i++) {

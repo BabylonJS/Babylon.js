@@ -264,7 +264,7 @@ export class Constants {
     /** Cube Map Texture target */
     public static readonly TEXTURE_CUBE_MAP = 34067;
     /** Cube Map Array Texture target */
-    public static readonly TEXTURE_CUBE_MAP_ARRAY = 0xDEADBEEF;
+    public static readonly TEXTURE_CUBE_MAP_ARRAY = 0xdeadbeef;
     /** 3D Texture target */
     public static readonly TEXTURE_3D = 32879;
 
