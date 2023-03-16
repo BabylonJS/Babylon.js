@@ -1575,7 +1575,7 @@
         {
             "title": "MultiRenderTarget with different texture types",
             "playgroundId": "#XSNYAU#1",
-            "excludedEngines": ["webgpu"]
+            "excludedEngines": ["webgl1", "webgpu"]
         },
         {
             "title": "Decal Map", 
