@@ -1487,7 +1487,8 @@ export class Control implements IAnimatable {
         let newLeft = projectedPosition.x + this._linkOffsetX.getValue(this._host) - this._currentMeasure.width / 2;
         let newTop = projectedPosition.y + this._linkOffsetY.getValue(this._host) - this._currentMeasure.height / 2;
 
-        if (this._left.ignoreAdaptiveScaling && this._top.ignoreAdaptiveScaling) {
+        const leftAndTopIgnoreAdaptiveScaling = this._left.ignoreAdaptiveScaling && this._top.ignoreAdaptiveScaling;
+        if (leftAndTopIgnoreAdaptiveScaling) {
             if (Math.abs(newLeft - oldLeft) < 0.5) {
                 newLeft = oldLeft;
             }
@@ -1497,7 +1498,7 @@ export class Control implements IAnimatable {
             }
         }
 
-        if (oldLeft === newLeft && oldTop === newTop) {
+        if (!leftAndTopIgnoreAdaptiveScaling && oldLeft === newLeft && oldTop === newTop) {
             return;
         }
 
