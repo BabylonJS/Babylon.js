@@ -123,7 +123,7 @@ export class Footer extends React.Component<IFooterProps> {
                             this.props.globalState.filesInput.loadFiles(evt);
                         }}
                         label="Open your scene from your hard drive (.babylon, .gltf, .glb, .obj)"
-                        accept={".babylon,.gltf,.glb,.obj"}
+                        accept={".babylon,.gltf,.glb,.obj,.dds,.env,.hdr,.ktx,.basis,.ktx2,.pvr,.astc,image/*"}
                     />
                     <DropUpButton
                         globalState={this.props.globalState}
