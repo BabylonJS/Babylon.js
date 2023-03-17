@@ -7,6 +7,7 @@ interface IFooterFileButtonProps {
     icon: any;
     label: string;
     onFilesPicked: (evt: Event, files: FileList | null) => void;
+    accept?: string;
 }
 
 export class FooterFileButton extends React.Component<IFooterFileButtonProps> {
@@ -22,7 +23,7 @@ export class FooterFileButton extends React.Component<IFooterFileButtonProps> {
         return (
             <div className="custom-upload" title={this.props.label}>
                 <img src={this.props.icon} />
-                <input type="file" id="files" multiple onChange={(evt) => this.onFilePicked(evt)} />
+                <input type="file" id="files" multiple accept={this.props.accept} onChange={(evt) => this.onFilePicked(evt)} />
             </div>
         );
     }
