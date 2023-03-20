@@ -74,6 +74,7 @@ export class SpriteRenderer {
 
     /**
      * Gets or sets a boolean indicating if the renderer must render sprites with pixel perfect rendering
+     * Note that pixel perfect mode is not supported in WebGL 1
      */
     public get pixelPerfect() {
         return this._pixelPerfect;
