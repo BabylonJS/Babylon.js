@@ -216,7 +216,7 @@ export class AssetContainer extends AbstractScene {
     }
 
     private _addNodeAndDescendantsToList(list: Node[], addedIds: Set<number>, rootNode: Node, predicate?: (entity: any) => boolean) {
-        if ((predicate && !predicate(rootNode)) || addedIds.has(rootNode.uniqueId)) {
+        if (!rootNode || (predicate && !predicate(rootNode)) || addedIds.has(rootNode.uniqueId)) {
             return;
         }
 
