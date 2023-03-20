@@ -122,6 +122,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         }
         return this._scene.prePassRenderer;
     }
+
     /**
      * Ratio object used for SSAO ratio and blur ratio
      */
@@ -132,6 +133,37 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
      * Dynamically generated sphere sampler.
      */
     private _sampleSphere: number[];
+
+    /**
+     * The radius around the analyzed pixel used by the SSAO post-process. Default value is 2.0
+     */
+    @serialize()
+    public radius: number = 2.0;
+
+    /**
+     * The base color of the SSAO post-process
+     * The final result is "base + ssao" between [0, 1]
+     */
+    @serialize()
+    public base: number = 0;
+
+    @serialize("bypassBlur")
+    private _bypassBlur: boolean = false;
+    /**
+     * Skips the denoising (blur) stage of the SSAO calculations.
+     *
+     * Useful to temporarily set while experimenting with the other SSAO2 settings.
+     */
+    public set bypassBlur(b: boolean) {
+        const defines = this._getDefinesForBlur(this.expensiveBlur, b);
+        const samplers = this._getSamplersForBlur(b);
+        this._blurHPostProcess.updateEffect(defines.h, null, samplers);
+        this._blurVPostProcess.updateEffect(defines.v, null, samplers);
+        this._bypassBlur = b;
+    }
+    public get bypassBlur(): boolean {
+        return this._bypassBlur;
+    }
 
     @serialize("expensiveBlur")
     private _expensiveBlur: boolean = true;
@@ -148,27 +180,8 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         this._blurVPostProcess.updateEffect(defines.v);
         this._expensiveBlur = b;
     }
-
     public get expensiveBlur(): boolean {
         return this._expensiveBlur;
-    }
-
-    private _bypassBlur: boolean = false;
-    /**
-     * Skips the denoising (blur) stage of the SSAO calculations.
-     *
-     * Useful to temporarily set while experimenting with the other SSAO2 settings.
-     */
-    public set bypassBlur(b: boolean) {
-        const defines = this._getDefinesForBlur(this.expensiveBlur, b);
-        const samplers = this._getSamplersForBlur(b);
-        this._blurHPostProcess.updateEffect(defines.h, null, samplers);
-        this._blurVPostProcess.updateEffect(defines.v, null, samplers);
-        this._bypassBlur = b;
-    }
-
-    public get bypassBlur(): boolean {
-        return this._bypassBlur;
     }
 
     /**
@@ -176,17 +189,17 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
      *
      * A higher value should result in smoother shadows but will use more processing time in the shaders.
      *
-     * Too high value can cause the shadows to get to blurry or visible artifacts (bands) near shard details in the geometry. The artifacts can sometimes be countered with increasing the bilateralSoften setting.
+     * A high value can cause the shadows to get to blurry or create visible artifacts (bands) near sharp details in the geometry. The artifacts can sometimes be mitigated by increasing the bilateralSoften setting.
      */
     @serialize()
     public bilateralSamples: number = 16;
 
     /**
-     * Controls the shape of the denoising kernel used by the bilateral filter. Default value is 0, which results in a box-filter.
+     * Controls the shape of the denoising kernel used by the bilateral filter. Default value is 0.
      *
-     * By default the bilateral filter acts like a box-filter, treating all samples with equal weights. This is effective to maximize the denoising effect given a limited set of samples. However, it also often results in visible ghosting around sharp shadow regions and can spread out lines over large areas so they are no longer visible.
+     * By default the bilateral filter acts like a box-filter, treating all samples on the same depth with equal weights. This is effective to maximize the denoising effect given a limited set of samples. However, it also often results in visible ghosting around sharp shadow regions and can spread out lines over large areas so they are no longer visible.
      *
-     * Increasing this setting will make the filter pay less attention to samples further away from the center, reducing many artifacts but at the same time increasing noise.
+     * Increasing this setting will make the filter pay less attention to samples further away from the center sample, reducing many artifacts but at the same time increasing noise.
      *
      * Useful value range is [0..1].
      */
@@ -196,25 +209,12 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     /**
      * How forgiving the bilateral denoiser should be when rejecting samples. Default value is 0.
      *
-     * A higher value results in the bilateral filter being more forgiving and thus doing a better job at denoising slanted and curved surfaces, but can lead to shadows spreading out around corners or between objects that are close to each other.
+     * A higher value results in the bilateral filter being more forgiving and thus doing a better job at denoising slanted and curved surfaces, but can lead to shadows spreading out around corners or between objects that are close to each other depth wise.
      *
      * Useful value range is normally [0..1], but higher values are allowed.
      */
     @serialize()
     public bilateralTolerance: number = 0;
-
-    /**
-     * The radius around the analyzed pixel used by the SSAO post-process. Default value is 2.0
-     */
-    @serialize()
-    public radius: number = 2.0;
-
-    /**
-     * The base color of the SSAO post-process
-     * The final result is "base + ssao" between [0, 1]
-     */
-    @serialize()
-    public base: number = 0;
 
     /**
      *  Support test.
