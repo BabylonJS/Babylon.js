@@ -410,7 +410,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         const blurFilter = new PostProcess(
             name,
             "ssao2",
-            ["outSize", "near", "far", "radius", "samples", "soften", "tolerance"],
+            ["outSize", "samples", "soften", "tolerance"],
             samplers,
             ratio,
             null,
@@ -430,9 +430,6 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             const originalColorSize = vertical ? this._originalColorPostProcess.width : this._originalColorPostProcess.height;
 
             effect.setFloat("outSize", ssaoCombineSize > 0 ? ssaoCombineSize : originalColorSize);
-            effect.setFloat("near", this._scene.activeCamera.minZ);
-            effect.setFloat("far", this._scene.activeCamera.maxZ);
-            effect.setFloat("radius", this.radius);
             effect.setInt("samples", this.bilateralSamples);
             effect.setFloat("soften", this.bilateralSoften);
             effect.setFloat("tolerance", this.bilateralTolerance);
@@ -522,7 +519,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
                 "range",
                 "projection",
                 "near",
-                "far",
+                // "far", // Not actually used in the shader
                 "texelSize",
                 "xViewport",
                 "yViewport",
@@ -555,7 +552,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             effect.setFloat("minZAspect", this.minZAspect);
             effect.setFloat("base", this.base);
             effect.setFloat("near", this._scene.activeCamera.minZ);
-            effect.setFloat("far", this._scene.activeCamera.maxZ);
+            // effect.setFloat("far", this._scene.activeCamera.maxZ);
             if (this._scene.activeCamera.mode === Camera.PERSPECTIVE_CAMERA) {
                 effect.setMatrix3x3("depthProjection", SSAO2RenderingPipeline.PERSPECTIVE_DEPTH_PROJECTION);
                 effect.setFloat("xViewport", Math.tan(this._scene.activeCamera.fov / 2) * this._scene.getEngine().getAspectRatio(this._scene.activeCamera, true));
@@ -615,7 +612,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     private _createRandomTexture(): void {
         const size = 128;
 
-        this._randomTexture = new DynamicTexture("SSAORandomTexture", size, this._scene, false, Texture.TRILINEAR_SAMPLINGMODE);
+        this._randomTexture = new DynamicTexture("SSAORandomTexture", size, this._scene, false, Texture.BILINEAR_SAMPLINGMODE);
         this._randomTexture.wrapU = Texture.WRAP_ADDRESSMODE;
         this._randomTexture.wrapV = Texture.WRAP_ADDRESSMODE;
 

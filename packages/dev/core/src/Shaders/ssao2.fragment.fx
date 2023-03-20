@@ -23,20 +23,20 @@ varying vec2 vUV;
 	1.0
 	);
 
-	float perspectiveDepthToViewZ(in float invClipZ, in float near, in float far ) {
-		return ( near * far ) / ( ( far - near ) * invClipZ - far );
-	}
+	// float perspectiveDepthToViewZ(in float invClipZ, in float near, in float far ) {
+	// 	return ( near * far ) / ( ( far - near ) * invClipZ - far );
+	// }
 
-	float viewZToPerspectiveDepth( in float viewZ, in float near, in float far ) {
-		return ( near * far / viewZ + far) / ( far - near );
-	}
+	// float viewZToPerspectiveDepth( in float viewZ, in float near, in float far ) {
+	// 	return ( near * far / viewZ + far) / ( far - near );
+	// }
 
-	float viewZToOrthographicDepth( in float viewZ, in float near, in float far ) {
-		return ( viewZ + near ) / ( near - far );
-	}
+	// float viewZToOrthographicDepth( in float viewZ, in float near, in float far ) {
+	// 	return ( viewZ + near ) / ( near - far );
+	// }
 
 	uniform float near;
-	uniform float far;
+	// uniform float far;
 	uniform float radius;
 
 	uniform sampler2D depthSampler;
