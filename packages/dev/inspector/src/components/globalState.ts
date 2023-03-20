@@ -118,6 +118,22 @@ export class GlobalState {
         DataStorage.WriteBoolean("settings_ignoreBackfacesForPicking", value);
     }
 
+    private _logNodeWhenPicking: Nullable<boolean> = null;
+
+    public get logNodeWhenPicking(): boolean {
+        if (this._logNodeWhenPicking === null) {
+            this._logNodeWhenPicking = DataStorage.ReadBoolean("settings_logNodeWhenPicking", false);
+        }
+
+        return this._logNodeWhenPicking!;
+    }
+
+    public set logNodeWhenPicking(value: boolean) {
+        this._logNodeWhenPicking = value;
+
+        DataStorage.WriteBoolean("settings_logNodeWhenPicking", value);
+    }
+
     public init(propertyChangedObservable: Observable<PropertyChangedEvent>) {
         this.onPropertyChangedObservable = propertyChangedObservable;
 

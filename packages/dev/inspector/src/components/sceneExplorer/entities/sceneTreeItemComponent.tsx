@@ -91,6 +91,9 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
         const scene = this.props.scene;
         this._onSelectionChangeObserver = this.props.onSelectionChangedObservable.add((entity) => {
             this._selectedEntity = entity;
+
+            if (entity && this.props.globalState.logNodeWhenPicking) console.log(entity);
+
             if (entity && scene.reservedDataStore && scene.reservedDataStore.gizmoManager) {
                 const manager: GizmoManager = scene.reservedDataStore.gizmoManager;
 
