@@ -429,7 +429,6 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             const ssaoCombineSize = vertical ? this._ssaoCombinePostProcess.width : this._ssaoCombinePostProcess.height;
             const originalColorSize = vertical ? this._originalColorPostProcess.width : this._originalColorPostProcess.height;
 
-            // TODO!
             effect.setFloat("outSize", ssaoCombineSize > 0 ? ssaoCombineSize : originalColorSize);
             effect.setFloat("near", this._scene.activeCamera.minZ);
             effect.setFloat("far", this._scene.activeCamera.maxZ);
