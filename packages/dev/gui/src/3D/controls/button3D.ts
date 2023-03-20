@@ -17,12 +17,20 @@ export class Button3D extends AbstractButton3D {
     /** @internal */
     protected _currentMaterial: Material;
 
+    protected _width: number;
+    protected _height: number;
+    protected _depth: number;
+
     /**
      * Creates a new button
      * @param name defines the control name
      */
-    constructor(name?: string) {
+    constructor(name?: string, width = 1, height = 1, depth = 0.08) {
         super(name);
+
+        this._width = width;
+        this._height = height;
+        this._depth = depth;
 
         // Default animations
 
@@ -83,14 +91,17 @@ export class Button3D extends AbstractButton3D {
         const mesh = CreateBox(
             this.name + "_rootMesh",
             {
-                width: 1.0,
-                height: 1.0,
-                depth: 0.08,
+                width: this._width,
+                height: this._height,
+                depth: this._depth,
                 faceUV: faceUV,
                 wrap: true,
             },
             scene
         );
+
+        this._contentScaleRatioY = (this._contentScaleRatio * this._width) / this._height;
+        this._setFacadeTextureScaling();
 
         return mesh;
     }
