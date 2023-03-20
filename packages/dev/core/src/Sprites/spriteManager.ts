@@ -665,6 +665,10 @@ export class SpriteManager implements ISpriteManager {
         serializationObject.capacity = this.capacity;
         serializationObject.cellWidth = this.cellWidth;
         serializationObject.cellHeight = this.cellHeight;
+        serializationObject.fogEnabled = this.fogEnabled;
+        serializationObject.blendMode = this.blendMode;
+        serializationObject.disableDepthWrite = this.disableDepthWrite;
+        serializationObject.pixelPerfect = this.pixelPerfect;
 
         if (this.texture) {
             if (serializeTexture) {
@@ -704,6 +708,19 @@ export class SpriteManager implements ISpriteManager {
             },
             scene
         );
+
+        if (parsedManager.fogEnabled !== undefined) {
+            manager.fogEnabled = parsedManager.fogEnabled;
+        }
+        if (parsedManager.blendMode !== undefined) {
+            manager.blendMode = parsedManager.blendMode;
+        }
+        if (parsedManager.disableDepthWrite !== undefined) {
+            manager.disableDepthWrite = parsedManager.disableDepthWrite;
+        }
+        if (parsedManager.pixelPerfect !== undefined) {
+            manager.pixelPerfect = parsedManager.pixelPerfect;
+        }
 
         if (parsedManager.metadata !== undefined) {
             manager.metadata = parsedManager.metadata;
