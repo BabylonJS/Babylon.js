@@ -19,9 +19,16 @@ declare module "../scene" {
          * @param storeNonLinearDepth Defines whether the depth is stored linearly like in Babylon Shadows or directly like glFragCoord.z
          * @param force32bitsFloat Forces 32 bits float when supported (else 16 bits float is prioritized over 32 bits float if supported)
          * @param samplingMode The sampling mode to be used with the render target (Linear, Nearest...)
+         * @param storeCameraSpaceZ Defines whether the depth stored is the Z coordinate in camera space. If true, storeNonLinearDepth has no effect. (Default: false)
          * @returns the created depth renderer
          */
-        enableDepthRenderer(camera?: Nullable<Camera>, storeNonLinearDepth?: boolean, force32bitsFloat?: boolean, samplingMode?: number): DepthRenderer;
+        enableDepthRenderer(
+            camera?: Nullable<Camera>,
+            storeNonLinearDepth?: boolean,
+            force32bitsFloat?: boolean,
+            samplingMode?: number,
+            storeCameraSpaceZ?: boolean
+        ): DepthRenderer;
 
         /**
          * Disables a depth renderer for a given camera
@@ -35,7 +42,8 @@ Scene.prototype.enableDepthRenderer = function (
     camera?: Nullable<Camera>,
     storeNonLinearDepth = false,
     force32bitsFloat: boolean = false,
-    samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE
+    samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+    storeCameraSpaceZ: boolean = false
 ): DepthRenderer {
     camera = camera || this.activeCamera;
     if (!camera) {
@@ -54,7 +62,7 @@ Scene.prototype.enableDepthRenderer = function (
         } else {
             textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
         }
-        this._depthRenderer[camera.id] = new DepthRenderer(this, textureType, camera, storeNonLinearDepth, samplingMode);
+        this._depthRenderer[camera.id] = new DepthRenderer(this, textureType, camera, storeNonLinearDepth, samplingMode, storeCameraSpaceZ);
     }
 
     return this._depthRenderer[camera.id];

@@ -116,7 +116,11 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
             (this.props.stateManager.data as GlobalState).onPreviewCommandActivated.notifyObservers(true);
         }
 
-        notifiers?.callback?.((this.props.stateManager.data as GlobalState).nodeMaterial.getScene(), this.props.nodeData.data as NodeMaterialBlock);
+        const rebuild = notifiers?.callback?.((this.props.stateManager.data as GlobalState).nodeMaterial.getScene(), this.props.nodeData.data as NodeMaterialBlock) ?? false;
+
+        if (rebuild) {
+            this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
+        }
     }
 
     render() {
