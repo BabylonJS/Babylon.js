@@ -44,7 +44,7 @@ export interface IEditablePropertyOption {
         /** the onPreviewCommandActivated observer of the preview manager should be triggered */
         activatePreviewCommand?: boolean;
         /** a callback to trigger */
-        callback?: (scene: Scene, block: NodeMaterialBlock) => void;
+        callback?: (scene: Scene, block: NodeMaterialBlock) => boolean | undefined | void;
         /** a callback to validate the property. Returns true if the property is ok, else false. If false, the rebuild/update/callback events won't be called */
         onValidation?: (block: NodeMaterialBlock, propertyName: string) => boolean;
     };
