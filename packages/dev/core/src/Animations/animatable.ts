@@ -16,7 +16,8 @@ export class Animatable {
     private _localDelayOffset: Nullable<number> = null;
     private _pausedDelay: Nullable<number> = null;
     private _manualJumpDelay: Nullable<number> = null;
-    private _runtimeAnimations = new Array<RuntimeAnimation>();
+    /** @hidden */
+    public _runtimeAnimations = new Array<RuntimeAnimation>();
     private _paused = false;
     private _scene: Scene;
     private _speedRatio = 1;
@@ -319,9 +320,10 @@ export class Animatable {
     /**
      * Stop and delete the current animation
      * @param animationName defines a string used to only stop some of the runtime animations instead of all
-     * @param targetMask - a function that determines if the animation should be stopped based on its target (all animations will be stopped if both this and animationName are empty)
+     * @param targetMask a function that determines if the animation should be stopped based on its target (all animations will be stopped if both this and animationName are empty)
+     * @param useGlobalSplice if true, the animatables will be removed by the caller of this function (false by default)
      */
-    public stop(animationName?: string, targetMask?: (target: any) => boolean): void {
+    public stop(animationName?: string, targetMask?: (target: any) => boolean, useGlobalSplice = false): void {
         if (animationName || targetMask) {
             const idx = this._scene._activeAnimatables.indexOf(this);
 
@@ -342,7 +344,9 @@ export class Animatable {
                 }
 
                 if (runtimeAnimations.length == 0) {
-                    this._scene._activeAnimatables.splice(idx, 1);
+                    if (!useGlobalSplice) {
+                        this._scene._activeAnimatables.splice(idx, 1);
+                    }
                     this._raiseOnAnimationEnd();
                 }
             }
@@ -350,12 +354,10 @@ export class Animatable {
             const index = this._scene._activeAnimatables.indexOf(this);
 
             if (index > -1) {
-                this._scene._activeAnimatables.splice(index, 1);
-                const runtimeAnimations = this._runtimeAnimations;
-
-                for (let index = 0; index < runtimeAnimations.length; index++) {
-                    runtimeAnimations[index].dispose();
+                if (!useGlobalSplice) {
+                    this._scene._activeAnimatables.splice(index, 1);
                 }
+                this._runtimeAnimations = [];
 
                 this._raiseOnAnimationEnd();
             }
