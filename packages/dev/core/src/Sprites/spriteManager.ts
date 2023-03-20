@@ -234,6 +234,19 @@ export class SpriteManager implements ISpriteManager {
         this._spriteRenderer.disableDepthWrite = value;
     }
 
+    /**
+     * Gets or sets a boolean indicating if the renderer must render sprites with pixel perfect rendering
+     * In this mode, sprites are rendered as "pixel art", which means that they appear as pixelated but remain stable when moving or when rotated or scaled.
+     * Note that for this mode to work as expected, the sprite texture must use the BILINEAR sampling mode, not NEAREST!
+     */
+    public get pixelPerfect() {
+        return this._spriteRenderer.pixelPerfect;
+    }
+
+    public set pixelPerfect(value: boolean) {
+        this._spriteRenderer.pixelPerfect = value;
+    }
+
     private _spriteRenderer: SpriteRenderer;
     /** Associative array from JSON sprite data file */
     private _cellData: any;

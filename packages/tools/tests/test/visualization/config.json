@@ -1587,6 +1587,10 @@
         {
             "title": "Scene Recorder Apply Delta",
             "playgroundId": "#9ZS92P#9"
+        },
+        {
+            "title": "Sprites Pixel Perfect",
+            "playgroundId": "#ZX8DJ3#10"
         }
     ]
 }

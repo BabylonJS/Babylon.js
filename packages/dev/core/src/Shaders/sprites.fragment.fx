@@ -12,11 +12,29 @@ uniform sampler2D diffuseSampler;
 
 #define CUSTOM_FRAGMENT_DEFINITIONS
 
+#ifdef PIXEL_PERFECT
+// see iq comment here: https://www.shadertoy.com/view/MllBWf
+vec2 uvPixelPerfect(vec2 uv) {
+    vec2 res = vec2(textureSize(diffuseSampler, 0));
+    
+    uv = uv * res;
+    vec2 seam = floor(uv + 0.5);
+    uv = seam + clamp((uv-seam) / fwidth(uv), -0.5, 0.5);
+    return uv / res;
+}
+#endif
+
 void main(void) {
 
 #define CUSTOM_FRAGMENT_MAIN_BEGIN
 
-	vec4 color = texture2D(diffuseSampler, vUV);
+	#ifdef PIXEL_PERFECT
+		vec2 uv = uvPixelPerfect(vUV);
+	#else
+		vec2 uv = vUV;
+	#endif
+
+	vec4 color = texture2D(diffuseSampler, uv);
 	// Fix for ios14 and lower
 	float fAlphaTest = float(alphaTest);
 
