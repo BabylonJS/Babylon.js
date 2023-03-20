@@ -57,18 +57,8 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         this._canvas = document.getElementById("renderCanvas") as HTMLCanvasElement;
         if (useWebGPU) {
             this._engine = new WebGPUEngine(this._canvas, {
-                deviceDescriptor: {
-                    requiredFeatures: [
-                        "depth-clip-control",
-                        "depth24unorm-stencil8",
-                        "depth32float-stencil8",
-                        "texture-compression-bc",
-                        "texture-compression-etc2",
-                        "texture-compression-astc",
-                        "timestamp-query",
-                        "indirect-first-instance",
-                    ],
-                },
+                enableAllFeatures: true,
+                setMaximumLimits: true,
                 antialias,
                 useHighPrecisionMatrix: true,
             });

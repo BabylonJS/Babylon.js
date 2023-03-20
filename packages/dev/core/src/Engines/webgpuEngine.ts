@@ -91,9 +91,28 @@ export interface WebGPUEngineOptions extends ThinEngineOptions, GPURequestAdapte
     powerPreference?: GPUPowerPreference;
 
     /**
-     * Defines the device descriptor used to create a device.
+     * When set to true, indicates that only a fallback adapter may be returned when requesting an adapter.
+     * If the user agent does not support a fallback adapter, will cause requestAdapter() to resolve to null.
+     * Default: false
+     */
+    forceFallbackAdapter?: boolean;
+
+    /**
+     * Defines the device descriptor used to create a device once we have retrieved an appropriate adapter
      */
     deviceDescriptor?: GPUDeviceDescriptor;
+
+    /**
+     * When requesting the device, enable all the features supported by the adapter. Default: false
+     * Note that this setting is ignored if you explicitely set deviceDescriptor.requiredFeatures
+     */
+    enableAllFeatures?: boolean;
+
+    /**
+     * When requesting the device, set the required limits to the maximum possible values (the ones from adapter.limits). Default: false
+     * Note that this setting is ignored if you explicitely set deviceDescriptor.requiredLimits
+     */
+    setMaximumLimits?: boolean;
 
     /**
      * Defines the requested Swap Chain Format.
@@ -101,7 +120,7 @@ export interface WebGPUEngineOptions extends ThinEngineOptions, GPURequestAdapte
     swapChainFormat?: GPUTextureFormat;
 
     /**
-     * Defines whether we should generate debug markers in the gpu command lists (can be seen with PIX for eg)
+     * Defines whether we should generate debug markers in the gpu command lists (can be seen with PIX for eg). Default: false
      */
     enableGPUDebugMarkers?: boolean;
 
@@ -150,9 +169,17 @@ export class WebGPUEngine extends Engine {
     private _tintWASM: Nullable<WebGPUTintWASM> = null;
     private _adapter: GPUAdapter;
     private _adapterSupportedExtensions: GPUFeatureName[];
+    private _adapterInfo: GPUAdapterInfo = {
+        vendor: "",
+        architecture: "",
+        device: "",
+        description: "",
+    };
+    private _adapterSupportedLimits: GPUSupportedLimits;
     /** @internal */
     public _device: GPUDevice;
     private _deviceEnabledExtensions: GPUFeatureName[];
+    private _deviceLimits: GPUSupportedLimits;
     private _context: GPUCanvasContext;
     private _mainPassSampleCount: number;
     /** @internal */
@@ -352,7 +379,7 @@ export class WebGPUEngine extends Engine {
             : navigator.gpu
                   .requestAdapter()
                   .then(
-                      (adapter: GPUAdapter | null) => !!adapter,
+                      (adapter: GPUAdapter | undefined) => !!adapter,
                       () => false
                   )
                   .catch(() => false);
@@ -383,6 +410,16 @@ export class WebGPUEngine extends Engine {
         return this._deviceEnabledExtensions;
     }
 
+    /** Gets the supported limits by the WebGPU adapter */
+    public get supportedLimits(): GPUSupportedLimits {
+        return this._adapterSupportedLimits;
+    }
+
+    /** Gets the current limits of the WebGPU device */
+    public get currentLimits() {
+        return this._deviceLimits;
+    }
+
     /**
      * Returns a string describing the current engine
      */
@@ -405,9 +442,9 @@ export class WebGPUEngine extends Engine {
      */
     public getInfo() {
         return {
-            vendor: "unknown vendor",
-            renderer: "unknown renderer",
-            version: "unknown version",
+            vendor: this._adapterInfo.vendor || "unknown vendor",
+            renderer: this._adapterInfo.architecture || "unknown renderer",
+            version: this._adapterInfo.description || "unknown version",
         };
     }
 
@@ -524,18 +561,24 @@ export class WebGPUEngine extends Engine {
                     throw Error("WebGPU initializations stopped.");
                 }
             )
-            .then((adapter: GPUAdapter | null) => {
+            .then((adapter: GPUAdapter | undefined) => {
                 if (!adapter) {
                     throw "Could not retrieve a WebGPU adapter (adapter is null).";
                 } else {
                     this._adapter = adapter!;
                     this._adapterSupportedExtensions = [];
                     this._adapter.features?.forEach((feature) => this._adapterSupportedExtensions.push(feature as WebGPUConstants.FeatureName));
+                    this._adapterSupportedLimits = this._adapter.limits;
 
-                    const deviceDescriptor = this._options.deviceDescriptor;
+                    this._adapter.requestAdapterInfo().then((adapterInfo) => {
+                        this._adapterInfo = adapterInfo;
+                    });
 
-                    if (deviceDescriptor?.requiredFeatures) {
-                        const requestedExtensions = deviceDescriptor.requiredFeatures;
+                    const deviceDescriptor = this._options.deviceDescriptor ?? {};
+                    const requiredFeatures = deviceDescriptor?.requiredFeatures ?? (this._options.enableAllFeatures ? this._adapterSupportedExtensions : undefined);
+
+                    if (requiredFeatures) {
+                        const requestedExtensions = requiredFeatures;
                         const validExtensions: GPUFeatureName[] = [];
 
                         for (const extension of requestedExtensions) {
@@ -547,7 +590,14 @@ export class WebGPUEngine extends Engine {
                         deviceDescriptor.requiredFeatures = validExtensions;
                     }
 
-                    return this._adapter.requestDevice(this._options.deviceDescriptor);
+                    if (this._options.setMaximumLimits && !deviceDescriptor.requiredLimits) {
+                        deviceDescriptor.requiredLimits = {};
+                        for (const name in this._adapterSupportedLimits) {
+                            deviceDescriptor.requiredLimits[name] = this._adapterSupportedLimits[name];
+                        }
+                    }
+
+                    return this._adapter.requestDevice(deviceDescriptor);
                 }
             })
             .then(
@@ -555,6 +605,7 @@ export class WebGPUEngine extends Engine {
                     this._device = device;
                     this._deviceEnabledExtensions = [];
                     this._device.features?.forEach((feature) => this._deviceEnabledExtensions.push(feature as WebGPUConstants.FeatureName));
+                    this._deviceLimits = device.limits;
 
                     let numUncapturedErrors = -1;
                     this._device.addEventListener("uncapturederror", (event) => {

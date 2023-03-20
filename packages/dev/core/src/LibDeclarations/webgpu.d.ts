@@ -1,3 +1,4 @@
+/* eslint-disable babylonjs/available */
 /* eslint-disable @typescript-eslint/naming-convention */
 interface GPUObjectBase {
     label: string | undefined;
@@ -8,37 +9,50 @@ interface GPUObjectDescriptorBase {
 }
 
 interface GPUSupportedLimits {
-    readonly maxTextureDimension1D: GPUSize32;
-    readonly maxTextureDimension2D: GPUSize32;
-    readonly maxTextureDimension3D: GPUSize32;
-    readonly maxTextureArrayLayers: GPUSize32;
-    readonly maxBindGroups: GPUSize32;
-    readonly maxDynamicUniformBuffersPerPipelineLayout: GPUSize32;
-    readonly maxDynamicStorageBuffersPerPipelineLayout: GPUSize32;
-    readonly maxSampledTexturesPerShaderStage: GPUSize32;
-    readonly maxSamplersPerShaderStage: GPUSize32;
-    readonly maxStorageBuffersPerShaderStage: GPUSize32;
-    readonly maxStorageTexturesPerShaderStage: GPUSize32;
-    readonly maxUniformBuffersPerShaderStage: GPUSize32;
-    readonly maxUniformBufferBindingSize: GPUSize64;
-    readonly maxStorageBufferBindingSize: GPUSize64;
-    readonly minUniformBufferOffsetAlignment: GPUSize32;
-    readonly minStorageBufferOffsetAlignment: GPUSize32;
-    readonly maxVertexBuffers: GPUSize32;
-    readonly maxVertexAttributes: GPUSize32;
-    readonly maxVertexBufferArrayStride: GPUSize32;
-    readonly maxInterStageShaderComponents: GPUSize32;
-    readonly maxComputeWorkgroupStorageSize: GPUSize32;
-    readonly maxComputeInvocationsPerWorkgroup: GPUSize32;
-    readonly maxComputeWorkgroupSizeX: GPUSize32;
-    readonly maxComputeWorkgroupSizeY: GPUSize32;
-    readonly maxComputeWorkgroupSizeZ: GPUSize32;
-    readonly maxComputeWorkgroupsPerDimension: GPUSize32;
+    [name: string]: number;
+
+    readonly maxTextureDimension1D: number;
+    readonly maxTextureDimension2D: number;
+    readonly maxTextureDimension3D: number;
+    readonly maxTextureArrayLayers: number;
+    readonly maxBindGroups: number;
+    readonly maxBindingsPerBindGroup: number;
+    readonly maxDynamicUniformBuffersPerPipelineLayout: number;
+    readonly maxDynamicStorageBuffersPerPipelineLayout: number;
+    readonly maxSampledTexturesPerShaderStage: number;
+    readonly maxSamplersPerShaderStage: number;
+    readonly maxStorageBuffersPerShaderStage: number;
+    readonly maxStorageTexturesPerShaderStage: number;
+    readonly maxUniformBuffersPerShaderStage: number;
+    readonly maxFragmentCombinedOutputResources: number;
+    readonly maxUniformBufferBindingSize: number;
+    readonly maxStorageBufferBindingSize: number;
+    readonly minUniformBufferOffsetAlignment: number;
+    readonly minStorageBufferOffsetAlignment: number;
+    readonly maxVertexBuffers: number;
+    readonly maxBufferSize: number;
+    readonly maxVertexAttributes: number;
+    readonly maxVertexBufferArrayStride: number;
+    readonly maxInterStageShaderComponents: number;
+    readonly maxInterStageShaderVariables: number;
+    readonly maxColorAttachments: number;
+    readonly maxColorAttachmentBytesPerSample: number;
+    readonly maxComputeWorkgroupStorageSize: number;
+    readonly maxComputeInvocationsPerWorkgroup: number;
+    readonly maxComputeWorkgroupSizeX: number;
+    readonly maxComputeWorkgroupSizeY: number;
+    readonly maxComputeWorkgroupSizeZ: number;
+    readonly maxComputeWorkgroupsPerDimension: number;
 }
 
 type GPUSupportedFeatures = ReadonlySet<string>;
 
-type GPUPredefinedColorSpace = "srgb";
+interface GPUAdapterInfo {
+    readonly vendor: string;
+    readonly architecture: string;
+    readonly device: string;
+    readonly description: string;
+}
 
 interface Navigator {
     readonly gpu: GPU | undefined;
@@ -49,7 +63,7 @@ interface WorkerNavigator {
 }
 
 declare class GPU {
-    requestAdapter(options?: GPURequestAdapterOptions): Promise<GPUAdapter | null>;
+    requestAdapter(options?: GPURequestAdapterOptions): Promise<GPUAdapter | undefined>;
     getPreferredCanvasFormat(): GPUTextureFormat;
 }
 
@@ -68,6 +82,7 @@ declare class GPUAdapter {
     readonly isFallbackAdapter: boolean;
 
     requestDevice(descriptor?: GPUDeviceDescriptor): Promise<GPUDevice>;
+    requestAdapterInfo(unmaskHints?: string[]): Promise<GPUAdapterInfo>;
 }
 
 interface GPUDeviceDescriptor extends GPUObjectDescriptorBase {
@@ -78,7 +93,6 @@ interface GPUDeviceDescriptor extends GPUObjectDescriptorBase {
 
 type GPUFeatureName =
     | "depth-clip-control"
-    | "depth24unorm-stencil8"
     | "depth32float-stencil8"
     | "texture-compression-bc"
     | "texture-compression-etc2"
@@ -86,7 +100,9 @@ type GPUFeatureName =
     | "timestamp-query"
     | "indirect-first-instance"
     | "shader-f16"
-    | "bgra8unorm-storage";
+    | "rg11b10ufloat-renderable"
+    | "bgra8unorm-storage"
+    | "float32-filterable";
 
 declare class GPUDevice extends EventTarget implements GPUObjectBase {
     label: string | undefined;
@@ -312,7 +328,7 @@ declare class GPUExternalTexture implements GPUObjectBase {
 
 interface GPUExternalTextureDescriptor extends GPUObjectDescriptorBase {
     source: HTMLVideoElement;
-    colorSpace?: GPUPredefinedColorSpace /* default="srgb" */;
+    colorSpace?: PredefinedColorSpace /* default="srgb" */;
 }
 
 declare class GPUSampler implements GPUObjectBase {
@@ -686,7 +702,7 @@ interface GPUImageCopyTexture {
 }
 
 interface GPUImageCopyTextureTagged extends GPUImageCopyTexture {
-    colorSpace?: GPUPredefinedColorSpace /* default="srgb" */;
+    colorSpace?: PredefinedColorSpace /* default="srgb" */;
     premultipliedAlpha?: boolean /* default=false */;
 }
 
@@ -934,7 +950,7 @@ interface GPUCanvasConfiguration extends GPUObjectDescriptorBase {
     format: GPUTextureFormat;
     usage?: GPUTextureUsageFlags /* default=0x10 - GPUTextureUsage.RENDER_ATTACHMENT */;
     viewFormats?: GPUTextureFormat[] /* default=[] */;
-    colorSpace?: GPUPredefinedColorSpace /* default="srgb" */;
+    colorSpace?: PredefinedColorSpace /* default="srgb" */;
     alphaMode?: GPUCanvasAlphaMode /* default="opaque" */;
 }
 
@@ -974,11 +990,14 @@ type GPUBufferDynamicOffset = number; /* unsigned long */
 type GPUStencilValue = number; /* unsigned long */
 type GPUSampleMask = number; /* unsigned long */
 type GPUDepthBias = number; /* long */
+
 type GPUSize64 = number; /* unsigned long long */
 type GPUIntegerCoordinate = number; /* unsigned long */
 type GPUIndex32 = number; /* unsigned long */
 type GPUSize32 = number; /* unsigned long */
 type GPUSignedOffset32 = number; /* long */
+
+type GPUFlagsConstant = number; /* unsigned long */
 
 interface GPUColorDict {
     r: number;
