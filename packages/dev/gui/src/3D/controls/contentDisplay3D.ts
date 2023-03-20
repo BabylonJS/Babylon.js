@@ -12,7 +12,7 @@ export class ContentDisplay3D extends Control3D {
     private _facadeTexture: Nullable<AdvancedDynamicTexture>;
     protected _contentResolution = 512;
     protected _contentScaleRatio = 2;
-    protected _contentScaleRatioY: number | undefined;
+    protected _contentScaleRatioY?: number;
 
     /**
      * Gets or sets the GUI 2D content used to display the button's facade
