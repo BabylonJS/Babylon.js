@@ -5,8 +5,7 @@
  * is used will be selected based on their order in this enum - i.e.
  * a value later in this list will be preferentially used.
  */
-export enum PhysicsMaterialCombineMode
-{
+export enum PhysicsMaterialCombineMode {
     /**
      * The final value will be the geometric mean of the two values:
      * sqrt( valueA *  valueB )
@@ -29,7 +28,7 @@ export enum PhysicsMaterialCombineMode
      * The final value will be the product of the two values:
      * valueA * valueB
      */
-    MULTIPLY
+    MULTIPLY,
 }
 
 /**
@@ -37,7 +36,6 @@ export enum PhysicsMaterialCombineMode
  * Helps setting friction and restitution that are used to compute responding forces in collision response
  */
 export interface PhysicsMaterial {
-
     /**
      * Sets the friction used by this material
      *

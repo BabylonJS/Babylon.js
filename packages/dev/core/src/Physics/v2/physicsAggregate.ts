@@ -175,7 +175,7 @@ export class PhysicsAggregate {
         this._options.center = _options.center ?? this.body.getObjectCenterDelta();
         this.shape = new PhysicsShape({ type, parameters: this._options as any }, this._scene);
 
-        this.material = {friction: this._options.friction, restitution: this._options.restitution};
+        this.material = { friction: this._options.friction, restitution: this._options.restitution };
         this.body.setShape(this.shape);
         this.shape.setMaterial(this.material);
 

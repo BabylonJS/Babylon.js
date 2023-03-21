@@ -148,8 +148,12 @@ export interface IPhysicsEnginePluginV2 {
     getTimeStep(): number;
     executeStep(delta: number, bodies: Array<PhysicsBody>): void; //not forgetting pre and post events
     getPluginVersion(): number;
-    registerOnCollide(func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>, distance: number, impulse: number, normal: Nullable<Vector3>) => void): void;
-    unregisterOnCollide(func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>, distance: number, impulse: number, normal: Nullable<Vector3>) => void): void;
+    registerOnCollide(
+        func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>, distance: number, impulse: number, normal: Nullable<Vector3>) => void
+    ): void;
+    unregisterOnCollide(
+        func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>, distance: number, impulse: number, normal: Nullable<Vector3>) => void
+    ): void;
 
     // body
     initBody(body: PhysicsBody, motionType: PhysicsMotionType, position: Vector3, orientation: Quaternion): void;
@@ -158,7 +162,7 @@ export interface IPhysicsEnginePluginV2 {
     removeBody(body: PhysicsBody): void;
     sync(body: PhysicsBody): void;
     syncTransform(body: PhysicsBody, transformNode: TransformNode): void;
-    addNodeShape(body: PhysicsBody, shapeNode: TransformNode) : void;
+    addNodeShape(body: PhysicsBody, shapeNode: TransformNode): void;
     setShape(body: PhysicsBody, shape: PhysicsShape): void;
     getShape(body: PhysicsBody): PhysicsShape;
     getShapeType(shape: PhysicsShape): ShapeType;
@@ -183,8 +187,14 @@ export interface IPhysicsEnginePluginV2 {
     getAngularVelocityToRef(body: PhysicsBody, angVel: Vector3): void;
     getBodyGeometry(body: PhysicsBody): {};
     disposeBody(body: PhysicsBody): void;
-    registerOnBodyCollide(body: PhysicsBody, func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>, distance: number, impulse: number, normal: Nullable<Vector3>) => void): void;
-    unregisterOnBodyCollide(body: PhysicsBody, func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>, distance: number, impulse: number, normal: Nullable<Vector3>) => void): void;
+    registerOnBodyCollide(
+        body: PhysicsBody,
+        func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>, distance: number, impulse: number, normal: Nullable<Vector3>) => void
+    ): void;
+    unregisterOnBodyCollide(
+        body: PhysicsBody,
+        func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>, distance: number, impulse: number, normal: Nullable<Vector3>) => void
+    ): void;
     setCollisionCallbackEnabled(body: PhysicsBody, enabled: boolean): void;
     addConstraint(body: PhysicsBody, childBody: PhysicsBody, constraint: PhysicsConstraint): void;
 

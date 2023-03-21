@@ -82,12 +82,11 @@ TransformNode.prototype.getPhysicsBody = function (): Nullable<PhysicsBody> {
     return this.physicsBody;
 };
 
-
 Object.defineProperty(TransformNode.prototype, "physicsShape", {
-    get: function(this: TransformNode) {
+    get: function (this: TransformNode) {
         return this._physicsShape;
     },
-    set: function(this: TransformNode, value: Nullable<PhysicsShape>) {
+    set: function (this: TransformNode, value: Nullable<PhysicsShape>) {
         if (this._physicsShape === value) {
             return;
         }
@@ -98,19 +97,19 @@ Object.defineProperty(TransformNode.prototype, "physicsShape", {
 
         this._physicsShape = value;
         if (this._physicsShape) {
-            var cur : Nullable<Node> = this;
+            var cur: Nullable<Node> = this;
             while (cur) {
-                if(cur instanceof TransformNode && cur.physicsBody) {
+                if (cur instanceof TransformNode && cur.physicsBody) {
                     cur.physicsBody.addNodeShape(this);
                 }
 
                 cur = cur.parent;
             }
         }
-    }
+    },
 });
 
-TransformNode.prototype.getPhysicsShape = function(): Nullable<PhysicsShape> {
+TransformNode.prototype.getPhysicsShape = function (): Nullable<PhysicsShape> {
     return this.physicsShape;
 };
 
