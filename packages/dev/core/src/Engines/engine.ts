@@ -421,7 +421,22 @@ export class Engine extends ThinEngine {
     /**
      * Gets a boolean indicating if the pointer is currently locked
      */
-    public isPointerLock = false;
+    public get isPointerLock() {
+        let canvasCheck = false;
+        // Check if document exists and update canvasCheck if it does
+        if (IsDocumentAvailable() && this._renderingCanvas) {
+            canvasCheck = document.pointerLockElement === this._renderingCanvas;
+        }
+        // Return either manual pointerlock state or canvas pointerlock state
+        return this._isPointerLock || canvasCheck;
+    }
+
+    public set isPointerLock(value: boolean) {
+        this._isPointerLock = value;
+    }
+
+    // Store manual pointerlock state, if specified
+    private _isPointerLock = false;
 
     // Observables
 
@@ -540,7 +555,6 @@ export class Engine extends ThinEngine {
     private _onCanvasContextMenu: (evt: Event) => void;
 
     private _onFullscreenChange: () => void;
-    private _onPointerLockChange: () => void;
 
     protected _compatibilityMode = true;
 
@@ -690,14 +704,6 @@ export class Engine extends ThinEngine {
 
             document.addEventListener("fullscreenchange", this._onFullscreenChange, false);
             document.addEventListener("webkitfullscreenchange", this._onFullscreenChange, false);
-
-            // Pointer lock
-            this._onPointerLockChange = () => {
-                this.isPointerLock = document.pointerLockElement === canvas;
-            };
-
-            document.addEventListener("pointerlockchange", this._onPointerLockChange, false);
-            document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
         }
 
         this.enableOfflineSupport = Engine.OfflineProviderFactory !== undefined;
@@ -1905,10 +1911,6 @@ export class Engine extends ThinEngine {
             document.removeEventListener("mozfullscreenchange", this._onFullscreenChange);
             document.removeEventListener("webkitfullscreenchange", this._onFullscreenChange);
             document.removeEventListener("msfullscreenchange", this._onFullscreenChange);
-            document.removeEventListener("pointerlockchange", this._onPointerLockChange);
-            document.removeEventListener("mspointerlockchange", this._onPointerLockChange);
-            document.removeEventListener("mozpointerlockchange", this._onPointerLockChange);
-            document.removeEventListener("webkitpointerlockchange", this._onPointerLockChange);
         }
 
         super.dispose();
