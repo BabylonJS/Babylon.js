@@ -519,7 +519,6 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
                 "range",
                 "projection",
                 "near",
-                // "far", // Not actually used in the shader
                 "texelSize",
                 "xViewport",
                 "yViewport",
@@ -552,7 +551,6 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             effect.setFloat("minZAspect", this.minZAspect);
             effect.setFloat("base", this.base);
             effect.setFloat("near", this._scene.activeCamera.minZ);
-            // effect.setFloat("far", this._scene.activeCamera.maxZ);
             if (this._scene.activeCamera.mode === Camera.PERSPECTIVE_CAMERA) {
                 effect.setMatrix3x3("depthProjection", SSAO2RenderingPipeline.PERSPECTIVE_DEPTH_PROJECTION);
                 effect.setFloat("xViewport", Math.tan(this._scene.activeCamera.fov / 2) * this._scene.getEngine().getAspectRatio(this._scene.activeCamera, true));

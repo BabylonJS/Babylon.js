@@ -23,20 +23,7 @@ varying vec2 vUV;
 	1.0
 	);
 
-	// float perspectiveDepthToViewZ(in float invClipZ, in float near, in float far ) {
-	// 	return ( near * far ) / ( ( far - near ) * invClipZ - far );
-	// }
-
-	// float viewZToPerspectiveDepth( in float viewZ, in float near, in float far ) {
-	// 	return ( near * far / viewZ + far) / ( far - near );
-	// }
-
-	// float viewZToOrthographicDepth( in float viewZ, in float near, in float far ) {
-	// 	return ( viewZ + near ) / ( near - far );
-	// }
-
 	uniform float near;
-	// uniform float far;
 	uniform float radius;
 
 	uniform sampler2D depthSampler;
@@ -204,7 +191,6 @@ varying vec2 vUV;
 					// value at the edge varies depending on the "soften" control input.
 					//
 					// Note: soften === 0 => fallof === 1 for all i, legacy that needs to be kept.
-					// float falloff = smoothstep(0.0, float(samples), 0.00001 + abs(float(samples - i)*soften));
 					float falloff = smoothstep(0.0,
 											   float(samples),
 											   float(samples) - abs(float(i)) * soften);
