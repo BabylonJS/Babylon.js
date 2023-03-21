@@ -479,7 +479,7 @@ export class AnimationGroup implements IDisposable {
         }
 
         // We will take care of removing all stopped animatables
-        this._scene._activeAnimatables = this._scene._activeAnimatables.filter(anim => anim._runtimeAnimations.length > 0);
+        this._scene._activeAnimatables = this._scene._activeAnimatables.filter((anim) => anim._runtimeAnimations.length > 0);
 
         this._isStarted = false;
 
