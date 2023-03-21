@@ -317,7 +317,7 @@ export class RuntimeAnimation {
 
     /**
      * Disposes of the runtime animation
-     * Note: No hard dispose shoudl happen here as this method is skipped for performance reason (look at animatable.stop())
+     * Note: No hard dispose should happen here as this method is skipped for performance reason (look at animatable.stop())
      */
     public dispose(): void {
         const index = this._animation.runtimeAnimations.indexOf(this);
