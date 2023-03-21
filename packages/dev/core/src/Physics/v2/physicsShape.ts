@@ -196,7 +196,12 @@ export class PhysicsShapeSphere extends PhysicsShape {
         super({ type: ShapeType.SPHERE, parameters: { center: center, radius: radius } }, scene);
     }
 
-    static fromMesh(mesh: AbstractMesh) {
+    /**
+     * 
+     * @param mesh 
+     * @returns PhysicsShapeSphere
+     */
+    static FromMesh(mesh: AbstractMesh) {
         const bounds = mesh.getBoundingInfo();
         //<todo.eoin We don't use bounding sphere because the results seem to be wrong
         const centerLocal = bounds.boundingBox.center;
@@ -225,7 +230,7 @@ export class PhysicsShapeCapsule extends PhysicsShape {
      * not the optimal bounding capsule.
      * @param TransformNode node Node from which to derive a cylinder shape
      */
-    static fromMesh(mesh: AbstractMesh): PhysicsShapeCapsule {
+    static FromMesh(mesh: AbstractMesh): PhysicsShapeCapsule {
         const boundsLocal = mesh.getBoundingInfo();
         const radius = boundsLocal.boundingBox.extendSize.x;
         const pointFromCenter = new Vector3(0, boundsLocal.boundingBox.extendSize.y - radius, 0);
@@ -255,7 +260,7 @@ export class PhysicsShapeCylinder extends PhysicsShape {
      * not the optimal bounding cylinder.
      * @param TransformNode node Node from which to derive a cylinder shape
      */
-    static fromMesh(mesh: AbstractMesh): PhysicsShapeCylinder {
+    static FromMesh(mesh: AbstractMesh): PhysicsShapeCylinder {
         const boundsLocal = mesh.getBoundingInfo();
         const radius = boundsLocal.boundingBox.extendSize.x;
         const pointFromCenter = new Vector3(0, boundsLocal.boundingBox.extendSize.y, 0);
@@ -269,7 +274,7 @@ export class PhysicsShapeCylinder extends PhysicsShape {
  * Helper object to create a box shape
  */
 export class PhysicsShapeBox extends PhysicsShape {
-    /**getHierarchyBoundingVectors
+    /**
      *
      * @param center local center of the sphere
      * @param rotation local orientation
@@ -280,7 +285,12 @@ export class PhysicsShapeBox extends PhysicsShape {
         super({ type: ShapeType.BOX, parameters: { center: center, rotation: rotation, extents: extents } }, scene);
     }
 
-    static fromMesh(mesh: AbstractMesh): PhysicsShapeBox {
+    /**
+     * 
+     * @param mesh 
+     * @returns PhysicsShapeBox
+     */
+    static FromMesh(mesh: AbstractMesh): PhysicsShapeBox {
         const bounds = mesh.getBoundingInfo();
         const centerLocal = bounds.boundingBox.center;
         const extents = bounds.boundingBox.extendSize.scale(2.0); //<todo.eoin extendSize seems to really be half-extents?

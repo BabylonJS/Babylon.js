@@ -103,6 +103,7 @@ Object.defineProperty(TransformNode.prototype, "physicsShape", {
 
         this._physicsShape = value;
         if (this._physicsShape) {
+            // eslint-disable-next-line @typescript-eslint/no-this-alias
             let cur: Nullable<Node> = this;
             while (cur) {
                 if (cur instanceof TransformNode && cur.physicsBody) {

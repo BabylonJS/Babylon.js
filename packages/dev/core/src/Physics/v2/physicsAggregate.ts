@@ -169,7 +169,7 @@ export class PhysicsAggregate {
         this._options.friction = _options.friction === void 0 ? 0.2 : _options.friction;
         this._options.restitution = _options.restitution === void 0 ? 0.2 : _options.restitution;
 
-        const motionType = this._options.mass == 0 ? PhysicsMotionType.STATIC : PhysicsMotionType.DYNAMIC;
+        const motionType = this._options.mass === 0 ? PhysicsMotionType.STATIC : PhysicsMotionType.DYNAMIC;
         this.body = new PhysicsBody(transformNode, motionType, this._scene);
         this._addSizeOptions();
         this._options.center = _options.center ?? this.body.getObjectCenterDelta();

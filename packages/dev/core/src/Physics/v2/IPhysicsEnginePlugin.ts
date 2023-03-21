@@ -60,19 +60,19 @@ export enum ConstraintMotorType {
 /** @internal */
 export interface PhysicsShapeParameters {
     /**
-     *
+     * Shape center position
      */
     center?: Vector3;
     /**
-     *
+     * Radius for cylinder, shape and capsule
      */
     radius?: number;
     /**
-     *
+     * First point position that defines the cylinder or capsule
      */
     pointA?: Vector3;
     /**
-     *
+     * Second point position that defines the cylinder or capsule
      */
     pointB?: Vector3;
     /**
@@ -80,15 +80,15 @@ export interface PhysicsShapeParameters {
      */
     rotation?: Quaternion;
     /**
-     *
+     * Dimesion extention for the box
      */
     extents?: Vector3;
     /**
-     *
+     * Mesh used for Mesh shape or convex hull. It can be different than the mesh the body is attached to.
      */
     mesh?: Mesh;
     /**
-     *
+     * Use children hierarchy
      */
     includeChildMeshes?: boolean;
 }
@@ -96,27 +96,27 @@ export interface PhysicsShapeParameters {
 /** @internal */
 export interface PhysicsConstraintParameters {
     /**
-     *
+     * Pivot vector for 1st body
      */
     pivotA?: Vector3;
     /**
-     *
+     * Pivot vector for 2nd body
      */
     pivotB?: Vector3;
     /**
-     *
+     * Axis vector for 1st body
      */
     axisA?: Vector3;
     /**
-     *
+     * Axis vector for 2nd body
      */
     axisB?: Vector3;
     /**
-     *
+     * Maximum distance between both bodies
      */
     maxDistance?: number;
     /**
-     *
+     * Can connected bodies collide?
      */
     collision?: boolean;
 }
