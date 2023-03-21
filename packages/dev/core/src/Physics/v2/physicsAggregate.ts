@@ -4,9 +4,13 @@ import { PhysicsShape } from "./physicsShape";
 import { Logger } from "../../Misc/logger";
 import type { Scene } from "../../scene";
 import type { TransformNode } from "../../Meshes/transformNode";
-import { Quaternion, Vector3 } from "../../Maths/math.vector";
+import { Vector3 } from "../../Maths/math.vector";
 import { Scalar } from "../../Maths/math.scalar";
-import { ShapeType } from "./IPhysicsEnginePlugin";
+import { PhysicsMotionType, ShapeType } from "./IPhysicsEnginePlugin";
+import type { Mesh } from "../../Meshes/mesh";
+import type { Observer } from "../../Misc/observable";
+import type { Nullable } from "../../types";
+import type { Node } from "../../node";
 
 /**
  * The interface for the physics aggregate parameters
@@ -99,6 +103,11 @@ export interface PhysicsAggregateParameters {
      * mesh local center
      */
     center?: Vector3;
+
+    /**
+     * mesh object. Used for mesh and convex hull aggregates.
+     */
+    mesh?: Mesh;
 }
 /**
  * Helper class to create and interact with a PhysicsAggregate.
@@ -122,6 +131,8 @@ export class PhysicsAggregate {
      * The material that is associated with this aggregate
      */
     public material: PhysicsMaterial;
+
+    private _nodeDisposeObserver: Nullable<Observer<Node>>;
 
     constructor(
         /**
@@ -158,15 +169,23 @@ export class PhysicsAggregate {
         this._options.friction = _options.friction === void 0 ? 0.2 : _options.friction;
         this._options.restitution = _options.restitution === void 0 ? 0.2 : _options.restitution;
 
-        this.body = new PhysicsBody(transformNode, this._scene);
+        const motionType = this._options.mass == 0 ? PhysicsMotionType.STATIC : PhysicsMotionType.DYNAMIC;
+        this.body = new PhysicsBody(transformNode, motionType, this._scene);
         this._addSizeOptions();
         this._options.center = _options.center ?? this.body.getObjectCenterDelta();
         this.shape = new PhysicsShape({ type, parameters: this._options as any }, this._scene);
 
-        this.material = new PhysicsMaterial(this._options.friction, this._options.restitution, this._scene);
+        this.material = {friction: this._options.friction, restitution: this._options.restitution};
         this.body.setShape(this.shape);
         this.shape.setMaterial(this.material);
-        this.body.setMassProperties({ centerOfMass: new Vector3(0, 0, 0), mass: this._options.mass, inertia: new Vector3(1, 1, 1), inertiaOrientation: Quaternion.Identity() });
+
+        this.body.setMassProperties({ mass: this._options.mass });
+
+        this._nodeDisposeObserver = this.transformNode.onDisposeObservable.add(() => {
+            // The body is already disposed on its own observable, so it's not necessary to dispose it here.
+            this.shape.dispose();
+            this.material.dispose();
+        });
     }
 
     private _addSizeOptions(): void {
@@ -198,6 +217,12 @@ export class PhysicsAggregate {
                 break;
             case ShapeType.MESH:
             case ShapeType.CONVEX_HULL:
+                if (!this._options.mesh && (this.transformNode.getClassName() === "Mesh" || this.transformNode.getClassName() === "InstancedMesh")) {
+                    this._options.mesh = this.transformNode as Mesh;
+                } else {
+                    Logger.Warn("No mesh was provided for the mesh shape");
+                }
+                break;
             case ShapeType.BOX:
                 this._options.extents = this._options.extents ? this._options.extents : new Vector3(impostorExtents.x, impostorExtents.y, impostorExtents.z);
                 break;
@@ -208,8 +233,11 @@ export class PhysicsAggregate {
      * Releases the body, shape and material
      */
     public dispose(): void {
+        if (this._nodeDisposeObserver) {
+            this.body.transformNode.onDisposeObservable.remove(this._nodeDisposeObserver);
+            this._nodeDisposeObserver = null;
+        }
         this.body.dispose();
-        this.material.dispose();
         this.shape.dispose();
     }
 }

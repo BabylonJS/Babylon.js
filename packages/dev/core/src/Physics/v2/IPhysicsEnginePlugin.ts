@@ -85,21 +85,52 @@ export interface PhysicsConstraintParameters {
 /** @internal */
 export interface MassProperties {
     /**
+     * The center of mass, in local space. This is The
+     * point the body will rotate around when applying
+     * an angular velocity.
      *
+     * If not provided, the physics engine will compute
+     * an appropriate value.
      */
-    centerOfMass: Vector3;
+    centerOfMass?: Vector3;
     /**
+     * The total mass of this object, in kilograms. This
+     * affects how easy it is to move the body. A value
+     * of zero will be used as an infinite mass.
      *
+     * If not provided, the physics engine will compute
+     * an appropriate value.
      */
-    mass: number;
+    mass?: number;
     /**
+     * The principal moments of inertia of this object
+     * for a unit mass. This determines how easy it is
+     * for the body to rotate. A value of zero on any
+     * axis will be used as infinite interia about that
+     * axis.
      *
+     * If not provided, the physics engine will compute
+     * an appropriate value.
      */
-    inertia: Vector3;
+    inertia?: Vector3;
     /**
+     * The rotation rotating from inertia major axis space
+     * to parent space (i.e., the rotation which, when
+     * applied to the 3x3 inertia tensor causes the inertia
+     * tensor to become a diagonal matrix). This determines
+     * how the values of inertia are aligned with the parent
+     * object.
      *
+     * If not provided, the physics engine will compute
+     * an appropriate value.
      */
-    inertiaOrientation: Quaternion;
+    inertiaOrientation?: Quaternion;
+}
+
+export enum PhysicsMotionType {
+    STATIC,
+    ANIMATED,
+    DYNAMIC,
 }
 
 /** @internal */
@@ -117,16 +148,17 @@ export interface IPhysicsEnginePluginV2 {
     getTimeStep(): number;
     executeStep(delta: number, bodies: Array<PhysicsBody>): void; //not forgetting pre and post events
     getPluginVersion(): number;
-    registerOnCollide(func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>) => void): void;
-    unregisterOnCollide(func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>) => void): void;
+    registerOnCollide(func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>, distance: number, impulse: number, normal: Nullable<Vector3>) => void): void;
+    unregisterOnCollide(func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>, distance: number, impulse: number, normal: Nullable<Vector3>) => void): void;
 
     // body
-    initBody(body: PhysicsBody, position: Vector3, orientation: Quaternion): void;
-    initBodyInstances(body: PhysicsBody, mesh: Mesh): void;
+    initBody(body: PhysicsBody, motionType: PhysicsMotionType, position: Vector3, orientation: Quaternion): void;
+    initBodyInstances(body: PhysicsBody, motionType: PhysicsMotionType, mesh: Mesh): void;
     updateBodyInstances(body: PhysicsBody, mesh: Mesh): void;
     removeBody(body: PhysicsBody): void;
     sync(body: PhysicsBody): void;
     syncTransform(body: PhysicsBody, transformNode: TransformNode): void;
+    addNodeShape(body: PhysicsBody, shapeNode: TransformNode) : void;
     setShape(body: PhysicsBody, shape: PhysicsShape): void;
     getShape(body: PhysicsBody): PhysicsShape;
     getShapeType(shape: PhysicsShape): ShapeType;
@@ -134,6 +166,9 @@ export interface IPhysicsEnginePluginV2 {
     getFilterGroup(body: PhysicsBody): number;
     setEventMask(body: PhysicsBody, eventMask: number): void;
     getEventMask(body: PhysicsBody): number;
+    setMotionType(body: PhysicsBody, motionType: PhysicsMotionType): void;
+    getMotionType(body: PhysicsBody): PhysicsMotionType;
+    computeMassProperties(body: PhysicsBody): MassProperties;
     setMassProperties(body: PhysicsBody, massProps: MassProperties): void;
     getMassProperties(body: PhysicsBody): MassProperties;
     setLinearDamping(body: PhysicsBody, damping: number): void;
@@ -148,8 +183,8 @@ export interface IPhysicsEnginePluginV2 {
     getAngularVelocityToRef(body: PhysicsBody, angVel: Vector3): void;
     getBodyGeometry(body: PhysicsBody): {};
     disposeBody(body: PhysicsBody): void;
-    registerOnBodyCollide(body: PhysicsBody, func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>) => void): void;
-    unregisterOnBodyCollide(body: PhysicsBody, func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>) => void): void;
+    registerOnBodyCollide(body: PhysicsBody, func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>, distance: number, impulse: number, normal: Nullable<Vector3>) => void): void;
+    unregisterOnBodyCollide(body: PhysicsBody, func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>, distance: number, impulse: number, normal: Nullable<Vector3>) => void): void;
     setCollisionCallbackEnabled(body: PhysicsBody, enabled: boolean): void;
     addConstraint(body: PhysicsBody, childBody: PhysicsBody, constraint: PhysicsConstraint): void;
 
@@ -158,7 +193,6 @@ export interface IPhysicsEnginePluginV2 {
     setFilterLayer(shape: PhysicsShape, layer: number): void;
     getFilterLayer(shape: PhysicsShape): number;
     setMaterial(shape: PhysicsShape, material: PhysicsMaterial): void;
-    getMaterial(shape: PhysicsShape): PhysicsMaterial;
     setDensity(shape: PhysicsShape, density: number): void;
     getDensity(shape: PhysicsShape): number;
     addChild(shape: PhysicsShape, newChild: PhysicsShape, childTransform: TransformNode): void;
@@ -166,14 +200,6 @@ export interface IPhysicsEnginePluginV2 {
     getNumChildren(shape: PhysicsShape): number;
     getBoundingBox(shape: PhysicsShape): BoundingBox;
     disposeShape(shape: PhysicsShape): void;
-
-    // material
-    initMaterial(material: PhysicsMaterial): void;
-    setFriction(material: PhysicsMaterial, friction: number): void;
-    getFriction(material: PhysicsMaterial): number;
-    setRestitution(material: PhysicsMaterial, restitution: number): void;
-    getRestitution(material: PhysicsMaterial): number;
-    disposeMaterial(material: PhysicsMaterial): void;
 
     // constraint
     initConstraint(constraint: PhysicsConstraint, body: PhysicsBody, childBody: PhysicsBody): void;

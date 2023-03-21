@@ -1,15 +1,16 @@
-import type { IPhysicsEnginePluginV2, MassProperties } from "./IPhysicsEnginePlugin";
+import type { IPhysicsEnginePluginV2, MassProperties, PhysicsMotionType } from "./IPhysicsEnginePlugin";
 import type { PhysicsShape } from "./physicsShape";
 import { Vector3, Quaternion, TmpVectors } from "../../Maths/math.vector";
 import type { Scene } from "../../scene";
 import type { PhysicsEngine } from "./physicsEngine";
+import type { Mesh, TransformNode, AbstractMesh } from "../../Meshes";
 import type { Nullable } from "core/types";
 import type { PhysicsConstraint } from "./physicsConstraint";
 import type { Bone } from "core/Bones/bone";
 import { Space } from "core/Maths/math.axis";
-import type { TransformNode } from "core/Meshes/transformNode";
-import type { Mesh } from "core/Meshes/mesh";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { Observer } from "../../Misc/observable";
+import type { Node } from "../../node";
+
 /**
  * PhysicsBody is useful for creating a physics body that can be used in a physics engine. It allows
  * the user to set the mass and velocity of the body, which can then be used to calculate the
@@ -44,17 +45,19 @@ export class PhysicsBody {
 
     private static _DEFAULT_OBJECT_SIZE: Vector3 = new Vector3(1, 1, 1);
     private static _IDENTITY_QUATERNION = Quaternion.Identity();
+    private _nodeDisposeObserver: Nullable<Observer<Node>>;
 
     /**
      * Constructs a new physics body for the given node.
      * @param transformNode - The Transform Node to construct the physics body for.
+     * @param motionType - The motion type of the physics body.
      * @param scene - The scene containing the physics engine.
      *
      * This code is useful for creating a physics body for a given Transform Node in a scene.
      * It checks the version of the physics engine and the physics plugin, and initializes the body accordingly.
      * It also sets the node's rotation quaternion if it is not already set. Finally, it adds the body to the physics engine.
      */
-    constructor(transformNode: TransformNode, scene: Scene) {
+    constructor(transformNode: TransformNode, motionType: PhysicsMotionType, scene: Scene) {
         if (!scene) {
             return;
         }
@@ -78,14 +81,18 @@ export class PhysicsBody {
         // instances?
         const m = transformNode as Mesh;
         if (m.hasThinInstances) {
-            this._physicsPlugin.initBodyInstances(this, m);
+            this._physicsPlugin.initBodyInstances(this, motionType, m);
         } else {
             // single instance
-            this._physicsPlugin.initBody(this, transformNode.position, transformNode.rotationQuaternion);
+            this._physicsPlugin.initBody(this, motionType, transformNode.position, transformNode.rotationQuaternion);
         }
         this.transformNode = transformNode;
         transformNode.physicsBody = this;
         physicsEngine.addBody(this);
+
+        this._nodeDisposeObserver = transformNode.onDisposeObservable.add(() => {
+            this.dispose();
+        });
     }
 
     /**
@@ -96,6 +103,14 @@ export class PhysicsBody {
         if (m.hasThinInstances) {
             this._physicsPlugin.updateBodyInstances(this, m);
         }
+    }
+
+    /**
+     * Adds the physics shape associated with the transform node to this body
+     * @param shapeNode - A node with a physics shape. Should be a child of the body node
+     */
+    public addNodeShape(shapeNode: TransformNode) {
+        this._physicsPlugin.addNodeShape(this, shapeNode);
     }
 
     /**
@@ -171,6 +186,28 @@ export class PhysicsBody {
      */
     public getEventMask(): number {
         return this._physicsPlugin.getEventMask(this);
+    }
+
+    public setMotionType(motionType: PhysicsMotionType): void {
+        this._physicsPlugin.setMotionType(this, motionType);
+    }
+
+    public getMotionType(): PhysicsMotionType {
+        return this._physicsPlugin.getMotionType(this);
+    }
+
+    /**
+     * Computes the mass properties of the physics object, based on the set of physics shapes this body uses.
+     *
+     * @param massProps - The mass properties to set.
+     *
+     * This method is useful for computing the initial mass properties of a physics object, such as its mass,
+     * inertia, and center of mass; these values are important for accurately simulating the physics of the
+     * object in the physics engine, and computing values based on the shape will provide you with reasonable
+     * intial values, which you can then customize.
+     */
+    public computeMassProperties(): MassProperties {
+        return this._physicsPlugin.computeMassProperties(this);
     }
 
     /**
@@ -338,14 +375,18 @@ export class PhysicsBody {
      * Filtering by body is inefficient. It's more preferable to register a collision callback for the entire world
      * and do the filtering on the user side.
      */
-    public registerOnCollide(func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>) => void): void {
+    public registerOnCollide(
+        func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>, distance: number, impulse: number, normal: Nullable<Vector3>) => void
+    ): void {
         return this._physicsPlugin.registerOnBodyCollide(this, func);
     }
 
     /**
      * Unregister a collision callback that is called when the body collides
      */
-    public unregisterOnCollide(func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>) => void): void {
+    public unregisterOnCollide(
+        func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>, distance: number, impulse: number, normal: Nullable<Vector3>) => void
+    ): void {
         return this._physicsPlugin.unregisterOnBodyCollide(this, func);
     }
 
@@ -488,6 +529,10 @@ export class PhysicsBody {
      * This method is useful for cleaning up the physics engine when a body is no longer needed. Disposing the body will free up resources and prevent memory leaks.
      */
     public dispose() {
+        if (this._nodeDisposeObserver) {
+            this.transformNode.onDisposeObservable.remove(this._nodeDisposeObserver);
+            this._nodeDisposeObserver = null;
+        }
         this._physicsEngine.removeBody(this);
         this._physicsPlugin.removeBody(this);
         this._physicsPlugin.disposeBody(this);

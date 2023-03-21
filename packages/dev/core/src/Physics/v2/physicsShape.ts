@@ -1,10 +1,11 @@
 import type { TransformNode } from "../../Meshes/transformNode";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import type { BoundingBox } from "../../Culling/boundingBox";
 import { ShapeType } from "./IPhysicsEnginePlugin";
 import type { IPhysicsEnginePluginV2, PhysicsShapeParameters } from "./IPhysicsEnginePlugin";
 import type { PhysicsMaterial } from "./physicsMaterial";
-import type { Vector3 } from "../../Maths/math.vector";
-import type { Quaternion } from "../../Maths/math.vector";
+import { Vector3 } from "../../Maths/math.vector";
+import { Quaternion } from "../../Maths/math.vector";
 import type { Mesh } from "../../Meshes/mesh";
 import type { Scene } from "../../scene";
 
@@ -42,6 +43,8 @@ export class PhysicsShape {
     private _physicsPlugin: IPhysicsEnginePluginV2;
 
     private _type: ShapeType;
+
+    private _material: PhysicsMaterial;
 
     /**
      * Constructs a new physics shape.
@@ -112,6 +115,7 @@ export class PhysicsShape {
      */
     public setMaterial(material: PhysicsMaterial): void {
         this._physicsPlugin.setMaterial(this, material);
+        this._material = material;
     }
 
     /**
@@ -119,7 +123,7 @@ export class PhysicsShape {
      * @returns
      */
     public getMaterial(): PhysicsMaterial | undefined {
-        return this._physicsPlugin.getMaterial(this);
+        return this._material;
     }
 
     /**
@@ -191,6 +195,14 @@ export class PhysicsShapeSphere extends PhysicsShape {
     constructor(center: Vector3, radius: number, scene: Scene) {
         super({ type: ShapeType.SPHERE, parameters: { center: center, radius: radius } }, scene);
     }
+
+    static fromMesh(mesh: AbstractMesh) {
+        const bounds = mesh.getBoundingInfo();
+        //<todo.eoin We don't use bounding sphere because the results seem to be wrong
+        const centerLocal = bounds.boundingBox.center;
+        const radius = bounds.boundingBox.extendSize.x;
+        return new PhysicsShapeSphere(centerLocal, radius, mesh.getScene());
+    }
 }
 
 /**
@@ -206,6 +218,20 @@ export class PhysicsShapeCapsule extends PhysicsShape {
      */
     constructor(pointA: Vector3, pointB: Vector3, radius: number, scene: Scene) {
         super({ type: ShapeType.CAPSULE, parameters: { pointA: pointA, pointB: pointB, radius: radius } }, scene);
+    }
+
+    /**
+     * Derive an approximate capsule from the transform node. Note, this is
+     * not the optimal bounding capsule.
+     * @param TransformNode node Node from which to derive a cylinder shape
+     */
+    static fromMesh(mesh: AbstractMesh): PhysicsShapeCapsule {
+        const boundsLocal = mesh.getBoundingInfo();
+        const radius = boundsLocal.boundingBox.extendSize.x;
+        var pointFromCenter = new Vector3(0, boundsLocal.boundingBox.extendSize.y - radius, 0);
+        const pointA = boundsLocal.boundingBox.center.add(pointFromCenter);
+        const pointB = boundsLocal.boundingBox.center.subtract(pointFromCenter);
+        return new PhysicsShapeCapsule(pointA, pointB, radius, mesh.getScene());
     }
 }
 
@@ -223,13 +249,27 @@ export class PhysicsShapeCylinder extends PhysicsShape {
     constructor(pointA: Vector3, pointB: Vector3, radius: number, scene: Scene) {
         super({ type: ShapeType.CYLINDER, parameters: { pointA: pointA, pointB: pointB, radius: radius } }, scene);
     }
+
+    /**
+     * Derive an approximate cylinder from the transform node. Note, this is
+     * not the optimal bounding cylinder.
+     * @param TransformNode node Node from which to derive a cylinder shape
+     */
+    static fromMesh(mesh: AbstractMesh): PhysicsShapeCylinder {
+        const boundsLocal = mesh.getBoundingInfo();
+        const radius = boundsLocal.boundingBox.extendSize.x;
+        var pointFromCenter = new Vector3(0, boundsLocal.boundingBox.extendSize.y, 0);
+        const pointA = boundsLocal.boundingBox.center.add(pointFromCenter);
+        const pointB = boundsLocal.boundingBox.center.subtract(pointFromCenter);
+        return new PhysicsShapeCylinder(pointA, pointB, radius, mesh.getScene());
+    }
 }
 
 /**
  * Helper object to create a box shape
  */
 export class PhysicsShapeBox extends PhysicsShape {
-    /**
+    /**getHierarchyBoundingVectors
      *
      * @param center local center of the sphere
      * @param rotation local orientation
@@ -238,6 +278,13 @@ export class PhysicsShapeBox extends PhysicsShape {
      */
     constructor(center: Vector3, rotation: Quaternion, extents: Vector3, scene: Scene) {
         super({ type: ShapeType.BOX, parameters: { center: center, rotation: rotation, extents: extents } }, scene);
+    }
+
+    static fromMesh(mesh: AbstractMesh): PhysicsShapeBox {
+        const bounds = mesh.getBoundingInfo();
+        const centerLocal = bounds.boundingBox.center;
+        const extents = bounds.boundingBox.extendSize.scale(2.0); //<todo.eoin extendSize seems to really be half-extents?
+        return new PhysicsShapeBox(centerLocal, Quaternion.Identity(), extents, mesh.getScene());
     }
 }
 

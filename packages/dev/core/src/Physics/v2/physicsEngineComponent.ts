@@ -4,6 +4,7 @@ import type { Vector3 } from "../../Maths/math.vector";
 import { TransformNode } from "../../Meshes/transformNode";
 import type { Node } from "../../node";
 import type { PhysicsBody } from "./physicsBody";
+import type { PhysicsShape } from "./physicsShape";
 
 import "../joinedPhysicsEngineComponent";
 
@@ -25,6 +26,12 @@ declare module "../../Meshes/transformNode" {
          *
          */
         getPhysicsBody(): Nullable<PhysicsBody>;
+
+        _physicsShape: Nullable<PhysicsShape>;
+
+        physicsShape: Nullable<PhysicsShape>;
+
+        getPhysicsShape(): Nullable<PhysicsShape>;
 
         /** Apply a physic impulse to the mesh
          * @param force defines the force to apply
@@ -73,6 +80,38 @@ Object.defineProperty(TransformNode.prototype, "physicsBody", {
 /** @internal */
 TransformNode.prototype.getPhysicsBody = function (): Nullable<PhysicsBody> {
     return this.physicsBody;
+};
+
+
+Object.defineProperty(TransformNode.prototype, "physicsShape", {
+    get: function(this: TransformNode) {
+        return this._physicsShape;
+    },
+    set: function(this: TransformNode, value: Nullable<PhysicsShape>) {
+        if (this._physicsShape === value) {
+            return;
+        }
+
+        if (this._physicsShape) {
+            //<todo.eoin Remove from body
+        }
+
+        this._physicsShape = value;
+        if (this._physicsShape) {
+            var cur : Nullable<Node> = this;
+            while (cur) {
+                if(cur instanceof TransformNode && cur.physicsBody) {
+                    cur.physicsBody.addNodeShape(this);
+                }
+
+                cur = cur.parent;
+            }
+        }
+    }
+});
+
+TransformNode.prototype.getPhysicsShape = function(): Nullable<PhysicsShape> {
+    return this.physicsShape;
 };
 
 /**
