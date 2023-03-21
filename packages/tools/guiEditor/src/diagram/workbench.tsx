@@ -442,11 +442,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             ...guiControl.metadata,
             guiEditor: true,
         };
-        guiControl.highlightLineWidth = 5;
-        guiControl.isHighlighted = false;
-        guiControl.isReadOnly = true;
-        guiControl.isHitTestVisible = true;
-        guiControl.isPointerBlocker = true;
     }
 
     /**
