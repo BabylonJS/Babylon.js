@@ -198,9 +198,6 @@ export class PhysicsBody {
 
     /**
      * Computes the mass properties of the physics object, based on the set of physics shapes this body uses.
-     *
-     * @param massProps - The mass properties to set.
-     *
      * This method is useful for computing the initial mass properties of a physics object, such as its mass,
      * inertia, and center of mass; these values are important for accurately simulating the physics of the
      * object in the physics engine, and computing values based on the shape will provide you with reasonable
