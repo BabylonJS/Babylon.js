@@ -1821,9 +1821,16 @@ export class Control implements IAnimatable {
         }
     }
 
+    /**
+     * Ugly hack to skip first clipping because there is something wrong
+     * in the measure computation for grid children on the first render
+     * @internal
+     */
+    public _skipFirstClipping: boolean = false;
+    
     protected _evaluateClippingState(parentMeasure: Measure) {
         this._currentMeasure.transformToRef(this._transformMatrix, this._evaluatedMeasure);
-        if (this.parent && this.parent.clipChildren) {
+        if (this.parent && this.parent.clipChildren && !this._skipFirstClipping) {
             parentMeasure.transformToRef(this.parent._transformMatrix, this._evaluatedParentMeasure);
             // Early clip
             if (this._evaluatedMeasure.left > this._evaluatedParentMeasure.left + this._evaluatedParentMeasure.width) {
