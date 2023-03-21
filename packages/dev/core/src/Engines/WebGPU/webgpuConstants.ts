@@ -21,6 +21,13 @@ export enum FeatureName {
 }
 
 /** @internal */
+export enum BufferMapState {
+    Unmapped = "unmapped",
+    Pending = "pending",
+    Mapped = "mapped",
+}
+
+/** @internal */
 export enum BufferUsage {
     MapRead = 1,
     MapWrite = 2,
@@ -214,6 +221,12 @@ export enum FilterMode {
 }
 
 /** @internal */
+export enum MipmapFilterMode {
+    Nearest = "nearest",
+    Linear = "linear",
+}
+
+/** @internal */
 export enum CompareFunction {
     Never = "never",
     Less = "less",
@@ -265,6 +278,12 @@ export enum CompilationMessageType {
     Error = "error",
     Warning = "warning",
     Info = "info",
+}
+
+/** @internal */
+export enum PipelineErrorReason {
+    Validation = "validation",
+    Internal = "internal",
 }
 
 /** @internal */
@@ -425,11 +444,13 @@ export enum CanvasAlphaMode {
 
 /** @internal */
 export enum DeviceLostReason {
+    Unknown = "unknown",
     Destroyed = "destroyed",
 }
 
 /** @internal */
 export enum ErrorFilter {
-    OutOfMemory = "out-of-memory",
     Validation = "validation",
+    OutOfMemory = "out-of-memory",
+    Internal = "internal",
 }
