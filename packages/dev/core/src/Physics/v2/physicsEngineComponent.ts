@@ -27,8 +27,14 @@ declare module "../../Meshes/transformNode" {
          */
         getPhysicsBody(): Nullable<PhysicsBody>;
 
+        /**
+         *
+         */
         _physicsShape: Nullable<PhysicsShape>;
 
+        /**
+         *
+         */
         physicsShape: Nullable<PhysicsShape>;
 
         getPhysicsShape(): Nullable<PhysicsShape>;
@@ -97,7 +103,7 @@ Object.defineProperty(TransformNode.prototype, "physicsShape", {
 
         this._physicsShape = value;
         if (this._physicsShape) {
-            var cur: Nullable<Node> = this;
+            let cur: Nullable<Node> = this;
             while (cur) {
                 if (cur instanceof TransformNode && cur.physicsBody) {
                     cur.physicsBody.addNodeShape(this);

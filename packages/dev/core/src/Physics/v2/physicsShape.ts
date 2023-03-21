@@ -4,8 +4,8 @@ import type { BoundingBox } from "../../Culling/boundingBox";
 import { ShapeType } from "./IPhysicsEnginePlugin";
 import type { IPhysicsEnginePluginV2, PhysicsShapeParameters } from "./IPhysicsEnginePlugin";
 import type { PhysicsMaterial } from "./physicsMaterial";
-import { Vector3 } from "../../Maths/math.vector";
-import { Quaternion } from "../../Maths/math.vector";
+import { Vector3 , Quaternion } from "../../Maths/math.vector";
+
 import type { Mesh } from "../../Meshes/mesh";
 import type { Scene } from "../../scene";
 
@@ -228,7 +228,7 @@ export class PhysicsShapeCapsule extends PhysicsShape {
     static fromMesh(mesh: AbstractMesh): PhysicsShapeCapsule {
         const boundsLocal = mesh.getBoundingInfo();
         const radius = boundsLocal.boundingBox.extendSize.x;
-        var pointFromCenter = new Vector3(0, boundsLocal.boundingBox.extendSize.y - radius, 0);
+        const pointFromCenter = new Vector3(0, boundsLocal.boundingBox.extendSize.y - radius, 0);
         const pointA = boundsLocal.boundingBox.center.add(pointFromCenter);
         const pointB = boundsLocal.boundingBox.center.subtract(pointFromCenter);
         return new PhysicsShapeCapsule(pointA, pointB, radius, mesh.getScene());
@@ -258,7 +258,7 @@ export class PhysicsShapeCylinder extends PhysicsShape {
     static fromMesh(mesh: AbstractMesh): PhysicsShapeCylinder {
         const boundsLocal = mesh.getBoundingInfo();
         const radius = boundsLocal.boundingBox.extendSize.x;
-        var pointFromCenter = new Vector3(0, boundsLocal.boundingBox.extendSize.y, 0);
+        const pointFromCenter = new Vector3(0, boundsLocal.boundingBox.extendSize.y, 0);
         const pointA = boundsLocal.boundingBox.center.add(pointFromCenter);
         const pointB = boundsLocal.boundingBox.center.subtract(pointFromCenter);
         return new PhysicsShapeCylinder(pointA, pointB, radius, mesh.getScene());

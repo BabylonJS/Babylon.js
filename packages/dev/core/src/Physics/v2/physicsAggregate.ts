@@ -1,5 +1,5 @@
 import { PhysicsBody } from "./physicsBody";
-import { PhysicsMaterial } from "./physicsMaterial";
+import type { PhysicsMaterial } from "./physicsMaterial";
 import { PhysicsShape } from "./physicsShape";
 import { Logger } from "../../Misc/logger";
 import type { Scene } from "../../scene";

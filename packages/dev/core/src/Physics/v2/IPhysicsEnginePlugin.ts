@@ -59,23 +59,65 @@ export enum ConstraintMotorType {
 
 /** @internal */
 export interface PhysicsShapeParameters {
+    /**
+     *
+     */
     center?: Vector3;
+    /**
+     *
+     */
     radius?: number;
+    /**
+     *
+     */
     pointA?: Vector3;
+    /**
+     *
+     */
     pointB?: Vector3;
+    /**
+     *
+     */
     rotation?: Quaternion;
+    /**
+     *
+     */
     extents?: Vector3;
+    /**
+     *
+     */
     mesh?: Mesh;
+    /**
+     *
+     */
     includeChildMeshes?: boolean;
 }
 
 /** @internal */
 export interface PhysicsConstraintParameters {
+    /**
+     *
+     */
     pivotA?: Vector3;
+    /**
+     *
+     */
     pivotB?: Vector3;
+    /**
+     *
+     */
     axisA?: Vector3;
+    /**
+     *
+     */
     axisB?: Vector3;
+    /**
+     *
+     */
     maxDistance?: number;
+    /**
+     *
+     */
     collision?: boolean;
 }
 
