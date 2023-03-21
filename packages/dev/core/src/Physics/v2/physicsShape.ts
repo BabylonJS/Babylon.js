@@ -4,7 +4,7 @@ import type { BoundingBox } from "../../Culling/boundingBox";
 import { ShapeType } from "./IPhysicsEnginePlugin";
 import type { IPhysicsEnginePluginV2, PhysicsShapeParameters } from "./IPhysicsEnginePlugin";
 import type { PhysicsMaterial } from "./physicsMaterial";
-import { Vector3 , Quaternion } from "../../Maths/math.vector";
+import { Vector3, Quaternion } from "../../Maths/math.vector";
 
 import type { Mesh } from "../../Meshes/mesh";
 import type { Scene } from "../../scene";
