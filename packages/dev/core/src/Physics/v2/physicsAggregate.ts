@@ -184,7 +184,6 @@ export class PhysicsAggregate {
         this._nodeDisposeObserver = this.transformNode.onDisposeObservable.add(() => {
             // The body is already disposed on its own observable, so it's not necessary to dispose it here.
             this.shape.dispose();
-            this.material.dispose();
         });
     }
 
