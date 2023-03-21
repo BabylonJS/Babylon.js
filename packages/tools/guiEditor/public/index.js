@@ -36,7 +36,7 @@ let loadScriptAsync = function (url, instantResolve) {
 
 const Versions = {
     dist: ["https://preview.babylonjs.com/timestamp.js?t=" + Date.now(), "https://preview.babylonjs.com/babylon.js", "https://preview.babylonjs.com/gui/babylon.gui.min.js"],
-    local: ["//localhost:1337/babylon.js", "//localhost:1337/gui/babylon.gui.min.js"],
+    local: [`//${window.location.hostname}:1337/babylon.js`, `//${window.location.hostname}:1337/gui/babylon.gui.min.js`],
 };
 
 let loadInSequence = async function (versions, index, resolve) {
