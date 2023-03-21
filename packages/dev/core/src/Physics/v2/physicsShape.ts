@@ -197,8 +197,8 @@ export class PhysicsShapeSphere extends PhysicsShape {
     }
 
     /**
-     * 
-     * @param mesh 
+     *
+     * @param mesh
      * @returns PhysicsShapeSphere
      */
     static FromMesh(mesh: AbstractMesh) {
@@ -286,8 +286,8 @@ export class PhysicsShapeBox extends PhysicsShape {
     }
 
     /**
-     * 
-     * @param mesh 
+     *
+     * @param mesh
      * @returns PhysicsShapeBox
      */
     static FromMesh(mesh: AbstractMesh): PhysicsShapeBox {
