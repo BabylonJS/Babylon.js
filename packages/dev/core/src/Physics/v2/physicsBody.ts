@@ -460,8 +460,12 @@ export class PhysicsBody {
      * @returns geometric center of the associated mesh
      */
     public getObjectCenter(): Vector3 {
-        // TODO
-        return new Vector3(0, 0, 0);
+        if ((<any>this.transformNode).getBoundingInfo) {
+            const boundingInfo = (<any>this.transformNode).getBoundingInfo();
+            return boundingInfo.boundingBox.centerWorld;
+        } else {
+            return this.transformNode.position;
+        }
     }
 
     /**
