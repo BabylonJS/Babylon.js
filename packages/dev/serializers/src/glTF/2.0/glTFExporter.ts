@@ -2138,7 +2138,8 @@ export class _Exporter {
                                     this._bufferViews,
                                     this._accessors,
                                     convertToRightHandedSystem,
-                                    this._animationSampleRate
+                                    this._animationSampleRate,
+                                    this._options.shouldExportAnimation
                                 );
                                 if (babylonNode.animations.length) {
                                     _GLTFAnimation._CreateNodeAnimationFromNodeAnimations(
@@ -2151,7 +2152,8 @@ export class _Exporter {
                                         this._bufferViews,
                                         this._accessors,
                                         convertToRightHandedSystem,
-                                        this._animationSampleRate
+                                        this._animationSampleRate,
+                                        this._options.shouldExportAnimation
                                     );
                                 }
                             }
@@ -2181,7 +2183,8 @@ export class _Exporter {
                     this._bufferViews,
                     this._accessors,
                     this._convertToRightHandedSystemMap,
-                    this._animationSampleRate
+                    this._animationSampleRate,
+                    this._options.shouldExportAnimation
                 );
             }
 
