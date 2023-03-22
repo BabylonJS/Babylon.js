@@ -95,7 +95,7 @@ varying vec2 vUV;
 			// Epsilon due to accuracy issues, otherwise we will get a ton of
 			// incorrect occlusions with low sample counts.
 		    float rangeCheck = 1.0 - smoothstep(correctedRadius*0.5, correctedRadius, difference);
-		    occlusion += (difference >= EPSILON ? 1.0 : 0.0) * rangeCheck;
+		    occlusion += step(EPSILON, difference) * rangeCheck;
 		}
 		occlusion = occlusion*(1.0 - smoothstep(maxZ * 0.75, maxZ, depth));
 		float ao = 1.0 - totalStrength * occlusion * samplesFactor;
