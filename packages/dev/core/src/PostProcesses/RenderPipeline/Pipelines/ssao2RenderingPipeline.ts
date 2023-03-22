@@ -421,7 +421,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         this._blurVPostProcess = this._createBlurFilter("BlurV", samplers, blurRatio, defines.v, textureType, false);
     }
 
-    private _createBlurFilter(name: string, samplers: Array<string>, ratio: number, defines: string, textureType: number, vertical: boolean): PostProcess {
+    private _createBlurFilter(name: string, samplers: Array<string>, ratio: number, defines: string, textureType: number, horizontal: boolean): PostProcess {
         const blurFilter = new PostProcess(
             name,
             "ssao2",
@@ -441,8 +441,8 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
                 return;
             }
 
-            const ssaoCombineSize = vertical ? this._ssaoCombinePostProcess.width : this._ssaoCombinePostProcess.height;
-            const originalColorSize = vertical ? this._originalColorPostProcess.width : this._originalColorPostProcess.height;
+            const ssaoCombineSize = horizontal ? this._ssaoCombinePostProcess.width : this._ssaoCombinePostProcess.height;
+            const originalColorSize = horizontal ? this._originalColorPostProcess.width : this._originalColorPostProcess.height;
 
             effect.setFloat("outSize", ssaoCombineSize > 0 ? ssaoCombineSize : originalColorSize);
             effect.setInt("samples", this.bilateralSamples);
