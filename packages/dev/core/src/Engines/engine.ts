@@ -422,13 +422,8 @@ export class Engine extends ThinEngine {
      * Gets a boolean indicating if the pointer is currently locked
      */
     public get isPointerLock() {
-        let canvasCheck = false;
-        // Check if document exists and update canvasCheck if it does
-        if (IsDocumentAvailable() && this._renderingCanvas) {
-            canvasCheck = document.pointerLockElement === this._renderingCanvas;
-        }
         // Return either manual pointerlock state or canvas pointerlock state
-        return this._isPointerLock || canvasCheck;
+        return this._isPointerLock || (this._isCanvasPresent && document.pointerLockElement === this._renderingCanvas);
     }
 
     public set isPointerLock(value: boolean) {
@@ -437,6 +432,8 @@ export class Engine extends ThinEngine {
 
     // Store manual pointerlock state, if specified
     private _isPointerLock = false;
+    // Check for document and canvas before using pointerlock
+    private _isCanvasPresent = false;
 
     // Observables
 
@@ -609,7 +606,8 @@ export class Engine extends ThinEngine {
 
         if ((<any>canvasOrContext).getContext) {
             const canvas = <HTMLCanvasElement>canvasOrContext;
-
+            // Since we know that there's a canvas, check for document existence
+            this._isCanvasPresent = IsDocumentAvailable();
             this._sharedInit(canvas);
 
             this._connectVREvents();
