@@ -684,7 +684,12 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
      * @returns An instantiated pipeline from the serialized object.
      */
     public static Parse(source: any, scene: Scene, rootUrl: string): SSAO2RenderingPipeline {
-        return SerializationHelper.Parse(() => new SSAO2RenderingPipeline(source._name, scene, source._ratio, undefined, source._forceGeometryBuffer, source._textureType) , source, scene, rootUrl);
+        return SerializationHelper.Parse(
+            () => new SSAO2RenderingPipeline(source._name, scene, source._ratio, undefined, source._forceGeometryBuffer, source._textureType),
+            source,
+            scene,
+            rootUrl
+        );
     }
 }
 
