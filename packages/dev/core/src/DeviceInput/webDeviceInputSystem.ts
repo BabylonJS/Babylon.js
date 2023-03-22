@@ -709,6 +709,10 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 pointer[PointerInput.MouseWheelZ] = evt.deltaZ || 0;
 
                 const deviceEvent = evt as IUIEvent;
+                // By default, there is no pointerId for mouse wheel events so we'll add one here
+                if (!evt.pointerId) {
+                    evt.pointerId = this._isUsingFirefox ? 0 : 1;
+                }
 
                 if (pointer[PointerInput.MouseWheelX] !== 0) {
                     deviceEvent.inputIndex = PointerInput.MouseWheelX;
