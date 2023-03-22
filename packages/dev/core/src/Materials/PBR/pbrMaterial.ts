@@ -775,6 +775,7 @@ export class PBRMaterial extends PBRBaseMaterial {
         this.brdf.copyTo(clone.brdf);
         this.sheen.copyTo(clone.sheen);
         this.subSurface.copyTo(clone.subSurface);
+        this.iridescence.copyTo(clone.iridescence);
 
         return clone;
     }
