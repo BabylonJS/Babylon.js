@@ -88,7 +88,7 @@ float viewZToOrthographicDepth( in float viewZ, in float near, in float far ) {
 			// get sample position:
 		    vec3 samplePosition = scales[(i + int(random.x * 16.0)) % 16] * tbn * sampleSphere[(i + int(random.y * 16.0)) % 16];
 		    samplePosition = samplePosition * correctedRadius + origin;
-		  
+
 			// project sample position:
 		    vec4 offset = vec4(samplePosition, 1.0);
 		    offset = projection * offset;
@@ -98,13 +98,16 @@ float viewZToOrthographicDepth( in float viewZ, in float near, in float far ) {
 		    if (offset.x < 0.0 || offset.y < 0.0 || offset.x > 1.0 || offset.y > 1.0) {
 		        continue;
 		    }
-		  
+
 			// get sample linearDepth:
 		    float sampleDepth = abs(texture2D(depthSampler, offset.xy).r);
 			// range check & accumulate:
 		    difference = depthSign * samplePosition.z - sampleDepth;
 		    float rangeCheck = 1.0 - smoothstep(correctedRadius*0.5, correctedRadius, difference);
-		    occlusion += (difference >= 0.0 ? 1.0 : 0.0) * rangeCheck;
+
+			// We need to filter away diffs very close to 0 due to precision errors,
+			// otherwise we will get a ton of incorrect occlusions with low sample counts.
+		    occlusion += (difference >= 0.02 ? 1.0 : 0.0) * rangeCheck;
 		}
 		occlusion = occlusion*(1.0 - smoothstep(maxZ * 0.75, maxZ, depth));
 		float ao = 1.0 - totalStrength * occlusion * samplesFactor;
