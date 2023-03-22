@@ -61,7 +61,7 @@ export enum ConstraintMotorType {
 /**
  * Collision object that is the parameter when notification for collision fires.
  */
-export interface CollisionEvent {
+export interface IPhysicsCollisionEvent {
     /**
      * 1st physics body that collided
      */
@@ -269,7 +269,7 @@ export interface IPhysicsEnginePluginV2 {
     disposeBody(body: PhysicsBody): void;
     setCollisionCallbackEnabled(body: PhysicsBody, enabled: boolean): void;
     addConstraint(body: PhysicsBody, childBody: PhysicsBody, constraint: PhysicsConstraint): void;
-    getCollisionObservable(body: PhysicsBody): Observable<CollisionEvent>;
+    getCollisionObservable(body: PhysicsBody): Observable<IPhysicsCollisionEvent>;
 
     // shape
     initShape(shape: PhysicsShape, type: ShapeType, options: PhysicsShapeParameters): void;
