@@ -1,4 +1,4 @@
-import type { IPhysicsEnginePluginV2, MassProperties, PhysicsMotionType } from "./IPhysicsEnginePlugin";
+import type { CollisionEvent, IPhysicsEnginePluginV2, MassProperties, PhysicsMotionType } from "./IPhysicsEnginePlugin";
 import type { PhysicsShape } from "./physicsShape";
 import { Vector3, Quaternion, TmpVectors } from "../../Maths/math.vector";
 import type { Scene } from "../../scene";
@@ -371,14 +371,7 @@ export class PhysicsBody {
      * Returns an observable that will be notified for all collisions happening for event-enabled bodies
      * @returns Observable
      */
-    public getCollisionObservable(): Observable<{
-        collider: PhysicsBody;
-        collidedAgainst: PhysicsBody;
-        point: Nullable<Vector3>;
-        distance: number;
-        impulse: number;
-        normal: Nullable<Vector3>;
-    }> {
+    public getCollisionObservable(): Observable<CollisionEvent> {
         return this._physicsPlugin.getCollisionObservable(this);
     }
 
