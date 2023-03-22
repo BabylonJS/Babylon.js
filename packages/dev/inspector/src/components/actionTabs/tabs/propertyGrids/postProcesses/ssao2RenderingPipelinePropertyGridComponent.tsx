@@ -87,6 +87,16 @@ export class SSAO2RenderingPipelinePropertyGridComponent extends React.Component
                         propertyName="radius"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
+                    <SliderLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Epsilon"
+                        minimum={0}
+                        maximum={1}
+                        step={0.001}
+                        target={renderPipeline}
+                        propertyName="epsilon"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                 </LineContainerComponent>
                 <LineContainerComponent title="Denoiser">
                     <CheckBoxLineComponent

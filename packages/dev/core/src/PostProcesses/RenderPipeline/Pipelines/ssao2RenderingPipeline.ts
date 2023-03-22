@@ -74,6 +74,21 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     @serialize()
     public minZAspect: number = 0.2;
 
+    @serialize("epsilon")
+    private _epsilon: number = 0.02;
+    /**
+     * Used in SSAO calculations to compensate for accuracy issues with depth values. Default 0.02.
+     *
+     * Normally you do not need to change this value, but you can experiment with it if you get a lot of in false self-occlusion on flat surfaces when using fewer than 16 samples. Useful range is normally [0..0.1] but higher values is allowed.
+     */
+    public set epsilon(n: number) {
+        this._epsilon = n;
+        this._ssaoPostProcess.updateEffect(this._getDefinesForSSAO());
+    }
+    public get epsilon(): number {
+        return this._epsilon;
+    }
+
     @serialize("samples")
     private _samples: number = 8;
     /**
@@ -491,7 +506,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     }
 
     private _getDefinesForSSAO() {
-        const defines = "#define SAMPLES " + this.samples + "\n#define SSAO";
+        const defines = `#define SSAO\n#define SAMPLES ${this.samples}\n#define EPSILON ${this.epsilon.toFixed(4)}`;
 
         return defines;
     }

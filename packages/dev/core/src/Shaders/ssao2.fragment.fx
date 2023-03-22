@@ -89,8 +89,13 @@ varying vec2 vUV;
 		    float sampleDepth = abs(textureLod(depthSampler, offset.xy, 0.0).r);
 			// range check & accumulate:
 		    difference = depthSign * samplePosition.z - sampleDepth;
+
+			// Ignore samples that has a diff < 0 since they are behind our
+			// point and can't be occluding it. Also ignore diff smaller than
+			// Epsilon due to accuracy issues, otherwise we will get a ton of
+			// incorrect occlusions with low sample counts.
 		    float rangeCheck = 1.0 - smoothstep(correctedRadius*0.5, correctedRadius, difference);
-		    occlusion += (difference >= 0.0 ? 1.0 : 0.0) * rangeCheck;
+		    occlusion += (difference >= EPSILON ? 1.0 : 0.0) * rangeCheck;
 		}
 		occlusion = occlusion*(1.0 - smoothstep(maxZ * 0.75, maxZ, depth));
 		float ao = 1.0 - totalStrength * occlusion * samplesFactor;
