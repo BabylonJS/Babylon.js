@@ -298,11 +298,11 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
 
         this._createRandomTexture();
 
-        this._originalColorPostProcess = new PassPostProcess("SSAOOriginalSceneColor", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), undefined, textureType);
+        this._originalColorPostProcess = new PassPostProcess("SSAOOriginalSceneColor", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), undefined, this._textureType);
         this._originalColorPostProcess.samples = this.textureSamples;
         this._createSSAOPostProcess(1.0, textureType);
-        this._createBlurPostProcess(ssaoRatio, blurRatio, textureType);
-        this._createSSAOCombinePostProcess(blurRatio, textureType);
+        this._createBlurPostProcess(ssaoRatio, blurRatio, this._textureType);
+        this._createSSAOCombinePostProcess(blurRatio, this._textureType);
 
         // Set up pipeline
         this.addEffect(
