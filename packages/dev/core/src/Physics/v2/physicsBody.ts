@@ -8,7 +8,7 @@ import type { Nullable } from "core/types";
 import type { PhysicsConstraint } from "./physicsConstraint";
 import type { Bone } from "core/Bones/bone";
 import { Space } from "core/Maths/math.axis";
-import type { Observer } from "../../Misc/observable";
+import type { Observable, Observer } from "../../Misc/observable";
 import type { Node } from "../../node";
 
 /**
@@ -368,31 +368,23 @@ export class PhysicsBody {
     }
 
     /**
-     * Register a collision callback that is called when the body collides
-     * Filtering by body is inefficient. It's more preferable to register a collision callback for the entire world
-     * and do the filtering on the user side.
+     * Returns an observable that will be notified for all collisions happening for event-enabled bodies
+     * @returns Observable
      */
-    public registerOnCollide(
-        func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>, distance: number, impulse: number, normal: Nullable<Vector3>) => void
-    ): void {
-        return this._physicsPlugin.registerOnBodyCollide(this, func);
-    }
-
-    /**
-     * Unregister a collision callback that is called when the body collides
-     */
-    public unregisterOnCollide(
-        func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>, distance: number, impulse: number, normal: Nullable<Vector3>) => void
-    ): void {
-        return this._physicsPlugin.unregisterOnBodyCollide(this, func);
+    public getCollisionObservable(): Observable<{
+        collider: PhysicsBody;
+        collidedAgainst: PhysicsBody;
+        point: Nullable<Vector3>;
+        distance: number;
+        impulse: number;
+        normal: Nullable<Vector3>;
+    }> {
+        return this._physicsPlugin.getCollisionObservable(this);
     }
 
     /**
      * Enable or disable collision callback for this PhysicsBody.
-     * `registerOnCollide` method will enable collision callback and `unregisterOnCollide` will disable them.
-     * Registering a collision callback on the plugin and enabling collision per body is faster than
-     * registering callback per PhysicsBody.
-     * @param enabled true if PhysicsBody's collision will rise a collision event and call the callback
+     * @param enabled true if PhysicsBody's collision will rise a collision event and notifies the observable
      */
     public setCollisionCallbackEnabled(enabled: boolean): void {
         return this._physicsPlugin.setCollisionCallbackEnabled(this, enabled);

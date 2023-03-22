@@ -8,6 +8,7 @@ import type { TransformNode } from "../../Meshes/transformNode";
 import type { PhysicsMaterial } from "./physicsMaterial";
 import type { Mesh } from "../../Meshes/mesh";
 import type { Nullable } from "core/types";
+import type { Observable } from "core/Misc/observable";
 
 /** @internal */
 export enum ConstraintAxisLimitMode {
@@ -178,24 +179,31 @@ export enum PhysicsMotionType {
 /** @internal */
 export interface IPhysicsEnginePluginV2 {
     /**
-     *
+     * Physics plugin world instance
      */
     world: any;
     /**
-     *
+     * Physics plugin name
      */
     name: string;
+
+    /**
+     * Collision observable
+     */
+    onCollisionObservable: Observable<{
+        collider: PhysicsBody;
+        collidedAgainst: PhysicsBody;
+        point: Nullable<Vector3>;
+        distance: number;
+        impulse: number;
+        normal: Nullable<Vector3>;
+    }>;
+
     setGravity(gravity: Vector3): void;
     setTimeStep(timeStep: number): void;
     getTimeStep(): number;
     executeStep(delta: number, bodies: Array<PhysicsBody>): void; //not forgetting pre and post events
     getPluginVersion(): number;
-    registerOnCollide(
-        func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>, distance: number, impulse: number, normal: Nullable<Vector3>) => void
-    ): void;
-    unregisterOnCollide(
-        func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>, distance: number, impulse: number, normal: Nullable<Vector3>) => void
-    ): void;
 
     // body
     initBody(body: PhysicsBody, motionType: PhysicsMotionType, position: Vector3, orientation: Quaternion): void;
@@ -229,16 +237,11 @@ export interface IPhysicsEnginePluginV2 {
     getAngularVelocityToRef(body: PhysicsBody, angVel: Vector3): void;
     getBodyGeometry(body: PhysicsBody): {};
     disposeBody(body: PhysicsBody): void;
-    registerOnBodyCollide(
-        body: PhysicsBody,
-        func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>, distance: number, impulse: number, normal: Nullable<Vector3>) => void
-    ): void;
-    unregisterOnBodyCollide(
-        body: PhysicsBody,
-        func: (collider: PhysicsBody, collidedAgainst: PhysicsBody, point: Nullable<Vector3>, distance: number, impulse: number, normal: Nullable<Vector3>) => void
-    ): void;
     setCollisionCallbackEnabled(body: PhysicsBody, enabled: boolean): void;
     addConstraint(body: PhysicsBody, childBody: PhysicsBody, constraint: PhysicsConstraint): void;
+    getCollisionObservable(
+        body: PhysicsBody
+    ): Observable<{ collider: PhysicsBody; collidedAgainst: PhysicsBody; point: Nullable<Vector3>; distance: number; impulse: number; normal: Nullable<Vector3> }>;
 
     // shape
     initShape(shape: PhysicsShape, type: ShapeType, options: PhysicsShapeParameters): void;
