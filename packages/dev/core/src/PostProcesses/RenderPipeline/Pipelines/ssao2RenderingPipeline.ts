@@ -124,6 +124,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     /**
      * Force rendering the geometry through geometry buffer.
      */
+    @serialize()
     private _forceGeometryBuffer: boolean = false;
     private get _geometryBufferRenderer(): Nullable<GeometryBufferRenderer> {
         if (!this._forceGeometryBuffer) {
@@ -143,6 +144,12 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
      */
     @serialize()
     private _ratio: any;
+
+    /*
+     * The texture type used by the different post processes created by SSAO
+     */
+    @serialize()
+    private _textureType: number;
 
     /**
      * Dynamically generated sphere sampler.
@@ -271,6 +278,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
 
         this._scene = scene;
         this._ratio = ratio;
+        this._textureType = textureType;
         this._forceGeometryBuffer = forceGeometryBuffer;
 
         if (!this.isSupported) {
@@ -676,7 +684,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
      * @returns An instantiated pipeline from the serialized object.
      */
     public static Parse(source: any, scene: Scene, rootUrl: string): SSAO2RenderingPipeline {
-        return SerializationHelper.Parse(() => new SSAO2RenderingPipeline(source._name, scene, source._ratio), source, scene, rootUrl);
+        return SerializationHelper.Parse(() => new SSAO2RenderingPipeline(source._name, scene, source._ratio, undefined, source._forceGeometryBuffer, source._textureType) , source, scene, rootUrl);
     }
 }
 
