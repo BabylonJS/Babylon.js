@@ -802,6 +802,15 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     }
 
     /**
+     * Sets the Default image processing configuration used either in the this material.
+     *
+     * If sets to null, the scene one is in use.
+     */
+     public set imageProcessingConfiguration(value: ImageProcessingConfiguration) {
+        this._attachImageProcessingConfiguration(value);
+    }
+
+    /**
      * Stores the available render targets.
      */
     private _renderTargets = new SmartArray<RenderTargetTexture>(16);
