@@ -806,7 +806,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      *
      * If sets to null, the scene one is in use.
      */
-     public set imageProcessingConfiguration(value: ImageProcessingConfiguration) {
+    public set imageProcessingConfiguration(value: ImageProcessingConfiguration) {
         this._attachImageProcessingConfiguration(value);
     }
 
