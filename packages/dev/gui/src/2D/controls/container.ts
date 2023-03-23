@@ -544,7 +544,7 @@ export class Container extends Control {
             context.drawImage(contextToDrawTo.canvas, this._currentMeasure.left, this._currentMeasure.top);
             context.restore();
         }
-        this._skipFirstClipping = false;
+
         context.restore();
     }
 

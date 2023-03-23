@@ -312,7 +312,6 @@ export class Grid extends Container {
             goodContainer.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
             goodContainer.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
             super.addControl(goodContainer);
-            goodContainer._skipFirstClipping = true;
         }
 
         goodContainer.addControl(control);
