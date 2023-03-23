@@ -84,7 +84,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         this._onInputChanged = onInputChanged;
 
         // If we need a pointerId, set one for future use
-        this._mouseId = this._isUsingFirefox || this._usingSafari ? 0 : 1;
+        this._mouseId = this._isUsingFirefox ? 0 : 1;
 
         this._enableEvents();
 
