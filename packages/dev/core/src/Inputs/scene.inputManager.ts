@@ -746,11 +746,6 @@ export class InputManager {
         };
 
         this._onPointerMove = (evt: IMouseEvent) => {
-            // preserve compatibility with Safari when pointerId is not present
-            if ((evt as IPointerEvent).pointerId === undefined) {
-                (evt as IPointerEvent as any).pointerId = 0;
-            }
-
             this._updatePointerPosition(evt as IPointerEvent);
 
             // Check if pointer leaves DragMovementThreshold range to determine if swipe is occurring
@@ -798,11 +793,6 @@ export class InputManager {
             this._totalPointersPressed++;
             this._pickedDownMesh = null;
             this._meshPickProceed = false;
-
-            // preserve compatibility with Safari when pointerId is not present
-            if (evt.pointerId === undefined) {
-                (evt as any).pointerId = 0;
-            }
 
             // If ExclusiveDoubleClickMode is true, we need to resolve any pending delayed clicks
             if (InputManager.ExclusiveDoubleClickMode) {
@@ -892,11 +882,6 @@ export class InputManager {
             this._totalPointersPressed--;
             this._pickedUpMesh = null;
             this._meshPickProceed = false;
-
-            // preserve compatibility with Safari when pointerId is not present
-            if (evt.pointerId === undefined) {
-                (evt as any).pointerId = 0;
-            }
 
             this._updatePointerPosition(evt);
 
