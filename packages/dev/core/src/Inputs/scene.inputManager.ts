@@ -794,11 +794,6 @@ export class InputManager {
             this._pickedDownMesh = null;
             this._meshPickProceed = false;
 
-            // preserve compatibility with Safari when pointerId is not present
-            if (evt.pointerId === undefined) {
-                (evt as any).pointerId = 0;
-            }
-
             // If ExclusiveDoubleClickMode is true, we need to resolve any pending delayed clicks
             if (InputManager.ExclusiveDoubleClickMode) {
                 for (let i = 0; i < this._delayedClicks.length; i++) {
@@ -887,11 +882,6 @@ export class InputManager {
             this._totalPointersPressed--;
             this._pickedUpMesh = null;
             this._meshPickProceed = false;
-
-            // preserve compatibility with Safari when pointerId is not present
-            if (evt.pointerId === undefined) {
-                (evt as any).pointerId = 0;
-            }
 
             this._updatePointerPosition(evt);
 
