@@ -620,13 +620,6 @@ export class PBRMaterial extends PBRBaseMaterial {
     public unlit = false;
 
     /**
-     * Gets the image processing configuration used either in this material.
-     */
-    public get imageProcessingConfiguration(): ImageProcessingConfiguration {
-        return this._imageProcessingConfiguration;
-    }
-
-    /**
      * Gets whether the color curves effect is enabled.
      */
     public get cameraColorCurvesEnabled(): boolean {
