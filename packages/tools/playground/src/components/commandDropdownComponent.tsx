@@ -25,7 +25,7 @@ interface ICommandDropdownComponentProps {
     toRight?: boolean;
 }
 
-export class CommandDropdownComponent extends React.Component<ICommandDropdownComponentProps, { isExpanded: boolean; }> {
+export class CommandDropdownComponent extends React.Component<ICommandDropdownComponentProps, { isExpanded: boolean }> {
     public constructor(props: ICommandDropdownComponentProps) {
         super(props);
 
@@ -77,9 +77,7 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                                 <img src={"imgs/" + this.props.icon + ".svg"} />
                             </div>
                         )}
-                        {(!this.props.icon || this.props.hamburgerMode) && (
-                            <div className="command-dropdown-active">{activeState === "Latest" ? engineVersion : activeState}</div>
-                        )}
+                        {(!this.props.icon || this.props.hamburgerMode) && <div className="command-dropdown-active">{activeState === "Latest" ? engineVersion : activeState}</div>}
                     </div>
                     {this.state.isExpanded && (
                         <div className={"command-dropdown-content sub1" + (this.props.toRight ? " toRight" : "")}>
