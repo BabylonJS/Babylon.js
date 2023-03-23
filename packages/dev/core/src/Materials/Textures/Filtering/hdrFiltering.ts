@@ -143,6 +143,10 @@ export class HDRFiltering {
         // Internal Swap
         outputTexture._swapAndDie(texture._texture!);
 
+        // New settings
+        texture.gammaSpace = false;
+        texture.lodGenerationOffset = this._lodGenerationOffset;
+        texture.lodGenerationScale = this._lodGenerationScale;
         texture._prefiltered = true;
 
         return texture;
