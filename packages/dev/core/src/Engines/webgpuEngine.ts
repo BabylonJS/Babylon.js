@@ -62,6 +62,22 @@ declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTe
 declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
 declare type RenderTargetWrapper = import("./renderTargetWrapper").RenderTargetWrapper;
 
+const viewDescriptorSwapChainAntialiasing: GPUTextureViewDescriptor = {
+    label: `TextureView_SwapChain_ResolveTarget`,
+    dimension: WebGPUConstants.TextureDimension.E2d,
+    format: undefined as any, // will be updated with the right value
+    mipLevelCount: 1,
+    arrayLayerCount: 1,
+};
+
+const viewDescriptorSwapChain: GPUTextureViewDescriptor = {
+    label: `TextureView_SwapChain`,
+    dimension: WebGPUConstants.TextureDimension.E2d,
+    format: undefined as any, // will be updated with the right value
+    mipLevelCount: 1,
+    arrayLayerCount: 1,
+};
+
 /**
  * Options to load the associated Glslang library
  */
@@ -162,7 +178,6 @@ export class WebGPUEngine extends Engine {
     private readonly _defaultSampleCount = 4; // Only supported value for now.
 
     // Engine Life Cycle
-    private _canvas: HTMLCanvasElement;
     /** @internal */
     public _options: WebGPUEngineOptions;
     private _glslang: any = null;
@@ -513,7 +528,7 @@ export class WebGPUEngine extends Engine {
         this._isWebGPU = true;
         this._shaderPlatformName = "WEBGPU";
 
-        this._canvas = canvas;
+        this._renderingCanvas = canvas;
         this._options = options;
 
         this._mainPassSampleCount = options.antialias ? this._defaultSampleCount : 1;
@@ -808,7 +823,10 @@ export class WebGPUEngine extends Engine {
     }
 
     private _initializeContextAndSwapChain(): void {
-        this._context = this._canvas.getContext("webgpu") as unknown as GPUCanvasContext;
+        if (!this._renderingCanvas) {
+            throw "The rendering canvas has not been set!";
+        }
+        this._context = this._renderingCanvas.getContext("webgpu") as unknown as GPUCanvasContext;
         this._configureContext();
         this._colorFormat = this._options.swapChainFormat!;
         this._mainRenderPassWrapper.colorAttachmentGPUTextures = [new WebGPUHardwareTexture()];
@@ -824,12 +842,12 @@ export class WebGPUEngine extends Engine {
         this.flushFramebuffer(false);
 
         this._mainTextureExtends = {
-            width: this.getRenderWidth(),
-            height: this.getRenderHeight(),
+            width: this.getRenderWidth(true),
+            height: this.getRenderHeight(true),
             depthOrArrayLayers: 1,
         };
 
-        const bufferDataUpdate = new Float32Array([this.getRenderHeight()]);
+        const bufferDataUpdate = new Float32Array([this.getRenderHeight(true)]);
 
         this._bufferManager.setSubData(this._ubInvertY, 4, bufferDataUpdate);
         this._bufferManager.setSubData(this._ubDontInvertY, 4, bufferDataUpdate);
@@ -838,7 +856,7 @@ export class WebGPUEngine extends Engine {
 
         if (this._options.antialias) {
             const mainTextureDescriptor: GPUTextureDescriptor = {
-                label: "Texture_MainColor_antialiasing",
+                label: `Texture_MainColor_${this._mainTextureExtends.width}x${this._mainTextureExtends.height}_antialiasing`,
                 size: this._mainTextureExtends,
                 mipLevelCount: 1,
                 sampleCount: this._mainPassSampleCount,
@@ -853,7 +871,13 @@ export class WebGPUEngine extends Engine {
             this._mainTexture = this._device.createTexture(mainTextureDescriptor);
             mainColorAttachments = [
                 {
-                    view: this._mainTexture.createView(),
+                    view: this._mainTexture.createView({
+                        label: "TextureView_MainColor_antialiasing",
+                        dimension: WebGPUConstants.TextureDimension.E2d,
+                        format: this._options.swapChainFormat!,
+                        mipLevelCount: 1,
+                        arrayLayerCount: 1,
+                    }),
                     clearValue: new Color4(0, 0, 0, 1),
                     loadOp: WebGPUConstants.LoadOp.Clear,
                     storeOp: WebGPUConstants.StoreOp.Store, // don't use StoreOp.Discard, else using several cameras with different viewports or using scissors will fail because we call beginRenderPass / endPass several times for the same color attachment!
@@ -875,7 +899,7 @@ export class WebGPUEngine extends Engine {
         this._setDepthTextureFormat(this._mainRenderPassWrapper);
 
         const depthTextureDescriptor: GPUTextureDescriptor = {
-            label: "Texture_MainDepthStencil",
+            label: `Texture_MainDepthStencil_${this._mainTextureExtends.width}x${this._mainTextureExtends.height}`,
             size: this._mainTextureExtends,
             mipLevelCount: 1,
             sampleCount: this._mainPassSampleCount,
@@ -889,7 +913,13 @@ export class WebGPUEngine extends Engine {
         }
         this._depthTexture = this._device.createTexture(depthTextureDescriptor);
         const mainDepthAttachment: GPURenderPassDepthStencilAttachment = {
-            view: this._depthTexture.createView(),
+            view: this._depthTexture.createView({
+                label: `TextureView_MainDepthStencil_${this._mainTextureExtends.width}x${this._mainTextureExtends.height}`,
+                dimension: WebGPUConstants.TextureDimension.E2d,
+                format: this._depthTexture.format,
+                mipLevelCount: 1,
+                arrayLayerCount: 1,
+            }),
 
             depthClearValue: this._clearDepthValue,
             depthLoadOp: WebGPUConstants.LoadOp.Clear,
@@ -1078,7 +1108,7 @@ export class WebGPUEngine extends Engine {
         const h = Math.floor(this._viewportCached.w);
 
         if (!this._currentRenderTarget) {
-            y = this.getRenderHeight() - y - h;
+            y = this.getRenderHeight(true) - y - h;
         }
 
         renderPass.setViewport(Math.floor(this._viewportCached.x), y, Math.floor(this._viewportCached.z), h, 0, 1);
@@ -2841,9 +2871,11 @@ export class WebGPUEngine extends Engine {
 
         // Resolve in case of MSAA
         if (this._options.antialias) {
-            this._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0]!.resolveTarget = swapChainTexture.createView();
+            viewDescriptorSwapChainAntialiasing.format = swapChainTexture.format;
+            this._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0]!.resolveTarget = swapChainTexture.createView(viewDescriptorSwapChainAntialiasing);
         } else {
-            this._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0]!.view = swapChainTexture.createView();
+            viewDescriptorSwapChain.format = swapChainTexture.format;
+            this._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0]!.view = swapChainTexture.createView(viewDescriptorSwapChain);
         }
 
         if (this.dbgVerboseLogsForFirstFrames) {
@@ -3358,7 +3390,7 @@ export class WebGPUEngine extends Engine {
             return this._currentRenderTarget.width;
         }
 
-        return this._canvas.width;
+        return this._renderingCanvas?.width ?? 0;
     }
 
     /**
@@ -3371,15 +3403,7 @@ export class WebGPUEngine extends Engine {
             return this._currentRenderTarget.height;
         }
 
-        return this._canvas.height;
-    }
-
-    /**
-     * Gets the HTML canvas attached with the current WebGPU context
-     * @returns a HTML canvas
-     */
-    public getRenderingCanvas(): Nullable<HTMLCanvasElement> {
-        return this._canvas;
+        return this._renderingCanvas?.height ?? 0;
     }
 
     //------------------------------------------------------------------------------
