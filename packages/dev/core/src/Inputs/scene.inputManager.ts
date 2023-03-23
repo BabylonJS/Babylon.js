@@ -746,11 +746,6 @@ export class InputManager {
         };
 
         this._onPointerMove = (evt: IMouseEvent) => {
-            // preserve compatibility with Safari when pointerId is not present
-            if ((evt as IPointerEvent).pointerId === undefined) {
-                (evt as IPointerEvent as any).pointerId = 0;
-            }
-
             this._updatePointerPosition(evt as IPointerEvent);
 
             // Check if pointer leaves DragMovementThreshold range to determine if swipe is occurring

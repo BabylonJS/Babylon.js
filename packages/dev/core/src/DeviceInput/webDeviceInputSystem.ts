@@ -710,6 +710,8 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
                 const deviceEvent = evt as IUIEvent;
                 // By default, there is no pointerId for mouse wheel events so we'll add one here
+                // This logic was originally in the InputManager but was added here to make the
+                // InputManager more platform-agnostic
                 if (!evt.pointerId) {
                     evt.pointerId = this._isUsingFirefox ? 0 : 1;
                 }
