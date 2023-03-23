@@ -627,18 +627,6 @@ export class PBRMaterial extends PBRBaseMaterial {
     }
 
     /**
-     * Sets the Default image processing configuration used either in the this material.
-     *
-     * If sets to null, the scene one is in use.
-     */
-    public set imageProcessingConfiguration(value: ImageProcessingConfiguration) {
-        this._attachImageProcessingConfiguration(value);
-
-        // Ensure the effect will be rebuilt.
-        this._markAllSubMeshesAsTexturesDirty();
-    }
-
-    /**
      * Gets whether the color curves effect is enabled.
      */
     public get cameraColorCurvesEnabled(): boolean {

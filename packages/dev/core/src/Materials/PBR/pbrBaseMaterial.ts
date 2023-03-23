@@ -808,6 +808,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      */
     public set imageProcessingConfiguration(value: ImageProcessingConfiguration) {
         this._attachImageProcessingConfiguration(value);
+
+        // Ensure the effect will be rebuilt.
+        this._markAllSubMeshesAsTexturesDirty();
     }
 
     /**
