@@ -24,6 +24,8 @@ export interface InternalTextureCreationOptions {
     creationFlags?: number;
     /** Creates the RTT in sRGB space */
     useSRGBBuffer?: boolean;
+    /** Label of the texture (used for debugging only) */
+    label?: string;
 }
 
 /**

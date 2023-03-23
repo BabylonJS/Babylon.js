@@ -346,6 +346,9 @@ ThinEngine.prototype.createCubeTextureBase = function (
     texture._lodGenerationScale = lodScale;
     texture._lodGenerationOffset = lodOffset;
     texture._useSRGBBuffer = !!useSRGBBuffer && this._caps.supportSRGBBuffers && (this.webGLVersion > 1 || this.isWebGPU || !!noMipmap);
+    if (texture !== fallback) {
+        texture.label = rootUrl.substring(0, 60); // default label, can be overriden by the caller
+    }
 
     if (!this._doNotHandleContextLost) {
         texture._extension = forcedExtension;

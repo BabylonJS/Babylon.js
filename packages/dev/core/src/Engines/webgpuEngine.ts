@@ -1915,6 +1915,7 @@ export class WebGPUEngine extends Engine {
             fullOptions.samples = options.samples ?? 1;
             fullOptions.creationFlags = options.creationFlags ?? 0;
             fullOptions.useSRGBBuffer = options.useSRGBBuffer ?? false;
+            fullOptions.label = options.label;
         } else {
             fullOptions.generateMipMaps = <boolean>options;
             fullOptions.type = Constants.TEXTURETYPE_UNSIGNED_INT;
@@ -1956,6 +1957,7 @@ export class WebGPUEngine extends Engine {
         texture._cachedWrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         texture._cachedWrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         texture._useSRGBBuffer = fullOptions.useSRGBBuffer;
+        texture.label = fullOptions.label;
 
         this._internalTexturesCache.push(texture);
 
