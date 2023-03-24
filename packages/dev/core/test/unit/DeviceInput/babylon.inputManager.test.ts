@@ -743,7 +743,7 @@ describe("InputManager", () => {
                 },
                 writable: true,
             });
-            
+
             // Manually set isPointerLock to true
             engine.isPointerLock = true;
 

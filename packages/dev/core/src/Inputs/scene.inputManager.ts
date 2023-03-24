@@ -760,7 +760,7 @@ export class InputManager {
                     Math.abs(this._startingPointerPosition.y - this._pointerY) > InputManager.DragMovementThreshold;
             }
 
-            // Because there's a race condition between pointermove and pointerlockchange events, we need to 
+            // Because there's a race condition between pointermove and pointerlockchange events, we need to
             // verify that the pointer is still locked after each pointermove event.
             if (engine.isPointerLock) {
                 engine._verifyPointerLock();
