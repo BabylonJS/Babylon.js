@@ -286,7 +286,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                     icon={addGridElementDark}
                                     shortcut=""
                                     isActive={false}
-                                    disabled={this._removingRow}
+                                    disabled={this._removingRow || this._editedRow}
                                     onClick={() => {
                                         let total = 0;
                                         let count = 0;
@@ -308,7 +308,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                     icon={subtractGridElementDark}
                                     shortcut=""
                                     isActive={false}
-                                    disabled={this._removingRow || grid.rowCount <= 1}
+                                    disabled={this._removingRow || grid.rowCount <= 1 || this._editedRow}
                                     onClick={() => {
                                         let hasChild = false;
                                         for (let i = 0; i < grid.columnCount; ++i) {
@@ -408,6 +408,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                 icon={addGridElementDark}
                                 shortcut=""
                                 isActive={false}
+                                disabled={this._removingColumn || this._editedColumn}
                                 onClick={() => {
                                     let total = 0;
                                     let count = 0;
@@ -428,8 +429,8 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                 tooltip="Remove Column"
                                 icon={subtractGridElementDark}
                                 shortcut=""
-                                isActive={this._removingColumn}
-                                disabled={grid.columnCount <= 1}
+                                isActive={false}
+                                disabled={this._removingColumn || this._editedColumn || grid.columnCount <= 1}
                                 onClick={() => {
                                     let hasChild = false;
                                     for (let i = 0; i < grid.rowCount; ++i) {
