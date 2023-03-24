@@ -146,10 +146,11 @@ export class PickingInfo {
 
     /**
      * Gets the texture coordinates of where the pick occurred
+     * @param uvSet The UV set to use to calculate the texture coordinates (default: VertexBuffer.UVKind)
      * @returns The vector containing the coordinates of the texture
      */
-    public getTextureCoordinates(): Nullable<Vector2> {
-        if (!this.pickedMesh || !this.pickedMesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
+    public getTextureCoordinates(uvSet = VertexBuffer.UVKind): Nullable<Vector2> {
+        if (!this.pickedMesh || !this.pickedMesh.isVerticesDataPresent(uvSet)) {
             return null;
         }
 
@@ -158,7 +159,7 @@ export class PickingInfo {
             return null;
         }
 
-        const uvs = this.pickedMesh.getVerticesData(VertexBuffer.UVKind);
+        const uvs = this.pickedMesh.getVerticesData(uvSet);
         if (!uvs) {
             return null;
         }
