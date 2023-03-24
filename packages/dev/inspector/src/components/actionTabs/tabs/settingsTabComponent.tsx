@@ -16,7 +16,6 @@ export class SettingsTabComponent extends PaneComponent {
                 <LineContainerComponent title="UI" selection={this.props.globalState}>
                     <CheckBoxLineComponent label="Only display Euler values" target={state} propertyName="onlyUseEulers" />
                     <CheckBoxLineComponent label="Ignore backfaces when picking" target={state} propertyName="ignoreBackfacesForPicking" />
-                    <CheckBoxLineComponent label="Log Node when picking" target={state} propertyName="logNodeWhenPicking" />
                 </LineContainerComponent>
             </div>
         );
