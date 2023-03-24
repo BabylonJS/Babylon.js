@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import type { Behavior, IBehaviorAware } from "./Behaviors";
 import type { Nullable } from "./types";
 import { Tools } from "./Misc/tools";
 import type { IAnimatable } from "./Animations/animatable.interface";
@@ -142,7 +143,7 @@ export enum ScenePerformancePriority {
  * Represents a scene to be rendered by the engine.
  * @see https://doc.babylonjs.com/features/featuresDeepDive/scene
  */
-export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHolder {
+export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHolder, IBehaviorAware<Scene> {
     /** The fog is deactivated */
     public static readonly FOGMODE_NONE = 0;
     /** The fog density is following an exponential function */
@@ -5399,5 +5400,79 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public getPerfCollector(): PerformanceViewerCollector {
         throw _WarnImport("performanceViewerSceneExtension");
+    }
+
+    // Behaviors
+    private _behaviors = new Array<Behavior<Scene>>();
+
+    /**
+     * Attach a behavior to the scene
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/behaviors
+     * @param behavior defines the behavior to attach
+     * @param attachImmediately defines that the behavior must be attached even if the scene is still loading
+     * @returns the current Scene
+     */
+    public addBehavior(behavior: Behavior<Scene>, attachImmediately = false): Scene {
+        const index = this._behaviors.indexOf(behavior);
+
+        if (index !== -1) {
+            return this;
+        }
+
+        behavior.init();
+        if (this.isLoading && !attachImmediately) {
+            // We defer the attachment when the scene will be loaded
+            this.onDataLoadedObservable.addOnce(() => {
+                behavior.attach(this);
+            });
+        } else {
+            behavior.attach(this);
+        }
+        this._behaviors.push(behavior);
+
+        return this;
+    }
+
+    /**
+     * Remove an attached behavior
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/behaviors
+     * @param behavior defines the behavior to attach
+     * @returns the current Scene
+     */
+    public removeBehavior(behavior: Behavior<Scene>): Scene {
+        const index = this._behaviors.indexOf(behavior);
+
+        if (index === -1) {
+            return this;
+        }
+
+        this._behaviors[index].detach();
+        this._behaviors.splice(index, 1);
+
+        return this;
+    }
+
+    /**
+     * Gets the list of attached behaviors
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/behaviors
+     */
+    public get behaviors(): Behavior<Scene>[] {
+        return this._behaviors;
+    }
+
+    /**
+     * Gets an attached behavior by name
+     * @param name defines the name of the behavior to look for
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/behaviors
+     * @returns null if behavior was not found else the requested behavior
+     */
+    public getBehaviorByName(name: string): Nullable<Behavior<Scene>> {
+        for (const behavior of this._behaviors) {
+            if (behavior.name === name) {
+                return behavior;
+            }
+        }
+
+        return null;
     }
 }
