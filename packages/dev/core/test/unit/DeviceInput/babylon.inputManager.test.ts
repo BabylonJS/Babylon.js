@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 
-import { FreeCamera } from "core/Cameras";
+import { ArcRotateCamera, FreeCamera } from "core/Cameras";
 import type { PickingInfo } from "core/Collisions/pickingInfo";
 import { DeviceType, PointerInput } from "core/DeviceInput";
 import { InternalDeviceSourceManager } from "core/DeviceInput/internalDeviceSourceManager";
@@ -10,7 +10,6 @@ import { NullEngine } from "core/Engines";
 import type { Engine } from "core/Engines/engine";
 import type { IPointerEvent, IUIEvent } from "core/Events";
 import { PointerEventTypes } from "core/Events";
-import { InputManager } from "core/Inputs/scene.inputManager";
 import { Vector3 } from "core/Maths/math.vector";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
@@ -701,5 +700,87 @@ describe("InputManager", () => {
         }
 
         expect(projectionMatrixChangedCt).toBe(3);
+    });
+
+    it("stops movement when pointerlock is released", () => {
+        // Create a canvas that we can use to test our isPointerLock logic
+        const emptyCanvas = document.createElement("canvas");
+        let passedTest = false;
+
+        // Since the NullEngine can't actually use the renderingCanvas, we have to manually add it
+        Object.defineProperty(engine, "_renderingCanvas", {
+            value: emptyCanvas,
+            writable: true,
+        });
+
+        expect(engine?.isPointerLock).toBe(false);
+
+        if (deviceInputSystem && scene && engine) {
+            const arcCamera = new ArcRotateCamera("camera", 0, 0, 0, Vector3.Zero(), scene);
+            scene.activeCamera = arcCamera;
+            arcCamera.attachControl();
+
+            // Set initial point
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Horizontal, 64, false);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Vertical, 64, false);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Move, 1);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
+            arcCamera.inertialAlphaOffset = 0;
+            arcCamera.inertialBetaOffset = 0;
+
+            // Set pointerlockElement to our canvas element, this will enable pointerlock
+            Object.defineProperty(document, "pointerLockElement", {
+                value: emptyCanvas,
+                writable: true,
+            });
+
+            // Since the NullEngine is unable to assign and call this we'll just set it manually
+            // This will allow it to be called by _verifyPointerLock (used by InputManager)
+            Object.defineProperty(engine, "_onPointerLockChange", {
+                value: () => {
+                    engine!.isPointerLock = document.pointerLockElement === emptyCanvas;
+                },
+                writable: true,
+            });
+
+            // Manually set isPointerLock to true
+            engine.isPointerLock = true;
+
+            // Move left a bit and see if there's a change in the alpha offset
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Horizontal, 64, false);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Vertical, 64, false);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, 10, 64, false);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Move, 1);
+            // Check that the offset has changed
+            const testOffset = arcCamera.inertialAlphaOffset;
+            passedTest = testOffset !== 0;
+
+            // Remove the element to disable pointerlock
+            // As a side note, disabling pointerlock will clear the pointerlockElement
+            // so this should resolve isPointerLock to false (which is why we're not explicitly setting it to false)
+            Object.defineProperty(document, "pointerLockElement", {
+                value: undefined,
+                writable: true,
+            });
+
+            // Next, we're attempting to move the camera with no pointerLockElement
+            // The check for isPointerLock in the InputManager's _onPointerMove function should
+            // force isPointerLock to false, which should prevent the camera from moving.
+            // There should be no change.
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Horizontal, 64, false);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Vertical, 64, false);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, 10, -640, false);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Move, 1);
+
+            // If we passed the previous test and there was no change, this should pass too.
+            passedTest = passedTest && !engine.isPointerLock && arcCamera.inertialAlphaOffset === testOffset;
+
+            // Get rid of the ArcRotateCamera
+            arcCamera.detachControl();
+            arcCamera.dispose();
+        }
+
+        expect(passedTest).toBe(true);
     });
 });
