@@ -176,10 +176,10 @@ export class PhysicsAggregate {
         this.shape = new PhysicsShape({ type, parameters: this._options as any }, this._scene);
 
         this.material = { friction: this._options.friction, restitution: this._options.restitution };
-        this.body.setShape(this.shape);
-        this.shape.setMaterial(this.material);
+        this.body.shape = this.shape;
+        this.shape.material = this.material;
 
-        this.body.setMassProperties({ mass: this._options.mass });
+        this.body.massProperties = { mass: this._options.mass };
 
         this._nodeDisposeObserver = this.transformNode.onDisposeObservable.add(() => {
             // The body is already disposed on its own observable, so it's not necessary to dispose it here.
