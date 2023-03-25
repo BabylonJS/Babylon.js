@@ -17,6 +17,11 @@ $line-padding-left: 2px;
 
         .checkBoxLine {
             width: 22%;
+
+            .label {
+                justify-content: flex-end;
+                padding-right: 10px;
+            }
         }
 
         .buttonLine {
