@@ -76,7 +76,11 @@ const MetadataEditorPopupComponent: React.FC<IMetadataEditorPopupComponentProps>
     };
     const parsableJson = (object: Object): boolean => {
         if (!object) return false;
-        return !!JSON.parse(JSON.stringify(object));
+        try {
+            return !!JSON.parse(JSON.stringify(object));
+        } catch (error) {
+            return false;
+        }
     };
 
     const parsableString = (string: string): JSON | null => {
