@@ -24,7 +24,7 @@ export const MetadataEditorComponent: React.FC<IMetadataEditorComponentProps> = 
     const observableSelection: Observable<any> = props.globalState.onSelectionChangedObservable;
     const observerMetaPopup: Nullable<Observer<any>> = observableSelection.add(selectionUpdated, -1, false, null, false);
 
-    const startMetadataEditorPopup = (scene: Scene): void => {
+    const startMetadataEditorPopup = (): void => {
         Inspector._CreatePersistentPopup(
             {
                 props: {
@@ -33,18 +33,13 @@ export const MetadataEditorComponent: React.FC<IMetadataEditorComponentProps> = 
                     onClose: () => observableSelection.remove(observerMetaPopup),
                     size: initialWindowSize,
                 },
-                children: <MetadataEditorPopupComponent scene={scene} globalState={props.globalState} />,
+                children: <MetadataEditorPopupComponent />,
             },
             document.body
         );
     };
-    return <ButtonLineComponent label="Open Metadata Editor" onClick={() => startMetadataEditorPopup(props.scene)} />;
+    return <ButtonLineComponent label="Open Metadata Editor" onClick={() => startMetadataEditorPopup()} />;
 };
-
-interface IMetadataEditorPopupComponentProps {
-    scene: Scene;
-    globalState: GlobalState;
-}
 
 enum MetaDataTypes {
     UNDEFINED = "undefined",
@@ -52,7 +47,7 @@ enum MetaDataTypes {
     STRING = "string",
     JSON = "JSON",
 }
-const MetadataEditorPopupComponent: React.FC<IMetadataEditorPopupComponentProps> = (props: IMetadataEditorPopupComponentProps) => {
+const MetadataEditorPopupComponent: React.FC = () => {
     const [currentEntityUniqueId, setCurrentEntityUniqueId] = useState<string | null>(null);
     const [currentEntityId, setCurrentEntityId] = useState("");
     const [currentEntityName, setCurrentEntityName] = useState("");
@@ -60,7 +55,7 @@ const MetadataEditorPopupComponent: React.FC<IMetadataEditorPopupComponentProps>
     const [metadataPropType, setMetadataPropType] = useState<string>(MetaDataTypes.UNDEFINED);
     const [isValidJson, setIsValidJson] = useState(false);
     const [prettyJson, setPrettyJson] = useState(true);
-    const [jsonParseErrorMsg, setJsonParseErrorMsg] = useState<string | null>(null);
+    const [statusMessage, setStatusMessage] = useState<string | null>("ready to pick");
 
     const stringifyEntityType = () => {
         if (Object.prototype.hasOwnProperty.call(currentEntity, "metadata")) {
@@ -85,36 +80,58 @@ const MetadataEditorPopupComponent: React.FC<IMetadataEditorPopupComponentProps>
 
     const parsableString = (string: string): JSON | null => {
         try {
-            setJsonParseErrorMsg(null);
+            setStatusMessage(null);
             return JSON.parse(string);
         } catch (error) {
-            setJsonParseErrorMsg(error.message);
+            setStatusMessage("invalid JSON: " + error.message);
             return null;
         }
     };
 
-    const parseMetaObject = (validJson: boolean) => {
-        if (validJson) return JSON.stringify(currentEntity.metadata, undefined, prettyJson ? 2 : undefined);
-        if (isString(currentEntity.metadata)) return currentEntity.metadata;
-        return String(currentEntity.metadata);
+    const parseMetaObject = (validJson: boolean, metadata: any) => {
+        if (validJson) return JSON.stringify(metadata, undefined, prettyJson ? 2 : undefined);
+        if (isString(metadata)) return metadata;
+        return String(metadata);
     };
 
     const refreshSelected = () => {
         if (currentEntity) {
+            setStatusMessage("loaded entity");
             const validJson = parsableJson(currentEntity.metadata);
             setCurrentEntityUniqueId(currentEntity.uniqueId);
             setCurrentEntityId(currentEntity.id);
             setCurrentEntityName(currentEntity.name);
-            setCurrentEntityMetadata(parseMetaObject(validJson));
+            setCurrentEntityMetadata(parseMetaObject(validJson, currentEntity.metadata));
             setMetadataPropType(stringifyEntityType());
             setIsValidJson(validJson);
         } else {
+            setStatusMessage("could not find entity, please pick again");
             setCurrentEntityUniqueId(null);
             setCurrentEntityId("");
             setCurrentEntityName("");
             setCurrentEntityMetadata("");
             setMetadataPropType(MetaDataTypes.UNDEFINED);
             setIsValidJson(false);
+        }
+    };
+
+    const populateGltfExtras = () => {
+        if (isValidJson) {
+            try {
+                const parsedJson = parsableString(currentEntityMetadata) as any;
+                if (parsedJson) {
+                    if (Object.prototype.hasOwnProperty.call(parsedJson, "gltf")) {
+                        setStatusMessage("metadata.gltf property already exists");
+                    } else {
+                        parsedJson["gltf"] = {
+                            extras: {},
+                        };
+                        setCurrentEntityMetadata(parseMetaObject(isValidJson, parsedJson));
+                    }
+                }
+            } catch (error) {
+                setStatusMessage(error.message);
+            }
         }
     };
 
@@ -145,6 +162,7 @@ const MetadataEditorPopupComponent: React.FC<IMetadataEditorPopupComponentProps>
                     <CheckBoxLineComponent
                         label="Pretty JSON"
                         isSelected={() => prettyJson}
+                        disabled={!isValidJson}
                         onSelect={(value) => {
                             setPrettyJson(value);
                             /* Update textArea */
@@ -157,6 +175,7 @@ const MetadataEditorPopupComponent: React.FC<IMetadataEditorPopupComponentProps>
                         }}
                     />
                     <ButtonLineComponent label="Refresh from Picked Node" onClick={refreshSelected} />
+                    <ButtonLineComponent label="Populate glTF extras" onClick={populateGltfExtras} isDisabled={!isValidJson} />
                 </div>
             </div>
             <TextInputLineComponent
@@ -184,7 +203,7 @@ const MetadataEditorPopupComponent: React.FC<IMetadataEditorPopupComponentProps>
                 }}
             />
             <div className="type-label">{metadataPropType}</div>
-            <div className="type-error">{!isValidJson && <span>{`invalid JSON: ${jsonParseErrorMsg}`}</span>}</div>
+            <div className="type-status">{statusMessage}</div>
             <div id="footer">
                 <ButtonLineComponent
                     label={`Update metadata${currentEntityUniqueId ? " as " + metadataPropType : ""}`}
@@ -192,14 +211,17 @@ const MetadataEditorPopupComponent: React.FC<IMetadataEditorPopupComponentProps>
                         if (currentEntity) {
                             if (metadataPropType === MetaDataTypes.NULL) {
                                 currentEntity.metadata = null;
+                                setStatusMessage("metadata set to null");
                                 return;
                             }
                             if (metadataPropType === MetaDataTypes.UNDEFINED) {
                                 delete currentEntity.metadata;
+                                setStatusMessage("metadata set to undefined");
                                 return;
                             }
                             const parsedJson = parsableString(currentEntityMetadata);
                             currentEntity.metadata = parsedJson || currentEntityMetadata;
+                            setStatusMessage("metadata updated");
                         }
                     }}
                     isDisabled={!currentEntityUniqueId}
