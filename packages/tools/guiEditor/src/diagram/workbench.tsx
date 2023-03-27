@@ -312,7 +312,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             if (control.parent?.getClassName() === "Grid") {
                 const cellInfo = (control.parent as Grid).getChildCellInfo(control);
                 const [row, column] = cellInfo.split(":");
-                control.metadata = { ...control.metadata, "_cellInfo": {row, column} };
+                control.metadata = { ...control.metadata, _cellInfo: { row, column } };
             }
             const obj = {};
             control.serialize(obj);
@@ -354,11 +354,11 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
                 const newGuiNode = this.props.globalState.workbench.appendBlock(newSelection[0]);
                 if (newGuiNode.parent?.typeName === "Grid" && newGuiNode.metadata?._cellInfo) {
-                    const {row, column} = newGuiNode.metadata._cellInfo;
+                    const { row, column } = newGuiNode.metadata._cellInfo;
                     const gridParent = newGuiNode.parent as Grid;
                     gridParent.removeControl(newGuiNode);
                     gridParent.addControl(newGuiNode, parseInt(row), parseInt(column));
-                }                
+                }
                 this.props.globalState.setSelection([newGuiNode]);
 
                 return true;

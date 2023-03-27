@@ -125,7 +125,6 @@ export class CoordinateHelper {
             const parentSizes = CoordinateHelper.GetParentSizes(node);
             parentWidth = parentSizes.width;
             parentHeight = parentSizes.height;
-
         } else {
             parentWidth = size.width;
             parentHeight = size.height;

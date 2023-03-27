@@ -207,6 +207,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
                 {this.props.multilines && (
                     <>
                         <textarea
+                            className={this.props.disabled ? "disabled" : ""}
                             value={this.state.value}
                             onFocus={() => {
                                 if (this.props.lockObject) {
@@ -235,6 +236,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
                         className={`value${this.props.noUnderline === true ? " noUnderline" : ""}${this.props.arrows ? " hasArrows" : ""}${this.state.dragging ? " dragging" : ""}`}
                     >
                         <input
+                            className={this.props.disabled ? "disabled" : ""}
                             value={value}
                             onBlur={(evt) => {
                                 if (this.props.lockObject) {

@@ -59,7 +59,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                     <div className="ge-grid-divider">
                         <TextInputLineComponent
                             lockObject={this.props.lockObject}
-                            key={`rText${i}`}
+                            key={`rText${i}-${this.state.removingRow}`}
                             label=""
                             icon={gridRowIconDark}
                             iconLabel={`Row ${i}`}
@@ -126,7 +126,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                     <div className="ge-grid-divider">
                         <TextInputLineComponent
                             lockObject={this.props.lockObject}
-                            key={`ctext${i}`}
+                            key={`ctext${i}-${this.state.removingColumn}`}
                             label=""
                             icon={gridColumnIconDark}
                             iconLabel={`Column ${i}`}

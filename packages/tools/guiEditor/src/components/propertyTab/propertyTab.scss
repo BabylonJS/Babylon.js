@@ -320,6 +320,7 @@
         }
 
         .disabled {
+            color: var(--backgroundGrey);
             background-color: var(--disabledBackground);
         }
 
@@ -391,6 +392,7 @@
         grid-template-columns: 1fr 120px;
 
         .disabled {
+            color: var(--backgroundGrey);
             background-color: var(--disabledBackground);
         }
 
