@@ -19,7 +19,7 @@ import { KeyboardEventTypes } from "core/Events/keyboardEvents";
 import type { Line } from "gui/2D/controls/line";
 import type { Grid } from "gui/2D/controls/grid";
 import { Tools } from "../tools";
-import type { Observer } from "core/Misc/observable";
+import type { Observable, Observer } from "core/Misc/observable";
 import type { ISize } from "core/Maths/math";
 import { Texture } from "core/Materials/Textures/texture";
 import type { DimensionProperties } from "./coordinateHelper";
@@ -31,6 +31,7 @@ import type { StackPanel } from "gui/2D/controls/stackPanel";
 import type { TransformNode } from "core/Meshes/transformNode";
 import { RandomGUID } from "core/Misc/guid";
 import { DataStorage } from "core/Misc/dataStorage";
+import type { Vector2WithInfo } from "gui/2D/math2D";
 
 export interface IWorkbenchComponentProps {
     globalState: GlobalState;
@@ -605,6 +606,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                     controlToLinkedMesh.set(control.metadata.editorUniqueId, control.linkedMesh);
                 }
             });
+            const controlToPointerUp = new Map<string, Observable<Vector2WithInfo>>();
+            liveRoot.getDescendants().forEach((control) => {
+                if (control.onPointerUpObservable.hasObservers()) {
+                    controlToPointerUp.set(control.metadata.editorUniqueId, control.onPointerUpObservable);
+                }
+            });
             liveRoot.clearControls();
             const originalToCloneMap = new Map<Control, Control>();
             const updatedRootChildren = this.trueRootContainer.children.slice(0);
@@ -620,6 +627,14 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                     const linkedMesh = controlToLinkedMesh.get(control.metadata.editorUniqueId);
                     if (linkedMesh) {
                         control.linkWithMesh(linkedMesh);
+                    }
+                }
+            });
+            liveRoot.getDescendants().forEach((control) => {
+                if (control.metadata && controlToPointerUp.has(control.metadata.editorUniqueId)) {
+                    const pointerUp = controlToPointerUp.get(control.metadata.editorUniqueId);
+                    if (pointerUp) {
+                        control.onPointerUpObservable = pointerUp;
                     }
                 }
             });
