@@ -1425,8 +1425,9 @@ export class _Exporter {
                 meshPrimitive.targets = [];
             }
             const target: { [attribute: string]: number } = {};
+            const mesh = babylonSubMesh.getMesh() as Mesh;
             if (babylonMorphTarget.hasNormals) {
-                const vertexNormals = (babylonSubMesh.getMesh() as Mesh).getVerticesData(VertexBuffer.NormalKind, undefined, undefined, true)!;
+                const vertexNormals = mesh.getVerticesData(VertexBuffer.NormalKind, undefined, undefined, true)!;
                 const morphNormals = babylonMorphTarget.getNormals()!;
                 const count = babylonSubMesh.verticesCount;
                 const byteStride = 12; // 3 x 4 byte floats
@@ -1461,7 +1462,7 @@ export class _Exporter {
                 );
             }
             if (babylonMorphTarget.hasPositions) {
-                const vertexPositions = (babylonSubMesh.getMesh() as Mesh).getVerticesData(VertexBuffer.PositionKind, undefined, undefined, true)!;
+                const vertexPositions = mesh.getVerticesData(VertexBuffer.PositionKind, undefined, undefined, true)!;
                 const morphPositions = babylonMorphTarget.getPositions()!;
                 const count = babylonSubMesh.verticesCount;
                 const byteStride = 12; // 3 x 4 byte floats
@@ -1500,7 +1501,7 @@ export class _Exporter {
                 accessor.max = minMax.max!.asArray();
             }
             if (babylonMorphTarget.hasTangents) {
-                const vertexTangents = (babylonSubMesh.getMesh() as Mesh).getVerticesData(VertexBuffer.TangentKind, undefined, undefined, true)!;
+                const vertexTangents = mesh.getVerticesData(VertexBuffer.TangentKind, undefined, undefined, true)!;
                 const morphTangents = babylonMorphTarget.getTangents()!;
                 const count = babylonSubMesh.verticesCount;
                 const byteStride = 12; // 3 x 4 byte floats
