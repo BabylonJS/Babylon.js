@@ -1357,8 +1357,8 @@ export class _Exporter {
     }
 
     private _getVertexBufferFromMesh(attributeKind: string, bufferMesh: Mesh): Nullable<VertexBuffer> {
-        if (bufferMesh.isVerticesDataPresent(attributeKind)) {
-            const vertexBuffer = bufferMesh.getVertexBuffer(attributeKind);
+        if (bufferMesh.isVerticesDataPresent(attributeKind, true)) {
+            const vertexBuffer = bufferMesh.getVertexBuffer(attributeKind, true);
             if (vertexBuffer) {
                 return vertexBuffer;
             }
@@ -1391,8 +1391,8 @@ export class _Exporter {
                 : null;
 
         if (bufferMesh) {
-            const vertexBuffer = bufferMesh.getVertexBuffer(kind);
-            const vertexData = bufferMesh.getVerticesData(kind);
+            const vertexBuffer = bufferMesh.getVertexBuffer(kind, true);
+            const vertexData = bufferMesh.getVerticesData(kind, undefined, undefined, true);
 
             if (vertexBuffer && vertexData) {
                 const typeByteLength = VertexBuffer.GetTypeByteLength(attributeComponentKind);
@@ -1426,7 +1426,7 @@ export class _Exporter {
             }
             const target: { [attribute: string]: number } = {};
             if (babylonMorphTarget.hasNormals) {
-                const vertexNormals = babylonSubMesh.getMesh().getVerticesData(VertexBuffer.NormalKind)!;
+                const vertexNormals = (babylonSubMesh.getMesh() as Mesh).getVerticesData(VertexBuffer.NormalKind, undefined, undefined, true)!;
                 const morphNormals = babylonMorphTarget.getNormals()!;
                 const count = babylonSubMesh.verticesCount;
                 const byteStride = 12; // 3 x 4 byte floats
@@ -1461,7 +1461,7 @@ export class _Exporter {
                 );
             }
             if (babylonMorphTarget.hasPositions) {
-                const vertexPositions = babylonSubMesh.getMesh().getVerticesData(VertexBuffer.PositionKind)!;
+                const vertexPositions = (babylonSubMesh.getMesh() as Mesh).getVerticesData(VertexBuffer.PositionKind, undefined, undefined, true)!;
                 const morphPositions = babylonMorphTarget.getPositions()!;
                 const count = babylonSubMesh.verticesCount;
                 const byteStride = 12; // 3 x 4 byte floats
@@ -1500,7 +1500,7 @@ export class _Exporter {
                 accessor.max = minMax.max!.asArray();
             }
             if (babylonMorphTarget.hasTangents) {
-                const vertexTangents = babylonSubMesh.getMesh().getVerticesData(VertexBuffer.TangentKind)!;
+                const vertexTangents = (babylonSubMesh.getMesh() as Mesh).getVerticesData(VertexBuffer.TangentKind, undefined, undefined, true)!;
                 const morphTangents = babylonMorphTarget.getTangents()!;
                 const count = babylonSubMesh.verticesCount;
                 const byteStride = 12; // 3 x 4 byte floats
@@ -1686,7 +1686,7 @@ export class _Exporter {
             for (const attribute of attributeData) {
                 const attributeKind = attribute.kind;
                 const attributeComponentKind = attribute.accessorComponentType;
-                if (bufferMesh.isVerticesDataPresent(attributeKind)) {
+                if (bufferMesh.isVerticesDataPresent(attributeKind, true)) {
                     const vertexBuffer = this._getVertexBufferFromMesh(attributeKind, bufferMesh);
                     attribute.byteStride = vertexBuffer
                         ? vertexBuffer.getSize() * VertexBuffer.GetTypeByteLength(attribute.accessorComponentType)
@@ -1757,7 +1757,7 @@ export class _Exporter {
                                 continue;
                             }
                         }
-                        const vertexData = bufferMesh.getVerticesData(attributeKind);
+                        const vertexData = bufferMesh.getVerticesData(attributeKind, undefined, undefined, true);
                         if (vertexData) {
                             const vertexBuffer = this._getVertexBufferFromMesh(attributeKind, bufferMesh);
                             if (vertexBuffer) {
@@ -1821,7 +1821,7 @@ export class _Exporter {
                                 this._reorderIndicesBasedOnPrimitiveMode(submesh, primitiveMode, babylonIndices, byteOffset, binaryWriter);
                             } else {
                                 for (const attribute of attributeData) {
-                                    const vertexData = bufferMesh.getVerticesData(attribute.kind);
+                                    const vertexData = bufferMesh.getVerticesData(attribute.kind, undefined, undefined, true);
                                     if (vertexData) {
                                         let byteOffset = this._bufferViews[vertexAttributeBufferViews[attribute.kind]].byteOffset;
                                         if (!byteOffset) {
