@@ -40,6 +40,10 @@ export interface IMultiRenderTargetOptions {
      */
     generateDepthTexture?: boolean;
     /**
+     * Define the internal format of the buffer in the RTT (RED, RG, RGB, RGBA (default), ALPHA...) of all the draw buffers we want to create
+     */
+    formats?: number[];
+    /**
      * Define depth texture format to use
      */
     depthTextureFormat?: number;
@@ -178,11 +182,12 @@ export class MultiRenderTarget extends RenderTargetTexture {
         const types: number[] = [];
         const samplingModes: number[] = [];
         const useSRGBBuffers: boolean[] = [];
+        const formats: number[] = [];
         const targetTypes: number[] = [];
         const faceIndex: number[] = [];
         const layerIndex: number[] = [];
         const layerCounts: number[] = [];
-        this._initTypes(count, types, samplingModes, useSRGBBuffers, targetTypes, faceIndex, layerIndex, layerCounts, options);
+        this._initTypes(count, types, samplingModes, useSRGBBuffers, formats, targetTypes, faceIndex, layerIndex, layerCounts, options);
 
         const generateDepthBuffer = !options || options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
         const generateStencilBuffer = !options || options.generateStencilBuffer === undefined ? false : options.generateStencilBuffer;
@@ -198,6 +203,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
             types: types,
             textureCount: count,
             useSRGBBuffers: useSRGBBuffers,
+            formats: formats,
             targetTypes: targetTypes,
             faceIndex: faceIndex,
             layerIndex: layerIndex,
@@ -218,6 +224,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
         types: number[],
         samplingModes: number[],
         useSRGBBuffers: boolean[],
+        formats: number[], 
         targets: number[],
         faceIndex: number[],
         layerIndex: number[],
@@ -241,6 +248,12 @@ export class MultiRenderTarget extends RenderTargetTexture {
                 useSRGBBuffers.push(options.useSRGBBuffers[i]);
             } else {
                 useSRGBBuffers.push(false);
+            }
+
+            if (options && options.formats && options.formats[i] !== undefined) {
+                formats.push(options.formats[i]);
+            } else {
+                formats.push(Constants.TEXTUREFORMAT_RGBA);
             }
 
             if (options && options.targetTypes && options.targetTypes[i] !== undefined) {
