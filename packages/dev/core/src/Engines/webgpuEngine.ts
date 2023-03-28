@@ -635,6 +635,9 @@ export class WebGPUEngine extends Engine {
 
                     if (!this._doNotHandleContextLost) {
                         this._device.lost?.then((info) => {
+                            if (this._isDisposed) {
+                                return;
+                            }
                             this._contextWasLost = true;
                             Logger.Warn("WebGPU context lost. " + info);
                             this.onContextLostObservable.notifyObservers(this);
@@ -3373,8 +3376,10 @@ export class WebGPUEngine extends Engine {
      * Dispose and release all associated resources
      */
     public dispose(): void {
+        this._isDisposed = true;
         this._mainTexture?.destroy();
         this._depthTexture?.destroy();
+        this._device.destroy();
         super.dispose();
     }
 

@@ -266,7 +266,7 @@ export class ThinEngine {
         return this._webGLVersion;
     }
 
-    private _isDisposed = false;
+    protected _isDisposed = false;
 
     public get isDisposed(): boolean {
         return this._isDisposed;
