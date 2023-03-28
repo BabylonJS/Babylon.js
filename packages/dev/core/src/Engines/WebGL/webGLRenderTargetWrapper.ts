@@ -107,10 +107,8 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
             // Default behavior (WebGL)
             const gl = this._context;
 
-            faceIndexOrLayer = faceIndexOrLayer ?? -1;
-
             const attachment = (<any>gl)["COLOR_ATTACHMENT" + attachmentIndex + "_WEBGL"];
-            const target = faceIndexOrLayer !== -1 ? gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndexOrLayer : gl.TEXTURE_2D;
+            const target = faceIndexOrLayer ? gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndexOrLayer : gl.TEXTURE_2D;
 
             gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, target, texture._hardwareTexture.underlyingResource, lodLevel);
         }
@@ -165,7 +163,7 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
      * @param layer The layer of the texture to be set (make negative to not modify)
      * @param face The face of the texture to be set (make negative to not modify)
      */
-    public setLayerAndFaceIndex(index: number = 0, layer: number = -1, face: number = -1): void {
+    public setLayerAndFaceIndex(index: number = 0, layer?: number, face?: number): void {
         super.setLayerAndFaceIndex(index, layer, face);
 
         if (!this.textures || !this.layerIndices || !this.faceIndices) {

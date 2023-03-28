@@ -8,7 +8,7 @@ export class WebGLHardwareTexture implements HardwareTextureWrapper {
 
     // There can be multiple buffers for a single WebGL texture because different layers of a 2DArrayTexture / 3DTexture
     // or different faces of a cube texture can be bound to different render targets at the same time.
-    private _MSAARenderBuffer: Nullable<WebGLRenderbuffer[]> = null;
+    private _MSAARenderBuffers: Nullable<WebGLRenderbuffer[]> = null;
 
     public get underlyingResource(): Nullable<WebGLTexture> {
         return this._webGLTexture;
@@ -33,22 +33,22 @@ export class WebGLHardwareTexture implements HardwareTextureWrapper {
 
     public reset() {
         this._webGLTexture = null as any;
-        this._MSAARenderBuffer = null;
+        this._MSAARenderBuffers = null;
     }
 
     public addMSAARenderBuffer(buffer: WebGLRenderbuffer) {
-        if (!this._MSAARenderBuffer) {
-            this._MSAARenderBuffer = [];
+        if (!this._MSAARenderBuffers) {
+            this._MSAARenderBuffers = [];
         }
-        this._MSAARenderBuffer.push(buffer);
+        this._MSAARenderBuffers.push(buffer);
     }
 
     public releaseMSAARenderBuffers() {
-        if (this._MSAARenderBuffer) {
-            for (const buffer of this._MSAARenderBuffer) {
+        if (this._MSAARenderBuffers) {
+            for (const buffer of this._MSAARenderBuffers) {
                 this._context.deleteRenderbuffer(buffer);
             }
-            this._MSAARenderBuffer = null;
+            this._MSAARenderBuffers = null;
         }
     }
 

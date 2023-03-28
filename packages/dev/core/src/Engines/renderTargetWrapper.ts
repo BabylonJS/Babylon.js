@@ -221,7 +221,7 @@ export class RenderTargetWrapper {
      * @param layer The layer of the texture to be set (make negative to not modify)
      * @param face The face of the texture to be set (make negative to not modify)
      */
-    public setLayerAndFaceIndex(index: number = 0, layer: number = -1, face: number = -1): void {
+    public setLayerAndFaceIndex(index: number = 0, layer?: number, face?: number): void {
         if (!this._layerIndices) {
             this._layerIndices = [];
         }
@@ -229,10 +229,10 @@ export class RenderTargetWrapper {
             this._faceIndices = [];
         }
 
-        if (layer >= 0) {
+        if (layer && layer >= 0) {
             this._layerIndices[index] = layer;
         }
-        if (face >= 0) {
+        if (face && face >= 0) {
             this._faceIndices[index] = face;
         }
     }
