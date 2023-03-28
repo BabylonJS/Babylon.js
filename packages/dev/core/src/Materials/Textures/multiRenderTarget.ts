@@ -504,6 +504,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
         const types: number[] = [];
         const samplingModes: number[] = [];
         const useSRGBBuffers: boolean[] = [];
+        const formats: number[] = [];
         const targetTypes: number[] = [];
         const faceIndex: number[] = [];
         const layerIndex: number[] = [];
@@ -511,7 +512,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
 
         this._textureNames = textureNames;
 
-        this._initTypes(count, types, samplingModes, useSRGBBuffers, targetTypes, faceIndex, layerIndex, layerCounts, options);
+        this._initTypes(count, types, samplingModes, useSRGBBuffers, formats, targetTypes, faceIndex, layerIndex, layerCounts, options);
         this._multiRenderTargetOptions.types = types;
         this._multiRenderTargetOptions.samplingModes = samplingModes;
         this._multiRenderTargetOptions.useSRGBBuffers = useSRGBBuffers;
