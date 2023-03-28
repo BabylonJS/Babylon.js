@@ -591,6 +591,11 @@ export class UniformBuffer {
         return this._name;
     }
 
+    /** Gets the current effect */
+    public get currentEffect(): Nullable<Effect> {
+        return this._currentEffect;
+    }
+
     private _buffersEqual(buf1: Float32Array, buf2: Float32Array): boolean {
         for (let i = 0; i < buf1.length; ++i) {
             if (buf1[i] !== buf2[i]) {
