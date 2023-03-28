@@ -282,9 +282,11 @@ export class MaterialPluginManager {
                     if (uniforms) {
                         if (uniforms.ubo) {
                             for (const uniform of uniforms.ubo) {
-                                const arraySize = uniform.arraySize ?? 0;
-                                eventData.ubo.addUniform(uniform.name, uniform.size, arraySize);
-                                this._uboDeclaration += `${uniform.type} ${uniform.name}${arraySize > 0 ? `[${arraySize}]` : ""};\r\n`;
+                                if (uniform.size && uniform.type) {
+                                    const arraySize = uniform.arraySize ?? 0;
+                                    eventData.ubo.addUniform(uniform.name, uniform.size, arraySize);
+                                    this._uboDeclaration += `${uniform.type} ${uniform.name}${arraySize > 0 ? `[${arraySize}]` : ""};\r\n`;
+                                }
                                 this._uniformList.push(uniform.name);
                             }
                         }
