@@ -906,7 +906,7 @@ export class ThinEngine {
                 canvas.addEventListener("webglcontextlost", this._onContextLost, false);
                 canvas.addEventListener("webglcontextrestored", this._onContextRestored, false);
 
-                options.powerPreference = "high-performance";
+                options.powerPreference = options.powerPreference || "high-performance";
             }
 
             // Detect if we are running on a faulty buggy desktop OS.
