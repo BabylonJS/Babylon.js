@@ -24,6 +24,8 @@ export class FilesInput {
         return true;
     };
 
+    public displyLoadingUI: boolean = true;
+
     /**
      * Function used when loading the scene file
      * @param sceneFile
@@ -298,7 +300,9 @@ export class FilesInput {
             }
 
             SceneLoader.ShowLoadingScreen = false;
-            this._engine.displayLoadingUI();
+            if (this.displyLoadingUI) {
+                this._engine.displayLoadingUI();
+            }
 
             this.loadAsync(this._sceneFileToLoad, this._progressCallback)
                 .then((scene) => {
@@ -312,20 +316,26 @@ export class FilesInput {
 
                         // Wait for textures and shaders to be ready
                         this._currentScene.executeWhenReady(() => {
-                            this._engine.hideLoadingUI();
+                            if (this.displyLoadingUI) {
+                                this._engine.hideLoadingUI();
+                            }
                             this._engine.runRenderLoop(() => {
                                 this._renderFunction();
                             });
                         });
                     } else {
-                        this._engine.hideLoadingUI();
+                        if (this.displyLoadingUI) {
+                            this._engine.hideLoadingUI();
+                        }
                     }
                     if (this._sceneLoadedCallback && this._currentScene) {
                         this._sceneLoadedCallback(this._sceneFileToLoad, this._currentScene);
                     }
                 })
                 .catch((error) => {
-                    this._engine.hideLoadingUI();
+                    if (this.displyLoadingUI) {
+                        this._engine.hideLoadingUI();
+                    }
                     if (this._errorCallback) {
                         this._errorCallback(this._sceneFileToLoad, this._currentScene, error.message);
                     }
