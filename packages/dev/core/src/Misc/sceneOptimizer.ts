@@ -385,6 +385,10 @@ export class MergeMeshesOptimization extends SceneOptimization {
             return false;
         }
 
+        if (mesh.getTotalVertices() === 0) {
+            return false;
+        }
+
         return true;
     };
 
