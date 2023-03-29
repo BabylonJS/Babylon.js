@@ -364,7 +364,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     public get hasThinInstances(): boolean {
-        return (this._thinInstanceDataStorage.instancesCount ?? 0) > 0;
+        return (this._thinInstanceDataStorage?.instancesCount ?? 0) > 0;
     }
 
     // Members
@@ -422,10 +422,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /** @internal */
-    public _instanceDataStorage = new _InstanceDataStorage();
+    public _instanceDataStorage: Nullable<_InstanceDataStorage> = new _InstanceDataStorage();
 
     /** @internal */
-    public _thinInstanceDataStorage = new _ThinInstanceDataStorage();
+    public _thinInstanceDataStorage: Nullable<_ThinInstanceDataStorage> = new _ThinInstanceDataStorage();
 
     /** @internal */
     public _shouldGenerateFlatShading: boolean = false;
@@ -477,39 +477,39 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /** Gets the array buffer used to store the instanced buffer used for instances' world matrices */
     public get worldMatrixInstancedBuffer() {
-        return this._instanceDataStorage.instancesData;
+        return this._instanceDataStorage!.instancesData;
     }
 
     /** Gets the array buffer used to store the instanced buffer used for instances' previous world matrices */
     public get previousWorldMatrixInstancedBuffer() {
-        return this._instanceDataStorage.instancesPreviousData;
+        return this._instanceDataStorage!.instancesPreviousData;
     }
 
     /** Gets or sets a boolean indicating that the update of the instance buffer of the world matrices is manual */
     public get manualUpdateOfWorldMatrixInstancedBuffer() {
-        return this._instanceDataStorage.manualUpdate;
+        return this._instanceDataStorage!.manualUpdate;
     }
 
     public set manualUpdateOfWorldMatrixInstancedBuffer(value: boolean) {
-        this._instanceDataStorage.manualUpdate = value;
+        this._instanceDataStorage!.manualUpdate = value;
     }
 
     /** Gets or sets a boolean indicating that the update of the instance buffer of the world matrices is manual */
     public get manualUpdateOfPreviousWorldMatrixInstancedBuffer() {
-        return this._instanceDataStorage.previousManualUpdate;
+        return this._instanceDataStorage!.previousManualUpdate;
     }
 
     public set manualUpdateOfPreviousWorldMatrixInstancedBuffer(value: boolean) {
-        this._instanceDataStorage.previousManualUpdate = value;
+        this._instanceDataStorage!.previousManualUpdate = value;
     }
 
     /** Gets or sets a boolean indicating that the update of the instance buffer of the world matrices must be performed in all cases (and notably even in frozen mode) */
     public get forceWorldMatrixInstancedBufferUpdate() {
-        return this._instanceDataStorage.forceMatrixUpdates;
+        return this._instanceDataStorage!.forceMatrixUpdates;
     }
 
     public set forceWorldMatrixInstancedBufferUpdate(value: boolean) {
-        this._instanceDataStorage.forceMatrixUpdates = value;
+        this._instanceDataStorage!.forceMatrixUpdates = value;
     }
 
     /**
@@ -709,7 +709,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this.parent = parent;
         }
 
-        this._instanceDataStorage.hardwareInstancedRendering = this.getEngine().getCaps().instancedArrays;
+        this._instanceDataStorage!.hardwareInstancedRendering = this.getEngine().getCaps().instancedArrays;
 
         this._internalMeshDataInfo._onMeshReadyObserverAdded = (observer: Observer<Mesh>) => {
             // only notify once! then unregister the observer
@@ -1311,7 +1311,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Sets a value overriding the instance count. Only applicable when custom instanced InterleavedVertexBuffer are used rather than InstancedMeshs
      */
     public set overridenInstanceCount(count: number) {
-        this._instanceDataStorage.overridenInstanceCount = count;
+        this._instanceDataStorage!.overridenInstanceCount = count;
     }
 
     // Methods
@@ -1324,7 +1324,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         internalDataInfo._preActivateId = sceneRenderId;
-        this._instanceDataStorage.visibleInstances = null;
+        if (this._instanceDataStorage) {
+            this._instanceDataStorage.visibleInstances = null;
+        }
         return this;
     }
 
@@ -1332,7 +1334,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @internal
      */
     public _preActivateForIntermediateRendering(renderId: number): Mesh {
-        if (this._instanceDataStorage.visibleInstances) {
+        if (this._instanceDataStorage && this._instanceDataStorage.visibleInstances) {
             this._instanceDataStorage.visibleInstances.intermediateDefaultRenderId = renderId;
         }
         return this;
@@ -1342,14 +1344,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @internal
      */
     public _registerInstanceForRenderId(instance: InstancedMesh, renderId: number): Mesh {
-        if (!this._instanceDataStorage.visibleInstances) {
+        if (this._instanceDataStorage && !this._instanceDataStorage.visibleInstances) {
             this._instanceDataStorage.visibleInstances = {
                 defaultRenderId: renderId,
                 selfDefaultRenderId: this._renderId,
             };
         }
 
-        if (!this._instanceDataStorage.visibleInstances[renderId]) {
+        if (this._instanceDataStorage && !this._instanceDataStorage.visibleInstances[renderId]) {
             if (this._instanceDataStorage.previousRenderId !== undefined && this._instanceDataStorage.isFrozen) {
                 this._instanceDataStorage.visibleInstances[this._instanceDataStorage.previousRenderId] = null;
             }
@@ -1357,7 +1359,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this._instanceDataStorage.visibleInstances[renderId] = new Array<InstancedMesh>();
         }
 
-        this._instanceDataStorage.visibleInstances[renderId].push(instance);
+        this._instanceDataStorage?.visibleInstances[renderId].push(instance);
         return this;
     }
 
@@ -1823,6 +1825,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @internal
      */
     public _getInstancesRenderList(subMeshId: number, isReplacementMode: boolean = false): _InstancesBatch {
+        if (!this._instanceDataStorage) {
+            // This will only happen if the mesh is used after it is disposed
+            throw new Error("No instance data storage");
+        }
         if (this._instanceDataStorage.isFrozen) {
             if (isReplacementMode) {
                 this._instanceDataStorage.batchCacheReplacementModeInFrozenMode.hardwareInstancedRendering[subMeshId] = false;
@@ -1867,6 +1873,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @internal
      */
     public _renderWithInstances(subMesh: SubMesh, fillMode: number, batch: _InstancesBatch, effect: Effect, engine: Engine): Mesh {
+        if (!this._instanceDataStorage) {
+            // This will only happen if the mesh is used after it is disposed
+            throw new Error("No instance data storage");
+        }
         const visibleInstances = batch.visibleInstances[subMesh._id];
         const visibleInstanceCount = visibleInstances ? visibleInstances.length : 0;
 
@@ -2042,7 +2052,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Write current matrices as previous matrices
         // Default behaviour when previous matrices are not specified explicitly
         // Will break if instances number/order changes
-        if (this._scene.needsPreviousWorldMatrices && !this._thinInstanceDataStorage.previousMatrixData && this._thinInstanceDataStorage.matrixData) {
+        if (
+            this._thinInstanceDataStorage &&
+            this._scene.needsPreviousWorldMatrices &&
+            !this._thinInstanceDataStorage.previousMatrixData &&
+            this._thinInstanceDataStorage.matrixData
+        ) {
             if (!this._thinInstanceDataStorage.previousMatrixBuffer) {
                 this._thinInstanceDataStorage.previousMatrixBuffer = this._thinInstanceCreateMatrixBuffer("previousWorld", this._thinInstanceDataStorage.matrixData, false);
             } else {
@@ -2097,7 +2112,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 }
                 instanceCount++;
 
-                this._draw(subMesh, fillMode, this._instanceDataStorage.overridenInstanceCount);
+                this._draw(subMesh, fillMode, this._instanceDataStorage?.overridenInstanceCount);
             }
 
             const visibleInstancesForSubMesh = batch.visibleInstances[subMesh._id];
@@ -2130,7 +2145,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @internal
      */
     public _rebuild(dispose = false): void {
-        if (this._instanceDataStorage.instancesBuffer) {
+        if (this._instanceDataStorage?.instancesBuffer) {
             // Dispose instance buffer to be recreated in _renderWithInstances when rendered
             if (dispose) {
                 this._instanceDataStorage.instancesBuffer.dispose();
@@ -2168,13 +2183,17 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         this._internalMeshDataInfo._effectiveMaterial = null;
-        this._instanceDataStorage.isFrozen = true;
+        if (this._instanceDataStorage) {
+            this._instanceDataStorage.isFrozen = true;
+        }
     }
 
     /** @internal */
     public _unFreeze() {
-        this._instanceDataStorage.isFrozen = false;
-        this._instanceDataStorage.previousBatch = null;
+        if (this._instanceDataStorage) {
+            this._instanceDataStorage.isFrozen = false;
+            this._instanceDataStorage.previousBatch = null;
+        }
     }
 
     /**
@@ -2240,7 +2259,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Material
-        if (!instanceDataStorage.isFrozen || !this._internalMeshDataInfo._effectiveMaterial || this._internalMeshDataInfo._effectiveMaterial !== material) {
+        if (
+            (instanceDataStorage && !instanceDataStorage.isFrozen) ||
+            !this._internalMeshDataInfo._effectiveMaterial ||
+            this._internalMeshDataInfo._effectiveMaterial !== material
+        ) {
             if (material._storeEffectOnSubMeshes) {
                 if (!material.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
                     if (oldCamera) {
@@ -2299,7 +2322,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         let sideOrientation: Nullable<number>;
 
-        if (!instanceDataStorage.isFrozen && (this._internalMeshDataInfo._effectiveMaterial.backFaceCulling || this.overrideMaterialSideOrientation !== null)) {
+        if (
+            instanceDataStorage &&
+            !instanceDataStorage.isFrozen &&
+            (this._internalMeshDataInfo._effectiveMaterial.backFaceCulling || this.overrideMaterialSideOrientation !== null)
+        ) {
             const mainDeterminant = effectiveMesh._getWorldMatrixDeterminant();
             sideOrientation = this.overrideMaterialSideOrientation;
             if (sideOrientation == null) {
@@ -2310,7 +2337,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
             instanceDataStorage.sideOrientation = sideOrientation!;
         } else {
-            sideOrientation = instanceDataStorage.sideOrientation;
+            sideOrientation = instanceDataStorage?.sideOrientation ?? null;
         }
 
         const reverse = this._internalMeshDataInfo._effectiveMaterial._preBind(drawWrapper, sideOrientation);
@@ -2372,7 +2399,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             scene.updateTransformMatrix(true);
         }
 
-        if (scene.performancePriority === ScenePerformancePriority.Aggressive && !instanceDataStorage.isFrozen) {
+        if (scene.performancePriority === ScenePerformancePriority.Aggressive && instanceDataStorage && !instanceDataStorage.isFrozen) {
             this._freeze();
         }
 
@@ -2832,6 +2859,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         internalDataInfo._source = null;
+        this._instanceDataStorage = null;
+        this._thinInstanceDataStorage = null;
 
         // Instances
         this._disposeInstanceSpecificData();
@@ -3757,7 +3786,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Thin instances
-        if (this._thinInstanceDataStorage.instancesCount && this._thinInstanceDataStorage.matrixData) {
+        if (this._thinInstanceDataStorage && this._thinInstanceDataStorage.instancesCount && this._thinInstanceDataStorage.matrixData) {
             serializationObject.thinInstances = {
                 instancesCount: this._thinInstanceDataStorage.instancesCount,
                 matrixData: Array.from(this._thinInstanceDataStorage.matrixData),
@@ -4240,14 +4269,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             const thinInstances = parsedMesh.thinInstances;
 
             mesh.thinInstanceEnablePicking = !!thinInstances.enablePicking;
+            if (mesh._thinInstanceDataStorage) {
+                if (thinInstances.matrixData) {
+                    mesh.thinInstanceSetBuffer("matrix", new Float32Array(thinInstances.matrixData), 16, false);
 
-            if (thinInstances.matrixData) {
-                mesh.thinInstanceSetBuffer("matrix", new Float32Array(thinInstances.matrixData), 16, false);
-
-                mesh._thinInstanceDataStorage.matrixBufferSize = thinInstances.matrixBufferSize;
-                mesh._thinInstanceDataStorage.instancesCount = thinInstances.instancesCount;
-            } else {
-                mesh._thinInstanceDataStorage.matrixBufferSize = thinInstances.matrixBufferSize;
+                    mesh._thinInstanceDataStorage.matrixBufferSize = thinInstances.matrixBufferSize;
+                    mesh._thinInstanceDataStorage.instancesCount = thinInstances.instancesCount;
+                } else {
+                    mesh._thinInstanceDataStorage.matrixBufferSize = thinInstances.matrixBufferSize;
+                }
             }
 
             if (parsedMesh.thinInstances.userThinInstance) {
