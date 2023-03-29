@@ -2832,6 +2832,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         internalDataInfo._source = null;
+        this._instanceDataStorage.visibleInstances = {};
 
         // Instances
         this._disposeInstanceSpecificData();
