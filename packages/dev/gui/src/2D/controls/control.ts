@@ -1822,7 +1822,7 @@ export class Control implements IAnimatable {
     }
 
     protected _evaluateClippingState(parentMeasure: Measure) {
-        // Since transformMatrix is used here, we need to have it freshly computed 
+        // Since transformMatrix is used here, we need to have it freshly computed
         this._transform();
         this._currentMeasure.transformToRef(this._transformMatrix, this._evaluatedMeasure);
         if (this.parent && this.parent.clipChildren) {
