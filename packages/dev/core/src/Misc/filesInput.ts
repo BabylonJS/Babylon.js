@@ -50,7 +50,7 @@ export class FilesInput {
      * Creates a new FilesInput
      * @param engine defines the rendering engine
      * @param scene defines the hosting scene
-     * @param sceneLoadedCallback callback called when scene is loaded
+     * @param sceneLoadedCallback callback called when scene (files provided) is loaded
      * @param progressCallback callback called to track progress
      * @param additionalRenderLoopLogicCallback callback called to add user logic to the rendering loop
      * @param textureLoadingCallback callback called when a texture is loading
@@ -288,11 +288,13 @@ export class FilesInput {
     public reload() {
         // If a scene file has been provided
         if (this._sceneFileToLoad) {
-            if (this._currentScene) {
-                if (Logger.errorsCount > 0) {
-                    Logger.ClearLogCache();
+            if (!this.useAppend) {
+                if (this._currentScene) {
+                    if (Logger.errorsCount > 0) {
+                        Logger.ClearLogCache();
+                    }
+                    this._engine.stopRenderLoop();
                 }
-                this._engine.stopRenderLoop();
             }
 
             SceneLoader.ShowLoadingScreen = false;
@@ -315,6 +317,8 @@ export class FilesInput {
                                 this._renderFunction();
                             });
                         });
+                    } else {
+                        this._engine.hideLoadingUI();
                     }
                     if (this._sceneLoadedCallback && this._currentScene) {
                         this._sceneLoadedCallback(this._sceneFileToLoad, this._currentScene);
