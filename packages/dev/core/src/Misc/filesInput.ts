@@ -30,7 +30,7 @@ export class FilesInput {
      * @param onProgress
      */
     public loadAsync: (sceneFile: File, onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void>) => Promise<Scene> = (sceneFile, onProgress) =>
-        SceneLoader.LoadAsync("file:", sceneFile, this._engine, onProgress);
+        this.useAppend ? SceneLoader.AppendAsync("file:", sceneFile, this._currentScene, onProgress) : SceneLoader.LoadAsync("file:", sceneFile, this._engine, onProgress);
 
     private _engine: Engine;
     private _currentScene: Nullable<Scene>;
@@ -57,6 +57,7 @@ export class FilesInput {
      * @param startingProcessingFilesCallback callback called when the system is about to process all files
      * @param onReloadCallback callback called when a reload is requested
      * @param errorCallback callback call if an error occurs
+     * @param useAppend defines if the file loaded must be appended (true) or have the scene replaced (false, default behavior)
      */
     constructor(
         engine: Engine,
@@ -67,7 +68,8 @@ export class FilesInput {
         textureLoadingCallback: Nullable<(remaining: number) => void>,
         startingProcessingFilesCallback: Nullable<(files?: File[]) => void>,
         onReloadCallback: Nullable<(sceneFile: File) => void>,
-        errorCallback: Nullable<(sceneFile: File, scene: Nullable<Scene>, message: string) => void>
+        errorCallback: Nullable<(sceneFile: File, scene: Nullable<Scene>, message: string) => void>,
+        public readonly useAppend = false
     ) {
         this._engine = engine;
         this._currentScene = scene;
@@ -298,23 +300,25 @@ export class FilesInput {
 
             this.loadAsync(this._sceneFileToLoad, this._progressCallback)
                 .then((scene) => {
-                    if (this._currentScene) {
-                        this._currentScene.dispose();
+                    // if appending do nothing
+                    if (!this.useAppend) {
+                        if (this._currentScene) {
+                            this._currentScene.dispose();
+                        }
+
+                        this._currentScene = scene;
+
+                        // Wait for textures and shaders to be ready
+                        this._currentScene.executeWhenReady(() => {
+                            this._engine.hideLoadingUI();
+                            this._engine.runRenderLoop(() => {
+                                this._renderFunction();
+                            });
+                        });
                     }
-
-                    this._currentScene = scene;
-
-                    if (this._sceneLoadedCallback) {
+                    if (this._sceneLoadedCallback && this._currentScene) {
                         this._sceneLoadedCallback(this._sceneFileToLoad, this._currentScene);
                     }
-
-                    // Wait for textures and shaders to be ready
-                    this._currentScene.executeWhenReady(() => {
-                        this._engine.hideLoadingUI();
-                        this._engine.runRenderLoop(() => {
-                            this._renderFunction();
-                        });
-                    });
                 })
                 .catch((error) => {
                     this._engine.hideLoadingUI();
