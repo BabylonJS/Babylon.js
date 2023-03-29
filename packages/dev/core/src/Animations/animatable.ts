@@ -867,7 +867,7 @@ Scene.prototype.stopAnimation = function (target: any, animationName?: string, t
 Scene.prototype.stopAllAnimations = function (): void {
     if (this._activeAnimatables) {
         for (let i = 0; i < this._activeAnimatables.length; i++) {
-            this._activeAnimatables[i].stop();
+            this._activeAnimatables[i].stop(undefined, undefined, true);
         }
         this._activeAnimatables.length = 0;
     }
