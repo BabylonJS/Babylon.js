@@ -205,13 +205,13 @@ export class DepthPeelingRenderer {
                 format: Constants.TEXTUREFORMAT_RG, // For MSAA we need RGBA
                 samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
                 type: this._engine.getCaps().textureFloatLinearFiltering ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_HALF_FLOAT,
-                label: "DepthPeelingRenderer - depth texture",
+                label: "DepthPeelingRenderer-DepthTexture",
             } as InternalTextureCreationOptions,
             {
                 format: Constants.TEXTUREFORMAT_RGBA,
                 samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
                 type: Constants.TEXTURETYPE_HALF_FLOAT, // For MSAA we need FLOAT
-                label: "DepthPeelingRenderer - color texture",
+                label: "DepthPeelingRenderer-ColorTexture",
             } as InternalTextureCreationOptions,
         ];
 

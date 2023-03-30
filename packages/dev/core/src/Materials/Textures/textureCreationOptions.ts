@@ -58,6 +58,8 @@ export interface DepthTextureCreationOptions {
     samples?: number;
     /** Specifies the depth texture format to use */
     depthTextureFormat?: number;
+    /** Label of the texture (used for debugging only) */
+    label?: string;
 }
 
 /**

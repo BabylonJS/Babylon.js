@@ -1255,7 +1255,7 @@ export class WebGPUTextureHelper {
                 commandEncoder,
                 WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.RenderAttachment | WebGPUConstants.TextureUsage.TextureBinding,
                 undefined,
-                "temp texture for copy with invertY"
+                "TempTextureForCopyWithInvertY"
             );
 
         const renderPassDescriptor = webgpuHardwareTexture?._copyInvertYRenderPassDescr ?? {
@@ -1957,7 +1957,7 @@ export class WebGPUTextureHelper {
                         commandEncoder,
                         WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.TextureBinding,
                         undefined,
-                        "temp texture for updateTexture"
+                        "TempTextureForUpdateTexture"
                     );
 
                     this._deferredReleaseTextures.push([srcTexture, null]);
