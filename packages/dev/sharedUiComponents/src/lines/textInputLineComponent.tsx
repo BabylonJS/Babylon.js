@@ -31,6 +31,7 @@ export interface ITextInputLineComponentProps {
     multilines?: boolean;
     throttlePropertyChangedNotification?: boolean;
     throttlePropertyChangedNotificationDelay?: number;
+    disabled?: boolean;
 }
 
 let throttleTimerId = -1;
@@ -107,6 +108,9 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
     }
 
     updateValue(value: string, valueToValidate?: string) {
+        if (this.props.disabled) {
+            return;
+        }
         if (this.props.numbersOnly) {
             if (/[^0-9.\p\x%-]/g.test(value)) {
                 return;
@@ -175,7 +179,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
     }
 
     onKeyDown(event: React.KeyboardEvent) {
-        if (this.props.arrows) {
+        if (!this.props.disabled && this.props.arrows) {
             if (event.key === "ArrowUp") {
                 this.incrementValue(1);
                 event.preventDefault();
@@ -191,8 +195,9 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
         const value = this.state.value === conflictingValuesPlaceholder ? "" : this.state.value;
         const placeholder = this.state.value === conflictingValuesPlaceholder ? conflictingValuesPlaceholder : this.props.placeholder || "";
         const step = this.props.step || (this.props.roundValues ? 1 : 0.01);
+        const className = this.props.multilines ? "textInputArea" : this.props.unit !== undefined ? "textInputLine withUnits" : "textInputLine";
         return (
-            <div className={this.props.multilines ? "textInputArea" : this.props.unit !== undefined ? "textInputLine withUnits" : "textInputLine"}>
+            <div className={className}>
                 {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} color="black" className="icon" />}
                 {this.props.label !== undefined && (
                     <div className="label" title={this.props.label}>
@@ -202,6 +207,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
                 {this.props.multilines && (
                     <>
                         <textarea
+                            className={this.props.disabled ? "disabled" : ""}
                             value={this.state.value}
                             onFocus={() => {
                                 if (this.props.lockObject) {
@@ -221,6 +227,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
                                     this.props.lockObject.lock = false;
                                 }
                             }}
+                            disabled={this.props.disabled}
                         />
                     </>
                 )}
@@ -229,6 +236,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
                         className={`value${this.props.noUnderline === true ? " noUnderline" : ""}${this.props.arrows ? " hasArrows" : ""}${this.state.dragging ? " dragging" : ""}`}
                     >
                         <input
+                            className={this.props.disabled ? "disabled" : ""}
                             value={value}
                             onBlur={(evt) => {
                                 if (this.props.lockObject) {
@@ -246,6 +254,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
                             placeholder={placeholder}
                             type={this.props.numeric ? "number" : "text"}
                             step={step}
+                            disabled={this.props.disabled}
                         />
                         {this.props.arrows && (
                             <InputArrowsComponent incrementValue={(amount) => this.incrementValue(amount)} setDragging={(dragging) => this.setState({ dragging })} />
