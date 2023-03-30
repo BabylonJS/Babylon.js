@@ -163,7 +163,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
         }
     }
 
-    isCloseTo(value: number, expected: number, epsilon: number) {
+    isCloseTo(value: number, expected: number, epsilon: number = 0.001) {
         return Math.abs(value - expected) < epsilon;
     }
 
