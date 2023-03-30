@@ -166,7 +166,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
         return MathTools.Round(floatResult, 10000);
     }
 
-    isCloseTo(value: number, expected: number, epsilon: number) {
+    isCloseTo(value: number, expected: number, epsilon: number = 0.001) {
         return Math.abs(value - expected) < epsilon;
     }
 
@@ -195,7 +195,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
 
         // If the total percentage is not 100% we need to adjust the values based on the remaining percentage that was not modified by the user;
         // If the remaining percentage is 0% we need to resize the modified entries to fit the remaining space
-        if (this.isCloseTo(percentageTotal, 1, 0.001)) {
+        if (this.isCloseTo(percentageTotal, 1)) {
             modifiedCellValues = cellValues;
         } else {
             const absoluteRemainingPercentage = 1 - modifiedEntriesPercentageTotal;
