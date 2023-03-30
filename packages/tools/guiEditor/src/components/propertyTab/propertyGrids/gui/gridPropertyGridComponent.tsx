@@ -18,6 +18,7 @@ import cancelGridElementDark from "shared-ui-components/imgs/cancelGridElementDa
 import valueChangedGridDark from "shared-ui-components/imgs/valueChangedGridDark.svg";
 import deleteGridElementDark from "shared-ui-components/imgs/deleteGridElementDark.svg";
 import type { GlobalState } from "../../../../globalState";
+import { MathTools } from "gui/2D/math2D";
 
 interface IGridPropertyGridComponentProps {
     grids: Grid[];
@@ -156,11 +157,13 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
     }
 
     parsePercentage(value: string) {
+        let floatResult;
         if (value.indexOf("%") !== -1) {
-            return parseFloat(value.replace("%", "")) / 100;
+            floatResult = parseFloat(value.replace("%", "")) / 100;
         } else {
-            return parseFloat(value);
+            floatResult = parseFloat(value);
         }
+        return MathTools.Round(floatResult, 10000);
     }
 
     isCloseTo(value: number, expected: number, epsilon: number) {
