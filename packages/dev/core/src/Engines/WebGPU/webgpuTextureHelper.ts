@@ -819,6 +819,8 @@ export class WebGPUTextureHelper {
                 return WebGPUConstants.TextureFormat.Depth24UnormStencil8;
             case Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8:
                 return WebGPUConstants.TextureFormat.Depth32FloatStencil8;
+            case Constants.TEXTUREFORMAT_STENCIL8:
+                return WebGPUConstants.TextureFormat.Stencil8;
 
             case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM:
                 return useSRGBBuffer ? WebGPUConstants.TextureFormat.BC7RGBAUnormSRGB : WebGPUConstants.TextureFormat.BC7RGBAUnorm;
