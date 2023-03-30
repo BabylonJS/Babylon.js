@@ -158,7 +158,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
 
     parsePercentage(value: string) {
         let floatResult;
-        if (value.indexOf("%") !== -1) {
+        if (value.trim().at(-1) === "%") {
             floatResult = parseFloat(value.replace("%", "")) / 100;
         } else {
             floatResult = parseFloat(value);
