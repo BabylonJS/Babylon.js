@@ -1125,6 +1125,25 @@ export class WebGPUTextureHelper {
         return false;
     }
 
+    public static GetDepthFormatOnly(format: GPUTextureFormat): GPUTextureFormat {
+        switch (format) {
+            case WebGPUConstants.TextureFormat.Depth16Unorm:
+                return WebGPUConstants.TextureFormat.Depth16Unorm;
+            case WebGPUConstants.TextureFormat.Depth24Plus:
+                return WebGPUConstants.TextureFormat.Depth24Plus;
+            case WebGPUConstants.TextureFormat.Depth24PlusStencil8:
+                return WebGPUConstants.TextureFormat.Depth24Plus;
+            case WebGPUConstants.TextureFormat.Depth24UnormStencil8:
+                return WebGPUConstants.TextureFormat.Depth24Plus;
+            case WebGPUConstants.TextureFormat.Depth32Float:
+                return WebGPUConstants.TextureFormat.Depth32Float;
+            case WebGPUConstants.TextureFormat.Depth32FloatStencil8:
+                return WebGPUConstants.TextureFormat.Depth32Float;
+        }
+
+        return format;
+    }
+
     public copyVideoToTexture(video: ExternalTexture, texture: InternalTexture, format: GPUTextureFormat, invertY = false, commandEncoder?: GPUCommandEncoder): void {
         const useOwnCommandEncoder = commandEncoder === undefined;
         const [pipeline, bindGroupLayout] = this._getVideoPipeline(format, invertY ? VideoPipelineType.InvertY : VideoPipelineType.DontInvertY);
@@ -1677,13 +1696,13 @@ export class WebGPUTextureHelper {
             gpuTextureWrapper.set(gpuTexture);
             gpuTextureWrapper.createView(
                 {
-                    format: gpuTextureWrapper.format,
+                    format: WebGPUTextureHelper.GetDepthFormatOnly(gpuTextureWrapper.format),
                     dimension: WebGPUConstants.TextureViewDimension.Cube,
                     mipLevelCount: mipmapCount,
                     baseArrayLayer: 0,
                     baseMipLevel: 0,
                     arrayLayerCount: 6,
-                    aspect: WebGPUConstants.TextureAspect.All,
+                    aspect: WebGPUTextureHelper.HasDepthAndStencilAspects(gpuTextureWrapper.format) ? WebGPUConstants.TextureAspect.DepthOnly : WebGPUConstants.TextureAspect.All,
                 },
                 isStorageTexture
             );
@@ -1706,7 +1725,7 @@ export class WebGPUTextureHelper {
             gpuTextureWrapper.set(gpuTexture);
             gpuTextureWrapper.createView(
                 {
-                    format: gpuTextureWrapper.format,
+                    format: WebGPUTextureHelper.GetDepthFormatOnly(gpuTextureWrapper.format),
                     dimension: texture.is2DArray
                         ? WebGPUConstants.TextureViewDimension.E2dArray
                         : texture.is3D
@@ -1716,7 +1735,7 @@ export class WebGPUTextureHelper {
                     baseArrayLayer: 0,
                     baseMipLevel: 0,
                     arrayLayerCount: texture.is3D ? 1 : layerCount,
-                    aspect: WebGPUConstants.TextureAspect.All,
+                    aspect: WebGPUTextureHelper.HasDepthAndStencilAspects(gpuTextureWrapper.format) ? WebGPUConstants.TextureAspect.DepthOnly : WebGPUConstants.TextureAspect.All,
                 },
                 isStorageTexture
             );
