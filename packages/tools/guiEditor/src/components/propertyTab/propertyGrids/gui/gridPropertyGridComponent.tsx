@@ -202,7 +202,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
             const magnitudeRemainingPercentage = Math.abs(absoluteRemainingPercentage);
             const unmodifiedEntriesPercentage = percentageTotal - modifiedEntriesPercentageTotal;
 
-            const resizeModifiedEntries = this.isCloseTo(unmodifiedEntriesPercentage, 0, 0.001);
+            const resizeModifiedEntries = this.isCloseTo(unmodifiedEntriesPercentage, 0);
             for (let i = 0; i < cellValues.length; ++i) {
                 const value = cellValues[i];
                 const percent = this.checkPercentage(value);
