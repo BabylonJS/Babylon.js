@@ -22,7 +22,7 @@ describe("Babylon Mesh", () => {
     });
 
     describe("#Mesh dictionary mode threshold", () => {
-        it("No more than 144 own properties on a mesh", () => {
+        it("No more than 128 own properties on a mesh", () => {
             const scene = new Scene(subject);
             const mesh = MeshBuilder.CreateGround("ground1", { width: 6, height: 6, subdivisions: 2 }, scene);
 
@@ -33,7 +33,7 @@ describe("Babylon Mesh", () => {
                 }
             }
 
-            expect(count).toBeLessThan(144);
+            expect(count).toBeLessThan(128);
         });
     });
 });

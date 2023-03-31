@@ -143,6 +143,8 @@ class _InternalMeshDataInfo {
     public _effectiveMaterial: Nullable<Material> = null;
 
     public _forcedInstanceCount: number = 0;
+
+    public _overrideMaterialFillMode: Nullable<number> = null;
 }
 
 /**
@@ -442,7 +444,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /**
      * Use this property to override Material's fillMode value
      */
-    public overrideMaterialFillMode: Nullable<number> = null;
+    public get overrideMaterialFillMode(): Nullable<number> {
+        return this._internalMeshDataInfo._overrideMaterialFillMode;
+    }
+
+    public set overrideMaterialFillMode(fillMode: Nullable<number>) {
+        this._internalMeshDataInfo._overrideMaterialFillMode = fillMode;
+    }
 
     /**
      * Gets or sets a boolean indicating whether to render ignoring the active camera's max z setting. (false by default)
