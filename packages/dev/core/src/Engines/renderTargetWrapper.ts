@@ -218,8 +218,8 @@ export class RenderTargetWrapper {
     /**
      * Sets the layer and face indices of a texture in the textures array that should be bound to each color attachment
      * @param index The index of the texture in the textures array to modify
-     * @param layer The layer of the texture to be set (make negative to not modify)
-     * @param face The face of the texture to be set (make negative to not modify)
+     * @param layer The layer of the texture to be set
+     * @param face The face of the texture to be set
      */
     public setLayerAndFaceIndex(index: number = 0, layer?: number, face?: number): void {
         if (!this._layerIndices) {
@@ -229,10 +229,10 @@ export class RenderTargetWrapper {
             this._faceIndices = [];
         }
 
-        if (layer && layer >= 0) {
+        if (layer !== undefined && layer >= 0) {
             this._layerIndices[index] = layer;
         }
-        if (face && face >= 0) {
+        if (face !== undefined && face >= 0) {
             this._faceIndices[index] = face;
         }
     }
