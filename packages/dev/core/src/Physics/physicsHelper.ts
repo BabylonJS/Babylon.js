@@ -410,7 +410,7 @@ class PhysicsRadialExplosionEvent {
             return false;
         }
 
-        const bodyObjectCenter = body.getObjectCenter();
+        const bodyObjectCenter = body.getObjectCenterWorld();
         this._getHitData(mesh, bodyObjectCenter, origin, data);
         return true;
     }
@@ -683,7 +683,7 @@ class PhysicsUpdraftEvent {
             return false;
         }
 
-        const center = body.getObjectCenter();
+        const center = body.getObjectCenterWorld();
         this._getHitData(center, data);
         return true;
     }
@@ -875,7 +875,7 @@ class PhysicsVortexEvent {
             return false;
         }
 
-        const bodyCenter = body.getObjectCenter();
+        const bodyCenter = body.getObjectCenterWorld();
         this._getHitData(bodyObject, bodyCenter, data);
         return true;
     }

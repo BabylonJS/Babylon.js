@@ -1459,6 +1459,19 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /**
+     * Computes a fresh bounding info from the mesh positions and cached world matrix.
+     * @returns the bounding info obtained from the mesh positions and cached world matrix, or null if the mesh has no position data.
+     */
+    public getBoundingInfoFromVerticesData() {
+        const data = this.getVerticesData(VertexBuffer.PositionKind);
+        if (data) {
+            const extend = extractMinAndMax(data, 0, this.getTotalVertices());
+            return new BoundingInfo(extend.minimum, extend.maximum, this.worldMatrixFromCache);
+        }
+        return null;
+    }
+
+    /**
      * Internal function to get buffer data and possibly apply morphs and normals
      * @param applySkeleton
      * @param applyMorph
