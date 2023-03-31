@@ -744,16 +744,16 @@ export class WebGPUEngine extends Engine {
         // TODO WEBGPU Real Capability check once limits will be working.
 
         this._caps = {
-            maxTexturesImageUnits: 16,
-            maxVertexTextureImageUnits: 16,
-            maxCombinedTexturesImageUnits: 32,
-            maxTextureSize: 8192,
-            maxCubemapTextureSize: 2048,
-            maxRenderTextureSize: 8192,
-            maxVertexAttribs: 16,
-            maxVaryingVectors: 15,
-            maxFragmentUniformVectors: 1024,
-            maxVertexUniformVectors: 1024,
+            maxTexturesImageUnits: this._deviceLimits.maxSampledTexturesPerShaderStage,
+            maxVertexTextureImageUnits: this._deviceLimits.maxSampledTexturesPerShaderStage,
+            maxCombinedTexturesImageUnits: this._deviceLimits.maxSampledTexturesPerShaderStage * 2,
+            maxTextureSize: this._deviceLimits.maxTextureDimension2D,
+            maxCubemapTextureSize: this._deviceLimits.maxTextureDimension2D,
+            maxRenderTextureSize: this._deviceLimits.maxTextureDimension2D,
+            maxVertexAttribs: this._deviceLimits.maxVertexAttributes,
+            maxVaryingVectors: this._deviceLimits.maxInterStageShaderVariables,
+            maxFragmentUniformVectors: Math.floor(this._deviceLimits.maxUniformBufferBindingSize / 4),
+            maxVertexUniformVectors: Math.floor(this._deviceLimits.maxUniformBufferBindingSize / 4),
             standardDerivatives: true,
             astc: (this._deviceEnabledExtensions.indexOf(WebGPUConstants.FeatureName.TextureCompressionASTC) >= 0 ? true : undefined) as any,
             s3tc: (this._deviceEnabledExtensions.indexOf(WebGPUConstants.FeatureName.TextureCompressionBC) >= 0 ? true : undefined) as any,
@@ -761,13 +761,13 @@ export class WebGPUEngine extends Engine {
             etc1: null,
             etc2: (this._deviceEnabledExtensions.indexOf(WebGPUConstants.FeatureName.TextureCompressionETC2) >= 0 ? true : undefined) as any,
             bptc: this._deviceEnabledExtensions.indexOf(WebGPUConstants.FeatureName.TextureCompressionBC) >= 0 ? true : undefined,
-            maxAnisotropy: 4, // the spec only supports values of 1 and 4
+            maxAnisotropy: 16, // Most implementations support maxAnisotropy values in range between 1 and 16, inclusive. The used value of maxAnisotropy will be clamped to the maximum value that the platform supports.
             uintIndices: true,
             fragmentDepthSupported: true,
             highPrecisionShaderSupported: true,
             colorBufferFloat: true,
             textureFloat: true,
-            textureFloatLinearFiltering: false, // WebGPU does not allow filtering 32 bits float textures
+            textureFloatLinearFiltering: this._deviceEnabledExtensions.indexOf(WebGPUConstants.FeatureName.Float32Filterable) >= 0,
             textureFloatRender: true,
             textureHalfFloat: true,
             textureHalfFloatLinearFiltering: true,
@@ -778,21 +778,22 @@ export class WebGPUEngine extends Engine {
             depthTextureExtension: true,
             vertexArrayObject: false,
             instancedArrays: true,
-            timerQuery: typeof BigUint64Array !== "undefined" && this.enabledExtensions.indexOf(WebGPUConstants.FeatureName.TimestampQuery) !== -1 ? (true as any) : undefined,
+            timerQuery:
+                typeof BigUint64Array !== "undefined" && this._deviceEnabledExtensions.indexOf(WebGPUConstants.FeatureName.TimestampQuery) !== -1 ? (true as any) : undefined,
             supportOcclusionQuery: typeof BigUint64Array !== "undefined",
             canUseTimestampForTimerQuery: true,
             multiview: false,
             oculusMultiview: false,
             parallelShaderCompile: undefined,
             blendMinMax: true,
-            maxMSAASamples: 4,
+            maxMSAASamples: 4, // the spec only supports values of 1 and 4
             canUseGLInstanceID: true,
             canUseGLVertexID: true,
             supportComputeShaders: true,
             supportSRGBBuffers: true,
             supportTransformFeedbacks: false,
             textureMaxLevel: true,
-            texture2DArrayMaxLayerCount: 2048,
+            texture2DArrayMaxLayerCount: this._deviceLimits.maxTextureArrayLayers,
         };
 
         this._caps.parallelShaderCompile = null as any;
