@@ -1549,7 +1549,7 @@ export class _Exporter {
         }
         if (babylonMesh instanceof InstancedMesh || babylonMesh instanceof Mesh) {
             const baseMesh = babylonMesh instanceof Mesh ? babylonMesh : babylonMesh.sourceMesh;
-            if (typeof baseMesh.overrideMaterialFillMode === 'number') {
+            if (typeof baseMesh.overrideMaterialFillMode === "number") {
                 return baseMesh.overrideMaterialFillMode;
             }
         }
