@@ -234,7 +234,7 @@ export class DepthRenderer {
                 engine.enableEffect(drawWrapper);
 
                 if (!hardwareInstancedRendering) {
-                    renderingMesh._bind(subMesh, effect, material.fillMode);
+                    renderingMesh._bind(subMesh, effect, subMesh.getFillMode(material));
                 }
 
                 if (!renderingMaterial) {
@@ -298,7 +298,7 @@ export class DepthRenderer {
                 }
 
                 // Draw
-                renderingMesh._processRendering(effectiveMesh, subMesh, effect, material.fillMode, batch, hardwareInstancedRendering, (isInstance, world) =>
+                renderingMesh._processRendering(effectiveMesh, subMesh, effect, subMesh.getFillMode(material), batch, hardwareInstancedRendering, (isInstance, world) =>
                     effect.setMatrix("world", world)
                 );
             }

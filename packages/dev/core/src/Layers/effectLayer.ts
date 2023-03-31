@@ -888,7 +888,7 @@ export abstract class EffectLayer {
 
             engine.enableEffect(drawWrapper);
             if (!hardwareInstancedRendering) {
-                const fillMode = scene.forcePointsCloud ? Material.PointFillMode : scene.forceWireframe ? Material.WireFrameFillMode : material.fillMode;
+                const fillMode = subMesh.getFillMode(material, scene);
                 renderingMesh._bind(subMesh, effect, fillMode);
             }
 
@@ -971,7 +971,7 @@ export abstract class EffectLayer {
             }
 
             // Draw
-            renderingMesh._processRendering(effectiveMesh, subMesh, effect, material.fillMode, batch, hardwareInstancedRendering, (isInstance, world) =>
+            renderingMesh._processRendering(effectiveMesh, subMesh, effect, subMesh.getFillMode(material), batch, hardwareInstancedRendering, (isInstance, world) =>
                 effect.setMatrix("world", world)
             );
         } else {

@@ -219,7 +219,7 @@ export class OutlineRenderer implements ISceneComponent {
         MaterialHelper.BindMorphTargetParameters(renderingMesh, effect);
 
         if (!hardwareInstancedRendering) {
-            renderingMesh._bind(subMesh, effect, material.fillMode);
+            renderingMesh._bind(subMesh, effect, subMesh.getFillMode(material));
         }
 
         // Alpha test
@@ -237,7 +237,7 @@ export class OutlineRenderer implements ISceneComponent {
         engine.setZOffset(-this.zOffset);
         engine.setZOffsetUnits(-this.zOffsetUnits);
 
-        renderingMesh._processRendering(effectiveMesh, subMesh, effect, material.fillMode, batch, hardwareInstancedRendering, (isInstance, world) => {
+        renderingMesh._processRendering(effectiveMesh, subMesh, effect, subMesh.getFillMode(material), batch, hardwareInstancedRendering, (isInstance, world) => {
             effect.setMatrix("world", world);
         });
 

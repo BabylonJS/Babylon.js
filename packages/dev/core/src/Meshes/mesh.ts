@@ -440,6 +440,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     public overrideMaterialSideOrientation: Nullable<number> = null;
 
     /**
+     * Use this property to override Material's fillMode value
+     */
+    public overrideMaterialFillMode: Nullable<number> = null;
+
+    /**
      * Gets or sets a boolean indicating whether to render ignoring the active camera's max z setting. (false by default)
      * Note this will reduce performance when set to true.
      */
@@ -2320,11 +2325,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Bind
-        const fillMode = scene.forcePointsCloud
-            ? Material.PointFillMode
-            : scene.forceWireframe
-            ? Material.WireFrameFillMode
-            : this._internalMeshDataInfo._effectiveMaterial.fillMode;
+        const fillMode = subMesh.getFillMode(this._internalMeshDataInfo._effectiveMaterial, scene);
 
         if (this._internalMeshDataInfo._onBeforeBindObservable) {
             this._internalMeshDataInfo._onBeforeBindObservable.notifyObservers(this);
@@ -3631,6 +3632,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         serializationObject.checkCollisions = this.checkCollisions;
         serializationObject.isBlocker = this.isBlocker;
         serializationObject.overrideMaterialSideOrientation = this.overrideMaterialSideOrientation;
+        serializationObject.overrideMaterialFillMode = this.overrideMaterialFillMode;
 
         // Parent
         if (this.parent) {
@@ -3979,6 +3981,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         mesh.checkCollisions = parsedMesh.checkCollisions;
         mesh.overrideMaterialSideOrientation = parsedMesh.overrideMaterialSideOrientation;
+        mesh.overrideMaterialFillMode = parsedMesh.overrideMaterialFillMode;
 
         if (parsedMesh.isBlocker !== undefined) {
             mesh.isBlocker = parsedMesh.isBlocker;

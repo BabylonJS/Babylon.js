@@ -12,6 +12,7 @@ import { extractMinAndMaxIndexed } from "../Maths/math.functions";
 import type { Plane } from "../Maths/math.plane";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import type { IMaterialContext } from "../Engines/IMaterialContext";
+import type { Scene } from "../scene";
 
 declare type Collider = import("../Collisions/collider").Collider;
 declare type Material = import("../Materials/material").Material;
@@ -319,6 +320,22 @@ export class SubMesh implements ICullable {
         return (material as MultiMaterial).getSubMaterial !== undefined;
     }
 
+    /**
+     * @internal
+     * Get active fillMode for specified material and optional scene for global overrides
+     * */
+    public getFillMode(material: Material, scene?: Scene): number {
+        if (scene) {
+            if (scene.forcePointsCloud) {
+                return Constants.MATERIAL_PointFillMode;
+            }
+            if (scene.forceWireframe) {
+                return Constants.MATERIAL_WireFrameFillMode;
+            }
+        }
+        return this._renderingMesh.overrideMaterialFillMode ?? material.fillMode;
+    }
+
     // Methods
 
     /**
@@ -473,10 +490,11 @@ export class SubMesh implements ICullable {
         if (!material) {
             return null;
         }
+        const fillMode = this.getFillMode(material);
         let step = 3;
         let checkStopper = false;
 
-        switch (material.fillMode) {
+        switch (fillMode) {
             case Constants.MATERIAL_PointListDrawMode:
             case Constants.MATERIAL_LineLoopDrawMode:
             case Constants.MATERIAL_LineStripDrawMode:
@@ -491,7 +509,7 @@ export class SubMesh implements ICullable {
         }
 
         // LineMesh first as it's also a Mesh...
-        if (material.fillMode === Constants.MATERIAL_LineListDrawMode) {
+        if (fillMode === Constants.MATERIAL_LineListDrawMode) {
             // Check if mesh is unindexed
             if (!indices.length) {
                 return this._intersectUnIndexedLines(ray, positions, indices, (this._mesh as any).intersectionThreshold, fastCheck);

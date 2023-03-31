@@ -1781,6 +1781,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         }
 
         // Collide
+        const material = subMesh.getMaterial();
         collider._collide(
             subMesh._trianglePlanes,
             subMesh._lastColliderWorldVertices,
@@ -1788,10 +1789,10 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             subMesh.indexStart,
             subMesh.indexStart + subMesh.indexCount,
             subMesh.verticesStart,
-            !!subMesh.getMaterial(),
+            !!material,
             this,
             this._shouldConvertRHS(),
-            subMesh.getMaterial()?.fillMode === Constants.MATERIAL_TriangleStripDrawMode
+            !!material && subMesh.getFillMode(material) === Constants.MATERIAL_TriangleStripDrawMode
         );
         return this;
     }
@@ -1903,12 +1904,13 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             if (!material) {
                 continue;
             }
+            const fillMode = subMesh.getFillMode(material);
             if (
-                material.fillMode == Constants.MATERIAL_TriangleStripDrawMode ||
-                material.fillMode == Constants.MATERIAL_TriangleFillMode ||
-                material.fillMode == Constants.MATERIAL_WireFrameFillMode ||
-                material.fillMode == Constants.MATERIAL_PointFillMode ||
-                material.fillMode == Constants.MATERIAL_LineListDrawMode
+                fillMode == Constants.MATERIAL_TriangleStripDrawMode ||
+                fillMode == Constants.MATERIAL_TriangleFillMode ||
+                fillMode == Constants.MATERIAL_WireFrameFillMode ||
+                fillMode == Constants.MATERIAL_PointFillMode ||
+                fillMode == Constants.MATERIAL_LineListDrawMode
             ) {
                 anySubmeshSupportIntersect = true;
                 break;

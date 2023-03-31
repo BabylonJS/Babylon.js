@@ -1547,6 +1547,12 @@ export class _Exporter {
         if (babylonMesh instanceof LinesMesh) {
             return Material.LineListDrawMode;
         }
+        if (babylonMesh instanceof InstancedMesh || babylonMesh instanceof Mesh) {
+            const baseMesh = babylonMesh instanceof Mesh ? babylonMesh : babylonMesh.sourceMesh;
+            if (typeof baseMesh.overrideMaterialFillMode === 'number') {
+                return baseMesh.overrideMaterialFillMode;
+            }
+        }
         return babylonMesh.material ? babylonMesh.material.fillMode : Material.TriangleFillMode;
     }
 

@@ -95,8 +95,9 @@ SubMesh.prototype.projectToRef = function (vector: Vector3, positions: Vector3[]
     }
     let step = 3;
     let checkStopper = false;
+    const fillMode = this.getFillMode(material);
 
-    switch (material.fillMode) {
+    switch (fillMode) {
         case Constants.MATERIAL_PointListDrawMode:
         case Constants.MATERIAL_LineLoopDrawMode:
         case Constants.MATERIAL_LineStripDrawMode:
@@ -111,7 +112,7 @@ SubMesh.prototype.projectToRef = function (vector: Vector3, positions: Vector3[]
     }
 
     // LineMesh first as it's also a Mesh...
-    if (material.fillMode === Constants.MATERIAL_LineListDrawMode) {
+    if (fillMode === Constants.MATERIAL_LineListDrawMode) {
         return -1;
     } else {
         // Check if mesh is unindexed
