@@ -31,9 +31,13 @@ export class WebGPUTintWASM {
 
     public static ShowWGSLShaderCode = false;
 
-    private _twgsl: any = null;
+    private static _twgsl: any = null;
 
     public async initTwgsl(twgslOptions?: TwgslOptions): Promise<void> {
+        if (WebGPUTintWASM._twgsl) {
+            return;
+        }
+
         twgslOptions = twgslOptions || {};
         twgslOptions = {
             ...WebGPUTintWASM._TWgslDefaultOptions,
@@ -41,7 +45,7 @@ export class WebGPUTintWASM {
         };
 
         if (twgslOptions.twgsl) {
-            this._twgsl = twgslOptions.twgsl;
+            WebGPUTintWASM._twgsl = twgslOptions.twgsl;
             return Promise.resolve();
         }
 
@@ -54,7 +58,7 @@ export class WebGPUTintWASM {
         }
 
         if ((self as any).twgsl) {
-            this._twgsl = await (self as any).twgsl(twgslOptions!.wasmPath);
+            WebGPUTintWASM._twgsl = await (self as any).twgsl(twgslOptions!.wasmPath);
             return Promise.resolve();
         }
 
@@ -62,7 +66,7 @@ export class WebGPUTintWASM {
     }
 
     public convertSpirV2WGSL(code: Uint32Array): string {
-        const ccode = this._twgsl.convertSpirV2WGSL(code);
+        const ccode = WebGPUTintWASM._twgsl.convertSpirV2WGSL(code);
         if (WebGPUTintWASM.ShowWGSLShaderCode) {
             console.log(ccode);
             console.log("***********************************************");
