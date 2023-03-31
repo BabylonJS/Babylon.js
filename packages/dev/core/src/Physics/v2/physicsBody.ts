@@ -44,7 +44,6 @@ export class PhysicsBody {
     disablePreStep: boolean = true;
 
     private static _DEFAULT_OBJECT_SIZE: Vector3 = new Vector3(1, 1, 1);
-    private static _IDENTITY_QUATERNION = Quaternion.Identity();
     private _nodeDisposeObserver: Nullable<Observer<Node>>;
 
     /**
@@ -101,7 +100,7 @@ export class PhysicsBody {
      * @returns the newly cloned PhysicsBody
      */
     public clone(transformNode: TransformNode): PhysicsBody {
-        const clonedBody = new PhysicsBody(transformNode, this.motionType, this.transformNode.getScene());
+        const clonedBody = new PhysicsBody(transformNode, this.getMotionType(), this.transformNode.getScene());
         clonedBody.shape = this.shape;
         return clonedBody;
     }
@@ -149,31 +148,6 @@ export class PhysicsBody {
     }
 
     /**
-     * Sets the filter group of the physics body.
-     * @param group - The filter group of the physics body.
-     *
-     * This method is useful for setting the filter group of the physics body.
-     * The filter group is used to determine which bodies should collide with each other.
-     * This allows for more control over the physics engine and can be used to create more realistic simulations.
-     */
-    public set filterGroup(group: number) {
-        this._physicsPlugin.setFilterGroup(this, group);
-    }
-
-    /**
-     * Gets the filter group of the physics engine.
-     *
-     * @returns The filter group of the physics engine.
-     *
-     * This method is useful for getting the filter group of the physics engine,
-     * which is used to determine which objects will interact with each other.
-     * This is important for creating realistic physics simulations.
-     */
-    public get filterGroup(): number {
-        return this._physicsPlugin.getFilterGroup(this);
-    }
-
-    /**
      * Sets the event mask for the physics engine.
      *
      * @param eventMask - A bitmask that determines which events will be sent to the physics engine.
@@ -181,8 +155,8 @@ export class PhysicsBody {
      * This method is useful for setting the event mask for the physics engine, which determines which events
      * will be sent to the physics engine. This allows the user to control which events the physics engine will respond to.
      */
-    public set eventMask(eventMask: number) {
-        this._physicsPlugin.setEventMask(this, eventMask);
+    public setEventMask(eventMask: number, instanceIndex?: number) {
+        this._physicsPlugin.setEventMask(this, eventMask, instanceIndex);
     }
 
     /**
@@ -195,22 +169,22 @@ export class PhysicsBody {
      * This is important for ensuring that the engine is responding to the correct events and not
      * wasting resources on unnecessary events.
      */
-    public get eventMask(): number {
-        return this._physicsPlugin.getEventMask(this);
+    public getEventMask(instanceIndex?: number): number {
+        return this._physicsPlugin.getEventMask(this, instanceIndex);
     }
 
     /**
      * Sets the motion type of the physics body. Can be STATIC, DYNAMIC, or ANIMATED.
      */
-    public set motionType(motionType: PhysicsMotionType) {
-        this._physicsPlugin.setMotionType(this, motionType);
+    public setMotionType(motionType: PhysicsMotionType, instanceIndex?: number) {
+        this._physicsPlugin.setMotionType(this, motionType, instanceIndex);
     }
 
     /**
      * Gets the motion type of the physics body. Can be STATIC, DYNAMIC, or ANIMATED.
      */
-    public get motionType(): PhysicsMotionType {
-        return this._physicsPlugin.getMotionType(this);
+    public getMotionType(instanceIndex?: number): PhysicsMotionType {
+        return this._physicsPlugin.getMotionType(this, instanceIndex);
     }
 
     /**
@@ -220,20 +194,21 @@ export class PhysicsBody {
      * object in the physics engine, and computing values based on the shape will provide you with reasonable
      * intial values, which you can then customize.
      */
-    public computeMassProperties(): MassProperties {
-        return this._physicsPlugin.computeMassProperties(this);
+    public computeMassProperties(instanceIndex?: number): MassProperties {
+        return this._physicsPlugin.computeMassProperties(this, instanceIndex);
     }
 
     /**
      * Sets the mass properties of the physics object.
      *
      * @param massProps - The mass properties to set.
+     * @param instanceIndex - The index of the instance to set the mass properties for. If not defined, the mass properties will be set for all instances.
      *
      * This method is useful for setting the mass properties of a physics object, such as its mass,
      * inertia, and center of mass. This is important for accurately simulating the physics of the object in the physics engine.
      */
-    public set massProperties(massProps: MassProperties) {
-        this._physicsPlugin.setMassProperties(this, massProps);
+    public setMassProperties(massProps: MassProperties, instanceIndex?: number): void {
+        this._physicsPlugin.setMassProperties(this, massProps, instanceIndex);
     }
 
     /**
@@ -246,8 +221,8 @@ export class PhysicsBody {
      * and moment of inertia. This information is necessary for accurate physics
      * simulations.
      */
-    public get massProperties(): MassProperties {
-        return this._physicsPlugin.getMassProperties(this);
+    public getMassProperties(instanceIndex?: number): MassProperties {
+        return this._physicsPlugin.getMassProperties(this, instanceIndex);
     }
 
     /**
@@ -259,8 +234,8 @@ export class PhysicsBody {
      * which is the rate at which the body's velocity decreases over time. This is useful for simulating
      * the effects of air resistance or other forms of friction.
      */
-    public set linearDamping(damping: number) {
-        this._physicsPlugin.setLinearDamping(this, damping);
+    public setLinearDamping(damping: number, instanceIndex?: number) {
+        this._physicsPlugin.setLinearDamping(this, damping, instanceIndex);
     }
 
     /**
@@ -271,8 +246,8 @@ export class PhysicsBody {
      * resistance the body has to linear motion. This is useful for simulating realistic physics behavior
      * in a game.
      */
-    public get linearDamping(): number {
-        return this._physicsPlugin.getLinearDamping(this);
+    public getLinearDamping(instanceIndex?: number): number {
+        return this._physicsPlugin.getLinearDamping(this, instanceIndex);
     }
 
     /**
@@ -283,8 +258,8 @@ export class PhysicsBody {
      * By setting the damping, the body's angular velocity will be reduced over time, simulating the effect of friction.
      * This can be used to create realistic physical behavior in a physics engine.
      */
-    public set angularDamping(damping: number) {
-        this._physicsPlugin.setAngularDamping(this, damping);
+    public setAngularDamping(damping: number, instanceIndex?: number) {
+        this._physicsPlugin.setAngularDamping(this, damping, instanceIndex);
     }
 
     /**
@@ -296,8 +271,8 @@ export class PhysicsBody {
      * which is the rate of reduction of the angular velocity over time.
      * This is important for simulating realistic physics behavior in a game.
      */
-    public get angularDamping(): number {
-        return this._physicsPlugin.getAngularDamping(this);
+    public getAngularDamping(instanceIndex?: number): number {
+        return this._physicsPlugin.getAngularDamping(this, instanceIndex);
     }
 
     /**
@@ -309,8 +284,8 @@ export class PhysicsBody {
      * By setting the linear velocity, the physics object will move in the direction and speed specified by the vector.
      * This allows for realistic physics simulations, such as simulating the motion of a ball rolling down a hill.
      */
-    public setLinearVelocity(linVel: Vector3): void {
-        this._physicsPlugin.setLinearVelocity(this, linVel);
+    public setLinearVelocity(linVel: Vector3, instanceIndex?: number): void {
+        this._physicsPlugin.setLinearVelocity(this, linVel, instanceIndex);
     }
 
     /**
@@ -319,8 +294,8 @@ export class PhysicsBody {
      *
      * This method is useful for getting the linear velocity of a physics body in a physics engine.
      * This can be used to determine the speed and direction of the body, which can be used to calculate the motion of the body.*/
-    public getLinearVelocityToRef(linVel: Vector3): void {
-        return this._physicsPlugin.getLinearVelocityToRef(this, linVel);
+    public getLinearVelocityToRef(linVel: Vector3, instanceIndex?: number): void {
+        return this._physicsPlugin.getLinearVelocityToRef(this, linVel, instanceIndex);
     }
 
     /**
@@ -331,8 +306,8 @@ export class PhysicsBody {
      * simulating realistic physics behavior. The angular velocity is used to determine the rate of rotation of the object,
      * which is important for simulating realistic motion.
      */
-    public setAngularVelocity(angVel: Vector3): void {
-        this._physicsPlugin.setAngularVelocity(this, angVel);
+    public setAngularVelocity(angVel: Vector3, instanceIndex?: number): void {
+        this._physicsPlugin.setAngularVelocity(this, angVel, instanceIndex);
     }
 
     /**
@@ -342,8 +317,8 @@ export class PhysicsBody {
      * This method is useful for getting the angular velocity of a physics body, which can be used to determine the body's
      * rotational speed. This information can be used to create realistic physics simulations.
      */
-    public getAngularVelocityToRef(angVel: Vector3): void {
-        return this._physicsPlugin.getAngularVelocityToRef(this, angVel);
+    public getAngularVelocityToRef(angVel: Vector3, instanceIndex?: number): void {
+        return this._physicsPlugin.getAngularVelocityToRef(this, angVel, instanceIndex);
     }
 
     /**
@@ -351,12 +326,13 @@ export class PhysicsBody {
      *
      * @param impulse The impulse vector.
      * @param location The location of the impulse.
+     * @param instanceIndex For a instanced body, the instance to where the impulse should be applied. If not specified, the impulse is applied to all instances.
      *
      * This method is useful for applying an impulse to a physics object, which can be used to simulate physical forces such as gravity,
      * collisions, and explosions. This can be used to create realistic physics simulations in a game or other application.
      */
-    public applyImpulse(impulse: Vector3, location: Vector3): void {
-        this._physicsPlugin.applyImpulse(this, impulse, location);
+    public applyImpulse(impulse: Vector3, location: Vector3, instanceIndex?: number): void {
+        this._physicsPlugin.applyImpulse(this, impulse, location, instanceIndex);
     }
 
     /**
@@ -364,12 +340,13 @@ export class PhysicsBody {
      *
      * @param force The force vector.
      * @param location The location of the force.
+     * @param instanceIndex For a instanced body, the instance to where the force should be applied. If not specified, the force is applied to all instances.
      *
      * This method is useful for applying a force to a physics object, which can be used to simulate physical forces such as gravity,
      * collisions, and explosions. This can be used to create realistic physics simulations in a game or other application.
      */
-    public applyForce(force: Vector3, location: Vector3): void {
-        this._physicsPlugin.applyForce(this, force, location);
+    public applyForce(force: Vector3, location: Vector3, instanceIndex?: number): void {
+        this._physicsPlugin.applyForce(this, force, location, instanceIndex);
     }
 
     /**
@@ -399,68 +376,60 @@ export class PhysicsBody {
         return this._physicsPlugin.setCollisionCallbackEnabled(this, enabled);
     }
 
+    private _getObjectBoundingBox() {
+        const tmAbstractMesh = this.transformNode as AbstractMesh;
+        if (tmAbstractMesh && tmAbstractMesh.getBoundingInfoFromVerticesData) {
+            return tmAbstractMesh?.getBoundingInfoFromVerticesData()?.boundingBox;
+        }
+        return undefined;
+    }
+
     /**
-     * Gets the object extents
+     * Gets the object extents in its local space, but considering its scaling.
      * @returns the object extents
      */
     public getObjectExtents(): Vector3 {
-        const tmAbstractMesh = this.transformNode as AbstractMesh;
-        if (tmAbstractMesh.getBoundingInfo) {
-            const q = this.transformNode.rotationQuaternion;
-            const scaling = this.transformNode.scaling.clone();
-            //reset rotation
-            this.transformNode.rotationQuaternion = PhysicsBody._IDENTITY_QUATERNION;
-            //calculate the world matrix with no rotation
-            const worldMatrix = this.transformNode.computeWorldMatrix && this.transformNode.computeWorldMatrix(true);
-            if (worldMatrix) {
-                worldMatrix.decompose(scaling, undefined, undefined);
-            }
-            tmAbstractMesh.refreshBoundingInfo();
-            const boundingInfo = tmAbstractMesh.getBoundingInfo();
-            // get the global scaling of the object
-            const size = boundingInfo.boundingBox.extendSize.scale(2).multiplyInPlace(scaling);
-            size.x = Math.abs(size.x);
-            size.y = Math.abs(size.y);
-            size.z = Math.abs(size.z);
-            //bring back the rotation
-            this.transformNode.rotationQuaternion = q;
-            //calculate the world matrix with the new rotation
-            this.transformNode.computeWorldMatrix && this.transformNode.computeWorldMatrix(true);
-            return size;
+        const bi = this._getObjectBoundingBox();
+        if (bi) {
+            return bi.extendSize.scale(2).multiply(this.transformNode.scaling);
         } else {
             return PhysicsBody._DEFAULT_OBJECT_SIZE;
         }
     }
 
     /**
-     * returns the delta between the object bounding box center and the mesh origin
-     * @returns delta between object bounding box center and origin
+     * Get the minimum position of the object in its local space, but considering its scaling.
+     * @returns
      */
-    public getObjectCenterDelta(): Vector3 {
-        const tmAbstractMesh = this.transformNode as AbstractMesh;
-        if (tmAbstractMesh.getBoundingInfo) {
-            const delta = new Vector3();
-            const boundingInfo = tmAbstractMesh.getBoundingInfo();
-            this.transformNode.computeWorldMatrix(true);
-            tmAbstractMesh.refreshBoundingInfo();
-            delta.copyFrom(boundingInfo.boundingBox.centerWorld);
-            delta.subtractInPlace(tmAbstractMesh.getAbsolutePosition());
-            delta.x /= tmAbstractMesh.scaling.x;
-            delta.y /= tmAbstractMesh.scaling.y;
-            delta.z /= tmAbstractMesh.scaling.z;
-            return delta;
+    public getObjectMin(): Vector3 {
+        const bi = this._getObjectBoundingBox();
+        if (bi) {
+            return bi.minimum.multiply(this.transformNode.scaling);
         } else {
             return Vector3.Zero();
         }
     }
 
-    /**
-     * @returns geometric center of the associated mesh
+    /*
+     * Get the center of the object in its local space, but considering its scaling.
      */
     public getObjectCenter(): Vector3 {
-        if ((<any>this.transformNode).getBoundingInfo) {
-            const boundingInfo = (<any>this.transformNode).getBoundingInfo();
-            return boundingInfo.boundingBox.centerWorld;
+        const bi = this._getObjectBoundingBox();
+        if (bi) {
+            return bi.center.multiply(this.transformNode.scaling);
+        } else {
+            return Vector3.Zero();
+        }
+    }
+
+    /*
+     * Get the center of the object in world space.
+     * @returns geometric center of the associated mesh
+     */
+    public getObjectCenterWorld(): Vector3 {
+        const bi = this._getObjectBoundingBox();
+        if (bi) {
+            return bi.centerWorld;
         } else {
             return this.transformNode.position;
         }
@@ -471,10 +440,12 @@ export class PhysicsBody {
      *
      * @param childBody - The body to which the constraint will be applied.
      * @param constraint - The constraint to be applied.
+     * @param instanceIndex - If this body is instanced, the index of the instance to which the constraint will be applied. If not specified, no constraint will be applied.
+     * @param childInstanceIndex - If the child body is instanced, the index of the instance to which the constraint will be applied. If not specified, no constraint will be applied.
      *
      */
-    public addConstraint(childBody: PhysicsBody, constraint: PhysicsConstraint): void {
-        this._physicsPlugin.addConstraint(this, childBody, constraint);
+    public addConstraint(childBody: PhysicsBody, constraint: PhysicsConstraint, instanceIndex?: number, childInstanceIndex?: number): void {
+        this._physicsPlugin.addConstraint(this, childBody, constraint, instanceIndex, childInstanceIndex);
     }
 
     /**

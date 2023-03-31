@@ -71,6 +71,14 @@ export interface IPhysicsCollisionEvent {
      */
     collidedAgainst: PhysicsBody;
     /**
+     * index in instances array for the collider
+     */
+    colliderIndex: number;
+    /**
+     * index in instances array for the collidedAgainst
+     */
+    collidedAgainstIndex: number;
+    /**
      * World position where the collision occured
      */
     point: Nullable<Vector3>;
@@ -220,14 +228,7 @@ export interface IPhysicsEnginePluginV2 {
     /**
      * Collision observable
      */
-    onCollisionObservable: Observable<{
-        collider: PhysicsBody;
-        collidedAgainst: PhysicsBody;
-        point: Nullable<Vector3>;
-        distance: number;
-        impulse: number;
-        normal: Nullable<Vector3>;
-    }>;
+    onCollisionObservable: Observable<IPhysicsCollisionEvent>;
 
     setGravity(gravity: Vector3): void;
     setTimeStep(timeStep: number): void;
@@ -246,35 +247,35 @@ export interface IPhysicsEnginePluginV2 {
     setShape(body: PhysicsBody, shape: PhysicsShape): void;
     getShape(body: PhysicsBody): PhysicsShape;
     getShapeType(shape: PhysicsShape): ShapeType;
-    setFilterGroup(body: PhysicsBody, group: number): void;
-    getFilterGroup(body: PhysicsBody): number;
-    setEventMask(body: PhysicsBody, eventMask: number): void;
-    getEventMask(body: PhysicsBody): number;
-    setMotionType(body: PhysicsBody, motionType: PhysicsMotionType): void;
-    getMotionType(body: PhysicsBody): PhysicsMotionType;
-    computeMassProperties(body: PhysicsBody): MassProperties;
-    setMassProperties(body: PhysicsBody, massProps: MassProperties): void;
-    getMassProperties(body: PhysicsBody): MassProperties;
-    setLinearDamping(body: PhysicsBody, damping: number): void;
-    getLinearDamping(body: PhysicsBody): number;
-    setAngularDamping(body: PhysicsBody, damping: number): void;
-    getAngularDamping(body: PhysicsBody): number;
-    setLinearVelocity(body: PhysicsBody, linVel: Vector3): void;
-    getLinearVelocityToRef(body: PhysicsBody, linVel: Vector3): void;
-    applyImpulse(body: PhysicsBody, impulse: Vector3, location: Vector3): void;
-    applyForce(body: PhysicsBody, force: Vector3, location: Vector3): void;
-    setAngularVelocity(body: PhysicsBody, angVel: Vector3): void;
-    getAngularVelocityToRef(body: PhysicsBody, angVel: Vector3): void;
+    setEventMask(body: PhysicsBody, eventMask: number, instanceIndex?: number): void;
+    getEventMask(body: PhysicsBody, instanceIndex?: number): number;
+    setMotionType(body: PhysicsBody, motionType: PhysicsMotionType, instanceIndex?: number): void;
+    getMotionType(body: PhysicsBody, instanceIndex?: number): PhysicsMotionType;
+    computeMassProperties(body: PhysicsBody, instanceIndex?: number): MassProperties;
+    setMassProperties(body: PhysicsBody, massProps: MassProperties, instanceIndex?: number): void;
+    getMassProperties(body: PhysicsBody, instanceIndex?: number): MassProperties;
+    setLinearDamping(body: PhysicsBody, damping: number, instanceIndex?: number): void;
+    getLinearDamping(body: PhysicsBody, instanceIndex?: number): number;
+    setAngularDamping(body: PhysicsBody, damping: number, instanceIndex?: number): void;
+    getAngularDamping(body: PhysicsBody, instanceIndex?: number): number;
+    setLinearVelocity(body: PhysicsBody, linVel: Vector3, instanceIndex?: number): void;
+    getLinearVelocityToRef(body: PhysicsBody, linVel: Vector3, instanceIndex?: number): void;
+    applyImpulse(body: PhysicsBody, impulse: Vector3, location: Vector3, instanceIndex?: number): void;
+    applyForce(body: PhysicsBody, force: Vector3, location: Vector3, instanceIndex?: number): void;
+    setAngularVelocity(body: PhysicsBody, angVel: Vector3, instanceIndex?: number): void;
+    getAngularVelocityToRef(body: PhysicsBody, angVel: Vector3, instanceIndex?: number): void;
     getBodyGeometry(body: PhysicsBody): {};
     disposeBody(body: PhysicsBody): void;
-    setCollisionCallbackEnabled(body: PhysicsBody, enabled: boolean): void;
-    addConstraint(body: PhysicsBody, childBody: PhysicsBody, constraint: PhysicsConstraint): void;
-    getCollisionObservable(body: PhysicsBody): Observable<IPhysicsCollisionEvent>;
+    setCollisionCallbackEnabled(body: PhysicsBody, enabled: boolean, instanceIndex?: number): void;
+    addConstraint(body: PhysicsBody, childBody: PhysicsBody, constraint: PhysicsConstraint, instanceIndex?: number, childInstanceIndex?: number): void;
+    getCollisionObservable(body: PhysicsBody, instanceIndex?: number): Observable<IPhysicsCollisionEvent>;
 
     // shape
     initShape(shape: PhysicsShape, type: ShapeType, options: PhysicsShapeParameters): void;
-    setFilterLayer(shape: PhysicsShape, layer: number): void;
-    getFilterLayer(shape: PhysicsShape): number;
+    setShapeFilterMembershipMask(shape: PhysicsShape, membershipMask: number): void;
+    getShapeFilterMembershipMask(shape: PhysicsShape): number;
+    setShapeFilterCollideMask(shape: PhysicsShape, collideMask: number): void;
+    getShapeFilterCollideMask(shape: PhysicsShape): number;
     setMaterial(shape: PhysicsShape, material: PhysicsMaterial): void;
     setDensity(shape: PhysicsShape, density: number): void;
     getDensity(shape: PhysicsShape): number;

@@ -172,14 +172,14 @@ export class PhysicsAggregate {
         const motionType = this._options.mass === 0 ? PhysicsMotionType.STATIC : PhysicsMotionType.DYNAMIC;
         this.body = new PhysicsBody(transformNode, motionType, this._scene);
         this._addSizeOptions();
-        this._options.center = _options.center ?? this.body.getObjectCenterDelta();
+        this._options.center = _options.center ?? this.body.getObjectCenter();
         this.shape = new PhysicsShape({ type, parameters: this._options as any }, this._scene);
 
         this.material = { friction: this._options.friction, restitution: this._options.restitution };
         this.body.shape = this.shape;
         this.shape.material = this.material;
 
-        this.body.massProperties = { mass: this._options.mass };
+        this.body.setMassProperties({ mass: this._options.mass });
 
         this._nodeDisposeObserver = this.transformNode.onDisposeObservable.add(() => {
             // The body is already disposed on its own observable, so it's not necessary to dispose it here.
@@ -188,38 +188,51 @@ export class PhysicsAggregate {
     }
 
     private _addSizeOptions(): void {
+        this.transformNode.computeWorldMatrix(true);
         const impostorExtents = this.body.getObjectExtents();
+        const impostorMin = this.body.getObjectMin();
 
         switch (this.type) {
             case ShapeType.SPHERE:
-                if (Scalar.WithinEpsilon(impostorExtents.x, impostorExtents.y, 0.0001) && Scalar.WithinEpsilon(impostorExtents.x, impostorExtents.z, 0.0001)) {
-                    this._options.radius = this._options.radius ? this._options.radius : impostorExtents.x / 2;
+                if (
+                    !this._options.radius &&
+                    Scalar.WithinEpsilon(impostorExtents.x, impostorExtents.y, 0.0001) &&
+                    Scalar.WithinEpsilon(impostorExtents.x, impostorExtents.z, 0.0001)
+                ) {
+                    this._options.radius = impostorExtents.x / 2;
                 } else {
-                    Logger.Warn("Non uniform scaling is unsupported for sphere shapes.");
+                    Logger.Warn("Non uniform scaling is unsupported for sphere shapes. Setting the radius to the biggest extent.");
+                    this._options.radius = Math.max(impostorExtents.x, impostorExtents.y, impostorExtents.z) / 2;
                 }
                 break;
             case ShapeType.CAPSULE:
                 {
                     const capRadius = impostorExtents.x / 2;
                     this._options.radius = this._options.radius ?? capRadius;
-                    this._options.pointA = this._options.pointA ?? new Vector3(0, -impostorExtents.y * 0.5 + capRadius, 0);
-                    this._options.pointB = this._options.pointB ?? new Vector3(0, impostorExtents.y * 0.5 - capRadius, 0);
+                    this._options.pointA = this._options.pointA ?? new Vector3(0, impostorMin.y + capRadius, 0);
+                    this._options.pointB = this._options.pointB ?? new Vector3(0, impostorMin.y + impostorExtents.y - capRadius, 0);
                 }
                 break;
             case ShapeType.CYLINDER:
                 {
                     const capRadius = impostorExtents.x / 2;
                     this._options.radius = this._options.radius ? this._options.radius : capRadius;
-                    this._options.pointA = this._options.pointA ? this._options.pointA : new Vector3(0, -impostorExtents.y * 0.5, 0);
-                    this._options.pointB = this._options.pointB ? this._options.pointB : new Vector3(0, impostorExtents.y * 0.5, 0);
+                    this._options.pointA = this._options.pointA ? this._options.pointA : new Vector3(0, impostorMin.y, 0);
+                    this._options.pointB = this._options.pointB ? this._options.pointB : new Vector3(0, impostorMin.y + impostorExtents.y, 0);
                 }
                 break;
             case ShapeType.MESH:
             case ShapeType.CONVEX_HULL:
                 if (!this._options.mesh && (this.transformNode.getClassName() === "Mesh" || this.transformNode.getClassName() === "InstancedMesh")) {
                     this._options.mesh = this.transformNode as Mesh;
-                } else {
-                    Logger.Warn("No mesh was provided for the mesh shape");
+                } else if (
+                    !(
+                        this._options.mesh &&
+                        this._options.mesh.getClassName &&
+                        (this._options.mesh.getClassName() === "Mesh" || this._options.mesh.getClassName() === "InstancedMesh")
+                    )
+                ) {
+                    throw new Error("No valid mesh was provided for mesh or convex hull shape parameter.");
                 }
                 break;
             case ShapeType.BOX:

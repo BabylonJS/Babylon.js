@@ -94,21 +94,51 @@ export class PhysicsShape {
     }
 
     /**
+     * Set the membership mask of a shape. This is a bitfield of arbitrary
+     * "categories" to which the shape is a member. This is used in combination
+     * with the collide mask to determine if this shape should collide with
+     * another.
      *
-     * @param layer
+     * @param membershipMask Bitfield of categories of this shape.
      */
-    public set filterLayer(layer: number) {
-        this._physicsPlugin.setFilterLayer(this, layer);
+    public set filterMembershipMask(membershipMask: number) {
+        this._physicsPlugin.setShapeFilterMembershipMask(this, membershipMask);
+    }
+
+    /**
+     * Get the membership mask of a shape.
+     * @returns Bitmask of categories which this shape is a member of.
+     */
+    public get filterMembershipMask(): number {
+        return this._physicsPlugin.getShapeFilterMembershipMask(this);
+    }
+
+    /**
+     * Sets the collide mask of a shape. This is a bitfield of arbitrary
+     * "categories" to which this shape collides with. Given two shapes,
+     * the engine will check if the collide mask and membership overlap:
+     * shapeA.filterMembershipMask & shapeB.filterCollideMask
+     *
+     * If this value is zero (i.e. shapeB only collides with categories
+     * which shapeA is _not_ a member of) then the shapes will not collide.
+     *
+     * Note, the engine will also perform the same test with shapeA and
+     * shapeB swapped; the shapes will not collide if either shape has
+     * a collideMask which prevents collision with the other shape.
+     *
+     * @param collideMask Bitmask of categories this shape should collide with
+     */
+    public set filterCollideMask(collideMask: number) {
+        this._physicsPlugin.setShapeFilterCollideMask(this, collideMask);
     }
 
     /**
      *
-     * @returns
+     * @returns Bitmask of categories that this shape should collide with
      */
-    public get filterLayer(): number {
-        return this._physicsPlugin.getFilterLayer(this);
+    public get filterCollideMask(): number {
+        return this._physicsPlugin.getShapeFilterCollideMask(this);
     }
-
     /**
      *
      * @param material
