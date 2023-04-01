@@ -34,7 +34,6 @@ import { MessageLineComponent } from "shared-ui-components/lines/messageLineComp
 import { FileButtonLineComponent } from "shared-ui-components/lines/fileButtonLineComponent";
 import { IndentedTextLineComponent } from "shared-ui-components/lines/indentedTextLineComponent";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
-import { MetadataEditorComponent } from "inspector/components/actionTabs/tabs/tools/metadataEditorComponent";
 import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 
 import GIF from "gif.js.optimized";
@@ -498,9 +497,6 @@ export class ToolsTabComponent extends PaneComponent {
                     <TextInputLineComponent lockObject={this._lockObject} label="Hostname" target={this} propertyName="_reflectorHostname" />
                     <FloatLineComponent lockObject={this._lockObject} label="Port" target={this} propertyName="_reflectorPort" isInteger={true} />
                     <ButtonLineComponent label="Connect" onClick={() => this.connectReflector()} />
-                </LineContainerComponent>
-                <LineContainerComponent title="METADATA" selection={this.props.globalState}>
-                    <MetadataEditorComponent scene={scene} globalState={this.props.globalState} />
                 </LineContainerComponent>
             </div>
         );
