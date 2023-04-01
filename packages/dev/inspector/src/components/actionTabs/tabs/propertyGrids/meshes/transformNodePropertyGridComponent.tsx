@@ -19,7 +19,6 @@ import { CommonPropertyGridComponent } from "../commonPropertyGridComponent";
 import { VariantsPropertyGridComponent } from "../variantsPropertyGridComponent";
 import type { Mesh } from "core/Meshes/mesh";
 import { ParentPropertyGridComponent } from "../parentPropertyGridComponent";
-import { MetadataGridComponent } from "inspector/components/actionTabs/tabs/propertyGrids/metadata/metadataPropertyGridComponent";
 
 interface ITransformNodePropertyGridComponentProps {
     globalState: GlobalState;
@@ -37,7 +36,7 @@ export class TransformNodePropertyGridComponent extends React.Component<ITransfo
         const transformNode = this.props.transformNode;
 
         return (
-            <div className="pane">
+            <>
                 <CustomPropertyGridComponent
                     globalState={this.props.globalState}
                     target={transformNode}
@@ -105,8 +104,7 @@ export class TransformNodePropertyGridComponent extends React.Component<ITransfo
                     />
                 </LineContainerComponent>
                 <AnimationGridComponent globalState={this.props.globalState} animatable={transformNode} scene={transformNode.getScene()} lockObject={this.props.lockObject} />
-                <MetadataGridComponent globalState={this.props.globalState} entity={transformNode} />
-            </div>
+            </>
         );
     }
 }

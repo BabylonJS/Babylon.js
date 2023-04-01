@@ -26,7 +26,7 @@ export class FreeCameraPropertyGridComponent extends React.Component<IFreeCamera
         const camera = this.props.camera;
 
         return (
-            <div className="pane">
+            <>
                 <CommonCameraPropertyGridComponent
                     globalState={this.props.globalState}
                     lockObject={this.props.lockObject}
@@ -97,7 +97,7 @@ export class FreeCameraPropertyGridComponent extends React.Component<IFreeCamera
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

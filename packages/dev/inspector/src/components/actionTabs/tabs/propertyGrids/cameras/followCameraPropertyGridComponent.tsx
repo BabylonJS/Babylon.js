@@ -26,7 +26,7 @@ export class FollowCameraPropertyGridComponent extends React.Component<IFollowCa
         const camera = this.props.camera;
 
         return (
-            <div className="pane">
+            <>
                 <CommonCameraPropertyGridComponent
                     globalState={this.props.globalState}
                     lockObject={this.props.lockObject}
@@ -114,7 +114,7 @@ export class FollowCameraPropertyGridComponent extends React.Component<IFollowCa
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

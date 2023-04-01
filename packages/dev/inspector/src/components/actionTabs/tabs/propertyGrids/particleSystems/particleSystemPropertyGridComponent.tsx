@@ -328,7 +328,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
         );
 
         return (
-            <div className="pane">
+            <>
                 <CustomPropertyGridComponent
                     globalState={this.props.globalState}
                     target={system}
@@ -922,7 +922,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

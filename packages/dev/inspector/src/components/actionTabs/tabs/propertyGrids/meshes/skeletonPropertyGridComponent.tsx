@@ -215,7 +215,7 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
         }
 
         return (
-            <div className="pane">
+            <>
                 <CustomPropertyGridComponent
                     globalState={this.props.globalState}
                     target={skeleton}
@@ -246,7 +246,7 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
                     {displayOptions}
                 </LineContainerComponent>
                 <AnimationGridComponent globalState={this.props.globalState} animatable={skeleton} scene={skeleton.getScene()} lockObject={this.props.lockObject} />
-            </div>
+            </>
         );
     }
 }

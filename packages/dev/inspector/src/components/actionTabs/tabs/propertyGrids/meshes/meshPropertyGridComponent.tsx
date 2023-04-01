@@ -28,7 +28,6 @@ import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { AnimationGridComponent } from "../animations/animationPropertyGridComponent";
-import { MetadataGridComponent } from "inspector/components/actionTabs/tabs/propertyGrids/metadata/metadataPropertyGridComponent";
 import { RenderingManager } from "core/Rendering/renderingManager";
 import { CommonPropertyGridComponent } from "../commonPropertyGridComponent";
 import { VariantsPropertyGridComponent } from "../variantsPropertyGridComponent";
@@ -401,7 +400,7 @@ export class MeshPropertyGridComponent extends React.Component<
             : [];
 
         return (
-            <div className="pane">
+            <>
                 <CustomPropertyGridComponent
                     globalState={this.props.globalState}
                     target={mesh}
@@ -791,8 +790,7 @@ export class MeshPropertyGridComponent extends React.Component<
                         <CheckBoxLineComponent label="Display SkeletonMap" isSelected={() => displaySkeletonMap} onSelect={() => this.displaySkeletonMap()} />
                     )}
                 </LineContainerComponent>
-                <MetadataGridComponent globalState={this.props.globalState} entity={mesh} />
-            </div>
+            </>
         );
     }
 }

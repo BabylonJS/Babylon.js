@@ -21,14 +21,12 @@ export class EmptyPropertyGridComponent extends React.Component<IEmptyPropertyGr
 
     render() {
         return (
-            <div className="pane">
-                <CustomPropertyGridComponent
-                    globalState={this.props.globalState}
-                    lockObject={this.props.lockObject}
-                    target={this.props.item}
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-            </div>
+            <CustomPropertyGridComponent
+                globalState={this.props.globalState}
+                lockObject={this.props.lockObject}
+                target={this.props.item}
+                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+            />
         );
     }
 }

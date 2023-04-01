@@ -246,7 +246,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
         }
 
         return (
-            <div className="pane">
+            <>
                 <CommonMaterialPropertyGridComponent
                     globalState={this.props.globalState}
                     lockObject={this.props.lockObject}
@@ -1216,7 +1216,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

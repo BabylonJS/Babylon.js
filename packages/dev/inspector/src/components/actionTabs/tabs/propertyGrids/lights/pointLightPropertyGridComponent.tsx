@@ -26,7 +26,7 @@ export class PointLightPropertyGridComponent extends React.Component<IPointLight
         const light = this.props.light;
 
         return (
-            <div className="pane">
+            <>
                 <CommonLightPropertyGridComponent
                     globalState={this.props.globalState}
                     lockObject={this.props.lockObject}
@@ -62,7 +62,7 @@ export class PointLightPropertyGridComponent extends React.Component<IPointLight
                     light={light}
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
-            </div>
+            </>
         );
     }
 }
