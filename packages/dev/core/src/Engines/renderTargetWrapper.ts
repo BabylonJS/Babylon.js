@@ -218,7 +218,7 @@ export class RenderTargetWrapper {
                 isCube: this._isCube,
                 samples,
                 depthTextureFormat: format,
-                label
+                label,
             },
             this
         );
