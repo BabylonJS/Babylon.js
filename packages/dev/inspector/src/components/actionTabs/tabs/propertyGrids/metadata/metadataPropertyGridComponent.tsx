@@ -44,6 +44,7 @@ export class MetadataGridComponent extends React.Component<
         isValidJson: boolean;
     }
 > {
+    private textAreaHost: React.RefObject<HTMLDivElement>;
     /** @ignorenaming */
     constructor(props: IMetadataComponentProps) {
         super(props);
@@ -57,6 +58,7 @@ export class MetadataGridComponent extends React.Component<
             statusMessage: "ready to pick",
             isValidJson: false,
         };
+        this.textAreaHost = React.createRef();
         this.refreshSelected = this.refreshSelected.bind(this);
         this.populateGltfExtras = this.populateGltfExtras.bind(this);
     }
@@ -226,21 +228,16 @@ export class MetadataGridComponent extends React.Component<
     }
     */
 
-    // copyToClipboard() contains dDuplicated code from colorLineComponent, could place in utility
     copyToClipboard() {
-        const element = document.createElement("div");
-        element.textContent = this.state.selectedEntityMetadata;
-        document.body.appendChild(element);
-
-        if (window.getSelection) {
-            const range = document.createRange();
-            range.selectNode(element);
-            window.getSelection()!.removeAllRanges();
-            window.getSelection()!.addRange(range);
+        try {
+            const textAreaElement = this.textAreaHost.current?.firstChild?.firstChild as HTMLTextAreaElement;
+            textAreaElement.select();
+            textAreaElement.setSelectionRange(0, 99999); // For mobile devices
+            navigator.clipboard.writeText(textAreaElement.value);
+        } catch (error) {
+            window.alert("Could not copy to clipboard, see log.");
+            console.log(error);
         }
-
-        document.execCommand("copy");
-        element.remove();
     }
 
     /** Safely checks if valid JSON then appends necessary props without overwriting existing */
@@ -313,7 +310,7 @@ export class MetadataGridComponent extends React.Component<
                         }
                     }}
                 />
-                <div id="metadata-container" className={this.getClassName()}>
+                <div ref={this.textAreaHost} id="metadata-container" className={this.getClassName()}>
                     <TextInputLineComponent
                         multilines
                         value={this.state.selectedEntityMetadata}
