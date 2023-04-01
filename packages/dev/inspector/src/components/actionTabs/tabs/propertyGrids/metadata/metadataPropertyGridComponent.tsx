@@ -14,13 +14,23 @@ interface IMetadataComponentProps {
     entity: any;
 }
 
-enum MetaDataTypes {
+enum MetadataTypes {
     UNDEFINED = "undefined",
     NULL = "null",
     STRING = "string",
     OBJECT = "Object",
     JSON = "JSON",
 }
+
+/**
+ * UI Grid Component for Metadata property
+ * The following root Classes have been considered:
+ *   Node, Scene
+ *
+ *   The Following root Classes have NOT been considered (but has metadata property):
+ *     Material, AnimationGroup, Sound, BaseTexture, ReflectionProbe, SpriteManager
+ *
+ */
 export class MetadataGridComponent extends React.Component<
     IMetadataComponentProps,
     {
@@ -29,11 +39,12 @@ export class MetadataGridComponent extends React.Component<
         dirty: boolean;
         prettyJson: boolean;
         preventObjCorruption: boolean;
-        metadataPropType: MetaDataTypes;
+        metadataPropType: MetadataTypes;
         statusMessage: string | null;
         isValidJson: boolean;
     }
 > {
+    /** @ignorenaming */
     constructor(props: IMetadataComponentProps) {
         super(props);
         this.state = {
@@ -42,7 +53,7 @@ export class MetadataGridComponent extends React.Component<
             dirty: false,
             prettyJson: false,
             preventObjCorruption: true,
-            metadataPropType: MetaDataTypes.UNDEFINED,
+            metadataPropType: MetadataTypes.UNDEFINED,
             statusMessage: "ready to pick",
             isValidJson: false,
         };
@@ -50,13 +61,15 @@ export class MetadataGridComponent extends React.Component<
         this.populateGltfExtras = this.populateGltfExtras.bind(this);
     }
 
+    /** @ignorenaming */
     componentDidMount() {
         if (this.props.globalState) {
             this.refreshSelected();
         }
     }
 
-    componentDidUpdate(prevProps: Readonly<IMetadataComponentProps>, prevState: Readonly<any>, snapshot?: any): void {
+    /** @ignorenaming */
+    componentDidUpdate(prevProps: Readonly<IMetadataComponentProps>): void {
         if (this.props.entity) {
             if (!prevProps.entity || prevProps.entity.id !== this.props.entity.id) {
                 this.setState({
@@ -67,6 +80,7 @@ export class MetadataGridComponent extends React.Component<
         }
     }
 
+    /** on entity refresh */
     refreshSelected() {
         if (this.props.entity) {
             const validJson = this.parsableJson(this.props.entity.metadata);
@@ -80,40 +94,48 @@ export class MetadataGridComponent extends React.Component<
             this.setState({
                 statusMessage: "could not find entity, please pick again",
                 selectedEntityMetadata: "",
-                metadataPropType: MetaDataTypes.UNDEFINED,
+                metadataPropType: MetadataTypes.UNDEFINED,
                 isValidJson: false,
             });
         }
     }
 
+    /** textarea style */
     getClassName(): string {
         switch (this.state.metadataPropType) {
-            case MetaDataTypes.STRING:
+            case MetadataTypes.STRING:
                 return "meta-string";
-            case MetaDataTypes.JSON:
+            case MetadataTypes.JSON:
                 return "meta-json";
-            case MetaDataTypes.OBJECT:
+            case MetadataTypes.OBJECT:
                 return this.state.preventObjCorruption ? "meta-object-protect" : "meta-object";
             default:
                 return "";
         }
     }
 
-    getEntityType(entity: any): MetaDataTypes {
+    /**
+     * Determines the Metadata type
+     * @param entity Picked entity
+     * @returns MetadataTypes
+     */
+    getEntityType(entity: any): MetadataTypes {
         if (Object.prototype.hasOwnProperty.call(entity, "metadata")) {
             const meta = entity.metadata;
-            if (this.isString(meta)) return MetaDataTypes.STRING;
-            if (meta === null) return MetaDataTypes.NULL;
-            if (!this.objectCanSafelyStringify(meta)) return MetaDataTypes.OBJECT;
-            return MetaDataTypes.JSON;
+            if (this.isString(meta)) return MetadataTypes.STRING;
+            if (meta === null) return MetadataTypes.NULL;
+            if (!this.objectCanSafelyStringify(meta)) return MetadataTypes.OBJECT;
+            return MetadataTypes.JSON;
         }
-        return MetaDataTypes.UNDEFINED;
+        return MetadataTypes.UNDEFINED;
     }
 
+    /** @ignorenaming */
     isString(input: any): boolean {
         return typeof input === "string" || input instanceof String;
     }
 
+    /** @ignorenaming */
     parsableJson(object: Object): boolean {
         if (!object) return false;
         try {
@@ -123,6 +145,7 @@ export class MetadataGridComponent extends React.Component<
         }
     }
 
+    /** @ignorenaming */
     parsableString(string: string): JSON | null {
         try {
             this.setState({ statusMessage: null });
@@ -133,12 +156,18 @@ export class MetadataGridComponent extends React.Component<
         }
     }
 
+    /** @ignorenaming */
     parseMetaObject(validJson: boolean, metadata: any) {
         if (validJson) return JSON.stringify(metadata, undefined, this.state.prettyJson ? 2 : undefined);
         if (this.isString(metadata)) return metadata;
         return String(metadata);
     }
 
+    /**
+     * Recurse through an object to check for any Functions, returns False if found at least one
+     * @param o Any Object, String or number
+     * @returns Boolean
+     */
     objectCanSafelyStringify(o: Object | string | number): boolean {
         if (o === null || typeof o === "function") return false;
         if (typeof o === "number" || this.isString(o)) return true;
@@ -214,6 +243,7 @@ export class MetadataGridComponent extends React.Component<
         element.remove();
     }
 
+    /** Safely checks if valid JSON then appends necessary props without overwriting existing */
     populateGltfExtras() {
         if (this.state.isValidJson) {
             try {
@@ -253,8 +283,9 @@ export class MetadataGridComponent extends React.Component<
         }
     }
 
+    /** @ignorenaming */
     render() {
-        const protectObj = this.state.preventObjCorruption && this.state.metadataPropType === MetaDataTypes.OBJECT;
+        const protectObj = this.state.preventObjCorruption && this.state.metadataPropType === MetadataTypes.OBJECT;
         return (
             <LineContainerComponent title="METADATA" closed={true} selection={this.props.globalState}>
                 <TextLineComponent label="Property type" value={this.state.metadataPropType} />
@@ -271,7 +302,7 @@ export class MetadataGridComponent extends React.Component<
                     onSelect={(value) => {
                         this.setState({ prettyJson: value });
                         // Update textArea
-                        if (this.props.entity && this.state.metadataPropType !== MetaDataTypes.NULL && this.state.metadataPropType !== MetaDataTypes.UNDEFINED) {
+                        if (this.props.entity && this.state.metadataPropType !== MetadataTypes.NULL && this.state.metadataPropType !== MetadataTypes.UNDEFINED) {
                             const parsable = this.parsableString(this.state.selectedEntityMetadata);
                             if (parsable && !this.isString(parsable)) {
                                 this.setState({
@@ -296,21 +327,21 @@ export class MetadataGridComponent extends React.Component<
                             if (value === "" || value === "undefined") {
                                 this.setState({
                                     isValidJson: false,
-                                    metadataPropType: MetaDataTypes.UNDEFINED,
+                                    metadataPropType: MetadataTypes.UNDEFINED,
                                 });
                                 return;
                             }
                             if (value === "null") {
                                 this.setState({
                                     isValidJson: false,
-                                    metadataPropType: MetaDataTypes.NULL,
+                                    metadataPropType: MetadataTypes.NULL,
                                 });
                                 return;
                             }
                             const parsedJson = !!this.parsableString(value);
                             this.setState({
                                 isValidJson: parsedJson,
-                                metadataPropType: parsedJson ? MetaDataTypes.JSON : MetaDataTypes.STRING,
+                                metadataPropType: parsedJson ? MetadataTypes.JSON : MetadataTypes.STRING,
                             });
                         }}
                     />
@@ -325,12 +356,12 @@ export class MetadataGridComponent extends React.Component<
                     label={`Update metadata${this.props.entity ? " as " + this.state.metadataPropType : ""}`}
                     onClick={() => {
                         if (this.props.entity) {
-                            if (this.state.metadataPropType === MetaDataTypes.NULL) {
+                            if (this.state.metadataPropType === MetadataTypes.NULL) {
                                 this.props.entity.metadata = null;
                                 this.setState({ statusMessage: "metadata set to null", dirty: false });
                                 return;
                             }
-                            if (this.state.metadataPropType === MetaDataTypes.UNDEFINED) {
+                            if (this.state.metadataPropType === MetadataTypes.UNDEFINED) {
                                 delete this.props.entity.metadata;
                                 this.setState({ statusMessage: "metadata set to undefined", dirty: false });
                                 return;
