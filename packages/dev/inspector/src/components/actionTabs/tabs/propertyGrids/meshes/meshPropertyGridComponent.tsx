@@ -40,7 +40,6 @@ import { NormalMaterial } from "materials/normal/normalMaterial";
 
 import "core/Physics/physicsEngineComponent";
 import "core/Physics/v1/physicsEngineComponent";
-import "core/Physics/v1/physicsEngineComponent";
 
 import { ParentPropertyGridComponent } from "../parentPropertyGridComponent";
 import { Tools } from "core/Misc/tools";
