@@ -78,6 +78,8 @@ const viewDescriptorSwapChain: GPUTextureViewDescriptor = {
     arrayLayerCount: 1,
 };
 
+const disableUniformityAnalysisMarker = "/* disable_uniformity_analysis */";
+
 /**
  * Options to load the associated Glslang library
  */
@@ -1599,11 +1601,13 @@ export class WebGPUEngine extends Engine {
     private _createPipelineStageDescriptor(
         vertexShader: Uint32Array | string,
         fragmentShader: Uint32Array | string,
-        shaderLanguage: ShaderLanguage
+        shaderLanguage: ShaderLanguage,
+        disableUniformityAnalysisInVertex: boolean,
+        disableUniformityAnalysisInFragment: boolean
     ): IWebGPURenderPipelineStageDescriptor {
         if (this._tintWASM && shaderLanguage === ShaderLanguage.GLSL) {
-            vertexShader = this._tintWASM.convertSpirV2WGSL(vertexShader as Uint32Array) as any;
-            fragmentShader = this._tintWASM.convertSpirV2WGSL(fragmentShader as Uint32Array) as any;
+            vertexShader = this._tintWASM.convertSpirV2WGSL(vertexShader as Uint32Array, disableUniformityAnalysisInVertex);
+            fragmentShader = this._tintWASM.convertSpirV2WGSL(fragmentShader as Uint32Array, disableUniformityAnalysisInFragment);
         }
 
         return {
@@ -1623,10 +1627,13 @@ export class WebGPUEngine extends Engine {
     }
 
     private _compileRawPipelineStageDescriptor(vertexCode: string, fragmentCode: string, shaderLanguage: ShaderLanguage): IWebGPURenderPipelineStageDescriptor {
+        const disableUniformityAnalysisInVertex = vertexCode.indexOf(disableUniformityAnalysisMarker) >= 0;
+        const disableUniformityAnalysisInFragment = fragmentCode.indexOf(disableUniformityAnalysisMarker) >= 0;
+
         const vertexShader = shaderLanguage === ShaderLanguage.GLSL ? this._compileRawShaderToSpirV(vertexCode, "vertex") : vertexCode;
         const fragmentShader = shaderLanguage === ShaderLanguage.GLSL ? this._compileRawShaderToSpirV(fragmentCode, "fragment") : fragmentCode;
 
-        return this._createPipelineStageDescriptor(vertexShader, fragmentShader, shaderLanguage);
+        return this._createPipelineStageDescriptor(vertexShader, fragmentShader, shaderLanguage, disableUniformityAnalysisInVertex, disableUniformityAnalysisInFragment);
     }
 
     private _compilePipelineStageDescriptor(
@@ -1637,6 +1644,9 @@ export class WebGPUEngine extends Engine {
     ): IWebGPURenderPipelineStageDescriptor {
         this.onBeforeShaderCompilationObservable.notifyObservers(this);
 
+        const disableUniformityAnalysisInVertex = vertexCode.indexOf(disableUniformityAnalysisMarker) >= 0;
+        const disableUniformityAnalysisInFragment = fragmentCode.indexOf(disableUniformityAnalysisMarker) >= 0;
+
         const shaderVersion = "#version 450\n";
         const vertexShader =
             shaderLanguage === ShaderLanguage.GLSL ? this._compileShaderToSpirV(vertexCode, "vertex", defines, shaderVersion) : this._getWGSLShader(vertexCode, "vertex", defines);
@@ -1645,7 +1655,7 @@ export class WebGPUEngine extends Engine {
                 ? this._compileShaderToSpirV(fragmentCode, "fragment", defines, shaderVersion)
                 : this._getWGSLShader(fragmentCode, "fragment", defines);
 
-        const program = this._createPipelineStageDescriptor(vertexShader, fragmentShader, shaderLanguage);
+        const program = this._createPipelineStageDescriptor(vertexShader, fragmentShader, shaderLanguage, disableUniformityAnalysisInVertex, disableUniformityAnalysisInFragment);
 
         this.onAfterShaderCompilationObservable.notifyObservers(this);
 

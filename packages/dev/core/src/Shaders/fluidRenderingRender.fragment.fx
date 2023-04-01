@@ -1,3 +1,5 @@
+/* disable_uniformity_analysis */
+
 // Index of refraction for water
 #define IOR 1.333
 
@@ -140,7 +142,7 @@ void main(void) {
     vec3 rayDir = normalize(viewPos); // direction from camera position to view position
 
 #ifdef FLUIDRENDERING_DIFFUSETEXTURE
-    vec3 diffuseColor = texture2D(diffuseSampler, texCoord).rgb;
+    vec3 diffuseColor = textureLod(diffuseSampler, texCoord, 0.0).rgb;
 #endif
 
     vec3  lightDir = normalize(vec3(viewMatrix * vec4(-dirLight, 0.)));
@@ -157,7 +159,7 @@ void main(void) {
     // Refraction color
     vec3 refractionDir = refract(rayDir, normal, ETA);
 
-    vec3 transmitted = (texture2D(textureSampler, vec2(texCoord + refractionDir.xy * thickness * refractionStrength)).rgb);
+    vec3 transmitted = (textureLod(textureSampler, vec2(texCoord + refractionDir.xy * thickness * refractionStrength), 0.0).rgb);
     vec3 transmittance = exp(-density * thickness * (1.0 - diffuseColor)); // Beer law
    
     vec3 refractionColor = transmitted * transmittance;
