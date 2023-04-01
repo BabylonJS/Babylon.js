@@ -22,19 +22,10 @@ enum MetadataTypes {
     JSON = "JSON",
 }
 
-/**
- * UI Grid Component for Metadata property
- * The following root Classes have been considered:
- *   Node, Scene
- *
- *   The Following root Classes have NOT been considered (but has metadata property):
- *     Material, AnimationGroup, Sound, BaseTexture, ReflectionProbe, SpriteManager
- *
- */
+/** @ignorenaming */
 export class MetadataGridComponent extends React.Component<
     IMetadataComponentProps,
     {
-        entityHasMetadataProp: boolean;
         selectedEntityMetadata: string;
         dirty: boolean;
         prettyJson: boolean;
@@ -49,7 +40,6 @@ export class MetadataGridComponent extends React.Component<
     constructor(props: IMetadataComponentProps) {
         super(props);
         this.state = {
-            entityHasMetadataProp: false,
             selectedEntityMetadata: "",
             dirty: false,
             prettyJson: false,
@@ -74,9 +64,6 @@ export class MetadataGridComponent extends React.Component<
     componentDidUpdate(prevProps: Readonly<IMetadataComponentProps>): void {
         if (this.props.entity) {
             if (!prevProps.entity || prevProps.entity.id !== this.props.entity.id) {
-                this.setState({
-                    entityHasMetadataProp: Object.prototype.hasOwnProperty.call(this.props.entity, "metadata"),
-                });
                 this.refreshSelected();
             }
         }
