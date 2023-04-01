@@ -305,7 +305,10 @@ export class MetadataGridComponent extends React.Component<
                     label="Prevent Object corruption"
                     disabled={false}
                     isSelected={() => this.state.preventObjCorruption}
-                    onSelect={(value) => this.setState({ preventObjCorruption: value })}
+                    onSelect={(value) => {
+                        this.setState({ preventObjCorruption: value });
+                        this.setTextAreaDisabled(value && this.state.metadataPropType === MetadataTypes.OBJECT);
+                    }}
                 />
                 <CheckBoxLineComponent
                     label="Pretty JSON"
