@@ -67,7 +67,7 @@ export class WebGPUTintWASM {
         return Promise.reject("twgsl is not available.");
     }
 
-    public convertSpirV2WGSL(code: Uint32Array, disableUniformityAnalysis: boolean): string {
+    public convertSpirV2WGSL(code: Uint32Array, disableUniformityAnalysis = false): string {
         const ccode = WebGPUTintWASM._twgsl.convertSpirV2WGSL(code);
         if (WebGPUTintWASM.ShowWGSLShaderCode) {
             console.log(ccode);
