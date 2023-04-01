@@ -74,7 +74,6 @@ export class MetadataGridComponent extends React.Component<
         if (this.props.entity) {
             const validJson = this.parsableJson(this.props.entity.metadata);
             const metadataPropType = this.getEntityType(this.props.entity);
-            console.log(metadataPropType, this.props.entity);
             this.setState({
                 statusMessage: "", // loaded entity
                 selectedEntityMetadata: this.parseMetaObject(validJson, this.props.entity.metadata),
