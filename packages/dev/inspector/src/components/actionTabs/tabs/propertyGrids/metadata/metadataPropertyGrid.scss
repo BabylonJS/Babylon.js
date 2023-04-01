@@ -41,14 +41,14 @@
 }
 
 .copy-root {
+    display: grid;
+    justify-content: end;
     height: 30px;
 }
 
 .copy-container {
     height: 30px;
     width: 30px;
-    right: 0;
-    position: fixed;
     cursor: pointer;
 }
 
