@@ -44,7 +44,7 @@ export class MetadataGridComponent extends React.Component<
         isValidJson: boolean;
     }
 > {
-    private textAreaHost: React.RefObject<HTMLDivElement>;
+    private readonly _textAreaHost: React.RefObject<HTMLDivElement>;
     /** @ignorenaming */
     constructor(props: IMetadataComponentProps) {
         super(props);
@@ -58,7 +58,7 @@ export class MetadataGridComponent extends React.Component<
             statusMessage: "ready to pick",
             isValidJson: false,
         };
-        this.textAreaHost = React.createRef();
+        this._textAreaHost = React.createRef();
         this.refreshSelected = this.refreshSelected.bind(this);
         this.populateGltfExtras = this.populateGltfExtras.bind(this);
     }
@@ -86,12 +86,15 @@ export class MetadataGridComponent extends React.Component<
     refreshSelected() {
         if (this.props.entity) {
             const validJson = this.parsableJson(this.props.entity.metadata);
+            const metadataPropType = this.getEntityType(this.props.entity);
+            console.log(metadataPropType, this.props.entity);
             this.setState({
                 statusMessage: "", // loaded entity
                 selectedEntityMetadata: this.parseMetaObject(validJson, this.props.entity.metadata),
-                metadataPropType: this.getEntityType(this.props.entity),
+                metadataPropType: metadataPropType,
                 isValidJson: validJson,
             });
+            this.setTextAreaDisabled(this.state.preventObjCorruption && metadataPropType === MetadataTypes.OBJECT);
         } else {
             this.setState({
                 statusMessage: "could not find entity, please pick again",
@@ -99,6 +102,17 @@ export class MetadataGridComponent extends React.Component<
                 metadataPropType: MetadataTypes.UNDEFINED,
                 isValidJson: false,
             });
+            this.setTextAreaDisabled(true);
+        }
+    }
+
+    /** @ignorenaming */
+    setTextAreaDisabled(disabled: boolean) {
+        try {
+            const textAreaElement = this._textAreaHost.current?.firstChild?.firstChild as HTMLTextAreaElement;
+            textAreaElement.disabled = disabled;
+        } catch (error) {
+            console.error(error);
         }
     }
 
@@ -171,8 +185,8 @@ export class MetadataGridComponent extends React.Component<
      * @returns Boolean
      */
     objectCanSafelyStringify(o: Object | string | number): boolean {
-        if (o === null || typeof o === "function") return false;
-        if (typeof o === "number" || this.isString(o)) return true;
+        if (typeof o === "function") return false;
+        if (o === null || o === true || o === false || typeof o === "number" || this.isString(o)) return true;
 
         if (typeof o === "object") {
             if (Object.values(o).length === 0) return true;
@@ -190,10 +204,10 @@ export class MetadataGridComponent extends React.Component<
     testObjectCanSafelyStringify() {
         const scene = this.props.entity._scene;
         console.log("/// test Truthy and Falsey ///");
-        console.log("expect false", this.objectCanSafelyStringify(true));
-        console.log("expect false", this.objectCanSafelyStringify(false));
+        console.log("expect true", this.objectCanSafelyStringify(true));
+        console.log("expect true", this.objectCanSafelyStringify(false));
+        console.log("expect true", this.objectCanSafelyStringify(null as any));
         console.log("expect false", this.objectCanSafelyStringify(undefined as any));
-        console.log("expect false", this.objectCanSafelyStringify(null as any));
 
         console.log("/// test Strings");
         console.log("expect true", this.objectCanSafelyStringify(""));
@@ -201,8 +215,9 @@ export class MetadataGridComponent extends React.Component<
         console.log("expect true", this.objectCanSafelyStringify(String("hello")));
 
         console.log("/// test Number");
-        console.log("expect true", this.objectCanSafelyStringify(String(2)));
-        console.log("expect true", this.objectCanSafelyStringify(String(Number(9))));
+        console.log("expect true", this.objectCanSafelyStringify(2));
+        console.log("expect true", this.objectCanSafelyStringify(2.456));
+        console.log("expect true", this.objectCanSafelyStringify(Number(9)));
 
         console.log("/// test Array");
         console.log("expect true", this.objectCanSafelyStringify(String([])));
@@ -230,13 +245,13 @@ export class MetadataGridComponent extends React.Component<
 
     copyToClipboard() {
         try {
-            const textAreaElement = this.textAreaHost.current?.firstChild?.firstChild as HTMLTextAreaElement;
+            const textAreaElement = this._textAreaHost.current?.firstChild?.firstChild as HTMLTextAreaElement;
             textAreaElement.select();
             textAreaElement.setSelectionRange(0, 99999); // For mobile devices
             navigator.clipboard.writeText(textAreaElement.value);
         } catch (error) {
             window.alert("Could not copy to clipboard, see log.");
-            console.log(error);
+            console.error(error);
         }
     }
 
@@ -310,7 +325,7 @@ export class MetadataGridComponent extends React.Component<
                         }
                     }}
                 />
-                <div ref={this.textAreaHost} id="metadata-container" className={this.getClassName()}>
+                <div ref={this._textAreaHost} id="metadata-container" className={this.getClassName()}>
                     <TextInputLineComponent
                         multilines
                         value={this.state.selectedEntityMetadata}
