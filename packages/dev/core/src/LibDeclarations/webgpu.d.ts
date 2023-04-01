@@ -155,10 +155,7 @@ declare class GPUBuffer implements GPUObjectBase {
     destroy(): void;
 }
 
-type GPUBufferMapState = 
-    | "unmapped"
-    | "pending"
-    | "mapped";
+type GPUBufferMapState = "unmapped" | "pending" | "mapped";
 
 interface GPUBufferDescriptor extends GPUObjectDescriptorBase {
     size: GPUSize64;
@@ -497,9 +494,7 @@ interface GPUPipelineErrorInit {
     reason: GPUPipelineErrorReason;
 }
 
-type GPUPipelineErrorReason =
-    | "validation"
-    | "internal";
+type GPUPipelineErrorReason = "validation" | "internal";
 
 type GPUAutoLayoutMode = "auto";
 
