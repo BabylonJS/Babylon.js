@@ -95,8 +95,10 @@ export class MetadataGridComponent extends React.Component<
     /** @ignorenaming */
     setTextAreaDisabled(disabled: boolean) {
         try {
-            const textAreaElement = this._textAreaHost.current?.firstChild?.firstChild as HTMLTextAreaElement;
-            textAreaElement.disabled = disabled;
+            if (this._textAreaHost.current) {
+                const textAreaElement = this._textAreaHost.current?.firstChild?.firstChild as HTMLTextAreaElement;
+                textAreaElement.disabled = disabled;
+            }
         } catch (error) {
             console.error(error);
         }
