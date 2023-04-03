@@ -4,6 +4,7 @@
     --button: #333333;
     --buttonBackground: #ffffff;
     --buttonDisabledBackground: #c8c8c8;
+    --disabledBackground: #c8c8c8;
     --buttonPressed: #ffffff;
     --buttonPressedBackground: #606060;
     --buttonHoverBackground: #afafaf;
@@ -318,6 +319,11 @@
             font-weight: 600;
         }
 
+        .disabled {
+            color: var(--backgroundGrey);
+            background-color: var(--disabledBackground);
+        }
+
         img {
             width: 30px;
         }
@@ -384,6 +390,11 @@
         height: 100%;
         display: grid;
         grid-template-columns: 1fr 120px;
+
+        .disabled {
+            color: var(--backgroundGrey);
+            background-color: var(--disabledBackground);
+        }
 
         .label {
             grid-column: 1;

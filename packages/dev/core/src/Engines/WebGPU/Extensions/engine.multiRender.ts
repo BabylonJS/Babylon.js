@@ -83,6 +83,17 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
 
     let depthStencilTexture = null;
     if (generateDepthBuffer || generateStencilBuffer || generateDepthTexture) {
+        if (!generateDepthTexture) {
+            // The caller doesn't want a depth texture, so we are free to use the depth texture format we want.
+            // So, we will align with what the WebGL engine does
+            if (generateDepthBuffer && generateStencilBuffer) {
+                depthTextureFormat = Constants.TEXTUREFORMAT_DEPTH24_STENCIL8;
+            } else if (generateDepthBuffer) {
+                depthTextureFormat = Constants.TEXTUREFORMAT_DEPTH32_FLOAT;
+            } else {
+                depthTextureFormat = Constants.TEXTUREFORMAT_STENCIL8;
+            }
+        }
         depthStencilTexture = rtWrapper.createDepthStencilTexture(0, false, generateStencilBuffer, 1, depthTextureFormat);
     }
 

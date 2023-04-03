@@ -2080,6 +2080,7 @@ export class NativeEngine extends Engine {
         let format = Constants.TEXTUREFORMAT_RGBA;
         let useSRGBBuffer = false;
         let samples = 1;
+        let label: string | undefined;
         if (options !== undefined && typeof options === "object") {
             generateMipMaps = !!options.generateMipMaps;
             type = options.type === undefined ? Constants.TEXTURETYPE_UNSIGNED_INT : options.type;
@@ -2087,6 +2088,7 @@ export class NativeEngine extends Engine {
             format = options.format === undefined ? Constants.TEXTUREFORMAT_RGBA : options.format;
             useSRGBBuffer = options.useSRGBBuffer === undefined ? false : options.useSRGBBuffer;
             samples = options.samples ?? 1;
+            label = options.label;
         } else {
             generateMipMaps = !!options;
         }
@@ -2132,6 +2134,7 @@ export class NativeEngine extends Engine {
         texture.samplingMode = samplingMode;
         texture.type = type;
         texture.format = format;
+        texture.label = label;
 
         this._internalTexturesCache.push(texture);
 

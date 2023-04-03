@@ -115,6 +115,7 @@ varying vec2 vUV;
 #ifndef BLUR_BYPASS
 	uniform sampler2D depthSampler;
 #ifdef BLUR_LEGACY
+    #define inline
 	float blur13Bilateral(sampler2D image, vec2 uv, vec2 step) {
 		float result = 0.0;
 		vec2 off1 = vec2(1.411764705882353) * step;

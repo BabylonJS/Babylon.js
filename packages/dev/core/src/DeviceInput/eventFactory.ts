@@ -106,6 +106,10 @@ export class DeviceEventFactory {
     ): any {
         const evt = this._CreateMouseEvent(deviceType, deviceSlot, inputIndex, currentState, deviceInputSystem, elementToAttachTo);
 
+        // While WheelEvents don't generally have a pointerId, we used to add one in the InputManager
+        // This line has been added to make the InputManager more platform-agnostic
+        // Similar code exists in the WebDeviceInputSystem to handle browser created events
+        evt.pointerId = 1;
         evt.type = "wheel";
         evt.deltaMode = EventConstants.DOM_DELTA_PIXEL;
         evt.deltaX = 0;

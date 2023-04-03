@@ -42,7 +42,11 @@ void main(void)
                     break;
                 
                 vec2 offset = vUV + velocity * (hlim + float(i));
-                result += texture2D(textureSampler, offset);
+                #if defined(WEBGPU)
+                    result += texture2DLodEXT(textureSampler, offset, 0.0);
+                #else
+                    result += texture2D(textureSampler, offset);
+                #endif
             }
 
             gl_FragColor = result / float(samplesCount);
@@ -71,7 +75,11 @@ void main(void)
                     break;
                 
                 vec2 offset1 = vUV + velocity * (float(i) / float(nSamples - 1) - 0.5);
-                result += texture2D(textureSampler, offset1);
+                #if defined(WEBGPU)
+                    result += texture2DLodEXT(textureSampler, offset1, 0.0);
+                #else
+                    result += texture2D(textureSampler, offset1);
+                #endif
             }
 
             gl_FragColor = result / float(nSamples);

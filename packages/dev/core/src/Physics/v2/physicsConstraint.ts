@@ -56,7 +56,7 @@ export class PhysicsConstraint {
      * @returns The type of the constraint.
      *
      */
-    public getType(): ConstraintType {
+    public get type(): ConstraintType {
         return this._type;
     }
 
@@ -66,7 +66,7 @@ export class PhysicsConstraint {
      * @returns The physics constraint parameters.
      *
      */
-    public getOptions(): PhysicsConstraintParameters {
+    public get options(): PhysicsConstraintParameters {
         return this._options;
     }
 
@@ -74,7 +74,7 @@ export class PhysicsConstraint {
      * Enable/disable the constraint
      * @param isEnabled value for the constraint
      */
-    public setEnabled(isEnabled: boolean): void {
+    public set isEnabled(isEnabled: boolean) {
         this._physicsPlugin.setEnabled(this, isEnabled);
     }
 
@@ -82,7 +82,7 @@ export class PhysicsConstraint {
      *
      * @returns true if constraint is enabled
      */
-    public getEnabled(): boolean {
+    public get isEnabled(): boolean {
         return this._physicsPlugin.getEnabled(this);
     }
 
@@ -92,7 +92,7 @@ export class PhysicsConstraint {
      * @param isEnabled - A boolean value indicating whether collisions should be enabled or disabled.
      *
      */
-    public setCollisionsEnabled(isEnabled: boolean): void {
+    public set isCollisionsEnabled(isEnabled: boolean) {
         this._physicsPlugin.setCollisionsEnabled(this, isEnabled);
     }
 
@@ -102,7 +102,7 @@ export class PhysicsConstraint {
      * @returns `true` if collisions are enabled, `false` otherwise.
      *
      */
-    public getCollisionsEnabled(): boolean {
+    public get isCollisionsEnabled(): boolean {
         return this._physicsPlugin.getCollisionsEnabled(this);
     }
 

@@ -96,6 +96,17 @@ export class PhysicsBody {
     }
 
     /**
+     * Clone the PhysicsBody to a new body and assign it to the transformNode parameter
+     * @param transformNode transformNode that will be used for the cloned PhysicsBody
+     * @returns the newly cloned PhysicsBody
+     */
+    public clone(transformNode: TransformNode): PhysicsBody {
+        const clonedBody = new PhysicsBody(transformNode, this.motionType, this.transformNode.getScene());
+        clonedBody.shape = this.shape;
+        return clonedBody;
+    }
+
+    /**
      * If a physics body is connected to an instanced node, update the number physic instances to match the number of node instances.
      */
     public updateBodyInstances() {
@@ -120,7 +131,7 @@ export class PhysicsBody {
      * This method is useful for setting the shape of the physics body, which is necessary for the physics engine to accurately simulate the body's behavior.
      * The shape is used to calculate the body's mass, inertia, and other properties.
      */
-    public setShape(shape: PhysicsShape): void {
+    public set shape(shape: PhysicsShape) {
         this._physicsPlugin.setShape(this, shape);
     }
 
@@ -133,7 +144,7 @@ export class PhysicsBody {
      * This method is useful for retrieving the physics shape associated with this object,
      * which can be used to apply physical forces to the object or to detect collisions.
      */
-    public getShape(): PhysicsShape | undefined {
+    public get shape(): PhysicsShape {
         return this._physicsPlugin.getShape(this);
     }
 
@@ -145,7 +156,7 @@ export class PhysicsBody {
      * The filter group is used to determine which bodies should collide with each other.
      * This allows for more control over the physics engine and can be used to create more realistic simulations.
      */
-    public setFilterGroup(group: number): void {
+    public set filterGroup(group: number) {
         this._physicsPlugin.setFilterGroup(this, group);
     }
 
@@ -158,7 +169,7 @@ export class PhysicsBody {
      * which is used to determine which objects will interact with each other.
      * This is important for creating realistic physics simulations.
      */
-    public getFilterGroup(): number {
+    public get filterGroup(): number {
         return this._physicsPlugin.getFilterGroup(this);
     }
 
@@ -170,7 +181,7 @@ export class PhysicsBody {
      * This method is useful for setting the event mask for the physics engine, which determines which events
      * will be sent to the physics engine. This allows the user to control which events the physics engine will respond to.
      */
-    public setEventMask(eventMask: number): void {
+    public set eventMask(eventMask: number) {
         this._physicsPlugin.setEventMask(this, eventMask);
     }
 
@@ -184,15 +195,21 @@ export class PhysicsBody {
      * This is important for ensuring that the engine is responding to the correct events and not
      * wasting resources on unnecessary events.
      */
-    public getEventMask(): number {
+    public get eventMask(): number {
         return this._physicsPlugin.getEventMask(this);
     }
 
-    public setMotionType(motionType: PhysicsMotionType): void {
+    /**
+     * Sets the motion type of the physics body. Can be STATIC, DYNAMIC, or ANIMATED.
+     */
+    public set motionType(motionType: PhysicsMotionType) {
         this._physicsPlugin.setMotionType(this, motionType);
     }
 
-    public getMotionType(): PhysicsMotionType {
+    /**
+     * Gets the motion type of the physics body. Can be STATIC, DYNAMIC, or ANIMATED.
+     */
+    public get motionType(): PhysicsMotionType {
         return this._physicsPlugin.getMotionType(this);
     }
 
@@ -215,22 +232,21 @@ export class PhysicsBody {
      * This method is useful for setting the mass properties of a physics object, such as its mass,
      * inertia, and center of mass. This is important for accurately simulating the physics of the object in the physics engine.
      */
-    public setMassProperties(massProps: MassProperties): void {
+    public set massProperties(massProps: MassProperties) {
         this._physicsPlugin.setMassProperties(this, massProps);
     }
 
     /**
      * Retrieves the mass properties of the object.
      *
-     * @returns The mass properties of the object, or `undefined` if the physics
-     * plugin does not support mass properties.
+     * @returns The mass properties of the object.
      *
      * This method is useful for physics simulations, as it allows the user to
      * retrieve the mass properties of the object, such as its mass, center of mass,
      * and moment of inertia. This information is necessary for accurate physics
      * simulations.
      */
-    public getMassProperties(): MassProperties | undefined {
+    public get massProperties(): MassProperties {
         return this._physicsPlugin.getMassProperties(this);
     }
 
@@ -243,7 +259,7 @@ export class PhysicsBody {
      * which is the rate at which the body's velocity decreases over time. This is useful for simulating
      * the effects of air resistance or other forms of friction.
      */
-    public setLinearDamping(damping: number): void {
+    public set linearDamping(damping: number) {
         this._physicsPlugin.setLinearDamping(this, damping);
     }
 
@@ -255,7 +271,7 @@ export class PhysicsBody {
      * resistance the body has to linear motion. This is useful for simulating realistic physics behavior
      * in a game.
      */
-    public getLinearDamping(): number {
+    public get linearDamping(): number {
         return this._physicsPlugin.getLinearDamping(this);
     }
 
@@ -267,7 +283,7 @@ export class PhysicsBody {
      * By setting the damping, the body's angular velocity will be reduced over time, simulating the effect of friction.
      * This can be used to create realistic physical behavior in a physics engine.
      */
-    public setAngularDamping(damping: number): void {
+    public set angularDamping(damping: number) {
         this._physicsPlugin.setAngularDamping(this, damping);
     }
 
@@ -280,7 +296,7 @@ export class PhysicsBody {
      * which is the rate of reduction of the angular velocity over time.
      * This is important for simulating realistic physics behavior in a game.
      */
-    public getAngularDamping(): number {
+    public get angularDamping(): number {
         return this._physicsPlugin.getAngularDamping(this);
     }
 

@@ -97,7 +97,7 @@ export class PhysicsShape {
      *
      * @param layer
      */
-    public setFilterLayer(layer: number): void {
+    public set filterLayer(layer: number) {
         this._physicsPlugin.setFilterLayer(this, layer);
     }
 
@@ -105,15 +105,15 @@ export class PhysicsShape {
      *
      * @returns
      */
-    public getFilterLayer(): number {
+    public get filterLayer(): number {
         return this._physicsPlugin.getFilterLayer(this);
     }
 
     /**
      *
-     * @param materialId
+     * @param material
      */
-    public setMaterial(material: PhysicsMaterial): void {
+    public set material(material: PhysicsMaterial) {
         this._physicsPlugin.setMaterial(this, material);
         this._material = material;
     }
@@ -122,7 +122,7 @@ export class PhysicsShape {
      *
      * @returns
      */
-    public getMaterial(): PhysicsMaterial | undefined {
+    public get material(): PhysicsMaterial {
         return this._material;
     }
 
@@ -130,14 +130,14 @@ export class PhysicsShape {
      *
      * @param density
      */
-    public setDensity(density: number): void {
+    public set density(density: number) {
         this._physicsPlugin.setDensity(this, density);
     }
 
     /**
      *
      */
-    public getDensity(): number {
+    public get density(): number {
         return this._physicsPlugin.getDensity(this);
     }
 

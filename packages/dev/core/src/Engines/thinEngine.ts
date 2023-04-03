@@ -222,14 +222,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.51.0";
+        return "babylonjs@5.53.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.51.0";
+        return "5.53.0";
     }
 
     /**
@@ -266,7 +266,7 @@ export class ThinEngine {
         return this._webGLVersion;
     }
 
-    private _isDisposed = false;
+    protected _isDisposed = false;
 
     public get isDisposed(): boolean {
         return this._isDisposed;
@@ -906,7 +906,7 @@ export class ThinEngine {
                 canvas.addEventListener("webglcontextlost", this._onContextLost, false);
                 canvas.addEventListener("webglcontextrestored", this._onContextRestored, false);
 
-                options.powerPreference = "high-performance";
+                options.powerPreference = options.powerPreference || "high-performance";
             }
 
             // Detect if we are running on a faulty buggy desktop OS.
@@ -1809,16 +1809,16 @@ export class ThinEngine {
 
     /**
      * Binds the frame buffer to the specified texture.
-     * @param texture The render target wrapper to render to
-     * @param faceIndex The face of the texture to render to in case of cube texture
+     * @param rtWrapper The render target wrapper to render to
+     * @param faceIndex The face of the texture to render to in case of cube texture and if the render target wrapper is not a multi render target
      * @param requiredWidth The width of the target to render to
      * @param requiredHeight The height of the target to render to
      * @param forceFullscreenViewport Forces the viewport to be the entire texture/screen if true
-     * @param lodLevel defines the lod level to bind to the frame buffer
-     * @param layer defines the 2d array index to bind to frame buffer to
+     * @param lodLevel Defines the lod level to bind to the frame buffer
+     * @param layer Defines the 2d array index to bind to the frame buffer if the render target wrapper is not a multi render target
      */
     public bindFramebuffer(
-        texture: RenderTargetWrapper,
+        rtWrapper: RenderTargetWrapper,
         faceIndex: number = 0,
         requiredWidth?: number,
         requiredHeight?: number,
@@ -1826,33 +1826,35 @@ export class ThinEngine {
         lodLevel = 0,
         layer = 0
     ): void {
-        const webglRTWrapper = texture as WebGLRenderTargetWrapper;
+        const webglRTWrapper = rtWrapper as WebGLRenderTargetWrapper;
 
         if (this._currentRenderTarget) {
             this.unBindFramebuffer(this._currentRenderTarget);
         }
-        this._currentRenderTarget = texture;
+        this._currentRenderTarget = rtWrapper;
         this._bindUnboundFramebuffer(webglRTWrapper._MSAAFramebuffer ? webglRTWrapper._MSAAFramebuffer : webglRTWrapper._framebuffer);
 
         const gl = this._gl;
-        if (texture.is2DArray) {
-            gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, texture.texture!._hardwareTexture?.underlyingResource, lodLevel, layer);
-        } else if (texture.isCube) {
-            gl.framebufferTexture2D(
-                gl.FRAMEBUFFER,
-                gl.COLOR_ATTACHMENT0,
-                gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex,
-                texture.texture!._hardwareTexture?.underlyingResource,
-                lodLevel
-            );
+        if (!rtWrapper.isMulti) {
+            if (rtWrapper.is2DArray) {
+                gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, rtWrapper.texture!._hardwareTexture?.underlyingResource, lodLevel, layer);
+            } else if (rtWrapper.isCube) {
+                gl.framebufferTexture2D(
+                    gl.FRAMEBUFFER,
+                    gl.COLOR_ATTACHMENT0,
+                    gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex,
+                    rtWrapper.texture!._hardwareTexture?.underlyingResource,
+                    lodLevel
+                );
+            }
         }
 
-        const depthStencilTexture = texture._depthStencilTexture;
+        const depthStencilTexture = rtWrapper._depthStencilTexture;
         if (depthStencilTexture) {
-            const attachment = texture._depthStencilTextureWithStencil ? gl.DEPTH_STENCIL_ATTACHMENT : gl.DEPTH_ATTACHMENT;
-            if (texture.is2DArray) {
+            const attachment = rtWrapper._depthStencilTextureWithStencil ? gl.DEPTH_STENCIL_ATTACHMENT : gl.DEPTH_ATTACHMENT;
+            if (rtWrapper.is2DArray) {
                 gl.framebufferTextureLayer(gl.FRAMEBUFFER, attachment, depthStencilTexture._hardwareTexture?.underlyingResource, lodLevel, layer);
-            } else if (texture.isCube) {
+            } else if (rtWrapper.isCube) {
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, depthStencilTexture._hardwareTexture?.underlyingResource, lodLevel);
             } else {
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, gl.TEXTURE_2D, depthStencilTexture._hardwareTexture?.underlyingResource, lodLevel);
@@ -1863,13 +1865,13 @@ export class ThinEngine {
             this.setViewport(this._cachedViewport, requiredWidth, requiredHeight);
         } else {
             if (!requiredWidth) {
-                requiredWidth = texture.width;
+                requiredWidth = rtWrapper.width;
                 if (lodLevel) {
                     requiredWidth = requiredWidth / Math.pow(2, lodLevel);
                 }
             }
             if (!requiredHeight) {
-                requiredHeight = texture.height;
+                requiredHeight = rtWrapper.height;
                 if (lodLevel) {
                     requiredHeight = requiredHeight / Math.pow(2, lodLevel);
                 }
@@ -3893,6 +3895,7 @@ export class ThinEngine {
         let format = Constants.TEXTUREFORMAT_RGBA;
         let useSRGBBuffer = false;
         let samples = 1;
+        let label: string | undefined;
         if (options !== undefined && typeof options === "object") {
             generateMipMaps = !!options.generateMipMaps;
             type = options.type === undefined ? Constants.TEXTURETYPE_UNSIGNED_INT : options.type;
@@ -3900,6 +3903,7 @@ export class ThinEngine {
             format = options.format === undefined ? Constants.TEXTUREFORMAT_RGBA : options.format;
             useSRGBBuffer = options.useSRGBBuffer === undefined ? false : options.useSRGBBuffer;
             samples = options.samples ?? 1;
+            label = options.label;
         } else {
             generateMipMaps = !!options;
         }
@@ -3963,6 +3967,7 @@ export class ThinEngine {
         texture.samplingMode = samplingMode;
         texture.type = type;
         texture.format = format;
+        texture.label = label;
 
         this._internalTexturesCache.push(texture);
 
@@ -4025,6 +4030,10 @@ export class ThinEngine {
         const isBase64 = fromData && url.indexOf(";base64,") !== -1;
 
         const texture = fallback ? fallback : new InternalTexture(this, InternalTextureSource.Url);
+
+        if (texture !== fallback) {
+            texture.label = url.substring(0, 60); // default label, can be overriden by the caller
+        }
 
         const originalUrl = url;
         if (this._transformTextureUrl && !isBase64 && !fallback && !buffer) {
