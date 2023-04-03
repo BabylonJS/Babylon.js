@@ -17,6 +17,7 @@ import type {
     MaterialPluginFillRenderTargetTextures,
 } from "./materialPluginEvent";
 import { MaterialPluginEvent } from "./materialPluginEvent";
+import type { Observer } from "core/Misc/observable";
 
 declare type Scene = import("../scene").Scene;
 declare type Engine = import("../Engines/engine").Engine;
@@ -281,8 +282,11 @@ export class MaterialPluginManager {
                     if (uniforms) {
                         if (uniforms.ubo) {
                             for (const uniform of uniforms.ubo) {
-                                eventData.ubo.addUniform(uniform.name, uniform.size);
-                                this._uboDeclaration += `${uniform.type} ${uniform.name};\r\n`;
+                                if (uniform.size && uniform.type) {
+                                    const arraySize = uniform.arraySize ?? 0;
+                                    eventData.ubo.addUniform(uniform.name, uniform.size, arraySize);
+                                    this._uboDeclaration += `${uniform.type} ${uniform.name}${arraySize > 0 ? `[${arraySize}]` : ""};\r\n`;
+                                }
                                 this._uniformList.push(uniform.name);
                             }
                         }
@@ -392,6 +396,7 @@ export type PluginMaterialFactory = (material: Material) => Nullable<MaterialPlu
 
 const plugins: Array<[string, PluginMaterialFactory]> = [];
 let inited = false;
+let observer: Nullable<Observer<Material>> = null;
 
 /**
  * Registers a new material plugin through a factory, or updates it. This makes the plugin available to all materials instantiated after its registration.
@@ -401,7 +406,7 @@ let inited = false;
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function RegisterMaterialPlugin(pluginName: string, factory: PluginMaterialFactory): void {
     if (!inited) {
-        Material.OnEventObservable.add((material: Material) => {
+        observer = Material.OnEventObservable.add((material: Material) => {
             for (const [, factory] of plugins) {
                 factory(material);
             }
@@ -426,6 +431,9 @@ export function UnregisterMaterialPlugin(pluginName: string): boolean {
     for (let i = 0; i < plugins.length; ++i) {
         if (plugins[i][0] === pluginName) {
             plugins.splice(i, 1);
+            if (plugins.length === 0) {
+                UnregisterAllMaterialPlugins();
+            }
             return true;
         }
     }
@@ -438,4 +446,6 @@ export function UnregisterMaterialPlugin(pluginName: string): boolean {
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function UnregisterAllMaterialPlugins(): void {
     plugins.length = 0;
+    inited = false;
+    Material.OnEventObservable.remove(observer);
 }

@@ -18,6 +18,7 @@ import cancelGridElementDark from "shared-ui-components/imgs/cancelGridElementDa
 import valueChangedGridDark from "shared-ui-components/imgs/valueChangedGridDark.svg";
 import deleteGridElementDark from "shared-ui-components/imgs/deleteGridElementDark.svg";
 import type { GlobalState } from "../../../../globalState";
+import { MathTools } from "gui/2D/math2D";
 
 interface IGridPropertyGridComponentProps {
     grids: Grid[];
@@ -28,12 +29,17 @@ interface IGridPropertyGridComponentProps {
     onUpdateRequiredObservable?: Observable<void>;
 }
 
-export class GridPropertyGridComponent extends React.Component<IGridPropertyGridComponentProps> {
+interface IGridPropertyComponentState {
+    removingColumn: boolean;
+    removingRow: boolean;
+}
+
+export class GridPropertyGridComponent extends React.Component<IGridPropertyGridComponentProps, IGridPropertyComponentState> {
     constructor(props: IGridPropertyGridComponentProps) {
         super(props);
+
+        this.state = { removingColumn: false, removingRow: false };
     }
-    private _removingColumn: boolean = false;
-    private _removingRow: boolean = false;
     private _previousGrid: Nullable<Grid> = null;
     private _rowDefinitions: string[] = [];
     private _rowEditFlags: boolean[] = [];
@@ -47,27 +53,33 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
     renderRows() {
         return this._rowDefinitions.map((rd, i) => {
             return (
-                <div key={`r${i}`} className={this._removingRow && i === this._rowEditFlags.length - 1 ? "ge-grid-remove" : this._rowEditFlags[i] ? "ge-grid-edit" : "ge-grid"}>
+                <div
+                    key={`r${i}`}
+                    className={this.state.removingRow && i === this._rowEditFlags.length - 1 ? "ge-grid-remove" : this._rowEditFlags[i] ? "ge-grid-edit" : "ge-grid"}
+                >
                     <div className="ge-grid-divider">
                         <TextInputLineComponent
                             lockObject={this.props.lockObject}
-                            key={`rText${i}`}
+                            key={`rText${i}-${this.state.removingRow}`}
                             label=""
-                            icon={gridColumnIconDark}
+                            icon={gridRowIconDark}
                             iconLabel={`Row ${i}`}
                             value={rd}
                             numbersOnly={true}
                             onChange={(newValue) => {
+                                if (newValue === this._rowDefinitions[i]) {
+                                    return;
+                                }
                                 this._rowDefinitions[i] = newValue;
                                 this._rowEditFlags[i] = true;
                                 this._editedRow = true;
-                                this._removingRow = false;
                                 this._rowChild = false;
-                                this.forceUpdate();
+                                this.setState({ removingRow: false });
                             }}
+                            disabled={this.state.removingRow}
                         />
                         <TextLineComponent tooltip="" label={`[${i}]`} value="" color="grey"></TextLineComponent>
-                        {this._removingRow && i === this._rowEditFlags.length - 1 && (
+                        {this.state.removingRow && i === this._rowEditFlags.length - 1 && (
                             <TextLineComponent icon={deleteGridElementDark} label=" " value=" " color="grey"></TextLineComponent>
                         )}
                         {this._rowEditFlags[i] && <TextLineComponent icon={valueChangedGridDark} label=" " value=" " color="grey"></TextLineComponent>}
@@ -110,28 +122,31 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
             return (
                 <div
                     key={`c${i}`}
-                    className={this._removingColumn && i === this._columnEditFlags.length - 1 ? "ge-grid-remove" : this._columnEditFlags[i] ? "ge-grid-edit" : "ge-grid"}
+                    className={this.state.removingColumn && i === this._columnEditFlags.length - 1 ? "ge-grid-remove" : this._columnEditFlags[i] ? "ge-grid-edit" : "ge-grid"}
                 >
                     <div className="ge-grid-divider">
                         <TextInputLineComponent
                             lockObject={this.props.lockObject}
-                            key={`ctext${i}`}
+                            key={`ctext${i}-${this.state.removingColumn}`}
                             label=""
-                            icon={gridRowIconDark}
+                            icon={gridColumnIconDark}
                             iconLabel={`Column ${i}`}
                             value={cd}
                             numbersOnly={true}
                             onChange={(newValue) => {
+                                if (newValue === this._columnDefinitions[i]) {
+                                    return;
+                                }
                                 this._columnDefinitions[i] = newValue;
                                 this._columnEditFlags[i] = true;
                                 this._editedColumn = true;
-                                this._removingColumn = false;
                                 this._columnChild = false;
-                                this.forceUpdate();
+                                this.setState({ removingColumn: false });
                             }}
+                            disabled={this.state.removingColumn}
                         />
                         <TextLineComponent tooltip="" label={`[${i}]`} value="" color="grey"></TextLineComponent>
-                        {this._removingColumn && i === this._columnEditFlags.length - 1 && (
+                        {this.state.removingColumn && i === this._columnEditFlags.length - 1 && (
                             <TextLineComponent icon={deleteGridElementDark} label=" " value=" " color="grey"></TextLineComponent>
                         )}
                         {this._columnEditFlags[i] && <TextLineComponent icon={valueChangedGridDark} label=" " value=" " color="grey"></TextLineComponent>}
@@ -141,64 +156,77 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
         });
     }
 
+    parsePercentage(value: string) {
+        let floatResult;
+        if (value.trim().at(-1) === "%") {
+            floatResult = parseFloat(value.replace("%", "")) / 100;
+        } else {
+            floatResult = parseFloat(value);
+        }
+        return MathTools.Round(floatResult, 10000);
+    }
+
+    isCloseTo(value: number, expected: number, epsilon: number = 0.001) {
+        return Math.abs(value - expected) < epsilon;
+    }
+
+    adjustPercentages(definitions: string[], editFlags: boolean[]): string[] {
+        let percentageTotal = 0;
+        let modifiedEntriesPercentageTotal = 0;
+
+        const cellValues: string[] = [];
+
+        for (let i = 0; i < definitions.length; ++i) {
+            let value = definitions[i];
+            const percent = this.checkPercentage(value);
+            if (editFlags[i]) {
+                value = this.checkValue(value, percent);
+            }
+            if (percent) {
+                percentageTotal += this.parsePercentage(value);
+                if (editFlags[i]) {
+                    modifiedEntriesPercentageTotal += this.parsePercentage(value);
+                }
+            }
+            cellValues.push(value);
+        }
+
+        let modifiedCellValues = [];
+
+        // If the total percentage is not 100% we need to adjust the values based on the remaining percentage that was not modified by the user;
+        // If the remaining percentage is 0% we need to resize the modified entries to fit the remaining space
+        if (this.isCloseTo(percentageTotal, 1)) {
+            modifiedCellValues = cellValues;
+        } else {
+            const absoluteRemainingPercentage = 1 - modifiedEntriesPercentageTotal;
+            const magnitudeRemainingPercentage = Math.abs(absoluteRemainingPercentage);
+            const unmodifiedEntriesPercentage = percentageTotal - modifiedEntriesPercentageTotal;
+
+            const resizeModifiedEntries = this.isCloseTo(unmodifiedEntriesPercentage, 0);
+            for (let i = 0; i < cellValues.length; ++i) {
+                const value = cellValues[i];
+                const percent = this.checkPercentage(value);
+                if ((percent && !editFlags[i]) || (editFlags[i] && resizeModifiedEntries)) {
+                    const parsedValue = this.parsePercentage(value);
+                    const entryWeight = parsedValue / (resizeModifiedEntries ? percentageTotal : unmodifiedEntriesPercentage);
+                    const newEntryValue = entryWeight * (resizeModifiedEntries ? 1 : magnitudeRemainingPercentage);
+                    modifiedCellValues.push(`${newEntryValue * 100}%`);
+                } else {
+                    modifiedCellValues.push(value);
+                }
+            }
+        }
+
+        return modifiedCellValues;
+    }
+
     resizeRow() {
         const grid = this.props.grids[0];
-        let total = 0;
-        let editCount = 0;
-        let percentCount = 0;
-        const rowValues: number[] = [];
-        for (let i = 0; i < this._rowDefinitions.length; ++i) {
-            let value = this._rowDefinitions[i];
-            const percent = this.checkPercentage(value);
-            if (this._rowEditFlags[i]) {
-                value = this.checkValue(value, percent);
-                if (percent) {
-                    editCount++;
-                }
-            }
 
-            if (percent) {
-                percentCount++;
-                const valueAsInt = parseInt(value.substring(0, value.length - 1));
-                total += valueAsInt / 100;
-                rowValues.push(valueAsInt / 100);
-            } else {
-                const valueAsInt = parseInt(value.substring(0, value.length - 2));
-                rowValues.push(valueAsInt);
-            }
-        }
+        const modifiedRowValues = this.adjustPercentages(this._rowDefinitions, this._rowEditFlags);
 
-        const allEdited = editCount === percentCount;
-
-        if (total > 1.0 || allEdited) {
-            const difference = total - 1.0;
-            const diff = Math.abs(difference);
-            for (let i = 0; i < grid.rowCount; ++i) {
-                if (this.checkPercentage(this._rowDefinitions[i])) {
-                    const value = rowValues[i];
-                    const weighted = diff * (value / total);
-                    rowValues[i] = difference > 0 ? value - weighted : value + weighted;
-                }
-            }
-        } else if (total < 1.0) {
-            const difference = 1.0 - total;
-            for (let i = 0; i < grid.rowCount; ++i) {
-                if (this.checkPercentage(this._rowDefinitions[i]) && this._rowEditFlags[i]) {
-                    const value = rowValues[i];
-                    total -= value;
-                }
-            }
-            for (let i = 0; i < grid.rowCount; ++i) {
-                if (this.checkPercentage(this._rowDefinitions[i]) && !this._rowEditFlags[i]) {
-                    const value = rowValues[i];
-                    const weighted = difference * (value / total);
-                    rowValues[i] = value + weighted;
-                }
-            }
-        }
-
-        for (let i = 0; i < this._rowDefinitions.length; ++i) {
-            grid.setRowDefinition(i, rowValues[i], !this.checkPercentage(this._rowDefinitions[i]));
+        for (let i = 0; i < modifiedRowValues.length; ++i) {
+            grid.setRowDefinition(i, this.parsePercentage(modifiedRowValues[i]), !this.checkPercentage(modifiedRowValues[i]));
         }
 
         this.setRowValues();
@@ -206,62 +234,11 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
 
     resizeColumn() {
         const grid = this.props.grids[0];
-        let total = 0;
-        let editCount = 0;
-        let percentCount = 0;
-        const columnValues: number[] = [];
-        for (let i = 0; i < this._columnDefinitions.length; ++i) {
-            let value = this._columnDefinitions[i];
-            const percent = this.checkPercentage(value);
-            if (this._columnEditFlags[i]) {
-                value = this.checkValue(value, percent);
-                if (percent) {
-                    editCount++;
-                }
-            }
 
-            if (percent) {
-                percentCount++;
-                const valueAsInt = parseInt(value.substring(0, value.length - 1));
-                total += valueAsInt / 100;
-                columnValues.push(valueAsInt / 100);
-            } else {
-                const valueAsInt = parseInt(value.substring(0, value.length - 2));
-                columnValues.push(valueAsInt);
-            }
-        }
+        const columnValues = this.adjustPercentages(this._columnDefinitions, this._columnEditFlags);
 
-        const allEdited = editCount === percentCount;
-
-        if (total > 1.0 || allEdited) {
-            const difference = total - 1.0;
-            const diff = Math.abs(difference);
-            for (let i = 0; i < grid.columnCount; ++i) {
-                if (this.checkPercentage(this._columnDefinitions[i])) {
-                    const value = columnValues[i];
-                    const weighted = diff * (value / total);
-                    columnValues[i] = difference > 0 ? value - weighted : value + weighted;
-                }
-            }
-        } else if (total < 1.0) {
-            const difference = 1.0 - total;
-            for (let i = 0; i < grid.columnCount; ++i) {
-                if (this.checkPercentage(this._columnDefinitions[i]) && this._columnEditFlags[i]) {
-                    const value = columnValues[i];
-                    total -= value;
-                }
-            }
-            for (let i = 0; i < grid.columnCount; ++i) {
-                if (this.checkPercentage(this._columnDefinitions[i]) && !this._columnEditFlags[i]) {
-                    const value = columnValues[i];
-                    const weighted = difference * (value / total);
-                    columnValues[i] = value + weighted;
-                }
-            }
-        }
-
-        for (let i = 0; i < this._columnDefinitions.length; ++i) {
-            grid.setColumnDefinition(i, columnValues[i], !this.checkPercentage(this._columnDefinitions[i]));
+        for (let i = 0; i < columnValues.length; ++i) {
+            grid.setColumnDefinition(i, this.parsePercentage(columnValues[i]), !this.checkPercentage(this._columnDefinitions[i]));
         }
 
         this.setColumnValues();
@@ -283,8 +260,6 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
 
     resetValues() {
         const grid = this.props.grids[0];
-        this._removingColumn = false;
-        this._removingRow = false;
         this._columnChild = false;
         this._rowChild = false;
         this._previousGrid = grid;
@@ -292,6 +267,8 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
         this.setColumnValues();
         this.resizeColumn();
         this.resizeRow();
+
+        this.setState({ removingColumn: false, removingRow: false });
     }
 
     render() {
@@ -300,7 +277,6 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
         if (grid !== this._previousGrid) {
             this.resetValues();
         }
-
         return (
             <div className="pane">
                 <CommonControlPropertyGridComponent
@@ -323,6 +299,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                     icon={addGridElementDark}
                                     shortcut=""
                                     isActive={false}
+                                    disabled={this.state.removingRow || this._editedRow}
                                     onClick={() => {
                                         let total = 0;
                                         let count = 0;
@@ -343,8 +320,8 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                     tooltip="Remove Row"
                                     icon={subtractGridElementDark}
                                     shortcut=""
-                                    isActive={this._removingRow}
-                                    disabled={grid.rowCount <= 1}
+                                    isActive={false}
+                                    disabled={this.state.removingRow || grid.rowCount <= 1 || this._editedRow}
                                     onClick={() => {
                                         let hasChild = false;
                                         for (let i = 0; i < grid.columnCount; ++i) {
@@ -352,16 +329,13 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                             if (child?.children.length) {
                                                 hasChild = true;
                                                 break;
-                                                //(grid.rowCount > 1 && !this._removingRow)
                                             }
                                         }
-
                                         this.resetValues();
                                         if (hasChild) {
                                             this._rowChild = true;
                                         }
-                                        this._removingRow = true;
-                                        this.forceUpdate();
+                                        this.setState({ removingRow: true });
                                     }}
                                 />
                                 {this._editedRow && (
@@ -391,7 +365,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                         />
                                     </>
                                 )}
-                                {this._removingRow && (
+                                {this.state.removingRow && (
                                     <>
                                         <CommandButtonComponent
                                             altStyle={true}
@@ -403,8 +377,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                                 grid.removeRowDefinition(grid.rowCount - 1);
                                                 this.setRowValues();
                                                 this.resizeRow();
-                                                this.forceUpdate();
-                                                this._removingRow = false;
+                                                this.setState({ removingRow: false });
                                                 this._rowChild = false;
                                                 this.props.onUpdateRequiredObservable?.notifyObservers();
                                             }}
@@ -416,7 +389,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                             shortcut=""
                                             isActive={false}
                                             onClick={() => {
-                                                this._removingRow = false;
+                                                this.setState({ removingRow: false });
                                                 this._rowChild = false;
                                                 this.forceUpdate();
                                             }}
@@ -444,6 +417,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                 icon={addGridElementDark}
                                 shortcut=""
                                 isActive={false}
+                                disabled={this.state.removingColumn || this._editedColumn}
                                 onClick={() => {
                                     let total = 0;
                                     let count = 0;
@@ -464,8 +438,8 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                 tooltip="Remove Column"
                                 icon={subtractGridElementDark}
                                 shortcut=""
-                                isActive={this._removingColumn}
-                                disabled={grid.columnCount <= 1}
+                                isActive={false}
+                                disabled={this.state.removingColumn || this._editedColumn || grid.columnCount <= 1}
                                 onClick={() => {
                                     let hasChild = false;
                                     for (let i = 0; i < grid.rowCount; ++i) {
@@ -479,8 +453,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                     if (hasChild) {
                                         this._columnChild = true;
                                     }
-                                    this._removingColumn = true;
-                                    this.forceUpdate();
+                                    this.setState({ removingColumn: true });
                                 }}
                             />
                             {this._editedColumn && (
@@ -509,7 +482,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                     />
                                 </>
                             )}
-                            {this._removingColumn && (
+                            {this.state.removingColumn && (
                                 <>
                                     <CommandButtonComponent
                                         altStyle={true}
@@ -521,8 +494,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                             grid.removeColumnDefinition(grid.columnCount - 1);
                                             this.setColumnValues();
                                             this.resizeColumn();
-                                            this.forceUpdate();
-                                            this._removingColumn = false;
+                                            this.setState({ removingColumn: false });
                                             this._columnChild = false;
                                             this.props.onUpdateRequiredObservable?.notifyObservers();
                                         }}
@@ -534,9 +506,8 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
                                         shortcut=""
                                         isActive={false}
                                         onClick={() => {
-                                            this._removingColumn = false;
+                                            this.setState({ removingColumn: false });
                                             this._columnChild = false;
-                                            this.forceUpdate();
                                         }}
                                     />
                                 </>

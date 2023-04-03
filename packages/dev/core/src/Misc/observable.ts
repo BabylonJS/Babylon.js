@@ -266,6 +266,9 @@ export class Observable<T> {
      * @internal
      */
     public _deferUnregister(observer: Observer<T>): void {
+        if (observer._willBeUnregistered) {
+            return;
+        }
         this._numObserversMarkedAsDeleted++;
         observer.unregisterOnNextCall = false;
         observer._willBeUnregistered = true;

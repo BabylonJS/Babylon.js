@@ -263,12 +263,16 @@ export class _GLTFAnimation {
         bufferViews: IBufferView[],
         accessors: IAccessor[],
         convertToRightHandedSystem: boolean,
-        animationSampleRate: number
+        animationSampleRate: number,
+        shouldExportAnimation?: (animation: Animation) => boolean
     ) {
         let glTFAnimation: IAnimation;
         if (_GLTFAnimation._IsTransformable(babylonNode)) {
             if (babylonNode.animations) {
                 for (const animation of babylonNode.animations) {
+                    if (shouldExportAnimation && !shouldExportAnimation(animation)) {
+                        continue;
+                    }
                     const animationInfo = _GLTFAnimation._DeduceAnimationInfo(animation);
                     if (animationInfo) {
                         glTFAnimation = {
@@ -324,7 +328,8 @@ export class _GLTFAnimation {
         bufferViews: IBufferView[],
         accessors: IAccessor[],
         convertToRightHandedSystem: boolean,
-        animationSampleRate: number
+        animationSampleRate: number,
+        shouldExportAnimation?: (animation: Animation) => boolean
     ) {
         let glTFAnimation: IAnimation;
         if (babylonNode instanceof Mesh) {
@@ -333,6 +338,9 @@ export class _GLTFAnimation {
                 for (let i = 0; i < morphTargetManager.numTargets; ++i) {
                     const morphTarget = morphTargetManager.getTarget(i);
                     for (const animation of morphTarget.animations) {
+                        if (shouldExportAnimation && !shouldExportAnimation(animation)) {
+                            continue;
+                        }
                         const combinedAnimation = new Animation(
                             `${animation.name}`,
                             "influence",
@@ -410,7 +418,8 @@ export class _GLTFAnimation {
         bufferViews: IBufferView[],
         accessors: IAccessor[],
         convertToRightHandedSystemMap: { [nodeId: number]: boolean },
-        animationSampleRate: number
+        animationSampleRate: number,
+        shouldExportAnimation?: (animation: Animation) => boolean
     ) {
         let glTFAnimation: IAnimation;
         if (babylonScene.animationGroups) {
@@ -429,6 +438,9 @@ export class _GLTFAnimation {
                     const targetAnimation = animationGroup.targetedAnimations[i];
                     const target = targetAnimation.target;
                     const animation = targetAnimation.animation;
+                    if (shouldExportAnimation && !shouldExportAnimation(animation)) {
+                        continue;
+                    }
                     if (this._IsTransformable(target) || (target.length === 1 && this._IsTransformable(target[0]))) {
                         const animationInfo = _GLTFAnimation._DeduceAnimationInfo(targetAnimation.animation);
                         if (animationInfo) {

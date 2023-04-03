@@ -1,47 +1,33 @@
 // SSAO 2 Shader
 precision highp float;
 uniform sampler2D textureSampler;
-uniform float near;
-uniform float far;
-uniform float radius;
-
-float scales[16] = float[16](
-0.1,
-0.11406250000000001,
-0.131640625,
-0.15625,
-0.187890625,
-0.2265625,
-0.272265625,
-0.325,
-0.384765625,
-0.4515625,
-0.525390625,
-0.60625,
-0.694140625,
-0.7890625,
-0.891015625,
-1.0
-);
-
 varying vec2 vUV;
 
-float perspectiveDepthToViewZ(in float invClipZ, in float near, in float far ) {
-	return ( near * far ) / ( ( far - near ) * invClipZ - far );
-}
-
-float viewZToPerspectiveDepth( in float viewZ, in float near, in float far ) {
-	return ( near * far / viewZ + far) / ( far - near );
-}
-
-float viewZToOrthographicDepth( in float viewZ, in float near, in float far ) {
-	return ( viewZ + near ) / ( near - far );
-}
-
 #ifdef SSAO
-	uniform sampler2D randomSampler;
+	float scales[16] = float[16](
+	0.1,
+	0.11406250000000001,
+	0.131640625,
+	0.15625,
+	0.187890625,
+	0.2265625,
+	0.272265625,
+	0.325,
+	0.384765625,
+	0.4515625,
+	0.525390625,
+	0.60625,
+	0.694140625,
+	0.7890625,
+	0.891015625,
+	1.0
+	);
+
+	uniform float near;
+	uniform float radius;
 
 	uniform sampler2D depthSampler;
+	uniform sampler2D randomSampler;
 	uniform sampler2D normalSampler;
 
 	uniform float randTextureTiles;
@@ -61,11 +47,11 @@ float viewZToOrthographicDepth( in float viewZ, in float near, in float far ) {
 
 	void main()
 	{
-		vec3 random = texture2D(randomSampler, vUV * randTextureTiles).rgb;
-		float depth = texture2D(depthSampler, vUV).r;
+		vec3 random = textureLod(randomSampler, vUV * randTextureTiles, 0.0).rgb;
+		float depth = textureLod(depthSampler, vUV, 0.0).r;
 		float depthSign = depth / abs(depth);
 		depth = depth * depthSign;
-		vec3 normal = texture2D(normalSampler, vUV).rgb;
+		vec3 normal = textureLod(normalSampler, vUV, 0.0).rgb;
 		float occlusion = 0.0;
 		float correctedRadius = min(radius, minZAspect * depth / near);
 
@@ -88,7 +74,7 @@ float viewZToOrthographicDepth( in float viewZ, in float near, in float far ) {
 			// get sample position:
 		    vec3 samplePosition = scales[(i + int(random.x * 16.0)) % 16] * tbn * sampleSphere[(i + int(random.y * 16.0)) % 16];
 		    samplePosition = samplePosition * correctedRadius + origin;
-		  
+
 			// project sample position:
 		    vec4 offset = vec4(samplePosition, 1.0);
 		    offset = projection * offset;
@@ -98,13 +84,18 @@ float viewZToOrthographicDepth( in float viewZ, in float near, in float far ) {
 		    if (offset.x < 0.0 || offset.y < 0.0 || offset.x > 1.0 || offset.y > 1.0) {
 		        continue;
 		    }
-		  
+
 			// get sample linearDepth:
-		    float sampleDepth = abs(texture2D(depthSampler, offset.xy).r);
+		    float sampleDepth = abs(textureLod(depthSampler, offset.xy, 0.0).r);
 			// range check & accumulate:
 		    difference = depthSign * samplePosition.z - sampleDepth;
+
+			// Ignore samples that has a diff < 0 since they are behind our
+			// point and can't be occluding it. Also ignore diff smaller than
+			// Epsilon due to accuracy issues, otherwise we will get a ton of
+			// incorrect occlusions with low sample counts.
 		    float rangeCheck = 1.0 - smoothstep(correctedRadius*0.5, correctedRadius, difference);
-		    occlusion += (difference >= 0.0 ? 1.0 : 0.0) * rangeCheck;
+		    occlusion += step(EPSILON, difference) * rangeCheck;
 		}
 		occlusion = occlusion*(1.0 - smoothstep(maxZ * 0.75, maxZ, depth));
 		float ao = 1.0 - totalStrength * occlusion * samplesFactor;
@@ -113,125 +104,121 @@ float viewZToOrthographicDepth( in float viewZ, in float near, in float far ) {
 	}
 #endif
 
-#ifdef BILATERAL_BLUR
-	uniform sampler2D depthSampler;
+#ifdef BLUR
 	uniform float outSize;
-	uniform float samplerOffsets[SAMPLES];
 
-	vec4 blur9(sampler2D image, vec2 uv, float resolution, vec2 direction) {
-	  vec4 color = vec4(0.0);
-	  vec2 off1 = vec2(1.3846153846) * direction;
-	  vec2 off2 = vec2(3.2307692308) * direction;
-	  color += texture2D(image, uv) * 0.2270270270;
-	  color += texture2D(image, uv + (off1 / resolution)) * 0.3162162162;
-	  color += texture2D(image, uv - (off1 / resolution)) * 0.3162162162;
-	  color += texture2D(image, uv + (off2 / resolution)) * 0.0702702703;
-	  color += texture2D(image, uv - (off2 / resolution)) * 0.0702702703;
-	  return color;
+	// These three controls the non-legacy bilateral filter
+	uniform float soften;
+	uniform float tolerance;
+	uniform int samples;
+
+#ifndef BLUR_BYPASS
+	uniform sampler2D depthSampler;
+#ifdef BLUR_LEGACY
+    #define inline
+	float blur13Bilateral(sampler2D image, vec2 uv, vec2 step) {
+		float result = 0.0;
+		vec2 off1 = vec2(1.411764705882353) * step;
+		vec2 off2 = vec2(3.2941176470588234) * step;
+		vec2 off3 = vec2(5.176470588235294) * step;
+
+		float compareDepth = abs(textureLod(depthSampler, uv, 0.0).r);
+		float sampleDepth;
+		float weight;
+		float weightSum = 30.0;
+
+		result += textureLod(image, uv, 0.0).r * 30.0;
+
+		sampleDepth = abs(textureLod(depthSampler, uv + off1, 0.0).r);
+		weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
+		weightSum +=  weight;
+		result += textureLod(image, uv + off1, 0.0).r * weight;
+
+		sampleDepth = abs(textureLod(depthSampler, uv - off1, 0.0).r);
+		weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
+		weightSum +=  weight;
+		result += textureLod(image, uv - off1, 0.0).r * weight;
+
+		sampleDepth = abs(textureLod(depthSampler, uv + off2, 0.0).r);
+		weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
+		weightSum += weight;
+		result += textureLod(image, uv + off2, 0.0).r * weight;
+
+		sampleDepth = abs(textureLod(depthSampler, uv - off2, 0.0).r);
+		weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
+		weightSum += weight;
+		result += textureLod(image, uv - off2, 0.0).r * weight;
+
+		sampleDepth = abs(textureLod(depthSampler, uv + off3, 0.0).r);
+		weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
+		weightSum += weight;
+		result += textureLod(image, uv + off3, 0.0).r * weight;
+
+		sampleDepth = abs(textureLod(depthSampler, uv - off3, 0.0).r);
+		weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
+		weightSum += weight;
+		result += textureLod(image, uv - off3, 0.0).r * weight;
+
+		return result / weightSum;
 	}
-
-	vec4 blur13(sampler2D image, vec2 uv, float resolution, vec2 direction) {
-	  vec4 color = vec4(0.0);
-	  vec2 off1 = vec2(1.411764705882353) * direction;
-	  vec2 off2 = vec2(3.2941176470588234) * direction;
-	  vec2 off3 = vec2(5.176470588235294) * direction;
-	  color += texture2D(image, uv) * 0.1964825501511404;
-	  color += texture2D(image, uv + (off1 / resolution)) * 0.2969069646728344;
-	  color += texture2D(image, uv - (off1 / resolution)) * 0.2969069646728344;
-	  color += texture2D(image, uv + (off2 / resolution)) * 0.09447039785044732;
-	  color += texture2D(image, uv - (off2 / resolution)) * 0.09447039785044732;
-	  color += texture2D(image, uv + (off3 / resolution)) * 0.010381362401148057;
-	  color += texture2D(image, uv - (off3 / resolution)) * 0.010381362401148057;
-	  return color;
-	}
-
-	vec4 blur13Bilateral(sampler2D image, vec2 uv, float resolution, vec2 direction) {
-	  vec4 color = vec4(0.0);
-	  vec2 off1 = vec2(1.411764705882353) * direction;
-	  vec2 off2 = vec2(3.2941176470588234) * direction;
-	  vec2 off3 = vec2(5.176470588235294) * direction;
-
-	  float compareDepth = abs(texture2D(depthSampler, uv).r);
-	  float sampleDepth;
-	  float weight;
-	  float weightSum = 30.0;
-
-	  color += texture2D(image, uv) * 30.0;
-
-	  sampleDepth = abs(texture2D(depthSampler, uv + (off1 / resolution)).r);
-	  weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
-	  weightSum +=  weight;
-	  color += texture2D(image, uv + (off1 / resolution)) * weight;
-
-	  sampleDepth = abs(texture2D(depthSampler, uv - (off1 / resolution)).r);
-	  weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
-	  weightSum +=  weight;
-	  color += texture2D(image, uv - (off1 / resolution)) * weight;
-
-	  sampleDepth = abs(texture2D(depthSampler, uv + (off2 / resolution)).r);
-	  weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
-	  weightSum += weight;
-	  color += texture2D(image, uv + (off2 / resolution)) * weight;
-
-	  sampleDepth = abs(texture2D(depthSampler, uv - (off2 / resolution)).r);
-	  weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
-	  weightSum += weight;
-	  color += texture2D(image, uv - (off2 / resolution)) * weight;
-
-	  sampleDepth = abs(texture2D(depthSampler, uv + (off3 / resolution)).r);
-	  weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
-	  weightSum += weight;
-	  color += texture2D(image, uv + (off3 / resolution)) * weight;
-
-	  sampleDepth = abs(texture2D(depthSampler, uv - (off3 / resolution)).r);
-	  weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30.0);
-	  weightSum += weight;
-	  color += texture2D(image, uv - (off3 / resolution)) * weight;
-
-	  return color / weightSum;
-	}
+#endif
+#endif
 
 	void main()
 	{
-		#if EXPENSIVE
-		float compareDepth = abs(texture2D(depthSampler, vUV).r);
-		float texelsize = 1.0 / outSize;
 		float result = 0.0;
-		float weightSum = 0.0;
-
-		for (int i = 0; i < SAMPLES; ++i)
-		{
-			#ifdef BILATERAL_BLUR_H
-			vec2 direction = vec2(1.0, 0.0);
-			vec2 sampleOffset = vec2(texelsize * samplerOffsets[i], 0.0);
+		#ifdef BLUR_BYPASS
+			result = textureLod(textureSampler, vUV, 0.0).r;
+		#else
+			#ifdef BLUR_H
+				vec2 step = vec2(1.0 / outSize, 0.0);
 			#else
-			vec2 direction = vec2(0.0, 1.0);
-			vec2 sampleOffset = vec2(0.0, texelsize * samplerOffsets[i]);
+				vec2 step = vec2(0.0, 1.0 / outSize);
 			#endif
-			vec2 samplePos = vUV + sampleOffset;
 
-			float sampleDepth = abs(texture2D(depthSampler, samplePos).r);
-			float weight = clamp(1.0 / ( 0.003 + abs(compareDepth - sampleDepth)), 0.0, 30000.0);
+			#ifdef BLUR_LEGACY
+				result = blur13Bilateral(textureSampler, vUV, step);
+			#else
+				float compareDepth = abs(textureLod(depthSampler, vUV, 0.0).r);
+				float weightSum = 0.0;
+				for (int i = -samples; i < samples; i += 2)
+				{
+					// Step over the texels two at a time, sampling both by sampling the position
+					// directly between them. The graphics hardware will thus read both.
+					//
+					// Note that we really should sample the center position seperately, but to
+					// minimize the risk of regressions, we keep doing it like this for now.
+					vec2 samplePos = vUV + step * (float(i) + 0.5);
 
-			result += texture2D(textureSampler, samplePos).r * weight;
-			weightSum += weight;
-		}
+					float sampleDepth = abs(textureLod(depthSampler, samplePos, 0.0).r);
 
-		result /= weightSum;
+					// The falloff is used to optionally give samples further from the center
+					// gradually lower weights. The value at the center is always 1.0, but the
+					// value at the edge varies depending on the "soften" control input.
+					//
+					// Note: soften === 0 => fallof === 1 for all i, legacy that needs to be kept.
+					float falloff = smoothstep(0.0,
+											   float(samples),
+											   float(samples) - abs(float(i)) * soften);
+
+					// minDivider affects how much a sample's depth need to differ before it is
+					// more or less rejected. A higher value results in the bilateral filter
+					// being more forgiving when rejecting samples, letting the denoiser work on
+					// slanted and curved surfaces.
+					//
+					// Note: tolerance === 0 => minDivider === 0.003, legacy that needs to be kept.
+					float minDivider = tolerance * 0.5 + 0.003;
+					float weight = falloff / ( minDivider + abs(compareDepth - sampleDepth));
+
+					result += textureLod(textureSampler, samplePos, 0.0).r * weight;
+					weightSum += weight;
+				}
+				result /= weightSum;
+			#endif
+		#endif
+
 		gl_FragColor.rgb = vec3(result);
 		gl_FragColor.a = 1.0;
-		#else
-		vec4 color;
-		#ifdef BILATERAL_BLUR_H
-		vec2 direction = vec2(1.0, 0.0);
-		color = blur13Bilateral(textureSampler, vUV, outSize, direction);
-		#else
-		vec2 direction = vec2(0.0, 1.0);
-		color = blur13Bilateral(textureSampler, vUV, outSize, direction);
-		#endif
-
-		gl_FragColor.rgb = vec3(color.r);
-		gl_FragColor.a = 1.0;
-		#endif
 	}
+
 #endif

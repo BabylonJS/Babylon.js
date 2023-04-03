@@ -178,9 +178,13 @@ class TransmissionHelper {
         Tools.SetImmediate(() => {
             if (this._shouldRenderAsTransmission(mesh.material)) {
                 (mesh.material as PBRMaterial).refractionTexture = this._opaqueRenderTarget;
-                this._transparentMeshesCache.push(mesh);
+                if (this._transparentMeshesCache.indexOf(mesh) === -1) {
+                    this._transparentMeshesCache.push(mesh);
+                }
             } else {
-                this._opaqueMeshesCache.push(mesh);
+                if (this._opaqueMeshesCache.indexOf(mesh) === -1) {
+                    this._opaqueMeshesCache.push(mesh);
+                }
             }
         });
     }

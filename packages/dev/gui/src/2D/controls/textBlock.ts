@@ -554,7 +554,7 @@ export class TextBlock extends Control {
             if (currentHeight > height && n > 1) {
                 const lastLine = lines[n - 2] as { text: string; width: number };
                 const currentLine = lines[n - 1] as { text: string; width: number };
-                lines[n - 2] = this._parseLineEllipsis(`${lastLine.text + currentLine.text}`, width, context);
+                lines[n - 2] = this._parseLineEllipsis(lastLine.text + this._wordDivider + currentLine.text, width, context);
                 const linesToRemove = lines.length - n + 1;
                 for (let i = 0; i < linesToRemove; i++) {
                     lines.pop();

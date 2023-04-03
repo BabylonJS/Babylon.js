@@ -1367,7 +1367,7 @@ export class Control implements IAnimatable {
         this.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
 
         const globalViewport = this._host._getGlobalViewport();
-        const projectedPosition = Vector3.Project(position, Matrix.Identity(), scene.getTransformMatrix(), globalViewport);
+        const projectedPosition = Vector3.Project(position, Matrix.IdentityReadOnly, scene.getTransformMatrix(), globalViewport);
 
         this._moveToProjectedPosition(projectedPosition);
 
@@ -1823,6 +1823,8 @@ export class Control implements IAnimatable {
     }
 
     protected _evaluateClippingState(parentMeasure: Measure) {
+        // Since transformMatrix is used here, we need to have it freshly computed
+        this._transform();
         this._currentMeasure.transformToRef(this._transformMatrix, this._evaluatedMeasure);
         if (this.parent && this.parent.clipChildren) {
             parentMeasure.transformToRef(this.parent._transformMatrix, this._evaluatedParentMeasure);

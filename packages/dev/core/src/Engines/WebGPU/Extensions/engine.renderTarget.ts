@@ -25,6 +25,7 @@ WebGPUEngine.prototype.createRenderTargetTexture = function (size: TextureSize, 
         fullOptions.creationFlags = options.creationFlags ?? 0;
         fullOptions.noColorAttachment = !!options.noColorAttachment;
         fullOptions.samples = options.samples;
+        fullOptions.label = options.label;
     } else {
         fullOptions.generateMipMaps = <boolean>options;
         fullOptions.generateDepthBuffer = true;
@@ -57,7 +58,8 @@ WebGPUEngine.prototype.createRenderTargetTexture = function (size: TextureSize, 
                     fullOptions.samplingMode === Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST),
             rtWrapper._generateStencilBuffer,
             rtWrapper.samples,
-            fullOptions.generateStencilBuffer ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT
+            fullOptions.generateStencilBuffer ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT,
+            fullOptions.label ? fullOptions.label + "-DepthStencil" : undefined
         );
     }
 
@@ -78,6 +80,8 @@ WebGPUEngine.prototype.createRenderTargetTexture = function (size: TextureSize, 
 
 WebGPUEngine.prototype._createDepthStencilTexture = function (size: TextureSize, options: DepthTextureCreationOptions): InternalTexture {
     const internalTexture = new InternalTexture(this, InternalTextureSource.DepthStencil);
+
+    internalTexture.label = options.label;
 
     const internalOptions = {
         bilinearFiltering: false,

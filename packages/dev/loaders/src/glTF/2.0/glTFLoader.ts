@@ -1907,7 +1907,10 @@ export class GLTFLoader implements IGLTFLoader {
         return this._loadAccessorAsync(context, accessor, Float32Array) as Promise<Float32Array>;
     }
 
-    private _loadIndicesAccessorAsync(context: string, accessor: IAccessor): Promise<IndicesArray> {
+    /**
+     * @internal
+     */
+    public _loadIndicesAccessorAsync(context: string, accessor: IAccessor): Promise<IndicesArray> {
         if (accessor.type !== AccessorType.SCALAR) {
             throw new Error(`${context}/type: Invalid value ${accessor.type}`);
         }
@@ -1937,7 +1940,10 @@ export class GLTFLoader implements IGLTFLoader {
         return accessor._data as Promise<IndicesArray>;
     }
 
-    private _loadVertexBufferViewAsync(bufferView: IBufferView): Promise<Buffer> {
+    /**
+     * @internal
+     */
+    public _loadVertexBufferViewAsync(bufferView: IBufferView): Promise<Buffer> {
         if (bufferView._babylonBuffer) {
             return bufferView._babylonBuffer;
         }
@@ -1950,7 +1956,10 @@ export class GLTFLoader implements IGLTFLoader {
         return bufferView._babylonBuffer;
     }
 
-    private _loadVertexAccessorAsync(context: string, accessor: IAccessor, kind: string): Promise<VertexBuffer> {
+    /**
+     * @internal
+     */
+    public _loadVertexAccessorAsync(context: string, accessor: IAccessor, kind: string): Promise<VertexBuffer> {
         if (accessor._babylonVertexBuffer?.[kind]) {
             return accessor._babylonVertexBuffer[kind];
         }

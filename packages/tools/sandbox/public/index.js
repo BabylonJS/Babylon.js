@@ -44,12 +44,12 @@ const Versions = {
         "https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js",
     ],
     local: [
-        "//localhost:1337/babylon.js",
-        "//localhost:1337/loaders/babylonjs.loaders.min.js",
-        "//localhost:1337/serializers/babylonjs.serializers.min.js",
-        "//localhost:1337/materialsLibrary/babylonjs.materials.min.js",
-        "//localhost:1337/gui/babylon.gui.min.js",
-        "//localhost:1337/inspector/babylon.inspector.bundle.js",
+        `//${window.location.hostname}:1337/babylon.js`,
+        `//${window.location.hostname}:1337/loaders/babylonjs.loaders.min.js`,
+        `//${window.location.hostname}:1337/serializers/babylonjs.serializers.min.js`,
+        `//${window.location.hostname}:1337/materialsLibrary/babylonjs.materials.min.js`,
+        `//${window.location.hostname}:1337/gui/babylon.gui.min.js`,
+        `//${window.location.hostname}:1337/inspector/babylon.inspector.bundle.js`,
     ],
 };
 

@@ -661,6 +661,7 @@ export class PostProcess {
             type: this._textureType,
             format: this._textureFormat,
             samples: this._samples,
+            label: "PostProcessRTT-" + this.name,
         };
 
         this._textures.push(this._createRenderTargetTexture(textureSize, textureOptions, 0));

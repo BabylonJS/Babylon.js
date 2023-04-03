@@ -42,6 +42,7 @@ export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPr
             { label: "Clip", value: TextWrapping.Clip },
             { label: "Ellipsis", value: TextWrapping.Ellipsis },
             { label: "Word wrap", value: TextWrapping.WordWrap },
+            { label: "Word wrap ellipsis", value: TextWrapping.WordWrapEllipsis },
         ];
 
         return (

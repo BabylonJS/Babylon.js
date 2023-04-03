@@ -19,7 +19,7 @@ import { KeyboardEventTypes } from "core/Events/keyboardEvents";
 import type { Line } from "gui/2D/controls/line";
 import type { Grid } from "gui/2D/controls/grid";
 import { Tools } from "../tools";
-import type { Observer } from "core/Misc/observable";
+import type { Observable, Observer } from "core/Misc/observable";
 import type { ISize } from "core/Maths/math";
 import { Texture } from "core/Materials/Textures/texture";
 import type { DimensionProperties } from "./coordinateHelper";
@@ -31,6 +31,7 @@ import type { StackPanel } from "gui/2D/controls/stackPanel";
 import type { TransformNode } from "core/Meshes/transformNode";
 import { RandomGUID } from "core/Misc/guid";
 import { DataStorage } from "core/Misc/dataStorage";
+import type { Vector2WithInfo } from "gui/2D/math2D";
 
 export interface IWorkbenchComponentProps {
     globalState: GlobalState;
@@ -308,8 +309,15 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this._pasteDisabled = false;
         const controlList: any[] = [];
         for (const control of this.props.globalState.selectedControls) {
+            // For grid controls, have to save current position in it
+            if (control.parent?.getClassName() === "Grid") {
+                const cellInfo = (control.parent as Grid).getChildCellInfo(control);
+                const [row, column] = cellInfo.split(":");
+                control.metadata = { ...control.metadata, _cellInfo: { row, column } };
+            }
             const obj = {};
             control.serialize(obj);
+
             controlList.push(obj);
             this._currLeft = control.leftInPixels;
             this._currTop = control.topInPixels;
@@ -346,6 +354,12 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
                 newSelection[0].topInPixels = this._currTop;
 
                 const newGuiNode = this.props.globalState.workbench.appendBlock(newSelection[0]);
+                if (newGuiNode.parent?.typeName === "Grid" && newGuiNode.metadata?._cellInfo) {
+                    const { row, column } = newGuiNode.metadata._cellInfo;
+                    const gridParent = newGuiNode.parent as Grid;
+                    gridParent.removeControl(newGuiNode);
+                    gridParent.addControl(newGuiNode, parseInt(row), parseInt(column));
+                }
                 this.props.globalState.setSelection([newGuiNode]);
 
                 return true;
@@ -429,11 +443,6 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             ...guiControl.metadata,
             guiEditor: true,
         };
-        guiControl.highlightLineWidth = 5;
-        guiControl.isHighlighted = false;
-        guiControl.isReadOnly = true;
-        guiControl.isHitTestVisible = true;
-        guiControl.isPointerBlocker = true;
     }
 
     /**
@@ -595,17 +604,66 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         return this.props.globalState.liveGuiTexture && this.props.globalState.guiTexture && this.trueRootContainer;
     }
 
+    private _controlToLinkedMeshMap = new Map<Control, TransformNode>();
+    private _observersMap = {
+        onPointerDownObservable: new Map<string, Observable<Vector2WithInfo>>(),
+        onPointerUpObservable: new Map<string, Observable<Vector2WithInfo>>(),
+        onPointerMoveObservable: new Map<string, Observable<Vector2WithInfo>>(),
+        onPointerEnterObservable: new Map<string, Observable<Vector2WithInfo>>(),
+        onPointerOutObservable: new Map<string, Observable<Vector2WithInfo>>(),
+        onPointerClickObservable: new Map<string, Observable<Vector2WithInfo>>(),
+        onDisposeObservable: new Map<string, Observable<Control>>(),
+        onIsVisibleChangedObservable: new Map<string, Observable<boolean>>(),
+        onBeforeDrawObservable: new Map<string, Observable<Control>>(),
+        onAfterDrawObservable: new Map<string, Observable<Control>>(),
+        onWheelObservable: new Map<string, Observable<WheelEvent>>(),
+    };
+
+    private _saveObservables(root: Container) {
+        root.getDescendants().forEach((control) => {
+            if (control.linkedMesh) {
+                this._controlToLinkedMeshMap.set(control.metadata.editorUniqueId, control.linkedMesh);
+            }
+
+            Object.keys(this._observersMap).forEach((key) => {
+                const observable = (control as any)[key];
+                if (observable.hasObservers()) {
+                    (this._observersMap as any)[key].set(control.metadata.editorUniqueId, observable);
+                }
+            });
+        });
+    }
+
+    private _restoreObservables(root: Container) {
+        root.getDescendants().forEach((control) => {
+            if (this._controlToLinkedMeshMap.has(control.metadata?.editorUniqueId)) {
+                const linkedMesh = this._controlToLinkedMeshMap.get(control.metadata.editorUniqueId);
+                if (linkedMesh) {
+                    control.linkWithMesh(linkedMesh);
+                }
+            }
+
+            Object.keys(this._observersMap).forEach((key) => {
+                const savedObservable = (this._observersMap as any)[key].get(control.metadata?.editorUniqueId);
+                if (savedObservable) {
+                    (control as any)[key] = savedObservable;
+                }
+            });
+        });
+
+        this._controlToLinkedMeshMap.clear();
+        Object.keys(this._observersMap).forEach((key) => {
+            (this._observersMap as any)[key].clear();
+        });
+    }
+
     private _copyEditorGUIToLiveGUI() {
         if (this._canClone()) {
             // Before cloning, save all of the live GUI controls that have a linked mesh
-            const controlToLinkedMesh = new Map<Control, TransformNode>();
             const liveRoot = this.props.globalState.liveGuiTexture!.rootContainer;
-            liveRoot.getDescendants().forEach((control) => {
-                if (control.linkedMesh) {
-                    controlToLinkedMesh.set(control.metadata.editorUniqueId, control.linkedMesh);
-                }
-            });
+            this._saveObservables(liveRoot);
             liveRoot.clearControls();
+
             const originalToCloneMap = new Map<Control, Control>();
             const updatedRootChildren = this.trueRootContainer.children.slice(0);
             for (const child of updatedRootChildren) {
@@ -615,15 +673,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
             }
 
             // Relink all meshes
-            liveRoot.getDescendants().forEach((control) => {
-                if (control.metadata && controlToLinkedMesh.has(control.metadata.editorUniqueId)) {
-                    const linkedMesh = controlToLinkedMesh.get(control.metadata.editorUniqueId);
-                    if (linkedMesh) {
-                        control.linkWithMesh(linkedMesh);
-                    }
-                }
-            });
-
+            this._restoreObservables(liveRoot);
             this._syncConnectedLines(updatedRootChildren, originalToCloneMap);
         }
     }

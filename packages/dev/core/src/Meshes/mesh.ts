@@ -674,10 +674,16 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             // Physics clone
             if (scene.getPhysicsEngine) {
                 const physicsEngine = scene.getPhysicsEngine();
-                if (clonePhysicsImpostor && physicsEngine && physicsEngine.getPluginVersion() === 1) {
-                    const impostor = (physicsEngine as PhysicsEngineV1).getImpostorForPhysicsObject(source);
-                    if (impostor) {
-                        this.physicsImpostor = impostor.clone(this);
+                if (clonePhysicsImpostor && physicsEngine) {
+                    if (physicsEngine.getPluginVersion() === 1) {
+                        const impostor = (physicsEngine as PhysicsEngineV1).getImpostorForPhysicsObject(source);
+                        if (impostor) {
+                            this.physicsImpostor = impostor.clone(this);
+                        }
+                    } else if (physicsEngine.getPluginVersion() === 2) {
+                        if (source.physicsBody) {
+                            source.physicsBody.clone(this);
+                        }
                     }
                 }
             }
@@ -1023,16 +1029,19 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * - VertexBuffer.MatricesWeightsExtraKind
      * @param copyWhenShared defines a boolean indicating that if the mesh geometry is shared among some other meshes, the returned array is a copy of the internal one
      * @param forceCopy defines a boolean forcing the copy of the buffer no matter what the value of copyWhenShared is
+     * @param bypassInstanceData defines a boolean indicating that the function should not take into account the instance data (applies only if the mesh has instances). Default: false
      * @returns a FloatArray or null if the mesh has no geometry or no vertex buffer for this kind.
      */
-    public getVerticesData(kind: string, copyWhenShared?: boolean, forceCopy?: boolean): Nullable<FloatArray> {
+    public getVerticesData(kind: string, copyWhenShared?: boolean, forceCopy?: boolean, bypassInstanceData?: boolean): Nullable<FloatArray> {
         if (!this._geometry) {
             return null;
         }
-        let data = this._userInstancedBuffersStorage?.vertexBuffers[kind]?.getFloatData(
-            this._geometry.getTotalVertices(),
-            forceCopy || (copyWhenShared && this._geometry.meshes.length !== 1)
-        );
+        let data = bypassInstanceData
+            ? undefined
+            : this._userInstancedBuffersStorage?.vertexBuffers[kind]?.getFloatData(
+                  this.instances.length + 1, // +1 because the master mesh is not included in the instances array
+                  forceCopy || (copyWhenShared && this._geometry.meshes.length !== 1)
+              );
         if (!data) {
             data = this._geometry.getVerticesData(kind, copyWhenShared, forceCopy);
         }
@@ -1055,14 +1064,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * - VertexBuffer.MatricesIndicesExtraKind
      * - VertexBuffer.MatricesWeightsKind
      * - VertexBuffer.MatricesWeightsExtraKind
+     * @param bypassInstanceData defines a boolean indicating that the function should not take into account the instance data (applies only if the mesh has instances). Default: false
      * @returns a FloatArray or null if the mesh has no vertex buffer for this kind.
      */
-    public getVertexBuffer(kind: string): Nullable<VertexBuffer> {
+    public getVertexBuffer(kind: string, bypassInstanceData?: boolean): Nullable<VertexBuffer> {
         if (!this._geometry) {
             return null;
         }
 
-        return this._userInstancedBuffersStorage?.vertexBuffers[kind] ?? this._geometry.getVertexBuffer(kind);
+        return (bypassInstanceData ? undefined : this._userInstancedBuffersStorage?.vertexBuffers[kind]) ?? this._geometry.getVertexBuffer(kind);
     }
 
     /**
@@ -1081,16 +1091,17 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * - VertexBuffer.MatricesIndicesExtraKind
      * - VertexBuffer.MatricesWeightsKind
      * - VertexBuffer.MatricesWeightsExtraKind
+     * @param bypassInstanceData defines a boolean indicating that the function should not take into account the instance data (applies only if the mesh has instances). Default: false
      * @returns a boolean
      */
-    public isVerticesDataPresent(kind: string): boolean {
+    public isVerticesDataPresent(kind: string, bypassInstanceData?: boolean): boolean {
         if (!this._geometry) {
             if (this._delayInfo) {
                 return this._delayInfo.indexOf(kind) !== -1;
             }
             return false;
         }
-        return this._userInstancedBuffersStorage?.vertexBuffers[kind] !== undefined || this._geometry.isVerticesDataPresent(kind);
+        return (!bypassInstanceData && this._userInstancedBuffersStorage?.vertexBuffers[kind] !== undefined) || this._geometry.isVerticesDataPresent(kind);
     }
 
     /**
@@ -1108,23 +1119,31 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * - VertexBuffer.MatricesIndicesExtraKind
      * - VertexBuffer.MatricesWeightsKind
      * - VertexBuffer.MatricesWeightsExtraKind
+     * @param bypassInstanceData defines a boolean indicating that the function should not take into account the instance data (applies only if the mesh has instances). Default: false
      * @returns a boolean
      */
-    public isVertexBufferUpdatable(kind: string): boolean {
+    public isVertexBufferUpdatable(kind: string, bypassInstanceData?: boolean): boolean {
         if (!this._geometry) {
             if (this._delayInfo) {
                 return this._delayInfo.indexOf(kind) !== -1;
             }
             return false;
         }
-        return this._userInstancedBuffersStorage?.vertexBuffers[kind]?.isUpdatable() || this._geometry.isVertexBufferUpdatable(kind);
+        if (!bypassInstanceData) {
+            const buffer = this._userInstancedBuffersStorage?.vertexBuffers[kind];
+            if (buffer) {
+                return buffer.isUpdatable();
+            }
+        }
+        return this._geometry.isVertexBufferUpdatable(kind);
     }
 
     /**
      * Returns a string which contains the list of existing `kinds` of Vertex Data associated with this mesh.
+     * @param bypassInstanceData defines a boolean indicating that the function should not take into account the instance data (applies only if the mesh has instances). Default: false
      * @returns an array of strings
      */
-    public getVerticesDataKinds(): string[] {
+    public getVerticesDataKinds(bypassInstanceData?: boolean): string[] {
         if (!this._geometry) {
             const result = new Array<string>();
             if (this._delayInfo) {
@@ -1135,9 +1154,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return result;
         }
         const kinds = this._geometry.getVerticesDataKinds();
-        if (this._userInstancedBuffersStorage) {
+        if (!bypassInstanceData && this._userInstancedBuffersStorage) {
             for (const kind in this._userInstancedBuffersStorage.vertexBuffers) {
-                kinds.push(kind);
+                if (kinds.indexOf(kind) === -1) {
+                    kinds.push(kind);
+                }
             }
         }
         return kinds;
@@ -2811,6 +2832,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         internalDataInfo._source = null;
+        this._instanceDataStorage.visibleInstances = {};
 
         // Instances
         this._disposeInstanceSpecificData();

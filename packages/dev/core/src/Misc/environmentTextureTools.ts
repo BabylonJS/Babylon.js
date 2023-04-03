@@ -272,6 +272,12 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
                     faceDataFloat[i] = Math.pow(faceDataFloat[i], 2.2);
                 }
                 faceData = faceDataFloat;
+            } else if (faceData && texture.gammaSpace) {
+                const floatData = faceData as Float32Array;
+                for (let i = 0; i < floatData.length; i++) {
+                    // Gamma to linear
+                    floatData[i] = Math.pow(floatData[i], 2.2);
+                }
             }
 
             const tempTexture = engine.createRawTexture(

@@ -707,6 +707,11 @@ export class Engine extends ThinEngine {
         this._timeStep = this._creationOptions.timeStep || 1 / 60;
     }
 
+    /** @internal */
+    public _verifyPointerLock(): void {
+        this._onPointerLockChange?.();
+    }
+
     /**
      * Gets current aspect ratio
      * @param viewportOwner defines the camera to use to get the aspect ratio
