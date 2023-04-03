@@ -1573,6 +1573,11 @@
             "excludedEngines": ["webgl1"]
         },
         {
+            "title": "MultiRenderTarget with different texture types",
+            "playgroundId": "#XSNYAU#1",
+            "excludedEngines": ["webgl1", "webgpu"]
+        },
+        {
             "title": "Decal Map", 
             "playgroundId": "#9BVW2S#43"
         },
