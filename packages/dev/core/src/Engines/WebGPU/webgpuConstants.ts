@@ -1,11 +1,5 @@
 /** @internal */
 // eslint-disable-next-line import/export
-export enum PredefinedColorSpace {
-    SRGB = "srgb",
-}
-
-/** @internal */
-// eslint-disable-next-line import/export
 export enum PowerPreference {
     LowPower = "low-power",
     HighPerformance = "high-performance",
@@ -14,7 +8,6 @@ export enum PowerPreference {
 /** @internal */
 export enum FeatureName {
     DepthClipControl = "depth-clip-control",
-    Depth24UnormStencil8 = "depth24unorm-stencil8",
     Depth32FloatStencil8 = "depth32float-stencil8",
     TextureCompressionBC = "texture-compression-bc",
     TextureCompressionETC2 = "texture-compression-etc2",
@@ -22,7 +15,16 @@ export enum FeatureName {
     TimestampQuery = "timestamp-query",
     IndirectFirstInstance = "indirect-first-instance",
     ShaderF16 = "shader-f16",
+    RG11B10UFloatRenderable = "rg11b10ufloat-renderable",
     BGRA8UnormStorage = "bgra8unorm-storage",
+    Float32Filterable = "float32-filterable",
+}
+
+/** @internal */
+export enum BufferMapState {
+    Unmapped = "unmapped",
+    Pending = "pending",
+    Mapped = "mapped",
 }
 
 /** @internal */
@@ -219,6 +221,12 @@ export enum FilterMode {
 }
 
 /** @internal */
+export enum MipmapFilterMode {
+    Nearest = "nearest",
+    Linear = "linear",
+}
+
+/** @internal */
 export enum CompareFunction {
     Never = "never",
     Less = "less",
@@ -270,6 +278,12 @@ export enum CompilationMessageType {
     Error = "error",
     Warning = "warning",
     Info = "info",
+}
+
+/** @internal */
+export enum PipelineErrorReason {
+    Validation = "validation",
+    Internal = "internal",
 }
 
 /** @internal */
@@ -430,11 +444,13 @@ export enum CanvasAlphaMode {
 
 /** @internal */
 export enum DeviceLostReason {
+    Unknown = "unknown",
     Destroyed = "destroyed",
 }
 
 /** @internal */
 export enum ErrorFilter {
-    OutOfMemory = "out-of-memory",
     Validation = "validation",
+    OutOfMemory = "out-of-memory",
+    Internal = "internal",
 }

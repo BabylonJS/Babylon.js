@@ -244,6 +244,7 @@ export class RenderTargetWrapper {
      * @param generateStencil true if the stencil aspect should also be created
      * @param samples sample count to use when creating the texture
      * @param format format of the depth texture
+     * @param label defines the label to use for the texture (for debugging purpose only)
      * @returns the depth/stencil created texture
      */
     public createDepthStencilTexture(
@@ -251,7 +252,8 @@ export class RenderTargetWrapper {
         bilinearFiltering: boolean = true,
         generateStencil: boolean = false,
         samples: number = 1,
-        format: number = Constants.TEXTUREFORMAT_DEPTH32_FLOAT
+        format: number = Constants.TEXTUREFORMAT_DEPTH32_FLOAT,
+        label?: string
     ): InternalTexture {
         this._depthStencilTexture?.dispose();
 
@@ -265,6 +267,7 @@ export class RenderTargetWrapper {
                 isCube: this._isCube,
                 samples,
                 depthTextureFormat: format,
+                label,
             },
             this
         );

@@ -56,18 +56,8 @@ export const evaluateInitEngineForVisualization = async (engineName: string, use
         };
 
         const options = {
-            deviceDescriptor: {
-                requiredFeatures: [
-                    "depth-clip-control",
-                    "depth24unorm-stencil8",
-                    "depth32float-stencil8",
-                    "texture-compression-bc",
-                    "texture-compression-etc2",
-                    "texture-compression-astc",
-                    "timestamp-query",
-                    "indirect-first-instance",
-                ],
-            },
+            enableAllFeatures: true,
+            setMaximumLimits: true,
             antialias: false,
         };
 
@@ -120,7 +110,6 @@ export const evaluatePrepareScene = async (
         return x - Math.floor(x);
     };
     BABYLON.SceneLoader.OnPluginActivatedObservable.clear();
-    window.engine!.beginFrame();
     BABYLON.SceneLoader.ShowLoadingScreen = false;
     BABYLON.SceneLoader.ForceFullSceneLoadingForIncremental = true;
     if (sceneMetadata.sceneFolder) {
@@ -222,8 +211,6 @@ export const evaluateRenderSceneForVisualization = async (renderCount: number) =
         }
         BABYLON.SceneLoader.ShowLoadingScreen = false;
         window.scene.useConstantAnimationDeltaTime = true;
-
-        window.engine.endFrame();
 
         window.scene.executeWhenReady(function () {
             if (!window.scene || !window.engine) {

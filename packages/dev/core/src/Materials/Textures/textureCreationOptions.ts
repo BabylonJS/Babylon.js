@@ -24,6 +24,8 @@ export interface InternalTextureCreationOptions {
     creationFlags?: number;
     /** Creates the RTT in sRGB space */
     useSRGBBuffer?: boolean;
+    /** Label of the texture (used for debugging only) */
+    label?: string;
 }
 
 /**
@@ -56,6 +58,8 @@ export interface DepthTextureCreationOptions {
     samples?: number;
     /** Specifies the depth texture format to use */
     depthTextureFormat?: number;
+    /** Label of the texture (used for debugging only) */
+    label?: string;
 }
 
 /**

@@ -546,6 +546,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             noColorAttachment: noColorAttachment,
             useSRGBBuffer,
             colorAttachment: colorAttachment,
+            label: this.name,
         };
 
         if (this.samplingMode === Texture.NEAREST_SAMPLINGMODE) {

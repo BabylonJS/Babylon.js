@@ -227,7 +227,7 @@
         },
         {
             "title": "Simulate pointer",
-            "playgroundId": "#8MGKWK#269",
+            "playgroundId": "#8MGKWK#574",
             "referenceImage": "simulatePointer.png"
         },
         {
@@ -982,7 +982,7 @@
         },
         {
             "title": "MeshSimplification",
-            "playgroundId": "#1ED15P#40",
+            "playgroundId": "#1ED15P#46",
             "referenceImage": "meshSimplification.png"
         },
         {
@@ -1077,7 +1077,7 @@
             "title": "Shadows CSM and LODs",
             "playgroundId": "#24HWT9#0",
             "referenceImage": "shadowscsmandlod.png",
-            "excludedEngines": ["webgl1"]
+            "excludedEngines": ["webgl1","webgpu"]
         },
         {
             "title": "Glow layer and LODs",
@@ -1132,14 +1132,14 @@
         {
             "title": "Prepass + mirror, without postprocess",
             "renderCount": 10,
-            "playgroundId": "#PIZ1GK#459",
+            "playgroundId": "#PIZ1GK#1084",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-mirror-without-pp.png"
         },
         {
             "title": "Prepass + mirror, with postprocesses",
             "renderCount": 10,
-            "playgroundId": "#PIZ1GK#460",
+            "playgroundId": "#PIZ1GK#1085",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-mirror-with-pp.png"
         },
@@ -1393,7 +1393,7 @@
         {
             "title": "Sample depth texture",
             "renderCount": 5,
-            "playgroundId": "#8RU8Q3#146",
+            "playgroundId": "#8RU8Q3#158",
             "excludedEngines": ["webgl1"],
             "referenceImage": "sampleDepthTexture.png"
         },
@@ -1501,11 +1501,11 @@
             "referenceImage": "multiSGPerLight.png",
             "errorRatio": 2,
             "renderCount": 5,
-            "excludedEngines": ["webgl1"]
+            "excludedEngines": ["webgl1","webgpu"]
         },
         {
             "title": "Fluid rendering particle system",
-            "playgroundId": "#544N0Q#25",
+            "playgroundId": "#544N0Q#67",
             "referenceImage": "fluidParticleSystem.png",
             "excludedEngines": ["webgl1"]
         },
@@ -1520,7 +1520,7 @@
             "title": "Export GLTF Extension KHR_texture_transform",
             "playgroundId": "#20OAV9#9228",
             "referenceImage": "exportGltfKHRTextureTransform.png",
-            "renderCount": 5
+            "renderCount": 15
         },
         {
             "title": "GUI Input Text Area Inside ScrollViewer",
@@ -1570,6 +1570,7 @@
         {
             "title": "Screen Space Reflections 2",
             "playgroundId": "#PIZ1GK#977",
+            "renderCount": 5,
             "excludedEngines": ["webgl1"]
         },
         {

@@ -134,7 +134,7 @@
         },
         {
             "title": "create environment texture",
-            "playgroundId": "#L4RXKN#7",
+            "playgroundId": "#L4RXKN#9",
             "excludedEngines": ["webgl1"]
         },
         {
@@ -154,7 +154,7 @@
         {
             "title": "wgsl in shadermaterial",
             "renderCount": 30,
-            "playgroundId": "#8RU8Q3#135",
+            "playgroundId": "#8RU8Q3#157",
             "excludedEngines": ["webgl1", "webgl2"]
         },
         {

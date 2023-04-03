@@ -150,18 +150,8 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             if (useWebGPU) {
                 globalObject.createDefaultEngine = async function () {
                     const engine = new WebGPUEngine(canvas, {
-                        deviceDescriptor: {
-                            requiredFeatures: [
-                                "depth-clip-control",
-                                "depth24unorm-stencil8",
-                                "depth32float-stencil8",
-                                "texture-compression-bc",
-                                "texture-compression-etc2",
-                                "texture-compression-astc",
-                                "timestamp-query",
-                                "indirect-first-instance",
-                            ],
-                        },
+                        enableAllFeatures: true,
+                        setMaximumLimits: true,
                     });
                     await engine.initAsync();
                     return engine;

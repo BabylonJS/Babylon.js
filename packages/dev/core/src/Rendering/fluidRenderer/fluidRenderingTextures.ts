@@ -168,6 +168,7 @@ export class FluidRenderingTextures {
                 generateDepthBuffer: this._generateDepthBuffer,
                 generateStencilBuffer: false,
                 samples: this._samples,
+                label: `FluidRenderingRTT-${this._name}`,
             }
         );
 
@@ -207,6 +208,7 @@ export class FluidRenderingTextures {
                 generateDepthBuffer: false,
                 generateStencilBuffer: false,
                 samples: this._samples,
+                label: `FluidRenderingRTTBlur-${debugName}`,
             }
         );
 

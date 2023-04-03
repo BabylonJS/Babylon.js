@@ -1,3 +1,9 @@
+#if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
+	#define TEXTUREFUNC(s, c, lod) texture2DLodEXT(s, c, lod)
+#else
+	#define TEXTUREFUNC(s, c, bias) texture2D(s, c, bias)
+#endif
+
 // References:
 // * https://github.com/kode80/kode80SSR
 
@@ -9,17 +15,17 @@ uniform vec2 texelOffsetScale;
 
 const float weights[8] = float[8] (0.071303, 0.131514, 0.189879, 0.321392, 0.452906,  0.584419, 0.715932, 0.847445);
 
-void processSample(vec2 uv, float i, vec2 stepSize, out vec4 accumulator, out float denominator)
+void processSample(vec2 uv, float i, vec2 stepSize, inout vec4 accumulator, inout float denominator)
 {
     vec2 offsetUV = stepSize * i + uv;
     float coefficient = weights[int(2.0 - abs(i))];
-    accumulator += texture2D(textureSampler, offsetUV) * coefficient;
+    accumulator += TEXTUREFUNC(textureSampler, offsetUV, 0.0) * coefficient;
     denominator += coefficient;
 }
 
 void main()
 {
-    vec4 colorFull = texture2D(textureSampler, vUV);
+    vec4 colorFull = TEXTUREFUNC(textureSampler, vUV, 0.0);
 
     if (dot(colorFull, vec4(1.0)) == 0.0) {
         gl_FragColor = colorFull;
@@ -30,7 +36,7 @@ void main()
 
     vec2 stepSize = texelOffsetScale.xy * blurRadius;
 
-    vec4 accumulator = texture2D(textureSampler, vUV) * 0.214607;
+    vec4 accumulator = TEXTUREFUNC(textureSampler, vUV, 0.0) * 0.214607;
     float denominator = 0.214607;
 
     processSample(vUV, 1.0, stepSize, accumulator, denominator);

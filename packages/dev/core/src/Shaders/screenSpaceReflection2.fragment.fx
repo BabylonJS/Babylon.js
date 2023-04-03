@@ -1,3 +1,11 @@
+#if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
+	#define TEXTUREFUNC(s, c, lod) texture2DLodEXT(s, c, lod)
+	#define TEXTURECUBEFUNC(s, c, lod) textureLod(s, c, lod)
+#else
+	#define TEXTUREFUNC(s, c, bias) texture2D(s, c, bias)
+	#define TEXTURECUBEFUNC(s, c, bias) textureCube(s, c, bias)
+#endif
+
 // References:
 // * https://sakibsaikia.github.io/graphics/2016/12/26/Screen-Space-Reflection-in-Killing-Floor-2.html
 // * https://github.com/kode80/kode80SSR
@@ -113,9 +121,9 @@ void main()
 {
 #ifdef SSR_SUPPORTED
     // Get color and reflectivity
-    vec4 colorFull = texture2D(textureSampler, vUV);
+    vec4 colorFull = TEXTUREFUNC(textureSampler, vUV, 0.0);
     vec3 color = colorFull.rgb;
-    vec4 reflectivity = texture2D(reflectivitySampler, vUV);
+    vec4 reflectivity = TEXTUREFUNC(reflectivitySampler, vUV, 0.0);
     if (max(reflectivity.r, max(reflectivity.g, reflectivity.b)) <= reflectivityThreshold) {
         #ifdef SSR_USE_BLUR
             gl_FragColor = vec4(0.);
@@ -153,7 +161,7 @@ void main()
         wReflectedVector.z *= -1.0;
     #endif
 
-    vec3 envColor = textureCube(envCubeSampler, wReflectedVector).xyz;
+    vec3 envColor = TEXTURECUBEFUNC(envCubeSampler, wReflectedVector, 0.0).xyz;
     #ifdef SSR_ENVIRONMENT_CUBE_IS_GAMMASPACE
         envColor = toLinearSpace(envColor);
     #endif
@@ -277,6 +285,6 @@ void main()
         gl_FragColor = vec4(finalColor, colorFull.a);
     #endif
 #else
-    gl_FragColor = texture2D(textureSampler, vUV);
+    gl_FragColor = TEXTUREFUNC(textureSampler, vUV, 0.0);
 #endif
 }

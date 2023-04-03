@@ -1,5 +1,5 @@
 ﻿#ifdef INSTANCES
-	var finalWorld = mat4x4<f32>(world0, world1, world2, world3);
+	var finalWorld = mat4x4<f32>(vertexInputs.world0, vertexInputs.world1, vertexInputs.world2, vertexInputs.world3);
 	#if defined(PREPASS_VELOCITY) || defined(VELOCITY)
 		var finalPreviousWorld = mat4x4<f32>(previousWorld0, previousWorld1, previousWorld2, previousWorld3);
 	#endif

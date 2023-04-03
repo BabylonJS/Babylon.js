@@ -216,8 +216,9 @@ void main(void) {
         #endif
 		refractionVector.y = refractionVector.y * vRefractionInfos.w;
 
+		vec4 refractionLookup = textureCube(refractionCubeSampler, refractionVector);
 		if (dot(refractionVector, viewDirectionW) < 1.0) {
-			refractionColor = textureCube(refractionCubeSampler, refractionVector);
+			refractionColor = refractionLookup;
 		}
 	#else
 		vec3 vRefractionUVW = vec3(refractionMatrix * (view * vec4(vPositionW + refractionVector * vRefractionInfos.z, 1.0)));

@@ -412,7 +412,8 @@ export class FluidRenderer {
                         true,
                         this._engine.isStencilEnable,
                         targetRenderers[0].samples,
-                        this._engine.isStencilEnable ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT
+                        this._engine.isStencilEnable ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT,
+                        `PostProcessRTTDepthStencil-${firstPostProcess.name}`
                     );
                 }
                 for (const targetRenderer of targetRenderers) {
