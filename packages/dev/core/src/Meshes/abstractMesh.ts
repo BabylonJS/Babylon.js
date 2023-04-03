@@ -1792,7 +1792,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             !!material,
             this,
             this._shouldConvertRHS(),
-            !!material && subMesh.getFillMode(material) === Constants.MATERIAL_TriangleStripDrawMode
+            !!material && subMesh.getRenderingMesh().getFillMode(material) === Constants.MATERIAL_TriangleStripDrawMode
         );
         return this;
     }
@@ -1904,7 +1904,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             if (!material) {
                 continue;
             }
-            const fillMode = subMesh.getFillMode(material);
+            const fillMode = subMesh.getRenderingMesh().getFillMode(material);
             if (
                 fillMode == Constants.MATERIAL_TriangleStripDrawMode ||
                 fillMode == Constants.MATERIAL_TriangleFillMode ||

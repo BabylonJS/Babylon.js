@@ -12,7 +12,6 @@ import { extractMinAndMaxIndexed } from "../Maths/math.functions";
 import type { Plane } from "../Maths/math.plane";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import type { IMaterialContext } from "../Engines/IMaterialContext";
-import type { Scene } from "../scene";
 
 declare type Collider = import("../Collisions/collider").Collider;
 declare type Material = import("../Materials/material").Material;
@@ -320,22 +319,6 @@ export class SubMesh implements ICullable {
         return (material as MultiMaterial).getSubMaterial !== undefined;
     }
 
-    /**
-     * @internal
-     * Get active fillMode for specified material and optional scene for global overrides
-     * */
-    public getFillMode(material: Material, scene?: Scene): number {
-        if (scene) {
-            if (scene.forcePointsCloud) {
-                return Constants.MATERIAL_PointFillMode;
-            }
-            if (scene.forceWireframe) {
-                return Constants.MATERIAL_WireFrameFillMode;
-            }
-        }
-        return this._renderingMesh.overrideMaterialFillMode ?? material.fillMode;
-    }
-
     // Methods
 
     /**
@@ -490,7 +473,7 @@ export class SubMesh implements ICullable {
         if (!material) {
             return null;
         }
-        const fillMode = this.getFillMode(material);
+        const fillMode = this.getRenderingMesh().getFillMode(material);
         let step = 3;
         let checkStopper = false;
 

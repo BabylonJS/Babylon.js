@@ -804,7 +804,7 @@ export class GeometryBufferRenderer {
 
                 engine.enableEffect(drawWrapper);
                 if (!hardwareInstancedRendering) {
-                    renderingMesh._bind(subMesh, effect, subMesh.getFillMode(material));
+                    renderingMesh._bind(subMesh, effect, renderingMesh.getFillMode(material));
                 }
 
                 if (!this._useUbo) {
@@ -960,7 +960,7 @@ export class GeometryBufferRenderer {
                 }
 
                 // Draw
-                renderingMesh._processRendering(effectiveMesh, subMesh, effect, subMesh.getFillMode(material), batch, hardwareInstancedRendering, (isInstance, w) => {
+                renderingMesh._processRendering(effectiveMesh, subMesh, effect, renderingMesh.getFillMode(material), batch, hardwareInstancedRendering, (isInstance, w) => {
                     if (!isInstance) {
                         effect.setMatrix("world", w);
                     }

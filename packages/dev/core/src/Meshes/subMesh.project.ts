@@ -95,7 +95,7 @@ SubMesh.prototype.projectToRef = function (vector: Vector3, positions: Vector3[]
     }
     let step = 3;
     let checkStopper = false;
-    const fillMode = this.getFillMode(material);
+    const fillMode = this.getRenderingMesh().getFillMode(material);
 
     switch (fillMode) {
         case Constants.MATERIAL_PointListDrawMode:

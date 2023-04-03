@@ -1201,6 +1201,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         return this._geometry.getIndices(copyWhenShared, forceCopy);
     }
 
+    /**
+     * @internal
+     * Get active fillMode for specified material with override applied
+     * */
+    public getFillMode(material: Material): number {
+        return this.overrideMaterialFillMode ?? material.fillMode;
+    }
+
     public get isBlocked(): boolean {
         return this._masterMesh !== null && this._masterMesh !== undefined;
     }
@@ -2333,7 +2341,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Bind
-        const fillMode = subMesh.getFillMode(this._internalMeshDataInfo._effectiveMaterial, scene);
+        const fillMode = scene.forcePointsCloud
+            ? Material.PointFillMode
+            : scene.forceWireframe
+            ? Material.WireFrameFillMode
+            : this.getFillMode(this._internalMeshDataInfo._effectiveMaterial);
 
         if (this._internalMeshDataInfo._onBeforeBindObservable) {
             this._internalMeshDataInfo._onBeforeBindObservable.notifyObservers(this);

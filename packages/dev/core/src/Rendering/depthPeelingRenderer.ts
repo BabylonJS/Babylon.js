@@ -425,7 +425,7 @@ export class DepthPeelingRenderer {
         for (let i = 0; i < transparentSubMeshes.length; i++) {
             const subMesh = transparentSubMeshes.data[i];
             const material = subMesh.getMaterial();
-            const fillMode = material && subMesh.getFillMode(material);
+            const fillMode = material && subMesh.getRenderingMesh().getFillMode(material);
 
             if (
                 (fillMode === Material.TriangleFanDrawMode || fillMode === Material.TriangleFillMode || fillMode === Material.TriangleStripDrawMode) &&

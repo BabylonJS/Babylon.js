@@ -1194,7 +1194,7 @@ export class ShadowGenerator implements IShadowGenerator {
             engine.enableEffect(drawWrapper);
 
             if (!hardwareInstancedRendering) {
-                renderingMesh._bind(subMesh, effect, subMesh.getFillMode(material));
+                renderingMesh._bind(subMesh, effect, renderingMesh.getFillMode(material));
             }
 
             this.getTransformMatrix(); // make sure _cachedDirection et _cachedPosition are up to date
@@ -1293,7 +1293,7 @@ export class ShadowGenerator implements IShadowGenerator {
             this.onBeforeShadowMapRenderObservable.notifyObservers(effect);
 
             // Draw
-            renderingMesh._processRendering(effectiveMesh, subMesh, effect, subMesh.getFillMode(material), batch, hardwareInstancedRendering, (isInstance, worldOverride) => {
+            renderingMesh._processRendering(effectiveMesh, subMesh, effect, renderingMesh.getFillMode(material), batch, hardwareInstancedRendering, (isInstance, worldOverride) => {
                 if (effectiveMesh !== renderingMesh && !isInstance) {
                     renderingMesh.getMeshUniformBuffer().bindToEffect(effect, "Mesh");
                     renderingMesh.transferToEffect(worldOverride);
