@@ -2148,13 +2148,13 @@ export class NativeEngine extends Engine {
         let generateStencilBuffer = false;
         let noColorAttachment = false;
         let colorAttachment: InternalTexture | undefined = undefined;
-        //let samples = 1;
+        let samples = 1;
         if (options !== undefined && typeof options === "object") {
             generateDepthBuffer = options.generateDepthBuffer ?? true;
             generateStencilBuffer = !!options.generateStencilBuffer;
             noColorAttachment = !!options.noColorAttachment;
             colorAttachment = options.colorAttachment;
-            //samples = options.samples ?? 1;
+            samples = options.samples ?? 1;
         }
 
         const texture = colorAttachment || (noColorAttachment ? null : this._createInternalTexture(size, options, true, InternalTextureSource.RenderTarget));
@@ -2175,10 +2175,13 @@ export class NativeEngine extends Engine {
 
         rtWrapper.setTextures(texture);
 
-        // TODO: handle this in native
-        //this.updateRenderTargetTextureSampleCount(rtWrapper, samples);
+        this.updateRenderTargetTextureSampleCount(rtWrapper, samples);
 
         return rtWrapper;
+    }
+
+    public updateRenderTargetTextureSampleCount(rtWrapper: RenderTargetWrapper, samples: number): number {
+        return 1;
     }
 
     public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {
