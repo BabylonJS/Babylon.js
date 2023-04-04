@@ -42,6 +42,14 @@ export class PostProcessRenderPipelineManager {
     }
 
     /**
+     * Remove the pipeline from the manager
+     * @param renderPipelineName the name of the pipeline to remove
+     */
+    public removePipeline(renderPipelineName: string): void {
+        delete this._renderPipelines[renderPipelineName];
+    }
+
+    /**
      * Attaches a camera to the pipeline
      * @param renderPipelineName The name of the pipeline to attach to
      * @param cameras the camera to attach
