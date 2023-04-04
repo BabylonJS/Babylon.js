@@ -412,8 +412,8 @@ export class TargetCamera extends Camera {
         return this;
     }
 
-    private _cachedRotationZ = 0;
-    private _cachedQuaternionRotationZ = 0;
+    private _cachedRotation = Vector3.Zero();
+    private _cachedQuaternionRotation = Quaternion.Zero();
     /** @internal */
     public _getViewMatrix(): Matrix {
         if (this.lockedTarget) {
@@ -424,12 +424,12 @@ export class TargetCamera extends Camera {
         this._updateCameraRotationMatrix();
 
         // Apply the changed rotation to the upVector
-        if (this.rotationQuaternion && this._cachedQuaternionRotationZ != this.rotationQuaternion.z) {
+        if (this.rotationQuaternion && !this._cachedQuaternionRotation.equalsWithEpsilon(this.rotationQuaternion)) {
             this._rotateUpVectorWithCameraRotationMatrix();
-            this._cachedQuaternionRotationZ = this.rotationQuaternion.z;
-        } else if (this._cachedRotationZ !== this.rotation.z) {
+            this._cachedQuaternionRotation = this.rotationQuaternion.clone();
+        } else if (this._cachedRotation.equalsWithEpsilon(this.rotation)) {
             this._rotateUpVectorWithCameraRotationMatrix();
-            this._cachedRotationZ = this.rotation.z;
+            this._cachedRotation = this.rotation.clone();
         }
 
         Vector3.TransformCoordinatesToRef(this._referencePoint, this._cameraRotationMatrix, this._transformedReferencePoint);
