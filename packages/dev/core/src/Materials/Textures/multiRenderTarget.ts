@@ -516,6 +516,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
         this._multiRenderTargetOptions.types = types;
         this._multiRenderTargetOptions.samplingModes = samplingModes;
         this._multiRenderTargetOptions.useSRGBBuffers = useSRGBBuffers;
+        this._multiRenderTargetOptions.formats = formats;
         this._multiRenderTargetOptions.targetTypes = targetTypes;
         this._multiRenderTargetOptions.faceIndex = faceIndex;
         this._multiRenderTargetOptions.layerIndex = layerIndex;
