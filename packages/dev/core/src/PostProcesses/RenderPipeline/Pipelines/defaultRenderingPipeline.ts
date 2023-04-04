@@ -821,6 +821,7 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
         this.onBuildObservable.clear();
         this._disposePostProcesses(true);
         this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._cameras);
+        this._scene._postProcessRenderPipelineManager.removePipeline(this.name);
         this._scene.autoClear = true;
         if (this._resizeObserver) {
             this._scene.getEngine().onResizeObservable.remove(this._resizeObserver);
