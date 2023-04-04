@@ -297,7 +297,6 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
 
         const internalSizedFormat = this._getRGBABufferInternalSizedFormat(type, format, useSRGBBuffer);
         const internalFormat = this._getInternalFormat(format);
-        gl.texImage2D(gl.TEXTURE_2D, 0, internalSizedFormat, width, height, 0, internalFormat, this._getWebGLTextureType(type), null);
         const webGLTextureType = this._getWebGLTextureType(type);
 
         if (isWebGL2 && (target === Constants.TEXTURE_2D_ARRAY || target === Constants.TEXTURE_3D)) {
@@ -309,15 +308,15 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
 
             texture.baseDepth = texture.depth = layerCount;
 
-            gl.texImage3D(target, 0, internalSizedFormat, width, height, layerCount, 0, gl.RGBA, webGLTextureType, null);
+            gl.texImage3D(target, 0, internalSizedFormat, width, height, layerCount, 0, internalFormat, webGLTextureType, null);
         } else if (target === Constants.TEXTURE_CUBE_MAP) {
             // We have to generate all faces to complete the framebuffer
             for (let i = 0; i < 6; i++) {
-                gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internalSizedFormat, width, height, 0, gl.RGBA, webGLTextureType, null);
+                gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internalSizedFormat, width, height, 0, internalFormat, webGLTextureType, null);
             }
             texture.isCube = true;
         } else {
-            gl.texImage2D(gl.TEXTURE_2D, 0, internalSizedFormat, width, height, 0, gl.RGBA, webGLTextureType, null);
+            gl.texImage2D(gl.TEXTURE_2D, 0, internalSizedFormat, width, height, 0, internalFormat, webGLTextureType, null);
         }
 
         if (generateMipMaps) {
