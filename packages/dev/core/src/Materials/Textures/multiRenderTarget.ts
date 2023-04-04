@@ -224,7 +224,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
         types: number[],
         samplingModes: number[],
         useSRGBBuffers: boolean[],
-        formats: number[], 
+        formats: number[],
         targets: number[],
         faceIndex: number[],
         layerIndex: number[],
