@@ -2180,7 +2180,13 @@ export class NativeEngine extends Engine {
         return rtWrapper;
     }
 
+    // This function is being added for the sole purpose of overriding the ThinEngine version.  The reason
+    // for this is that the ThinEngine version of this function uses a WebGL2RenderingContext, which is not
+    // available in Babylon Native.  The return value is just a hard-coded value that is not used anywhere
+    // in Babylon Native's code.  This is effectively a hack/workaround so that Babylon Native doesn't crash
+    // This function should be updated once the maxMSAASamples is updated as well.
     public updateRenderTargetTextureSampleCount(rtWrapper: RenderTargetWrapper, samples: number): number {
+        // TODO: Implement this function once the maxMSAASamples is updated.
         return 1;
     }
 
