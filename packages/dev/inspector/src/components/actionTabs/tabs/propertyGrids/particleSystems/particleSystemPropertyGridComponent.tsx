@@ -548,7 +548,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                             globalState={this.props.globalState}
                             gradients={system.getEmitRateGradients()!}
                             label="Velocity gradients"
-                            docLink="https://doc.babylonjs.com/babylon101/particles#emit-rate-over-time"
+                            docLink="https://doc.babylonjs.com/features/featuresDeepDive/particles/particle_system/tuning_gradients#change-speed-over-lifetime"
                             onCreateRequired={() => {
                                 system.addEmitRateGradient(0, 50, 50);
                             }}
@@ -576,7 +576,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         globalState={this.props.globalState}
                         gradients={system.getVelocityGradients()!}
                         label="Velocity gradients"
-                        docLink="https://doc.babylonjs.com/babylon101/particles#velocity-over-time"
+                        docLink="https://doc.babylonjs.com/features/featuresDeepDive/particles/particle_system/tuning_gradients#change-speed-over-lifetime"
                         onCreateRequired={() => {
                             system.addVelocityGradient(0, 0.1, 0.1);
                         }}
@@ -589,7 +589,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         globalState={this.props.globalState}
                         gradients={system.getLimitVelocityGradients()!}
                         label="Limit velocity gradients"
-                        docLink="https://doc.babylonjs.com/babylon101/particles#limit-velocity-over-time"
+                        docLink="https://doc.babylonjs.com/features/featuresDeepDive/particles/particle_system/tuning_gradients#limit-speed-over-lifetime"
                         onCreateRequired={() => {
                             system.addLimitVelocityGradient(0, 0.1, 0.1);
                         }}
@@ -602,7 +602,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         globalState={this.props.globalState}
                         gradients={system.getDragGradients()!}
                         label="Drag gradients"
-                        docLink="https://doc.babylonjs.com/babylon101/particles#drag-factor"
+                        docLink="https://doc.babylonjs.com/features/featuresDeepDive/particles/particle_system/tuning_gradients#change-drag-over-lifetime"
                         onCreateRequired={() => {
                             system.addDragGradient(0, 0.1, 0.1);
                         }}
@@ -664,7 +664,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                             globalState={this.props.globalState}
                             gradients={system.getStartSizeGradients()!}
                             label="Start size gradients"
-                            docLink="https://doc.babylonjs.com/babylon101/particles#start-size-over-time"
+                            docLink="https://doc.babylonjs.com/features/featuresDeepDive/particles/particle_system/tuning_gradients#change-size-over-lifetime"
                             onCreateRequired={() => {
                                 system.addStartSizeGradient(0, 1, 1);
                             }}
@@ -678,7 +678,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         globalState={this.props.globalState}
                         gradients={system.getSizeGradients()!}
                         label="Size gradients"
-                        docLink="https://doc.babylonjs.com/babylon101/particles#size"
+                        docLink="https://doc.babylonjs.com/features/featuresDeepDive/particles/particle_system/tuning_gradients#change-size-over-lifetime"
                         onCreateRequired={() => {
                             system.addSizeGradient(0, 1, 1);
                         }}
@@ -715,7 +715,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                             globalState={this.props.globalState}
                             gradients={system.getLifeTimeGradients()!}
                             label="Lifetime gradients"
-                            docLink="https://doc.babylonjs.com/babylon101/particles#lifetime"
+                            docLink="https://doc.babylonjs.com/features/featuresDeepDive/particles/particle_system/tuning_gradients#change-lifetime-over-duration"
                             onCreateRequired={() => {
                                 system.addLifeTimeGradient(0, 1, 1);
                             }}
@@ -756,7 +756,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         globalState={this.props.globalState}
                         gradients={system.getColorGradients()!}
                         label="Color gradients"
-                        docLink="https://doc.babylonjs.com/babylon101/particles#particle-colors"
+                        docLink="https://doc.babylonjs.com/features/featuresDeepDive/particles/particle_system/tuning_gradients#change-color-over-lifetime"
                         onCreateRequired={() => {
                             system.addColorGradient(0, new Color4(0, 0, 0, 1), new Color4(0, 0, 0, 1));
                             system.addColorGradient(1, new Color4(1, 1, 1, 1), new Color4(1, 1, 1, 1));
@@ -775,7 +775,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                                         globalState={this.props.globalState}
                                         gradients={system.getRampGradients()!}
                                         label="Ramp gradients"
-                                        docLink="https://doc.babylonjs.com/babylon101/particles#ramp-gradients"
+                                        docLink="https://doc.babylonjs.com/features/featuresDeepDive/particles/particle_system/ramps_and_blends#ramp-gradients"
                                         onCreateRequired={() => {
                                             system.addRampGradient(0, Color3.White());
                                             system.addRampGradient(1, Color3.Black());
@@ -790,7 +790,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                                         globalState={this.props.globalState}
                                         gradients={system.getColorRemapGradients()!}
                                         label="Color remap gradients"
-                                        docLink="https://doc.babylonjs.com/babylon101/particles#ramp-gradients"
+                                        docLink="https://doc.babylonjs.com/features/featuresDeepDive/particles/particle_system/ramps_and_blends#ramp-gradients"
                                         onCreateRequired={() => {
                                             system.addColorRemapGradient(0, 1, 1);
                                         }}
@@ -803,7 +803,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                                         globalState={this.props.globalState}
                                         gradients={system.getAlphaRemapGradients()!}
                                         label="Alpha remap gradients"
-                                        docLink="https://doc.babylonjs.com/babylon101/particles#ramp-gradients"
+                                        docLink="https://doc.babylonjs.com/features/featuresDeepDive/particles/particle_system/ramps_and_blends#ramp-gradients"
                                         onCreateRequired={() => {
                                             system.addAlphaRemapGradient(0, 1, 1);
                                         }}
@@ -850,7 +850,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         globalState={this.props.globalState}
                         gradients={system.getAngularSpeedGradients()!}
                         label="Angular speed gradients"
-                        docLink="hhttps://doc.babylonjs.com/babylon101/particles#rotation"
+                        docLink="https://doc.babylonjs.com/features/featuresDeepDive/particles/particle_system/tuning_gradients#change-rotation-speed-over-lifetime"
                         onCreateRequired={() => {
                             system.addAngularSpeedGradient(0, 0.1, 0.1);
                         }}

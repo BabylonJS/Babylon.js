@@ -1064,9 +1064,9 @@ export class GLTFLoader implements IGLTFLoader {
             promises.push(
                 this._loadVertexAccessorAsync(`/accessors/${accessor.index}`, accessor, kind).then((babylonVertexBuffer) => {
                     if (babylonVertexBuffer.getKind() === VertexBuffer.PositionKind && !this.parent.alwaysComputeBoundingBox && !babylonMesh.skeleton) {
-                        const mmin = accessor.min as [number, number, number],
-                            mmax = accessor.max as [number, number, number];
-                        if (mmin !== undefined && mmax !== undefined) {
+                        if (accessor.min && accessor.max) {
+                            const min = TmpVectors.Vector3[0].copyFromFloats(...(accessor.min as [number, number, number]));
+                            const max = TmpVectors.Vector3[1].copyFromFloats(...(accessor.max as [number, number, number]));
                             if (accessor.normalized && accessor.componentType !== AccessorComponentType.FLOAT) {
                                 let divider = 1;
                                 switch (accessor.componentType) {
@@ -1083,15 +1083,10 @@ export class GLTFLoader implements IGLTFLoader {
                                         divider = 65535.0;
                                         break;
                                 }
-                                for (let i = 0; i < 3; ++i) {
-                                    mmin[i] = Math.max(mmin[i] / divider, -1.0);
-                                    mmax[i] = Math.max(mmax[i] / divider, -1.0);
-                                }
+                                const oneOverDivider = 1 / divider;
+                                min.scaleInPlace(oneOverDivider);
+                                max.scaleInPlace(oneOverDivider);
                             }
-                            const min = TmpVectors.Vector3[0],
-                                max = TmpVectors.Vector3[1];
-                            min.copyFromFloats(...mmin);
-                            max.copyFromFloats(...mmax);
                             babylonGeometry._boundingInfo = new BoundingInfo(min, max);
                             babylonGeometry.useBoundingInfoFromGeometry = true;
                         }
