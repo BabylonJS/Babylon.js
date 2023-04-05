@@ -427,7 +427,7 @@ export class TargetCamera extends Camera {
         if (this.rotationQuaternion && !this._cachedQuaternionRotation.equalsWithEpsilon(this.rotationQuaternion)) {
             this._rotateUpVectorWithCameraRotationMatrix();
             this._cachedQuaternionRotation.copyFrom(this.rotationQuaternion);
-        } else if (this._cachedRotation.equalsWithEpsilon(this.rotation)) {
+        } else if (!this._cachedRotation.equalsWithEpsilon(this.rotation)) {
             this._rotateUpVectorWithCameraRotationMatrix();
             this._cachedRotation.copyFrom(this.rotation);
         }
