@@ -1538,6 +1538,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         defines.METALLICWORKFLOW = this.isMetallicWorkflow();
         if (defines._areTexturesDirty) {
             defines._needUVs = false;
+            for (let i = 1; i <= Constants.MAX_SUPPORTED_UV_SETS; ++i) {
+                defines["MAINUV" + i] = false;
+            }
             if (scene.texturesEnabled) {
                 defines.ALBEDODIRECTUV = 0;
                 defines.AMBIENTDIRECTUV = 0;
