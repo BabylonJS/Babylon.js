@@ -319,6 +319,7 @@ export class RenderTargetWrapper {
 
                 const samplingModes: number[] = [];
                 const types: number[] = [];
+                const formats: number[] = [];
                 const targetTypes: number[] = [];
                 const faceIndex: number[] = [];
                 const layerIndex: number[] = [];
@@ -330,6 +331,7 @@ export class RenderTargetWrapper {
 
                     samplingModes.push(texture.samplingMode);
                     types.push(texture.type);
+                    formats.push(texture.format);
 
                     const index = internalTexture2Index[texture.uniqueId];
                     if (index !== undefined) {
@@ -370,6 +372,7 @@ export class RenderTargetWrapper {
                     generateStencilBuffer: this._generateStencilBuffer,
                     generateDepthTexture,
                     types,
+                    formats,
                     textureCount,
                     targetTypes,
                     faceIndex,
