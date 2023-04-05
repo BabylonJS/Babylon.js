@@ -96,7 +96,9 @@ export function ApplyPostProcess(
     scene: Scene,
     type?: number,
     samplingMode?: number,
-    format?: number
+    format?: number,
+    width?: number,
+    height?: number
 ): Promise<InternalTexture> {
     // Gets everything ready.
     const engine = internalTexture.getEngine() as Engine;
@@ -106,6 +108,8 @@ export function ApplyPostProcess(
     samplingMode = samplingMode ?? internalTexture.samplingMode;
     type = type ?? internalTexture.type;
     format = format ?? internalTexture.format;
+    width = width ?? internalTexture.width;
+    height = height ?? internalTexture.height;
 
     if (type === -1) {
         type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
@@ -118,7 +122,7 @@ export function ApplyPostProcess(
 
         // Hold the output of the decoding.
         const encodedTexture = engine.createRenderTargetTexture(
-            { width: internalTexture.width, height: internalTexture.height },
+            { width: width as number, height: height as number },
             {
                 generateDepthBuffer: false,
                 generateMipMaps: false,
