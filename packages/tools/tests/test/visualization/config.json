@@ -1575,7 +1575,7 @@
         },
         {
             "title": "MultiRenderTarget with different texture types",
-            "playgroundId": "#XSNYAU#1",
+            "playgroundId": "#XSNYAU#22",
             "excludedEngines": ["webgl1", "webgpu"]
         },
         {

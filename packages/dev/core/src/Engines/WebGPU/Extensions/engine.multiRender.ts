@@ -53,11 +53,16 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
     const defaultSamplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
     const defaultUseSRGBBuffer = false;
     const defaultFormat = Constants.TEXTUREFORMAT_RGBA;
+    const defaultTarget = Constants.TEXTURE_2D;
 
     let types = new Array<number>();
     let samplingModes = new Array<number>();
     let useSRGBBuffers = new Array<boolean>();
     let formats = new Array<number>();
+    let targets = new Array<number>();
+    let faceIndex = new Array<number>();
+    let layerIndex = new Array<number>();
+    let layers = new Array<number>();
 
     const rtWrapper = this._createHardwareRenderTargetWrapper(true, false, size) as WebGPURenderTargetWrapper;
 
@@ -80,6 +85,18 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
         }
         if (options.formats) {
             formats = options.formats;
+        }
+        if (options.targetTypes) {
+            targets = options.targetTypes;
+        }
+        if (options.faceIndex) {
+            faceIndex = options.faceIndex;
+        }
+        if (options.layerIndex) {
+            layerIndex = options.layerIndex;
+        }
+        if (options.layerCounts) {
+            layers = options.layerCounts;
         }
     }
 
@@ -114,11 +131,15 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
     for (let i = 0; i < textureCount; i++) {
         let samplingMode = samplingModes[i] || defaultSamplingMode;
         let type = types[i] || defaultType;
-        const useSRGBBuffer = useSRGBBuffers[i] || defaultUseSRGBBuffer;
+
         const format = formats[i] || defaultFormat;
+        const useSRGBBuffer = (useSRGBBuffers[i] || defaultUseSRGBBuffer) && this._caps.supportSRGBBuffers;
+
+        const target = targets[i] || defaultTarget;
+        const layerCount = layers[i] ?? 1;
 
         if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
-            // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
+            // if floating point linear (FLOAT) then force to NEAREST_SAMPLINGMODE
             samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
         } else if (type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
             // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
@@ -130,11 +151,29 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
             Logger.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
         }
 
-        const texture = new InternalTexture(this, InternalTextureSource.MultiRenderTarget);
-
-        textures.push(texture);
         attachments.push(i + 1);
         defaultAttachments.push(initializeBuffers ? i + 1 : i === 0 ? 1 : 0);
+
+        if (target === -1) {
+            continue;
+        }
+
+        const texture = new InternalTexture(this, InternalTextureSource.MultiRenderTarget);
+        textures[i] = texture;
+
+        switch (target) {
+            case Constants.TEXTURE_CUBE_MAP:
+                texture.isCube = true;
+                break;
+            case Constants.TEXTURE_3D:
+                texture.is3D = true;
+                texture.baseDepth = texture.depth = layerCount;
+                break;
+            case Constants.TEXTURE_2D_ARRAY:
+                texture.is2DArray = true;
+                texture.baseDepth = texture.depth = layerCount;
+                break;
+        }
 
         texture.baseWidth = width;
         texture.baseHeight = height;
@@ -157,11 +196,12 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
 
     if (depthStencilTexture) {
         depthStencilTexture.incrementReferences();
-        textures.push(depthStencilTexture);
+        textures[textureCount] = depthStencilTexture;
         this._internalTexturesCache.push(depthStencilTexture);
     }
 
     rtWrapper.setTextures(textures);
+    rtWrapper.setLayerAndFaceIndices(layerIndex, faceIndex);
 
     return rtWrapper;
 };
