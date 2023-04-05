@@ -426,10 +426,10 @@ export class TargetCamera extends Camera {
         // Apply the changed rotation to the upVector
         if (this.rotationQuaternion && !this._cachedQuaternionRotation.equalsWithEpsilon(this.rotationQuaternion)) {
             this._rotateUpVectorWithCameraRotationMatrix();
-            this._cachedQuaternionRotation = this.rotationQuaternion.clone();
+            this._cachedQuaternionRotation.copyFrom(this.rotationQuaternion);
         } else if (this._cachedRotation.equalsWithEpsilon(this.rotation)) {
             this._rotateUpVectorWithCameraRotationMatrix();
-            this._cachedRotation = this.rotation.clone();
+            this._cachedRotation.copyFrom(this.rotation);
         }
 
         Vector3.TransformCoordinatesToRef(this._referencePoint, this._cameraRotationMatrix, this._transformedReferencePoint);
