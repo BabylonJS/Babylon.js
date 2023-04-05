@@ -1,6 +1,315 @@
 {
-    "fromTag": "5.52.0",
+    "fromTag": "5.53.0",
     "changelog": {
+        "5.53.1": [
+            {
+                "pr": "13705",
+                "title": "PBR: Fix crash when enabling/disabling anisotropy",
+                "description": "See https://forum.babylonjs.com/t/inpsector-switching-anisotropic-does-not-have-an-effect-its-only-enables/39637",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrAnisotropicConfiguration.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "13678",
+                "title": "feat: support formats option for multirendertarget",
+                "description": "Add support for setting formats option of multirendertarget",
+                "author": {
+                    "name": "newbeea",
+                    "url": "https://github.com/newbeea"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.multiRender.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.multiRender.ts",
+                    "packages/dev/core/src/Engines/renderTargetWrapper.ts",
+                    "packages/dev/core/src/Materials/Textures/multiRenderTarget.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13704",
+                "title": "Reflection Probe: Fix Z inversion in right handed system",
+                "description": "See https://forum.babylonjs.com/t/reflection-probe-for-refractions-behaving-like-reflections-when-scene-userighthandedsystem/39633/6",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Probes/reflectionProbe.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13702",
+                "title": "Screenshot: Add finalWidth and finalHeight to the size object",
+                "description": "See https://forum.babylonjs.com/t/create-screenshot-using-render-target-ignores-hardware-scaling-level/39626/3",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/interfaces/screenshotSize.ts",
+                    "packages/dev/core/src/Misc/screenshotTools.ts",
+                    "packages/dev/core/src/Misc/textureTools.ts"
+                ],
+                "tags": [
+                    "rendering engine",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13703",
+                "title": "Animation: Fix infinite loop when mutating scene._activeAnimatables",
+                "description": "See https://forum.babylonjs.com/t/endanimationobs-death-loop/39584\r\n\r\n`Scene._animate` is doing:\r\n```typesccript\r\nconst animatables = this._activeAnimatables;\r\n\r\nfor (let index = 0; index < animatables.length; index++) {\r\n    const animatable = animatables[index];\r\n\r\n    if (!animatable._animate(animationTime) && animatable.disposeOnEnd) {\r\n        index--; // Array was updated\r\n    }\r\n}\r\n```\r\nand `AnimationGroup.stop` was doing:\r\n```typescript\r\nthis._scene._activeAnimatables = this._scene._activeAnimatables.filter((anim) => anim._runtimeAnimations.length > 0);\r\n```\r\nIt was therefore possible for `Scene._activeAnimatables` to be modified (replaced by another array) while `Scene._animate` was looping over it (when `AnimationGroup.stop` is called in a `onAnimationEndObservable` event, for example).\r\n\r\nA possible fix would have been to do `for (let index = 0; index < this._activeAnimatables.length; index++) {`, but I think it's safer not to mutate the array, because mutating it was done 2 or 3 weeks ago, and maybe we could get other bugs because of that...",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animationGroup.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "animations"
+                ]
+            },
+            {
+                "pr": "13701",
+                "title": "Playground download: Make sure that the canvas area occupies 100% of the surface.",
+                "description": "See https://forum.babylonjs.com/t/html-page-demo-is-broken/39280/4",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/tools/playground/public/zipContent/index.html"
+                ],
+                "tags": [
+                    "Playground"
+                ]
+            },
+            {
+                "pr": "13698",
+                "title": "Properly dispose of default rendering pipeline in the postProcessRend…",
+                "description": "…erPipelineManager.\r\n\r\nRelated forum issue: https://forum.babylonjs.com/t/how-to-dispose-rendering-pipeline-added-via-inspector/39611",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/postProcessRenderPipelineManager.ts",
+                    "packages/dev/inspector/src/components/sceneExplorer/sceneExplorerComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "post-process"
+                ]
+            },
+            {
+                "pr": "13697",
+                "title": "NativeEngine: Override updateRenderTargetTextureSampleCount to prevent crashes",
+                "description": "A bug was found where Babylon Native would crash when opening files with certain extensions like Transmission.  The issue was that functions were being called within the ThinEngine that required the presence of a WebGL2RenderingContext (which the NativeEngine has no context for).  The code in this PR serves as a workaround so that this object be will avoided.  This allows Babylon Native to open previously unopenable files.  It should be noted that these file will render accurately when IBL is active.  When IBL is not active, the transmission extension will not render properly.  This issue will be addressed in a later PR.\r\n\r\nBug: https://github.com/BabylonJS/BabylonNative/issues/1166",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine",
+                    "native"
+                ]
+            },
+            {
+                "pr": "13694",
+                "title": "Add inspector option for DepthOfFieldBlurLevel",
+                "description": "Also removes the seemingly unused interface `DepthOfFieldMergePostProcessOptions`",
+                "author": {
+                    "name": "kircher1",
+                    "url": "https://github.com/kircher1"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/depthOfFieldMergePostProcess.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/postProcesses/defaultRenderingPipelinePropertyGridComponent.tsx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "13696",
+                "title": "Fix bug with glTF accessor min/max code",
+                "description": "See https://forum.babylonjs.com/t/incorrect-bounding-box-after-loading-a-model-quantized-by-gltf-transform/39561",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "glTF"
+                ]
+            },
+            {
+                "pr": "13695",
+                "title": "Inspector. Particle System. Fix broken links to the documentation",
+                "description": null,
+                "author": {
+                    "name": "Dok11",
+                    "url": "https://github.com/Dok11"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/particleSystemPropertyGridComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "documentation"
+                ]
+            },
+            {
+                "pr": "13691",
+                "title": "WebGPU: synchronize with Spec / multiple improvements and fixes",
+                "description": "In this PR:\r\n* Synchronization with the latest specifications\r\n* Added labels to textures for debugging purposes. This helps a lot when debugging with WebGPU as all error messages in Canary refer to the faulty object(s) via their label, if any. \r\n* Changed vertex/fragment input/output handling to fix #13564. The user must now prefix all inputs/outputs with the correct object (`vertexInputs`/`vertexOutputs`/`fragmentInputs`/`fragmentOutputs`). This is a breaking change but it's the only way to make it work with WebGPU, and WebGPU isn't out yet so it doesn't matter much.\r\n* Updated caps based on actual limits retrieved from the device.\r\n* Uniformity analysis (UA) fixed. I did not disable uniformity analysis as a whole (`WebGPUTintWASM.DisableUniformityAnalysis = false`), let's see if we get any feedback from users because of the failure of uniformity analysis (all visual tests are successful).\r\n* there are still two visualization tests that fail (\"Shadows CSM and LODs\" and \"Multi shadow generators per light\") because of https://bugs.chromium.org/p/tint/issues/detail?id=1886\r\n* several fixes (wrong depth/stencil texture format in MultiRenderTarget in some cases, memory leaks, etc.)\r\n\r\nFixes #13633, #13564",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.cubeTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.multiRender.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.renderTarget.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuConstants.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsWGSL.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureHelper.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTintWASM.ts",
+                    "packages/dev/core/src/Engines/constants.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Engines/renderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/LibDeclarations/webgpu.d.ts",
+                    "packages/dev/core/src/Materials/Textures/internalTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/textureCreationOptions.ts",
+                    "packages/dev/core/src/PostProcesses/postProcess.ts",
+                    "packages/dev/core/src/Rendering/depthPeelingRenderer.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderer.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingDepthTextureCopy.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingTextures.ts",
+                    "packages/dev/core/src/Shaders/default.fragment.fx",
+                    "packages/dev/core/src/Shaders/depthOfFieldMerge.fragment.fx",
+                    "packages/dev/core/src/Shaders/fluidRenderingRender.fragment.fx",
+                    "packages/dev/core/src/Shaders/motionBlur.fragment.fx",
+                    "packages/dev/core/src/Shaders/screenSpaceReflection2.fragment.fx",
+                    "packages/dev/core/src/Shaders/screenSpaceReflection2Blur.fragment.fx",
+                    "packages/dev/core/src/Shaders/ssao2.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/bakedVertexAnimation.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/bonesVertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/clipPlaneFragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/clipPlaneVertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/instancesVertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/morphTargetsVertex.fx",
+                    "packages/tools/babylonServer/public/twgsl/twgsl.wasm",
+                    "packages/tools/playground/src/components/rendererComponent.tsx",
+                    "packages/tools/sandbox/src/components/renderingZone.tsx",
+                    "packages/tools/testTools/src/visualizationUtils.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/node-material1.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/prepass-mirror-with-pp.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/prepass-mirror-without-pp.png",
+                    "packages/tools/tests/test/visualization/config.json",
+                    "packages/tools/tests/test/visualization/webgpu.json"
+                ],
+                "tags": [
+                    "bug",
+                    "new feature",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "13435",
+                "title": "MultiRenderTarget extended support",
+                "description": "Minimally added support for MultiRenderTarget binding 2D, 2D Array, Cube Map, and (soon) 3D textures to different draw buffers.\r\n\r\nFrom the following [forum post](https://forum.babylonjs.com/t/multirendertarget-with-2d-array-textures/37185).\r\n\r\nAdditional considerations from the forum:\r\n* MRT w/ 3D textures\r\n* MRT w/ Cube map array textures (WebGPU)\r\n* Hardware maximum draw buffers (`gl.MAX_DRAW_BUFFERS`)",
+                "author": {
+                    "name": "Orikson",
+                    "url": "https://github.com/Orikson"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.multiRender.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.renderTarget.ts",
+                    "packages/dev/core/src/Engines/WebGL/webGLHardwareTexture.ts",
+                    "packages/dev/core/src/Engines/WebGL/webGLRenderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/constants.ts",
+                    "packages/dev/core/src/Engines/renderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Materials/Textures/multiRenderTarget.ts",
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/texture.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/texturePropertyGridComponent.tsx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/MultiRenderTarget with different texture types.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13687",
+                "title": "Make GLTFLoader index and vertex buffer load methods public",
+                "description": "As discussed here: https://forum.babylonjs.com/t/could-gltfloader-loadindicesaccessorasync-be-exposed-as-public-method/39469\r\n\r\nChange to public but keep underscore and add @internal tag.",
+                "author": {
+                    "name": "MiikaH",
+                    "url": "https://github.com/MiikaH"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13649",
+                "title": "Fixes to Grid behaviors in GUI Editor",
+                "description": "This fixes https://github.com/BabylonJS/ThePirateCove/issues/397, https://github.com/BabylonJS/ThePirateCove/issues/386, https://github.com/BabylonJS/ThePirateCove/issues/385, https://github.com/BabylonJS/ThePirateCove/issues/384, https://github.com/BabylonJS/ThePirateCove/issues/383\r\n",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/control.ts",
+                    "packages/dev/sharedUiComponents/src/imgs/gridColumnIconDark.svg",
+                    "packages/dev/sharedUiComponents/src/imgs/gridColumnIconLight.svg",
+                    "packages/dev/sharedUiComponents/src/imgs/gridRowIconDark.svg",
+                    "packages/dev/sharedUiComponents/src/imgs/gridRowIconLight.svg",
+                    "packages/dev/sharedUiComponents/src/lines/textInputLineComponent.tsx",
+                    "packages/tools/guiEditor/src/components/commandButtonComponent.tsx",
+                    "packages/tools/guiEditor/src/components/propertyTab/propertyGrids/gui/gridPropertyGridComponent.tsx",
+                    "packages/tools/guiEditor/src/components/propertyTab/propertyTab.scss",
+                    "packages/tools/guiEditor/src/diagram/coordinateHelper.tsx",
+                    "packages/tools/guiEditor/src/diagram/workbench.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "gui editor"
+                ]
+            }
+        ],
         "5.53.0": [
             {
                 "pr": "13683",
