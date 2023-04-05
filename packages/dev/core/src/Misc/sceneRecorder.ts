@@ -114,6 +114,9 @@ export class SceneRecorder {
                         deleteId: originalObject.id || originalObject.name,
                     },
                 };
+                if (!deltaJSON[key]) {
+                    deltaJSON[key] = [];
+                }
                 deltaJSON[key].push(newObject);
             }
         }
