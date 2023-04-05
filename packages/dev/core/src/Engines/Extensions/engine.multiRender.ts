@@ -169,11 +169,13 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
     const defaultType = Constants.TEXTURETYPE_UNSIGNED_INT;
     const defaultSamplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
     const defaultUseSRGBBuffer = false;
+    const defaultFormat = Constants.TEXTUREFORMAT_RGBA;
     const defaultTarget = Constants.TEXTURE_2D;
 
     let types = new Array<number>();
     let samplingModes = new Array<number>();
     let useSRGBBuffers = new Array<boolean>();
+    let formats = new Array<number>();
     let targets = new Array<number>();
     let faceIndex = new Array<number>();
     let layerIndex = new Array<number>();
@@ -196,6 +198,9 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
         }
         if (options.useSRGBBuffers) {
             useSRGBBuffers = options.useSRGBBuffers;
+        }
+        if (options.formats) {
+            formats = options.formats;
         }
         if (options.targetTypes) {
             targets = options.targetTypes;
@@ -249,6 +254,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
         let samplingMode = samplingModes[i] || defaultSamplingMode;
         let type = types[i] || defaultType;
         let useSRGBBuffer = useSRGBBuffers[i] || defaultUseSRGBBuffer;
+        const format = formats[i] || defaultFormat;
 
         const target = targets[i] || defaultTarget;
         const layerCount = layers[i] ?? 1;
@@ -289,7 +295,8 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
         gl.texParameteri(target, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(target, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-        const internalSizedFormat = this._getRGBABufferInternalSizedFormat(type, Constants.TEXTUREFORMAT_RGBA, useSRGBBuffer);
+        const internalSizedFormat = this._getRGBABufferInternalSizedFormat(type, format, useSRGBBuffer);
+        const internalFormat = this._getInternalFormat(format);
         const webGLTextureType = this._getWebGLTextureType(type);
 
         if (isWebGL2 && (target === Constants.TEXTURE_2D_ARRAY || target === Constants.TEXTURE_3D)) {
@@ -301,15 +308,15 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
 
             texture.baseDepth = texture.depth = layerCount;
 
-            gl.texImage3D(target, 0, internalSizedFormat, width, height, layerCount, 0, gl.RGBA, webGLTextureType, null);
+            gl.texImage3D(target, 0, internalSizedFormat, width, height, layerCount, 0, internalFormat, webGLTextureType, null);
         } else if (target === Constants.TEXTURE_CUBE_MAP) {
             // We have to generate all faces to complete the framebuffer
             for (let i = 0; i < 6; i++) {
-                gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internalSizedFormat, width, height, 0, gl.RGBA, webGLTextureType, null);
+                gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internalSizedFormat, width, height, 0, internalFormat, webGLTextureType, null);
             }
             texture.isCube = true;
         } else {
-            gl.texImage2D(gl.TEXTURE_2D, 0, internalSizedFormat, width, height, 0, gl.RGBA, webGLTextureType, null);
+            gl.texImage2D(gl.TEXTURE_2D, 0, internalSizedFormat, width, height, 0, internalFormat, webGLTextureType, null);
         }
 
         if (generateMipMaps) {
@@ -329,6 +336,7 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
         texture.samplingMode = samplingMode;
         texture.type = type;
         texture._useSRGBBuffer = useSRGBBuffer;
+        texture.format = format;
 
         this._internalTexturesCache.push(texture);
     }
