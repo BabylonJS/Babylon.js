@@ -12,10 +12,14 @@ import type { TransformNode } from "../Meshes/transformNode";
  * Class used to create a trail following a mesh
  */
 export class TrailMesh extends Mesh {
+    /**
+     * The diameter of the trail, i.e. the width of the ribbon.
+     */
+    public diameter: number;
+
     private _generator: TransformNode;
     private _autoStart: boolean;
     private _running: boolean;
-    private _diameter: number;
     private _length: number;
     private _sectionPolygonPointsCount: number = 4;
     private _sectionVectors: Array<Vector3>;
@@ -23,7 +27,7 @@ export class TrailMesh extends Mesh {
     private _beforeRenderObserver: Nullable<Observer<Scene>>;
 
     /**
-     * @constructor
+     * Creates a new TrailMesh.
      * @param name The value used by scene.getMeshByName() to do a lookup.
      * @param generator The mesh or transform node to generate a trail.
      * @param scene The scene to add this mesh to.
@@ -37,7 +41,7 @@ export class TrailMesh extends Mesh {
         this._running = false;
         this._autoStart = autoStart;
         this._generator = generator;
-        this._diameter = diameter;
+        this.diameter = diameter;
         this._length = length;
         this._sectionVectors = [];
         this._sectionNormalVectors = [];
@@ -69,11 +73,11 @@ export class TrailMesh extends Mesh {
         }
         const alpha: number = (2 * Math.PI) / this._sectionPolygonPointsCount;
         for (let i: number = 0; i < this._sectionPolygonPointsCount; i++) {
-            positions.push(meshCenter.x + Math.cos(i * alpha) * this._diameter, meshCenter.y + Math.sin(i * alpha) * this._diameter, meshCenter.z);
+            positions.push(meshCenter.x + Math.cos(i * alpha) * this.diameter, meshCenter.y + Math.sin(i * alpha) * this.diameter, meshCenter.z);
         }
         for (let i: number = 1; i <= this._length; i++) {
             for (let j: number = 0; j < this._sectionPolygonPointsCount; j++) {
-                positions.push(meshCenter.x + Math.cos(j * alpha) * this._diameter, meshCenter.y + Math.sin(j * alpha) * this._diameter, meshCenter.z);
+                positions.push(meshCenter.x + Math.cos(j * alpha) * this.diameter, meshCenter.y + Math.sin(j * alpha) * this.diameter, meshCenter.z);
             }
             const l: number = positions.length / 3 - 2 * this._sectionPolygonPointsCount;
             for (let j: number = 0; j < this._sectionPolygonPointsCount - 1; j++) {
@@ -124,7 +128,7 @@ export class TrailMesh extends Mesh {
         const wm = this._generator.getWorldMatrix();
         if (positions && normals) {
             for (let i: number = 3 * this._sectionPolygonPointsCount; i < positions.length; i++) {
-                positions[i - 3 * this._sectionPolygonPointsCount] = positions[i] - (normals[i] / this._length) * this._diameter;
+                positions[i - 3 * this._sectionPolygonPointsCount] = positions[i] - (normals[i] / this._length) * this.diameter;
             }
             for (let i: number = 3 * this._sectionPolygonPointsCount; i < normals.length; i++) {
                 normals[i - 3 * this._sectionPolygonPointsCount] = normals[i];
@@ -132,7 +136,7 @@ export class TrailMesh extends Mesh {
             const l: number = positions.length - 3 * this._sectionPolygonPointsCount;
             const alpha: number = (2 * Math.PI) / this._sectionPolygonPointsCount;
             for (let i: number = 0; i < this._sectionPolygonPointsCount; i++) {
-                this._sectionVectors[i].copyFromFloats(Math.cos(i * alpha) * this._diameter, Math.sin(i * alpha) * this._diameter, 0);
+                this._sectionVectors[i].copyFromFloats(Math.cos(i * alpha) * this.diameter, Math.sin(i * alpha) * this.diameter, 0);
                 this._sectionNormalVectors[i].copyFromFloats(Math.cos(i * alpha), Math.sin(i * alpha), 0);
                 Vector3.TransformCoordinatesToRef(this._sectionVectors[i], wm, this._sectionVectors[i]);
                 Vector3.TransformNormalToRef(this._sectionNormalVectors[i], wm, this._sectionNormalVectors[i]);
@@ -157,7 +161,7 @@ export class TrailMesh extends Mesh {
      * @returns a new mesh
      */
     public clone(name: string = "", newGenerator: TransformNode): TrailMesh {
-        return new TrailMesh(name, newGenerator === undefined ? this._generator : newGenerator, this.getScene(), this._diameter, this._length, this._autoStart);
+        return new TrailMesh(name, newGenerator === undefined ? this._generator : newGenerator, this.getScene(), this.diameter, this._length, this._autoStart);
     }
 
     /**
@@ -175,6 +179,6 @@ export class TrailMesh extends Mesh {
      * @returns the created trail mesh
      */
     public static Parse(parsedMesh: any, scene: Scene): TrailMesh {
-        return new TrailMesh(parsedMesh.name, parsedMesh._generator, scene, parsedMesh._diameter, parsedMesh._length, parsedMesh._autoStart);
+        return new TrailMesh(parsedMesh.name, parsedMesh._generator, scene, parsedMesh.diameter ?? parsedMesh._diameter, parsedMesh._length, parsedMesh._autoStart);
     }
 }
