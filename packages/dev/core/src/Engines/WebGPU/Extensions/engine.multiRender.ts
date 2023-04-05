@@ -52,10 +52,12 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
     const defaultType = Constants.TEXTURETYPE_UNSIGNED_INT;
     const defaultSamplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
     const defaultUseSRGBBuffer = false;
+    const defaultFormat = Constants.TEXTUREFORMAT_RGBA;
 
     let types = new Array<number>();
     let samplingModes = new Array<number>();
     let useSRGBBuffers = new Array<boolean>();
+    let formats = new Array<number>();
 
     const rtWrapper = this._createHardwareRenderTargetWrapper(true, false, size) as WebGPURenderTargetWrapper;
 
@@ -75,6 +77,9 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
         }
         if (options.useSRGBBuffers) {
             useSRGBBuffers = options.useSRGBBuffers;
+        }
+        if (options.formats) {
+            formats = options.formats;
         }
     }
 
@@ -110,6 +115,7 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
         let samplingMode = samplingModes[i] || defaultSamplingMode;
         let type = types[i] || defaultType;
         const useSRGBBuffer = useSRGBBuffers[i] || defaultUseSRGBBuffer;
+        const format = formats[i] || defaultFormat;
 
         if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
             // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
@@ -142,6 +148,7 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
         texture._cachedWrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         texture._cachedWrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         texture._useSRGBBuffer = useSRGBBuffer;
+        texture.format = format;
 
         this._internalTexturesCache.push(texture);
 
