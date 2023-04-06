@@ -1,5 +1,12 @@
 # Changelog
 
+## 5.54.0
+
+### Core
+
+- Fix scene recorder - [_Bug Fix_] by [sebavan](https://github.com/sebavan) ([#13707](https://github.com/BabylonJS/Babylon.js/pull/13707))
+- Make trailmesh diameter public - by [sebavan](https://github.com/sebavan) ([#13706](https://github.com/BabylonJS/Babylon.js/pull/13706))
+
 ## 5.53.1
 
 ### Core

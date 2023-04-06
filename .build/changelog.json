@@ -1,6 +1,40 @@
 {
-    "fromTag": "5.53.0",
+    "fromTag": "5.53.1",
     "changelog": {
+        "5.54.0": [
+            {
+                "pr": "13707",
+                "title": "Fix scene recorder",
+                "description": "https://forum.babylonjs.com/t/inspector-delta-files-uncaught-typeerror-cannot-read-properties-of-undefined-reading-push/39640/2",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/sceneRecorder.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "13706",
+                "title": "Make trailmesh diameter public",
+                "description": "https://forum.babylonjs.com/t/how-do-i-access-and-change-the-thickness-of-trailmesh/39623/3",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/trailMesh.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            }
+        ],
         "5.53.1": [
             {
                 "pr": "13705",
