@@ -819,8 +819,8 @@ export class Camera extends Node {
             return this._computedViewMatrix;
         }
 
-        this.updateCache();
         this._computedViewMatrix = this._getViewMatrix();
+        this.updateCache();
         this._currentRenderId = this.getScene().getRenderId();
         this._childUpdateId++;
 
