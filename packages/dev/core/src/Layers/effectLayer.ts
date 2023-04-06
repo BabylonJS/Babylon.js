@@ -888,8 +888,7 @@ export abstract class EffectLayer {
 
             engine.enableEffect(drawWrapper);
             if (!hardwareInstancedRendering) {
-                const fillMode = scene.forcePointsCloud ? Material.PointFillMode : scene.forceWireframe ? Material.WireFrameFillMode : material.fillMode;
-                renderingMesh._bind(subMesh, effect, fillMode);
+                renderingMesh._bind(subMesh, effect, material.fillMode);
             }
 
             if (!renderingMaterial) {
