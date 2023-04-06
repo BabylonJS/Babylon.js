@@ -2333,11 +2333,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Bind
-        const fillMode = scene.forcePointsCloud
-            ? Material.PointFillMode
-            : scene.forceWireframe
-            ? Material.WireFrameFillMode
-            : this._internalMeshDataInfo._effectiveMaterial.fillMode;
+        const effectiveMaterial = this._internalMeshDataInfo._effectiveMaterial;
+        const fillMode = effectiveMaterial.fillMode;
 
         if (this._internalMeshDataInfo._onBeforeBindObservable) {
             this._internalMeshDataInfo._onBeforeBindObservable.notifyObservers(this);
@@ -2348,7 +2345,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this._bind(subMesh, effect, fillMode, false);
         }
 
-        const effectiveMaterial = this._internalMeshDataInfo._effectiveMaterial;
         const world = effectiveMesh.getWorldMatrix();
         if (effectiveMaterial._storeEffectOnSubMeshes) {
             effectiveMaterial.bindForSubMesh(world, this, subMesh);
