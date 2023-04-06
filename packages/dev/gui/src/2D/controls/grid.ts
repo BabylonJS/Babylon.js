@@ -22,6 +22,32 @@ export class Grid extends Container {
     private _childControls = new Array<Control>();
 
     /**
+     * Sets a boolean indicating that control content must be clipped
+     * Please note that not clipping content may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
+     */
+    public set clipContent(value: boolean) {
+        super.clipContent = value;
+
+        // This value has to be replicated on all of the container cells
+        for (const key in this._cells) {
+            this._cells[key].clipContent = value;
+        }
+    }
+
+    /**
+     * Sets a boolean indicating if the children are clipped to the current control bounds.
+     * Please note that not clipping children may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
+     */
+    public set clipChildren(value: boolean) {
+        super.clipChildren = value;
+
+        // This value has to be replicated on all of the container cells
+        for (const key in this._cells) {
+            this._cells[key].clipChildren = value;
+        }
+    }
+
+    /**
      * Gets the number of columns
      */
     public get columnCount(): number {
@@ -311,6 +337,8 @@ export class Grid extends Container {
             this._cells[key] = goodContainer;
             goodContainer.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
             goodContainer.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+            goodContainer.clipContent = this.clipContent;
+            goodContainer.clipChildren = this.clipChildren;
             super.addControl(goodContainer);
         }
 
