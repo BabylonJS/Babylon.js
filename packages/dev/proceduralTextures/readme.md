@@ -21,7 +21,7 @@ To build all procedural textures and generate the *dist* folder, just run from t
 gulp proceduralTextureLibrary
 ```
 
-To integrate your new procedural texture to the build process, you have to edit the config.sjonfile in the tools/gulp folder and add an entry in the "proceduralTextureLibrary/libraries" section of the file:
+To integrate your new procedural texture to the build process, you have to edit the config.json file in the tools/gulp folder and add an entry in the "proceduralTextureLibrary/libraries" section of the file:
 
 ```
   "libraries": [
