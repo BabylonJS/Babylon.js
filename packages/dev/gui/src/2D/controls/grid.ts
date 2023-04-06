@@ -9,6 +9,7 @@ import { RegisterClass } from "core/Misc/typeStore";
 import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
 import type { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 import type { Observer } from "core/Misc/observable";
+import { serialize } from "core/Misc/decorators";
 
 /**
  * Class used to create a 2D grid container
@@ -22,7 +23,7 @@ export class Grid extends Container {
     private _childControls = new Array<Control>();
 
     /**
-     * Sets a boolean indicating that control content must be clipped
+     * Sets/Gets a boolean indicating that control content must be clipped
      * Please note that not clipping content may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
      */
     public set clipContent(value: boolean) {
@@ -34,8 +35,13 @@ export class Grid extends Container {
         }
     }
 
+    @serialize()
+    public get clipContent(): boolean {
+        return super.clipContent;
+    }
+
     /**
-     * Sets a boolean indicating if the children are clipped to the current control bounds.
+     * Sets/Gets a boolean indicating if the children are clipped to the current control bounds.
      * Please note that not clipping children may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
      */
     public set clipChildren(value: boolean) {
@@ -45,6 +51,10 @@ export class Grid extends Container {
         for (const key in this._cells) {
             this._cells[key].clipChildren = value;
         }
+    }
+
+    public get clipChildren(): boolean {
+        return super.clipChildren;
     }
 
     /**

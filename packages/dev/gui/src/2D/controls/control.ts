@@ -181,33 +181,27 @@ export class Control implements IAnimatable {
 
     private _clipChildren = true;
     /**
-     * Sets a boolean indicating if the children are clipped to the current control bounds.
+     * Sets/Gets a boolean indicating if the children are clipped to the current control bounds.
      * Please note that not clipping children may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
      */
     public set clipChildren(value: boolean) {
         this._clipChildren = value;
     }
-    /**
-     * Gets a boolean indicating if the children are clipped to the current control bounds.
-     * Please note that not clipping children may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
-     */
+
     @serialize()
     public get clipChildren() {
-        return this._clipChildren;        
+        return this._clipChildren;
     }
 
     private _clipContent = true;
     /**
-     * Sets a boolean indicating that control content must be clipped
+     * Sets/Gets a boolean indicating that control content must be clipped
      * Please note that not clipping content may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
      */
     public set clipContent(value: boolean) {
         this._clipContent = value;
-    } 
-    /**
-     * Gets a boolean indicating that control content must be clipped
-     * Please note that not clipping content may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
-     */
+    }
+
     @serialize()
     public get clipContent() {
         return this._clipContent;
