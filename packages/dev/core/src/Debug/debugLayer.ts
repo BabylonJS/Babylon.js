@@ -72,6 +72,23 @@ export interface IExplorerAdditionalNode {
     getContent(): IExplorerAdditionalChild[];
 }
 
+export type IInspectorContextMenuType = "pipeline" | "node" | "materials" | "spriteManagers" | "particleSystems";
+
+/**
+ * Context menu item
+ */
+export interface IInspectorContextMenuItem {
+    /**
+     * Display label - menu item
+     */
+    label: string;
+    /**
+     * Callback function that will be called when the menu item is selected
+     * @param entity the entity that is currently selected in the scene explorer
+     */
+    action: (entity?: unknown) => void;
+}
+
 /**
  * Interface used to define the options to use to create the Inspector
  */
@@ -128,6 +145,14 @@ export interface IInspectorOptions {
      * Optional camera to use to render the gizmos from the inspector (default to the scene.activeCamera or the latest from scene.activeCameras)
      */
     gizmoCamera?: Camera;
+    /**
+     * Context menu for inspector tools such as "Post Process", "Nodes", "Materials", etc.
+     */
+    contextMenu?: Partial<Record<IInspectorContextMenuType, IInspectorContextMenuItem[]>>;
+    /**
+     * List of context menu items that should be completely overridden by custom items from the contextMenu property.
+     */
+    contextMenuOverride?: IInspectorContextMenuType[];
 }
 
 declare module "../scene" {
