@@ -462,7 +462,7 @@ export class AssetContainer extends AbstractScene {
             for (const m of this.meshes) {
                 if (m.skeleton === s && !m.isAnInstance) {
                     const copy = storeMap[conversionMap[m.uniqueId]] as Mesh;
-                    if (copy.isAnInstance) {
+                    if (!copy || copy.isAnInstance) {
                         continue;
                     }
                     copy.skeleton = clone;
