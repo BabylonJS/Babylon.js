@@ -11,6 +11,7 @@ import type { PostProcess } from "core/PostProcesses/postProcess";
 import { MeshTreeItemComponent } from "./entities/meshTreeItemComponent";
 import { CameraTreeItemComponent } from "./entities/cameraTreeItemComponent";
 import { LightTreeItemComponent } from "./entities/lightTreeItemComponent";
+import { ExtensionsComponent } from "./extensionsComponent";
 import { TreeItemLabelComponent } from "./treeItemLabelComponent";
 import { faProjectDiagram } from "@fortawesome/free-solid-svg-icons";
 import { MaterialTreeItemComponent } from "./entities/materialTreeItemComponent";
@@ -189,6 +190,7 @@ export class TreeItemSpecializedComponent extends React.Component<ITreeItemSpeci
         return (
             <div className="meshTools">
                 <TreeItemLabelComponent label={entity.name} onClick={() => this.onClick()} icon={faProjectDiagram} color="cornflowerblue" />
+                {<ExtensionsComponent target={entity} extensibilityGroups={this.props.extensibilityGroups} />}
             </div>
         );
     }
