@@ -111,4 +111,6 @@ export interface EngineCapabilities {
 
     /** Defines the maximum layer count for a 2D Texture array. */
     texture2DArrayMaxLayerCount: number;
+    /** Defines if the morph target texture is supported. */
+    disableMorphTargetTexture: boolean;
 }

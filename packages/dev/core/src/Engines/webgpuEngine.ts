@@ -796,6 +796,7 @@ export class WebGPUEngine extends Engine {
             supportTransformFeedbacks: false,
             textureMaxLevel: true,
             texture2DArrayMaxLayerCount: this._deviceLimits.maxTextureArrayLayers,
+            disableMorphTargetTexture: false,
         };
 
         this._caps.parallelShaderCompile = null as any;

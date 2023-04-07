@@ -265,6 +265,7 @@ export class NativeEngine extends Engine {
             supportTransformFeedbacks: false,
             textureMaxLevel: false,
             texture2DArrayMaxLayerCount: _native.Engine.CAPS_LIMITS_MAX_TEXTURE_LAYERS,
+            disableMorphTargetTexture: false,
         };
 
         this._features = {
