@@ -1,9 +1,8 @@
-import { IInspectorOptions } from "core/Debug/debugLayer";
 import * as React from "react";
 
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
-import type { IExplorerAdditionalNode, IExplorerExtensibilityGroup, IInspectorContextMenuItem } from "core/Debug/debugLayer";
+import type { IExplorerAdditionalNode, IExplorerExtensibilityGroup, IInspectorContextMenuItem, IInspectorOptions } from "core/Debug/debugLayer";
 import type { Scene } from "core/scene";
 import { EngineStore } from "core/Engines/engineStore";
 
