@@ -486,7 +486,7 @@ interface GPUCompilationInfo {
 }
 
 declare class GPUPipelineError extends DOMException {
-    constructor(message: DOMString | undefined, options: GPUPipelineErrorInit);
+    constructor(message: string | undefined, options: GPUPipelineErrorInit);
     readonly reason: GPUPipelineErrorReason;
 }
 
