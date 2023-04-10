@@ -23,6 +23,10 @@ export interface IExplorerExtensibilityOption {
      * Defines the action to execute on click
      */
     action: (entity: any) => void;
+    /**
+     * Keep popup open after click
+     */
+    keepOpenAfterClick?: boolean;
 }
 
 /**
