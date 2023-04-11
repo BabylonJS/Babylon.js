@@ -14,6 +14,13 @@ import { Color4 } from "core/Maths/math.color";
 import "../Shaders/meshUVSpaceRenderer.vertex";
 import "../Shaders/meshUVSpaceRenderer.fragment";
 
+declare module "../scene" {
+    export interface Scene {
+        /** @internal */
+        _meshUVSpaceRendererShader: Nullable<ShaderMaterial>;
+    }
+}
+
 /**
  * Options for the MeshUVSpaceRenderer
  * @since 5.49.1
@@ -47,15 +54,13 @@ export interface IMeshUVSpaceRendererOptions {
  * @since 5.49.1
  */
 export class MeshUVSpaceRenderer {
-    private static _Shader: Nullable<ShaderMaterial> = null;
-
     private _mesh: AbstractMesh;
     private _scene: Scene;
     private _options: Required<IMeshUVSpaceRendererOptions>;
     private _textureCreatedInternally = false;
 
     private static _GetShader(scene: Scene): ShaderMaterial {
-        if (!MeshUVSpaceRenderer._Shader) {
+        if (!scene._meshUVSpaceRendererShader) {
             const shader = new ShaderMaterial(
                 "meshUVSpaceRendererShader",
                 scene,
@@ -72,24 +77,19 @@ export class MeshUVSpaceRenderer {
             shader.backFaceCulling = false;
             shader.alphaMode = Constants.ALPHA_COMBINE;
 
-            MeshUVSpaceRenderer._Shader = shader;
+            scene.onDisposeObservable.add(() => {
+                scene._meshUVSpaceRendererShader?.dispose();
+                scene._meshUVSpaceRendererShader = null;
+            });
+
+            scene._meshUVSpaceRendererShader = shader;
         }
 
-        return MeshUVSpaceRenderer._Shader;
+        return scene._meshUVSpaceRendererShader;
     }
 
     private static _IsRenderTargetTexture(texture: ThinTexture | RenderTargetTexture): texture is RenderTargetTexture {
         return (texture as RenderTargetTexture).renderList !== undefined;
-    }
-
-    /**
-     * Disposes of the global resources created by the MeshUVSpaceRenderer class
-     */
-    public static Dispose(): void {
-        if (MeshUVSpaceRenderer._Shader) {
-            MeshUVSpaceRenderer._Shader.dispose();
-            MeshUVSpaceRenderer._Shader = null;
-        }
     }
 
     /**
