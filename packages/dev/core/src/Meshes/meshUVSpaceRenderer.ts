@@ -72,6 +72,10 @@ export class MeshUVSpaceRenderer {
             shader.backFaceCulling = false;
             shader.alphaMode = Constants.ALPHA_COMBINE;
 
+            scene.getEngine().onDisposeObservable.add(() => {
+                MeshUVSpaceRenderer.Dispose();
+            });
+
             MeshUVSpaceRenderer._Shader = shader;
         }
 
