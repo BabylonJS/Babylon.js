@@ -1640,13 +1640,13 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             }
 
             if (
-                this._currentRenderId === this._scene.getFrameId() &&
+                this._currentRenderId === this._scene.getRenderId() &&
                 (!this._scene.activeCamera || (this._scene.activeCamera && this._currentRenderingCameraUniqueId === this._scene.activeCamera.uniqueId))
             ) {
                 return 0;
             }
 
-            this._currentRenderId = this._scene.getFrameId();
+            this._currentRenderId = this._scene.getRenderId();
             if (this._scene.activeCamera) {
                 this._currentRenderingCameraUniqueId = this._scene.activeCamera.uniqueId;
             }
