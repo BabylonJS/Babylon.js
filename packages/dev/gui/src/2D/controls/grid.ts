@@ -27,7 +27,7 @@ export class Grid extends Container {
      * Please note that not clipping content may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
      */
     public set clipContent(value: boolean) {
-        this.clipContent = value;
+        this._clipContent = value;
 
         // This value has to be replicated on all of the container cells
         for (const key in this._cells) {
@@ -37,7 +37,7 @@ export class Grid extends Container {
 
     @serialize()
     public get clipContent(): boolean {
-        return this.clipContent;
+        return this._clipContent;
     }
 
     /**
@@ -45,7 +45,7 @@ export class Grid extends Container {
      * Please note that not clipping children may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
      */
     public set clipChildren(value: boolean) {
-        this.clipChildren = value;
+        this._clipChildren = value;
 
         // This value has to be replicated on all of the container cells
         for (const key in this._cells) {
@@ -54,7 +54,7 @@ export class Grid extends Container {
     }
 
     public get clipChildren(): boolean {
-        return this.clipChildren;
+        return this._clipChildren;
     }
 
     /**

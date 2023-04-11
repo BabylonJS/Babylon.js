@@ -179,7 +179,7 @@ export class Control implements IAnimatable {
     @serialize()
     public isFocusInvisible = false;
 
-    private _clipChildren = true;
+    protected _clipChildren = true;
     /**
      * Sets/Gets a boolean indicating if the children are clipped to the current control bounds.
      * Please note that not clipping children may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
@@ -193,7 +193,7 @@ export class Control implements IAnimatable {
         return this._clipChildren;
     }
 
-    private _clipContent = true;
+    protected _clipContent = true;
     /**
      * Sets/Gets a boolean indicating that control content must be clipped
      * Please note that not clipping content may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
