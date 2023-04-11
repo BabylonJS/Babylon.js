@@ -54,8 +54,6 @@ export interface IMeshUVSpaceRendererOptions {
  * @since 5.49.1
  */
 export class MeshUVSpaceRenderer {
-    private static _Shader: Nullable<ShaderMaterial> = null;
-
     private _mesh: AbstractMesh;
     private _scene: Scene;
     private _options: Required<IMeshUVSpaceRendererOptions>;
@@ -78,6 +76,11 @@ export class MeshUVSpaceRenderer {
             );
             shader.backFaceCulling = false;
             shader.alphaMode = Constants.ALPHA_COMBINE;
+
+            scene.onDisposeObservable.add(() => {
+                scene._meshUVSpaceRendererShader?.dispose();
+                scene._meshUVSpaceRendererShader = null;
+            });
 
             scene._meshUVSpaceRendererShader = shader;
         }
