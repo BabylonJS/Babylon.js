@@ -1096,7 +1096,7 @@ export class _GLTFMaterialExporter {
                         mimeType = textureMimeType as ImageMimeType;
                         break;
                     default:
-                        Tools.Warn("Unsupported media type: ${textureMimeType}");
+                        Tools.Warn(`Unsupported media type: ${textureMimeType}`);
                         break;
                 }
             }
