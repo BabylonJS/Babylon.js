@@ -245,6 +245,9 @@ export class SpriteManager implements ISpriteManager {
 
     public set pixelPerfect(value: boolean) {
         this._spriteRenderer.pixelPerfect = value;
+        if (value && this.texture.samplingMode !== Constants.TEXTURE_TRILINEAR_SAMPLINGMODE) {
+            this.texture.updateSamplingMode(Constants.TEXTURE_TRILINEAR_SAMPLINGMODE);
+        }
     }
 
     private _spriteRenderer: SpriteRenderer;
