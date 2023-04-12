@@ -242,7 +242,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         } else if (keyEvent.keyCode === 46) {
             // delete
             this.state.selectedEntity.dispose();
-            this.setState({ selectedEntity: null });
+            this.props.globalState.onSelectionChangedObservable.notifyObservers(scene);
         }
 
         if (!search) {
