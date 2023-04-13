@@ -178,6 +178,10 @@ interface IHighlightLayerExcludedMesh {
      * The mesh render callback use to restore previous stencil use
      */
     afterRender: Nullable<Observer<Mesh>>;
+    /**
+     * Current stencil state of the engine
+     */
+    stencilState: boolean;
 }
 
 /**
@@ -625,15 +629,27 @@ export class HighlightLayer extends EffectLayer {
 
         const meshExcluded = this._excludedMeshes[mesh.uniqueId];
         if (!meshExcluded) {
-            this._excludedMeshes[mesh.uniqueId] = {
+            const obj: IHighlightLayerExcludedMesh = {
                 mesh: mesh,
-                beforeBind: mesh.onBeforeBindObservable.add((mesh: Mesh) => {
-                    mesh.getEngine().setStencilBuffer(false);
-                }),
-                afterRender: mesh.onAfterRenderObservable.add((mesh: Mesh) => {
-                    mesh.getEngine().setStencilBuffer(true);
-                }),
+                beforeBind: null,
+                afterRender: null,
+                stencilState: false,
             };
+
+            obj.beforeBind = mesh.onBeforeBindObservable.add(
+                function (this: IHighlightLayerExcludedMesh, mesh: Mesh) {
+                    this.stencilState = mesh.getEngine().getStencilBuffer();
+                    mesh.getEngine().setStencilBuffer(false);
+                }.bind(obj)
+            );
+
+            obj.afterRender = mesh.onAfterRenderObservable.add(
+                function (this: IHighlightLayerExcludedMesh, mesh: Mesh) {
+                    mesh.getEngine().setStencilBuffer(this.stencilState);
+                }.bind(obj)
+            );
+
+            this._excludedMeshes[mesh.uniqueId] = obj;
         }
     }
 
