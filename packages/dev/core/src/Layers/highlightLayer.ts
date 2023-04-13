@@ -636,18 +636,14 @@ export class HighlightLayer extends EffectLayer {
                 stencilState: false,
             };
 
-            obj.beforeBind = mesh.onBeforeBindObservable.add(
-                function (this: IHighlightLayerExcludedMesh, mesh: Mesh) {
-                    this.stencilState = mesh.getEngine().getStencilBuffer();
-                    mesh.getEngine().setStencilBuffer(false);
-                }.bind(obj)
-            );
+            obj.beforeBind = mesh.onBeforeBindObservable.add((mesh: Mesh) => {
+                obj.stencilState = mesh.getEngine().getStencilBuffer();
+                mesh.getEngine().setStencilBuffer(false);
+            });
 
-            obj.afterRender = mesh.onAfterRenderObservable.add(
-                function (this: IHighlightLayerExcludedMesh, mesh: Mesh) {
-                    mesh.getEngine().setStencilBuffer(this.stencilState);
-                }.bind(obj)
-            );
+            obj.afterRender = mesh.onAfterRenderObservable.add((mesh: Mesh) => {
+                mesh.getEngine().setStencilBuffer(obj.stencilState);
+            });
 
             this._excludedMeshes[mesh.uniqueId] = obj;
         }
