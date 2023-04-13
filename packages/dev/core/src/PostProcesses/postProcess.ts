@@ -136,6 +136,12 @@ export class PostProcess {
     @serialize()
     public autoClear = true;
     /**
+     * If clearing the buffer should be forced in autoClear mode, even when alpha mode is enabled (default: false).
+     * By default, the buffer will only be cleared if alpha mode is disabled (and autoClear is true).
+     */
+    @serialize()
+    public forceAutoClearInAlphaMode = false;
+    /**
      * Type of alpha mode to use when performing the post process (default: Engine.ALPHA_DISABLE)
      */
     @serialize()
@@ -780,7 +786,7 @@ export class PostProcess {
         this.onActivateObservable.notifyObservers(camera);
 
         // Clear
-        if (this.autoClear && this.alphaMode === Constants.ALPHA_DISABLE) {
+        if (this.autoClear && (this.alphaMode === Constants.ALPHA_DISABLE || this.forceAutoClearInAlphaMode)) {
             this._engine.clear(this.clearColor ? this.clearColor : scene.clearColor, scene._allowPostProcessClearColor, true, true);
         }
 
