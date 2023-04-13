@@ -812,7 +812,9 @@ export class NodeMaterial extends PushMaterial {
 
         defines["NORMAL"] = mesh.isVerticesDataPresent(VertexBuffer.NormalKind);
         defines["TANGENT"] = mesh.isVerticesDataPresent(VertexBuffer.TangentKind);
-        defines["VERTEXCOLOR_NME"] = mesh.isVerticesDataPresent(VertexBuffer.ColorKind);
+
+        const hasVertexColors = mesh.useVertexColors && mesh.isVerticesDataPresent(VertexBuffer.ColorKind);
+        defines["VERTEXCOLOR_NME"] = hasVertexColors;
 
         let uvChanged = false;
         for (let i = 1; i <= Constants.MAX_SUPPORTED_UV_SETS; ++i) {
