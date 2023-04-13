@@ -68,11 +68,11 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     /**
      * Defines the minimum number of cascades used by the CSM.
      */
-    public static readonly MIN_CASCADES_COUNT = 2;
+    public static MIN_CASCADES_COUNT = 2;
     /**
      * Defines the maximum number of cascades used by the CSM.
      */
-    public static readonly MAX_CASCADES_COUNT = 4;
+    public static MAX_CASCADES_COUNT = 4;
 
     protected _validateFilter(filter: number): number {
         if (filter === ShadowGenerator.FILTER_NONE || filter === ShadowGenerator.FILTER_PCF || filter === ShadowGenerator.FILTER_PCSS) {
