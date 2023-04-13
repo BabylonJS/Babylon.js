@@ -1,5 +1,5 @@
 {
-    "fromTag": "5.53.1",
+    "fromTag": "5.54.0",
     "changelog": {
         "5.54.0": [
             {
@@ -32,6 +32,288 @@
                 "tags": [
                     "enhancement",
                     "rendering engine"
+                ]
+            }
+        ],
+        "5.55.0": [
+            {
+                "pr": "13732",
+                "title": "Prevent previous element props to be selected",
+                "description": "https://forum.babylonjs.com/t/inspector-broken-if-add-sprite-and-remove-it/39824/3",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/sceneExplorer/sceneExplorerComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "13726",
+                "title": "remove beta flag from GUI Editor",
+                "description": null,
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/guiEditor/src/components/commandBarComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13731",
+                "title": "MeshUVSpaceRenderer: Remove static",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/meshUVSpaceRenderer.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13715",
+                "title": "Pass clipContent/clipChildren down to Grid's internal containers",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/clipped-text-while-creating-tree-view-using-grid/38890/8",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/control.ts",
+                    "packages/dev/gui/src/2D/controls/grid.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "gui"
+                ]
+            },
+            {
+                "pr": "13728",
+                "title": "GPU particle system: Fix particles not rendered in water PG",
+                "description": "See https://forum.babylonjs.com/t/gpuparticle-cannot-be-displayed-in-scene-with-watermaterial/39773/3\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/gpuParticleSystem.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "particles"
+                ]
+            },
+            {
+                "pr": "13729",
+                "title": "glTF exporter: Fix warning message",
+                "description": "Fixes #13723 ",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/glTFMaterialExporter.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "exporters"
+                ]
+            },
+            {
+                "pr": "13724",
+                "title": "Round up ideal width/height calculations so no control is cut off",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/gui-adapt-tochildren-using-rounded-values-adaptive-scaling/29333",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    ".vscode/launch.json",
+                    "packages/dev/gui/src/2D/valueAndUnit.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Rounding values on controls inside StackPanel.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug",
+                    "gui"
+                ]
+            },
+            {
+                "pr": "13725",
+                "title": "Add option to keep context menu entries open, but close them by default.",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/inspector-close-the-context-menu-after-click-by-item/39668",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Debug/debugLayer.ts",
+                    "packages/dev/inspector/src/components/sceneExplorer/extensionsComponent.tsx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "13721",
+                "title": "Inspector. Add custom items to context menus or override them",
+                "description": "Example of new options, here we can add new menu items:\r\n```\r\nscene.debugLayer.show({\r\n    contextMenu: {\r\n        pipeline: [\r\n            {\r\n                label: \"Add new Custom pipeline\",\r\n                action: (e: any) => console.log(\">>> Custom action\", e),\r\n            },\r\n        ],\r\n        node: [\r\n            {\r\n                label: \"Add new Custom node\",\r\n                action: (e: any) => console.log(\">>> Custom action\", e),\r\n            },\r\n        ],\r\n        materials: [\r\n            {\r\n                label: \"Add new Custom material\",\r\n                action: (e: any) => console.log(\">>> Custom action\", e),\r\n            },\r\n        ],\r\n        particleSystems: [\r\n            {\r\n                label: \"Add new Custom particle system\",\r\n                action: (e: any) => console.log(\">>> Custom action\", e),\r\n            },\r\n        ],\r\n        spriteManagers: [\r\n            {\r\n                label: \"Add new Custom sprite manager\",\r\n                action: (e: any) => console.log(\">>> Custom action\", e),\r\n            },\r\n        ],\r\n    },\r\n});\r\n```\r\n\r\nOr even override default items by this way:\r\n```\r\nscene.debugLayer.show({\r\n    contextMenuOverride: [\"pipeline\", \"node\", \"materials\", \"particleSystems\", \"spriteManagers\"],\r\n    contextMenu: {\r\n```\r\n\r\nHere we pass the list of menus that should be overwriten by custom items.",
+                "author": {
+                    "name": "Dok11",
+                    "url": "https://github.com/Dok11"
+                },
+                "files": [
+                    "packages/dev/core/src/Debug/debugLayer.ts",
+                    "packages/dev/inspector/src/components/sceneExplorer/sceneExplorerComponent.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/treeItemComponent.tsx",
+                    "packages/dev/inspector/src/inspector.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "13722",
+                "title": "Update NOTICE.md",
+                "description": null,
+                "author": {
+                    "name": "querielo",
+                    "url": "https://github.com/querielo"
+                },
+                "files": [
+                    "NOTICE.md"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13720",
+                "title": "Fix asset Container crash with predicate",
+                "description": "https://forum.babylonjs.com/t/assetcontainer-crash-in-instantiatemodelstoscene-when-using-predicate/39699",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/LibDeclarations/webgpu.d.ts",
+                    "packages/dev/core/src/assetContainer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "assets"
+                ]
+            },
+            {
+                "pr": "13719",
+                "title": "Inspector. Custom context menu for additional nodes",
+                "description": "https://forum.babylonjs.com/t/inpsector-add-a-custom-context-menu-to-additional-nodes/39672/4?u=dok11",
+                "author": {
+                    "name": "Dok11",
+                    "url": "https://github.com/Dok11"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/sceneExplorer/treeItemSpecializedComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13717",
+                "title": "Morph targets: Workaround for Mali-G72 and morph target texture",
+                "description": "See https://forum.babylonjs.com/t/morph-targets-on-samsung-s9-exynos-9810-is-broken/32701/52",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/engineCapabilities.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Engines/nullEngine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Morph/morphTargetManager.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13714",
+                "title": "update inspector readme",
+                "description": "Remove outdated instructions and add links to the documentation page.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/inspector/README.md"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13708",
+                "title": "Add overrideRenderingFillMode property to Mesh",
+                "description": "Supersedes https://github.com/BabylonJS/Babylon.js/pull/13688\r\n\r\nAs discussed in forum thread here: https://forum.babylonjs.com/t/add-mesh-overridematerialfillmode/39475/\r\n\r\ncc @MiikaH to review\r\n\r\nThe main difference is use the override only within the rendering scope as the flag is only used as a visual tool. It also fixes some of the scene override levels inconsistencies.",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Layers/effectLayer.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/Rendering/depthPeelingRenderer.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13716",
+                "title": "Fluid renderer: Fix alpha not preserved",
+                "description": "See https://forum.babylonjs.com/t/fluidrenderer-background-color-with-alpha/38831/2",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/fluidRenderingRender.fragment.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13713",
+                "title": "docs: Fix a few typos",
+                "description": "There are small typos in:\n- packages/dev/proceduralTextures/readme.md\n- what's new.md\n\nFixes:\n- Should read `namespace` rather than `namepsace`.\n- Should read `json file` rather than `sjonfile`.\n- Should read `cascaded` rather than `cascacaded`.\n\n\n\nSemi-automated pull request generated by\nhttps://github.com/timgates42/meticulous/blob/master/docs/NOTE.md",
+                "author": {
+                    "name": "timgates42",
+                    "url": "https://github.com/timgates42"
+                },
+                "files": [
+                    "packages/dev/proceduralTextures/readme.md",
+                    "what's new.md"
+                ],
+                "tags": [
+                    "skip changelog"
                 ]
             }
         ],
