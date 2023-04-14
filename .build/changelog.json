@@ -1,37 +1,133 @@
 {
-    "fromTag": "5.54.0",
+    "fromTag": "5.55.0",
     "changelog": {
-        "5.54.0": [
+        "5.56.0": [
             {
-                "pr": "13707",
-                "title": "Fix scene recorder",
-                "description": "https://forum.babylonjs.com/t/inspector-delta-files-uncaught-typeerror-cannot-read-properties-of-undefined-reading-push/39640/2",
+                "pr": "13740",
+                "title": "Engine: Rollback changes because of perf problems",
+                "description": "Revert changes from #12952 because of performance problems.",
                 "author": {
-                    "name": "sebavan",
-                    "url": "https://github.com/sebavan"
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
                 },
                 "files": [
-                    "packages/dev/core/src/Misc/sceneRecorder.ts"
+                    "packages/dev/core/src/Engines/WebGL/webGLPipelineContext.ts",
+                    "packages/dev/core/src/Materials/effect.ts"
                 ],
                 "tags": [
-                    "bug",
-                    "inspector"
+                    "rendering engine"
                 ]
             },
             {
-                "pr": "13706",
-                "title": "Make trailmesh diameter public",
-                "description": "https://forum.babylonjs.com/t/how-do-i-access-and-change-the-thickness-of-trailmesh/39623/3",
+                "pr": "13738",
+                "title": "Fix Imports",
+                "description": "Fix https://github.com/BabylonJS/Babylon.js/pull/13624#issuecomment-1506874467",
                 "author": {
                     "name": "sebavan",
                     "url": "https://github.com/sebavan"
                 },
                 "files": [
-                    "packages/dev/core/src/Meshes/trailMesh.ts"
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "physics"
+                ]
+            },
+            {
+                "pr": "13737",
+                "title": "HDRFiltering: Fix final cube texture not having the right type",
+                "description": "[This PG](https://playground.babylonjs.com/#064AUB#71) generates some warnings:\r\n\r\n![image](https://user-images.githubusercontent.com/4152247/231767335-648c3450-d7b4-4dfa-8493-b8e67a49278a.png)\r\n\r\nand the spherical polynomials are not computed correctly because of the bug.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/Filtering/hdrFiltering.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13739",
+                "title": "CascadedShadowMaps: Allows setting min and max number of cascades",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Lights/Shadows/cascadedShadowGenerator.ts"
                 ],
                 "tags": [
                     "enhancement",
+                    "shadows"
+                ]
+            },
+            {
+                "pr": "13734",
+                "title": "Highlight layer: Fix wrong stencil state",
+                "description": "See https://forum.babylonjs.com/t/stencil-buffer-set-wrong-in-highlightlayer-excluded-meshes-after-render/39839",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Layers/highlightLayer.ts"
+                ],
+                "tags": [
+                    "bug",
                     "rendering engine"
+                ]
+            },
+            {
+                "pr": "13736",
+                "title": "Post Process: Add a property to clear the buffer even when alpha blending is enabled",
+                "description": "See https://forum.babylonjs.com/t/adding-a-background-image-that-is-not-affected-by-the-default-rendering-pipeline-post-processes/34494/5",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/postProcess.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "post-process"
+                ]
+            },
+            {
+                "pr": "13735",
+                "title": "fix import path",
+                "description": "https://forum.babylonjs.com/t/gltf-serializer-broken/39837",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/glTFSerializer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "exporters"
+                ]
+            },
+            {
+                "pr": "13733",
+                "title": "Sprite manager: Force the sampling mode in pixel perfect mode",
+                "description": "See https://forum.babylonjs.com/t/sprite-pixel-art-artifact-issue/39123/13",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Sprites/spriteManager.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "sprite"
                 ]
             }
         ],
@@ -314,6 +410,40 @@
                 ],
                 "tags": [
                     "skip changelog"
+                ]
+            }
+        ],
+        "5.54.0": [
+            {
+                "pr": "13707",
+                "title": "Fix scene recorder",
+                "description": "https://forum.babylonjs.com/t/inspector-delta-files-uncaught-typeerror-cannot-read-properties-of-undefined-reading-push/39640/2",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/sceneRecorder.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "13706",
+                "title": "Make trailmesh diameter public",
+                "description": "https://forum.babylonjs.com/t/how-do-i-access-and-change-the-thickness-of-trailmesh/39623/3",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/trailMesh.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
                 ]
             }
         ],
