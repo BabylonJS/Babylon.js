@@ -178,7 +178,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         BiPlanarBlock: "A node for reading a texture with biplanar mapping",
         MatrixDeterminantBlock: "Compute the determinant of a matrix",
         MatrixTransposeBlock: "Compute the transpose of a matrix",
-        MeshAttributeFallbackBlock: "Define fallback value for Mesh attribute if it doesn't exist",
+        MeshAttributeExistsBlock: "Falls back to secondary input if specified attribute doesn't exists on the rendered mesh",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -421,7 +421,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "WorldNormalBlock",
                 "WorldTangentBlock",
                 "FrontFacingBlock",
-                "MeshAttributeFallbackBlock",
+                "MeshAttributeExistsBlock",
             ],
             Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock", "CloudBlock", "VoronoiNoiseBlock"],
             Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock", "ClipPlanesBlock", "FragDepthBlock"],
