@@ -9,7 +9,7 @@ import { MorphTargetsBlock } from "./Vertex/morphTargetsBlock";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../nodeMaterialDecorator";
 import type { Scene } from "core/scene";
 
-export enum AttributeFallbackBlockTypes {
+export enum MeshAttributeExistsBlockTypes {
     None,
     Normal,
     Tangent,
@@ -51,43 +51,43 @@ export class MeshAttributeExistsBlock extends NodeMaterialBlock {
             if (sourceBlock instanceof InputBlock && sourceBlock.isAttribute) {
                 switch (sourceBlock.name) {
                     case "color":
-                        this.attributeType = AttributeFallbackBlockTypes.VertexColor;
+                        this.attributeType = MeshAttributeExistsBlockTypes.VertexColor;
                         break;
                     case "normal":
-                        this.attributeType = AttributeFallbackBlockTypes.Normal;
+                        this.attributeType = MeshAttributeExistsBlockTypes.Normal;
                         break;
                     case "tangent":
-                        this.attributeType = AttributeFallbackBlockTypes.Tangent;
+                        this.attributeType = MeshAttributeExistsBlockTypes.Tangent;
                         break;
                     case "uv":
-                        this.attributeType = AttributeFallbackBlockTypes.UV1;
+                        this.attributeType = MeshAttributeExistsBlockTypes.UV1;
                         break;
                     case "uv2":
-                        this.attributeType = AttributeFallbackBlockTypes.UV2;
+                        this.attributeType = MeshAttributeExistsBlockTypes.UV2;
                         break;
                     case "uv3":
-                        this.attributeType = AttributeFallbackBlockTypes.UV3;
+                        this.attributeType = MeshAttributeExistsBlockTypes.UV3;
                         break;
                     case "uv4":
-                        this.attributeType = AttributeFallbackBlockTypes.UV4;
+                        this.attributeType = MeshAttributeExistsBlockTypes.UV4;
                         break;
                     case "uv5":
-                        this.attributeType = AttributeFallbackBlockTypes.UV5;
+                        this.attributeType = MeshAttributeExistsBlockTypes.UV5;
                         break;
                     case "uv6":
-                        this.attributeType = AttributeFallbackBlockTypes.UV6;
+                        this.attributeType = MeshAttributeExistsBlockTypes.UV6;
                         break;
                 }
             } else if (sourceBlock instanceof MorphTargetsBlock) {
                 switch (this.input.connectedPoint?.name) {
                     case "normalOutput":
-                        this.attributeType = AttributeFallbackBlockTypes.Normal;
+                        this.attributeType = MeshAttributeExistsBlockTypes.Normal;
                         break;
                     case "tangentOutput":
-                        this.attributeType = AttributeFallbackBlockTypes.Tangent;
+                        this.attributeType = MeshAttributeExistsBlockTypes.Tangent;
                         break;
                     case "uvOutput":
-                        this.attributeType = AttributeFallbackBlockTypes.UV1;
+                        this.attributeType = MeshAttributeExistsBlockTypes.UV1;
                         break;
                 }
             }
@@ -108,19 +108,19 @@ export class MeshAttributeExistsBlock extends NodeMaterialBlock {
     @editableInPropertyPage("Attribute lookup", PropertyTypeForEdition.List, undefined, {
         notifiers: { update: true },
         options: [
-            { label: "(None)", value: AttributeFallbackBlockTypes.None },
-            { label: "Normal", value: AttributeFallbackBlockTypes.Normal },
-            { label: "Tangent", value: AttributeFallbackBlockTypes.Tangent },
-            { label: "Vertex Color", value: AttributeFallbackBlockTypes.VertexColor },
-            { label: "UV1", value: AttributeFallbackBlockTypes.UV1 },
-            { label: "UV2", value: AttributeFallbackBlockTypes.UV2 },
-            { label: "UV3", value: AttributeFallbackBlockTypes.UV3 },
-            { label: "UV4", value: AttributeFallbackBlockTypes.UV4 },
-            { label: "UV5", value: AttributeFallbackBlockTypes.UV5 },
-            { label: "UV6", value: AttributeFallbackBlockTypes.UV6 },
+            { label: "(None)", value: MeshAttributeExistsBlockTypes.None },
+            { label: "Normal", value: MeshAttributeExistsBlockTypes.Normal },
+            { label: "Tangent", value: MeshAttributeExistsBlockTypes.Tangent },
+            { label: "Vertex Color", value: MeshAttributeExistsBlockTypes.VertexColor },
+            { label: "UV1", value: MeshAttributeExistsBlockTypes.UV1 },
+            { label: "UV2", value: MeshAttributeExistsBlockTypes.UV2 },
+            { label: "UV3", value: MeshAttributeExistsBlockTypes.UV3 },
+            { label: "UV4", value: MeshAttributeExistsBlockTypes.UV4 },
+            { label: "UV5", value: MeshAttributeExistsBlockTypes.UV5 },
+            { label: "UV6", value: MeshAttributeExistsBlockTypes.UV6 },
         ],
     })
-    public attributeType = AttributeFallbackBlockTypes.None;
+    public attributeType = MeshAttributeExistsBlockTypes.None;
 
     /**
      * Gets the input component
@@ -148,31 +148,31 @@ export class MeshAttributeExistsBlock extends NodeMaterialBlock {
 
         let attributeDefine: null | string = null;
         switch (this.attributeType) {
-            case AttributeFallbackBlockTypes.VertexColor:
+            case MeshAttributeExistsBlockTypes.VertexColor:
                 attributeDefine = "VERTEXCOLOR_NME";
                 break;
-            case AttributeFallbackBlockTypes.Normal:
+            case MeshAttributeExistsBlockTypes.Normal:
                 attributeDefine = "NORMAL";
                 break;
-            case AttributeFallbackBlockTypes.Tangent:
+            case MeshAttributeExistsBlockTypes.Tangent:
                 attributeDefine = "TANGENT";
                 break;
-            case AttributeFallbackBlockTypes.UV1:
+            case MeshAttributeExistsBlockTypes.UV1:
                 attributeDefine = "UV1";
                 break;
-            case AttributeFallbackBlockTypes.UV2:
+            case MeshAttributeExistsBlockTypes.UV2:
                 attributeDefine = "UV2";
                 break;
-            case AttributeFallbackBlockTypes.UV3:
+            case MeshAttributeExistsBlockTypes.UV3:
                 attributeDefine = "UV3";
                 break;
-            case AttributeFallbackBlockTypes.UV4:
+            case MeshAttributeExistsBlockTypes.UV4:
                 attributeDefine = "UV4";
                 break;
-            case AttributeFallbackBlockTypes.UV5:
+            case MeshAttributeExistsBlockTypes.UV5:
                 attributeDefine = "UV5";
                 break;
-            case AttributeFallbackBlockTypes.UV6:
+            case MeshAttributeExistsBlockTypes.UV6:
                 attributeDefine = "UV6";
                 break;
         }
@@ -203,7 +203,7 @@ export class MeshAttributeExistsBlock extends NodeMaterialBlock {
     public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 
-        this.attributeType = serializationObject.attributeType ?? AttributeFallbackBlockTypes.None;
+        this.attributeType = serializationObject.attributeType ?? MeshAttributeExistsBlockTypes.None;
     }
 
     protected _dumpPropertiesCode() {
