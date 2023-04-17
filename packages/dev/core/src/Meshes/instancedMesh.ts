@@ -12,6 +12,7 @@ import { DeepCopier } from "../Misc/deepCopier";
 import { TransformNode } from "./transformNode";
 import type { Light } from "../Lights/light";
 import { VertexBuffer } from "../Buffers/buffer";
+import { Tools } from "../Misc/tools";
 
 Mesh._instancedMeshFactory = (name: string, mesh: Mesh): InstancedMesh => {
     const instance = new InstancedMesh(name, mesh);
@@ -106,11 +107,23 @@ export class InstancedMesh extends AbstractMesh {
         return this._sourceMesh.receiveShadows;
     }
 
+    public set receiveShadows(_value: boolean) {
+        if (this._sourceMesh?.receiveShadows !== _value) {
+            Tools.Warn("Setting receiveShadows on an instanced mesh has no effect");
+        }
+    }
+
     /**
      * The material of the source mesh
      */
     public get material(): Nullable<Material> {
         return this._sourceMesh.material;
+    }
+
+    public set material(_value: Nullable<Material>) {
+        if (this._sourceMesh?.material !== _value) {
+            Tools.Warn("Setting material on an instanced mesh has no effect");
+        }
     }
 
     /**
@@ -120,11 +133,23 @@ export class InstancedMesh extends AbstractMesh {
         return this._sourceMesh.visibility;
     }
 
+    public set visibility(_value: number) {
+        if (this._sourceMesh?.visibility !== _value) {
+            Tools.Warn("Setting visibility on an instanced mesh has no effect");
+        }
+    }
+
     /**
      * Skeleton of the source mesh
      */
     public get skeleton(): Nullable<Skeleton> {
         return this._sourceMesh.skeleton;
+    }
+
+    public set skeleton(_value: Nullable<Skeleton>) {
+        if (this._sourceMesh?.skeleton !== _value) {
+            Tools.Warn("Setting skeleton on an instanced mesh has no effect");
+        }
     }
 
     /**
