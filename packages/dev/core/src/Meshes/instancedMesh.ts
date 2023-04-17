@@ -43,6 +43,11 @@ export class InstancedMesh extends AbstractMesh {
     /** @internal */
     public _previousWorldMatrix: Nullable<Matrix>;
 
+    /**
+     * Creates a new InstancedMesh object from the mesh source.
+     * @param name defines the name of the instance
+     * @param source the mesh to create the instance from
+     */
     constructor(name: string, source: Mesh) {
         super(name, source.getScene());
 
