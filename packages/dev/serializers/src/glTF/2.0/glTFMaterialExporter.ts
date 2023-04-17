@@ -1014,6 +1014,7 @@ export class _GLTFMaterialExporter {
                             const occlusionTexture: IMaterialOcclusionTextureInfo = {
                                 index: glTFTexture.index,
                                 texCoord: glTFTexture.texCoord,
+                                extensions: glTFTexture.extensions,
                             };
 
                             glTFMaterial.occlusionTexture = occlusionTexture;
