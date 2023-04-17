@@ -427,7 +427,7 @@ export class Grid extends Container {
             tops.push(top);
 
             if (!rowDefinition.isPixel) {
-                const height = (rowDefinition.value / globalHeightPercentage) * availableHeight;
+                const height = Math.round((rowDefinition.value / globalHeightPercentage) * availableHeight);
                 top += height;
                 heights[index] = height;
             } else {
@@ -454,7 +454,7 @@ export class Grid extends Container {
         for (const columnDefinition of this._columnDefinitions) {
             lefts.push(left);
             if (!columnDefinition.isPixel) {
-                const width = (columnDefinition.value / globalWidthPercentage) * availableWidth;
+                const width = Math.round((columnDefinition.value / globalWidthPercentage) * availableWidth);
                 left += width;
                 widths[index] = width;
             } else {
@@ -478,10 +478,10 @@ export class Grid extends Container {
                 const y = parseInt(split[1]);
                 const cell = this._cells[key];
 
-                cell.left = lefts[y] + "px";
-                cell.top = tops[x] + "px";
-                cell.width = widths[y] + "px";
-                cell.height = heights[x] + "px";
+                cell.leftInPixels = lefts[y];
+                cell.topInPixels = tops[x];
+                cell.widthInPixels = widths[y];
+                cell.heightInPixels = heights[x];
                 cell._left.ignoreAdaptiveScaling = true;
                 cell._top.ignoreAdaptiveScaling = true;
                 cell._width.ignoreAdaptiveScaling = true;
