@@ -103,16 +103,3 @@ function setClipPlane(effect: Effect, uniformName: string, clipPlane: Nullable<P
         effect.setFloat4(uniformName, clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
     }
 }
-
-function addDefineString(clipPlane: boolean, defines: string[], defineString: string): boolean {
-    const defineIndex = defines.indexOf(defineString);
-    const alreadySet = defineIndex !== -1;
-    if (!alreadySet && clipPlane) {
-        defines.push(defineString);
-        return true;
-    } else if (alreadySet && !clipPlane) {
-        defines.splice(defineIndex, 1);
-        return true;
-    }
-    return false;
-}
