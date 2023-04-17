@@ -7,7 +7,7 @@ import type { Engine } from "../Engines/engine";
 import { Constants } from "../Engines/constants";
 import type { ISceneComponent } from "../sceneComponent";
 import { SceneComponentConstants } from "../sceneComponent";
-import { DrawWrapper } from "../Materials/drawWrapper";w
+import { DrawWrapper } from "../Materials/drawWrapper";
 import { MaterialHelper } from "../Materials/materialHelper";
 
 import "../Shaders/outline.fragment";
