@@ -5,7 +5,7 @@ import type { Nullable } from "../types";
 import { SerializationHelper, serialize } from "../Misc/decorators";
 import { RegisterClass } from "../Misc/typeStore";
 import type { ComputeEffect, IComputeEffectCreationOptions } from "./computeEffect";
-import type { ComputeBindingList, ComputeBindingMapping } from "../Engines/Extensions/engine.computeShader";
+import type { ComputeBindingMapping } from "../Engines/Extensions/engine.computeShader";
 import { ComputeBindingType } from "../Engines/Extensions/engine.computeShader";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
@@ -14,6 +14,7 @@ import type { IComputeContext } from "./IComputeContext";
 import type { StorageBuffer } from "../Buffers/storageBuffer";
 import { Logger } from "../Misc/logger";
 import { TextureSampler } from "../Materials/Textures/textureSampler";
+import type { DataBuffer } from "core/Buffers/dataBuffer";
 
 /**
  * Defines the options associated with the creation of a compute shader.
@@ -42,6 +43,8 @@ export interface IComputeShaderOptions {
     processFinalCode?: Nullable<(code: string) => string>;
 }
 
+type ComputeBindingListInternal = { [key: string]: { type: ComputeBindingType; object: any; indexInGroupEntries?: number; buffer?: Nullable<DataBuffer> } };
+
 /**
  * The ComputeShader object lets you execute a compute shader on your GPU (if supported by the engine)
  */
@@ -51,7 +54,7 @@ export class ComputeShader {
     private _options: IComputeShaderOptions;
     private _effect: ComputeEffect;
     private _cachedDefines: string;
-    private _bindings: ComputeBindingList = {};
+    private _bindings: ComputeBindingListInternal = {};
     private _samplers: { [key: string]: TextureSampler } = {};
     private _context: IComputeContext;
     private _contextIsDirty = false;
@@ -96,9 +99,9 @@ export class ComputeShader {
      * @param name Defines the name of the compute shader in the scene
      * @param engine Defines the engine the compute shader belongs to
      * @param shaderPath Defines  the route to the shader code in one of three ways:
-     *  * object: { compute: "custom" }, used with ShaderStore.ShadersStoreWGSL["customComputeShader"]
-     *  * object: { computeElement: "HTMLElementId" }, used with shader code in script tags
-     *  * object: { computeSource: "compute shader code string" using with string containing the shader code
+     *  * object: \{ compute: "custom" \}, used with ShaderStore.ShadersStoreWGSL["customComputeShader"]
+     *  * object: \{ computeElement: "HTMLElementId" \}, used with shader code in script tags
+     *  * object: \{ computeSource: "compute shader code string" \}, where the string contains the shader code
      *  * string: try first to find the code in ShaderStore.ShadersStoreWGSL[shaderPath + "ComputeShader"]. If not, assumes it is a file with name shaderPath.compute.fx in index.html folder.
      * @param options Define the options used to create the shader
      */
@@ -290,31 +293,40 @@ export class ComputeShader {
         }
 
         // If the sampling parameters of a texture bound to the shader have changed, we must clear the compute context so that it is recreated with the updated values
+        // Also, if the actual (gpu) buffer used by a uniform buffer has changed, we must clear the compute context so that it is recreated with the updated value
         for (const key in this._bindings) {
             const binding = this._bindings[key];
 
-            // TODO: remove this when browsers support reflection for wgsl shaders
             if (!this._options.bindingsMapping[key]) {
                 throw new Error("ComputeShader ('" + this.name + "'): No binding mapping has been provided for the property '" + key + "'");
             }
 
-            if (binding.type !== ComputeBindingType.Texture) {
-                continue;
-            }
+            switch (binding.type) {
+                case ComputeBindingType.Texture: {
+                    const sampler = this._samplers[key];
+                    const texture = binding.object as BaseTexture;
 
-            const sampler = this._samplers[key];
-            const texture = binding.object as BaseTexture;
-
-            if (!sampler || !texture._texture || !sampler.compareSampler(texture._texture)) {
-                this._samplers[key] = new TextureSampler().setParameters(
-                    texture.wrapU,
-                    texture.wrapV,
-                    texture.wrapR,
-                    texture.anisotropicFilteringLevel,
-                    texture._texture!.samplingMode,
-                    texture._texture?._comparisonFunction
-                );
-                this._contextIsDirty = true;
+                    if (!sampler || !texture._texture || !sampler.compareSampler(texture._texture)) {
+                        this._samplers[key] = new TextureSampler().setParameters(
+                            texture.wrapU,
+                            texture.wrapV,
+                            texture.wrapR,
+                            texture.anisotropicFilteringLevel,
+                            texture._texture!.samplingMode,
+                            texture._texture?._comparisonFunction
+                        );
+                        this._contextIsDirty = true;
+                    }
+                    break;
+                }
+                case ComputeBindingType.UniformBuffer: {
+                    const ubo = binding.object as UniformBuffer;
+                    if (ubo.getBuffer() !== binding.buffer) {
+                        binding.buffer = ubo.getBuffer();
+                        this._contextIsDirty = true;
+                    }
+                    break;
+                }
             }
         }
 
