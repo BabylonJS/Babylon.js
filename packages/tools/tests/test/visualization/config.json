@@ -1602,6 +1602,10 @@
         {
             "title": "Rounding values on controls inside StackPanel",
             "playgroundId": "#XCPP9Y#18325"
+        },
+        {
+            "title": "Rounding cell widths on Grid",
+            "playgroundId": "#PQ4G5G#2"
         }
     ]
 }
