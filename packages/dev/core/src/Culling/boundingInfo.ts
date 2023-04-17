@@ -1,6 +1,7 @@
 import type { DeepImmutable } from "../types";
 import { ArrayTools } from "../Misc/arrayTools";
 import type { Matrix } from "../Maths/math.vector";
+import { TmpVectors } from "../Maths/math.vector";
 import { Vector3 } from "../Maths/math.vector";
 import { Constants } from "../Engines/constants";
 import { BoundingBox } from "./boundingBox";
@@ -144,7 +145,7 @@ export class BoundingInfo implements ICullable {
 
     /**
      * Grows the bounding info to include the given point.
-     * @param point The point that will be included in the current bounding info
+     * @param point The point that will be included in the current bounding info (in local space)
      * @returns the current bounding info
      */
     public encapsulate(point: Vector3): BoundingInfo {
@@ -161,8 +162,16 @@ export class BoundingInfo implements ICullable {
      * @returns the current bounding info
      */
     public encapsulateBoundingInfo(toEncapsulate: BoundingInfo): BoundingInfo {
-        this.encapsulate(toEncapsulate.boundingBox.centerWorld.subtract(toEncapsulate.boundingBox.extendSizeWorld));
-        this.encapsulate(toEncapsulate.boundingBox.centerWorld.add(toEncapsulate.boundingBox.extendSizeWorld));
+        const invw = TmpVectors.Matrix[0];
+        this.boundingBox.getWorldMatrix().invertToRef(invw);
+
+        const v = TmpVectors.Vector3[0];
+
+        Vector3.TransformCoordinatesToRef(toEncapsulate.boundingBox.minimumWorld, invw, v);
+        this.encapsulate(v);
+
+        Vector3.TransformCoordinatesToRef(toEncapsulate.boundingBox.maximumWorld, invw, v);
+        this.encapsulate(v);
 
         return this;
     }

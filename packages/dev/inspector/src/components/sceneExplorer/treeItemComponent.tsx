@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import type { Nullable } from "core/types";
-import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
+import type { IInspectorContextMenuItem, IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faMinus, faBan, faExpandArrowsAlt, faCompress } from "@fortawesome/free-solid-svg-icons";
@@ -79,7 +79,7 @@ export interface ITreeItemComponentProps {
     entity?: any;
     selectedEntity: any;
     extensibilityGroups?: IExplorerExtensibilityGroup[];
-    contextMenuItems?: { label: string; action: () => void }[];
+    contextMenuItems?: IInspectorContextMenuItem[];
 }
 
 export class TreeItemComponent extends React.Component<ITreeItemComponentProps, { isExpanded: boolean; mustExpand: boolean }> {

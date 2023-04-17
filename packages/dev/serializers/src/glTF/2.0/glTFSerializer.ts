@@ -1,6 +1,6 @@
 import type { Node } from "core/node";
 import type { Scene } from "core/scene";
-import type { Animation } from "core/Animations";
+import type { Animation } from "core/Animations/animation";
 import type { GLTFData } from "./glTFData";
 import { _Exporter } from "./glTFExporter";
 

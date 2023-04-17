@@ -9,6 +9,7 @@ import { Tools } from "./tools";
 import type { IScreenshotSize } from "./interfaces/screenshotSize";
 import { DumpTools } from "./dumpTools";
 import type { Nullable } from "../types";
+import { ApplyPostProcess } from "./textureTools";
 
 declare type Engine = import("../Engines/engine").Engine;
 
@@ -174,8 +175,8 @@ export function CreateScreenshotWithResizeAsync(engine: Engine, camera: Camera, 
  * @param engine The engine to use for rendering
  * @param camera The camera to use for rendering
  * @param size This parameter can be set to a single number or to an object with the
- * following (optional) properties: precision, width, height. If a single number is passed,
- * it will be used for both width and height. If an object is passed, the screenshot size
+ * following (optional) properties: precision, width, height, finalWidth, finalHeight. If a single number is passed,
+ * it will be used for both width and height, as well as finalWidth, finalHeight. If an object is passed, the screenshot size
  * will be derived from the parameters. The precision property is a multiplier allowing
  * rendering at a higher or lower resolution
  * @param successCallback The callback receives a single parameter which contains the
@@ -203,7 +204,7 @@ export function CreateScreenshotUsingRenderTarget(
     enableStencilBuffer: boolean = false,
     useLayerMask: boolean = true
 ): void {
-    const { height, width } = _GetScreenshotSize(engine, camera, size);
+    const { height, width, finalWidth, finalHeight } = _GetScreenshotSize(engine, camera, size);
     const targetTextureSize = { width, height };
 
     if (!(height && width)) {
@@ -225,7 +226,7 @@ export function CreateScreenshotUsingRenderTarget(
         false,
         Constants.TEXTURETYPE_UNSIGNED_INT,
         false,
-        Texture.NEAREST_SAMPLINGMODE,
+        Texture.BILINEAR_SAMPLINGMODE,
         undefined,
         enableStencilBuffer,
         undefined,
@@ -241,10 +242,19 @@ export function CreateScreenshotUsingRenderTarget(
 
     const renderToTexture = () => {
         engine.onEndFrameObservable.addOnce(() => {
-            texture.readPixels(undefined, undefined, undefined, false)!.then((data) => {
-                DumpTools.DumpData(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true);
-                texture.dispose();
-            });
+            if (finalWidth === width && finalHeight === height) {
+                texture.readPixels(undefined, undefined, undefined, false)!.then((data) => {
+                    DumpTools.DumpData(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true);
+                    texture.dispose();
+                });
+            } else {
+                ApplyPostProcess("pass", texture.getInternalTexture()!, scene, undefined, undefined, undefined, finalWidth, finalHeight).then((texture) => {
+                    engine._readTexturePixels(texture, finalWidth, finalHeight, -1, 0, null, true, false, 0, 0).then((data) => {
+                        DumpTools.DumpData(finalWidth, finalHeight, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true);
+                        texture.dispose();
+                    });
+                });
+            }
         });
 
         // render the RTT
@@ -343,9 +353,11 @@ export function CreateScreenshotUsingRenderTargetAsync(
  * @param size
  * @private
  */
-function _GetScreenshotSize(engine: Engine, camera: Camera, size: IScreenshotSize | number): { height: number; width: number } {
+function _GetScreenshotSize(engine: Engine, camera: Camera, size: IScreenshotSize | number): { height: number; width: number; finalWidth: number; finalHeight: number } {
     let height = 0;
     let width = 0;
+    let finalWidth = 0;
+    let finalHeight = 0;
 
     //If a size value defined as object
     if (typeof size === "object") {
@@ -371,11 +383,32 @@ function _GetScreenshotSize(engine: Engine, camera: Camera, size: IScreenshotSiz
             width = Math.round(engine.getRenderWidth() * precision);
             height = Math.round(width / engine.getAspectRatio(camera));
         }
+
+        //If a finalWidth and finalHeight values is specified
+        if (size.finalWidth && size.finalHeight) {
+            finalHeight = size.finalHeight;
+            finalWidth = size.finalWidth;
+        }
+        //If passing only finalWidth, computing finalHeight to keep display canvas ratio.
+        else if (size.finalWidth && !size.finalHeight) {
+            finalWidth = size.finalWidth;
+            finalHeight = Math.round(finalWidth / engine.getAspectRatio(camera));
+        }
+        //If passing only finalHeight, computing finalWidth to keep display canvas ratio.
+        else if (size.finalHeight && !size.finalWidth) {
+            finalHeight = size.finalHeight;
+            finalWidth = Math.round(finalHeight * engine.getAspectRatio(camera));
+        } else {
+            finalWidth = width;
+            finalHeight = height;
+        }
     }
     //Assuming here that "size" parameter is a number
     else if (!isNaN(size)) {
         height = size;
         width = size;
+        finalWidth = size;
+        finalHeight = size;
     }
 
     // When creating the image data from the CanvasRenderingContext2D, the width and height is clamped to the size of the _gl context
@@ -388,8 +421,14 @@ function _GetScreenshotSize(engine: Engine, camera: Camera, size: IScreenshotSiz
     if (height) {
         height = Math.floor(height);
     }
+    if (finalWidth) {
+        finalWidth = Math.floor(finalWidth);
+    }
+    if (finalHeight) {
+        finalHeight = Math.floor(finalHeight);
+    }
 
-    return { height: height | 0, width: width | 0 };
+    return { height: height | 0, width: width | 0, finalWidth: finalWidth | 0, finalHeight: finalHeight | 0 };
 }
 
 /**

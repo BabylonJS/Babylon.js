@@ -222,14 +222,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.53.0";
+        return "babylonjs@5.57.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.53.0";
+        return "5.57.0";
     }
 
     /**
@@ -1206,6 +1206,7 @@ export class ThinEngine {
             supportTransformFeedbacks: this._webGLVersion > 1,
             textureMaxLevel: this._webGLVersion > 1,
             texture2DArrayMaxLayerCount: this._webGLVersion > 1 ? this._gl.getParameter(this._gl.MAX_ARRAY_TEXTURE_LAYERS) : 128,
+            disableMorphTargetTexture: false,
         };
 
         // Infos
@@ -1390,6 +1391,11 @@ export class ThinEngine {
         this._maxSimultaneousTextures = this._caps.maxCombinedTexturesImageUnits;
         for (let slot = 0; slot < this._maxSimultaneousTextures; slot++) {
             this._nextFreeTextureSlots.push(slot);
+        }
+
+        if (this._glRenderer === "Mali-G72") {
+            // Overcome a bug when using a texture to store morph targets on Mali-G72
+            this._caps.disableMorphTargetTexture = true;
         }
     }
 

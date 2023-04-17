@@ -2,6 +2,7 @@ import * as React from "react";
 
 import type { Observable } from "core/Misc/observable";
 import type { DefaultRenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline";
+import { DepthOfFieldEffectBlurLevel } from "core/PostProcesses/depthOfFieldEffect";
 
 import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
@@ -41,6 +42,12 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
         const vignetteModeOptions = [
             { label: "Multiply", value: ImageProcessingConfiguration.VIGNETTEMODE_MULTIPLY },
             { label: "Opaque", value: ImageProcessingConfiguration.VIGNETTEMODE_OPAQUE },
+        ];
+
+        const depthOfFieldBlurOptions = [
+            { label: "Low", value: DepthOfFieldEffectBlurLevel.Low },
+            { label: "Medium", value: DepthOfFieldEffectBlurLevel.Medium },
+            { label: "High", value: DepthOfFieldEffectBlurLevel.High },
         ];
 
         return (
@@ -202,6 +209,14 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                                 propertyName="lensSize"
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                                 decimalCount={0}
+                            />
+                            <OptionsLineComponent
+                                label="Blur level"
+                                options={depthOfFieldBlurOptions}
+                                target={renderPipeline}
+                                propertyName="depthOfFieldBlurLevel"
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                                onSelect={(value) => this.setState({ mode: value })}
                             />
                         </div>
                     )}

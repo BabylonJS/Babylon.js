@@ -1014,6 +1014,7 @@ export class _GLTFMaterialExporter {
                             const occlusionTexture: IMaterialOcclusionTextureInfo = {
                                 index: glTFTexture.index,
                                 texCoord: glTFTexture.texCoord,
+                                extensions: glTFTexture.extensions,
                             };
 
                             glTFMaterial.occlusionTexture = occlusionTexture;
@@ -1096,7 +1097,7 @@ export class _GLTFMaterialExporter {
                         mimeType = textureMimeType as ImageMimeType;
                         break;
                     default:
-                        Tools.Warn("Unsupported media type: ${textureMimeType}");
+                        Tools.Warn(`Unsupported media type: ${textureMimeType}`);
                         break;
                 }
             }

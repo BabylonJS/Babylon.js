@@ -181,7 +181,12 @@ export class MorphTargetManager implements IDisposable {
      * Gets a boolean indicating that the targets are stored into a texture (instead of as attributes)
      */
     public get isUsingTextureForTargets() {
-        return MorphTargetManager.EnableTextureStorage && this.useTextureToStoreTargets && this._canUseTextureForTargets;
+        return (
+            MorphTargetManager.EnableTextureStorage &&
+            this.useTextureToStoreTargets &&
+            this._canUseTextureForTargets &&
+            !this._scene?.getEngine().getCaps().disableMorphTargetTexture
+        );
     }
 
     /**

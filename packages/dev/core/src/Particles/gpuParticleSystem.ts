@@ -35,7 +35,7 @@ declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
 import "../Shaders/gpuRenderParticles.fragment";
 import "../Shaders/gpuRenderParticles.vertex";
 import { GetClass } from "../Misc/typeStore";
-import { addClipPlaneUniforms, bindClipPlane, prepareDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
+import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
 
 /**
  * This represents a GPU particle system in Babylon
@@ -1307,7 +1307,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      */
     public fillDefines(defines: Array<string>, blendMode: number = 0) {
         if (this._scene) {
-            prepareDefinesForClipPlanes(this, this._scene, defines);
+            prepareStringDefinesForClipPlanes(this, this._scene, defines);
         }
 
         if (blendMode === ParticleSystem.BLENDMODE_MULTIPLY) {
@@ -1640,13 +1640,13 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             }
 
             if (
-                this._currentRenderId === this._scene.getFrameId() &&
+                this._currentRenderId === this._scene.getRenderId() &&
                 (!this._scene.activeCamera || (this._scene.activeCamera && this._currentRenderingCameraUniqueId === this._scene.activeCamera.uniqueId))
             ) {
                 return 0;
             }
 
-            this._currentRenderId = this._scene.getFrameId();
+            this._currentRenderId = this._scene.getRenderId();
             if (this._scene.activeCamera) {
                 this._currentRenderingCameraUniqueId = this._scene.activeCamera.uniqueId;
             }

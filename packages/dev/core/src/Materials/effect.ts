@@ -371,7 +371,7 @@ export class Effect implements IDisposable {
                             migratedFragmentCode = processFinalCode("fragment", migratedFragmentCode);
                         }
                         const finalShaders = ShaderProcessor.Finalize(migratedVertexCode, migratedFragmentCode, processorOptions);
-                        processorOptions = null as any; // avoid some GC leaks because of code below (related to proxyFunction(name).bind(this))
+                        processorOptions = null as any;
                         this._useFinalCode(finalShaders.vertexCode, finalShaders.fragmentCode, baseName);
                     },
                     this._engine
@@ -400,29 +400,6 @@ export class Effect implements IDisposable {
             shaderCodes[1] = fragmentCode;
             shadersLoaded();
         });
-
-        const proxyFunction = function (functionName: string) {
-            // check if the function exists in the pipelineContext
-            return function (this: Effect) {
-                if (this._pipelineContext) {
-                    const func = this._pipelineContext[functionName as keyof IPipelineContext];
-                    (func as (uniformName: string, ...payload: any) => void).apply(this._pipelineContext, arguments);
-                }
-                return this;
-            };
-        };
-        ["Int?", "UInt?", "IntArray?", "UIntArray?", "Array?", "Color?", "Vector?", "Float?", "Matrices", "Matrix", "Matrix3x3", "Matrix2x2", "Quaternion", "DirectColor4"].forEach(
-            (functionName) => {
-                const name = `set${functionName}`;
-                if (name.endsWith("?")) {
-                    ["", 2, 3, 4].forEach((n) => {
-                        this[(name.slice(0, -1) + n) as keyof this] = this[(name.slice(0, -1) + n) as keyof this] || proxyFunction(name.slice(0, -1) + n).bind(this);
-                    });
-                } else {
-                    this[name as keyof this] = this[name as keyof this] || proxyFunction(name).bind(this);
-                }
-            }
-        );
     }
 
     private _useFinalCode(migratedVertexCode: string, migratedFragmentCode: string, baseName: any) {
@@ -1069,7 +1046,10 @@ export class Effect implements IDisposable {
      * @param value Value to be set.
      * @returns this effect.
      */
-    public setInt: (uniformName: string, value: number) => Effect;
+    public setInt(uniformName: string, value: number): Effect {
+        this._pipelineContext!.setInt(uniformName, value);
+        return this;
+    }
 
     /**
      * Sets an int2 value on a uniform variable.
@@ -1078,7 +1058,10 @@ export class Effect implements IDisposable {
      * @param y Second int in int2.
      * @returns this effect.
      */
-    public setInt2: (uniformName: string, x: number, y: number) => Effect;
+    public setInt2(uniformName: string, x: number, y: number): Effect {
+        this._pipelineContext!.setInt2(uniformName, x, y);
+        return this;
+    }
 
     /**
      * Sets an int3 value on a uniform variable.
@@ -1088,7 +1071,10 @@ export class Effect implements IDisposable {
      * @param z Third int in int3.
      * @returns this effect.
      */
-    public setInt3: (uniformName: string, x: number, y: number, z: number) => Effect;
+    public setInt3(uniformName: string, x: number, y: number, z: number): Effect {
+        this._pipelineContext!.setInt3(uniformName, x, y, z);
+        return this;
+    }
 
     /**
      * Sets an int4 value on a uniform variable.
@@ -1099,7 +1085,10 @@ export class Effect implements IDisposable {
      * @param w Fourth int in int4.
      * @returns this effect.
      */
-    public setInt4: (uniformName: string, x: number, y: number, z: number, w: number) => Effect;
+    public setInt4(uniformName: string, x: number, y: number, z: number, w: number): Effect {
+        this._pipelineContext!.setInt4(uniformName, x, y, z, w);
+        return this;
+    }
 
     /**
      * Sets an int array on a uniform variable.
@@ -1107,7 +1096,10 @@ export class Effect implements IDisposable {
      * @param array array to be set.
      * @returns this effect.
      */
-    public setIntArray: (uniformName: string, array: Int32Array) => Effect;
+    public setIntArray(uniformName: string, array: Int32Array): Effect {
+        this._pipelineContext!.setIntArray(uniformName, array);
+        return this;
+    }
 
     /**
      * Sets an int array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
@@ -1115,7 +1107,10 @@ export class Effect implements IDisposable {
      * @param array array to be set.
      * @returns this effect.
      */
-    public setIntArray2: (uniformName: string, array: Int32Array) => Effect;
+    public setIntArray2(uniformName: string, array: Int32Array): Effect {
+        this._pipelineContext!.setIntArray2(uniformName, array);
+        return this;
+    }
 
     /**
      * Sets an int array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
@@ -1123,7 +1118,10 @@ export class Effect implements IDisposable {
      * @param array array to be set.
      * @returns this effect.
      */
-    public setIntArray3: (uniformName: string, array: Int32Array) => Effect;
+    public setIntArray3(uniformName: string, array: Int32Array): Effect {
+        this._pipelineContext!.setIntArray3(uniformName, array);
+        return this;
+    }
 
     /**
      * Sets an int array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
@@ -1131,7 +1129,10 @@ export class Effect implements IDisposable {
      * @param array array to be set.
      * @returns this effect.
      */
-    public setIntArray4: (uniformName: string, array: Int32Array) => Effect;
+    public setIntArray4(uniformName: string, array: Int32Array): Effect {
+        this._pipelineContext!.setIntArray4(uniformName, array);
+        return this;
+    }
 
     /**
      * Sets an unsigned integer value on a uniform variable.
@@ -1139,7 +1140,10 @@ export class Effect implements IDisposable {
      * @param value Value to be set.
      * @returns this effect.
      */
-    public setUInt: (uniformName: string, value: number) => Effect;
+    public setUInt(uniformName: string, value: number): Effect {
+        this._pipelineContext!.setInt(uniformName, value);
+        return this;
+    }
 
     /**
      * Sets an unsigned int2 value on a uniform variable.
@@ -1148,7 +1152,10 @@ export class Effect implements IDisposable {
      * @param y Second unsigned int in uint2.
      * @returns this effect.
      */
-    public setUInt2: (uniformName: string, x: number, y: number) => Effect;
+    public setUInt2(uniformName: string, x: number, y: number): Effect {
+        this._pipelineContext!.setInt2(uniformName, x, y);
+        return this;
+    }
 
     /**
      * Sets an unsigned int3 value on a uniform variable.
@@ -1158,7 +1165,10 @@ export class Effect implements IDisposable {
      * @param z Third unsigned int in uint3.
      * @returns this effect.
      */
-    public setUInt3: (uniformName: string, x: number, y: number, z: number) => Effect;
+    public setUInt3(uniformName: string, x: number, y: number, z: number): Effect {
+        this._pipelineContext!.setInt3(uniformName, x, y, z);
+        return this;
+    }
 
     /**
      * Sets an unsigned int4 value on a uniform variable.
@@ -1169,7 +1179,10 @@ export class Effect implements IDisposable {
      * @param w Fourth unsigned int in uint4.
      * @returns this effect.
      */
-    public setUInt4: (uniformName: string, x: number, y: number, z: number, w: number) => Effect;
+    public setUInt4(uniformName: string, x: number, y: number, z: number, w: number): Effect {
+        this._pipelineContext!.setInt4(uniformName, x, y, z, w);
+        return this;
+    }
 
     /**
      * Sets an unsigned int array on a uniform variable.
@@ -1177,7 +1190,10 @@ export class Effect implements IDisposable {
      * @param array array to be set.
      * @returns this effect.
      */
-    public setUIntArray: (uniformName: string, array: Uint32Array) => Effect;
+    public setUIntArray(uniformName: string, array: Uint32Array): Effect {
+        this._pipelineContext!.setUIntArray(uniformName, array);
+        return this;
+    }
 
     /**
      * Sets an unsigned int array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
@@ -1185,7 +1201,10 @@ export class Effect implements IDisposable {
      * @param array array to be set.
      * @returns this effect.
      */
-    public setUIntArray2: (uniformName: string, array: Uint32Array) => Effect;
+    public setUIntArray2(uniformName: string, array: Uint32Array): Effect {
+        this._pipelineContext!.setUIntArray2(uniformName, array);
+        return this;
+    }
 
     /**
      * Sets an unsigned int array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
@@ -1193,7 +1212,10 @@ export class Effect implements IDisposable {
      * @param array array to be set.
      * @returns this effect.
      */
-    public setUIntArray3: (uniformName: string, array: Uint32Array) => Effect;
+    public setUIntArray3(uniformName: string, array: Uint32Array): Effect {
+        this._pipelineContext!.setUIntArray3(uniformName, array);
+        return this;
+    }
 
     /**
      * Sets an unsigned int array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
@@ -1201,7 +1223,10 @@ export class Effect implements IDisposable {
      * @param array array to be set.
      * @returns this effect.
      */
-    public setUIntArray4: (uniformName: string, array: Uint32Array) => Effect;
+    public setUIntArray4(uniformName: string, array: Uint32Array): Effect {
+        this._pipelineContext!.setUIntArray4(uniformName, array);
+        return this;
+    }
 
     /**
      * Sets an float array on a uniform variable.
@@ -1253,7 +1278,10 @@ export class Effect implements IDisposable {
      * @param array array to be set.
      * @returns this effect.
      */
-    public setArray: (uniformName: string, array: number[]) => Effect;
+    public setArray(uniformName: string, array: number[]): Effect {
+        this._pipelineContext!.setArray(uniformName, array);
+        return this;
+    }
 
     /**
      * Sets an array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
@@ -1261,7 +1289,10 @@ export class Effect implements IDisposable {
      * @param array array to be set.
      * @returns this effect.
      */
-    public setArray2: (uniformName: string, array: number[]) => Effect;
+    public setArray2(uniformName: string, array: number[]): Effect {
+        this._pipelineContext!.setArray2(uniformName, array);
+        return this;
+    }
 
     /**
      * Sets an array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
@@ -1269,7 +1300,10 @@ export class Effect implements IDisposable {
      * @param array array to be set.
      * @returns this effect.
      */
-    public setArray3: (uniformName: string, array: number[]) => Effect;
+    public setArray3(uniformName: string, array: number[]): Effect {
+        this._pipelineContext!.setArray3(uniformName, array);
+        return this;
+    }
 
     /**
      * Sets an array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
@@ -1277,7 +1311,10 @@ export class Effect implements IDisposable {
      * @param array array to be set.
      * @returns this effect.
      */
-    public setArray4: (uniformName: string, array: number[]) => Effect;
+    public setArray4(uniformName: string, array: number[]): Effect {
+        this._pipelineContext!.setArray4(uniformName, array);
+        return this;
+    }
 
     /**
      * Sets matrices on a uniform variable.
@@ -1285,7 +1322,10 @@ export class Effect implements IDisposable {
      * @param matrices matrices to be set.
      * @returns this effect.
      */
-    public setMatrices: (uniformName: string, matrices: Float32Array | Array<number>) => Effect;
+    public setMatrices(uniformName: string, matrices: Float32Array | Array<number>): Effect {
+        this._pipelineContext!.setMatrices(uniformName, matrices as Float32Array);
+        return this;
+    }
 
     /**
      * Sets matrix on a uniform variable.
@@ -1293,7 +1333,10 @@ export class Effect implements IDisposable {
      * @param matrix matrix to be set.
      * @returns this effect.
      */
-    public setMatrix: (uniformName: string, matrix: IMatrixLike) => Effect;
+    public setMatrix(uniformName: string, matrix: IMatrixLike): Effect {
+        this._pipelineContext!.setMatrix(uniformName, matrix);
+        return this;
+    }
 
     /**
      * Sets a 3x3 matrix on a uniform variable. (Specified as [1,2,3,4,5,6,7,8,9] will result in [1,2,3][4,5,6][7,8,9] matrix)
@@ -1301,7 +1344,11 @@ export class Effect implements IDisposable {
      * @param matrix matrix to be set.
      * @returns this effect.
      */
-    public setMatrix3x3: (uniformName: string, matrix: Float32Array | Array<number>) => Effect;
+    public setMatrix3x3(uniformName: string, matrix: Float32Array | Array<number>): Effect {
+        // the cast is ok because it is gl.uniformMatrix3fv() which is called at the end, and this function accepts Float32Array and Array<number>
+        this._pipelineContext!.setMatrix3x3(uniformName, matrix as Float32Array);
+        return this;
+    }
 
     /**
      * Sets a 2x2 matrix on a uniform variable. (Specified as [1,2,3,4] will result in [1,2][3,4] matrix)
@@ -1309,7 +1356,11 @@ export class Effect implements IDisposable {
      * @param matrix matrix to be set.
      * @returns this effect.
      */
-    public setMatrix2x2: (uniformName: string, matrix: Float32Array | Array<number>) => Effect;
+    public setMatrix2x2(uniformName: string, matrix: Float32Array | Array<number>): Effect {
+        // the cast is ok because it is gl.uniformMatrix3fv() which is called at the end, and this function accepts Float32Array and Array<number>
+        this._pipelineContext!.setMatrix2x2(uniformName, matrix as Float32Array);
+        return this;
+    }
 
     /**
      * Sets a float on a uniform variable.
@@ -1317,7 +1368,10 @@ export class Effect implements IDisposable {
      * @param value value to be set.
      * @returns this effect.
      */
-    public setFloat: (uniformName: string, value: number) => Effect;
+    public setFloat(uniformName: string, value: number): Effect {
+        this._pipelineContext!.setFloat(uniformName, value);
+        return this;
+    }
 
     /**
      * Sets a boolean on a uniform variable.
@@ -1336,7 +1390,10 @@ export class Effect implements IDisposable {
      * @param vector2 vector2 to be set.
      * @returns this effect.
      */
-    public setVector2: (uniformName: string, vector2: IVector2Like) => Effect;
+    public setVector2(uniformName: string, vector2: IVector2Like): Effect {
+        this._pipelineContext!.setVector2(uniformName, vector2);
+        return this;
+    }
 
     /**
      * Sets a float2 on a uniform variable.
@@ -1345,7 +1402,10 @@ export class Effect implements IDisposable {
      * @param y Second float in float2.
      * @returns this effect.
      */
-    public setFloat2: (uniformName: string, x: number, y: number) => Effect;
+    public setFloat2(uniformName: string, x: number, y: number): Effect {
+        this._pipelineContext!.setFloat2(uniformName, x, y);
+        return this;
+    }
 
     /**
      * Sets a Vector3 on a uniform variable.
@@ -1353,7 +1413,10 @@ export class Effect implements IDisposable {
      * @param vector3 Value to be set.
      * @returns this effect.
      */
-    public setVector3: (uniformName: string, vector3: IVector3Like) => Effect;
+    public setVector3(uniformName: string, vector3: IVector3Like): Effect {
+        this._pipelineContext!.setVector3(uniformName, vector3);
+        return this;
+    }
 
     /**
      * Sets a float3 on a uniform variable.
@@ -1363,7 +1426,10 @@ export class Effect implements IDisposable {
      * @param z Third float in float3.
      * @returns this effect.
      */
-    public setFloat3: (uniformName: string, x: number, y: number, z: number) => Effect;
+    public setFloat3(uniformName: string, x: number, y: number, z: number): Effect {
+        this._pipelineContext!.setFloat3(uniformName, x, y, z);
+        return this;
+    }
 
     /**
      * Sets a Vector4 on a uniform variable.
@@ -1371,7 +1437,10 @@ export class Effect implements IDisposable {
      * @param vector4 Value to be set.
      * @returns this effect.
      */
-    public setVector4: (uniformName: string, vector4: IVector4Like) => Effect;
+    public setVector4(uniformName: string, vector4: IVector4Like): Effect {
+        this._pipelineContext!.setVector4(uniformName, vector4);
+        return this;
+    }
 
     /**
      * Sets a Quaternion on a uniform variable.
@@ -1379,7 +1448,10 @@ export class Effect implements IDisposable {
      * @param quaternion Value to be set.
      * @returns this effect.
      */
-    public setQuaternion: (uniformName: string, quaternion: IQuaternionLike) => Effect;
+    public setQuaternion(uniformName: string, quaternion: IQuaternionLike): Effect {
+        this._pipelineContext!.setQuaternion(uniformName, quaternion);
+        return this;
+    }
 
     /**
      * Sets a float4 on a uniform variable.
@@ -1390,7 +1462,10 @@ export class Effect implements IDisposable {
      * @param w Fourth float in float4.
      * @returns this effect.
      */
-    public setFloat4: (uniformName: string, x: number, y: number, z: number, w: number) => Effect;
+    public setFloat4(uniformName: string, x: number, y: number, z: number, w: number): Effect {
+        this._pipelineContext!.setFloat4(uniformName, x, y, z, w);
+        return this;
+    }
 
     /**
      * Sets a Color3 on a uniform variable.
@@ -1398,7 +1473,10 @@ export class Effect implements IDisposable {
      * @param color3 Value to be set.
      * @returns this effect.
      */
-    public setColor3: (uniformName: string, color3: IColor3Like) => Effect;
+    public setColor3(uniformName: string, color3: IColor3Like): Effect {
+        this._pipelineContext!.setColor3(uniformName, color3);
+        return this;
+    }
 
     /**
      * Sets a Color4 on a uniform variable.
@@ -1407,7 +1485,10 @@ export class Effect implements IDisposable {
      * @param alpha Alpha value to be set.
      * @returns this effect.
      */
-    public setColor4: (uniformName: string, color3: IColor3Like, alpha: number) => Effect;
+    public setColor4(uniformName: string, color3: IColor3Like, alpha: number): Effect {
+        this._pipelineContext!.setColor4(uniformName, color3, alpha);
+        return this;
+    }
 
     /**
      * Sets a Color4 on a uniform variable
@@ -1415,14 +1496,20 @@ export class Effect implements IDisposable {
      * @param color4 defines the value to be set
      * @returns this effect.
      */
-    public setDirectColor4: (uniformName: string, color4: IColor4Like) => Effect;
+    public setDirectColor4(uniformName: string, color4: IColor4Like): Effect {
+        this._pipelineContext!.setDirectColor4(uniformName, color4);
+        return this;
+    }
 
     /**
      * Release all associated resources.
      **/
     public dispose() {
-        this._pipelineContext?.dispose();
+        if (this._pipelineContext) {
+            this._pipelineContext.dispose();
+        }
         this._engine._releaseEffect(this);
+
         this._isDisposed = true;
     }
 

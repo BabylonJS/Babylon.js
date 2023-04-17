@@ -143,6 +143,8 @@ class _InternalMeshDataInfo {
     public _effectiveMaterial: Nullable<Material> = null;
 
     public _forcedInstanceCount: number = 0;
+
+    public _overrideRenderingFillMode: Nullable<number> = null;
 }
 
 /**
@@ -438,6 +440,17 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Use this property to change the original side orientation defined at construction time
      */
     public overrideMaterialSideOrientation: Nullable<number> = null;
+
+    /**
+     * Use this property to override the Material's fillMode value
+     */
+    public get overrideRenderingFillMode(): Nullable<number> {
+        return this._internalMeshDataInfo._overrideRenderingFillMode;
+    }
+
+    public set overrideRenderingFillMode(fillMode: Nullable<number>) {
+        this._internalMeshDataInfo._overrideRenderingFillMode = fillMode;
+    }
 
     /**
      * Gets or sets a boolean indicating whether to render ignoring the active camera's max z setting. (false by default)
@@ -1724,11 +1737,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Wireframe
         let indexToBind;
-
         if (this._unIndexed) {
             indexToBind = null;
         } else {
-            switch (fillMode) {
+            switch (this._getRenderingFillMode(fillMode)) {
                 case Material.PointFillMode:
                     indexToBind = null;
                     break;
@@ -2076,6 +2088,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     ): Mesh {
         const scene = this.getScene();
         const engine = scene.getEngine();
+        fillMode = this._getRenderingFillMode(fillMode);
 
         if (hardwareInstancedRendering && subMesh.getRenderingMesh().hasThinInstances) {
             this._renderWithThinInstances(subMesh, fillMode, effect, engine);
@@ -2320,11 +2333,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Bind
-        const fillMode = scene.forcePointsCloud
-            ? Material.PointFillMode
-            : scene.forceWireframe
-            ? Material.WireFrameFillMode
-            : this._internalMeshDataInfo._effectiveMaterial.fillMode;
+        const effectiveMaterial = this._internalMeshDataInfo._effectiveMaterial;
+        const fillMode = effectiveMaterial.fillMode;
 
         if (this._internalMeshDataInfo._onBeforeBindObservable) {
             this._internalMeshDataInfo._onBeforeBindObservable.notifyObservers(this);
@@ -2335,7 +2345,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this._bind(subMesh, effect, fillMode, false);
         }
 
-        const effectiveMaterial = this._internalMeshDataInfo._effectiveMaterial;
         const world = effectiveMesh.getWorldMatrix();
         if (effectiveMaterial._storeEffectOnSubMeshes) {
             effectiveMaterial.bindForSubMesh(world, this, subMesh);
@@ -4740,6 +4749,17 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /** @internal */
     public _shouldConvertRHS() {
         return this.overrideMaterialSideOrientation === Material.CounterClockWiseSideOrientation;
+    }
+
+    /** @internal */
+    public _getRenderingFillMode(fillMode: number): number {
+        const scene = this.getScene();
+
+        if (scene.forcePointsCloud) return Material.PointFillMode;
+
+        if (scene.forceWireframe) return Material.WireFrameFillMode;
+
+        return this.overrideRenderingFillMode ?? fillMode;
     }
 }
 

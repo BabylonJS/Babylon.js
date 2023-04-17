@@ -14,7 +14,7 @@ import { Constants } from "../Engines/constants";
 import "../Shaders/depth.fragment";
 import "../Shaders/depth.vertex";
 import { _WarnImport } from "../Misc/devTools";
-import { addClipPlaneUniforms, bindClipPlane, prepareDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
+import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
 
 declare type Material = import("../Materials/material").Material;
 declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
@@ -440,7 +440,7 @@ export class DepthRenderer {
         }
 
         // Clip planes
-        prepareDefinesForClipPlanes(material, scene, defines);
+        prepareStringDefinesForClipPlanes(material, scene, defines);
 
         // Get correct effect
         const drawWrapper = subMesh._getDrawWrapper(undefined, true)!;
