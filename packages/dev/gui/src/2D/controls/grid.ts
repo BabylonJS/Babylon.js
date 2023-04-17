@@ -427,7 +427,7 @@ export class Grid extends Container {
             tops.push(top);
 
             if (!rowDefinition.isPixel) {
-                const height = Math.ceil((rowDefinition.value / globalHeightPercentage) * availableHeight);
+                const height = Math.round((rowDefinition.value / globalHeightPercentage) * availableHeight);
                 top += height;
                 heights[index] = height;
             } else {
@@ -454,7 +454,7 @@ export class Grid extends Container {
         for (const columnDefinition of this._columnDefinitions) {
             lefts.push(left);
             if (!columnDefinition.isPixel) {
-                const width = Math.ceil((columnDefinition.value / globalWidthPercentage) * availableWidth);
+                const width = Math.round((columnDefinition.value / globalWidthPercentage) * availableWidth);
                 left += width;
                 widths[index] = width;
             } else {
