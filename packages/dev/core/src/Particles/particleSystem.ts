@@ -44,7 +44,7 @@ import { ThinEngine } from "../Engines/thinEngine";
 import { MaterialHelper } from "../Materials/materialHelper";
 
 import "../Engines/Extensions/engine.alpha";
-import { addClipPlaneUniforms, prepareDefinesForClipPlanes, bindClipPlane } from "../Materials/clipPlaneMaterialHelper";
+import { addClipPlaneUniforms, prepareStringDefinesForClipPlanes, bindClipPlane } from "../Materials/clipPlaneMaterialHelper";
 
 declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
 declare type ProceduralTexture = import("../Materials/Textures/Procedurals/proceduralTexture").ProceduralTexture;
@@ -1744,7 +1744,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      */
     public fillDefines(defines: Array<string>, blendMode: number) {
         if (this._scene) {
-            prepareDefinesForClipPlanes(this, this._scene, defines);
+            prepareStringDefinesForClipPlanes(this, this._scene, defines);
         }
 
         if (this._isAnimationSheetEnabled) {

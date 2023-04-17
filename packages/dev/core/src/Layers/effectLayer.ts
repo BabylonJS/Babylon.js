@@ -28,7 +28,7 @@ import { _WarnImport } from "../Misc/devTools";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import { EffectFallbacks } from "../Materials/effectFallbacks";
 import { DrawWrapper } from "../Materials/drawWrapper";
-import { addClipPlaneUniforms, bindClipPlane, prepareDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
+import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
 
 /**
  * Effect layer options. This helps customizing the behaviour
@@ -651,7 +651,7 @@ export abstract class EffectLayer {
         }
 
         // ClipPlanes
-        prepareDefinesForClipPlanes(material, this._scene, defines);
+        prepareStringDefinesForClipPlanes(material, this._scene, defines);
 
         this._addCustomEffectDefines(defines);
 
