@@ -1,6 +1,79 @@
 {
-    "fromTag": "5.55.0",
+    "fromTag": "5.56.0",
     "changelog": {
+        "5.57.0": [
+            {
+                "pr": "13745",
+                "title": "Compute shader: Fix wrong ubo bound to the shader in some cases",
+                "description": "See https://forum.babylonjs.com/t/passing-a-primitive-variable-to-a-compute-shader-that-runs-multiple-times-per-frame/39904/3",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Compute/computeShader.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "13742",
+                "title": "Clip planes defines perf",
+                "description": "Revert v5 factorization changes as they seem to be harmful to the V8 optimizer.",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Layers/effectLayer.ts",
+                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts",
+                    "packages/dev/core/src/Materials/clipPlaneMaterialHelper.ts",
+                    "packages/dev/core/src/Materials/shaderMaterial.ts",
+                    "packages/dev/core/src/Particles/gpuParticleSystem.ts",
+                    "packages/dev/core/src/Particles/particleSystem.ts",
+                    "packages/dev/core/src/Rendering/depthRenderer.ts",
+                    "packages/dev/core/src/Rendering/geometryBufferRenderer.ts",
+                    "packages/dev/core/src/Rendering/outlineRenderer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13744",
+                "title": "Adding no-op setters to instancedMesh",
+                "description": "See https://forum.babylonjs.com/t/typeerror-cannot-set-property-visibility-of-object-object-which-has-only-a-getter/39723/7?u=raananw",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/instancedMesh.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "13741",
+                "title": "BoundingInfo: Fix encapsulateBoundingInfo method",
+                "description": "See https://forum.babylonjs.com/t/bounding-info-encapsulation/39894/2",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/boundingInfo.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "math"
+                ]
+            }
+        ],
         "5.56.0": [
             {
                 "pr": "13740",
