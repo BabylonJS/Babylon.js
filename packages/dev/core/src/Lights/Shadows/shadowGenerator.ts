@@ -31,7 +31,7 @@ import "../../Shaders/shadowMap.fragment";
 import "../../Shaders/shadowMap.vertex";
 import "../../Shaders/depthBoxBlur.fragment";
 import "../../Shaders/ShadersInclude/shadowMapFragmentSoftTransparentShadow";
-import { addClipPlaneUniforms, bindClipPlane, prepareDefinesForClipPlanes } from "../../Materials/clipPlaneMaterialHelper";
+import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "../../Materials/clipPlaneMaterialHelper";
 
 /**
  * Defines the options associated with the creation of a custom shader for a shadow generator.
@@ -1555,7 +1555,7 @@ export class ShadowGenerator implements IShadowGenerator {
             }
 
             // ClipPlanes
-            prepareDefinesForClipPlanes(material, this._scene, defines);
+            prepareStringDefinesForClipPlanes(material, this._scene, defines);
 
             // Instances
             if (useInstances) {

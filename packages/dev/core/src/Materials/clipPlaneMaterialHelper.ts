@@ -26,7 +26,24 @@ export function addClipPlaneUniforms(uniforms: string[]): void {
 }
 
 /** @internal */
-export function prepareDefinesForClipPlanes(primaryHolder: IClipPlanesHolder, secondaryHolder: IClipPlanesHolder, defines: string[] | Record<string, any>): boolean {
+export function prepareStringDefinesForClipPlanes(primaryHolder: IClipPlanesHolder, secondaryHolder: IClipPlanesHolder, defines: string[]): void {
+    const clipPlane = !!(primaryHolder.clipPlane ?? secondaryHolder.clipPlane);
+    const clipPlane2 = !!(primaryHolder.clipPlane2 ?? secondaryHolder.clipPlane2);
+    const clipPlane3 = !!(primaryHolder.clipPlane3 ?? secondaryHolder.clipPlane3);
+    const clipPlane4 = !!(primaryHolder.clipPlane4 ?? secondaryHolder.clipPlane4);
+    const clipPlane5 = !!(primaryHolder.clipPlane5 ?? secondaryHolder.clipPlane5);
+    const clipPlane6 = !!(primaryHolder.clipPlane6 ?? secondaryHolder.clipPlane6);
+
+    if (clipPlane) defines.push("#define CLIPPLANE");
+    if (clipPlane2) defines.push("#define CLIPPLANE2");
+    if (clipPlane3) defines.push("#define CLIPPLANE3");
+    if (clipPlane4) defines.push("#define CLIPPLANE4");
+    if (clipPlane5) defines.push("#define CLIPPLANE5");
+    if (clipPlane6) defines.push("#define CLIPPLANE6");
+}
+
+/** @internal */
+export function prepareDefinesForClipPlanes(primaryHolder: IClipPlanesHolder, secondaryHolder: IClipPlanesHolder, defines: Record<string, any>): boolean {
     let changed = false;
 
     const clipPlane = !!(primaryHolder.clipPlane ?? secondaryHolder.clipPlane);
@@ -36,39 +53,30 @@ export function prepareDefinesForClipPlanes(primaryHolder: IClipPlanesHolder, se
     const clipPlane5 = !!(primaryHolder.clipPlane5 ?? secondaryHolder.clipPlane5);
     const clipPlane6 = !!(primaryHolder.clipPlane6 ?? secondaryHolder.clipPlane6);
 
-    if (Array.isArray(defines)) {
-        changed = addDefineString(clipPlane, defines, "#define CLIPPLANE") || changed;
-        changed = addDefineString(clipPlane2, defines, "#define CLIPPLANE2") || changed;
-        changed = addDefineString(clipPlane3, defines, "#define CLIPPLANE3") || changed;
-        changed = addDefineString(clipPlane4, defines, "#define CLIPPLANE4") || changed;
-        changed = addDefineString(clipPlane5, defines, "#define CLIPPLANE5") || changed;
-        changed = addDefineString(clipPlane6, defines, "#define CLIPPLANE6") || changed;
-    } else {
-        // Do not factorize this code, it breaks browsers optimizations.
-        if (defines["CLIPPLANE"] !== clipPlane) {
-            defines["CLIPPLANE"] = clipPlane;
-            changed = true;
-        }
-        if (defines["CLIPPLANE2"] !== clipPlane2) {
-            defines["CLIPPLANE2"] = clipPlane2;
-            changed = true;
-        }
-        if (defines["CLIPPLANE3"] !== clipPlane3) {
-            defines["CLIPPLANE3"] = clipPlane3;
-            changed = true;
-        }
-        if (defines["CLIPPLANE4"] !== clipPlane4) {
-            defines["CLIPPLANE4"] = clipPlane4;
-            changed = true;
-        }
-        if (defines["CLIPPLANE5"] !== clipPlane5) {
-            defines["CLIPPLANE5"] = clipPlane5;
-            changed = true;
-        }
-        if (defines["CLIPPLANE6"] !== clipPlane6) {
-            defines["CLIPPLANE6"] = clipPlane6;
-            changed = true;
-        }
+    // Do not factorize this code, it breaks browsers optimizations.
+    if (defines["CLIPPLANE"] !== clipPlane) {
+        defines["CLIPPLANE"] = clipPlane;
+        changed = true;
+    }
+    if (defines["CLIPPLANE2"] !== clipPlane2) {
+        defines["CLIPPLANE2"] = clipPlane2;
+        changed = true;
+    }
+    if (defines["CLIPPLANE3"] !== clipPlane3) {
+        defines["CLIPPLANE3"] = clipPlane3;
+        changed = true;
+    }
+    if (defines["CLIPPLANE4"] !== clipPlane4) {
+        defines["CLIPPLANE4"] = clipPlane4;
+        changed = true;
+    }
+    if (defines["CLIPPLANE5"] !== clipPlane5) {
+        defines["CLIPPLANE5"] = clipPlane5;
+        changed = true;
+    }
+    if (defines["CLIPPLANE6"] !== clipPlane6) {
+        defines["CLIPPLANE6"] = clipPlane6;
+        changed = true;
     }
 
     return changed;

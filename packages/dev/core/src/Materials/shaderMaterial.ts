@@ -21,7 +21,7 @@ import type { StorageBuffer } from "../Buffers/storageBuffer";
 import { PushMaterial } from "./pushMaterial";
 import { EngineStore } from "../Engines/engineStore";
 import { Constants } from "../Engines/constants";
-import { addClipPlaneUniforms, bindClipPlane, prepareDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
+import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
 
 declare type ExternalTexture = import("./Textures/externalTexture").ExternalTexture;
 
@@ -810,7 +810,7 @@ export class ShaderMaterial extends PushMaterial {
         if (this._options.useClipPlane !== false) {
             addClipPlaneUniforms(uniforms);
 
-            prepareDefinesForClipPlanes(this, scene, defines);
+            prepareStringDefinesForClipPlanes(this, scene, defines);
         }
 
         if (this.customShaderNameResolve) {

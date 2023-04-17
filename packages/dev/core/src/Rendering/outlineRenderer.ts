@@ -7,12 +7,12 @@ import type { Engine } from "../Engines/engine";
 import { Constants } from "../Engines/constants";
 import type { ISceneComponent } from "../sceneComponent";
 import { SceneComponentConstants } from "../sceneComponent";
-import { DrawWrapper } from "../Materials/drawWrapper";
+import { DrawWrapper } from "../Materials/drawWrapper";w
 import { MaterialHelper } from "../Materials/materialHelper";
 
 import "../Shaders/outline.fragment";
 import "../Shaders/outline.vertex";
-import { addClipPlaneUniforms, bindClipPlane, prepareDefinesForClipPlanes } from "core/Materials/clipPlaneMaterialHelper";
+import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "core/Materials/clipPlaneMaterialHelper";
 
 declare module "../scene" {
     export interface Scene {
@@ -285,7 +285,7 @@ export class OutlineRenderer implements ISceneComponent {
             defines.push("#define LOGARITHMICDEPTH");
         }
         // Clip planes
-        prepareDefinesForClipPlanes(material, scene, defines);
+        prepareStringDefinesForClipPlanes(material, scene, defines);
 
         // Bones
         if (mesh.useBones && mesh.computeBonesUsingShaders) {

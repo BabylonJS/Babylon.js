@@ -21,7 +21,7 @@ import { Material } from "../Materials/material";
 import "../Shaders/geometry.fragment";
 import "../Shaders/geometry.vertex";
 import { MaterialFlags } from "../Materials/materialFlags";
-import { addClipPlaneUniforms, bindClipPlane, prepareDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
+import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
 
 /** @internal */
 interface ISavedTransformationMatrix {
@@ -602,7 +602,7 @@ export class GeometryBufferRenderer {
             defines.push("#define RENDER_TARGET_COUNT " + this._multiRenderTarget.textures.length);
         }
 
-        prepareDefinesForClipPlanes(material, this._scene, defines);
+        prepareStringDefinesForClipPlanes(material, this._scene, defines);
 
         // Get correct effect
         const engine = this._scene.getEngine();
