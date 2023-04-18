@@ -741,6 +741,10 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     /** @internal */
     public _masterMesh: Nullable<AbstractMesh> = null;
     protected _boundingInfo: Nullable<BoundingInfo> = null;
+    /** @internal
+     * Bounding info that is unnafected by the addition of thin instances
+     */
+    public _rawBoundingInfo: Nullable<BoundingInfo> = null;
     protected _boundingInfoIsDirty = true;
     /** @internal */
     public _renderId = 0;
@@ -1216,6 +1220,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     /**
      * Returns the mesh BoundingInfo object or creates a new one and returns if it was undefined.
      * Note that it returns a shallow bounding of the mesh (i.e. it does not include children).
+     * However, if the mesh contains thin instances, it will be expanded to include them. If you want the "raw" bounding data instead, then use `getRawBoundingInfo()`.
      * To get the full bounding of all children, call `getHierarchyBoundingVectors` instead.
      * @returns a BoundingInfo
      */
@@ -1231,6 +1236,14 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         }
         // cannot be null.
         return this._boundingInfo!;
+    }
+
+    /**
+     * Returns the bounding info unnafected by instance data.
+     * @returns the bounding info of the mesh unaffected by instance data.
+     */
+    public getRawBoundingInfo() {
+        return this._rawBoundingInfo ?? this.getBoundingInfo();
     }
 
     /**

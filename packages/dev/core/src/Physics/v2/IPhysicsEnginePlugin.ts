@@ -10,37 +10,105 @@ import type { Mesh } from "../../Meshes/mesh";
 import type { Nullable } from "core/types";
 import type { Observable } from "core/Misc/observable";
 
-/** @internal */
-export enum ConstraintAxisLimitMode {
+/** How a specific axis can be constrained */
+export enum PhysicsConstraintAxisLimitMode {
+    /*
+     * The axis is not restricted at all
+     */
     FREE,
+    /*
+     * The axis has a minimum/maximum limit
+     */
     LIMITED,
+    /*
+     * The axis allows no relative movement of the pivots
+     */
     LOCKED,
-    NONE,
 }
 
-/** @internal */
-export enum ConstraintAxis {
+/** The constraint specific axis to use when setting Friction, `ConstraintAxisLimitMode`, max force, ... */
+export enum PhysicsConstraintAxis {
+    /*
+     * Translation along the primary axis of the constraint (i.e. the
+     * direction specified by PhysicsConstraintParameters.axisA/axisB)
+     */
     LINEAR_X,
+    /*
+     * Translation along the second axis of the constraint (i.e. the
+     * direction specified by PhysicsConstraintParameters.perpAxisA/perpAxisB)
+     */
     LINEAR_Y,
+    /*
+     * Translation along the third axis of the constraint. This axis is
+     * computed from the cross product of axisA/axisB and perpAxisA/perpAxisB)
+     */
     LINEAR_Z,
+    /*
+     * Rotation around the primary axis of the constraint (i.e. the
+     * axis specified by PhysicsConstraintParameters.axisA/axisB)
+     */
     ANGULAR_X,
+    /*
+     * Rotation around the second axis of the constraint (i.e. the
+     * axis specified by PhysicsConstraintParameters.perpAxisA/perpAxisB)
+     */
     ANGULAR_Y,
+    /*
+     * Rotation around the third axis of the constraint. This axis is
+     * computed from the cross product of axisA/axisB and perpAxisA/perpAxisB)
+     */
     ANGULAR_Z,
+    /*
+     * A 3D distance limit; similar to specifying the LINEAR_X/Y/Z axes
+     * individually, but the distance calculation uses all three axes
+     * simultaneously, instead of individually.
+     */
     LINEAR_DISTANCE,
 }
 
-/** @internal */
-export enum ConstraintType {
+/** Type of Constraint */
+export enum PhysicsConstraintType {
+    /**
+     * A ball and socket constraint will attempt to line up the pivot
+     * positions in each body, and have no restrictions on rotation
+     */
     BALL_AND_SOCKET = 1,
+    /**
+     * A distance constraint will attempt to keep the pivot locations
+     * within a specified distance.
+     */
     DISTANCE = 2,
+    /**
+     * A hinge constraint will keep the pivot positions aligned as well
+     * as two angular axes. The remaining angular axis will be free to rotate.
+     */
     HINGE = 3,
+    /**
+     * A slider constraint allows bodies to translate along one axis and
+     * rotate about the same axis. The remaining two axes are locked in
+     * place
+     */
     SLIDER = 4,
+    /**
+     * A lock constraint will attempt to keep the pivots completely lined
+     * up between both bodies, allowing no relative movement.
+     */
     LOCK = 5,
+    /*
+     * A prismatic will lock the rotations of the bodies, and allow translation
+     * only along one axis
+     */
     PRISMATIC = 6,
+    /*
+     * A generic constraint; this starts with no limits on how the bodies can
+     * move relative to each other, but limits can be added via the PhysicsConstraint
+     * interfaces. This can be used to specify a large variety of constraints
+     */
+    SIX_DOF = 7,
 }
 
-/** @internal */
-export enum ShapeType {
+/** Type of Shape */
+export enum PhysicsShapeType {
     SPHERE,
     CAPSULE,
     CYLINDER,
@@ -51,8 +119,8 @@ export enum ShapeType {
     HEIGHTFIELD,
 }
 
-/** @internal */
-export enum ConstraintMotorType {
+/** Optional motor which attempts to move a body at a specific velocity, or at a specific position */
+export enum PhysicsConstraintMotorType {
     NONE,
     VELOCITY,
     POSITION,
@@ -71,6 +139,14 @@ export interface IPhysicsCollisionEvent {
      */
     collidedAgainst: PhysicsBody;
     /**
+     * index in instances array for the collider
+     */
+    colliderIndex: number;
+    /**
+     * index in instances array for the collidedAgainst
+     */
+    collidedAgainstIndex: number;
+    /**
      * World position where the collision occured
      */
     point: Nullable<Vector3>;
@@ -88,7 +164,9 @@ export interface IPhysicsCollisionEvent {
     normal: Nullable<Vector3>;
 }
 
-/** @internal */
+/**
+ * Parameters used to describe the Shape
+ */
 export interface PhysicsShapeParameters {
     /**
      * Shape center position
@@ -107,7 +185,7 @@ export interface PhysicsShapeParameters {
      */
     pointB?: Vector3;
     /**
-     *
+     * Shape orientation
      */
     rotation?: Quaternion;
     /**
@@ -124,39 +202,60 @@ export interface PhysicsShapeParameters {
     includeChildMeshes?: boolean;
 }
 
-/** @internal */
+/**
+ * Parameters used to describe a Constraint
+ */
 export interface PhysicsConstraintParameters {
     /**
-     * Pivot vector for 1st body
+     * Location of the constraint pivot in the space of first body
      */
     pivotA?: Vector3;
     /**
-     * Pivot vector for 2nd body
+     * Location of the constraint pivot in the space of the second body
      */
     pivotB?: Vector3;
     /**
-     * Axis vector for 1st body
+     * An axis in the space of the first body which determines how
+     * distances/angles are measured for LINEAR_X/ANGULAR_X limits.
      */
     axisA?: Vector3;
     /**
-     * Axis vector for 2nd body
+     * An axis in the space of the second body which determines how
+     * distances/angles are measured for LINEAR_X/ANGULAR_X limits.
      */
     axisB?: Vector3;
+
     /**
-     * Maximum distance between both bodies
+     * An axis in the space of the first body which determines how
+     * distances/angles are measured for LINEAR_Y/ANGULAR_Y limits.
+     */
+    perpAxisA?: Vector3;
+
+    /**
+     * An axis in the space of the second body which determines how
+     * distances/angles are measured for LINEAR_Y/ANGULAR_Y limits.
+     */
+    perpAxisB?: Vector3;
+
+    /**
+     * The maximum distance that can seperate the two pivots.
+     * Only used for DISTANCE constraints
      */
     maxDistance?: number;
+
     /**
-     * Can connected bodies collide?
+     * Determines if the connected bodies should collide. Generally,
+     * it is preferable to set this to false, especially if the constraint
+     * positions the bodies so that they overlap. Otherwise, the constraint
+     * will "fight" the collision detection and may cause jitter.
      */
     collision?: boolean;
 }
 
 /**
- *
+ * Parameters used to describe mass and inertia of the Physics Body
  */
-/** @internal */
-export interface MassProperties {
+export interface PhysicsMassProperties {
     /**
      * The center of mass, in local space. This is The
      * point the body will rotate around when applying
@@ -200,6 +299,9 @@ export interface MassProperties {
     inertiaOrientation?: Quaternion;
 }
 
+/**
+ * Indicates how the body will behave.
+  */
 export enum PhysicsMotionType {
     STATIC,
     ANIMATED,
@@ -220,14 +322,7 @@ export interface IPhysicsEnginePluginV2 {
     /**
      * Collision observable
      */
-    onCollisionObservable: Observable<{
-        collider: PhysicsBody;
-        collidedAgainst: PhysicsBody;
-        point: Nullable<Vector3>;
-        distance: number;
-        impulse: number;
-        normal: Nullable<Vector3>;
-    }>;
+    onCollisionObservable: Observable<IPhysicsCollisionEvent>;
 
     setGravity(gravity: Vector3): void;
     setTimeStep(timeStep: number): void;
@@ -242,39 +337,38 @@ export interface IPhysicsEnginePluginV2 {
     removeBody(body: PhysicsBody): void;
     sync(body: PhysicsBody): void;
     syncTransform(body: PhysicsBody, transformNode: TransformNode): void;
-    addNodeShape(body: PhysicsBody, shapeNode: TransformNode): void;
-    setShape(body: PhysicsBody, shape: PhysicsShape): void;
-    getShape(body: PhysicsBody): PhysicsShape;
-    getShapeType(shape: PhysicsShape): ShapeType;
-    setFilterGroup(body: PhysicsBody, group: number): void;
-    getFilterGroup(body: PhysicsBody): number;
-    setEventMask(body: PhysicsBody, eventMask: number): void;
-    getEventMask(body: PhysicsBody): number;
-    setMotionType(body: PhysicsBody, motionType: PhysicsMotionType): void;
-    getMotionType(body: PhysicsBody): PhysicsMotionType;
-    computeMassProperties(body: PhysicsBody): MassProperties;
-    setMassProperties(body: PhysicsBody, massProps: MassProperties): void;
-    getMassProperties(body: PhysicsBody): MassProperties;
-    setLinearDamping(body: PhysicsBody, damping: number): void;
-    getLinearDamping(body: PhysicsBody): number;
-    setAngularDamping(body: PhysicsBody, damping: number): void;
-    getAngularDamping(body: PhysicsBody): number;
-    setLinearVelocity(body: PhysicsBody, linVel: Vector3): void;
-    getLinearVelocityToRef(body: PhysicsBody, linVel: Vector3): void;
-    applyImpulse(body: PhysicsBody, impulse: Vector3, location: Vector3): void;
-    applyForce(body: PhysicsBody, force: Vector3, location: Vector3): void;
-    setAngularVelocity(body: PhysicsBody, angVel: Vector3): void;
-    getAngularVelocityToRef(body: PhysicsBody, angVel: Vector3): void;
+    setShape(body: PhysicsBody, shape: Nullable<PhysicsShape>): void;
+    getShape(body: PhysicsBody): Nullable<PhysicsShape>;
+    getShapeType(shape: PhysicsShape): PhysicsShapeType;
+    setEventMask(body: PhysicsBody, eventMask: number, instanceIndex?: number): void;
+    getEventMask(body: PhysicsBody, instanceIndex?: number): number;
+    setMotionType(body: PhysicsBody, motionType: PhysicsMotionType, instanceIndex?: number): void;
+    getMotionType(body: PhysicsBody, instanceIndex?: number): PhysicsMotionType;
+    computeMassProperties(body: PhysicsBody, instanceIndex?: number): PhysicsMassProperties;
+    setMassProperties(body: PhysicsBody, massProps: PhysicsMassProperties, instanceIndex?: number): void;
+    getMassProperties(body: PhysicsBody, instanceIndex?: number): PhysicsMassProperties;
+    setLinearDamping(body: PhysicsBody, damping: number, instanceIndex?: number): void;
+    getLinearDamping(body: PhysicsBody, instanceIndex?: number): number;
+    setAngularDamping(body: PhysicsBody, damping: number, instanceIndex?: number): void;
+    getAngularDamping(body: PhysicsBody, instanceIndex?: number): number;
+    setLinearVelocity(body: PhysicsBody, linVel: Vector3, instanceIndex?: number): void;
+    getLinearVelocityToRef(body: PhysicsBody, linVel: Vector3, instanceIndex?: number): void;
+    applyImpulse(body: PhysicsBody, impulse: Vector3, location: Vector3, instanceIndex?: number): void;
+    applyForce(body: PhysicsBody, force: Vector3, location: Vector3, instanceIndex?: number): void;
+    setAngularVelocity(body: PhysicsBody, angVel: Vector3, instanceIndex?: number): void;
+    getAngularVelocityToRef(body: PhysicsBody, angVel: Vector3, instanceIndex?: number): void;
     getBodyGeometry(body: PhysicsBody): {};
     disposeBody(body: PhysicsBody): void;
-    setCollisionCallbackEnabled(body: PhysicsBody, enabled: boolean): void;
-    addConstraint(body: PhysicsBody, childBody: PhysicsBody, constraint: PhysicsConstraint): void;
-    getCollisionObservable(body: PhysicsBody): Observable<IPhysicsCollisionEvent>;
+    setCollisionCallbackEnabled(body: PhysicsBody, enabled: boolean, instanceIndex?: number): void;
+    addConstraint(body: PhysicsBody, childBody: PhysicsBody, constraint: PhysicsConstraint, instanceIndex?: number, childInstanceIndex?: number): void;
+    getCollisionObservable(body: PhysicsBody, instanceIndex?: number): Observable<IPhysicsCollisionEvent>;
 
     // shape
-    initShape(shape: PhysicsShape, type: ShapeType, options: PhysicsShapeParameters): void;
-    setFilterLayer(shape: PhysicsShape, layer: number): void;
-    getFilterLayer(shape: PhysicsShape): number;
+    initShape(shape: PhysicsShape, type: PhysicsShapeType, options: PhysicsShapeParameters): void;
+    setShapeFilterMembershipMask(shape: PhysicsShape, membershipMask: number): void;
+    getShapeFilterMembershipMask(shape: PhysicsShape): number;
+    setShapeFilterCollideMask(shape: PhysicsShape, collideMask: number): void;
+    getShapeFilterCollideMask(shape: PhysicsShape): number;
     setMaterial(shape: PhysicsShape, material: PhysicsMaterial): void;
     setDensity(shape: PhysicsShape, density: number): void;
     getDensity(shape: PhysicsShape): number;
@@ -290,20 +384,20 @@ export interface IPhysicsEnginePluginV2 {
     getEnabled(constraint: PhysicsConstraint): boolean;
     setCollisionsEnabled(constraint: PhysicsConstraint, isEnabled: boolean): void;
     getCollisionsEnabled(constraint: PhysicsConstraint): boolean;
-    setAxisFriction(constraint: PhysicsConstraint, axis: ConstraintAxis, friction: number): void;
-    getAxisFriction(constraint: PhysicsConstraint, axis: ConstraintAxis): number;
-    setAxisMode(constraint: PhysicsConstraint, axis: ConstraintAxis, limitMode: ConstraintAxisLimitMode): void;
-    getAxisMode(constraint: PhysicsConstraint, axis: ConstraintAxis): ConstraintAxisLimitMode;
-    setAxisMinLimit(constraint: PhysicsConstraint, axis: ConstraintAxis, minLimit: number): void;
-    getAxisMinLimit(constraint: PhysicsConstraint, axis: ConstraintAxis): number;
-    setAxisMaxLimit(constraint: PhysicsConstraint, axis: ConstraintAxis, limit: number): void;
-    getAxisMaxLimit(constraint: PhysicsConstraint, axis: ConstraintAxis): number;
-    setAxisMotorType(constraint: PhysicsConstraint, axis: ConstraintAxis, motorType: ConstraintMotorType): void;
-    getAxisMotorType(constraint: PhysicsConstraint, axis: ConstraintAxis): ConstraintMotorType;
-    setAxisMotorTarget(constraint: PhysicsConstraint, axis: ConstraintAxis, target: number): void;
-    getAxisMotorTarget(constraint: PhysicsConstraint, axis: ConstraintAxis): number;
-    setAxisMotorMaxForce(constraint: PhysicsConstraint, axis: ConstraintAxis, maxForce: number): void;
-    getAxisMotorMaxForce(constraint: PhysicsConstraint, axis: ConstraintAxis): number;
+    setAxisFriction(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis, friction: number): void;
+    getAxisFriction(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): number;
+    setAxisMode(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis, limitMode: PhysicsConstraintAxisLimitMode): void;
+    getAxisMode(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): PhysicsConstraintAxisLimitMode;
+    setAxisMinLimit(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis, minLimit: number): void;
+    getAxisMinLimit(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): number;
+    setAxisMaxLimit(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis, limit: number): void;
+    getAxisMaxLimit(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): number;
+    setAxisMotorType(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis, motorType: PhysicsConstraintMotorType): void;
+    getAxisMotorType(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): PhysicsConstraintMotorType;
+    setAxisMotorTarget(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis, target: number): void;
+    getAxisMotorTarget(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): number;
+    setAxisMotorMaxForce(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis, maxForce: number): void;
+    getAxisMotorMaxForce(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): number;
     disposeConstraint(constraint: PhysicsConstraint): void;
 
     // raycast

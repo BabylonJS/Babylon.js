@@ -10,12 +10,10 @@ import type { PhysicsBody } from "./physicsBody";
  * Class used to control physics engine
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
  */
-/** @internal */
 export class PhysicsEngine implements IPhysicsEngine {
     /** @internal */
     private _physicsBodies: Array<PhysicsBody> = [];
     private _subTimeStep: number = 0;
-    //private _uniqueIdCounter = 0;
 
     /**
      * Gets the gravity vector used by the simulation
