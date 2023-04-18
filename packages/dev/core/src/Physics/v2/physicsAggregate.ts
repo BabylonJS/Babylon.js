@@ -12,7 +12,7 @@ import type { Observer } from "../../Misc/observable";
 import type { Nullable } from "../../types";
 import type { Node } from "../../node";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import { BoundingBox } from "core/Culling";
+import { BoundingBox } from "core/Culling/boundingBox";
 
 /**
  * The interface for the physics aggregate parameters
