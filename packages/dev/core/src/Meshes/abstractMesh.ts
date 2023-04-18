@@ -112,6 +112,10 @@ class _InternalAbstractMeshDataInfo {
     // Collisions
     public _meshCollisionData = new _MeshCollisionData();
     public _enableDistantPicking = false;
+    /** @internal
+     * Bounding info that is unnafected by the addition of thin instances
+     */
+    public _rawBoundingInfo: Nullable<BoundingInfo> = null;
 }
 
 /**
@@ -329,6 +333,14 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         }
         this._markSubMeshesAsMiscDirty();
         return true;
+    }
+
+    /** @internal */
+    public get _rawBoundingInfo(): Nullable<BoundingInfo> {
+        return this._internalAbstractMeshDataInfo._rawBoundingInfo;
+    }
+    public set _rawBoundingInfo(boundingInfo: Nullable<BoundingInfo>) {
+        this._internalAbstractMeshDataInfo._rawBoundingInfo = boundingInfo;
     }
 
     // Events
@@ -741,10 +753,6 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     /** @internal */
     public _masterMesh: Nullable<AbstractMesh> = null;
     protected _boundingInfo: Nullable<BoundingInfo> = null;
-    /** @internal
-     * Bounding info that is unnafected by the addition of thin instances
-     */
-    public _rawBoundingInfo: Nullable<BoundingInfo> = null;
     protected _boundingInfoIsDirty = true;
     /** @internal */
     public _renderId = 0;
@@ -1243,7 +1251,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @returns the bounding info of the mesh unaffected by instance data.
      */
     public getRawBoundingInfo() {
-        return this._rawBoundingInfo ?? this.getBoundingInfo();
+        return this._internalAbstractMeshDataInfo._rawBoundingInfo ?? this.getBoundingInfo();
     }
 
     /**
