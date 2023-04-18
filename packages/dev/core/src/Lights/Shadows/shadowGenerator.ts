@@ -32,7 +32,7 @@ import "../../Shaders/shadowMap.vertex";
 import "../../Shaders/depthBoxBlur.fragment";
 import "../../Shaders/ShadersInclude/shadowMapFragmentSoftTransparentShadow";
 import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "../../Materials/clipPlaneMaterialHelper";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 
 /**
  * Defines the options associated with the creation of a custom shader for a shadow generator.
