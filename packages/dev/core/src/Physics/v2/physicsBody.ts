@@ -399,7 +399,7 @@ export class PhysicsBody {
      */
     public getObjectCenterWorld(instanceIndex?: number): Vector3 {
         const ref = new Vector3();
-        return this.getObjectCenterWorldToRef(ref, instanceIndex);        
+        return this.getObjectCenterWorldToRef(ref, instanceIndex);
     }
 
     /*
@@ -414,7 +414,7 @@ export class PhysicsBody {
             const matrixData = (this.transformNode as Mesh)._thinInstanceDataStorage.matrixData;
             if (matrixData) {
                 ref.set(matrixData[index * 16 + 12], matrixData[index * 16 + 13], matrixData[index * 16 + 14]);
-            } 
+            }
         } else {
             ref.copyFrom(this.transformNode.position);
         }

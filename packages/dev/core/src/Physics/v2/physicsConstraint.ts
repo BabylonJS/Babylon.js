@@ -152,9 +152,9 @@ export class Physics6DoFConstraint extends PhysicsConstraint {
     /*
      * The collection of limits which this constraint will apply
      */
-    public limits : Physics6DoFLimit[];
+    public limits: Physics6DoFLimit[];
 
-    constructor(constraintParams : PhysicsConstraintParameters, limits: Physics6DoFLimit[], scene: Scene) {
+    constructor(constraintParams: PhysicsConstraintParameters, limits: Physics6DoFLimit[], scene: Scene) {
         super(PhysicsConstraintType.SIX_DOF, constraintParams, scene);
         this.limits = limits;
     }
@@ -420,4 +420,3 @@ export class PrismaticConstraint extends PhysicsConstraint {
         super(PhysicsConstraintType.PRISMATIC, { pivotA: pivotA, pivotB: pivotB, axisA: axisA, axisB: axisB }, scene);
     }
 }
-

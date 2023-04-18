@@ -301,7 +301,7 @@ export interface PhysicsMassProperties {
 
 /**
  * Indicates how the body will behave.
-  */
+ */
 export enum PhysicsMotionType {
     STATIC,
     ANIMATED,

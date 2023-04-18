@@ -208,7 +208,7 @@ export class PhysicsAggregate {
     private _addSizeOptions(): void {
         this.transformNode.computeWorldMatrix(true);
         const bb = this._getObjectBoundingBox();
-        
+
         const extents = TmpVectors.Vector3[0];
         extents.copyFrom(bb.extendSizeWorld);
         extents.scaleInPlace(2);
@@ -228,11 +228,7 @@ export class PhysicsAggregate {
 
         switch (this.type) {
             case PhysicsShapeType.SPHERE:
-                if (
-                    !this._options.radius &&
-                    Scalar.WithinEpsilon(extents.x, extents.y, 0.0001) &&
-                    Scalar.WithinEpsilon(extents.x, extents.z, 0.0001)
-                ) {
+                if (!this._options.radius && Scalar.WithinEpsilon(extents.x, extents.y, 0.0001) && Scalar.WithinEpsilon(extents.x, extents.z, 0.0001)) {
                     this._options.radius = extents.x / 2;
                 } else {
                     Logger.Warn("Non uniform scaling is unsupported for sphere shapes. Setting the radius to the biggest bounding box extent.");
