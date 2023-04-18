@@ -12,7 +12,7 @@ import type { PhysicsEngine as PhysicsEngineV2 } from "./v2/physicsEngine";
 import type { IPhysicsEngine } from "./IPhysicsEngine";
 import type { PhysicsImpostor } from "./v1/physicsImpostor";
 import type { PhysicsBody } from "./v2/physicsBody";
-import { PhysicsMotionType } from "./v2";
+import { PhysicsMotionType } from "./v2/IPhysicsEnginePlugin";
 
 class HelperTools {
     /*
