@@ -431,9 +431,10 @@ export class Vector2 {
     public rotateToRef<T extends Vector2>(angle: number, result: T): T {
         const cos = Math.cos(angle);
         const sin = Math.sin(angle);
-        result.x = cos * this.x - sin * this.y;
-        result.y = sin * this.x + cos * this.y;
-
+        const x = cos * this.x - sin * this.y;
+        const y = sin * this.x + cos * this.y;
+        result.x = x;
+        result.y = y;
         return result;
     }
 
