@@ -191,11 +191,11 @@ export class PhysicsShape {
     public addChildFromParent(parentTransform: TransformNode, newChild: PhysicsShape, childTransform: TransformNode): void {
         const childToWorld = childTransform.computeWorldMatrix(true);
         const parentToWorld = parentTransform.computeWorldMatrix(true);
-        let childToParent = TmpVectors.Matrix[0];
+        const childToParent = TmpVectors.Matrix[0];
         childToWorld.multiplyToRef(Matrix.Invert(parentToWorld), childToParent);
-        let translation = TmpVectors.Vector3[0];
-        let rotation = TmpVectors.Quaternion[0];
-        let scale = TmpVectors.Vector3[1];
+        const translation = TmpVectors.Vector3[0];
+        const rotation = TmpVectors.Quaternion[0];
+        const scale = TmpVectors.Vector3[1];
         childToParent.decompose(scale, rotation, translation);
         this._physicsPlugin.addChild(this, newChild, translation, rotation, scale);
     }

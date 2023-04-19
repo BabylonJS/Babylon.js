@@ -111,6 +111,9 @@ export interface PhysicsAggregateParameters {
      */
     mesh?: Mesh;
 
+    /**
+     *
+     */
     startAsleep?: boolean;
 }
 /**

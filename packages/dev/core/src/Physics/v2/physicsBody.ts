@@ -47,6 +47,9 @@ export class PhysicsBody {
      */
     disablePreStep: boolean = true;
 
+    /**
+     *
+     */
     public startAsleep: boolean;
 
     private _nodeDisposeObserver: Nullable<Observer<Node>>;
