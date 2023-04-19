@@ -1,6 +1,113 @@
 {
-    "fromTag": "5.56.0",
+    "fromTag": "5.57.0",
     "changelog": {
+        "5.57.1": [
+            {
+                "pr": "13749",
+                "title": "Physics Iteration 13",
+                "description": "A big portion of this change has already been reviewed.",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.ts",
+                    "packages/dev/core/src/Meshes/thinInstanceMesh.ts",
+                    "packages/dev/core/src/Physics/physicsEngineComponent.ts",
+                    "packages/dev/core/src/Physics/physicsHelper.ts",
+                    "packages/dev/core/src/Physics/physicsRaycastResult.ts",
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsAggregate.ts",
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts",
+                    "packages/dev/core/src/Physics/v2/physicsConstraint.ts",
+                    "packages/dev/core/src/Physics/v2/physicsEngine.ts",
+                    "packages/dev/core/src/Physics/v2/physicsEngineComponent.ts",
+                    "packages/dev/core/src/Physics/v2/physicsShape.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13750",
+                "title": "ShadowGenerator: improve performance",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13748",
+                "title": "no premature result mutation for Vec2.rotateToRef",
+                "description": "for next case:\r\n```\r\nconst vec = new Vector2(offsetX, offsetY);\r\nvec.rotateToRef(angle, vec);\r\n```",
+                "author": {
+                    "name": "nekochanoide",
+                    "url": "https://github.com/nekochanoide"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13747",
+                "title": "Update typo in solidParticleSystem.ts",
+                "description": null,
+                "author": {
+                    "name": "steambap",
+                    "url": "https://github.com/steambap"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/solidParticleSystem.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13743",
+                "title": "Round values coming from grid width calculation to avoid gaps between…",
+                "description": "… consecutive cells\r\n\r\nRelated forum issue: ",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/grid.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Rounding cell widths on Grid.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug",
+                    "gui"
+                ]
+            },
+            {
+                "pr": "13746",
+                "title": "Fix GLTF export of ambient texture with texture transforms",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/gltf2export-glbasync-missing-uv-scale-on-ambienttexture/39900",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/glTFMaterialExporter.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "glTF",
+                    "texture"
+                ]
+            }
+        ],
         "5.57.0": [
             {
                 "pr": "13745",
