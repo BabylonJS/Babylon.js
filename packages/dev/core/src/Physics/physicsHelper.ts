@@ -637,7 +637,7 @@ class PhysicsUpdraftEvent {
     private _originTop: Vector3 = Vector3.Zero(); // the most upper part of the cylinder
     private _originDirection: Vector3 = Vector3.Zero(); // used if the updraftMode is perpendicular
     private _tickCallback: any;
-    private _cylinder: Mesh;
+    private _cylinder: Mesh | undefined;
     private _cylinderPosition: Vector3 = Vector3.Zero(); // to keep the cylinders position, because normally the origin is in the center and not on the bottom
     private _dataFetched: boolean = false; // check if the has been fetched the data. If not, do cleanup
     private static _HitData: PhysicsHitData = { force: new Vector3(), contactPoint: new Vector3(), distanceFromOrigin: 0 };
@@ -702,10 +702,12 @@ class PhysicsUpdraftEvent {
         }
         if (force) {
             this._cylinder.dispose();
+            this._cylinder = undefined;
         } else {
             setTimeout(() => {
-                if (!this._dataFetched) {
+                if (!this._dataFetched && this._cylinder) {
                     this._cylinder.dispose();
+                    this._cylinder = undefined;
                 }
             }, 0);
         }
@@ -802,6 +804,9 @@ class PhysicsUpdraftEvent {
     }
 
     private _intersectsWithCylinder(mesh: AbstractMesh): boolean {
+        if (!this._cylinder) {
+            return false;
+        }
         this._cylinder.position = this._cylinderPosition;
         return this._cylinder.intersectsMesh(mesh, true);
     }
@@ -1191,7 +1196,7 @@ export interface PhysicsUpdraftEventData {
     /**
      * A cylinder used for the updraft event
      */
-    cylinder: Mesh;
+    cylinder?: Mesh;
 }
 
 /**

@@ -11,8 +11,8 @@ import type { Mesh } from "../../Meshes/mesh";
 import type { Observer } from "../../Misc/observable";
 import type { Nullable } from "../../types";
 import type { Node } from "../../node";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import { BoundingBox } from "core/Culling/boundingBox";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
+import { BoundingBox } from "../../Culling/boundingBox";
 
 /**
  * The interface for the physics aggregate parameters

@@ -348,11 +348,11 @@ Mesh.prototype.thinInstanceRefreshBoundingInfo = function (forceRefreshParentInf
 
     const vectors = this._thinInstanceDataStorage.boundingVectors;
 
-    if (forceRefreshParentInfo || !this._rawBoundingInfo) {
+    if (forceRefreshParentInfo || !this.rawBoundingInfo) {
         vectors.length = 0;
         this.refreshBoundingInfo(applySkeleton, applyMorph);
         const boundingInfo = this.getBoundingInfo();
-        this._rawBoundingInfo = new BoundingInfo(boundingInfo.minimum, boundingInfo.maximum);
+        this.rawBoundingInfo = new BoundingInfo(boundingInfo.minimum, boundingInfo.maximum);
     }
 
     const boundingInfo = this.getBoundingInfo();

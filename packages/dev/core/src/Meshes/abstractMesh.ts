@@ -336,10 +336,10 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /** @internal */
-    public get _rawBoundingInfo(): Nullable<BoundingInfo> {
+    public get rawBoundingInfo(): Nullable<BoundingInfo> {
         return this._internalAbstractMeshDataInfo._rawBoundingInfo;
     }
-    public set _rawBoundingInfo(boundingInfo: Nullable<BoundingInfo>) {
+    public set rawBoundingInfo(boundingInfo: Nullable<BoundingInfo>) {
         this._internalAbstractMeshDataInfo._rawBoundingInfo = boundingInfo;
     }
 
@@ -1251,7 +1251,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @returns the bounding info of the mesh unaffected by instance data.
      */
     public getRawBoundingInfo() {
-        return this._internalAbstractMeshDataInfo._rawBoundingInfo ?? this.getBoundingInfo();
+        return this.rawBoundingInfo ?? this.getBoundingInfo();
     }
 
     /**
