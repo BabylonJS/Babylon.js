@@ -1,7 +1,13 @@
 import type { Scene } from "../../scene";
 import type { Vector3 } from "../../Maths/math.vector";
-import type { IPhysicsEnginePluginV2, ConstraintAxis, PhysicsConstraintParameters, ConstraintAxisLimitMode, ConstraintMotorType } from "./IPhysicsEnginePlugin";
-import { ConstraintType } from "./IPhysicsEnginePlugin";
+import type {
+    IPhysicsEnginePluginV2,
+    PhysicsConstraintAxis,
+    PhysicsConstraintParameters,
+    PhysicsConstraintAxisLimitMode,
+    PhysicsConstraintMotorType,
+} from "./IPhysicsEnginePlugin";
+import { PhysicsConstraintType } from "./IPhysicsEnginePlugin";
 
 /**
  * This is a holder class for the physics constraint created by the physics plugin
@@ -18,7 +24,7 @@ export class PhysicsConstraint {
      */
     protected _physicsPlugin: IPhysicsEnginePluginV2;
     protected _options: PhysicsConstraintParameters;
-    protected _type: ConstraintType;
+    protected _type: PhysicsConstraintType;
 
     /**
      * Constructs a new constraint for the physics constraint.
@@ -29,7 +35,7 @@ export class PhysicsConstraint {
      * This code is useful for creating a new constraint for the physics engine. It checks if the scene has a physics engine, and if the plugin version is correct.
      * If all checks pass, it initializes the constraint with the given type and options.
      */
-    constructor(type: ConstraintType, options: PhysicsConstraintParameters, scene: Scene) {
+    constructor(type: PhysicsConstraintType, options: PhysicsConstraintParameters, scene: Scene) {
         if (!scene) {
             throw new Error("Missing scene parameter for constraint constructor.");
         }
@@ -56,7 +62,7 @@ export class PhysicsConstraint {
      * @returns The type of the constraint.
      *
      */
-    public get type(): ConstraintType {
+    public get type(): PhysicsConstraintType {
         return this._type;
     }
 
@@ -107,12 +113,59 @@ export class PhysicsConstraint {
     }
 
     /**
+     * Disposes the constraint from the physics engine.
+     *
+     * This method is useful for cleaning up the physics engine when a body is no longer needed. Disposing the body will free up resources and prevent memory leaks.
+     */
+    public dispose(): void {
+        this._physicsPlugin.disposeConstraint(this);
+    }
+}
+
+/*
+ * This describes a single limit used by Physics6DoFConstraint
+ */
+export class Physics6DoFLimit {
+    /*
+     * The axis ID to limit
+     */
+    axis: PhysicsConstraintAxis;
+    /*
+     * An optional minimum limit for the axis.
+     * Corresponds to a distance in meters for linear axes, an angle in radians for angular axes.
+     */
+    minLimit?: number;
+    /*
+     * An optional maximum limit for the axis.
+     * Corresponds to a distance in meters for linear axes, an angle in radians for angular axes.
+     */
+    maxLimit?: number;
+}
+
+/*
+ * A generic constraint, which can be used to build more complex constraints than those specified
+ * in PhysicsConstraintType. The axis and pivot options in PhysicsConstraintParameters define the space
+ * the constraint operates in. This constraint contains a set of limits, which restrict the
+ * relative movement of the bodies in that coordinate system
+ */
+export class Physics6DoFConstraint extends PhysicsConstraint {
+    /*
+     * The collection of limits which this constraint will apply
+     */
+    public limits: Physics6DoFLimit[];
+
+    constructor(constraintParams: PhysicsConstraintParameters, limits: Physics6DoFLimit[], scene: Scene) {
+        super(PhysicsConstraintType.SIX_DOF, constraintParams, scene);
+        this.limits = limits;
+    }
+
+    /**
      * Sets the friction of the given axis of the physics engine.
      * @param axis - The axis of the physics engine to set the friction for.
      * @param friction - The friction to set for the given axis.
      *
      */
-    public setAxisFriction(axis: ConstraintAxis, friction: number): void {
+    public setAxisFriction(axis: PhysicsConstraintAxis, friction: number): void {
         this._physicsPlugin.setAxisFriction(this, axis, friction);
     }
 
@@ -122,7 +175,7 @@ export class PhysicsConstraint {
      * @returns The friction of the given axis.
      *
      */
-    public getAxisFriction(axis: ConstraintAxis): number {
+    public getAxisFriction(axis: PhysicsConstraintAxis): number {
         return this._physicsPlugin.getAxisFriction(this, axis);
     }
 
@@ -136,7 +189,7 @@ export class PhysicsConstraint {
      * the engine can be configured to either stop the motion of the objects, or to allow them to continue
      * moving beyond the constraint.
      */
-    public setAxisMode(axis: ConstraintAxis, limitMode: ConstraintAxisLimitMode): void {
+    public setAxisMode(axis: PhysicsConstraintAxis, limitMode: PhysicsConstraintAxisLimitMode): void {
         this._physicsPlugin.setAxisMode(this, axis, limitMode);
     }
 
@@ -147,7 +200,7 @@ export class PhysicsConstraint {
      * @returns The limit mode of the given axis.
      *
      */
-    public getAxisMode(axis: ConstraintAxis): ConstraintAxisLimitMode {
+    public getAxisMode(axis: PhysicsConstraintAxis): PhysicsConstraintAxisLimitMode {
         return this._physicsPlugin.getAxisMode(this, axis);
     }
 
@@ -157,7 +210,7 @@ export class PhysicsConstraint {
      * @param minLimit - The minimum limit of the axis.
      *
      */
-    public setAxisMinLimit(axis: ConstraintAxis, minLimit: number): void {
+    public setAxisMinLimit(axis: PhysicsConstraintAxis, minLimit: number): void {
         this._physicsPlugin.setAxisMinLimit(this, axis, minLimit);
     }
 
@@ -167,7 +220,7 @@ export class PhysicsConstraint {
      * @returns The minimum limit of the given axis.
      *
      */
-    public getAxisMinLimit(axis: ConstraintAxis): number {
+    public getAxisMinLimit(axis: PhysicsConstraintAxis): number {
         return this._physicsPlugin.getAxisMinLimit(this, axis);
     }
 
@@ -180,7 +233,7 @@ export class PhysicsConstraint {
      * which can be used to control the movement of the physics object. This helps to ensure that the
      * physics object does not move beyond the given limit.
      */
-    public setAxisMaxLimit(axis: ConstraintAxis, limit: number): void {
+    public setAxisMaxLimit(axis: PhysicsConstraintAxis, limit: number): void {
         this._physicsPlugin.setAxisMaxLimit(this, axis, limit);
     }
 
@@ -190,7 +243,7 @@ export class PhysicsConstraint {
      * @returns The maximum limit of the given axis.
      *
      */
-    public getAxisMaxLimit(axis: ConstraintAxis): number {
+    public getAxisMaxLimit(axis: PhysicsConstraintAxis): number {
         return this._physicsPlugin.getAxisMaxLimit(this, axis);
     }
 
@@ -201,7 +254,7 @@ export class PhysicsConstraint {
      * @returns void
      *
      */
-    public setAxisMotorType(axis: ConstraintAxis, motorType: ConstraintMotorType): void {
+    public setAxisMotorType(axis: PhysicsConstraintAxis, motorType: PhysicsConstraintMotorType): void {
         this._physicsPlugin.setAxisMotorType(this, axis, motorType);
     }
 
@@ -212,7 +265,7 @@ export class PhysicsConstraint {
      * @returns The motor type of the specified axis.
      *
      */
-    public getAxisMotorType(axis: ConstraintAxis): ConstraintMotorType {
+    public getAxisMotorType(axis: PhysicsConstraintAxis): PhysicsConstraintMotorType {
         return this._physicsPlugin.getAxisMotorType(this, axis);
     }
 
@@ -223,7 +276,7 @@ export class PhysicsConstraint {
      *
      * This method is useful for setting the target velocity of the motor associated with the given axis of the constraint.
      */
-    public setAxisMotorTarget(axis: ConstraintAxis, target: number): void {
+    public setAxisMotorTarget(axis: PhysicsConstraintAxis, target: number): void {
         this._physicsPlugin.setAxisMotorTarget(this, axis, target);
     }
 
@@ -233,7 +286,7 @@ export class PhysicsConstraint {
      * @returns The target velocity of the motor.
      *
      */
-    public getAxisMotorTarget(axis: ConstraintAxis): number {
+    public getAxisMotorTarget(axis: PhysicsConstraintAxis): number {
         return this._physicsPlugin.getAxisMotorTarget(this, axis);
     }
 
@@ -243,7 +296,7 @@ export class PhysicsConstraint {
      * @param maxForce - The maximum force of the motor.
      *
      */
-    public setAxisMotorMaxForce(axis: ConstraintAxis, maxForce: number): void {
+    public setAxisMotorMaxForce(axis: PhysicsConstraintAxis, maxForce: number): void {
         this._physicsPlugin.setAxisMotorMaxForce(this, axis, maxForce);
     }
 
@@ -253,17 +306,8 @@ export class PhysicsConstraint {
      * @returns The maximum force of the motor.
      *
      */
-    public getAxisMotorMaxForce(axis: ConstraintAxis): number {
+    public getAxisMotorMaxForce(axis: PhysicsConstraintAxis): number {
         return this._physicsPlugin.getAxisMotorMaxForce(this, axis);
-    }
-
-    /**
-     * Disposes the constraint from the physics engine.
-     *
-     * This method is useful for cleaning up the physics engine when a body is no longer needed. Disposing the body will free up resources and prevent memory leaks.
-     */
-    public dispose(): void {
-        this._physicsPlugin.disposeConstraint(this);
     }
 }
 
@@ -282,7 +326,7 @@ export class PhysicsConstraint {
  */
 export class BallAndSocketConstraint extends PhysicsConstraint {
     constructor(pivotA: Vector3, pivotB: Vector3, axisA: Vector3, axisB: Vector3, scene: Scene) {
-        super(ConstraintType.BALL_AND_SOCKET, { pivotA: pivotA, pivotB: pivotB, axisA: axisA, axisB: axisB }, scene);
+        super(PhysicsConstraintType.BALL_AND_SOCKET, { pivotA: pivotA, pivotB: pivotB, axisA: axisA, axisB: axisB }, scene);
     }
 }
 
@@ -298,7 +342,7 @@ export class BallAndSocketConstraint extends PhysicsConstraint {
  */
 export class DistanceConstraint extends PhysicsConstraint {
     constructor(maxDistance: number, scene: Scene) {
-        super(ConstraintType.DISTANCE, { maxDistance: maxDistance }, scene);
+        super(PhysicsConstraintType.DISTANCE, { maxDistance: maxDistance }, scene);
     }
 }
 
@@ -315,7 +359,7 @@ export class DistanceConstraint extends PhysicsConstraint {
  */
 export class HingeConstraint extends PhysicsConstraint {
     constructor(pivotA: Vector3, pivotB: Vector3, axisA: Vector3, axisB: Vector3, scene: Scene) {
-        super(ConstraintType.HINGE, { pivotA: pivotA, pivotB: pivotB, axisA: axisA, axisB: axisB }, scene);
+        super(PhysicsConstraintType.HINGE, { pivotA: pivotA, pivotB: pivotB, axisA: axisA, axisB: axisB }, scene);
     }
 }
 
@@ -335,7 +379,7 @@ export class HingeConstraint extends PhysicsConstraint {
  */
 export class SliderConstraint extends PhysicsConstraint {
     constructor(pivotA: Vector3, pivotB: Vector3, axisA: Vector3, axisB: Vector3, scene: Scene) {
-        super(ConstraintType.SLIDER, { pivotA: pivotA, pivotB: pivotB, axisA: axisA, axisB: axisB }, scene);
+        super(PhysicsConstraintType.SLIDER, { pivotA: pivotA, pivotB: pivotB, axisA: axisA, axisB: axisB }, scene);
     }
 }
 
@@ -354,7 +398,7 @@ export class SliderConstraint extends PhysicsConstraint {
  */
 export class LockConstraint extends PhysicsConstraint {
     constructor(pivotA: Vector3, pivotB: Vector3, axisA: Vector3, axisB: Vector3, scene: Scene) {
-        super(ConstraintType.LOCK, { pivotA: pivotA, pivotB: pivotB, axisA: axisA, axisB: axisB }, scene);
+        super(PhysicsConstraintType.LOCK, { pivotA: pivotA, pivotB: pivotB, axisA: axisA, axisB: axisB }, scene);
     }
 }
 
@@ -373,6 +417,6 @@ export class LockConstraint extends PhysicsConstraint {
  */
 export class PrismaticConstraint extends PhysicsConstraint {
     constructor(pivotA: Vector3, pivotB: Vector3, axisA: Vector3, axisB: Vector3, scene: Scene) {
-        super(ConstraintType.PRISMATIC, { pivotA: pivotA, pivotB: pivotB, axisA: axisA, axisB: axisB }, scene);
+        super(PhysicsConstraintType.PRISMATIC, { pivotA: pivotA, pivotB: pivotB, axisA: axisA, axisB: axisB }, scene);
     }
 }
