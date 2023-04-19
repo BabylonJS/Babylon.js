@@ -15,11 +15,11 @@ export class PhysicsRaycastResult {
     private _rayToWorld: Vector3 = Vector3.Zero();
 
     /**
-     *
+     * The Physics body that the ray hit
      */
     public body?: PhysicsBody;
     /**
-     *
+     * The body Index in case the Physics body is using instances
      */
     public bodyIndex?: number;
 

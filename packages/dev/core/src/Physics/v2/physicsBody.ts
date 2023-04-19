@@ -48,7 +48,7 @@ export class PhysicsBody {
     disablePreStep: boolean = true;
 
     /**
-     *
+     * Physics engine will try to make this body sleeping and not active
      */
     public startAsleep: boolean;
 

@@ -112,7 +112,7 @@ export interface PhysicsAggregateParameters {
     mesh?: Mesh;
 
     /**
-     *
+     * Physics engine will try to make this body sleeping and not active
      */
     startAsleep?: boolean;
 }
