@@ -208,7 +208,6 @@ export class PhysicsAggregate {
     private _addSizeOptions(): void {
         this.transformNode.computeWorldMatrix(true);
         const bb = this._getObjectBoundingBox();
-
         const extents = TmpVectors.Vector3[0];
         extents.copyFrom(bb.extendSizeWorld);
         extents.scaleInPlace(2);

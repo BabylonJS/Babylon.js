@@ -409,7 +409,7 @@ export class PhysicsBody {
      * @returns geometric center of the associated mesh
      */
     public getObjectCenterWorldToRef(ref: Vector3, instanceIndex?: number): Vector3 {
-        if (this._pluginDataInstances) {
+        if (this._pluginDataInstances?.length > 0) {
             const index = instanceIndex || 0;
             const matrixData = (this.transformNode as Mesh)._thinInstanceDataStorage.matrixData;
             if (matrixData) {

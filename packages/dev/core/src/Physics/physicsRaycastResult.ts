@@ -13,7 +13,7 @@ export class PhysicsRaycastResult {
     private _hitPointWorld: Vector3 = Vector3.Zero();
     private _rayFromWorld: Vector3 = Vector3.Zero();
     private _rayToWorld: Vector3 = Vector3.Zero();
-
+    
     public body?: PhysicsBody;
     public bodyIndex?: number;
 

@@ -420,3 +420,4 @@ export class PrismaticConstraint extends PhysicsConstraint {
         super(PhysicsConstraintType.PRISMATIC, { pivotA: pivotA, pivotB: pivotB, axisA: axisA, axisB: axisB }, scene);
     }
 }
+
