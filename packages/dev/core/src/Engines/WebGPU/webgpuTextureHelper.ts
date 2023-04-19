@@ -1447,7 +1447,7 @@ export class WebGPUTextureHelper {
         }
 
         const gpuTexture = this._device.createTexture({
-            label: `Texture_${label ? label + "_" : ""}${textureSize.width}x${textureSize.height}x${textureSize.depthOrArrayLayers}_${
+            label: `Texture${is3D ? "3D" : "2D"}_${label ? label + "_" : ""}${textureSize.width}x${textureSize.height}x${textureSize.depthOrArrayLayers}_${
                 hasMipmaps ? "wmips" : "womips"
             }_${format}_samples${sampleCount}`,
             size: textureSize,
@@ -1752,12 +1752,11 @@ export class WebGPUTextureHelper {
         return gpuTextureWrapper;
     }
 
-    public createMSAATexture(texture: InternalTexture, samples: number): void {
+    public createMSAATexture(texture: InternalTexture, samples: number, releaseExisting = true, index = -1): void {
         const gpuTextureWrapper = texture._hardwareTexture as Nullable<WebGPUHardwareTexture>;
 
-        if (gpuTextureWrapper?.msaaTexture) {
-            this.releaseTexture(gpuTextureWrapper.msaaTexture);
-            gpuTextureWrapper.msaaTexture = null;
+        if (releaseExisting) {
+            gpuTextureWrapper?.releaseMSAATexture();
         }
 
         if (!gpuTextureWrapper || (samples ?? 1) <= 1) {
@@ -1766,40 +1765,22 @@ export class WebGPUTextureHelper {
 
         const width = texture.width;
         const height = texture.height;
-        const layerCount = texture.depth || 1;
 
-        if (texture.isCube) {
-            const gpuMSAATexture = this.createCubeTexture(
-                { width, height },
-                false,
-                false,
-                texture.invertY,
-                false,
-                gpuTextureWrapper.format,
-                samples,
-                this._commandEncoderForCreation,
-                gpuTextureWrapper.textureUsages,
-                gpuTextureWrapper.textureAdditionalUsages,
-                texture.label ? "MSAA" + texture.label : undefined
-            );
-            gpuTextureWrapper.msaaTexture = gpuMSAATexture;
-        } else {
-            const gpuMSAATexture = this.createTexture(
-                { width, height, layers: layerCount },
-                false,
-                false,
-                texture.invertY,
-                false,
-                texture.is3D,
-                gpuTextureWrapper.format,
-                samples,
-                this._commandEncoderForCreation,
-                gpuTextureWrapper.textureUsages,
-                gpuTextureWrapper.textureAdditionalUsages,
-                texture.label ? "MSAA" + texture.label : undefined
-            );
-            gpuTextureWrapper.msaaTexture = gpuMSAATexture;
-        }
+        const gpuMSAATexture = this.createTexture(
+            { width, height, layers: 1 },
+            false,
+            false,
+            false,
+            false,
+            false,
+            gpuTextureWrapper.format,
+            samples,
+            this._commandEncoderForCreation,
+            WebGPUConstants.TextureUsage.RenderAttachment,
+            0,
+            texture.label ? "MSAA" + texture.label : undefined
+        );
+        gpuTextureWrapper.setMSAATexture(gpuMSAATexture, index);
     }
 
     //------------------------------------------------------------------------------

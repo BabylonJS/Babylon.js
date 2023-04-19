@@ -2686,7 +2686,7 @@ export class WebGPUEngine extends Engine {
         const depthStencilTexture = rtWrapper._depthStencilTexture;
         const gpuDepthStencilWrapper = depthStencilTexture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
         const gpuDepthStencilTexture = gpuDepthStencilWrapper?.underlyingResource as Nullable<GPUTexture>;
-        const gpuDepthStencilMSAATexture = gpuDepthStencilWrapper?.msaaTexture;
+        const gpuDepthStencilMSAATexture = gpuDepthStencilWrapper?.getMSAATexture();
 
         const depthTextureView = gpuDepthStencilTexture?.createView(this._rttRenderPassWrapper.depthAttachmentViewDescriptor!);
         const depthMSAATextureView = gpuDepthStencilMSAATexture?.createView(this._rttRenderPassWrapper.depthAttachmentViewDescriptor!);
@@ -2713,13 +2713,23 @@ export class WebGPUEngine extends Engine {
                 const gpuMRTWrapper = mrtTexture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
                 const gpuMRTTexture = gpuMRTWrapper?.underlyingResource;
                 if (gpuMRTWrapper && gpuMRTTexture) {
+                    const gpuMSAATexture = gpuMRTWrapper.getMSAATexture(i);
+
+                    const layerIndex = rtWrapper.layerIndices?.[i] ?? 0;
+                    const faceIndex = rtWrapper.faceIndices?.[i] ?? 0;
                     const viewDescriptor = {
                         ...this._rttRenderPassWrapper.colorAttachmentViewDescriptor!,
                         format: gpuMRTWrapper.format,
+                        baseArrayLayer: mrtTexture.isCube ? layerIndex * 6 + faceIndex : layerIndex,
                     };
-                    const gpuMSAATexture = gpuMRTWrapper.msaaTexture;
+                    const msaaViewDescriptor = {
+                        ...this._rttRenderPassWrapper.colorAttachmentViewDescriptor!,
+                        format: gpuMRTWrapper.format,
+                        baseArrayLayer: 0,
+                    };
+
                     const colorTextureView = gpuMRTTexture.createView(viewDescriptor);
-                    const colorMSAATextureView = gpuMSAATexture?.createView(viewDescriptor);
+                    const colorMSAATextureView = gpuMSAATexture?.createView(msaaViewDescriptor);
 
                     colorAttachments.push({
                         view: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
@@ -2739,7 +2749,7 @@ export class WebGPUEngine extends Engine {
                 const gpuWrapper = internalTexture._hardwareTexture as WebGPUHardwareTexture;
                 const gpuTexture = gpuWrapper.underlyingResource!;
 
-                const gpuMSAATexture = gpuWrapper.msaaTexture;
+                const gpuMSAATexture = gpuWrapper.getMSAATexture();
                 const colorTextureView = gpuTexture.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
                 const colorMSAATextureView = gpuMSAATexture?.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
 
