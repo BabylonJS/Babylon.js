@@ -1,5 +1,4 @@
 import type { HardwareTextureWrapper } from "../../Materials/Textures/hardwareTextureWrapper";
-import { InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import { Scalar } from "../../Maths/math.scalar";
 import type { Nullable } from "../../types";
 import * as WebGPUConstants from "./webgpuConstants";
