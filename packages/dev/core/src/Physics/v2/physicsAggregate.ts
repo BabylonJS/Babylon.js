@@ -232,7 +232,7 @@ export class PhysicsAggregate {
             case PhysicsShapeType.SPHERE:
                 if (!this._options.radius && Scalar.WithinEpsilon(extents.x, extents.y, 0.0001) && Scalar.WithinEpsilon(extents.x, extents.z, 0.0001)) {
                     this._options.radius = extents.x / 2;
-                } else {
+                } else if (!this._options.radius) {
                     Logger.Warn("Non uniform scaling is unsupported for sphere shapes. Setting the radius to the biggest bounding box extent.");
                     this._options.radius = Math.max(extents.x, extents.y, extents.z) / 2;
                 }
