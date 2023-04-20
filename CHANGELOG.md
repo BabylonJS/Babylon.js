@@ -1,5 +1,15 @@
 # Changelog
 
+## 6.0.0
+
+### Core
+
+- Small fix for webxr declaration (consistency) - by [RaananW](https://github.com/RaananW) ([#13758](https://github.com/BabylonJS/Babylon.js/pull/13758))
+- WebGPU: MultiRenderTarget extended support - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#13751](https://github.com/BabylonJS/Babylon.js/pull/13751))
+
+### Playground
+
+
 ## 5.57.1
 
 ### Core
