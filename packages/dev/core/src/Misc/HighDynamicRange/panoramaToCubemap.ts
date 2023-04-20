@@ -90,7 +90,7 @@ export class PanoramaToCubeMapTools {
      * @param size The willing size of the generated cubemap (each faces will be size * size pixels)
      * @returns The cubemap data
      */
-    public static ConvertPanoramaToCubemap(float32Array: Float32Array, inputWidth: number, inputHeight: number, size: number): CubeMapInfo {
+    public static ConvertPanoramaToCubemap(float32Array: Float32Array, inputWidth: number, inputHeight: number, size: number, samples = 1): CubeMapInfo {
         if (!float32Array) {
             throw "ConvertPanoramaToCubemap: input cannot be null";
         }
@@ -99,12 +99,12 @@ export class PanoramaToCubeMapTools {
             throw "ConvertPanoramaToCubemap: input size is wrong";
         }
 
-        const textureFront = this.CreateCubemapTexture(size, this.FACE_FRONT, float32Array, inputWidth, inputHeight);
-        const textureBack = this.CreateCubemapTexture(size, this.FACE_BACK, float32Array, inputWidth, inputHeight);
-        const textureLeft = this.CreateCubemapTexture(size, this.FACE_LEFT, float32Array, inputWidth, inputHeight);
-        const textureRight = this.CreateCubemapTexture(size, this.FACE_RIGHT, float32Array, inputWidth, inputHeight);
-        const textureUp = this.CreateCubemapTexture(size, this.FACE_UP, float32Array, inputWidth, inputHeight);
-        const textureDown = this.CreateCubemapTexture(size, this.FACE_DOWN, float32Array, inputWidth, inputHeight);
+        const textureFront = this.CreateCubemapTexture(size, this.FACE_FRONT, float32Array, inputWidth, inputHeight, samples);
+        const textureBack = this.CreateCubemapTexture(size, this.FACE_BACK, float32Array, inputWidth, inputHeight, samples);
+        const textureLeft = this.CreateCubemapTexture(size, this.FACE_LEFT, float32Array, inputWidth, inputHeight, samples);
+        const textureRight = this.CreateCubemapTexture(size, this.FACE_RIGHT, float32Array, inputWidth, inputHeight, samples);
+        const textureUp = this.CreateCubemapTexture(size, this.FACE_UP, float32Array, inputWidth, inputHeight, samples);
+        const textureDown = this.CreateCubemapTexture(size, this.FACE_DOWN, float32Array, inputWidth, inputHeight, samples);
 
         return {
             front: textureFront,
@@ -120,36 +120,43 @@ export class PanoramaToCubeMapTools {
         };
     }
 
-    private static CreateCubemapTexture(texSize: number, faceData: Vector3[], float32Array: Float32Array, inputWidth: number, inputHeight: number) {
+    private static CreateCubemapTexture(texSize: number, faceData: Vector3[], float32Array: Float32Array, inputWidth: number, inputHeight: number, samples = 1) {
         const buffer = new ArrayBuffer(texSize * texSize * 4 * 3);
         const textureArray = new Float32Array(buffer);
 
-        const rotDX1 = faceData[1].subtract(faceData[0]).scale(1 / texSize);
-        const rotDX2 = faceData[3].subtract(faceData[2]).scale(1 / texSize);
+        const sampleFactor = 1 / samples;
+        const sampleFactorSqr = sampleFactor * sampleFactor;
+
+        const rotDX1 = faceData[1].subtract(faceData[0]).scale(sampleFactor / texSize);
+        const rotDX2 = faceData[3].subtract(faceData[2]).scale(sampleFactor / texSize);
 
         const dy = 1 / texSize;
         let fy = 0;
 
         for (let y = 0; y < texSize; y++) {
-            let xv1 = faceData[0];
-            let xv2 = faceData[2];
+            for (let sy = 0; sy < samples; sy++) {
+                let xv1 = faceData[0];
+                let xv2 = faceData[2];
 
-            for (let x = 0; x < texSize; x++) {
-                const v = xv2.subtract(xv1).scale(fy).add(xv1);
-                v.normalize();
+                for (let x = 0; x < texSize; x++) {
+                    for (let sx = 0; sx < samples; sx++) {
+                        const v = xv2.subtract(xv1).scale(fy).add(xv1);
+                        v.normalize();
 
-                const color = this.CalcProjectionSpherical(v, float32Array, inputWidth, inputHeight);
+                        const color = this.CalcProjectionSpherical(v, float32Array, inputWidth, inputHeight);
 
-                // 3 channels per pixels
-                textureArray[y * texSize * 3 + x * 3 + 0] = color.r;
-                textureArray[y * texSize * 3 + x * 3 + 1] = color.g;
-                textureArray[y * texSize * 3 + x * 3 + 2] = color.b;
+                        // 3 channels per pixels
+                        textureArray[y * texSize * 3 + x * 3 + 0] += color.r * sampleFactorSqr;
+                        textureArray[y * texSize * 3 + x * 3 + 1] += color.g * sampleFactorSqr;
+                        textureArray[y * texSize * 3 + x * 3 + 2] += color.b * sampleFactorSqr;
 
-                xv1 = xv1.add(rotDX1);
-                xv2 = xv2.add(rotDX2);
+                        xv1 = xv1.add(rotDX1);
+                        xv2 = xv2.add(rotDX2);
+                    }
+                }
+
+                fy += dy * sampleFactor;
             }
-
-            fy += dy;
         }
 
         return textureArray;
