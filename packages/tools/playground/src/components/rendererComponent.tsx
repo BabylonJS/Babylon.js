@@ -195,6 +195,11 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 recastInit = "await Recast();";
             }
 
+            let havokInit = "";
+            if (code.includes("HavokPlugin") && typeof Ammo === "function") {
+                havokInit = "globalThis.HK = await HavokPhysics();";
+            }
+
             // Check for Unity Toolkit
             if ((location.href.indexOf("UnityToolkit") !== -1 || Utilities.ReadBoolFromStore("unity-toolkit", false)) && !this._unityToolkitWasLoaded) {
                 await this._loadScriptAsync("/libs/babylon.manager.js");
@@ -238,6 +243,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 code += `
                 window.initFunction = async function() {
                     ${ammoInit}
+                    ${havokInit}
                     ${recastInit}
                     var asyncEngineCreation = async function() {
                         try {
