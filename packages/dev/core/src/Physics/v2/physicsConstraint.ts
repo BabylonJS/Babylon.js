@@ -122,34 +122,34 @@ export class PhysicsConstraint {
     }
 }
 
-/*
+/**
  * This describes a single limit used by Physics6DoFConstraint
  */
 export class Physics6DoFLimit {
-    /*
+    /**
      * The axis ID to limit
      */
     axis: PhysicsConstraintAxis;
-    /*
+    /**
      * An optional minimum limit for the axis.
      * Corresponds to a distance in meters for linear axes, an angle in radians for angular axes.
      */
     minLimit?: number;
-    /*
+    /**
      * An optional maximum limit for the axis.
      * Corresponds to a distance in meters for linear axes, an angle in radians for angular axes.
      */
     maxLimit?: number;
 }
 
-/*
+/**
  * A generic constraint, which can be used to build more complex constraints than those specified
  * in PhysicsConstraintType. The axis and pivot options in PhysicsConstraintParameters define the space
  * the constraint operates in. This constraint contains a set of limits, which restrict the
  * relative movement of the bodies in that coordinate system
  */
 export class Physics6DoFConstraint extends PhysicsConstraint {
-    /*
+    /**
      * The collection of limits which this constraint will apply
      */
     public limits: Physics6DoFLimit[];

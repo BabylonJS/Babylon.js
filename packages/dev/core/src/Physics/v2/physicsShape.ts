@@ -4,7 +4,7 @@ import type { BoundingBox } from "../../Culling/boundingBox";
 import { PhysicsShapeType } from "./IPhysicsEnginePlugin";
 import type { IPhysicsEnginePluginV2, PhysicsShapeParameters } from "./IPhysicsEnginePlugin";
 import type { PhysicsMaterial } from "./physicsMaterial";
-import { Vector3, Quaternion } from "../../Maths/math.vector";
+import { Matrix, Vector3, Quaternion, TmpVectors } from "../../Maths/math.vector";
 
 import type { Mesh } from "../../Meshes/mesh";
 import type { Scene } from "../../scene";
@@ -180,12 +180,35 @@ export class PhysicsShape {
     }
 
     /**
+     * Utility to add a child shape to this container,
+     * automatically computing the relative transform between
+     * the container shape and the child instance.
      *
-     * @param newChild
-     * @param childTransform
+     * @param parentTransform The transform node associated with this shape
+     * @param newChild The new PhysicsShape to add
+     * @param childTransform The transform node associated with the child shape
      */
-    public addChild(newChild: PhysicsShape, childTransform: TransformNode): void {
-        this._physicsPlugin.addChild(this, newChild, childTransform);
+    public addChildFromParent(parentTransform: TransformNode, newChild: PhysicsShape, childTransform: TransformNode): void {
+        const childToWorld = childTransform.computeWorldMatrix(true);
+        const parentToWorld = parentTransform.computeWorldMatrix(true);
+        const childToParent = TmpVectors.Matrix[0];
+        childToWorld.multiplyToRef(Matrix.Invert(parentToWorld), childToParent);
+        const translation = TmpVectors.Vector3[0];
+        const rotation = TmpVectors.Quaternion[0];
+        const scale = TmpVectors.Vector3[1];
+        childToParent.decompose(scale, rotation, translation);
+        this._physicsPlugin.addChild(this, newChild, translation, rotation, scale);
+    }
+
+    /**
+     * Adds a child shape to a container with an optional transform
+     * @param newChild The new PhysicsShape to add
+     * @param translation Optional position of the child shape relative to this shape
+     * @param rotation Optional rotation of the child shape relative to this shape
+     * @param scale Optional scale of the child shape relative to this shape
+     */
+    public addChild(newChild: PhysicsShape, translation?: Vector3, rotation?: Quaternion, scale?: Vector3): void {
+        this._physicsPlugin.addChild(this, newChild, translation, rotation, scale);
     }
 
     /**
@@ -241,7 +264,8 @@ export class PhysicsShapeSphere extends PhysicsShape {
     static FromMesh(mesh: AbstractMesh) {
         const bounds = mesh.getBoundingInfo();
         const centerLocal = bounds.boundingSphere.center;
-        const radius = bounds.boundingSphere.radius;
+        const he = bounds.boundingBox.extendSize;
+        const radius = Math.max(he.x, he.y, he.z);
         return new PhysicsShapeSphere(centerLocal, radius, mesh.getScene());
     }
 }

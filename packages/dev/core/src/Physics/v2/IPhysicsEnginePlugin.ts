@@ -372,7 +372,7 @@ export interface IPhysicsEnginePluginV2 {
     setMaterial(shape: PhysicsShape, material: PhysicsMaterial): void;
     setDensity(shape: PhysicsShape, density: number): void;
     getDensity(shape: PhysicsShape): number;
-    addChild(shape: PhysicsShape, newChild: PhysicsShape, childTransform: TransformNode): void;
+    addChild(shape: PhysicsShape, newChild: PhysicsShape, translation?: Vector3, rotation?: Quaternion, scale?: Vector3): void;
     removeChild(shape: PhysicsShape, childIndex: number): void;
     getNumChildren(shape: PhysicsShape): number;
     getBoundingBox(shape: PhysicsShape): BoundingBox;

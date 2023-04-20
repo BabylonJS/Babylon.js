@@ -111,6 +111,9 @@ export interface PhysicsAggregateParameters {
      */
     mesh?: Mesh;
 
+    /**
+     * Physics engine will try to make this body sleeping and not active
+     */
     startAsleep?: boolean;
 }
 /**
@@ -208,7 +211,6 @@ export class PhysicsAggregate {
     private _addSizeOptions(): void {
         this.transformNode.computeWorldMatrix(true);
         const bb = this._getObjectBoundingBox();
-
         const extents = TmpVectors.Vector3[0];
         extents.copyFrom(bb.extendSizeWorld);
         extents.scaleInPlace(2);
