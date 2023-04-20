@@ -28,8 +28,8 @@
         "typescript": "^4.4.4"
     },
     "peerDependencies": {
-        "@babylonjs/core": "^5.22.0",
-        "@babylonjs/gui": "^5.22.0",
+        "@babylonjs/core": "^6.0.0",
+        "@babylonjs/gui": "^6.0.0",
         "@types/dagre": "^0.7.47",
         "dagre": "^0.8.5",
         "react": "^17.0.2",
