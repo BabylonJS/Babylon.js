@@ -1,1 +1,1 @@
-export * from "./hkPlugin";
+export * from "./havokPlugin";
