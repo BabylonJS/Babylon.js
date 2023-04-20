@@ -479,7 +479,7 @@ ThinEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function (
                 texture.height,
                 samples,
                 -1 /* not used */,
-                this._getRGBAMultiSampleBufferFormat(texture.type),
+                this._getRGBAMultiSampleBufferFormat(texture.type, texture.format),
                 attachment
             );
 
