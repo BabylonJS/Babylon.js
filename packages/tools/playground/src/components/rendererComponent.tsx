@@ -16,6 +16,8 @@ interface IRenderingComponentProps {
 
 declare const Ammo: any;
 declare const Recast: any;
+declare const HavokPhysics: any;
+declare const HK: any;
 
 export class RenderingComponent extends React.Component<IRenderingComponentProps> {
     private _engine: Nullable<Engine>;
@@ -196,7 +198,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             }
 
             let havokInit = "";
-            if (code.includes("HavokPlugin") && typeof Ammo === "function") {
+            if (code.includes("HavokPlugin") && typeof HavokPhysics === "function" && typeof HK === "undefined") {
                 havokInit = "globalThis.HK = await HavokPhysics();";
             }
 
