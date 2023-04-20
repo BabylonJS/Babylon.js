@@ -973,12 +973,11 @@ declare enum XOVR_multiview2 {
 }
 
 interface OVR_multiview2 {
-    readonly FRAMEBUFFER_ATTACHMENT_TEXTURE_NUM_VIEWS_OVR: number;
-    readonly FRAMEBUFFER_ATTACHMENT_TEXTURE_BASE_VIEW_INDEX_OVR: number;
-    readonly MAX_VIEWS_OVR: number;
-    readonly FRAMEBUFFER_INCOMPLETE_VIEW_TARGETS_OVR: number;
-
-    framebufferTextureMultiviewOVR(target: GLenum, attachment: GLenum, texture: WebGLTexture, level: number, baseViewIndex: number, numViews: number): WebGLRenderbuffer;
+    framebufferTextureMultiviewOVR(target: GLenum, attachment: GLenum, texture: WebGLTexture | null, level: GLint, baseViewIndex: GLint, numViews: GLsizei): void;
+    readonly FRAMEBUFFER_ATTACHMENT_TEXTURE_NUM_VIEWS_OVR: 0x9630;
+    readonly FRAMEBUFFER_ATTACHMENT_TEXTURE_BASE_VIEW_INDEX_OVR: 0x9632;
+    readonly MAX_VIEWS_OVR: 0x9631;
+    readonly FRAMEBUFFER_INCOMPLETE_VIEW_TARGETS_OVR: 0x9633;
 }
 
 declare abstract class OVR_multiview2 implements OVR_multiview2 {}
