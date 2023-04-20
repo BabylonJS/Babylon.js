@@ -14,11 +14,11 @@ import type { BoundingBox } from "../../../Culling/boundingBox";
 import type { TransformNode } from "../../../Meshes/transformNode";
 import type { PhysicsRaycastResult } from "../../physicsRaycastResult";
 import { Mesh } from "../../../Meshes/mesh";
-import type { Scene } from "core/scene";
-import { VertexBuffer } from "core/Buffers/buffer";
-import { ArrayTools } from "core/Misc/arrayTools";
-import { Observable } from "core/Misc/observable";
-import type { Nullable } from "core/types";
+import type { Scene } from "../../../scene";
+import { VertexBuffer } from "../../../Buffers/buffer";
+import { ArrayTools } from "../../../Misc/arrayTools";
+import { Observable } from "../../../Misc/observable";
+import type { Nullable } from "../../../types";
 declare let HK: any;
 
 class MeshAccumulator {
@@ -189,7 +189,7 @@ class CollisionEvent {
         const intBuf = new Int32Array(buffer, offset);
         const floatBuf = new Float32Array(buffer, offset);
         const offA = 2;
-        eventOut.contactOnA.bodyId = BigInt(intBuf[offA]); //<todo.eoin Need to get the high+low words!
+        eventOut.contactOnA.bodyId = BigInt(intBuf[offA]); //<todo Need to get the high+low words!
         eventOut.contactOnA.position.set(floatBuf[offA + 8], floatBuf[offA + 9], floatBuf[offA + 10]);
         eventOut.contactOnA.normal.set(floatBuf[offA + 11], floatBuf[offA + 12], floatBuf[offA + 13]);
         const offB = 18;
@@ -338,7 +338,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         body._pluginData = new BodyPluginData(this._hknp.HP_Body_Create()[1]);
 
         this._internalSetMotionType(body._pluginData, motionType);
-        const transform = [this._bVecToV3(position), this._bQuatToV4(orientation)]; //<todo.eoin temp transform?
+        const transform = [this._bVecToV3(position), this._bQuatToV4(orientation)]; //<todo temp transform?
         this._hknp.HP_Body_SetQTransform(body._pluginData.hpBodyId, transform);
 
         this._hknp.HP_World_AddBody(this.world, body._pluginData.hpBodyId, body.startAsleep);
@@ -367,6 +367,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * Initializes the body instances for a given physics body and mesh.
      *
      * @param body - The physics body to initialize.
+     * @param motionType - How the body will be handled by the engine
      * @param mesh - The mesh to initialize.
      *
      * This code is useful for creating a physics body from a mesh. It creates a
@@ -581,7 +582,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         if (shape.type) {
             return shape.type;
         } else {
-            //<todo.eoin This returns a native type!
+            //<todo This returns a native type!
             return this._hknp.HP_Shape_GetType(shape._pluginData);
         }
     }
@@ -1043,21 +1044,10 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                     }
                 }
                 break;
-            case PhysicsShapeType.HEIGHTFIELD:
-                {
-                    // todo
-                    //shape._pluginData = this._hknp.HP_Shape_CreateHeightField(numXSamples : number, numZSamples : number, scale : Vector3, heights : number) : [Result, HP_ShapeId];
-                }
-                break;
             default:
                 throw new Error("Unsupported Shape Type.");
                 break;
         }
-
-        // recurs for container
-        /*if (type == ShapeType.CONTAINER) {
-
-        }*/
     }
 
     public setShapeFilterMembershipMask(shape: PhysicsShape, membershipMask: number): void {
@@ -1161,9 +1151,6 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     public removeChild(shape: PhysicsShape, childIndex: number): void {
         this._hknp.HP_Shape_RemoveChild(shape._pluginData, childIndex);
     }
-    /**
-     *
-     */
 
     /**
      * Returns the number of children of the given shape.
@@ -1175,9 +1162,6 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     public getNumChildren(shape: PhysicsShape): number {
         return this._hknp.HP_Shape_GetNumChildren(shape._pluginData)[1];
     }
-    /**
-     *
-     */
 
     /**
      * Calculates the bounding box of a given physics shape.
@@ -1351,7 +1335,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * @param childInstanceIndex - If the child body is instanced, the index of the instance to which the constraint will be applied. If not specified, no constraint will be applied.
      */
     addConstraint(body: PhysicsBody, childBody: PhysicsBody, constraint: PhysicsConstraint, instanceIndex?: number, childInstanceIndex?: number): void {
-        //<todo.eoin It's real weird that initConstraint() is called only after adding to a body!
+        //<todo It's real weird that initConstraint() is called only after adding to a body!
         this.initConstraint(constraint, body, childBody, instanceIndex, childInstanceIndex);
     }
 
@@ -1665,7 +1649,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                 if (observableA) {
                     observableA.notifyObservers(collisionInfo);
                 } else if (observableB) {
-                    //<todo.eoin This seems like it would give unexpected results when both bodies have observers?
+                    //<todo This seems like it would give unexpected results when both bodies have observers?
                     // Flip collision info:
                     collisionInfo.collider = bodyInfoB.body;
                     collisionInfo.colliderIndex = bodyInfoB.index;
