@@ -230,6 +230,10 @@ bool traceScreenSpaceRay1(
     pqk -= dPQK;
     stepCount -= 1.0;
 
+    if (((pqk.x + dPQK.x) * stepDirection) > end || (stepCount + 1.0) >= maxSteps || sceneZMax == 0.0) {
+        hit = false;
+    }
+
 #ifdef SSRAYTRACE_ENABLE_REFINEMENT
     if (stride > 1.0 && hit) {
         // Refine the hit point within the last large-stride step
