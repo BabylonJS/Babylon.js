@@ -929,7 +929,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         target={material}
                         propertyName="emissiveIntensity"
                         minimum={0}
-                        maximum={1}
+                        maximum={1000}
                         step={0.01}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />

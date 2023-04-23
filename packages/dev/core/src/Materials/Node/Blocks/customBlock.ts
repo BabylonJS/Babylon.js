@@ -5,7 +5,7 @@ import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../Misc/typeStore";
 import type { Scene } from "../../../scene";
 import type { Nullable } from "../../../types";
-import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
+import { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 
 /**
  * Custom block created from user-defined json
@@ -123,7 +123,7 @@ export class CustomBlock extends NodeMaterialBlock {
 
         options.inParameters?.forEach((input: any, index: number) => {
             const type = (<any>NodeMaterialBlockConnectionPointTypes)[input.type];
-            this.registerInput(input.name, type);
+            this.registerInput(input.name, type, input.isOptional, undefined, undefined, true);
 
             Object.defineProperty(this, input.name, {
                 get: function () {
@@ -151,6 +151,18 @@ export class CustomBlock extends NodeMaterialBlock {
         });
 
         options.inLinkedConnectionTypes?.forEach((connection: any) => {
+            if (connection.array) {
+                if (!connection.source) {
+                    console.error("requires source");
+                    return;
+                }
+
+                let indices = [];
+                for (const n of connection.array)
+                    indices.push(this._findInputByName(n)![1]);
+                this._linkConnectionTypesArray(this._findInputByName(connection.source)![1], indices);
+                return;
+            }
             this._linkConnectionTypes(this._findInputByName(connection.input1)![1], this._findInputByName(connection.input2)![1]);
         });
     }

@@ -8,10 +8,11 @@ import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import type { Mesh } from "../../Meshes/mesh";
 import type { SubMesh } from "../../Meshes/subMesh";
 import type { NodeMaterial, NodeMaterialDefines } from "./nodeMaterial";
-import type { InputBlock } from "./Blocks/Input/inputBlock";
+import { InputBlock } from "./Blocks/Input/inputBlock";
 import { UniqueIdGenerator } from "../../Misc/uniqueIdGenerator";
 import type { Scene } from "../../scene";
 import { GetClass } from "../../Misc/typeStore";
+import { TmpColors } from "../../Maths/math.color";
 import type { EffectFallbacks } from "../effectFallbacks";
 
 /**
@@ -253,11 +254,13 @@ export class NodeMaterialBlock {
         type: NodeMaterialBlockConnectionPointTypes,
         isOptional: boolean = false,
         target?: NodeMaterialBlockTargets,
-        point?: NodeMaterialConnectionPoint
+        point?: NodeMaterialConnectionPoint,
+        hasDefaultValue?:boolean
     ) {
         point = point ?? new NodeMaterialConnectionPoint(name, this, NodeMaterialConnectionPointDirection.Input);
         point.type = type;
         point.isOptional = isOptional;
+        point.hasDefaultValue = hasDefaultValue || false;
         if (target) {
             point.target = target;
         }
@@ -513,8 +516,60 @@ export class NodeMaterialBlock {
         }
         this._inputs[inputIndex1]._linkedConnectionSource = this._inputs[inputIndex0];
     }
+    
+    protected _linkConnectionTypesArray(inputIndexFrom: number, inputIndices: number[],) {
+        for (const index of inputIndices)
+            this._inputs[index]._linkedConnectionSource = this._inputs[inputIndexFrom];
+    }
 
-    private _processBuild(block: NodeMaterialBlock, state: NodeMaterialBuildState, input: NodeMaterialConnectionPoint, activeBlocks: NodeMaterialBlock[]) {
+    private _emitDefaultConstant(type : NodeMaterialBlockConnectionPointTypes, state: NodeMaterialBuildState) {
+        switch (type) {
+            case NodeMaterialBlockConnectionPointTypes.Float:
+                return `${state._emitFloat(0)}`;
+            case NodeMaterialBlockConnectionPointTypes.Vector2:
+                return `vec2(0.0, 0.0)`;
+            case NodeMaterialBlockConnectionPointTypes.Vector3:
+                return `vec3(0.0, 0.0, 0.0)`;
+            case NodeMaterialBlockConnectionPointTypes.Vector4:
+                return `vec4(0.0, 0.0, 0.0, 0.0)`;
+            case NodeMaterialBlockConnectionPointTypes.Color3:
+                TmpColors.Color3[0].set(1, 1, 1);
+                TmpColors.Color3[0].toLinearSpaceToRef(TmpColors.Color3[0]);
+                // if (this.convertToGammaSpace) {
+                //     TmpColors.Color3[0].toGammaSpaceToRef(TmpColors.Color3[0]);
+                // }
+                // if (this.convertToLinearSpace) {
+                //     TmpColors.Color3[0].toLinearSpaceToRef(TmpColors.Color3[0]);
+                // }
+                return `vec3(${TmpColors.Color3[0].r}, ${TmpColors.Color3[0].g}, ${TmpColors.Color3[0].b})`;
+            case NodeMaterialBlockConnectionPointTypes.Color4:
+                TmpColors.Color4[0].set(1,1,1,1);
+                TmpColors.Color4[0].toLinearSpaceToRef(TmpColors.Color4[0]);
+                // if (this.convertToGammaSpace) {
+                //     TmpColors.Color4[0].toGammaSpaceToRef(TmpColors.Color4[0]);
+                // }
+                // if (this.convertToLinearSpace) {
+                //     TmpColors.Color4[0].toLinearSpaceToRef(TmpColors.Color4[0]);
+                // }
+                return `vec4(${TmpColors.Color4[0].r}, ${TmpColors.Color4[0].g}, ${TmpColors.Color4[0].b}, ${TmpColors.Color4[0].a})`;
+        }
+
+        return "";
+    }
+
+    private _processBuild(block: NodeMaterialBlock | undefined, state: NodeMaterialBuildState, input: NodeMaterialConnectionPoint, activeBlocks: NodeMaterialBlock[]) {
+        if (!block) {
+            //
+            // If no block then use default values
+            // console.log("default", state, input, activeBlocks);
+            const associatedVariableName = state._getFreeVariableName("u_" + input.name);
+            state.constants.push(associatedVariableName);
+            input.associatedVariableName = associatedVariableName;
+            input._enforceAssociatedVariableName = true;
+            state._constantDeclaration += this._declareOutput(input, state) + ` = ${this._emitDefaultConstant(input.type, state)};\r\n`;
+            return;
+        }
+
         block.build(state, activeBlocks);
 
         const localBlockIsFragment = state._vertexState != null;
@@ -577,6 +632,10 @@ export class NodeMaterialBlock {
         return true;
     }
 
+    makeDefaultBlock() : NodeMaterialBlock {
+        throw "Not implemented";
+    }
+
     /**
      * Compile the current node and generate the shader code
      * @param state defines the current compilation state (uniforms, samplers, current string)
@@ -599,12 +658,33 @@ export class NodeMaterialBlock {
 
         // Check if "parent" blocks are compiled
         for (const input of this._inputs) {
+            let block : NodeMaterialBlock | undefined;
+
             if (!input.connectedPoint) {
                 if (!input.isOptional) {
                     // Emit a warning
                     state.sharedData.checks.notConnectedNonOptionalInputs.push(input);
+                    continue;
                 }
-                continue;
+
+                if (!input.hasDefaultValue)
+                    continue;
+
+                if (input.type == NodeMaterialBlockConnectionPointTypes.All || input.type == NodeMaterialBlockConnectionPointTypes.AutoDetect) {
+                    if (!input._linkedConnectionSource) {
+                        console.error("if auto detect or all, default values requires linkedconnectionsource");
+                        continue;
+                    }
+
+                    console.error("linked type not connected");
+                    continue;
+                }
+
+                // console.log("type", input.type, input);
+                // block = input.makeDefaultInputBlock("optional_input_" + input.name);
+                // console.log("block", block);
+                // block = NewInputBlock("optional_input_" + input.name, this.target, input.type);
+                // input._connectedPoint = new NodeMaterialConnectionPoint("optional_point_" + input.name, block, NodeMaterialConnectionPointDirection.Input);
             }
 
             if (this.target !== NodeMaterialBlockTargets.Neutral) {
@@ -617,8 +697,10 @@ export class NodeMaterialBlock {
                 }
             }
 
-            const block = input.connectedPoint.ownerBlock;
-            if (block && block !== this) {
+            if (!block)
+                block = input.connectedPoint?.ownerBlock;
+            // const block = input.connectedPoint!.ownerBlock;
+            if (block !== this) {
                 this._processBuild(block, state, input, activeBlocks);
             }
         }
