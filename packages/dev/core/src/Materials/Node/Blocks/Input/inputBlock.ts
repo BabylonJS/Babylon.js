@@ -572,6 +572,8 @@ export class InputBlock extends NodeMaterialBlock {
         }
     }
 
+    private static _TempFogColor = Color3.Black();
+
     /**
      * @internal
      */
@@ -600,7 +602,8 @@ export class InputBlock extends NodeMaterialBlock {
                     scene.bindEyePosition(effect, variableName, true);
                     break;
                 case NodeMaterialSystemValues.FogColor:
-                    effect.setColor3(variableName, scene.fogColor);
+                    scene.fogColor.toLinearSpaceToRef(InputBlock._TempFogColor);
+                    effect.setColor3(variableName, InputBlock._TempFogColor);
                     break;
                 case NodeMaterialSystemValues.DeltaTime:
                     effect.setFloat(variableName, scene.deltaTime / 1000.0);

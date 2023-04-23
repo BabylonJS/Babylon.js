@@ -30,7 +30,7 @@ varying vec2 vUV;
 varying vec4 vColor;
 varying vec3 vPositionW;
 
-#if defined(BILLBOARD) && !defined(BILLBOARDY) && !defined(BILLBOARDSTRETCHED)
+#if defined(BILLBOARD) && !defined(BILLBOARDY)
 uniform mat4 invView;
 #endif
 
@@ -71,6 +71,36 @@ vec3 rotate(vec3 yaxis, vec3 rotatedCorner) {
 }
 
 #ifdef BILLBOARDSTRETCHED
+uniform mat4 rotateView;
+
+#define PI_FLOAT     3.14159265f
+
+float atan2(float y, float x)
+{
+    //http://pubs.opengroup.org/onlinepubs/009695399/functions/atan2.html
+    //Volkan SALMA
+
+    float ONEQTR_PI = PI_FLOAT / 4.0;
+	float THRQTR_PI = 3.0 * PI_FLOAT / 4.0;
+	float r, angle;
+	float abs_y = abs(y) + 1e-10f;      // kludge to prevent 0/0 condition
+	if ( x < 0.0f )
+	{
+		r = (x + abs_y) / (abs_y - x);
+		angle = THRQTR_PI;
+	}
+	else
+	{
+		r = (x - abs_y) / (x + abs_y);
+		angle = ONEQTR_PI;
+	}
+	angle += (0.1963f * r * r - 0.9817f) * r;
+	if ( y < 0.0f )
+		return( -angle );     // negate if in quad III or IV
+	else
+		return( angle );
+}
+
 vec3 rotateAlign(vec3 toCamera, vec3 rotatedCorner) {
 	vec3 normalizedToCamera = normalize(toCamera);
 	vec3 normalizedCrossDirToCamera = normalize(cross(normalize(direction), normalizedToCamera));
@@ -127,14 +157,31 @@ void main() {
 
 		vec4 viewPosition = (view * vec4(vPositionW, 1.0));
 	#elif defined(BILLBOARDSTRETCHED)
-		rotatedCorner.x = cornerPos.x * cos(angle) - cornerPos.y * sin(angle);
-		rotatedCorner.y = cornerPos.x * sin(angle) + cornerPos.y * cos(angle);
-		rotatedCorner.z = 0.;
+		// rotatedCorner.x = cornerPos.x * cos(angle) - cornerPos.y * sin(angle);
+		// rotatedCorner.y = cornerPos.x * sin(angle) + cornerPos.y * cos(angle);
+		// rotatedCorner.z = 0.;
 
-		vec3 toCamera = (position + worldOffset) - eyePosition;
-		vPositionW = rotateAlign(toCamera, rotatedCorner.xyz);
+		// vec3 toCamera = (position + worldOffset) - eyePosition;
 
-		vec4 viewPosition = (view * vec4(vPositionW, 1.0));
+		vec3 nDirection = normalize(direction);
+		vec3 dir = (rotateView * vec4(nDirection.xyz, 0.0)).xyz;
+		float addAngle = atan2(dir.y, dir.x);
+
+		rotatedCorner.x=cornerPos.x*cos(angle+addAngle)-cornerPos.y*sin(angle+addAngle);
+		rotatedCorner.y=cornerPos.x*sin(angle+addAngle)+cornerPos.y*cos(angle+addAngle);
+		rotatedCorner.z=0.;
+
+		// vPositionW = rotateAlign(toCamera, rotatedCorner.xyz);
+
+		// vec4 viewPosition = (view * vec4(vPositionW, 1.0));
+
+		#ifdef LOCAL
+		vec4 viewPosition=view*vec4(((emitterWM*vec4(position,1.0)).xyz+worldOffset),1.0)+rotatedCorner;
+		#else
+		vec4 viewPosition=view*vec4((position+worldOffset),1.0)+rotatedCorner;
+		#endif
+		vPositionW=(invView*viewPosition).xyz;
+
 	#else
 		// Rotate
 		rotatedCorner.x = cornerPos.x * cos(angle) - cornerPos.y * sin(angle);

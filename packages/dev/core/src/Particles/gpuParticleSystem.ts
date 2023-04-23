@@ -3,7 +3,8 @@ import type { Immutable, Nullable, float, DataArray } from "../types";
 import type { Color3Gradient, IValueGradient } from "../Misc/gradients";
 import { FactorGradient, ColorGradient, GradientHelper } from "../Misc/gradients";
 import { Observable } from "../Misc/observable";
-import type { Vector3 } from "../Maths/math.vector";
+import { Vector3 } from "../Maths/math.vector";
+import { Quaternion } from "../Maths/math.vector";
 import { Matrix, TmpVectors } from "../Maths/math.vector";
 import { Color4, TmpColors } from "../Maths/math.color";
 import { Scalar } from "../Maths/math.scalar";
@@ -829,7 +830,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         // Random data
         const maxTextureSize = Math.min(this._engine.getCaps().maxTextureSize, fullOptions.randomTextureSize);
-        let d = [];
+        let d : number[] = [];
         for (let i = 0; i < maxTextureSize; ++i) {
             d.push(Math.random());
             d.push(Math.random());
@@ -1201,6 +1202,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             defines += "\n#define LOCAL";
         }
 
+        if (this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED) {
+            defines += "\n#define BILLBOARDSTRETCHED";
+        }
+
         if (this._platform.isUpdateBufferCreated() && this._cachedUpdateDefines === defines) {
             return;
         }
@@ -1265,7 +1270,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             attributeNamesOrOptions.push("initialDirection");
         }
 
-        if (!isBillboardStretched) {
+        if (isBillboardStretched) {
             attributeNamesOrOptions.push("direction");
         }
 
@@ -1278,7 +1283,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @internal
      */
     public static _GetEffectCreationOptions(isAnimationSheetEnabled = false, useLogarithmicDepth = false): string[] {
-        const effectCreationOption = ["emitterWM", "worldOffset", "view", "projection", "colorDead", "invView", "translationPivot", "eyePosition"];
+        const effectCreationOption = ["emitterWM", "worldOffset", "view", "rotateView", "projection", "colorDead", "invView", "translationPivot", "eyePosition"];
         addClipPlaneUniforms(effectCreationOption);
 
         if (isAnimationSheetEnabled) {
@@ -1484,13 +1489,20 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             effect.setVector3("eyePosition", camera.globalPosition);
         }
 
+        if (this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED) {
+            const rotation = Quaternion.Identity();
+            viewMatrix.decompose(undefined, rotation);
+            const rotateMatrix = Matrix.Compose(Vector3.One(), rotation, Vector3.Zero());
+            effect.setMatrix("rotateView", rotateMatrix);
+        }
+
         const defines = effect.defines;
 
         if (this._scene) {
             bindClipPlane(effect, this, this._scene);
         }
 
-        if (defines.indexOf("#define BILLBOARDMODE_ALL") >= 0) {
+        if (this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED || defines.indexOf("#define BILLBOARDMODE_ALL") >= 0) {
             const invView = viewMatrix.clone();
             invView.invert();
             effect.setMatrix("invView", invView);
@@ -1543,6 +1555,8 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
 
         this._recreateUpdateEffect();
+        if (!this.isReady())
+            return;
 
         if ((<AbstractMesh>this.emitter).position) {
             const emitterMesh = <AbstractMesh>this.emitter;

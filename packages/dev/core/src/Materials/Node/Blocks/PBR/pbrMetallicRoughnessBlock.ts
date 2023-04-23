@@ -149,6 +149,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             NodeMaterialBlockTargets.Fragment,
             new NodeMaterialConnectionPointCustomObject("iridescence", this, NodeMaterialConnectionPointDirection.Input, IridescenceBlock, "IridescenceBlock")
         );
+        this.registerInput("emissive", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
 
         this.registerOutput("ambientClr", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("diffuseDir", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Fragment);
@@ -392,6 +393,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state._excludeVariableName("aoOut");
 
         state._excludeVariableName("baseColor");
+        state._excludeVariableName("emissive");
         state._excludeVariableName("reflectivityOut");
         state._excludeVariableName("microSurface");
         state._excludeVariableName("roughness");
@@ -557,6 +559,13 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
      */
     public get iridescence(): NodeMaterialConnectionPoint {
         return this._inputs[17];
+    }
+    
+    /**
+     * Gets the emission object parameters
+     */
+    public get emissive(): NodeMaterialConnectionPoint {
+        return this._inputs[18];
     }
 
     /**
@@ -1362,8 +1371,10 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         });
 
         // _____________________________ Output Final Color Composition ________________________
+        const emissiveColor = this.emissive.isConnected ? this.emissive.associatedVariableName : "vec3(1.)";
+
         state.compilationString += state._emitCodeFromInclude("pbrBlockFinalColorComposition", comments, {
-            replaceStrings: [{ search: /finalEmissive/g, replace: "vec3(0.)" }],
+            replaceStrings: [{ search: /finalEmissive/g, replace: emissiveColor }],
         });
 
         // _____________________________ Apply image processing ________________________

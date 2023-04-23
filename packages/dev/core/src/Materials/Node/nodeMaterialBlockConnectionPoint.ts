@@ -1,7 +1,7 @@
 import { NodeMaterialBlockConnectionPointTypes } from "./Enums/nodeMaterialBlockConnectionPointTypes";
 import { NodeMaterialBlockTargets } from "./Enums/nodeMaterialBlockTargets";
 import type { Nullable } from "../../types";
-import type { InputBlock } from "./Blocks/Input/inputBlock";
+import { InputBlock } from "./Blocks/Input/inputBlock";
 import { Observable } from "../../Misc/observable";
 import type { NodeMaterialBlock } from "./nodeMaterialBlock";
 
@@ -211,6 +211,8 @@ export class NodeMaterialConnectionPoint {
      * Gets or sets a string indicating that this uniform must be defined under a #ifdef
      */
     public define: string;
+
+    public hasDefaultValue : boolean = false;
 
     /** @internal */
     public _prioritizeVertex = false;

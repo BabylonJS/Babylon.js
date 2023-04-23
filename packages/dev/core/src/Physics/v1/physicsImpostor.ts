@@ -668,7 +668,7 @@ export class PhysicsImpostor {
      */
     public setParam(paramName: string, value: number) {
         (<any>this._options)[paramName] = value;
-        this._bodyUpdateRequired = true;
+        // this._bodyUpdateRequired = true;
     }
 
     /**

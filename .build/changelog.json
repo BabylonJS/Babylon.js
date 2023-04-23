@@ -5183,7 +5183,7 @@
                     "url": "https://github.com/CedricGuillemet"
                 },
                 "files": [
-                    "packages/dev/core/src/Physics/Plugins/ammoJSPlugin.ts",
+                    "packages/dev/core/src/Physics/Plugins/.ts",
                     "packages/dev/core/src/Physics/Plugins/oimoJSPlugin.ts",
                     "packages/dev/core/src/Physics/physicsImpostor.ts"
                 ],

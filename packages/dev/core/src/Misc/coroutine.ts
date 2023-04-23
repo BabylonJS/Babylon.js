@@ -122,7 +122,7 @@ export function runCoroutine<T>(
             if (!abortSignal || !abortSignal.aborted) {
                 scheduler(coroutine, onStep, onError);
             } else {
-                onError(new Error("Aborted"));
+                onError("Aborted");
             }
 
             if (reschedule === undefined) {
