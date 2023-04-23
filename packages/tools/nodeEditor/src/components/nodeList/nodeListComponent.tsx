@@ -11,6 +11,7 @@ import { LineWithFileButtonComponent } from "../../sharedComponents/lineWithFile
 import { Tools } from "core/Misc/tools";
 import addButton from "../../imgs/add.svg";
 import deleteButton from "../../imgs/delete.svg";
+import { NodeLedger } from "shared-ui-components/nodeGraphSystem/nodeLedger";
 
 import "./nodeList.scss";
 
@@ -50,7 +51,8 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         DeltaTimeBlock: "A float representing the time that has passed since the last frame was rendered",
         Float: "A floating point number representing a value with a fractional component",
         TextureBlock: "A node for reading a linked or embedded texture file",
-        TimeBlock: "A float value that represents the time that has passed since the scene was loaded",
+        TimeBlock: "A float value that represents the time that has passed since the scene was loaded (it is incremented by 0.6 each second)",
+        RealTimeBlock: "A float value that represents the number of seconds that have elapsed since the engine was initialized",
         Vector2: "a vector composed of X and Y channels",
         Vector3: "a vector composed of X, Y, and Z channels",
         Vector4: "a vector composed of X, Y, Z, and W channels",
@@ -69,6 +71,8 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         InstancesBlock: "Provides the world matrix for each instance to apply this material to all instances",
         MatrixIndicesBlock: "A Vector4 representing the vertex to bone skinning assignments",
         MatrixWeightsBlock: "A Vector4 representing the vertex to bone skinning weights",
+        MatrixIndicesExtraBlock: "A Vector4 representing the vertex to bone skinning assignments when the number of influences per bone is greater than 4",
+        MatrixWeightsExtraBlock: "A Vector4 representing the vertex to bone skinning weights when the number of influences per bone is greater than 4",
         NormalBlock: "A Vector3 representing the normal of each vertex of the attached mesh",
         PositionBlock: "A Vector3 representing the position of each vertex of the attached mesh",
         TangentBlock: "A Vector3 representing the tangent of each vertex of the attached mesh",
@@ -172,6 +176,8 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         ShadowMapBlock: "Compute a depth value suitable for shadow map generation",
         TriPlanarBlock: "A node for reading a texture with triplanar mapping",
         BiPlanarBlock: "A node for reading a texture with biplanar mapping",
+        MatrixDeterminantBlock: "Compute the determinant of a matrix",
+        MatrixTransposeBlock: "Compute the transpose of a matrix",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -321,6 +327,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "TextureBlock",
                 "ReflectionTextureBlock",
                 "TimeBlock",
+                "RealTimeBlock",
                 "DeltaTimeBlock",
                 "MaterialAlphaBlock",
                 "FragCoordBlock",
@@ -389,6 +396,8 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "ViewProjectionMatrixBlock",
                 "ProjectionMatrixBlock",
                 "MatrixBuilderBlock",
+                "MatrixDeterminantBlock",
+                "MatrixTransposeBlock",
             ],
             Misc: ["ElbowBlock", "ShadowMapBlock"],
             Mesh: [
@@ -405,6 +414,8 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "TangentBlock",
                 "MatrixIndicesBlock",
                 "MatrixWeightsBlock",
+                "MatrixIndicesExtraBlock",
+                "MatrixWeightsExtraBlock",
                 "WorldPositionBlock",
                 "WorldNormalBlock",
                 "WorldTangentBlock",
@@ -545,6 +556,18 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                     </LineContainerComponent>
                 );
             }
+
+            // Register blocks
+            const ledger = NodeLedger.RegisteredNodeNames;
+            for (const key in allBlocks) {
+                const blocks = allBlocks[key] as string[];
+                if (blocks.length) {
+                    ledger.push(...blocks);
+                }
+            }
+            NodeLedger.NameFormatter = (name) => {
+                return name.replace("Block", "");
+            };
         }
 
         return (

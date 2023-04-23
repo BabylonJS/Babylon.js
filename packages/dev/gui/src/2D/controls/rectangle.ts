@@ -73,6 +73,10 @@ export class Rectangle extends Container {
         return 0;
     }
 
+    protected _getRectangleFill(context: ICanvasRenderingContext) {
+        return this._getBackgroundColor(context);
+    }
+
     protected _localDraw(context: ICanvasRenderingContext): void {
         context.save();
 
@@ -83,8 +87,8 @@ export class Rectangle extends Container {
             context.shadowOffsetY = this.shadowOffsetY;
         }
 
-        if (this._background) {
-            context.fillStyle = this.typeName === "Button" ? (this.isEnabled ? this._background : this.disabledColor) : this._background;
+        if (this._background || this._backgroundGradient) {
+            context.fillStyle = this._getRectangleFill(context);
 
             if (this._cornerRadius) {
                 this._drawRoundedRect(context, this._thickness / 2);
@@ -101,8 +105,8 @@ export class Rectangle extends Container {
                 context.shadowOffsetY = 0;
             }
 
-            if (this.color) {
-                context.strokeStyle = this.color;
+            if (this.color || this.gradient) {
+                context.strokeStyle = this.gradient ? this.gradient.getCanvasGradient(context) : this.color;
             }
             context.lineWidth = this._thickness;
 

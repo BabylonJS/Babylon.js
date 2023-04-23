@@ -31,6 +31,13 @@ export class Tools {
         return result;
     }
 
+    public static GetNameString(obj: any) {
+        if (obj?.name?.toString) {
+            return obj.name.toString();
+        }
+        return "";
+    }
+
     public static SortAndFilter(parent: any, items: any[]): any[] {
         if (!items) {
             return [];
@@ -43,8 +50,8 @@ export class Tools {
         }
 
         return finalArray.sort((a: any, b: any) => {
-            const lowerCaseA = (a.name || "").toLowerCase();
-            const lowerCaseB = (b.name || "").toLowerCase();
+            const lowerCaseA = Tools.GetNameString(a).toLowerCase();
+            const lowerCaseB = Tools.GetNameString(b).toLowerCase();
 
             if (lowerCaseA === lowerCaseB) {
                 return 0;

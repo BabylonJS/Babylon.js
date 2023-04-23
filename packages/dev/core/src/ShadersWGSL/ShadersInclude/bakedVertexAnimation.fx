@@ -2,10 +2,10 @@
 {
     // calculate the current frame for the VAT
     #ifdef INSTANCES
-        let VATStartFrame: f32 = bakedVertexAnimationSettingsInstanced.x;
-        let VATEndFrame: f32 = bakedVertexAnimationSettingsInstanced.y;
-        let VATOffsetFrame: f32 = bakedVertexAnimationSettingsInstanced.z;
-        let VATSpeed: f32 = bakedVertexAnimationSettingsInstanced.w;
+        let VATStartFrame: f32 = vertexInputs.bakedVertexAnimationSettingsInstanced.x;
+        let VATEndFrame: f32 = vertexInputs.bakedVertexAnimationSettingsInstanced.y;
+        let VATOffsetFrame: f32 = vertexInputs.bakedVertexAnimationSettingsInstanced.z;
+        let VATSpeed: f32 = vertexInputs.bakedVertexAnimationSettingsInstanced.w;
     #else
         let VATStartFrame: f32 = uniforms.bakedVertexAnimationSettings.x;
         let VATEndFrame: f32 = uniforms.bakedVertexAnimationSettings.y;
@@ -24,27 +24,27 @@
     VATFrameNum = VATFrameNum + VATStartFrame + frameCorrection;
 
     var VATInfluence : mat4x4<f32>;
-    VATInfluence = readMatrixFromRawSamplerVAT(bakedVertexAnimationTexture, matricesIndices[0], VATFrameNum) * matricesWeights[0];
+    VATInfluence = readMatrixFromRawSamplerVAT(bakedVertexAnimationTexture, vertexInputs.matricesIndices[0], VATFrameNum) * vertexInputs.matricesWeights[0];
     #if NUM_BONE_INFLUENCERS > 1
-        VATInfluence = VATInfluence + readMatrixFromRawSamplerVAT(bakedVertexAnimationTexture, matricesIndices[1], VATFrameNum) * matricesWeights[1];
+        VATInfluence = VATInfluence + readMatrixFromRawSamplerVAT(bakedVertexAnimationTexture, vertexInputs.matricesIndices[1], VATFrameNum) * vertexInputs.matricesWeights[1];
     #endif
     #if NUM_BONE_INFLUENCERS > 2
-        VATInfluence = VATInfluence + readMatrixFromRawSamplerVAT(bakedVertexAnimationTexture, matricesIndices[2], VATFrameNum) * matricesWeights[2];
+        VATInfluence = VATInfluence + readMatrixFromRawSamplerVAT(bakedVertexAnimationTexture, vertexInputs.matricesIndices[2], VATFrameNum) * vertexInputs.matricesWeights[2];
     #endif
     #if NUM_BONE_INFLUENCERS > 3
-        VATInfluence = VATInfluence + readMatrixFromRawSamplerVAT(bakedVertexAnimationTexture, matricesIndices[3], VATFrameNum) * matricesWeights[3];
+        VATInfluence = VATInfluence + readMatrixFromRawSamplerVAT(bakedVertexAnimationTexture, vertexInputs.matricesIndices[3], VATFrameNum) * vertexInputs.matricesWeights[3];
     #endif
     #if NUM_BONE_INFLUENCERS > 4
-        VATInfluence = VATInfluence + readMatrixFromRawSamplerVAT(bakedVertexAnimationTexture, matricesIndicesExtra[0], VATFrameNum) * matricesWeightsExtra[0];
+        VATInfluence = VATInfluence + readMatrixFromRawSamplerVAT(bakedVertexAnimationTexture, vertexInputs.matricesIndicesExtra[0], VATFrameNum) * vertexInputs.matricesWeightsExtra[0];
     #endif
     #if NUM_BONE_INFLUENCERS > 5
-        VATInfluence = VATInfluence + readMatrixFromRawSamplerVAT(bakedVertexAnimationTexture, matricesIndicesExtra[1], VATFrameNum) * matricesWeightsExtra[1];
+        VATInfluence = VATInfluence + readMatrixFromRawSamplerVAT(bakedVertexAnimationTexture, vertexInputs.matricesIndicesExtra[1], VATFrameNum) * vertexInputs.matricesWeightsExtra[1];
     #endif
     #if NUM_BONE_INFLUENCERS > 6
-        VATInfluence = VATInfluence + readMatrixFromRawSamplerVAT(bakedVertexAnimationTexture, matricesIndicesExtra[2], VATFrameNum) * matricesWeightsExtra[2];
+        VATInfluence = VATInfluence + readMatrixFromRawSamplerVAT(bakedVertexAnimationTexture, vertexInputs.matricesIndicesExtra[2], VATFrameNum) * vertexInputs.matricesWeightsExtra[2];
     #endif
     #if NUM_BONE_INFLUENCERS > 7
-        VATInfluence = VATInfluence + readMatrixFromRawSamplerVAT(bakedVertexAnimationTexture, matricesIndicesExtra[3], VATFrameNum) * matricesWeightsExtra[3];
+        VATInfluence = VATInfluence + readMatrixFromRawSamplerVAT(bakedVertexAnimationTexture, vertexInputs.matricesIndicesExtra[3], VATFrameNum) * vertexInputs.matricesWeightsExtra[3];
     #endif
 
     finalWorld = finalWorld * VATInfluence;

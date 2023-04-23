@@ -92,6 +92,10 @@ void main(void) {
     vec4 opacityMap = texture2D(opacitySampler, vOpacityUV + uvOffset);
 #endif
 
+#ifdef DECAL
+    vec4 decalColor = texture2D(decalSampler, vDecalUV + uvOffset);
+#endif
+
     albedoOpacityBlock(
         vAlbedoColor,
     #ifdef ALBEDO
@@ -105,6 +109,10 @@ void main(void) {
     #ifdef DETAIL
         detailColor,
         vDetailInfos,
+    #endif
+    #ifdef DECAL
+        decalColor,
+        vDecalInfos,
     #endif
         albedoOpacityOut
     );
@@ -662,7 +670,7 @@ void main(void) {
     #endif
 
     #ifdef PREPASS_NORMAL
-        gl_FragData[PREPASS_NORMAL_INDEX] = vec4((view * vec4(normalW, 0.0)).rgb, writeGeometryInfo); // Normal
+        gl_FragData[PREPASS_NORMAL_INDEX] = vec4(normalize((view * vec4(normalW, 0.0)).rgb), writeGeometryInfo); // Normal
     #endif
 
     #ifdef PREPASS_ALBEDO_SQRT
@@ -671,7 +679,7 @@ void main(void) {
 
     #ifdef PREPASS_REFLECTIVITY
         #ifndef UNLIT
-            gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(toGammaSpace(specularEnvironmentR0), microSurface) * writeGeometryInfo;
+            gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(specularEnvironmentR0, microSurface) * writeGeometryInfo;
         #else
             gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4( 0.0, 0.0, 0.0, 1.0 ) * writeGeometryInfo;
         #endif

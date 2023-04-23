@@ -25,9 +25,41 @@ export class SceneDepthBlock extends NodeMaterialBlock {
      * Defines if the depth renderer should be setup in non linear mode
      */
     @editableInPropertyPage("Use non linear depth", PropertyTypeForEdition.Boolean, "ADVANCED", {
-        notifiers: { activatePreviewCommand: true, callback: (scene) => scene.disableDepthRenderer() },
+        notifiers: {
+            activatePreviewCommand: true,
+            callback: (scene, block) => {
+                const sceneDepthBlock = block as SceneDepthBlock;
+                let retVal = false;
+                if (sceneDepthBlock.useNonLinearDepth) {
+                    sceneDepthBlock.storeCameraSpaceZ = false;
+                    retVal = true;
+                }
+                scene.disableDepthRenderer();
+                return retVal;
+            },
+        },
     })
     public useNonLinearDepth = false;
+
+    /**
+     * Defines if the depth renderer should be setup in camera space Z mode (if set, useNonLinearDepth has no effect)
+     */
+    @editableInPropertyPage("Store Camera space Z", PropertyTypeForEdition.Boolean, "ADVANCED", {
+        notifiers: {
+            activatePreviewCommand: true,
+            callback: (scene, block) => {
+                const sceneDepthBlock = block as SceneDepthBlock;
+                let retVal = false;
+                if (sceneDepthBlock.storeCameraSpaceZ) {
+                    sceneDepthBlock.useNonLinearDepth = false;
+                    retVal = true;
+                }
+                scene.disableDepthRenderer();
+                return retVal;
+            },
+        },
+    })
+    public storeCameraSpaceZ = false;
 
     /**
      * Defines if the depth renderer should be setup in full 32 bits float mode
@@ -100,7 +132,7 @@ export class SceneDepthBlock extends NodeMaterialBlock {
     }
 
     private _getTexture(scene: Scene): BaseTexture {
-        const depthRenderer = scene.enableDepthRenderer(undefined, this.useNonLinearDepth, this.force32itsFloat);
+        const depthRenderer = scene.enableDepthRenderer(undefined, this.useNonLinearDepth, this.force32itsFloat, undefined, this.storeCameraSpaceZ);
 
         return depthRenderer.getDepthMap();
     }
@@ -221,6 +253,7 @@ export class SceneDepthBlock extends NodeMaterialBlock {
         const serializationObject = super.serialize();
 
         serializationObject.useNonLinearDepth = this.useNonLinearDepth;
+        serializationObject.storeCameraSpaceZ = this.storeCameraSpaceZ;
         serializationObject.force32itsFloat = this.force32itsFloat;
 
         return serializationObject;
@@ -230,6 +263,7 @@ export class SceneDepthBlock extends NodeMaterialBlock {
         super._deserialize(serializationObject, scene, rootUrl);
 
         this.useNonLinearDepth = serializationObject.useNonLinearDepth;
+        this.storeCameraSpaceZ = !!serializationObject.storeCameraSpaceZ;
         this.force32itsFloat = serializationObject.force32itsFloat;
     }
 }

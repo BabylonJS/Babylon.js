@@ -13,6 +13,8 @@ import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObj
 import type { GlobalState } from "../../../../globalState";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 
+import "core/Materials/material.decalMap";
+
 interface IStandardMaterialPropertyGridComponentProps {
     globalState: GlobalState;
     material: StandardMaterial;
@@ -128,6 +130,14 @@ export class StandardMaterialPropertyGridComponent extends React.Component<IStan
                     propertyName="isEnabled"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
+                {material.decalMap && (
+                    <CheckBoxLineComponent
+                        label="Use decalmap"
+                        target={material.decalMap}
+                        propertyName="isEnabled"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                )}
             </LineContainerComponent>
         );
     }

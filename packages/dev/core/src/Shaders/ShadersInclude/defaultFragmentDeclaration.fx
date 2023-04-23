@@ -105,4 +105,6 @@ uniform vec2 vReflectionInfos;
 uniform vec4 vDetailInfos;
 #endif
 
+#include<decalFragmentDeclaration>
+
 #define ADDITIONAL_FRAGMENT_DECLARATION

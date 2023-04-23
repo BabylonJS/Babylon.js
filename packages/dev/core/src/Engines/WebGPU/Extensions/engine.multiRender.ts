@@ -7,6 +7,7 @@ import type { TextureSize } from "../../../Materials/Textures/textureCreationOpt
 import type { RenderTargetWrapper } from "../../renderTargetWrapper";
 import { WebGPUEngine } from "../../webgpuEngine";
 import type { WebGPURenderTargetWrapper } from "../webgpuRenderTargetWrapper";
+import type { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 
 WebGPUEngine.prototype.unBindMultiColorAttachmentFramebuffer = function (
     rtWrapper: RenderTargetWrapper,
@@ -52,10 +53,17 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
     const defaultType = Constants.TEXTURETYPE_UNSIGNED_INT;
     const defaultSamplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
     const defaultUseSRGBBuffer = false;
+    const defaultFormat = Constants.TEXTUREFORMAT_RGBA;
+    const defaultTarget = Constants.TEXTURE_2D;
 
     let types = new Array<number>();
     let samplingModes = new Array<number>();
     let useSRGBBuffers = new Array<boolean>();
+    let formats = new Array<number>();
+    let targets = new Array<number>();
+    let faceIndex = new Array<number>();
+    let layerIndex = new Array<number>();
+    let layers = new Array<number>();
 
     const rtWrapper = this._createHardwareRenderTargetWrapper(true, false, size) as WebGPURenderTargetWrapper;
 
@@ -76,6 +84,21 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
         if (options.useSRGBBuffers) {
             useSRGBBuffers = options.useSRGBBuffers;
         }
+        if (options.formats) {
+            formats = options.formats;
+        }
+        if (options.targetTypes) {
+            targets = options.targetTypes;
+        }
+        if (options.faceIndex) {
+            faceIndex = options.faceIndex;
+        }
+        if (options.layerIndex) {
+            layerIndex = options.layerIndex;
+        }
+        if (options.layerCounts) {
+            layers = options.layerCounts;
+        }
     }
 
     const width = (<{ width: number; height: number }>size).width || <number>size;
@@ -83,6 +106,17 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
 
     let depthStencilTexture = null;
     if (generateDepthBuffer || generateStencilBuffer || generateDepthTexture) {
+        if (!generateDepthTexture) {
+            // The caller doesn't want a depth texture, so we are free to use the depth texture format we want.
+            // So, we will align with what the WebGL engine does
+            if (generateDepthBuffer && generateStencilBuffer) {
+                depthTextureFormat = Constants.TEXTUREFORMAT_DEPTH24_STENCIL8;
+            } else if (generateDepthBuffer) {
+                depthTextureFormat = Constants.TEXTUREFORMAT_DEPTH32_FLOAT;
+            } else {
+                depthTextureFormat = Constants.TEXTUREFORMAT_STENCIL8;
+            }
+        }
         depthStencilTexture = rtWrapper.createDepthStencilTexture(0, false, generateStencilBuffer, 1, depthTextureFormat);
     }
 
@@ -98,10 +132,15 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
     for (let i = 0; i < textureCount; i++) {
         let samplingMode = samplingModes[i] || defaultSamplingMode;
         let type = types[i] || defaultType;
-        const useSRGBBuffer = useSRGBBuffers[i] || defaultUseSRGBBuffer;
+
+        const format = formats[i] || defaultFormat;
+        const useSRGBBuffer = (useSRGBBuffers[i] || defaultUseSRGBBuffer) && this._caps.supportSRGBBuffers;
+
+        const target = targets[i] || defaultTarget;
+        const layerCount = layers[i] ?? 1;
 
         if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
-            // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
+            // if floating point linear (FLOAT) then force to NEAREST_SAMPLINGMODE
             samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
         } else if (type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
             // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
@@ -113,11 +152,29 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
             Logger.Warn("Float textures are not supported. Render target forced to TEXTURETYPE_UNSIGNED_BYTE type");
         }
 
-        const texture = new InternalTexture(this, InternalTextureSource.MultiRenderTarget);
-
-        textures.push(texture);
         attachments.push(i + 1);
         defaultAttachments.push(initializeBuffers ? i + 1 : i === 0 ? 1 : 0);
+
+        if (target === -1) {
+            continue;
+        }
+
+        const texture = new InternalTexture(this, InternalTextureSource.MultiRenderTarget);
+        textures[i] = texture;
+
+        switch (target) {
+            case Constants.TEXTURE_CUBE_MAP:
+                texture.isCube = true;
+                break;
+            case Constants.TEXTURE_3D:
+                texture.is3D = true;
+                texture.baseDepth = texture.depth = layerCount;
+                break;
+            case Constants.TEXTURE_2D_ARRAY:
+                texture.is2DArray = true;
+                texture.baseDepth = texture.depth = layerCount;
+                break;
+        }
 
         texture.baseWidth = width;
         texture.baseHeight = height;
@@ -131,6 +188,7 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
         texture._cachedWrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         texture._cachedWrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         texture._useSRGBBuffer = useSRGBBuffer;
+        texture.format = format;
 
         this._internalTexturesCache.push(texture);
 
@@ -139,11 +197,12 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
 
     if (depthStencilTexture) {
         depthStencilTexture.incrementReferences();
-        textures.push(depthStencilTexture);
+        textures[textureCount] = depthStencilTexture;
         this._internalTexturesCache.push(depthStencilTexture);
     }
 
     rtWrapper.setTextures(textures);
+    rtWrapper.setLayerAndFaceIndices(layerIndex, faceIndex);
 
     return rtWrapper;
 };
@@ -163,14 +222,24 @@ WebGPUEngine.prototype.updateMultipleRenderTargetTextureSampleCount = function (
 
     for (let i = 0; i < count; ++i) {
         const texture = rtWrapper.textures[i];
-        this._textureHelper.createMSAATexture(texture, samples);
+        const gpuTextureWrapper = texture._hardwareTexture as Nullable<WebGPUHardwareTexture>;
+
+        gpuTextureWrapper?.releaseMSAATexture();
+    }
+
+    // Note that rtWrapper.textures can't have null textures, lastTextureIsDepthTexture can't be true if rtWrapper._depthStencilTexture is null
+    const lastTextureIsDepthTexture = rtWrapper._depthStencilTexture === rtWrapper.textures[count - 1];
+
+    for (let i = 0; i < count; ++i) {
+        const texture = rtWrapper.textures[i];
+        this._textureHelper.createMSAATexture(texture, samples, false, i === count - 1 && lastTextureIsDepthTexture ? 0 : i);
         texture.samples = samples;
     }
 
     // Note that the last texture of textures is the depth texture if the depth texture has been generated by the MRT class and so the MSAA texture
     // will be recreated for this texture by the loop above: in that case, there's no need to create the MSAA texture for rtWrapper._depthStencilTexture
     // because rtWrapper._depthStencilTexture is the same texture than the depth texture
-    if (rtWrapper._depthStencilTexture && rtWrapper._depthStencilTexture !== rtWrapper.textures[rtWrapper.textures.length - 1]) {
+    if (rtWrapper._depthStencilTexture && !lastTextureIsDepthTexture) {
         this._textureHelper.createMSAATexture(rtWrapper._depthStencilTexture, samples);
         rtWrapper._depthStencilTexture.samples = samples;
     }

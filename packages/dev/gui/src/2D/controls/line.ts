@@ -14,10 +14,14 @@ import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
 /** Class used to render 2D lines */
 export class Line extends Control {
     private _lineWidth = 1;
-    private _x1 = new ValueAndUnit(0);
-    private _y1 = new ValueAndUnit(0);
-    private _x2 = new ValueAndUnit(0);
-    private _y2 = new ValueAndUnit(0);
+    /** @internal */
+    public _x1 = new ValueAndUnit(0);
+    /** @internal */
+    public _y1 = new ValueAndUnit(0);
+    /** @internal */
+    public _x2 = new ValueAndUnit(0);
+    /** @internal */
+    public _y2 = new ValueAndUnit(0);
     private _dash = new Array<number>();
     private _connectedControl: Control;
     private _connectedControlDirtyObserver: Nullable<Observer<Control>>;
@@ -149,11 +153,13 @@ export class Line extends Control {
         return;
     }
 
-    private get _effectiveX2(): number {
+    /** @internal */
+    public get _effectiveX2(): number {
         return (this._connectedControl ? this._connectedControl.centerX : 0) + this._x2.getValue(this._host);
     }
 
-    private get _effectiveY2(): number {
+    /** @internal */
+    public get _effectiveY2(): number {
         return (this._connectedControl ? this._connectedControl.centerY : 0) + this._y2.getValue(this._host);
     }
 
@@ -186,7 +192,7 @@ export class Line extends Control {
         }
 
         this._applyStates(context);
-        context.strokeStyle = this.color;
+        context.strokeStyle = this._getColor(context);
         context.lineWidth = this._lineWidth;
         context.setLineDash(this._dash);
 
@@ -223,7 +229,7 @@ export class Line extends Control {
         }
 
         const globalViewport = this._host._getGlobalViewport();
-        const projectedPosition = Vector3.Project(position, Matrix.Identity(), scene.getTransformMatrix(), globalViewport);
+        const projectedPosition = Vector3.Project(position, Matrix.IdentityReadOnly, scene.getTransformMatrix(), globalViewport);
 
         this._moveToProjectedPosition(projectedPosition, end);
 

@@ -176,9 +176,11 @@ export class Gizmo implements IGizmo {
 
     protected _updateGizmoRotationToMatchAttachedMesh = true;
     protected _updateGizmoPositionToMatchAttachedMesh = true;
+    protected _updateScale = true;
 
     /**
      * If set the gizmo's rotation will be updated to match the attached mesh each frame (Default: true)
+     * NOTE: This is only possible for meshes with uniform scaling, as otherwise it's not possible to decompose the rotation
      */
     public set updateGizmoRotationToMatchAttachedMesh(value: boolean) {
         this._updateGizmoRotationToMatchAttachedMesh = value;
@@ -198,7 +200,7 @@ export class Gizmo implements IGizmo {
     /**
      * When set, the gizmo will always appear the same size no matter where the camera is (default: true)
      */
-    protected _updateScale = true;
+
     public set updateScale(value: boolean) {
         this._updateScale = value;
     }

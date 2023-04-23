@@ -56,8 +56,8 @@ export class ExtensionsComponent extends React.Component<IExtensionsComponentPro
         }
 
         return (
-            <div ref={this._extensionRef} className="extensions" onClick={() => this.showPopup()}>
-                <div title="Additional options" className="icon">
+            <div ref={this._extensionRef} className="extensions">
+                <div title="Additional options" className="icon" onClick={() => this.showPopup()}>
                     <FontAwesomeIcon icon={faEllipsisH} />
                 </div>
                 <div
@@ -70,7 +70,16 @@ export class ExtensionsComponent extends React.Component<IExtensionsComponentPro
                 >
                     {options.map((extensibility) => {
                         return (
-                            <div key={extensibility.label} className="popupMenu" onClick={() => extensibility.action(this.props.target)}>
+                            <div
+                                key={extensibility.label}
+                                className="popupMenu"
+                                onClick={() => {
+                                    extensibility.action(this.props.target);
+                                    if (!extensibility.keepOpenAfterClick) {
+                                        this.setState({ popupVisible: false });
+                                    }
+                                }}
+                            >
                                 {extensibility.label}
                             </div>
                         );

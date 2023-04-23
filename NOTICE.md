@@ -1,2 +1,2 @@
 Babylon.js
-Copyright 2022 The Babylon.js team
+Copyright 2023 The Babylon.js team

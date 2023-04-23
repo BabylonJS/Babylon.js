@@ -50,6 +50,13 @@ class _ClickInfo {
     }
 }
 
+/** @internal */
+interface _IClickEvent {
+    clickInfo: _ClickInfo;
+    evt: IPointerEvent;
+    timeoutId: number;
+}
+
 /**
  * Class used to manage all inputs for the scene.
  */
@@ -60,7 +67,11 @@ export class InputManager {
     public static LongPressDelay = 500; // in milliseconds
     /** Time in milliseconds with two consecutive clicks will be considered as a double click */
     public static DoubleClickDelay = 300; // in milliseconds
-    /** If you need to check double click without raising a single click at first click, enable this flag */
+    /**
+     * This flag will modify the behavior so that, when true, a click will happen if and only if
+     * another click DOES NOT happen within the DoubleClickDelay time frame.  If another click does
+     * happen within that time frame, the first click will not fire an event and and a double click will occur.
+     */
     public static ExclusiveDoubleClickMode = false;
 
     /** This is a defensive check to not allow control attachment prior to an already active one. If already attached, previous control is unattached before attaching the new one. */
@@ -80,8 +91,6 @@ export class InputManager {
     ) => void;
     private _initActionManager: (act: Nullable<AbstractActionManager>, clickInfo: _ClickInfo) => Nullable<AbstractActionManager>;
     private _delayedSimpleClick: (btn: number, clickInfo: _ClickInfo, cb: (clickInfo: _ClickInfo, pickResult: Nullable<PickingInfo>) => void) => void;
-    private _delayedSimpleClickTimeout: number;
-    private _previousDelayedSimpleClickTimeout: number;
     private _meshPickProceed = false;
 
     private _previousButtonPressed: number;
@@ -92,6 +101,7 @@ export class InputManager {
     private _isSwiping: boolean = false;
     private _swipeButtonPressed: number = -1;
     private _skipPointerTap: boolean = false;
+    private _isMultiTouchGesture: boolean = false;
 
     private _pointerOverMesh: Nullable<AbstractMesh>;
 
@@ -110,6 +120,7 @@ export class InputManager {
     private _meshUnderPointerId: { [pointerId: number]: Nullable<AbstractMesh> } = {};
     private _movePointerInfo: Nullable<PointerInfo> = null;
     private _cameraObserverCount = 0;
+    private _delayedClicks: Array<Nullable<_IClickEvent>> = [null, null, null, null, null];
 
     // Keyboard
     private _onKeyDown: (evt: IKeyboardEvent) => void;
@@ -213,7 +224,7 @@ export class InputManager {
             }
         }
 
-        this._setCursorAndPointerOverMesh(pickResult, evt.pointerId, scene);
+        this._setCursorAndPointerOverMesh(pickResult, evt, scene);
 
         for (const step of scene._pointerMoveStage) {
             const isMeshPicked = pickResult?.pickedMesh ? true : false;
@@ -224,7 +235,7 @@ export class InputManager {
 
         if (scene.onPointerMove) {
             // Because of lazy picking, we need to force a pick to update the pickResult
-            pickResult = pickResult || this._pickMove(evt.pointerId);
+            pickResult = pickResult || this._pickMove(evt);
             scene.onPointerMove(evt, pickResult, type);
         }
 
@@ -289,7 +300,7 @@ export class InputManager {
     }
 
     /** @internal */
-    public _pickMove(pointerId: number): PickingInfo {
+    public _pickMove(evt: IPointerEvent): PickingInfo {
         const scene = this._scene;
         const pickResult = scene.pick(
             this._unTranslatedPointerX,
@@ -300,17 +311,17 @@ export class InputManager {
             scene.pointerMoveTrianglePredicate
         );
 
-        this._setCursorAndPointerOverMesh(pickResult, pointerId, scene);
+        this._setCursorAndPointerOverMesh(pickResult, evt, scene);
 
         return pickResult;
     }
 
-    private _setCursorAndPointerOverMesh(pickResult: Nullable<PickingInfo>, pointerId: number, scene: Scene) {
+    private _setCursorAndPointerOverMesh(pickResult: Nullable<PickingInfo>, evt: IPointerEvent, scene: Scene) {
         const engine = scene.getEngine();
         const canvas = engine.getInputElement();
 
         if (pickResult?.pickedMesh) {
-            this.setPointerOverMesh(pickResult.pickedMesh, pointerId, pickResult);
+            this.setPointerOverMesh(pickResult.pickedMesh, evt.pointerId, pickResult, evt);
 
             if (!scene.doNotHandleCursors && canvas && this._pointerOverMesh) {
                 const actionManager = this._pointerOverMesh._getActionManagerForTrigger();
@@ -319,7 +330,7 @@ export class InputManager {
                 }
             }
         } else {
-            this.setPointerOverMesh(null, pointerId, pickResult);
+            this.setPointerOverMesh(null, evt.pointerId, pickResult, evt);
         }
     }
 
@@ -515,7 +526,7 @@ export class InputManager {
                 scene.onPointerUp(evt, pickResult, PointerEventTypes.POINTERUP);
             }
 
-            if (!clickInfo.hasSwiped && !this._skipPointerTap) {
+            if (!clickInfo.hasSwiped && !this._skipPointerTap && !this._isMultiTouchGesture) {
                 let type = 0;
                 if (clickInfo.singleClick) {
                     type = PointerEventTypes.POINTERTAP;
@@ -588,7 +599,19 @@ export class InputManager {
                 this._doubleClickOccured = false;
                 clickInfo.singleClick = true;
                 clickInfo.ignore = false;
-                cb(clickInfo, this._currentPickResult);
+
+                // If we have a delayed click, we need to resolve the TAP event
+                if (this._delayedClicks[btn]) {
+                    const evt = this._delayedClicks[btn]!.evt;
+                    const type = PointerEventTypes.POINTERTAP;
+                    const pi = new PointerInfo(type, evt, this._currentPickResult);
+                    if (scene.onPointerObservable.hasObservers() && scene.onPointerObservable.hasSpecificMask(type)) {
+                        scene.onPointerObservable.notifyObservers(pi, type);
+                    }
+
+                    // Clear the delayed click
+                    this._delayedClicks[btn] = null;
+                }
             }
         };
 
@@ -646,9 +669,17 @@ export class InputManager {
                     }
                     // at least one double click is required to be check and exclusive double click is enabled
                     else {
-                        // wait that no double click has been raised during the double click delay
-                        this._previousDelayedSimpleClickTimeout = this._delayedSimpleClickTimeout;
-                        this._delayedSimpleClickTimeout = window.setTimeout(this._delayedSimpleClick.bind(this, btn, clickInfo, cb), InputManager.DoubleClickDelay);
+                        // Queue up a delayed click, just in case this isn't a double click
+                        // It should be noted that while this delayed event happens
+                        // because of user input, it shouldn't be considered as a direct,
+                        // timing-dependent result of that input.  It's meant to just fire the TAP event
+                        const delayedClick = {
+                            evt: evt,
+                            clickInfo: clickInfo,
+                            timeoutId: window.setTimeout(this._delayedSimpleClick.bind(this, btn, clickInfo, cb), InputManager.DoubleClickDelay),
+                        };
+
+                        this._delayedClicks[btn] = delayedClick;
                     }
 
                     let checkDoubleClick = obs1.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP) || obs2.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP);
@@ -667,10 +698,12 @@ export class InputManager {
                                 this._doubleClickOccured = true;
                                 clickInfo.doubleClick = true;
                                 clickInfo.ignore = false;
-                                if (InputManager.ExclusiveDoubleClickMode && this._previousDelayedSimpleClickTimeout) {
-                                    clearTimeout(this._previousDelayedSimpleClickTimeout);
+                                // If we have a pending click, we need to cancel it
+                                if (InputManager.ExclusiveDoubleClickMode && this._delayedClicks[btn]) {
+                                    clearTimeout(this._delayedClicks[btn]?.timeoutId);
+                                    this._delayedClicks[btn] = null;
                                 }
-                                this._previousDelayedSimpleClickTimeout = this._delayedSimpleClickTimeout;
+
                                 cb(clickInfo, this._currentPickResult);
                             }
                             // if the two successive clicks are too far, it's just two simple clicks
@@ -681,11 +714,11 @@ export class InputManager {
                                 this._previousStartingPointerPosition.y = this._startingPointerPosition.y;
                                 this._previousButtonPressed = btn;
                                 if (InputManager.ExclusiveDoubleClickMode) {
-                                    if (this._previousDelayedSimpleClickTimeout) {
-                                        clearTimeout(this._previousDelayedSimpleClickTimeout);
+                                    // If we have a delayed click, we need to cancel it
+                                    if (this._delayedClicks[btn]) {
+                                        clearTimeout(this._delayedClicks[btn]?.timeoutId);
+                                        this._delayedClicks[btn] = null;
                                     }
-                                    this._previousDelayedSimpleClickTimeout = this._delayedSimpleClickTimeout;
-
                                     cb(clickInfo, this._previousPickResult);
                                 } else {
                                     cb(clickInfo, this._currentPickResult);
@@ -705,17 +738,14 @@ export class InputManager {
                 }
             }
 
+            // Even if ExclusiveDoubleClickMode is true, we need to always handle
+            // up events at time of execution, unless we're explicitly ignoring them.
             if (!needToIgnoreNext) {
                 cb(clickInfo, this._currentPickResult);
             }
         };
 
         this._onPointerMove = (evt: IMouseEvent) => {
-            // preserve compatibility with Safari when pointerId is not present
-            if ((evt as IPointerEvent).pointerId === undefined) {
-                (evt as IPointerEvent as any).pointerId = 0;
-            }
-
             this._updatePointerPosition(evt as IPointerEvent);
 
             // Check if pointer leaves DragMovementThreshold range to determine if swipe is occurring
@@ -723,6 +753,12 @@ export class InputManager {
                 this._isSwiping =
                     Math.abs(this._startingPointerPosition.x - this._pointerX) > InputManager.DragMovementThreshold ||
                     Math.abs(this._startingPointerPosition.y - this._pointerY) > InputManager.DragMovementThreshold;
+            }
+
+            // Because there's a race condition between pointermove and pointerlockchange events, we need to
+            // verify that the pointer is still locked after each pointermove event.
+            if (engine.isPointerLock) {
+                engine._verifyPointerLock();
             }
 
             // PreObservable support
@@ -755,7 +791,7 @@ export class InputManager {
                     (!scene.cameraToUseForPointers || (scene.cameraToUseForPointers.layerMask & mesh.layerMask) !== 0);
             }
 
-            const pickResult = scene._registeredActions > 0 ? this._pickMove((evt as IPointerEvent).pointerId) : null;
+            const pickResult = scene._registeredActions > 0 ? this._pickMove(evt as IPointerEvent) : null;
             this._processPointerMove(pickResult, evt as IPointerEvent);
         };
 
@@ -764,9 +800,33 @@ export class InputManager {
             this._pickedDownMesh = null;
             this._meshPickProceed = false;
 
-            // preserve compatibility with Safari when pointerId is not present
-            if (evt.pointerId === undefined) {
-                (evt as any).pointerId = 0;
+            // If ExclusiveDoubleClickMode is true, we need to resolve any pending delayed clicks
+            if (InputManager.ExclusiveDoubleClickMode) {
+                for (let i = 0; i < this._delayedClicks.length; i++) {
+                    if (this._delayedClicks[i]) {
+                        // If the button that was pressed is the same as the one that was released,
+                        // just clear the timer.  This will be resolved in the up event.
+                        if (evt.button === i) {
+                            clearTimeout(this._delayedClicks[i]?.timeoutId);
+                        } else {
+                            // Otherwise, we need to resolve the click
+                            const clickInfo = this._delayedClicks[i]!.clickInfo;
+                            this._doubleClickOccured = false;
+                            clickInfo.singleClick = true;
+                            clickInfo.ignore = false;
+
+                            const prevEvt = this._delayedClicks[i]!.evt;
+                            const type = PointerEventTypes.POINTERTAP;
+                            const pi = new PointerInfo(type, prevEvt, this._currentPickResult);
+                            if (scene.onPointerObservable.hasObservers() && scene.onPointerObservable.hasSpecificMask(type)) {
+                                scene.onPointerObservable.notifyObservers(pi, type);
+                            }
+
+                            // Clear the delayed click
+                            this._delayedClicks[i] = null;
+                        }
+                    }
+                }
             }
 
             this._updatePointerPosition(evt);
@@ -829,11 +889,6 @@ export class InputManager {
             this._pickedUpMesh = null;
             this._meshPickProceed = false;
 
-            // preserve compatibility with Safari when pointerId is not present
-            if (evt.pointerId === undefined) {
-                (evt as any).pointerId = 0;
-            }
-
             this._updatePointerPosition(evt);
 
             if (scene.preventDefaultOnPointerUp && elementToAttachTo) {
@@ -869,7 +924,19 @@ export class InputManager {
                     }
                 }
 
-                this._pointerCaptures[evt.pointerId] = false;
+                // There should be a pointer captured at this point so if there isn't we should reset and return
+                if (!this._pointerCaptures[evt.pointerId]) {
+                    if (this._swipeButtonPressed === evt.button) {
+                        this._isSwiping = false;
+                        this._swipeButtonPressed = -1;
+                    }
+                    return;
+                }
+
+                // Only release capture if all buttons are released
+                if (evt.buttons === 0) {
+                    this._pointerCaptures[evt.pointerId] = false;
+                }
                 if (!scene.cameraToUseForPointers && !scene.activeCamera) {
                     return;
                 }
@@ -978,8 +1045,14 @@ export class InputManager {
                     if (eventData.inputIndex === PointerInput.LeftClick) {
                         if (attachDown && deviceSource.getInput(eventData.inputIndex) === 1) {
                             this._onPointerDown(eventData);
+                            if (this._totalPointersPressed > 1) {
+                                this._isMultiTouchGesture = true;
+                            }
                         } else if (attachUp && deviceSource.getInput(eventData.inputIndex) === 0) {
                             this._onPointerUp(eventData);
+                            if (this._totalPointersPressed === 0) {
+                                this._isMultiTouchGesture = false;
+                            }
                         }
                     }
 
@@ -1024,8 +1097,9 @@ export class InputManager {
      * @param mesh - defines the mesh to use
      * @param pointerId - optional pointer id when using more than one pointer. Defaults to 0
      * @param pickResult - optional pickingInfo data used to find mesh
+     * @param evt - optional pointer event
      */
-    public setPointerOverMesh(mesh: Nullable<AbstractMesh>, pointerId: number = 0, pickResult?: Nullable<PickingInfo>): void {
+    public setPointerOverMesh(mesh: Nullable<AbstractMesh>, pointerId: number = 0, pickResult?: Nullable<PickingInfo>, evt?: IPointerEvent): void {
         if (this._meshUnderPointerId[pointerId] === mesh && (!mesh || !mesh._internalAbstractMeshDataInfo._pointerOverDisableMeshTesting)) {
             return;
         }
@@ -1036,7 +1110,7 @@ export class InputManager {
         if (underPointerMesh) {
             actionManager = underPointerMesh._getActionManagerForTrigger(Constants.ACTION_OnPointerOutTrigger);
             if (actionManager) {
-                actionManager.processTrigger(Constants.ACTION_OnPointerOutTrigger, ActionEvent.CreateNew(underPointerMesh, undefined, { pointerId }));
+                actionManager.processTrigger(Constants.ACTION_OnPointerOutTrigger, ActionEvent.CreateNew(underPointerMesh, evt, { pointerId }));
             }
         }
 
@@ -1046,7 +1120,7 @@ export class InputManager {
 
             actionManager = mesh._getActionManagerForTrigger(Constants.ACTION_OnPointerOverTrigger);
             if (actionManager) {
-                actionManager.processTrigger(Constants.ACTION_OnPointerOverTrigger, ActionEvent.CreateNew(mesh, undefined, { pointerId, pickResult }));
+                actionManager.processTrigger(Constants.ACTION_OnPointerOverTrigger, ActionEvent.CreateNew(mesh, evt, { pointerId, pickResult }));
             }
         } else {
             delete this._meshUnderPointerId[pointerId];

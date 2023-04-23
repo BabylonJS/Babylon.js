@@ -12,17 +12,22 @@ import { faWrench, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { Texture } from "core/Materials/Textures/texture";
 import { FileButtonLineComponent } from "shared-ui-components/lines/fileButtonLineComponent";
 import { Tools } from "core/Misc/tools";
+import type { Scene } from "core/scene";
+import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 
 export interface ITextureLinkLineComponentProps {
     label: string;
     texture: Nullable<BaseTexture>;
     material?: Material;
+    texturedObject?: { getScene: () => Scene };
     onSelectionChangedObservable?: Observable<any>;
     onDebugSelectionChangeObservable?: Observable<TextureLinkLineComponent>;
     propertyName?: string;
     onTextureCreated?: (texture: BaseTexture) => void;
     customDebugAction?: (state: boolean) => void;
     onTextureRemoved?: () => void;
+    fileFormats?: string;
+    cubeOnly?: boolean;
 }
 
 export class TextureLinkLineComponent extends React.Component<ITextureLinkLineComponentProps, { isDebugSelected: boolean }> {
@@ -142,14 +147,20 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
     }
 
     updateTexture(file: File) {
-        const material = this.props.material!;
+        const material = this.props.material ?? this.props.texturedObject;
+        if (!material) {
+            return;
+        }
         Tools.ReadFile(
             file,
             (data) => {
                 const blob = new Blob([data], { type: "octet/stream" });
                 const url = URL.createObjectURL(blob);
 
-                const texture = new Texture(url, material.getScene(), false, false);
+                const extension = file.name.split(".").pop()?.toLowerCase();
+                const texture = this.props.cubeOnly
+                    ? new CubeTexture(url, material.getScene(), [], false, undefined, undefined, undefined, undefined, false, extension ? "." + extension : undefined)
+                    : new Texture(url, material.getScene(), false, false);
 
                 if (this.props.propertyName) {
                     (material as any)[this.props.propertyName!] = texture;
@@ -165,7 +176,10 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
     }
 
     removeTexture() {
-        const material = this.props.material!;
+        const material = this.props.material ?? this.props.texturedObject;
+        if (!material) {
+            return;
+        }
         if (this.props.propertyName) {
             (material as any)[this.props.propertyName!] = null;
         } else if (this.props.onTextureRemoved) {
@@ -180,18 +194,26 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
 
         if (!texture) {
             if (this.props.propertyName || this.props.onTextureCreated) {
-                return <FileButtonLineComponent label={`Add ${this.props.label} texture`} onClick={(file) => this.updateTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />;
+                return (
+                    <FileButtonLineComponent
+                        label={`Add ${this.props.label} texture`}
+                        onClick={(file) => this.updateTexture(file)}
+                        accept={this.props.fileFormats ?? ".jpg, .png, .tga, .dds, .env"}
+                    />
+                );
             }
             return null;
         }
         return (
             <div className="textureLinkLine">
-                {!texture.isCube && this.props.material && (
+                {(!texture.isCube || this.props.cubeOnly) && (this.props.material || this.props.texturedObject) && (
                     <>
                         <div className={this.state.isDebugSelected ? "debug selected" : "debug"}>
-                            <span className="actionIcon" onClick={() => this.debugTexture()} title="Render as main texture">
-                                <FontAwesomeIcon icon={faWrench} />
-                            </span>
+                            {this.props.material && (
+                                <span className="actionIcon" onClick={() => this.debugTexture()} title="Render as main texture">
+                                    <FontAwesomeIcon icon={faWrench} />
+                                </span>
+                            )}
                             <span className="actionIcon" onClick={() => this.removeTexture()} title="Remove texture">
                                 <FontAwesomeIcon icon={faTrash} />
                             </span>

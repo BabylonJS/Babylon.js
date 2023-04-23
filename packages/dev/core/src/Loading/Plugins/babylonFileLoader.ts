@@ -888,6 +888,10 @@ SceneLoader.RegisterPlugin({
                 }
             }
 
+            scene.geometries.forEach((g) => {
+                g._loadedUniqueId = "";
+            });
+
             return true;
         } catch (err) {
             const msg = logOperation("importMesh", parsedData ? parsedData.producer : "Unknown") + log;
@@ -901,6 +905,7 @@ SceneLoader.RegisterPlugin({
             if (log !== null && SceneLoader.loggingLevel !== SceneLoader.NO_LOGGING) {
                 Logger.Log(logOperation("importMesh", parsedData ? parsedData.producer : "Unknown") + (SceneLoader.loggingLevel !== SceneLoader.MINIMAL_LOGGING ? log : ""));
             }
+            tempMaterialIndexContainer = {};
         }
 
         return false;

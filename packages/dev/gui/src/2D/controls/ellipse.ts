@@ -54,8 +54,8 @@ export class Ellipse extends Container {
             context
         );
 
-        if (this._background) {
-            context.fillStyle = this._background;
+        if (this._backgroundGradient || this._background) {
+            context.fillStyle = this._getBackgroundColor(context);
 
             context.fill();
         }

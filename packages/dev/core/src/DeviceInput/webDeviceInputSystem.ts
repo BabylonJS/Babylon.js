@@ -1,6 +1,6 @@
 import type { Engine } from "../Engines/engine";
 import type { IPointerEvent, IUIEvent } from "../Events/deviceInputEvents";
-import { DomManagement } from "../Misc/domManagement";
+import { DomManagement, IsNavigatorAvailable } from "../Misc/domManagement";
 import type { Observer } from "../Misc/observable";
 import { Tools } from "../Misc/tools";
 import type { Nullable } from "../types";
@@ -26,7 +26,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     private readonly _usingSafari: boolean = Tools.IsSafari();
     // Found solution for determining if MacOS is being used here:
     // https://stackoverflow.com/questions/10527983/best-way-to-detect-mac-os-x-or-windows-computers-with-javascript-or-jquery
-    private readonly _usingMacOS: boolean = /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform);
+    private readonly _usingMacOS: boolean = IsNavigatorAvailable() && /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform);
 
     private _onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void;
     private _onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void;
@@ -82,6 +82,9 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         this._onDeviceConnected = onDeviceConnected;
         this._onDeviceDisconnected = onDeviceDisconnected;
         this._onInputChanged = onInputChanged;
+
+        // If we need a pointerId, set one for future use
+        this._mouseId = this._isUsingFirefox ? 0 : 1;
 
         this._enableEvents();
 
@@ -426,6 +429,10 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 pointer[PointerInput.Horizontal] = evt.clientX;
                 pointer[PointerInput.Vertical] = evt.clientY;
 
+                if (evt.pointerId === undefined) {
+                    evt.pointerId = this._mouseId;
+                }
+
                 this._onInputChanged(deviceType, deviceSlot, deviceEvent);
 
                 // Lets Propagate the event for move with same position.
@@ -470,14 +477,9 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 const previousVertical = pointer[PointerInput.Vertical];
 
                 if (deviceType === DeviceType.Mouse) {
-                    // Mouse; Among supported browsers, value is either 1 or 0 for mouse
-                    if (this._mouseId === -1) {
-                        if (evt.pointerId === undefined) {
-                            // If there is no pointerId (eg. manually dispatched MouseEvent)
-                            this._mouseId = this._isUsingFirefox ? 0 : 1;
-                        } else {
-                            this._mouseId = evt.pointerId;
-                        }
+                    // Mouse; Set pointerId if undefined
+                    if (evt.pointerId === undefined) {
+                        evt.pointerId = this._mouseId;
                     }
 
                     if (!document.pointerLockElement) {
@@ -541,6 +543,10 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
                 const deviceEvent = evt as IUIEvent;
 
+                if (evt.pointerId === undefined) {
+                    evt.pointerId = this._mouseId;
+                }
+
                 if (previousHorizontal !== evt.clientX || previousVertical !== evt.clientY) {
                     deviceEvent.inputIndex = PointerInput.Move;
                     this._onInputChanged(deviceType, deviceSlot, deviceEvent);
@@ -591,7 +597,15 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
                 this._inputs[DeviceType.Touch][deviceSlot][PointerInput.LeftClick] = 0;
 
-                const deviceEvent: IUIEvent = DeviceEventFactory.CreateDeviceEvent(DeviceType.Touch, deviceSlot, PointerInput.LeftClick, 0, this, this._elementToAttachTo);
+                const deviceEvent: IUIEvent = DeviceEventFactory.CreateDeviceEvent(
+                    DeviceType.Touch,
+                    deviceSlot,
+                    PointerInput.LeftClick,
+                    0,
+                    this,
+                    this._elementToAttachTo,
+                    evt.pointerId
+                );
 
                 this._onInputChanged(DeviceType.Touch, deviceSlot, deviceEvent);
 
@@ -662,7 +676,15 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                     if (pointerId !== -1 && pointer[deviceSlot]?.[PointerInput.LeftClick] === 1) {
                         pointer[deviceSlot][PointerInput.LeftClick] = 0;
 
-                        const deviceEvent: IUIEvent = DeviceEventFactory.CreateDeviceEvent(DeviceType.Touch, deviceSlot, PointerInput.LeftClick, 0, this, this._elementToAttachTo);
+                        const deviceEvent: IUIEvent = DeviceEventFactory.CreateDeviceEvent(
+                            DeviceType.Touch,
+                            deviceSlot,
+                            PointerInput.LeftClick,
+                            0,
+                            this,
+                            this._elementToAttachTo,
+                            pointerId
+                        );
 
                         this._onInputChanged(DeviceType.Touch, deviceSlot, deviceEvent);
 
@@ -693,6 +715,12 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 pointer[PointerInput.MouseWheelZ] = evt.deltaZ || 0;
 
                 const deviceEvent = evt as IUIEvent;
+                // By default, there is no pointerId for mouse wheel events so we'll add one here
+                // This logic was originally in the InputManager but was added here to make the
+                // InputManager more platform-agnostic
+                if (evt.pointerId === undefined) {
+                    evt.pointerId = this._mouseId;
+                }
 
                 if (pointer[PointerInput.MouseWheelX] !== 0) {
                     deviceEvent.inputIndex = PointerInput.MouseWheelX;

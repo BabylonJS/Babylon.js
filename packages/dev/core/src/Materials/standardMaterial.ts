@@ -5,7 +5,7 @@ import { SmartArray } from "../Misc/smartArray";
 import type { IAnimatable } from "../Animations/animatable.interface";
 
 import type { Nullable } from "../types";
-import { Scene, ScenePerformancePriority } from "../scene";
+import { Scene } from "../scene";
 import { Matrix } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
 import { VertexBuffer } from "../Buffers/buffer";
@@ -1123,6 +1123,7 @@ export class StandardMaterial extends PushMaterial {
 
         this._eventInfo.isReadyForSubMesh = true;
         this._eventInfo.defines = defines;
+        this._eventInfo.subMesh = subMesh;
         this._callbackPluginEventIsReadyForSubMesh(this._eventInfo);
 
         if (!this._eventInfo.isReadyForSubMesh) {
@@ -1196,6 +1197,8 @@ export class StandardMaterial extends PushMaterial {
         this._callbackPluginEventPrepareDefines(this._eventInfo);
 
         // Get correct effect
+        let forceWasNotReadyPreviously = false;
+
         if (defines.isDirty) {
             const lightDisposed = defines._areLightsDisposed;
             defines.markAsProcessed();
@@ -1428,6 +1431,8 @@ export class StandardMaterial extends PushMaterial {
                 engine
             );
 
+            this._eventInfo.customCode = undefined;
+
             if (effect) {
                 if (this._onEffectCreatedObservable) {
                     onCreatedEffectParameters.effect = effect;
@@ -1439,6 +1444,8 @@ export class StandardMaterial extends PushMaterial {
                 if (this.allowShaderHotSwapping && previousEffect && !effect.isReady()) {
                     effect = previousEffect;
                     defines.markAsUnprocessed();
+
+                    forceWasNotReadyPreviously = this.isFrozen;
 
                     if (lightDisposed) {
                         // re register in case it takes more than one frame.
@@ -1457,12 +1464,10 @@ export class StandardMaterial extends PushMaterial {
         }
 
         defines._renderId = scene.getRenderId();
-        subMesh.effect._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyReady = forceWasNotReadyPreviously ? false : true;
         subMesh.effect._wasPreviouslyUsingInstances = useInstances;
 
-        if (scene.performancePriority !== ScenePerformancePriority.BackwardCompatible) {
-            this.checkReadyOnlyOnce = true;
-        }
+        this._checkScenePerformancePriority();
 
         return true;
     }
@@ -1556,14 +1561,14 @@ export class StandardMaterial extends PushMaterial {
             this.bindOnlyNormalMatrix(this._normalMatrix);
         }
 
-        const mustRebind = this._mustRebind(scene, effect, mesh.visibility);
+        const mustRebind = effect._forceRebindOnNextCall || this._mustRebind(scene, effect, mesh.visibility);
 
         // Bones
         MaterialHelper.BindBonesParameters(mesh, effect);
         const ubo = this._uniformBuffer;
         if (mustRebind) {
             this.bindViewProjection(effect);
-            if (!ubo.useUbo || !this.isFrozen || !ubo.isSync) {
+            if (!ubo.useUbo || !this.isFrozen || !ubo.isSync || effect._forceRebindOnNextCall) {
                 if (StandardMaterial.FresnelEnabled && defines.FRESNEL) {
                     // Fresnel
                     if (this.diffuseFresnelParameters && this.diffuseFresnelParameters.isEnabled) {

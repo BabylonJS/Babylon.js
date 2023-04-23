@@ -70,6 +70,9 @@ export class MaterialPluginBase {
 
         if (!material.pluginManager) {
             material.pluginManager = new MaterialPluginManager(material);
+            material.onDisposeObservable.add(() => {
+                material.pluginManager = undefined;
+            });
         }
 
         this._pluginDefineNames = defines;
@@ -263,7 +266,7 @@ export class MaterialPluginBase {
      * Gets the description of the uniforms to add to the ubo (if engine supports ubos) or to inject directly in the vertex/fragment shaders (if engine does not support ubos)
      * @returns the description of the uniforms
      */
-    public getUniforms(): { ubo?: Array<{ name: string; size: number; type: string }>; vertex?: string; fragment?: string } {
+    public getUniforms(): { ubo?: Array<{ name: string; size?: number; type?: string; arraySize?: number }>; vertex?: string; fragment?: string } {
         return {};
     }
 

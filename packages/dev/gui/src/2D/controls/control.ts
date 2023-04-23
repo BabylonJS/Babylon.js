@@ -19,12 +19,13 @@ import type { Style } from "../style";
 import { Matrix2D, Vector2WithInfo } from "../math2D";
 import { GetClass, RegisterClass } from "core/Misc/typeStore";
 import { SerializationHelper, serialize } from "core/Misc/decorators";
-import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import type { ICanvasGradient, ICanvasRenderingContext } from "core/Engines/ICanvas";
 import { EngineStore } from "core/Engines/engineStore";
 import type { IAccessibilityTag } from "core/IAccessibilityTag";
 import type { IPointerEvent } from "core/Events/deviceInputEvents";
 import type { IAnimatable } from "core/Animations/animatable.interface";
 import type { Animation } from "core/Animations/animation";
+import type { BaseGradient } from "./gradient/BaseGradient";
 
 /**
  * Root class used for all 2D controls
@@ -74,7 +75,7 @@ export class Control implements IAnimatable {
     /** @internal */
     public _prevCurrentMeasureTransformedIntoGlobalSpace = Measure.Empty();
     /** @internal */
-    protected _cachedParentMeasure = Measure.Empty();
+    public _cachedParentMeasure = Measure.Empty();
     private _descendantsOnlyPadding = false;
     private _paddingLeft = new ValueAndUnit(0);
     private _paddingRight = new ValueAndUnit(0);
@@ -116,6 +117,7 @@ export class Control implements IAnimatable {
     protected _disabledColor = "#9a9a9a";
     protected _disabledColorItem = "#6a6a6a";
     protected _isReadOnly = false;
+    private _gradient: Nullable<BaseGradient> = null;
     /** @internal */
     protected _rebuildLayout = false;
 
@@ -177,19 +179,33 @@ export class Control implements IAnimatable {
     @serialize()
     public isFocusInvisible = false;
 
+    protected _clipChildren = true;
     /**
-     * Gets or sets a boolean indicating if the children are clipped to the current control bounds.
+     * Sets/Gets a boolean indicating if the children are clipped to the current control bounds.
      * Please note that not clipping children may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
      */
-    @serialize()
-    public clipChildren = true;
+    public set clipChildren(value: boolean) {
+        this._clipChildren = value;
+    }
 
-    /**
-     * Gets or sets a boolean indicating that control content must be clipped
-     * Please note that not clipping children may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
-     */
     @serialize()
-    public clipContent = true;
+    public get clipChildren() {
+        return this._clipChildren;
+    }
+
+    protected _clipContent = true;
+    /**
+     * Sets/Gets a boolean indicating that control content must be clipped
+     * Please note that not clipping content may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
+     */
+    public set clipContent(value: boolean) {
+        this._clipContent = value;
+    }
+
+    @serialize()
+    public get clipContent() {
+        return this._clipContent;
+    }
 
     /**
      * Gets or sets a boolean indicating that the current control should cache its rendering (useful when the control does not change often)
@@ -781,6 +797,21 @@ export class Control implements IAnimatable {
         this._markAsDirty();
     }
 
+    /** Gets or sets gradient. Setting a gradient will override the color */
+    @serialize()
+    public get gradient(): Nullable<BaseGradient> {
+        return this._gradient;
+    }
+
+    public set gradient(value: Nullable<BaseGradient>) {
+        if (this._gradient === value) {
+            return;
+        }
+
+        this._gradient = value;
+        this._markAsDirty();
+    }
+
     /** Gets or sets z index which is used to reorder controls on the z axis */
     @serialize()
     public get zIndex(): number {
@@ -1350,7 +1381,7 @@ export class Control implements IAnimatable {
         this.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
 
         const globalViewport = this._host._getGlobalViewport();
-        const projectedPosition = Vector3.Project(position, Matrix.Identity(), scene.getTransformMatrix(), globalViewport);
+        const projectedPosition = Vector3.Project(position, Matrix.IdentityReadOnly, scene.getTransformMatrix(), globalViewport);
 
         this._moveToProjectedPosition(projectedPosition);
 
@@ -1470,7 +1501,8 @@ export class Control implements IAnimatable {
         let newLeft = projectedPosition.x + this._linkOffsetX.getValue(this._host) - this._currentMeasure.width / 2;
         let newTop = projectedPosition.y + this._linkOffsetY.getValue(this._host) - this._currentMeasure.height / 2;
 
-        if (this._left.ignoreAdaptiveScaling && this._top.ignoreAdaptiveScaling) {
+        const leftAndTopIgnoreAdaptiveScaling = this._left.ignoreAdaptiveScaling && this._top.ignoreAdaptiveScaling;
+        if (leftAndTopIgnoreAdaptiveScaling) {
             if (Math.abs(newLeft - oldLeft) < 0.5) {
                 newLeft = oldLeft;
             }
@@ -1478,6 +1510,10 @@ export class Control implements IAnimatable {
             if (Math.abs(newTop - oldTop) < 0.5) {
                 newTop = oldTop;
             }
+        }
+
+        if (!leftAndTopIgnoreAdaptiveScaling && oldLeft === newLeft && oldTop === newTop) {
+            return;
         }
 
         this.left = newLeft + "px";
@@ -1552,7 +1588,7 @@ export class Control implements IAnimatable {
 
     /** @internal */
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    protected invalidateRect() {
+    public invalidateRect() {
         this._transform();
         if (this.host && this.host.useInvalidateRectOptimization) {
             // Rotate by transform to get the measure transformed to global space
@@ -1679,6 +1715,10 @@ export class Control implements IAnimatable {
         context.strokeRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
     }
 
+    protected _getColor(context: ICanvasRenderingContext): string | ICanvasGradient {
+        return this.gradient ? this.gradient.getCanvasGradient(context) : this.color;
+    }
+
     /**
      * @internal
      */
@@ -1700,8 +1740,8 @@ export class Control implements IAnimatable {
             context.font = this._font;
         }
 
-        if (this._color) {
-            context.fillStyle = this._color;
+        if (this._color || this.gradient) {
+            context.fillStyle = this._getColor(context);
         }
 
         if (Control.AllowAlphaInheritance) {
@@ -1797,6 +1837,8 @@ export class Control implements IAnimatable {
     }
 
     protected _evaluateClippingState(parentMeasure: Measure) {
+        // Since transformMatrix is used here, we need to have it freshly computed
+        this._transform();
         this._currentMeasure.transformToRef(this._transformMatrix, this._evaluatedMeasure);
         if (this.parent && this.parent.clipChildren) {
             parentMeasure.transformToRef(this.parent._transformMatrix, this._evaluatedParentMeasure);
@@ -2371,6 +2413,11 @@ export class Control implements IAnimatable {
             serializationObject.fontStyle = this.fontStyle;
         }
 
+        if (this._gradient) {
+            serializationObject.gradient = {};
+            this._gradient.serialize(serializationObject.gradient);
+        }
+
         // Animations
         SerializationHelper.AppendSerializedAnimations(this, serializationObject);
     }
@@ -2393,6 +2440,13 @@ export class Control implements IAnimatable {
 
         if (serializedObject.fontStyle) {
             this.fontStyle = serializedObject.fontStyle;
+        }
+
+        // Gradient
+        if (serializedObject.gradient) {
+            const className = Tools.Instantiate("BABYLON.GUI." + serializedObject.gradient.className);
+            this._gradient = new className();
+            this._gradient?.parse(serializedObject.gradient);
         }
 
         // Animations
@@ -2547,6 +2601,15 @@ export class Control implements IAnimatable {
 
         context.scale(1 / width, 1 / height);
         context.translate(-x, -y);
+    }
+
+    /**
+     * Returns true if the control is ready to be used
+     * @returns
+     */
+    public isReady(): boolean {
+        // Most controls are ready by default, so the default implementation is to return true
+        return true;
     }
 }
 RegisterClass("BABYLON.GUI.Control", Control);

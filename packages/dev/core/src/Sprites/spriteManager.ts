@@ -234,6 +234,22 @@ export class SpriteManager implements ISpriteManager {
         this._spriteRenderer.disableDepthWrite = value;
     }
 
+    /**
+     * Gets or sets a boolean indicating if the renderer must render sprites with pixel perfect rendering
+     * In this mode, sprites are rendered as "pixel art", which means that they appear as pixelated but remain stable when moving or when rotated or scaled.
+     * Note that for this mode to work as expected, the sprite texture must use the BILINEAR sampling mode, not NEAREST!
+     */
+    public get pixelPerfect() {
+        return this._spriteRenderer.pixelPerfect;
+    }
+
+    public set pixelPerfect(value: boolean) {
+        this._spriteRenderer.pixelPerfect = value;
+        if (value && this.texture.samplingMode !== Constants.TEXTURE_TRILINEAR_SAMPLINGMODE) {
+            this.texture.updateSamplingMode(Constants.TEXTURE_TRILINEAR_SAMPLINGMODE);
+        }
+    }
+
     private _spriteRenderer: SpriteRenderer;
     /** Associative array from JSON sprite data file */
     private _cellData: any;
@@ -294,7 +310,7 @@ export class SpriteManager implements ISpriteManager {
             return;
         }
 
-        this._scene.spriteManagers.push(this);
+        this._scene.spriteManagers && this._scene.spriteManagers.push(this);
         this.uniqueId = this.scene.getUniqueId();
 
         if (imgUrl) {
@@ -628,8 +644,10 @@ export class SpriteManager implements ISpriteManager {
         this._textureContent = null;
 
         // Remove from scene
-        const index = this._scene.spriteManagers.indexOf(this);
-        this._scene.spriteManagers.splice(index, 1);
+        if (this._scene.spriteManagers) {
+            const index = this._scene.spriteManagers.indexOf(this);
+            this._scene.spriteManagers.splice(index, 1);
+        }
 
         // Callback
         this.onDisposeObservable.notifyObservers(this);
@@ -650,6 +668,10 @@ export class SpriteManager implements ISpriteManager {
         serializationObject.capacity = this.capacity;
         serializationObject.cellWidth = this.cellWidth;
         serializationObject.cellHeight = this.cellHeight;
+        serializationObject.fogEnabled = this.fogEnabled;
+        serializationObject.blendMode = this.blendMode;
+        serializationObject.disableDepthWrite = this.disableDepthWrite;
+        serializationObject.pixelPerfect = this.pixelPerfect;
 
         if (this.texture) {
             if (serializeTexture) {
@@ -689,6 +711,19 @@ export class SpriteManager implements ISpriteManager {
             },
             scene
         );
+
+        if (parsedManager.fogEnabled !== undefined) {
+            manager.fogEnabled = parsedManager.fogEnabled;
+        }
+        if (parsedManager.blendMode !== undefined) {
+            manager.blendMode = parsedManager.blendMode;
+        }
+        if (parsedManager.disableDepthWrite !== undefined) {
+            manager.disableDepthWrite = parsedManager.disableDepthWrite;
+        }
+        if (parsedManager.pixelPerfect !== undefined) {
+            manager.pixelPerfect = parsedManager.pixelPerfect;
+        }
 
         if (parsedManager.metadata !== undefined) {
             manager.metadata = parsedManager.metadata;

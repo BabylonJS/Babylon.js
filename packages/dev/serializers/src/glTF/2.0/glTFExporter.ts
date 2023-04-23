@@ -849,17 +849,18 @@ export class _Exporter {
                 const meshMaterial = (babylonTransformNode as Mesh).material;
                 const convertToLinear = meshMaterial ? meshMaterial.getClassName() === "StandardMaterial" : true;
                 const vertexData: Color3 | Color4 = stride === 3 ? new Color3() : new Color4();
+                const useExactSrgbConversions = this._babylonScene.getEngine().useExactSrgbConversions;
                 for (let k = 0, length = meshAttributeArray.length / stride; k < length; ++k) {
                     index = k * stride;
                     if (stride === 3) {
                         Color3.FromArrayToRef(meshAttributeArray, index, vertexData as Color3);
                         if (convertToLinear) {
-                            (vertexData as Color3).toLinearSpaceToRef(vertexData as Color3);
+                            (vertexData as Color3).toLinearSpaceToRef(vertexData as Color3, useExactSrgbConversions);
                         }
                     } else {
                         Color4.FromArrayToRef(meshAttributeArray, index, vertexData as Color4);
                         if (convertToLinear) {
-                            (vertexData as Color4).toLinearSpaceToRef(vertexData as Color4);
+                            (vertexData as Color4).toLinearSpaceToRef(vertexData as Color4, useExactSrgbConversions);
                         }
                     }
                     vertexAttributes.push(vertexData.asArray());
@@ -1356,8 +1357,8 @@ export class _Exporter {
     }
 
     private _getVertexBufferFromMesh(attributeKind: string, bufferMesh: Mesh): Nullable<VertexBuffer> {
-        if (bufferMesh.isVerticesDataPresent(attributeKind)) {
-            const vertexBuffer = bufferMesh.getVertexBuffer(attributeKind);
+        if (bufferMesh.isVerticesDataPresent(attributeKind, true)) {
+            const vertexBuffer = bufferMesh.getVertexBuffer(attributeKind, true);
             if (vertexBuffer) {
                 return vertexBuffer;
             }
@@ -1390,8 +1391,8 @@ export class _Exporter {
                 : null;
 
         if (bufferMesh) {
-            const vertexBuffer = bufferMesh.getVertexBuffer(kind);
-            const vertexData = bufferMesh.getVerticesData(kind);
+            const vertexBuffer = bufferMesh.getVertexBuffer(kind, true);
+            const vertexData = bufferMesh.getVerticesData(kind, undefined, undefined, true);
 
             if (vertexBuffer && vertexData) {
                 const typeByteLength = VertexBuffer.GetTypeByteLength(attributeComponentKind);
@@ -1424,8 +1425,9 @@ export class _Exporter {
                 meshPrimitive.targets = [];
             }
             const target: { [attribute: string]: number } = {};
+            const mesh = babylonSubMesh.getMesh() as Mesh;
             if (babylonMorphTarget.hasNormals) {
-                const vertexNormals = babylonSubMesh.getMesh().getVerticesData(VertexBuffer.NormalKind)!;
+                const vertexNormals = mesh.getVerticesData(VertexBuffer.NormalKind, undefined, undefined, true)!;
                 const morphNormals = babylonMorphTarget.getNormals()!;
                 const count = babylonSubMesh.verticesCount;
                 const byteStride = 12; // 3 x 4 byte floats
@@ -1460,7 +1462,7 @@ export class _Exporter {
                 );
             }
             if (babylonMorphTarget.hasPositions) {
-                const vertexPositions = babylonSubMesh.getMesh().getVerticesData(VertexBuffer.PositionKind)!;
+                const vertexPositions = mesh.getVerticesData(VertexBuffer.PositionKind, undefined, undefined, true)!;
                 const morphPositions = babylonMorphTarget.getPositions()!;
                 const count = babylonSubMesh.verticesCount;
                 const byteStride = 12; // 3 x 4 byte floats
@@ -1499,7 +1501,7 @@ export class _Exporter {
                 accessor.max = minMax.max!.asArray();
             }
             if (babylonMorphTarget.hasTangents) {
-                const vertexTangents = babylonSubMesh.getMesh().getVerticesData(VertexBuffer.TangentKind)!;
+                const vertexTangents = mesh.getVerticesData(VertexBuffer.TangentKind, undefined, undefined, true)!;
                 const morphTangents = babylonMorphTarget.getTangents()!;
                 const count = babylonSubMesh.verticesCount;
                 const byteStride = 12; // 3 x 4 byte floats
@@ -1544,6 +1546,12 @@ export class _Exporter {
     private _getMeshPrimitiveMode(babylonMesh: AbstractMesh): number {
         if (babylonMesh instanceof LinesMesh) {
             return Material.LineListDrawMode;
+        }
+        if (babylonMesh instanceof InstancedMesh || babylonMesh instanceof Mesh) {
+            const baseMesh = babylonMesh instanceof Mesh ? babylonMesh : babylonMesh.sourceMesh;
+            if (typeof baseMesh.overrideRenderingFillMode === "number") {
+                return baseMesh.overrideRenderingFillMode;
+            }
         }
         return babylonMesh.material ? babylonMesh.material.fillMode : Material.TriangleFillMode;
     }
@@ -1685,7 +1693,7 @@ export class _Exporter {
             for (const attribute of attributeData) {
                 const attributeKind = attribute.kind;
                 const attributeComponentKind = attribute.accessorComponentType;
-                if (bufferMesh.isVerticesDataPresent(attributeKind)) {
+                if (bufferMesh.isVerticesDataPresent(attributeKind, true)) {
                     const vertexBuffer = this._getVertexBufferFromMesh(attributeKind, bufferMesh);
                     attribute.byteStride = vertexBuffer
                         ? vertexBuffer.getSize() * VertexBuffer.GetTypeByteLength(attribute.accessorComponentType)
@@ -1756,7 +1764,7 @@ export class _Exporter {
                                 continue;
                             }
                         }
-                        const vertexData = bufferMesh.getVerticesData(attributeKind);
+                        const vertexData = bufferMesh.getVerticesData(attributeKind, undefined, undefined, true);
                         if (vertexData) {
                             const vertexBuffer = this._getVertexBufferFromMesh(attributeKind, bufferMesh);
                             if (vertexBuffer) {
@@ -1820,7 +1828,7 @@ export class _Exporter {
                                 this._reorderIndicesBasedOnPrimitiveMode(submesh, primitiveMode, babylonIndices, byteOffset, binaryWriter);
                             } else {
                                 for (const attribute of attributeData) {
-                                    const vertexData = bufferMesh.getVerticesData(attribute.kind);
+                                    const vertexData = bufferMesh.getVerticesData(attribute.kind, undefined, undefined, true);
                                     if (vertexData) {
                                         let byteOffset = this._bufferViews[vertexAttributeBufferViews[attribute.kind]].byteOffset;
                                         if (!byteOffset) {
@@ -1903,6 +1911,15 @@ export class _Exporter {
 
         this._convertToRightHandedSystem = !babylonScene.useRightHandedSystem;
         this._convertToRightHandedSystemMap = {};
+
+        // Scene metadata
+        if (babylonScene.metadata) {
+            if (this._options.metadataSelector) {
+                scene.extras = this._options.metadataSelector(babylonScene.metadata);
+            } else if (babylonScene.metadata.gltf) {
+                scene.extras = babylonScene.metadata.gltf.extras;
+            }
+        }
 
         // Set default values for all nodes
         babylonScene.rootNodes.forEach((rootNode) => {
@@ -2128,7 +2145,8 @@ export class _Exporter {
                                     this._bufferViews,
                                     this._accessors,
                                     convertToRightHandedSystem,
-                                    this._animationSampleRate
+                                    this._animationSampleRate,
+                                    this._options.shouldExportAnimation
                                 );
                                 if (babylonNode.animations.length) {
                                     _GLTFAnimation._CreateNodeAnimationFromNodeAnimations(
@@ -2141,7 +2159,8 @@ export class _Exporter {
                                         this._bufferViews,
                                         this._accessors,
                                         convertToRightHandedSystem,
-                                        this._animationSampleRate
+                                        this._animationSampleRate,
+                                        this._options.shouldExportAnimation
                                     );
                                 }
                             }
@@ -2171,7 +2190,8 @@ export class _Exporter {
                     this._bufferViews,
                     this._accessors,
                     this._convertToRightHandedSystemMap,
-                    this._animationSampleRate
+                    this._animationSampleRate,
+                    this._options.shouldExportAnimation
                 );
             }
 
@@ -2261,40 +2281,42 @@ export class _Exporter {
                 inverseBindMatrices.push(bone.getInvertedAbsoluteTransform());
 
                 const transformNode = bone.getTransformNode();
-                if (transformNode) {
+                if (transformNode && nodeMap[transformNode.uniqueId] !== null && nodeMap[transformNode.uniqueId] !== undefined) {
                     skin.joints.push(nodeMap[transformNode.uniqueId]);
                 } else {
                     Tools.Warn("Exporting a bone without a linked transform node is currently unsupported");
                 }
             }
 
-            // create buffer view for inverse bind matrices
-            const byteStride = 64; // 4 x 4 matrix of 32 bit float
-            const byteLength = inverseBindMatrices.length * byteStride;
-            const bufferViewOffset = binaryWriter.getByteOffset();
-            const bufferView = _GLTFUtilities._CreateBufferView(0, bufferViewOffset, byteLength, undefined, "InverseBindMatrices" + " - " + skeleton.name);
-            this._bufferViews.push(bufferView);
-            const bufferViewIndex = this._bufferViews.length - 1;
-            const bindMatrixAccessor = _GLTFUtilities._CreateAccessor(
-                bufferViewIndex,
-                "InverseBindMatrices" + " - " + skeleton.name,
-                AccessorType.MAT4,
-                AccessorComponentType.FLOAT,
-                inverseBindMatrices.length,
-                null,
-                null,
-                null
-            );
-            const inverseBindAccessorIndex = this._accessors.push(bindMatrixAccessor) - 1;
-            skin.inverseBindMatrices = inverseBindAccessorIndex;
-            this._skins.push(skin);
-            skinMap[skeleton.uniqueId] = this._skins.length - 1;
+            if (skin.joints.length > 0) {
+                // create buffer view for inverse bind matrices
+                const byteStride = 64; // 4 x 4 matrix of 32 bit float
+                const byteLength = inverseBindMatrices.length * byteStride;
+                const bufferViewOffset = binaryWriter.getByteOffset();
+                const bufferView = _GLTFUtilities._CreateBufferView(0, bufferViewOffset, byteLength, undefined, "InverseBindMatrices" + " - " + skeleton.name);
+                this._bufferViews.push(bufferView);
+                const bufferViewIndex = this._bufferViews.length - 1;
+                const bindMatrixAccessor = _GLTFUtilities._CreateAccessor(
+                    bufferViewIndex,
+                    "InverseBindMatrices" + " - " + skeleton.name,
+                    AccessorType.MAT4,
+                    AccessorComponentType.FLOAT,
+                    inverseBindMatrices.length,
+                    null,
+                    null,
+                    null
+                );
+                const inverseBindAccessorIndex = this._accessors.push(bindMatrixAccessor) - 1;
+                skin.inverseBindMatrices = inverseBindAccessorIndex;
+                this._skins.push(skin);
+                skinMap[skeleton.uniqueId] = this._skins.length - 1;
 
-            inverseBindMatrices.forEach((mat) => {
-                mat.m.forEach((cell: number) => {
-                    binaryWriter.setFloat32(cell);
+                inverseBindMatrices.forEach((mat) => {
+                    mat.m.forEach((cell: number) => {
+                        binaryWriter.setFloat32(cell);
+                    });
                 });
-            });
+            }
         }
         return promiseChain.then(() => {
             return skinMap;
@@ -2335,11 +2357,10 @@ export class _BinaryWriter {
      */
     private _resizeBuffer(byteLength: number): ArrayBuffer {
         const newBuffer = new ArrayBuffer(byteLength);
-        const oldUint8Array = new Uint8Array(this._arrayBuffer);
+        const copyOldBufferSize = Math.min(this._arrayBuffer.byteLength, byteLength);
+        const oldUint8Array = new Uint8Array(this._arrayBuffer, 0, copyOldBufferSize);
         const newUint8Array = new Uint8Array(newBuffer);
-        for (let i = 0, length = newUint8Array.byteLength; i < length; ++i) {
-            newUint8Array[i] = oldUint8Array[i];
-        }
+        newUint8Array.set(oldUint8Array, 0);
         this._arrayBuffer = newBuffer;
         this._dataView = new DataView(this._arrayBuffer);
 

@@ -11,18 +11,49 @@ import type { AdvancedDynamicTexture } from "../../2D/advancedDynamicTexture";
 import { Color3 } from "core/Maths/math.color";
 
 /**
+ * Options used to create a button in 3D
+ */
+export interface IButton3DCreationOptions {
+    /**
+     * Width of the button. Default: 1
+     */
+    width?: number;
+
+    /**
+     * Height of the button. Default: 1
+     */
+    height?: number;
+
+    /**
+     * Depth of the button. Default: 0.08
+     */
+    depth?: number;
+}
+
+/**
  * Class used to create a button in 3D
  */
 export class Button3D extends AbstractButton3D {
     /** @internal */
     protected _currentMaterial: Material;
 
+    protected _options: IButton3DCreationOptions;
+    protected _height: number;
+    protected _depth: number;
+
     /**
      * Creates a new button
      * @param name defines the control name
      */
-    constructor(name?: string) {
+    constructor(name?: string, options?: IButton3DCreationOptions) {
         super(name);
+
+        this._options = {
+            width: 1,
+            height: 1,
+            depth: 0.08,
+            ...options,
+        };
 
         // Default animations
 
@@ -83,14 +114,17 @@ export class Button3D extends AbstractButton3D {
         const mesh = CreateBox(
             this.name + "_rootMesh",
             {
-                width: 1.0,
-                height: 1.0,
-                depth: 0.08,
+                width: this._options.width,
+                height: this._options.height,
+                depth: this._options.depth,
                 faceUV: faceUV,
                 wrap: true,
             },
             scene
         );
+
+        this._contentScaleRatioY = (this._contentScaleRatio * this._options.width!) / this._options.height!;
+        this._setFacadeTextureScaling();
 
         return mesh;
     }

@@ -70,6 +70,25 @@ export class SpriteRenderer {
         return this._capacity;
     }
 
+    private _pixelPerfect = false;
+
+    /**
+     * Gets or sets a boolean indicating if the renderer must render sprites with pixel perfect rendering
+     * Note that pixel perfect mode is not supported in WebGL 1
+     */
+    public get pixelPerfect() {
+        return this._pixelPerfect;
+    }
+
+    public set pixelPerfect(value: boolean) {
+        if (this._pixelPerfect === value) {
+            return;
+        }
+
+        this._pixelPerfect = value;
+        this._createEffects();
+    }
+
     private readonly _engine: ThinEngine;
     private readonly _useVAO: boolean = false;
     private readonly _useInstancing: boolean = false;
@@ -105,26 +124,9 @@ export class SpriteRenderer {
         this._useInstancing = engine.getCaps().instancedArrays && engine._features.supportSpriteInstancing;
         this._useVAO = engine.getCaps().vertexArrayObject && !engine.disableVertexArrayObjects;
         this._scene = scene;
-        this._drawWrapperBase = new DrawWrapper(engine);
-        this._drawWrapperFog = new DrawWrapper(engine);
-        this._drawWrapperDepth = new DrawWrapper(engine, false);
-        this._drawWrapperFogDepth = new DrawWrapper(engine, false);
 
         if (!this._useInstancing) {
             this._buildIndexBuffer();
-        }
-
-        if (this._drawWrapperBase.drawContext) {
-            this._drawWrapperBase.drawContext.useInstancing = this._useInstancing;
-        }
-        if (this._drawWrapperFog.drawContext) {
-            this._drawWrapperFog.drawContext.useInstancing = this._useInstancing;
-        }
-        if (this._drawWrapperDepth.drawContext) {
-            this._drawWrapperDepth.drawContext.useInstancing = this._useInstancing;
-        }
-        if (this._drawWrapperFogDepth.drawContext) {
-            this._drawWrapperFogDepth.drawContext.useInstancing = this._useInstancing;
         }
 
         // VBO
@@ -160,13 +162,41 @@ export class SpriteRenderer {
         this._vertexBuffers["cellInfo"] = cellInfo;
         this._vertexBuffers[VertexBuffer.ColorKind] = colors;
 
-        // Effects
+        this._createEffects();
+    }
+
+    private _createEffects() {
+        this._drawWrapperBase?.dispose();
+        this._drawWrapperFog?.dispose();
+        this._drawWrapperDepth?.dispose();
+        this._drawWrapperFogDepth?.dispose();
+
+        this._drawWrapperBase = new DrawWrapper(this._engine);
+        this._drawWrapperFog = new DrawWrapper(this._engine);
+        this._drawWrapperDepth = new DrawWrapper(this._engine, false);
+        this._drawWrapperFogDepth = new DrawWrapper(this._engine, false);
+
+        if (this._drawWrapperBase.drawContext) {
+            this._drawWrapperBase.drawContext.useInstancing = this._useInstancing;
+        }
+        if (this._drawWrapperFog.drawContext) {
+            this._drawWrapperFog.drawContext.useInstancing = this._useInstancing;
+        }
+        if (this._drawWrapperDepth.drawContext) {
+            this._drawWrapperDepth.drawContext.useInstancing = this._useInstancing;
+        }
+        if (this._drawWrapperFogDepth.drawContext) {
+            this._drawWrapperFogDepth.drawContext.useInstancing = this._useInstancing;
+        }
+
+        const defines = this._pixelPerfect ? "#define PIXEL_PERFECT\n" : "";
+
         this._drawWrapperBase.effect = this._engine.createEffect(
             "sprites",
             [VertexBuffer.PositionKind, "options", "offsets", "inverts", "cellInfo", VertexBuffer.ColorKind],
             ["view", "projection", "textureInfos", "alphaTest"],
             ["diffuseSampler"],
-            ""
+            defines
         );
 
         this._drawWrapperDepth.effect = this._drawWrapperBase.effect;
@@ -180,7 +210,7 @@ export class SpriteRenderer {
                     [VertexBuffer.PositionKind, "options", "offsets", "inverts", "cellInfo", VertexBuffer.ColorKind],
                     ["view", "projection", "textureInfos", "alphaTest", "vFogInfos", "vFogColor"],
                     ["diffuseSampler"],
-                    "#define FOG"
+                    defines + "#define FOG"
                 );
             this._drawWrapperFogDepth.effect = this._drawWrapperFog.effect;
             this._drawWrapperFogDepth.materialContext = this._drawWrapperFog.materialContext;

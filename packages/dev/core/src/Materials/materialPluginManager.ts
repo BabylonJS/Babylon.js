@@ -17,6 +17,7 @@ import type {
     MaterialPluginFillRenderTargetTextures,
 } from "./materialPluginEvent";
 import { MaterialPluginEvent } from "./materialPluginEvent";
+import type { Observer } from "core/Misc/observable";
 
 declare type Scene = import("../scene").Scene;
 declare type Engine = import("../Engines/engine").Engine;
@@ -30,6 +31,8 @@ declare module "./material" {
         pluginManager?: MaterialPluginManager;
     }
 }
+
+const rxOption = new RegExp("^([gimus]+)!");
 
 /**
  * Class that manages the plugins of a material
@@ -279,8 +282,11 @@ export class MaterialPluginManager {
                     if (uniforms) {
                         if (uniforms.ubo) {
                             for (const uniform of uniforms.ubo) {
-                                eventData.ubo.addUniform(uniform.name, uniform.size);
-                                this._uboDeclaration += `${uniform.type} ${uniform.name};\r\n`;
+                                if (uniform.size && uniform.type) {
+                                    const arraySize = uniform.arraySize ?? 0;
+                                    eventData.ubo.addUniform(uniform.name, uniform.size, arraySize);
+                                    this._uboDeclaration += `${uniform.type} ${uniform.name}${arraySize > 0 ? `[${arraySize}]` : ""};\r\n`;
+                                }
                                 this._uniformList.push(uniform.name);
                             }
                         }
@@ -329,7 +335,7 @@ export class MaterialPluginManager {
             if (!points) {
                 return code;
             }
-            for (const pointName in points) {
+            for (let pointName in points) {
                 let injectedCode = "";
                 for (const plugin of this._activePlugins) {
                     const customCode = plugin.getCustomCode(shaderType);
@@ -340,15 +346,37 @@ export class MaterialPluginManager {
                 if (injectedCode.length > 0) {
                     if (pointName.charAt(0) === "!") {
                         // pointName is a regular expression
-                        const rx = new RegExp(pointName.substring(1), "g");
-                        let match = rx.exec(code);
+                        pointName = pointName.substring(1);
+
+                        let regexFlags = "g";
+                        if (pointName.charAt(0) === "!") {
+                            // no flags
+                            regexFlags = "";
+                            pointName = pointName.substring(1);
+                        } else {
+                            // get the flag(s)
+                            const matchOption = rxOption.exec(pointName);
+                            if (matchOption && matchOption.length >= 2) {
+                                regexFlags = matchOption[1];
+                                pointName = pointName.substring(regexFlags.length + 1);
+                            }
+                        }
+
+                        if (regexFlags.indexOf("g") < 0) {
+                            // we force the "g" flag so that the regexp object is stateful!
+                            regexFlags += "g";
+                        }
+
+                        const sourceCode = code;
+                        const rx = new RegExp(pointName, regexFlags);
+                        let match = rx.exec(sourceCode);
                         while (match !== null) {
                             let newCode = injectedCode;
                             for (let i = 0; i < match.length; ++i) {
                                 newCode = newCode.replace("$" + i, match[i]);
                             }
                             code = code.replace(match[0], newCode);
-                            match = rx.exec(code);
+                            match = rx.exec(sourceCode);
                         }
                     } else {
                         const fullPointName = "#define " + pointName;
@@ -368,6 +396,7 @@ export type PluginMaterialFactory = (material: Material) => Nullable<MaterialPlu
 
 const plugins: Array<[string, PluginMaterialFactory]> = [];
 let inited = false;
+let observer: Nullable<Observer<Material>> = null;
 
 /**
  * Registers a new material plugin through a factory, or updates it. This makes the plugin available to all materials instantiated after its registration.
@@ -377,7 +406,7 @@ let inited = false;
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function RegisterMaterialPlugin(pluginName: string, factory: PluginMaterialFactory): void {
     if (!inited) {
-        Material.OnEventObservable.add((material: Material) => {
+        observer = Material.OnEventObservable.add((material: Material) => {
             for (const [, factory] of plugins) {
                 factory(material);
             }
@@ -402,6 +431,9 @@ export function UnregisterMaterialPlugin(pluginName: string): boolean {
     for (let i = 0; i < plugins.length; ++i) {
         if (plugins[i][0] === pluginName) {
             plugins.splice(i, 1);
+            if (plugins.length === 0) {
+                UnregisterAllMaterialPlugins();
+            }
             return true;
         }
     }
@@ -414,4 +446,6 @@ export function UnregisterMaterialPlugin(pluginName: string): boolean {
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function UnregisterAllMaterialPlugins(): void {
     plugins.length = 0;
+    inited = false;
+    Material.OnEventObservable.remove(observer);
 }

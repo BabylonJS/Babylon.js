@@ -1,3 +1,5 @@
+/* disable_uniformity_analysis */
+
 // Index of refraction for water
 #define IOR 1.333
 
@@ -46,7 +48,11 @@ vec3 computeViewPosFromUVDepth(vec2 texCoord, float depth) {
     vec4 ndc;
     
     ndc.xy = texCoord * 2.0 - 1.0;
+#ifdef FLUIDRENDERING_RHS
+    ndc.z = -projectionMatrix[2].z + projectionMatrix[3].z / depth;
+#else
     ndc.z = projectionMatrix[2].z + projectionMatrix[3].z / depth;
+#endif
     ndc.w = 1.0;
 
     vec4 eyePos = invProjectionMatrix * ndc;
@@ -56,7 +62,7 @@ vec3 computeViewPosFromUVDepth(vec2 texCoord, float depth) {
 }
 
 vec3 getViewPosFromTexCoord(vec2 texCoord) {
-    float depth = texture2D(depthSampler, texCoord).x;
+    float depth = textureLod(depthSampler, texCoord, 0.).x;
     return computeViewPosFromUVDepth(texCoord, depth);
 }
 
@@ -79,7 +85,7 @@ void main(void) {
     return;
 #endif
 
-    vec2 depthVel = texture2D(depthSampler, texCoord).rg;
+    vec2 depthVel = textureLod(depthSampler, texCoord, 0.).rg;
     float depth = depthVel.r;
 #ifndef FLUIDRENDERING_FIXED_THICKNESS
     float thickness = texture2D(thicknessSampler, texCoord).x;
@@ -89,14 +95,14 @@ void main(void) {
     depthNonLinear = depthNonLinear * 0.5 + 0.5;
 #endif
 
-    vec3 backColor = texture2D(textureSampler, texCoord).rgb;
+    vec4 backColor = texture2D(textureSampler, texCoord);
 
 #ifndef FLUIDRENDERING_FIXED_THICKNESS
     if (depth >= cameraFar || depth <= 0. || thickness <= minimumThickness) {
 #else
     if (depth >= cameraFar || depth <= 0. || bgDepth <= depthNonLinear) {
 #endif
-        glFragColor = vec4(backColor, 1.);
+        glFragColor = backColor;
         return;
     }
 
@@ -118,6 +124,9 @@ void main(void) {
     }
 
     vec3 normal = normalize(cross(ddy, ddx));
+#ifdef FLUIDRENDERING_RHS
+    normal = -normal;
+#endif
 #ifndef WEBGPU
     if(isnan(normal.x) || isnan(normal.y) || isnan(normal.z) || isinf(normal.x) || isinf(normal.y) || isinf(normal.z)) {
         normal = vec3(0., 0., -1.);
@@ -133,7 +142,7 @@ void main(void) {
     vec3 rayDir = normalize(viewPos); // direction from camera position to view position
 
 #ifdef FLUIDRENDERING_DIFFUSETEXTURE
-    vec3 diffuseColor = texture2D(diffuseSampler, texCoord).rgb;
+    vec3 diffuseColor = textureLod(diffuseSampler, texCoord, 0.0).rgb;
 #endif
 
     vec3  lightDir = normalize(vec3(viewMatrix * vec4(-dirLight, 0.)));
@@ -150,10 +159,10 @@ void main(void) {
     // Refraction color
     vec3 refractionDir = refract(rayDir, normal, ETA);
 
-    vec3 transmitted = (texture2D(textureSampler, vec2(texCoord + refractionDir.xy * thickness * refractionStrength)).rgb);
+    vec4 transmitted = textureLod(textureSampler, vec2(texCoord + refractionDir.xy * thickness * refractionStrength), 0.0);
     vec3 transmittance = exp(-density * thickness * (1.0 - diffuseColor)); // Beer law
    
-    vec3 refractionColor = transmitted * transmittance;
+    vec3 refractionColor = transmitted.rgb * transmittance;
 
 #ifdef FLUIDRENDERING_ENVIRONMENT
     // Reflection of the environment.
@@ -173,5 +182,5 @@ void main(void) {
     finalColor = mix(finalColor, vec3(1.0), smoothstep(0.3, 1.0, velocity / 6.0));
 #endif
 
-    glFragColor = vec4(finalColor, 1.);
+    glFragColor = vec4(finalColor, transmitted.a);
 }

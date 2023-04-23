@@ -1,4 +1,4 @@
-import { serialize, serializeAsMatrix, SerializationHelper } from "../../Misc/decorators";
+import { serialize, serializeAsMatrix, SerializationHelper, serializeAsVector3 } from "../../Misc/decorators";
 import { Tools } from "../../Misc/tools";
 import type { Nullable } from "../../types";
 import type { Scene } from "../../scene";
@@ -37,6 +37,7 @@ export class CubeTexture extends BaseTexture {
      * It must define where the camera used to render the texture was set
      * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/reflectionTexture#using-local-cubemap-mode
      */
+    @serializeAsVector3()
     public boundingBoxPosition = Vector3.Zero();
 
     private _boundingBoxSize: Vector3;
@@ -61,6 +62,7 @@ export class CubeTexture extends BaseTexture {
      * Returns the bounding box size
      * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/reflectionTexture#using-local-cubemap-mode
      */
+    @serializeAsVector3()
     public get boundingBoxSize(): Vector3 {
         return this._boundingBoxSize;
     }

@@ -1,5 +1,6 @@
 import type { Node } from "core/node";
 import type { Scene } from "core/scene";
+import type { Animation } from "core/Animations/animation";
 import type { GLTFData } from "./glTFData";
 import { _Exporter } from "./glTFExporter";
 
@@ -13,6 +14,13 @@ export interface IExportOptions {
      * @returns boolean, which indicates whether the node should be exported (true) or not (false)
      */
     shouldExportNode?(node: Node): boolean;
+
+    /**
+     * Function which indicates whether an animation on the scene should be exported or not
+     * @param animation source animation
+     * @returns boolean, which indicates whether the animation should be exported (true) or not (false)
+     */
+    shouldExportAnimation?(animation: Animation): boolean;
 
     /**
      * Function used to extract the part of node's metadata that will be exported into glTF node extras

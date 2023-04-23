@@ -7,10 +7,11 @@ import { RenderGridPropertyGridComponent } from "./propertyGrids/renderGridPrope
 import { PhysicsViewer } from "core/Debug/physicsViewer";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import type { Mesh } from "core/Meshes/mesh";
+import { MaterialFlags } from "core/Materials/materialFlags";
 
 import "core/Physics/physicsEngineComponent";
 import "core/Physics/v1/physicsEngineComponent";
-import "core/Physics/v1/physicsEngineComponent";
+import "core/Physics/v2/physicsEngineComponent";
 
 export class DebugTabComponent extends PaneComponent {
     private _physicsViewersEnabled = false;
@@ -42,6 +43,24 @@ export class DebugTabComponent extends PaneComponent {
             for (const mesh of scene.meshes) {
                 if (mesh.physicsImpostor) {
                     const debugMesh = physicsViewer.showImpostor(mesh.physicsImpostor, mesh as Mesh);
+
+                    if (debugMesh) {
+                        debugMesh.reservedDataStore = { hidden: true };
+                        debugMesh.material!.reservedDataStore = { hidden: true };
+                    }
+                } else if (mesh.physicsBody) {
+                    const debugMesh = physicsViewer.showBody(mesh.physicsBody);
+
+                    if (debugMesh) {
+                        debugMesh.reservedDataStore = { hidden: true };
+                        debugMesh.material!.reservedDataStore = { hidden: true };
+                    }
+                }
+            }
+
+            for (const transformNode of scene.transformNodes) {
+                if (transformNode.physicsBody) {
+                    const debugMesh = physicsViewer.showBody(transformNode.physicsBody);
 
                     if (debugMesh) {
                         debugMesh.reservedDataStore = { hidden: true };
@@ -123,6 +142,16 @@ export class DebugTabComponent extends PaneComponent {
                         label="Fresnel"
                         isSelected={() => StandardMaterial.FresnelEnabled}
                         onSelect={() => (StandardMaterial.FresnelEnabled = !StandardMaterial.FresnelEnabled)}
+                    />
+                    <CheckBoxLineComponent
+                        label="Detail"
+                        isSelected={() => MaterialFlags.DetailTextureEnabled}
+                        onSelect={() => (MaterialFlags.DetailTextureEnabled = !MaterialFlags.DetailTextureEnabled)}
+                    />
+                    <CheckBoxLineComponent
+                        label="Decal"
+                        isSelected={() => MaterialFlags.DecalMapEnabled}
+                        onSelect={() => (MaterialFlags.DecalMapEnabled = !MaterialFlags.DecalMapEnabled)}
                     />
                 </LineContainerComponent>
                 <LineContainerComponent title="FEATURES" selection={this.props.globalState}>

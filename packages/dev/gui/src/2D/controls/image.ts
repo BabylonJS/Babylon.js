@@ -54,6 +54,11 @@ export class Image extends Control {
     } = { data: null, key: "" };
 
     /**
+     * Cache of images to avoid loading the same image multiple times
+     */
+    public static SourceImgCache = new Map<string, { img: IImage; timesUsed: number; loaded: boolean; waitingForLoadCallback: Array<() => void> }>();
+
+    /**
      * Observable notified when the content is loaded
      */
     public onImageLoadedObservable = new Observable<Image>();
@@ -74,6 +79,10 @@ export class Image extends Control {
      */
     public get isLoaded(): boolean {
         return this._loaded;
+    }
+
+    public isReady(): boolean {
+        return this.isLoaded;
     }
 
     /**
@@ -509,12 +518,32 @@ export class Image extends Control {
     }
 
     /**
+     * Resets the internal Image Element cache. Can reduce memory usage.
+     */
+    public static ResetImageCache() {
+        Image.SourceImgCache.clear();
+    }
+
+    private _removeCacheUsage(source: Nullable<string>) {
+        const value = source && Image.SourceImgCache.get(source);
+        if (value) {
+            value.timesUsed -= 1;
+            // Since the image isn't being used anymore, we can clean it from the cache
+            if (value.timesUsed === 0) {
+                Image.SourceImgCache.delete(source);
+            }
+        }
+    }
+
+    /**
      * Gets or sets image source url
      */
     public set source(value: Nullable<string>) {
         if (this._source === value) {
             return;
         }
+
+        this._removeCacheUsage(this._source);
 
         this._loaded = false;
         this._source = value;
@@ -529,9 +558,34 @@ export class Image extends Control {
         if (!engine) {
             throw new Error("Invalid engine. Unable to create a canvas.");
         }
+        if (value && Image.SourceImgCache.has(value)) {
+            const cachedData = Image.SourceImgCache.get(value)!;
+            this._domImage = cachedData.img;
+            cachedData.timesUsed += 1;
+            if (cachedData.loaded) {
+                this._onImageLoaded();
+            } else {
+                cachedData.waitingForLoadCallback.push(this._onImageLoaded.bind(this));
+            }
+            return;
+        }
         this._domImage = engine.createCanvasImage();
+        if (value) {
+            Image.SourceImgCache.set(value, { img: this._domImage, timesUsed: 1, loaded: false, waitingForLoadCallback: [this._onImageLoaded.bind(this)] });
+        }
 
         this._domImage.onload = () => {
+            if (value) {
+                const cachedData = Image.SourceImgCache.get(value);
+                if (cachedData) {
+                    cachedData.loaded = true;
+                    for (const waitingCallback of cachedData.waitingForLoadCallback) {
+                        waitingCallback();
+                    }
+                    cachedData.waitingForLoadCallback.length = 0;
+                    return;
+                }
+            }
             this._onImageLoaded();
         };
         if (value) {
@@ -915,6 +969,7 @@ export class Image extends Control {
         super.dispose();
         this.onImageLoadedObservable.clear();
         this.onSVGAttributesComputedObservable.clear();
+        this._removeCacheUsage(this._source);
     }
 
     // Static

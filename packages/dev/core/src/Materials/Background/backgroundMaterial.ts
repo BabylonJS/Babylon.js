@@ -13,7 +13,6 @@ import type { Observer } from "../../Misc/observable";
 import { Logger } from "../../Misc/logger";
 import type { Nullable, int, float } from "../../types";
 import type { Scene } from "../../scene";
-import { ScenePerformancePriority } from "../../scene";
 import type { Matrix } from "../../Maths/math.vector";
 import { Vector3, Vector4 } from "../../Maths/math.vector";
 import { VertexBuffer } from "../../Buffers/buffer";
@@ -968,9 +967,7 @@ export class BackgroundMaterial extends PushMaterial {
         subMesh.effect._wasPreviouslyReady = true;
         subMesh.effect._wasPreviouslyUsingInstances = useInstances;
 
-        if (scene.performancePriority !== ScenePerformancePriority.BackwardCompatible) {
-            this.checkReadyOnlyOnce = true;
-        }
+        this._checkScenePerformancePriority();
 
         return true;
     }
@@ -986,7 +983,7 @@ export class BackgroundMaterial extends PushMaterial {
         this._primaryColor.copyFrom(this.__perceptualColor);
 
         // Revert gamma space.
-        this._primaryColor.toLinearSpaceToRef(this._primaryColor);
+        this._primaryColor.toLinearSpaceToRef(this._primaryColor, this.getScene().getEngine().useExactSrgbConversions);
 
         // Revert image processing configuration.
         if (this._imageProcessingConfiguration) {
@@ -1057,7 +1054,7 @@ export class BackgroundMaterial extends PushMaterial {
      * @param world The world matrix to bind.
      */
     public bindOnlyWorldMatrix(world: Matrix): void {
-        this._activeEffect.setMatrix("world", world);
+        this._activeEffect!.setMatrix("world", world);
     }
 
     /**

@@ -2,7 +2,7 @@ import type { Observer } from "../Misc/observable";
 import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
 import type { PointerInfo } from "../Events/pointerEvents";
-import { Vector3 } from "../Maths/math.vector";
+import type { Vector3 } from "../Maths/math.vector";
 import { TransformNode } from "../Meshes/transformNode";
 import type { Node } from "../node";
 import { Mesh } from "../Meshes/mesh";
@@ -15,7 +15,7 @@ import { StandardMaterial } from "../Materials/standardMaterial";
 import type { Scene } from "../scene";
 import type { PositionGizmo } from "./positionGizmo";
 import { Color3 } from "../Maths/math.color";
-
+import { TmpVectors } from "../Maths/math.vector";
 /**
  * Interface for axis drag gizmo
  */
@@ -31,6 +31,13 @@ export interface IAxisDragGizmo extends IGizmo {
     onSnapObservable: Observable<{ snapDistance: number }>;
     /** If the gizmo is enabled */
     isEnabled: boolean;
+
+    /** Default material used to render when gizmo is not disabled or hovered */
+    coloredMaterial: StandardMaterial;
+    /** Material used to render when gizmo is hovered with mouse*/
+    hoverMaterial: StandardMaterial;
+    /** Material used to render when gizmo is disabled. typically grey.*/
+    disableMaterial: StandardMaterial;
 }
 
 /**
@@ -61,6 +68,20 @@ export class AxisDragGizmo extends Gizmo implements IAxisDragGizmo {
     protected _disableMaterial: StandardMaterial;
     protected _dragging: boolean = false;
 
+    /** Default material used to render when gizmo is not disabled or hovered */
+    public get coloredMaterial() {
+        return this._coloredMaterial;
+    }
+
+    /** Material used to render when gizmo is hovered with mouse*/
+    public get hoverMaterial() {
+        return this._hoverMaterial;
+    }
+
+    /** Material used to render when gizmo is disabled. typically grey.*/
+    public get disableMaterial() {
+        return this._disableMaterial;
+    }
     /**
      * @internal
      */
@@ -143,8 +164,6 @@ export class AxisDragGizmo extends Gizmo implements IAxisDragGizmo {
         this._gizmoMesh.parent = this._rootMesh;
 
         let currentSnapDragDistance = 0;
-        const tmpVector = new Vector3();
-        const tmpVector2 = new Vector3();
         const tmpSnapEvent = { snapDistance: 0 };
         // Add drag behavior to handle events when the gizmo is dragged
         this.dragBehavior = new PointerDragBehavior({ dragAxis: dragAxis });
@@ -162,9 +181,9 @@ export class AxisDragGizmo extends Gizmo implements IAxisDragGizmo {
                 let matrixChanged: boolean = false;
                 // Snapping logic
                 if (this.snapDistance == 0) {
-                    this.attachedNode.getWorldMatrix().getTranslationToRef(tmpVector2);
-                    tmpVector2.addInPlace(event.delta);
-                    if (this.dragBehavior.validateDrag(tmpVector2)) {
+                    this.attachedNode.getWorldMatrix().getTranslationToRef(TmpVectors.Vector3[2]);
+                    TmpVectors.Vector3[2].addInPlace(event.delta);
+                    if (this.dragBehavior.validateDrag(TmpVectors.Vector3[2])) {
                         if ((this.attachedNode as any).position) {
                             // Required for nodes like lights
                             (this.attachedNode as any).position.addInPlaceFromFloats(event.delta.x, event.delta.y, event.delta.z);
@@ -180,13 +199,13 @@ export class AxisDragGizmo extends Gizmo implements IAxisDragGizmo {
                     if (Math.abs(currentSnapDragDistance) > this.snapDistance) {
                         const dragSteps = Math.floor(Math.abs(currentSnapDragDistance) / this.snapDistance);
                         currentSnapDragDistance = currentSnapDragDistance % this.snapDistance;
-                        event.delta.normalizeToRef(tmpVector);
-                        tmpVector.scaleInPlace(this.snapDistance * dragSteps);
+                        event.delta.normalizeToRef(TmpVectors.Vector3[1]);
+                        TmpVectors.Vector3[1].scaleInPlace(this.snapDistance * dragSteps);
 
-                        this.attachedNode.getWorldMatrix().getTranslationToRef(tmpVector2);
-                        tmpVector2.addInPlace(tmpVector);
-                        if (this.dragBehavior.validateDrag(tmpVector2)) {
-                            this.attachedNode.getWorldMatrix().addTranslationFromFloats(tmpVector.x, tmpVector.y, tmpVector.z);
+                        this.attachedNode.getWorldMatrix().getTranslationToRef(TmpVectors.Vector3[2]);
+                        TmpVectors.Vector3[2].addInPlace(TmpVectors.Vector3[1]);
+                        if (this.dragBehavior.validateDrag(TmpVectors.Vector3[2])) {
+                            this.attachedNode.getWorldMatrix().addTranslationFromFloats(TmpVectors.Vector3[1].x, TmpVectors.Vector3[1].y, TmpVectors.Vector3[1].z);
                             this.attachedNode.updateCache();
                             tmpSnapEvent.snapDistance = this.snapDistance * dragSteps;
                             this.onSnapObservable.notifyObservers(tmpSnapEvent);

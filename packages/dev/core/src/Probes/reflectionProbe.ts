@@ -126,6 +126,7 @@ export class ReflectionProbe {
         }
         this._renderTargetTexture = new RenderTargetTexture(name, size, scene, generateMipMaps, true, textureType, true);
         this._renderTargetTexture.gammaSpace = !linearSpace;
+        this._renderTargetTexture.invertZ = scene.useRightHandedSystem;
 
         const useReverseDepthBuffer = scene.getEngine().useReverseDepthBuffer;
 

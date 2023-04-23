@@ -178,9 +178,13 @@ class TransmissionHelper {
         Tools.SetImmediate(() => {
             if (this._shouldRenderAsTransmission(mesh.material)) {
                 (mesh.material as PBRMaterial).refractionTexture = this._opaqueRenderTarget;
-                this._transparentMeshesCache.push(mesh);
+                if (this._transparentMeshesCache.indexOf(mesh) === -1) {
+                    this._transparentMeshesCache.push(mesh);
+                }
             } else {
-                this._opaqueMeshesCache.push(mesh);
+                if (this._opaqueMeshesCache.indexOf(mesh) === -1) {
+                    this._opaqueMeshesCache.push(mesh);
+                }
             }
         });
     }
@@ -265,7 +269,7 @@ class TransmissionHelper {
             this._scene.environmentIntensity = 1.0;
             sceneImageProcessingapplyByPostProcess = this._scene.imageProcessingConfiguration.applyByPostProcess;
             if (!this._options.clearColor) {
-                this._scene.clearColor.toLinearSpaceToRef(opaqueRenderTarget.clearColor);
+                this._scene.clearColor.toLinearSpaceToRef(opaqueRenderTarget.clearColor, this._scene.getEngine().useExactSrgbConversions);
             } else {
                 opaqueRenderTarget.clearColor.copyFrom(this._options.clearColor);
             }

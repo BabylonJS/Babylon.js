@@ -22,8 +22,8 @@ const _copySource = function <T>(creationFunction: () => T, source: T, instancia
     const destination = creationFunction();
 
     // Tags
-    if (Tags) {
-        Tags.AddTagsTo(destination, (<any>source).tags);
+    if (Tags && Tags.HasTags(source)) {
+        Tags.AddTagsTo(destination, Tags.GetTags(source, true));
     }
 
     const classStore = getMergedStore(destination);
@@ -345,23 +345,15 @@ export class SerializationHelper {
     }
 
     /**
-     * Creates a new entity from a serialization data object
-     * @param creationFunction defines a function used to instanciated the new entity
-     * @param source defines the source serialization data
-     * @param scene defines the hosting scene
-     * @param rootUrl defines the root url for resources
-     * @returns a new entity
+     * Given a source json and a destination object in a scene, this function will parse the source and will try to apply its content to the destination object
+     * @param source the source json data
+     * @param destination the destination object
+     * @param scene the scene where the object is
+     * @param rootUrl root url to use to load assets
      */
-    public static Parse<T>(creationFunction: () => T, source: any, scene: Nullable<Scene>, rootUrl: Nullable<string> = null): T {
-        const destination = creationFunction();
-
+    public static ParseProperties(source: any, destination: any, scene: Nullable<Scene>, rootUrl: Nullable<string>) {
         if (!rootUrl) {
             rootUrl = "";
-        }
-
-        // Tags
-        if (Tags) {
-            Tags.AddTagsTo(destination, source.tags);
         }
 
         const classStore = getMergedStore(destination);
@@ -423,6 +415,25 @@ export class SerializationHelper {
                 }
             }
         }
+    }
+
+    /**
+     * Creates a new entity from a serialization data object
+     * @param creationFunction defines a function used to instanciated the new entity
+     * @param source defines the source serialization data
+     * @param scene defines the hosting scene
+     * @param rootUrl defines the root url for resources
+     * @returns a new entity
+     */
+    public static Parse<T>(creationFunction: () => T, source: any, scene: Nullable<Scene>, rootUrl: Nullable<string> = null): T {
+        const destination = creationFunction();
+
+        // Tags
+        if (Tags) {
+            Tags.AddTagsTo(destination, source.tags);
+        }
+
+        SerializationHelper.ParseProperties(source, destination, scene, rootUrl);
 
         return destination;
     }

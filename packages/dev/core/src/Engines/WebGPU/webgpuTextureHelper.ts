@@ -819,6 +819,8 @@ export class WebGPUTextureHelper {
                 return WebGPUConstants.TextureFormat.Depth24UnormStencil8;
             case Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8:
                 return WebGPUConstants.TextureFormat.Depth32FloatStencil8;
+            case Constants.TEXTUREFORMAT_STENCIL8:
+                return WebGPUConstants.TextureFormat.Stencil8;
 
             case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM:
                 return useSRGBBuffer ? WebGPUConstants.TextureFormat.BC7RGBAUnormSRGB : WebGPUConstants.TextureFormat.BC7RGBAUnorm;
@@ -1125,6 +1127,25 @@ export class WebGPUTextureHelper {
         return false;
     }
 
+    public static GetDepthFormatOnly(format: GPUTextureFormat): GPUTextureFormat {
+        switch (format) {
+            case WebGPUConstants.TextureFormat.Depth16Unorm:
+                return WebGPUConstants.TextureFormat.Depth16Unorm;
+            case WebGPUConstants.TextureFormat.Depth24Plus:
+                return WebGPUConstants.TextureFormat.Depth24Plus;
+            case WebGPUConstants.TextureFormat.Depth24PlusStencil8:
+                return WebGPUConstants.TextureFormat.Depth24Plus;
+            case WebGPUConstants.TextureFormat.Depth24UnormStencil8:
+                return WebGPUConstants.TextureFormat.Depth24Plus;
+            case WebGPUConstants.TextureFormat.Depth32Float:
+                return WebGPUConstants.TextureFormat.Depth32Float;
+            case WebGPUConstants.TextureFormat.Depth32FloatStencil8:
+                return WebGPUConstants.TextureFormat.Depth32Float;
+        }
+
+        return format;
+    }
+
     public copyVideoToTexture(video: ExternalTexture, texture: InternalTexture, format: GPUTextureFormat, invertY = false, commandEncoder?: GPUCommandEncoder): void {
         const useOwnCommandEncoder = commandEncoder === undefined;
         const [pipeline, bindGroupLayout] = this._getVideoPipeline(format, invertY ? VideoPipelineType.InvertY : VideoPipelineType.DontInvertY);
@@ -1253,7 +1274,9 @@ export class WebGPUTextureHelper {
                 format,
                 1,
                 commandEncoder,
-                WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.RenderAttachment | WebGPUConstants.TextureUsage.TextureBinding
+                WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.RenderAttachment | WebGPUConstants.TextureUsage.TextureBinding,
+                undefined,
+                "TempTextureForCopyWithInvertY"
             );
 
         const renderPassDescriptor = webgpuHardwareTexture?._copyInvertYRenderPassDescr ?? {
@@ -1398,7 +1421,8 @@ export class WebGPUTextureHelper {
         sampleCount = 1,
         commandEncoder?: GPUCommandEncoder,
         usage = -1,
-        additionalUsages = 0
+        additionalUsages = 0,
+        label?: string
     ): GPUTexture {
         if (sampleCount > 1) {
             // WebGPU only supports 1 or 4
@@ -1423,7 +1447,9 @@ export class WebGPUTextureHelper {
         }
 
         const gpuTexture = this._device.createTexture({
-            label: `Texture_${textureSize.width}x${textureSize.height}x${textureSize.depthOrArrayLayers}_${hasMipmaps ? "wmips" : "womips"}_${format}_samples${sampleCount}`,
+            label: `Texture${is3D ? "3D" : "2D"}_${label ? label + "_" : ""}${textureSize.width}x${textureSize.height}x${textureSize.depthOrArrayLayers}_${
+                hasMipmaps ? "wmips" : "womips"
+            }_${format}_samples${sampleCount}`,
             size: textureSize,
             dimension: is3D ? WebGPUConstants.TextureDimension.E3d : WebGPUConstants.TextureDimension.E2d,
             format,
@@ -1453,7 +1479,8 @@ export class WebGPUTextureHelper {
         sampleCount = 1,
         commandEncoder?: GPUCommandEncoder,
         usage = -1,
-        additionalUsages = 0
+        additionalUsages = 0,
+        label?: string
     ): GPUTexture {
         if (sampleCount > 1) {
             // WebGPU only supports 1 or 4
@@ -1474,7 +1501,7 @@ export class WebGPUTextureHelper {
         }
 
         const gpuTexture = this._device.createTexture({
-            label: `TextureCube_${width}x${height}x6_${hasMipmaps ? "wmips" : "womips"}_${format}_samples${sampleCount}`,
+            label: `TextureCube_${label ? label + "_" : ""}${width}x${height}x6_${hasMipmaps ? "wmips" : "womips"}_${format}_samples${sampleCount}`,
             size: {
                 width,
                 height,
@@ -1664,13 +1691,14 @@ export class WebGPUTextureHelper {
                 1,
                 this._commandEncoderForCreation,
                 gpuTextureWrapper.textureUsages,
-                gpuTextureWrapper.textureAdditionalUsages
+                gpuTextureWrapper.textureAdditionalUsages,
+                texture.label
             );
 
             gpuTextureWrapper.set(gpuTexture);
             gpuTextureWrapper.createView(
                 {
-                    format: gpuTextureWrapper.format,
+                    format: WebGPUTextureHelper.GetDepthFormatOnly(gpuTextureWrapper.format),
                     dimension: WebGPUConstants.TextureViewDimension.Cube,
                     mipLevelCount: mipmapCount,
                     baseArrayLayer: 0,
@@ -1692,13 +1720,14 @@ export class WebGPUTextureHelper {
                 1,
                 this._commandEncoderForCreation,
                 gpuTextureWrapper.textureUsages,
-                gpuTextureWrapper.textureAdditionalUsages
+                gpuTextureWrapper.textureAdditionalUsages,
+                texture.label
             );
 
             gpuTextureWrapper.set(gpuTexture);
             gpuTextureWrapper.createView(
                 {
-                    format: gpuTextureWrapper.format,
+                    format: WebGPUTextureHelper.GetDepthFormatOnly(gpuTextureWrapper.format),
                     dimension: texture.is2DArray
                         ? WebGPUConstants.TextureViewDimension.E2dArray
                         : texture.is3D
@@ -1723,12 +1752,11 @@ export class WebGPUTextureHelper {
         return gpuTextureWrapper;
     }
 
-    public createMSAATexture(texture: InternalTexture, samples: number): void {
+    public createMSAATexture(texture: InternalTexture, samples: number, releaseExisting = true, index = -1): void {
         const gpuTextureWrapper = texture._hardwareTexture as Nullable<WebGPUHardwareTexture>;
 
-        if (gpuTextureWrapper?.msaaTexture) {
-            this.releaseTexture(gpuTextureWrapper.msaaTexture);
-            gpuTextureWrapper.msaaTexture = null;
+        if (releaseExisting) {
+            gpuTextureWrapper?.releaseMSAATexture();
         }
 
         if (!gpuTextureWrapper || (samples ?? 1) <= 1) {
@@ -1737,38 +1765,22 @@ export class WebGPUTextureHelper {
 
         const width = texture.width;
         const height = texture.height;
-        const layerCount = texture.depth || 1;
 
-        if (texture.isCube) {
-            const gpuMSAATexture = this.createCubeTexture(
-                { width, height },
-                false,
-                false,
-                texture.invertY,
-                false,
-                gpuTextureWrapper.format,
-                samples,
-                this._commandEncoderForCreation,
-                gpuTextureWrapper.textureUsages,
-                gpuTextureWrapper.textureAdditionalUsages
-            );
-            gpuTextureWrapper.msaaTexture = gpuMSAATexture;
-        } else {
-            const gpuMSAATexture = this.createTexture(
-                { width, height, layers: layerCount },
-                false,
-                false,
-                texture.invertY,
-                false,
-                texture.is3D,
-                gpuTextureWrapper.format,
-                samples,
-                this._commandEncoderForCreation,
-                gpuTextureWrapper.textureUsages,
-                gpuTextureWrapper.textureAdditionalUsages
-            );
-            gpuTextureWrapper.msaaTexture = gpuMSAATexture;
-        }
+        const gpuMSAATexture = this.createTexture(
+            { width, height, layers: 1 },
+            false,
+            false,
+            false,
+            false,
+            false,
+            gpuTextureWrapper.format,
+            samples,
+            this._commandEncoderForCreation,
+            WebGPUConstants.TextureUsage.RenderAttachment,
+            0,
+            texture.label ? "MSAA" + texture.label : undefined
+        );
+        gpuTextureWrapper.setMSAATexture(gpuMSAATexture, index);
     }
 
     //------------------------------------------------------------------------------
@@ -1945,7 +1957,9 @@ export class WebGPUTextureHelper {
                         format,
                         1,
                         commandEncoder,
-                        WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.TextureBinding
+                        WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.TextureBinding,
+                        undefined,
+                        "TempTextureForUpdateTexture"
                     );
 
                     this._deferredReleaseTextures.push([srcTexture, null]);

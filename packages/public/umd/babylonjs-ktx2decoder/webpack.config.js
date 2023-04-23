@@ -8,6 +8,18 @@ module.exports = (env) => {
         maxMode: true,
         outputPath: path.resolve(__dirname),
         devPackageAliasPath: `../../../tools/ktx2Decoder/dist`,
+        alias: {
+            "core": path.resolve(__dirname, "../../../dev/core/dist"),
+        },
+        extendedWebpackConfig: {
+            externals: {},
+            module: {
+                rules: require("@dev/build-tools").webpackTools.getRules({
+                    sideEffects: true,
+                    includeCSS: true,
+                }),
+            },
+        }
     });
     return commonConfig;
 };

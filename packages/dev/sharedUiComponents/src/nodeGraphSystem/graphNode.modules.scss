@@ -25,6 +25,9 @@
     color: white;
     transform: scaleX(1.01) translateY(-0.5px);
     transform-origin: center;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: 100%;
 }
 
 .headerIcon {
@@ -34,12 +37,11 @@
     z-index: 10;
     justify-self: end;
     align-self: center;
-    margin-right: 5px;
     user-select: none;
     pointer-events: none;
     width: 20px;
     display: grid;
-    margin-left: 5px;
+    margin-left: 6px;
 }
 
 .header {
@@ -48,6 +50,7 @@
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
+    max-width: 190px;
 }
 
 .connections {

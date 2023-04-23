@@ -40,6 +40,10 @@ export interface IMultiRenderTargetOptions {
      */
     generateDepthTexture?: boolean;
     /**
+     * Define the internal format of the buffer in the RTT (RED, RG, RGB, RGBA (default), ALPHA...) of all the draw buffers we want to create
+     */
+    formats?: number[];
+    /**
      * Define depth texture format to use
      */
     depthTextureFormat?: number;
@@ -59,6 +63,27 @@ export interface IMultiRenderTargetOptions {
      * Define the default type of the buffers we are creating
      */
     drawOnlyOnFirstAttachmentByDefault?: boolean;
+    /**
+     * Define the type of texture at each attahment index (of Constants.TEXTURE_2D, .TEXTURE_2D_ARRAY, .TEXTURE_CUBE_MAP, .TEXTURE_CUBE_MAP_ARRAY, .TEXTURE_3D).
+     * You can also use the -1 value to indicate that no texture should be created but that you will assign a texture to that attachment index later.
+     * Can be useful when you want to attach several layers of the same 2DArrayTexture / 3DTexture or several faces of the same CubeMapTexture: Use the setInternalTexture
+     * method for that purpose, after the MultiRenderTarget has been created.
+     */
+    targetTypes?: number[];
+    /**
+     * Define the face index of each texture in the textures array (if applicable, given the corresponding targetType) at creation time (for Constants.TEXTURE_CUBE_MAP and .TEXTURE_CUBE_MAP_ARRAY).
+     * Can be changed at any time by calling setLayerAndFaceIndices or setLayerAndFaceIndex
+     */
+    faceIndex?: number[];
+    /**
+     * Define the layer index of each texture in the textures array (if applicable, given the corresponding targetType) at creation time (for Constants.TEXTURE_3D, .TEXTURE_2D_ARRAY, and .TEXTURE_CUBE_MAP_ARRAY).
+     * Can be changed at any time by calling setLayerAndFaceIndices or setLayerAndFaceIndex
+     */
+    layerIndex?: number[];
+    /**
+     * Define the number of layer of each texture in the textures array (if applicable, given the corresponding targetType) (for Constants.TEXTURE_3D, .TEXTURE_2D_ARRAY, and .TEXTURE_CUBE_MAP_ARRAY)
+     */
+    layerCounts?: number[];
 }
 
 /**
@@ -72,6 +97,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
     private _multiRenderTargetOptions: IMultiRenderTargetOptions;
     private _count: number;
     private _drawOnlyOnFirstAttachmentByDefault: boolean;
+    private _textureNames?: string[];
 
     /**
      * Get if draw buffers are currently supported by the used hardware and browser.
@@ -151,10 +177,17 @@ export class MultiRenderTarget extends RenderTargetTexture {
             return;
         }
 
+        this._textureNames = textureNames;
+
         const types: number[] = [];
         const samplingModes: number[] = [];
         const useSRGBBuffers: boolean[] = [];
-        this._initTypes(count, types, samplingModes, useSRGBBuffers, options);
+        const formats: number[] = [];
+        const targetTypes: number[] = [];
+        const faceIndex: number[] = [];
+        const layerIndex: number[] = [];
+        const layerCounts: number[] = [];
+        this._initTypes(count, types, samplingModes, useSRGBBuffers, formats, targetTypes, faceIndex, layerIndex, layerCounts, options);
 
         const generateDepthBuffer = !options || options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
         const generateStencilBuffer = !options || options.generateStencilBuffer === undefined ? false : options.generateStencilBuffer;
@@ -170,6 +203,11 @@ export class MultiRenderTarget extends RenderTargetTexture {
             types: types,
             textureCount: count,
             useSRGBBuffers: useSRGBBuffers,
+            formats: formats,
+            targetTypes: targetTypes,
+            faceIndex: faceIndex,
+            layerIndex: layerIndex,
+            layerCounts: layerCounts,
         };
 
         this._count = count;
@@ -181,7 +219,18 @@ export class MultiRenderTarget extends RenderTargetTexture {
         }
     }
 
-    private _initTypes(count: number, types: number[], samplingModes: number[], useSRGBBuffers: boolean[], options?: IMultiRenderTargetOptions) {
+    private _initTypes(
+        count: number,
+        types: number[],
+        samplingModes: number[],
+        useSRGBBuffers: boolean[],
+        formats: number[],
+        targets: number[],
+        faceIndex: number[],
+        layerIndex: number[],
+        layerCounts: number[],
+        options?: IMultiRenderTargetOptions
+    ) {
         for (let i = 0; i < count; i++) {
             if (options && options.types && options.types[i] !== undefined) {
                 types.push(options.types[i]);
@@ -200,7 +249,62 @@ export class MultiRenderTarget extends RenderTargetTexture {
             } else {
                 useSRGBBuffers.push(false);
             }
+
+            if (options && options.formats && options.formats[i] !== undefined) {
+                formats.push(options.formats[i]);
+            } else {
+                formats.push(Constants.TEXTUREFORMAT_RGBA);
+            }
+
+            if (options && options.targetTypes && options.targetTypes[i] !== undefined) {
+                targets.push(options.targetTypes[i]);
+            } else {
+                targets.push(Constants.TEXTURE_2D);
+            }
+
+            if (options && options.faceIndex && options.faceIndex[i] !== undefined) {
+                faceIndex.push(options.faceIndex[i]);
+            } else {
+                faceIndex.push(0);
+            }
+
+            if (options && options.layerIndex && options.layerIndex[i] !== undefined) {
+                layerIndex.push(options.layerIndex[i]);
+            } else {
+                layerIndex.push(0);
+            }
+
+            if (options && options.layerCounts && options.layerCounts[i] !== undefined) {
+                layerCounts.push(options.layerCounts[i]);
+            } else {
+                layerCounts.push(1);
+            }
         }
+    }
+
+    private _createInternaTextureIndexMapping() {
+        const mapMainInternalTexture2Index: { [key: number]: number } = {};
+        const mapInternalTexture2MainIndex: number[] = [];
+
+        if (!this._renderTarget) {
+            return mapInternalTexture2MainIndex;
+        }
+
+        const internalTextures = this._renderTarget!.textures!;
+        for (let i = 0; i < internalTextures.length; i++) {
+            const texture = internalTextures[i];
+            if (!texture) {
+                continue;
+            }
+            const mainIndex = mapMainInternalTexture2Index[texture.uniqueId];
+            if (mainIndex !== undefined) {
+                mapInternalTexture2MainIndex[i] = mainIndex;
+            } else {
+                mapMainInternalTexture2Index[texture.uniqueId] = i;
+            }
+        }
+
+        return mapInternalTexture2MainIndex;
     }
 
     /**
@@ -210,6 +314,8 @@ export class MultiRenderTarget extends RenderTargetTexture {
         if (this._count < 1) {
             return;
         }
+
+        const mapInternalTexture2MainIndex = this._createInternaTextureIndexMapping();
 
         this.releaseInternalTextures();
         this._createInternalTextures();
@@ -222,7 +328,14 @@ export class MultiRenderTarget extends RenderTargetTexture {
         const internalTextures = this._renderTarget!.textures!;
         for (let i = 0; i < internalTextures.length; i++) {
             const texture = this._textures[i];
+            if (mapInternalTexture2MainIndex[i] !== undefined) {
+                this._renderTarget!.setTexture(internalTextures[mapInternalTexture2MainIndex[i]], i);
+            }
             texture._texture = internalTextures[i];
+            if (texture._texture) {
+                texture._noMipmap = !texture._texture.useMipMaps;
+                texture._useSRGBBuffer = texture._texture._useSRGBBuffer;
+            }
         }
 
         if (this.samples !== 1) {
@@ -253,6 +366,10 @@ export class MultiRenderTarget extends RenderTargetTexture {
                 texture.name = textureNames[i];
             }
             texture._texture = internalTextures[i];
+            if (texture._texture) {
+                texture._noMipmap = !texture._texture.useMipMaps;
+                texture._useSRGBBuffer = texture._texture._useSRGBBuffer;
+            }
             this._textures.push(texture);
         }
     }
@@ -276,8 +393,11 @@ export class MultiRenderTarget extends RenderTargetTexture {
 
         if (!this.textures[index]) {
             this.textures[index] = new Texture(null, this.getScene());
+            this.textures[index].name = this._textureNames?.[index] ?? this.textures[index].name;
         }
         this.textures[index]._texture = texture;
+        this.textures[index]._noMipmap = !texture.useMipMaps;
+        this.textures[index]._useSRGBBuffer = texture._useSRGBBuffer;
 
         this._count = this.renderTarget.textures ? this.renderTarget.textures.length : 0;
 
@@ -290,6 +410,58 @@ export class MultiRenderTarget extends RenderTargetTexture {
         if (this._multiRenderTargetOptions.useSRGBBuffers) {
             this._multiRenderTargetOptions.useSRGBBuffers[index] = texture._useSRGBBuffer;
         }
+        if (this._multiRenderTargetOptions.targetTypes && this._multiRenderTargetOptions.targetTypes[index] !== -1) {
+            let target: number = 0;
+            if (texture.is2DArray) {
+                target = Constants.TEXTURE_2D_ARRAY;
+            } else if (texture.isCube) {
+                target = Constants.TEXTURE_CUBE_MAP;
+            } /*else if (texture.isCubeArray) {
+                target = Constants.TEXTURE_CUBE_MAP_ARRAY;
+            }*/ else if (texture.is3D) {
+                target = Constants.TEXTURE_3D;
+            } else {
+                target = Constants.TEXTURE_2D;
+            }
+            this._multiRenderTargetOptions.targetTypes[index] = target;
+        }
+    }
+
+    /**
+     * Changes an attached texture's face index or layer.
+     * @param index The index of the texture to modify the attachment of
+     * @param layerIndex The layer index of the texture to be attached to the framebuffer
+     * @param faceIndex The face index of the texture to be attached to the framebuffer
+     */
+    public setLayerAndFaceIndex(index: number, layerIndex: number = -1, faceIndex: number = -1) {
+        if (!this.textures[index] || !this.renderTarget) {
+            return;
+        }
+
+        if (this._multiRenderTargetOptions.layerIndex) {
+            this._multiRenderTargetOptions.layerIndex[index] = layerIndex;
+        }
+        if (this._multiRenderTargetOptions.faceIndex) {
+            this._multiRenderTargetOptions.faceIndex[index] = faceIndex;
+        }
+
+        this.renderTarget.setLayerAndFaceIndex(index, layerIndex, faceIndex);
+    }
+
+    /**
+     * Changes every attached texture's face index or layer.
+     * @param layerIndices The layer indices of the texture to be attached to the framebuffer
+     * @param faceIndices The face indices of the texture to be attached to the framebuffer
+     */
+    public setLayerAndFaceIndices(layerIndices: number[], faceIndices: number[]) {
+        if (!this.renderTarget) {
+            return;
+        }
+
+        this._multiRenderTargetOptions.layerIndex = layerIndices;
+        this._multiRenderTargetOptions.faceIndex = faceIndices;
+
+        this.renderTarget.setLayerAndFaceIndices(layerIndices, faceIndices);
     }
 
     /**
@@ -315,7 +487,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
      */
     public resize(size: any) {
         this._size = size;
-        this._rebuild();
+        this._rebuild(undefined, this._textureNames);
     }
 
     /**
@@ -332,11 +504,24 @@ export class MultiRenderTarget extends RenderTargetTexture {
         const types: number[] = [];
         const samplingModes: number[] = [];
         const useSRGBBuffers: boolean[] = [];
+        const formats: number[] = [];
+        const targetTypes: number[] = [];
+        const faceIndex: number[] = [];
+        const layerIndex: number[] = [];
+        const layerCounts: number[] = [];
 
-        this._initTypes(count, types, samplingModes, useSRGBBuffers, options);
+        this._textureNames = textureNames;
+
+        this._initTypes(count, types, samplingModes, useSRGBBuffers, formats, targetTypes, faceIndex, layerIndex, layerCounts, options);
         this._multiRenderTargetOptions.types = types;
         this._multiRenderTargetOptions.samplingModes = samplingModes;
         this._multiRenderTargetOptions.useSRGBBuffers = useSRGBBuffers;
+        this._multiRenderTargetOptions.formats = formats;
+        this._multiRenderTargetOptions.targetTypes = targetTypes;
+        this._multiRenderTargetOptions.faceIndex = faceIndex;
+        this._multiRenderTargetOptions.layerIndex = layerIndex;
+        this._multiRenderTargetOptions.layerCounts = layerCounts;
+
         this._rebuild(true, textureNames);
     }
 

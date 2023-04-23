@@ -9,30 +9,6 @@ import { Constants } from "../Engines/constants";
 import "../Shaders/depthOfFieldMerge.fragment";
 
 /**
- * Options to be set when merging outputs from the default pipeline.
- */
-export class DepthOfFieldMergePostProcessOptions {
-    /**
-     * The original image to merge on top of
-     */
-    public originalFromInput: PostProcess;
-    /**
-     * Parameters to perform the merge of the depth of field effect
-     */
-    public depthOfField?: {
-        circleOfConfusion: PostProcess;
-        blurSteps: Array<PostProcess>;
-    };
-    /**
-     * Parameters to perform the merge of bloom effect
-     */
-    public bloom?: {
-        blurred: PostProcess;
-        weight: number;
-    };
-}
-
-/**
  * The DepthOfFieldMergePostProcess merges blurred images with the original based on the values of the circle of confusion.
  */
 export class DepthOfFieldMergePostProcess extends PostProcess {

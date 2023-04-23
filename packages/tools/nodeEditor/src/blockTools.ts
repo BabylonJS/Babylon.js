@@ -93,6 +93,8 @@ import { FragDepthBlock } from "core/Materials/Node/Blocks/Fragment/fragDepthBlo
 import { ShadowMapBlock } from "core/Materials/Node/Blocks/Fragment/shadowMapBlock";
 import { TriPlanarBlock } from "core/Materials/Node/Blocks/triPlanarBlock";
 import { BiPlanarBlock } from "core/Materials/Node/Blocks/biPlanarBlock";
+import { MatrixDeterminantBlock } from "core/Materials/Node/Blocks/matrixDeterminantBlock";
+import { MatrixTransposeBlock } from "core/Materials/Node/Blocks/matrixTransposeBlock";
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
@@ -430,10 +432,25 @@ export class BlockTools {
                 meshMatrixWeights.setAsAttribute("matricesWeights");
                 return meshMatrixWeights;
             }
+            case "MatrixIndicesExtraBlock": {
+                const meshMatrixIndices = new InputBlock("matricesIndicesExtra");
+                meshMatrixIndices.setAsAttribute("matricesIndicesExtra");
+                return meshMatrixIndices;
+            }
+            case "MatrixWeightsExtraBlock": {
+                const meshMatrixWeights = new InputBlock("matricesWeightsExtra");
+                meshMatrixWeights.setAsAttribute("matricesWeightsExtra");
+                return meshMatrixWeights;
+            }
             case "TimeBlock": {
                 const timeBlock = new InputBlock("Time", undefined, NodeMaterialBlockConnectionPointTypes.Float);
                 timeBlock.animationType = AnimatedInputBlockTypes.Time;
                 return timeBlock;
+            }
+            case "RealTimeBlock": {
+                const realTimeBlock = new InputBlock("RealTime", undefined, NodeMaterialBlockConnectionPointTypes.Float);
+                realTimeBlock.animationType = AnimatedInputBlockTypes.RealTime;
+                return realTimeBlock;
             }
             case "DeltaTimeBlock": {
                 const deltaTimeBlock = new InputBlock("Delta time");
@@ -610,6 +627,10 @@ export class BlockTools {
                 return new TriPlanarBlock("TriPlanarTexture");
             case "BiPlanarBlock":
                 return new BiPlanarBlock("BiPlanarTexture");
+            case "MatrixTransposeBlock":
+                return new MatrixTransposeBlock("Transpose");
+            case "MatrixDeterminantBlock":
+                return new MatrixDeterminantBlock("Determinant");
         }
 
         return null;

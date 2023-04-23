@@ -4,6 +4,7 @@ import type { RenderTargetCreationOptions, TextureSize } from "../Materials/Text
 import type { Nullable } from "../types";
 import { Constants } from "./constants";
 import type { ThinEngine } from "./thinEngine";
+import type { IMultiRenderTargetOptions } from "../Materials/Textures/multiRenderTarget";
 
 /**
  * An interface enforcing the renderTarget accessor to used by render target textures.
@@ -24,6 +25,8 @@ export class RenderTargetWrapper {
     private _isCube: boolean;
     private _isMulti: boolean;
     private _textures: Nullable<InternalTexture[]> = null;
+    private _faceIndices: Nullable<number[]> = null;
+    private _layerIndices: Nullable<number[]> = null;
     /** @internal */
     public _samples = 1;
 
@@ -96,7 +99,7 @@ export class RenderTargetWrapper {
     }
 
     /**
-     * Gets the number of layers of the render target wrapper (only used if is2DArray is true)
+     * Gets the number of layers of the render target wrapper (only used if is2DArray is true and wrapper is not a multi render target)
      */
     public get layers(): number {
         return (<{ width: number; height: number; layers?: number }>this._size).layers || 0;
@@ -114,6 +117,20 @@ export class RenderTargetWrapper {
      */
     public get textures(): Nullable<InternalTexture[]> {
         return this._textures;
+    }
+
+    /**
+     * Gets the face indices that correspond to the list of render textures. If we are not in a multi render target, the list will be null
+     */
+    public get faceIndices(): Nullable<number[]> {
+        return this._faceIndices;
+    }
+
+    /**
+     * Gets the layer indices that correspond to the list of render textures. If we are not in a multi render target, the list will be null
+     */
+    public get layerIndices(): Nullable<number[]> {
+        return this._layerIndices;
     }
 
     /**
@@ -173,8 +190,8 @@ export class RenderTargetWrapper {
 
     /**
      * Set a texture in the textures array
-     * @param texture the texture to set
-     * @param index the index in the textures array to set
+     * @param texture The texture to set
+     * @param index The index in the textures array to set
      * @param disposePrevious If this function should dispose the previous texture
      */
     public setTexture(texture: InternalTexture, index: number = 0, disposePrevious: boolean = true): void {
@@ -189,12 +206,45 @@ export class RenderTargetWrapper {
     }
 
     /**
+     * Sets the layer and face indices of every render target texture bound to each color attachment
+     * @param layers The layers of each texture to be set
+     * @param faces The faces of each texture to be set
+     */
+    public setLayerAndFaceIndices(layers: number[], faces: number[]) {
+        this._layerIndices = layers;
+        this._faceIndices = faces;
+    }
+
+    /**
+     * Sets the layer and face indices of a texture in the textures array that should be bound to each color attachment
+     * @param index The index of the texture in the textures array to modify
+     * @param layer The layer of the texture to be set
+     * @param face The face of the texture to be set
+     */
+    public setLayerAndFaceIndex(index: number = 0, layer?: number, face?: number): void {
+        if (!this._layerIndices) {
+            this._layerIndices = [];
+        }
+        if (!this._faceIndices) {
+            this._faceIndices = [];
+        }
+
+        if (layer !== undefined && layer >= 0) {
+            this._layerIndices[index] = layer;
+        }
+        if (face !== undefined && face >= 0) {
+            this._faceIndices[index] = face;
+        }
+    }
+
+    /**
      * Creates the depth/stencil texture
      * @param comparisonFunction Comparison function to use for the texture
      * @param bilinearFiltering true if bilinear filtering should be used when sampling the texture
      * @param generateStencil true if the stencil aspect should also be created
      * @param samples sample count to use when creating the texture
      * @param format format of the depth texture
+     * @param label defines the label to use for the texture (for debugging purpose only)
      * @returns the depth/stencil created texture
      */
     public createDepthStencilTexture(
@@ -202,7 +252,8 @@ export class RenderTargetWrapper {
         bilinearFiltering: boolean = true,
         generateStencil: boolean = false,
         samples: number = 1,
-        format: number = Constants.TEXTUREFORMAT_DEPTH32_FLOAT
+        format: number = Constants.TEXTUREFORMAT_DEPTH32_FLOAT,
+        label?: string
     ): InternalTexture {
         this._depthStencilTexture?.dispose();
 
@@ -216,6 +267,7 @@ export class RenderTargetWrapper {
                 isCube: this._isCube,
                 samples,
                 depthTextureFormat: format,
+                label,
             },
             this
         );
@@ -267,22 +319,65 @@ export class RenderTargetWrapper {
 
                 const samplingModes: number[] = [];
                 const types: number[] = [];
+                const formats: number[] = [];
+                const targetTypes: number[] = [];
+                const faceIndex: number[] = [];
+                const layerIndex: number[] = [];
+                const layerCounts: number[] = [];
+                const internalTexture2Index: { [id: number]: number } = {};
 
                 for (let i = 0; i < textureCount; ++i) {
                     const texture = textureArray[i];
 
                     samplingModes.push(texture.samplingMode);
                     types.push(texture.type);
+                    formats.push(texture.format);
+
+                    const index = internalTexture2Index[texture.uniqueId];
+                    if (index !== undefined) {
+                        targetTypes.push(-1);
+                        layerCounts.push(0);
+                    } else {
+                        internalTexture2Index[texture.uniqueId] = i;
+                        if (texture.is2DArray) {
+                            targetTypes.push(Constants.TEXTURE_2D_ARRAY);
+                            layerCounts.push(texture.depth);
+                        } else if (texture.isCube) {
+                            targetTypes.push(Constants.TEXTURE_CUBE_MAP);
+                            layerCounts.push(0);
+                        } /*else if (texture.isCubeArray) {
+                            targetTypes.push(Constants.TEXTURE_CUBE_MAP_ARRAY);
+                            layerCounts.push(texture.depth);
+                        }*/ else if (texture.is3D) {
+                            targetTypes.push(Constants.TEXTURE_3D);
+                            layerCounts.push(texture.depth);
+                        } else {
+                            targetTypes.push(Constants.TEXTURE_2D);
+                            layerCounts.push(0);
+                        }
+                    }
+
+                    if (this._faceIndices) {
+                        faceIndex.push(this._faceIndices[i] ?? 0);
+                    }
+                    if (this._layerIndices) {
+                        layerIndex.push(this._layerIndices[i] ?? 0);
+                    }
                 }
 
-                const optionsMRT = {
+                const optionsMRT: IMultiRenderTargetOptions = {
                     samplingModes,
                     generateMipMaps: textureArray[0].generateMipMaps,
                     generateDepthBuffer: this._generateDepthBuffer,
                     generateStencilBuffer: this._generateStencilBuffer,
                     generateDepthTexture,
                     types,
+                    formats,
                     textureCount,
+                    targetTypes,
+                    faceIndex,
+                    layerIndex,
+                    layerCounts,
                 };
                 const size = {
                     width: this.width,
@@ -290,6 +385,14 @@ export class RenderTargetWrapper {
                 };
 
                 rtw = this._engine.createMultipleRenderTarget(size, optionsMRT);
+
+                for (let i = 0; i < textureCount; ++i) {
+                    if (targetTypes[i] !== -1) {
+                        continue;
+                    }
+                    const index = internalTexture2Index[textureArray[i].uniqueId];
+                    rtw.setTexture(rtw.textures![index], i);
+                }
             }
         } else {
             const options: RenderTargetCreationOptions = {};

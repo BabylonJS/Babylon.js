@@ -11,7 +11,7 @@ import type { SubMesh } from "../Meshes/subMesh";
  * @internal
  */
 export class PushMaterial extends Material {
-    protected _activeEffect: Effect;
+    protected _activeEffect?: Effect;
 
     protected _normalMatrix: Matrix = new Matrix();
 
@@ -21,7 +21,7 @@ export class PushMaterial extends Material {
     }
 
     public getEffect(): Effect {
-        return this._storeEffectOnSubMeshes ? this._activeEffect : super.getEffect()!;
+        return this._storeEffectOnSubMeshes ? this._activeEffect! : super.getEffect()!;
     }
 
     public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
@@ -57,7 +57,7 @@ export class PushMaterial extends Material {
      * @param world the matrix to bind
      */
     public bindOnlyWorldMatrix(world: Matrix): void {
-        this._activeEffect.setMatrix("world", world);
+        this._activeEffect!.setMatrix("world", world);
     }
 
     /**
@@ -66,7 +66,7 @@ export class PushMaterial extends Material {
      * @param normalMatrix the matrix to bind
      */
     public bindOnlyNormalMatrix(normalMatrix: Matrix): void {
-        this._activeEffect.setMatrix("normalMatrix", normalMatrix);
+        this._activeEffect!.setMatrix("normalMatrix", normalMatrix);
     }
 
     public bind(world: Matrix, mesh?: Mesh): void {
@@ -80,9 +80,17 @@ export class PushMaterial extends Material {
     protected _afterBind(mesh?: Mesh, effect: Nullable<Effect> = null): void {
         super._afterBind(mesh, effect);
         this.getScene()._cachedEffect = effect;
+        if (effect) {
+            effect._forceRebindOnNextCall = false;
+        }
     }
 
     protected _mustRebind(scene: Scene, effect: Effect, visibility: number = 1) {
         return scene.isCachedMaterialInvalid(this, effect, visibility);
+    }
+
+    public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, notBoundToMesh?: boolean) {
+        this._activeEffect = undefined;
+        super.dispose(forceDisposeEffect, forceDisposeTextures, notBoundToMesh);
     }
 }

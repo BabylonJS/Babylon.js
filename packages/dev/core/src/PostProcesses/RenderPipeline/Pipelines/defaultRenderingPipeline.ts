@@ -25,6 +25,7 @@ import { DepthOfFieldEffect, DepthOfFieldEffectBlurLevel } from "../../../PostPr
 import { BloomEffect } from "../../../PostProcesses/bloomEffect";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { EngineStore } from "../../../Engines/engineStore";
+import { Tools } from "core/Misc/tools";
 
 import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
 
@@ -514,7 +515,13 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
 
             if (this.imageProcessingEnabled !== this._scene.imageProcessingConfiguration.isEnabled) {
                 this._imageProcessingEnabled = this._scene.imageProcessingConfiguration.isEnabled;
-                this._buildPipeline();
+                // Avoid re-entrant problems by deferring the call to _buildPipeline because the call to _buildPipeline
+                // at the end of the constructor could end up triggering imageProcessingConfiguration.onUpdateParameters!
+                // Note that the pipeline could have been disposed before the deferred call was executed, but in that case
+                // _buildAllowed will have been set to false, preventing _buildPipeline from being executed.
+                Tools.SetImmediate(() => {
+                    this._buildPipeline();
+                });
             }
         });
 
@@ -810,9 +817,11 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
      * Dispose of the pipeline and stop all post processes
      */
     public dispose(): void {
+        this._buildAllowed = false;
         this.onBuildObservable.clear();
         this._disposePostProcesses(true);
         this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._cameras);
+        this._scene._postProcessRenderPipelineManager.removePipeline(this.name);
         this._scene.autoClear = true;
         if (this._resizeObserver) {
             this._scene.getEngine().onResizeObservable.remove(this._resizeObserver);

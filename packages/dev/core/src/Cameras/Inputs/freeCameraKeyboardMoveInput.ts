@@ -74,6 +74,18 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
     @serialize()
     public keysRotateRight: number[] = [];
 
+    /**
+     * Gets or Set the list of keyboard keys used to control the up rotation move of the camera.
+     */
+    @serialize()
+    public keysRotateUp: number[] = [];
+
+    /**
+     * Gets or Set the list of keyboard keys used to control the down rotation move of the camera.
+     */
+    @serialize()
+    public keysRotateDown: number[] = [];
+
     private _keys = new Array<number>();
     private _onCanvasBlurObserver: Nullable<Observer<Engine>>;
     private _onKeyboardObserver: Nullable<Observer<KeyboardInfo>>;
@@ -110,7 +122,9 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
                         this.keysUpward.indexOf(evt.keyCode) !== -1 ||
                         this.keysDownward.indexOf(evt.keyCode) !== -1 ||
                         this.keysRotateLeft.indexOf(evt.keyCode) !== -1 ||
-                        this.keysRotateRight.indexOf(evt.keyCode) !== -1
+                        this.keysRotateRight.indexOf(evt.keyCode) !== -1 ||
+                        this.keysRotateUp.indexOf(evt.keyCode) !== -1 ||
+                        this.keysRotateDown.indexOf(evt.keyCode) !== -1
                     ) {
                         const index = this._keys.indexOf(evt.keyCode);
 
@@ -130,7 +144,9 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
                         this.keysUpward.indexOf(evt.keyCode) !== -1 ||
                         this.keysDownward.indexOf(evt.keyCode) !== -1 ||
                         this.keysRotateLeft.indexOf(evt.keyCode) !== -1 ||
-                        this.keysRotateRight.indexOf(evt.keyCode) !== -1
+                        this.keysRotateRight.indexOf(evt.keyCode) !== -1 ||
+                        this.keysRotateUp.indexOf(evt.keyCode) !== -1 ||
+                        this.keysRotateDown.indexOf(evt.keyCode) !== -1
                     ) {
                         const index = this._keys.indexOf(evt.keyCode);
 
@@ -145,7 +161,6 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
             }
         });
     }
-
     /**
      * Detach the current controls from the specified dom element.
      */
@@ -194,6 +209,12 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
                 } else if (this.keysRotateRight.indexOf(keyCode) !== -1) {
                     camera._localDirection.copyFromFloats(0, 0, 0);
                     camera.cameraRotation.y += this._getLocalRotation();
+                } else if (this.keysRotateUp.indexOf(keyCode) !== -1) {
+                    camera._localDirection.copyFromFloats(0, 0, 0);
+                    camera.cameraRotation.x -= this._getLocalRotation();
+                } else if (this.keysRotateDown.indexOf(keyCode) !== -1) {
+                    camera._localDirection.copyFromFloats(0, 0, 0);
+                    camera.cameraRotation.x += this._getLocalRotation();
                 }
 
                 if (camera.getScene().useRightHandedSystem) {

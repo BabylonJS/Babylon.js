@@ -577,3 +577,5 @@ RegisterClass("BABYLON.IncrementValueAction", IncrementValueAction);
 RegisterClass("BABYLON.SetValueAction", SetValueAction);
 RegisterClass("BABYLON.SetStateAction", SetStateAction);
 RegisterClass("BABYLON.SetParentAction", SetParentAction);
+RegisterClass("BABYLON.SwitchBooleanAction", SwitchBooleanAction);
+RegisterClass("BABYLON.CombineAction", CombineAction);

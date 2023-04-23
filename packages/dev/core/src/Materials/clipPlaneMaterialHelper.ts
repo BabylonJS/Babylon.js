@@ -26,20 +26,59 @@ export function addClipPlaneUniforms(uniforms: string[]): void {
 }
 
 /** @internal */
-export function prepareDefinesForClipPlanes(primaryHolder: IClipPlanesHolder, secondaryHolder: IClipPlanesHolder, defines: string[] | Record<string, any>): boolean {
+export function prepareStringDefinesForClipPlanes(primaryHolder: IClipPlanesHolder, secondaryHolder: IClipPlanesHolder, defines: string[]): void {
+    const clipPlane = !!(primaryHolder.clipPlane ?? secondaryHolder.clipPlane);
+    const clipPlane2 = !!(primaryHolder.clipPlane2 ?? secondaryHolder.clipPlane2);
+    const clipPlane3 = !!(primaryHolder.clipPlane3 ?? secondaryHolder.clipPlane3);
+    const clipPlane4 = !!(primaryHolder.clipPlane4 ?? secondaryHolder.clipPlane4);
+    const clipPlane5 = !!(primaryHolder.clipPlane5 ?? secondaryHolder.clipPlane5);
+    const clipPlane6 = !!(primaryHolder.clipPlane6 ?? secondaryHolder.clipPlane6);
+
+    if (clipPlane) defines.push("#define CLIPPLANE");
+    if (clipPlane2) defines.push("#define CLIPPLANE2");
+    if (clipPlane3) defines.push("#define CLIPPLANE3");
+    if (clipPlane4) defines.push("#define CLIPPLANE4");
+    if (clipPlane5) defines.push("#define CLIPPLANE5");
+    if (clipPlane6) defines.push("#define CLIPPLANE6");
+}
+
+/** @internal */
+export function prepareDefinesForClipPlanes(primaryHolder: IClipPlanesHolder, secondaryHolder: IClipPlanesHolder, defines: Record<string, any>): boolean {
     let changed = false;
-    let clipPlane = primaryHolder.clipPlane ?? secondaryHolder.clipPlane;
-    changed = addDefine(clipPlane, defines, "CLIPPLANE") || changed;
-    clipPlane = primaryHolder.clipPlane2 ?? secondaryHolder.clipPlane2;
-    changed = addDefine(clipPlane, defines, "CLIPPLANE2") || changed;
-    clipPlane = primaryHolder.clipPlane3 ?? secondaryHolder.clipPlane3;
-    changed = addDefine(clipPlane, defines, "CLIPPLANE3") || changed;
-    clipPlane = primaryHolder.clipPlane4 ?? secondaryHolder.clipPlane4;
-    changed = addDefine(clipPlane, defines, "CLIPPLANE4") || changed;
-    clipPlane = primaryHolder.clipPlane5 ?? secondaryHolder.clipPlane5;
-    changed = addDefine(clipPlane, defines, "CLIPPLANE5") || changed;
-    clipPlane = primaryHolder.clipPlane6 ?? secondaryHolder.clipPlane6;
-    changed = addDefine(clipPlane, defines, "CLIPPLANE6") || changed;
+
+    const clipPlane = !!(primaryHolder.clipPlane ?? secondaryHolder.clipPlane);
+    const clipPlane2 = !!(primaryHolder.clipPlane2 ?? secondaryHolder.clipPlane2);
+    const clipPlane3 = !!(primaryHolder.clipPlane3 ?? secondaryHolder.clipPlane3);
+    const clipPlane4 = !!(primaryHolder.clipPlane4 ?? secondaryHolder.clipPlane4);
+    const clipPlane5 = !!(primaryHolder.clipPlane5 ?? secondaryHolder.clipPlane5);
+    const clipPlane6 = !!(primaryHolder.clipPlane6 ?? secondaryHolder.clipPlane6);
+
+    // Do not factorize this code, it breaks browsers optimizations.
+    if (defines["CLIPPLANE"] !== clipPlane) {
+        defines["CLIPPLANE"] = clipPlane;
+        changed = true;
+    }
+    if (defines["CLIPPLANE2"] !== clipPlane2) {
+        defines["CLIPPLANE2"] = clipPlane2;
+        changed = true;
+    }
+    if (defines["CLIPPLANE3"] !== clipPlane3) {
+        defines["CLIPPLANE3"] = clipPlane3;
+        changed = true;
+    }
+    if (defines["CLIPPLANE4"] !== clipPlane4) {
+        defines["CLIPPLANE4"] = clipPlane4;
+        changed = true;
+    }
+    if (defines["CLIPPLANE5"] !== clipPlane5) {
+        defines["CLIPPLANE5"] = clipPlane5;
+        changed = true;
+    }
+    if (defines["CLIPPLANE6"] !== clipPlane6) {
+        defines["CLIPPLANE6"] = clipPlane6;
+        changed = true;
+    }
+
     return changed;
 }
 
@@ -63,21 +102,4 @@ function setClipPlane(effect: Effect, uniformName: string, clipPlane: Nullable<P
     if (clipPlane) {
         effect.setFloat4(uniformName, clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
     }
-}
-
-function addDefine(clipPlane: Nullable<Plane>, defines: string[] | Record<string, any>, defineName: string): boolean {
-    let isSet = true;
-    if (clipPlane) {
-        if (Array.isArray(defines)) {
-            const defineString = "#define " + defineName;
-            isSet = defines.indexOf(defineString) !== -1;
-            if (!isSet) {
-                defines.push(defineString);
-            }
-        } else {
-            isSet = defines[defineName];
-            defines[defineName] = true;
-        }
-    }
-    return !isSet;
 }

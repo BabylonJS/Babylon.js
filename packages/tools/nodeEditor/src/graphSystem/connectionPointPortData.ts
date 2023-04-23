@@ -53,7 +53,7 @@ export class ConnectionPointPortData implements IPortData {
         if (!this.isConnected) {
             return null;
         }
-        if (!this._connectedPort) {
+        if (!this._connectedPort && this.data.connectedPoint) {
             const otherBlock = this.data.connectedPoint!.ownerBlock;
             let otherNode = this._nodeContainer.nodes.find((n) => n.content.data === otherBlock);
 

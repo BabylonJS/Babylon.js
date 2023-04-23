@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+import * as KTX2 from "core/Materials/Textures/ktx2decoderTypes";
+
 import { DataReader } from "./Misc/dataReader";
-import { sourceTextureFormat } from "./transcoder";
 
 /** @internal */
 export enum SupercompressionScheme {
@@ -321,21 +322,21 @@ export class KTX2FileReader {
         return Math.max(this._header.layerCount, 1) * this._header.faceCount * layerPixelDepth;
     }
 
-    public get textureFormat(): sourceTextureFormat {
-        return this._dfdBlock.colorModel === DFDModel.UASTC ? sourceTextureFormat.UASTC4x4 : sourceTextureFormat.ETC1S;
+    public get textureFormat(): KTX2.SourceTextureFormat {
+        return this._dfdBlock.colorModel === DFDModel.UASTC ? KTX2.SourceTextureFormat.UASTC4x4 : KTX2.SourceTextureFormat.ETC1S;
     }
 
     public get hasAlpha(): boolean {
         const tformat = this.textureFormat;
 
         switch (tformat) {
-            case sourceTextureFormat.ETC1S:
+            case KTX2.SourceTextureFormat.ETC1S:
                 return (
                     this._dfdBlock.numSamples === 2 &&
                     (this._dfdBlock.samples[0].channelType === DFDChannel_ETC1S.AAA || this._dfdBlock.samples[1].channelType === DFDChannel_ETC1S.AAA)
                 );
 
-            case sourceTextureFormat.UASTC4x4:
+            case KTX2.SourceTextureFormat.UASTC4x4:
                 return this._dfdBlock.samples[0].channelType === DFDChannel_UASTC.RGBA;
         }
 

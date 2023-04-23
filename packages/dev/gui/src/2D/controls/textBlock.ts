@@ -50,6 +50,7 @@ export class TextBlock extends Control {
     private _underline: boolean = false;
     private _lineThrough: boolean = false;
     private _wordDivider: string = " ";
+    private _forceResizeWidth: boolean = false;
     /**
      * An event triggered after the text is changed
      */
@@ -290,6 +291,24 @@ export class TextBlock extends Control {
     }
 
     /**
+     * By default, if a text block has text wrapping other than Clip, its width
+     * is not resized even if resizeToFit = true. This parameter forces the width
+     * to be resized.
+     */
+    @serialize()
+    public get forceResizeWidth(): boolean {
+        return this._forceResizeWidth;
+    }
+
+    public set forceResizeWidth(value: boolean) {
+        if (this._forceResizeWidth === value) {
+            return;
+        }
+        this._forceResizeWidth = value;
+        this._markAsDirty();
+    }
+
+    /**
      * Creates a new TextBlock object
      * @param name defines the name of the control
      * @param text defines the text to display (empty string by default)
@@ -331,9 +350,9 @@ export class TextBlock extends Control {
         }
 
         if (this._resizeToFit) {
-            if (this._textWrapping === TextWrapping.Clip) {
-                const newWidth = (this._paddingLeftInPixels + this._paddingRightInPixels + maxLineWidth) | 0;
-                if (newWidth !== this._width.internalValue) {
+            if (this._textWrapping === TextWrapping.Clip || this._forceResizeWidth) {
+                const newWidth = Math.ceil(this._paddingLeftInPixels) + Math.ceil(this._paddingRightInPixels) + Math.ceil(maxLineWidth);
+                if (newWidth !== this._width.getValueInPixel(this._host, this._tempParentMeasure.width)) {
                     this._width.updateInPlace(newWidth, ValueAndUnit.UNITMODE_PIXEL);
                     this._rebuildLayout = true;
                 }
@@ -535,7 +554,7 @@ export class TextBlock extends Control {
             if (currentHeight > height && n > 1) {
                 const lastLine = lines[n - 2] as { text: string; width: number };
                 const currentLine = lines[n - 1] as { text: string; width: number };
-                lines[n - 2] = this._parseLineEllipsis(`${lastLine.text + currentLine.text}`, width, context);
+                lines[n - 2] = this._parseLineEllipsis(lastLine.text + this._wordDivider + currentLine.text, width, context);
                 const linesToRemove = lines.length - n + 1;
                 for (let i = 0; i < linesToRemove; i++) {
                     lines.pop();

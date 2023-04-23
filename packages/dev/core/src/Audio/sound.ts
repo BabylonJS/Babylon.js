@@ -104,11 +104,14 @@ export class Sound {
             return this._htmlAudioElement.currentTime;
         }
 
-        let currentTime: number = this._startOffset;
-        if (this.isPlaying && Engine.audioEngine?.audioContext) {
-            currentTime += Engine.audioEngine.audioContext.currentTime - this._startTime;
+        if (Engine.audioEngine?.audioContext && (this.isPlaying || this.isPaused)) {
+            // The `_currentTime` member is only updated when the sound is paused. Add the time since the last start
+            // to get the actual current time.
+            const timeSinceLastStart = this.isPaused ? 0 : Engine.audioEngine.audioContext.currentTime - this._startTime;
+            return this._currentTime + timeSinceLastStart;
         }
-        return currentTime;
+
+        return 0;
     }
 
     /**
@@ -133,7 +136,7 @@ export class Sound {
     private _playbackRate: number = 1;
     private _streaming: boolean = false;
     private _startTime: number = 0;
-    private _startOffset: number = 0;
+    private _currentTime: number = 0;
     private _position: Vector3 = Vector3.Zero();
     private _localDirection: Vector3 = new Vector3(1, 0, 0);
     private _volume: number = 1;
@@ -355,7 +358,7 @@ export class Sound {
                             this._isReadyToPlay = true;
                             // Simulating a ready to play event to avoid breaking code path
                             if (this._readyToPlayCallback) {
-                                window.setTimeout(() => {
+                                setTimeout(() => {
                                     if (this._readyToPlayCallback) {
                                         this._readyToPlayCallback();
                                     }
@@ -377,7 +380,7 @@ export class Sound {
             }
             // Simulating a ready to play event to avoid breaking code for non web audio browsers
             if (this._readyToPlayCallback) {
-                window.setTimeout(() => {
+                setTimeout(() => {
                     if (this._readyToPlayCallback) {
                         this._readyToPlayCallback();
                     }
@@ -501,7 +504,7 @@ export class Sound {
             this.distanceModel = options.distanceModel ?? this.distanceModel;
             this._playbackRate = options.playbackRate ?? this._playbackRate;
             this._length = options.length ?? undefined;
-            this._offset = options.offset ?? undefined;
+            this._setOffset(options.offset ?? undefined);
             this.setVolume(options.volume ?? this._volume);
             this._updateSpatialParameters();
             if (this.isPlaying) {
@@ -739,10 +742,6 @@ export class Sound {
     public play(time?: number, offset?: number, length?: number): void {
         if (this._isReadyToPlay && this._scene.audioEnabled && Engine.audioEngine?.audioContext) {
             try {
-                if (this._startOffset < 0) {
-                    time = -this._startOffset;
-                    this._startOffset = 0;
-                }
                 let startTime = time ? Engine.audioEngine?.audioContext.currentTime + time : Engine.audioEngine?.audioContext.currentTime;
                 if (!this._soundSource || !this._streamingSource) {
                     if (this._spatialSound && this._soundPanner) {
@@ -812,7 +811,10 @@ export class Sound {
                     const tryToPlay = () => {
                         if (Engine.audioEngine?.audioContext) {
                             length = length || this._length;
-                            offset = offset || this._offset;
+
+                            if (offset !== undefined) {
+                                this._setOffset(offset);
+                            }
 
                             if (this._soundSource) {
                                 const oldSource = this._soundSource;
@@ -836,7 +838,7 @@ export class Sound {
                                     this._onended();
                                 };
                                 startTime = time ? Engine.audioEngine?.audioContext!.currentTime + time : Engine.audioEngine.audioContext!.currentTime;
-                                const actualOffset = this.isPaused ? this._startOffset % this._soundSource!.buffer!.duration : offset ? offset : 0;
+                                const actualOffset = ((this.isPaused ? this.currentTime : 0) + (this._offset ?? 0)) % this._soundSource!.buffer!.duration;
                                 this._soundSource!.start(startTime, actualOffset, this.loop ? undefined : length);
                             }
                         }
@@ -873,7 +875,8 @@ export class Sound {
 
     private _onended() {
         this.isPlaying = false;
-        this._startOffset = 0;
+        this._startTime = 0;
+        this._currentTime = 0;
         if (this.onended) {
             this.onended();
         }
@@ -899,19 +902,22 @@ export class Sound {
                 this.isPlaying = false;
             } else if (Engine.audioEngine?.audioContext && this._soundSource) {
                 const stopTime = time ? Engine.audioEngine.audioContext.currentTime + time : undefined;
-                this._soundSource.stop(stopTime);
-                if (stopTime === undefined) {
+                this._soundSource.onended = () => {
                     this.isPlaying = false;
-                    this._soundSource.onended = () => void 0;
-                } else {
-                    this._soundSource.onended = () => {
-                        this.isPlaying = false;
-                    };
-                }
-                if (!this.isPaused) {
-                    this._startOffset = 0;
-                }
+                    this.isPaused = false;
+                    this._startTime = 0;
+                    this._currentTime = 0;
+                    if (this._soundSource) {
+                        this._soundSource.onended = () => void 0;
+                    }
+                    this._onended();
+                };
+                this._soundSource.stop(stopTime);
             }
+        } else if (this.isPaused) {
+            this.isPaused = false;
+            this._startTime = 0;
+            this._currentTime = 0;
         }
     }
 
@@ -920,7 +926,6 @@ export class Sound {
      */
     public pause(): void {
         if (this.isPlaying) {
-            this.isPaused = true;
             if (this._streaming) {
                 if (this._htmlAudioElement) {
                     this._htmlAudioElement.pause();
@@ -928,9 +933,13 @@ export class Sound {
                     this._streamingSource.disconnect();
                 }
                 this.isPlaying = false;
-            } else if (Engine.audioEngine?.audioContext) {
-                this.stop(0);
-                this._startOffset += Engine.audioEngine.audioContext.currentTime - this._startTime;
+                this.isPaused = true;
+            } else if (Engine.audioEngine?.audioContext && this._soundSource) {
+                this._soundSource.onended = () => void 0;
+                this._soundSource.stop();
+                this.isPlaying = false;
+                this.isPaused = true;
+                this._currentTime += Engine.audioEngine.audioContext.currentTime - this._startTime;
             }
         }
     }
@@ -1047,7 +1056,7 @@ export class Sound {
                         clonedSound.play(0, this._offset, this._length);
                     }
                 } else {
-                    window.setTimeout(setBufferAndRun, 300);
+                    setTimeout(setBufferAndRun, 300);
                 }
             };
 
@@ -1196,7 +1205,7 @@ export class Sound {
                         newSound.play(0, newSound._offset, newSound._length);
                     }
                 } else {
-                    window.setTimeout(setBufferAndRun, 300);
+                    setTimeout(setBufferAndRun, 300);
                 }
             };
 
@@ -1227,5 +1236,16 @@ export class Sound {
         }
 
         return newSound;
+    }
+
+    private _setOffset(value?: number) {
+        if (this._offset === value) {
+            return;
+        }
+        if (this.isPaused) {
+            this.stop();
+            this.isPaused = false;
+        }
+        this._offset = value;
     }
 }

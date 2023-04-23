@@ -544,12 +544,12 @@ export class VirtualJoystick {
             this._clearContainerSize
         );
 
-        // clear puck pixels
+        // clear puck pixels + 1 pixel for the change made before it moved
         VirtualJoystick._VJCanvasContext.clearRect(
-            this._joystickPreviousPointerPos.x - this._clearPuckSizeOffset,
-            this._joystickPreviousPointerPos.y - this._clearPuckSizeOffset,
-            this._clearPuckSize,
-            this._clearPuckSize
+            this._joystickPreviousPointerPos.x - this._clearPuckSizeOffset - 1,
+            this._joystickPreviousPointerPos.y - this._clearPuckSizeOffset - 1,
+            this._clearPuckSize + 2,
+            this._clearPuckSize + 2
         );
     }
 

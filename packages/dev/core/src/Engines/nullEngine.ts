@@ -138,6 +138,7 @@ export class NullEngine extends Engine {
             textureHalfFloatLinearFiltering: false,
             textureHalfFloatRender: false,
             textureLOD: false,
+            texelFetch: false,
             drawBuffersExtension: false,
             depthTextureExtension: false,
             vertexArrayObject: false,
@@ -153,6 +154,7 @@ export class NullEngine extends Engine {
             supportTransformFeedbacks: false,
             textureMaxLevel: false,
             texture2DArrayMaxLayerCount: 128,
+            disableMorphTargetTexture: false,
         };
 
         this._features = {

@@ -9,6 +9,7 @@ import { RegisterClass } from "core/Misc/typeStore";
 import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
 import type { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 import type { Observer } from "core/Misc/observable";
+import { serialize } from "core/Misc/decorators";
 
 /**
  * Class used to create a 2D grid container
@@ -20,6 +21,41 @@ export class Grid extends Container {
     private _columnDefinitionObservers: Observer<void>[] = [];
     private _cells: { [key: string]: Container } = {};
     private _childControls = new Array<Control>();
+
+    /**
+     * Sets/Gets a boolean indicating that control content must be clipped
+     * Please note that not clipping content may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
+     */
+    public set clipContent(value: boolean) {
+        this._clipContent = value;
+
+        // This value has to be replicated on all of the container cells
+        for (const key in this._cells) {
+            this._cells[key].clipContent = value;
+        }
+    }
+
+    @serialize()
+    public get clipContent(): boolean {
+        return this._clipContent;
+    }
+
+    /**
+     * Sets/Gets a boolean indicating if the children are clipped to the current control bounds.
+     * Please note that not clipping children may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
+     */
+    public set clipChildren(value: boolean) {
+        this._clipChildren = value;
+
+        // This value has to be replicated on all of the container cells
+        for (const key in this._cells) {
+            this._cells[key].clipChildren = value;
+        }
+    }
+
+    public get clipChildren(): boolean {
+        return this._clipChildren;
+    }
 
     /**
      * Gets the number of columns
@@ -311,6 +347,8 @@ export class Grid extends Container {
             this._cells[key] = goodContainer;
             goodContainer.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
             goodContainer.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+            goodContainer.clipContent = this.clipContent;
+            goodContainer.clipChildren = this.clipChildren;
             super.addControl(goodContainer);
         }
 
@@ -389,7 +427,7 @@ export class Grid extends Container {
             tops.push(top);
 
             if (!rowDefinition.isPixel) {
-                const height = (rowDefinition.value / globalHeightPercentage) * availableHeight;
+                const height = Math.round((rowDefinition.value / globalHeightPercentage) * availableHeight);
                 top += height;
                 heights[index] = height;
             } else {
@@ -416,7 +454,7 @@ export class Grid extends Container {
         for (const columnDefinition of this._columnDefinitions) {
             lefts.push(left);
             if (!columnDefinition.isPixel) {
-                const width = (columnDefinition.value / globalWidthPercentage) * availableWidth;
+                const width = Math.round((columnDefinition.value / globalWidthPercentage) * availableWidth);
                 left += width;
                 widths[index] = width;
             } else {
@@ -440,10 +478,10 @@ export class Grid extends Container {
                 const y = parseInt(split[1]);
                 const cell = this._cells[key];
 
-                cell.left = lefts[y] + "px";
-                cell.top = tops[x] + "px";
-                cell.width = widths[y] + "px";
-                cell.height = heights[x] + "px";
+                cell.leftInPixels = lefts[y];
+                cell.topInPixels = tops[x];
+                cell.widthInPixels = widths[y];
+                cell.heightInPixels = heights[x];
                 cell._left.ignoreAdaptiveScaling = true;
                 cell._top.ignoreAdaptiveScaling = true;
                 cell._width.ignoreAdaptiveScaling = true;

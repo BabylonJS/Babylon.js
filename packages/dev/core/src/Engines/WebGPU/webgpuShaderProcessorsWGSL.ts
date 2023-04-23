@@ -26,14 +26,7 @@ import "../../ShadersWGSL/ShadersInclude/morphTargetsVertexGlobalDeclaration";
 import "../../ShadersWGSL/ShadersInclude/sceneUboDeclaration";
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
 
-const builtInName_vertex_index = "gl_VertexID";
-const builtInName_instance_index = "gl_InstanceID";
-const builtInName_position = "gl_Position";
-
-const builtInName_position_frag = "gl_FragCoord";
-const builtInName_front_facing = "gl_FrontFacing";
-const builtInName_frag_depth = "gl_FragDepth";
-const builtInName_FragColor = "gl_FragColor";
+const builtInName_frag_depth = "fragmentOutputs.fragDepth";
 
 const leftOverVarName = "uniforms";
 const internalsVarName = "internals";
@@ -61,10 +54,7 @@ const gpuTextureViewDimensionByWebGPUTextureFunction: { [key: string]: Nullable<
 /** @internal */
 export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
     protected _attributesWGSL: string[];
-    protected _attributesDeclWGSL: string[];
-    protected _attributeNamesWGSL: string[];
     protected _varyingsWGSL: string[];
-    protected _varyingsDeclWGSL: string[];
     protected _varyingNamesWGSL: string[];
     protected _stridedUniformArrays: string[];
 
@@ -100,17 +90,14 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         this._webgpuProcessingContext = processingContext as WebGPUShaderProcessingContext;
 
         this._attributesWGSL = [];
-        this._attributesDeclWGSL = [];
-        this._attributeNamesWGSL = [];
         this._varyingsWGSL = [];
-        this._varyingsDeclWGSL = [];
         this._varyingNamesWGSL = [];
         this._stridedUniformArrays = [];
     }
 
     public preProcessShaderCode(code: string): string {
         return (
-            `struct ${WebGPUShaderProcessor.InternalsUBOName} {\nyFactor_: f32,\ntextureOutputHeight_: f32,\n};\nvar<uniform> ${internalsVarName} : ${WebGPUShaderProcessor.InternalsUBOName};\n` +
+            `struct ${WebGPUShaderProcessor.InternalsUBOName} {\n  yFactor_: f32,\n  textureOutputHeight_: f32,\n};\nvar<uniform> ${internalsVarName} : ${WebGPUShaderProcessor.InternalsUBOName};\n` +
             RemoveComments(code)
         );
     }
@@ -130,8 +117,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
             } else {
                 location = this._webgpuProcessingContext.getVaryingNextLocation(varyingType, this._getArraySize(name, varyingType, preProcessors)[2]);
                 this._webgpuProcessingContext.availableVaryings[name] = location;
-                this._varyingsWGSL.push(`@location(${location}) ${name} : ${varyingType},`);
-                this._varyingsDeclWGSL.push(`var<private> ${name} : ${varyingType};`);
+                this._varyingsWGSL.push(`  @location(${location}) ${name} : ${varyingType},`);
                 this._varyingNamesWGSL.push(name);
             }
 
@@ -152,8 +138,6 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
             this._webgpuProcessingContext.orderedAttributes[location] = name;
 
             this._attributesWGSL.push(`@location(${location}) ${name} : ${attributeType},`);
-            this._attributesDeclWGSL.push(`var<private> ${name} : ${attributeType};`);
-            this._attributeNamesWGSL.push(name);
             attribute = "";
         }
         return attribute;
@@ -238,10 +222,10 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
 
     public finalizeShaders(vertexCode: string, fragmentCode: string): { vertexCode: string; fragmentCode: string } {
         const fragCoordCode =
-            fragmentCode.indexOf("gl_FragCoord") >= 0
+            fragmentCode.indexOf("fragmentInputs.position") >= 0
                 ? `
             if (internals.yFactor_ == 1.) {
-                gl_FragCoord.y = internals.textureOutputHeight_ - gl_FragCoord.y;
+                fragmentInputs.position.y = internals.textureOutputHeight_ - fragmentInputs.position.y;
             }
         `
                 : "";
@@ -264,56 +248,35 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         vertexCode = vertexCode.replace(/#define /g, "//#define ");
         vertexCode = this._processStridedUniformArrays(vertexCode);
 
-        const varyingsDecl = this._varyingsDeclWGSL.join("\n") + "\n";
-
-        const vertexBuiltinDecl = `var<private> ${builtInName_vertex_index} : u32;\nvar<private> ${builtInName_instance_index} : u32;\nvar<private> ${builtInName_position} : vec4<f32>;\n`;
-
-        const vertexAttributesDecl = this._attributesDeclWGSL.join("\n") + "\n";
-
         let vertexInputs = "struct VertexInputs {\n  @builtin(vertex_index) vertexIndex : u32,\n  @builtin(instance_index) instanceIndex : u32,\n";
         if (this._attributesWGSL.length > 0) {
             vertexInputs += this._attributesWGSL.join("\n");
         }
-        vertexInputs += "\n};\n";
+        vertexInputs += "\n};\nvar<private> vertexInputs : VertexInputs;\n";
 
-        let vertexFragmentInputs = "struct FragmentInputs {\n  @builtin(position) position : vec4<f32>,\n";
+        let vertexOutputs = "struct FragmentInputs {\n  @builtin(position) position : vec4<f32>,\n";
         if (this._varyingsWGSL.length > 0) {
-            vertexFragmentInputs += this._varyingsWGSL.join("\n");
+            vertexOutputs += this._varyingsWGSL.join("\n");
         }
-        vertexFragmentInputs += "\n};\n";
+        vertexOutputs += "\n};\nvar<private> vertexOutputs : FragmentInputs;\n";
 
-        vertexCode = vertexBuiltinDecl + vertexInputs + vertexAttributesDecl + vertexFragmentInputs + varyingsDecl + vertexCode;
+        vertexCode = vertexInputs + vertexOutputs + vertexCode;
 
-        let vertexStartingCode = `  var output : FragmentInputs;\n  ${builtInName_vertex_index} = input.vertexIndex;\n  ${builtInName_instance_index} = input.instanceIndex;\n`;
+        const vertexMainStartingCode = `\n  vertexInputs = input;\n`;
+        const vertexMainEndingCode = `  vertexOutputs.position.y = vertexOutputs.position.y * internals.yFactor_;\n  return vertexOutputs;`;
 
-        for (let i = 0; i < this._attributeNamesWGSL.length; ++i) {
-            const name = this._attributeNamesWGSL[i];
-            vertexStartingCode += `  ${name} = input.${name};\n`;
-        }
-
-        let vertexEndingCode = `  output.position = ${builtInName_position};\n  output.position.y = output.position.y * internals.yFactor_;\n`;
-
-        for (let i = 0; i < this._varyingNamesWGSL.length; ++i) {
-            const name = this._varyingNamesWGSL[i];
-            vertexEndingCode += `  output.${name} = ${name};\n`;
-        }
-
-        vertexEndingCode += "  return output;";
-
-        vertexCode = this._injectStartingAndEndingCode(vertexCode, "fn main", vertexStartingCode, vertexEndingCode);
+        vertexCode = this._injectStartingAndEndingCode(vertexCode, "fn main", vertexMainStartingCode, vertexMainEndingCode);
 
         // fragment code
         fragmentCode = fragmentCode.replace(/#define /g, "//#define ");
         fragmentCode = this._processStridedUniformArrays(fragmentCode);
         fragmentCode = fragmentCode.replace(/dpdy/g, "(-internals.yFactor_)*dpdy"); // will also handle dpdyCoarse and dpdyFine
 
-        const fragmentBuiltinDecl = `var<private> ${builtInName_position_frag} : vec4<f32>;\nvar<private> ${builtInName_front_facing} : bool;\nvar<private> ${builtInName_FragColor} : vec4<f32>;\nvar<private> ${builtInName_frag_depth} : f32;\n`;
-
-        let fragmentFragmentInputs = "struct FragmentInputs {\n  @builtin(position) position : vec4<f32>,\n  @builtin(front_facing) frontFacing : bool,\n";
+        let fragmentInputs = "struct FragmentInputs {\n  @builtin(position) position : vec4<f32>,\n  @builtin(front_facing) frontFacing : bool,\n";
         if (this._varyingsWGSL.length > 0) {
-            fragmentFragmentInputs += this._varyingsWGSL.join("\n");
+            fragmentInputs += this._varyingsWGSL.join("\n");
         }
-        fragmentFragmentInputs += "\n};\n";
+        fragmentInputs += "\n};\nvar<private> fragmentInputs : FragmentInputs;\n";
 
         let fragmentOutputs = "struct FragmentOutputs {\n  @location(0) color : vec4<f32>,\n";
 
@@ -340,25 +303,12 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
             fragmentOutputs += "  @builtin(frag_depth) fragDepth: f32,\n";
         }
 
-        fragmentOutputs += "};\n";
+        fragmentOutputs += "};\nvar<private> fragmentOutputs : FragmentOutputs;\n";
 
-        fragmentCode = fragmentBuiltinDecl + fragmentFragmentInputs + varyingsDecl + fragmentOutputs + fragmentCode;
+        fragmentCode = fragmentInputs + fragmentOutputs + fragmentCode;
 
-        let fragmentStartingCode =
-            `  var output : FragmentOutputs;\n  ${builtInName_position_frag} = input.position;\n  ${builtInName_front_facing} = input.frontFacing;\n` + fragCoordCode;
-
-        for (let i = 0; i < this._varyingNamesWGSL.length; ++i) {
-            const name = this._varyingNamesWGSL[i];
-            fragmentStartingCode += `  ${name} = input.${name};\n`;
-        }
-
-        let fragmentEndingCode = `  output.color = ${builtInName_FragColor};\n`;
-
-        if (hasFragDepth) {
-            fragmentEndingCode += `  output.fragDepth = ${builtInName_frag_depth};\n`;
-        }
-
-        fragmentEndingCode += "  return output;";
+        const fragmentStartingCode = "  fragmentInputs = input;\n  " + fragCoordCode;
+        const fragmentEndingCode = "  return fragmentOutputs;";
 
         fragmentCode = this._injectStartingAndEndingCode(fragmentCode, "fn main", fragmentStartingCode, fragmentEndingCode);
 

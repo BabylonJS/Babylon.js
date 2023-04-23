@@ -3,6 +3,7 @@ import { Mesh } from "../Meshes/mesh";
 import { VertexBuffer, Buffer } from "../Buffers/buffer";
 import { Matrix, Vector3, TmpVectors } from "../Maths/math.vector";
 import { Logger } from "../Misc/logger";
+import { BoundingInfo } from "core/Culling/boundingInfo";
 
 declare module "./mesh" {
     export interface Mesh {
@@ -347,9 +348,11 @@ Mesh.prototype.thinInstanceRefreshBoundingInfo = function (forceRefreshParentInf
 
     const vectors = this._thinInstanceDataStorage.boundingVectors;
 
-    if (forceRefreshParentInfo) {
+    if (forceRefreshParentInfo || !this.rawBoundingInfo) {
         vectors.length = 0;
         this.refreshBoundingInfo(applySkeleton, applyMorph);
+        const boundingInfo = this.getBoundingInfo();
+        this.rawBoundingInfo = new BoundingInfo(boundingInfo.minimum, boundingInfo.maximum);
     }
 
     const boundingInfo = this.getBoundingInfo();

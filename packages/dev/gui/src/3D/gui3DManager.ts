@@ -192,7 +192,7 @@ export class GUI3DManager implements IDisposable {
                 delete this._lastControlDown[pointerEvent.pointerId];
             }
 
-            if (pointerEvent.pointerType === "touch") {
+            if (pointerEvent.pointerType === "touch" || (pointerEvent.pointerType === "xr" && this._scene.getEngine().hostInformation.isMobile)) {
                 this._handlePointerOut(pointerId, false);
             }
         }

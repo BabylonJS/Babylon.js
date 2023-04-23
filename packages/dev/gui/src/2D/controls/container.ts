@@ -12,6 +12,9 @@ import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { Constants } from "core/Engines/constants";
 import { Observable } from "core/Misc/observable";
+import type { BaseGradient } from "./gradient/BaseGradient";
+import { Tools } from "core/Misc/tools";
+import { Matrix2D } from "../math2D";
 
 /**
  * Root class for 2D containers
@@ -24,6 +27,8 @@ export class Container extends Control {
     protected _measureForChildren = Measure.Empty();
     /** @internal */
     protected _background = "";
+    /** @internal */
+    protected _backgroundGradient: Nullable<BaseGradient> = null;
     /** @internal */
     protected _adaptWidthToChildren = false;
     /** @internal */
@@ -109,6 +114,20 @@ export class Container extends Control {
         }
 
         this._background = value;
+        this._markAsDirty();
+    }
+
+    /** Gets or sets background gradient color. Takes precedence over background */
+    @serialize()
+    public get backgroundGradient() {
+        return this._backgroundGradient;
+    }
+
+    public set backgroundGradient(value: Nullable<BaseGradient>) {
+        if (this._backgroundGradient === value) {
+            return;
+        }
+        this._backgroundGradient = value;
         this._markAsDirty();
     }
 
@@ -327,11 +346,15 @@ export class Container extends Control {
         }
     }
 
+    protected _getBackgroundColor(context: ICanvasRenderingContext) {
+        return this._backgroundGradient ? this._backgroundGradient.getCanvasGradient(context) : this._background;
+    }
+
     /**
      * @internal
      */
     protected _localDraw(context: ICanvasRenderingContext): void {
-        if (this._background) {
+        if (this._background || this._backgroundGradient) {
             context.save();
             if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
                 context.shadowColor = this.shadowColor;
@@ -340,7 +363,8 @@ export class Container extends Control {
                 context.shadowOffsetY = this.shadowOffsetY;
             }
 
-            context.fillStyle = this._background;
+            context.fillStyle = this._getBackgroundColor(context);
+
             context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
             context.restore();
         }
@@ -479,6 +503,9 @@ export class Container extends Control {
         // Do nothing by default
     }
 
+    private _inverseTransformMatrix = Matrix2D.Identity();
+    private _inverseMeasure = new Measure(0, 0, 0, 0);
+
     /**
      * @internal
      */
@@ -490,7 +517,9 @@ export class Container extends Control {
             contextToDrawTo.save();
             contextToDrawTo.translate(-this._currentMeasure.left, -this._currentMeasure.top);
             if (invalidatedRectangle) {
-                contextToDrawTo.clearRect(invalidatedRectangle.left, invalidatedRectangle.top, invalidatedRectangle.width, invalidatedRectangle.height);
+                this._transformMatrix.invertToRef(this._inverseTransformMatrix);
+                invalidatedRectangle.transformToRef(this._inverseTransformMatrix, this._inverseMeasure);
+                contextToDrawTo.clearRect(this._inverseMeasure.left, this._inverseMeasure.top, this._inverseMeasure.width, this._inverseMeasure.height);
             } else {
                 contextToDrawTo.clearRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
             }
@@ -596,6 +625,12 @@ export class Container extends Control {
      */
     public serialize(serializationObject: any) {
         super.serialize(serializationObject);
+
+        if (this.backgroundGradient) {
+            serializationObject.backgroundGradient = {};
+            this.backgroundGradient.serialize(serializationObject.backgroundGradient);
+        }
+
         if (!this.children.length) {
             return;
         }
@@ -626,6 +661,13 @@ export class Container extends Control {
         super._parseFromContent(serializedObject, host);
         this._link(host);
 
+        // Gradient
+        if (serializedObject.backgroundGradient) {
+            const className = Tools.Instantiate("BABYLON.GUI." + serializedObject.backgroundGradient.className);
+            this._backgroundGradient = new className();
+            this._backgroundGradient?.parse(serializedObject.backgroundGradient);
+        }
+
         if (!serializedObject.children) {
             return;
         }
@@ -633,6 +675,16 @@ export class Container extends Control {
         for (const childData of serializedObject.children) {
             this.addControl(Control.Parse(childData, host));
         }
+    }
+
+    public isReady(): boolean {
+        for (const child of this.children) {
+            if (!child.isReady()) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
 RegisterClass("BABYLON.GUI.Container", Container);

@@ -1,3 +1,4 @@
+import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
 
 declare type Engine = import("./engine").Engine;
@@ -10,6 +11,12 @@ declare type Scene = import("../scene").Scene;
 export class EngineStore {
     /** Gets the list of created engines */
     public static Instances = new Array<Engine>();
+
+    /**
+     * Notifies when an engine was disposed.
+     * Mainly used for static/cache cleanup
+     */
+    public static OnEnginesDisposedObservable = new Observable<Engine>();
 
     /** @internal */
     public static _LastCreatedScene: Nullable<Scene> = null;

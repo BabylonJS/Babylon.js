@@ -5,9 +5,23 @@ import type { IPipelineContext } from "../IPipelineContext";
 import type { NativeEngine } from "../nativeEngine";
 
 export class NativePipelineContext implements IPipelineContext {
-    // TODO: async should be true?
-    public isAsync = false;
-    public isReady = false;
+    public isParallelCompiled: boolean = true;
+    public isCompiled: boolean = false;
+    public compilationError?: Error;
+
+    public get isAsync(): boolean {
+        return this.isParallelCompiled;
+    }
+
+    public get isReady(): boolean {
+        if (this.compilationError) {
+            const message = this.compilationError.message;
+            throw new Error("SHADER ERROR" + (typeof message === "string" ? "\n" + message : ""));
+        }
+        return this.isCompiled;
+    }
+
+    public onCompiled?: () => void;
 
     public _getVertexShaderCode(): string | null {
         return null;
@@ -276,6 +290,107 @@ export class NativePipelineContext implements IPipelineContext {
     public setIntArray4(uniformName: string, array: Int32Array): void {
         this._valueCache[uniformName] = null;
         this._engine.setIntArray4(this._uniforms[uniformName]!, array);
+    }
+
+    /**
+     * Sets an unsigned integer value on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param value Value to be set.
+     */
+    public setUInt(uniformName: string, value: number): void {
+        const cache = this._valueCache[uniformName];
+        if (cache !== undefined && cache === value) {
+            return;
+        }
+
+        if (this._engine.setUInt(this._uniforms[uniformName]!, value)) {
+            this._valueCache[uniformName] = value;
+        }
+    }
+
+    /**
+     * Sets a unsigned int2 on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param x First unsigned int in uint2.
+     * @param y Second unsigned int in uint2.
+     */
+    public setUInt2(uniformName: string, x: number, y: number): void {
+        if (this._cacheFloat2(uniformName, x, y)) {
+            if (!this._engine.setUInt2(this._uniforms[uniformName], x, y)) {
+                this._valueCache[uniformName] = null;
+            }
+        }
+    }
+
+    /**
+     * Sets a unsigned int3 on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param x First unsigned int in uint3.
+     * @param y Second unsigned int in uint3.
+     * @param z Third unsigned int in uint3.
+     */
+    public setUInt3(uniformName: string, x: number, y: number, z: number): void {
+        if (this._cacheFloat3(uniformName, x, y, z)) {
+            if (!this._engine.setUInt3(this._uniforms[uniformName], x, y, z)) {
+                this._valueCache[uniformName] = null;
+            }
+        }
+    }
+
+    /**
+     * Sets a unsigned int4 on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param x First unsigned int in uint4.
+     * @param y Second unsigned int in uint4.
+     * @param z Third unsigned int in uint4.
+     * @param w Fourth unsigned int in uint4.
+     */
+    public setUInt4(uniformName: string, x: number, y: number, z: number, w: number): void {
+        if (this._cacheFloat4(uniformName, x, y, z, w)) {
+            if (!this._engine.setUInt4(this._uniforms[uniformName], x, y, z, w)) {
+                this._valueCache[uniformName] = null;
+            }
+        }
+    }
+
+    /**
+     * Sets an unsigned int array on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param array array to be set.
+     */
+    public setUIntArray(uniformName: string, array: Uint32Array): void {
+        this._valueCache[uniformName] = null;
+        this._engine.setUIntArray(this._uniforms[uniformName]!, array);
+    }
+
+    /**
+     * Sets an unsigned int array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
+     * @param uniformName Name of the variable.
+     * @param array array to be set.
+     */
+    public setUIntArray2(uniformName: string, array: Uint32Array): void {
+        this._valueCache[uniformName] = null;
+        this._engine.setUIntArray2(this._uniforms[uniformName]!, array);
+    }
+
+    /**
+     * Sets an unsigned int array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
+     * @param uniformName Name of the variable.
+     * @param array array to be set.
+     */
+    public setUIntArray3(uniformName: string, array: Uint32Array): void {
+        this._valueCache[uniformName] = null;
+        this._engine.setUIntArray3(this._uniforms[uniformName]!, array);
+    }
+
+    /**
+     * Sets an unsigned int array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
+     * @param uniformName Name of the variable.
+     * @param array array to be set.
+     */
+    public setUIntArray4(uniformName: string, array: Uint32Array): void {
+        this._valueCache[uniformName] = null;
+        this._engine.setUIntArray4(this._uniforms[uniformName]!, array);
     }
 
     /**

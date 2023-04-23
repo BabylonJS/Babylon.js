@@ -475,8 +475,18 @@ export class AnimationGroup implements IDisposable {
 
         const list = this._animatables.slice();
         for (let index = 0; index < list.length; index++) {
-            list[index].stop();
+            list[index].stop(undefined, undefined, true);
         }
+
+        // We will take care of removing all stopped animatables
+        let curIndex = 0;
+        for (let index = 0; index < this._scene._activeAnimatables.length; index++) {
+            const animatable = this._scene._activeAnimatables[index];
+            if (animatable._runtimeAnimations.length > 0) {
+                this._scene._activeAnimatables[curIndex++] = animatable;
+            }
+        }
+        this._scene._activeAnimatables.length = curIndex;
 
         this._isStarted = false;
 

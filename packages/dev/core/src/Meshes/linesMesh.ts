@@ -8,6 +8,7 @@ import { Mesh } from "../Meshes/mesh";
 import { InstancedMesh } from "../Meshes/instancedMesh";
 import { Material } from "../Materials/material";
 import { ShaderMaterial } from "../Materials/shaderMaterial";
+import type { Effect } from "../Materials/effect";
 
 import "../Shaders/color.fragment";
 import "../Shaders/color.vertex";
@@ -113,6 +114,7 @@ export class LinesMesh extends Mesh {
             this.material = material;
         } else {
             this.material = new ShaderMaterial("colorShader", this.getScene(), "color", options, false);
+            this.material.doNotSerialize = true;
         }
     }
 
@@ -160,11 +162,10 @@ export class LinesMesh extends Mesh {
     /**
      * @internal
      */
-    public _bind(): Mesh {
+    public _bind(_subMesh: SubMesh, colorEffect: Effect): Mesh {
         if (!this._geometry) {
             return this;
         }
-        const colorEffect = this._lineMaterial.getEffect();
 
         // VBOs
         const indexToBind = this.isUnIndexed ? null : this._geometry.getIndexBuffer();
@@ -207,9 +208,14 @@ export class LinesMesh extends Mesh {
     /**
      * Disposes of the line mesh
      * @param doNotRecurse If children should be disposed
+     * @param disposeMaterialAndTextures This parameter is not used by the LineMesh class
+     * @param doNotDisposeMaterial If the material should not be disposed (default: false, meaning the material is disposed)
      */
-    public dispose(doNotRecurse?: boolean): void {
-        this._lineMaterial.dispose(false, false, true);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false, doNotDisposeMaterial?: boolean): void {
+        if (!doNotDisposeMaterial) {
+            this._lineMaterial.dispose(false, false, true);
+        }
         super.dispose(doNotRecurse);
     }
 

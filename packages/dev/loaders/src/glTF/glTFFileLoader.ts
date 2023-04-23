@@ -30,6 +30,7 @@ import type { LoadFileError } from "core/Misc/fileTools";
 import { DecodeBase64UrlToBinary } from "core/Misc/fileTools";
 import { RuntimeError, ErrorCodes } from "core/Misc/error";
 import type { TransformNode } from "core/Meshes/transformNode";
+import type { MorphTargetManager } from "core/Morph/morphTargetManager";
 
 interface IFileRequestInfo extends IFileRequest {
     _lengthComputable?: boolean;
@@ -713,6 +714,13 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
                 cameras.push(camera);
             });
 
+            const morphTargetManagers: Array<MorphTargetManager> = [];
+            this.onMeshLoadedObservable.add((mesh) => {
+                if (mesh.morphTargetManager) {
+                    morphTargetManagers.push(mesh.morphTargetManager);
+                }
+            });
+
             return this._loader.importMeshAsync(null, scene, container, data, rootUrl, onProgress, fileName).then((result) => {
                 Array.prototype.push.apply(container.geometries, result.geometries);
                 Array.prototype.push.apply(container.meshes, result.meshes);
@@ -724,6 +732,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
                 Array.prototype.push.apply(container.lights, result.lights);
                 Array.prototype.push.apply(container.transformNodes, result.transformNodes);
                 Array.prototype.push.apply(container.cameras, cameras);
+                Array.prototype.push.apply(container.morphTargetManagers, morphTargetManagers);
                 return container;
             });
         });

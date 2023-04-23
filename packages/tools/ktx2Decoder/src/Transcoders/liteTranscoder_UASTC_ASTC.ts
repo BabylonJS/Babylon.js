@@ -1,4 +1,5 @@
-import { sourceTextureFormat, transcodeTarget } from "../transcoder";
+import * as KTX2 from "core/Materials/Textures/ktx2decoderTypes";
+
 import { LiteTranscoder } from "./liteTranscoder";
 
 /**
@@ -12,8 +13,8 @@ export class LiteTranscoder_UASTC_ASTC extends LiteTranscoder {
     public static WasmModuleURL = "https://preview.babylonjs.com/ktx2Transcoders/1/uastc_astc.wasm";
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public static CanTranscode(src: sourceTextureFormat, dst: transcodeTarget, isInGammaSpace: boolean): boolean {
-        return src === sourceTextureFormat.UASTC4x4 && dst === transcodeTarget.ASTC_4x4_RGBA;
+    public static CanTranscode(src: KTX2.SourceTextureFormat, dst: KTX2.TranscodeTarget, isInGammaSpace: boolean): boolean {
+        return src === KTX2.SourceTextureFormat.UASTC4x4 && dst === KTX2.TranscodeTarget.ASTC_4X4_RGBA;
     }
 
     public static Name = "UniversalTranscoder_UASTC_ASTC";

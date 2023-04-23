@@ -18,6 +18,9 @@ export class MorphTargetManager implements IDisposable {
     /** Enable storing morph target data into textures when set to true (true by default) */
     public static EnableTextureStorage = true;
 
+    /** Maximum number of active morph targets supported in the "vertex attribute" mode (i.e., not the "texture" mode) */
+    public static MaxActiveMorphTargetsInVertexAttributeMode = 8;
+
     private _targets = new Array<MorphTarget>();
     private _targetInfluenceChangedObservers = new Array<Nullable<Observer<boolean>>>();
     private _targetDataLayoutChangedObservers = new Array<Nullable<Observer<void>>>();
@@ -95,7 +98,7 @@ export class MorphTargetManager implements IDisposable {
         this._scene = scene;
 
         if (this._scene) {
-            this._scene.morphTargetManagers.push(this);
+            this._scene.addMorphTargetManager(this);
 
             this._uniqueId = this._scene.getUniqueId();
 
@@ -178,7 +181,12 @@ export class MorphTargetManager implements IDisposable {
      * Gets a boolean indicating that the targets are stored into a texture (instead of as attributes)
      */
     public get isUsingTextureForTargets() {
-        return MorphTargetManager.EnableTextureStorage && this.useTextureToStoreTargets && this._canUseTextureForTargets;
+        return (
+            MorphTargetManager.EnableTextureStorage &&
+            this.useTextureToStoreTargets &&
+            this._canUseTextureForTargets &&
+            !this._scene?.getEngine().getCaps().disableMorphTargetTexture
+        );
     }
 
     /**
@@ -230,6 +238,10 @@ export class MorphTargetManager implements IDisposable {
             target.onInfluenceChanged.remove(this._targetInfluenceChangedObservers.splice(index, 1)[0]);
             target._onDataLayoutChanged.remove(this._targetDataLayoutChangedObservers.splice(index, 1)[0]);
             this._syncActiveTargets(true);
+        }
+
+        if (this._scene) {
+            this._scene.stopAnimation(target);
         }
     }
 
@@ -289,6 +301,10 @@ export class MorphTargetManager implements IDisposable {
         this._supportsUVs = true;
         this._vertexCount = 0;
 
+        if (this._scene && this._targets.length > this._scene.getEngine().getCaps().texture2DArrayMaxLayerCount) {
+            this.useTextureToStoreTargets = false;
+        }
+
         if (!this._morphTargetTextureIndices || this._morphTargetTextureIndices.length !== this._targets.length) {
             this._morphTargetTextureIndices = new Float32Array(this._targets.length);
         }
@@ -298,6 +314,10 @@ export class MorphTargetManager implements IDisposable {
             targetIndex++;
             if (target.influence === 0 && this.optimizeInfluencers) {
                 continue;
+            }
+
+            if (this._activeTargets.length >= MorphTargetManager.MaxActiveMorphTargetsInVertexAttributeMode && !this.isUsingTextureForTargets) {
+                break;
             }
 
             this._activeTargets.push(target);
@@ -469,6 +489,10 @@ export class MorphTargetManager implements IDisposable {
                     this._parentContainer.morphTargetManagers.splice(index, 1);
                 }
                 this._parentContainer = null;
+            }
+
+            for (const morph of this._targets) {
+                this._scene.stopAnimation(morph);
             }
         }
     }

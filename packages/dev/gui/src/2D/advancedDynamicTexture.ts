@@ -47,6 +47,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     /** Snippet ID if the content was created from the snippet server */
     public snippetId: string;
 
+    /** Observable that fires when the GUI is ready */
+    public onGuiReadyObservable = new Observable<AdvancedDynamicTexture>();
+
     private _isDirty = false;
     private _renderObserver: Nullable<Observer<Camera>>;
     private _resizeObserver: Nullable<Observer<Engine>>;
@@ -56,6 +59,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private _pointerObserver: Nullable<Observer<PointerInfo>>;
     private _canvasPointerOutObserver: Nullable<Observer<PointerEvent>>;
     private _canvasBlurObserver: Nullable<Observer<Engine>>;
+    private _controlAddedObserver: Nullable<Observer<Nullable<Control>>>;
+    private _controlRemovedObserver: Nullable<Observer<Nullable<Control>>>;
     private _background: string;
     /** @internal */
     public _rootContainer = new Container("root");
@@ -85,6 +90,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private _rootElement: Nullable<HTMLElement>;
     private _cursorChanged = false;
     private _defaultMousePointerId = 0;
+    private _rootChildrenHaveChanged: boolean = false;
 
     /** @internal */
     public _capturedPointerIds = new Set<number>();
@@ -384,6 +390,18 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this.applyYInversionOnUpdate = invertY;
         this._rootElement = scene.getEngine().getInputElement();
         this._renderObserver = scene.onBeforeCameraRenderObservable.add((camera: Camera) => this._checkUpdate(camera));
+
+        /** Whenever a control is added or removed to the root, we have to recheck the camera projection as it can have changed  */
+        this._controlAddedObserver = this._rootContainer.onControlAddedObservable.add((control) => {
+            if (control) {
+                this._rootChildrenHaveChanged = true;
+            }
+        });
+        this._controlRemovedObserver = this._rootContainer.onControlRemovedObservable.add((control) => {
+            if (control) {
+                this._rootChildrenHaveChanged = true;
+            }
+        });
         this._preKeyboardObserver = scene.onPreKeyboardObservable.add((info) => {
             if (!this._focusedControl) {
                 return;
@@ -571,6 +589,12 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         if (this._canvasBlurObserver) {
             scene.getEngine().onCanvasBlurObservable.remove(this._canvasBlurObserver);
         }
+        if (this._controlAddedObserver) {
+            this._rootContainer.onControlAddedObservable.remove(this._controlAddedObserver);
+        }
+        if (this._controlRemovedObserver) {
+            this._rootContainer.onControlRemovedObservable.remove(this._controlRemovedObserver);
+        }
         if (this._layerToDispose) {
             this._layerToDispose.texture = null;
             this._layerToDispose.dispose();
@@ -583,6 +607,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this.onEndRenderObservable.clear();
         this.onBeginLayoutObservable.clear();
         this.onEndLayoutObservable.clear();
+        this.onGuiReadyObservable.clear();
         super.dispose();
     }
     private _onResize(): void {
@@ -657,7 +682,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         return new Vector3(projectedPosition.x, projectedPosition.y, projectedPosition.z);
     }
 
-    private _checkUpdate(camera: Camera): void {
+    private _checkUpdate(camera: Camera, skipUpdate?: boolean): void {
         if (this._layerToDispose) {
             if ((camera.layerMask & this._layerToDispose.layerMask) === 0) {
                 return;
@@ -687,6 +712,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                     continue;
                 }
                 control.notRenderable = false;
+                if (this.useInvalidateRectOptimization) {
+                    control.invalidateRect();
+                }
 
                 control._moveToProjectedPosition(projectedPosition);
             }
@@ -695,13 +723,15 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             return;
         }
         this._isDirty = false;
-        this._render();
-        this.update(this.applyYInversionOnUpdate, this.premulAlpha, AdvancedDynamicTexture.AllowGPUOptimizations);
+        this._render(skipUpdate);
+        if (!skipUpdate) {
+            this.update(this.applyYInversionOnUpdate, this.premulAlpha, AdvancedDynamicTexture.AllowGPUOptimizations);
+        }
     }
 
     private _clearMeasure = new Measure(0, 0, 0, 0);
 
-    private _render(): void {
+    private _render(skipRender?: boolean): void {
         const textureSize = this.getSize();
         const renderWidth = textureSize.width;
         const renderHeight = textureSize.height;
@@ -710,6 +740,19 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         context.font = "18px Arial";
         context.strokeStyle = "white";
 
+        if (this.onGuiReadyObservable.hasObservers()) {
+            this._checkGuiIsReady();
+        }
+
+        /** We have to recheck the camera projection in the case the root control's children have changed  */
+        if (this._rootChildrenHaveChanged) {
+            const camera = this.getScene()?.activeCamera;
+            if (camera) {
+                this._rootChildrenHaveChanged = false;
+                this._checkUpdate(camera, true);
+            }
+        }
+
         // Layout
         this.onBeginLayoutObservable.notifyObservers(this);
         const measure = new Measure(0, 0, renderWidth, renderHeight);
@@ -717,6 +760,10 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this._rootContainer._layout(measure, context);
         this.onEndLayoutObservable.notifyObservers(this);
         this._isDirty = false; // Restoring the dirty state that could have been set by controls during layout processing
+
+        if (skipRender) {
+            return;
+        }
 
         // Clear
         if (this._invalidatedRectangle) {
@@ -1476,5 +1523,20 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     public scaleTo(width: number, height: number): void {
         super.scaleTo(width, height);
         this.markAsDirty();
+    }
+
+    private _checkGuiIsReady() {
+        if (this.guiIsReady()) {
+            this.onGuiReadyObservable.notifyObservers(this);
+
+            this.onGuiReadyObservable.clear();
+        }
+    }
+
+    /**
+     * Returns true if all the GUI components are ready to render
+     */
+    public guiIsReady(): boolean {
+        return this._rootContainer.isReady();
     }
 }

@@ -16,6 +16,7 @@ import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObj
 import type { GlobalState } from "../../../../globalState";
 import { Vector2LineComponent } from "shared-ui-components/lines/vector2LineComponent";
 
+import "core/Materials/material.decalMap";
 import "core/Rendering/prePassRendererSceneComponent";
 import "core/Rendering/subSurfaceSceneComponent";
 
@@ -152,6 +153,14 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     propertyName="isEnabled"
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
+                {material.decalMap && (
+                    <CheckBoxLineComponent
+                        label="Use decalmap"
+                        target={material.decalMap}
+                        propertyName="isEnabled"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                )}
             </LineContainerComponent>
         );
     }

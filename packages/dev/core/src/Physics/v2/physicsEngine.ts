@@ -1,32 +1,29 @@
 import type { Nullable } from "../../types";
 import { Vector3 } from "../../Maths/math.vector";
 import type { IPhysicsEngine } from "../IPhysicsEngine";
-import type { IPhysicsEnginePlugin } from "./IPhysicsEnginePlugin";
+import type { IPhysicsEnginePluginV2 } from "./IPhysicsEnginePlugin";
 import { PhysicsRaycastResult } from "../physicsRaycastResult";
 import { _WarnImport } from "../../Misc/devTools";
+import type { PhysicsBody } from "./physicsBody";
 
 /**
  * Class used to control physics engine
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
  */
-/** @internal */
 export class PhysicsEngine implements IPhysicsEngine {
     /** @internal */
-    /**
-     * Global value used to control the smallest number supported by the simulation
-     */
-    public static Epsilon = 0.001;
-
-    //private _impostors: Array<PhysicsImpostor> = [];
-    //private _joints: Array<PhysicsImpostorJoint> = [];
+    private _physicsBodies: Array<PhysicsBody> = [];
     private _subTimeStep: number = 0;
-    //private _uniqueIdCounter = 0;
 
     /**
      * Gets the gravity vector used by the simulation
      */
     public gravity: Vector3;
 
+    /**
+     *
+     * @returns physics plugin version
+     */
     public getPluginVersion(): number {
         return this._physicsPlugin.getPluginVersion();
     }
@@ -34,7 +31,7 @@ export class PhysicsEngine implements IPhysicsEngine {
      * Factory used to create the default physics plugin.
      * @returns The default physics plugin
      */
-    public static DefaultPluginFactory(): IPhysicsEnginePlugin {
+    public static DefaultPluginFactory(): IPhysicsEnginePluginV2 {
         throw _WarnImport("");
     }
 
@@ -43,7 +40,7 @@ export class PhysicsEngine implements IPhysicsEngine {
      * @param gravity defines the gravity vector used by the simulation
      * @param _physicsPlugin defines the plugin to use (CannonJS by default)
      */
-    constructor(gravity: Nullable<Vector3>, private _physicsPlugin: IPhysicsEnginePlugin = PhysicsEngine.DefaultPluginFactory()) {
+    constructor(gravity: Nullable<Vector3>, private _physicsPlugin: IPhysicsEnginePluginV2 = PhysicsEngine.DefaultPluginFactory()) {
         gravity = gravity || new Vector3(0, -9.807, 0);
         this.setGravity(gravity);
         this.setTimeStep();
@@ -121,27 +118,44 @@ export class PhysicsEngine implements IPhysicsEngine {
      * @param delta defines the timespan between frames
      */
     public _step(delta: number) {
-        //check if any mesh has no body / requires an update
-        /*this._impostors.forEach((impostor) => {
-            if (impostor.isBodyInitRequired()) {
-                this._physicsPlugin.generatePhysicsBody(impostor);
-            }
-        });
-*/
         if (delta > 0.1) {
             delta = 0.1;
         } else if (delta <= 0) {
             delta = 1.0 / 60.0;
         }
 
-        this._physicsPlugin.executeStep(delta);
+        this._physicsPlugin.executeStep(delta, this._physicsBodies);
+    }
+
+    /**
+     * Add a body as an active component of this engine
+     * @param body
+     */
+    public addBody(physicsBody: PhysicsBody): void {
+        this._physicsBodies.push(physicsBody);
+    }
+    /**
+     * Removes a particular body from this engine
+     */
+    public removeBody(physicsBody: PhysicsBody): void {
+        const index = this._physicsBodies.indexOf(physicsBody);
+        if (index > -1) {
+            /*const removed =*/ this._physicsBodies.splice(index, 1);
+        }
+    }
+    /**
+     * Returns an array of bodies added to this engine
+
+     */
+    public getBodies(): Array<PhysicsBody> {
+        return this._physicsBodies;
     }
 
     /**
      * Gets the current plugin used to run the simulation
      * @returns current plugin
      */
-    public getPhysicsPlugin(): IPhysicsEnginePlugin {
+    public getPhysicsPlugin(): IPhysicsEnginePluginV2 {
         return this._physicsPlugin;
     }
 

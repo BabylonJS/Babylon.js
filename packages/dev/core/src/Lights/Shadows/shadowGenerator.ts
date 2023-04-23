@@ -31,7 +31,8 @@ import "../../Shaders/shadowMap.fragment";
 import "../../Shaders/shadowMap.vertex";
 import "../../Shaders/depthBoxBlur.fragment";
 import "../../Shaders/ShadersInclude/shadowMapFragmentSoftTransparentShadow";
-import { addClipPlaneUniforms, bindClipPlane, prepareDefinesForClipPlanes } from "../../Materials/clipPlaneMaterialHelper";
+import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "../../Materials/clipPlaneMaterialHelper";
+import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 
 /**
  * Defines the options associated with the creation of a custom shader for a shadow generator.
@@ -825,6 +826,7 @@ export class ShadowGenerator implements IShadowGenerator {
     protected _useUBO: boolean;
     protected _sceneUBOs: UniformBuffer[];
     protected _currentSceneUBO: UniformBuffer;
+    protected _opacityTexture: Nullable<BaseTexture>;
 
     /**
      * @internal
@@ -1226,18 +1228,9 @@ export class ShadowGenerator implements IShadowGenerator {
                 subMesh._setMainDrawWrapperOverride(null);
             } else {
                 // Alpha test
-                if (this.useOpacityTextureForTransparentShadow) {
-                    const opacityTexture = (material as any).opacityTexture;
-                    if (opacityTexture) {
-                        effect.setTexture("diffuseSampler", opacityTexture);
-                        effect.setMatrix("diffuseMatrix", opacityTexture.getTextureMatrix() || this._defaultTextureMatrix);
-                    }
-                } else if (material.needAlphaTesting() || material.needAlphaBlending()) {
-                    const alphaTexture = material.getAlphaTestTexture();
-                    if (alphaTexture) {
-                        effect.setTexture("diffuseSampler", alphaTexture);
-                        effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix() || this._defaultTextureMatrix);
-                    }
+                if (this._opacityTexture) {
+                    effect.setTexture("diffuseSampler", this._opacityTexture);
+                    effect.setMatrix("diffuseMatrix", this._opacityTexture.getTextureMatrix() || this._defaultTextureMatrix);
                 }
 
                 // Bones
@@ -1449,6 +1442,8 @@ export class ShadowGenerator implements IShadowGenerator {
         const material = subMesh.getMaterial(),
             shadowDepthWrapper = material?.shadowDepthWrapper;
 
+        this._opacityTexture = null;
+
         if (!material) {
             return false;
         }
@@ -1481,18 +1476,16 @@ export class ShadowGenerator implements IShadowGenerator {
             }
 
             // Alpha test
-            const needAlphaTesting = material?.needAlphaTesting();
-            const needAlphaBlending = material?.needAlphaBlending();
+            const needAlphaTesting = material.needAlphaTesting();
 
-            if (material && (needAlphaTesting || needAlphaBlending)) {
-                let alphaTexture = null;
+            if (needAlphaTesting || material.needAlphaBlending()) {
                 if (this.useOpacityTextureForTransparentShadow) {
-                    alphaTexture = (material as any).opacityTexture;
+                    this._opacityTexture = (material as any).opacityTexture;
                 } else {
-                    alphaTexture = material.getAlphaTestTexture();
+                    this._opacityTexture = material.getAlphaTestTexture();
                 }
-                if (alphaTexture) {
-                    if (!alphaTexture.isReady()) {
+                if (this._opacityTexture) {
+                    if (!this._opacityTexture.isReady()) {
                         return false;
                     }
 
@@ -1507,7 +1500,7 @@ export class ShadowGenerator implements IShadowGenerator {
                         defines.push("#define UV1");
                     }
                     if (mesh.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
-                        if (alphaTexture.coordinatesIndex === 1) {
+                        if (this._opacityTexture.coordinatesIndex === 1) {
                             attribs.push(VertexBuffer.UV2Kind);
                             defines.push("#define UV2");
                         }
@@ -1555,7 +1548,7 @@ export class ShadowGenerator implements IShadowGenerator {
             }
 
             // ClipPlanes
-            prepareDefinesForClipPlanes(material, this._scene, defines);
+            prepareStringDefinesForClipPlanes(material, this._scene, defines);
 
             // Instances
             if (useInstances) {

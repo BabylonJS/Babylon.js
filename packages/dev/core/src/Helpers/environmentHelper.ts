@@ -207,13 +207,14 @@ export class EnvironmentHelper {
 
     /**
      * Creates the default options for the helper.
+     * @param scene The scene the environment helper belongs to.
      */
-    private static _GetDefaultOptions(): IEnvironmentHelperOptions {
+    private static _GetDefaultOptions(scene: Scene): IEnvironmentHelperOptions {
         return {
             createGround: true,
             groundSize: 15,
             groundTexture: this._GroundTextureCDNUrl,
-            groundColor: new Color3(0.2, 0.2, 0.3).toLinearSpace().scale(3),
+            groundColor: new Color3(0.2, 0.2, 0.3).toLinearSpace(scene.getEngine().useExactSrgbConversions).scale(3),
             groundOpacity: 0.9,
             enableGroundShadow: true,
             groundShadowLevel: 0.5,
@@ -231,7 +232,7 @@ export class EnvironmentHelper {
             createSkybox: true,
             skyboxSize: 20,
             skyboxTexture: this._SkyboxTextureCDNUrl,
-            skyboxColor: new Color3(0.2, 0.2, 0.3).toLinearSpace().scale(3),
+            skyboxColor: new Color3(0.2, 0.2, 0.3).toLinearSpace(scene.getEngine().useExactSrgbConversions).scale(3),
 
             backgroundYRotation: 0,
             sizeAuto: true,
@@ -339,7 +340,7 @@ export class EnvironmentHelper {
      */
     constructor(options: Partial<IEnvironmentHelperOptions>, scene: Scene) {
         this._options = {
-            ...EnvironmentHelper._GetDefaultOptions(),
+            ...EnvironmentHelper._GetDefaultOptions(scene),
             ...options,
         };
         this._scene = scene;
@@ -618,7 +619,7 @@ export class EnvironmentHelper {
             }
         }
 
-        const gammaGround = this._options.groundColor.toGammaSpace();
+        const gammaGround = this._options.groundColor.toGammaSpace(this._scene.getEngine().useExactSrgbConversions);
         this._groundMirror.clearColor = new Color4(gammaGround.r, gammaGround.g, gammaGround.b, 1);
         this._groundMirror.adaptiveBlurKernel = this._options.groundMirrorBlurKernel;
     }

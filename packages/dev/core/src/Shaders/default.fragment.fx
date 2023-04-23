@@ -44,6 +44,7 @@ varying vec4 vColor;
 #include<samplerFragmentDeclaration>(_DEFINENAME_,OPACITY,_VARYINGNAME_,Opacity,_SAMPLERNAME_,opacity)
 #include<samplerFragmentDeclaration>(_DEFINENAME_,EMISSIVE,_VARYINGNAME_,Emissive,_SAMPLERNAME_,emissive)
 #include<samplerFragmentDeclaration>(_DEFINENAME_,LIGHTMAP,_VARYINGNAME_,Lightmap,_SAMPLERNAME_,lightmap)
+#include<samplerFragmentDeclaration>(_DEFINENAME_,DECAL,_VARYINGNAME_,Decal,_SAMPLERNAME_,decal)
 
 #ifdef REFRACTION
 
@@ -144,7 +145,10 @@ void main(void) {
 	baseColor.rgb *= vDiffuseInfos.y;
 #endif
 
-
+#ifdef DECAL
+	vec4 decalColor = texture2D(decalSampler, vDecalUV + uvOffset);
+	#include<decalFragment>(surfaceAlbedo, baseColor, GAMMADECAL, _GAMMADECAL_NOTUSED_)
+#endif
 
 #include<depthPrePass>
 
@@ -212,8 +216,9 @@ void main(void) {
         #endif
 		refractionVector.y = refractionVector.y * vRefractionInfos.w;
 
+		vec4 refractionLookup = textureCube(refractionCubeSampler, refractionVector);
 		if (dot(refractionVector, viewDirectionW) < 1.0) {
-			refractionColor = textureCube(refractionCubeSampler, refractionVector);
+			refractionColor = refractionLookup;
 		}
 	#else
 		vec3 vRefractionUVW = vec3(refractionMatrix * (view * vec4(vPositionW + refractionVector * vRefractionInfos.z, 1.0)));
@@ -442,7 +447,7 @@ color.rgb = max(color.rgb, 0.);
     #endif
 
     #ifdef PREPASS_NORMAL
-        gl_FragData[PREPASS_NORMAL_INDEX] = vec4((view * vec4(normalW, 0.0)).rgb, writeGeometryInfo); // Normal
+        gl_FragData[PREPASS_NORMAL_INDEX] = vec4(normalize((view * vec4(normalW, 0.0)).rgb), writeGeometryInfo); // Normal
     #endif
 
     #ifdef PREPASS_ALBEDO_SQRT
@@ -451,9 +456,9 @@ color.rgb = max(color.rgb, 0.);
     #ifdef PREPASS_REFLECTIVITY
 		#if defined(SPECULARTERM)
 			#if defined(SPECULAR)
-				gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(specularMapColor) * writeGeometryInfo; // no specularity if no visibility
+				gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(toLinearSpace(specularMapColor)) * writeGeometryInfo; // no specularity if no visibility
 			#else
-				gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(specularColor, 1.0) * writeGeometryInfo;
+				gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(toLinearSpace(specularColor), 1.0) * writeGeometryInfo;
 			#endif
 		#else
 			gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(0.0, 0.0, 0.0, 1.0) * writeGeometryInfo;

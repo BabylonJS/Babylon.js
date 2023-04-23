@@ -67,7 +67,7 @@ ThinEngine.prototype.createRenderTargetTexture = function (this: ThinEngine, siz
     let colorAttachment: InternalTexture | undefined = undefined;
     let samples = 1;
     if (options !== undefined && typeof options === "object") {
-        generateDepthBuffer = !!options.generateDepthBuffer;
+        generateDepthBuffer = options.generateDepthBuffer ?? true;
         generateStencilBuffer = !!options.generateStencilBuffer;
         noColorAttachment = !!options.noColorAttachment;
         colorAttachment = options.colorAttachment;
@@ -246,12 +246,9 @@ ThinEngine.prototype.updateRenderTargetTextureSampleCount = function (rtWrapper:
     }
 
     const hardwareTexture = rtWrapper.texture._hardwareTexture as WebGLHardwareTexture;
-    if (hardwareTexture._MSAARenderBuffer) {
-        gl.deleteRenderbuffer(hardwareTexture._MSAARenderBuffer);
-        hardwareTexture._MSAARenderBuffer = null;
-    }
+    hardwareTexture.releaseMSAARenderBuffers();
 
-    if (samples > 1 && gl.renderbufferStorageMultisample) {
+    if (samples > 1 && typeof gl.renderbufferStorageMultisample === "function") {
         const framebuffer = gl.createFramebuffer();
 
         if (!framebuffer) {
@@ -275,7 +272,7 @@ ThinEngine.prototype.updateRenderTargetTextureSampleCount = function (rtWrapper:
             throw new Error("Unable to create multi sampled framebuffer");
         }
 
-        hardwareTexture._MSAARenderBuffer = colorRenderbuffer;
+        hardwareTexture.addMSAARenderBuffer(colorRenderbuffer);
     } else {
         this._bindUnboundFramebuffer(rtWrapper._framebuffer);
     }

@@ -254,6 +254,10 @@ export const LoadImage = (
     };
 
     const cspHandler = (err: any) => {
+        if (err.blockedURI !== img.src) {
+            return;
+        }
+
         unloadHandlersList();
         const cspException = new Error(`CSP violation of policy ${err.effectiveDirective} ${err.blockedURI}. Current policy is ${err.originalPolicy}`);
 

@@ -197,6 +197,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                 animationOptions = [
                     { label: "None", value: AnimatedInputBlockTypes.None },
                     { label: "Time", value: AnimatedInputBlockTypes.Time },
+                    { label: "RealTime", value: AnimatedInputBlockTypes.RealTime },
                 ];
                 systemValuesOptions = [
                     { label: "Delta time", value: NodeMaterialSystemValues.DeltaTime },
@@ -243,6 +244,8 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                 attributeOptions = [
                     { label: "matricesIndices", value: "matricesIndices" },
                     { label: "matricesWeights", value: "matricesWeights" },
+                    { label: "matricesIndicesExtra", value: "matricesIndicesExtra" },
+                    { label: "matricesWeightsExtra", value: "matricesWeightsExtra" },
                     { label: "tangent", value: "tangent" },
                 ];
                 systemValuesOptions = [{ label: "Camera parameters", value: NodeMaterialSystemValues.CameraParameters }];
@@ -275,12 +278,12 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                             options={typeOptions}
                             target={inputBlock}
                             noDirectUpdate={true}
-                            extractValue={(block) => {
-                                if (block.visibleInInspector) {
+                            extractValue={() => {
+                                if (inputBlock.visibleInInspector) {
                                     return 1;
                                 }
 
-                                if (block.isConstant) {
+                                if (inputBlock.isConstant) {
                                     return 2;
                                 }
 
@@ -327,12 +330,12 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                         options={modeOptions}
                         target={inputBlock}
                         noDirectUpdate={true}
-                        extractValue={(block) => {
-                            if (block.isAttribute) {
+                        extractValue={() => {
+                            if (inputBlock.isAttribute) {
                                 return 1;
                             }
 
-                            if (block.isSystemValue) {
+                            if (inputBlock.isSystemValue) {
                                 return 2;
                             }
 

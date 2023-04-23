@@ -143,6 +143,8 @@ class _InternalMeshDataInfo {
     public _effectiveMaterial: Nullable<Material> = null;
 
     public _forcedInstanceCount: number = 0;
+
+    public _overrideRenderingFillMode: Nullable<number> = null;
 }
 
 /**
@@ -440,6 +442,17 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     public overrideMaterialSideOrientation: Nullable<number> = null;
 
     /**
+     * Use this property to override the Material's fillMode value
+     */
+    public get overrideRenderingFillMode(): Nullable<number> {
+        return this._internalMeshDataInfo._overrideRenderingFillMode;
+    }
+
+    public set overrideRenderingFillMode(fillMode: Nullable<number>) {
+        this._internalMeshDataInfo._overrideRenderingFillMode = fillMode;
+    }
+
+    /**
      * Gets or sets a boolean indicating whether to render ignoring the active camera's max z setting. (false by default)
      * Note this will reduce performance when set to true.
      */
@@ -632,6 +645,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             } else {
                 this.metadata = source.metadata;
             }
+            this._internalMetadata = source._internalMetadata;
 
             // Tags
             if (Tags && Tags.HasTags(source)) {
@@ -673,10 +687,16 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             // Physics clone
             if (scene.getPhysicsEngine) {
                 const physicsEngine = scene.getPhysicsEngine();
-                if (clonePhysicsImpostor && physicsEngine && physicsEngine.getPluginVersion() === 1) {
-                    const impostor = (physicsEngine as PhysicsEngineV1).getImpostorForPhysicsObject(source);
-                    if (impostor) {
-                        this.physicsImpostor = impostor.clone(this);
+                if (clonePhysicsImpostor && physicsEngine) {
+                    if (physicsEngine.getPluginVersion() === 1) {
+                        const impostor = (physicsEngine as PhysicsEngineV1).getImpostorForPhysicsObject(source);
+                        if (impostor) {
+                            this.physicsImpostor = impostor.clone(this);
+                        }
+                    } else if (physicsEngine.getPluginVersion() === 2) {
+                        if (source.physicsBody) {
+                            source.physicsBody.clone(this);
+                        }
                     }
                 }
             }
@@ -755,7 +775,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         for (const child of this.getChildTransformNodes(true)) {
             // instancedMesh should have a different sourced mesh
-            if (child.getClassName() === "InstancedMesh" && instance.getClassName() === "Mesh") {
+            if (child.getClassName() === "InstancedMesh" && instance.getClassName() === "Mesh" && (child as InstancedMesh).sourceMesh === this) {
                 (child as InstancedMesh).instantiateHierarchy(
                     instance,
                     {
@@ -1022,16 +1042,19 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * - VertexBuffer.MatricesWeightsExtraKind
      * @param copyWhenShared defines a boolean indicating that if the mesh geometry is shared among some other meshes, the returned array is a copy of the internal one
      * @param forceCopy defines a boolean forcing the copy of the buffer no matter what the value of copyWhenShared is
+     * @param bypassInstanceData defines a boolean indicating that the function should not take into account the instance data (applies only if the mesh has instances). Default: false
      * @returns a FloatArray or null if the mesh has no geometry or no vertex buffer for this kind.
      */
-    public getVerticesData(kind: string, copyWhenShared?: boolean, forceCopy?: boolean): Nullable<FloatArray> {
+    public getVerticesData(kind: string, copyWhenShared?: boolean, forceCopy?: boolean, bypassInstanceData?: boolean): Nullable<FloatArray> {
         if (!this._geometry) {
             return null;
         }
-        let data = this._userInstancedBuffersStorage?.vertexBuffers[kind]?.getFloatData(
-            this._geometry.getTotalVertices(),
-            forceCopy || (copyWhenShared && this._geometry.meshes.length !== 1)
-        );
+        let data = bypassInstanceData
+            ? undefined
+            : this._userInstancedBuffersStorage?.vertexBuffers[kind]?.getFloatData(
+                  this.instances.length + 1, // +1 because the master mesh is not included in the instances array
+                  forceCopy || (copyWhenShared && this._geometry.meshes.length !== 1)
+              );
         if (!data) {
             data = this._geometry.getVerticesData(kind, copyWhenShared, forceCopy);
         }
@@ -1054,14 +1077,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * - VertexBuffer.MatricesIndicesExtraKind
      * - VertexBuffer.MatricesWeightsKind
      * - VertexBuffer.MatricesWeightsExtraKind
+     * @param bypassInstanceData defines a boolean indicating that the function should not take into account the instance data (applies only if the mesh has instances). Default: false
      * @returns a FloatArray or null if the mesh has no vertex buffer for this kind.
      */
-    public getVertexBuffer(kind: string): Nullable<VertexBuffer> {
+    public getVertexBuffer(kind: string, bypassInstanceData?: boolean): Nullable<VertexBuffer> {
         if (!this._geometry) {
             return null;
         }
 
-        return this._userInstancedBuffersStorage?.vertexBuffers[kind] ?? this._geometry.getVertexBuffer(kind);
+        return (bypassInstanceData ? undefined : this._userInstancedBuffersStorage?.vertexBuffers[kind]) ?? this._geometry.getVertexBuffer(kind);
     }
 
     /**
@@ -1080,16 +1104,17 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * - VertexBuffer.MatricesIndicesExtraKind
      * - VertexBuffer.MatricesWeightsKind
      * - VertexBuffer.MatricesWeightsExtraKind
+     * @param bypassInstanceData defines a boolean indicating that the function should not take into account the instance data (applies only if the mesh has instances). Default: false
      * @returns a boolean
      */
-    public isVerticesDataPresent(kind: string): boolean {
+    public isVerticesDataPresent(kind: string, bypassInstanceData?: boolean): boolean {
         if (!this._geometry) {
             if (this._delayInfo) {
                 return this._delayInfo.indexOf(kind) !== -1;
             }
             return false;
         }
-        return this._userInstancedBuffersStorage?.vertexBuffers[kind] !== undefined || this._geometry.isVerticesDataPresent(kind);
+        return (!bypassInstanceData && this._userInstancedBuffersStorage?.vertexBuffers[kind] !== undefined) || this._geometry.isVerticesDataPresent(kind);
     }
 
     /**
@@ -1107,23 +1132,31 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * - VertexBuffer.MatricesIndicesExtraKind
      * - VertexBuffer.MatricesWeightsKind
      * - VertexBuffer.MatricesWeightsExtraKind
+     * @param bypassInstanceData defines a boolean indicating that the function should not take into account the instance data (applies only if the mesh has instances). Default: false
      * @returns a boolean
      */
-    public isVertexBufferUpdatable(kind: string): boolean {
+    public isVertexBufferUpdatable(kind: string, bypassInstanceData?: boolean): boolean {
         if (!this._geometry) {
             if (this._delayInfo) {
                 return this._delayInfo.indexOf(kind) !== -1;
             }
             return false;
         }
-        return this._userInstancedBuffersStorage?.vertexBuffers[kind]?.isUpdatable() || this._geometry.isVertexBufferUpdatable(kind);
+        if (!bypassInstanceData) {
+            const buffer = this._userInstancedBuffersStorage?.vertexBuffers[kind];
+            if (buffer) {
+                return buffer.isUpdatable();
+            }
+        }
+        return this._geometry.isVertexBufferUpdatable(kind);
     }
 
     /**
      * Returns a string which contains the list of existing `kinds` of Vertex Data associated with this mesh.
+     * @param bypassInstanceData defines a boolean indicating that the function should not take into account the instance data (applies only if the mesh has instances). Default: false
      * @returns an array of strings
      */
-    public getVerticesDataKinds(): string[] {
+    public getVerticesDataKinds(bypassInstanceData?: boolean): string[] {
         if (!this._geometry) {
             const result = new Array<string>();
             if (this._delayInfo) {
@@ -1134,9 +1167,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return result;
         }
         const kinds = this._geometry.getVerticesDataKinds();
-        if (this._userInstancedBuffersStorage) {
+        if (!bypassInstanceData && this._userInstancedBuffersStorage) {
             for (const kind in this._userInstancedBuffersStorage.vertexBuffers) {
-                kinds.push(kind);
+                if (kinds.indexOf(kind) === -1) {
+                    kinds.push(kind);
+                }
             }
         }
         return kinds;
@@ -1688,7 +1723,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /**
      * @internal
      */
-    public _bind(subMesh: SubMesh, effect: Effect, fillMode: number): Mesh {
+    public _bind(subMesh: SubMesh, effect: Effect, fillMode: number, allowInstancedRendering = true): Mesh {
         if (!this._geometry) {
             return this;
         }
@@ -1702,11 +1737,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Wireframe
         let indexToBind;
-
         if (this._unIndexed) {
             indexToBind = null;
         } else {
-            switch (fillMode) {
+            switch (this._getRenderingFillMode(fillMode)) {
                 case Material.PointFillMode:
                     indexToBind = null;
                     break;
@@ -1721,7 +1755,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // VBOs
-        if (!this._userInstancedBuffersStorage || this.hasThinInstances) {
+        if (!allowInstancedRendering || !this._userInstancedBuffersStorage || this.hasThinInstances) {
             this._geometry._bind(effect, indexToBind);
         } else {
             this._geometry._bind(effect, indexToBind, this._userInstancedBuffersStorage.vertexBuffers, this._userInstancedBuffersStorage.vertexArrayObjects);
@@ -2054,6 +2088,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     ): Mesh {
         const scene = this.getScene();
         const engine = scene.getEngine();
+        fillMode = this._getRenderingFillMode(fillMode);
 
         if (hardwareInstancedRendering && subMesh.getRenderingMesh().hasThinInstances) {
             this._renderWithThinInstances(subMesh, fillMode, effect, engine);
@@ -2298,11 +2333,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Bind
-        const fillMode = scene.forcePointsCloud
-            ? Material.PointFillMode
-            : scene.forceWireframe
-            ? Material.WireFrameFillMode
-            : this._internalMeshDataInfo._effectiveMaterial.fillMode;
+        const effectiveMaterial = this._internalMeshDataInfo._effectiveMaterial;
+        const fillMode = effectiveMaterial.fillMode;
 
         if (this._internalMeshDataInfo._onBeforeBindObservable) {
             this._internalMeshDataInfo._onBeforeBindObservable.notifyObservers(this);
@@ -2310,10 +2342,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         if (!hardwareInstancedRendering) {
             // Binding will be done later because we need to add more info to the VB
-            this._bind(subMesh, effect, fillMode);
+            this._bind(subMesh, effect, fillMode, false);
         }
 
-        const effectiveMaterial = this._internalMeshDataInfo._effectiveMaterial;
         const world = effectiveMesh.getWorldMatrix();
         if (effectiveMaterial._storeEffectOnSubMeshes) {
             effectiveMaterial.bindForSubMesh(world, this, subMesh);
@@ -2810,6 +2841,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         internalDataInfo._source = null;
+        this._instanceDataStorage.visibleInstances = {};
 
         // Instances
         this._disposeInstanceSpecificData();
@@ -3722,6 +3754,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 serializationInstance.metadata = instance.metadata;
             }
 
+            // Action Manager
+            if (instance.actionManager) {
+                serializationInstance.actions = instance.actionManager.serialize(instance.name);
+            }
+
             serializationObject.instances.push(serializationInstance);
 
             // Animations
@@ -4179,6 +4216,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     Mesh._PhysicsImpostorParser(scene, instance, parsedInstance);
                 }
 
+                // Actions
+                if (parsedInstance.actions !== undefined) {
+                    instance._waitingData.actions = parsedInstance.actions;
+                }
+
                 // Animation
                 if (parsedInstance.animations) {
                     for (let animationIndex = 0; animationIndex < parsedInstance.animations.length; animationIndex++) {
@@ -4593,15 +4635,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         const getVertexDataFromMesh = (mesh: Mesh) => {
             const wm = mesh.computeWorldMatrix(true);
             const vertexData = VertexData.ExtractFromMesh(mesh, false, false);
-            return [vertexData, wm] as const;
+            return { vertexData, transform: wm };
         };
 
-        const [sourceVertexData, sourceTransform] = getVertexDataFromMesh(source);
+        const { vertexData: sourceVertexData, transform: sourceTransform } = getVertexDataFromMesh(source);
         if (isAsync) {
             yield;
         }
 
-        const meshVertexDatas = new Array<readonly [VertexData, Matrix]>(meshes.length - 1);
+        const meshVertexDatas = new Array<{ vertexData: VertexData; transform?: Matrix }>(meshes.length - 1);
         for (let i = 1; i < meshes.length; i++) {
             meshVertexDatas[i - 1] = getVertexDataFromMesh(meshes[i]);
             if (isAsync) {
@@ -4707,6 +4749,17 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /** @internal */
     public _shouldConvertRHS() {
         return this.overrideMaterialSideOrientation === Material.CounterClockWiseSideOrientation;
+    }
+
+    /** @internal */
+    public _getRenderingFillMode(fillMode: number): number {
+        const scene = this.getScene();
+
+        if (scene.forcePointsCloud) return Material.PointFillMode;
+
+        if (scene.forceWireframe) return Material.WireFrameFillMode;
+
+        return this.overrideRenderingFillMode ?? fillMode;
     }
 }
 

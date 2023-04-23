@@ -34,6 +34,7 @@ class SkyMaterialDefines extends MaterialDefines {
     public VERTEXALPHA = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public SKIPFINALCOLORCLAMP = false;
+    public DITHER = false;
 
     constructor() {
         super();
@@ -123,6 +124,12 @@ export class SkyMaterial extends PushMaterial {
     @serializeAsVector3()
     public up: Vector3 = Vector3.Up();
 
+    /**
+     * Defines if sky should be dithered.
+     */
+    @serialize()
+    public dithering: boolean = false;
+
     // Private members
     private _cameraPosition: Vector3 = Vector3.Zero();
     private _skyOrientation: Quaternion = new Quaternion();
@@ -197,6 +204,10 @@ export class SkyMaterial extends PushMaterial {
             defines.markAsMiscDirty();
         }
 
+        if (defines.DITHER !== this.dithering) {
+            defines.markAsMiscDirty();
+        }
+
         // Get correct effect
         if (defines.isDirty) {
             defines.markAsProcessed();
@@ -210,6 +221,7 @@ export class SkyMaterial extends PushMaterial {
             }
 
             defines.IMAGEPROCESSINGPOSTPROCESS = scene.imageProcessingConfiguration.applyByPostProcess;
+            defines.DITHER = this.dithering;
 
             //Attributes
             const attribs = [VertexBuffer.PositionKind];

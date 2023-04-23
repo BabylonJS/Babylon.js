@@ -17,7 +17,6 @@ import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { PivotTools } from "../Misc/pivotTools";
 import { Color3 } from "../Maths/math.color";
-
 import type { LinesMesh } from "../Meshes/linesMesh";
 import { Epsilon } from "../Maths/math.constants";
 import type { IPointerEvent } from "../Events/deviceInputEvents";
@@ -90,6 +89,11 @@ export interface IBoundingBoxGizmo extends IGizmo {
     setEnabledScaling(enable: boolean, homogeneousScaling?: boolean): void;
     /** Enables a pointer drag behavior on the bounding box of the gizmo */
     enableDragBehavior(): void;
+
+    /** Default material used to render when gizmo is not disabled or hovered */
+    coloredMaterial: StandardMaterial;
+    /** Material used to render when gizmo is hovered with mouse*/
+    hoverMaterial: StandardMaterial;
 }
 
 /**
@@ -232,6 +236,15 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
     protected _coloredMaterial: StandardMaterial;
     protected _hoverColoredMaterial: StandardMaterial;
 
+    /** Default material used to render when gizmo is not disabled or hovered */
+    public get coloredMaterial() {
+        return this._coloredMaterial;
+    }
+
+    /** Material used to render when gizmo is hovered with mouse*/
+    public get hoverMaterial() {
+        return this._hoverColoredMaterial;
+    }
     /**
      * Get the pointerDragBehavior
      */
@@ -455,10 +468,11 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                 this.onDragStartObservable.notifyObservers({});
                 this._selectNode(sphere);
             });
-            _dragBehavior.onDragEndObservable.add(() => {
+            _dragBehavior.onDragEndObservable.add((event) => {
                 this.onRotationSphereDragEndObservable.notifyObservers({});
                 this._selectNode(null);
                 this._updateDummy();
+                this._unhoverMeshOnTouchUp(event.pointerInfo, sphere);
             });
 
             this._rotateSpheresParent.addChild(sphere);
@@ -479,7 +493,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
 
                     const box = CreateBox("", { size: 1 }, gizmoLayer.utilityLayerScene);
                     box.material = this._coloredMaterial;
-                    box.metadata = zeroAxisCount === 2; // None homogenous scale handle
+                    box._internalMetadata = zeroAxisCount === 2; // None homogenous scale handle
                     box.isNearGrabbable = true;
 
                     // Dragging logic
@@ -540,10 +554,11 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                         this.onDragStartObservable.notifyObservers({});
                         this._selectNode(box);
                     });
-                    _dragBehavior.onDragEndObservable.add(() => {
+                    _dragBehavior.onDragEndObservable.add((event) => {
                         this.onScaleBoxDragEndObservable.notifyObservers({});
                         this._selectNode(null);
                         this._updateDummy();
+                        this._unhoverMeshOnTouchUp(event.pointerInfo, box);
                     });
 
                     this._scaleBoxesParent.addChild(box);
@@ -622,6 +637,14 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                 m.isVisible = !selectedMesh || m == selectedMesh;
             });
     }
+
+    protected _unhoverMeshOnTouchUp(pointerInfo: Nullable<PointerInfo>, selectedMesh: AbstractMesh) {
+        // force unhover mesh if not a mouse event
+        if (pointerInfo?.event instanceof PointerEvent && pointerInfo?.event.pointerType === "touch") {
+            selectedMesh.material = this._coloredMaterial;
+        }
+    }
+
     /**
      * returns an array containing all boxes used for scaling (in increasing x, y and z orders)
      */
@@ -795,7 +818,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
         this._scaleBoxesParent.getChildMeshes().forEach((m) => {
             let enableMesh = enable;
             // Disable heterogeneous scale handles if requested.
-            if (homogeneousScaling && m.metadata === true) {
+            if (homogeneousScaling && m._internalMetadata === true) {
                 enableMesh = false;
             }
             m.setEnabled(enableMesh);

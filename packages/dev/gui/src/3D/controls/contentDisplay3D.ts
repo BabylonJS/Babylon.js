@@ -12,6 +12,7 @@ export class ContentDisplay3D extends Control3D {
     private _facadeTexture: Nullable<AdvancedDynamicTexture>;
     protected _contentResolution = 512;
     protected _contentScaleRatio = 2;
+    protected _contentScaleRatioY?: number;
 
     /**
      * Gets or sets the GUI 2D content used to display the button's facade
@@ -36,8 +37,7 @@ export class ContentDisplay3D extends Control3D {
                 true,
                 Texture.TRILINEAR_SAMPLINGMODE
             );
-            this._facadeTexture.rootContainer.scaleX = this._contentScaleRatio;
-            this._facadeTexture.rootContainer.scaleY = this._contentScaleRatio;
+            this._setFacadeTextureScaling();
             this._facadeTexture.premulAlpha = true;
         } else {
             this._facadeTexture.rootContainer.clearControls();
@@ -46,6 +46,13 @@ export class ContentDisplay3D extends Control3D {
         this._facadeTexture.addControl(value);
 
         this._applyFacade(this._facadeTexture);
+    }
+
+    protected _setFacadeTextureScaling() {
+        if (this._facadeTexture) {
+            this._facadeTexture.rootContainer.scaleX = this._contentScaleRatio;
+            this._facadeTexture.rootContainer.scaleY = this._contentScaleRatioY ?? this._contentScaleRatio;
+        }
     }
 
     /**

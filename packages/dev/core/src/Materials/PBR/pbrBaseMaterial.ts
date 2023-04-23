@@ -5,7 +5,7 @@ import { Logger } from "../../Misc/logger";
 import { SmartArray } from "../../Misc/smartArray";
 import { GetEnvironmentBRDFTexture } from "../../Misc/brdfTextureTools";
 import type { Nullable } from "../../types";
-import { Scene, ScenePerformancePriority } from "../../scene";
+import { Scene } from "../../scene";
 import type { Matrix } from "../../Maths/math.vector";
 import { Vector4 } from "../../Maths/math.vector";
 import { VertexBuffer } from "../../Buffers/buffer";
@@ -839,7 +839,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * It helps with side by side comparison against the final render
      * This defaults to -1
      */
-    private _debugLimit = -1;
+    public debugLimit = -1;
 
     /**
      * @internal
@@ -847,7 +847,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * As the default viewing range might not be enough (if the ambient is really small for instance)
      * You can use the factor to better multiply the final value.
      */
-    private _debugFactor = 1;
+    public debugFactor = 1;
 
     /**
      * Defines the clear coat layer parameters for the material.
@@ -1150,6 +1150,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         this._eventInfo.isReadyForSubMesh = true;
         this._eventInfo.defines = defines;
+        this._eventInfo.subMesh = subMesh;
         this._callbackPluginEventIsReadyForSubMesh(this._eventInfo);
 
         if (!this._eventInfo.isReadyForSubMesh) {
@@ -1171,6 +1172,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         const lightDisposed = defines._areLightsDisposed;
         let effect = this._prepareEffect(mesh, defines, this.onCompiled, this.onError, useInstances, null, subMesh.getRenderingMesh().hasThinInstances);
 
+        let forceWasNotReadyPreviously = false;
+
         if (effect) {
             if (this._onEffectCreatedObservable) {
                 onCreatedEffectParameters.effect = effect;
@@ -1182,6 +1185,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             if (this.allowShaderHotSwapping && previousEffect && !effect.isReady()) {
                 effect = previousEffect;
                 defines.markAsUnprocessed();
+
+                forceWasNotReadyPreviously = this.isFrozen;
 
                 if (lightDisposed) {
                     // re register in case it takes more than one frame.
@@ -1199,12 +1204,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         defines._renderId = scene.getRenderId();
-        subMesh.effect._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyReady = forceWasNotReadyPreviously ? false : true;
         subMesh.effect._wasPreviouslyUsingInstances = !!useInstances;
 
-        if (scene.performancePriority !== ScenePerformancePriority.BackwardCompatible) {
-            this.checkReadyOnlyOnce = true;
-        }
+        this._checkScenePerformancePriority();
 
         return true;
     }
@@ -1483,7 +1486,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         const join = defines.toString();
-        return engine.createEffect(
+        const effect = engine.createEffect(
             shaderName,
             <IEffectCreationOptions>{
                 attributes: attribs,
@@ -1501,6 +1504,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             },
             engine
         );
+
+        this._eventInfo.customCode = undefined;
+
+        return effect;
     }
 
     private _prepareDefines(
@@ -1531,6 +1538,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         defines.METALLICWORKFLOW = this.isMetallicWorkflow();
         if (defines._areTexturesDirty) {
             defines._needUVs = false;
+            for (let i = 1; i <= Constants.MAX_SUPPORTED_UV_SETS; ++i) {
+                defines["MAINUV" + i] = false;
+            }
             if (scene.texturesEnabled) {
                 defines.ALBEDODIRECTUV = 0;
                 defines.AMBIENTDIRECTUV = 0;
@@ -1587,10 +1597,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                         defines.REALTIME_FILTERING = false;
                     }
 
-                    if (reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE) {
-                        defines.INVERTCUBICMAP = true;
-                    }
-
+                    defines.INVERTCUBICMAP = reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE;
                     defines.REFLECTIONMAP_3D = reflectionTexture.isCube;
                     defines.REFLECTIONMAP_OPPOSITEZ = defines.REFLECTIONMAP_3D && this.getScene().useRightHandedSystem ? !reflectionTexture.invertZ : reflectionTexture.invertZ;
 
@@ -1763,7 +1770,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     defines.BUMP = false;
                     defines.PARALLAX = false;
                     defines.PARALLAXOCCLUSION = false;
-                    defines.PARALLAOBJECTSPACE_NORMALMAP = false;
+                    defines.OBJECTSPACE_NORMALMAP = false;
                 }
 
                 if (this._environmentBRDFTexture && MaterialFlags.ReflectionTextureEnabled) {
@@ -2003,7 +2010,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             this.bindOnlyNormalMatrix(this._normalMatrix);
         }
 
-        const mustRebind = this._mustRebind(scene, effect, mesh.visibility);
+        const mustRebind = effect._forceRebindOnNextCall || this._mustRebind(scene, effect, mesh.visibility);
 
         // Bones
         MaterialHelper.BindBonesParameters(mesh, this._activeEffect, this.prePassConfiguration);
@@ -2014,7 +2021,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             this.bindViewProjection(effect);
             reflectionTexture = this._getReflectionTexture();
 
-            if (!ubo.useUbo || !this.isFrozen || !ubo.isSync) {
+            if (!ubo.useUbo || !this.isFrozen || !ubo.isSync || effect._forceRebindOnNextCall) {
                 // Texture uniforms
                 if (scene.texturesEnabled) {
                     if (this._albedoTexture && MaterialFlags.DiffuseTextureEnabled) {
@@ -2196,7 +2203,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                 ubo.updateColor3("vAmbientColor", this._globalAmbientColor);
 
-                ubo.updateFloat2("vDebugMode", this._debugLimit, this._debugFactor);
+                ubo.updateFloat2("vDebugMode", this.debugLimit, this.debugFactor);
             }
 
             // Textures

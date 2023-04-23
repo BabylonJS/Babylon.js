@@ -13,6 +13,7 @@ import { SliderLineComponent } from "shared-ui-components/lines/sliderLineCompon
 import type { GlobalState } from "../../../../globalState";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
+import { CustomPropertyGridComponent } from "../customPropertyGridComponent";
 
 interface ICommonPostProcessPropertyGridComponentProps {
     globalState: GlobalState;
@@ -31,6 +32,12 @@ export class CommonPostProcessPropertyGridComponent extends React.Component<ICom
 
         return (
             <div>
+                <CustomPropertyGridComponent
+                    globalState={this.props.globalState}
+                    target={postProcess}
+                    lockObject={this.props.lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                />
                 <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
                     <TextLineComponent label="Class" value={postProcess.getClassName()} />
                     <TextInputLineComponent

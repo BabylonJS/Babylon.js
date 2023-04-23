@@ -5,3 +5,6 @@ export * from "./physicsShape";
 export * from "./physicsConstraint";
 export * from "./physicsMaterial";
 export * from "./physicsAggregate";
+export * from "./IPhysicsEnginePlugin";
+/* eslint-disable import/no-internal-modules */
+export * from "./Plugins/index";

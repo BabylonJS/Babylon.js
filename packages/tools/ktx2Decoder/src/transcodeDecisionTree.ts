@@ -1,44 +1,12 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { sourceTextureFormat, transcodeTarget } from "./transcoder";
+import * as KTX2 from "core/Materials/Textures/ktx2decoderTypes";
 
-const COMPRESSED_RGBA_BPTC_UNORM_EXT = 0x8e8c;
-const COMPRESSED_RGBA_ASTC_4x4_KHR = 0x93b0;
-const COMPRESSED_RGB_S3TC_DXT1_EXT = 0x83f0;
-const COMPRESSED_RGBA_S3TC_DXT5_EXT = 0x83f3;
-const COMPRESSED_RGBA_PVRTC_4BPPV1_IMG = 0x8c02;
-const COMPRESSED_RGB_PVRTC_4BPPV1_IMG = 0x8c00;
-const COMPRESSED_RGBA8_ETC2_EAC = 0x9278;
-const COMPRESSED_RGB8_ETC2 = 0x9274;
-const COMPRESSED_RGB_ETC1_WEBGL = 0x8d64;
-const RGBA8Format = 0x8058;
-const R8Format = 0x8229;
-const RG8Format = 0x822b;
-
-interface ILeaf {
-    transcodeFormat: number;
-    engineFormat: number;
-    roundToMultiple4?: boolean;
-}
-
-interface INode {
-    cap?: string;
-    option?: string;
-    alpha?: boolean;
-    needsPowerOfTwo?: boolean;
-    yes?: INode | ILeaf;
-    no?: INode | ILeaf;
-}
-
-interface IDecisionTree {
-    [textureFormat: string]: INode;
-}
-
-const DecisionTree: IDecisionTree = {
+const DecisionTree: KTX2.IDecisionTree = {
     ETC1S: {
         option: "forceRGBA",
         yes: {
-            transcodeFormat: transcodeTarget.RGBA32,
-            engineFormat: RGBA8Format,
+            transcodeFormat: KTX2.TranscodeTarget.RGBA32,
+            engineFormat: KTX2.EngineFormat.RGBA8Format,
             roundToMultiple4: false,
         },
         no: {
@@ -46,38 +14,38 @@ const DecisionTree: IDecisionTree = {
             yes: {
                 alpha: true,
                 yes: {
-                    transcodeFormat: transcodeTarget.ETC2_RGBA,
-                    engineFormat: COMPRESSED_RGBA8_ETC2_EAC,
+                    transcodeFormat: KTX2.TranscodeTarget.ETC2_RGBA,
+                    engineFormat: KTX2.EngineFormat.COMPRESSED_RGBA8_ETC2_EAC,
                 },
                 no: {
-                    transcodeFormat: transcodeTarget.ETC1_RGB,
-                    engineFormat: COMPRESSED_RGB8_ETC2,
+                    transcodeFormat: KTX2.TranscodeTarget.ETC1_RGB,
+                    engineFormat: KTX2.EngineFormat.COMPRESSED_RGB8_ETC2,
                 },
             },
             no: {
                 cap: "etc1",
                 alpha: false,
                 yes: {
-                    transcodeFormat: transcodeTarget.ETC1_RGB,
-                    engineFormat: COMPRESSED_RGB_ETC1_WEBGL,
+                    transcodeFormat: KTX2.TranscodeTarget.ETC1_RGB,
+                    engineFormat: KTX2.EngineFormat.COMPRESSED_RGB_ETC1_WEBGL,
                 },
                 no: {
                     cap: "bptc",
                     yes: {
-                        transcodeFormat: transcodeTarget.BC7_RGBA,
-                        engineFormat: COMPRESSED_RGBA_BPTC_UNORM_EXT,
+                        transcodeFormat: KTX2.TranscodeTarget.BC7_RGBA,
+                        engineFormat: KTX2.EngineFormat.COMPRESSED_RGBA_BPTC_UNORM_EXT,
                     },
                     no: {
                         cap: "s3tc",
                         yes: {
                             alpha: true,
                             yes: {
-                                transcodeFormat: transcodeTarget.BC3_RGBA,
-                                engineFormat: COMPRESSED_RGBA_S3TC_DXT5_EXT,
+                                transcodeFormat: KTX2.TranscodeTarget.BC3_RGBA,
+                                engineFormat: KTX2.EngineFormat.COMPRESSED_RGBA_S3TC_DXT5_EXT,
                             },
                             no: {
-                                transcodeFormat: transcodeTarget.BC1_RGB,
-                                engineFormat: COMPRESSED_RGB_S3TC_DXT1_EXT,
+                                transcodeFormat: KTX2.TranscodeTarget.BC1_RGB,
+                                engineFormat: KTX2.EngineFormat.COMPRESSED_RGB_S3TC_DXT1_EXT,
                             },
                         },
                         no: {
@@ -86,17 +54,17 @@ const DecisionTree: IDecisionTree = {
                             yes: {
                                 alpha: true,
                                 yes: {
-                                    transcodeFormat: transcodeTarget.PVRTC1_4_RGBA,
-                                    engineFormat: COMPRESSED_RGBA_PVRTC_4BPPV1_IMG,
+                                    transcodeFormat: KTX2.TranscodeTarget.PVRTC1_4_RGBA,
+                                    engineFormat: KTX2.EngineFormat.COMPRESSED_RGBA_PVRTC_4BPPV1_IMG,
                                 },
                                 no: {
-                                    transcodeFormat: transcodeTarget.PVRTC1_4_RGB,
-                                    engineFormat: COMPRESSED_RGB_PVRTC_4BPPV1_IMG,
+                                    transcodeFormat: KTX2.TranscodeTarget.PVRTC1_4_RGB,
+                                    engineFormat: KTX2.EngineFormat.COMPRESSED_RGB_PVRTC_4BPPV1_IMG,
                                 },
                             },
                             no: {
-                                transcodeFormat: transcodeTarget.RGBA32,
-                                engineFormat: RGBA8Format,
+                                transcodeFormat: KTX2.TranscodeTarget.RGBA32,
+                                engineFormat: KTX2.EngineFormat.RGBA8Format,
                                 roundToMultiple4: false,
                             },
                         },
@@ -109,41 +77,41 @@ const DecisionTree: IDecisionTree = {
     UASTC: {
         option: "forceRGBA",
         yes: {
-            transcodeFormat: transcodeTarget.RGBA32,
-            engineFormat: RGBA8Format,
+            transcodeFormat: KTX2.TranscodeTarget.RGBA32,
+            engineFormat: KTX2.EngineFormat.RGBA8Format,
             roundToMultiple4: false,
         },
         no: {
             option: "forceR8",
             yes: {
-                transcodeFormat: transcodeTarget.R8,
-                engineFormat: R8Format,
+                transcodeFormat: KTX2.TranscodeTarget.R8,
+                engineFormat: KTX2.EngineFormat.R8Format,
                 roundToMultiple4: false,
             },
             no: {
                 option: "forceRG8",
                 yes: {
-                    transcodeFormat: transcodeTarget.RG8,
-                    engineFormat: RG8Format,
+                    transcodeFormat: KTX2.TranscodeTarget.RG8,
+                    engineFormat: KTX2.EngineFormat.RG8Format,
                     roundToMultiple4: false,
                 },
                 no: {
                     cap: "astc",
                     yes: {
-                        transcodeFormat: transcodeTarget.ASTC_4x4_RGBA,
-                        engineFormat: COMPRESSED_RGBA_ASTC_4x4_KHR,
+                        transcodeFormat: KTX2.TranscodeTarget.ASTC_4X4_RGBA,
+                        engineFormat: KTX2.EngineFormat.COMPRESSED_RGBA_ASTC_4X4_KHR,
                     },
                     no: {
                         cap: "bptc",
                         yes: {
-                            transcodeFormat: transcodeTarget.BC7_RGBA,
-                            engineFormat: COMPRESSED_RGBA_BPTC_UNORM_EXT,
+                            transcodeFormat: KTX2.TranscodeTarget.BC7_RGBA,
+                            engineFormat: KTX2.EngineFormat.COMPRESSED_RGBA_BPTC_UNORM_EXT,
                         },
                         no: {
                             option: "useRGBAIfASTCBC7NotAvailableWhenUASTC",
                             yes: {
-                                transcodeFormat: transcodeTarget.RGBA32,
-                                engineFormat: RGBA8Format,
+                                transcodeFormat: KTX2.TranscodeTarget.RGBA32,
+                                engineFormat: KTX2.EngineFormat.RGBA8Format,
                                 roundToMultiple4: false,
                             },
                             no: {
@@ -151,31 +119,31 @@ const DecisionTree: IDecisionTree = {
                                 yes: {
                                     alpha: true,
                                     yes: {
-                                        transcodeFormat: transcodeTarget.ETC2_RGBA,
-                                        engineFormat: COMPRESSED_RGBA8_ETC2_EAC,
+                                        transcodeFormat: KTX2.TranscodeTarget.ETC2_RGBA,
+                                        engineFormat: KTX2.EngineFormat.COMPRESSED_RGBA8_ETC2_EAC,
                                     },
                                     no: {
-                                        transcodeFormat: transcodeTarget.ETC1_RGB,
-                                        engineFormat: COMPRESSED_RGB8_ETC2,
+                                        transcodeFormat: KTX2.TranscodeTarget.ETC1_RGB,
+                                        engineFormat: KTX2.EngineFormat.COMPRESSED_RGB8_ETC2,
                                     },
                                 },
                                 no: {
                                     cap: "etc1",
                                     yes: {
-                                        transcodeFormat: transcodeTarget.ETC1_RGB,
-                                        engineFormat: COMPRESSED_RGB_ETC1_WEBGL,
+                                        transcodeFormat: KTX2.TranscodeTarget.ETC1_RGB,
+                                        engineFormat: KTX2.EngineFormat.COMPRESSED_RGB_ETC1_WEBGL,
                                     },
                                     no: {
                                         cap: "s3tc",
                                         yes: {
                                             alpha: true,
                                             yes: {
-                                                transcodeFormat: transcodeTarget.BC3_RGBA,
-                                                engineFormat: COMPRESSED_RGBA_S3TC_DXT5_EXT,
+                                                transcodeFormat: KTX2.TranscodeTarget.BC3_RGBA,
+                                                engineFormat: KTX2.EngineFormat.COMPRESSED_RGBA_S3TC_DXT5_EXT,
                                             },
                                             no: {
-                                                transcodeFormat: transcodeTarget.BC1_RGB,
-                                                engineFormat: COMPRESSED_RGB_S3TC_DXT1_EXT,
+                                                transcodeFormat: KTX2.TranscodeTarget.BC1_RGB,
+                                                engineFormat: KTX2.EngineFormat.COMPRESSED_RGB_S3TC_DXT1_EXT,
                                             },
                                         },
                                         no: {
@@ -184,17 +152,17 @@ const DecisionTree: IDecisionTree = {
                                             yes: {
                                                 alpha: true,
                                                 yes: {
-                                                    transcodeFormat: transcodeTarget.PVRTC1_4_RGBA,
-                                                    engineFormat: COMPRESSED_RGBA_PVRTC_4BPPV1_IMG,
+                                                    transcodeFormat: KTX2.TranscodeTarget.PVRTC1_4_RGBA,
+                                                    engineFormat: KTX2.EngineFormat.COMPRESSED_RGBA_PVRTC_4BPPV1_IMG,
                                                 },
                                                 no: {
-                                                    transcodeFormat: transcodeTarget.PVRTC1_4_RGB,
-                                                    engineFormat: COMPRESSED_RGB_PVRTC_4BPPV1_IMG,
+                                                    transcodeFormat: KTX2.TranscodeTarget.PVRTC1_4_RGB,
+                                                    engineFormat: KTX2.EngineFormat.COMPRESSED_RGB_PVRTC_4BPPV1_IMG,
                                                 },
                                             },
                                             no: {
-                                                transcodeFormat: transcodeTarget.RGBA32,
-                                                engineFormat: RGBA8Format,
+                                                transcodeFormat: KTX2.TranscodeTarget.RGBA32,
+                                                engineFormat: KTX2.EngineFormat.RGBA8Format,
                                                 roundToMultiple4: false,
                                             },
                                         },
@@ -210,14 +178,15 @@ const DecisionTree: IDecisionTree = {
 };
 
 export class TranscodeDecisionTree {
-    private static _IsLeafNode(node: INode | ILeaf): node is ILeaf {
-        return (node as ILeaf).transcodeFormat !== undefined;
+    private static _IsLeafNode(node: KTX2.INode | KTX2.ILeaf): node is KTX2.ILeaf {
+        return (node as KTX2.ILeaf).engineFormat !== undefined;
     }
 
+    private _textureFormat: KTX2.SourceTextureFormat;
     private _hasAlpha: boolean;
     private _isPowerOfTwo: boolean;
-    private _caps: any;
-    private _options: any;
+    private _caps: KTX2.ICompressedFormatCapabilities;
+    private _options: KTX2.IKTX2DecoderOptions;
     private _transcodeFormat: number;
     private _engineFormat: number;
     private _roundToMultiple4: boolean;
@@ -234,16 +203,29 @@ export class TranscodeDecisionTree {
         return this._roundToMultiple4;
     }
 
-    constructor(textureFormat: sourceTextureFormat, hasAlpha: boolean, isPowerOfTwo: boolean, caps: any, options?: any) {
+    constructor(textureFormat: KTX2.SourceTextureFormat, hasAlpha: boolean, isPowerOfTwo: boolean, caps: KTX2.ICompressedFormatCapabilities, options?: KTX2.IKTX2DecoderOptions) {
+        this._textureFormat = textureFormat;
         this._hasAlpha = hasAlpha;
         this._isPowerOfTwo = isPowerOfTwo;
         this._caps = caps;
         this._options = options ?? {};
 
-        this._parseNode(textureFormat === sourceTextureFormat.UASTC4x4 ? DecisionTree.UASTC : DecisionTree.ETC1S);
+        this.parseTree(DecisionTree);
     }
 
-    private _parseNode(node: INode | ILeaf): void {
+    public parseTree(tree: KTX2.IDecisionTree): boolean {
+        const node = this._textureFormat === KTX2.SourceTextureFormat.UASTC4x4 ? tree.UASTC : tree.ETC1S;
+        if (node) {
+            this._parseNode(node);
+        }
+        return node !== undefined;
+    }
+
+    private _parseNode(node: KTX2.INode | KTX2.ILeaf | undefined): void {
+        if (!node) {
+            return;
+        }
+
         if (TranscodeDecisionTree._IsLeafNode(node)) {
             this._transcodeFormat = node.transcodeFormat;
             this._engineFormat = node.engineFormat;
@@ -252,16 +234,23 @@ export class TranscodeDecisionTree {
             let condition = true;
 
             if (node.cap !== undefined) {
-                condition = condition && this._caps[node.cap];
+                condition = condition && !!this._caps[node.cap as keyof typeof this._caps];
             }
             if (node.option !== undefined) {
-                condition = condition && this._options[node.option];
+                condition = condition && !!this._options[node.option as keyof typeof this._options];
             }
             if (node.alpha !== undefined) {
                 condition = condition && this._hasAlpha === node.alpha;
             }
             if (node.needsPowerOfTwo !== undefined) {
                 condition = condition && this._isPowerOfTwo === node.needsPowerOfTwo;
+            }
+            if (node.transcodeFormat !== undefined) {
+                if (Array.isArray(node.transcodeFormat)) {
+                    condition = condition && node.transcodeFormat.indexOf(this._transcodeFormat) !== -1;
+                } else {
+                    condition = condition && node.transcodeFormat === this._transcodeFormat;
+                }
             }
 
             this._parseNode(condition ? node.yes! : node.no!);

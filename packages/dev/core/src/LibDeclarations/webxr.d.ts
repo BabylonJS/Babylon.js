@@ -973,12 +973,11 @@ declare enum XOVR_multiview2 {
 }
 
 interface OVR_multiview2 {
-    readonly FRAMEBUFFER_ATTACHMENT_TEXTURE_NUM_VIEWS_OVR: number;
-    readonly FRAMEBUFFER_ATTACHMENT_TEXTURE_BASE_VIEW_INDEX_OVR: number;
-    readonly MAX_VIEWS_OVR: number;
-    readonly FRAMEBUFFER_INCOMPLETE_VIEW_TARGETS_OVR: number;
-
-    framebufferTextureMultiviewOVR(target: GLenum, attachment: GLenum, texture: WebGLTexture, level: number, baseViewIndex: number, numViews: number): WebGLRenderbuffer;
+    framebufferTextureMultiviewOVR(target: GLenum, attachment: GLenum, texture: WebGLTexture | null, level: GLint, baseViewIndex: GLint, numViews: GLsizei): void;
+    readonly FRAMEBUFFER_ATTACHMENT_TEXTURE_NUM_VIEWS_OVR: 0x9630;
+    readonly FRAMEBUFFER_ATTACHMENT_TEXTURE_BASE_VIEW_INDEX_OVR: 0x9632;
+    readonly MAX_VIEWS_OVR: 0x9631;
+    readonly FRAMEBUFFER_INCOMPLETE_VIEW_TARGETS_OVR: 0x9633;
 }
 
 declare abstract class OVR_multiview2 implements OVR_multiview2 {}
@@ -1144,4 +1143,57 @@ interface XRLightProbe extends EventTarget {
 /**
  * END: WebXR DOM Overlays Module
  * https://immersive-web.github.io/dom-overlays/
+ */
+
+/**
+ * BEGIN: WebXR Depth Sensing Moudle
+ * https://www.w3.org/TR/webxr-depth-sensing-1/
+ */
+
+type XRDepthUsage = "cpu-optimized" | "gpu-optimized";
+type XRDepthDataFormat = "luminance-alpha" | "float32";
+
+type XRDepthStateInit = {
+    readonly usagePreference: XRDepthUsage[];
+    readonly dataFormatPreference: XRDepthDataFormat[];
+};
+
+interface XRSessionInit {
+    depthSensing?: XRDepthStateInit;
+}
+
+interface XRSession {
+    readonly depthUsage: XRDepthUsage;
+    readonly depthDataFormat: XRDepthDataFormat;
+}
+
+interface XRDepthInformation {
+    readonly width: number;
+    readonly height: number;
+
+    readonly normDepthBufferFromNormView: XRRigidTransform;
+    readonly rawValueToMeters: number;
+}
+
+interface XRCPUDepthInformation extends XRDepthInformation {
+    readonly data: ArrayBuffer;
+
+    getDepthInMeters(x: number, y: number): number;
+}
+
+interface XRFrame {
+    getDepthInformation(view: XRView): XRCPUDepthInformation | undefined;
+}
+
+interface XRWebGLDepthInformation extends XRDepthInformation {
+    readonly texture: WebGLTexture;
+}
+
+interface XRWebGLBinding {
+    getDepthInformation(view: XRView): XRWebGLDepthInformation | undefined;
+}
+
+/**
+ * END: WebXR Depth Sensing Moudle
+ * https://www.w3.org/TR/webxr-depth-sensing-1/
  */

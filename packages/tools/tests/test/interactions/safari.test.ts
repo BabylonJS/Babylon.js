@@ -78,9 +78,9 @@ describe("safari", () => {
     // This test just verifies that pointer capture is being set and released correctly
     // It should be noted that we can't move the cursor outside of the window so we have to test the
     // pointer capture functions (eg. hasPointerCapture)
-    // PG: https://playground.babylonjs.com/#5NMCCT
+    // PG: https://playground.babylonjs.com/#5NMCCT#2
     it("check pointerCapture", async () => {
-        await LoadPlayground(driver, "#5NMCCT", getGlobalConfig(), 1000);
+        await LoadPlayground(driver, "#5NMCCT#2", getGlobalConfig(), 1000);
         const el = await driver.findElement(By.id("babylon-canvas"));
 
         // With allowMouse = true, touch controls should move camera forward if isMouseEvent is true

@@ -228,6 +228,44 @@ export class FreeCamera extends TargetCamera {
     }
 
     /**
+     * Gets or Set the list of keyboard keys used to control the up rotation move of the camera.
+     */
+    public get keysRotateUp(): number[] {
+        const keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        if (keyboard) {
+            return keyboard.keysRotateUp;
+        }
+
+        return [];
+    }
+
+    public set keysRotateUp(value: number[]) {
+        const keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        if (keyboard) {
+            keyboard.keysRotateUp = value;
+        }
+    }
+
+    /**
+     * Gets or Set the list of keyboard keys used to control the down rotation move of the camera.
+     */
+    public get keysRotateDown(): number[] {
+        const keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        if (keyboard) {
+            return keyboard.keysRotateDown;
+        }
+
+        return [];
+    }
+
+    public set keysRotateDown(value: number[]) {
+        const keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        if (keyboard) {
+            keyboard.keysRotateDown = value;
+        }
+    }
+
+    /**
      * Event raised when the camera collide with a mesh in the scene.
      */
     public onCollide: (collidedMesh: AbstractMesh) => void;

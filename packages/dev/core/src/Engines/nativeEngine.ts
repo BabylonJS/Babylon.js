@@ -180,7 +180,7 @@ class CommandBufferEncoder {
 /** @internal */
 export class NativeEngine extends Engine {
     // This must match the protocol version in NativeEngine.cpp
-    private static readonly PROTOCOL_VERSION = 7;
+    private static readonly PROTOCOL_VERSION = 8;
 
     private readonly _engine: INativeEngine = new _native.Engine();
     private readonly _camera: Nullable<INativeCamera> = _native.Camera ? new _native.Camera() : null;
@@ -201,11 +201,8 @@ export class NativeEngine extends Engine {
     private _zOffsetUnits: number = 0;
     private _depthWrite: boolean = true;
 
-    public getHardwareScalingLevel(): number {
-        return this._engine.getHardwareScalingLevel();
-    }
-
     public setHardwareScalingLevel(level: number): void {
+        super.setHardwareScalingLevel(level);
         this._engine.setHardwareScalingLevel(level);
     }
 
@@ -252,6 +249,7 @@ export class NativeEngine extends Engine {
             textureHalfFloatLinearFiltering: false,
             textureHalfFloatRender: false,
             textureLOD: true,
+            texelFetch: false,
             drawBuffersExtension: false,
             depthTextureExtension: false,
             vertexArrayObject: true,
@@ -267,6 +265,7 @@ export class NativeEngine extends Engine {
             supportTransformFeedbacks: false,
             textureMaxLevel: false,
             texture2DArrayMaxLayerCount: _native.Engine.CAPS_LIMITS_MAX_TEXTURE_LAYERS,
+            disableMorphTargetTexture: false,
         };
 
         this._features = {
@@ -357,10 +356,13 @@ export class NativeEngine extends Engine {
                 writable: true,
             });
         }
+
         // Currently we do not fully configure the ThinEngine on construction of NativeEngine.
         // Setup resolution scaling based on display settings.
         const devicePixelRatio = window ? window.devicePixelRatio || 1.0 : 1.0;
-        this._hardwareScalingLevel = options.adaptToDeviceRatio ? devicePixelRatio : 1.0;
+        this._hardwareScalingLevel = options.adaptToDeviceRatio ? 1.0 / devicePixelRatio : 1.0;
+        this._engine.setHardwareScalingLevel(this._hardwareScalingLevel);
+        this._lastDevicePixelRatio = devicePixelRatio;
         this.resize();
 
         const currentDepthFunction = this.getDepthFunction();
@@ -646,27 +648,44 @@ export class NativeEngine extends Engine {
         }
     }
 
-    /**
-     * @internal
-     */
-    public _isRenderingStateCompiled(pipelineContext: IPipelineContext): boolean {
-        // TODO: support async shader compilcation
-        return true;
+    public isAsync(pipelineContext: IPipelineContext): boolean {
+        return !!(pipelineContext.isAsync && this._engine.createProgramAsync);
     }
 
     /**
      * @internal
      */
     public _executeWhenRenderingStateIsCompiled(pipelineContext: IPipelineContext, action: () => void) {
-        // TODO: support async shader compilcation
-        action();
+        const nativePipelineContext = pipelineContext as NativePipelineContext;
+
+        if (!this.isAsync(pipelineContext)) {
+            action();
+            return;
+        }
+
+        const oldHandler = nativePipelineContext.onCompiled;
+
+        if (oldHandler) {
+            nativePipelineContext.onCompiled = () => {
+                oldHandler!();
+                action();
+            };
+        } else {
+            nativePipelineContext.onCompiled = action;
+        }
     }
 
     public createRawShaderProgram(): WebGLProgram {
         throw new Error("Not Supported");
     }
 
-    public createShaderProgram(_pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: Nullable<string>): WebGLProgram {
+    public createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: Nullable<string>): WebGLProgram {
+        const nativePipelineContext = pipelineContext as NativePipelineContext;
+
+        if (nativePipelineContext.nativeProgram) {
+            throw new Error("Tried to create a second program in the same NativePipelineContext");
+        }
+
         this.onBeforeShaderCompilationObservable.notifyObservers(this);
 
         const vertexInliner = new ShaderCodeInliner(vertexCode);
@@ -680,9 +699,26 @@ export class NativeEngine extends Engine {
         vertexCode = ThinEngine._ConcatenateShader(vertexCode, defines);
         fragmentCode = ThinEngine._ConcatenateShader(fragmentCode, defines);
 
-        const program = this._engine.createProgram(vertexCode, fragmentCode);
-        this.onAfterShaderCompilationObservable.notifyObservers(this);
-        return program as WebGLProgram;
+        const onSuccess = () => {
+            nativePipelineContext.isCompiled = true;
+            nativePipelineContext.onCompiled?.();
+            this.onAfterShaderCompilationObservable.notifyObservers(this);
+        };
+
+        if (this.isAsync(pipelineContext)) {
+            return this._engine.createProgramAsync(vertexCode, fragmentCode, onSuccess, (error: Error) => {
+                nativePipelineContext.compilationError = error;
+            }) as WebGLProgram;
+        } else {
+            try {
+                const program = (nativePipelineContext.nativeProgram = this._engine.createProgram(vertexCode, fragmentCode));
+                onSuccess();
+                return program as WebGLProgram;
+            } catch (e: any) {
+                const message = e?.message;
+                throw new Error("SHADER ERROR" + (typeof message === "string" ? "\n" + message : ""));
+            }
+        }
     }
 
     /**
@@ -759,7 +795,12 @@ export class NativeEngine extends Engine {
 
     public setViewport(viewport: IViewportLike, requiredWidth?: number, requiredHeight?: number): void {
         this._cachedViewport = viewport;
-        this._engine.setViewPort(viewport.x, viewport.y, viewport.width, viewport.height);
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETVIEWPORT);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(viewport.x);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(viewport.y);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(viewport.width);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(viewport.height);
+        this._commandBufferEncoder.finishEncodingCommand();
     }
 
     public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false, cullBackFaces?: boolean, stencil?: IStencilState, zOffsetUnits: number = 0): void {
@@ -1774,13 +1815,17 @@ export class NativeEngine extends Engine {
     /**
      * Wraps an external native texture in a Babylon texture.
      * @param texture defines the external texture
+     * @param hasMipMaps defines whether the external texture has mip maps
+     * @param samplingMode defines the sampling mode for the external texture (default: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE)
      * @returns the babylon internal texture
      */
-    public wrapNativeTexture(texture: any): InternalTexture {
+    public wrapNativeTexture(texture: any, hasMipMaps: boolean = false, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE): InternalTexture {
         const hardwareTexture = new NativeHardwareTexture(texture, this._engine);
         const internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
         internalTexture._hardwareTexture = hardwareTexture;
         internalTexture.isReady = true;
+        internalTexture.useMipMaps = hasMipMaps;
+        this.updateTextureSamplingMode(samplingMode, internalTexture);
         return internalTexture;
     }
 
@@ -2036,6 +2081,7 @@ export class NativeEngine extends Engine {
         let format = Constants.TEXTUREFORMAT_RGBA;
         let useSRGBBuffer = false;
         let samples = 1;
+        let label: string | undefined;
         if (options !== undefined && typeof options === "object") {
             generateMipMaps = !!options.generateMipMaps;
             type = options.type === undefined ? Constants.TEXTURETYPE_UNSIGNED_INT : options.type;
@@ -2043,6 +2089,7 @@ export class NativeEngine extends Engine {
             format = options.format === undefined ? Constants.TEXTUREFORMAT_RGBA : options.format;
             useSRGBBuffer = options.useSRGBBuffer === undefined ? false : options.useSRGBBuffer;
             samples = options.samples ?? 1;
+            label = options.label;
         } else {
             generateMipMaps = !!options;
         }
@@ -2088,6 +2135,7 @@ export class NativeEngine extends Engine {
         texture.samplingMode = samplingMode;
         texture.type = type;
         texture.format = format;
+        texture.label = label;
 
         this._internalTexturesCache.push(texture);
 
@@ -2101,13 +2149,13 @@ export class NativeEngine extends Engine {
         let generateStencilBuffer = false;
         let noColorAttachment = false;
         let colorAttachment: InternalTexture | undefined = undefined;
-        //let samples = 1;
+        let samples = 1;
         if (options !== undefined && typeof options === "object") {
-            generateDepthBuffer = !!options.generateDepthBuffer;
+            generateDepthBuffer = options.generateDepthBuffer ?? true;
             generateStencilBuffer = !!options.generateStencilBuffer;
             noColorAttachment = !!options.noColorAttachment;
             colorAttachment = options.colorAttachment;
-            //samples = options.samples ?? 1;
+            samples = options.samples ?? 1;
         }
 
         const texture = colorAttachment || (noColorAttachment ? null : this._createInternalTexture(size, options, true, InternalTextureSource.RenderTarget));
@@ -2128,10 +2176,19 @@ export class NativeEngine extends Engine {
 
         rtWrapper.setTextures(texture);
 
-        // TODO: handle this in native
-        //this.updateRenderTargetTextureSampleCount(rtWrapper, samples);
+        this.updateRenderTargetTextureSampleCount(rtWrapper, samples);
 
         return rtWrapper;
+    }
+
+    // This function is being added for the sole purpose of overriding the ThinEngine version.  The reason
+    // for this is that the ThinEngine version of this function uses a WebGL2RenderingContext, which is not
+    // available in Babylon Native.  The return value is just a hard-coded value that is not used anywhere
+    // in Babylon Native's code.  This is effectively a hack/workaround so that Babylon Native doesn't crash
+    // This function should be updated once the maxMSAASamples is updated as well.
+    public updateRenderTargetTextureSampleCount(rtWrapper: RenderTargetWrapper, samples: number): number {
+        // TODO: Implement this function once the maxMSAASamples is updated.
+        return 1;
     }
 
     public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {
