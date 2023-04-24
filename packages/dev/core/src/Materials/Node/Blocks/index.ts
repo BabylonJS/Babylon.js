@@ -59,3 +59,4 @@ export * from "./triPlanarBlock";
 export * from "./biPlanarBlock";
 export * from "./matrixDeterminantBlock";
 export * from "./matrixTransposeBlock";
+export * from "./meshAttributeExistsBlock";

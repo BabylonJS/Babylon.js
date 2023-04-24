@@ -46,6 +46,7 @@ import { TBNBlock } from "core/Materials/Node/Blocks/Fragment/TBNBlock";
 import { LengthBlock } from "core/Materials/Node/Blocks/lengthBlock";
 import { DistanceBlock } from "core/Materials/Node/Blocks/distanceBlock";
 import { FrontFacingBlock } from "core/Materials/Node/Blocks/Fragment/frontFacingBlock";
+import { MeshAttributeExistsBlock } from "core/Materials/Node/Blocks/meshAttributeExistsBlock";
 import { NegateBlock } from "core/Materials/Node/Blocks/negateBlock";
 import { PowBlock } from "core/Materials/Node/Blocks/powBlock";
 import type { Scene } from "core/scene";
@@ -234,6 +235,8 @@ export class BlockTools {
                 return new GradientBlock("Gradient");
             case "FrontFacingBlock":
                 return new FrontFacingBlock("Front facing");
+            case "MeshAttributeExistsBlock":
+                return new MeshAttributeExistsBlock("Attribute exists");
             case "CosBlock": {
                 const cosBlock = new TrigonometryBlock("Cos");
                 cosBlock.operation = TrigonometryBlockOperations.Cos;
