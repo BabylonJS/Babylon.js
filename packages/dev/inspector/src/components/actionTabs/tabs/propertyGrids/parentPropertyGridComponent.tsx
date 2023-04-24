@@ -57,7 +57,7 @@ export class ParentPropertyGridComponent extends React.Component<IParentProperty
                     noDirectUpdate={true}
                     onSelect={(value) => {
                         const nodeAsTransform = node as TransformNode;
-                        if (value < 0) {
+                        if ((value as number) < 0) {
                             if (nodeAsTransform.setParent) {
                                 nodeAsTransform.setParent(null);
                             } else {
