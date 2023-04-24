@@ -143,12 +143,12 @@ export class HDRTools {
      * @param size The expected size of the extracted cubemap.
      * @returns The Cube Map information.
      */
-    public static GetCubeMapTextureData(buffer: ArrayBuffer, size: number): CubeMapInfo {
+    public static GetCubeMapTextureData(buffer: ArrayBuffer, size: number, supersample = false): CubeMapInfo {
         const uint8array = new Uint8Array(buffer);
         const hdrInfo = this.RGBE_ReadHeader(uint8array);
         const data = this.RGBE_ReadPixels(uint8array, hdrInfo);
 
-        const cubeMapData = PanoramaToCubeMapTools.ConvertPanoramaToCubemap(data, hdrInfo.width, hdrInfo.height, size);
+        const cubeMapData = PanoramaToCubeMapTools.ConvertPanoramaToCubemap(data, hdrInfo.width, hdrInfo.height, size, supersample);
 
         return cubeMapData;
     }

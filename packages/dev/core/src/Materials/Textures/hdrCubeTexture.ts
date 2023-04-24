@@ -30,6 +30,7 @@ export class HDRCubeTexture extends BaseTexture {
     private _prefilterOnLoad: boolean;
     private _textureMatrix: Matrix;
     private _size: number;
+    private _supersample: boolean;
     private _onLoad: () => void;
     private _onError: Nullable<() => void> = null;
 
@@ -122,7 +123,8 @@ export class HDRCubeTexture extends BaseTexture {
         gammaSpace = false,
         prefilterOnLoad = false,
         onLoad: Nullable<() => void> = null,
-        onError: Nullable<(message?: string, exception?: any) => void> = null
+        onError: Nullable<(message?: string, exception?: any) => void> = null,
+        supersample = false
     ) {
         super(sceneOrEngine);
 
@@ -149,6 +151,7 @@ export class HDRCubeTexture extends BaseTexture {
 
         this._noMipmap = noMipmap;
         this._size = size;
+        this._supersample = supersample;
         this._generateHarmonics = generateHarmonics;
 
         this._texture = this._getFromCache(url, this._noMipmap, undefined, undefined, undefined, this.isCube);
@@ -195,7 +198,7 @@ export class HDRCubeTexture extends BaseTexture {
             this.lodGenerationScale = 0.8;
 
             // Extract the raw linear data.
-            const data = HDRTools.GetCubeMapTextureData(buffer, this._size);
+            const data = HDRTools.GetCubeMapTextureData(buffer, this._size, this._supersample);
 
             // Generate harmonics if needed.
             if (this._generateHarmonics) {
