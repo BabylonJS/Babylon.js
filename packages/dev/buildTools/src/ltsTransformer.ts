@@ -89,13 +89,7 @@ const processSourceFile = (packageName: string, relativeLTSFile: any, program: {
                         const newClause = ts.factory.updateImportClause(clause, clause.isTypeOnly, clause.name, ts.factory.createNamedImports(leftImports));
                         return ts.factory.updateImportDeclaration(node, node.modifiers, newClause, ts.factory.createStringLiteral(transformed), node.assertClause);
                     } else {
-                        return ts.factory.updateImportDeclaration(
-                            node,
-                            node.modifiers,
-                            node.importClause,
-                            ts.factory.createStringLiteral(transformed),
-                            node.assertClause
-                        ); // TODO what is the assert clause?
+                        return ts.factory.updateImportDeclaration(node, node.modifiers, node.importClause, ts.factory.createStringLiteral(transformed), node.assertClause); // TODO what is the assert clause?
                     }
                 } else if (ts.isExportDeclaration(node)) {
                     // check import clause
