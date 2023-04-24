@@ -1,0 +1,222 @@
+[
+  {
+    "name": "thread_name",
+    "ph": "M",
+    "pid": 69848,
+    "tid": 0,
+    "ts": 0,
+    "args": {
+      "name": "Group #1"
+    }
+  },
+  {
+    "name": "thread_name",
+    "ph": "M",
+    "pid": 69848,
+    "tid": 1,
+    "ts": 0,
+    "args": {
+      "name": "Group #2"
+    }
+  },
+  {
+    "name": "babylonjs-viewer-assets:build",
+    "cat": "babylonjs-viewer-assets,build,",
+    "ph": "X",
+    "ts": 5450300.60005188,
+    "dur": 71727.49996185303,
+    "pid": 69848,
+    "tid": 1,
+    "args": {
+      "target": {
+        "project": "babylonjs-viewer-assets",
+        "target": "build"
+      },
+      "status": "local-cache"
+    }
+  },
+  {
+    "name": "@dev/build-tools:build",
+    "cat": "@dev/build-tools,build,",
+    "ph": "X",
+    "ts": 5450198.900103569,
+    "dur": 209046.599984169,
+    "pid": 69848,
+    "tid": 0,
+    "args": {
+      "target": {
+        "project": "@dev/build-tools",
+        "target": "build"
+      },
+      "status": "local-cache"
+    }
+  },
+  {
+    "name": "@dev/core:build",
+    "cat": "@dev/core,build,",
+    "ph": "X",
+    "ts": 5659914.100050926,
+    "dur": 124859713.50002289,
+    "pid": 69848,
+    "tid": 1,
+    "args": {
+      "target": {
+        "project": "@dev/core",
+        "target": "build"
+      },
+      "status": "success"
+    }
+  },
+  {
+    "name": "thread_name",
+    "ph": "M",
+    "pid": 69848,
+    "tid": 2,
+    "ts": 0,
+    "args": {
+      "name": "Group #3"
+    }
+  },
+  {
+    "name": "thread_name",
+    "ph": "M",
+    "pid": 69848,
+    "tid": 3,
+    "ts": 0,
+    "args": {
+      "name": "Group #4"
+    }
+  },
+  {
+    "name": "thread_name",
+    "ph": "M",
+    "pid": 69848,
+    "tid": 4,
+    "ts": 0,
+    "args": {
+      "name": "Group #5"
+    }
+  },
+  {
+    "name": "thread_name",
+    "ph": "M",
+    "pid": 69848,
+    "tid": 5,
+    "ts": 0,
+    "args": {
+      "name": "Group #6"
+    }
+  },
+  {
+    "name": "@dev/serializers:build",
+    "cat": "@dev/serializers,build,",
+    "ph": "X",
+    "ts": 130521120.20003796,
+    "dur": 82940257.69996643,
+    "pid": 69848,
+    "tid": 5,
+    "args": {
+      "target": {
+        "project": "@dev/serializers",
+        "target": "build"
+      },
+      "status": "success"
+    }
+  },
+  {
+    "name": "@dev/post-processes:build",
+    "cat": "@dev/post-processes,build,",
+    "ph": "X",
+    "ts": 130521726.60005093,
+    "dur": 93240531.59999847,
+    "pid": 69848,
+    "tid": 1,
+    "args": {
+      "target": {
+        "project": "@dev/post-processes",
+        "target": "build"
+      },
+      "status": "success"
+    }
+  },
+  {
+    "name": "@dev/loaders:build",
+    "cat": "@dev/loaders,build,",
+    "ph": "X",
+    "ts": 130521054.00002003,
+    "dur": 98137457.80003071,
+    "pid": 69848,
+    "tid": 3,
+    "args": {
+      "target": {
+        "project": "@dev/loaders",
+        "target": "build"
+      },
+      "status": "failure"
+    }
+  },
+  {
+    "name": "@dev/materials:build",
+    "cat": "@dev/materials,build,",
+    "ph": "X",
+    "ts": 130521089.40005302,
+    "dur": 102355115.3999567,
+    "pid": 69848,
+    "tid": 4,
+    "args": {
+      "target": {
+        "project": "@dev/materials",
+        "target": "build"
+      },
+      "status": "success"
+    }
+  },
+  {
+    "name": "@lts/core:build",
+    "cat": "@lts/core,build,",
+    "ph": "X",
+    "ts": 130520940.10007381,
+    "dur": 102931865.70000648,
+    "pid": 69848,
+    "tid": 0,
+    "args": {
+      "target": {
+        "project": "@lts/core",
+        "target": "build"
+      },
+      "status": "failure"
+    }
+  },
+  {
+    "name": "@dev/gui:build",
+    "cat": "@dev/gui,build,",
+    "ph": "X",
+    "ts": 130520999.00007248,
+    "dur": 111320413.49995136,
+    "pid": 69848,
+    "tid": 2,
+    "args": {
+      "target": {
+        "project": "@dev/gui",
+        "target": "build"
+      },
+      "status": "failure"
+    }
+  },
+  {
+    "name": "@dev/procedural-textures:build",
+    "cat": "@dev/procedural-textures,build,",
+    "ph": "X",
+    "ts": 213461856.80007935,
+    "dur": 31962633.70001316,
+    "pid": 69848,
+    "tid": 5,
+    "args": {
+      "target": {
+        "project": "@dev/procedural-textures",
+        "target": "build"
+      },
+      "status": "success"
+    }
+  }
+]

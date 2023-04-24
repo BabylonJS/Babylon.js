@@ -25,9 +25,7 @@
     "devDependencies": {
         "@babylonjs/core": "^6.0.0",
         "react": "^17.0.2",
-        "react-dom": "^17.0.2",
-        "rimraf": "^3.0.2",
-        "typescript": "^4.4.4"
+        "react-dom": "^17.0.2"
     },
     "keywords": [
         "3D",

@@ -1720,7 +1720,7 @@ export class Engine extends ThinEngine {
         this._bindTextureDirectly(bindTarget, texture, true);
         this._unpackFlipY(texture.invertY);
 
-        let target = gl.TEXTURE_2D;
+        let target: GLenum = gl.TEXTURE_2D;
         if (texture.isCube) {
             target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex;
         }
