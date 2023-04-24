@@ -22,8 +22,8 @@ export class EquiRectangularCubeTexture extends BaseTexture {
     /** The size of the cubemap. */
     private _size: number;
 
-    /** Number of samples per cube map texel */
-    private _samples: number;
+    /** Whether to supersample the input image */
+    private _supersample: boolean;
 
     /** The buffer of the image. */
     private _buffer: ArrayBuffer;
@@ -56,7 +56,7 @@ export class EquiRectangularCubeTexture extends BaseTexture {
         gammaSpace: boolean = true,
         onLoad: Nullable<() => void> = null,
         onError: Nullable<(message?: string, exception?: any) => void> = null,
-        samples = 1
+        supersample = false
     ) {
         super(scene);
 
@@ -68,7 +68,7 @@ export class EquiRectangularCubeTexture extends BaseTexture {
         this.name = url;
         this.url = url;
         this._size = size;
-        this._samples = samples;
+        this._supersample = supersample;
         this._noMipmap = noMipmap;
         this.gammaSpace = gammaSpace;
         this._onLoad = onLoad;
@@ -136,7 +136,7 @@ export class EquiRectangularCubeTexture extends BaseTexture {
             const imageData = this._getFloat32ArrayFromArrayBuffer(this._buffer);
 
             // Extract the raw linear data.
-            const data = PanoramaToCubeMapTools.ConvertPanoramaToCubemap(imageData, this._width, this._height, this._size, this._samples);
+            const data = PanoramaToCubeMapTools.ConvertPanoramaToCubemap(imageData, this._width, this._height, this._size, this._supersample);
 
             const results = [];
 

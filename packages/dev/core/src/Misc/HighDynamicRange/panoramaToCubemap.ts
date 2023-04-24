@@ -90,7 +90,7 @@ export class PanoramaToCubeMapTools {
      * @param size The willing size of the generated cubemap (each faces will be size * size pixels)
      * @returns The cubemap data
      */
-    public static ConvertPanoramaToCubemap(float32Array: Float32Array, inputWidth: number, inputHeight: number, size: number, samples = 1): CubeMapInfo {
+    public static ConvertPanoramaToCubemap(float32Array: Float32Array, inputWidth: number, inputHeight: number, size: number, supersample = false): CubeMapInfo {
         if (!float32Array) {
             throw "ConvertPanoramaToCubemap: input cannot be null";
         }
@@ -99,12 +99,12 @@ export class PanoramaToCubeMapTools {
             throw "ConvertPanoramaToCubemap: input size is wrong";
         }
 
-        const textureFront = this.CreateCubemapTexture(size, this.FACE_FRONT, float32Array, inputWidth, inputHeight, samples);
-        const textureBack = this.CreateCubemapTexture(size, this.FACE_BACK, float32Array, inputWidth, inputHeight, samples);
-        const textureLeft = this.CreateCubemapTexture(size, this.FACE_LEFT, float32Array, inputWidth, inputHeight, samples);
-        const textureRight = this.CreateCubemapTexture(size, this.FACE_RIGHT, float32Array, inputWidth, inputHeight, samples);
-        const textureUp = this.CreateCubemapTexture(size, this.FACE_UP, float32Array, inputWidth, inputHeight, samples);
-        const textureDown = this.CreateCubemapTexture(size, this.FACE_DOWN, float32Array, inputWidth, inputHeight, samples);
+        const textureFront = this.CreateCubemapTexture(size, this.FACE_FRONT, float32Array, inputWidth, inputHeight, supersample);
+        const textureBack = this.CreateCubemapTexture(size, this.FACE_BACK, float32Array, inputWidth, inputHeight, supersample);
+        const textureLeft = this.CreateCubemapTexture(size, this.FACE_LEFT, float32Array, inputWidth, inputHeight, supersample);
+        const textureRight = this.CreateCubemapTexture(size, this.FACE_RIGHT, float32Array, inputWidth, inputHeight, supersample);
+        const textureUp = this.CreateCubemapTexture(size, this.FACE_UP, float32Array, inputWidth, inputHeight, supersample);
+        const textureDown = this.CreateCubemapTexture(size, this.FACE_DOWN, float32Array, inputWidth, inputHeight, supersample);
 
         return {
             front: textureFront,
@@ -120,10 +120,12 @@ export class PanoramaToCubeMapTools {
         };
     }
 
-    private static CreateCubemapTexture(texSize: number, faceData: Vector3[], float32Array: Float32Array, inputWidth: number, inputHeight: number, samples = 1) {
+    private static CreateCubemapTexture(texSize: number, faceData: Vector3[], float32Array: Float32Array, inputWidth: number, inputHeight: number, supersample = false) {
         const buffer = new ArrayBuffer(texSize * texSize * 4 * 3);
         const textureArray = new Float32Array(buffer);
 
+        // If supersampling, determine number of samples needed when source texture width is divided for 4 cube faces
+        const samples = supersample ? Math.max(1, Math.round(inputWidth / 4 / texSize)) : 1;
         const sampleFactor = 1 / samples;
         const sampleFactorSqr = sampleFactor * sampleFactor;
 
