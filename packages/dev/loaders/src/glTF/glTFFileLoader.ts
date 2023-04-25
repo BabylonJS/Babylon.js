@@ -654,6 +654,31 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     /**
      * @internal
      */
+    public loadBinary(
+        scene: Scene,
+        data: ArrayBuffer,
+        fileName: string,
+        onSuccess: (data: any, responseURL?: string) => void,
+        onError?: (request?: WebRequest, exception?: LoadFileError) => void
+    ): void {
+        const rootUrl = "file:";
+        this._validate(scene, data as ArrayBuffer, rootUrl, fileName);
+        this._unpackBinaryAsync(
+            new DataReader({
+                readAsync: (byteOffset, byteLength) => readAsync(data as ArrayBuffer, byteOffset, byteLength),
+                byteLength: (data as ArrayBuffer).byteLength,
+            })
+        ).then(
+            (loaderData) => {
+                onSuccess(loaderData);
+            },
+            onError ? (error) => onError(undefined, error) : undefined
+        );
+    }
+
+    /**
+     * @internal
+     */
     public importMeshAsync(
         meshesNames: any,
         scene: Scene,

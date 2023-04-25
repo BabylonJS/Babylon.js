@@ -162,6 +162,9 @@ export interface ISceneLoaderPluginBase {
         onError?: (request?: WebRequest, exception?: LoadFileError) => void
     ): IFileRequest;
 
+
+    loadBinary?(scene: Scene, data: ArrayBuffer, fileName: string, onSuccess: (data: any, responseURL?: string) => void, onError?: (request?: WebRequest, exception?: LoadFileError) => void): void
+
     /**
      * The callback that returns true if the data can be directly loaded.
      * @param data string containing the file data
@@ -488,6 +491,79 @@ export class SceneLoader {
         }
 
         return errorMessage;
+    }
+
+    private static _FormatErrorMessageString(fileInfo: string, message?: string, exception?: any): string {
+        let errorMessage = "Unable to load from " + fileInfo;
+
+        if (message) {
+            errorMessage += `: ${message}`;
+        } else if (exception) {
+            errorMessage += `: ${exception}`;
+        }
+
+        return errorMessage;
+    }
+
+
+    private static _LoadBinaryData(
+        binaryData: ArrayBuffer,
+        scene: Scene,
+        onSuccess: (plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync, data: any, responseURL?: string) => void,
+        onError: (message?: string, exception?: any) => void,
+        onDispose: () => void,
+        pluginExtension: string
+    ) : Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>
+    {
+        const registeredPlugin = SceneLoader._GetPluginForExtension(pluginExtension)
+
+        let plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync;
+        if ((registeredPlugin.plugin as ISceneLoaderPluginFactory).createPlugin !== undefined) {
+            plugin = (registeredPlugin.plugin as ISceneLoaderPluginFactory).createPlugin();
+        } else {
+            plugin = <any>registeredPlugin.plugin;
+        }
+
+        if (!plugin) {
+            throw "The loader plugin corresponding to the file type you are trying to load has not been found. If using es6, please import the plugin you wish to use before.";
+        }
+
+        SceneLoader.OnPluginActivatedObservable.notifyObservers(plugin);
+
+        let pluginDisposed = false;
+        const onDisposeObservable = (plugin as any).onDisposeObservable as Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        if (onDisposeObservable) {
+            onDisposeObservable.add(() => {
+                pluginDisposed = true;
+                onDispose();
+            });
+        }
+
+        const dataCallback = (data: any, responseURL?: string) => {
+            if (scene.isDisposed) {
+                onError("Scene has been disposed");
+                return;
+            }
+
+            onSuccess(plugin, data, responseURL);
+        };
+
+        const manifestChecked = () => {
+            if (pluginDisposed) {
+                return;
+            }
+
+            const errorCallback = (request?: WebRequest, exception?: LoadFileError) => {
+                onError(request?.statusText, exception);
+            };
+
+            if(plugin.loadBinary){
+                plugin.loadBinary(scene, binaryData, "", dataCallback, errorCallback)
+            }
+        };
+        
+        manifestChecked();
+        return plugin;
     }
 
     private static _LoadData(
@@ -1033,6 +1109,114 @@ export class SceneLoader {
      * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
      * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
      * @param scene is the instance of BABYLON.Scene to append to
+     * @param onSuccess a callback with the scene when import succeeds
+     * @param onProgress a callback with a progress event for each file being loaded
+     * @param onError a callback with the scene, a message, and possibly an exception when import fails
+     * @param pluginExtension the extension used to determine the plugin
+     * @returns The loaded plugin
+     */
+    public static AppendBinary(
+        rootUrl: string,
+        fileName: string,
+        binaryData: ArrayBuffer,
+        scene: Nullable<Scene> = EngineStore.LastCreatedScene,
+        onSuccess: Nullable<(scene: Scene) => void> = null,
+        onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
+        onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
+        pluginExtension: string = ".glb"
+    ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
+        if (!scene) {
+            Logger.Error("No scene available to append to");
+            return null;
+        }
+
+        const loadingToken = {};
+        scene.addPendingData(loadingToken);
+
+        const disposeHandler = () => {
+            scene.removePendingData(loadingToken);
+        };
+
+        if (SceneLoader.ShowLoadingScreen && !this._ShowingLoadingScreen) {
+            this._ShowingLoadingScreen = true;
+            scene.getEngine().displayLoadingUI();
+            scene.executeWhenReady(() => {
+                scene.getEngine().hideLoadingUI();
+                this._ShowingLoadingScreen = false;
+            });
+        }
+
+        const errorHandler = (message?: string, exception?: any) => {
+            const errorMessage = SceneLoader._FormatErrorMessageString(rootUrl, message, exception);
+
+            if (onError) {
+                onError(scene, errorMessage, new RuntimeError(errorMessage, ErrorCodes.SceneLoaderError, exception));
+            } else {
+                Logger.Error(errorMessage);
+                // should the exception be thrown?
+            }
+
+            disposeHandler();
+        };
+
+        const progressHandler = onProgress
+            ? (event: ISceneLoaderProgressEvent) => {
+                  try {
+                      onProgress(event);
+                  } catch (e) {
+                      errorHandler("Error in onProgress callback", e);
+                  }
+              }
+            : undefined;
+
+        const successHandler = () => {
+            if (onSuccess) {
+                try {
+                    onSuccess(scene);
+                } catch (e) {
+                    errorHandler("Error in onSuccess callback", e);
+                }
+            }
+
+            scene.removePendingData(loadingToken);
+        };
+
+        return SceneLoader._LoadBinaryData(
+            binaryData,
+            scene,
+            (plugin, data) => {
+                if ((<any>plugin).load) {
+                    const syncedPlugin = <ISceneLoaderPlugin>plugin;
+                    if (!syncedPlugin.load(scene, data, rootUrl, errorHandler)) {
+                        return;
+                    }
+
+                    scene.loadingPluginName = plugin.name;
+                    successHandler();
+                } else {
+                    const asyncedPlugin = <ISceneLoaderPluginAsync>plugin;
+                    asyncedPlugin
+                        .loadAsync(scene, data, rootUrl, progressHandler, fileName)
+                        .then(() => {
+                            scene.loadingPluginName = plugin.name;
+                            successHandler();
+                        })
+                        .catch((error) => {
+                            errorHandler(error.message, error);
+                        });
+                }
+            },
+            errorHandler,
+            disposeHandler,
+            pluginExtension
+        );
+    }
+
+    /**
+     * Append a scene
+     * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+     * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
+     * @param scene is the instance of BABYLON.Scene to append to
      * @param onProgress a callback with a progress event for each file being loaded
      * @param pluginExtension the extension used to determine the plugin
      * @returns The given scene
@@ -1048,6 +1232,32 @@ export class SceneLoader {
             SceneLoader.Append(
                 rootUrl,
                 sceneFilename,
+                scene,
+                (scene) => {
+                    resolve(scene);
+                },
+                onProgress,
+                (scene, message, exception) => {
+                    reject(exception || new Error(message));
+                },
+                pluginExtension
+            );
+        });
+    }
+
+    public static AppendBinaryAsync(
+        rootUrl: string,
+        fileName: string,
+        binaryData: ArrayBuffer,
+        scene: Nullable<Scene> = EngineStore.LastCreatedScene,
+        onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
+        pluginExtension: string = ".glb"
+    ): Promise<Scene> {
+        return new Promise((resolve, reject) => {
+            SceneLoader.AppendBinary(
+                rootUrl,
+                fileName,
+                binaryData,
                 scene,
                 (scene) => {
                     resolve(scene);
