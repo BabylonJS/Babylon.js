@@ -407,6 +407,7 @@ export class ThinEngine {
     protected _creationOptions: EngineOptions;
     protected _audioContext: Nullable<AudioContext>;
     protected _audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>;
+    /** @internal */
     public _glSRGBExtensionValues: {
         SRGB: typeof WebGL2RenderingContext.SRGB;
         SRGB8: typeof WebGL2RenderingContext.SRGB8 | EXT_sRGB["SRGB_ALPHA_EXT"];
