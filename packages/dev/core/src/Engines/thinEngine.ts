@@ -4312,7 +4312,7 @@ export class ThinEngine {
                     : extension === ".jpg" && !texture._useSRGBBuffer
                     ? gl.RGB
                     : texture._useSRGBBuffer
-                    ? gl.SRGB8_ALPHA8
+                    ? this._glSRGBExtensionValues.SRGB8_ALPHA8
                     : gl.RGBA;
                 let texelFormat = format ? this._getInternalFormat(format) : extension === ".jpg" && !texture._useSRGBBuffer ? gl.RGB : gl.RGBA;
 
