@@ -1376,7 +1376,7 @@ export class ThinEngine {
                     SRGB: WebGL2RenderingContext.SRGB,
                     SRGB8: WebGL2RenderingContext.SRGB8,
                     SRGB8_ALPHA8: WebGL2RenderingContext.SRGB8_ALPHA8,
-                }
+                };
             } else {
                 const sRGBExtension = this._gl.getExtension("EXT_sRGB");
 
@@ -1386,7 +1386,7 @@ export class ThinEngine {
                         SRGB: sRGBExtension.SRGB_EXT as typeof WebGL2RenderingContext.SRGB | EXT_sRGB["SRGB_EXT"],
                         SRGB8: sRGBExtension.SRGB_ALPHA_EXT as typeof WebGL2RenderingContext.SRGB8 | EXT_sRGB["SRGB_ALPHA_EXT"],
                         SRGB8_ALPHA8: sRGBExtension.SRGB_ALPHA_EXT as typeof WebGL2RenderingContext.SRGB8_ALPHA8 | EXT_sRGB["SRGB8_ALPHA8_EXT"],
-                    }
+                    };
                 }
             }
             // take into account the forced state that was provided in options
