@@ -412,10 +412,6 @@ export class ThinEngine {
         SRGB: typeof WebGL2RenderingContext.SRGB;
         SRGB8: typeof WebGL2RenderingContext.SRGB8 | EXT_sRGB["SRGB_ALPHA_EXT"];
         SRGB8_ALPHA8: typeof WebGL2RenderingContext.SRGB8_ALPHA8 | EXT_sRGB["SRGB_ALPHA_EXT"];
-    } = {
-        SRGB: WebGL2RenderingContext?.SRGB,
-        SRGB8: WebGL2RenderingContext?.SRGB8,
-        SRGB8_ALPHA8: WebGL2RenderingContext?.SRGB8_ALPHA8,
     };
     /**
      * Gets the options used for engine creation
@@ -1376,13 +1372,21 @@ export class ThinEngine {
         if (!this._caps.supportSRGBBuffers) {
             if (this._webGLVersion > 1) {
                 this._caps.supportSRGBBuffers = true;
+                this._glSRGBExtensionValues = {
+                    SRGB: WebGL2RenderingContext.SRGB,
+                    SRGB8: WebGL2RenderingContext.SRGB8,
+                    SRGB8_ALPHA8: WebGL2RenderingContext.SRGB8_ALPHA8,
+                }
             } else {
                 const sRGBExtension = this._gl.getExtension("EXT_sRGB");
 
                 if (sRGBExtension != null) {
                     this._caps.supportSRGBBuffers = true;
-                    this._glSRGBExtensionValues.SRGB8 = sRGBExtension.SRGB_ALPHA_EXT as typeof WebGL2RenderingContext.SRGB8 | EXT_sRGB["SRGB_ALPHA_EXT"];
-                    this._glSRGBExtensionValues.SRGB8_ALPHA8 = sRGBExtension.SRGB_ALPHA_EXT as typeof WebGL2RenderingContext.SRGB8_ALPHA8 | EXT_sRGB["SRGB8_ALPHA8_EXT"];
+                    this._glSRGBExtensionValues = {
+                        SRGB: sRGBExtension.SRGB_EXT as typeof WebGL2RenderingContext.SRGB | EXT_sRGB["SRGB_EXT"],
+                        SRGB8: sRGBExtension.SRGB_ALPHA_EXT as typeof WebGL2RenderingContext.SRGB8 | EXT_sRGB["SRGB_ALPHA_EXT"],
+                        SRGB8_ALPHA8: sRGBExtension.SRGB_ALPHA_EXT as typeof WebGL2RenderingContext.SRGB8_ALPHA8 | EXT_sRGB["SRGB8_ALPHA8_EXT"],
+                    }
                 }
             }
             // take into account the forced state that was provided in options
