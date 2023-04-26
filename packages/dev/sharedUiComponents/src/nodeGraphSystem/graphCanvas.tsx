@@ -1258,9 +1258,9 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                         break;
                     }
                 }
-            }
-            if (!pointA) {
-                return;
+                if (!pointA) {
+                    return;
+                }
             }
             if (!emittedNodeData.isInput) {
                 nodeA = this.props.onEmitNewNode(emittedNodeData);
