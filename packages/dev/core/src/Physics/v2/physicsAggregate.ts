@@ -4,7 +4,7 @@ import { PhysicsShape } from "./physicsShape";
 import { Logger } from "../../Misc/logger";
 import type { Scene } from "../../scene";
 import type { TransformNode } from "../../Meshes/transformNode";
-import { TmpVectors, Vector3 } from "../../Maths/math.vector";
+import { Quaternion, TmpVectors, Vector3 } from "../../Maths/math.vector";
 import { Scalar } from "../../Maths/math.scalar";
 import { PhysicsMotionType, PhysicsShapeType } from "./IPhysicsEnginePlugin";
 import type { Mesh } from "../../Meshes/mesh";
@@ -100,6 +100,11 @@ export interface PhysicsAggregateParameters {
      * Extents for box
      */
     extents?: Vector3;
+
+    /**
+     * Orientation for box
+     */
+    rotation?: Quaternion;
 
     /**
      * mesh local center
@@ -212,7 +217,7 @@ export class PhysicsAggregate {
         this.transformNode.computeWorldMatrix(true);
         const bb = this._getObjectBoundingBox();
         const extents = TmpVectors.Vector3[0];
-        extents.copyFrom(bb.extendSizeWorld);
+        extents.copyFrom(bb.extendSize);
         extents.scaleInPlace(2);
         extents.multiplyInPlace(this.transformNode.scaling);
 
@@ -269,6 +274,7 @@ export class PhysicsAggregate {
                 break;
             case PhysicsShapeType.BOX:
                 this._options.extents = this._options.extents ?? new Vector3(extents.x, extents.y, extents.z);
+                this._options.rotation = this._options.rotation ?? Quaternion.Identity();
                 break;
         }
     }
