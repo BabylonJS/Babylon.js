@@ -4,13 +4,13 @@ import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import { CreateBox } from "../Meshes/Builders/boxBuilder";
 import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
-import { Quaternion, Vector3 } from "../Maths/math.vector";
+import { Matrix, Quaternion, TmpVectors, Vector3 } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
 import type { Material } from "../Materials/material";
 import { EngineStore } from "../Engines/engineStore";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import type { IPhysicsEnginePlugin as IPhysicsEnginePluginV1 } from "../Physics/v1/IPhysicsEnginePlugin";
-import type { IPhysicsEnginePluginV2 } from "../Physics/v2/IPhysicsEnginePlugin";
+import type { IPhysicsEnginePluginV2, PhysicsMassProperties } from "../Physics/v2/IPhysicsEnginePlugin";
 import { PhysicsImpostor } from "../Physics/v1/physicsImpostor";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder";
@@ -19,10 +19,13 @@ import { CreateCapsule } from "../Meshes/Builders/capsuleBuilder";
 import { Logger } from "../Misc/logger";
 import type { PhysicsBody } from "../Physics/v2/physicsBody";
 import { VertexData } from "../Meshes/mesh.vertexData";
+import { MeshBuilder } from "../Meshes/meshBuilder";
 
 /**
  * Used to show the physics impostor around the specific mesh
  */
+// TODO: the bodymeshes should be an array containing both the debug and the inertia mesh.
+// inertia box has to be updated accordingly to the physics body.
 export class PhysicsViewer {
     /** @internal */
     protected _impostors: Array<Nullable<PhysicsImpostor>> = [];
@@ -30,14 +33,18 @@ export class PhysicsViewer {
     protected _meshes: Array<Nullable<AbstractMesh>> = [];
     /** @internal */
     protected _bodies: Array<Nullable<PhysicsBody>> = [];
+    protected _inertiaBodies: Array<Nullable<PhysicsBody>> = [];
     /** @internal */
     protected _bodyMeshes: Array<Nullable<AbstractMesh>> = [];
+    /** @internal */
+    protected _inertiaMeshes: Array<Nullable<AbstractMesh>> = [];
     /** @internal */
     protected _scene: Nullable<Scene>;
     /** @internal */
     protected _numMeshes = 0;
     /** @internal */
     protected _numBodies = 0;
+    protected _numInertiaBodies = 0;
     /** @internal */
     protected _physicsEnginePlugin: IPhysicsEnginePluginV1 | IPhysicsEnginePluginV2 | null;
     private _renderFunction: () => void;
@@ -136,6 +143,17 @@ export class PhysicsViewer {
         }
     }
 
+    protected updateInertiaMeshes(): void {
+        const plugin = this._physicsEnginePlugin as IPhysicsEnginePluginV2;
+        for (let i = 0; i < this._numInertiaBodies; i++) {
+            const body = this._inertiaBodies[i];
+            const transform = this._inertiaMeshes[i];
+            if (body && transform) {
+                plugin.syncTransform(body, transform);
+            }
+        }
+    }
+
     /**
      * Renders a specified physic impostor
      * @param impostor defines the impostor to render
@@ -202,6 +220,32 @@ export class PhysicsViewer {
             }
 
             this._numBodies++;
+        }
+
+        return debugMesh;
+    }
+
+    /**
+     * Shows a debug box corresponding to the inertia of a given body
+     * @param body 
+     */
+    public showInertia(body: PhysicsBody): Nullable<AbstractMesh> {
+        if (!this._scene) {
+            return null;
+        }
+
+        for (let i = 0; i < this._numInertiaBodies; i++) {
+            if (this._inertiaBodies[i] == body) {
+                return null;
+            }
+        }
+
+        const debugMesh = this._getDebugInertiaMesh(body);
+        if (debugMesh) {
+            this._inertiaBodies[this._numBodies] = body;
+            this._inertiaMeshes[this._numBodies] = debugMesh;
+
+            this._numInertiaBodies++;
         }
 
         return debugMesh;
@@ -497,6 +541,63 @@ export class PhysicsViewer {
             mesh.thinInstanceSetBuffer("matrix", instanceBuffer, 16);
         }
         mesh.material = this._getDebugMaterial(utilityLayerScene);
+        return mesh;
+    }
+
+    private _getMeshDebugInertiaMatrixToRef(massProps: PhysicsMassProperties, matrix: Matrix) {
+        const orientation = massProps.inertiaOrientation ?? Quaternion.Identity();
+        const inertiaLocal = massProps.inertia ?? Vector3.Zero();
+        const center = massProps.centerOfMass ?? Vector3.Zero();
+        const mass = massProps.mass ?? 1;
+        const invMass = 1 / mass;
+        
+        const betaSqrd = (inertiaLocal.x - inertiaLocal.y + inertiaLocal.z) * invMass * 6;
+        const beta = Math.sqrt(Math.max(betaSqrd, 0));  // Safety check for zeroed elements!
+
+        const gammaSqrd = inertiaLocal.x * invMass * 12 - betaSqrd;
+        const gamma = Math.sqrt(Math.max(gammaSqrd, 0));  // Safety check for zeroed elements!
+
+        const alphaSqrd = inertiaLocal.z * invMass * 12 - betaSqrd;
+        const alpha = Math.sqrt(Math.max(alphaSqrd, 0));  // Safety check for zeroed elements!
+
+        const extents = TmpVectors.Vector3[0];
+        extents.set(alpha, beta, gamma);
+
+        const scaling = Matrix.ScalingToRef(extents.x, extents.y, extents.z, TmpVectors.Matrix[0]);
+        const rotation = orientation.toRotationMatrix(TmpVectors.Matrix[1]);
+        const translation = Matrix.TranslationToRef(center.x, center.y, center.z, TmpVectors.Matrix[2]);
+
+        scaling.multiplyToRef(rotation, matrix);
+        matrix.multiplyToRef(translation, matrix);
+
+        return matrix;
+    }
+
+    private _getDebugInertiaMesh(body: PhysicsBody): Nullable<AbstractMesh> {
+        if (!this._utilityLayer) {
+            return null;
+        }
+        const utilityLayerScene = this._utilityLayer.utilityLayerScene;
+
+        // The base inertia mesh is going to be a 1x1 cube that's scaled and rotated according to the inertia
+        const mesh = MeshBuilder.CreateBox("custom", { size: 1 }, utilityLayerScene);
+        const matrixRef = Matrix.Identity();
+        if (body._pluginDataInstances.length) {
+            const instanceBuffer = new Float32Array(body._pluginDataInstances.length * 16);
+            for (let i = 0; i < body._pluginDataInstances.length; ++i) {
+                const props = body.getMassProperties(i);
+                this._getMeshDebugInertiaMatrixToRef(props, matrixRef);
+                matrixRef.copyToArray(instanceBuffer, i * 16);
+            }
+            mesh.thinInstanceSetBuffer("matrix", instanceBuffer, 16);
+        } else {
+            const props = body.getMassProperties();
+            this._getMeshDebugInertiaMatrixToRef(props, matrixRef);
+            matrixRef.decomposeToTransformNode(mesh);
+            mesh.bakeCurrentTransformIntoVertices();
+        }
+        mesh.material = this._getDebugMaterial(utilityLayerScene);
+
         return mesh;
     }
 
