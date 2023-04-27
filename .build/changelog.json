@@ -1,110 +1,179 @@
 {
-    "fromTag": "5.57.1",
+    "fromTag": "6.0.0",
     "changelog": {
-        "5.57.1": [
+        "6.1.0": [
             {
-                "pr": "13749",
-                "title": "Physics Iteration 13",
-                "description": "A big portion of this change has already been reviewed.",
+                "pr": "13772",
+                "title": "Fix typing to fit ts 4 and ts 5",
+                "description": null,
                 "author": {
-                    "name": "CedricGuillemet",
-                    "url": "https://github.com/CedricGuillemet"
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
                 },
                 "files": [
-                    "packages/dev/core/src/Meshes/abstractMesh.ts",
-                    "packages/dev/core/src/Meshes/thinInstanceMesh.ts",
-                    "packages/dev/core/src/Physics/physicsEngineComponent.ts",
-                    "packages/dev/core/src/Physics/physicsHelper.ts",
-                    "packages/dev/core/src/Physics/physicsRaycastResult.ts",
-                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
-                    "packages/dev/core/src/Physics/v2/physicsAggregate.ts",
-                    "packages/dev/core/src/Physics/v2/physicsBody.ts",
-                    "packages/dev/core/src/Physics/v2/physicsConstraint.ts",
-                    "packages/dev/core/src/Physics/v2/physicsEngine.ts",
-                    "packages/dev/core/src/Physics/v2/physicsEngineComponent.ts",
-                    "packages/dev/core/src/Physics/v2/physicsShape.ts"
+                    "packages/dev/core/src/Engines/Extensions/engine.cubeTexture.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/LibDeclarations/webgl2.d.ts",
+                    "packages/dev/core/src/LibDeclarations/webxr.d.ts",
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13774",
+                "title": "Animation: Fix animation.runtimeAnimations array not cleaned up on stop",
+                "description": "Fixes #13762 \r\n\r\nThe code I added back was removed in https://github.com/BabylonJS/Babylon.js/commit/93d7ccc2f98435a455ece615f6e0a3561bcded9a but calling `runtimeAnimations[index].dispose();` is cleaning the `Animation._runtimeAnimations` array, which is different from the `Animatable._runtimeAnimations` array.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animatable.ts",
+                    "packages/dev/core/src/Animations/runtimeAnimation.ts"
                 ],
                 "tags": [
-                    "skip changelog"
+                    "bug",
+                    "animations"
                 ]
             },
             {
-                "pr": "13750",
-                "title": "ShadowGenerator: improve performance",
+                "pr": "13769",
+                "title": "Fix for peer dependencies (Due to CI architecture)",
+                "description": "Whoever wants to know what exactly happened, let me know :-)",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/public/@babylonjs/accessibility/package.json",
+                    "packages/public/@babylonjs/gui-editor/package.json",
+                    "packages/public/@babylonjs/gui/package.json",
+                    "packages/public/@babylonjs/inspector/package.json",
+                    "packages/public/@babylonjs/loaders/package.json",
+                    "packages/public/@babylonjs/materials/package.json",
+                    "packages/public/@babylonjs/node-editor/package.json",
+                    "packages/public/@babylonjs/post-processes/package.json",
+                    "packages/public/@babylonjs/procedural-textures/package.json",
+                    "packages/public/@babylonjs/serializers/package.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13766",
+                "title": "Add possibility to apply supersampling when generating HDRCubeTexture()",
+                "description": "I decided a take a quick attempt at adding number of samples option to `HDRCubeTexture()` in order to allow generating more accurate lower resolution HDRCubeTextures.\r\n\r\nOriginal discussion about the issue here: https://forum.babylonjs.com/t/is-ibl-texture-tool-hdr-to-env-conversion-code-part-of-babylon-js/40031\r\n\r\nHere is a Playground example using the proposed samples argument with 4 samples to match 512 -> 128 downsample: https://www.babylonjs-playground.com/#NWNUIH#2\r\n\r\nThe result is EXACTLY same as the comparison .env file that is generated with https://www.babylonjs.com/tools/ibl/, but this time possible to create within Babylon.js without added custom code.\r\n\r\nLet me know if option like this makes sense? Performance should be exactly same than before unless additional samples are used.",
+                "author": {
+                    "name": "MiikaH",
+                    "url": "https://github.com/MiikaH"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/equiRectangularCubeTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/hdrCubeTexture.ts",
+                    "packages/dev/core/src/Misc/HighDynamicRange/hdr.ts",
+                    "packages/dev/core/src/Misc/HighDynamicRange/panoramaToCubemap.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13768",
+                "title": "Effect Layer: Set intensity of effect per mesh",
+                "description": "See https://forum.babylonjs.com/t/neon-effect-using-an-imported-material-looks-good-from-up-close-but-not-far-away/40081/7",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Layers/effectLayer.ts",
+                    "packages/dev/core/src/Shaders/glowMapGeneration.fragment.fx"
+                ],
+                "tags": [
+                    "rendering engine",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13727",
+                "title": "Add NME MeshAttributeExistsBlock",
+                "description": "This pull request combines feature requests of two forum threads from last year:\r\n\r\n- https://forum.babylonjs.com/t/node-pbr-material-renders-black-if-mesh-doesnt-have-normals/29011\r\n- https://forum.babylonjs.com/t/default-nodematerial-vertex-color-input-to-white-if-attribute-doesnt-exist-on-mesh/29461\r\n\r\nI recently refactored a project where I used custom blocks to work around those issues above, and ended up with a single `MeshAttributeFallbackBlock` that I think might be flexible enough to be added to Babylon.js itself.\r\n\r\nThe nodeblock itself is pretty simple. It allows connecting to an attribute input (or morph target block) and has another falback input to provide value if mesh doesn't have the said attribute.\r\n\r\nHere is a test NME url (only works with these PR changes in place): `/#W3ZANW` and a Playground test url: `/#5LCPMS`\r\n\r\nThe above example demonstrates three use cases where such node is useful / necessary:\r\n\r\n### Vertex color fallback\r\n\r\nThis allows using same NodeMaterial with meshes or mesh primitives that contain and don't contain vertex colors. Currently if vertex color is used, it defaults to black color when attribute is present and there is no way to distinguish between actually intented black color and missing attribute.\r\n\r\n![Vertex Color Fallback](https://static.miikah.fi/other/images/nme_vertex_color_fallback.png)\r\n\r\n### Normal fallback\r\n\r\nIt is possible to generate flat normal in fragment shader if attribute isn't present. This matches gltf spec where a flat normal is used for meshes that don't contain normals.\r\n\r\n![Normal Fallback](https://static.miikah.fi/other/images/nme_normal_fallback.png)\r\n\r\n### UV fallback\r\n\r\nAnd kind of as additional possibility that my original normal and vertex color specific nodes didn't allow, is generating UV fallback with a generated UV if attribute isn't present.\r\n\r\n![UV Fallback](https://static.miikah.fi/other/images/nme_generated_uv_fallback.png)",
+                "author": {
+                    "name": "MiikaH",
+                    "url": "https://github.com/MiikaH"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/index.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/meshAttributeExistsBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/tools/nodeEditor/src/blockTools.ts",
+                    "packages/tools/nodeEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/display/meshAttributeExistsDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/registerToDisplayLedger.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13767",
+                "title": "SSR: Fix ghosting when using large step values",
+                "description": "See https://playground.babylonjs.com/#PIZ1GK#1126\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/screenSpaceRayTrace.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13753",
+                "title": "PrePass renderer: Save memory by using a Red format for the depth texture",
                 "description": null,
                 "author": {
                     "name": "Popov72",
                     "url": "https://github.com/Popov72"
                 },
                 "files": [
-                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts"
+                    "packages/dev/core/src/Engines/Extensions/engine.multiRender.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Rendering/prePassRenderer.ts"
                 ],
                 "tags": [
-                    "enhancement",
-                    "skip changelog"
+                    "rendering engine",
+                    "optimizations",
+                    "new feature"
                 ]
             },
             {
-                "pr": "13748",
-                "title": "no premature result mutation for Vec2.rotateToRef",
-                "description": "for next case:\r\n```\r\nconst vec = new Vector2(offsetX, offsetY);\r\nvec.rotateToRef(angle, vec);\r\n```",
+                "pr": "13764",
+                "title": "add havok to download mode",
+                "description": null,
                 "author": {
-                    "name": "nekochanoide",
-                    "url": "https://github.com/nekochanoide"
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
                 },
                 "files": [
-                    "packages/dev/core/src/Maths/math.vector.ts"
+                    "packages/tools/playground/public/zipContent/index.html"
                 ],
                 "tags": []
             },
             {
-                "pr": "13747",
-                "title": "Update typo in solidParticleSystem.ts",
+                "pr": "13760",
+                "title": "readme version",
                 "description": null,
                 "author": {
-                    "name": "steambap",
-                    "url": "https://github.com/steambap"
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
                 },
                 "files": [
-                    "packages/dev/core/src/Particles/solidParticleSystem.ts"
+                    "packages/public/@babylonjs/core/readme.md",
+                    "readme-es6.md"
                 ],
                 "tags": [
                     "skip changelog"
-                ]
-            },
-            {
-                "pr": "13743",
-                "title": "Round values coming from grid width calculation to avoid gaps between…",
-                "description": "… consecutive cells\r\n\r\nRelated forum issue: ",
-                "author": {
-                    "name": "carolhmj",
-                    "url": "https://github.com/carolhmj"
-                },
-                "files": [
-                    "packages/dev/gui/src/2D/controls/grid.ts",
-                    "packages/tools/tests/test/visualization/ReferenceImages/Rounding cell widths on Grid.png",
-                    "packages/tools/tests/test/visualization/config.json"
-                ],
-                "tags": [
-                    "bug",
-                    "gui"
-                ]
-            },
-            {
-                "pr": "13746",
-                "title": "Fix GLTF export of ambient texture with texture transforms",
-                "description": "Related forum issue: https://forum.babylonjs.com/t/gltf2export-glbasync-missing-uv-scale-on-ambienttexture/39900",
-                "author": {
-                    "name": "carolhmj",
-                    "url": "https://github.com/carolhmj"
-                },
-                "files": [
-                    "packages/dev/serializers/src/glTF/2.0/glTFMaterialExporter.ts"
-                ],
-                "tags": [
-                    "bug",
-                    "glTF",
-                    "texture"
                 ]
             }
         ],
@@ -245,6 +314,113 @@
                 "tags": [
                     "new feature",
                     "WebGPU"
+                ]
+            }
+        ],
+        "5.57.1": [
+            {
+                "pr": "13749",
+                "title": "Physics Iteration 13",
+                "description": "A big portion of this change has already been reviewed.",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.ts",
+                    "packages/dev/core/src/Meshes/thinInstanceMesh.ts",
+                    "packages/dev/core/src/Physics/physicsEngineComponent.ts",
+                    "packages/dev/core/src/Physics/physicsHelper.ts",
+                    "packages/dev/core/src/Physics/physicsRaycastResult.ts",
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsAggregate.ts",
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts",
+                    "packages/dev/core/src/Physics/v2/physicsConstraint.ts",
+                    "packages/dev/core/src/Physics/v2/physicsEngine.ts",
+                    "packages/dev/core/src/Physics/v2/physicsEngineComponent.ts",
+                    "packages/dev/core/src/Physics/v2/physicsShape.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13750",
+                "title": "ShadowGenerator: improve performance",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13748",
+                "title": "no premature result mutation for Vec2.rotateToRef",
+                "description": "for next case:\r\n```\r\nconst vec = new Vector2(offsetX, offsetY);\r\nvec.rotateToRef(angle, vec);\r\n```",
+                "author": {
+                    "name": "nekochanoide",
+                    "url": "https://github.com/nekochanoide"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13747",
+                "title": "Update typo in solidParticleSystem.ts",
+                "description": null,
+                "author": {
+                    "name": "steambap",
+                    "url": "https://github.com/steambap"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/solidParticleSystem.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13743",
+                "title": "Round values coming from grid width calculation to avoid gaps between…",
+                "description": "… consecutive cells\r\n\r\nRelated forum issue: ",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/grid.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Rounding cell widths on Grid.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug",
+                    "gui"
+                ]
+            },
+            {
+                "pr": "13746",
+                "title": "Fix GLTF export of ambient texture with texture transforms",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/gltf2export-glbasync-missing-uv-scale-on-ambienttexture/39900",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/glTFMaterialExporter.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "glTF",
+                    "texture"
                 ]
             }
         ],
