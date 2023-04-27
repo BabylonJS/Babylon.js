@@ -407,7 +407,12 @@ export class ThinEngine {
     protected _creationOptions: EngineOptions;
     protected _audioContext: Nullable<AudioContext>;
     protected _audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>;
-
+    /** @internal */
+    public _glSRGBExtensionValues: {
+        SRGB: typeof WebGL2RenderingContext.SRGB;
+        SRGB8: typeof WebGL2RenderingContext.SRGB8 | EXT_sRGB["SRGB_ALPHA_EXT"];
+        SRGB8_ALPHA8: typeof WebGL2RenderingContext.SRGB8_ALPHA8 | EXT_sRGB["SRGB_ALPHA_EXT"];
+    };
     /**
      * Gets the options used for engine creation
      * @returns EngineOptions object
@@ -1357,8 +1362,8 @@ export class ThinEngine {
             const blendMinMaxExtension = this._gl.getExtension("EXT_blend_minmax");
             if (blendMinMaxExtension != null) {
                 this._caps.blendMinMax = true;
-                this._gl.MAX = blendMinMaxExtension.MAX_EXT;
-                this._gl.MIN = blendMinMaxExtension.MIN_EXT;
+                this._gl.MAX = blendMinMaxExtension.MAX_EXT as typeof WebGL2RenderingContext.MAX;
+                this._gl.MIN = blendMinMaxExtension.MIN_EXT as typeof WebGL2RenderingContext.MIN;
             }
         }
 
@@ -1367,14 +1372,21 @@ export class ThinEngine {
         if (!this._caps.supportSRGBBuffers) {
             if (this._webGLVersion > 1) {
                 this._caps.supportSRGBBuffers = true;
+                this._glSRGBExtensionValues = {
+                    SRGB: WebGL2RenderingContext.SRGB,
+                    SRGB8: WebGL2RenderingContext.SRGB8,
+                    SRGB8_ALPHA8: WebGL2RenderingContext.SRGB8_ALPHA8,
+                };
             } else {
                 const sRGBExtension = this._gl.getExtension("EXT_sRGB");
 
                 if (sRGBExtension != null) {
                     this._caps.supportSRGBBuffers = true;
-                    this._gl.SRGB = sRGBExtension.SRGB_EXT;
-                    this._gl.SRGB8 = sRGBExtension.SRGB_ALPHA_EXT;
-                    this._gl.SRGB8_ALPHA8 = sRGBExtension.SRGB_ALPHA_EXT;
+                    this._glSRGBExtensionValues = {
+                        SRGB: sRGBExtension.SRGB_EXT as typeof WebGL2RenderingContext.SRGB | EXT_sRGB["SRGB_EXT"],
+                        SRGB8: sRGBExtension.SRGB_ALPHA_EXT as typeof WebGL2RenderingContext.SRGB8 | EXT_sRGB["SRGB_ALPHA_EXT"],
+                        SRGB8_ALPHA8: sRGBExtension.SRGB_ALPHA_EXT as typeof WebGL2RenderingContext.SRGB8_ALPHA8 | EXT_sRGB["SRGB8_ALPHA8_EXT"],
+                    };
                 }
             }
             // take into account the forced state that was provided in options
@@ -4300,7 +4312,7 @@ export class ThinEngine {
                     : extension === ".jpg" && !texture._useSRGBBuffer
                     ? gl.RGB
                     : texture._useSRGBBuffer
-                    ? gl.SRGB8_ALPHA8
+                    ? this._glSRGBExtensionValues.SRGB8_ALPHA8
                     : gl.RGBA;
                 let texelFormat = format ? this._getInternalFormat(format) : extension === ".jpg" && !texture._useSRGBBuffer ? gl.RGB : gl.RGBA;
 
@@ -5588,7 +5600,7 @@ export class ThinEngine {
      * @internal
      */
     public _getInternalFormat(format: number, useSRGBBuffer = false): number {
-        let internalFormat = useSRGBBuffer ? this._gl.SRGB8_ALPHA8 : this._gl.RGBA;
+        let internalFormat = useSRGBBuffer ? this._glSRGBExtensionValues.SRGB8_ALPHA8 : this._gl.RGBA;
 
         switch (format) {
             case Constants.TEXTUREFORMAT_ALPHA:
@@ -5607,10 +5619,10 @@ export class ThinEngine {
                 internalFormat = this._gl.RG;
                 break;
             case Constants.TEXTUREFORMAT_RGB:
-                internalFormat = useSRGBBuffer ? this._gl.SRGB : this._gl.RGB;
+                internalFormat = useSRGBBuffer ? this._glSRGBExtensionValues.SRGB : this._gl.RGB;
                 break;
             case Constants.TEXTUREFORMAT_RGBA:
-                internalFormat = useSRGBBuffer ? this._gl.SRGB8_ALPHA8 : this._gl.RGBA;
+                internalFormat = useSRGBBuffer ? this._glSRGBExtensionValues.SRGB8_ALPHA8 : this._gl.RGBA;
                 break;
         }
 
@@ -5648,7 +5660,7 @@ export class ThinEngine {
                     case Constants.TEXTUREFORMAT_LUMINANCE_ALPHA:
                         return this._gl.LUMINANCE_ALPHA;
                     case Constants.TEXTUREFORMAT_RGB:
-                        return useSRGBBuffer ? this._gl.SRGB : this._gl.RGB;
+                        return useSRGBBuffer ? this._glSRGBExtensionValues.SRGB : this._gl.RGB;
                 }
             }
             return this._gl.RGBA;
@@ -5681,9 +5693,9 @@ export class ThinEngine {
                     case Constants.TEXTUREFORMAT_RG:
                         return this._gl.RG8;
                     case Constants.TEXTUREFORMAT_RGB:
-                        return useSRGBBuffer ? this._gl.SRGB8 : this._gl.RGB8; // By default. Other possibilities are RGB565, SRGB8.
+                        return useSRGBBuffer ? this._glSRGBExtensionValues.SRGB8 : this._gl.RGB8; // By default. Other possibilities are RGB565, SRGB8.
                     case Constants.TEXTUREFORMAT_RGBA:
-                        return useSRGBBuffer ? this._gl.SRGB8_ALPHA8 : this._gl.RGBA8; // By default. Other possibilities are RGB5_A1, RGBA4, SRGB8_ALPHA8.
+                        return useSRGBBuffer ? this._glSRGBExtensionValues.SRGB8_ALPHA8 : this._gl.RGBA8; // By default. Other possibilities are RGB5_A1, RGBA4, SRGB8_ALPHA8.
                     case Constants.TEXTUREFORMAT_RED_INTEGER:
                         return this._gl.R8UI;
                     case Constants.TEXTUREFORMAT_RG_INTEGER:
@@ -5800,7 +5812,7 @@ export class ThinEngine {
                 }
         }
 
-        return useSRGBBuffer ? this._gl.SRGB8_ALPHA8 : this._gl.RGBA8;
+        return useSRGBBuffer ? this._glSRGBExtensionValues.SRGB8_ALPHA8 : this._gl.RGBA8;
     }
 
     /**
