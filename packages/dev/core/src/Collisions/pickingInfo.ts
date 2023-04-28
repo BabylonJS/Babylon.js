@@ -72,20 +72,30 @@ export class PickingInfo {
             return null;
         }
 
-        const indices = this.pickedMesh.getIndices();
+        let indices = this.pickedMesh.getIndices();
 
-        if (!indices) {
-            return null;
+        if (indices?.length === 0) {
+            indices = null;
         }
 
         let result: Vector3;
 
+        const tmp0 = TmpVectors.Vector3[0];
+        const tmp1 = TmpVectors.Vector3[1];
+        const tmp2 = TmpVectors.Vector3[2];
+
         if (useVerticesNormals) {
             const normals = <FloatArray>this.pickedMesh.getVerticesData(VertexBuffer.NormalKind);
 
-            let normal0 = Vector3.FromArray(normals, indices[this.faceId * 3] * 3);
-            let normal1 = Vector3.FromArray(normals, indices[this.faceId * 3 + 1] * 3);
-            let normal2 = Vector3.FromArray(normals, indices[this.faceId * 3 + 2] * 3);
+            let normal0 = indices
+                ? Vector3.FromArray(normals, indices[this.faceId * 3] * 3)
+                : tmp0.copyFromFloats(normals[this.faceId * 3 * 3], normals[this.faceId * 3 * 3 + 1], normals[this.faceId * 3 * 3 + 2]);
+            let normal1 = indices
+                ? Vector3.FromArray(normals, indices[this.faceId * 3 + 1] * 3)
+                : tmp1.copyFromFloats(normals[(this.faceId * 3 + 1) * 3], normals[(this.faceId * 3 + 1) * 3 + 1], normals[(this.faceId * 3 + 1) * 3 + 2]);
+            let normal2 = indices
+                ? Vector3.FromArray(normals, indices[this.faceId * 3 + 2] * 3)
+                : tmp2.copyFromFloats(normals[(this.faceId * 3 + 2) * 3], normals[(this.faceId * 3 + 2) * 3 + 1], normals[(this.faceId * 3 + 2) * 3 + 2]);
 
             normal0 = normal0.scale(this.bu);
             normal1 = normal1.scale(this.bv);
@@ -95,9 +105,15 @@ export class PickingInfo {
         } else {
             const positions = <FloatArray>this.pickedMesh.getVerticesData(VertexBuffer.PositionKind);
 
-            const vertex1 = Vector3.FromArray(positions, indices[this.faceId * 3] * 3);
-            const vertex2 = Vector3.FromArray(positions, indices[this.faceId * 3 + 1] * 3);
-            const vertex3 = Vector3.FromArray(positions, indices[this.faceId * 3 + 2] * 3);
+            const vertex1 = indices
+                ? Vector3.FromArray(positions, indices[this.faceId * 3] * 3)
+                : tmp0.copyFromFloats(positions[this.faceId * 3 * 3], positions[this.faceId * 3 * 3 + 1], positions[this.faceId * 3 * 3 + 2]);
+            const vertex2 = indices
+                ? Vector3.FromArray(positions, indices[this.faceId * 3 + 1] * 3)
+                : tmp1.copyFromFloats(positions[(this.faceId * 3 + 1) * 3], positions[(this.faceId * 3 + 1) * 3 + 1], positions[(this.faceId * 3 + 1) * 3 + 2]);
+            const vertex3 = indices
+                ? Vector3.FromArray(positions, indices[this.faceId * 3 + 2] * 3)
+                : tmp2.copyFromFloats(positions[(this.faceId * 3 + 2) * 3], positions[(this.faceId * 3 + 2) * 3 + 1], positions[(this.faceId * 3 + 2) * 3 + 2]);
 
             const p1p2 = vertex1.subtract(vertex2);
             const p3p2 = vertex3.subtract(vertex2);
