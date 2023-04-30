@@ -413,7 +413,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                 body._pluginDataInstances.push(pluginData);
                 this._hknp.HP_World_AddBody(this.world, hkbody, body.startAsleep);
                 pluginData.worldTransformOffset = this._hknp.HP_Body_GetWorldTransformOffset(hkbody)[1];
-                this._bodies.set(hkbody[0], { body: pluginData, index: i });
+                this._bodies.set(hkbody[0], { body: body, index: i });
             }
         }
     }
