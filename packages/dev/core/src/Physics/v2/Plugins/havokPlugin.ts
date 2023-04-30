@@ -383,6 +383,9 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             return; // TODO: error handling
         }
         this._createOrUpdateBodyInstances(body, motionType, matrixData, 0, instancesCount, false);
+        body._pluginDataInstances.forEach((bodyId, index) => {
+            this._bodies.set(bodyId.hpBodyId[0], { body: body, index: index });
+        });
     }
 
     private _createOrUpdateBodyInstances(body: PhysicsBody, motionType: PhysicsMotionType, matrixData: Float32Array, startIndex: number, endIndex: number, update: boolean): void {
@@ -413,7 +416,6 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                 body._pluginDataInstances.push(pluginData);
                 this._hknp.HP_World_AddBody(this.world, hkbody, body.startAsleep);
                 pluginData.worldTransformOffset = this._hknp.HP_Body_GetWorldTransformOffset(hkbody)[1];
-                this._bodies.set(hkbody[0], { body: body, index: i });
             }
         }
     }
@@ -438,6 +440,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             for (let i = pluginInstancesCount; i < instancesCount; i++) {
                 this._hknp.HP_Body_SetShape(body._pluginDataInstances[i].hpBodyId, firstBodyShape);
                 this._internalUpdateMassProperties(body._pluginDataInstances[i]);
+                this._bodies.set(body._pluginDataInstances[i].hpBodyId[0], { body: body, index: i });
             }
         } else if (instancesCount < pluginInstancesCount) {
             const instancesToRemove = pluginInstancesCount - instancesCount;
