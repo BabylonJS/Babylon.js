@@ -31,7 +31,7 @@ export class SoundPropertyGridComponent extends React.Component<ISoundPropertyGr
         const sound = this.props.sound;
 
         return (
-            <div className="pane">
+            <>
                 <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
                     <TextLineComponent label="Class" value={sound.getClassName()} />
                     <TextInputLineComponent
@@ -99,7 +99,7 @@ export class SoundPropertyGridComponent extends React.Component<ISoundPropertyGr
                     />
                     <CheckBoxLineComponent label="Loop" target={sound} propertyName="loop" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

@@ -51,7 +51,7 @@ export class MultiMaterialPropertyGridComponent extends React.Component<IMultiMa
         const material = this.props.material;
 
         return (
-            <div className="pane">
+            <>
                 <CommonMaterialPropertyGridComponent
                     globalState={this.props.globalState}
                     lockObject={this.props.lockObject}
@@ -59,7 +59,7 @@ export class MultiMaterialPropertyGridComponent extends React.Component<IMultiMa
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
                 {this.renderChildMaterial()}
-            </div>
+            </>
         );
     }
 }

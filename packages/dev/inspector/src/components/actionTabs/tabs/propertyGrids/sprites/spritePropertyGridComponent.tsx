@@ -145,7 +145,7 @@ export class SpritePropertyGridComponent extends React.Component<ISpriteProperty
         }
 
         return (
-            <div className="pane">
+            <>
                 <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
                     <TextInputLineComponent
                         lockObject={this.props.lockObject}
@@ -272,7 +272,7 @@ export class SpritePropertyGridComponent extends React.Component<ISpriteProperty
                     />
                     <ButtonLineComponent label={sprite.animationStarted ? "Stop" : "Start"} onClick={() => this.switchPlayStopState()} />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

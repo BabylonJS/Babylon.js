@@ -93,7 +93,7 @@ export class TargetedAnimationGridComponent extends React.Component<ITargetedAni
         const targetedAnimation = this.props.targetedAnimation;
 
         return (
-            <div className="pane">
+            <>
                 <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
                     <TextLineComponent label="Class" value={targetedAnimation.getClassName()} />
                     <TextInputLineComponent
@@ -113,7 +113,7 @@ export class TargetedAnimationGridComponent extends React.Component<ITargetedAni
                     {this._animationCurveEditorContext && <AnimationCurveEditorComponent globalState={this.props.globalState} context={this._animationCurveEditorContext} />}
                     <ButtonLineComponent label="Dispose" onClick={this.deleteAnimation} />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

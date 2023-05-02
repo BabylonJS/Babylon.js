@@ -29,7 +29,7 @@ export class LayerPropertyGridComponent extends React.Component<ILayerPropertyGr
         const layer = this.props.layer;
 
         return (
-            <div className="pane">
+            <>
                 <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
                     <TextLineComponent label="Class" value={layer.getClassName()} />
                     <TextInputLineComponent
@@ -62,7 +62,7 @@ export class LayerPropertyGridComponent extends React.Component<ILayerPropertyGr
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

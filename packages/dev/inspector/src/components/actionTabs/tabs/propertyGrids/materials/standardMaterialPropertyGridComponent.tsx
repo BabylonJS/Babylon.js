@@ -146,7 +146,7 @@ export class StandardMaterialPropertyGridComponent extends React.Component<IStan
         const material = this.props.material;
 
         return (
-            <div className="pane">
+            <>
                 <CommonMaterialPropertyGridComponent
                     globalState={this.props.globalState}
                     lockObject={this.props.lockObject}
@@ -348,7 +348,7 @@ export class StandardMaterialPropertyGridComponent extends React.Component<IStan
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

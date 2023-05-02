@@ -1,0 +1,61 @@
+#metadata-container {
+    textarea {
+        display: block;
+        margin: 4px;
+        width: calc(100% - 14px);
+        min-height: 100px;
+        max-height: 500px;
+        resize: vertical;
+    }
+}
+
+.meta-string {
+    textarea {
+        background: #ffee99;
+    }
+}
+
+.meta-json {
+    textarea {
+        background: #99ddff;
+    }
+}
+
+.meta-object {
+    textarea {
+        background: #dd99ff;
+    }
+}
+
+.meta-object-protect {
+    textarea {
+        background: #b0b0b0;
+    }
+}
+
+.buttonLine {
+    &.disabled {
+        opacity: 20%;
+        pointer-events: none;
+    }
+}
+
+.copy-root {
+    display: grid;
+    justify-content: end;
+    height: 30px;
+}
+
+.copy-container {
+    height: 30px;
+    width: 30px;
+    cursor: pointer;
+}
+
+.hoverIcon:hover {
+    opacity: 0.8;
+}
+
+.type-status {
+    padding: 5px 15px;
+}

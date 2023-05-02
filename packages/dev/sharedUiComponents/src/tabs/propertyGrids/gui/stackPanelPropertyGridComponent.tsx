@@ -22,7 +22,7 @@ export class StackPanelPropertyGridComponent extends React.Component<IStackPanel
         const stackPanel = this.props.stackPanel;
 
         return (
-            <div className="pane">
+            <>
                 <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={stackPanel} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent title="STACKPANEL">
                     <CheckBoxLineComponent
@@ -33,7 +33,7 @@ export class StackPanelPropertyGridComponent extends React.Component<IStackPanel
                     />
                     <CheckBoxLineComponent label="Vertical" target={stackPanel} propertyName="isVertical" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

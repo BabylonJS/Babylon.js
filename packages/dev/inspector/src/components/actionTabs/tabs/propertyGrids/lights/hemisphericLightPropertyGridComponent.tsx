@@ -25,7 +25,7 @@ export class HemisphericLightPropertyGridComponent extends React.Component<IHemi
         const light = this.props.light;
 
         return (
-            <div className="pane">
+            <>
                 <CommonLightPropertyGridComponent
                     globalState={this.props.globalState}
                     lockObject={this.props.lockObject}
@@ -55,7 +55,7 @@ export class HemisphericLightPropertyGridComponent extends React.Component<IHemi
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }
