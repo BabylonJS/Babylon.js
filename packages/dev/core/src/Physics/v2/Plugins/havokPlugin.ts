@@ -440,11 +440,13 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             for (let i = pluginInstancesCount; i < instancesCount; i++) {
                 this._hknp.HP_Body_SetShape(body._pluginDataInstances[i].hpBodyId, firstBodyShape);
                 this._internalUpdateMassProperties(body._pluginDataInstances[i]);
+                this._bodies.set(body._pluginDataInstances[i].hpBodyId[0], { body: body, index: i });
             }
         } else if (instancesCount < pluginInstancesCount) {
             const instancesToRemove = pluginInstancesCount - instancesCount;
             for (let i = 0; i < instancesToRemove; i++) {
                 const hkbody = body._pluginDataInstances.pop();
+                this._bodies.delete(hkbody.hpBodyId[0]);
                 this._hknp.HP_World_RemoveBody(this.world, hkbody.hpBodyId);
                 this._hknp.HP_Body_Release(hkbody.hpBodyId);
             }
