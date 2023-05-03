@@ -695,17 +695,21 @@ export class Tools {
         throw _WarnImport("DumpTools");
     }
 
+    private static _IsOffScreenCanvas(canvas: HTMLCanvasElement | OffscreenCanvas): canvas is OffscreenCanvas {
+        return (canvas as OffscreenCanvas).convertToBlob !== undefined;
+    }
+
     /**
      * Converts the canvas data to blob.
      * This acts as a polyfill for browsers not supporting the to blob function.
-     * @param canvas Defines the canvas to extract the data from
+     * @param canvas Defines the canvas to extract the data from (can be an offscreen canvas)
      * @param successCallback Defines the callback triggered once the data are available
      * @param mimeType Defines the mime type of the result
      * @param quality defines the quality of the result
      */
-    static ToBlob(canvas: HTMLCanvasElement, successCallback: (blob: Nullable<Blob>) => void, mimeType: string = "image/png", quality?: number): void {
+    static ToBlob(canvas: HTMLCanvasElement | OffscreenCanvas, successCallback: (blob: Nullable<Blob>) => void, mimeType: string = "image/png", quality?: number): void {
         // We need HTMLCanvasElement.toBlob for HD screenshots
-        if (!canvas.toBlob) {
+        if (!Tools._IsOffScreenCanvas(canvas) && !canvas.toBlob) {
             //  low performance polyfill based on toDataURL (https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob)
             canvas.toBlob = function (callback, type, quality) {
                 setTimeout(() => {
@@ -720,13 +724,22 @@ export class Tools {
                 });
             };
         }
-        canvas.toBlob(
-            function (blob) {
-                successCallback(blob);
-            },
-            mimeType,
-            quality
-        );
+        if (Tools._IsOffScreenCanvas(canvas)) {
+            canvas
+                .convertToBlob({
+                    type: mimeType,
+                    quality,
+                })
+                .then((blob) => successCallback(blob));
+        } else {
+            canvas.toBlob(
+                function (blob) {
+                    successCallback(blob);
+                },
+                mimeType,
+                quality
+            );
+        }
     }
 
     /**
@@ -766,20 +779,36 @@ export class Tools {
 
     /**
      * Encodes the canvas data to base 64 or automatically download the result if filename is defined
-     * @param canvas canvas to get the data from.
+     * @param canvas canvas to get the data from (can be an offscreen canvas).
      * @param successCallback defines the callback triggered once the data are available
      * @param mimeType defines the mime type of the result
      * @param fileName defines he filename to download. If present, the result will automatically be downloaded
      * @param quality defines the quality of the result
      */
     static EncodeScreenshotCanvasData(
-        canvas: HTMLCanvasElement,
+        canvas: HTMLCanvasElement | OffscreenCanvas,
         successCallback?: (data: string) => void,
         mimeType: string = "image/png",
         fileName?: string,
         quality?: number
     ): void {
         if (successCallback) {
+            if (Tools._IsOffScreenCanvas(canvas)) {
+                canvas
+                    .convertToBlob({
+                        type: mimeType,
+                        quality,
+                    })
+                    .then((blob) => {
+                        const reader = new FileReader();
+                        reader.readAsDataURL(blob);
+                        reader.onloadend = () => {
+                            const base64data = reader.result;
+                            successCallback(base64data as string);
+                        };
+                    });
+                return;
+            }
             const base64Image = canvas.toDataURL(mimeType, quality);
             successCallback(base64Image);
         } else {
