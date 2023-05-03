@@ -948,6 +948,29 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     }
 
     /**
+     * Sets the gravity factor of a body
+     * @param body the physics body to set the gravity factor for
+     * @param factor the gravity factor
+     * @param instanceIndex the index of the instance in an instanced body
+     */
+    public setGravityFactor(body: PhysicsBody, factor: number, instanceIndex?: number): void {
+        this._applyToBodyOrInstances(body, (pluginRef) => {
+            this._hknp.HP_Body_SetGravityFactor(pluginRef.hpBodyId, factor);
+        }, instanceIndex);
+    }
+
+    /**
+     * Get the gravity factor of a body
+     * @param body the physics body to get the gravity factor from
+     * @param instanceIndex the index of the instance in an instanced body. If not specified, the gravity factor of the first instance will be returned.
+     * @returns the gravity factor
+     */
+    public getGravityFactor(body: PhysicsBody, instanceIndex?: number): number {
+        const pluginRef = this._getPluginReference(body, instanceIndex);
+        return this._hknp.HP_Body_GetGravityFactor(pluginRef.hpBodyId)[1];
+    }
+
+    /**
      * Disposes a physics body.
      *
      * @param body - The physics body to dispose.

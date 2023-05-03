@@ -506,6 +506,24 @@ export class PhysicsBody {
     }
 
     /**
+     * Sets the gravity factor of the physics body
+     * @param factor the gravity factor to set
+     * @param instanceIndex the instance of the body to set, if undefined all instances will be set
+     */
+    public setGravityFactor(factor: number, instanceIndex?: number) {
+        this._physicsPlugin.setGravityFactor(this, factor, instanceIndex);
+    }
+
+    /**
+     * Gets the gravity factor of the physics body
+     * @param instanceIndex the instance of the body to get, if undefined the value of first instance will be returned
+     * @returns the gravity factor
+     */
+    public getGravityFactor(instanceIndex?: number): number {
+        return this._physicsPlugin.getGravityFactor(this, instanceIndex);
+    }
+
+    /**
      * Disposes the body from the physics engine.
      *
      * This method is useful for cleaning up the physics engine when a body is no longer needed. Disposing the body will free up resources and prevent memory leaks.
