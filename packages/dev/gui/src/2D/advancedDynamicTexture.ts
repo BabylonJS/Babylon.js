@@ -1281,9 +1281,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         if (!scene) {
             return this;
         }
-
+        const size = this.getSize();
         const data = this.serializeContent();
-        const clone = AdvancedDynamicTexture.CreateFullscreenUI(newName || "Clone of " + this.name, this.isForeground, scene, this.samplingMode);
+        const clone = new AdvancedDynamicTexture(newName ?? "Clone of " + this.name, size.width, size.height, scene, !this.noMipmap, this.samplingMode);
         clone.parseSerializedObject(data);
 
         return clone;
