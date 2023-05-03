@@ -762,9 +762,10 @@ export class PBRMaterial extends PBRBaseMaterial {
     /**
      * Makes a duplicate of the current material.
      * @param name - name to use for the new material.
+     * @param repeatClonedTextures - if textures that are used in more than one attribute should be cloned multiple times or not.
      */
-    public clone(name: string): PBRMaterial {
-        const clone = SerializationHelper.Clone(() => new PBRMaterial(name, this.getScene()), this);
+    public clone(name: string, repeatClonedTextures: boolean = true): PBRMaterial {
+        const clone = SerializationHelper.Clone(() => new PBRMaterial(name, this.getScene()), this, { doNotRepeatClonedTextures: !repeatClonedTextures});
 
         clone.id = name;
         clone.name = name;
