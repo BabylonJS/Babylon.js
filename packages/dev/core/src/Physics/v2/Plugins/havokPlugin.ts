@@ -1,13 +1,19 @@
 import { Matrix, Quaternion, TmpVectors, Vector3 } from "../../../Maths/math.vector";
-import { PhysicsShapeType, PhysicsConstraintType, PhysicsMotionType , PhysicsConstraintMotorType, PhysicsConstraintAxis , PhysicsConstraintAxisLimitMode } from "../IPhysicsEnginePlugin";
+import {
+    PhysicsShapeType,
+    PhysicsConstraintType,
+    PhysicsMotionType,
+    PhysicsConstraintMotorType,
+    PhysicsConstraintAxis,
+    PhysicsConstraintAxisLimitMode,
+} from "../IPhysicsEnginePlugin";
 import type { PhysicsShapeParameters, IPhysicsEnginePluginV2, PhysicsMassProperties, IPhysicsCollisionEvent } from "../IPhysicsEnginePlugin";
 import { Logger } from "../../../Misc/logger";
 import type { PhysicsBody } from "../physicsBody";
-import type { PhysicsConstraint , Physics6DoFConstraint } from "../physicsConstraint";
+import type { PhysicsConstraint, Physics6DoFConstraint } from "../physicsConstraint";
 
 import type { PhysicsMaterial } from "../physicsMaterial";
 import { PhysicsMaterialCombineMode } from "../physicsMaterial";
-
 
 import { PhysicsShape } from "../physicsShape";
 import type { BoundingBox } from "../../../Culling/boundingBox";
