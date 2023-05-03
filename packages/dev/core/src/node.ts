@@ -824,9 +824,6 @@ export class Node implements IBehaviorAware<Node> {
     public clone(name: string, newParent: Nullable<Node>, doNotCloneChildren?: boolean): Nullable<Node> {
         const result = SerializationHelper.Clone(() => new Node(name, this.getScene()), this);
 
-        result.name = name;
-        result.id = name;
-
         if (newParent) {
             result.parent = newParent;
         }
@@ -836,10 +833,8 @@ export class Node implements IBehaviorAware<Node> {
             const directDescendants = this.getDescendants(true);
             for (let index = 0; index < directDescendants.length; index++) {
                 const child = directDescendants[index];
-
-                if ((<any>child).clone) {
-                    (<any>child).clone(name + "." + child.name, result);
-                }
+                
+                child.clone(name + "." + child.name, result);                
             }
         }
 
