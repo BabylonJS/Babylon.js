@@ -260,6 +260,34 @@ export class Path2 {
     }
 
     /**
+     * Adds _numberOfSegments_ segments according to the quadratic curve definition to the current Path2.
+     * @param controlX control point x value
+     * @param controlY control point y value
+     * @param endX end point x value
+     * @param endY end point y value
+     * @param numberOfSegments (default: 36)
+     * @returns the updated Path2.
+     */
+    public addQuadraticCurveTo(controlX: number, controlY: number, endX: number, endY: number, numberOfSegments = 36): Path2 {
+        if (this.closed) {
+            return this;
+        }
+
+        const equation = (t: number, val0: number, val1: number, val2: number) => {
+            const res = (1.0 - t) * (1.0 - t) * val0 + 2.0 * t * (1.0 - t) * val1 + t * t * val2;
+            return res;
+        };
+        const startPoint = this._points[this._points.length - 1];
+        for (let i = 0; i <= numberOfSegments; i++) {
+            const step = i / numberOfSegments;
+            const x = equation(step, startPoint.x, controlX, endX);
+            const y = equation(step, startPoint.y, controlY, endY);
+            this.addLineTo(x, y);
+        }        
+        return this;
+    }    
+
+    /**
      * Adds _numberOfSegments_ segments according to the bezier curve definition to the current Path2.
      * @param originTangentX tangent vector at the origin point x value
      * @param originTangentY tangent vector at the origin point y value
@@ -270,7 +298,7 @@ export class Path2 {
      * @param numberOfSegments (default: 36)
      * @returns the updated Path2.
      */
-    public addBezierTo(originTangentX: number, originTangentY: number, destinationTangentX: number, destinationTangentY: number, endX: number, endY: number, numberOfSegments = 36): Path2 {
+    public addBezierCurveTo(originTangentX: number, originTangentY: number, destinationTangentX: number, destinationTangentY: number, endX: number, endY: number, numberOfSegments = 36): Path2 {
         if (this.closed) {
             return this;
         }

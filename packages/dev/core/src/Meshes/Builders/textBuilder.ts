@@ -46,11 +46,11 @@ class ShapePath {
     }
 
     quadraticCurveTo(cpx: number, cpy: number, x: number, y: number) {
-        this._currentPath.addArcTo(cpx, cpy, x, y, this._resolution);
+        this._currentPath.addQuadraticCurveTo(cpx, cpy, x, y, this._resolution);
     }
 
     bezierCurveTo(cpx1: number, cpy1: number, cpx2: number, cpy2: number, x: number, y: number) {
-        this._currentPath.addBezierTo(cpx1, cpy1, cpx2, cpy2, x, y, this._resolution);
+        this._currentPath.addBezierCurveTo(cpx1, cpy1, cpx2, cpy2, x, y, this._resolution);
     }
 
     get paths() {
