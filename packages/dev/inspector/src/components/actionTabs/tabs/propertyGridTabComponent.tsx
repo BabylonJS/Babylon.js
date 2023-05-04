@@ -105,6 +105,7 @@ import { SoundPropertyGridComponent } from "./propertyGrids/sounds/soundProperty
 import { LayerPropertyGridComponent } from "./propertyGrids/layers/layerPropertyGridComponent";
 import type { EffectLayer } from "core/Layers/effectLayer";
 import { EmptyPropertyGridComponent } from "./propertyGrids/emptyPropertyGridComponent";
+import { MetadataGridComponent } from "inspector/components/actionTabs/tabs/propertyGrids/metadata/metadataPropertyGridComponent";
 
 export class PropertyGridTabComponent extends PaneComponent {
     private _timerIntervalId: number;
@@ -128,7 +129,7 @@ export class PropertyGridTabComponent extends PaneComponent {
         window.clearInterval(this._timerIntervalId);
     }
 
-    render() {
+    renderContent() {
         const entity = this.props.selectedEntity;
 
         if (!entity) {
@@ -694,5 +695,16 @@ export class PropertyGridTabComponent extends PaneComponent {
         }
 
         return null;
+    }
+
+    render() {
+        const entity = this.props.selectedEntity || {};
+        const entityHasMetadataProp = Object.prototype.hasOwnProperty.call(entity, "metadata");
+        return (
+            <div className="pane">
+                {this.renderContent()}
+                {entityHasMetadataProp && <MetadataGridComponent globalState={this.props.globalState} entity={entity} />}
+            </div>
+        );
     }
 }

@@ -36,7 +36,7 @@ export class TransformNodePropertyGridComponent extends React.Component<ITransfo
         const transformNode = this.props.transformNode;
 
         return (
-            <div className="pane">
+            <>
                 <CustomPropertyGridComponent
                     globalState={this.props.globalState}
                     target={transformNode}
@@ -104,7 +104,7 @@ export class TransformNodePropertyGridComponent extends React.Component<ITransfo
                     />
                 </LineContainerComponent>
                 <AnimationGridComponent globalState={this.props.globalState} animatable={transformNode} scene={transformNode.getScene()} lockObject={this.props.lockObject} />
-            </div>
+            </>
         );
     }
 }

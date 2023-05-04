@@ -1248,6 +1248,20 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             const emittedNodeData = newDefaultInput.data;
 
             pointA = emittedNodeData.getPortByName(pointName)!;
+            if (!pointA) {
+                for (let i = 0; i < emittedNodeData.outputs.length; i++) {
+                    const output = emittedNodeData.outputs[i];
+                    const outputData = output.data;
+                    const outputBlockType = outputData._blockType;
+                    if (outputBlockType === pointB.data._blockType) {
+                        pointA = output;
+                        break;
+                    }
+                }
+                if (!pointA) {
+                    return;
+                }
+            }
             if (!emittedNodeData.isInput) {
                 nodeA = this.props.onEmitNewNode(emittedNodeData);
             } else {

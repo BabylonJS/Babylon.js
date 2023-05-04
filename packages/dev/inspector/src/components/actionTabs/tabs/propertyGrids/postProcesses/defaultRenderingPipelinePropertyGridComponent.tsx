@@ -51,7 +51,7 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
         ];
 
         return (
-            <div className="pane">
+            <>
                 <CommonRenderingPipelinePropertyGridComponent
                     globalState={this.props.globalState}
                     lockObject={this.props.lockObject}
@@ -470,7 +470,7 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                         </div>
                     )}
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

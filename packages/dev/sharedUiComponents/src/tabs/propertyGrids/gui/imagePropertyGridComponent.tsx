@@ -33,7 +33,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
         ];
 
         return (
-            <div className="pane">
+            <>
                 <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={image} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent title="IMAGE">
                     <TextInputLineComponent
@@ -105,7 +105,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

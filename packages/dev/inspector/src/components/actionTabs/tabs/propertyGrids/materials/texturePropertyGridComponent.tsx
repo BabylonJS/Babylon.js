@@ -272,7 +272,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
         }
 
         return (
-            <div className="pane">
+            <>
                 <LineContainerComponent title="PREVIEW" selection={this.props.globalState}>
                     <TextureLineComponent ref={this._textureLineRef} texture={texture} width={256} height={256} globalState={this.props.globalState} />
                     <FileButtonLineComponent label="Load texture from file" onClick={(file) => this.updateTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
@@ -547,7 +547,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                         </div>
                     )}
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

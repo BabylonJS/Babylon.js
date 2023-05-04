@@ -1,6 +1,13 @@
 import { Matrix, Quaternion, TmpVectors, Vector3 } from "../../../Maths/math.vector";
-import { PhysicsShapeType, PhysicsConstraintType, PhysicsMotionType, PhysicsConstraintAxis, PhysicsConstraintAxisLimitMode } from "../IPhysicsEnginePlugin";
-import type { PhysicsShapeParameters, PhysicsConstraintMotorType, IPhysicsEnginePluginV2, PhysicsMassProperties, IPhysicsCollisionEvent } from "../IPhysicsEnginePlugin";
+import {
+    PhysicsShapeType,
+    PhysicsConstraintType,
+    PhysicsMotionType,
+    PhysicsConstraintMotorType,
+    PhysicsConstraintAxis,
+    PhysicsConstraintAxisLimitMode,
+} from "../IPhysicsEnginePlugin";
+import type { PhysicsShapeParameters, IPhysicsEnginePluginV2, PhysicsMassProperties, IPhysicsCollisionEvent } from "../IPhysicsEnginePlugin";
 import { Logger } from "../../../Misc/logger";
 import type { PhysicsBody } from "../physicsBody";
 import type { PhysicsConstraint, Physics6DoFConstraint } from "../physicsConstraint";
@@ -438,11 +445,13 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             for (let i = pluginInstancesCount; i < instancesCount; i++) {
                 this._hknp.HP_Body_SetShape(body._pluginDataInstances[i].hpBodyId, firstBodyShape);
                 this._internalUpdateMassProperties(body._pluginDataInstances[i]);
+                this._bodies.set(body._pluginDataInstances[i].hpBodyId[0], { body: body, index: i });
             }
         } else if (instancesCount < pluginInstancesCount) {
             const instancesToRemove = pluginInstancesCount - instancesCount;
             for (let i = 0; i < instancesToRemove; i++) {
                 const hkbody = body._pluginDataInstances.pop();
+                this._bodies.delete(hkbody.hpBodyId[0]);
                 this._hknp.HP_World_RemoveBody(this.world, hkbody.hpBodyId);
                 this._hknp.HP_Body_Release(hkbody.hpBodyId);
             }
@@ -1506,7 +1515,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      *
      */
     public setAxisMotorType(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis, motorType: PhysicsConstraintMotorType): void {
-        this._hknp.HP_Constraint_SetAxisMotorType(constraint._pluginData, this._constraintAxisToNative(axis), motorType);
+        this._hknp.HP_Constraint_SetAxisMotorType(constraint._pluginData, this._constraintAxisToNative(axis), this._constraintMotorTypeToNative(motorType));
     }
 
     /**
@@ -1517,7 +1526,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      *
      */
     public getAxisMotorType(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): PhysicsConstraintMotorType {
-        return this._hknp.HP_Constraint_GetAxisMotorType(constraint._pluginData, this._constraintAxisToNative(axis))[1];
+        return this._nativeToMotorType(this._hknp.HP_Constraint_GetAxisMotorType(constraint._pluginData, this._constraintAxisToNative(axis))[1]);
     }
 
     /**
@@ -1716,6 +1725,26 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
 
     private _bQuatToV4(q: Quaternion): Array<number> {
         return [q._x, q._y, q._z, q._w];
+    }
+
+    private _constraintMotorTypeToNative(motorType: PhysicsConstraintMotorType): any {
+        switch (motorType) {
+            case PhysicsConstraintMotorType.POSITION:
+                return this._hknp.ConstraintMotorType.POSITION;
+            case PhysicsConstraintMotorType.VELOCITY:
+                return this._hknp.ConstraintMotorType.VELOCITY;
+        }
+        return this._hknp.ConstraintMotorType.NONE;
+    }
+
+    private _nativeToMotorType(motorType: any): PhysicsConstraintMotorType {
+        switch (motorType) {
+            case this._hknp.ConstraintMotorType.POSITION:
+                return PhysicsConstraintMotorType.POSITION;
+            case this._hknp.ConstraintMotorType.VELOCITY:
+                return PhysicsConstraintMotorType.VELOCITY;
+        }
+        return PhysicsConstraintMotorType.NONE;
     }
 
     private _materialCombineToNative(mat: PhysicsMaterialCombineMode): any {

@@ -76,7 +76,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         ];
 
         return (
-            <div>
+            <>
                 <LineContainerComponent title="GENERAL">
                     <TextLineComponent label="Class" value={control.getClassName()} />
                     <TextInputLineComponent
@@ -298,7 +298,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

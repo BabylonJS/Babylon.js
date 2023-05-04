@@ -24,7 +24,7 @@ export class SliderPropertyGridComponent extends React.Component<ISliderProperty
         const slider = this.props.slider;
 
         return (
-            <div className="pane">
+            <>
                 <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={slider} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent title="SLIDER">
                     <TextInputLineComponent
@@ -79,7 +79,7 @@ export class SliderPropertyGridComponent extends React.Component<ISliderProperty
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

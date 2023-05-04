@@ -69,13 +69,6 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             this._engine?.switchFullscreen(false);
         });
 
-        if (this.props.globalState.runtimeMode !== RuntimeMode.Editor) {
-            this.props.globalState.onCodeLoaded.add((code) => {
-                this.props.globalState.currentCode = code;
-                this.props.globalState.onRunRequiredObservable.notifyObservers();
-            });
-        }
-
         window.addEventListener("resize", () => {
             if (!this._engine) {
                 return;
