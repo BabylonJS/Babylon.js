@@ -258,6 +258,37 @@ export class Path2 {
         }
         return this;
     }
+
+    /**
+     * Adds _numberOfSegments_ segments according to the bezier curve definition to the current Path2.
+     * @param originTangentX tangent vector at the origin point x value
+     * @param originTangentY tangent vector at the origin point y value
+     * @param destinationTangentX tangent vector at the destination point x value
+     * @param destinationTangentY tangent vector at the destination point y value 
+     * @param endX end point x value
+     * @param endY end point y value
+     * @param numberOfSegments (default: 36)
+     * @returns the updated Path2.
+     */
+    public addBezierTo(originTangentX: number, originTangentY: number, destinationTangentX: number, destinationTangentY: number, endX: number, endY: number, numberOfSegments = 36): Path2 {
+        if (this.closed) {
+            return this;
+        }
+
+        const equation = (t: number, val0: number, val1: number, val2: number, val3: number) => {
+            const res = (1.0 - t) * (1.0 - t) * (1.0 - t) * val0 + 3.0 * t * (1.0 - t) * (1.0 - t) * val1 + 3.0 * t * t * (1.0 - t) * val2 + t * t * t * val3;
+            return res;
+        };
+        const startPoint = this._points[this._points.length - 1];
+        for (let i = 0; i <= numberOfSegments; i++) {
+            const step = i / numberOfSegments;
+            const x = equation(step, startPoint.x, originTangentX, destinationTangentX, endX);
+            const y = equation(step, startPoint.y, originTangentY, destinationTangentY, endY);
+            this.addLineTo(x, y);
+        }        
+        return this;
+    }
+
     /**
      * Closes the Path2.
      * @returns the Path2.
