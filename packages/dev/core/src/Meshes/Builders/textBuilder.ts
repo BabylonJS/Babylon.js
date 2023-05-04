@@ -29,6 +29,7 @@ export interface IFontData {
 // Shape functions
 class ShapePath {
     private _paths: Path2[] = [];
+    private _holes: Path2[] = [];
     private _currentPath: Path2;
     private _resolution: number;
 
@@ -53,13 +54,23 @@ class ShapePath {
         this._currentPath.addBezierCurveTo(cpx1, cpy1, cpx2, cpy2, x, y, this._resolution);
     }
 
+    extractHoles() {
+
+    }
+
     get paths() {
         return this._paths;
+    }
+
+    get holes() {
+        return this._holes;
     }
 }
 
 // Utility functions
-function CreatePath(char: string, scale: number, offsetX: number, offsetY: number, resolution: number, fontData: IFontData): Nullable<{ offsetX: number, path: ShapePath }> {
+function CreateShapePath(char: string, scale: number, offsetX: number, offsetY: number, resolution: number, fontData: IFontData): Nullable<{ 
+    offsetX: number, 
+    shapePath: ShapePath }> {
 
 	const glyph = fontData.glyphs[char] || fontData.glyphs['?'];
 
@@ -68,7 +79,7 @@ function CreatePath(char: string, scale: number, offsetX: number, offsetY: numbe
 		return null;
 	}
 
-	const path = new ShapePath(resolution);
+	const shapePath = new ShapePath(resolution);
 
 	if (glyph.o) {
 
@@ -83,14 +94,14 @@ function CreatePath(char: string, scale: number, offsetX: number, offsetY: numbe
 					const x = parseInt(outline[i++]) * scale + offsetX;
 					const y = parseInt(outline[i++]) * scale + offsetY;
 
-					path.moveTo(x, y);
+					shapePath.moveTo(x, y);
 					break;
                 }
 				case 'l': { // lineTo
 					const x = parseInt(outline[i++]) * scale + offsetX;
 					const y = parseInt(outline[i++]) * scale + offsetY;
 
-					path.lineTo(x, y);
+					shapePath.lineTo(x, y);
 					break;
                 }
 				case 'q': { // quadraticCurveTo
@@ -99,7 +110,7 @@ function CreatePath(char: string, scale: number, offsetX: number, offsetY: numbe
 					const cpx1 = parseInt(outline[i++]) * scale + offsetX;
 					const cpy1 = parseInt(outline[i++]) * scale + offsetY;
 
-					path.quadraticCurveTo(cpx1, cpy1, cpx, cpy);
+					shapePath.quadraticCurveTo(cpx1, cpy1, cpx, cpy);
 					break;
                 }
 				case 'b':{ // bezierCurveTo
@@ -110,22 +121,25 @@ function CreatePath(char: string, scale: number, offsetX: number, offsetY: numbe
 					const cpx2 = parseInt(outline[i++]) * scale + offsetX;
 					const cpy2 = parseInt(outline[i++]) * scale + offsetY;
 
-					path.bezierCurveTo(cpx1, cpy1, cpx2, cpy2, cpx, cpy);
+					shapePath.bezierCurveTo(cpx1, cpy1, cpx2, cpy2, cpx, cpy);
 					break;
                 }
 			}
 		}
 	}
 
-	return { offsetX: glyph.ha * scale, path: path };
+    // Extract holes (based on clockwise data)
+    shapePath.extractHoles();
+
+	return { offsetX: glyph.ha * scale, shapePath: shapePath };
 }
 
-function CreatePaths(text: string, size: number, resolution: number, fontData: IFontData) {
+function CreateShapePaths(text: string, size: number, resolution: number, fontData: IFontData) {
 	const chars = Array.from(text);
 	const scale = size / fontData.resolution;
 	const line_height = (fontData.boundingBox.yMax - fontData.boundingBox.yMin + fontData.underlineThickness ) * scale;
 
-	const paths: ShapePath[] = [];
+	const shapePaths: ShapePath[] = [];
 
 	let offsetX = 0, offsetY = 0;
 
@@ -137,30 +151,18 @@ function CreatePaths(text: string, size: number, resolution: number, fontData: I
 			offsetX = 0;
 			offsetY -= line_height;
 		} else {
-    		const ret = CreatePath(char, scale, offsetX, offsetY, resolution, fontData);
+    		const ret = CreateShapePath(char, scale, offsetX, offsetY, resolution, fontData);
 
             if (ret) {
 			    offsetX += ret.offsetX;
-			    paths.push( ret.path );
+			    shapePaths.push(ret.shapePath);
             }
 		}
 
 	}
 
-	return paths;
+	return shapePaths;
 }
-
-function CreateListOfPaths(text: string, size: number, resolution: number, fontData: IFontData) {
-    const shapes: Path2[][] = [];
-    const paths = CreatePaths(text, size, resolution, fontData);
-
-    for (const p of paths) {
-        shapes.push(p.paths);
-    }
-
-    return shapes;
-}
-
 
 export function CreateText(
     name: string,
@@ -180,26 +182,31 @@ export function CreateText(
 ): Mesh {
 
     // First we need to generate the paths
-    const listOfPaths = CreateListOfPaths(text, options.size || 50, options.resolution || 8, fontData);
-
-    // Get the list of shapes
-    const shapes: Vector3[][] = [];
-    for (const paths of listOfPaths) {
-        for (const path of paths) {
-            const points = path.getPoints();
-            const vectors: Vector3[] = [];
-            for (const point of points) {
-                vectors.push(new Vector3(point.x, 0, point.y)); // ExtrudePolygon expects data on the xz plane
-            }
-            shapes.push(vectors);
-        }
-    }
+    const shapePaths = CreateShapePaths(text, options.size || 50, options.resolution || 8, fontData);
 
     // And extrude them
     const meshes: Mesh[] = [];
-    for (const shape of shapes) {
+    for (const shapePath of shapePaths) {
+        
+        const shapeVectors: Vector3[] = [];
+        const holeVectors: Vector3[] = [];
+        for (const path of shapePath.paths) {
+            const points = path.getPoints();
+            for (const point of points) {
+                shapeVectors.push(new Vector3(point.x, 0, point.y)); // ExtrudePolygon expects data on the xz plane
+            }
+        }
+
+        for (const path of shapePath.holes) {
+            const points = path.getPoints();
+            for (const point of points) {
+                holeVectors.push(new Vector3(point.x, 0, point.y)); // ExtrudePolygon expects data on the xz plane
+            }
+        }
+
+        // Extrusion!
         const mesh = ExtrudePolygon(name, { 
-            shape: shape, 
+            shape: shapeVectors, 
             depth: options.depth || 1.0,
             sideOrientation: Mesh._GetDefaultSideOrientation(options.sideOrientation || Mesh.DOUBLESIDE)
         }, scene);
