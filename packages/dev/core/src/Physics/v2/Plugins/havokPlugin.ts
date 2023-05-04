@@ -1,14 +1,11 @@
 import { Matrix, Quaternion, TmpVectors, Vector3 } from "../../../Maths/math.vector";
-import { PhysicsShapeType, PhysicsConstraintType, PhysicsMotionType } from "../IPhysicsEnginePlugin";
+import { PhysicsShapeType, PhysicsConstraintType, PhysicsMotionType, PhysicsConstraintAxis, PhysicsConstraintAxisLimitMode } from "../IPhysicsEnginePlugin";
 import type { PhysicsShapeParameters, PhysicsConstraintMotorType, IPhysicsEnginePluginV2, PhysicsMassProperties, IPhysicsCollisionEvent } from "../IPhysicsEnginePlugin";
 import { Logger } from "../../../Misc/logger";
 import type { PhysicsBody } from "../physicsBody";
-import type { PhysicsConstraint } from "../physicsConstraint";
-import type { Physics6DoFConstraint } from "../physicsConstraint";
+import type { PhysicsConstraint, Physics6DoFConstraint } from "../physicsConstraint";
 import type { PhysicsMaterial } from "../physicsMaterial";
 import { PhysicsMaterialCombineMode } from "../physicsMaterial";
-import { PhysicsConstraintAxis } from "../IPhysicsEnginePlugin";
-import { PhysicsConstraintAxisLimitMode } from "../IPhysicsEnginePlugin";
 import { PhysicsShape } from "../physicsShape";
 import type { BoundingBox } from "../../../Culling/boundingBox";
 import type { TransformNode } from "../../../Meshes/transformNode";
@@ -328,6 +325,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * Initializes a physics body with the given position and orientation.
      *
      * @param body - The physics body to initialize.
+     * @param motionType - The motion type of the body.
      * @param position - The position of the body.
      * @param orientation - The orientation of the body.
      * This code is useful for initializing a physics body with the given position and orientation.
@@ -954,9 +952,13 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * @param instanceIndex the index of the instance in an instanced body
      */
     public setGravityFactor(body: PhysicsBody, factor: number, instanceIndex?: number): void {
-        this._applyToBodyOrInstances(body, (pluginRef) => {
-            this._hknp.HP_Body_SetGravityFactor(pluginRef.hpBodyId, factor);
-        }, instanceIndex);
+        this._applyToBodyOrInstances(
+            body,
+            (pluginRef) => {
+                this._hknp.HP_Body_SetGravityFactor(pluginRef.hpBodyId, factor);
+            },
+            instanceIndex
+        );
     }
 
     /**
@@ -1354,7 +1356,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * @param body - The main body to which the constraint is applied.
      * @param childBody - The body to which the constraint is applied.
      * @param constraint - The constraint to be applied.
-     * * @param instanceIndex - If this body is instanced, the index of the instance to which the constraint will be applied. If not specified, no constraint will be applied.
+     * @param instanceIndex - If this body is instanced, the index of the instance to which the constraint will be applied. If not specified, no constraint will be applied.
      * @param childInstanceIndex - If the child body is instanced, the index of the instance to which the constraint will be applied. If not specified, no constraint will be applied.
      */
     addConstraint(body: PhysicsBody, childBody: PhysicsBody, constraint: PhysicsConstraint, instanceIndex?: number, childInstanceIndex?: number): void {
