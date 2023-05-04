@@ -11,10 +11,8 @@ import type { PhysicsShapeParameters, IPhysicsEnginePluginV2, PhysicsMassPropert
 import { Logger } from "../../../Misc/logger";
 import type { PhysicsBody } from "../physicsBody";
 import type { PhysicsConstraint, Physics6DoFConstraint } from "../physicsConstraint";
-
 import type { PhysicsMaterial } from "../physicsMaterial";
 import { PhysicsMaterialCombineMode } from "../physicsMaterial";
-
 import { PhysicsShape } from "../physicsShape";
 import type { BoundingBox } from "../../../Culling/boundingBox";
 import type { TransformNode } from "../../../Meshes/transformNode";
@@ -334,6 +332,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * Initializes a physics body with the given position and orientation.
      *
      * @param body - The physics body to initialize.
+     * @param motionType - The motion type of the body.
      * @param position - The position of the body.
      * @param orientation - The orientation of the body.
      * This code is useful for initializing a physics body with the given position and orientation.
@@ -956,6 +955,33 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     }
 
     /**
+     * Sets the gravity factor of a body
+     * @param body the physics body to set the gravity factor for
+     * @param factor the gravity factor
+     * @param instanceIndex the index of the instance in an instanced body
+     */
+    public setGravityFactor(body: PhysicsBody, factor: number, instanceIndex?: number): void {
+        this._applyToBodyOrInstances(
+            body,
+            (pluginRef) => {
+                this._hknp.HP_Body_SetGravityFactor(pluginRef.hpBodyId, factor);
+            },
+            instanceIndex
+        );
+    }
+
+    /**
+     * Get the gravity factor of a body
+     * @param body the physics body to get the gravity factor from
+     * @param instanceIndex the index of the instance in an instanced body. If not specified, the gravity factor of the first instance will be returned.
+     * @returns the gravity factor
+     */
+    public getGravityFactor(body: PhysicsBody, instanceIndex?: number): number {
+        const pluginRef = this._getPluginReference(body, instanceIndex);
+        return this._hknp.HP_Body_GetGravityFactor(pluginRef.hpBodyId)[1];
+    }
+
+    /**
      * Disposes a physics body.
      *
      * @param body - The physics body to dispose.
@@ -1339,7 +1365,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * @param body - The main body to which the constraint is applied.
      * @param childBody - The body to which the constraint is applied.
      * @param constraint - The constraint to be applied.
-     * * @param instanceIndex - If this body is instanced, the index of the instance to which the constraint will be applied. If not specified, no constraint will be applied.
+     * @param instanceIndex - If this body is instanced, the index of the instance to which the constraint will be applied. If not specified, no constraint will be applied.
      * @param childInstanceIndex - If the child body is instanced, the index of the instance to which the constraint will be applied. If not specified, no constraint will be applied.
      */
     addConstraint(body: PhysicsBody, childBody: PhysicsBody, constraint: PhysicsConstraint, instanceIndex?: number, childInstanceIndex?: number): void {
