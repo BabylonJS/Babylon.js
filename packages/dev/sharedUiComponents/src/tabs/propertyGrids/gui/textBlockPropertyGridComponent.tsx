@@ -46,7 +46,7 @@ export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPr
         ];
 
         return (
-            <div className="pane">
+            <>
                 <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={textBlock} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent title="TEXTBLOCK">
                     <TextInputLineComponent
@@ -107,7 +107,7 @@ export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPr
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

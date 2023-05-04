@@ -90,7 +90,7 @@ export class PBRSpecularGlossinessMaterialPropertyGridComponent extends React.Co
         const material = this.props.material;
 
         return (
-            <div className="pane">
+            <>
                 <CommonMaterialPropertyGridComponent
                     globalState={this.props.globalState}
                     lockObject={this.props.lockObject}
@@ -142,7 +142,7 @@ export class PBRSpecularGlossinessMaterialPropertyGridComponent extends React.Co
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

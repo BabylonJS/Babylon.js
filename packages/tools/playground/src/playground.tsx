@@ -114,22 +114,28 @@ export class Playground extends React.Component<IPlaygroundProps, { errorMessage
     public render() {
         if (this._globalState.runtimeMode === RuntimeMode.Full) {
             return (
-                <div className="canvasZone" id="pg-root-full">
-                    <RenderingComponent globalState={this._globalState} />
-                    <ErrorDisplayComponent globalState={this._globalState} />
-                    <WaitRingComponent globalState={this._globalState} />
-                </div>
+                <>
+                    <MonacoComponent globalState={this._globalState} className="pg-split-part hidden" refObject={this._monacoRef} />
+                    <div className="canvasZone" id="pg-root-full">
+                        <RenderingComponent globalState={this._globalState} />
+                        <ErrorDisplayComponent globalState={this._globalState} />
+                        <WaitRingComponent globalState={this._globalState} />
+                    </div>
+                </>
             );
         }
 
         if (this._globalState.runtimeMode === RuntimeMode.Frame) {
             return (
-                <div className="canvasZone" id="pg-root-frame">
-                    <RenderingComponent globalState={this._globalState} />
-                    <FooterComponent globalState={this._globalState} />
-                    <ErrorDisplayComponent globalState={this._globalState} />
-                    <WaitRingComponent globalState={this._globalState} />
-                </div>
+                <>
+                    <MonacoComponent globalState={this._globalState} className="pg-split-part hidden" refObject={this._monacoRef} />
+                    <div className="canvasZone" id="pg-root-frame">
+                        <RenderingComponent globalState={this._globalState} />
+                        <FooterComponent globalState={this._globalState} />
+                        <ErrorDisplayComponent globalState={this._globalState} />
+                        <WaitRingComponent globalState={this._globalState} />
+                    </div>
+                </>
             );
         }
 

@@ -142,7 +142,7 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
         }
 
         return (
-            <div className="pane">
+            <>
                 <LineContainerComponent title="GENERAL">
                     <TextLineComponent label="Class" value={animationGroup.getClassName()} />
                     <TextInputLineComponent
@@ -183,7 +183,7 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
                     <TextLineComponent label="To" value={animationGroup.to.toFixed(2)} />
                     <TextLineComponent label="Unique ID" value={animationGroup.uniqueId.toString()} />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

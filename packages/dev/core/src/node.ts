@@ -833,8 +833,8 @@ export class Node implements IBehaviorAware<Node> {
             const directDescendants = this.getDescendants(true);
             for (let index = 0; index < directDescendants.length; index++) {
                 const child = directDescendants[index];
-                
-                child.clone(name + "." + child.name, result);                
+
+                child.clone(name + "." + child.name, result);
             }
         }
 

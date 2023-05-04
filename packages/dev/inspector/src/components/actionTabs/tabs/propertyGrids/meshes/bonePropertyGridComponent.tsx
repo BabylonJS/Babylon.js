@@ -36,7 +36,7 @@ export class BonePropertyGridComponent extends React.Component<IBonePropertyGrid
         const bone = this.props.bone;
 
         return (
-            <div className="pane">
+            <>
                 <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
                     <TextLineComponent label="Name" value={bone.name} />
                     <TextLineComponent label="Index" value={bone.getIndex().toString()} />
@@ -87,7 +87,7 @@ export class BonePropertyGridComponent extends React.Component<IBonePropertyGrid
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

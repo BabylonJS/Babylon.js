@@ -24,14 +24,12 @@ export class MaterialPropertyGridComponent extends React.Component<IMaterialProp
         const material = this.props.material;
 
         return (
-            <div className="pane">
-                <CommonMaterialPropertyGridComponent
-                    globalState={this.props.globalState}
-                    lockObject={this.props.lockObject}
-                    material={material}
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-            </div>
+            <CommonMaterialPropertyGridComponent
+                globalState={this.props.globalState}
+                lockObject={this.props.lockObject}
+                material={material}
+                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+            />
         );
     }
 }

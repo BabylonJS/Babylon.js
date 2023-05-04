@@ -223,7 +223,6 @@ export class PhysicsAggregate {
 
         const min = TmpVectors.Vector3[1];
         min.copyFrom(bb.minimum);
-        min.scaleInPlace(2);
         min.multiplyInPlace(this.transformNode.scaling);
 
         if (!this._options.center) {

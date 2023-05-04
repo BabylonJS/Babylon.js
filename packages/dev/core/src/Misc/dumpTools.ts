@@ -11,7 +11,7 @@ import type { Nullable } from "../types";
 import { passPixelShader } from "../Shaders/pass.fragment";
 
 type DumpToolsEngine = {
-    canvas: HTMLCanvasElement;
+    canvas: HTMLCanvasElement | OffscreenCanvas;
     engine: ThinEngine;
     renderer: EffectRenderer;
     wrapper: EffectWrapper;
@@ -25,7 +25,7 @@ export class DumpTools {
 
     private static _CreateDumpRenderer(): DumpToolsEngine {
         if (!DumpTools._DumpToolsEngine) {
-            const canvas = document.createElement("canvas");
+            const canvas = new OffscreenCanvas(100, 100); // will be resized later
             const engine = new ThinEngine(canvas, false, {
                 preserveDrawingBuffer: true,
                 depth: false,
