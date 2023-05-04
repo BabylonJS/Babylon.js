@@ -20,7 +20,11 @@ const __mergedStore = {};
 
 /** @internal */
 export interface CopySourceOptions {
-    doNotRepeatClonedTextures?: boolean;
+    /*
+     * if a texture is used in more than one channel (e.g diffuse and opacity),
+     * only clone it once and reuse it on the other channels. Default false
+     */
+    cloneTexturesOnlyOnce?: boolean;
 }
 
 const _copySource = function <T>(creationFunction: () => T, source: T, instanciate: boolean, options: CopySourceOptions = {}): T {
@@ -50,7 +54,7 @@ const _copySource = function <T>(creationFunction: () => T, source: T, instancia
                     (<any>destination)[property] = sourceProperty;
                     break;
                 case 1: // Texture
-                    if (options.doNotRepeatClonedTextures && textureMap[sourceProperty.uniqueId]) {
+                    if (options.cloneTexturesOnlyOnce && textureMap[sourceProperty.uniqueId]) {
                         (<any>destination)[property] = textureMap[sourceProperty.uniqueId];
                     } else {
                         (<any>destination)[property] = instanciate || sourceProperty.isRenderTarget ? sourceProperty : sourceProperty.clone();

@@ -53,10 +53,10 @@ describe("Babylon Material", function () {
             const texture = new Texture("/Playground/scenes/BoomBox/BoomBox_baseColor.png", scene);
             baseMaterial.albedoTexture = texture;
             baseMaterial.opacityTexture = texture;
-            const repeatCloneMaterial = baseMaterial.clone("repeatClonedMaterial");
+            const repeatCloneMaterial = baseMaterial.clone("repeatClonedMaterial", false);
             expect(Object.is(repeatCloneMaterial.albedoTexture, repeatCloneMaterial.opacityTexture)).toBe(false);
 
-            const noRepeatCloneMaterial = baseMaterial.clone("noRepeatClonedMaterial", false);
+            const noRepeatCloneMaterial = baseMaterial.clone("noRepeatClonedMaterial", true);
             expect(Object.is(noRepeatCloneMaterial.albedoTexture, noRepeatCloneMaterial.opacityTexture)).toBe(true);
         });
 
@@ -66,10 +66,10 @@ describe("Babylon Material", function () {
             const texture = new Texture("/Playground/scenes/BoomBox/BoomBox_baseColor.png", scene);
             baseMaterial.diffuseTexture = texture;
             baseMaterial.opacityTexture = texture;
-            const repeatCloneMaterial = baseMaterial.clone("repeatClonedMaterial");
+            const repeatCloneMaterial = baseMaterial.clone("repeatClonedMaterial", false);
             expect(Object.is(repeatCloneMaterial.diffuseTexture, repeatCloneMaterial.opacityTexture)).toBe(false);
 
-            const noRepeatCloneMaterial = baseMaterial.clone("noRepeatClonedMaterial", false);
+            const noRepeatCloneMaterial = baseMaterial.clone("noRepeatClonedMaterial", true);
             expect(Object.is(noRepeatCloneMaterial.diffuseTexture, noRepeatCloneMaterial.opacityTexture)).toBe(true);
         });
     });

@@ -1976,11 +1976,11 @@ export class StandardMaterial extends PushMaterial {
     /**
      * Makes a duplicate of the material, and gives it a new name
      * @param name defines the new name for the duplicated material
-     * @param repeatClonedTextures if textures that are used as more than one property should be cloned more than once
+     * @param cloneTexturesOnlyOnce - if a texture is used in more than one channel (e.g diffuse and opacity), only clone it once and reuse it on the other channels. Default false.
      * @returns the cloned material
      */
-    public clone(name: string, repeatClonedTextures: boolean = true): StandardMaterial {
-        const result = SerializationHelper.Clone(() => new StandardMaterial(name, this.getScene()), this, {doNotRepeatClonedTextures: !repeatClonedTextures});
+    public clone(name: string, cloneTexturesOnlyOnce: boolean = false): StandardMaterial {
+        const result = SerializationHelper.Clone(() => new StandardMaterial(name, this.getScene()), this, { cloneTexturesOnlyOnce: cloneTexturesOnlyOnce });
 
         result.name = name;
         result.id = name;
