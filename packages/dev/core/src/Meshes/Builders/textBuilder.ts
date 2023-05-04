@@ -1,11 +1,12 @@
 import { Path2 } from "../../Maths/math.path";
-import { Vector2 } from "../../Maths/math.vector";
+import { Vector3 } from "../../Maths/math.vector";
 import type { Scene } from "../../scene";
 import type { Nullable } from "../../types";
 import { Mesh } from "../mesh";
+import { ExtrudePolygon } from "./polygonBuilder";
 
 /**
- * Hugely inspired by https://github.com/mrdoob/three.js/blob/master/examples/jsm/loaders/FontLoader.js
+ * Largely inspired by https://github.com/mrdoob/three.js/blob/master/examples/jsm/loaders/FontLoader.js
  */
 
 // Interfaces
@@ -27,7 +28,6 @@ export interface IFontData {
 
 // Shape functions
 class ShapePath {
-    private _startingPoint: Vector2;
     private _paths: Path2[] = [];
     private _currentPath: Path2;
     private _resolution: number;
@@ -37,7 +37,6 @@ class ShapePath {
     }
     
     moveTo(x: number, y: number) {
-        this._startingPoint = new Vector2(x, y);
         this._currentPath = new Path2(x, y);
         this._paths.push(this._currentPath);
     }
@@ -151,7 +150,7 @@ function CreatePaths(text: string, size: number, resolution: number, fontData: I
 	return paths;
 }
 
-function CreateShapes(text: string, size: number, resolution: number, fontData: IFontData) {
+function CreateListOfPaths(text: string, size: number, resolution: number, fontData: IFontData) {
     const shapes: Path2[][] = [];
     const paths = CreatePaths(text, size, resolution, fontData);
 
@@ -168,21 +167,46 @@ export function CreateText(
     text: string,
     fontData: IFontData,
     options: {
-        size: number,
-        resolution: number,
+        size?: number,
+        resolution?: number,
+        depth?: number,        
+        sideOrientation?: number;
+    } = {
+        size: 50,
+        resolution: 8,
+        depth: 1.0
     },
     scene: Nullable<Scene> = null
 ): Mesh {
 
-    // First we need to generate the shapes
-    const shapes = CreateShapes(text, options.size || 50, options.resolution || 8, fontData);
+    // First we need to generate the paths
+    const listOfPaths = CreateListOfPaths(text, options.size || 50, options.resolution || 8, fontData);
 
-    // Then we need to triangulate the shapes
-    
+    // Get the list of shapes
+    const shapes: Vector3[][] = [];
+    for (const paths of listOfPaths) {
+        for (const path of paths) {
+            const points = path.getPoints();
+            const vectors: Vector3[] = [];
+            for (const point of points) {
+                vectors.push(new Vector3(point.x, 0, point.y)); // ExtrudePolygon expects data on the xz plane
+            }
+            shapes.push(vectors);
+        }
+    }
 
     // And extrude them
+    const meshes: Mesh[] = [];
+    for (const shape of shapes) {
+        const mesh = ExtrudePolygon(name, { 
+            shape: shape, 
+            depth: options.depth || 1.0,
+            sideOrientation: Mesh._GetDefaultSideOrientation(options.sideOrientation || Mesh.DOUBLESIDE)
+        }, scene);
+        meshes.push(mesh);
+    }
 
-    // Then we can build the mesh
+    // Then we can merge everyone into one single mesh
     const newMesh = new Mesh(name, scene);
 
     return newMesh;
