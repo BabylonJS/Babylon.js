@@ -121,6 +121,15 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                                             )}
                                         </div>
                                     );
+                                } else if (m.fileButton && m.label === 'Load contorl') {
+                                    return (
+                                        <FileButtonLineComponent
+                                            key={m.label}
+                                            label="Load contorl"
+                                            onClick={(file) => this.props.globalState.onControlLoadObservable.notifyObservers(file)}
+                                            accept=".json"
+                                        />
+                                    );
                                 } else {
                                     return (
                                         <FileButtonLineComponent

@@ -141,6 +141,16 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                     },
                                 },
                                 {
+                                    label: "Save selected contorl",
+                                    onClick: () => {
+                                        this.props.globalState.onSaveSelectedControl.notifyObservers();
+                                    },
+                                },
+                                {
+                                    label: "Load contorl",
+                                    fileButton: true,
+                                },
+                                {
                                     label: "Help",
                                     onClick: () => {
                                         window.open("https://doc.babylonjs.com/toolsAndResources/tools/guiEditor", "_blank");

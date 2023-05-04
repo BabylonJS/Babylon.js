@@ -68,6 +68,9 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         this.props.globalState.onSaveObservable.add(() => {
             this.save(this.saveLocally);
         });
+        this.props.globalState.onSaveSelectedControl.add(() => {
+            this.save(this.saveSelectedControlLocally);
+        });
         this.props.globalState.onSnippetSaveObservable.add(() => {
             this.save(this.saveToSnippetServer);
         });
@@ -80,6 +83,8 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         });
 
         this.props.globalState.onLoadObservable.add((file) => this.load(file));
+
+        this.props.globalState.onControlLoadObservable.add((file) => this.loadContorl(file));
     }
 
     componentDidMount() {
@@ -115,6 +120,22 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         );
     }
 
+    /**
+     * Read loaded file
+     * @param file 
+     */
+    loadContorl(file: File) {
+        Tools.ReadFile(
+            file,
+            (data) => {
+                const decoder = new TextDecoder("utf-8");
+                this.props.globalState.workbench.loadControlFromJson(JSON.parse(decoder.decode(data)));
+            },
+            undefined,
+            true
+        );
+    }
+
     save(saveCallback: () => void) {
         this.props.globalState.workbench.removeEditorTransformation();
         const allControls = this.props.globalState.guiTexture.rootContainer.getDescendants();
@@ -136,6 +157,27 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         } catch (error) {
             this.props.globalState.hostWindow.alert("Unable to save your GUI");
             Tools.Error("Unable to save your GUI");
+        }
+    };
+
+    /**
+     * Save the selected contorl as Json with file name of guiContorl
+     */
+    saveSelectedControlLocally = () => {
+        try {
+            const serializationObject: any = {
+                controls: []
+            };
+            for (const contorl of this.props.globalState.selectedControls) {
+                const controlSerializationObject = {};
+                contorl.serialize(controlSerializationObject);
+                serializationObject.controls.push(controlSerializationObject);
+            }
+            const json = JSON.stringify(serializationObject);
+            StringTools.DownloadAsFile(this.props.globalState.hostDocument, json, "guiControl.json");
+        } catch (error) {
+            this.props.globalState.hostWindow.alert("Unable to save your selected Control");
+            Tools.Error("Unable to save your selected Control");
         }
     };
 

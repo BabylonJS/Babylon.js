@@ -481,6 +481,25 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
         this.loadToEditor();
     }
 
+    /**
+     * Load Control from Json then select loaded Control
+     * @param serializationObject 
+     */
+    loadControlFromJson(serializationObject: any) {
+        const newSelection = [];
+        for (const control of serializationObject.controls) {
+            newSelection.push(Control.Parse(control, this.props.globalState.guiTexture));
+        }
+        const newGuiNode = this.props.globalState.workbench.appendBlock(newSelection[0]);
+        if (newGuiNode.parent?.typeName === "Grid" && newGuiNode.metadata?._cellInfo) {
+            const { row, column } = newGuiNode.metadata._cellInfo;
+            const gridParent = newGuiNode.parent as Grid;
+            gridParent.removeControl(newGuiNode);
+            gridParent.addControl(newGuiNode, parseInt(row), parseInt(column));
+        }
+        this.props.globalState.setSelection([newGuiNode]);       
+    }
+
     async loadFromSnippet(snippetId: string) {
         this.removeEditorTransformation();
         this.props.globalState.setSelection([]);
