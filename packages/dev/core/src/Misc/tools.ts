@@ -792,7 +792,21 @@ export class Tools {
         fileName?: string,
         quality?: number
     ): void {
-        if (successCallback) {
+        if (typeof fileName === "string") {
+            this.ToBlob(
+                canvas,
+                function (blob) {
+                    if (blob) {
+                        Tools.DownloadBlob(blob, fileName);
+                    }
+                    if (successCallback) {
+                        successCallback('');
+                    }
+                },
+                mimeType,
+                quality
+            );
+        } else if (successCallback) {
             if (Tools._IsOffScreenCanvas(canvas)) {
                 canvas
                     .convertToBlob({
@@ -811,17 +825,6 @@ export class Tools {
             }
             const base64Image = canvas.toDataURL(mimeType, quality);
             successCallback(base64Image);
-        } else {
-            this.ToBlob(
-                canvas,
-                function (blob) {
-                    if (blob) {
-                        Tools.DownloadBlob(blob, fileName);
-                    }
-                },
-                mimeType,
-                quality
-            );
         }
     }
 
