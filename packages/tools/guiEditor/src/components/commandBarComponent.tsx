@@ -141,14 +141,15 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                     },
                                 },
                                 {
-                                    label: "Save selected contorl",
+                                    label: "Save selected control",
                                     onClick: () => {
                                         this.props.globalState.onSaveSelectedControl.notifyObservers();
                                     },
                                 },
                                 {
-                                    label: "Load contorl",
+                                    label: "Load control",
                                     fileButton: true,
+                                    loadControlButton: true
                                 },
                                 {
                                     label: "Help",
