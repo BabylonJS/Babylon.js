@@ -23,7 +23,7 @@ export class CheckboxPropertyGridComponent extends React.Component<ICheckboxProp
         const checkbox = this.props.checkbox;
 
         return (
-            <div className="pane">
+            <>
                 <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={checkbox} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent title="CHECKBOX">
                     <FloatLineComponent
@@ -35,7 +35,7 @@ export class CheckboxPropertyGridComponent extends React.Component<ICheckboxProp
                     />
                     <CheckBoxLineComponent label="Checked" target={checkbox} propertyName="isChecked" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

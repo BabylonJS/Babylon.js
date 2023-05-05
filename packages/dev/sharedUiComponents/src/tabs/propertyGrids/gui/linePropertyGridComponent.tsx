@@ -39,7 +39,7 @@ export class LinePropertyGridComponent extends React.Component<ILinePropertyGrid
         const line = this.props.line;
 
         return (
-            <div className="pane">
+            <>
                 <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={line} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent title="LINE">
                     <FloatLineComponent
@@ -85,7 +85,7 @@ export class LinePropertyGridComponent extends React.Component<ILinePropertyGrid
                         onChange={(newValue) => this.onDashChange(newValue)}
                     />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

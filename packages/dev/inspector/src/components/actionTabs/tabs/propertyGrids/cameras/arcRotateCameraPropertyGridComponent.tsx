@@ -29,7 +29,7 @@ export class ArcRotateCameraPropertyGridComponent extends React.Component<IArcRo
         const camera = this.props.camera;
 
         return (
-            <div className="pane">
+            <>
                 <CommonCameraPropertyGridComponent
                     globalState={this.props.globalState}
                     lockObject={this.props.lockObject}
@@ -192,7 +192,7 @@ export class ArcRotateCameraPropertyGridComponent extends React.Component<IArcRo
                     />
                     <CheckBoxLineComponent label="Framing" target={camera} propertyName="useFramingBehavior" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

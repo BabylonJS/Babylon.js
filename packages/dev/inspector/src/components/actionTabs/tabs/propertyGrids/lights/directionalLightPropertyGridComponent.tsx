@@ -54,7 +54,7 @@ export class DirectionalLightPropertyGridComponent extends React.Component<IDire
         const displayFrustum = (light as any)._displayFrustum ?? false;
 
         return (
-            <div className="pane">
+            <>
                 <CommonLightPropertyGridComponent
                     globalState={this.props.globalState}
                     lockObject={this.props.lockObject}
@@ -108,7 +108,7 @@ export class DirectionalLightPropertyGridComponent extends React.Component<IDire
                 <LineContainerComponent title="DEBUG" closed={true} selection={this.props.globalState}>
                     <CheckBoxLineComponent label="Display frustum" isSelected={() => displayFrustum} onSelect={() => this.displayFrustum()} />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

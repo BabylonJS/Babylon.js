@@ -153,7 +153,7 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
         ];
 
         return (
-            <div className="pane">
+            <>
                 <LineContainerComponent title="RENDERING MODE" selection={this.props.globalState}>
                     <RadioButtonLineComponent
                         onSelectionChangedObservable={this._renderingModeGroupObservable}
@@ -373,7 +373,7 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
                 <LineContainerComponent title="SHADOWS" closed={true} selection={this.props.globalState}>
                     <ButtonLineComponent label="Normalize scene" onClick={() => this.normalizeScene()} />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

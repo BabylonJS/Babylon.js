@@ -164,7 +164,7 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
         ];
 
         return (
-            <div className="pane">
+            <>
                 <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
                     <TextInputLineComponent
                         lockObject={this.props.lockObject}
@@ -242,7 +242,7 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }
