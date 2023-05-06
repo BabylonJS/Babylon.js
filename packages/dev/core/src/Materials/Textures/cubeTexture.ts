@@ -2,7 +2,7 @@ import { serialize, serializeAsMatrix, SerializationHelper, serializeAsVector3 }
 import { Tools } from "../../Misc/tools";
 import type { Nullable } from "../../types";
 import type { Scene } from "../../scene";
-import { Matrix, Vector3 } from "../../Maths/math.vector";
+import { Matrix, Quaternion, TmpVectors, Vector3 } from "../../Maths/math.vector";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../../Materials/Textures/texture";
 import { Constants } from "../../Engines/constants";
@@ -112,6 +112,9 @@ export class CubeTexture extends BaseTexture {
 
     @serializeAsMatrix("textureMatrix")
     private _textureMatrix: Matrix;
+
+    @serializeAsMatrix("textureMatrixRefraction")
+    private _textureMatrixRefraction: Matrix = new Matrix();
 
     private _format: number;
     private _createPolynomials: boolean;
@@ -337,6 +340,33 @@ export class CubeTexture extends BaseTexture {
         }
 
         this._textureMatrix = value;
+
+        if (!this.getScene()?.useRightHandedSystem) {
+            return;
+        }
+
+        const scale = TmpVectors.Vector3[0];
+        const quat = TmpVectors.Quaternion[0];
+        const trans = TmpVectors.Vector3[1];
+        const euler = TmpVectors.Vector3[2];
+
+        this._textureMatrix.decompose(scale, quat, trans);
+        quat.toEulerAnglesToRef(euler);
+
+        euler.x *= -1;
+        euler.y *= -1;
+
+        Quaternion.FromEulerAnglesToRef(euler.x, euler.y, euler.z, quat);
+        Matrix.ComposeToRef(scale, quat, trans, this._textureMatrixRefraction);
+    }
+
+    /**
+     * Gets a suitable rotate/transform matrix when the texture is used for refraction.
+     * There's a separate function from getReflectionTextureMatrix because refraction requires a special configuration of the matrix in right-handed mode.
+     * @returns The refraction matrix
+     */
+    public getRefractionTextureMatrix(): Matrix {
+        return this.getScene()?.useRightHandedSystem ? this._textureMatrixRefraction : this._textureMatrix;
     }
 
     private _loadTexture(onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null) {

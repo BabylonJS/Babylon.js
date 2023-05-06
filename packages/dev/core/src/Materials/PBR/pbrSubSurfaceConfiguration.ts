@@ -522,7 +522,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
             }
 
             if (refractionTexture && MaterialFlags.RefractionTextureEnabled) {
-                uniformBuffer.updateMatrix("refractionMatrix", refractionTexture.getReflectionTextureMatrix());
+                uniformBuffer.updateMatrix("refractionMatrix", refractionTexture.getRefractionTextureMatrix());
 
                 let depth = 1.0;
                 if (!refractionTexture.isCube) {
