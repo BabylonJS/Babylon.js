@@ -591,7 +591,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
      * @returns The refraction matrix
      */
     public getRefractionTextureMatrix(): Matrix {
-        return <Matrix>Matrix.IdentityReadOnly;
+        return this.getReflectionTextureMatrix();
     }
 
     /**
