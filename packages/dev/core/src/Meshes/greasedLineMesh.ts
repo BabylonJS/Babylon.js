@@ -240,9 +240,28 @@ export class GreasedLineMesh extends Mesh {
         skipBoundingInfo?: boolean
     ): PickingInfo {
         const pickingInfo = new PickingInfo();
+        const intersections = this.intersections(ray);
+        if (intersections) {
+            const intersection = intersections[0];
+            pickingInfo.hit = true;
+            pickingInfo.distance = intersection.distance;
+            pickingInfo.ray = ray;
+            pickingInfo.pickedMesh = intersection.object;
+            pickingInfo.pickedPoint = intersection.point;
+        }
 
+        return pickingInfo;
+    }
+
+    /**
+     *
+     * @param ray
+     * @param firstOnly
+     * @returns
+     */
+    public intersections(ray: Ray, firstOnly = true):{distance: number, point: Vector3, index: number, object: GreasedLineMesh}[] | undefined {
         if (this._boundingSphere && ray.intersectsSphere(this._boundingSphere, this.intersectionThreshold) === false) {
-            return pickingInfo;
+            return;
         }
 
         const vStart = new Vector3();
@@ -278,7 +297,7 @@ export class GreasedLineMesh extends Mesh {
                 const width = widths[iFloored] !== undefined ? widths[iFloored] : 1;
                 const precision = this.intersectionThreshold + (lineWidth * width) / 2;
 
-                const distance = ray.intersectionSegment(vStart, vEnd, precision / 1000);
+                const distance = ray.intersectionSegment(vStart, vEnd, precision / 1000); // TODO: sizeAtt - keep in mind
                 if (distance !== -1) {
                     intersects.push({
                         distance: distance,

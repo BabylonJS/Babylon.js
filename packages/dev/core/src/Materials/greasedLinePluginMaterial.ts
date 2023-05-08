@@ -1,4 +1,4 @@
-import { serialize, serializeAsTexture } from 'core/Misc/decorators';
+// import { serialize, serializeAsTexture } from "core/Misc/decorators";
 import { Engine } from "../Engines/engine";
 import type { GreasedLineMeshColorDistribution } from "../Meshes/greasedLineMesh";
 import { GreasedLineMeshColorMode } from "../Meshes/greasedLineMesh";
@@ -10,7 +10,7 @@ import type { UniformBuffer } from "./uniformBuffer";
 import type { Vector2 } from "../Maths/math.vector";
 import type { Color3 } from "../Maths/math.color";
 import type { Nullable } from "../types";
-import { DeepCopier } from "..";
+import { DeepCopier } from "core/Misc/deepCopier";
 
 /**
  *
@@ -55,13 +55,13 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
     ) {
         super(material, GreasedLinePluginMaterial.name, 200, {
             GREASED_LINE_HAS_COLOR: parameters.color,
-            GREASED_LINE_SIZE_ATTENUATION: parameters.sizeAttenuation
+            GREASED_LINE_SIZE_ATTENUATION: parameters.sizeAttenuation,
         });
 
         this._engine = this._scene.getEngine();
 
         if (parameters.colors) {
-            this._createColorsTexture(`${material.name}-colors-texture`,parameters.colors);
+            this._createColorsTexture(`${material.name}-colors-texture`, parameters.colors);
         }
 
         this._parameters = parameters;
@@ -120,7 +120,6 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
 
     // only getter, it doesn't make sense to use this plugin on a mesh other than GreasedLineMesh
     // and it doesn't make sense to disable it on the mesh
-
     get isEnabled() {
         return true;
     }
@@ -129,48 +128,44 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
      *
      * @param uniformBuffer
      */
-    bindForSubMesh(
-        uniformBuffer: UniformBuffer,
-    ) {
-        if (this._isEnabled) {
-            const activeCamera = this._scene.activeCamera;
+    bindForSubMesh(uniformBuffer: UniformBuffer) {
+        const activeCamera = this._scene.activeCamera;
 
-            if (activeCamera) {
-                const projection = activeCamera.getProjectionMatrix();
-                uniformBuffer.updateMatrix("greasedLineProjection", projection);
-            }
-
-            uniformBuffer.updateFloat("lineWidth", this._parameters.width ?? 1);
-
-            uniformBuffer.updateFloat("greasedLineVisibility", this._parameters.visibility ?? 1);
-
-            if (this._parameters.resolution) {
-                uniformBuffer.updateFloat2("resolution", this._parameters.resolution.x, this._parameters.resolution.y);
-            } else {
-                uniformBuffer.updateFloat2("resolution", this._engine.getRenderWidth(), this._engine.getRenderHeight());
-            }
-
-            uniformBuffer.updateFloat("dashArray", this._parameters.dashArray ?? 0);
-            uniformBuffer.updateFloat("dashOffset", this._parameters.dashOffset ?? 0);
-            uniformBuffer.updateFloat("dashRatio", this._parameters.dashRatio ?? 0.5);
-            uniformBuffer.updateFloat("useDash", GreasedLinePluginMaterial._BooleanToNumber(this._parameters.useDash));
-
-            uniformBuffer.updateFloat("colorMode", this._parameters.colorMode ?? GreasedLineMeshColorMode.COLOR_MODE_SET);
-
-            if (this._parameters.color) {
-                uniformBuffer.updateColor3("singleColor", this._parameters.color);
-            }
-
-            uniformBuffer.updateFloat("useColors", GreasedLinePluginMaterial._BooleanToNumber(this._parameters.useColors));
-
-            if (this._colorsTexture) {
-                uniformBuffer.updateFloat("colorsWidth", this._colorsTexture.getSize().width * 2);
-
-                uniformBuffer.setTexture("colors", this._colorsTexture);
-            }
-
-            uniformBuffer.update();
+        if (activeCamera) {
+            const projection = activeCamera.getProjectionMatrix();
+            uniformBuffer.updateMatrix("greasedLineProjection", projection);
         }
+
+        uniformBuffer.updateFloat("lineWidth", this._parameters.width ?? 1);
+
+        uniformBuffer.updateFloat("greasedLineVisibility", this._parameters.visibility ?? 1);
+
+        if (this._parameters.resolution) {
+            uniformBuffer.updateFloat2("resolution", this._parameters.resolution.x, this._parameters.resolution.y);
+        } else {
+            uniformBuffer.updateFloat2("resolution", this._engine.getRenderWidth(), this._engine.getRenderHeight());
+        }
+
+        uniformBuffer.updateFloat("dashArray", this._parameters.dashArray ?? 0);
+        uniformBuffer.updateFloat("dashOffset", this._parameters.dashOffset ?? 0);
+        uniformBuffer.updateFloat("dashRatio", this._parameters.dashRatio ?? 0.5);
+        uniformBuffer.updateFloat("useDash", GreasedLinePluginMaterial._BooleanToNumber(this._parameters.useDash));
+
+        uniformBuffer.updateFloat("colorMode", this._parameters.colorMode ?? GreasedLineMeshColorMode.COLOR_MODE_SET);
+
+        if (this._parameters.color) {
+            uniformBuffer.updateColor3("singleColor", this._parameters.color);
+        }
+
+        uniformBuffer.updateFloat("useColors", GreasedLinePluginMaterial._BooleanToNumber(this._parameters.useColors));
+
+        if (this._colorsTexture) {
+            uniformBuffer.updateFloat("colorsWidth", this._colorsTexture.getSize().width * 2);
+
+            uniformBuffer.setTexture("colors", this._colorsTexture);
+        }
+
+        uniformBuffer.update();
     }
 
     prepareDefines(defines: Record<string, unknown> /*, scene: Scene, mesh: AbstractMesh*/) {
@@ -335,7 +330,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
      * @returns
      */
     public static Parse(parsed: any, scene: Scene): Nullable<GreasedLinePluginMaterial> {
-        const rootUrl = ''; // TODO: ?
+        const rootUrl = ""; // TODO: ?
         const material = Material.Parse(parsed.material, scene, rootUrl);
         if (material) {
             const result = new GreasedLinePluginMaterial(material, scene, parsed.parameters);
@@ -396,10 +391,8 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
      *
      * @returns
      */
-    public getParameters():GreasedLineMaterialParameters {
-        const parameters:GreasedLineMaterialParameters = {
-
-        };
+    public getParameters(): GreasedLineMaterialParameters {
+        const parameters: GreasedLineMaterialParameters = {};
         DeepCopier.DeepCopy(this._parameters, parameters);
         return parameters;
     }
