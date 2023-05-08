@@ -800,7 +800,7 @@ export class Tools {
                         Tools.DownloadBlob(blob, fileName);
                     }
                     if (successCallback) {
-                        successCallback('');
+                        successCallback("");
                     }
                 },
                 mimeType,
