@@ -3,11 +3,12 @@ import type { Measure } from "../measure";
 import { RegisterClass } from "core/Misc/typeStore";
 import { serialize } from "core/Misc/decorators";
 import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import { Vector4 } from "core/Maths/math";
 
 /** Class used to create rectangle container */
 export class Rectangle extends Container {
     private _thickness = 1;
-    private _cornerRadius = 0;
+    private _cornerRadius = Vector4.Zero();
 
     /** Gets or sets border thickness */
     @serialize()
@@ -26,14 +27,17 @@ export class Rectangle extends Container {
 
     /** Gets or sets the corner radius angle */
     @serialize()
-    public get cornerRadius(): number {
+    public get cornerRadius(): Vector4 {
+        return this._cornerRadius;
+    }
+    public get cornerRadiusFree(): Vector4 {
         return this._cornerRadius;
     }
 
-    public set cornerRadius(value: number) {
-        if (value < 0) {
-            value = 0;
-        }
+    public set cornerRadius(value: Vector4) {
+        // if (value < 0) {
+        //     value = 0;
+        // }
 
         if (this._cornerRadius === value) {
             return;
@@ -41,6 +45,22 @@ export class Rectangle extends Container {
 
         this._cornerRadius = value;
         this._markAsDirty();
+    }
+    public set cornerRadiusX(value: number) {
+        if (this._cornerRadius.x === value) return
+        this._cornerRadius.x = value
+    }
+    public set cornerRadiusY(value: number) {
+        if (this._cornerRadius.y === value) return
+        this._cornerRadius.y = value;
+    }
+    public set cornerRadiusZ(value: number) {
+        if (this._cornerRadius.z === value) return
+        this._cornerRadius.z = value;
+    }
+    public set cornerRadiusW(value: number) {
+        if (this._cornerRadius.w === value) return
+        this._cornerRadius.w = value;
     }
 
     /**
@@ -141,19 +161,29 @@ export class Rectangle extends Container {
         const width = this._currentMeasure.width - offset * 2;
         const height = this._currentMeasure.height - offset * 2;
 
-        let radius = Math.min(height / 2, Math.min(width / 2, this._cornerRadius));
-        radius = Math.abs(radius);
+        let radius = {
+            x: Math.min(height / 2, Math.min(width / 2, this._cornerRadius.x)),
+            y: Math.min(height / 2, Math.min(width / 2, this._cornerRadius.y)),
+            z: Math.min(height / 2, Math.min(width / 2, this._cornerRadius.z)),
+            w: Math.min(height / 2, Math.min(width / 2, this._cornerRadius.w))
+        }
+        radius = {
+            x: Math.abs(radius.x),
+            y: Math.abs(radius.y),
+            z: Math.abs(radius.z),
+            w: Math.abs(radius.w)
+        }
 
         context.beginPath();
-        context.moveTo(x + radius, y);
-        context.lineTo(x + width - radius, y);
-        context.arc(x + width - radius, y + radius, radius, (3 * Math.PI) / 2, Math.PI * 2);
-        context.lineTo(x + width, y + height - radius);
-        context.arc(x + width - radius, y + height - radius, radius, 0, Math.PI / 2);
-        context.lineTo(x + radius, y + height);
-        context.arc(x + radius, y + height - radius, radius, Math.PI / 2, Math.PI);
-        context.lineTo(x, y + radius);
-        context.arc(x + radius, y + radius, radius, Math.PI, (3 * Math.PI) / 2);
+        context.moveTo(x + radius.x, y);
+        context.lineTo(x + width - radius.y, y);
+        context.arc(x + width - radius.y, y + radius.y, radius.y, (3 * Math.PI) / 2, Math.PI * 2);
+        context.lineTo(x + width, y + height - radius.z);
+        context.arc(x + width - radius.z, y + height - radius.z, radius.z, 0, Math.PI / 2);
+        context.lineTo(x + radius.w, y + height);
+        context.arc(x + radius.w, y + height - radius.w, radius.w, Math.PI / 2, Math.PI);
+        context.lineTo(x, y + radius.x);
+        context.arc(x + radius.x, y + radius.x, radius.x, Math.PI, (3 * Math.PI) / 2);
         context.closePath();
     }
 

@@ -56,13 +56,43 @@ export class RectanglePropertyGridComponent extends React.Component<IRectanglePr
                         digits={2}
                     />
                 </div>
-                <div className="ge-divider double">
+                <div className="ge-divider quad">
                     <IconComponent icon={cornerRadiusIcon} label={"Corner Radius"} />
                     <FloatLineComponent
                         lockObject={lockObject}
                         label=""
                         target={proxy}
-                        propertyName="cornerRadius"
+                        propertyName="cornerRadiusX"
+                        unit={<UnitButton unit="PX" locked />}
+                        arrows
+                        min={0}
+                        digits={2}
+                    />
+                    <FloatLineComponent
+                        lockObject={lockObject}
+                        label=""
+                        target={proxy}
+                        propertyName="cornerRadiusY"
+                        unit={<UnitButton unit="PX" locked />}
+                        arrows
+                        min={0}
+                        digits={2}
+                    />
+                    <FloatLineComponent
+                        lockObject={lockObject}
+                        label=""
+                        target={proxy}
+                        propertyName="cornerRadiusZ"
+                        unit={<UnitButton unit="PX" locked />}
+                        arrows
+                        min={0}
+                        digits={2}
+                    />
+                    <FloatLineComponent
+                        lockObject={lockObject}
+                        label=""
+                        target={proxy}
+                        propertyName="cornerRadiusW"
                         unit={<UnitButton unit="PX" locked />}
                         arrows
                         min={0}
