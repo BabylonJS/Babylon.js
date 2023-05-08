@@ -367,7 +367,7 @@ export class AssetContainer extends AbstractScene {
                 }
             }
 
-            if ((clone as any) && (source as any).position) {
+            if ((clone as any).position && (source as any).position) {
                 (clone as any).position.copyFrom((source as any).position);
             }
             if ((clone as any).rotationQuaternion && (source as any).rotationQuaternion) {
@@ -443,7 +443,7 @@ export class AssetContainer extends AbstractScene {
             } else {
                 // Mesh or TransformNode
                 let canInstance = true;
-                if ((node.getClassName() !== "Mesh" && node.getClassName() !== "InstancedMesh") || (node as Mesh).skeleton !== null || (node as Mesh).getTotalVertices() === 0) {
+                if (node.getClassName() === "TransformNode" || node.getClassName() === "Node" || (node as Mesh).skeleton || (node as Mesh).getTotalVertices() === 0) {
                     // Transform nodes, skinned meshes, and meshes with no vertices can never be instanced!
                     canInstance = false;
                 } else if (localOptions.doNotInstantiate) {
