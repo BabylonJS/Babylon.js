@@ -12,18 +12,18 @@
         "@nrwl/cli": "^14.3.5",
         "@nrwl/tao": "^14.3.5",
         "@nrwl/workspace": "^14.3.5",
-        "@types/expect-puppeteer": "~4.4.7",
+        "@types/expect-puppeteer": "~5.0.3",
         "@types/fs-extra": "^9.0.13",
         "@types/jest": "~27.4.0",
         "@types/jest-environment-puppeteer": "~5.0.0",
         "@types/jest-expect-message": "~1.0.3",
         "@types/puppeteer": "~5.4.4",
         "@types/selenium-webdriver": "^4.1.2",
-        "@typescript-eslint/eslint-plugin": "~5.16.0",
-        "@typescript-eslint/parser": "~5.16.0",
-        "ajv": "~8.11.0",
+        "@typescript-eslint/eslint-plugin": "~5.59.0",
+        "@typescript-eslint/parser": "~5.59.0",
+        "ajv": "~8.12.0",
         "chokidar": "~3.5.2",
-        "concurrently": "~7.2.0",
+        "concurrently": "~8.0.1",
         "dotenv": "~16.0.0",
         "eslint": "^8.11.0",
         "eslint-config-prettier": "~8.5.0",
@@ -46,10 +46,10 @@
         "tslib": "^2.4.0",
         "typescript": "~4.9.4",
         "webpack": "^5.73.0",
-        "webpack-cli": "^4.10.0"
+        "webpack-cli": "^5.1.0"
     },
     "optionalDependencies": {
-        "canvas": "~2.9.0"
+        "canvas": "~2.11.0"
     },
     "workspaces": [
         "packages/**/*"
