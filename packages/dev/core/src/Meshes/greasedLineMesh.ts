@@ -225,7 +225,7 @@ export class GreasedLineMesh extends Mesh {
      * @returns the created ground mesh
      */
     public static Parse(serializedMesh: any, scene: Scene): GreasedLineMesh {
-        const pluginMaterial = GreasedLinePluginMaterial.Parse(serializedMesh.pluginMaterial);
+        const pluginMaterial = GreasedLinePluginMaterial.Parse(serializedMesh.pluginMaterial); // TODO: how does pluginmaterial serialization work?
         const result = new GreasedLineMesh(serializedMesh.name, scene, serializedMesh.parameters, pluginMaterial, serializedMesh.updatable, serializedMesh.lazy);
         return result;
     }
