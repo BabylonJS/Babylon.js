@@ -48,6 +48,7 @@ export class PhysicsViewer {
     /** @internal */
     protected _physicsEnginePlugin: IPhysicsEnginePluginV1 | IPhysicsEnginePluginV2 | null;
     private _renderFunction: () => void;
+    private _inertiaRenderFunction: () => void;
     private _utilityLayer: Nullable<UtilityLayerRenderer>;
 
     private _debugBoxMesh: Mesh;
@@ -143,14 +144,37 @@ export class PhysicsViewer {
         }
     }
 
-    protected updateInertiaMeshes(): void {
-        const plugin = this._physicsEnginePlugin as IPhysicsEnginePluginV2;
+    protected _updateInertiaMeshes(): void {
         for (let i = 0; i < this._numInertiaBodies; i++) {
             const body = this._inertiaBodies[i];
-            const transform = this._inertiaMeshes[i];
-            if (body && transform) {
-                plugin.syncTransform(body, transform);
+            const mesh = this._inertiaMeshes[i];
+            if (body && mesh) {
+                this._updateDebugInertia(body, mesh);
             }
+        }
+    }
+
+    protected _updateDebugInertia(body: PhysicsBody, inertiaMesh: AbstractMesh): void {
+        const inertiaMatrixRef = Matrix.Identity();
+        const transformMatrixRef = Matrix.Identity();
+        const finalMatrixRef = Matrix.Identity();
+        if (body._pluginDataInstances.length) {
+            const inertiaAsMesh = inertiaMesh as Mesh;
+            const inertiaMeshMatrixData = inertiaAsMesh._thinInstanceDataStorage.matrixData!;
+            const bodyTransformMatrixData = (body.transformNode as Mesh)._thinInstanceDataStorage.matrixData!;
+            for (let i = 0; i < body._pluginDataInstances.length; i++) {
+                const props = body.getMassProperties(i);
+                this._getMeshDebugInertiaMatrixToRef(props, inertiaMatrixRef);
+                transformMatrixRef.copyFromArray(bodyTransformMatrixData, i * 16);
+                inertiaMatrixRef.multiplyToRef(transformMatrixRef, finalMatrixRef);
+                finalMatrixRef.copyToArray(inertiaMeshMatrixData, i * 16);
+            }
+            inertiaAsMesh.thinInstanceBufferUpdated("matrix");
+        } else {
+            const props = body.getMassProperties();
+            this._getMeshDebugInertiaMatrixToRef(props, inertiaMatrixRef);
+            inertiaMatrixRef.multiplyToRef(body.transformNode.getWorldMatrix(), inertiaMatrixRef);
+            inertiaMatrixRef.decomposeToTransformNode(inertiaMesh);
         }
     }
 
@@ -227,7 +251,7 @@ export class PhysicsViewer {
 
     /**
      * Shows a debug box corresponding to the inertia of a given body
-     * @param body 
+     * @param body
      */
     public showInertia(body: PhysicsBody): Nullable<AbstractMesh> {
         if (!this._scene) {
@@ -244,6 +268,11 @@ export class PhysicsViewer {
         if (debugMesh) {
             this._inertiaBodies[this._numBodies] = body;
             this._inertiaMeshes[this._numBodies] = debugMesh;
+
+            if (this._numInertiaBodies === 0) {
+                this._inertiaRenderFunction = this._updateInertiaMeshes.bind(this);
+                this._scene.registerBeforeRender(this._inertiaRenderFunction);
+            }
 
             this._numInertiaBodies++;
         }
@@ -349,6 +378,39 @@ export class PhysicsViewer {
 
         if (removed && this._numBodies === 0) {
             this._scene.unregisterBeforeRender(this._renderFunction);
+        }
+    }
+
+    public hideInertia(body: Nullable<PhysicsBody>) {
+        if (!body || !this._scene || !this._utilityLayer) {
+            return;
+        }
+        let removed = false;
+        const utilityLayerScene = this._utilityLayer.utilityLayerScene;
+
+        for (let i = 0; i < this._numInertiaBodies; i++) {
+            if (this._inertiaBodies[i] === body) {
+                const mesh = this._inertiaMeshes[i];
+
+                if (!mesh) {
+                    continue;
+                }
+
+                utilityLayerScene.removeMesh(mesh);
+                mesh.dispose();
+
+                this._inertiaBodies.splice(i, 1);
+                this._inertiaMeshes.splice(i, 1);
+
+                this._numInertiaBodies--;
+
+                removed = true;
+                break;
+            }
+        }
+
+        if (removed && this._numInertiaBodies === 0) {
+            this._scene.unregisterBeforeRender(this._inertiaRenderFunction);
         }
     }
 
@@ -550,15 +612,15 @@ export class PhysicsViewer {
         const center = massProps.centerOfMass ?? Vector3.Zero();
         const mass = massProps.mass ?? 1;
         const invMass = 1 / mass;
-        
+
         const betaSqrd = (inertiaLocal.x - inertiaLocal.y + inertiaLocal.z) * invMass * 6;
-        const beta = Math.sqrt(Math.max(betaSqrd, 0));  // Safety check for zeroed elements!
+        const beta = Math.sqrt(Math.max(betaSqrd, 0)); // Safety check for zeroed elements!
 
         const gammaSqrd = inertiaLocal.x * invMass * 12 - betaSqrd;
-        const gamma = Math.sqrt(Math.max(gammaSqrd, 0));  // Safety check for zeroed elements!
+        const gamma = Math.sqrt(Math.max(gammaSqrd, 0)); // Safety check for zeroed elements!
 
         const alphaSqrd = inertiaLocal.z * invMass * 12 - betaSqrd;
-        const alpha = Math.sqrt(Math.max(alphaSqrd, 0));  // Safety check for zeroed elements!
+        const alpha = Math.sqrt(Math.max(alphaSqrd, 0)); // Safety check for zeroed elements!
 
         const extents = TmpVectors.Vector3[0];
         extents.set(alpha, beta, gamma);
@@ -580,7 +642,7 @@ export class PhysicsViewer {
         const utilityLayerScene = this._utilityLayer.utilityLayerScene;
 
         // The base inertia mesh is going to be a 1x1 cube that's scaled and rotated according to the inertia
-        const mesh = MeshBuilder.CreateBox("custom", { size: 1 }, utilityLayerScene);
+        const inertiaBoxMesh = MeshBuilder.CreateBox("custom", { size: 1 }, utilityLayerScene);
         const matrixRef = Matrix.Identity();
         if (body._pluginDataInstances.length) {
             const instanceBuffer = new Float32Array(body._pluginDataInstances.length * 16);
@@ -589,16 +651,16 @@ export class PhysicsViewer {
                 this._getMeshDebugInertiaMatrixToRef(props, matrixRef);
                 matrixRef.copyToArray(instanceBuffer, i * 16);
             }
-            mesh.thinInstanceSetBuffer("matrix", instanceBuffer, 16);
+            inertiaBoxMesh.thinInstanceSetBuffer("matrix", instanceBuffer, 16);
         } else {
             const props = body.getMassProperties();
             this._getMeshDebugInertiaMatrixToRef(props, matrixRef);
-            matrixRef.decomposeToTransformNode(mesh);
-            mesh.bakeCurrentTransformIntoVertices();
+            matrixRef.decomposeToTransformNode(inertiaBoxMesh);
+            // inertiaBoxMesh.bakeCurrentTransformIntoVertices();
         }
-        mesh.material = this._getDebugMaterial(utilityLayerScene);
+        inertiaBoxMesh.material = this._getDebugMaterial(utilityLayerScene);
 
-        return mesh;
+        return inertiaBoxMesh;
     }
 
     /**
