@@ -782,7 +782,7 @@ export class Tools {
      * @param canvas The canvas to get the data from, which can be an offscreen canvas.
      * @param successCallback The callback which is triggered once the data is available. If `fileName` is defined, the callback will be invoked after the download occurs, and the `data` argument will be an empty string.
      * @param mimeType The mime type of the result.
-     * @param fileName The name of the file to download. If present, the result will automatically be downloaded.
+     * @param fileName The name of the file to download. If defined, the result will automatically be downloaded. If not defined, and `successCallback` is also not defined, the result will automatically be downloaded with an auto-generated file name.
      * @param quality The quality of the result. See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
      */
     static EncodeScreenshotCanvasData(
