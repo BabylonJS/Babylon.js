@@ -778,12 +778,12 @@ export class Tools {
     }
 
     /**
-     * Encodes the canvas data to base 64 or automatically download the result if filename is defined
-     * @param canvas canvas to get the data from (can be an offscreen canvas).
-     * @param successCallback defines the callback triggered once the data are available
-     * @param mimeType defines the mime type of the result
-     * @param fileName defines he filename to download. If present, the result will automatically be downloaded
-     * @param quality defines the quality of the result
+     * Encodes the canvas data to base 64, or automatically downloads the result if `fileName` is defined.
+     * @param canvas The canvas to get the data from, which can be an offscreen canvas.
+     * @param successCallback The callback which is triggered once the data is available. If `fileName` is defined, the callback will be invoked after the download occurs, and the `data` argument will be an empty string.
+     * @param mimeType The mime type of the result.
+     * @param fileName The name of the file to download. If defined, the result will automatically be downloaded. If not defined, and `successCallback` is also not defined, the result will automatically be downloaded with an auto-generated file name.
+     * @param quality The quality of the result. See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
      */
     static EncodeScreenshotCanvasData(
         canvas: HTMLCanvasElement | OffscreenCanvas,
@@ -792,7 +792,21 @@ export class Tools {
         fileName?: string,
         quality?: number
     ): void {
-        if (successCallback) {
+        if (typeof fileName === "string" || !successCallback) {
+            this.ToBlob(
+                canvas,
+                function (blob) {
+                    if (blob) {
+                        Tools.DownloadBlob(blob, fileName);
+                    }
+                    if (successCallback) {
+                        successCallback("");
+                    }
+                },
+                mimeType,
+                quality
+            );
+        } else if (successCallback) {
             if (Tools._IsOffScreenCanvas(canvas)) {
                 canvas
                     .convertToBlob({
@@ -811,17 +825,6 @@ export class Tools {
             }
             const base64Image = canvas.toDataURL(mimeType, quality);
             successCallback(base64Image);
-        } else {
-            this.ToBlob(
-                canvas,
-                function (blob) {
-                    if (blob) {
-                        Tools.DownloadBlob(blob, fileName);
-                    }
-                },
-                mimeType,
-                quality
-            );
         }
     }
 
