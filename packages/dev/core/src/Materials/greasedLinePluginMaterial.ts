@@ -1,9 +1,10 @@
+import { serialize, serializeAsTexture } from 'core/Misc/decorators';
 import { Engine } from "../Engines/engine";
 import type { GreasedLineMeshColorDistribution } from "../Meshes/greasedLineMesh";
 import { GreasedLineMeshColorMode } from "../Meshes/greasedLineMesh";
 import { RawTexture } from "./Textures/rawTexture";
 import { MaterialPluginBase } from "./materialPluginBase";
-import type { Material } from "./material";
+import { Material } from "./material";
 import type { Scene } from "../scene";
 import type { UniformBuffer } from "./uniformBuffer";
 import type { Vector2 } from "../Maths/math.vector";
@@ -19,7 +20,7 @@ export interface GreasedLineMaterialParameters {
     width?: number;
 
     color?: Color3;
-    colorMode: GreasedLineMeshColorMode;
+    colorMode?: GreasedLineMeshColorMode;
     useColors?: boolean;
     colors?: Uint8Array;
     colorDistribution?: GreasedLineMeshColorDistribution;
@@ -38,10 +39,13 @@ export interface GreasedLineMaterialParameters {
  *
  */
 export class GreasedLinePluginMaterial extends MaterialPluginBase {
+    @serializeAsTexture("detailTexture")
     private _colorsTexture?: RawTexture;
+
+    @serialize()
     private _parameters: GreasedLineMaterialParameters;
+
     private _engine: Engine;
-    private _isEnabled = false;
 
     constructor(
         material: Material,
@@ -62,7 +66,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
 
         this._parameters = parameters;
 
-        this.isEnabled = true;
+        this._enable(true); // always enabled
     }
 
     getAttributes(attributes: string[]) {
@@ -116,6 +120,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
 
     // only getter, it doesn't make sense to use this plugin on a mesh other than GreasedLineMesh
     // and it doesn't make sense to disable it on the mesh
+
     get isEnabled() {
         return true;
     }
@@ -150,7 +155,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
             uniformBuffer.updateFloat("dashRatio", this._parameters.dashRatio ?? 0.5);
             uniformBuffer.updateFloat("useDash", GreasedLinePluginMaterial._BooleanToNumber(this._parameters.useDash));
 
-            uniformBuffer.updateFloat("colorMode", this._parameters.colorMode);
+            uniformBuffer.updateFloat("colorMode", this._parameters.colorMode ?? GreasedLineMeshColorMode.COLOR_MODE_SET);
 
             if (this._parameters.color) {
                 uniformBuffer.updateColor3("singleColor", this._parameters.color);
@@ -325,6 +330,23 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
 
     /**
      *
+     * @param parsed
+     * @param scene
+     * @returns
+     */
+    public static Parse(parsed: any, scene: Scene): Nullable<GreasedLinePluginMaterial> {
+        const rootUrl = ''; // TODO: ?
+        const material = Material.Parse(parsed.material, scene, rootUrl);
+        if (material) {
+            const result = new GreasedLinePluginMaterial(material, scene, parsed.parameters);
+            return result;
+        }
+
+        return null;
+    }
+
+    /**
+     *
      * @param value
      */
     public setUseColors(value: boolean) {
@@ -374,8 +396,10 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
      *
      * @returns
      */
-    public getParameters() {
-        const parameters = {};
+    public getParameters():GreasedLineMaterialParameters {
+        const parameters:GreasedLineMaterialParameters = {
+
+        };
         DeepCopier.DeepCopy(this._parameters, parameters);
         return parameters;
     }

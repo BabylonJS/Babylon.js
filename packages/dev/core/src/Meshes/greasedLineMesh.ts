@@ -1,13 +1,14 @@
 import type { Scene } from "../scene";
 import type { Matrix } from "../Maths/math.vector";
 import { Vector3 } from "../Maths/math.vector";
-import type { GreasedLinePluginMaterial } from "../Materials/greasedLinePluginMaterial";
+import { GreasedLinePluginMaterial } from "../Materials/greasedLinePluginMaterial";
 import { BoundingSphere } from "core/Culling/boundingSphere";
 import { Mesh } from "./mesh";
-import { Ray, TrianglePickingPredicate } from "../Culling/ray";
-import { Buffer } from "../Buffers/buffer";
+import type { Ray, TrianglePickingPredicate } from "../Culling/ray";
+import { Buffer, VertexBuffer } from "../Buffers/buffer";
 import { VertexData } from "./mesh.vertexData";
 import { DeepCopier } from "../Misc/deepCopier";
+import { PickingInfo } from "core/Collisions/pickingInfo";
 
 export type GreasedLinePoints = Vector3[] | Vector3[][] | Float32Array | Float32Array[] | number[][];
 
@@ -69,6 +70,8 @@ export class GreasedLineMesh extends Mesh {
     private _matrixWorld: Matrix;
 
     private _boundingSphere: BoundingSphere;
+
+    public intersectionThreshold = 0.2;
 
     constructor(
         public readonly name: string,
@@ -203,74 +206,93 @@ export class GreasedLineMesh extends Mesh {
         this._uvs = [];
     }
 
-    //   public intersects(ray: Ray, fastCheck?: boolean | undefined, trianglePredicate?: TrianglePickingPredicate | undefined, onlyBoundingInfo?: boolean, worldToUse?: Matrix | undefined, skipBoundingInfo?: boolean): PickingInfo {
-    //       //
-    //   }
+    /**
+     * Serializes this ground mesh
+     * @param serializationObject object to write serialization to
+     */
+    public serialize(serializationObject: any): void {
+        super.serialize(serializationObject);
+        serializationObject.parameters = this._parameters;
 
-    //   public raycast(raycaster: Ray, threshold = 0.2) {
-    //     if (
-    //       this._boundingSphere &&
-    //       raycaster.intersectsSphere(this._boundingSphere, threshold) === false
-    //     ) {
-    //       return;
-    //     }
+        const serializedPluginMaterial = this._pluginMaterial.serialize();
+        serializationObject.pluginMaterial = serializedPluginMaterial;
+    }
 
-    //     const vStart = new Vector3();
-    //     const vEnd = new Vector3();
-    //     const vOffsetStart = new Vector3();
-    //     const vOffsetEnd = new Vector3();
+    /**
+     * Parses a serialized ground mesh
+     * @param serializedMesh the serialized mesh
+     * @param scene the scene to create the ground mesh in
+     * @returns the created ground mesh
+     */
+    public static Parse(serializedMesh: any, scene: Scene): GreasedLineMesh {
+        const pluginMaterial = GreasedLinePluginMaterial.Parse(serializedMesh.pluginMaterial);
+        const result = new GreasedLineMesh(serializedMesh.name, scene, serializedMesh.parameters, pluginMaterial, serializedMesh.updatable, serializedMesh.lazy);
+        return result;
+    }
 
-    //     const indices = this.getIndices();
-    //     const positions = this.getVerticesData(VertexBuffer.PositionKind);
-    //     const widths = this._widths;
+    // TODO: which parameters to suppport?
+    public intersects(
+        ray: Ray,
+        fastCheck?: boolean | undefined,
+        trianglePredicate?: TrianglePickingPredicate | undefined,
+        onlyBoundingInfo?: boolean,
+        worldToUse?: Matrix | undefined,
+        skipBoundingInfo?: boolean
+    ): PickingInfo {
+        const pickingInfo = new PickingInfo();
 
-    //     const lineWidth =
-    //       (this.material as GreasedLineSimpleMaterial).getParameters().width ?? 1;
+        if (this._boundingSphere && ray.intersectsSphere(this._boundingSphere, this.intersectionThreshold) === false) {
+            return pickingInfo;
+        }
 
-    //     const intersects = [];
-    //     if (indices !== null && positions !== null) {
-    //       let i = 0,
-    //         l = 0;
-    //       for (i = 0, l = indices.length - 1; i < l; i += 3) {
-    //         const a = indices[i];
-    //         const b = indices[i + 1];
+        const vStart = new Vector3();
+        const vEnd = new Vector3();
+        const vOffsetStart = new Vector3();
+        const vOffsetEnd = new Vector3();
 
-    //         vStart.fromArray(positions, a * 3);
-    //         vEnd.fromArray(positions, b * 3);
+        const indices = this.getIndices();
+        const positions = this.getVerticesData(VertexBuffer.PositionKind);
+        const widths = this._widths;
 
-    //         if (this._offset) {
-    //           vOffsetStart.fromArray(this._offset, a * 3);
-    //           vOffsetEnd.fromArray(this._offset, b * 3);
-    //           vStart.addInPlace(vOffsetStart);
-    //           vStart.addInPlace(vOffsetEnd);
-    //         }
+        const lineWidth = this.greasedLineMaterial.getParameters().width ?? 1;
 
-    //         const iFloored = Math.floor(i / 3);
-    //         const width = widths[iFloored] !== undefined ? widths[iFloored] : 1;
-    //         const precision = threshold + (lineWidth * width) / 2;
+        const intersects = [];
+        if (indices !== null && positions !== null) {
+            let i = 0,
+                l = 0;
+            for (i = 0, l = indices.length - 1; i < l; i += 3) {
+                const a = indices[i];
+                const b = indices[i + 1];
 
-    //         const distance = raycaster.intersectionSegment(
-    //           vStart,
-    //           vEnd,
-    //           precision / 1000
-    //         );
-    //         if (distance !== -1) {
-    //           intersects.push({
-    //             distance: distance,
-    //             point: raycaster.direction
-    //               .normalize()
-    //               .multiplyByFloats(distance, distance, distance)
-    //               .add(raycaster.origin),
-    //             index: i,
-    //             object: this,
-    //           });
-    //         }
-    //       }
-    //       i = l;
-    //     }
+                vStart.fromArray(positions, a * 3);
+                vEnd.fromArray(positions, b * 3);
 
-    //     return intersects;
-    //   }
+                if (this._offset) {
+                    vOffsetStart.fromArray(this._offset, a * 3);
+                    vOffsetEnd.fromArray(this._offset, b * 3);
+                    vStart.addInPlace(vOffsetStart);
+                    vStart.addInPlace(vOffsetEnd);
+                }
+
+                const iFloored = Math.floor(i / 3);
+                const width = widths[iFloored] !== undefined ? widths[iFloored] : 1;
+                const precision = this.intersectionThreshold + (lineWidth * width) / 2;
+
+                const distance = ray.intersectionSegment(vStart, vEnd, precision / 1000);
+                if (distance !== -1) {
+                    intersects.push({
+                        distance: distance,
+                        point: ray.direction.normalize().multiplyByFloats(distance, distance, distance).add(ray.origin),
+                        index: i,
+                        object: this,
+                    });
+                }
+            }
+            i = l;
+        }
+
+        return intersects;
+    }
 
     private _updateRaycastBoundingInfo() {
         const boundingInfo = this.getBoundingInfo();
