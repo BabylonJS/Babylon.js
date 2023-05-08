@@ -792,7 +792,7 @@ export class Tools {
         fileName?: string,
         quality?: number
     ): void {
-        if (typeof fileName === "string") {
+        if (typeof fileName === "string" || !successCallback) {
             this.ToBlob(
                 canvas,
                 function (blob) {
