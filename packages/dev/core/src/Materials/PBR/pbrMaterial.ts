@@ -764,8 +764,8 @@ export class PBRMaterial extends PBRBaseMaterial {
      * @param name - name to use for the new material.
      * @param cloneTexturesOnlyOnce - if a texture is used in more than one channel (e.g diffuse and opacity), only clone it once and reuse it on the other channels. Default false.
      */
-    public clone(name: string, cloneTexturesOnlyOnce: boolean = false): PBRMaterial {
-        const clone = SerializationHelper.Clone(() => new PBRMaterial(name, this.getScene()), this, { cloneTexturesOnlyOnce: cloneTexturesOnlyOnce });
+    public clone(name: string, cloneTexturesOnlyOnce: boolean = true): PBRMaterial {
+        const clone = SerializationHelper.Clone(() => new PBRMaterial(name, this.getScene()), this, { cloneTexturesOnlyOnce });
 
         clone.id = name;
         clone.name = name;
