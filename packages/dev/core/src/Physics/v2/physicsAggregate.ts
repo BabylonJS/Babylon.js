@@ -119,7 +119,9 @@ export class PhysicsAggregate {
         }
         const m = transformNode as Mesh;
         if (this.transformNode.parent && this._options.mass !== 0 && m.hasThinInstances) {
-            Logger.Warn("A physics body has been created for an object which has a parent and thin instances. Babylon physics currently works in local space so unexpected issues may occur.");
+            Logger.Warn(
+                "A physics body has been created for an object which has a parent and thin instances. Babylon physics currently works in local space so unexpected issues may occur."
+            );
         }
 
         // Legacy support for old syntax.
