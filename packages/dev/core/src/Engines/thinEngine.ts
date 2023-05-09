@@ -1791,7 +1791,13 @@ export class ThinEngine {
 
         if (IsWindowObjectExist()) {
             if (this._renderingCanvas) {
-                const boundingRect = this._renderingCanvas.getBoundingClientRect();
+                const boundingRect = this._renderingCanvas.getBoundingClientRect
+                    ? this._renderingCanvas.getBoundingClientRect()
+                    : {
+                          // fallback to last solution in case the function doesn't exist
+                          width: this._renderingCanvas.width * this._hardwareScalingLevel,
+                          height: this._renderingCanvas.height * this._hardwareScalingLevel,
+                      };
                 width = this._renderingCanvas.clientWidth || boundingRect.width;
                 height = this._renderingCanvas.clientHeight || boundingRect.height;
             } else {
