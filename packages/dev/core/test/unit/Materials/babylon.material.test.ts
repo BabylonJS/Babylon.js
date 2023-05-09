@@ -1,5 +1,5 @@
 import { Engine, NullEngine } from "core/Engines";
-import { PBRMaterial, Texture } from "core/Materials";
+import { PBRMaterial, StandardMaterial, Texture } from "core/Materials";
 import { MeshBuilder } from "core/Meshes";
 import { Scene } from "core/scene";
 
@@ -46,6 +46,31 @@ describe("Babylon Material", function () {
             const material = new PBRMaterial("material", scene);
             material.albedoTexture = new Texture("/Playground/scenes/BoomBox/BoomBox_baseColor.png", scene);
             expect(await Promise.all([material.forceCompilationAsync(mesh), material.forceCompilationAsync(mesh)])).toHaveLength(2);
+        });
+        it("Clone PBR material with and without cloning repeated textures", () => {
+            const scene = new Scene(subject);
+            const baseMaterial = new PBRMaterial("material", scene);
+            const texture = new Texture("/Playground/scenes/BoomBox/BoomBox_baseColor.png", scene);
+            baseMaterial.albedoTexture = texture;
+            baseMaterial.opacityTexture = texture;
+            const repeatCloneMaterial = baseMaterial.clone("repeatClonedMaterial", false);
+            expect(Object.is(repeatCloneMaterial.albedoTexture, repeatCloneMaterial.opacityTexture)).toBe(false);
+
+            const noRepeatCloneMaterial = baseMaterial.clone("noRepeatClonedMaterial", true);
+            expect(Object.is(noRepeatCloneMaterial.albedoTexture, noRepeatCloneMaterial.opacityTexture)).toBe(true);
+        });
+
+        it("Clone Standard material with and without cloning repeated textures", () => {
+            const scene = new Scene(subject);
+            const baseMaterial = new StandardMaterial("material", scene);
+            const texture = new Texture("/Playground/scenes/BoomBox/BoomBox_baseColor.png", scene);
+            baseMaterial.diffuseTexture = texture;
+            baseMaterial.opacityTexture = texture;
+            const repeatCloneMaterial = baseMaterial.clone("repeatClonedMaterial", false);
+            expect(Object.is(repeatCloneMaterial.diffuseTexture, repeatCloneMaterial.opacityTexture)).toBe(false);
+
+            const noRepeatCloneMaterial = baseMaterial.clone("noRepeatClonedMaterial", true);
+            expect(Object.is(noRepeatCloneMaterial.diffuseTexture, noRepeatCloneMaterial.opacityTexture)).toBe(true);
         });
     });
 });
