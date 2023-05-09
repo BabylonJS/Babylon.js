@@ -1,14 +1,15 @@
+// import type { Nullable } from './../types';
 import type { Scene } from "../scene";
 import type { Matrix } from "../Maths/math.vector";
 import { Vector3 } from "../Maths/math.vector";
-import { GreasedLinePluginMaterial } from "../Materials/greasedLinePluginMaterial";
+import type { GreasedLinePluginMaterial } from "../Materials/greasedLinePluginMaterial";
 import { BoundingSphere } from "core/Culling/boundingSphere";
 import { Mesh } from "./mesh";
 import type { Ray, TrianglePickingPredicate } from "../Culling/ray";
 import { Buffer, VertexBuffer } from "../Buffers/buffer";
 import { VertexData } from "./mesh.vertexData";
 import { DeepCopier } from "../Misc/deepCopier";
-import { PickingInfo } from "core/Collisions/pickingInfo";
+import { PickingInfo } from "../Collisions/pickingInfo";
 
 export type GreasedLinePoints = Vector3[] | Vector3[][] | Float32Array | Float32Array[] | number[][];
 
@@ -119,7 +120,7 @@ export class GreasedLineMesh extends Mesh {
 
     public dispose() {
         super.dispose();
-        this.greasedLineMaterial.dispose();
+        this.greasedLineMaterial?.dispose();
     }
 
     public isLazy() {
@@ -210,13 +211,13 @@ export class GreasedLineMesh extends Mesh {
      * Serializes this ground mesh
      * @param serializationObject object to write serialization to
      */
-    public serialize(serializationObject: any): void {
-        super.serialize(serializationObject);
-        serializationObject.parameters = this._parameters;
+    // public serialize(serializationObject: any): void {
+    //     super.serialize(serializationObject);
+    //     serializationObject.parameters = this._parameters;
 
-        const serializedPluginMaterial = this._pluginMaterial.serialize();
-        serializationObject.pluginMaterial = serializedPluginMaterial;
-    }
+    //     const serializedPluginMaterial = this._pluginMaterial.serialize();
+    //     serializationObject.pluginMaterial = serializedPluginMaterial;
+    // }
 
     /**
      * Parses a serialized ground mesh
@@ -224,11 +225,15 @@ export class GreasedLineMesh extends Mesh {
      * @param scene the scene to create the ground mesh in
      * @returns the created ground mesh
      */
-    public static Parse(serializedMesh: any, scene: Scene): GreasedLineMesh {
-        const pluginMaterial = GreasedLinePluginMaterial.Parse(serializedMesh.pluginMaterial); // TODO: how does pluginmaterial serialization work?
-        const result = new GreasedLineMesh(serializedMesh.name, scene, serializedMesh.parameters, pluginMaterial, serializedMesh.updatable, serializedMesh.lazy);
-        return result;
-    }
+    // public static Parse2(serializedMesh: any, scene: Scene): Mesh {
+    //     const pluginMaterial = GreasedLinePluginMaterial.Parse(serializedMesh.pluginMaterial, scene); // TODO: how does pluginmaterial serialization work?
+    //     if (pluginMaterial) {
+
+    //         const result = new GreasedLineMesh(serializedMesh.name, scene, serializedMesh.parameters, pluginMaterial, serializedMesh.updatable, serializedMesh.lazy);
+    //         return result;
+    //     }
+    //     return null;
+    // }
 
     // TODO: which parameters to suppport?
     public intersects(

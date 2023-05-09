@@ -1,4 +1,3 @@
-// import { serialize, serializeAsTexture } from "core/Misc/decorators";
 import { Engine } from "../Engines/engine";
 import type { GreasedLineMeshColorDistribution } from "../Meshes/greasedLineMesh";
 import { GreasedLineMeshColorMode } from "../Meshes/greasedLineMesh";
@@ -10,7 +9,8 @@ import type { UniformBuffer } from "./uniformBuffer";
 import type { Vector2 } from "../Maths/math.vector";
 import type { Color3 } from "../Maths/math.color";
 import type { Nullable } from "../types";
-import { DeepCopier } from "core/Misc/deepCopier";
+import { DeepCopier } from "../Misc/deepCopier";
+// import { serialize, serializeAsTexture } from "../Misc/decorators";
 
 /**
  *
@@ -39,10 +39,8 @@ export interface GreasedLineMaterialParameters {
  *
  */
 export class GreasedLinePluginMaterial extends MaterialPluginBase {
-    @serializeAsTexture("detailTexture")
     private _colorsTexture?: RawTexture;
 
-    @serialize()
     private _parameters: GreasedLineMaterialParameters;
 
     private _engine: Engine;
@@ -319,8 +317,9 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
      *
      */
     public dispose(): void {
-        super.dispose(true);
-        // TODO: dispose something else?
+        this._colorsTexture?.dispose();
+        this._material.dispose();
+        super.dispose();
     }
 
     /**
@@ -392,9 +391,10 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
      * @returns
      */
     public getParameters(): GreasedLineMaterialParameters {
-        const parameters: GreasedLineMaterialParameters = {};
-        DeepCopier.DeepCopy(this._parameters, parameters);
-        return parameters;
+        // const parameters: GreasedLineMaterialParameters = {...this._parameters};
+        // DeepCopier.DeepCopy(this._parameters, parameters);
+        // return parameters;
+        return this._parameters; // TODO: DeepCopier doesn't work
     }
 
     /**
