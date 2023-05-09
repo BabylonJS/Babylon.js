@@ -610,16 +610,14 @@ export class PhysicsViewer {
         const orientation = massProps.inertiaOrientation ?? Quaternion.Identity();
         const inertiaLocal = massProps.inertia ?? Vector3.Zero();
         const center = massProps.centerOfMass ?? Vector3.Zero();
-        const mass = massProps.mass ?? 1;
-        const invMass = 1 / mass;
 
-        const betaSqrd = (inertiaLocal.x - inertiaLocal.y + inertiaLocal.z) * invMass * 6;
+        const betaSqrd = (inertiaLocal.x - inertiaLocal.y + inertiaLocal.z) * 6;
         const beta = Math.sqrt(Math.max(betaSqrd, 0)); // Safety check for zeroed elements!
 
-        const gammaSqrd = inertiaLocal.x * invMass * 12 - betaSqrd;
+        const gammaSqrd = inertiaLocal.x * 12 - betaSqrd;
         const gamma = Math.sqrt(Math.max(gammaSqrd, 0)); // Safety check for zeroed elements!
 
-        const alphaSqrd = inertiaLocal.z * invMass * 12 - betaSqrd;
+        const alphaSqrd = inertiaLocal.z * 12 - betaSqrd;
         const alpha = Math.sqrt(Math.max(alphaSqrd, 0)); // Safety check for zeroed elements!
 
         const extents = TmpVectors.Vector3[0];
