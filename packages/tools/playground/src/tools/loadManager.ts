@@ -88,7 +88,7 @@ export class LoadManager {
                 parent.location.hash = pgHash;
             }
             this._previousHash = pgHash;
-            this._loadPlayground(pgHash.substr(1));
+            this._loadPlayground(pgHash.substring(1));
         }
     }
 
@@ -151,13 +151,16 @@ export class LoadManager {
             };
 
             if (id[0] === "#") {
-                id = id.substr(1);
+                id = id.substring(1);
             }
 
             this.globalState.currentSnippetToken = id.split("#")[0];
             if (!id.split("#")[1]) {
                 id += "#0";
             }
+
+            // defensive-handling a safari issue
+            id.replace(/%23/g, "#");
 
             xmlHttp.open("GET", this.globalState.SnippetServerUrl + "/" + id.replace(/#/g, "/"));
             xmlHttp.send();
