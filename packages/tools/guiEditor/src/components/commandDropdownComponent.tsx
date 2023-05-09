@@ -131,7 +131,7 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                                             accept=".json"
                                         />
                                     );
-                                } 
+                                }
                             })}
                         </div>
                     )}

@@ -122,7 +122,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
     /**
      * Read loaded file
-     * @param file 
+     * @param file
      */
     loadControl(file: File) {
         Tools.ReadFile(
@@ -166,7 +166,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     saveSelectedControlLocally = () => {
         try {
             const serializationObject: any = {
-                controls: []
+                controls: [],
             };
             for (const control of this.props.globalState.selectedControls) {
                 const controlSerializationObject = {};

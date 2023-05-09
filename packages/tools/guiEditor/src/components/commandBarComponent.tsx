@@ -149,7 +149,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                                 {
                                     label: "Load control",
                                     fileButton: true,
-                                    loadControlButton: true
+                                    loadControlButton: true,
                                 },
                                 {
                                     label: "Help",

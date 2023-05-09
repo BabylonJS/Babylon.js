@@ -483,7 +483,7 @@ export class WorkbenchComponent extends React.Component<IWorkbenchComponentProps
 
     /**
      * Load Control from Json then select loaded Control
-     * @param serializationObject 
+     * @param serializationObject
      */
     loadControlFromJson(serializationObject: any) {
         const newControls = [];
