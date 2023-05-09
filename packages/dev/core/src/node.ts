@@ -4,7 +4,7 @@ import type { Nullable } from "./types";
 import { Matrix, Vector3 } from "./Maths/math.vector";
 import type { Engine } from "./Engines/engine";
 import type { IBehaviorAware, Behavior } from "./Behaviors/behavior";
-import { serialize } from "./Misc/decorators";
+import { SerializationHelper, serialize } from "./Misc/decorators";
 import type { Observer } from "./Misc/observable";
 import { Observable } from "./Misc/observable";
 import { EngineStore } from "./Engines/engineStore";
@@ -812,6 +812,33 @@ export class Node implements IBehaviorAware<Node> {
      */
     public getAnimationRange(name: string): Nullable<AnimationRange> {
         return this._ranges[name] || null;
+    }
+
+    /**
+     * Clone the current node
+     * @param name Name of the new clone
+     * @param newParent New parent for the clone
+     * @param doNotCloneChildren Do not clone children hierarchy
+     * @returns the new transform node
+     */
+    public clone(name: string, newParent: Nullable<Node>, doNotCloneChildren?: boolean): Nullable<Node> {
+        const result = SerializationHelper.Clone(() => new Node(name, this.getScene()), this);
+
+        if (newParent) {
+            result.parent = newParent;
+        }
+
+        if (!doNotCloneChildren) {
+            // Children
+            const directDescendants = this.getDescendants(true);
+            for (let index = 0; index < directDescendants.length; index++) {
+                const child = directDescendants[index];
+
+                child.clone(name + "." + child.name, result);
+            }
+        }
+
+        return result;
     }
 
     /**
