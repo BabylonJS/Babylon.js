@@ -4,7 +4,7 @@ import { PhysicsShape } from "./physicsShape";
 import { Logger } from "../../Misc/logger";
 import type { Scene } from "../../scene";
 import type { TransformNode } from "../../Meshes/transformNode";
-import { TmpVectors, Vector3 } from "../../Maths/math.vector";
+import { Quaternion, TmpVectors, Vector3 } from "../../Maths/math.vector";
 import { Scalar } from "../../Maths/math.scalar";
 import { PhysicsMotionType, PhysicsShapeType } from "./IPhysicsEnginePlugin";
 import type { Mesh } from "../../Meshes/mesh";
@@ -22,64 +22,16 @@ export interface PhysicsAggregateParameters {
      * The mass of the physics aggregate
      */
     mass: number;
+
     /**
      * The friction of the physics aggregate
      */
     friction?: number;
+
     /**
      * The coefficient of restitution of the physics aggregate
      */
     restitution?: number;
-    /**
-     * The native options of the physics aggregate
-     */
-    nativeOptions?: any;
-    /**
-     * Specifies if the parent should be ignored
-     */
-    ignoreParent?: boolean;
-    /**
-     * Specifies if bi-directional transformations should be disabled
-     */
-    disableBidirectionalTransformation?: boolean;
-    /**
-     * The pressure inside the physics aggregate, soft object only
-     */
-    pressure?: number;
-    /**
-     * The stiffness the physics aggregate, soft object only
-     */
-    stiffness?: number;
-    /**
-     * The number of iterations used in maintaining consistent vertex velocities, soft object only
-     */
-    velocityIterations?: number;
-    /**
-     * The number of iterations used in maintaining consistent vertex positions, soft object only
-     */
-    positionIterations?: number;
-    /**
-     * The number used to fix points on a cloth (0, 1, 2, 4, 8) or rope (0, 1, 2) only
-     * 0 None, 1, back left or top, 2, back right or bottom, 4, front left, 8, front right
-     * Add to fix multiple points
-     */
-    fixedPoints?: number;
-    /**
-     * The collision margin around a soft object
-     */
-    margin?: number;
-    /**
-     * The collision margin around a soft object
-     */
-    damping?: number;
-    /**
-     * The path for a rope based on an extrusion
-     */
-    path?: any;
-    /**
-     * The shape of an extrusion used for a rope based on an extrusion
-     */
-    shape?: any;
 
     /**
      * Radius for sphere, cylinder and capsule
@@ -100,6 +52,11 @@ export interface PhysicsAggregateParameters {
      * Extents for box
      */
     extents?: Vector3;
+
+    /**
+     * Orientation for box
+     */
+    rotation?: Quaternion;
 
     /**
      * mesh local center
@@ -212,13 +169,12 @@ export class PhysicsAggregate {
         this.transformNode.computeWorldMatrix(true);
         const bb = this._getObjectBoundingBox();
         const extents = TmpVectors.Vector3[0];
-        extents.copyFrom(bb.extendSizeWorld);
+        extents.copyFrom(bb.extendSize);
         extents.scaleInPlace(2);
         extents.multiplyInPlace(this.transformNode.scaling);
 
         const min = TmpVectors.Vector3[1];
         min.copyFrom(bb.minimum);
-        min.scaleInPlace(2);
         min.multiplyInPlace(this.transformNode.scaling);
 
         if (!this._options.center) {
@@ -269,6 +225,7 @@ export class PhysicsAggregate {
                 break;
             case PhysicsShapeType.BOX:
                 this._options.extents = this._options.extents ?? new Vector3(extents.x, extents.y, extents.z);
+                this._options.rotation = this._options.rotation ?? Quaternion.Identity();
                 break;
         }
     }

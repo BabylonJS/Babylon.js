@@ -23,7 +23,7 @@ export class EllipsePropertyGridComponent extends React.Component<IEllipseProper
         const ellipse = this.props.ellipse;
 
         return (
-            <div className="pane">
+            <>
                 <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={ellipse} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent title="ELLIPSE">
                     <CheckBoxLineComponent
@@ -40,7 +40,7 @@ export class EllipsePropertyGridComponent extends React.Component<IEllipseProper
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

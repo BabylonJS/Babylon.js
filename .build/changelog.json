@@ -1,88 +1,101 @@
 {
-    "fromTag": "5.57.1",
+    "fromTag": "6.1.0",
     "changelog": {
-        "5.57.1": [
+        "6.2.0": [
             {
-                "pr": "13749",
-                "title": "Physics Iteration 13",
-                "description": "A big portion of this change has already been reviewed.",
-                "author": {
-                    "name": "CedricGuillemet",
-                    "url": "https://github.com/CedricGuillemet"
-                },
-                "files": [
-                    "packages/dev/core/src/Meshes/abstractMesh.ts",
-                    "packages/dev/core/src/Meshes/thinInstanceMesh.ts",
-                    "packages/dev/core/src/Physics/physicsEngineComponent.ts",
-                    "packages/dev/core/src/Physics/physicsHelper.ts",
-                    "packages/dev/core/src/Physics/physicsRaycastResult.ts",
-                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
-                    "packages/dev/core/src/Physics/v2/physicsAggregate.ts",
-                    "packages/dev/core/src/Physics/v2/physicsBody.ts",
-                    "packages/dev/core/src/Physics/v2/physicsConstraint.ts",
-                    "packages/dev/core/src/Physics/v2/physicsEngine.ts",
-                    "packages/dev/core/src/Physics/v2/physicsEngineComponent.ts",
-                    "packages/dev/core/src/Physics/v2/physicsShape.ts"
-                ],
-                "tags": [
-                    "skip changelog"
-                ]
-            },
-            {
-                "pr": "13750",
-                "title": "ShadowGenerator: improve performance",
-                "description": null,
+                "pr": "13810",
+                "title": "HDRCubeTexture: Fix texture being ready too soon",
+                "description": "See https://forum.babylonjs.com/t/hdrcubetexture-reports-isready-before-it-has-loaded/40458",
                 "author": {
                     "name": "Popov72",
                     "url": "https://github.com/Popov72"
                 },
                 "files": [
-                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts"
+                    "packages/dev/core/src/Engines/Extensions/engine.rawTexture.ts"
                 ],
                 "tags": [
-                    "enhancement",
-                    "skip changelog"
+                    "bug",
+                    "rendering engine"
                 ]
             },
             {
-                "pr": "13748",
-                "title": "no premature result mutation for Vec2.rotateToRef",
-                "description": "for next case:\r\n```\r\nconst vec = new Vector2(offsetX, offsetY);\r\nvec.rotateToRef(angle, vec);\r\n```",
+                "pr": "13808",
+                "title": "cylinder/capsule size computation fix",
+                "description": "follow up https://forum.babylonjs.com/t/capsule-uncentered-physical-body/40321\r\nfixes #13799 \r\nfixes #13801\r\nbbox minimum was scaled by a factor of 2.\r\nfix the motortype conversion between wasm and ts",
                 "author": {
-                    "name": "nekochanoide",
-                    "url": "https://github.com/nekochanoide"
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
                 },
                 "files": [
-                    "packages/dev/core/src/Maths/math.vector.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "13747",
-                "title": "Update typo in solidParticleSystem.ts",
-                "description": null,
-                "author": {
-                    "name": "steambap",
-                    "url": "https://github.com/steambap"
-                },
-                "files": [
-                    "packages/dev/core/src/Particles/solidParticleSystem.ts"
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsAggregate.ts"
                 ],
                 "tags": [
-                    "skip changelog"
+                    "physics"
                 ]
             },
             {
-                "pr": "13743",
-                "title": "Round values coming from grid width calculation to avoid gaps between…",
-                "description": "… consecutive cells\r\n\r\nRelated forum issue: ",
+                "pr": "13798",
+                "title": "GamepadManager: Fixed issue where providing scene object to constructor would prevent status updates",
+                "description": "A user on the forum found an issue where the GamepadManager wouldn't update its gamepad statuses when `this._scene` was defined.  The fix was to remove these checks.  Thanks to user CiderPunk for finding this issue.\r\n\r\nForum Link: https://forum.babylonjs.com/t/gamepad-events-not-triggering/40362",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Gamepads/gamepadManager.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inputs"
+                ]
+            },
+            {
+                "pr": "13802",
+                "title": "OIT: Fix wrong prepass state when mesh visibility changes",
+                "description": "See https://forum.babylonjs.com/t/shader-crash-with-oit/40332/29\r\n\r\nFollow up to #13781",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13803",
+                "title": "Dump Tools: Use an offscreen canvas",
+                "description": "See https://forum.babylonjs.com/t/createscreenshot-in-worker/40198/1.\r\n\r\nThis change will allow to use the screenshot tools in a worker thread.\r\n\r\nNote that `OffScreenCanvas` is supported by Safari only since 16.4 (https://caniuse.com/?search=offscreencanvas)...",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/LibDeclarations/offscreenCanvas.d.ts",
+                    "packages/dev/core/src/Misc/dumpTools.ts",
+                    "packages/dev/core/src/Misc/tools.ts"
+                ],
+                "tags": [
+                    "rendering engine",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13806",
+                "title": "Fix GUI cloning",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/cloning-meshes-with-gui/40430",
                 "author": {
                     "name": "carolhmj",
                     "url": "https://github.com/carolhmj"
                 },
                 "files": [
-                    "packages/dev/gui/src/2D/controls/grid.ts",
-                    "packages/tools/tests/test/visualization/ReferenceImages/Rounding cell widths on Grid.png",
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts",
+                    "packages/dev/gui/src/2D/controls/control.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/GUI for Mesh cloning.png",
                     "packages/tools/tests/test/visualization/config.json"
                 ],
                 "tags": [
@@ -91,20 +104,357 @@
                 ]
             },
             {
-                "pr": "13746",
-                "title": "Fix GLTF export of ambient texture with texture transforms",
-                "description": "Related forum issue: https://forum.babylonjs.com/t/gltf2export-glbasync-missing-uv-scale-on-ambienttexture/39900",
+                "pr": "13804",
+                "title": "allow ts playground in full and frame",
+                "description": "The editor is resposible of parsing ts and converting it to js. I am adding a hidden instance of the editor that will load the code and send it to the PG.\n\nthere is a very small load time reduction (20-30ms), but typescript playground will now load correctly.\n\nAs part of playground improvements we will need to deal with this issue as well.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/playground/src/components/rendererComponent.tsx",
+                    "packages/tools/playground/src/playground.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13783",
+                "title": "Update havokPlugin.ts",
+                "description": "Attempt to fix https://forum.babylonjs.com/t/havoc-thininstances-collisioncallback/40315\r\n+ Add new thinInstances to `havokPlugin._bodies` map when `body.updateBodyInstances()` is called, not only when initiated.\r\n+ Add removal of deleted thinInstances from `havokPlugin._bodies` map\r\n\r\nTest (&stress) case for latest commit. console logs the _bodies map at the end.\r\nhttps://playground.babylonjs.com/#LJX5R3\r\nhttps://playground.babylonjs.com/?snapshot=refs/pull/13783/merge#LJX5R3\r\nThe PG spawns 2500 thinInstances of a sphere to test performance and memory, previous commit caused memory issues.\r\ninitially 100 spheres then + 25 per frame up to 2500 total.\r\n",
+                "author": {
+                    "name": "aWeirdo",
+                    "url": "https://github.com/aWeirdo"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "physics"
+                ]
+            },
+            {
+                "pr": "13780",
+                "title": "PickingInfo: Handle unindexed meshes in getNormal",
+                "description": "See https://forum.babylonjs.com/t/the-points-where-the-annotation-is-picked-are-snapped-parallel-to-the-surface-of-the-object/40119/8",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/pickingInfo.ts",
+                    "packages/dev/core/test/unit/Collisions/babylon.pickingInfo.test.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "collisions"
+                ]
+            },
+            {
+                "pr": "13781",
+                "title": "OIT: Fix wrong prepass state when material transparency changes",
+                "description": "See https://forum.babylonjs.com/t/shader-crash-with-oit/40332/15",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/material.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13671",
+                "title": "Inspector: METADATA pop-up window feature",
+                "description": "I have re-approached the code as per this discussion:\r\nhttps://forum.babylonjs.com/t/read-write-metadata-using-the-inspector/34208\r\n\r\nThus a first-attempt at the metadata editor. It's not perfect but in a good state.\r\n\r\nNotes:\r\n- the metadata property can be set to `null` and `undefined` just by typing the literal string\r\n- the metadata property can also be set as a string or JSON object\r\n- there is some basic validation but aim was focused on UX\r\n- there is a known glitch where quoted values `\"a string\"` gets considered as a JSON in validation (not really an issue)\r\n- simple prettifying but not full beautifier with colour - considered re-using `monaco-editor` however it looked over bloaty/unnecessary\r\n- there is a bit of duplicate css however wanted to avoid conflicts and not affect backwards compatibility\r\n- minimal impact on performance by using an observer\r\n- could probably improve the picking trigger/observer but OK for first-release\r\n\r\nNew METADATA tab:\r\n![meta-inspector](https://user-images.githubusercontent.com/34647206/227415803-a6da9fe4-f3ef-4ae3-8b44-56c070a846d0.png)\r\n\r\nNew METADATA pop-up window:\r\n![meta-window](https://user-images.githubusercontent.com/34647206/227416142-0d68c695-16c7-4446-987f-a25ba48755a9.png)\r\n\r\n![meta-window-error](https://user-images.githubusercontent.com/34647206/227416148-d6c34b2d-479a-4b90-985c-a2a52c37b425.png)\r\n\r\n![meta-window-undefined](https://user-images.githubusercontent.com/34647206/227416375-db4b3ad0-42d3-4d29-b7e0-2288d2d59491.png)\r\n\r\nsupersedes https://github.com/BabylonJS/Babylon.js/pull/13643\r\n\r\nCloses #13027 ",
+                "author": {
+                    "name": "j-te",
+                    "url": "https://github.com/j-te"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGridTabComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/animationGroupPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/animationPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/targetedAnimationPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/cameras/arcRotateCameraPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/cameras/followCameraPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/cameras/freeCameraPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/emptyPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/layers/layerPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/lights/directionalLightPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/lights/hemisphericLightPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/lights/pointLightPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/lights/spotLightPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/backgroundMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/materialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/multiMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/nodeMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/pbrMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/pbrMetallicRoughnessMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/pbrSpecularGlossinessMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/standardMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/texturePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/bonePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/meshPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/skeletonPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/transformNodePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/metadata/metadataPropertyGrid.scss",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/metadata/metadataPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/particleSystemPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/postProcesses/defaultRenderingPipelinePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/postProcesses/lensRenderingPipelinePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/postProcesses/postProcessPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/postProcesses/renderingPipelinePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/postProcesses/ssao2RenderingPipelinePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/postProcesses/ssaoRenderingPipelinePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/postProcesses/ssrRenderingPipelinePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/scenePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/sounds/soundPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/sprites/spriteManagerPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/sprites/spritePropertyGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/tabs/propertyGrids/gui/checkboxPropertyGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/tabs/propertyGrids/gui/colorPickerPropertyGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/tabs/propertyGrids/gui/controlPropertyGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/tabs/propertyGrids/gui/ellipsePropertyGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/tabs/propertyGrids/gui/gridPropertyGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/tabs/propertyGrids/gui/imageBasedSliderPropertyGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/tabs/propertyGrids/gui/imagePropertyGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/tabs/propertyGrids/gui/inputTextPropertyGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/tabs/propertyGrids/gui/linePropertyGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/tabs/propertyGrids/gui/radioButtonPropertyGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/tabs/propertyGrids/gui/rectanglePropertyGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/tabs/propertyGrids/gui/scrollViewerPropertyGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/tabs/propertyGrids/gui/sliderPropertyGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/tabs/propertyGrids/gui/stackPanelPropertyGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/tabs/propertyGrids/gui/textBlockPropertyGridComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13773",
+                "title": "Node Material Editor: Fix automatic creation of inputs for \"sourceY\" …",
+                "description": "…and \"sourceZ\"\r\n\r\nFix #13761",
                 "author": {
                     "name": "carolhmj",
                     "url": "https://github.com/carolhmj"
                 },
                 "files": [
-                    "packages/dev/serializers/src/glTF/2.0/glTFMaterialExporter.ts"
+                    "packages/dev/core/src/Materials/Node/nodeMaterialConnectionPointCustomObject.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx"
                 ],
                 "tags": [
                     "bug",
-                    "glTF",
-                    "texture"
+                    "nme"
+                ]
+            },
+            {
+                "pr": "13777",
+                "title": "Fix for RTT rendering in an XR session",
+                "description": "When rendered in an XR session, the camera's viewport was applied on the full size of the RTT). This made the RTT render on a quarter of the screen (instead of half of the screen, as expected in XR with two eyes).\nThis changes RTT rendering in Rigged cameras (which ATM is mainly WebXR). It is expected that tha parent's camera will be the full viewport to render both eyes (which is 100% viewport in case of XR).\n\nIt is a small breaking change, but is actually more a bug fix.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13778",
+                "title": "Physics: Fix aggregate size calculation and allow passing box rotatio…",
+                "description": "…n as an aggregate option. Also add a basic explanation of motion types on PhysicsBody constructor.\r\n\r\nRelated forum issue: https://forum.babylonjs.com/t/physical-body-dont-rotate-with-its-mesh/40207",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/physicsAggregate.ts",
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "physics"
+                ]
+            }
+        ],
+        "6.1.0": [
+            {
+                "pr": "13772",
+                "title": "Fix typing to fit ts 4 and ts 5",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.cubeTexture.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/LibDeclarations/webgl2.d.ts",
+                    "packages/dev/core/src/LibDeclarations/webxr.d.ts",
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13774",
+                "title": "Animation: Fix animation.runtimeAnimations array not cleaned up on stop",
+                "description": "Fixes #13762 \r\n\r\nThe code I added back was removed in https://github.com/BabylonJS/Babylon.js/commit/93d7ccc2f98435a455ece615f6e0a3561bcded9a but calling `runtimeAnimations[index].dispose();` is cleaning the `Animation._runtimeAnimations` array, which is different from the `Animatable._runtimeAnimations` array.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animatable.ts",
+                    "packages/dev/core/src/Animations/runtimeAnimation.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "animations"
+                ]
+            },
+            {
+                "pr": "13769",
+                "title": "Fix for peer dependencies (Due to CI architecture)",
+                "description": "Whoever wants to know what exactly happened, let me know :-)",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/public/@babylonjs/accessibility/package.json",
+                    "packages/public/@babylonjs/gui-editor/package.json",
+                    "packages/public/@babylonjs/gui/package.json",
+                    "packages/public/@babylonjs/inspector/package.json",
+                    "packages/public/@babylonjs/loaders/package.json",
+                    "packages/public/@babylonjs/materials/package.json",
+                    "packages/public/@babylonjs/node-editor/package.json",
+                    "packages/public/@babylonjs/post-processes/package.json",
+                    "packages/public/@babylonjs/procedural-textures/package.json",
+                    "packages/public/@babylonjs/serializers/package.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13766",
+                "title": "Add possibility to apply supersampling when generating HDRCubeTexture()",
+                "description": "I decided a take a quick attempt at adding number of samples option to `HDRCubeTexture()` in order to allow generating more accurate lower resolution HDRCubeTextures.\r\n\r\nOriginal discussion about the issue here: https://forum.babylonjs.com/t/is-ibl-texture-tool-hdr-to-env-conversion-code-part-of-babylon-js/40031\r\n\r\nHere is a Playground example using the proposed samples argument with 4 samples to match 512 -> 128 downsample: https://www.babylonjs-playground.com/#NWNUIH#2\r\n\r\nThe result is EXACTLY same as the comparison .env file that is generated with https://www.babylonjs.com/tools/ibl/, but this time possible to create within Babylon.js without added custom code.\r\n\r\nLet me know if option like this makes sense? Performance should be exactly same than before unless additional samples are used.",
+                "author": {
+                    "name": "MiikaH",
+                    "url": "https://github.com/MiikaH"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/equiRectangularCubeTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/hdrCubeTexture.ts",
+                    "packages/dev/core/src/Misc/HighDynamicRange/hdr.ts",
+                    "packages/dev/core/src/Misc/HighDynamicRange/panoramaToCubemap.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13768",
+                "title": "Effect Layer: Set intensity of effect per mesh",
+                "description": "See https://forum.babylonjs.com/t/neon-effect-using-an-imported-material-looks-good-from-up-close-but-not-far-away/40081/7",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Layers/effectLayer.ts",
+                    "packages/dev/core/src/Shaders/glowMapGeneration.fragment.fx"
+                ],
+                "tags": [
+                    "rendering engine",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13727",
+                "title": "Add NME MeshAttributeExistsBlock",
+                "description": "This pull request combines feature requests of two forum threads from last year:\r\n\r\n- https://forum.babylonjs.com/t/node-pbr-material-renders-black-if-mesh-doesnt-have-normals/29011\r\n- https://forum.babylonjs.com/t/default-nodematerial-vertex-color-input-to-white-if-attribute-doesnt-exist-on-mesh/29461\r\n\r\nI recently refactored a project where I used custom blocks to work around those issues above, and ended up with a single `MeshAttributeFallbackBlock` that I think might be flexible enough to be added to Babylon.js itself.\r\n\r\nThe nodeblock itself is pretty simple. It allows connecting to an attribute input (or morph target block) and has another falback input to provide value if mesh doesn't have the said attribute.\r\n\r\nHere is a test NME url (only works with these PR changes in place): `/#W3ZANW` and a Playground test url: `/#5LCPMS`\r\n\r\nThe above example demonstrates three use cases where such node is useful / necessary:\r\n\r\n### Vertex color fallback\r\n\r\nThis allows using same NodeMaterial with meshes or mesh primitives that contain and don't contain vertex colors. Currently if vertex color is used, it defaults to black color when attribute is present and there is no way to distinguish between actually intented black color and missing attribute.\r\n\r\n![Vertex Color Fallback](https://static.miikah.fi/other/images/nme_vertex_color_fallback.png)\r\n\r\n### Normal fallback\r\n\r\nIt is possible to generate flat normal in fragment shader if attribute isn't present. This matches gltf spec where a flat normal is used for meshes that don't contain normals.\r\n\r\n![Normal Fallback](https://static.miikah.fi/other/images/nme_normal_fallback.png)\r\n\r\n### UV fallback\r\n\r\nAnd kind of as additional possibility that my original normal and vertex color specific nodes didn't allow, is generating UV fallback with a generated UV if attribute isn't present.\r\n\r\n![UV Fallback](https://static.miikah.fi/other/images/nme_generated_uv_fallback.png)",
+                "author": {
+                    "name": "MiikaH",
+                    "url": "https://github.com/MiikaH"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/index.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/meshAttributeExistsBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/tools/nodeEditor/src/blockTools.ts",
+                    "packages/tools/nodeEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/display/meshAttributeExistsDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/registerToDisplayLedger.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13767",
+                "title": "SSR: Fix ghosting when using large step values",
+                "description": "See https://playground.babylonjs.com/#PIZ1GK#1126\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/screenSpaceRayTrace.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13753",
+                "title": "PrePass renderer: Save memory by using a Red format for the depth texture",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.multiRender.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Rendering/prePassRenderer.ts"
+                ],
+                "tags": [
+                    "rendering engine",
+                    "optimizations",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13764",
+                "title": "add havok to download mode",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/playground/public/zipContent/index.html"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13760",
+                "title": "readme version",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/public/@babylonjs/core/readme.md",
+                    "readme-es6.md"
+                ],
+                "tags": [
+                    "skip changelog"
                 ]
             }
         ],
@@ -245,6 +595,113 @@
                 "tags": [
                     "new feature",
                     "WebGPU"
+                ]
+            }
+        ],
+        "5.57.1": [
+            {
+                "pr": "13749",
+                "title": "Physics Iteration 13",
+                "description": "A big portion of this change has already been reviewed.",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.ts",
+                    "packages/dev/core/src/Meshes/thinInstanceMesh.ts",
+                    "packages/dev/core/src/Physics/physicsEngineComponent.ts",
+                    "packages/dev/core/src/Physics/physicsHelper.ts",
+                    "packages/dev/core/src/Physics/physicsRaycastResult.ts",
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsAggregate.ts",
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts",
+                    "packages/dev/core/src/Physics/v2/physicsConstraint.ts",
+                    "packages/dev/core/src/Physics/v2/physicsEngine.ts",
+                    "packages/dev/core/src/Physics/v2/physicsEngineComponent.ts",
+                    "packages/dev/core/src/Physics/v2/physicsShape.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13750",
+                "title": "ShadowGenerator: improve performance",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13748",
+                "title": "no premature result mutation for Vec2.rotateToRef",
+                "description": "for next case:\r\n```\r\nconst vec = new Vector2(offsetX, offsetY);\r\nvec.rotateToRef(angle, vec);\r\n```",
+                "author": {
+                    "name": "nekochanoide",
+                    "url": "https://github.com/nekochanoide"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13747",
+                "title": "Update typo in solidParticleSystem.ts",
+                "description": null,
+                "author": {
+                    "name": "steambap",
+                    "url": "https://github.com/steambap"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/solidParticleSystem.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13743",
+                "title": "Round values coming from grid width calculation to avoid gaps between…",
+                "description": "… consecutive cells\r\n\r\nRelated forum issue: ",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/grid.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Rounding cell widths on Grid.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug",
+                    "gui"
+                ]
+            },
+            {
+                "pr": "13746",
+                "title": "Fix GLTF export of ambient texture with texture transforms",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/gltf2export-glbasync-missing-uv-scale-on-ambienttexture/39900",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/glTFMaterialExporter.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "glTF",
+                    "texture"
                 ]
             }
         ],

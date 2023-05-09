@@ -238,7 +238,7 @@ export class RefractionBlock extends NodeMaterialBlock {
             effect.setTexture(this._2DSamplerName, refractionTexture);
         }
 
-        effect.setMatrix(this._refractionMatrixName, refractionTexture.getReflectionTextureMatrix());
+        effect.setMatrix(this._refractionMatrixName, refractionTexture.getRefractionTextureMatrix());
 
         let depth = 1.0;
         if (!refractionTexture.isCube) {

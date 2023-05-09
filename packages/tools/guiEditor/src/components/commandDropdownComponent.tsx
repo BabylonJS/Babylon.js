@@ -11,6 +11,7 @@ interface ICommandDropdownComponentProps {
         label: string;
         icon?: string;
         fileButton?: boolean;
+        loadControlButton?: boolean;
         onClick?: () => void;
         onCheck?: (value: boolean) => void;
         storeKey?: string;
@@ -125,8 +126,8 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                                     return (
                                         <FileButtonLineComponent
                                             key={m.label}
-                                            label="Load"
-                                            onClick={(file) => this.props.globalState.onLoadObservable.notifyObservers(file)}
+                                            label={!m.loadControlButton ? "Load" : "Load control"}
+                                            onClick={(file) => this.props.globalState[!m.loadControlButton ? "onLoadObservable" : "onControlLoadObservable"].notifyObservers(file)}
                                             accept=".json"
                                         />
                                     );

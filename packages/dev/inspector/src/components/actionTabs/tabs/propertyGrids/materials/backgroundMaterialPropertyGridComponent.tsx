@@ -69,7 +69,7 @@ export class BackgroundMaterialPropertyGridComponent extends React.Component<IBa
         const material = this.props.material;
 
         return (
-            <div className="pane">
+            <>
                 <CommonMaterialPropertyGridComponent
                     globalState={this.props.globalState}
                     lockObject={this.props.lockObject}
@@ -131,7 +131,7 @@ export class BackgroundMaterialPropertyGridComponent extends React.Component<IBa
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

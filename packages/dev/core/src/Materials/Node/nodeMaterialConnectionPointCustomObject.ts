@@ -19,7 +19,8 @@ export class NodeMaterialConnectionPointCustomObject<T extends NodeMaterialBlock
         name: string,
         ownerBlock: NodeMaterialBlock,
         direction: NodeMaterialConnectionPointDirection,
-        private _blockType: new (...args: any[]) => T,
+        // @internal
+        public _blockType: new (...args: any[]) => T,
         private _blockName: string
     ) {
         super(name, ownerBlock, direction);

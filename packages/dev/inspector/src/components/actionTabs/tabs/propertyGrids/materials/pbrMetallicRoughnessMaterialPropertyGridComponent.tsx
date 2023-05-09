@@ -90,7 +90,7 @@ export class PBRMetallicRoughnessMaterialPropertyGridComponent extends React.Com
         const material = this.props.material;
 
         return (
-            <div className="pane">
+            <>
                 <CommonMaterialPropertyGridComponent
                     globalState={this.props.globalState}
                     lockObject={this.props.lockObject}
@@ -152,7 +152,7 @@ export class PBRMetallicRoughnessMaterialPropertyGridComponent extends React.Com
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

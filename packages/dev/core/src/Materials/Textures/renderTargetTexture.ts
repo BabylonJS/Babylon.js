@@ -936,7 +936,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                 scene.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix(true));
                 scene.activeCamera = camera;
             }
-            engine.setViewport(camera.viewport, this.getRenderWidth(), this.getRenderHeight());
+            engine.setViewport(camera.rigParent ? camera.rigParent.viewport : camera.viewport, this.getRenderWidth(), this.getRenderHeight());
         }
 
         this._defaultRenderListPrepared = false;

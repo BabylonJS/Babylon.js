@@ -36,6 +36,11 @@ export class CubeMapToSphericalPolynomialTools {
         new FileFaceOrientation("back", new Vector3(0, 0, -1), new Vector3(-1, 0, 0), new Vector3(0, -1, 0)), // -Z bottom
     ];
 
+    /** @internal */
+    public static MAX_HDRI_VALUE = 4096;
+    /** @internal */
+    public static PRESERVE_CLAMPED_COLORS = false;
+
     /**
      * Converts a texture to the according Spherical Polynomial data.
      * This extracts the first 3 orders only as they are the only one used in the lighting.
@@ -180,10 +185,20 @@ export class CubeMapToSphericalPolynomialTools {
 
                     // Prevent to explode in case of really high dynamic ranges.
                     // sh 3 would not be enough to accurately represent it.
-                    const max = 4096;
-                    r = Scalar.Clamp(r, 0, max);
-                    g = Scalar.Clamp(g, 0, max);
-                    b = Scalar.Clamp(b, 0, max);
+                    const max = this.MAX_HDRI_VALUE;
+                    if (this.PRESERVE_CLAMPED_COLORS) {
+                        const currentMax = Math.max(r, g, b);
+                        if (currentMax > max) {
+                            const factor = max / currentMax;
+                            r *= factor;
+                            g *= factor;
+                            b *= factor;
+                        }
+                    } else {
+                        r = Scalar.Clamp(r, 0, max);
+                        g = Scalar.Clamp(g, 0, max);
+                        b = Scalar.Clamp(b, 0, max);
+                    }
 
                     const color = new Color3(r, g, b);
 

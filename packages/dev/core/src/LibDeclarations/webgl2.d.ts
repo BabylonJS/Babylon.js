@@ -4,9 +4,9 @@
 
 interface WebGL2RenderingContext extends WebGL2RenderingContextBase {
     HALF_FLOAT_OES: number;
-    RGBA16F: number;
-    RGBA32F: number;
-    DEPTH24_STENCIL8: number;
+    RGBA16F: typeof WebGL2RenderingContext.RGBA16F;
+    RGBA32F: typeof WebGL2RenderingContext.RGBA32F;
+    DEPTH24_STENCIL8: typeof WebGL2RenderingContext.DEPTH24_STENCIL8;
     COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR: number;
     COMPRESSED_SRGB_S3TC_DXT1_EXT: number;
     COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT: number;
@@ -14,13 +14,10 @@ interface WebGL2RenderingContext extends WebGL2RenderingContextBase {
     COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT: number;
     COMPRESSED_SRGB8_ETC2: number;
     COMPRESSED_SRGB8_ALPHA8_ETC2_EAC: number;
-    DRAW_FRAMEBUFFER: number;
-    UNSIGNED_INT_24_8: number;
-    MAX: number;
-    MIN: number;
-    SRGB: number;
-    SRGB8: number;
-    SRGB8_ALPHA8: number;
+    DRAW_FRAMEBUFFER: typeof WebGL2RenderingContext.DRAW_FRAMEBUFFER;
+    UNSIGNED_INT_24_8: typeof WebGL2RenderingContext.UNSIGNED_INT_24_8;
+    MIN: typeof WebGL2RenderingContext.MIN;
+    MAX: typeof WebGL2RenderingContext.MAX;
 }
 
 interface EXT_disjoint_timer_query {

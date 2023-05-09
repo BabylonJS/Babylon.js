@@ -67,7 +67,7 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
     public releaseMSAATexture() {
         if (this._webgpuMSAATexture) {
             for (const texture of this._webgpuMSAATexture) {
-                texture.destroy();
+                texture?.destroy();
             }
             this._webgpuMSAATexture = null;
         }

@@ -4,7 +4,7 @@
     },
     "name": "babylonjs-viewer-assets",
     "description": "Compiled resources for the Babylon viewer.",
-    "version": "6.0.0",
+    "version": "6.2.0",
     "repository": {
         "type": "git",
         "url": "https://github.com/BabylonJS/Babylon.js.git"
@@ -38,7 +38,7 @@
         "rimraf": "^3.0.2",
         "typescript": "^4.4.4",
         "webpack": "^5.73.0",
-        "webpack-cli": "^4.10.0",
+        "webpack-cli": "^5.1.0",
         "webpack-merge": "^5.8.0"
     },
     "homepage": "https://www.babylonjs.com",

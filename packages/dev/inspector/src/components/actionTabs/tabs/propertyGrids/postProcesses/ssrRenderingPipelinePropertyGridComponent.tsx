@@ -28,7 +28,7 @@ export class SSRRenderingPipelinePropertyGridComponent extends React.Component<I
         const renderPipeline = this.props.renderPipeline;
 
         return (
-            <div className="pane">
+            <>
                 <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
                     <TextLineComponent label="Name" value={renderPipeline.name} />
                     <TextLineComponent label="Class" value={renderPipeline.getClassName()} />
@@ -257,7 +257,7 @@ export class SSRRenderingPipelinePropertyGridComponent extends React.Component<I
                         />
                     </LineContainerComponent>
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }
