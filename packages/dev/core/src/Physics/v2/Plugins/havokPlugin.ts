@@ -1435,7 +1435,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      *
      */
     public getAxisFriction(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): number {
-        return this._hknp.HP_Constraint_GetAxisfriction(constraint._pluginData, this._constraintAxisToNative(axis))[1];
+        return this._hknp.HP_Constraint_GetAxisFriction(constraint._pluginData, this._constraintAxisToNative(axis))[1];
     }
 
     /**
