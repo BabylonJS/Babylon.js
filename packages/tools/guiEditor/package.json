@@ -29,7 +29,7 @@
         "@dev/core": "1.0.0",
         "@dev/gui": "1.0.0",
         "@dev/shared-ui-components": "1.0.0",
-        "@svgr/webpack": "^6.2.0",
+        "@svgr/webpack": "^7.0.0",
         "@types/dagre": "^0.7.47",
         "@types/react": "^17.0.30",
         "@types/react-dom": "^17.0.10",
@@ -42,7 +42,7 @@
         "typescript": "^4.4.4",
         "url-loader": "^4.1.1",
         "webpack": "^5.73.0",
-        "webpack-cli": "^4.10.0",
+        "webpack-cli": "^5.1.0",
         "webpack-merge": "^5.8.0"
     },
     "sideEffects": true
