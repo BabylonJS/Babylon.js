@@ -1790,8 +1790,20 @@ export class ThinEngine {
         }
 
         if (IsWindowObjectExist()) {
-            width = this._renderingCanvas ? this._renderingCanvas.clientWidth || this._renderingCanvas.width : window.innerWidth;
-            height = this._renderingCanvas ? this._renderingCanvas.clientHeight || this._renderingCanvas.height : window.innerHeight;
+            if (this._renderingCanvas) {
+                const boundingRect = this._renderingCanvas.getBoundingClientRect
+                    ? this._renderingCanvas.getBoundingClientRect()
+                    : {
+                          // fallback to last solution in case the function doesn't exist
+                          width: this._renderingCanvas.width * this._hardwareScalingLevel,
+                          height: this._renderingCanvas.height * this._hardwareScalingLevel,
+                      };
+                width = this._renderingCanvas.clientWidth || boundingRect.width;
+                height = this._renderingCanvas.clientHeight || boundingRect.height;
+            } else {
+                width = window.innerWidth;
+                height = window.innerHeight;
+            }
         } else {
             width = this._renderingCanvas ? this._renderingCanvas.width : 100;
             height = this._renderingCanvas ? this._renderingCanvas.height : 100;
