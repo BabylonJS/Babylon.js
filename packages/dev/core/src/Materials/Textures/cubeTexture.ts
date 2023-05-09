@@ -348,15 +348,12 @@ export class CubeTexture extends BaseTexture {
         const scale = TmpVectors.Vector3[0];
         const quat = TmpVectors.Quaternion[0];
         const trans = TmpVectors.Vector3[1];
-        const euler = TmpVectors.Vector3[2];
 
         this._textureMatrix.decompose(scale, quat, trans);
-        quat.toEulerAnglesToRef(euler);
 
-        euler.x *= -1;
-        euler.y *= -1;
+        quat.z *= -1; // these two operations correspond to negating the x and y euler angles
+        quat.w *= -1;
 
-        Quaternion.FromEulerAnglesToRef(euler.x, euler.y, euler.z, quat);
         Matrix.ComposeToRef(scale, quat, trans, this._textureMatrixRefraction);
     }
 
