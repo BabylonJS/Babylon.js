@@ -1790,7 +1790,7 @@ export class ThinEngine {
         }
 
         if (IsWindowObjectExist()) {
-            if(this._renderingCanvas) {
+            if (this._renderingCanvas) {
                 const boundingRect = this._renderingCanvas.getBoundingClientRect();
                 width = this._renderingCanvas.clientWidth || boundingRect.width;
                 height = this._renderingCanvas.clientHeight || boundingRect.height;
