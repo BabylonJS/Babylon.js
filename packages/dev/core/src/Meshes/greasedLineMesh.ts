@@ -211,13 +211,13 @@ export class GreasedLineMesh extends Mesh {
      * Serializes this ground mesh
      * @param serializationObject object to write serialization to
      */
-    // public serialize(serializationObject: any): void {
-    //     super.serialize(serializationObject);
-    //     serializationObject.parameters = this._parameters;
+    public serialize(serializationObject: any): void {
+        super.serialize(serializationObject);
+        serializationObject.parameters = this._parameters;
 
-    //     const serializedPluginMaterial = this._pluginMaterial.serialize();
-    //     serializationObject.pluginMaterial = serializedPluginMaterial;
-    // }
+        const serializedPluginMaterial = this._pluginMaterial.serialize();
+        serializationObject.pluginMaterial = serializedPluginMaterial;
+    }
 
     /**
      * Parses a serialized ground mesh

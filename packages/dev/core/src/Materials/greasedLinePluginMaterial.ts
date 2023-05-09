@@ -9,8 +9,8 @@ import type { UniformBuffer } from "./uniformBuffer";
 import type { Vector2 } from "../Maths/math.vector";
 import type { Color3 } from "../Maths/math.color";
 import type { Nullable } from "../types";
-import { DeepCopier } from "../Misc/deepCopier";
-// import { serialize, serializeAsTexture } from "../Misc/decorators";
+// import { DeepCopier } from "../Misc/deepCopier";
+import { serialize, serializeAsTexture } from "../Misc/decorators";
 
 /**
  *
@@ -39,8 +39,10 @@ export interface GreasedLineMaterialParameters {
  *
  */
 export class GreasedLinePluginMaterial extends MaterialPluginBase {
+    @serializeAsTexture()
     private _colorsTexture?: RawTexture;
 
+    @serialize()
     private _parameters: GreasedLineMaterialParameters;
 
     private _engine: Engine;
