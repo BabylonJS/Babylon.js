@@ -1618,7 +1618,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             result.body = hitBody?.body;
             result.bodyIndex = hitBody?.index;
         } else {
-            result.reset();
+            result.reset(from, to);
         }
     }
 
