@@ -72,8 +72,8 @@ export class PhysicsRaycastResult {
      */
     public setHitData(hitNormalWorld: IXYZ, hitPointWorld: IXYZ) {
         this._hasHit = true;
-        this._hitNormalWorld = new Vector3(hitNormalWorld.x, hitNormalWorld.y, hitNormalWorld.z);
-        this._hitPointWorld = new Vector3(hitPointWorld.x, hitPointWorld.y, hitPointWorld.z);
+        this._hitNormalWorld.set(hitNormalWorld.x, hitNormalWorld.y, hitNormalWorld.z);
+        this._hitPointWorld.set(hitPointWorld.x, hitPointWorld.y, hitPointWorld.z);
     }
 
     /**
@@ -97,14 +97,14 @@ export class PhysicsRaycastResult {
      * @param to The to point on world space
      */
     public reset(from: Vector3 = Vector3.Zero(), to: Vector3 = Vector3.Zero()) {
-        this._rayFromWorld = from;
-        this._rayToWorld = to;
+        this._rayFromWorld.copyFrom(from);
+        this._rayToWorld.copyFrom(to);
 
         this._hasHit = false;
         this._hitDistance = 0;
 
-        this._hitNormalWorld = Vector3.Zero();
-        this._hitPointWorld = Vector3.Zero();
+        this._hitNormalWorld.setAll(0);
+        this._hitPointWorld.setAll(0);
     }
 }
 

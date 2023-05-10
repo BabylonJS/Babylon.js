@@ -1624,6 +1624,9 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     public raycast(from: Vector3, to: Vector3, result: PhysicsRaycastResult): void {
         const queryMembership = ~0;
         const queryCollideWith = ~0;
+
+        result.reset(from, to);
+
         const query = [this._bVecToV3(from), this._bVecToV3(to), [queryMembership, queryCollideWith]];
         this._hknp.HP_World_CastRayWithCollector(this.world, this._queryCollector, query);
 
@@ -1637,8 +1640,6 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             const hitBody = this._bodies.get(hitData[1][0][0]);
             result.body = hitBody?.body;
             result.bodyIndex = hitBody?.index;
-        } else {
-            result.reset(from, to);
         }
     }
 
