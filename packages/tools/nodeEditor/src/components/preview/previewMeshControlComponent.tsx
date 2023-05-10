@@ -22,6 +22,8 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
     private _colorInputRef: React.RefObject<HTMLInputElement>;
     private _filePickerRef: React.RefObject<HTMLInputElement>;
     private _onResetRequiredObserver: Nullable<Observer<boolean>>;
+    private _onDropEventObserver: Nullable<Observer<DragEvent>>;
+    private _onRefreshPreviewMeshControlComponentRequiredObserver: Nullable<Observer<void>>;
 
     constructor(props: IPreviewMeshControlComponent) {
         super(props);
@@ -31,10 +33,20 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
         this._onResetRequiredObserver = this.props.globalState.onResetRequiredObservable.add(() => {
             this.forceUpdate();
         });
+
+        this._onDropEventObserver = this.props.globalState.onDropEventReceivedObservable.add((event) => {
+            this.useCustomMesh(event);
+        });
+
+        this._onRefreshPreviewMeshControlComponentRequiredObserver = this.props.globalState.onRefreshPreviewMeshControlComponentRequiredObservable.add(() => {
+            this.forceUpdate();
+        });
     }
 
     componentWillUnmount() {
         this.props.globalState.onResetRequiredObservable.remove(this._onResetRequiredObserver);
+        this.props.globalState.onDropEventReceivedObservable.remove(this._onDropEventObserver);
+        this.props.globalState.onRefreshPreviewMeshControlComponentRequiredObservable.remove(this._onRefreshPreviewMeshControlComponentRequiredObserver);
     }
 
     changeMeshType(newOne: PreviewType) {
@@ -51,7 +63,7 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
     }
 
     useCustomMesh(evt: any) {
-        const files: File[] = evt.target.files;
+        const files: File[] = evt.target?.files || evt.dataTransfer?.files;
         if (files && files.length) {
             const file = files[0];
 
@@ -59,7 +71,6 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
             this.props.globalState.previewType = PreviewType.Custom;
             this.props.globalState.listOfCustomPreviewFiles = [...files];
             this.props.globalState.onPreviewCommandActivated.notifyObservers(false);
-            // this.props.globalState.listOfCustomPreviewFiles = [file];
             this.forceUpdate();
         }
         if (this._filePickerRef.current) {
@@ -112,7 +123,7 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
             { label: "Smoke", value: PreviewType.Smoke },
             { label: "Load...", value: PreviewType.Custom + 1 },
         ];
-        console.log("list of custom previewFiles length", this.props.globalState.listOfCustomPreviewFiles.length);
+
         if (this.props.globalState.listOfCustomPreviewFiles.length > 0) {
             meshTypeOptions.splice(0, 0, {
                 label: "Custom",

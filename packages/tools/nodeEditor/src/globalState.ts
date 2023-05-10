@@ -16,6 +16,7 @@ import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 import { RegisterDefaultInput } from "./graphSystem/registerDefaultInput";
 import { RegisterExportData } from "./graphSystem/registerExportData";
+import type { FilesInput } from "core/Misc/filesInput";
 
 export class GlobalState {
     nodeMaterial: NodeMaterial;
@@ -37,6 +38,7 @@ export class GlobalState {
     onAnimationCommandActivated = new Observable<void>();
     onImportFrameObservable = new Observable<any>();
     onPopupClosedObservable = new Observable<void>();
+    onDropEventReceivedObservable = new Observable<DragEvent>();
     onGetNodeFromBlock: (block: NodeMaterialBlock) => GraphNode;
     previewType: PreviewType;
     previewFile: File;
@@ -53,6 +55,8 @@ export class GlobalState {
     controlCamera: boolean;
     _mode: NodeMaterialModes;
     pointerOverCanvas: boolean = false;
+    filesInput: FilesInput;
+    onRefreshPreviewMeshControlComponentRequiredObservable = new Observable<void>();
 
     /** Gets the mode */
     public get mode(): NodeMaterialModes {

@@ -160,6 +160,44 @@ export class PreviewManager {
 
         this._lightParent = new TransformNode("LightParent", this._scene);
 
+        this._globalState.filesInput = new FilesInput(
+            this._engine,
+            this._scene,
+            (_, scene) => {
+                this._meshes.push(...scene.meshes);
+                this._prepareScene();
+            },
+            null,
+            null,
+            null,
+            null,
+            null,
+            () => {
+                this._globalState.previewType = PreviewType.Box;
+                this._globalState.listOfCustomPreviewFiles = [];
+                this._scene.meshes.forEach((m) => m.dispose());
+                this._globalState.onRefreshPreviewMeshControlComponentRequiredObservable.notifyObservers();
+                this._refreshPreviewMesh(true);
+            },
+            true
+        );
+        const canvas = this._engine.getRenderingCanvas();
+        if (canvas) {
+            const onDrag = (evt: DragEvent) => {
+                evt.stopPropagation();
+                evt.preventDefault();
+            };
+            canvas.addEventListener("dragenter", onDrag, false);
+            canvas.addEventListener("dragover", onDrag, false);
+
+            const onDrop = (evt: DragEvent) => {
+                evt.stopPropagation();
+                evt.preventDefault();
+                this._globalState.onDropEventReceivedObservable.notifyObservers(evt);
+            };
+            canvas.addEventListener("drop", onDrop, false);
+        }
+
         this._refreshPreviewMesh();
 
         this._engine.runRenderLoop(() => {
@@ -292,8 +330,8 @@ export class PreviewManager {
         this._updatePreview();
     }
 
-    private _refreshPreviewMesh() {
-        if (this._currentType !== this._globalState.previewType || this._currentType === PreviewType.Custom) {
+    private _refreshPreviewMesh(force?: boolean) {
+        if (this._currentType !== this._globalState.previewType || this._currentType === PreviewType.Custom || force) {
             this._currentType = this._globalState.previewType;
             if (this._meshes && this._meshes.length) {
                 for (const mesh of this._meshes) {
@@ -381,28 +419,7 @@ export class PreviewManager {
                         });
                         return;
                     case PreviewType.Custom:
-                        const filesLoader = new FilesInput(
-                            this._scene.getEngine(),
-                            this._scene,
-                            (sceneFile, scene) => {
-                                console.log("loading done");
-                                this._meshes.push(...scene.meshes);
-                                this._prepareScene();
-                            },
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            true
-                        );
-                        console.log("start loading files");
-                        filesLoader.loadFiles({ target: { files: this._globalState.listOfCustomPreviewFiles } });
-                        // SceneLoader.AppendAsync("file:", this._globalState.previewFile, this._scene).then(() => {
-                        //     this._meshes.push(...this._scene.meshes);
-                        //     this._prepareScene();
-                        // });
+                        this._globalState.filesInput.loadFiles({ target: { files: this._globalState.listOfCustomPreviewFiles } });
                         return;
                 }
             } else if (this._globalState.mode === NodeMaterialModes.ProceduralTexture) {
