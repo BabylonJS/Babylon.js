@@ -328,7 +328,7 @@ export class GreasedLineMesh extends Mesh {
         const name = <string>serializedMesh.name;
 
         const material =
-            materialOptions.materialType === GreasedLineMeshMaterialType.MATERIAL_TYPE_PBR ? new PBRMaterial(name, this._scene) : new StandardMaterial(name, this._scene);
+            materialOptions.materialType === GreasedLineMeshMaterialType.MATERIAL_TYPE_PBR ? new PBRMaterial(name, scene) : new StandardMaterial(name, scene);
         const pluginMaterial = new GreasedLinePluginMaterial(material, scene, materialOptions);
 
         const parsed = new GreasedLineMesh(name, scene, lineOptions, pluginMaterial);
