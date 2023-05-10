@@ -1077,7 +1077,7 @@
             "title": "Shadows CSM and LODs",
             "playgroundId": "#24HWT9#0",
             "referenceImage": "shadowscsmandlod.png",
-            "excludedEngines": ["webgl1","webgpu"]
+            "excludedEngines": ["webgl1"]
         },
         {
             "title": "Glow layer and LODs",
@@ -1501,7 +1501,7 @@
             "referenceImage": "multiSGPerLight.png",
             "errorRatio": 2,
             "renderCount": 5,
-            "excludedEngines": ["webgl1","webgpu"]
+            "excludedEngines": ["webgl1"]
         },
         {
             "title": "Fluid rendering particle system",
