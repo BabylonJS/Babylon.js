@@ -388,6 +388,7 @@ export class Gizmo implements IGizmo {
             } else {
                 this._attachedNode._worldMatrix.decompose(TmpVectors.Vector3[0], TmpVectors.Quaternion[0], transform.position, Gizmo.PreserveScaling ? transform : undefined);
             }
+            TmpVectors.Vector3[0].scaleInPlace(1.0 / transform.scalingDeterminant);
             transform.scaling.copyFrom(TmpVectors.Vector3[0]);
             if (!transform.billboardMode) {
                 if (transform.rotationQuaternion) {
