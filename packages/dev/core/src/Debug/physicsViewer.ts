@@ -174,7 +174,9 @@ export class PhysicsViewer {
         } else {
             const props = body.getMassProperties();
             this._getMeshDebugInertiaMatrixToRef(props, inertiaMatrixRef);
-            inertiaMatrixRef.multiplyToRef(body.transformNode.getWorldMatrix(), inertiaMatrixRef);
+            body.transformNode.rotationQuaternion?.toRotationMatrix(transformMatrixRef);
+            transformMatrixRef.setTranslation(body.transformNode.position);
+            inertiaMatrixRef.multiplyToRef(transformMatrixRef, inertiaMatrixRef);
             inertiaMatrixRef.decomposeToTransformNode(inertiaMesh);
         }
     }
