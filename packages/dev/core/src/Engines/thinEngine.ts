@@ -5211,6 +5211,10 @@ export class ThinEngine {
         // Video
         if ((<VideoTexture>texture).video) {
             this._activeChannel = channel;
+            const videoInternalTexture = (<VideoTexture>texture).getInternalTexture();
+            if (videoInternalTexture) {
+                videoInternalTexture._associatedChannel = channel;
+            }
             (<VideoTexture>texture).update();
         } else if (texture.delayLoadState === Constants.DELAYLOADSTATE_NOTLOADED) {
             // Delay loading
