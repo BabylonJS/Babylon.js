@@ -513,8 +513,23 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                 const bodyTranslation = bodyTransform[0];
                 const bodyOrientation = bodyTransform[1];
                 const quat = TmpVectors.Quaternion[0];
-                transformNode.position.set(bodyTranslation[0], bodyTranslation[1], bodyTranslation[2]);
+
                 quat.set(bodyOrientation[0], bodyOrientation[1], bodyOrientation[2], bodyOrientation[3]);
+
+                const parent = transformNode.parent as TransformNode;
+                // transform position/orientation in parent space
+                if (parent && parent.absoluteRotationQuaternion) {
+                    TmpVectors.Vector3[2].set(bodyTranslation[0], bodyTranslation[1], bodyTranslation[2]);
+                    parent.absoluteRotationQuaternion.conjugateToRef(TmpVectors.Quaternion[1]);
+                    quat.multiplyInPlace(TmpVectors.Quaternion[1]);
+                    TmpVectors.Vector3[2].subtractToRef(parent.absolutePosition, TmpVectors.Vector3[0]);
+                    const localPosition = TmpVectors.Vector3[1];
+                    TmpVectors.Vector3[0].rotateByQuaternionToRef(TmpVectors.Quaternion[1], localPosition);
+                    transformNode.position.set(localPosition.x, localPosition.y, localPosition.z); // use set so position._isDirty is true
+                } else {
+                    transformNode.position.set(bodyTranslation[0], bodyTranslation[1], bodyTranslation[2]);
+                }
+
                 if (transformNode.rotationQuaternion) {
                     transformNode.rotationQuaternion.copyFrom(quat);
                 } else {
@@ -1149,6 +1164,11 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * It then creates an array containing the position and orientation of the node and returns it.
      */
     private _getTransformInfos(node: TransformNode): any[] {
+        if (node.parent) {
+            node.computeWorldMatrix();
+            return [this._bVecToV3(node.absolutePosition), this._bQuatToV4(node.absoluteRotationQuaternion)];
+        }
+
         let orientation = TmpVectors.Quaternion[0];
         if (node.rotationQuaternion) {
             orientation = node.rotationQuaternion;
@@ -1618,7 +1638,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             result.body = hitBody?.body;
             result.bodyIndex = hitBody?.index;
         } else {
-            result.reset();
+            result.reset(from, to);
         }
     }
 

@@ -100,7 +100,7 @@ export class PhysicsBody {
             this._physicsPlugin.initBodyInstances(this, motionType, m);
         } else {
             // single instance
-            this._physicsPlugin.initBody(this, motionType, transformNode.position, transformNode.rotationQuaternion);
+            this._physicsPlugin.initBody(this, motionType, transformNode.absolutePosition, transformNode.absoluteRotationQuaternion);
         }
         this.transformNode = transformNode;
         transformNode.physicsBody = this;
