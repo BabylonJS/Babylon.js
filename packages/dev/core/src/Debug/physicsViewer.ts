@@ -56,6 +56,7 @@ export class PhysicsViewer {
     private _debugCapsuleMesh: Mesh;
     private _debugCylinderMesh: Mesh;
     private _debugMaterial: StandardMaterial;
+    private _debugInertiaMaterial: StandardMaterial;
     private _debugMeshMeshes = new Array<Mesh>();
 
     /**
@@ -266,8 +267,8 @@ export class PhysicsViewer {
 
         const debugMesh = this._getDebugInertiaMesh(body);
         if (debugMesh) {
-            this._inertiaBodies[this._numBodies] = body;
-            this._inertiaMeshes[this._numBodies] = debugMesh;
+            this._inertiaBodies[this._numInertiaBodies] = body;
+            this._inertiaMeshes[this._numInertiaBodies] = debugMesh;
 
             if (this._numInertiaBodies === 0) {
                 this._inertiaRenderFunction = this._updateInertiaMeshes.bind(this);
@@ -423,6 +424,17 @@ export class PhysicsViewer {
         }
 
         return this._debugMaterial;
+    }
+
+    private _getDebugInertiaMaterial(scene: Scene): Material {
+        if (!this._debugInertiaMaterial) {
+            this._debugInertiaMaterial = new StandardMaterial("", scene);
+            this._debugInertiaMaterial.wireframe = true;
+            this._debugInertiaMaterial.emissiveColor = Color3.Purple();
+            this._debugInertiaMaterial.disableLighting = true;
+        }
+
+        return this._debugInertiaMaterial;
     }
 
     private _getDebugBoxMesh(scene: Scene): AbstractMesh {
@@ -656,7 +668,7 @@ export class PhysicsViewer {
             matrixRef.decomposeToTransformNode(inertiaBoxMesh);
             // inertiaBoxMesh.bakeCurrentTransformIntoVertices();
         }
-        inertiaBoxMesh.material = this._getDebugMaterial(utilityLayerScene);
+        inertiaBoxMesh.material = this._getDebugInertiaMaterial(utilityLayerScene);
 
         return inertiaBoxMesh;
     }
@@ -672,6 +684,10 @@ export class PhysicsViewer {
         // bodies
         for (let index = this._numBodies - 1; index >= 0; index--) {
             this.hideBody(this._bodies[0]);
+        }
+        // inertia
+        for (let index = this._numInertiaBodies - 1; index >= 0; index--) {
+            this.hideInertia(this._inertiaBodies[0]);
         }
 
         if (this._debugBoxMesh) {
