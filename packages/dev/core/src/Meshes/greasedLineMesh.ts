@@ -2,27 +2,54 @@
 import type { Scene } from "../scene";
 import type { Matrix } from "../Maths/math.vector";
 import { Vector3 } from "../Maths/math.vector";
-import type { GreasedLinePluginMaterial } from "../Materials/greasedLinePluginMaterial";
-import { BoundingSphere } from "core/Culling/boundingSphere";
+import type { GreasedLineMaterialOptions } from "../Materials/greasedLinePluginMaterial";
+import { GreasedLineMeshMaterialType, GreasedLinePluginMaterial } from "../Materials/greasedLinePluginMaterial";
+import { BoundingSphere } from "../Culling/boundingSphere";
 import { Mesh } from "./mesh";
 import type { Ray, TrianglePickingPredicate } from "../Culling/ray";
 import { Buffer, VertexBuffer } from "../Buffers/buffer";
 import { VertexData } from "./mesh.vertexData";
-// import { DeepCopier } from "../Misc/deepCopier";
 import { PickingInfo } from "../Collisions/pickingInfo";
 import type { Nullable } from "../types";
 import type { Node } from "../node";
+import { PBRMaterial } from "../Materials/PBR/pbrMaterial";
+import { StandardMaterial } from "../Materials/standardMaterial";
+import { DeepCopier } from "../Misc/deepCopier";
 
-
-export type GreasedLinePoints = Vector3[] | Vector3[][] | Float32Array | Float32Array[] | number[][];
-
-export interface GreasedLineParameters {
+/**
+ * Options for creating a GreasedLineMesh
+ */
+export interface GreasedLineMeshOptions {
+    /**
+     * Points of the line.
+     */
     points: number[][];
+    /**
+     * Each line segmment (from point to point) can have it's width multiplier. Final width = widths[segmentIdx] * width.
+     */
     widths?: number[];
-    widthsDistribution?: number;
+    /**
+     * How to distribute the widths if the width table contains fewer entries than there are line segments.
+     * @see NormalizeWidthTable
+     */
+    widthsDistribution?: GreasedLineMeshWidthDistribution;
+    /**
+     * Each line point can have an offset.
+     */
     offsets?: number[];
+    /**
+     * If instance is specified, lines are added to the specified instance.
+     */
     instance?: GreasedLineMesh;
+    /**
+     * If true, offsets and widths are updatable.
+     */
     updatable?: boolean;
+    /**
+     * Use when @see instance is specified.
+     * If true, the line will be rendered only after calling instance.updateLazy(). If false, line will be rerendered after every call to @see CreateGreasedLine
+     */
+    lazy?: boolean;
 }
 
 export enum GreasedLineMeshColorDistribution {
@@ -43,8 +70,9 @@ export enum GreasedLineMeshWidthDistribution {
     WIDTH_DISTRIBUTION_START_END = 5,
 }
 
-
-
+/**
+ * GreasedLine
+ */
 export class GreasedLineMesh extends Mesh {
     private _vertexPositions: number[];
     private _offsets?: number[];
@@ -64,30 +92,31 @@ export class GreasedLineMesh extends Mesh {
     private _matrixWorld: Matrix;
 
     private _boundingSphere: BoundingSphere;
+    private _lazy = false;
+    private _updatable: boolean = false;
 
-    public intersectionThreshold = 0.2;
+    /**
+     * Treshold used to pick the mesh
+     */
+    public intersectionThreshold = 10; // TODO: tune default value
 
-    constructor(
-        public readonly name: string,
-        scene: Scene,
-        private _parameters: GreasedLineParameters,
-        private _pluginMaterial: GreasedLinePluginMaterial,
-        private _updatable: boolean = false,
-        private _lazy = false
-    ) {
+    constructor(public readonly name: string, scene: Scene, private _options: GreasedLineMeshOptions, private _pluginMaterial: GreasedLinePluginMaterial) {
         super(name, scene, null, null, false, false);
+
+        this._lazy = this._options.lazy ?? false;
+        this._updatable = this._options.updatable ?? false;
 
         this._vertexPositions = [];
         this._indices = [];
         this._uvs = [];
 
-        if (_parameters.offsets) {
-            this._offsets = [..._parameters.offsets];
+        if (_options.offsets) {
+            this._offsets = [..._options.offsets];
         }
         this._previous = [];
         this._next = [];
         this._side = [];
-        this._widths = _parameters.widths ?? new Array(_parameters.points.length).fill(1);
+        this._widths = _options.widths ?? new Array(_options.points.length).fill(1);
         this._counters = [];
 
         this._points = [];
@@ -96,11 +125,14 @@ export class GreasedLineMesh extends Mesh {
 
         this._boundingSphere = new BoundingSphere(Vector3.Zero(), Vector3.Zero(), this._matrixWorld);
 
-        if (this._parameters.points) {
-            this.addPoints(this._parameters.points);
+        if (this._options.points) {
+            this.addPoints(this._options.points);
         }
     }
 
+    /**
+     * Updated a lazy line. Rerenders the line and updates boundinfo as well.
+     */
     public updateLazy() {
         this.setPoints(this._points);
         this._drawLine();
@@ -111,32 +143,81 @@ export class GreasedLineMesh extends Mesh {
         }
     }
 
+    /**
+     * Dispose the line and it's resources
+     */
     public dispose() {
         this.greasedLineMaterial?.dispose();
         this.material?.dispose();
         super.dispose();
     }
 
-    public isLazy() {
-        return this._lazy;
-    }
+    // TODO: do we need any of these?
 
-    public getSegmentWidths() {
-        return this._widths; // TODO: clone?
-    }
+    // public get positions() {
+    //     return this._vertexPositions; // TODO: clone?
+    // }
 
-    public get positions() {
-        return this._vertexPositions; // TODO: clone?
-    }
-
-    public get points() {
-        return this._points; // TODO: clone?
-    }
+    // public get points() {
+    //     return this._points; // TODO: clone?
+    // }
 
     // public set points(points: number[][]) {
     //     this.setPoints(points);
     // }
 
+    public isLazy(): boolean {
+        return this._lazy;
+    }
+
+    /**
+     *
+     * @returns currente segment widths
+     */
+    public getSegmentWidths(): number[] {
+        return this._widths; // TODO: clone?
+    }
+
+    /**
+     *
+     * @returns options of the line
+     */
+    public getOptions(): GreasedLineMeshOptions {
+        // const options = {};
+        // DeepCopier.DeepCopy(this._options, options);
+        return this._options; // TODO: DeepCopy?
+    }
+
+    /**
+     * Sets point offets
+     * @param offsets offset table [x,y,z, x,y,z, ....]
+     */
+    public setOffsets(offsets: number[]) {
+        this._offsetsBuffer && this._offsetsBuffer.update(offsets);
+    }
+
+    /**
+     * Sets widths at each line point
+     * @param widths width table [widthUpper,widthLower, widthUpper,widthLower, ...]
+     */
+    public setSegmentWidths(widths: number[]) {
+        this._widths = widths;
+        if (!this._lazy) {
+            this._widthsBuffer && this._widthsBuffer.update(widths);
+        }
+    }
+
+    /**
+     * Gets the pluginMaterial associated with line
+     */
+    get greasedLineMaterial() {
+        return this._pluginMaterial;
+    }
+
+    /**
+     * Adds new points to the line. It doesn't rerenders the line if in lazy mode.
+     * @param points points table
+     */
     public addPoints(points: number[][]) {
         const numberPoints = points;
         this._points.push(...numberPoints);
@@ -145,8 +226,13 @@ export class GreasedLineMesh extends Mesh {
         }
     }
 
+    /**
+     * Sets line points and rerenders the line.
+     * @param points points table
+     */
     public setPoints(points: number[][]) {
         this._points = points;
+        this._options.points = points;
 
         this._initGreasedLine();
 
@@ -191,18 +277,33 @@ export class GreasedLineMesh extends Mesh {
         }
     }
 
-    private _initGreasedLine() {
-        this._vertexPositions = [];
-        this._counters = [];
-        this._previous = [];
-        this._next = [];
-        this._side = [];
-        this._indices = [];
-        this._uvs = []
-    }
+    /**
+     * Clones the line.
+     * @param name new line name
+     * @param newParent new parent node
+     * @returns cloned line
+     */
+    public clone(name: string = `${this.name}-cloned`, newParent?: Nullable<Node>) {
+        // TODO: can this method be async and can we use dynamic imports of the material?
 
-    public clone(name: string = "", newParent?:Nullable<Node>) {
-        return this; // TODO: implement
+        const lineOptions = {};
+        DeepCopier.DeepCopy(this._options, lineOptions);
+        const materialOptions = {};
+        DeepCopier.DeepCopy(this._pluginMaterial.getOptions(), materialOptions);
+
+        const material =
+            (<GreasedLineMaterialOptions>materialOptions).materialType === GreasedLineMeshMaterialType.MATERIAL_TYPE_PBR
+                ? new PBRMaterial(name, this._scene)
+                : new StandardMaterial(name, this._scene);
+        const pluginMaterial = new GreasedLinePluginMaterial(material, this._scene, materialOptions);
+        const cloned = new GreasedLineMesh(name, this._scene, <GreasedLineMeshOptions>lineOptions, pluginMaterial);
+        cloned.material = material;
+
+        if (newParent) {
+            cloned.parent = newParent;
+        }
+
+        return cloned;
     }
 
     /**
@@ -211,12 +312,8 @@ export class GreasedLineMesh extends Mesh {
      */
     public serialize(serializationObject: any): void {
         super.serialize(serializationObject);
-        serializationObject.parameters = this._parameters;
-        serializationObject.parameters.points = this._points;
-        serializationObject.parameters.offsets = this._offsets;
-
-        const serializedPluginMaterial = this._pluginMaterial.serialize();
-        serializationObject.pluginMaterial = serializedPluginMaterial;
+        serializationObject.lineOptions = this._options;
+        serializationObject.materialOptions = this._pluginMaterial.getOptions();
     }
 
     /**
@@ -225,15 +322,19 @@ export class GreasedLineMesh extends Mesh {
      * @param scene the scene to create the ground mesh in
      * @returns the created ground mesh
      */
-    // public static Parse(serializedMesh: any, scene: Scene): Mesh {
-    //     const pluginMaterial = GreasedLinePluginMaterial.Parse(serializedMesh.pluginMaterial, scene); // TODO: how does pluginmaterial serialization work?
-    //     if (pluginMaterial) {
+    public static Parse(serializedMesh: any, scene: Scene): Mesh {
+        const lineOptions = <GreasedLineMeshOptions>serializedMesh.lineOptions;
+        const materialOptions = <GreasedLineMaterialOptions>serializedMesh.materialOptions;
+        const name = <string>serializedMesh.name;
 
-    //         const result = new GreasedLineMesh(serializedMesh.name, scene, serializedMesh.parameters, pluginMaterial, serializedMesh.updatable, serializedMesh.lazy);
-    //         return result;
-    //     }
-    //     return null;
-    // }
+        const material =
+            materialOptions.materialType === GreasedLineMeshMaterialType.MATERIAL_TYPE_PBR ? new PBRMaterial(name, this._scene) : new StandardMaterial(name, this._scene);
+        const pluginMaterial = new GreasedLinePluginMaterial(material, scene, materialOptions);
+
+        const parsed = new GreasedLineMesh(name, scene, lineOptions, pluginMaterial);
+        parsed.material = material;
+        return parsed;
+    }
 
     // TODO: which parameters to suppport?
     public intersects(
@@ -259,12 +360,12 @@ export class GreasedLineMesh extends Mesh {
     }
 
     /**
-     *
-     * @param ray
-     * @param firstOnly
-     * @returns
+     * Gets all intersections of a ray and the line.
+     * @param ray Ray
+     * @param firstOnly If true, the first and only intersection is immediatelly returned if found.
+     * @returns intersection(s)
      */
-    public intersections(ray: Ray, firstOnly = true):{distance: number, point: Vector3, object: GreasedLineMesh}[] | undefined {
+    public intersections(ray: Ray, firstOnly = true): { distance: number; point: Vector3; object: GreasedLineMesh }[] | undefined {
         if (this._boundingSphere && ray.intersectsSphere(this._boundingSphere, this.intersectionThreshold) === false) {
             return;
         }
@@ -278,7 +379,7 @@ export class GreasedLineMesh extends Mesh {
         const positions = this.getVerticesData(VertexBuffer.PositionKind);
         const widths = this._widths;
 
-        const lineWidth = this.greasedLineMaterial.getParameters().width ?? 1;
+        const lineWidth = this.greasedLineMaterial.getOptions().width ?? 1;
 
         const intersects = [];
         if (indices !== null && positions !== null) {
@@ -318,6 +419,16 @@ export class GreasedLineMesh extends Mesh {
         }
 
         return intersects;
+    }
+
+    private _initGreasedLine() {
+        this._vertexPositions = [];
+        this._counters = [];
+        this._previous = [];
+        this._next = [];
+        this._side = [];
+        this._indices = [];
+        this._uvs = [];
     }
 
     private _updateRaycastBoundingInfo() {
@@ -420,26 +531,5 @@ export class GreasedLineMesh extends Mesh {
             this.setVerticesBuffer(offsetBuffer.createVertexBuffer("offsets", 0, 3));
             this._offsetsBuffer = offsetBuffer;
         }
-    }
-
-    public getParameters() {
-        // const parameters = {};
-        // DeepCopier.DeepCopy(this._parameters, parameters);
-        return this._parameters; // TODO: DeepCopy
-    }
-
-    public setOffsets(offsets: number[]) {
-        this._offsetsBuffer && this._offsetsBuffer.update(offsets);
-    }
-
-    public setSegmentWidths(widths: number[]) {
-        this._widths = widths;
-        if (!this._lazy) {
-            this._widthsBuffer && this._widthsBuffer.update(widths);
-        }
-    }
-
-    get greasedLineMaterial() {
-        return this._pluginMaterial;
     }
 }
