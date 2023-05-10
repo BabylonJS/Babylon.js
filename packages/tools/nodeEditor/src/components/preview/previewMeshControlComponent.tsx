@@ -57,8 +57,9 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
 
             this.props.globalState.previewFile = file;
             this.props.globalState.previewType = PreviewType.Custom;
+            this.props.globalState.listOfCustomPreviewFiles = [...files];
             this.props.globalState.onPreviewCommandActivated.notifyObservers(false);
-            this.props.globalState.listOfCustomPreviewFiles = [file];
+            // this.props.globalState.listOfCustomPreviewFiles = [file];
             this.forceUpdate();
         }
         if (this._filePickerRef.current) {
@@ -111,7 +112,7 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
             { label: "Smoke", value: PreviewType.Smoke },
             { label: "Load...", value: PreviewType.Custom + 1 },
         ];
-
+        console.log("list of custom previewFiles length", this.props.globalState.listOfCustomPreviewFiles.length);
         if (this.props.globalState.listOfCustomPreviewFiles.length > 0) {
             meshTypeOptions.splice(0, 0, {
                 label: "Custom",
@@ -125,7 +126,7 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
         }
 
         const options = this.props.globalState.mode === NodeMaterialModes.Particle ? particleTypeOptions : meshTypeOptions;
-        const accept = this.props.globalState.mode === NodeMaterialModes.Particle ? ".json" : ".glb, .babylon, .obj";
+        const accept = this.props.globalState.mode === NodeMaterialModes.Particle ? ".json" : ".*";
 
         return (
             <div id="preview-mesh-bar">
@@ -151,7 +152,7 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
                             }}
                             title="Preview with a custom mesh"
                         >
-                            <input ref={this._filePickerRef} id="file-picker" type="file" onChange={(evt) => this.useCustomMesh(evt)} accept={accept} />
+                            <input ref={this._filePickerRef} multiple id="file-picker" type="file" onChange={(evt) => this.useCustomMesh(evt)} accept={accept} />
                         </div>
                     </>
                 )}

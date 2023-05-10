@@ -35,6 +35,7 @@ import { DataStorage } from "core/Misc/dataStorage";
 import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import { CreateTorus } from "core/Meshes/Builders/torusBuilder";
 import type { TextureBlock } from "core/Materials/Node/Blocks/Dual/textureBlock";
+import { FilesInput } from "core/Misc/filesInput";
 
 import "core/Rendering/depthRendererSceneComponent";
 
@@ -380,10 +381,28 @@ export class PreviewManager {
                         });
                         return;
                     case PreviewType.Custom:
-                        SceneLoader.AppendAsync("file:", this._globalState.previewFile, this._scene).then(() => {
-                            this._meshes.push(...this._scene.meshes);
-                            this._prepareScene();
-                        });
+                        const filesLoader = new FilesInput(
+                            this._scene.getEngine(),
+                            this._scene,
+                            (sceneFile, scene) => {
+                                console.log("loading done");
+                                this._meshes.push(...scene.meshes);
+                                this._prepareScene();
+                            },
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            true
+                        );
+                        console.log("start loading files");
+                        filesLoader.loadFiles({ target: { files: this._globalState.listOfCustomPreviewFiles } });
+                        // SceneLoader.AppendAsync("file:", this._globalState.previewFile, this._scene).then(() => {
+                        //     this._meshes.push(...this._scene.meshes);
+                        //     this._prepareScene();
+                        // });
                         return;
                 }
             } else if (this._globalState.mode === NodeMaterialModes.ProceduralTexture) {
