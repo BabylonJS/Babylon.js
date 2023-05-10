@@ -8,8 +8,11 @@ import { Mesh } from "./mesh";
 import type { Ray, TrianglePickingPredicate } from "../Culling/ray";
 import { Buffer, VertexBuffer } from "../Buffers/buffer";
 import { VertexData } from "./mesh.vertexData";
-import { DeepCopier } from "../Misc/deepCopier";
+// import { DeepCopier } from "../Misc/deepCopier";
 import { PickingInfo } from "../Collisions/pickingInfo";
+import type { Nullable } from "../types";
+import type { Node } from "../node";
+
 
 export type GreasedLinePoints = Vector3[] | Vector3[][] | Float32Array | Float32Array[] | number[][];
 
@@ -20,7 +23,6 @@ export interface GreasedLineParameters {
     offsets?: number[];
     instance?: GreasedLineMesh;
     updatable?: boolean;
-    materialType?: GreasedLineMeshMaterialType;
 }
 
 export enum GreasedLineMeshColorDistribution {
@@ -41,20 +43,11 @@ export enum GreasedLineMeshWidthDistribution {
     WIDTH_DISTRIBUTION_START_END = 5,
 }
 
-export enum GreasedLineMeshMaterialType {
-    MATERIAL_TYPE_STANDARD = 0,
-    MATERIAL_TYPE_PBR = 1,
-}
 
-export enum GreasedLineMeshColorMode {
-    COLOR_MODE_SET = 0,
-    COLOR_MODE_ADD = 1,
-    COLOR_MODE_MULTIPLY = 2,
-}
 
 export class GreasedLineMesh extends Mesh {
     private _vertexPositions: number[];
-    private _offset?: number[];
+    private _offsets?: number[];
     private _previous: number[];
     private _next: number[];
     private _side: number[];
@@ -89,7 +82,7 @@ export class GreasedLineMesh extends Mesh {
         this._uvs = [];
 
         if (_parameters.offsets) {
-            this._offset = [..._parameters.offsets];
+            this._offsets = [..._parameters.offsets];
         }
         this._previous = [];
         this._next = [];
@@ -119,8 +112,9 @@ export class GreasedLineMesh extends Mesh {
     }
 
     public dispose() {
-        super.dispose();
         this.greasedLineMaterial?.dispose();
+        this.material?.dispose();
+        super.dispose();
     }
 
     public isLazy() {
@@ -128,20 +122,20 @@ export class GreasedLineMesh extends Mesh {
     }
 
     public getSegmentWidths() {
-        return this._widths;
+        return this._widths; // TODO: clone?
     }
 
     public get positions() {
-        return this._vertexPositions;
+        return this._vertexPositions; // TODO: clone?
     }
 
     public get points() {
-        return this._points;
+        return this._points; // TODO: clone?
     }
 
-    public set points(points: number[][]) {
-        this.setPoints(points);
-    }
+    // public set points(points: number[][]) {
+    //     this.setPoints(points);
+    // }
 
     public addPoints(points: number[][]) {
         const numberPoints = points;
@@ -204,7 +198,11 @@ export class GreasedLineMesh extends Mesh {
         this._next = [];
         this._side = [];
         this._indices = [];
-        this._uvs = [];
+        this._uvs = []
+    }
+
+    public clone(name: string = "", newParent?:Nullable<Node>) {
+        return this; // TODO: implement
     }
 
     /**
@@ -214,6 +212,8 @@ export class GreasedLineMesh extends Mesh {
     public serialize(serializationObject: any): void {
         super.serialize(serializationObject);
         serializationObject.parameters = this._parameters;
+        serializationObject.parameters.points = this._points;
+        serializationObject.parameters.offsets = this._offsets;
 
         const serializedPluginMaterial = this._pluginMaterial.serialize();
         serializationObject.pluginMaterial = serializedPluginMaterial;
@@ -225,7 +225,7 @@ export class GreasedLineMesh extends Mesh {
      * @param scene the scene to create the ground mesh in
      * @returns the created ground mesh
      */
-    // public static Parse2(serializedMesh: any, scene: Scene): Mesh {
+    // public static Parse(serializedMesh: any, scene: Scene): Mesh {
     //     const pluginMaterial = GreasedLinePluginMaterial.Parse(serializedMesh.pluginMaterial, scene); // TODO: how does pluginmaterial serialization work?
     //     if (pluginMaterial) {
 
@@ -246,7 +246,7 @@ export class GreasedLineMesh extends Mesh {
     ): PickingInfo {
         const pickingInfo = new PickingInfo();
         const intersections = this.intersections(ray);
-        if (intersections) {
+        if (intersections?.length === 1) {
             const intersection = intersections[0];
             pickingInfo.hit = true;
             pickingInfo.distance = intersection.distance;
@@ -264,7 +264,7 @@ export class GreasedLineMesh extends Mesh {
      * @param firstOnly
      * @returns
      */
-    public intersections(ray: Ray, firstOnly = true):{distance: number, point: Vector3, index: number, object: GreasedLineMesh}[] | undefined {
+    public intersections(ray: Ray, firstOnly = true):{distance: number, point: Vector3, object: GreasedLineMesh}[] | undefined {
         if (this._boundingSphere && ray.intersectsSphere(this._boundingSphere, this.intersectionThreshold) === false) {
             return;
         }
@@ -291,9 +291,9 @@ export class GreasedLineMesh extends Mesh {
                 vStart.fromArray(positions, a * 3);
                 vEnd.fromArray(positions, b * 3);
 
-                if (this._offset) {
-                    vOffsetStart.fromArray(this._offset, a * 3);
-                    vOffsetEnd.fromArray(this._offset, b * 3);
+                if (this._offsets) {
+                    vOffsetStart.fromArray(this._offsets, a * 3);
+                    vOffsetEnd.fromArray(this._offsets, b * 3);
                     vStart.addInPlace(vOffsetStart);
                     vStart.addInPlace(vOffsetEnd);
                 }
@@ -307,9 +307,11 @@ export class GreasedLineMesh extends Mesh {
                     intersects.push({
                         distance: distance,
                         point: ray.direction.normalize().multiplyByFloats(distance, distance, distance).add(ray.origin),
-                        index: i,
                         object: this,
                     });
+                    if (firstOnly) {
+                        return intersects;
+                    }
                 }
             }
             i = l;
@@ -323,15 +325,13 @@ export class GreasedLineMesh extends Mesh {
         this._boundingSphere.reConstruct(boundingInfo.minimum, boundingInfo.maximum, this._matrixWorld);
     }
 
-    private _compareV3(positionIdx1: number, positionIdx2: number, positions: number[]) {
+    private static _CompareV3(positionIdx1: number, positionIdx2: number, positions: number[]) {
         const arrayIdx1 = positionIdx1 * 6;
         const arrayIdx2 = positionIdx2 * 6;
         return positions[arrayIdx1] === positions[arrayIdx2] && positions[arrayIdx1 + 1] === positions[arrayIdx2 + 1] && positions[arrayIdx1 + 2] === positions[arrayIdx2 + 2];
     }
 
-    private _copyV3(positionIdx: number, positions: number[]) {
-        positions = positions ?? this._vertexPositions;
-
+    private static _CopyV3(positionIdx: number, positions: number[]) {
         const arrayIdx = positionIdx * 6;
         return [positions[arrayIdx], positions[arrayIdx + 1], positions[arrayIdx + 2]];
     }
@@ -346,10 +346,10 @@ export class GreasedLineMesh extends Mesh {
         const side = [];
         const uvs = [];
 
-        if (this._compareV3(0, l - 1, positions)) {
-            v = this._copyV3(l - 2, positions);
+        if (GreasedLineMesh._CompareV3(0, l - 1, positions)) {
+            v = GreasedLineMesh._CopyV3(l - 2, positions);
         } else {
-            v = this._copyV3(0, positions);
+            v = GreasedLineMesh._CopyV3(0, positions);
         }
         previous.push(v[0], v[1], v[2]);
         previous.push(v[0], v[1], v[2]);
@@ -363,21 +363,21 @@ export class GreasedLineMesh extends Mesh {
             uvs.push(j / (l - 1), 1);
 
             if (j < l - 1) {
-                v = this._copyV3(j, positions);
+                v = GreasedLineMesh._CopyV3(j, positions);
                 previous.push(v[0], v[1], v[2]);
                 previous.push(v[0], v[1], v[2]);
             }
             if (j > 0) {
-                v = this._copyV3(j, positions);
+                v = GreasedLineMesh._CopyV3(j, positions);
                 next.push(v[0], v[1], v[2]);
                 next.push(v[0], v[1], v[2]);
             }
         }
 
-        if (this._compareV3(l - 1, 0, positions)) {
-            v = this._copyV3(1, positions);
+        if (GreasedLineMesh._CompareV3(l - 1, 0, positions)) {
+            v = GreasedLineMesh._CopyV3(1, positions);
         } else {
-            v = this._copyV3(l - 1, positions);
+            v = GreasedLineMesh._CopyV3(l - 1, positions);
         }
         next.push(v[0], v[1], v[2]);
         next.push(v[0], v[1], v[2]);
@@ -415,17 +415,17 @@ export class GreasedLineMesh extends Mesh {
         this.setVerticesBuffer(widthBuffer.createVertexBuffer("widths", 0, 1));
         this._widthsBuffer = widthBuffer;
 
-        if (this._offset) {
-            const offsetBuffer = new Buffer(engine, this._offset, this._updatable, 3);
+        if (this._offsets) {
+            const offsetBuffer = new Buffer(engine, this._offsets, this._updatable, 3);
             this.setVerticesBuffer(offsetBuffer.createVertexBuffer("offsets", 0, 3));
             this._offsetsBuffer = offsetBuffer;
         }
     }
 
     public getParameters() {
-        const parameters = {};
-        DeepCopier.DeepCopy(this._parameters, parameters);
-        return parameters;
+        // const parameters = {};
+        // DeepCopier.DeepCopy(this._parameters, parameters);
+        return this._parameters; // TODO: DeepCopy
     }
 
     public setOffsets(offsets: number[]) {

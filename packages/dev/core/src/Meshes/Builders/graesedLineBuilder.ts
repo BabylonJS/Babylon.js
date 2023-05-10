@@ -1,46 +1,115 @@
 import { Color3 } from "./../../Maths/math.color";
-import type { GreasedLineMaterialParameters } from "./../../Materials/greasedLinePluginMaterial";
-import { GreasedLinePluginMaterial } from "./../../Materials/greasedLinePluginMaterial";
+import type { GreasedLineMaterialParameters} from "./../../Materials/greasedLinePluginMaterial";
+import { GreasedLineMeshColorMode, GreasedLinePluginMaterial , GreasedLineMeshMaterialType } from "./../../Materials/greasedLinePluginMaterial";
 import { StandardMaterial } from "./../../Materials/standardMaterial";
 import { PBRMaterial } from "./../../Materials/PBR/pbrMaterial";
 import type { Vector2 } from "./../../Maths/math.vector";
 import { Vector3 } from "./../../Maths/math.vector";
 import type { Nullable } from "../../types";
 import type { GreasedLineParameters, GreasedLinePoints } from "../greasedLineMesh";
-import { GreasedLineMeshColorDistribution, GreasedLineMeshColorMode, GreasedLineMeshWidthDistribution, GreasedLineMesh , GreasedLineMeshMaterialType} from "../greasedLineMesh";
+import { GreasedLineMeshColorDistribution, GreasedLineMeshWidthDistribution, GreasedLineMesh,  } from "../greasedLineMesh";
 import type { Scene } from "../../scene";
 import { EngineStore } from "../../Engines/engineStore";
 
-export namespace GreasedLineMeshBuilder {
-    export interface GreasedLineBuilderParameters {
-        points: GreasedLinePoints;
-        materialType?: GreasedLineMeshMaterialType;
+/**
+ * Parameter for GreasedLineBuilder
+ */
+export interface GreasedLineBuilderParameters {
+    // mesh related
 
-        sizeAttenuation?: boolean;
-        widths?: number[];
-        widthsDistribution?: GreasedLineMeshWidthDistribution;
-        offsets?: number[];
+    /**
+     * Points of the line.
+     */
+    points: GreasedLinePoints;
+    /**
+     * Line width.
+     */
+    width?: number;
+    /**
+     * If false then width units = scene units. If true then line will width be reduced for better perspective view.
+     */
+    sizeAttenuation?: boolean;
+    /**
+     * Each line segmment(from point to point) can have it's width multiplier. Final width = widths[segmentIdx] * width.
+     */
+    widths?: number[];
+    /**
+     * How to distribute the widths if the width table contains fewer entries than there are line segments.
+     * @see NormalizeWidthTable
+     */
+    widthsDistribution?: GreasedLineMeshWidthDistribution;
+    /**
+     * Each line point can have an offset.
+     */
+    offsets?: number[]; // TODO: support Vector3 here
+    /**
+     * If instance is specified, lines are added to the specified instance.
+     */
+    instance?: GreasedLineMesh;
+    /**
+     * If true, offsets and widths are updatable.
+     */
+    updatable?: boolean;
+    /**
+     * Use when @see instance is specified.
+     * If true, the line will be rendered only after calling instance.updateLazy(). If false, line will be rerendered after every call to @see CreateGreasedLine
+     */
+    lazy?: boolean;
 
-        instance?: GreasedLineMesh;
-        updatable?: boolean;
-        lazy?: boolean;
+    // material related
+    /**
+     * Type of the material to use to render the line.
+     */
+    materialType?: GreasedLineMeshMaterialType;
+    /**
+     * Color of the line. Applies to all line segments.
+     */
+    color?: Color3;
+    /**
+     * Color mode of the line. Applient to all line segments. Default value is @see GreasedLineMeshColorMode.ADD
+     * The pixel color from the material shader will be modified with the value of @see color using the colorMode.
+     */
+    colorMode?: GreasedLineMeshColorMode;
+    /**
+     * Colors of the line segments.
+     */
+    colors?: Color3[];
+    /**
+     * If true, @see colors are used, otherwise they're ignored.
+     */
+    useColors?: boolean;
+    /**
+     * How to distribute the colors in case the number of colors is smaller than the number of line segments.
+     * @see GreasedLineMeshColorDistribution
+     */
+    colorDistribution?: GreasedLineMeshColorDistribution;
+    /**
+     * If true, dashing is used.
+     */
+    useDash?: boolean;
+    /**
+     * @see GreasedLinePluginMaterial.setDashArray
+     */
+    dashArray?: number;
+    /**
+     * @see GreasedLinePluginMaterial.setDashOffset
+     */
+    dashOffset?: number;
+    /**
+     * @see GreasedLinePluginMaterial.setDashRatio
+     */
+    dashRatio?: number;
+    /**
+     * @see GreasedLinePluginMaterial.setVisibility
+     */
+    visibility?: number;
+    /**
+     * Rendering resolution
+     */
+    resolution?: Vector2; // TODO: This should be somewhere in the original shaders already?!
+}
 
-        color?: Color3;
-        colorMode?: GreasedLineMeshColorMode;
-        width?: number;
-        useColors?: boolean;
-        colors?: Color3[];
-        colorDistribution?: GreasedLineMeshColorDistribution;
-
-        useDash?: boolean;
-        dashArray?: number;
-        dashOffset?: number;
-        dashRatio?: number;
-
-        visibility?: number;
-        resolution?: Vector2;
-    }
-
+export class GreasedLineMeshBuilder {
     /**
      * Creates a GreasedLine mesh
      * @param name name of the mesh
@@ -48,11 +117,11 @@ export namespace GreasedLineMeshBuilder {
      * @param scene scene where the mesh will be created
      * @returns instance of GreasedLineMesh
      */
-    export function CreateGreasedLine(name: string, parameters: GreasedLineBuilderParameters, scene: Nullable<Scene>) {
+    public static CreateGreasedLine(name: string, parameters: GreasedLineBuilderParameters, scene: Nullable<Scene>) {
         scene = <Scene>(scene ?? EngineStore.LastCreatedScene);
 
         let instance;
-        const allPoints = ConvertPoints(parameters.points);
+        const allPoints = GreasedLineMeshBuilder.ConvertPoints(parameters.points);
 
         let length = 0;
         if (Array.isArray(allPoints[0])) {
@@ -61,22 +130,24 @@ export namespace GreasedLineMeshBuilder {
             });
         }
 
-        const widths = NormalizeWidthTable(length, parameters.widths ?? [], GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_START);
+        const widths = GreasedLineMeshBuilder.NormalizeWidthTable(length, parameters.widths ?? [], GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_START);
 
-        const colors = parameters.colors ? NormalizeColorTable(length, parameters.colors, GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_START, parameters.color) : undefined;
+        const colors = parameters.colors
+            ? GreasedLineMeshBuilder.NormalizeColorTable(length, parameters.colors, GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_START, parameters.color)
+            : undefined;
 
         // create new mesh if instance is not defined
         if (!parameters.instance) {
             const initialGreasedLineParameters: GreasedLineParameters = {
                 points: allPoints,
                 offsets: parameters.offsets,
-                materialType: parameters.materialType,
                 updatable: parameters.updatable,
                 widths,
                 widthsDistribution: parameters.widthsDistribution,
             };
 
             const initialMaterialParameters: GreasedLineMaterialParameters = {
+                materialType: parameters.materialType,
                 colorDistribution: parameters.colorDistribution,
                 dashArray: parameters.dashArray,
                 dashOffset: parameters.dashOffset,
@@ -92,7 +163,7 @@ export namespace GreasedLineMeshBuilder {
             };
 
             if (colors) {
-                initialMaterialParameters.colors = Color3toUint8(colors);
+                initialMaterialParameters.colors = GreasedLineMeshBuilder.Color3toUint8(colors);
             }
 
             const material = parameters.materialType === GreasedLineMeshMaterialType.MATERIAL_TYPE_PBR ? new PBRMaterial(name, scene) : new StandardMaterial(name, scene);
@@ -103,12 +174,12 @@ export namespace GreasedLineMeshBuilder {
         } else {
             // update the data on the mesh instance
             instance = parameters.instance;
-            _setSegmentWidths(instance, widths);
+            GreasedLineMeshBuilder._SetSegmentWidths(instance, widths);
             instance.addPoints(allPoints);
         }
 
         if (colors) {
-            _setColors(instance, colors);
+            GreasedLineMeshBuilder._SetColors(instance, colors);
         }
 
         return instance;
@@ -119,7 +190,7 @@ export namespace GreasedLineMeshBuilder {
      * @param colors Arrray of Color3
      * @returns Uin8Array of colors [r, g, b, r, g, b, ...]
      */
-    export function Color3toUint8(colors: Color3[]) {
+    public static Color3toUint8(colors: Color3[]) {
         const colorTable: Uint8Array = new Uint8Array(colors.length * 3);
         for (let i = 0, j = 0; i < colors.length; i++) {
             colorTable[j++] = colors[i].r * 255;
@@ -135,7 +206,7 @@ export namespace GreasedLineMeshBuilder {
      * @param points GreasedLinePoints
      * @returns number[][] with x, y, z coordinates of the points, like [[x, y, z, x, y, z, ...], [x, y, z, ...]]
      */
-    export function ConvertPoints(points: GreasedLinePoints): number[][] {
+    public static ConvertPoints(points: GreasedLinePoints): number[][] {
         if (points.length && !Array.isArray(points[0]) && points[0] instanceof Vector3) {
             const positions: number[] = [];
             for (let j = 0; j < points.length; j++) {
@@ -182,7 +253,13 @@ export namespace GreasedLineMeshBuilder {
      * @param defaultWidthLower the default value which will be used to fill empty witdth entries - lower width
      * @returns normalizes
      */
-    export function NormalizeWidthTable(pointCount: number, widths: number[], widthsDistribution: GreasedLineMeshWidthDistribution, defaultWidthUpper = 1, defaultWidthLower = 1):number[] {
+    public static NormalizeWidthTable(
+        pointCount: number,
+        widths: number[],
+        widthsDistribution: GreasedLineMeshWidthDistribution,
+        defaultWidthUpper = 1,
+        defaultWidthLower = 1
+    ): number[] {
         // is the color table is shorter the the point table?
         const missingCount = pointCount - widths.length / 2;
 
@@ -289,7 +366,7 @@ export namespace GreasedLineMeshBuilder {
      * @param defaultColor default color to be used to fill empty entries in the color table
      * @returns normalized array of Color3
      */
-    export function NormalizeColorTable(pointCount: number, colors: Color3[], colorDistribution: GreasedLineMeshColorDistribution, defaultColor: Color3 = Color3.White()):Color3[] {
+    public static NormalizeColorTable(pointCount: number, colors: Color3[], colorDistribution: GreasedLineMeshColorDistribution, defaultColor: Color3 = Color3.White()): Color3[] {
         // is the color table is shorter the the point table?
         const missingCount = pointCount - colors.length;
         if (missingCount < 0) {
@@ -391,30 +468,43 @@ export namespace GreasedLineMeshBuilder {
     //     return colorsTexture;
     // }
 
-    // eslint-disable-next-line no-inner-declarations
-    function _setColors(instance: GreasedLineMesh, colors: Color3[]) {
+    /**
+     * Appends the colors to the existing colors of the line instance or sets for the first time.
+     * @param instance line instance
+     * @param colors array of colors
+     */
+    private static _SetColors(instance: GreasedLineMesh, colors: Color3[]) {
         if (instance.material instanceof StandardMaterial || instance.material instanceof PBRMaterial) {
             if (instance.greasedLineMaterial) {
                 const currentColors = instance.greasedLineMaterial.getParameters().colors;
                 if (currentColors) {
-                    const colorsUint8 = Color3toUint8(colors);
-                    const newColors = _appendColorsToExistingColors(currentColors, colorsUint8);
+                    const colorsUint8 = GreasedLineMeshBuilder.Color3toUint8(colors);
+                    const newColors = GreasedLineMeshBuilder._MergeColorTables(currentColors, colorsUint8);
                     instance.greasedLineMaterial.setColors(newColors, instance.isLazy());
                 }
             }
         }
     }
 
-    // eslint-disable-next-line no-inner-declarations
-    function _appendColorsToExistingColors(existingColors: Uint8Array, colorsToAppend: Uint8Array) {
+    /**
+     * Merges two color tables.
+     * @param existingColors existing color table
+     * @param colorsToAppend color table to append
+     * @returns
+     */
+    private static _MergeColorTables(existingColors: Uint8Array, colorsToAppend: Uint8Array) {
         const tmp = new Uint8Array(existingColors.byteLength + colorsToAppend.byteLength);
         tmp.set(new Uint8Array(existingColors), 0);
         tmp.set(new Uint8Array(colorsToAppend), existingColors.byteLength);
         return tmp;
     }
 
-    // eslint-disable-next-line no-inner-declarations
-    function _setSegmentWidths(instance: GreasedLineMesh, segmentWidths: number[]) {
+    /**
+     * Adds or sets the widths on the line instance.
+     * @param instance line instance
+     * @param segmentWidths width table
+     */
+    private static _SetSegmentWidths(instance: GreasedLineMesh, segmentWidths: number[]) {
         const currentWidths = instance.getSegmentWidths();
 
         if (currentWidths) {

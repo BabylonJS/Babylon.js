@@ -1,6 +1,5 @@
 import { Engine } from "../Engines/engine";
 import type { GreasedLineMeshColorDistribution } from "../Meshes/greasedLineMesh";
-import { GreasedLineMeshColorMode } from "../Meshes/greasedLineMesh";
 import { RawTexture } from "./Textures/rawTexture";
 import { MaterialPluginBase } from "./materialPluginBase";
 import { Material } from "./material";
@@ -12,10 +11,23 @@ import type { Nullable } from "../types";
 // import { DeepCopier } from "../Misc/deepCopier";
 import { serialize, serializeAsTexture } from "../Misc/decorators";
 
+export enum GreasedLineMeshMaterialType {
+    MATERIAL_TYPE_STANDARD = 0,
+    MATERIAL_TYPE_PBR = 1,
+}
+
+export enum GreasedLineMeshColorMode {
+    COLOR_MODE_SET = 0,
+    COLOR_MODE_ADD = 1,
+    COLOR_MODE_MULTIPLY = 2,
+}
+
 /**
  *
  */
 export interface GreasedLineMaterialParameters {
+    materialType?: GreasedLineMeshMaterialType;
+
     lazy?: boolean;
     width?: number;
 
@@ -320,7 +332,6 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
      */
     public dispose(): void {
         this._colorsTexture?.dispose();
-        this._material.dispose();
         super.dispose();
     }
 
