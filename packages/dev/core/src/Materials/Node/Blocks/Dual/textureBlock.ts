@@ -448,11 +448,11 @@ export class TextureBlock extends NodeMaterialBlock {
     }
 
     private get _samplerFunc() {
-        return this.lod.isConnected ? 'texture2DLodEXT' : 'texture2D';
+        return this.lod.isConnected ? "texture2DLodEXT" : "texture2D";
     }
 
     private get _samplerLodSuffix() {
-        return this.lod.isConnected ? `, ${this.lod.associatedVariableName}` : '';
+        return this.lod.isConnected ? `, ${this.lod.associatedVariableName}` : "";
     }
 
     private _generateTextureLookup(state: NodeMaterialBuildState): void {
@@ -480,7 +480,9 @@ export class TextureBlock extends NodeMaterialBlock {
         }
 
         if (this.uv.ownerBlock.target === NodeMaterialBlockTargets.Fragment) {
-            state.compilationString += `vec4 ${this._tempTextureRead} = ${this._samplerFunc}(${this.samplerName}, ${this._getUVW(uvInput.associatedVariableName)}${this._samplerLodSuffix});\r\n`;
+            state.compilationString += `vec4 ${this._tempTextureRead} = ${this._samplerFunc}(${this.samplerName}, ${this._getUVW(uvInput.associatedVariableName)}${
+                this._samplerLodSuffix
+            });\r\n`;
             return;
         }
 
