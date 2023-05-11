@@ -1052,7 +1052,7 @@ export class Texture extends BaseTexture {
                         texture.name = parsedTexture.name;
                     } else {
                         let url: string;
-                        if (parsedTexture.name && parsedTexture.name.indexOf("://") > 0) {
+                        if (parsedTexture.name && (parsedTexture.name.indexOf("://") > 0 || parsedTexture.url.startsWith("data:"))) {
                             url = parsedTexture.name;
                         } else {
                             url = rootUrl + parsedTexture.name;
