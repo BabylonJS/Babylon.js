@@ -5,7 +5,7 @@ import { Mesh } from "../Meshes/mesh";
 import { CreateBox } from "../Meshes/Builders/boxBuilder";
 import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
 import { Matrix, Quaternion, TmpVectors, Vector3 } from "../Maths/math.vector";
-import { Color3 } from "../Maths/math.color";
+import { Color3, Color4 } from "../Maths/math.color";
 import type { Material } from "../Materials/material";
 import { EngineStore } from "../Engines/engineStore";
 import { StandardMaterial } from "../Materials/standardMaterial";
@@ -24,8 +24,6 @@ import { MeshBuilder } from "../Meshes/meshBuilder";
 /**
  * Used to show the physics impostor around the specific mesh
  */
-// TODO: the bodymeshes should be an array containing both the debug and the inertia mesh.
-// inertia box has to be updated accordingly to the physics body.
 export class PhysicsViewer {
     /** @internal */
     protected _impostors: Array<Nullable<PhysicsImpostor>> = [];
@@ -431,9 +429,8 @@ export class PhysicsViewer {
     private _getDebugInertiaMaterial(scene: Scene): Material {
         if (!this._debugInertiaMaterial) {
             this._debugInertiaMaterial = new StandardMaterial("", scene);
-            this._debugInertiaMaterial.wireframe = true;
-            this._debugInertiaMaterial.emissiveColor = Color3.Purple();
             this._debugInertiaMaterial.disableLighting = true;
+            this._debugInertiaMaterial.alpha = 0.0;
         }
 
         return this._debugInertiaMaterial;
@@ -668,8 +665,10 @@ export class PhysicsViewer {
             const props = body.getMassProperties();
             this._getMeshDebugInertiaMatrixToRef(props, matrixRef);
             matrixRef.decomposeToTransformNode(inertiaBoxMesh);
-            // inertiaBoxMesh.bakeCurrentTransformIntoVertices();
         }
+        inertiaBoxMesh.enableEdgesRendering();
+        inertiaBoxMesh.edgesWidth = 2.0;
+        inertiaBoxMesh.edgesColor = new Color4(1, 0, 1, 1);
         inertiaBoxMesh.material = this._getDebugInertiaMaterial(utilityLayerScene);
 
         return inertiaBoxMesh;
