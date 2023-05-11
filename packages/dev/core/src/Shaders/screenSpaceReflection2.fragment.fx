@@ -192,7 +192,7 @@ void main()
             vec3 jitt = vec3(0.);
         #else
             float roughness = 1.0 - reflectivity.a;
-            vec3 jitt = mix(vec3(0.0), hash(csPosition), roughness) * roughnessFactor; // jittering of the reflection direction to simulate roughness
+            vec3 jitt = mix(vec3(0.0), hash(csPosition) - vec3(0.5), roughness) * roughnessFactor; // jittering of the reflection direction to simulate roughness
         #endif
 
         vec2 uv2 = vUV * texSize;
