@@ -1,6 +1,137 @@
 {
-    "fromTag": "6.2.0",
+    "fromTag": "6.3.0",
     "changelog": {
+        "6.3.1": [
+            {
+                "pr": "13850",
+                "title": "Fix Dump tools clamping",
+                "description": "https://forum.babylonjs.com/t/maybe-bug-about-dumptools-ts/40685/2",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/dumpTools.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "tools"
+                ]
+            },
+            {
+                "pr": "13849",
+                "title": "Add clarification to expected coordinate spaces when using Ray.inters…",
+                "description": "…ectsMesh and AbstractMesh.intersects.\r\n\r\nRelated forum issue: https://forum.babylonjs.com/t/moved-extruded-polygons-dont-intersect-with-rays/40694",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/ray.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13848",
+                "title": "SSR: Make the jitter centered",
+                "description": "See https://forum.babylonjs.com/t/setting-blurdispersionstrength-to-0-and-setting-roughnessfactor-will-cause-the-reflection-to-skew-in-ssr/40646/2\r\n\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/screenSpaceReflection2.fragment.fx"
+                ],
+                "tags": [
+                    "rendering engine",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13847",
+                "title": "Make sure not to add rootUrl to data URLs when parsing textures",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/texture.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "loaders"
+                ]
+            },
+            {
+                "pr": "13846",
+                "title": "Add texture LOD input to NME TextureBlock",
+                "description": "This change adds a \"lod\" input to NME TextureBlock so that texture mip LOD level can be adjusted.\r\n\r\nA playground example here: https://playground.babylonjs.com/#66MYF9 (Works with the change in place)",
+                "author": {
+                    "name": "MiikaH",
+                    "url": "https://github.com/MiikaH"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/textureBlock.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "13844",
+                "title": "Fix Required dependency in HTMLElementTexture",
+                "description": "Ensures the ES6 version of the HTMLElementTexture contains all its mandatory dependencies.",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/htmlElementTexture.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "13845",
+                "title": "Fix polynomials not being ready in PBR and env",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Misc/environmentTextureTools.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "13843",
+                "title": "Fix video texture bootstrap data.",
+                "description": "https://forum.babylonjs.com/t/gl-invalid-operation-texture-format-does-not-support-mipmap-generation/39954/5\r\n\r\nLet s keep an eye open for regression after this one.",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/videoTexture.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "texture"
+                ]
+            }
+        ],
         "6.3.0": [
             {
                 "pr": "13836",
