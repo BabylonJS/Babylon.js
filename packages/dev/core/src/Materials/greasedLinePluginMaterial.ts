@@ -1,16 +1,13 @@
 import { Engine } from "../Engines/engine";
-import type { GreasedLineMeshColorDistribution } from "../Meshes/greasedLineMesh";
 import { RawTexture } from "./Textures/rawTexture";
 import { MaterialPluginBase } from "./materialPluginBase";
-import { Material } from "./material";
 import type { Scene } from "../scene";
 import type { UniformBuffer } from "./uniformBuffer";
 import type { Vector2 } from "../Maths/math.vector";
-import type { Color3 } from "../Maths/math.color";
+import { Color3 } from "../Maths/math.color";
 import type { Nullable } from "../types";
-// import { DeepCopier } from "../Misc/deepCopier";
 import { serialize, serializeAsTexture } from "../Misc/decorators";
-// import { DeepCopier } from "../Misc/deepCopier";
+import type { Material } from "./material";
 
 export enum GreasedLineMeshMaterialType {
     MATERIAL_TYPE_STANDARD = 0,
@@ -31,67 +28,76 @@ export interface GreasedLineMaterialOptions {
     /**
      * Use when @see instance is specified.
      * If true, the line will be rendered only after calling instance.updateLazy(). If false, line will be rerendered after every call to @see CreateGreasedLine
-     */
+     * Defaults to false.
+    */
     lazy?: boolean;
     // material related
     /**
      * Line width.
+     * Default to 1.
      */
     width?: number;
     /**
-     * If false then width units = scene units. If true then line will width be reduced for better perspective view.
+     * If false then width units = scene units. If true then line will width be reduced.
+     * Defaults to false.
      */
     sizeAttenuation?: boolean;
     /**
      * Type of the material to use to render the line.
+     * Defaults to StandardMaterial.
      */
     materialType?: GreasedLineMeshMaterialType;
     /**
      * Color of the line. Applies to all line segments.
+     * Defaults to White.
      */
     color?: Color3;
     /**
-     * Color mode of the line. Applient to all line segments. Default value is @see GreasedLineMeshColorMode.ADD
+     * Color mode of the line. Applient to all line segments.
      * The pixel color from the material shader will be modified with the value of @see color using the colorMode.
+     * Defaults to @see GreasedLineMeshColorMode.SET
      */
     colorMode?: GreasedLineMeshColorMode;
     /**
      * Colors of the line segments.
+     * Defaults to empty.
      */
     colors?: Uint8Array;
     /**
      * If true, @see colors are used, otherwise they're ignored.
+     * Defaults to false.
      */
     useColors?: boolean;
     /**
-     * How to distribute the colors in case the number of colors is smaller than the number of line segments.
-     * @see GreasedLineMeshColorDistribution
-     */
-    colorDistribution?: GreasedLineMeshColorDistribution;
-    /**
      * If true, dashing is used.
+     * Defaults to false.
      */
     useDash?: boolean;
     /**
      * @see GreasedLinePluginMaterial.setDashArray
+     * Defaults to 0.
      */
     dashArray?: number;
     /**
+     * Defaults to 0.
      * @see GreasedLinePluginMaterial.setDashOffset
      */
     dashOffset?: number;
     /**
+     * Defaults to 0.5.
      * @see GreasedLinePluginMaterial.setDashRatio
      */
     dashRatio?: number;
     /**
+     * Defaults to 1.
      * @see GreasedLinePluginMaterial.setVisibility
      */
     visibility?: number;
     /**
+     * Defaults to engine.getRenderWidth() and engine.getRenderHeight()
      * Rendering resolution
      */
-    resolution?: Vector2; // TODO: This should be somewhere in the original shaders already?!
+    resolution?: Vector2;
 }
 
 /**
@@ -135,9 +141,10 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
         attributes.push("offsets");
         attributes.push("previous");
         attributes.push("next");
-        attributes.push("side");
+        // attributes.push("side");
+        // attributes.push("counters");
+        attributes.push("sideAndCounters");
         attributes.push("widths");
-        attributes.push("counters");
     }
 
     // eslint-disable-next-line babylonjs/available
@@ -218,7 +225,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
         uniformBuffer.updateFloat("colorMode", this._options.colorMode ?? GreasedLineMeshColorMode.COLOR_MODE_SET);
 
         if (this._options.color) {
-            uniformBuffer.updateColor3("singleColor", this._options.color);
+            uniformBuffer.updateColor3("singleColor", this._options.color ?? Color3.White());
         }
 
         uniformBuffer.updateFloat("useColors", GreasedLinePluginMaterial._BooleanToNumber(this._options.useColors));
@@ -252,9 +259,10 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
                 CUSTOM_VERTEX_DEFINITIONS: `
                     attribute vec3 previous;
                     attribute vec3 next;
-                    attribute float side;
+                    // attribute float side;
+                    // attribute float counters;
+                    attribute vec2 sideAndCounters;
                     attribute float widths;
-                    attribute float counters;
                     attribute vec3 offsets;
 
                     varying vec3 vNormal;
@@ -276,7 +284,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 CUSTOM_VERTEX_MAIN_END: `
                     vColorPointers = gl_VertexID;
-                    vCounters = counters;
+                    vCounters = sideAndCounters.y;
 
                     float aspect = resolution.x / resolution.y;
 
@@ -307,7 +315,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
                     normal.xy /= ( vec4( resolution, 0., 1. ) * greasedLineProjection ).xy;
                     #endif
 
-                    finalPosition.xy += normal.xy * side;
+                    finalPosition.xy += normal.xy * sideAndCounters.x;
 
                     gl_Position = finalPosition;
 
@@ -389,23 +397,6 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
     public dispose(): void {
         this._colorsTexture?.dispose();
         super.dispose();
-    }
-
-    /**
-     *
-     * @param parsed
-     * @param scene
-     * @returns
-     */
-    public static Parse(parsed: any, scene: Scene): Nullable<GreasedLinePluginMaterial> {
-        const rootUrl = ""; // TODO: ?
-        const material = Material.Parse(parsed.material, scene, rootUrl);
-        if (material) {
-            const result = new GreasedLinePluginMaterial(material, scene, parsed.options);
-            return result;
-        }
-
-        return null;
     }
 
     /**

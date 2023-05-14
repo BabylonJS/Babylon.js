@@ -2,8 +2,17 @@ import { VertexBuffer } from "./../Buffers/buffer";
 import { Vector3 } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 
-export namespace GreasedLineTools {
-    export function MeshesToLines(meshes: AbstractMesh[], omitZeroLengthLines = true) {
+/**
+ * Tool functions for GreasedLine
+ */
+export class GreasedLineTools {
+    /**
+     * Gets mesh triangles as line positions
+     * @param meshes array of meshes
+     * @param omitZeroLengthLines do not generate a line when the distance if the vertices in the triangle equals to zero
+     * @returns array of arrays of points
+     */
+    public static MeshesToLines(meshes: AbstractMesh[], omitZeroLengthLines = true) {
         const points: Vector3[][] = [];
 
         meshes.forEach((m) => {
@@ -30,7 +39,12 @@ export namespace GreasedLineTools {
         return points;
     }
 
-    export function GetLineLength(points: Vector3[]): number {
+    /**
+     * Gets the length of the line counting all it's segments length
+     * @param points array of line points
+     * @returns length of the line
+     */
+    public static GetLineLength(points: Vector3[]): number {
         let length = 0;
         for (let index = 0; index < points.length - 1; index++) {
             const point1 = points[index];
@@ -40,7 +54,15 @@ export namespace GreasedLineTools {
         return length;
     }
 
-    export function DivideLine(point1: Vector3, point2: Vector3, segmentCount: number): Vector3[] {
+    /**
+     *
+     * A segment is a part of the line between it's two points.
+     * @param point1 first point of the line
+     * @param point2 second point of the line
+     * @param segmentCount number of segments we want to have in the divided line
+     * @returns
+     */
+    public static SegmentizeTwoPointLine(point1: Vector3, point2: Vector3, segmentCount: number): Vector3[] {
         const dividedLinePoints: Vector3[] = [];
         const diff = point2.subtract(point1);
         const segmentVector = diff.divide(new Vector3(segmentCount, segmentCount, segmentCount));
@@ -55,33 +77,19 @@ export namespace GreasedLineTools {
         return dividedLinePoints;
     }
 
-    export function GetSubLines(points: Vector3[]): { point1: Vector3; point2: Vector3; length: number }[] {
-        const subLines = [];
-        for (let index = 0; index < points.length - 1; index++) {
-            const point1 = points[index];
-            const point2 = points[index + 1];
-            const length = point2.subtract(point1).length();
-            subLines.push({ point1, point2, length });
-        }
-
-        return subLines;
-    }
-
-    export function GetMinMaxSubLineLength(points: Vector3[]): { min: number; max: number } {
-        const subLines = GetSubLines(points);
-        const sorted = subLines.sort((s) => s.length);
-        return {
-            min: sorted[0].length,
-            max: sorted[sorted.length - 1].length,
-        };
-    }
-
-    export function segmentize(what: Vector3[] | { point1: Vector3; point2: Vector3; length: number }[], segmentLength: number): Vector3[] {
-        const subLines = what[0] instanceof Vector3 ? GetSubLines(what as Vector3[]) : (what as { point1: Vector3; point2: Vector3; length: number }[]);
+    /**
+     *
+     * A segment is a part of the line between it's two points.
+     * @param what line points
+     * @param segmentLength length of each segment of the resulting line (distance between two line points)
+     * @returns line point
+     */
+    public static SegmentizeLine(what: Vector3[] | { point1: Vector3; point2: Vector3; length: number }[], segmentLength: number): Vector3[] {
+        const subLines = what[0] instanceof Vector3 ? GreasedLineTools.GetLineSegments(what as Vector3[]) : (what as { point1: Vector3; point2: Vector3; length: number }[]);
         const points: Vector3[] = [];
         subLines.forEach((s) => {
             if (s.length > segmentLength) {
-                const segments = DivideLine(s.point1, s.point2, Math.ceil(s.length / segmentLength));
+                const segments = GreasedLineTools.SegmentizeTwoPointLine(s.point1, s.point2, Math.ceil(s.length / segmentLength));
                 segments.forEach((seg) => {
                     points.push(seg);
                 });
@@ -93,27 +101,77 @@ export namespace GreasedLineTools {
         return points;
     }
 
-    export function Circle(radius: number, segments: number, segmentAngle?: number, z = 0) {
+    /**
+     * Gets line segments.
+     * A segment is a part of the line between it's two points.
+     * @param points line points
+     * @returns segments information of the line segment including starting point, ending point and the distance between them
+     */
+    public static GetLineSegments(points: Vector3[]): { point1: Vector3; point2: Vector3; length: number }[] {
+        const subLines = [];
+        for (let index = 0; index < points.length - 1; index++) {
+            const point1 = points[index];
+            const point2 = points[index + 1];
+            const length = point2.subtract(point1).length();
+            subLines.push({ point1, point2, length });
+        }
+
+        return subLines;
+    }
+
+    /**
+     * Gets the minimum and the maximum length of a line segment in the line.
+     * A segment is a part of the line between it's two points.
+     * @param points line points
+     * @returns
+     */
+    public static GetMinMaxSubLineLength(points: Vector3[]): { min: number; max: number } {
+        const subLines = GreasedLineTools.GetLineSegments(points);
+        const sorted = subLines.sort((s) => s.length);
+        return {
+            min: sorted[0].length,
+            max: sorted[sorted.length - 1].length,
+        };
+    }
+
+    /**
+     * Creates lines in a shape of circle/arc.
+     * A segment is a part of the line between it's two points.
+     * @param radiusX radiusX of the circle
+     * @param radiusY radiusY of the circle - you can draw an oval if using different values
+     * @param segments number of segments in the circle
+     * @param segmentAngle angle offset of the segments. Defaults to Math.PI * 2 / segments. Change this value to draw a part of the circle.
+     * @param z z coordinate of the points. Defaults to 0.
+     * @returns line points
+     */
+    public static GetCircleLinePoints(radiusX: number, segments: number, z = 0, radiusY = radiusX, segmentAngle = (Math.PI * 2) / segments) {
         const points: Vector3[] = [];
-        const add = segmentAngle ?? (Math.PI * 2) / segments;
         for (let i = 0; i <= segments; i++) {
-            points.push(new Vector3(Math.cos(i * add) * radius, Math.sin(i * add) * radius, z));
+            points.push(new Vector3(Math.cos(i * segmentAngle) * radiusX, Math.sin(i * segmentAngle) * radiusY, z));
         }
         return points;
     }
 
-    export function bezier(p0: Vector3, p1: Vector3, p2: Vector3, segments: number) {
+    /**
+     * Gets line points in a shape of a bezier curve
+     * @param p0 bezier point0
+     * @param p1 bezier point1
+     * @param p2 bezier point2
+     * @param segments number of segments in the curve
+     * @returns
+     */
+    public static GetBezierLinePoints(p0: Vector3, p1: Vector3, p2: Vector3, segments: number) {
         const points: number[] = [];
 
         for (let i = 0; i < segments; i++) {
-            const point = GetBezierPoint(i / segments, p0, p1, p2);
+            const point = GreasedLineTools._GetBezierPoint(i / segments, p0, p1, p2);
             points.push(point.x, point.y, point.z);
         }
 
         return points;
     }
 
-    export function GetBezierPoint(percent: number, p0: Vector3, p1: Vector3, p2: Vector3) {
+    private static _GetBezierPoint(percent: number, p0: Vector3, p1: Vector3, p2: Vector3) {
         const a0 = (1 - percent) ** 2,
             a1 = 2 * percent * (1 - percent),
             a2 = percent ** 2;
@@ -124,7 +182,18 @@ export namespace GreasedLineTools {
         };
     }
 
-    export function GetArrowCap(position: Vector3, direction: Vector3, length: number, widthUp: number, widthDown: number, widthStartUp = 0, widthStartDown = 0) {
+    /**
+     *
+     * @param position
+     * @param direction
+     * @param length
+     * @param widthUp
+     * @param widthDown
+     * @param widthStartUp
+     * @param widthStartDown
+     * @returns
+     */
+    public static GetArrowCap(position: Vector3, direction: Vector3, length: number, widthUp: number, widthDown: number, widthStartUp = 0, widthStartDown = 0) {
         const points = [position.clone(), position.add(direction.multiplyByFloats(length, length, length))];
         const widths = [widthUp, widthDown, widthStartUp, widthStartDown];
 
@@ -134,23 +203,4 @@ export namespace GreasedLineTools {
         };
     }
 
-    export function GetCircleCap(position: Vector3, direction: Vector3, radiusA: number, radiusB: number, segments: number) {
-        const points: Vector3[] = [];
-        const widths: number[] = [];
-
-        const segmentLength = (radiusA * 4) / segments;
-        for (let i = 0, j = 0; i < segments + 1; i++, j += Math.PI / segments / 2) {
-            const s = segmentLength * Math.cos(j);
-            console.log(s);
-            const p = position.add(direction.multiplyByFloats(s, s, s));
-            points.push(p.clone());
-            const w = Math.ceil(radiusB * Math.sin(j)) + radiusB;
-            widths.push(w, w);
-        }
-
-        return {
-            points,
-            widths,
-        };
-    }
 }

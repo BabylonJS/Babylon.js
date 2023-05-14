@@ -1,6 +1,6 @@
-// import type { Nullable } from './../types';
 import type { Scene } from "../scene";
 import type { Matrix } from "../Maths/math.vector";
+import { TmpVectors } from "../Maths/math.vector";
 import { Vector3 } from "../Maths/math.vector";
 import type { GreasedLineMaterialOptions } from "../Materials/greasedLinePluginMaterial";
 import { GreasedLineMeshMaterialType, GreasedLinePluginMaterial } from "../Materials/greasedLinePluginMaterial";
@@ -26,28 +26,28 @@ export interface GreasedLineMeshOptions {
     points: number[][];
     /**
      * Each line segmment (from point to point) can have it's width multiplier. Final width = widths[segmentIdx] * width.
+     * Defaults to empty array.
      */
     widths?: number[];
     /**
-     * How to distribute the widths if the width table contains fewer entries than there are line segments.
-     * @see NormalizeWidthTable
-     */
-    widthsDistribution?: GreasedLineMeshWidthDistribution;
-    /**
      * Each line point can have an offset.
+     * Defaults to empty array.
      */
     offsets?: number[];
     /**
      * If instance is specified, lines are added to the specified instance.
+     * Defaults to undefined.
      */
     instance?: GreasedLineMesh;
     /**
      * If true, offsets and widths are updatable.
+     * Defaults to false.
      */
     updatable?: boolean;
     /**
      * Use when @see instance is specified.
      * If true, the line will be rendered only after calling instance.updateLazy(). If false, line will be rerendered after every call to @see CreateGreasedLine
+     * Defaults to false.
      */
     lazy?: boolean;
 }
@@ -78,12 +78,13 @@ export class GreasedLineMesh extends Mesh {
     private _offsets?: number[];
     private _previous: number[];
     private _next: number[];
-    private _side: number[];
+    // private _side: number[];
+    // private _counters: number[];
+    private _sideAndCounters: number[];
     private _widths: number[];
 
     private _indices: number[];
     private _uvs: number[];
-    private _counters: number[];
     private _points: number[][];
 
     private _offsetsBuffer?: Buffer;
@@ -115,9 +116,9 @@ export class GreasedLineMesh extends Mesh {
         }
         this._previous = [];
         this._next = [];
-        this._side = [];
+        // this._side = [];
+        // this._counters = [];
         this._widths = _options.widths ?? new Array(_options.points.length).fill(1);
-        this._counters = [];
 
         this._points = [];
 
@@ -135,7 +136,7 @@ export class GreasedLineMesh extends Mesh {
      */
     public updateLazy() {
         this.setPoints(this._points);
-        this._drawLine();
+        this._createVertexBuffers();
         this._updateRaycastBoundingInfo();
 
         if (this.greasedLineMaterial) {
@@ -264,15 +265,21 @@ export class GreasedLineMesh extends Mesh {
 
             this._vertexPositions.push(...positions);
             this._indices.push(...indices);
-            this._counters.push(...counters);
+            // this._counters.push(...counters);
+            // this._side.push(...side);
+
+            for (let i = 0; i < side.length; i++) {
+                this._sideAndCounters.push(side[i], counters[i]);
+            }
+
+            this._sideAndCounters;
             this._previous.push(...previous);
             this._next.push(...next);
             this._uvs.push(...uvs);
-            this._side.push(...side);
         });
 
         if (!this._lazy) {
-            this._drawLine();
+            this._createVertexBuffers();
             this._updateRaycastBoundingInfo();
         }
     }
@@ -327,8 +334,7 @@ export class GreasedLineMesh extends Mesh {
         const materialOptions = <GreasedLineMaterialOptions>serializedMesh.materialOptions;
         const name = <string>serializedMesh.name;
 
-        const material =
-            materialOptions.materialType === GreasedLineMeshMaterialType.MATERIAL_TYPE_PBR ? new PBRMaterial(name, scene) : new StandardMaterial(name, scene);
+        const material = materialOptions.materialType === GreasedLineMeshMaterialType.MATERIAL_TYPE_PBR ? new PBRMaterial(name, scene) : new StandardMaterial(name, scene);
         const pluginMaterial = new GreasedLinePluginMaterial(material, scene, materialOptions);
 
         const parsed = new GreasedLineMesh(name, scene, lineOptions, pluginMaterial);
@@ -352,7 +358,7 @@ export class GreasedLineMesh extends Mesh {
             pickingInfo.hit = true;
             pickingInfo.distance = intersection.distance;
             pickingInfo.ray = ray;
-            pickingInfo.pickedMesh = intersection.object;
+            pickingInfo.pickedMesh = this;
             pickingInfo.pickedPoint = intersection.point;
         }
 
@@ -365,15 +371,15 @@ export class GreasedLineMesh extends Mesh {
      * @param firstOnly If true, the first and only intersection is immediatelly returned if found.
      * @returns intersection(s)
      */
-    public intersections(ray: Ray, firstOnly = true): { distance: number; point: Vector3; object: GreasedLineMesh }[] | undefined {
+    public intersections(ray: Ray, firstOnly = true): { distance: number; point: Vector3 }[] | undefined {
         if (this._boundingSphere && ray.intersectsSphere(this._boundingSphere, this.intersectionThreshold) === false) {
             return;
         }
 
-        const vStart = new Vector3();
-        const vEnd = new Vector3();
-        const vOffsetStart = new Vector3();
-        const vOffsetEnd = new Vector3();
+        const vStart = TmpVectors.Vector3[0];
+        const vEnd = TmpVectors.Vector3[1];
+        const vOffsetStart = TmpVectors.Vector3[2];
+        const vOffsetEnd = TmpVectors.Vector3[3];
 
         const indices = this.getIndices();
         const positions = this.getVerticesData(VertexBuffer.PositionKind);
@@ -408,7 +414,6 @@ export class GreasedLineMesh extends Mesh {
                     intersects.push({
                         distance: distance,
                         point: ray.direction.normalize().multiplyByFloats(distance, distance, distance).add(ray.origin),
-                        object: this,
                     });
                     if (firstOnly) {
                         return intersects;
@@ -423,10 +428,11 @@ export class GreasedLineMesh extends Mesh {
 
     private _initGreasedLine() {
         this._vertexPositions = [];
-        this._counters = [];
+        // this._counters = [];
+        // this._side = [];
+        this._sideAndCounters = [];
         this._previous = [];
         this._next = [];
-        this._side = [];
         this._indices = [];
         this._uvs = [];
     }
@@ -501,7 +507,7 @@ export class GreasedLineMesh extends Mesh {
         };
     }
 
-    private _drawLine() {
+    private _createVertexBuffers() {
         const vertexData = new VertexData();
         vertexData.positions = this._vertexPositions;
         vertexData.indices = this._indices;
@@ -516,11 +522,14 @@ export class GreasedLineMesh extends Mesh {
         const nextBuffer = new Buffer(engine, this._next, false, 3);
         this.setVerticesBuffer(nextBuffer.createVertexBuffer("next", 0, 3));
 
-        const sideBuffer = new Buffer(engine, this._side, false, 1);
-        this.setVerticesBuffer(sideBuffer.createVertexBuffer("side", 0, 1));
+        const sideCounters = new Buffer(engine, this._sideAndCounters, false, 2);
+        this.setVerticesBuffer(sideCounters.createVertexBuffer("sideAndCounters", 0, 2));
 
-        const countersBuffer = new Buffer(engine, this._counters, false, 1);
-        this.setVerticesBuffer(countersBuffer.createVertexBuffer("counters", 0, 1));
+        // const sideBuffer = new Buffer(engine, this._side, false, 1);
+        // this.setVerticesBuffer(sideBuffer.createVertexBuffer("side", 0, 1));
+
+        // const countersBuffer = new Buffer(engine, this._counters, false, 1);
+        // this.setVerticesBuffer(countersBuffer.createVertexBuffer("counters", 0, 1));
 
         const widthBuffer = new Buffer(engine, this._widths, this._updatable, 1);
         this.setVerticesBuffer(widthBuffer.createVertexBuffer("widths", 0, 1));
