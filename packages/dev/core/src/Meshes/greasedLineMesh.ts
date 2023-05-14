@@ -76,11 +76,8 @@ export enum GreasedLineMeshWidthDistribution {
 export class GreasedLineMesh extends Mesh {
     private _vertexPositions: number[];
     private _offsets?: number[];
-    private _previous: number[];
-    private _next: number[];
-    // private _side: number[];
-    // private _counters: number[];
-    private _sideAndCounters: number[];
+    private _previousAndSide: number[];
+    private _nextAndCounters: number[];
     private _widths: number[];
 
     private _indices: number[];
@@ -114,10 +111,8 @@ export class GreasedLineMesh extends Mesh {
         if (_options.offsets) {
             this._offsets = [..._options.offsets];
         }
-        this._previous = [];
-        this._next = [];
-        // this._side = [];
-        // this._counters = [];
+        this._previousAndSide = [];
+        this._nextAndCounters = [];
         this._widths = _options.widths ?? new Array(_options.points.length).fill(1);
 
         this._points = [];
@@ -153,20 +148,10 @@ export class GreasedLineMesh extends Mesh {
         super.dispose();
     }
 
-    // TODO: do we need any of these?
-
-    // public get positions() {
-    //     return this._vertexPositions; // TODO: clone?
-    // }
-
-    // public get points() {
-    //     return this._points; // TODO: clone?
-    // }
-
-    // public set points(points: number[][]) {
-    //     this.setPoints(points);
-    // }
-
+    /**
+     *
+     * @returns true if the mesh was created in lazy mode
+     */
     public isLazy(): boolean {
         return this._lazy;
     }
@@ -265,16 +250,11 @@ export class GreasedLineMesh extends Mesh {
 
             this._vertexPositions.push(...positions);
             this._indices.push(...indices);
-            // this._counters.push(...counters);
-            // this._side.push(...side);
 
             for (let i = 0; i < side.length; i++) {
-                this._sideAndCounters.push(side[i], counters[i]);
+                this._previousAndSide.push(previous[i * 3], previous[i * 3 + 1], previous[i * 3 + 2], side[i]);
+                this._nextAndCounters.push(next[i * 3], next[i * 3 + 1], next[i * 3 + 2], counters[i]);
             }
-
-            this._sideAndCounters;
-            this._previous.push(...previous);
-            this._next.push(...next);
             this._uvs.push(...uvs);
         });
 
@@ -428,11 +408,8 @@ export class GreasedLineMesh extends Mesh {
 
     private _initGreasedLine() {
         this._vertexPositions = [];
-        // this._counters = [];
-        // this._side = [];
-        this._sideAndCounters = [];
-        this._previous = [];
-        this._next = [];
+        this._previousAndSide = [];
+        this._nextAndCounters = [];
         this._indices = [];
         this._uvs = [];
     }
@@ -516,20 +493,11 @@ export class GreasedLineMesh extends Mesh {
 
         const engine = this._scene.getEngine();
 
-        const previousBuffer = new Buffer(engine, this._previous, false, 3);
-        this.setVerticesBuffer(previousBuffer.createVertexBuffer("previous", 0, 3));
+        const previousAndSideBuffer = new Buffer(engine, this._previousAndSide, false, 4);
+        this.setVerticesBuffer(previousAndSideBuffer.createVertexBuffer("previousAndSide", 0, 4));
 
-        const nextBuffer = new Buffer(engine, this._next, false, 3);
-        this.setVerticesBuffer(nextBuffer.createVertexBuffer("next", 0, 3));
-
-        const sideCounters = new Buffer(engine, this._sideAndCounters, false, 2);
-        this.setVerticesBuffer(sideCounters.createVertexBuffer("sideAndCounters", 0, 2));
-
-        // const sideBuffer = new Buffer(engine, this._side, false, 1);
-        // this.setVerticesBuffer(sideBuffer.createVertexBuffer("side", 0, 1));
-
-        // const countersBuffer = new Buffer(engine, this._counters, false, 1);
-        // this.setVerticesBuffer(countersBuffer.createVertexBuffer("counters", 0, 1));
+        const nextAndCountersBuffer = new Buffer(engine, this._nextAndCounters, false, 4);
+        this.setVerticesBuffer(nextAndCountersBuffer.createVertexBuffer("nextAndCounters", 0, 4));
 
         const widthBuffer = new Buffer(engine, this._widths, this._updatable, 1);
         this.setVerticesBuffer(widthBuffer.createVertexBuffer("widths", 0, 1));

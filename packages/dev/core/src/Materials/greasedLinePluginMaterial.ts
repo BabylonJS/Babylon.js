@@ -139,11 +139,8 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
     // eslint-disable-next-line babylonjs/available
     getAttributes(attributes: string[]) {
         attributes.push("offsets");
-        attributes.push("previous");
-        attributes.push("next");
-        // attributes.push("side");
-        // attributes.push("counters");
-        attributes.push("sideAndCounters");
+        attributes.push("previousAndSide");
+        attributes.push("nextAndCounters");
         attributes.push("widths");
     }
 
@@ -257,11 +254,8 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
             return {
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 CUSTOM_VERTEX_DEFINITIONS: `
-                    attribute vec3 previous;
-                    attribute vec3 next;
-                    // attribute float side;
-                    // attribute float counters;
-                    attribute vec2 sideAndCounters;
+                    attribute vec4 previousAndSide;
+                    attribute vec4 nextAndCounters;
                     attribute float widths;
                     attribute vec3 offsets;
 
@@ -271,10 +265,10 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
                     flat out int vColorPointers;
 
                     vec2 fix( vec4 i, float aspect ) {
-                    vec2 res = i.xy / i.w;
-                    res.x *= aspect;
-                    return res;
-                }
+                        vec2 res = i.xy / i.w;
+                        res.x *= aspect;
+                        return res;
+                    }
                 `,
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 CUSTOM_VERTEX_UPDATE_POSITION: `
@@ -284,14 +278,14 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 CUSTOM_VERTEX_MAIN_END: `
                     vColorPointers = gl_VertexID;
-                    vCounters = sideAndCounters.y;
+                    vCounters = nextAndCounters.w;
 
                     float aspect = resolution.x / resolution.y;
 
                     mat4 m = viewProjection * world;
                     vec4 finalPosition = m * vec4( positionUpdated , 1.0 );
-                    vec4 prevPos = m * vec4( previous, 1.0 );
-                    vec4 nextPos = m * vec4( next, 1.0 );
+                    vec4 prevPos = m * vec4( previousAndSide.xyz, 1.0 );
+                    vec4 nextPos = m * vec4( nextAndCounters.xyz, 1.0 );
 
                     vec2 currentP = fix( finalPosition, aspect );
                     vec2 prevP = fix( prevPos, aspect );
@@ -303,19 +297,19 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
                     if( nextP == currentP ) dir = normalize( currentP - prevP );
                     else if( prevP == currentP ) dir = normalize( nextP - currentP );
                     else {
-                    vec2 dir1 = normalize( currentP - prevP );
-                    vec2 dir2 = normalize( nextP - currentP );
-                    dir = normalize( dir1 + dir2 );
+                        vec2 dir1 = normalize( currentP - prevP );
+                        vec2 dir2 = normalize( nextP - currentP );
+                        dir = normalize( dir1 + dir2 );
                     }
                     vec4 normal = vec4( -dir.y, dir.x, 0., 1. );
                     normal.xy *= .5 * w;
                     normal *= greasedLineProjection;
                     #ifdef GREASED_LINE_SIZE_ATTENUATION
-                    normal.xy *= finalPosition.w;
-                    normal.xy /= ( vec4( resolution, 0., 1. ) * greasedLineProjection ).xy;
+                        normal.xy *= finalPosition.w;
+                        normal.xy /= ( vec4( resolution, 0., 1. ) * greasedLineProjection ).xy;
                     #endif
 
-                    finalPosition.xy += normal.xy * sideAndCounters.x;
+                    finalPosition.xy += normal.xy * previousAndSide.w;
 
                     gl_Position = finalPosition;
 
