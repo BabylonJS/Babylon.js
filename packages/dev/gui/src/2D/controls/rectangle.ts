@@ -3,13 +3,11 @@ import type { Measure } from "../measure";
 import { RegisterClass } from "core/Misc/typeStore";
 import { serialize } from "core/Misc/decorators";
 import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
-import { Vector4 } from "core/Maths/math";
 
 /** Class used to create rectangle container */
 export class Rectangle extends Container {
     private _thickness = 1;
-    private _cornerRadius = 0;
-    private _cornerRadiusFree = Vector4.Zero();
+    private _cornerRadius = [0, 0, 0, 0];
 
     /** Gets or sets border thickness */
     @serialize()
@@ -26,22 +24,10 @@ export class Rectangle extends Container {
         this._markAsDirty();
     }
 
-    /** Gets or sets the corner radius angle */
+    /** Gets or sets the corner radius of all angles */
     @serialize()
     public get cornerRadius(): number {
-        return this._cornerRadius;
-    }
-    public get cornerRadiusX(): number {
-        return this._cornerRadiusFree.x;
-    }
-    public get cornerRadiusY(): number {
-        return this._cornerRadiusFree.y;
-    }
-    public get cornerRadiusZ(): number {
-        return this._cornerRadiusFree.z;
-    }
-    public get cornerRadiusW(): number {
-        return this._cornerRadiusFree.w;
+        return this._cornerRadius[0];
     }
 
     public set cornerRadius(value: number) {
@@ -49,37 +35,63 @@ export class Rectangle extends Container {
             value = 0;
         }
 
-        if (this._cornerRadius === value) {
+        if (this._cornerRadius[0] === value && this._cornerRadius[1] === value && this._cornerRadius[2] === value && this._cornerRadius[3] === value) {
             return;
         }
 
-        this._cornerRadius = value;
-        this._cornerRadiusFree.setAll(value);
+        this._cornerRadius = [value, value, value, value];
         this._markAsDirty();
     }
+
+    /** Gets or sets the corner radius top left angle */
+    @serialize()
+    public get cornerRadiusX(): number {
+        return this._cornerRadius[0];
+    }
+
     public set cornerRadiusX(value: number) {
-        if (this._cornerRadiusFree.x === value) {
-            return
+        if (this._cornerRadius[0] === value) {
+            return;
         }
-        this._cornerRadiusFree.x = value
+        this._cornerRadius[0] = value;
     }
+
+    /** Gets or sets the corner radius top right angle */
+    @serialize()
+    public get cornerRadiusY(): number {
+        return this._cornerRadius[1];
+    }
+
     public set cornerRadiusY(value: number) {
-        if (this._cornerRadiusFree.y === value) {
-            return
+        if (this._cornerRadius[1] === value) {
+            return;
         }
-        this._cornerRadiusFree.y = value;
+        this._cornerRadius[1] = value;
     }
+
+    /** Gets or sets the corner radius bottom left angle */
+    @serialize()
+    public get cornerRadiusZ(): number {
+        return this._cornerRadius[2];
+    }
+
     public set cornerRadiusZ(value: number) {
-        if (this._cornerRadiusFree.z === value) {
-            return
+        if (this._cornerRadius[2] === value) {
+            return;
         }
-        this._cornerRadiusFree.z = value;
+        this._cornerRadius[2] = value;
     }
+
+    /** Gets or sets the corner radius bottom right angle */
+    public get cornerRadiusW(): number {
+        return this._cornerRadius[3];
+    }
+
     public set cornerRadiusW(value: number) {
-        if (this._cornerRadiusFree.w === value) {
-            return
+        if (this._cornerRadius[3] === value) {
+            return;
         }
-        this._cornerRadiusFree.w = value;
+        this._cornerRadius[3] = value;
     }
 
     /**
@@ -96,7 +108,7 @@ export class Rectangle extends Container {
 
     /** @internal */
     protected _computeAdditionnalOffsetX() {
-        if (this._cornerRadiusFree) {
+        if (this._cornerRadius[0] !== 0 || this._cornerRadius[1] !== 0 || this._cornerRadius[2] !== 0 || this._cornerRadius[3] !== 0) {
             // Take in account the aliasing
             return 1;
         }
@@ -105,7 +117,7 @@ export class Rectangle extends Container {
 
     /** @internal */
     protected _computeAdditionnalOffsetY() {
-        if (this._cornerRadiusFree) {
+        if (this._cornerRadius[0] !== 0 || this._cornerRadius[1] !== 0 || this._cornerRadius[2] !== 0 || this._cornerRadius[3] !== 0) {
             // Take in account the aliasing
             return 1;
         }
@@ -129,7 +141,8 @@ export class Rectangle extends Container {
         if (this._background || this._backgroundGradient) {
             context.fillStyle = this._getRectangleFill(context);
 
-            if (this._cornerRadiusFree) {
+            if (this._cornerRadius[0] !== 0 || this._cornerRadius[1] !== 0 || this._cornerRadius[2] !== 0 || this._cornerRadius[3] !== 0) {
+                console.log("aa");
                 this._drawRoundedRect(context, this._thickness / 2);
                 context.fill();
             } else {
@@ -149,7 +162,7 @@ export class Rectangle extends Container {
             }
             context.lineWidth = this._thickness;
 
-            if (this._cornerRadiusFree) {
+            if (this._cornerRadius[0] !== 0 || this._cornerRadius[1] !== 0 || this._cornerRadius[2] !== 0 || this._cornerRadius[3] !== 0) {
                 this._drawRoundedRect(context, this._thickness / 2);
                 context.stroke();
             } else {
@@ -181,17 +194,17 @@ export class Rectangle extends Container {
         const height = this._currentMeasure.height - offset * 2;
 
         let radius = {
-            x: Math.min(height / 2, Math.min(width / 2, this._cornerRadiusFree.x)),
-            y: Math.min(height / 2, Math.min(width / 2, this._cornerRadiusFree.y)),
-            z: Math.min(height / 2, Math.min(width / 2, this._cornerRadiusFree.z)),
-            w: Math.min(height / 2, Math.min(width / 2, this._cornerRadiusFree.w))
-        }
+            x: Math.min(height / 2, Math.min(width / 2, this._cornerRadius[0])),
+            y: Math.min(height / 2, Math.min(width / 2, this._cornerRadius[1])),
+            z: Math.min(height / 2, Math.min(width / 2, this._cornerRadius[2])),
+            w: Math.min(height / 2, Math.min(width / 2, this._cornerRadius[3])),
+        };
         radius = {
             x: Math.abs(radius.x),
             y: Math.abs(radius.y),
             z: Math.abs(radius.z),
-            w: Math.abs(radius.w)
-        }
+            w: Math.abs(radius.w),
+        };
 
         context.beginPath();
         context.moveTo(x + radius.x, y);
@@ -207,7 +220,7 @@ export class Rectangle extends Container {
     }
 
     protected _clipForChildren(context: ICanvasRenderingContext) {
-        if (this._cornerRadiusFree) {
+        if (this._cornerRadius[0] !== 0 || this._cornerRadius[1] !== 0 || this._cornerRadius[2] !== 0 || this._cornerRadius[3] !== 0) {
             this._drawRoundedRect(context, this._thickness);
             context.clip();
         }

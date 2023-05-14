@@ -69,7 +69,7 @@ export class RectanglePropertyGridComponent extends React.Component<IRectanglePr
                         digits={2}
                     />
                 </div>
-                <div className="ge-divider quad">                    
+                <div className="ge-divider quad">
                     <FloatLineComponent
                         lockObject={lockObject}
                         label="X"
