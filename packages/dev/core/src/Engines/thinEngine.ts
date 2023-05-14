@@ -222,14 +222,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@6.2.0";
+        return "babylonjs@6.3.1";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "6.2.0";
+        return "6.3.1";
     }
 
     /**
@@ -5211,6 +5211,10 @@ export class ThinEngine {
         // Video
         if ((<VideoTexture>texture).video) {
             this._activeChannel = channel;
+            const videoInternalTexture = (<VideoTexture>texture).getInternalTexture();
+            if (videoInternalTexture) {
+                videoInternalTexture._associatedChannel = channel;
+            }
             (<VideoTexture>texture).update();
         } else if (texture.delayLoadState === Constants.DELAYLOADSTATE_NOTLOADED) {
             // Delay loading

@@ -293,7 +293,7 @@ export class Ray {
     }
 
     /**
-     * Checks if ray intersects a mesh
+     * Checks if ray intersects a mesh. The ray is defined in WORLD space.
      * @param mesh the mesh to check
      * @param fastCheck defines if the first intersection will be used (and not the closest)
      * @returns picking info of the intersection

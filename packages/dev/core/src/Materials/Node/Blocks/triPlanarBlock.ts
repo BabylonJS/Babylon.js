@@ -366,38 +366,42 @@ export class TriPlanarBlock extends NodeMaterialBlock {
         const y = state._getFreeVariableName("y");
         const z = state._getFreeVariableName("z");
         const w = state._getFreeVariableName("w");
+        const n = state._getFreeVariableName("n");
+        const uvx = state._getFreeVariableName("uvx");
+        const uvy = state._getFreeVariableName("uvy");
+        const uvz = state._getFreeVariableName("uvz");
 
         state.compilationString += `
-            vec3 n = ${this.normal.associatedVariableName}.xyz;
+            vec3 ${n} = ${this.normal.associatedVariableName}.xyz;
 
-            vec2 uvx = ${this.position.associatedVariableName}.yz;
-            vec2 uvy = ${this.position.associatedVariableName}.zx;
-            vec2 uvz = ${this.position.associatedVariableName}.xy;
+            vec2 ${uvx} = ${this.position.associatedVariableName}.yz;
+            vec2 ${uvy} = ${this.position.associatedVariableName}.zx;
+            vec2 ${uvz} = ${this.position.associatedVariableName}.xy;
         `;
 
         if (this.projectAsCube) {
             state.compilationString += `
-                uvx.xy = uvx.yx;
+                ${uvx}.xy = ${uvx}.yx;
 
-                if (n.x >= 0.0) {
-                    uvx.x = -uvx.x;
+                if (${n}.x >= 0.0) {
+                    ${uvx}.x = -${uvx}.x;
                 }
-                if (n.y < 0.0) {
-                    uvy.y = -uvy.y;
+                if (${n}.y < 0.0) {
+                    ${uvy}.y = -${uvy}.y;
                 }
-                if (n.z < 0.0) {
-                    uvz.x = -uvz.x;
+                if (${n}.z < 0.0) {
+                    ${uvz}.x = -${uvz}.x;
                 }
             `;
         }
 
         state.compilationString += `
-            vec4 ${x} = texture2D(${samplerName}, uvx);
-            vec4 ${y} = texture2D(${samplerYName}, uvy);
-            vec4 ${z} = texture2D(${samplerZName}, uvz);
+            vec4 ${x} = texture2D(${samplerName}, ${uvx});
+            vec4 ${y} = texture2D(${samplerYName}, ${uvy});
+            vec4 ${z} = texture2D(${samplerZName}, ${uvz});
            
             // blend weights
-            vec3 ${w} = pow(abs(n), vec3(${sharpness}));
+            vec3 ${w} = pow(abs(${n}), vec3(${sharpness}));
 
             // blend and return
             vec4 ${this._tempTextureRead} = (${x}*${w}.x + ${y}*${w}.y + ${z}*${w}.z) / (${w}.x + ${w}.y + ${w}.z);        

@@ -1085,8 +1085,15 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     if (!reflectionTexture.isReadyOrNotBlocking()) {
                         return false;
                     }
-                    if (reflectionTexture.irradianceTexture && !reflectionTexture.irradianceTexture.isReadyOrNotBlocking()) {
-                        return false;
+                    if (reflectionTexture.irradianceTexture) {
+                        if (!reflectionTexture.irradianceTexture.isReadyOrNotBlocking()) {
+                            return false;
+                        }
+                    } else {
+                        // Not ready until spherical are ready too.
+                        if (!reflectionTexture.sphericalPolynomial && reflectionTexture.getInternalTexture()?._sphericalPolynomialPromise) {
+                            return false;
+                        }
                     }
                 }
 

@@ -7,6 +7,7 @@ import type { ExternalTexture } from "./externalTexture";
 
 import "../../Engines/Extensions/engine.dynamicTexture";
 import "../../Engines/Extensions/engine.videoTexture";
+import "../../Engines/Extensions/engine.externalTexture";
 
 declare type ThinEngine = import("../../Engines/thinEngine").ThinEngine;
 declare type Scene = import("../../scene").Scene;
