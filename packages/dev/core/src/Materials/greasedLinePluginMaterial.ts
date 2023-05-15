@@ -61,7 +61,7 @@ export interface GreasedLineMaterialOptions {
      */
     colorMode?: GreasedLineMeshColorMode;
     /**
-     * Colors of the line segments.
+     * Colors of the line segments. RGBA
      * Defaults to empty.
      */
     colors?: Uint8Array;
@@ -375,7 +375,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
      * @param colors Uint8Array of colors
      */
     private _createColorsTexture(name: string, colors: Uint8Array) {
-        this._colorsTexture = new RawTexture(colors, colors.length / 3, 1, Engine.TEXTUREFORMAT_RGB, this._scene, false, true, RawTexture.NEAREST_NEAREST);
+        this._colorsTexture = new RawTexture(colors, colors.length / 4, 1, Engine.TEXTUREFORMAT_RGBA, this._scene, false, true, RawTexture.NEAREST_NEAREST);
         this._colorsTexture.name = name;
     }
 
@@ -397,7 +397,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
 
     /**
      * Creates or updates the colors texture
-     * @param colors color table
+     * @param colors color table RGBA
      * @param lazy if lazy, the colors are not updated
      * @param forceUpdate force creation of a new texture
      * @returns
