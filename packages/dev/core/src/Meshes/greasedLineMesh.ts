@@ -494,18 +494,18 @@ export class GreasedLineMesh extends Mesh {
         const engine = this._scene.getEngine();
 
         const previousAndSideBuffer = new Buffer(engine, this._previousAndSide, false, 4);
-        this.setVerticesBuffer(previousAndSideBuffer.createVertexBuffer("previousAndSide", 0, 4));
+        this.setVerticesBuffer(previousAndSideBuffer.createVertexBuffer("grl_previousAndSide", 0, 4));
 
         const nextAndCountersBuffer = new Buffer(engine, this._nextAndCounters, false, 4);
-        this.setVerticesBuffer(nextAndCountersBuffer.createVertexBuffer("nextAndCounters", 0, 4));
+        this.setVerticesBuffer(nextAndCountersBuffer.createVertexBuffer("grl_nextAndCounters", 0, 4));
 
         const widthBuffer = new Buffer(engine, this._widths, this._updatable, 1);
-        this.setVerticesBuffer(widthBuffer.createVertexBuffer("widths", 0, 1));
+        this.setVerticesBuffer(widthBuffer.createVertexBuffer("grl_widths", 0, 1));
         this._widthsBuffer = widthBuffer;
 
         if (this._offsets) {
             const offsetBuffer = new Buffer(engine, this._offsets, this._updatable, 3);
-            this.setVerticesBuffer(offsetBuffer.createVertexBuffer("offsets", 0, 3));
+            this.setVerticesBuffer(offsetBuffer.createVertexBuffer("grl_offsets", 0, 3));
             this._offsetsBuffer = offsetBuffer;
         }
     }

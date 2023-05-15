@@ -1,6 +1,7 @@
 import { VertexBuffer } from "./../Buffers/buffer";
-import { Vector3 } from "../Maths/math.vector";
+import { TmpVectors, Vector3 } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { Curve3 } from "..";
 
 /**
  * Tool functions for GreasedLine
@@ -28,7 +29,7 @@ export class GreasedLineTools {
                     const p2 = new Vector3(vertices[vi2], vertices[vi2 + 1], vertices[vi2 + 2]);
                     const p3 = new Vector3(vertices[vi3], vertices[vi3 + 1], vertices[vi3 + 2]);
 
-                    if (omitZeroLengthLines && p1.length() + p2.length() + p3.length() === 0) {
+                    if (omitZeroLengthLines && p1.lengthSquared() + p2.lengthSquared() + p3.lengthSquared() === 0) {
                         continue;
                     }
                     points.push([p1, p2, p3, p1]);
@@ -45,11 +46,12 @@ export class GreasedLineTools {
      * @returns length of the line
      */
     public static GetLineLength(points: Vector3[]): number {
+        const tmp = TmpVectors.Vector3[0];
         let length = 0;
         for (let index = 0; index < points.length - 1; index++) {
             const point1 = points[index];
             const point2 = points[index + 1];
-            length += point2.subtract(point1).length();
+            length += point2.subtractToRef(point1, tmp).length();
         }
         return length;
     }
@@ -65,7 +67,10 @@ export class GreasedLineTools {
     public static SegmentizeTwoPointLine(point1: Vector3, point2: Vector3, segmentCount: number): Vector3[] {
         const dividedLinePoints: Vector3[] = [];
         const diff = point2.subtract(point1);
-        const segmentVector = diff.divide(new Vector3(segmentCount, segmentCount, segmentCount));
+        const divisor = TmpVectors.Vector3[0];
+        divisor.setAll(segmentCount);
+        const segmentVector = TmpVectors.Vector3[1];
+        diff.divideToRef(divisor, segmentVector);
 
         let nextPoint = point1.clone();
         dividedLinePoints.push(nextPoint);
@@ -161,25 +166,7 @@ export class GreasedLineTools {
      * @returns
      */
     public static GetBezierLinePoints(p0: Vector3, p1: Vector3, p2: Vector3, segments: number) {
-        const points: number[] = [];
-
-        for (let i = 0; i < segments; i++) {
-            const point = GreasedLineTools._GetBezierPoint(i / segments, p0, p1, p2);
-            points.push(point.x, point.y, point.z);
-        }
-
-        return points;
-    }
-
-    private static _GetBezierPoint(percent: number, p0: Vector3, p1: Vector3, p2: Vector3) {
-        const a0 = (1 - percent) ** 2,
-            a1 = 2 * percent * (1 - percent),
-            a2 = percent ** 2;
-        return {
-            x: a0 * p0.x + a1 * p1.x + a2 * p2.x,
-            y: a0 * p0.y + a1 * p1.y + a2 * p2.y,
-            z: a0 * p0.z + a1 * p1.z + a2 * p2.z,
-        };
+        return Curve3.CreateQuadraticBezier(p0, p1, p2, segments).getPoints().flatMap(v => [v.x, v.y, v.z]);
     }
 
     /**

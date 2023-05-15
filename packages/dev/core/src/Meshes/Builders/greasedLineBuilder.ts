@@ -293,7 +293,7 @@ export class GreasedLineMeshBuilder {
             return widths.slice(0, pointCount * 2);
         }
 
-        // is the color table shorter than the point table?
+        // is the width table shorter than the point table?
         if (missingCount > 0) {
             // it is, fill in the missing elements
             if (widthsDistribution === GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_START_END) {
@@ -393,13 +393,14 @@ export class GreasedLineMeshBuilder {
      * @returns normalized array of Color3
      */
     public static NormalizeColorTable(pointCount: number, colors: Color3[], colorDistribution: GreasedLineMeshColorDistribution, defaultColor: Color3 = Color3.White()): Color3[] {
-        // is the color table is shorter the the point table?
+
         const missingCount = pointCount - colors.length;
         if (missingCount < 0) {
             return colors.slice(0, pointCount);
         }
 
         const colorsData: Color3[] = [];
+        // is the color table shorter than the point table?
         if (missingCount > 0) {
             // it is, fill in the missing elements
             if (colorDistribution === GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_START_END) {

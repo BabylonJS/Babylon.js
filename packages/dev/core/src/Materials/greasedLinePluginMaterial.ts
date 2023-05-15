@@ -4,10 +4,13 @@ import { MaterialPluginBase } from "./materialPluginBase";
 import type { Scene } from "../scene";
 import type { UniformBuffer } from "./uniformBuffer";
 import type { Vector2 } from "../Maths/math.vector";
+import { TmpVectors } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
 import type { Nullable } from "../types";
 import { serialize, serializeAsTexture } from "../Misc/decorators";
 import type { Material } from "./material";
+import { MaterialDefines } from "./materialDefines";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
 
 export enum GreasedLineMeshMaterialType {
     MATERIAL_TYPE_STANDARD = 0,
@@ -24,12 +27,11 @@ export enum GreasedLineMeshColorMode {
  * Options for GreasedLineMaterial
  */
 export interface GreasedLineMaterialOptions {
-
     /**
      * Use when @see instance is specified.
      * If true, the line will be rendered only after calling instance.updateLazy(). If false, line will be rerendered after every call to @see CreateGreasedLine
      * Defaults to false.
-    */
+     */
     lazy?: boolean;
     // material related
     /**
@@ -100,8 +102,18 @@ export interface GreasedLineMaterialOptions {
     resolution?: Vector2;
 }
 
+const GREASED_LINE_MATERIAL_NAME = "GreasedLine";
+
 /**
- *
+ * @internal
+ */
+export class MaterialGreasedLineDefines extends MaterialDefines {
+    GREASED_LINE_HAS_COLOR = false;
+    GREASED_LINE_SIZE_ATTENUATION = false;
+}
+
+/**
+ * GreasedLinePluginMaterial for GreasedLineMesh
  */
 export class GreasedLinePluginMaterial extends MaterialPluginBase {
     @serializeAsTexture()
@@ -118,12 +130,11 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
 
         options: GreasedLineMaterialOptions
     ) {
-        super(material, GreasedLinePluginMaterial.name, 200, {
-            // eslint-disable-next-line @typescript-eslint/naming-convention
-            GREASED_LINE_HAS_COLOR: options.color,
-            // eslint-disable-next-line @typescript-eslint/naming-convention
-            GREASED_LINE_SIZE_ATTENUATION: options.sizeAttenuation,
-        });
+        const defines = new MaterialGreasedLineDefines();
+        defines.GREASED_LINE_HAS_COLOR = !!options.color;
+        defines.GREASED_LINE_SIZE_ATTENUATION = options.sizeAttenuation ?? false;
+
+        super(material, GREASED_LINE_MATERIAL_NAME, 200, defines);
 
         this._engine = this._scene.getEngine();
 
@@ -136,52 +147,36 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
         this._enable(true); // always enabled
     }
 
-    // eslint-disable-next-line babylonjs/available
     getAttributes(attributes: string[]) {
-        attributes.push("offsets");
-        attributes.push("previousAndSide");
-        attributes.push("nextAndCounters");
-        attributes.push("widths");
+        attributes.push("grl_offsets");
+        attributes.push("grl_previousAndSide");
+        attributes.push("grl_nextAndCounters");
+        attributes.push("grl_widths");
     }
 
-    // eslint-disable-next-line babylonjs/available
     getSamplers(samplers: string[]) {
-        samplers.push("colors");
+        samplers.push("grl_colors");
     }
 
-    // eslint-disable-next-line babylonjs/available
     getUniforms() {
         return {
             ubo: [
-                { name: "greasedLineProjection", size: 16, type: "mat4" },
-                { name: "lineWidth", size: 1, type: "float" },
-                { name: "resolution", size: 2, type: "vec2" },
-                { name: "singleColor", size: 3, type: "vec3" },
-                { name: "colorMode", size: 1, type: "float" },
-                { name: "dashArray", size: 1, type: "float" },
-                { name: "dashOffset", size: 1, type: "float" },
-                { name: "dashRatio", size: 1, type: "float" },
-                { name: "useDash", size: 1, type: "float" },
-                { name: "greasedLineVisibility", size: 1, type: "float" },
-                { name: "colorsWidth", size: 1, type: "float" },
-                { name: "useColors", size: 1, type: "float" },
+                { name: "grl_projection", size: 16, type: "mat4" },
+                { name: "grl_singleColor", size: 3, type: "vec3" },
+                { name: "grl_resolution_lineWidth", size: 3, type: "vec3" },
+                { name: "grl_dashOptions", size: 4, type: "vec4" },
+                { name: "grl_colorMode_visibility_colorsWidth_useColors", size: 4, type: "vec4" },
             ],
             vertex: `
-      uniform float lineWidth;
-      uniform vec2 resolution;
-      uniform mat4 greasedLineProjection;
+      uniform vec3 grl_resolution_lineWidth;
+      uniform mat4 grl_projection;
       `,
             fragment: `
-      uniform float dashArray;
-      uniform float dashOffset;
-      uniform float dashRatio;
-      uniform float useDash;
-      uniform float greasedLineVisibility;
-      uniform float colorsWidth;
-      uniform float useColors;
-      uniform sampler2D colors;
-      uniform vec3 singleColor;
-      uniform float colorMode;
+      uniform vec4 grl_dashOptions;
+      uniform vec4 grl_colorMode_visibility_colorsWidth_useColors;
+
+      uniform sampler2D grl_colors;
+      uniform vec3 grl_singleColor;
       `,
         };
     }
@@ -192,72 +187,71 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
         return true;
     }
 
-    /**
-     *
-     * @param uniformBuffer
-     */
     bindForSubMesh(uniformBuffer: UniformBuffer) {
         const activeCamera = this._scene.activeCamera;
 
         if (activeCamera) {
             const projection = activeCamera.getProjectionMatrix();
-            uniformBuffer.updateMatrix("greasedLineProjection", projection);
-        }
-
-        uniformBuffer.updateFloat("lineWidth", this._options.width ?? 1);
-
-        uniformBuffer.updateFloat("greasedLineVisibility", this._options.visibility ?? 1);
-
-        if (this._options.resolution) {
-            uniformBuffer.updateFloat2("resolution", this._options.resolution.x, this._options.resolution.y);
+            uniformBuffer.updateMatrix("grl_projection", projection);
         } else {
-            uniformBuffer.updateFloat2("resolution", this._engine.getRenderWidth(), this._engine.getRenderHeight());
+            throw Error("GreasedLinePluginMaterial requires an active camera.");
         }
 
-        uniformBuffer.updateFloat("dashArray", this._options.dashArray ?? 0);
-        uniformBuffer.updateFloat("dashOffset", this._options.dashOffset ?? 0);
-        uniformBuffer.updateFloat("dashRatio", this._options.dashRatio ?? 0.5);
-        uniformBuffer.updateFloat("useDash", GreasedLinePluginMaterial._BooleanToNumber(this._options.useDash));
+        const resolutionLineWidth = TmpVectors.Vector3[0];
+        if (this._options.resolution) {
+            resolutionLineWidth.x = this._options.resolution.x;
+            resolutionLineWidth.y = this._options.resolution.y;
+        } else {
+            resolutionLineWidth.x = this._engine.getRenderWidth();
+            resolutionLineWidth.y = this._engine.getRenderHeight();
+        }
+        resolutionLineWidth.z = this._options.width ? this._options.width : this._options.sizeAttenuation ? 1 : 0.1;
+        uniformBuffer.updateVector3("grl_resolution_lineWidth", resolutionLineWidth);
 
-        uniformBuffer.updateFloat("colorMode", this._options.colorMode ?? GreasedLineMeshColorMode.COLOR_MODE_SET);
+        const dashOptions = TmpVectors.Vector4[0];
+        dashOptions.x = GreasedLinePluginMaterial._BooleanToNumber(this._options.useDash);
+        dashOptions.y = this._options.dashArray ?? 0;
+        dashOptions.z = this._options.dashOffset ?? 0;
+        dashOptions.w = this._options.dashRatio ?? 0.5;
+        uniformBuffer.updateVector4("grl_dashOptions", dashOptions);
+
+        const colorModeVisibilityColorsWidthUseColors = TmpVectors.Vector4[1];
+        colorModeVisibilityColorsWidthUseColors.x = this._options.colorMode ?? GreasedLineMeshColorMode.COLOR_MODE_SET;
+        colorModeVisibilityColorsWidthUseColors.y = this._options.visibility ?? 1;
+        colorModeVisibilityColorsWidthUseColors.z = this._colorsTexture ? this._colorsTexture.getSize().width * 2 : 0;
+        colorModeVisibilityColorsWidthUseColors.w = GreasedLinePluginMaterial._BooleanToNumber(this._options.useColors);
+        uniformBuffer.updateVector4("grl_colorMode_visibility_colorsWidth_useColors", colorModeVisibilityColorsWidthUseColors);
 
         if (this._options.color) {
-            uniformBuffer.updateColor3("singleColor", this._options.color ?? Color3.White());
+            uniformBuffer.updateColor3("grl_singleColor", this._options.color ?? Color3.White());
         }
 
-        uniformBuffer.updateFloat("useColors", GreasedLinePluginMaterial._BooleanToNumber(this._options.useColors));
-
         if (this._colorsTexture) {
-            uniformBuffer.updateFloat("colorsWidth", this._colorsTexture.getSize().width * 2);
-
-            uniformBuffer.setTexture("colors", this._colorsTexture);
+            uniformBuffer.setTexture("grl_colors", this._colorsTexture);
         }
 
         uniformBuffer.update();
     }
 
-    // eslint-disable-next-line babylonjs/available
-    prepareDefines(defines: Record<string, unknown> /*, scene: Scene, mesh: AbstractMesh*/) {
+    prepareDefines(defines: MaterialGreasedLineDefines, _scene: Scene, _mesh: AbstractMesh) {
         const options = this._options;
         defines["GREASED_LINE_HAS_COLOR"] = !!options.color;
-        defines["GREASED_LINE_SIZE_ATTENUATION"] = options.sizeAttenuation;
+        defines["GREASED_LINE_SIZE_ATTENUATION"] = options.sizeAttenuation ?? false;
     }
 
-    // eslint-disable-next-line babylonjs/available
     getClassName() {
-        return GreasedLinePluginMaterial.name;
+        return GREASED_LINE_MATERIAL_NAME;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    getCustomCode(shaderType: string): any {
+    getCustomCode(shaderType: string): Nullable<{ [pointName: string]: string }> {
         if (shaderType === "vertex") {
             return {
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 CUSTOM_VERTEX_DEFINITIONS: `
-                    attribute vec4 previousAndSide;
-                    attribute vec4 nextAndCounters;
-                    attribute float widths;
-                    attribute vec3 offsets;
+                    attribute vec4 grl_previousAndSide;
+                    attribute vec4 grl_nextAndCounters;
+                    attribute float grl_widths;
+                    attribute vec3 grl_offsets;
 
                     varying vec3 vNormal;
                     varying vec4 vColor;
@@ -272,26 +266,26 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
                 `,
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 CUSTOM_VERTEX_UPDATE_POSITION: `
-                    vec3 positionOffset = offsets;
+                    vec3 positionOffset = grl_offsets;
                     positionUpdated += positionOffset;
                 `,
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 CUSTOM_VERTEX_MAIN_END: `
                     vColorPointers = gl_VertexID;
-                    vCounters = nextAndCounters.w;
+                    vCounters = grl_nextAndCounters.w;
 
-                    float aspect = resolution.x / resolution.y;
+                    float aspect = grl_resolution_lineWidth.x / grl_resolution_lineWidth.y;
 
                     mat4 m = viewProjection * world;
                     vec4 finalPosition = m * vec4( positionUpdated , 1.0 );
-                    vec4 prevPos = m * vec4( previousAndSide.xyz, 1.0 );
-                    vec4 nextPos = m * vec4( nextAndCounters.xyz, 1.0 );
+                    vec4 prevPos = m * vec4( grl_previousAndSide.xyz, 1.0 );
+                    vec4 nextPos = m * vec4( grl_nextAndCounters.xyz, 1.0 );
 
                     vec2 currentP = fix( finalPosition, aspect );
                     vec2 prevP = fix( prevPos, aspect );
                     vec2 nextP = fix( nextPos, aspect );
 
-                    float w =  lineWidth * widths;
+                    float w = grl_resolution_lineWidth.z * grl_widths;
 
                     vec2 dir;
                     if( nextP == currentP ) dir = normalize( currentP - prevP );
@@ -303,13 +297,13 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
                     }
                     vec4 normal = vec4( -dir.y, dir.x, 0., 1. );
                     normal.xy *= .5 * w;
-                    normal *= greasedLineProjection;
+                    normal *= grl_projection;
                     #ifdef GREASED_LINE_SIZE_ATTENUATION
                         normal.xy *= finalPosition.w;
-                        normal.xy /= ( vec4( resolution, 0., 1. ) * greasedLineProjection ).xy;
+                        normal.xy /= ( vec4( grl_resolution_lineWidth.xy, 0., 1. ) * grl_projection ).xy;
                     #endif
 
-                    finalPosition.xy += normal.xy * previousAndSide.w;
+                    finalPosition.xy += normal.xy * grl_previousAndSide.w;
 
                     gl_Position = finalPosition;
 
@@ -330,31 +324,31 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
                 `,
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 CUSTOM_FRAGMENT_MAIN_END: `
-                    gl_FragColor.a *= step(vCounters, greasedLineVisibility);
+                    gl_FragColor.a *= step(vCounters, grl_colorMode_visibility_colorsWidth_useColors.y);
                     if( gl_FragColor.a == 0. ) discard;
 
-                    if(useDash == 1.){
-                        gl_FragColor.a *= ceil(mod(vCounters + dashOffset, dashArray) - (dashArray * dashRatio));
+                    if(grl_dashOptions.x == 1.){
+                        gl_FragColor.a *= ceil(mod(vCounters + grl_dashOptions.z, grl_dashOptions.y) - (grl_dashOptions.y * grl_dashOptions.w));
                         if(gl_FragColor.a == 0.) discard;
                     }
 
                     #ifdef GREASED_LINE_HAS_COLOR
-                        if (colorMode == ${GreasedLineMeshColorMode.COLOR_MODE_SET}.) {
-                        gl_FragColor.rgb = singleColor;
-                        } else if (colorMode == ${GreasedLineMeshColorMode.COLOR_MODE_ADD}.) {
-                        gl_FragColor.rgb += singleColor;
-                        } else if (colorMode == ${GreasedLineMeshColorMode.COLOR_MODE_MULTIPLY}.) {
-                        gl_FragColor.rgb *= singleColor;
+                        if (grl_colorMode_visibility_colorsWidth_useColors.x == ${GreasedLineMeshColorMode.COLOR_MODE_SET}.) {
+                            gl_FragColor.rgb = grl_singleColor;
+                        } else if (grl_colorMode_visibility_colorsWidth_useColors.x == ${GreasedLineMeshColorMode.COLOR_MODE_ADD}.) {
+                            gl_FragColor.rgb += grl_singleColor;
+                        } else if (grl_colorMode_visibility_colorsWidth_useColors.x == ${GreasedLineMeshColorMode.COLOR_MODE_MULTIPLY}.) {
+                            gl_FragColor.rgb *= grl_singleColor;
                         }
                     #else
-                        if (useColors == 1.) {
-                        vec4 c = texture2D(colors, vec2(float(vColorPointers)/(colorsWidth), 0.));;
+                        if (grl_colorMode_visibility_colorsWidth_useColors.w == 1.) {
+                            vec4 c = texture2D(grl_colors, vec2(float(vColorPointers)/(grl_colorMode_visibility_colorsWidth_useColors.z), 0.));;
 
-                        if (colorMode == ${GreasedLineMeshColorMode.COLOR_MODE_SET}.) {
+                        if (grl_colorMode_visibility_colorsWidth_useColors.x == ${GreasedLineMeshColorMode.COLOR_MODE_SET}.) {
                             gl_FragColor = c;
-                        } else if (colorMode == ${GreasedLineMeshColorMode.COLOR_MODE_ADD}.) {
+                        } else if (grl_colorMode_visibility_colorsWidth_useColors.x == ${GreasedLineMeshColorMode.COLOR_MODE_ADD}.) {
                             gl_FragColor += c;
-                        } else if (colorMode == ${GreasedLineMeshColorMode.COLOR_MODE_MULTIPLY}.) {
+                        } else if (grl_colorMode_visibility_colorsWidth_useColors.x == ${GreasedLineMeshColorMode.COLOR_MODE_MULTIPLY}.) {
                             gl_FragColor *= c;
                         }
                         }
@@ -367,18 +361,18 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
     }
 
     /**
-     *
+     * Converts boolean to number.
      * @param bool
-     * @returns
+     * @returns 1 if true, 0 if false.
      */
     private static _BooleanToNumber(bool?: boolean) {
         return bool ? 1 : 0;
     }
 
     /**
-     *
-     * @param name
-     * @param colors
+     * Creates a RawTexture from a color array and sets it on the plugin material instance.
+     * @param name name of the texture
+     * @param colors Uint8Array of colors
      */
     private _createColorsTexture(name: string, colors: Uint8Array) {
         this._colorsTexture = new RawTexture(colors, colors.length / 3, 1, Engine.TEXTUREFORMAT_RGB, this._scene, false, true, RawTexture.NEAREST_NEAREST);
@@ -386,7 +380,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
     }
 
     /**
-     *
+     * Disposes the plugin material.
      */
     public dispose(): void {
         this._colorsTexture?.dispose();
@@ -394,8 +388,8 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
     }
 
     /**
-     *
-     * @param value
+     * Sets whether to use the colors option to colorize the line.
+     * @param value true if use the colors, otherwise false
      */
     public setUseColors(value: boolean) {
         this._options.useColors = value;
@@ -463,7 +457,6 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
      * Turns on/off dashmode
      * @param value
      */
-    // TODO: define?
     public setUseDash(value: boolean) {
         this._options.useDash = value;
     }
@@ -486,7 +479,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
 
     /**
      * Sets the dash offset
-     * @param value the dashwss will be offset by this value
+     * @param value the dashes will be offset by this value
      */
     public setDashOffset(value: number) {
         this._options.dashOffset = value;
@@ -497,16 +490,12 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
      * @param value false means 1 unit in width = 1 unit on scene, true means 1 unit in width = 1 pixel (TODO: not really - make better description of this option)
      */
     public setSizeAttenuation(value: boolean) {
-        if ((this._options.sizeAttenuation === undefined && value !== undefined) || (this._options.sizeAttenuation !== undefined && value === undefined)) {
-            this._options.sizeAttenuation = value;
-            this.markAllDefinesAsDirty();
-        } else {
-            this._options.sizeAttenuation = value;
-        }
+        this._options.sizeAttenuation = value;
+        this.markAllDefinesAsDirty();
     }
 
     /**
-     * Sets line base width. At each point the line width is calculated byt widths[pointIndex] * width
+     * Sets line base width. At each point the line width is calculated by widths[pointIndex] * width
      * @param value base width
      */
     public setWidth(value: number) {
