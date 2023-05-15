@@ -1183,6 +1183,11 @@ interface XRWebGLBinding {
     getDepthInformation(view: XRView): XRWebGLDepthInformation | undefined;
 }
 
+// enabledFeatures
+interface XRSession {
+    enabledFeatures: string[];
+}
+
 /**
  * END: WebXR Depth Sensing Moudle
  * https://www.w3.org/TR/webxr-depth-sensing-1/
