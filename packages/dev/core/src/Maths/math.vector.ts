@@ -5498,36 +5498,6 @@ export class Matrix {
     }
 
     /**
-     * Copy the current matrix from the array starting index with the current matrix values
-     * @param array defines the copying array
-     * @param offset defines the offset in the copying array where to start storing values
-     * @returns the current matrix
-     */
-    public copyFromArray(array: Float32Array | Array<number>, offset: number = 0): this {
-        const source = this._m;
-        source[0] = array[offset];
-        source[1] = array[offset + 1];
-        source[2] = array[offset + 2];
-        source[3] = array[offset + 3];
-        source[4] = array[offset + 4];
-        source[5] = array[offset + 5];
-        source[6] = array[offset + 6];
-        source[7] = array[offset + 7];
-        source[8] = array[offset + 8];
-        source[9] = array[offset + 9];
-        source[10] = array[offset + 10];
-        source[11] = array[offset + 11];
-        source[12] = array[offset + 12];
-        source[13] = array[offset + 13];
-        source[14] = array[offset + 14];
-        source[15] = array[offset + 15];
-
-        this.markAsUpdated();
-
-        return this;
-    }
-
-    /**
      * Populates the given array from the starting index with the current matrix values
      * @param array defines the target array
      * @param offset defines the offset in the target array where to start storing values

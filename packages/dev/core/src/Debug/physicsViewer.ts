@@ -164,7 +164,7 @@ export class PhysicsViewer {
             for (let i = 0; i < body._pluginDataInstances.length; i++) {
                 const props = body.getMassProperties(i);
                 this._getMeshDebugInertiaMatrixToRef(props, inertiaMatrixRef);
-                transformMatrixRef.copyFromArray(bodyTransformMatrixData, i * 16);
+                Matrix.FromArrayToRef(bodyTransformMatrixData, i * 16, transformMatrixRef);
                 inertiaMatrixRef.multiplyToRef(transformMatrixRef, finalMatrixRef);
                 finalMatrixRef.copyToArray(inertiaMeshMatrixData, i * 16);
             }
