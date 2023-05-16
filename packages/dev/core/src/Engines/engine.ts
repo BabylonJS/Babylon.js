@@ -1928,7 +1928,6 @@ export class Engine extends ThinEngine {
         // no more engines left in the engine store? Notify!
         if (!Engine.Instances.length) {
             EngineStore.OnEnginesDisposedObservable.notifyObservers(this);
-            EngineStore.OnEnginesDisposedObservable.clear();
         }
 
         // Observables
