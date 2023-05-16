@@ -6,7 +6,7 @@ import { Mesh } from "../mesh";
 import { ExtrudePolygon } from "./polygonBuilder";
 
 /**
- * Largely inspired by https://github.com/mrdoob/three.js/blob/master/examples/jsm/loaders/FontLoader.js
+ * Parser inspired by https://github.com/mrdoob/three.js/blob/master/examples/jsm/loaders/FontLoader.js
  */
 
 // Interfaces
@@ -179,7 +179,7 @@ export function CreateText(
         depth: 1.0
     },
     scene: Nullable<Scene> = null
-): Mesh {
+): Nullable<Mesh> {
 
     // First we need to generate the paths
     const shapePaths = CreateShapePaths(text, options.size || 50, options.resolution || 8, fontData);
@@ -187,6 +187,10 @@ export function CreateText(
     // And extrude them
     const meshes: Mesh[] = [];
     for (const shapePath of shapePaths) {
+
+        if (!shapePath.paths.length) {
+            continue;
+        }
         
         const shapeVectors: Vector3[] = [];
         const holeVectors: Vector3[] = [];
@@ -214,7 +218,10 @@ export function CreateText(
     }
 
     // Then we can merge everyone into one single mesh
-    const newMesh = new Mesh(name, scene);
+    const newMesh = Mesh.MergeMeshes(meshes, true, true);
+
+    // Move pivot to center
+    
 
     return newMesh;
 }
