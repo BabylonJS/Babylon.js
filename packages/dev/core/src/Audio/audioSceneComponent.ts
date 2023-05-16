@@ -244,7 +244,7 @@ Object.defineProperty(Scene.prototype, "audioListenerRotationProvider", {
             this._addComponent(compo);
         }
 
-        if (typeof value !== "function") {
+        if (value && typeof value !== "function") {
             throw new Error("The value passed to [Scene.audioListenerRotationProvider] must be a function that returns a Vector3");
         } else {
             compo.audioListenerRotationProvider = value;
