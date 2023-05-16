@@ -100,6 +100,10 @@ export class PhysicsBody {
             this._physicsPlugin.initBodyInstances(this, motionType, m);
         } else {
             // single instance
+            if (transformNode.parent) {
+                // Force computation of world matrix so that the parent transforms are correctly reflected in absolutePosition/absoluteRotationQuaternion.
+                transformNode.computeWorldMatrix(true);
+            }
             this._physicsPlugin.initBody(this, motionType, transformNode.absolutePosition, transformNode.absoluteRotationQuaternion);
         }
         this.transformNode = transformNode;
