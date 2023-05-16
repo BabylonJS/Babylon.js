@@ -18,6 +18,7 @@ import type {
 } from "./materialPluginEvent";
 import { MaterialPluginEvent } from "./materialPluginEvent";
 import type { Observer } from "core/Misc/observable";
+import { EngineStore } from "../Engines/engineStore";
 
 declare type Scene = import("../scene").Scene;
 declare type Engine = import("../Engines/engine").Engine;
@@ -57,6 +58,12 @@ export class MaterialPluginManager {
     protected _uniformList: string[];
     protected _samplerList: string[];
     protected _uboList: string[];
+
+    static {
+        EngineStore.OnEnginesDisposedObservable.add(() => {
+            UnregisterAllMaterialPlugins();
+        });
+    }
 
     /**
      * Creates a new instance of the plugin manager
@@ -448,4 +455,5 @@ export function UnregisterAllMaterialPlugins(): void {
     plugins.length = 0;
     inited = false;
     Material.OnEventObservable.remove(observer);
+    observer = null;
 }
