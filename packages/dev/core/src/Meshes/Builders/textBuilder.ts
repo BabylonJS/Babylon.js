@@ -29,6 +29,7 @@ export interface IFontData {
 // Shape functions
 class ShapePath {
     private _paths: Path2[] = [];
+    private _tempPaths: Path2[] = [];
     private _holes: Path2[] = [];
     private _currentPath: Path2;
     private _resolution: number;
@@ -39,7 +40,7 @@ class ShapePath {
     
     moveTo(x: number, y: number) {
         this._currentPath = new Path2(x, y);
-        this._paths.push(this._currentPath);
+        this._tempPaths.push(this._currentPath);
     }
 
     lineTo(x: number, y: number) {
@@ -55,7 +56,15 @@ class ShapePath {
     }
 
     extractHoles() {
+        for (const path of this._tempPaths) {
+            if (path.area() < 0) {
+                this._holes.push(path);
+            } else {
+                this._paths.push(path);
+            }
+        }
 
+        this._tempPaths.length = 0;
     }
 
     get paths() {
@@ -211,6 +220,7 @@ export function CreateText(
         // Extrusion!
         const mesh = ExtrudePolygon(name, { 
             shape: shapeVectors, 
+            // holes: [holeVectors],
             depth: options.depth || 1.0,
             sideOrientation: Mesh._GetDefaultSideOrientation(options.sideOrientation || Mesh.DOUBLESIDE)
         }, scene);

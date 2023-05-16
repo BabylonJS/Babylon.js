@@ -341,6 +341,21 @@ export class Path2 {
     }
 
     /**
+     * Gets the area of the polygon defined by the path
+     * @returns area value
+     */
+    public area(): number {
+		const n = this._points.length;
+		let value = 0.0;
+
+		for (let p = n - 1, q = 0; q < n; p = q ++ ) {
+			value += this._points[p].x * this._points[q].y - this._points[q].x * this._points[p].y;
+		}
+
+		return value * 0.5;
+	}
+
+    /**
      * Gets the points which construct the path
      * @returns the Path2 internal array of points.
      */
