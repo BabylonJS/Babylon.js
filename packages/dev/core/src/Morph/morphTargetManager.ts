@@ -340,6 +340,10 @@ export class MorphTargetManager implements IDisposable {
             }
         }
 
+        if (this._morphTargetTextureIndices.length !== influenceCount) {
+            this._morphTargetTextureIndices = this._morphTargetTextureIndices.slice(0, influenceCount);
+        }
+
         if (!this._influences || this._influences.length !== influenceCount) {
             this._influences = new Float32Array(influenceCount);
         }
