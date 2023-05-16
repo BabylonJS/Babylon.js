@@ -2815,6 +2815,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             internalDataInfo._onBetweenPassObservable.clear();
         }
 
+        if (internalDataInfo._LODLevels) {
+            for (const lod of internalDataInfo._LODLevels)
+                lod.mesh = null;
+            internalDataInfo._LODLevels.length = 0;
+        }
+
         // Sources
         if (this._scene.useClonedMeshMap) {
             if (internalDataInfo.meshMap) {

@@ -75,6 +75,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      */
     public static readonly BILLBOARDMODE_STRETCHED_LOCAL = Constants.PARTICLES_BILLBOARDMODE_STRETCHED_LOCAL;
 
+    public static readonly BILLBOARDMODE_FLAT = Constants.PARTICLES_BILLBOARDMODE_FLAT;
+
     /**
      * This function can be defined to provide custom update for active particles.
      * This function will be called instead of regular update (age, position, color, etc.).

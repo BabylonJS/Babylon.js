@@ -62,6 +62,7 @@
         "build:umd": "nx run-many --target=build --parallel=3 --projects=babylonjs,babylonjs-gui,babylonjs-inspector,babylonjs-loaders,babylonjs-materials,babylonjs-serializers,babylonjs-post-process,babylonjs-procedural-textures,babylonjs-node-editor,babylonjs-gui-editor,babylonjs-ktx2decoder,babylonjs-viewer-assets,babylonjs-viewer,babylonjs-accessibility",
         "build:es6": "nx run-many --target=build --parallel=8 --projects=core,gui,loaders,materials,serializers,post-processes,procedural-textures,node-editor,inspector,gui-editor,viewer,shared-ui-components,accessibility",
         "build:es6-core-node": "nx run-many --target=build --parallel=2 --projects=core,node-editor",
+        "build:es6-core": "nx run-many --target=build --parallel=2 --projects=core",
         "build:es6-inspector": "nx run-many --target=build --parallel=1 --projects=inspector",
         "watch:shaders": "build-tools -c build-shaders --global --watch",
         "watch:assets": "build-tools -c pa --global --watch",
@@ -95,7 +96,8 @@
         "update-all-dependencies": "npm update -ws",
         "prepare-snapshot": "npm run build:snapshot -w @tools/babylon-server && build-tools -c ps",
         "start": "concurrently --kill-others -m 2 -n dev-watch,cdn-server \"npm run watch:dev:skip-compile\" \"npm run serve -w @tools/babylon-server\"",
-        "startNodeEditor": "concurrently --kill-others -m 2 -n dev-watch,cdn-server \"npm run watch:dev:skip-compile\" \"npm run serve -w @tools/node-editor\""
+        "startNodeEditor": "concurrently --kill-others -m 2 -n dev-watch,cdn-server \"npm run watch:dev:skip-compile\" \"npm run serve -w @tools/node-editor\"",
+        "startPlayground": "concurrently --kill-others -m 2 -n dev-watch,cdn-server \"npm run watch:dev:skip-compile\" \"npm run serve -w @tools/playground\""
     },
     "engines": {
         "node": ">=14.0.0 <20.0.0",

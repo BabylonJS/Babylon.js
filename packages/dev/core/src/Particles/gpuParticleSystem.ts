@@ -76,6 +76,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     /** @internal */
     public _randomTexture2: RawTexture;
 
+    private disposeRandomTexture1 : boolean = false;
+    private disposeRandomTexture2 : boolean = false;
+
     /** Indicates that the update of particles is done in the animate function (and not in render). Default: false */
     public updateInAnimate = false;
 
@@ -764,6 +767,8 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         options: Partial<{
             capacity: number;
             randomTextureSize: number;
+            randomTexture1 : RawTexture | undefined,
+            randomTexture2 : RawTexture | undefined
         }>,
         sceneOrEngine: Scene | ThinEngine,
         customEffect: Nullable<Effect> = null,
@@ -830,51 +835,62 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         // Random data
         const maxTextureSize = Math.min(this._engine.getCaps().maxTextureSize, fullOptions.randomTextureSize);
-        let d : number[] = [];
-        for (let i = 0; i < maxTextureSize; ++i) {
-            d.push(Math.random());
-            d.push(Math.random());
-            d.push(Math.random());
-            d.push(Math.random());
+        if (options.randomTexture1) {
+            this._randomTexture = options.randomTexture1;
+            this._randomTextureSize = this._randomTexture.getSize().width;
+        } else {
+            let d : number[] = [];
+            for (let i = 0; i < maxTextureSize; ++i) {
+                d.push(Math.random());
+                d.push(Math.random());
+                d.push(Math.random());
+                d.push(Math.random());
+            }
+            this._randomTexture = new RawTexture(
+                new Float32Array(d),
+                maxTextureSize,
+                1,
+                Constants.TEXTUREFORMAT_RGBA,
+                sceneOrEngine,
+                false,
+                false,
+                Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                Constants.TEXTURETYPE_FLOAT
+            );
+            this._randomTexture.name = "GPUParticleSystem_random1";
+            this._randomTexture.wrapU = Constants.TEXTURE_WRAP_ADDRESSMODE;
+            this._randomTexture.wrapV = Constants.TEXTURE_WRAP_ADDRESSMODE;
+            this.disposeRandomTexture1 = true;
         }
-        this._randomTexture = new RawTexture(
-            new Float32Array(d),
-            maxTextureSize,
-            1,
-            Constants.TEXTUREFORMAT_RGBA,
-            sceneOrEngine,
-            false,
-            false,
-            Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-            Constants.TEXTURETYPE_FLOAT
-        );
-        this._randomTexture.name = "GPUParticleSystem_random1";
-        this._randomTexture.wrapU = Constants.TEXTURE_WRAP_ADDRESSMODE;
-        this._randomTexture.wrapV = Constants.TEXTURE_WRAP_ADDRESSMODE;
 
-        d = [];
-        for (let i = 0; i < maxTextureSize; ++i) {
-            d.push(Math.random());
-            d.push(Math.random());
-            d.push(Math.random());
-            d.push(Math.random());
+        if (options.randomTexture2) {
+            this._randomTexture2 = options.randomTexture2;
+        } else {
+            let d : number[] = [];
+            for (let i = 0; i < maxTextureSize; ++i) {
+                d.push(Math.random());
+                d.push(Math.random());
+                d.push(Math.random());
+                d.push(Math.random());
+            }
+            this._randomTexture2 = new RawTexture(
+                new Float32Array(d),
+                maxTextureSize,
+                1,
+                Constants.TEXTUREFORMAT_RGBA,
+                sceneOrEngine,
+                false,
+                false,
+                Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                Constants.TEXTURETYPE_FLOAT
+            );
+            this._randomTexture2.name = "GPUParticleSystem_random2";
+            this._randomTexture2.wrapU = Constants.TEXTURE_WRAP_ADDRESSMODE;
+            this._randomTexture2.wrapV = Constants.TEXTURE_WRAP_ADDRESSMODE;
+
+            this._randomTextureSize = maxTextureSize;
+            this.disposeRandomTexture2 = true;
         }
-        this._randomTexture2 = new RawTexture(
-            new Float32Array(d),
-            maxTextureSize,
-            1,
-            Constants.TEXTUREFORMAT_RGBA,
-            sceneOrEngine,
-            false,
-            false,
-            Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-            Constants.TEXTURETYPE_FLOAT
-        );
-        this._randomTexture2.name = "GPUParticleSystem_random2";
-        this._randomTexture2.wrapU = Constants.TEXTURE_WRAP_ADDRESSMODE;
-        this._randomTexture2.wrapV = Constants.TEXTURE_WRAP_ADDRESSMODE;
-
-        this._randomTextureSize = maxTextureSize;
     }
 
     protected _reset() {
@@ -1211,6 +1227,8 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         if (this.billboardMode === ParticleSystem.BILLBOARDMODE_STRETCHED) {
             defines += "\n#define BILLBOARDSTRETCHED";
+        } else if (this.billboardMode === ParticleSystem.BILLBOARDMODE_FLAT) {
+            defines += "\n#define BILLBOARD_FLAT";
         }
 
         if (this._platform.isUpdateBufferCreated() && this._cachedUpdateDefines === defines) {
@@ -1339,6 +1357,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
                     break;
                 case ParticleSystem.BILLBOARDMODE_ALL:
                     defines.push("#define BILLBOARDMODE_ALL");
+                    break;  
+                case ParticleSystem.BILLBOARDMODE_FLAT:
+                    defines.push("#define BILLBOARD_FLAT");
                     break;
                 default:
                     break;
@@ -1799,15 +1820,15 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             (<any>this._dragGradientsTexture) = null;
         }
 
-        if (this._randomTexture) {
+        if (this._randomTexture && this.disposeRandomTexture1) {
             this._randomTexture.dispose();
-            (<any>this._randomTexture) = null;
         }
+        (<any>this._randomTexture) = null;
 
-        if (this._randomTexture2) {
-            this._randomTexture2.dispose();
-            (<any>this._randomTexture2) = null;
+        if (this._randomTexture2 && this.disposeRandomTexture2) {
+            this._randomTexture2.dispose(); 
         }
+        (<any>this._randomTexture2) = null;
 
         if (disposeTexture && this.particleTexture) {
             this.particleTexture.dispose();
@@ -1831,7 +1852,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @param cloneTexture Also clone the textures if true
      * @returns the cloned particle system
      */
-    public clone(name: string, newEmitter: any, cloneTexture = false): GPUParticleSystem {
+    public clone(name: string, newEmitter: any, cloneTexture = false, randomTexture1? : RawTexture, randomTexture2? : RawTexture): GPUParticleSystem {
         const custom = { ...this._customWrappers };
         let program: any = null;
         const engine = this._engine as any;
@@ -1853,7 +1874,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
 
         const serialization = this.serialize(cloneTexture);
-        const result = GPUParticleSystem.Parse(serialization, this._scene || this._engine, this._rootUrl);
+        const result = GPUParticleSystem.Parse(serialization, this._scene || this._engine, this._rootUrl, false, undefined, randomTexture1, randomTexture2);
         result.name = name;
         result.customShader = program;
         result._customWrappers = custom;
@@ -1897,7 +1918,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @param capacity defines the system capacity (if null or undefined the sotred capacity will be used)
      * @returns the parsed GPU particle system
      */
-    public static Parse(parsedParticleSystem: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string, doNotStart = false, capacity?: number): GPUParticleSystem {
+    public static Parse(parsedParticleSystem: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string, doNotStart = false, capacity?: number, randomTexture1? : RawTexture, randomTexture2? : RawTexture): GPUParticleSystem {
         const name = parsedParticleSystem.name;
         let engine: ThinEngine;
         let scene: Nullable<Scene>;
@@ -1911,7 +1932,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         const particleSystem = new GPUParticleSystem(
             name,
-            { capacity: capacity || parsedParticleSystem.capacity, randomTextureSize: parsedParticleSystem.randomTextureSize },
+            { capacity: capacity || parsedParticleSystem.capacity, randomTextureSize: parsedParticleSystem.randomTextureSize, randomTexture1, randomTexture2 },
             sceneOrEngine,
             null,
             parsedParticleSystem.isAnimationSheetEnabled

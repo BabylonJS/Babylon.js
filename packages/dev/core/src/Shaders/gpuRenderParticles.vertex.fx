@@ -143,6 +143,7 @@ void main() {
   vec2 cornerPos = (offset - translationPivot) * size.yz * size.x + translationPivot;
 
 #ifdef BILLBOARD
+
 	vec4 rotatedCorner;
 	rotatedCorner.w = 0.;
 
@@ -156,7 +157,19 @@ void main() {
 		vPositionW = rotate(normalize(yaxis), rotatedCorner.xyz);
 
 		vec4 viewPosition = (view * vec4(vPositionW, 1.0));
-	#elif defined(BILLBOARDSTRETCHED)
+	#elif BILLBOARD_FLAT
+		rotatedCorner.x = cornerPos.x * cos(angle) - cornerPos.y * sin(angle);
+		rotatedCorner.z = cornerPos.x * sin(angle) + cornerPos.y * cos(angle);
+		rotatedCorner.y = 0.;
+
+		#ifdef LOCAL
+			vPositionW = ((emitterWM * vec4(position, 1.0)).xyz + worldOffset) + rotatedCorner.xyz;
+		#else
+			vPositionW = (position + worldOffset) + rotatedCorner.xyz;
+		#endif
+
+		vec4 viewPosition = (view * vec4(vPositionW, 1.0));
+	#elif BILLBOARDSTRETCHED
 		// rotatedCorner.x = cornerPos.x * cos(angle) - cornerPos.y * sin(angle);
 		// rotatedCorner.y = cornerPos.x * sin(angle) + cornerPos.y * cos(angle);
 		// rotatedCorner.z = 0.;
@@ -181,7 +194,6 @@ void main() {
 		vec4 viewPosition=view*vec4((position+worldOffset),1.0)+rotatedCorner;
 		#endif
 		vPositionW=(invView*viewPosition).xyz;
-
 	#else
 		// Rotate
 		rotatedCorner.x = cornerPos.x * cos(angle) - cornerPos.y * sin(angle);

@@ -524,6 +524,10 @@ export class Constants {
      * Special billboard mode where the particle will be billboard to the camera but only around the axis of the direction of particle emission
      */
     public static readonly PARTICLES_BILLBOARDMODE_STRETCHED_LOCAL = 9;
+    /**
+     * Special billboard mode where the particle will be billboard to the camera but only around the axis of the direction of particle emission
+     */
+    public static readonly PARTICLES_BILLBOARDMODE_FLAT = 10;
 
     /** Default culling strategy : this is an exclusion test and it's the more accurate.
      *  Test order :
