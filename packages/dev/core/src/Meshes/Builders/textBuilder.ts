@@ -220,8 +220,16 @@ export function CreateText(
     // Then we can merge everyone into one single mesh
     const newMesh = Mesh.MergeMeshes(meshes, true, true);
 
-    // Move pivot to center
-    
+    if (newMesh){
+        // Move pivot to center
+        const bbox = newMesh?.getBoundingInfo();
+        newMesh.position.x = -bbox?.boundingBox.extendSizeWorld._x;
+        newMesh.position.y = -bbox?.boundingBox.extendSizeWorld._y;
+        newMesh.position.z = -bbox?.boundingBox.extendSizeWorld._z;
+        newMesh.name = name;
+
+        newMesh.bakeCurrentTransformIntoVertices();
+    }
 
     return newMesh;
 }
