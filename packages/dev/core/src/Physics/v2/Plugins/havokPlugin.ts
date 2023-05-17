@@ -35,14 +35,6 @@ class MeshAccumulator {
      * Merge mesh and its children so whole hierarchy can be used as a mesh shape or convex hull
      */
     public constructor(mesh: Mesh, collectIndices: boolean, scene: Scene) {
-        const worldFromRoot = mesh.computeWorldMatrix(true);
-        const rootScale = new Vector3();
-        const rootOrientation = new Quaternion();
-        const rootTranslation = new Vector3();
-        worldFromRoot.decompose(rootScale, rootOrientation, rootTranslation);
-
-        this._bodyFromWorld = Matrix.Compose(Vector3.One(), mesh.rotationQuaternion ? mesh.rotationQuaternion : Quaternion.Identity(), mesh.position);
-        this._bodyFromWorld = this._bodyFromWorld.invert();
         this._isRightHanded = scene.useRightHandedSystem;
         this._collectIndices = collectIndices;
     }
@@ -62,8 +54,9 @@ class MeshAccumulator {
      */
     public addMesh(mesh: Mesh, includeChildren: boolean): void {
         const indexOffset = this._vertices.length;
-        const worldFromShape = mesh.computeWorldMatrix(true);
-        const shapeFromBody = worldFromShape.multiply(this._bodyFromWorld);
+        // Force absoluteScaling to be computed
+        mesh.computeWorldMatrix(true);
+        const shapeFromBody = Matrix.Scaling(mesh.absoluteScaling.x, mesh.absoluteScaling.y, mesh.absoluteScaling.z);
 
         const vertexData = mesh.getVerticesData(VertexBuffer.PositionKind) || [];
         const numVerts = vertexData.length / 3;
