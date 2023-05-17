@@ -8,6 +8,7 @@ import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
 export class Rectangle extends Container {
     private _thickness = 1;
     private _cornerRadius = [0, 0, 0, 0];
+    private _cachedRadius = [0, 0, 0, 0];
 
     /** Gets or sets border thickness */
     @serialize()
@@ -39,7 +40,7 @@ export class Rectangle extends Container {
             return;
         }
 
-        this._cornerRadius = [value, value, value, value];
+        this._cornerRadius[0] = this._cornerRadius[1] = this._cornerRadius[2] = this._cornerRadius[3] = value;
         this._markAsDirty();
     }
 
@@ -142,7 +143,6 @@ export class Rectangle extends Container {
             context.fillStyle = this._getRectangleFill(context);
 
             if (this._cornerRadius[0] !== 0 || this._cornerRadius[1] !== 0 || this._cornerRadius[2] !== 0 || this._cornerRadius[3] !== 0) {
-                console.log("aa");
                 this._drawRoundedRect(context, this._thickness / 2);
                 context.fill();
             } else {
@@ -193,29 +193,20 @@ export class Rectangle extends Container {
         const width = this._currentMeasure.width - offset * 2;
         const height = this._currentMeasure.height - offset * 2;
 
-        let radius = {
-            x: Math.min(height / 2, Math.min(width / 2, this._cornerRadius[0])),
-            y: Math.min(height / 2, Math.min(width / 2, this._cornerRadius[1])),
-            z: Math.min(height / 2, Math.min(width / 2, this._cornerRadius[2])),
-            w: Math.min(height / 2, Math.min(width / 2, this._cornerRadius[3])),
-        };
-        radius = {
-            x: Math.abs(radius.x),
-            y: Math.abs(radius.y),
-            z: Math.abs(radius.z),
-            w: Math.abs(radius.w),
-        };
+        for (let index = 0; index < this._cornerRadius.length; index++) {
+            this._cachedRadius[index] = Math.abs(Math.min(height / 2, Math.min(width / 2, this._cornerRadius[index])));
+        }
 
         context.beginPath();
-        context.moveTo(x + radius.x, y);
-        context.lineTo(x + width - radius.y, y);
-        context.arc(x + width - radius.y, y + radius.y, radius.y, (3 * Math.PI) / 2, Math.PI * 2);
-        context.lineTo(x + width, y + height - radius.z);
-        context.arc(x + width - radius.z, y + height - radius.z, radius.z, 0, Math.PI / 2);
-        context.lineTo(x + radius.w, y + height);
-        context.arc(x + radius.w, y + height - radius.w, radius.w, Math.PI / 2, Math.PI);
-        context.lineTo(x, y + radius.x);
-        context.arc(x + radius.x, y + radius.x, radius.x, Math.PI, (3 * Math.PI) / 2);
+        context.moveTo(x + this._cachedRadius[0], y);
+        context.lineTo(x + width - this._cachedRadius[1], y);
+        context.arc(x + width - this._cachedRadius[1], y + this._cachedRadius[1], this._cachedRadius[1], (3 * Math.PI) / 2, Math.PI * 2);
+        context.lineTo(x + width, y + height - this._cachedRadius[2]);
+        context.arc(x + width - this._cachedRadius[2], y + height - this._cachedRadius[2], this._cachedRadius[2], 0, Math.PI / 2);
+        context.lineTo(x + this._cachedRadius[3], y + height);
+        context.arc(x + this._cachedRadius[3], y + height - this._cachedRadius[3], this._cachedRadius[3], Math.PI / 2, Math.PI);
+        context.lineTo(x, y + this._cachedRadius[0]);
+        context.arc(x + this._cachedRadius[0], y + this._cachedRadius[0], this._cachedRadius[0], Math.PI, (3 * Math.PI) / 2);
         context.closePath();
     }
 
