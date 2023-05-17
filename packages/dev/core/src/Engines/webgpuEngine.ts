@@ -3295,6 +3295,8 @@ export class WebGPUEngine extends Engine {
             }
         }
 
+        this._currentMaterialContext.textureState = textureState;
+
         const pipeline = this._cacheRenderPipeline.getRenderPipeline(fillMode, this._currentEffect!, this.currentSampleCount, textureState);
         const bindGroups = this._cacheBindGroups.getBindGroups(webgpuPipelineContext, this._currentDrawContext, this._currentMaterialContext);
 
