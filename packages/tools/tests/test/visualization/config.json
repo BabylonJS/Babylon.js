@@ -3,7 +3,7 @@
     "tests": [
         {
             "title": "MeshBuilder.CreateText",
-            "playgroundId": "#6I2RMN",
+            "playgroundId": "#6I2RMN#2",
             "referenceImage": "createText.png"
         },        
         {
