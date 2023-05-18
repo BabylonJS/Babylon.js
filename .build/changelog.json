@@ -1,5 +1,5 @@
 {
-    "fromTag": "6.3.0",
+    "fromTag": "6.3.1",
     "changelog": {
         "6.3.1": [
             {
@@ -129,6 +129,253 @@
                 "tags": [
                     "bug",
                     "texture"
+                ]
+            }
+        ],
+        "6.4.0": [
+            {
+                "pr": "13872",
+                "title": "Mesh: Improve doc for ignoreCameraMaxZ",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13871",
+                "title": "WebGPU: add support for new texture formats",
+                "description": "See https://forum.babylonjs.com/t/webgpu-rg11b10ufloat-and-rgb9e5ufloat-not-implemented/40890",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuCacheRenderPipeline.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureHelper.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "13870",
+                "title": "Fix Scene performance counters",
+                "description": "https://forum.babylonjs.com/t/confuse-about-sceneinstrument-caling-fetchnewframe/40840/2",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Instrumentation/sceneInstrumentation.ts",
+                    "packages/dev/core/src/Misc/perfCounter.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "performance viewer"
+                ]
+            },
+            {
+                "pr": "13853",
+                "title": "Physics: Add debug inertia view",
+                "description": "Closes #13775\r\n\r\nAn example in one of our PGs:\r\n![image](https://github.com/BabylonJS/Babylon.js/assets/6002144/b2010d49-4296-4f1b-84ac-170e7565f309)\r\n",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Debug/physicsViewer.ts"
+                ],
+                "tags": [
+                    "physics",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13864",
+                "title": "Allow `scene.audioListenerPositionProvider` to be set to null",
+                "description": "See https://forum.babylonjs.com/t/setting-scene-audiolistenerpositionprovider-to-null-throws-an-error/40820",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/Audio/audioSceneComponent.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "13869",
+                "title": "core not supported in declare module",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13868",
+                "title": "WebGPU: Fix morphTargetTextureIndices overwritting morphTargetTextureInfo",
+                "description": "See https://forum.babylonjs.com/t/webgpu-inactive-morph-target-shrinks-mesh-to-vertex-0/40864",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Morph/morphTargetManager.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "13866",
+                "title": "Material plugin: Fix cleaning when engine is disposed",
+                "description": "See https://forum.babylonjs.com/t/material-oneventobservable-clear-cause-material-plugins-not-work/40838/3\r\n\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/Materials/materialPluginManager.ts",
+                    "packages/tools/playground/src/components/rendererComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "13863",
+                "title": "add `enabledFeatures` to the session manager",
+                "description": "Fixes #13837",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/LibDeclarations/webxr.d.ts",
+                    "packages/dev/core/src/XR/webXRSessionManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13860",
+                "title": "Sprite: Fix picking when angle is not zero",
+                "description": "See https://forum.babylonjs.com/t/should-sprite-picking-work-with-rotation-angle/40768",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Sprites/spriteManager.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "sprite"
+                ]
+            },
+            {
+                "pr": "13842",
+                "title": "Node Material Editor: Allow loading GLTF format files in preview window, add drag and drop, revert to cube when loading fails",
+                "description": "Close #12752\r\n\r\nTo load a GLTF, you have to select all of its files in the file input/drag and drop all the files.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/src/components/preview/previewManager.ts",
+                    "packages/tools/nodeEditor/src/components/preview/previewMeshControlComponent.tsx",
+                    "packages/tools/nodeEditor/src/globalState.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "13859",
+                "title": "Fix bug where constraint perp axes were ignored",
+                "description": "Looks like we lost this in a refactor or something; the `perpAxisA` and `perpAxisB` fields in PhysicsConstraintParameters were unused, so constraints always used an arbitrary perp axis, instead of the user-provided one, which was making Physics6DoFConstraint hard to use.",
+                "author": {
+                    "name": "eoineoineoin",
+                    "url": "https://github.com/eoineoineoin"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "physics"
+                ]
+            },
+            {
+                "pr": "13857",
+                "title": "Decal: Add support for thin instances",
+                "description": "See https://forum.babylonjs.com/t/thin-instance-decals/40759\r\n\r\nThis PR also suppresses the \"Setting vertex data kind 'XXX' with an empty array\" warning when the created mesh is empty.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Builders/decalBuilder.ts"
+                ],
+                "tags": [
+                    "rendering engine",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13856",
+                "title": "ArcRotateCamera: Account for offset when using zoom to mouse location",
+                "description": "A user brought up an issue in the forum where the camera will zoom to a location but not account for any defined `targetScreenOffset` values.  This PR will now apply the offset to the zoom ray so that it's origin will come from the correct location.\r\n\r\nForum Link: https://forum.babylonjs.com/t/arcrotatecamera-zoomtomouselocation-does-not-take-targetscreenoffset-into-account/40743",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/Inputs/arcRotateCameraMouseWheelInput.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inputs"
+                ]
+            },
+            {
+                "pr": "13855",
+                "title": "DecalMap: Fix the isReady function",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/meshUVSpaceRenderer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
                 ]
             }
         ],
