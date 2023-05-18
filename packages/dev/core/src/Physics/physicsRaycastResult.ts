@@ -13,6 +13,7 @@ export class PhysicsRaycastResult {
     private _hitPointWorld: Vector3 = Vector3.Zero();
     private _rayFromWorld: Vector3 = Vector3.Zero();
     private _rayToWorld: Vector3 = Vector3.Zero();
+    private _triangleIndex: number = -1;
 
     /**
      * The Physics body that the ray hit
@@ -65,15 +66,23 @@ export class PhysicsRaycastResult {
         return this._rayToWorld;
     }
 
+    /*
+     * The index of the original triangle which was hit. Will be -1 if contact point is not on a mesh shape
+     */
+    get triangleIndex(): number {
+        return this._triangleIndex;
+    }
+
     /**
      * Sets the hit data (normal & point in world space)
      * @param hitNormalWorld defines the normal in world space
      * @param hitPointWorld defines the point in world space
      */
-    public setHitData(hitNormalWorld: IXYZ, hitPointWorld: IXYZ) {
+    public setHitData(hitNormalWorld: IXYZ, hitPointWorld: IXYZ, triangleIndex?: number) {
         this._hasHit = true;
         this._hitNormalWorld.set(hitNormalWorld.x, hitNormalWorld.y, hitNormalWorld.z);
         this._hitPointWorld.set(hitPointWorld.x, hitPointWorld.y, hitPointWorld.z);
+        this._triangleIndex = triangleIndex ?? -1;
     }
 
     /**
@@ -105,6 +114,7 @@ export class PhysicsRaycastResult {
 
         this._hitNormalWorld.setAll(0);
         this._hitPointWorld.setAll(0);
+        this._triangleIndex = -1;
     }
 }
 

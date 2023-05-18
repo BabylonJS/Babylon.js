@@ -6,6 +6,7 @@ import {
     PhysicsConstraintMotorType,
     PhysicsConstraintAxis,
     PhysicsConstraintAxisLimitMode,
+    IRaycastQuery,
 } from "../IPhysicsEnginePlugin";
 import type { PhysicsShapeParameters, IPhysicsEnginePluginV2, PhysicsMassProperties, IPhysicsCollisionEvent } from "../IPhysicsEnginePlugin";
 import { Logger } from "../../../Misc/logger";
@@ -1629,21 +1630,22 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * Performs a raycast. It takes in two points, from and to, and a PhysicsRaycastResult object to store the result of the raycast.
      * It then performs the raycast and stores the hit data in the PhysicsRaycastResult object.
      */
-    public raycast(from: Vector3, to: Vector3, result: PhysicsRaycastResult): void {
-        const queryMembership = ~0;
-        const queryCollideWith = ~0;
+    public raycast(from: Vector3, to: Vector3, result: PhysicsRaycastResult, query?: IRaycastQuery): void {
+        const queryMembership = query?.membership ?? ~0;
+        const queryCollideWith = query?.collideWith ?? ~0;
 
         result.reset(from, to);
 
-        const query = [this._bVecToV3(from), this._bVecToV3(to), [queryMembership, queryCollideWith]];
-        this._hknp.HP_World_CastRayWithCollector(this.world, this._queryCollector, query);
+        const hkQuery = [this._bVecToV3(from), this._bVecToV3(to), [queryMembership, queryCollideWith]];
+        this._hknp.HP_World_CastRayWithCollector(this.world, this._queryCollector, hkQuery);
 
         if (this._hknp.HP_QueryCollector_GetNumHits(this._queryCollector)[1] > 0) {
             const hitData = this._hknp.HP_QueryCollector_GetCastRayResult(this._queryCollector, 0)[1];
 
             const hitPos = hitData[1][3];
             const hitNormal = hitData[1][4];
-            result.setHitData({ x: hitNormal[0], y: hitNormal[1], z: hitNormal[2] }, { x: hitPos[0], y: hitPos[1], z: hitPos[2] });
+            const hitTriangle = hitData[1][5];
+            result.setHitData({ x: hitNormal[0], y: hitNormal[1], z: hitNormal[2] }, { x: hitPos[0], y: hitPos[1], z: hitPos[2] }, hitTriangle);
             result.calculateHitDistance();
             const hitBody = this._bodies.get(hitData[1][0][0]);
             result.body = hitBody?.body;

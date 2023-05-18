@@ -308,6 +308,11 @@ export enum PhysicsMotionType {
     DYNAMIC,
 }
 
+export interface IRaycastQuery {
+    membership?: number;
+    collideWith?: number;
+}
+
 /** @internal */
 export interface IPhysicsEnginePluginV2 {
     /**
