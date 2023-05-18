@@ -84,6 +84,7 @@ export class Rectangle extends Container {
     }
 
     /** Gets or sets the corner radius bottom right angle */
+    @serialize()
     public get cornerRadiusW(): number {
         return this._cornerRadius[3];
     }
