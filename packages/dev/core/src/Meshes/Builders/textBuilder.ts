@@ -218,6 +218,7 @@ function CreateShapePaths(text: string, size: number, resolution: number, fontDa
  * @param options defines options used to create the mesh
  * @param scene defines the hosting scene
  * @returns a new Mesh
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set/text
  */
 export function CreateText(
     name: string,
