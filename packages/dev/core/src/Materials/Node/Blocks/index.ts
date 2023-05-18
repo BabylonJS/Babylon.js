@@ -60,3 +60,4 @@ export * from "./biPlanarBlock";
 export * from "./matrixDeterminantBlock";
 export * from "./matrixTransposeBlock";
 export * from "./meshAttributeExistsBlock";
+export * from "./curveBlock";
