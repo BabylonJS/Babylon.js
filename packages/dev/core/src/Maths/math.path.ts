@@ -318,6 +318,64 @@ export class Path2 {
     }
 
     /**
+     * Defines if a given point is inside the polygon defines by the path
+     * @param point defines the point to test
+     * @returns true if the point is inside
+     */
+    public isPointInside(point: Vector2) {
+        let isInside = false;
+        const count = this._points.length;
+        for (let p = count - 1, q = 0; q < count; p = q++) {
+
+            let edgeLow = this._points[p];
+            let edgeHigh = this._points[q];
+
+            let edgeDx = edgeHigh.x - edgeLow.x;
+            let edgeDy = edgeHigh.y - edgeLow.y;
+
+            if (Math.abs(edgeDy) > Number.EPSILON) {
+                // Not parallel
+                if (edgeDy < 0) {
+                    edgeLow = this._points[q];
+                    edgeDx = - edgeDx;
+                    edgeHigh = this._points[p];
+                    edgeDy = - edgeDy;
+                }
+
+                if ((point.y < edgeLow.y) || (point.y > edgeHigh.y))
+                {
+                    continue;
+                }
+
+                if (point.y === edgeLow.y && point.x === edgeLow.x) {
+                    return	true;
+                } else {
+                    const perpEdge = edgeDy * (point.x - edgeLow.x) - edgeDx * (point.y - edgeLow.y);
+                    if (perpEdge === 0) {
+                        return	true;
+                    }
+                    if (perpEdge < 0) {
+                        continue;
+                    }
+                    isInside = !isInside;
+                }
+            } else {
+                // parallel or collinear
+                if (point.y !== edgeLow.y) {
+                    continue;
+                }
+
+                if (((edgeHigh.x <= point.x) && (point.x <= edgeLow.x)) ||
+                     ((edgeLow.x <= point.x) && (point.x <= edgeHigh.x))) {
+                    return true;
+                }
+            }
+        }
+
+        return isInside;
+    }
+
+    /**
      * Closes the Path2.
      * @returns the Path2.
      */
