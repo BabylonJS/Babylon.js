@@ -13,9 +13,11 @@ import { Container } from "gui/2D/controls/container";
 import type { Control } from "gui/2D/controls/control";
 import type { Node } from "core/node";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import type { IHTMLTwinRendererOptions } from "./htmlTwinRenderer";
 
 interface IHTMLTwinHostComponentProps {
     scene: Scene;
+    options?: IHTMLTwinRendererOptions;
 }
 interface IHTMLTwinHostComponentState {
     a11yTreeItems: HTMLTwinItem[];
@@ -23,9 +25,13 @@ interface IHTMLTwinHostComponentState {
 
 export class HTMLTwinHostComponent extends React.Component<IHTMLTwinHostComponentProps, IHTMLTwinHostComponentState> {
     private _observersMap = new Map<Observable<any>, Nullable<Observer<any>>>();
+    private _options: IHTMLTwinRendererOptions;
 
     constructor(props: IHTMLTwinHostComponentProps) {
         super(props);
+        this._options = props.options ?? {
+            addAllControls: true,
+        };
         this.state = { a11yTreeItems: [] };
     }
 
@@ -267,7 +273,7 @@ export class HTMLTwinHostComponent extends React.Component<IHTMLTwinHostComponen
         const queue: Control[] = [...rootItems];
         for (let i: number = 0; i < queue.length; i++) {
             const curNode = queue[i];
-            if (!curNode.isVisible) {
+            if (!curNode.isVisible || (!this._options.addAllControls && curNode.name !== "root" && !curNode.accessibilityTag?.description)) {
                 continue;
             }
             if (curNode instanceof Container && curNode.children.length !== 0 && !(curNode instanceof Button)) {
