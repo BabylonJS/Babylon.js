@@ -512,6 +512,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                 const parent = transformNode.parent as TransformNode;
                 // transform position/orientation in parent space
                 if (parent && parent.absoluteRotationQuaternion) {
+                    quat.normalize();
                     const finalTransform = TmpVectors.Matrix[0];
                     const finalTranslation = TmpVectors.Vector3[0];
                     finalTranslation.copyFromFloats(bodyTranslation[0], bodyTranslation[1], bodyTranslation[2]);
@@ -525,6 +526,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                     const localTransform = TmpVectors.Matrix[3];
                     finalTransform.multiplyToRef(parentInverseTransform, localTransform);
                     localTransform.decomposeToTransformNode(transformNode);
+                    transformNode.rotationQuaternion?.normalize();
                 } else {
                     transformNode.position.set(bodyTranslation[0], bodyTranslation[1], bodyTranslation[2]);
                     if (transformNode.rotationQuaternion) {
