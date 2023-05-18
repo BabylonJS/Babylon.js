@@ -839,7 +839,7 @@ export abstract class WebGPUCacheRenderPipeline {
             });
         }
 
-        webgpuPipelineContext.bindGroupLayouts = bindGroupLayouts;
+        webgpuPipelineContext.bindGroupLayouts[0] = bindGroupLayouts;
 
         return this._device.createPipelineLayout({ bindGroupLayouts });
     }
@@ -892,7 +892,7 @@ export abstract class WebGPUCacheRenderPipeline {
             });
         }
 
-        webgpuPipelineContext.bindGroupLayouts = bindGroupLayouts;
+        webgpuPipelineContext.bindGroupLayouts[this._textureState] = bindGroupLayouts;
 
         return this._device.createPipelineLayout({ bindGroupLayouts });
     }

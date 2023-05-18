@@ -131,7 +131,7 @@ export class WebGPUCacheBindGroups {
         WebGPUCacheBindGroups.NumBindGroupsCreatedTotal++;
         WebGPUCacheBindGroups._NumBindGroupsCreatedCurrentFrame++;
 
-        const bindGroupLayouts = webgpuPipelineContext.bindGroupLayouts;
+        const bindGroupLayouts = webgpuPipelineContext.bindGroupLayouts[materialContext.textureState];
         for (let i = 0; i < webgpuPipelineContext.shaderProcessingContext.bindGroupLayoutEntries.length; i++) {
             const setDefinition = webgpuPipelineContext.shaderProcessingContext.bindGroupLayoutEntries[i];
 
