@@ -3,7 +3,7 @@ import type { GlobalState } from "../globalState";
 import { RuntimeMode } from "../globalState";
 import { Utilities } from "../tools/utilities";
 import { DownloadManager } from "../tools/downloadManager";
-import { Engine, WebGPUEngine, UnregisterAllMaterialPlugins } from "@dev/core";
+import { Engine, WebGPUEngine } from "@dev/core";
 
 declare type Nullable<T> = import("@dev/core").Nullable<T>;
 declare type Scene = import("@dev/core").Scene;
@@ -69,13 +69,6 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             this._engine?.switchFullscreen(false);
         });
 
-        if (this.props.globalState.runtimeMode !== RuntimeMode.Editor) {
-            this.props.globalState.onCodeLoaded.add((code) => {
-                this.props.globalState.currentCode = code;
-                this.props.globalState.onRunRequiredObservable.notifyObservers();
-            });
-        }
-
         window.addEventListener("resize", () => {
             if (!this._engine) {
                 return;
@@ -105,11 +98,6 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
     private async _compileAndRunAsync() {
         this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
         this.props.globalState.onErrorObservable.notifyObservers(null);
-
-        // Check to make sure this function exists before calling as this function doesn't exist with older versions.
-        if (UnregisterAllMaterialPlugins) {
-            UnregisterAllMaterialPlugins();
-        }
 
         const displayInspector = this._scene?.debugLayer.isVisible();
 

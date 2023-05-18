@@ -1,5 +1,5 @@
 import type { Nullable, IndicesArray, FloatArray } from "../../types";
-import { Vector3, Matrix, Vector2 } from "../../Maths/math.vector";
+import { Vector3, Matrix, Vector2, TmpVectors } from "../../Maths/math.vector";
 import { Scalar } from "../../Maths/math.scalar";
 import { Mesh } from "../mesh";
 import { VertexBuffer } from "../../Buffers/buffer";
@@ -106,12 +106,6 @@ export function CreateDecal(
     const len = Math.sqrt(normal.x * normal.x + normal.z * normal.z);
     const pitch = Math.atan2(normal.y, len);
 
-    // Matrix
-    const decalWorldMatrix = Matrix.RotationYawPitchRoll(yaw, pitch, angle).multiply(Matrix.Translation(position.x, position.y, position.z));
-    const inverseDecalWorldMatrix = Matrix.Invert(decalWorldMatrix);
-    const meshWorldMatrix = sourceMesh.getWorldMatrix();
-    const transformMatrix = meshWorldMatrix.multiply(inverseDecalWorldMatrix);
-
     const vertexData = new VertexData();
     vertexData.indices = [];
     vertexData.positions = [];
@@ -124,7 +118,7 @@ export function CreateDecal(
 
     let currentVertexDataIndex = 0;
 
-    const extractDecalVector3 = (indexId: number): DecalVertex => {
+    const extractDecalVector3 = (indexId: number, transformMatrix: Matrix): DecalVertex => {
         const result = new DecalVertex();
         if (!indices || !positions || !normals) {
             return result;
@@ -365,122 +359,157 @@ export function CreateDecal(
         return clipResult;
     };
 
-    const oneFaceVertices = new Array<DecalVertex>(3);
+    const sourceMeshAsMesh = sourceMesh as Mesh;
+    const matrixData = sourceMeshAsMesh._thinInstanceDataStorage.matrixData;
 
-    for (let index = 0; index < indices.length; index += 3) {
-        let faceVertices: Nullable<DecalVertex[]> = oneFaceVertices;
+    const numMatrices = sourceMeshAsMesh.thinInstanceCount || 1;
+    const thinInstanceMatrix = TmpVectors.Matrix[0];
 
-        faceVertices[0] = extractDecalVector3(index);
-        if (meshHasOverridenMaterial && useLocalComputation) {
-            faceVertices[1] = extractDecalVector3(index + 2);
-            faceVertices[2] = extractDecalVector3(index + 1);
-        } else {
-            faceVertices[1] = extractDecalVector3(index + 1);
-            faceVertices[2] = extractDecalVector3(index + 2);
+    thinInstanceMatrix.copyFrom(Matrix.IdentityReadOnly);
+
+    for (let m = 0; m < numMatrices; ++m) {
+        if (sourceMeshAsMesh.hasThinInstances && matrixData) {
+            const ofst = m * 16;
+
+            thinInstanceMatrix.setRowFromFloats(0, matrixData[ofst + 0], matrixData[ofst + 1], matrixData[ofst + 2], matrixData[ofst + 3]);
+            thinInstanceMatrix.setRowFromFloats(1, matrixData[ofst + 4], matrixData[ofst + 5], matrixData[ofst + 6], matrixData[ofst + 7]);
+            thinInstanceMatrix.setRowFromFloats(2, matrixData[ofst + 8], matrixData[ofst + 9], matrixData[ofst + 10], matrixData[ofst + 11]);
+            thinInstanceMatrix.setRowFromFloats(3, matrixData[ofst + 12], matrixData[ofst + 13], matrixData[ofst + 14], matrixData[ofst + 15]);
         }
 
-        if (options.cullBackFaces) {
-            // If all the normals of the vertices of the face are pointing away from the view direction we discard the face.
-            // As computations are done in the decal coordinate space, the viewDirection is (0,0,1), so when dot(vertexNormal, -viewDirection) <= 0 the vertex is culled
-            if (-faceVertices[0].normal.z <= 0 && -faceVertices[1].normal.z <= 0 && -faceVertices[2].normal.z <= 0) {
-                continue;
-            }
-        }
+        // Matrix
+        const decalWorldMatrix = Matrix.RotationYawPitchRoll(yaw, pitch, angle).multiply(Matrix.Translation(position.x, position.y, position.z));
+        const inverseDecalWorldMatrix = Matrix.Invert(decalWorldMatrix);
+        const meshWorldMatrix = sourceMesh.getWorldMatrix();
+        const transformMatrix = thinInstanceMatrix.multiply(meshWorldMatrix).multiply(inverseDecalWorldMatrix);
 
-        // Clip
-        faceVertices = clip(faceVertices, xpAxis);
-        if (!faceVertices) continue;
-        faceVertices = clip(faceVertices, xnAxis);
-        if (!faceVertices) continue;
-        faceVertices = clip(faceVertices, ypAxis);
-        if (!faceVertices) continue;
-        faceVertices = clip(faceVertices, ynAxis);
-        if (!faceVertices) continue;
-        faceVertices = clip(faceVertices, zpAxis);
-        if (!faceVertices) continue;
-        faceVertices = clip(faceVertices, znAxis);
-        if (!faceVertices) continue;
+        const oneFaceVertices = new Array<DecalVertex>(3);
 
-        // Add UVs and get back to world
-        for (let vIndex = 0; vIndex < faceVertices.length; vIndex++) {
-            const vertex = faceVertices[vIndex];
+        for (let index = 0; index < indices.length; index += 3) {
+            let faceVertices: Nullable<DecalVertex[]> = oneFaceVertices;
 
-            //TODO check for Int32Array | Uint32Array | Uint16Array
-            (<number[]>vertexData.indices).push(currentVertexDataIndex);
-            if (useLocalComputation) {
-                if (vertex.localPositionOverride) {
-                    vertexData.positions[currentVertexDataIndex * 3] = vertex.localPositionOverride[0];
-                    vertexData.positions[currentVertexDataIndex * 3 + 1] = vertex.localPositionOverride[1];
-                    vertexData.positions[currentVertexDataIndex * 3 + 2] = vertex.localPositionOverride[2];
-                } else if (localPositions) {
-                    vertexData.positions[currentVertexDataIndex * 3] = localPositions[vertex.vertexIdx];
-                    vertexData.positions[currentVertexDataIndex * 3 + 1] = localPositions[vertex.vertexIdx + 1];
-                    vertexData.positions[currentVertexDataIndex * 3 + 2] = localPositions[vertex.vertexIdx + 2];
-                }
-                if (vertex.localNormalOverride) {
-                    vertexData.normals[currentVertexDataIndex * 3] = vertex.localNormalOverride[0];
-                    vertexData.normals[currentVertexDataIndex * 3 + 1] = vertex.localNormalOverride[1];
-                    vertexData.normals[currentVertexDataIndex * 3 + 2] = vertex.localNormalOverride[2];
-                } else if (localNormals) {
-                    vertexData.normals[currentVertexDataIndex * 3] = localNormals[vertex.vertexIdx];
-                    vertexData.normals[currentVertexDataIndex * 3 + 1] = localNormals[vertex.vertexIdx + 1];
-                    vertexData.normals[currentVertexDataIndex * 3 + 2] = localNormals[vertex.vertexIdx + 2];
-                }
+            faceVertices[0] = extractDecalVector3(index, transformMatrix);
+            if (meshHasOverridenMaterial && useLocalComputation) {
+                faceVertices[1] = extractDecalVector3(index + 2, transformMatrix);
+                faceVertices[2] = extractDecalVector3(index + 1, transformMatrix);
             } else {
-                vertex.position.toArray(vertexData.positions, currentVertexDataIndex * 3);
-                vertex.normal.toArray(vertexData.normals, currentVertexDataIndex * 3);
+                faceVertices[1] = extractDecalVector3(index + 1, transformMatrix);
+                faceVertices[2] = extractDecalVector3(index + 2, transformMatrix);
             }
-            if (vertexData.matricesIndices && vertexData.matricesWeights) {
-                if (vertex.matrixIndicesOverride) {
-                    vertexData.matricesIndices[currentVertexDataIndex * 4] = vertex.matrixIndicesOverride[0];
-                    vertexData.matricesIndices[currentVertexDataIndex * 4 + 1] = vertex.matrixIndicesOverride[1];
-                    vertexData.matricesIndices[currentVertexDataIndex * 4 + 2] = vertex.matrixIndicesOverride[2];
-                    vertexData.matricesIndices[currentVertexDataIndex * 4 + 3] = vertex.matrixIndicesOverride[3];
-                } else {
-                    if (matIndices) {
-                        vertexData.matricesIndices[currentVertexDataIndex * 4] = matIndices[vertex.vertexIdxForBones];
-                        vertexData.matricesIndices[currentVertexDataIndex * 4 + 1] = matIndices[vertex.vertexIdxForBones + 1];
-                        vertexData.matricesIndices[currentVertexDataIndex * 4 + 2] = matIndices[vertex.vertexIdxForBones + 2];
-                        vertexData.matricesIndices[currentVertexDataIndex * 4 + 3] = matIndices[vertex.vertexIdxForBones + 3];
-                    }
-                    if (matIndicesExtra && vertexData.matricesIndicesExtra) {
-                        vertexData.matricesIndicesExtra[currentVertexDataIndex * 4] = matIndicesExtra[vertex.vertexIdxForBones];
-                        vertexData.matricesIndicesExtra[currentVertexDataIndex * 4 + 1] = matIndicesExtra[vertex.vertexIdxForBones + 1];
-                        vertexData.matricesIndicesExtra[currentVertexDataIndex * 4 + 2] = matIndicesExtra[vertex.vertexIdxForBones + 2];
-                        vertexData.matricesIndicesExtra[currentVertexDataIndex * 4 + 3] = matIndicesExtra[vertex.vertexIdxForBones + 3];
-                    }
-                }
-                if (vertex.matrixWeightsOverride) {
-                    vertexData.matricesWeights[currentVertexDataIndex * 4] = vertex.matrixWeightsOverride[0];
-                    vertexData.matricesWeights[currentVertexDataIndex * 4 + 1] = vertex.matrixWeightsOverride[1];
-                    vertexData.matricesWeights[currentVertexDataIndex * 4 + 2] = vertex.matrixWeightsOverride[2];
-                    vertexData.matricesWeights[currentVertexDataIndex * 4 + 3] = vertex.matrixWeightsOverride[3];
-                } else {
-                    if (matWeights) {
-                        vertexData.matricesWeights[currentVertexDataIndex * 4] = matWeights[vertex.vertexIdxForBones];
-                        vertexData.matricesWeights[currentVertexDataIndex * 4 + 1] = matWeights[vertex.vertexIdxForBones + 1];
-                        vertexData.matricesWeights[currentVertexDataIndex * 4 + 2] = matWeights[vertex.vertexIdxForBones + 2];
-                        vertexData.matricesWeights[currentVertexDataIndex * 4 + 3] = matWeights[vertex.vertexIdxForBones + 3];
-                    }
-                    if (matWeightsExtra && vertexData.matricesWeightsExtra) {
-                        vertexData.matricesWeightsExtra[currentVertexDataIndex * 4] = matWeightsExtra[vertex.vertexIdxForBones];
-                        vertexData.matricesWeightsExtra[currentVertexDataIndex * 4 + 1] = matWeightsExtra[vertex.vertexIdxForBones + 1];
-                        vertexData.matricesWeightsExtra[currentVertexDataIndex * 4 + 2] = matWeightsExtra[vertex.vertexIdxForBones + 2];
-                        vertexData.matricesWeightsExtra[currentVertexDataIndex * 4 + 3] = matWeightsExtra[vertex.vertexIdxForBones + 3];
-                    }
+
+            if (options.cullBackFaces) {
+                // If all the normals of the vertices of the face are pointing away from the view direction we discard the face.
+                // As computations are done in the decal coordinate space, the viewDirection is (0,0,1), so when dot(vertexNormal, -viewDirection) <= 0 the vertex is culled
+                if (-faceVertices[0].normal.z <= 0 && -faceVertices[1].normal.z <= 0 && -faceVertices[2].normal.z <= 0) {
+                    continue;
                 }
             }
 
-            if (!options.captureUVS) {
-                (<number[]>vertexData.uvs).push(0.5 + vertex.position.x / size.x);
-                const v = 0.5 + vertex.position.y / size.y;
-                (<number[]>vertexData.uvs).push(CompatibilityOptions.UseOpenGLOrientationForUV ? 1 - v : v);
-            } else {
-                vertex.uv.toArray(vertexData.uvs, currentVertexDataIndex * 2);
+            // Clip
+            faceVertices = clip(faceVertices, xpAxis);
+            if (!faceVertices) continue;
+            faceVertices = clip(faceVertices, xnAxis);
+            if (!faceVertices) continue;
+            faceVertices = clip(faceVertices, ypAxis);
+            if (!faceVertices) continue;
+            faceVertices = clip(faceVertices, ynAxis);
+            if (!faceVertices) continue;
+            faceVertices = clip(faceVertices, zpAxis);
+            if (!faceVertices) continue;
+            faceVertices = clip(faceVertices, znAxis);
+            if (!faceVertices) continue;
+
+            // Add UVs and get back to world
+            for (let vIndex = 0; vIndex < faceVertices.length; vIndex++) {
+                const vertex = faceVertices[vIndex];
+
+                //TODO check for Int32Array | Uint32Array | Uint16Array
+                (<number[]>vertexData.indices).push(currentVertexDataIndex);
+                if (useLocalComputation) {
+                    if (vertex.localPositionOverride) {
+                        vertexData.positions[currentVertexDataIndex * 3] = vertex.localPositionOverride[0];
+                        vertexData.positions[currentVertexDataIndex * 3 + 1] = vertex.localPositionOverride[1];
+                        vertexData.positions[currentVertexDataIndex * 3 + 2] = vertex.localPositionOverride[2];
+                    } else if (localPositions) {
+                        vertexData.positions[currentVertexDataIndex * 3] = localPositions[vertex.vertexIdx];
+                        vertexData.positions[currentVertexDataIndex * 3 + 1] = localPositions[vertex.vertexIdx + 1];
+                        vertexData.positions[currentVertexDataIndex * 3 + 2] = localPositions[vertex.vertexIdx + 2];
+                    }
+                    if (vertex.localNormalOverride) {
+                        vertexData.normals[currentVertexDataIndex * 3] = vertex.localNormalOverride[0];
+                        vertexData.normals[currentVertexDataIndex * 3 + 1] = vertex.localNormalOverride[1];
+                        vertexData.normals[currentVertexDataIndex * 3 + 2] = vertex.localNormalOverride[2];
+                    } else if (localNormals) {
+                        vertexData.normals[currentVertexDataIndex * 3] = localNormals[vertex.vertexIdx];
+                        vertexData.normals[currentVertexDataIndex * 3 + 1] = localNormals[vertex.vertexIdx + 1];
+                        vertexData.normals[currentVertexDataIndex * 3 + 2] = localNormals[vertex.vertexIdx + 2];
+                    }
+                } else {
+                    vertex.position.toArray(vertexData.positions, currentVertexDataIndex * 3);
+                    vertex.normal.toArray(vertexData.normals, currentVertexDataIndex * 3);
+                }
+                if (vertexData.matricesIndices && vertexData.matricesWeights) {
+                    if (vertex.matrixIndicesOverride) {
+                        vertexData.matricesIndices[currentVertexDataIndex * 4] = vertex.matrixIndicesOverride[0];
+                        vertexData.matricesIndices[currentVertexDataIndex * 4 + 1] = vertex.matrixIndicesOverride[1];
+                        vertexData.matricesIndices[currentVertexDataIndex * 4 + 2] = vertex.matrixIndicesOverride[2];
+                        vertexData.matricesIndices[currentVertexDataIndex * 4 + 3] = vertex.matrixIndicesOverride[3];
+                    } else {
+                        if (matIndices) {
+                            vertexData.matricesIndices[currentVertexDataIndex * 4] = matIndices[vertex.vertexIdxForBones];
+                            vertexData.matricesIndices[currentVertexDataIndex * 4 + 1] = matIndices[vertex.vertexIdxForBones + 1];
+                            vertexData.matricesIndices[currentVertexDataIndex * 4 + 2] = matIndices[vertex.vertexIdxForBones + 2];
+                            vertexData.matricesIndices[currentVertexDataIndex * 4 + 3] = matIndices[vertex.vertexIdxForBones + 3];
+                        }
+                        if (matIndicesExtra && vertexData.matricesIndicesExtra) {
+                            vertexData.matricesIndicesExtra[currentVertexDataIndex * 4] = matIndicesExtra[vertex.vertexIdxForBones];
+                            vertexData.matricesIndicesExtra[currentVertexDataIndex * 4 + 1] = matIndicesExtra[vertex.vertexIdxForBones + 1];
+                            vertexData.matricesIndicesExtra[currentVertexDataIndex * 4 + 2] = matIndicesExtra[vertex.vertexIdxForBones + 2];
+                            vertexData.matricesIndicesExtra[currentVertexDataIndex * 4 + 3] = matIndicesExtra[vertex.vertexIdxForBones + 3];
+                        }
+                    }
+                    if (vertex.matrixWeightsOverride) {
+                        vertexData.matricesWeights[currentVertexDataIndex * 4] = vertex.matrixWeightsOverride[0];
+                        vertexData.matricesWeights[currentVertexDataIndex * 4 + 1] = vertex.matrixWeightsOverride[1];
+                        vertexData.matricesWeights[currentVertexDataIndex * 4 + 2] = vertex.matrixWeightsOverride[2];
+                        vertexData.matricesWeights[currentVertexDataIndex * 4 + 3] = vertex.matrixWeightsOverride[3];
+                    } else {
+                        if (matWeights) {
+                            vertexData.matricesWeights[currentVertexDataIndex * 4] = matWeights[vertex.vertexIdxForBones];
+                            vertexData.matricesWeights[currentVertexDataIndex * 4 + 1] = matWeights[vertex.vertexIdxForBones + 1];
+                            vertexData.matricesWeights[currentVertexDataIndex * 4 + 2] = matWeights[vertex.vertexIdxForBones + 2];
+                            vertexData.matricesWeights[currentVertexDataIndex * 4 + 3] = matWeights[vertex.vertexIdxForBones + 3];
+                        }
+                        if (matWeightsExtra && vertexData.matricesWeightsExtra) {
+                            vertexData.matricesWeightsExtra[currentVertexDataIndex * 4] = matWeightsExtra[vertex.vertexIdxForBones];
+                            vertexData.matricesWeightsExtra[currentVertexDataIndex * 4 + 1] = matWeightsExtra[vertex.vertexIdxForBones + 1];
+                            vertexData.matricesWeightsExtra[currentVertexDataIndex * 4 + 2] = matWeightsExtra[vertex.vertexIdxForBones + 2];
+                            vertexData.matricesWeightsExtra[currentVertexDataIndex * 4 + 3] = matWeightsExtra[vertex.vertexIdxForBones + 3];
+                        }
+                    }
+                }
+
+                if (!options.captureUVS) {
+                    (<number[]>vertexData.uvs).push(0.5 + vertex.position.x / size.x);
+                    const v = 0.5 + vertex.position.y / size.y;
+                    (<number[]>vertexData.uvs).push(CompatibilityOptions.UseOpenGLOrientationForUV ? 1 - v : v);
+                } else {
+                    vertex.uv.toArray(vertexData.uvs, currentVertexDataIndex * 2);
+                }
+                currentVertexDataIndex++;
             }
-            currentVertexDataIndex++;
         }
     }
+
+    // Avoid the "Setting vertex data kind 'XXX' with an empty array" warning when calling vertexData.applyToMesh
+    if (vertexData.indices.length === 0) vertexData.indices = null;
+    if (vertexData.positions.length === 0) vertexData.positions = null;
+    if (vertexData.normals.length === 0) vertexData.normals = null;
+    if (vertexData.uvs.length === 0) vertexData.uvs = null;
+    if (vertexData.matricesIndices?.length === 0) vertexData.matricesIndices = null;
+    if (vertexData.matricesWeights?.length === 0) vertexData.matricesWeights = null;
+    if (vertexData.matricesIndicesExtra?.length === 0) vertexData.matricesIndicesExtra = null;
+    if (vertexData.matricesWeightsExtra?.length === 0) vertexData.matricesWeightsExtra = null;
 
     // Return mesh
     const decal = new Mesh(name, sourceMesh.getScene());

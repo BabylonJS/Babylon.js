@@ -1,6 +1,6 @@
 import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import { TextureBlock } from "core/Materials/Node/Blocks/Dual/textureBlock";
-import type { RefractionBlock } from "core/Materials/Node/Blocks/PBR/refractionBlock";
+import { RefractionBlock } from "core/Materials/Node/Blocks/PBR/refractionBlock";
 import { ReflectionTextureBlock } from "core/Materials/Node/Blocks/Dual/reflectionTextureBlock";
 import { TextureLineComponent } from "../../sharedComponents/textureLineComponent";
 import { CurrentScreenBlock } from "core/Materials/Node/Blocks/Dual/currentScreenBlock";
@@ -50,6 +50,9 @@ export class TextureDisplayManager implements IDisplayManager {
             }
             if (block instanceof TriPlanarBlock) {
                 contentArea.classList.add(localStyles["triplanar-texture-block"]);
+            }
+            if (block instanceof RefractionBlock) {
+                contentArea.classList.add(localStyles["refraction-texture-block"]);
             }
 
             this._previewCanvas = contentArea.ownerDocument!.createElement("canvas");

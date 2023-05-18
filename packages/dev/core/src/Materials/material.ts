@@ -203,12 +203,6 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      */
     public static OnEventObservable = new Observable<Material>();
 
-    static {
-        EngineStore.OnEnginesDisposedObservable.addOnce(() => {
-            Material.OnEventObservable.clear();
-        });
-    }
-
     /**
      * Custom callback helping to override the default shader used in the material.
      */

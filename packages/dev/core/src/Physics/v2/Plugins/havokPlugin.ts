@@ -1,14 +1,18 @@
 import { Matrix, Quaternion, TmpVectors, Vector3 } from "../../../Maths/math.vector";
-import { PhysicsShapeType, PhysicsConstraintType, PhysicsMotionType } from "../IPhysicsEnginePlugin";
-import type { PhysicsShapeParameters, PhysicsConstraintMotorType, IPhysicsEnginePluginV2, PhysicsMassProperties, IPhysicsCollisionEvent } from "../IPhysicsEnginePlugin";
+import {
+    PhysicsShapeType,
+    PhysicsConstraintType,
+    PhysicsMotionType,
+    PhysicsConstraintMotorType,
+    PhysicsConstraintAxis,
+    PhysicsConstraintAxisLimitMode,
+} from "../IPhysicsEnginePlugin";
+import type { PhysicsShapeParameters, IPhysicsEnginePluginV2, PhysicsMassProperties, IPhysicsCollisionEvent } from "../IPhysicsEnginePlugin";
 import { Logger } from "../../../Misc/logger";
 import type { PhysicsBody } from "../physicsBody";
-import type { PhysicsConstraint } from "../physicsConstraint";
-import type { Physics6DoFConstraint } from "../physicsConstraint";
+import type { PhysicsConstraint, Physics6DoFConstraint } from "../physicsConstraint";
 import type { PhysicsMaterial } from "../physicsMaterial";
 import { PhysicsMaterialCombineMode } from "../physicsMaterial";
-import { PhysicsConstraintAxis } from "../IPhysicsEnginePlugin";
-import { PhysicsConstraintAxisLimitMode } from "../IPhysicsEnginePlugin";
 import { PhysicsShape } from "../physicsShape";
 import type { BoundingBox } from "../../../Culling/boundingBox";
 import type { TransformNode } from "../../../Meshes/transformNode";
@@ -328,6 +332,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * Initializes a physics body with the given position and orientation.
      *
      * @param body - The physics body to initialize.
+     * @param motionType - The motion type of the body.
      * @param position - The position of the body.
      * @param orientation - The orientation of the body.
      * This code is useful for initializing a physics body with the given position and orientation.
@@ -508,8 +513,23 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                 const bodyTranslation = bodyTransform[0];
                 const bodyOrientation = bodyTransform[1];
                 const quat = TmpVectors.Quaternion[0];
-                transformNode.position.set(bodyTranslation[0], bodyTranslation[1], bodyTranslation[2]);
+
                 quat.set(bodyOrientation[0], bodyOrientation[1], bodyOrientation[2], bodyOrientation[3]);
+
+                const parent = transformNode.parent as TransformNode;
+                // transform position/orientation in parent space
+                if (parent && parent.absoluteRotationQuaternion) {
+                    TmpVectors.Vector3[2].set(bodyTranslation[0], bodyTranslation[1], bodyTranslation[2]);
+                    parent.absoluteRotationQuaternion.conjugateToRef(TmpVectors.Quaternion[1]);
+                    quat.multiplyInPlace(TmpVectors.Quaternion[1]);
+                    TmpVectors.Vector3[2].subtractToRef(parent.absolutePosition, TmpVectors.Vector3[0]);
+                    const localPosition = TmpVectors.Vector3[1];
+                    TmpVectors.Vector3[0].rotateByQuaternionToRef(TmpVectors.Quaternion[1], localPosition);
+                    transformNode.position.set(localPosition.x, localPosition.y, localPosition.z); // use set so position._isDirty is true
+                } else {
+                    transformNode.position.set(bodyTranslation[0], bodyTranslation[1], bodyTranslation[2]);
+                }
+
                 if (transformNode.rotationQuaternion) {
                     transformNode.rotationQuaternion.copyFrom(quat);
                 } else {
@@ -950,6 +970,33 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     }
 
     /**
+     * Sets the gravity factor of a body
+     * @param body the physics body to set the gravity factor for
+     * @param factor the gravity factor
+     * @param instanceIndex the index of the instance in an instanced body
+     */
+    public setGravityFactor(body: PhysicsBody, factor: number, instanceIndex?: number): void {
+        this._applyToBodyOrInstances(
+            body,
+            (pluginRef) => {
+                this._hknp.HP_Body_SetGravityFactor(pluginRef.hpBodyId, factor);
+            },
+            instanceIndex
+        );
+    }
+
+    /**
+     * Get the gravity factor of a body
+     * @param body the physics body to get the gravity factor from
+     * @param instanceIndex the index of the instance in an instanced body. If not specified, the gravity factor of the first instance will be returned.
+     * @returns the gravity factor
+     */
+    public getGravityFactor(body: PhysicsBody, instanceIndex?: number): number {
+        const pluginRef = this._getPluginReference(body, instanceIndex);
+        return this._hknp.HP_Body_GetGravityFactor(pluginRef.hpBodyId)[1];
+    }
+
+    /**
      * Disposes a physics body.
      *
      * @param body - The physics body to dispose.
@@ -1117,6 +1164,11 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * It then creates an array containing the position and orientation of the node and returns it.
      */
     private _getTransformInfos(node: TransformNode): any[] {
+        if (node.parent) {
+            node.computeWorldMatrix();
+            return [this._bVecToV3(node.absolutePosition), this._bQuatToV4(node.absoluteRotationQuaternion)];
+        }
+
         let orientation = TmpVectors.Quaternion[0];
         if (node.rotationQuaternion) {
             orientation = node.rotationQuaternion;
@@ -1258,12 +1310,20 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         const pivotA = options.pivotA ? this._bVecToV3(options.pivotA) : this._bVecToV3(Vector3.Zero());
         const axisA = options.axisA ?? new Vector3(1, 0, 0);
         const perpAxisA = this._tmpVec3[0];
-        axisA?.getNormalToRef(perpAxisA);
+        if (options.perpAxisA) {
+            perpAxisA.copyFrom(options.perpAxisA);
+        } else {
+            axisA.getNormalToRef(perpAxisA);
+        }
         this._hknp.HP_Constraint_SetAnchorInParent(jointId, pivotA, this._bVecToV3(axisA), this._bVecToV3(perpAxisA));
         const pivotB = options.pivotB ? this._bVecToV3(options.pivotB) : this._bVecToV3(Vector3.Zero());
         const axisB = options.axisB ?? new Vector3(1, 0, 0);
         const perpAxisB = this._tmpVec3[0];
-        axisB.getNormalToRef(perpAxisB);
+        if (options.perpAxisB) {
+            perpAxisB.copyFrom(options.perpAxisB);
+        } else {
+            axisB.getNormalToRef(perpAxisB);
+        }
         this._hknp.HP_Constraint_SetAnchorInChild(jointId, pivotB, this._bVecToV3(axisB), this._bVecToV3(perpAxisB));
 
         if (type == PhysicsConstraintType.LOCK) {
@@ -1333,7 +1393,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * @param body - The main body to which the constraint is applied.
      * @param childBody - The body to which the constraint is applied.
      * @param constraint - The constraint to be applied.
-     * * @param instanceIndex - If this body is instanced, the index of the instance to which the constraint will be applied. If not specified, no constraint will be applied.
+     * @param instanceIndex - If this body is instanced, the index of the instance to which the constraint will be applied. If not specified, no constraint will be applied.
      * @param childInstanceIndex - If the child body is instanced, the index of the instance to which the constraint will be applied. If not specified, no constraint will be applied.
      */
     addConstraint(body: PhysicsBody, childBody: PhysicsBody, constraint: PhysicsConstraint, instanceIndex?: number, childInstanceIndex?: number): void {
@@ -1403,7 +1463,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      *
      */
     public getAxisFriction(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): number {
-        return this._hknp.HP_Constraint_GetAxisfriction(constraint._pluginData, this._constraintAxisToNative(axis))[1];
+        return this._hknp.HP_Constraint_GetAxisFriction(constraint._pluginData, this._constraintAxisToNative(axis))[1];
     }
 
     /**
@@ -1483,7 +1543,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      *
      */
     public setAxisMotorType(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis, motorType: PhysicsConstraintMotorType): void {
-        this._hknp.HP_Constraint_SetAxisMotorType(constraint._pluginData, this._constraintAxisToNative(axis), motorType);
+        this._hknp.HP_Constraint_SetAxisMotorType(constraint._pluginData, this._constraintAxisToNative(axis), this._constraintMotorTypeToNative(motorType));
     }
 
     /**
@@ -1494,7 +1554,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      *
      */
     public getAxisMotorType(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): PhysicsConstraintMotorType {
-        return this._hknp.HP_Constraint_GetAxisMotorType(constraint._pluginData, this._constraintAxisToNative(axis))[1];
+        return this._nativeToMotorType(this._hknp.HP_Constraint_GetAxisMotorType(constraint._pluginData, this._constraintAxisToNative(axis))[1]);
     }
 
     /**
@@ -1572,6 +1632,9 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     public raycast(from: Vector3, to: Vector3, result: PhysicsRaycastResult): void {
         const queryMembership = ~0;
         const queryCollideWith = ~0;
+
+        result.reset(from, to);
+
         const query = [this._bVecToV3(from), this._bVecToV3(to), [queryMembership, queryCollideWith]];
         this._hknp.HP_World_CastRayWithCollector(this.world, this._queryCollector, query);
 
@@ -1693,6 +1756,26 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
 
     private _bQuatToV4(q: Quaternion): Array<number> {
         return [q._x, q._y, q._z, q._w];
+    }
+
+    private _constraintMotorTypeToNative(motorType: PhysicsConstraintMotorType): any {
+        switch (motorType) {
+            case PhysicsConstraintMotorType.POSITION:
+                return this._hknp.ConstraintMotorType.POSITION;
+            case PhysicsConstraintMotorType.VELOCITY:
+                return this._hknp.ConstraintMotorType.VELOCITY;
+        }
+        return this._hknp.ConstraintMotorType.NONE;
+    }
+
+    private _nativeToMotorType(motorType: any): PhysicsConstraintMotorType {
+        switch (motorType) {
+            case this._hknp.ConstraintMotorType.POSITION:
+                return PhysicsConstraintMotorType.POSITION;
+            case this._hknp.ConstraintMotorType.VELOCITY:
+                return PhysicsConstraintMotorType.VELOCITY;
+        }
+        return PhysicsConstraintMotorType.NONE;
     }
 
     private _materialCombineToNative(mat: PhysicsMaterialCombineMode): any {

@@ -114,7 +114,14 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
             }
 
             if (delta) {
-                if (this.zoomToMouseLocation && this._hitPlane) {
+                if (this.zoomToMouseLocation) {
+                    // If we are zooming to the mouse location, then we need to get the hit plane at the start of the zoom gesture if it doesn't exist
+                    // The hit plane is normally calculated after the first motion and each time there's motion so if we don't do this first,
+                    // the first zoom will be to the center of the screen
+                    if (!this._hitPlane) {
+                        this._updateHitPlane();
+                    }
+
                     this._zoomToMouse(delta);
                 } else {
                     this.camera.inertialRadiusOffset += delta;
@@ -202,6 +209,9 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
         // we don't have to worry about this ray shooting off to infinity. This ray creates
         // a vector defining where we want to zoom to.
         const ray = scene.createPickingRay(scene.pointerX, scene.pointerY, Matrix.Identity(), camera, false);
+        // Since the camera is the origin of the picking ray, we need to offset it by the camera's offset manually
+        ray.origin.x -= camera.targetScreenOffset.x;
+        ray.origin.y -= camera.targetScreenOffset.y;
         let distance = 0;
         if (this._hitPlane) {
             distance = ray.intersectsPlane(this._hitPlane) ?? 0;

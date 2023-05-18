@@ -1,6 +1,1055 @@
 {
-    "fromTag": "6.0.0",
+    "fromTag": "6.3.1",
     "changelog": {
+        "6.3.1": [
+            {
+                "pr": "13850",
+                "title": "Fix Dump tools clamping",
+                "description": "https://forum.babylonjs.com/t/maybe-bug-about-dumptools-ts/40685/2",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/dumpTools.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "tools"
+                ]
+            },
+            {
+                "pr": "13849",
+                "title": "Add clarification to expected coordinate spaces when using Ray.inters…",
+                "description": "…ectsMesh and AbstractMesh.intersects.\r\n\r\nRelated forum issue: https://forum.babylonjs.com/t/moved-extruded-polygons-dont-intersect-with-rays/40694",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/ray.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13848",
+                "title": "SSR: Make the jitter centered",
+                "description": "See https://forum.babylonjs.com/t/setting-blurdispersionstrength-to-0-and-setting-roughnessfactor-will-cause-the-reflection-to-skew-in-ssr/40646/2\r\n\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/screenSpaceReflection2.fragment.fx"
+                ],
+                "tags": [
+                    "rendering engine",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13847",
+                "title": "Make sure not to add rootUrl to data URLs when parsing textures",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/texture.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "loaders"
+                ]
+            },
+            {
+                "pr": "13846",
+                "title": "Add texture LOD input to NME TextureBlock",
+                "description": "This change adds a \"lod\" input to NME TextureBlock so that texture mip LOD level can be adjusted.\r\n\r\nA playground example here: https://playground.babylonjs.com/#66MYF9 (Works with the change in place)",
+                "author": {
+                    "name": "MiikaH",
+                    "url": "https://github.com/MiikaH"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/textureBlock.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "13844",
+                "title": "Fix Required dependency in HTMLElementTexture",
+                "description": "Ensures the ES6 version of the HTMLElementTexture contains all its mandatory dependencies.",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/htmlElementTexture.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "13845",
+                "title": "Fix polynomials not being ready in PBR and env",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Misc/environmentTextureTools.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "13843",
+                "title": "Fix video texture bootstrap data.",
+                "description": "https://forum.babylonjs.com/t/gl-invalid-operation-texture-format-does-not-support-mipmap-generation/39954/5\r\n\r\nLet s keep an eye open for regression after this one.",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/videoTexture.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "texture"
+                ]
+            }
+        ],
+        "6.4.0": [
+            {
+                "pr": "13872",
+                "title": "Mesh: Improve doc for ignoreCameraMaxZ",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13871",
+                "title": "WebGPU: add support for new texture formats",
+                "description": "See https://forum.babylonjs.com/t/webgpu-rg11b10ufloat-and-rgb9e5ufloat-not-implemented/40890",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuCacheRenderPipeline.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureHelper.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "13870",
+                "title": "Fix Scene performance counters",
+                "description": "https://forum.babylonjs.com/t/confuse-about-sceneinstrument-caling-fetchnewframe/40840/2",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Instrumentation/sceneInstrumentation.ts",
+                    "packages/dev/core/src/Misc/perfCounter.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "performance viewer"
+                ]
+            },
+            {
+                "pr": "13853",
+                "title": "Physics: Add debug inertia view",
+                "description": "Closes #13775\r\n\r\nAn example in one of our PGs:\r\n![image](https://github.com/BabylonJS/Babylon.js/assets/6002144/b2010d49-4296-4f1b-84ac-170e7565f309)\r\n",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Debug/physicsViewer.ts"
+                ],
+                "tags": [
+                    "physics",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13864",
+                "title": "Allow `scene.audioListenerPositionProvider` to be set to null",
+                "description": "See https://forum.babylonjs.com/t/setting-scene-audiolistenerpositionprovider-to-null-throws-an-error/40820",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/Audio/audioSceneComponent.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "13869",
+                "title": "core not supported in declare module",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13868",
+                "title": "WebGPU: Fix morphTargetTextureIndices overwritting morphTargetTextureInfo",
+                "description": "See https://forum.babylonjs.com/t/webgpu-inactive-morph-target-shrinks-mesh-to-vertex-0/40864",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Morph/morphTargetManager.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "13866",
+                "title": "Material plugin: Fix cleaning when engine is disposed",
+                "description": "See https://forum.babylonjs.com/t/material-oneventobservable-clear-cause-material-plugins-not-work/40838/3\r\n\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/Materials/materialPluginManager.ts",
+                    "packages/tools/playground/src/components/rendererComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "13863",
+                "title": "add `enabledFeatures` to the session manager",
+                "description": "Fixes #13837",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/LibDeclarations/webxr.d.ts",
+                    "packages/dev/core/src/XR/webXRSessionManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13860",
+                "title": "Sprite: Fix picking when angle is not zero",
+                "description": "See https://forum.babylonjs.com/t/should-sprite-picking-work-with-rotation-angle/40768",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Sprites/spriteManager.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "sprite"
+                ]
+            },
+            {
+                "pr": "13842",
+                "title": "Node Material Editor: Allow loading GLTF format files in preview window, add drag and drop, revert to cube when loading fails",
+                "description": "Close #12752\r\n\r\nTo load a GLTF, you have to select all of its files in the file input/drag and drop all the files.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/src/components/preview/previewManager.ts",
+                    "packages/tools/nodeEditor/src/components/preview/previewMeshControlComponent.tsx",
+                    "packages/tools/nodeEditor/src/globalState.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "13859",
+                "title": "Fix bug where constraint perp axes were ignored",
+                "description": "Looks like we lost this in a refactor or something; the `perpAxisA` and `perpAxisB` fields in PhysicsConstraintParameters were unused, so constraints always used an arbitrary perp axis, instead of the user-provided one, which was making Physics6DoFConstraint hard to use.",
+                "author": {
+                    "name": "eoineoineoin",
+                    "url": "https://github.com/eoineoineoin"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "physics"
+                ]
+            },
+            {
+                "pr": "13857",
+                "title": "Decal: Add support for thin instances",
+                "description": "See https://forum.babylonjs.com/t/thin-instance-decals/40759\r\n\r\nThis PR also suppresses the \"Setting vertex data kind 'XXX' with an empty array\" warning when the created mesh is empty.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Builders/decalBuilder.ts"
+                ],
+                "tags": [
+                    "rendering engine",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13856",
+                "title": "ArcRotateCamera: Account for offset when using zoom to mouse location",
+                "description": "A user brought up an issue in the forum where the camera will zoom to a location but not account for any defined `targetScreenOffset` values.  This PR will now apply the offset to the zoom ray so that it's origin will come from the correct location.\r\n\r\nForum Link: https://forum.babylonjs.com/t/arcrotatecamera-zoomtomouselocation-does-not-take-targetscreenoffset-into-account/40743",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/Inputs/arcRotateCameraMouseWheelInput.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inputs"
+                ]
+            },
+            {
+                "pr": "13855",
+                "title": "DecalMap: Fix the isReady function",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/meshUVSpaceRenderer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            }
+        ],
+        "6.3.0": [
+            {
+                "pr": "13836",
+                "title": "NME Triplanar block: Fix redefinition of variable names",
+                "description": "See https://forum.babylonjs.com/t/orientation-of-textures-with-triplanar-node-material/40528/6\r\n\r\nFollow up to #13833 ",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/triPlanarBlock.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13839",
+                "title": "WebGPU: Update TWGSL",
+                "description": "The new version fixes the problem reported in [\"Issue 1886: Tint still emits @stride statement\"](https://bugs.chromium.org/p/tint/issues/detail?id=1886).",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/tools/babylonServer/public/twgsl/twgsl.wasm",
+                    "packages/tools/tests/test/visualization/config.json",
+                    "packages/tools/tests/test/visualization/webgpu.json"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "13841",
+                "title": "Video: Fix video not played when using multiple videos in a shader",
+                "description": "See https://forum.babylonjs.com/t/video-texture-lost-with-plugins-on-multi-materials/40479/5\r\n\r\nThis PG will be fixed by the PR: https://playground.babylonjs.com/#4R4FMK#19",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13838",
+                "title": "raycast reset and GC",
+                "description": "reset raycast result by default and avoid new vector3 creation/destruction",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/physicsRaycastResult.ts",
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13827",
+                "title": "Gizmo, Physics fixes",
+                "description": "Fixes for : \r\n- https://forum.babylonjs.com/t/havok-plugin-raycast-doesnt-update-the-result-if-theres-no-hit/40500/5\r\n- https://forum.babylonjs.com/t/using-scalingdeterminant-and-gizmos-leads-to-unexpected-behavior/40509\r\n- https://forum.babylonjs.com/t/havoc-problems-with-parented-meshes/40584/5\r\n\r\nPG for the later : https://playground.babylonjs.com/#4517EG#8\r\n\r\n@carolhmj The change to add parent support needs an extra pair of eyes. I've tested with PGs from the doc and didn't see any issue.",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/gizmo.ts",
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsAggregate.ts",
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "physics",
+                    "gizmos"
+                ]
+            },
+            {
+                "pr": "13834",
+                "title": "Refraction: Fix refraction coordinates in right handed system",
+                "description": "See https://forum.babylonjs.com/t/nodematerial-refraction-of-rendertargettexture/40617/3.\r\n\r\nFollow up to #13818, the correction must be done only for cube textures.\r\n\r\nThis PG, which is using a 2D texture for refraction, fails without the fix: https://playground.babylonjs.com/#FIWZP6#5\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/refractionBlock.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrSubSurfaceConfiguration.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/display/textureDisplayManager.modules.scss",
+                    "packages/tools/nodeEditor/src/graphSystem/display/textureDisplayManager.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13830",
+                "title": "Use getBoundingClientRect instead of width",
+                "description": "Following up on https://forum.babylonjs.com/t/engine-resize-issue-with-adapttodeviceratio-when-canvas-clientwidth-clientheight-are-0/40363\n\nIn certain cases clientWidth and height are undefined (or 0) - for example when the canvas is inlined. In this case, the defined width and height will be taken as the new width and height. The problem is that these values are already taking the hardware scaling into account, so it is then applied twice.\n\nThis approach uses the boundingClientRect, which will return the correct width and height, irrelevant of the width and height defined on the canvas itself.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "13825",
+                "title": "Update dependencies, move to sass away from node-sass",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/core/src/Misc/error.ts",
+                    "packages/dev/inspector/package.json",
+                    "packages/dev/sharedUiComponents/package.json",
+                    "packages/dev/sharedUiComponents/rollup.config.js",
+                    "packages/public/babylonjs-viewer-assets/package.json",
+                    "packages/public/umd/babylonjs-accessibility/package.json",
+                    "packages/public/umd/babylonjs-gui-editor/package.json",
+                    "packages/public/umd/babylonjs-gui/package.json",
+                    "packages/public/umd/babylonjs-inspector/package.json",
+                    "packages/public/umd/babylonjs-ktx2decoder/package.json",
+                    "packages/public/umd/babylonjs-loaders/package.json",
+                    "packages/public/umd/babylonjs-materials/package.json",
+                    "packages/public/umd/babylonjs-node-editor/package.json",
+                    "packages/public/umd/babylonjs-post-process/package.json",
+                    "packages/public/umd/babylonjs-procedural-textures/package.json",
+                    "packages/public/umd/babylonjs-serializers/package.json",
+                    "packages/public/umd/babylonjs-viewer/package.json",
+                    "packages/public/umd/babylonjs/package.json",
+                    "packages/tools/accessibility/package.json",
+                    "packages/tools/babylonServer/package.json",
+                    "packages/tools/devHost/package.json",
+                    "packages/tools/eslintBabylonPlugin/src/index.ts",
+                    "packages/tools/guiEditor/package.json",
+                    "packages/tools/ktx2Decoder/package.json",
+                    "packages/tools/nodeEditor/package.json",
+                    "packages/tools/playground/package.json",
+                    "packages/tools/reflector/package.json",
+                    "packages/tools/sandbox/package.json",
+                    "packages/tools/tests/package.json",
+                    "packages/tools/viewer/package.json",
+                    "packages/tools/vsm/package.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13833",
+                "title": "NME Triplanar block: Add a switch to better project the textures in the case of a cube",
+                "description": "See https://forum.babylonjs.com/t/orientation-of-textures-with-triplanar-node-material/40528\r\n\r\nThe switch also helps for more rounded shapes:\r\n\r\n![image](https://github.com/BabylonJS/Babylon.js/assets/4152247/d0a891ba-738e-4158-b592-16469eeeadb3)\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/triPlanarBlock.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "13832",
+                "title": "make sure PG load correctly on safari",
+                "description": "Safari changes the second hash to %23. Since we are not URI-decoding the hash string we need to be sure that no matter what, %23 is being replaced with # before processing the request.\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/playground/src/tools/loadManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13805",
+                "title": "Fix Asset Container typings",
+                "description": "Related: https://github.com/BabylonJS/Babylon.js/pull/13640#issuecomment-1532570652\r\n\r\nThere can be Node types in the cloned hierarchy, so we have to relax the typing, and check for the existence of properties like position, rotation, etc, before assigning them.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/assetContainer.ts",
+                    "packages/dev/core/src/node.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "assets"
+                ]
+            },
+            {
+                "pr": "13829",
+                "title": "Update havokPlugin.ts",
+                "description": "fixes #13826",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13807",
+                "title": "Add option to material cloning to not clone the same texture multiple times",
+                "description": "This is useful for GUI textures, for example",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrMaterial.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/Misc/decorators.ts",
+                    "packages/dev/core/test/unit/Materials/babylon.material.test.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "texture",
+                    "breaking change"
+                ]
+            },
+            {
+                "pr": "13809",
+                "title": "Add max value clamping and preserve colors options to CubeMapToSphericalPolynomialTools",
+                "description": "Is there any reason to have the 4096 limit for `ConvertCubeMapToSphericalPolynomial`? Can it be removed, adjusted higher or an additional option added to ignore it?\r\n\r\nWith the current 4096 max value limit in place it is impossible to use any proper \"out door\" unclipped HDRI images without having incorrect lighting.\r\n\r\nFor example an extremely bright outdoor HDRI here (https://polyhaven.com/a/rustig_koppie) has peak brightness of over 300.000 for pixels directly in the center of the sun.\r\n\r\nA Playground example shows how the current limit incorrectly produces extremely dim lighting: https://www.babylonjs-playground.com/#6CJSXS#2\r\n\r\nWith 4096 limit in place:\r\n![bright-hdr-sh-with-limit](https://user-images.githubusercontent.com/1881360/235967809-4f45bc7f-74d5-47c3-82ce-77c38bda668e.jpg)\r\n\r\nThis PR proposes removing the limit, in which case the calculated spherical harmonics produces correctly bright lighting even for bright outdoor HDRIs:\r\n![bright-hdr-sh-no-limit](https://user-images.githubusercontent.com/1881360/235968047-f42d609a-8712-4e99-b12a-8379b792f6a7.jpg)\r\n",
+                "author": {
+                    "name": "MiikaH",
+                    "url": "https://github.com/MiikaH"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/HighDynamicRange/cubemapToSphericalPolynomial.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13818",
+                "title": "PBR: Fix refraction texture in right handed system",
+                "description": "See https://forum.babylonjs.com/t/pbr-refractions-are-incorrect-when-userighthandedsystem-true/40496/2",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/refractionBlock.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrSubSurfaceConfiguration.ts",
+                    "packages/dev/core/src/Materials/Textures/baseTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/cubeTexture.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "13812",
+                "title": "adds save and load single control",
+                "description": "This change resolves #13132 by adding the option to save and load single control in gui editor ",
+                "author": {
+                    "name": "YifeiShi99",
+                    "url": "https://github.com/YifeiShi99"
+                },
+                "files": [
+                    "packages/tools/guiEditor/src/components/commandBarComponent.tsx",
+                    "packages/tools/guiEditor/src/components/commandDropdownComponent.tsx",
+                    "packages/tools/guiEditor/src/components/propertyTab/propertyTabComponent.tsx",
+                    "packages/tools/guiEditor/src/diagram/workbench.tsx",
+                    "packages/tools/guiEditor/src/globalState.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13817",
+                "title": "Fix BABYLON.Tools.DumpData ignoring the `fileName` parameter.",
+                "description": "Fixes an issue where `BABYLON.Tools.DumpData`'s `fileName` parameter is ignored when a `successCallback` is provided.\r\n\r\nhttps://forum.babylonjs.com/t/39955\r\nhttps://playground.babylonjs.com/#T13Z0M",
+                "author": {
+                    "name": "kv-bh",
+                    "url": "https://github.com/kv-bh"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/tools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13823",
+                "title": "WebGPU: Fix MSAA texture release",
+                "description": "See https://forum.babylonjs.com/t/an-error-occurs-when-webgpuengine-uses-ssao2/40586/3",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuHardwareTexture.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "13816",
+                "title": "WebGPU: Fix viewport reset too often",
+                "description": "See https://forum.babylonjs.com/t/webgpu-rendertargettexture-take-the-last-cameras-active/40473",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/webgpuEngine.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "13811",
+                "title": "Add set/getGravityFactor to PhysicsBody",
+                "description": "Related forum discussion: https://forum.babylonjs.com/t/havok-physics-behaves-unnatural-when-moving-a-box-with-a-constraint/40248/12\r\n\r\nPG examples with the functions:\r\n#P5XN43#18\r\n#PI5WQ1\r\n\r\nNice gif to be fancy:\r\n![havok-gravity-factor](https://user-images.githubusercontent.com/6002144/236016561-2cda43b4-7939-45aa-8527-8a51fc1c8f00.gif)\r\n",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts"
+                ],
+                "tags": [
+                    "physics",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13815",
+                "title": "Reset raycast result when no hit",
+                "description": "follow up https://forum.babylonjs.com/t/havok-plugin-raycast-doesnt-update-the-result-if-theres-no-hit/40500/2\r\nreset raycast result when no hit",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "physics"
+                ]
+            },
+            {
+                "pr": "13814",
+                "title": "remove unused interface parameters for aggregate",
+                "description": null,
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/physicsAggregate.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
+        "6.2.0": [
+            {
+                "pr": "13810",
+                "title": "HDRCubeTexture: Fix texture being ready too soon",
+                "description": "See https://forum.babylonjs.com/t/hdrcubetexture-reports-isready-before-it-has-loaded/40458",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.rawTexture.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13808",
+                "title": "cylinder/capsule size computation fix",
+                "description": "follow up https://forum.babylonjs.com/t/capsule-uncentered-physical-body/40321\r\nfixes #13799 \r\nfixes #13801\r\nbbox minimum was scaled by a factor of 2.\r\nfix the motortype conversion between wasm and ts",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsAggregate.ts"
+                ],
+                "tags": [
+                    "physics"
+                ]
+            },
+            {
+                "pr": "13798",
+                "title": "GamepadManager: Fixed issue where providing scene object to constructor would prevent status updates",
+                "description": "A user on the forum found an issue where the GamepadManager wouldn't update its gamepad statuses when `this._scene` was defined.  The fix was to remove these checks.  Thanks to user CiderPunk for finding this issue.\r\n\r\nForum Link: https://forum.babylonjs.com/t/gamepad-events-not-triggering/40362",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Gamepads/gamepadManager.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inputs"
+                ]
+            },
+            {
+                "pr": "13802",
+                "title": "OIT: Fix wrong prepass state when mesh visibility changes",
+                "description": "See https://forum.babylonjs.com/t/shader-crash-with-oit/40332/29\r\n\r\nFollow up to #13781",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13803",
+                "title": "Dump Tools: Use an offscreen canvas",
+                "description": "See https://forum.babylonjs.com/t/createscreenshot-in-worker/40198/1.\r\n\r\nThis change will allow to use the screenshot tools in a worker thread.\r\n\r\nNote that `OffScreenCanvas` is supported by Safari only since 16.4 (https://caniuse.com/?search=offscreencanvas)...",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/LibDeclarations/offscreenCanvas.d.ts",
+                    "packages/dev/core/src/Misc/dumpTools.ts",
+                    "packages/dev/core/src/Misc/tools.ts"
+                ],
+                "tags": [
+                    "rendering engine",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13806",
+                "title": "Fix GUI cloning",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/cloning-meshes-with-gui/40430",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts",
+                    "packages/dev/gui/src/2D/controls/control.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/GUI for Mesh cloning.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug",
+                    "gui"
+                ]
+            },
+            {
+                "pr": "13804",
+                "title": "allow ts playground in full and frame",
+                "description": "The editor is resposible of parsing ts and converting it to js. I am adding a hidden instance of the editor that will load the code and send it to the PG.\n\nthere is a very small load time reduction (20-30ms), but typescript playground will now load correctly.\n\nAs part of playground improvements we will need to deal with this issue as well.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/playground/src/components/rendererComponent.tsx",
+                    "packages/tools/playground/src/playground.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13783",
+                "title": "Update havokPlugin.ts",
+                "description": "Attempt to fix https://forum.babylonjs.com/t/havoc-thininstances-collisioncallback/40315\r\n+ Add new thinInstances to `havokPlugin._bodies` map when `body.updateBodyInstances()` is called, not only when initiated.\r\n+ Add removal of deleted thinInstances from `havokPlugin._bodies` map\r\n\r\nTest (&stress) case for latest commit. console logs the _bodies map at the end.\r\nhttps://playground.babylonjs.com/#LJX5R3\r\nhttps://playground.babylonjs.com/?snapshot=refs/pull/13783/merge#LJX5R3\r\nThe PG spawns 2500 thinInstances of a sphere to test performance and memory, previous commit caused memory issues.\r\ninitially 100 spheres then + 25 per frame up to 2500 total.\r\n",
+                "author": {
+                    "name": "aWeirdo",
+                    "url": "https://github.com/aWeirdo"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "physics"
+                ]
+            },
+            {
+                "pr": "13780",
+                "title": "PickingInfo: Handle unindexed meshes in getNormal",
+                "description": "See https://forum.babylonjs.com/t/the-points-where-the-annotation-is-picked-are-snapped-parallel-to-the-surface-of-the-object/40119/8",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/pickingInfo.ts",
+                    "packages/dev/core/test/unit/Collisions/babylon.pickingInfo.test.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "collisions"
+                ]
+            },
+            {
+                "pr": "13781",
+                "title": "OIT: Fix wrong prepass state when material transparency changes",
+                "description": "See https://forum.babylonjs.com/t/shader-crash-with-oit/40332/15",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/material.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13671",
+                "title": "Inspector: METADATA pop-up window feature",
+                "description": "I have re-approached the code as per this discussion:\r\nhttps://forum.babylonjs.com/t/read-write-metadata-using-the-inspector/34208\r\n\r\nThus a first-attempt at the metadata editor. It's not perfect but in a good state.\r\n\r\nNotes:\r\n- the metadata property can be set to `null` and `undefined` just by typing the literal string\r\n- the metadata property can also be set as a string or JSON object\r\n- there is some basic validation but aim was focused on UX\r\n- there is a known glitch where quoted values `\"a string\"` gets considered as a JSON in validation (not really an issue)\r\n- simple prettifying but not full beautifier with colour - considered re-using `monaco-editor` however it looked over bloaty/unnecessary\r\n- there is a bit of duplicate css however wanted to avoid conflicts and not affect backwards compatibility\r\n- minimal impact on performance by using an observer\r\n- could probably improve the picking trigger/observer but OK for first-release\r\n\r\nNew METADATA tab:\r\n![meta-inspector](https://user-images.githubusercontent.com/34647206/227415803-a6da9fe4-f3ef-4ae3-8b44-56c070a846d0.png)\r\n\r\nNew METADATA pop-up window:\r\n![meta-window](https://user-images.githubusercontent.com/34647206/227416142-0d68c695-16c7-4446-987f-a25ba48755a9.png)\r\n\r\n![meta-window-error](https://user-images.githubusercontent.com/34647206/227416148-d6c34b2d-479a-4b90-985c-a2a52c37b425.png)\r\n\r\n![meta-window-undefined](https://user-images.githubusercontent.com/34647206/227416375-db4b3ad0-42d3-4d29-b7e0-2288d2d59491.png)\r\n\r\nsupersedes https://github.com/BabylonJS/Babylon.js/pull/13643\r\n\r\nCloses #13027 ",
+                "author": {
+                    "name": "j-te",
+                    "url": "https://github.com/j-te"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGridTabComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/animationGroupPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/animationPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/targetedAnimationPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/cameras/arcRotateCameraPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/cameras/followCameraPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/cameras/freeCameraPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/emptyPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/layers/layerPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/lights/directionalLightPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/lights/hemisphericLightPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/lights/pointLightPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/lights/spotLightPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/backgroundMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/materialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/multiMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/nodeMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/pbrMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/pbrMetallicRoughnessMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/pbrSpecularGlossinessMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/standardMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/texturePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/bonePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/meshPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/skeletonPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/transformNodePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/metadata/metadataPropertyGrid.scss",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/metadata/metadataPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/particleSystemPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/postProcesses/defaultRenderingPipelinePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/postProcesses/lensRenderingPipelinePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/postProcesses/postProcessPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/postProcesses/renderingPipelinePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/postProcesses/ssao2RenderingPipelinePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/postProcesses/ssaoRenderingPipelinePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/postProcesses/ssrRenderingPipelinePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/scenePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/sounds/soundPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/sprites/spriteManagerPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/sprites/spritePropertyGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/tabs/propertyGrids/gui/checkboxPropertyGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/tabs/propertyGrids/gui/colorPickerPropertyGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/tabs/propertyGrids/gui/controlPropertyGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/tabs/propertyGrids/gui/ellipsePropertyGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/tabs/propertyGrids/gui/gridPropertyGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/tabs/propertyGrids/gui/imageBasedSliderPropertyGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/tabs/propertyGrids/gui/imagePropertyGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/tabs/propertyGrids/gui/inputTextPropertyGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/tabs/propertyGrids/gui/linePropertyGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/tabs/propertyGrids/gui/radioButtonPropertyGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/tabs/propertyGrids/gui/rectanglePropertyGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/tabs/propertyGrids/gui/scrollViewerPropertyGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/tabs/propertyGrids/gui/sliderPropertyGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/tabs/propertyGrids/gui/stackPanelPropertyGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/tabs/propertyGrids/gui/textBlockPropertyGridComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13773",
+                "title": "Node Material Editor: Fix automatic creation of inputs for \"sourceY\" …",
+                "description": "…and \"sourceZ\"\r\n\r\nFix #13761",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterialConnectionPointCustomObject.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "13777",
+                "title": "Fix for RTT rendering in an XR session",
+                "description": "When rendered in an XR session, the camera's viewport was applied on the full size of the RTT). This made the RTT render on a quarter of the screen (instead of half of the screen, as expected in XR with two eyes).\nThis changes RTT rendering in Rigged cameras (which ATM is mainly WebXR). It is expected that tha parent's camera will be the full viewport to render both eyes (which is 100% viewport in case of XR).\n\nIt is a small breaking change, but is actually more a bug fix.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13778",
+                "title": "Physics: Fix aggregate size calculation and allow passing box rotatio…",
+                "description": "…n as an aggregate option. Also add a basic explanation of motion types on PhysicsBody constructor.\r\n\r\nRelated forum issue: https://forum.babylonjs.com/t/physical-body-dont-rotate-with-its-mesh/40207",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/physicsAggregate.ts",
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "physics"
+                ]
+            }
+        ],
         "6.1.0": [
             {
                 "pr": "13772",

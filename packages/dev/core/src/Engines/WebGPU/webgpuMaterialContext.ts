@@ -29,6 +29,13 @@ export class WebGPUMaterialContext implements IMaterialContext {
     public samplers: { [name: string]: Nullable<IWebGPUMaterialContextSamplerCache> };
     public textures: { [name: string]: Nullable<IWebGPUMaterialContextTextureCache> };
 
+    // The texture state is a bitfield where each bit is set if the texture is a float32 texture (calculated in @WebGPUEngine._draw).
+    // Float32 textures must be handled differently because float filtering may not be supported by the underlying browser implementation.
+    // In this case, we must configure the sampler as "non filtering", as well as set the texture sample type to "unfilterable-float" when creating the bind group layout.
+    // When that happens, we end up with different bind group layouts (depending on which type of textures have been set in the material), that we must all store
+    // in the WebGPUPipelineContext (see @WebGPUPipelineContext.bindGroupLayouts) for later retrieval in the bind group cache implementation (see @WebGPUCacheBindGroups.getBindGroups), thanks to this property.
+    public textureState: number;
+
     public get forceBindGroupCreation() {
         // If there is at least one external texture to bind, we must recreate the bind groups each time
         // because we need to retrieve a new texture each frame (by calling device.importExternalTexture)
@@ -45,6 +52,7 @@ export class WebGPUMaterialContext implements IMaterialContext {
     constructor() {
         this.uniqueId = WebGPUMaterialContext._Counter++;
         this.updateId = 0;
+        this.textureState = 0;
         this.reset();
     }
 

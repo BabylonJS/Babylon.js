@@ -125,7 +125,7 @@ export class WebGPUClearQuad {
         let bindGroups = this._bindGroups[key];
 
         if (!bindGroups) {
-            const bindGroupLayouts = webgpuPipelineContext.bindGroupLayouts;
+            const bindGroupLayouts = webgpuPipelineContext.bindGroupLayouts[0];
             bindGroups = this._bindGroups[key] = [];
             bindGroups.push(
                 this._device.createBindGroup({

@@ -204,7 +204,7 @@ export class RefractionBlock extends NodeMaterialBlock {
         defines.setValue(this._define3DName, refractionTexture!.isCube, true);
         defines.setValue(this._defineLODRefractionAlpha, refractionTexture!.lodLevelInAlpha, true);
         defines.setValue(this._defineLinearSpecularRefraction, refractionTexture!.linearSpecularLOD, true);
-        defines.setValue(this._defineOppositeZ, this._scene.useRightHandedSystem ? !refractionTexture!.invertZ : refractionTexture!.invertZ, true);
+        defines.setValue(this._defineOppositeZ, this._scene.useRightHandedSystem && refractionTexture.isCube ? !refractionTexture!.invertZ : refractionTexture!.invertZ, true);
 
         defines.setValue("SS_LINKREFRACTIONTOTRANSPARENCY", this.linkRefractionWithTransparency, true);
         defines.setValue("SS_GAMMAREFRACTION", refractionTexture!.gammaSpace, true);
@@ -238,7 +238,7 @@ export class RefractionBlock extends NodeMaterialBlock {
             effect.setTexture(this._2DSamplerName, refractionTexture);
         }
 
-        effect.setMatrix(this._refractionMatrixName, refractionTexture.getReflectionTextureMatrix());
+        effect.setMatrix(this._refractionMatrixName, refractionTexture.getRefractionTextureMatrix());
 
         let depth = 1.0;
         if (!refractionTexture.isCube) {

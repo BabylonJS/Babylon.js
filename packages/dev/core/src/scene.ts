@@ -3985,6 +3985,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             }
         }
 
+        this.onAfterActiveMeshesEvaluationObservable.notifyObservers(this);
+
         // Particle systems
         if (this.particlesEnabled) {
             this.onBeforeParticlesRenderingObservable.notifyObservers(this);

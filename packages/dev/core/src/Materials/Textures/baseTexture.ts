@@ -586,6 +586,15 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
     }
 
     /**
+     * Gets a suitable rotate/transform matrix when the texture is used for refraction.
+     * There's a separate function from getReflectionTextureMatrix because refraction requires a special configuration of the matrix in right-handed mode.
+     * @returns The refraction matrix
+     */
+    public getRefractionTextureMatrix(): Matrix {
+        return this.getReflectionTextureMatrix();
+    }
+
+    /**
      * Get if the texture is ready to be consumed (either it is ready or it is not blocking)
      * @returns true if ready, not blocking or if there was an error loading the texture
      */

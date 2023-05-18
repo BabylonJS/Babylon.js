@@ -196,9 +196,7 @@ export class GamepadManager {
         if (!this._isMonitoring) {
             this._isMonitoring = true;
             //back-comp
-            if (!this._scene) {
-                this._checkGamepadsStatus();
-            }
+            this._checkGamepadsStatus();
         }
     }
 
@@ -228,7 +226,7 @@ export class GamepadManager {
             }
         }
 
-        if (this._isMonitoring && !this._scene) {
+        if (this._isMonitoring) {
             Engine.QueueNewFrame(() => {
                 this._checkGamepadsStatus();
             });

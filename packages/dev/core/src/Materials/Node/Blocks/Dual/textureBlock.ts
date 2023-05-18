@@ -153,6 +153,7 @@ export class TextureBlock extends NodeMaterialBlock {
             new NodeMaterialConnectionPointCustomObject("source", this, NodeMaterialConnectionPointDirection.Input, ImageSourceBlock, "ImageSourceBlock")
         );
         this.registerInput("layer", NodeMaterialBlockConnectionPointTypes.Float, true);
+        this.registerInput("lod", NodeMaterialBlockConnectionPointTypes.Float, true);
 
         this.registerOutput("rgba", NodeMaterialBlockConnectionPointTypes.Color4, NodeMaterialBlockTargets.Neutral);
         this.registerOutput("rgb", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Neutral);
@@ -197,6 +198,13 @@ export class TextureBlock extends NodeMaterialBlock {
      */
     public get layer(): NodeMaterialConnectionPoint {
         return this._inputs[2];
+    }
+
+    /**
+     * Gets the LOD input component
+     */
+    public get lod(): NodeMaterialConnectionPoint {
+        return this._inputs[3];
     }
 
     /**
@@ -439,15 +447,23 @@ export class TextureBlock extends NodeMaterialBlock {
         return coords;
     }
 
+    private get _samplerFunc() {
+        return this.lod.isConnected ? "texture2DLodEXT" : "texture2D";
+    }
+
+    private get _samplerLodSuffix() {
+        return this.lod.isConnected ? `, ${this.lod.associatedVariableName}` : "";
+    }
+
     private _generateTextureLookup(state: NodeMaterialBuildState): void {
         const samplerName = this.samplerName;
 
         state.compilationString += `#ifdef ${this._defineName}\r\n`;
-        state.compilationString += `vec4 ${this._tempTextureRead} = texture2D(${samplerName}, ${this._getUVW(this._transformedUVName)});\r\n`;
+        state.compilationString += `vec4 ${this._tempTextureRead} = ${this._samplerFunc}(${samplerName}, ${this._getUVW(this._transformedUVName)}${this._samplerLodSuffix});\r\n`;
         state.compilationString += `#elif defined(${this._mainUVDefineName})\r\n`;
-        state.compilationString += `vec4 ${this._tempTextureRead} = texture2D(${samplerName}, ${this._getUVW(
+        state.compilationString += `vec4 ${this._tempTextureRead} = ${this._samplerFunc}(${samplerName}, ${this._getUVW(
             this._mainUVName ? this._mainUVName : this.uv.associatedVariableName
-        )});\r\n`;
+        )}${this._samplerLodSuffix});\r\n`;
         state.compilationString += `#endif\r\n`;
     }
 
@@ -464,7 +480,9 @@ export class TextureBlock extends NodeMaterialBlock {
         }
 
         if (this.uv.ownerBlock.target === NodeMaterialBlockTargets.Fragment) {
-            state.compilationString += `vec4 ${this._tempTextureRead} = texture2D(${this.samplerName}, ${this._getUVW(uvInput.associatedVariableName)});\r\n`;
+            state.compilationString += `vec4 ${this._tempTextureRead} = ${this._samplerFunc}(${this.samplerName}, ${this._getUVW(uvInput.associatedVariableName)}${
+                this._samplerLodSuffix
+            });\r\n`;
             return;
         }
 

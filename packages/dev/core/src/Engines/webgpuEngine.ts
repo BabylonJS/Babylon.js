@@ -654,7 +654,7 @@ export class WebGPUEngine extends Engine {
             )
             .then(() => {
                 this._bufferManager = new WebGPUBufferManager(this._device);
-                this._textureHelper = new WebGPUTextureHelper(this._device, this._glslang, this._tintWASM, this._bufferManager);
+                this._textureHelper = new WebGPUTextureHelper(this._device, this._glslang, this._tintWASM, this._bufferManager, this._deviceEnabledExtensions);
                 this._cacheSampler = new WebGPUCacheSampler(this._device);
                 this._cacheBindGroups = new WebGPUCacheBindGroups(this._device, this._cacheSampler, this);
                 this._timestampQuery = new WebGPUTimestampQuery(this._device, this._bufferManager);
@@ -1080,13 +1080,6 @@ export class WebGPUEngine extends Engine {
         this._viewportsCurrent[index].y = 0;
         this._viewportsCurrent[index].w = 0;
         this._viewportsCurrent[index].h = 0;
-
-        if (index === 1) {
-            this._viewportCached.x = 0;
-            this._viewportCached.y = 0;
-            this._viewportCached.z = 0;
-            this._viewportCached.w = 0;
-        }
     }
 
     private _mustUpdateViewport(renderPass: GPURenderPassEncoder): boolean {
@@ -2840,6 +2833,7 @@ export class WebGPUEngine extends Engine {
             }
             this._debugPopGroup?.(1);
             this._resetCurrentViewport(1);
+            this._viewport(0, 0, 0, 0);
             this._resetCurrentScissor(1);
             this._resetCurrentStencilRef(1);
             this._resetCurrentColorBlend(1);
@@ -3300,6 +3294,8 @@ export class WebGPUEngine extends Engine {
                 bitVal = bitVal << 1;
             }
         }
+
+        this._currentMaterialContext.textureState = textureState;
 
         const pipeline = this._cacheRenderPipeline.getRenderPipeline(fillMode, this._currentEffect!, this.currentSampleCount, textureState);
         const bindGroups = this._cacheBindGroups.getBindGroups(webgpuPipelineContext, this._currentDrawContext, this._currentMaterialContext);

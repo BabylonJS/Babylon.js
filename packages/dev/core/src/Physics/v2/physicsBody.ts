@@ -100,7 +100,7 @@ export class PhysicsBody {
             this._physicsPlugin.initBodyInstances(this, motionType, m);
         } else {
             // single instance
-            this._physicsPlugin.initBody(this, motionType, transformNode.position, transformNode.rotationQuaternion);
+            this._physicsPlugin.initBody(this, motionType, transformNode.absolutePosition, transformNode.absoluteRotationQuaternion);
         }
         this.transformNode = transformNode;
         transformNode.physicsBody = this;
@@ -503,6 +503,24 @@ export class PhysicsBody {
         } else {
             callback(this, undefined);
         }
+    }
+
+    /**
+     * Sets the gravity factor of the physics body
+     * @param factor the gravity factor to set
+     * @param instanceIndex the instance of the body to set, if undefined all instances will be set
+     */
+    public setGravityFactor(factor: number, instanceIndex?: number) {
+        this._physicsPlugin.setGravityFactor(this, factor, instanceIndex);
+    }
+
+    /**
+     * Gets the gravity factor of the physics body
+     * @param instanceIndex the instance of the body to get, if undefined the value of first instance will be returned
+     * @returns the gravity factor
+     */
+    public getGravityFactor(instanceIndex?: number): number {
+        return this._physicsPlugin.getGravityFactor(this, instanceIndex);
     }
 
     /**

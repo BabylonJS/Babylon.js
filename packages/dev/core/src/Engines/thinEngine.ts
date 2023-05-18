@@ -222,14 +222,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@6.1.0";
+        return "babylonjs@6.4.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "6.1.0";
+        return "6.4.0";
     }
 
     /**
@@ -1790,8 +1790,20 @@ export class ThinEngine {
         }
 
         if (IsWindowObjectExist()) {
-            width = this._renderingCanvas ? this._renderingCanvas.clientWidth || this._renderingCanvas.width : window.innerWidth;
-            height = this._renderingCanvas ? this._renderingCanvas.clientHeight || this._renderingCanvas.height : window.innerHeight;
+            if (this._renderingCanvas) {
+                const boundingRect = this._renderingCanvas.getBoundingClientRect
+                    ? this._renderingCanvas.getBoundingClientRect()
+                    : {
+                          // fallback to last solution in case the function doesn't exist
+                          width: this._renderingCanvas.width * this._hardwareScalingLevel,
+                          height: this._renderingCanvas.height * this._hardwareScalingLevel,
+                      };
+                width = this._renderingCanvas.clientWidth || boundingRect.width;
+                height = this._renderingCanvas.clientHeight || boundingRect.height;
+            } else {
+                width = window.innerWidth;
+                height = window.innerHeight;
+            }
         } else {
             width = this._renderingCanvas ? this._renderingCanvas.width : 100;
             height = this._renderingCanvas ? this._renderingCanvas.height : 100;
@@ -5199,6 +5211,10 @@ export class ThinEngine {
         // Video
         if ((<VideoTexture>texture).video) {
             this._activeChannel = channel;
+            const videoInternalTexture = (<VideoTexture>texture).getInternalTexture();
+            if (videoInternalTexture) {
+                videoInternalTexture._associatedChannel = channel;
+            }
             (<VideoTexture>texture).update();
         } else if (texture.delayLoadState === Constants.DELAYLOADSTATE_NOTLOADED) {
             // Delay loading

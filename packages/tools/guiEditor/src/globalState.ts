@@ -95,8 +95,10 @@ export class GlobalState {
     onReframeWindowObservable = new Observable<void>();
     onLoadObservable = new Observable<File>();
     onSaveObservable = new Observable<void>();
+    onSaveSelectedControl = new Observable<void>();
     onSnippetLoadObservable = new Observable<void>();
     onSnippetSaveObservable = new Observable<void>();
+    onControlLoadObservable = new Observable<File>();
     onResponsiveChangeObservable = new Observable<boolean>();
     onParentingChangeObservable = new Observable<Nullable<Control>>();
     onDropObservable = new Observable<void>();
