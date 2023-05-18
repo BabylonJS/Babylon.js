@@ -360,6 +360,25 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         this._updateEffectDefines();
     }
 
+    @serialize("useFresnel")
+    private _useFresnel = false;
+
+    /**
+     * Gets or sets a boolean indicating whether the blending between the current color pixel and the reflection color should be done with a Fresnel coefficient (default: false).
+     * It is more physically accurate to use the Fresnel coefficient (otherwise it uses the reflectivity of the material for blending), but it is also more expensive when you use blur (when blurDispersionStrength \> 0).
+     */
+    public get useFresnel() {
+        return this._useFresnel;
+    }
+
+    public set useFresnel(fresnel: boolean) {
+        if (this._useFresnel === fresnel) {
+            return;
+        }
+        this._useFresnel = fresnel;
+        this._updateEffectDefines();
+    }
+
     @serialize("enableAutomaticThicknessComputation")
     private _enableAutomaticThicknessComputation = false;
 
@@ -748,6 +767,9 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         }
         if (this._generateOutputInGammaSpace) {
             defines.push("#define SSR_OUTPUT_IS_GAMMA_SPACE");
+        }
+        if (this._useFresnel) {
+            defines.push("#define SSR_BLEND_WITH_FRESNEL");
         }
 
         this._ssrPostProcess?.updateEffect(defines.join("\n"));

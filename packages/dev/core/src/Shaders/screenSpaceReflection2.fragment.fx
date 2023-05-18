@@ -246,7 +246,9 @@ void main()
         SSR = reflectedColor * reflectionAttenuation + (1.0 - reflectionAttenuation) * envColor;
     }
 
+#ifndef SSR_BLEND_WITH_FRESNEL
     SSR *= fresnel;
+#endif
 
     #ifdef SSR_USE_BLUR
         // from https://github.com/godotengine/godot/blob/master/servers/rendering/renderer_rd/shaders/effects/screen_space_reflection.glsl
@@ -274,7 +276,11 @@ void main()
         gl_FragColor = vec4(SSR, blur_radius / 255.0); // the render target is RGBA8 so we must fit the radius in the 0..1 range
     #else
         // Mix current color with SSR color
-        vec3 reflectionMultiplier = clamp(pow(reflectivity.rgb * strength, vec3(reflectionSpecularFalloffExponent)), 0.0, 1.0);
+        #ifdef SSR_BLEND_WITH_FRESNEL
+            vec3 reflectionMultiplier = clamp(pow(fresnel * strength, vec3(reflectionSpecularFalloffExponent)), 0.0, 1.0);
+        #else
+            vec3 reflectionMultiplier = clamp(pow(reflectivity.rgb * strength, vec3(reflectionSpecularFalloffExponent)), 0.0, 1.0);
+        #endif
         vec3 colorMultiplier = 1.0 - reflectionMultiplier;
 
         vec3 finalColor = (color * colorMultiplier) + (SSR * reflectionMultiplier);
