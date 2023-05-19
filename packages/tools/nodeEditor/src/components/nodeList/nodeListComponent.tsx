@@ -179,6 +179,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         MatrixDeterminantBlock: "Compute the determinant of a matrix",
         MatrixTransposeBlock: "Compute the transpose of a matrix",
         MeshAttributeExistsBlock: "Falls back to secondary input if specified attribute doesn't exists on the rendered mesh",
+        CurveBlock: "Apply a curve function",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -361,6 +362,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "ArcTanBlock",
                 "ArcTan2Block",
                 "CosBlock",
+                "CurveBlock",
                 "DegreesToRadiansBlock",
                 "ExpBlock",
                 "Exp2Block",
