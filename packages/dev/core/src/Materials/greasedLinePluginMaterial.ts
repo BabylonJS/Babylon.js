@@ -27,12 +27,6 @@ export enum GreasedLineMeshColorMode {
  * Options for GreasedLineMaterial
  */
 export interface GreasedLineMaterialOptions {
-    /**
-     * Use when @see instance is specified.
-     * If true, the line will be rendered only after calling instance.updateLazy(). If false, line will be rerendered after every call to @see CreateGreasedLine
-     * Defaults to false.
-     */
-    lazy?: boolean;
     // material related
     /**
      * Line width.
@@ -76,10 +70,10 @@ export interface GreasedLineMaterialOptions {
      */
     useDash?: boolean;
     /**
-     * @see GreasedLinePluginMaterial.setDashArray
-     * Defaults to 0.
+     * @see GreasedLinePluginMaterial.setDashCount
+     * Defaults to 1.
      */
-    dashArray?: number;
+    dashCount?: number;
     /**
      * Defaults to 0.
      * @see GreasedLinePluginMaterial.setDashOffset
@@ -119,6 +113,8 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
     @serializeAsTexture()
     private _colorsTexture?: RawTexture;
 
+    private _dashArray = 0;
+
     @serialize()
     private _options: GreasedLineMaterialOptions;
 
@@ -143,6 +139,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
         }
 
         this._options = options;
+        this.setDashCount(options.dashCount ?? 1); // calculate the _dashArray value
 
         this._enable(true); // always enabled
     }
@@ -210,7 +207,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
 
         const dashOptions = TmpVectors.Vector4[0];
         dashOptions.x = GreasedLinePluginMaterial._BooleanToNumber(this._options.useDash);
-        dashOptions.y = this._options.dashArray ?? 0;
+        dashOptions.y = this._dashArray ?? 0;
         dashOptions.z = this._options.dashOffset ?? 0;
         dashOptions.w = this._options.dashRatio ?? 0.5;
         uniformBuffer.updateVector4("grl_dashOptions", dashOptions);
@@ -370,7 +367,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
     }
 
     /**
-     * Creates a RawTexture from a color array and sets it on the plugin material instance.
+     * Creates a RawTexture from an RGBA color array and sets it on the plugin material instance.
      * @param name name of the texture
      * @param colors Uint8Array of colors
      */
@@ -435,14 +432,11 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
     }
 
     /**
-     *
-     * @returns
+     * Gets the plugin material options
+     * @returns the plugin material options @see GreasedLineMaterialOptions
      */
     public getOptions(): GreasedLineMaterialOptions {
-        // const options = {}
-        // DeepCopier.DeepCopy(this._options, options);
-        // return options;
-        return this._options; // TODO: DeepCopy?
+        return this._options;
     }
 
     /**
@@ -462,11 +456,12 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
     }
 
     /**
-     * Sets the dash array.
-     * @param value 1 / (number of dashes * 2)
+     * Sets the dash count.
+     * @param value number of dashes
      */
-    public setDashArray(value: number) {
-        this._options.dashArray = value;
+    public setDashCount(value: number) {
+        this._options.dashCount = value;
+        this._dashArray = 1 / (value * 2);
     }
 
     /**

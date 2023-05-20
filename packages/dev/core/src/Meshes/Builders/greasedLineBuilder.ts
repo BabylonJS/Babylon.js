@@ -1,4 +1,4 @@
-import { Color3, Color4 } from "../../Maths/math.color";
+import { Color3 } from "../../Maths/math.color";
 import type { GreasedLineMaterialOptions } from "../../Materials/greasedLinePluginMaterial";
 import { GreasedLineMeshColorMode, GreasedLinePluginMaterial, GreasedLineMeshMaterialType } from "../../Materials/greasedLinePluginMaterial";
 import { StandardMaterial } from "./../../Materials/standardMaterial";
@@ -80,7 +80,7 @@ export interface GreasedLineBuilderOptions {
      * Colors of the line segments.
      * Defaults to empty array.
      */
-    colors?: Color4[];
+    colors?: Color3[];
     /**
      * If true, @see colors are used, otherwise they're ignored.
      * Defaults to false.
@@ -98,10 +98,10 @@ export interface GreasedLineBuilderOptions {
      */
     useDash?: boolean;
     /**
-     * Defaults to 0.
-     * @see GreasedLinePluginMaterial.setDashArray
+     * Defaults to 1.
+     * @see GreasedLinePluginMaterial.setDashCount
      */
-    dashArray?: number;
+    dashCount?: number;
     /**
      * Defaults to 0.
      * @see GreasedLinePluginMaterial.setDashOffset
@@ -136,7 +136,7 @@ export interface GreasedLineBuilderOptions {
  * Builder class for create GreasedLineMeshes
  */
 export class GreasedLineMeshBuilder {
-    private static DEFAULT_COLOR = Color3.White();
+    private static _DEFAULT_COLOR = Color3.White();
 
     /**
      * Creates a GreasedLine mesh
@@ -161,7 +161,7 @@ export class GreasedLineMeshBuilder {
         const widths = GreasedLineMeshBuilder.NormalizeWidthTable(length, options.widths ?? [], GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_START);
 
         const colors = options.colors
-            ? GreasedLineMeshBuilder.NormalizeColorTable(length, options.colors, GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_START, Color4.FromColor3(options.color ?? GreasedLineMeshBuilder.DEFAULT_COLOR))
+            ? GreasedLineMeshBuilder.NormalizeColorTable(length, options.colors, GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_START, options.color ?? GreasedLineMeshBuilder._DEFAULT_COLOR)
             : undefined;
 
         const offsets = options.offsets instanceof Array<Vector3> ? (<Vector3[]>options.offsets).flatMap((v) => [v.x, v.y, v.z]) : options.offsets;
@@ -177,7 +177,7 @@ export class GreasedLineMeshBuilder {
 
             const initialMaterialOptions: GreasedLineMaterialOptions = {
                 materialType: options.materialType,
-                dashArray: options.dashArray,
+                dashCount: options.dashCount,
                 dashOffset: options.dashOffset,
                 dashRatio: options.dashRatio,
                 resolution: options.resolution,
@@ -191,7 +191,7 @@ export class GreasedLineMeshBuilder {
             };
 
             if (colors) {
-                initialMaterialOptions.colors = GreasedLineMeshBuilder.Color4toUint8(colors);
+                initialMaterialOptions.colors = GreasedLineMeshBuilder.Color3toRGBAUint8(colors);
             }
 
             const material = options.materialType === GreasedLineMeshMaterialType.MATERIAL_TYPE_PBR ? new PBRMaterial(name, scene) : new StandardMaterial(name, scene);
@@ -214,17 +214,17 @@ export class GreasedLineMeshBuilder {
     }
 
     /**
-     * Converts an array of Color4 to Uint8Array
-     * @param colors Arrray of Color4
+     * Converts an array of Color3 to Uint8Array
+     * @param colors Arrray of Color3
      * @returns Uin8Array of colors [r, g, b, a, r, g, b, a, ...]
      */
-    public static Color4toUint8(colors: Color4[]) {
+    public static Color3toRGBAUint8(colors: Color3[]) {
         const colorTable: Uint8Array = new Uint8Array(colors.length * 4);
         for (let i = 0, j = 0; i < colors.length; i++) {
             colorTable[j++] = colors[i].r * 255;
             colorTable[j++] = colors[i].g * 255;
             colorTable[j++] = colors[i].b * 255;
-            colorTable[j++] = colors[i].a * 255;
+            colorTable[j++] = 255;
         }
 
         return colorTable;
@@ -395,14 +395,14 @@ export class GreasedLineMeshBuilder {
      * @param defaultColor default color to be used to fill empty entries in the color table
      * @returns normalized array of Color3
      */
-    public static NormalizeColorTable(pointCount: number, colors: Color4[], colorDistribution: GreasedLineMeshColorDistribution, defaultColor: Color4): Color4[] {
+    public static NormalizeColorTable(pointCount: number, colors: Color3[], colorDistribution: GreasedLineMeshColorDistribution, defaultColor: Color3): Color3[] {
 
         const missingCount = pointCount - colors.length;
         if (missingCount < 0) {
             return colors.slice(0, pointCount);
         }
 
-        const colorsData: Color4[] = [];
+        const colorsData: Color3[] = [];
         // is the color table shorter than the point table?
         if (missingCount > 0) {
             // it is, fill in the missing elements
@@ -495,12 +495,12 @@ export class GreasedLineMeshBuilder {
      * @param instance line instance
      * @param colors array of colors
      */
-    private static _SetColors(instance: GreasedLineMesh, colors: Color4[]) {
+    private static _SetColors(instance: GreasedLineMesh, colors: Color3[]) {
         if (instance.material instanceof StandardMaterial || instance.material instanceof PBRMaterial) {
             if (instance.greasedLineMaterial) {
                 const currentColors = instance.greasedLineMaterial.getOptions().colors;
                 if (currentColors) {
-                    const colorsUint8 = GreasedLineMeshBuilder.Color4toUint8(colors);
+                    const colorsUint8 = GreasedLineMeshBuilder.Color3toRGBAUint8(colors);
                     const newColors = GreasedLineMeshBuilder._MergeColorTables(currentColors, colorsUint8);
                     instance.greasedLineMaterial.setColors(newColors, instance.isLazy());
                 }

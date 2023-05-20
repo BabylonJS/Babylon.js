@@ -31,7 +31,7 @@ export interface GreasedLineMeshOptions {
     widths?: number[];
     /**
      * Each line point can have an offset.
-     * Defaults to empty array.
+     * Defaults to empty array. This array can be mutated any time.
      */
     offsets?: number[];
     /**
@@ -101,28 +101,24 @@ export class GreasedLineMesh extends Mesh {
     constructor(public readonly name: string, scene: Scene, private _options: GreasedLineMeshOptions, private _pluginMaterial: GreasedLinePluginMaterial) {
         super(name, scene, null, null, false, false);
 
-        this._lazy = this._options.lazy ?? false;
-        this._updatable = this._options.updatable ?? false;
+        this._lazy = _options.lazy ?? false;
+        this._updatable = _options.updatable ?? false;
 
         this._vertexPositions = [];
         this._indices = [];
         this._uvs = [];
-
-        if (_options.offsets) {
-            this._offsets = [..._options.offsets];
-        }
+        this._points = [];
+        this._offsets = _options.offsets;
         this._previousAndSide = [];
         this._nextAndCounters = [];
         this._widths = _options.widths ?? new Array(_options.points.length).fill(1);
-
-        this._points = [];
 
         this._matrixWorld = this.getWorldMatrix();
 
         this._boundingSphere = new BoundingSphere(Vector3.Zero(), Vector3.Zero(), this._matrixWorld);
 
-        if (this._options.points) {
-            this.addPoints(this._options.points);
+        if (_options.points) {
+            this.addPoints(_options.points);
         }
     }
 
@@ -134,9 +130,7 @@ export class GreasedLineMesh extends Mesh {
         this._createVertexBuffers();
         this._updateRaycastBoundingInfo();
 
-        if (this.greasedLineMaterial) {
-            this.greasedLineMaterial.updateLazy();
-        }
+        this.greasedLineMaterial?.updateLazy();
     }
 
     /**
