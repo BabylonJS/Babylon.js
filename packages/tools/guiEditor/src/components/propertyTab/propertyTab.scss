@@ -265,6 +265,25 @@
             }
         }
     }
+    .ge-divider.quad {
+        display: grid;
+        grid-template-columns: 1fr 5px 1fr 5px 1fr 5px 1fr;
+        > .textInputLine,
+        > .floatLine {
+            &:first-of-type {
+                grid-column: 1;
+            }
+            &:nth-of-type(2) {
+                grid-column: 3;
+            }
+            &:nth-of-type(3) {
+                grid-column: 5;
+            }
+            &:nth-of-type(4) {
+                grid-column: 7;
+            }
+        }
+    }
     .ge-grid-divider {
         display: grid;
         grid-template-columns: 150px 1fr auto;
