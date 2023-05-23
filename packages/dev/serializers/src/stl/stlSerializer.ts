@@ -16,7 +16,7 @@ export class STLExport {
      * @param isLittleEndian toggle for binary type exporter.
      * @param doNotBakeTransform toggle if meshes transforms should be baked or not.
      * @param supportInstancedMeshes toggle to export instanced Meshes. Enabling support for instanced meshes will override doNoBakeTransform as true
-     * @param mergeMeshes toggle to export each mesh as an independent mesh. By default, all the meshes are combined into one mesh. This property has no effect when exporting in binary format
+     * @param exportIndividualMeshes toggle to export each mesh as an independent mesh. By default, all the meshes are combined into one mesh. This property has no effect when exporting in binary format
      * @returns the STL as UTF8 string
      */
     public static CreateSTL(
@@ -27,7 +27,7 @@ export class STLExport {
         isLittleEndian: boolean = true,
         doNotBakeTransform: boolean = false,
         supportInstancedMeshes: boolean = false,
-        mergeMeshes: boolean = true
+        exportIndividualMeshes: boolean = false
     ): any {
         //Binary support adapted from https://gist.github.com/paulkaplan/6d5f0ab2c7e8fdc68a61
 
@@ -99,14 +99,14 @@ export class STLExport {
             data.setUint32(offset, faceCount, isLittleEndian);
             offset += 4;
         } else {
-            if (mergeMeshes) {
+            if (!exportIndividualMeshes) {
                 data = "solid stlmesh\r\n";
             }
         }
 
         for (let i = 0; i < meshes.length; i++) {
             const mesh = meshes[i];
-            if (!binary && !mergeMeshes) {
+            if (!binary && exportIndividualMeshes) {
                 data += "solid " + mesh.name + "\r\n";
             }
             if (!doNotBakeTransform && mesh instanceof Mesh) {
@@ -134,12 +134,12 @@ export class STLExport {
                     data += "\tendfacet\r\n";
                 }
             }
-            if (!binary && !mergeMeshes) {
+            if (!binary && exportIndividualMeshes) {
                 data += "endsolid " + name + "\r\n";
             }
         }
 
-        if (!binary && mergeMeshes) {
+        if (!binary && !exportIndividualMeshes) {
             data += "endsolid stlmesh";
         }
 
