@@ -51,6 +51,8 @@ export class TextBlock extends Control {
     private _lineThrough: boolean = false;
     private _wordDivider: string = " ";
     private _forceResizeWidth: boolean = false;
+    private _applyOutlineToUnderline: boolean = false;
+
     /**
      * An event triggered after the text is changed
      */
@@ -253,6 +255,22 @@ export class TextBlock extends Control {
     }
 
     /**
+     * If the outline should be applied to the underline/strike-through too. Has different behavior in Edge/Chrome vs Firefox.
+     */
+    @serialize()
+    public get applyOutlineToUnderline(): boolean {
+        return this._applyOutlineToUnderline;
+    }
+
+    public set applyOutlineToUnderline(value: boolean) {
+        if (this._applyOutlineToUnderline === value) {
+            return;
+        }
+        this._applyOutlineToUnderline = value;
+        this._markAsDirty();
+    }
+
+    /**
      * Gets or sets outlineColor of the text to display
      */
     @serialize()
@@ -418,7 +436,7 @@ export class TextBlock extends Control {
         context.lineWidth = Math.round(this.fontSizeInPixels * 0.05);
         context.moveTo(xFrom, yFrom);
         context.lineTo(xTo, yTo);
-        if (this.outlineWidth) {
+        if (this.outlineWidth && this.applyOutlineToUnderline) {
             context.stroke();
             context.fill();
         } else {
