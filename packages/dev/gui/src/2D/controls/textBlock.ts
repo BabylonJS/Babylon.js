@@ -405,22 +405,29 @@ export class TextBlock extends Control {
         context.fillText(text, this._currentMeasure.left + x, y);
 
         if (this._underline) {
-            context.beginPath();
-            context.lineWidth = Math.round(this.fontSizeInPixels * 0.05);
-            context.moveTo(this._currentMeasure.left + x, y + 3);
-            context.lineTo(this._currentMeasure.left + x + textWidth, y + 3);
-            context.stroke();
-            context.closePath();
+            this._drawLine(this._currentMeasure.left + x, y + 3, this._currentMeasure.left + x + textWidth, y + 3, context);
         }
 
         if (this._lineThrough) {
-            context.beginPath();
-            context.lineWidth = Math.round(this.fontSizeInPixels * 0.05);
-            context.moveTo(this._currentMeasure.left + x, y - this.fontSizeInPixels / 3);
-            context.lineTo(this._currentMeasure.left + x + textWidth, y - this.fontSizeInPixels / 3);
-            context.stroke();
-            context.closePath();
+            this._drawLine(this._currentMeasure.left + x, y - this.fontSizeInPixels / 3, this._currentMeasure.left + x + textWidth, y - this.fontSizeInPixels / 3, context);
         }
+    }
+
+    private _drawLine(xFrom: number, yFrom: number, xTo: number, yTo: number, context: ICanvasRenderingContext): void {
+        context.beginPath();
+        context.lineWidth = Math.round(this.fontSizeInPixels * 0.05);
+        context.moveTo(xFrom, yFrom);
+        context.lineTo(xTo, yTo);
+        if (this.outlineWidth) {
+            context.stroke();
+            context.fill();
+        } else {
+            const currentStroke = context.strokeStyle;
+            context.strokeStyle = context.fillStyle;
+            context.stroke();
+            context.strokeStyle = currentStroke;
+        }
+        context.closePath();
     }
 
     /**
