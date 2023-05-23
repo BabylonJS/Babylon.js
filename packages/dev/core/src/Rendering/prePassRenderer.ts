@@ -299,6 +299,11 @@ export class PrePassRenderer {
 
         this.renderTargets.push(rt);
 
+        if (this._enabled) {
+            // The pre-pass renderer is already enabled, so make sure we create the render target with the correct number of textures
+            this._update();
+        }
+
         return rt;
     }
 
