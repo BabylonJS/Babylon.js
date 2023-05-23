@@ -1274,13 +1274,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
                 const generator = key.value;
                 if (generator && (!generator.getShadowMap()?.renderList || (generator.getShadowMap()?.renderList && generator.getShadowMap()?.renderList?.indexOf(this) !== -1))) {
-                    if (generator.getShadowMap()) {
-                        engine.currentRenderPassId = generator.getShadowMap()!.renderPassId;
-                    }
-                    for (const subMesh of this.subMeshes) {
-                        if (!generator.isReady(subMesh, hardwareInstancedRendering, subMesh.getMaterial()?.needAlphaBlendingForMesh(this) ?? false)) {
-                            engine.currentRenderPassId = currentRenderPassId;
-                            return false;
+                    const shadowMap = generator.getShadowMap()!;
+                    const renderPassIds = shadowMap.renderPassIds ?? [engine.currentRenderPassId];
+                    for (let p = 0; p < renderPassIds.length; ++p) {
+                        engine.currentRenderPassId = renderPassIds[p];
+                        for (const subMesh of this.subMeshes) {
+                            if (!generator.isReady(subMesh, hardwareInstancedRendering, subMesh.getMaterial()?.needAlphaBlendingForMesh(this) ?? false)) {
+                                engine.currentRenderPassId = currentRenderPassId;
+                                return false;
+                            }
                         }
                     }
                     engine.currentRenderPassId = currentRenderPassId;

@@ -1930,12 +1930,19 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         let index: number;
         const engine = this.getEngine();
 
+        const currentRenderPassId = engine.currentRenderPassId;
+
+        engine.currentRenderPassId = this.activeCamera?.renderPassId ?? currentRenderPassId;
+
         let isReady = true;
 
         // Pending data
         if (this._pendingData.length > 0) {
             isReady = false;
         }
+
+        // Ensures that the pre-pass renderer is enabled if it is to be enabled.
+        this.prePassRenderer?.update();
 
         // Meshes
         if (checkRenderTargets) {
@@ -1999,11 +2006,13 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
 
         if (!isReady) {
+            engine.currentRenderPassId = currentRenderPassId;
             return false;
         }
 
         // Effects
         if (!engine.areAllEffectsReady()) {
+            engine.currentRenderPassId = currentRenderPassId;
             return false;
         }
 
@@ -2012,6 +2021,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             for (index = 0; index < this._materialsRenderTargets.length; ++index) {
                 const rtt = this._materialsRenderTargets.data[index];
                 if (!rtt.isReadyForRendering()) {
+                    engine.currentRenderPassId = currentRenderPassId;
                     return false;
                 }
             }
@@ -2022,6 +2032,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             const geometry = this.geometries[index];
 
             if (geometry.delayLoadState === Constants.DELAYLOADSTATE_LOADING) {
+                engine.currentRenderPassId = currentRenderPassId;
                 return false;
             }
         }
@@ -2030,11 +2041,13 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         if (this.activeCameras && this.activeCameras.length > 0) {
             for (const camera of this.activeCameras) {
                 if (!camera.isReady(true)) {
+                    engine.currentRenderPassId = currentRenderPassId;
                     return false;
                 }
             }
         } else if (this.activeCamera) {
             if (!this.activeCamera.isReady(true)) {
+                engine.currentRenderPassId = currentRenderPassId;
                 return false;
             }
         }
@@ -2042,9 +2055,12 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         // Particles
         for (const particleSystem of this.particleSystems) {
             if (!particleSystem.isReady()) {
+                engine.currentRenderPassId = currentRenderPassId;
                 return false;
             }
         }
+
+        engine.currentRenderPassId = currentRenderPassId;
 
         return true;
     }

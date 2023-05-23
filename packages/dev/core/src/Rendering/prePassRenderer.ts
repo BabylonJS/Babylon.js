@@ -184,7 +184,7 @@ export class PrePassRenderer {
             this._currentTarget = prePassRenderTarget;
         } else {
             this._currentTarget = this.defaultRT;
-            this._engine.currentRenderPassId = this._currentTarget.renderPassId;
+            this._engine.currentRenderPassId = this._scene.activeCamera?.renderPassId ?? this._currentTarget.renderPassId;
         }
     }
 
@@ -782,6 +782,15 @@ export class PrePassRenderer {
             if (type === Constants.PREPASS_VELOCITY_TEXTURE_TYPE) {
                 this._scene.needsPreviousWorldMatrices = true;
             }
+        }
+    }
+
+    /**
+     * Makes sure that the prepass renderer is up to date if it has been dirtified.
+     */
+    public update() {
+        if (this._isDirty) {
+            this._update();
         }
     }
 
