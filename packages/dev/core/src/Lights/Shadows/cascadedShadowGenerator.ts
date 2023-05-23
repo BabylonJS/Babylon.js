@@ -799,6 +799,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
             undefined /*, Constants.TEXTUREFORMAT_RED*/
         );
         this._shadowMap.createDepthStencilTexture(engine.useReverseDepthBuffer ? Constants.GREATER : Constants.LESS, true);
+        this._shadowMap.noPrePassRenderer = true;
     }
 
     protected _initializeShadowMap(): void {
