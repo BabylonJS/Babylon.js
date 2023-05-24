@@ -51,6 +51,8 @@ export class TextBlock extends Control {
     private _lineThrough: boolean = false;
     private _wordDivider: string = " ";
     private _forceResizeWidth: boolean = false;
+    private _applyOutlineToUnderline: boolean = false;
+
     /**
      * An event triggered after the text is changed
      */
@@ -253,6 +255,22 @@ export class TextBlock extends Control {
     }
 
     /**
+     * If the outline should be applied to the underline/strike-through too. Has different behavior in Edge/Chrome vs Firefox.
+     */
+    @serialize()
+    public get applyOutlineToUnderline(): boolean {
+        return this._applyOutlineToUnderline;
+    }
+
+    public set applyOutlineToUnderline(value: boolean) {
+        if (this._applyOutlineToUnderline === value) {
+            return;
+        }
+        this._applyOutlineToUnderline = value;
+        this._markAsDirty();
+    }
+
+    /**
      * Gets or sets outlineColor of the text to display
      */
     @serialize()
@@ -405,22 +423,29 @@ export class TextBlock extends Control {
         context.fillText(text, this._currentMeasure.left + x, y);
 
         if (this._underline) {
-            context.beginPath();
-            context.lineWidth = Math.round(this.fontSizeInPixels * 0.05);
-            context.moveTo(this._currentMeasure.left + x, y + 3);
-            context.lineTo(this._currentMeasure.left + x + textWidth, y + 3);
-            context.stroke();
-            context.closePath();
+            this._drawLine(this._currentMeasure.left + x, y + 3, this._currentMeasure.left + x + textWidth, y + 3, context);
         }
 
         if (this._lineThrough) {
-            context.beginPath();
-            context.lineWidth = Math.round(this.fontSizeInPixels * 0.05);
-            context.moveTo(this._currentMeasure.left + x, y - this.fontSizeInPixels / 3);
-            context.lineTo(this._currentMeasure.left + x + textWidth, y - this.fontSizeInPixels / 3);
-            context.stroke();
-            context.closePath();
+            this._drawLine(this._currentMeasure.left + x, y - this.fontSizeInPixels / 3, this._currentMeasure.left + x + textWidth, y - this.fontSizeInPixels / 3, context);
         }
+    }
+
+    private _drawLine(xFrom: number, yFrom: number, xTo: number, yTo: number, context: ICanvasRenderingContext): void {
+        context.beginPath();
+        context.lineWidth = Math.round(this.fontSizeInPixels * 0.05);
+        context.moveTo(xFrom, yFrom);
+        context.lineTo(xTo, yTo);
+        if (this.outlineWidth && this.applyOutlineToUnderline) {
+            context.stroke();
+            context.fill();
+        } else {
+            const currentStroke = context.strokeStyle;
+            context.strokeStyle = context.fillStyle;
+            context.stroke();
+            context.strokeStyle = currentStroke;
+        }
+        context.closePath();
     }
 
     /**
