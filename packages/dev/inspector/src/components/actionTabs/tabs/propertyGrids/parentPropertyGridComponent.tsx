@@ -34,8 +34,8 @@ export class ParentPropertyGridComponent extends React.Component<IParentProperty
         const sortedNodes = scene
             .getNodes()
             .filter((n) => n !== node)
-            .map((n) => this._getNameForSorting).
-            .sort((a, b) => {
+            .map((n) => this._getNameForSorting(n))
+            .sort((aName, bName) => {
                 return aName.localeCompare(bName);
             });
 
@@ -65,7 +65,7 @@ export class ParentPropertyGridComponent extends React.Component<IParentProperty
                     noDirectUpdate={true}
                     onSelect={(value) => {
                         const nodeAsTransform = node as TransformNode;
-                        if (typeof value === "number" && value < 0) {
+                        if (typeof value !== "number" || value < 0) {
                             if (nodeAsTransform.setParent) {
                                 nodeAsTransform.setParent(null);
                             } else {
