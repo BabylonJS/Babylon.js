@@ -34,9 +34,8 @@ export class ParentPropertyGridComponent extends React.Component<IParentProperty
         const sortedNodes = scene
             .getNodes()
             .filter((n) => n !== node)
+            .map((n) => this._getNameForSorting).
             .sort((a, b) => {
-                const aName = this._getNameForSorting(a);
-                const bName = this._getNameForSorting(b);
                 return aName.localeCompare(bName);
             });
 
