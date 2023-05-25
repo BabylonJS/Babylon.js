@@ -192,7 +192,6 @@ export class MultiRenderTarget extends RenderTargetTexture {
         const generateDepthBuffer = !options || options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
         const generateStencilBuffer = !options || options.generateStencilBuffer === undefined ? false : options.generateStencilBuffer;
 
-        this._size = size;
         this._multiRenderTargetOptions = {
             samplingModes: samplingModes,
             generateMipMaps: generateMipMaps,
@@ -486,7 +485,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
      * @param size Define the new size
      */
     public resize(size: any) {
-        this._size = size;
+        this._processSizeParameter(size, false);
         this._rebuild(undefined, this._textureNames);
     }
 
