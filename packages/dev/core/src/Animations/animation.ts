@@ -983,7 +983,7 @@ export class Animation {
                 switch (state.loopMode) {
                     case Animation.ANIMATIONLOOPMODE_CYCLE:
                     case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                    case Animation.ANIMATIONLOOPMODE_YOYO:                        
+                    case Animation.ANIMATIONLOOPMODE_YOYO:
                         return quatValue;
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
                         return quatValue.addInPlace(state.offsetValue.scale(state.repeatCount));
@@ -999,7 +999,7 @@ export class Animation {
                 switch (state.loopMode) {
                     case Animation.ANIMATIONLOOPMODE_CYCLE:
                     case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                    case Animation.ANIMATIONLOOPMODE_YOYO:                        
+                    case Animation.ANIMATIONLOOPMODE_YOYO:
                         return vec3Value;
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
                         return vec3Value.add(state.offsetValue.scale(state.repeatCount));
@@ -1014,7 +1014,7 @@ export class Animation {
                 switch (state.loopMode) {
                     case Animation.ANIMATIONLOOPMODE_CYCLE:
                     case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                    case Animation.ANIMATIONLOOPMODE_YOYO:                        
+                    case Animation.ANIMATIONLOOPMODE_YOYO:
                         return vec2Value;
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
                         return vec2Value.add(state.offsetValue.scale(state.repeatCount));
@@ -1026,7 +1026,7 @@ export class Animation {
                 switch (state.loopMode) {
                     case Animation.ANIMATIONLOOPMODE_CYCLE:
                     case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                    case Animation.ANIMATIONLOOPMODE_YOYO:                        
+                    case Animation.ANIMATIONLOOPMODE_YOYO:
                         return this.sizeInterpolateFunction(startValue, endValue, gradient);
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
                         return this.sizeInterpolateFunction(startValue, endValue, gradient).add(state.offsetValue.scale(state.repeatCount));
@@ -1041,7 +1041,7 @@ export class Animation {
                 switch (state.loopMode) {
                     case Animation.ANIMATIONLOOPMODE_CYCLE:
                     case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                    case Animation.ANIMATIONLOOPMODE_YOYO:                        
+                    case Animation.ANIMATIONLOOPMODE_YOYO:
                         return color3Value;
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
                         return color3Value.add(state.offsetValue.scale(state.repeatCount));
@@ -1056,7 +1056,7 @@ export class Animation {
                 switch (state.loopMode) {
                     case Animation.ANIMATIONLOOPMODE_CYCLE:
                     case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                    case Animation.ANIMATIONLOOPMODE_YOYO:                        
+                    case Animation.ANIMATIONLOOPMODE_YOYO:
                         return color4Value;
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
                         return color4Value.add(state.offsetValue.scale(state.repeatCount));
