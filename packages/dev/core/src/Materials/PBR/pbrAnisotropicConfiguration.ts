@@ -24,6 +24,7 @@ export class MaterialAnisotropicDefines extends MaterialDefines {
     public ANISOTROPIC = false;
     public ANISOTROPIC_TEXTURE = false;
     public ANISOTROPIC_TEXTUREDIRECTUV = 0;
+    public ANISOTROPIC_LEGACY = false;
     public MAINUV1 = false;
 }
 
@@ -52,6 +53,22 @@ export class PBRAnisotropicConfiguration extends MaterialPluginBase {
     @serializeAsVector2()
     public direction = new Vector2(1, 0);
 
+    /**
+     * Sets the anisotropy direction as an angle.
+     */
+    public set angle(value: number) {
+        this.direction.x = Math.cos(value);
+        this.direction.y = Math.sin(value);
+    }
+
+    /**
+     * Gets the anisotropy angle value in radians.
+     * @returns the anisotropy angle value in radians.
+     */
+    public get angle(): number {
+        return Math.atan2(this.direction.y, this.direction.x);
+    }
+
     private _texture: Nullable<BaseTexture> = null;
     /**
      * Stores the anisotropy values in a texture.
@@ -62,6 +79,14 @@ export class PBRAnisotropicConfiguration extends MaterialPluginBase {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public texture: Nullable<BaseTexture> = null;
 
+    private _legacy = false;
+    /**
+     * Defines if the anisotropy is in legacy mode for backwards compatibility before 6.4.0.
+     */
+    @serialize()
+    @expandToProperty("_markAllSubMeshesAsMiscDirty")
+    public legacy: boolean = false;
+
     /** @internal */
     private _internalMarkAllSubMeshesAsTexturesDirty: () => void;
 
@@ -71,10 +96,20 @@ export class PBRAnisotropicConfiguration extends MaterialPluginBase {
         this._internalMarkAllSubMeshesAsTexturesDirty();
     }
 
+    /** @internal */
+    private _internalMarkAllSubMeshesAsMiscDirty: () => void;
+
+    /** @internal */
+    public _markAllSubMeshesAsMiscDirty(): void {
+        this._enable(this._isEnabled);
+        this._internalMarkAllSubMeshesAsMiscDirty();
+    }
+
     constructor(material: PBRBaseMaterial, addToPluginList = true) {
         super(material, "PBRAnisotropic", 110, new MaterialAnisotropicDefines(), addToPluginList);
 
         this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
+        this._internalMarkAllSubMeshesAsMiscDirty = material._dirtyCallbacks[Constants.MATERIAL_MiscDirtyFlag];
     }
 
     public isReadyForSubMesh(defines: MaterialAnisotropicDefines, scene: Scene): boolean {
@@ -112,10 +147,15 @@ export class PBRAnisotropicConfiguration extends MaterialPluginBase {
                     }
                 }
             }
+
+            if (defines._areMiscDirty) {
+                defines.ANISOTROPIC_LEGACY = this._legacy;
+            }
         } else {
             defines.ANISOTROPIC = false;
             defines.ANISOTROPIC_TEXTURE = false;
             defines.ANISOTROPIC_TEXTUREDIRECTUV = 0;
+            defines.ANISOTROPIC_LEGACY = false;
         }
     }
 
@@ -195,5 +235,20 @@ export class PBRAnisotropicConfiguration extends MaterialPluginBase {
                 { name: "anisotropyMatrix", size: 16, type: "mat4" },
             ],
         };
+    }
+
+    /**
+     * Parses a anisotropy Configuration from a serialized object.
+     * @param source - Serialized object.
+     * @param scene Defines the scene we are parsing for
+     * @param rootUrl Defines the rootUrl to load from
+     */
+    public parse(source: any, scene: Scene, rootUrl: string): void {
+        super.parse(source, scene, rootUrl);
+
+        // Backward compatibility
+        if (source.legacy === undefined) {
+            this.legacy = true;
+        }
     }
 }
