@@ -2005,24 +2005,12 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             }
         }
 
-        if (!isReady) {
-            engine.currentRenderPassId = currentRenderPassId;
-            return false;
-        }
-
-        // Effects
-        if (!engine.areAllEffectsReady()) {
-            engine.currentRenderPassId = currentRenderPassId;
-            return false;
-        }
-
         // Render targets
         if (checkRenderTargets) {
             for (index = 0; index < this._materialsRenderTargets.length; ++index) {
                 const rtt = this._materialsRenderTargets.data[index];
                 if (!rtt.isReadyForRendering()) {
-                    engine.currentRenderPassId = currentRenderPassId;
-                    return false;
+                    isReady = false;
                 }
             }
         }
@@ -2032,8 +2020,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             const geometry = this.geometries[index];
 
             if (geometry.delayLoadState === Constants.DELAYLOADSTATE_LOADING) {
-                engine.currentRenderPassId = currentRenderPassId;
-                return false;
+                isReady = false;
             }
         }
 
@@ -2041,28 +2028,39 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         if (this.activeCameras && this.activeCameras.length > 0) {
             for (const camera of this.activeCameras) {
                 if (!camera.isReady(true)) {
-                    engine.currentRenderPassId = currentRenderPassId;
-                    return false;
+                    isReady = false;
                 }
             }
         } else if (this.activeCamera) {
             if (!this.activeCamera.isReady(true)) {
-                engine.currentRenderPassId = currentRenderPassId;
-                return false;
+                isReady = false;
             }
         }
 
         // Particles
         for (const particleSystem of this.particleSystems) {
             if (!particleSystem.isReady()) {
-                engine.currentRenderPassId = currentRenderPassId;
-                return false;
+                isReady = false;
             }
+        }
+
+        // Layers
+        if (this.layers) {
+            for (const layer of this.layers) {
+                if (!layer.isReady()) {
+                    isReady = false;
+                }
+            }
+        }
+
+        // Effects
+        if (!engine.areAllEffectsReady()) {
+            isReady = false;
         }
 
         engine.currentRenderPassId = currentRenderPassId;
 
-        return true;
+        return isReady;
     }
 
     /** Resets all cached information relative to material (including effect and visibility) */
