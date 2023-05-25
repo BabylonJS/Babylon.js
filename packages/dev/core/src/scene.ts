@@ -2358,10 +2358,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             return;
         }
 
-        if (typeof newMesh.name !== "string") {
-            Tools.Warn("Mesh's name is not of string type.");
-        }
-
         this.meshes.push(newMesh);
 
         newMesh._resyncLightSources();
