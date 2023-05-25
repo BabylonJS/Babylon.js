@@ -1,6 +1,163 @@
 {
-    "fromTag": "6.4.0",
+    "fromTag": "6.4.1",
     "changelog": {
+        "6.5.0": [
+            {
+                "pr": "13892",
+                "title": "Shadows: Fix CSM in infinite far plane mode",
+                "description": "See https://forum.babylonjs.com/t/csm-and-infinite-far-plane/41064",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Lights/Shadows/cascadedShadowGenerator.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine",
+                    "shadows"
+                ]
+            },
+            {
+                "pr": "13890",
+                "title": "Fix the underline/strike-through line to use the color of the text when there is no outline.",
+                "description": "Please not that, due to a bug in Firefox (https://bugzilla.mozilla.org/show_bug.cgi?id=1834594), it's not possible to have both the text and the outline color on that browser. So I added an option to use or not the behavior in case consistent behavior is needed:\r\nExample PG: #CMMCCJ#6\r\n\r\nIn Edge/Chrome:\r\n\r\n![image](https://github.com/BabylonJS/Babylon.js/assets/6002144/262194fd-e931-47e6-b6ae-81db3d6b7d23)\r\n\r\nIn FF:\r\n![image](https://github.com/BabylonJS/Babylon.js/assets/6002144/fec96b5e-d9f3-44cf-a3a8-b5e4a7bc892b)\r\n\r\n\r\n",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/textBlock.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "gui"
+                ]
+            },
+            {
+                "pr": "13886",
+                "title": "STL export multiple meshes",
+                "description": "Add the option to not combine the meshes on export as STL\r\nBased on this discussion\r\nhttps://forum.babylonjs.com/t/stlexport-could-use-mesh-name-s-instead-than-the-generic-stlmesh-as-solid-label-s/40120",
+                "author": {
+                    "name": "Bulisor",
+                    "url": "https://github.com/Bulisor"
+                },
+                "files": [
+                    "packages/dev/serializers/src/stl/stlSerializer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13888",
+                "title": "Pre-Pass renderer: Fix scene.isReady when using the prepass renderer",
+                "description": "See https://forum.babylonjs.com/t/how-to-detect-the-completion-of-initialization/40952/7 and https://forum.babylonjs.com/t/model-load-much-slower-with-cascadedshadow-and-prepassrenderer/40893/6.\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Lights/Shadows/cascadedShadowGenerator.ts",
+                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts",
+                    "packages/dev/core/src/Materials/materialDefines.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/Rendering/prePassRenderer.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13889",
+                "title": "RenderTargetTexture: Fix render pass ids when resizing the texture",
+                "description": "See https://forum.babylonjs.com/t/setmaterialforrendering-not-work-after-resizing-rendertargettexture/41052",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13885",
+                "title": "Mesh: Fix billboards in right-handed systems",
+                "description": "See https://forum.babylonjs.com/t/scene-userighthandedsystem-true-and-billboard-mode/1601/7",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/transformNode.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13835",
+                "title": "Babylon Gui Editor, Free corner radius",
+                "description": "New variable for corner radius with different values on each corner.\r\nCss and React components for Editor.\r\n@carolhmj ",
+                "author": {
+                    "name": "J3F31",
+                    "url": "https://github.com/J3F31"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/rectangle.ts",
+                    "packages/tools/guiEditor/src/components/propertyTab/propertyGrids/gui/rectanglePropertyGridComponent.tsx",
+                    "packages/tools/guiEditor/src/components/propertyTab/propertyTab.scss"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13881",
+                "title": "WebGPU: Allow to pass to a compute shader the gpu buffer used in a bundle to render instances",
+                "description": "See https://forum.babylonjs.com/t/dynamic-size-of-instance-count/40839/9\r\n\r\nThis change allows you to pass the buffer used by the \"draw indirect\" call made in a render bundle to a compute shader.\r\n\r\nIt is useful to update the number of instances visible directly from a compute shader, when doing your own culling on the GPU, for example.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuDrawContext.ts",
+                    "packages/dev/core/src/Meshes/WebGPU/webgpuDataBuffer.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "13878",
+                "title": "Curve interpolation node",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/curveBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/index.ts",
+                    "packages/tools/nodeEditor/src/blockTools.ts",
+                    "packages/tools/nodeEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/display/curveDisplayManager.modules.scss",
+                    "packages/tools/nodeEditor/src/graphSystem/display/curveDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/curveNodePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/registerToDisplayLedger.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/registerToPropertyLedger.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "nme"
+                ]
+            }
+        ],
         "6.4.1": [
             {
                 "pr": "13876",
