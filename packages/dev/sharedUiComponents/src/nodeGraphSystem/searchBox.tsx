@@ -10,7 +10,7 @@ export interface ISearchBoxComponentProps {
 /**
  * The search box component.
  */
-export class SearchBoxComponent extends React.Component<ISearchBoxComponentProps, { isVisible: boolean; filter: string, selectedIndex: number }> {
+export class SearchBoxComponent extends React.Component<ISearchBoxComponentProps, { isVisible: boolean; filter: string; selectedIndex: number }> {
     private _handleEscKey: (evt: KeyboardEvent) => void;
     private _targetX: number;
     private _targetY: number;
@@ -64,12 +64,12 @@ export class SearchBoxComponent extends React.Component<ISearchBoxComponentProps
         }
 
         if (evt.code === "ArrowDown" && this._nodes.length > 0) {
-            this.setState({selectedIndex : Math.min(this.state.selectedIndex + 1, this._nodes.length - 1)});
+            this.setState({ selectedIndex: Math.min(this.state.selectedIndex + 1, this._nodes.length - 1) });
             return;
         }
 
         if (evt.code === "ArrowUp" && this._nodes.length > 0) {
-            this.setState({selectedIndex : Math.max(this.state.selectedIndex - 1, 0)});
+            this.setState({ selectedIndex: Math.max(this.state.selectedIndex - 1, 0) });
             return;
         }
     }
@@ -128,7 +128,11 @@ export class SearchBoxComponent extends React.Component<ISearchBoxComponentProps
                     <div className="graph-search-box-list">
                         {this._nodes.map((name, i) => {
                             return (
-                                <div className={"graph-search-box-list-item " + (this.state.selectedIndex === i ? "selected " : "")} onClick={() => this.onNewNodeRequested(name)} key={name}>
+                                <div
+                                    className={"graph-search-box-list-item " + (this.state.selectedIndex === i ? "selected " : "")}
+                                    onClick={() => this.onNewNodeRequested(name)}
+                                    key={name}
+                                >
                                     {NodeLedger.NameFormatter(name)}
                                 </div>
                             );
