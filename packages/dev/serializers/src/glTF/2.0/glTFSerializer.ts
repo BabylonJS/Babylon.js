@@ -51,7 +51,7 @@ export interface IExportOptions {
 
     /**
      * Indicates if coordinate system swapping root nodes should be included in export. Defaults to false.
-     * @deprecated Please use removeIdentityRootNodes instead
+     * @deprecated Please use removeNoopRootNodes instead
      */
     includeCoordinateSystemConversionNodes?: boolean;
 }
