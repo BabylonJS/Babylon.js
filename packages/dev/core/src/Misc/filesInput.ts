@@ -24,7 +24,7 @@ export class FilesInput {
         return true;
     };
 
-    public displyLoadingUI: boolean = true;
+    public displayLoadingUI: boolean = true;
 
     /**
      * Function used when loading the scene file
@@ -300,7 +300,7 @@ export class FilesInput {
             }
 
             SceneLoader.ShowLoadingScreen = false;
-            if (this.displyLoadingUI) {
+            if (this.displayLoadingUI) {
                 this._engine.displayLoadingUI();
             }
 
@@ -316,7 +316,7 @@ export class FilesInput {
 
                         // Wait for textures and shaders to be ready
                         this._currentScene.executeWhenReady(() => {
-                            if (this.displyLoadingUI) {
+                            if (this.displayLoadingUI) {
                                 this._engine.hideLoadingUI();
                             }
                             this._engine.runRenderLoop(() => {
@@ -324,7 +324,7 @@ export class FilesInput {
                             });
                         });
                     } else {
-                        if (this.displyLoadingUI) {
+                        if (this.displayLoadingUI) {
                             this._engine.hideLoadingUI();
                         }
                     }
@@ -333,7 +333,7 @@ export class FilesInput {
                     }
                 })
                 .catch((error) => {
-                    if (this.displyLoadingUI) {
+                    if (this.displayLoadingUI) {
                         this._engine.hideLoadingUI();
                     }
                     if (this._errorCallback) {
