@@ -77,11 +77,7 @@ export class _GLTFUtilities {
      * @param vertexCount Number of vertices to check for min and max values
      * @returns min number array and max number array
      */
-    public static _CalculateMinMaxPositions(
-        positions: FloatArray,
-        vertexStart: number,
-        vertexCount: number
-    ): { min: number[]; max: number[] } {
+    public static _CalculateMinMaxPositions(positions: FloatArray, vertexStart: number, vertexCount: number): { min: number[]; max: number[] } {
         const min = [Infinity, Infinity, Infinity];
         const max = [-Infinity, -Infinity, -Infinity];
         const positionStrideSize = 3;
