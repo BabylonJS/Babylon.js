@@ -81,11 +81,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
                     Logger.Warn(`${context}: Light ${babylonLight.name} is not supported in ${NAME}`);
                 } else {
                     const lightPosition = babylonLight.position.clone();
-                    const convertToRightHandedSystem = this._exporter._convertToRightHandedSystemMap[babylonNode.uniqueId];
                     if (!lightPosition.equals(Vector3.Zero())) {
-                        if (convertToRightHandedSystem) {
-                            _GLTFUtilities._GetRightHandedPositionVector3FromRef(lightPosition);
-                        }
                         node.translation = lightPosition.asArray();
                     }
                     if (lightType !== KHRLightsPunctual_LightType.POINT) {
@@ -94,9 +90,6 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
                         const len = Math.sqrt(localAxis.x * localAxis.x + localAxis.z * localAxis.z);
                         const pitch = -Math.atan2(localAxis.y, len);
                         const lightRotationQuaternion = Quaternion.RotationYawPitchRoll(yaw, pitch, 0);
-                        if (convertToRightHandedSystem) {
-                            _GLTFUtilities._GetRightHandedQuaternionFromRef(lightRotationQuaternion);
-                        }
                         if (!lightRotationQuaternion.equals(Quaternion.Identity())) {
                             node.rotation = lightRotationQuaternion.asArray();
                         }
@@ -173,7 +166,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
                                 nodeLocalTranslation.subtractInPlace(
                                     this._exporter._babylonScene.useRightHandedSystem
                                         ? babylonLight.direction
-                                        : _GLTFUtilities._GetRightHandedPositionVector3(babylonLight.direction)
+                                        : babylonLight.direction.multiplyByFloats(1, 1, -1)
                                 );
                             }
                             const nodeLocalRotation = this._exporter._babylonScene.useRightHandedSystem ? Quaternion.Identity() : new Quaternion(0, 1, 0, 0);
