@@ -1,22 +1,20 @@
 import { Color3 } from "../../Maths/math.color";
 import type { GreasedLineMaterialOptions } from "../../Materials/greasedLinePluginMaterial";
-import { GreasedLineMeshColorMode, GreasedLinePluginMaterial, GreasedLineMeshMaterialType } from "../../Materials/greasedLinePluginMaterial";
+import { GreasedLineMeshColorMode, GreasedLineMeshMaterialType, GreasedLinePluginMaterial } from "../../Materials/greasedLinePluginMaterial";
 import { StandardMaterial } from "./../../Materials/standardMaterial";
 import { PBRMaterial } from "../../Materials/PBR/pbrMaterial";
 import type { Vector2 } from "../../Maths/math.vector";
 import { Vector3 } from "../../Maths/math.vector";
 import type { Nullable } from "../../types";
-import type { GreasedLineMeshOptions } from "../greasedLineMesh";
+import type { GreasedLineMeshOptions, GreasedLinePoints } from "../greasedLineMesh";
 import { GreasedLineMeshColorDistribution, GreasedLineMeshWidthDistribution, GreasedLineMesh } from "../greasedLineMesh";
 import type { Scene } from "../../scene";
 import { EngineStore } from "../../Engines/engineStore";
 
-export type GreasedLinePoints = Vector3[] | Vector3[][] | Float32Array | Float32Array[] | number[][];
-
 /**
  * Options for GreasedLineBuilder
  */
-export interface GreasedLineBuilderOptions {
+export interface GreasedLineBuilderOptions2 {
     // mesh related
     /**
      * Points of the line.
@@ -133,23 +131,52 @@ export interface GreasedLineBuilderOptions {
 }
 
 /**
+ * Materail options for GreasedLneBuilder
+ */
+export interface GreasedLineMaterialBuilderOptions extends GreasedLineMaterialOptions {
+    /**
+     * If set to true a new material will created and a new material plugin will be attached
+     * to the material. The material will be set on the mesh. If the instance option is specified in the mesh options,
+     * no material will be created/assigned.
+     */
+    createAndAssignMaterial?: boolean;
+}
+
+/**
  * Builder class for create GreasedLineMeshes
  */
 export class GreasedLineMeshBuilder {
     private static _DEFAULT_COLOR = Color3.White();
 
     /**
+     *
+     * @param name name of the material
+     * @param options material options @see GreasedLineMaterialOptions
+     * @param scene scene or null to use the last scene
+     * @returns StandardMaterial or PBRMaterial with the @see GreasedLinePluginMaterial attached to it
+     */
+    public static CreateGreasedLineMaterial(name: string, options: GreasedLineMaterialOptions, scene: Nullable<Scene>) {
+        scene = <Scene>(scene ?? EngineStore.LastCreatedScene);
+
+        const material = options.materialType === GreasedLineMeshMaterialType.MATERIAL_TYPE_PBR ? new PBRMaterial(name, scene) : new StandardMaterial(name, scene);
+        new GreasedLinePluginMaterial(material, scene, options);
+
+        return material;
+    }
+
+    /**
      * Creates a GreasedLine mesh
      * @param name name of the mesh
      * @param options options for the mesh
+     * @param materialOptions material options for the mesh
      * @param scene scene where the mesh will be created
      * @returns instance of GreasedLineMesh
      */
-    public static CreateGreasedLine(name: string, options: GreasedLineBuilderOptions, scene: Nullable<Scene>) {
+    public static CreateGreasedLine(name: string, options: GreasedLineMeshOptions, materialOptions?: Nullable<GreasedLineMaterialBuilderOptions>, scene?: Nullable<Scene>) {
         scene = <Scene>(scene ?? EngineStore.LastCreatedScene);
 
         let instance;
-        const allPoints = GreasedLineMeshBuilder.ConvertPoints(options.points);
+        const allPoints = GreasedLineMesh.ConvertPoints(options.points);
 
         let length = 0;
         if (Array.isArray(allPoints[0])) {
@@ -160,45 +187,54 @@ export class GreasedLineMeshBuilder {
 
         const widths = GreasedLineMeshBuilder.NormalizeWidthTable(length, options.widths ?? [], GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_START);
 
-        const colors = options.colors
-            ? GreasedLineMeshBuilder.NormalizeColorTable(length, options.colors, GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_START, options.color ?? GreasedLineMeshBuilder._DEFAULT_COLOR)
+        const colors = materialOptions?.colors
+            ? GreasedLineMeshBuilder.NormalizeColorTable(
+                  length,
+                  materialOptions.colors,
+                  GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_START,
+                  materialOptions.color ?? GreasedLineMeshBuilder._DEFAULT_COLOR
+              )
             : undefined;
-
-        const offsets = options.offsets instanceof Array<Vector3> ? (<Vector3[]>options.offsets).flatMap((v) => [v.x, v.y, v.z]) : options.offsets;
 
         // create new mesh if instance is not defined
         if (!options.instance) {
             const initialGreasedLineOptions: GreasedLineMeshOptions = {
                 points: allPoints,
-                offsets,
+                // offsets: options.offsets,
                 updatable: options.updatable,
                 widths,
+                lazy: options.lazy,
             };
 
-            const initialMaterialOptions: GreasedLineMaterialOptions = {
-                materialType: options.materialType,
-                dashCount: options.dashCount,
-                dashOffset: options.dashOffset,
-                dashRatio: options.dashRatio,
-                resolution: options.resolution,
-                sizeAttenuation: options.sizeAttenuation,
-                useColors: options.useColors,
-                useDash: options.useDash,
-                visibility: options.visibility,
-                width: options.width,
-                color: options.color,
-                colorMode: options.colorMode ?? GreasedLineMeshColorMode.COLOR_MODE_SET,
-            };
+            instance = new GreasedLineMesh(name, scene, initialGreasedLineOptions);
 
-            if (colors) {
-                initialMaterialOptions.colors = GreasedLineMeshBuilder.Color3toRGBAUint8(colors);
+            if (materialOptions) {
+                const initialMaterialOptions: GreasedLineMaterialOptions = {
+                    materialType: materialOptions.materialType,
+                    dashCount: materialOptions.dashCount,
+                    dashOffset: materialOptions.dashOffset,
+                    dashRatio: materialOptions.dashRatio,
+                    resolution: materialOptions.resolution,
+                    sizeAttenuation: materialOptions.sizeAttenuation,
+                    useColors: materialOptions.useColors,
+                    useDash: materialOptions.useDash,
+                    visibility: materialOptions.visibility,
+                    width: materialOptions.width,
+                    color: materialOptions.color,
+                    colorMode: materialOptions.colorMode ?? GreasedLineMeshColorMode.COLOR_MODE_SET,
+                };
+
+                if (colors) {
+                    initialMaterialOptions.colors = colors;
+                }
+
+                if (materialOptions.createAndAssignMaterial) {
+                    const material =
+                        materialOptions.materialType === GreasedLineMeshMaterialType.MATERIAL_TYPE_PBR ? new PBRMaterial(name, scene) : new StandardMaterial(name, scene);
+                    new GreasedLinePluginMaterial(material, scene, initialMaterialOptions);
+                    instance.material = material;
+                }
             }
-
-            const material = options.materialType === GreasedLineMeshMaterialType.MATERIAL_TYPE_PBR ? new PBRMaterial(name, scene) : new StandardMaterial(name, scene);
-            const plugin = new GreasedLinePluginMaterial(material, scene, initialMaterialOptions);
-
-            instance = new GreasedLineMesh(name, scene, initialGreasedLineOptions, plugin);
-            instance.material = material;
         } else {
             // update the data on the mesh instance
             instance = options.instance;
@@ -206,6 +242,8 @@ export class GreasedLineMeshBuilder {
             instance.addPoints(allPoints);
         }
 
+        // add colors
+        // it will merge if any colors already on the instance
         if (colors) {
             GreasedLineMeshBuilder._SetColors(instance, colors);
         }
@@ -214,53 +252,13 @@ export class GreasedLineMeshBuilder {
     }
 
     /**
-     * Converts an array of Color3 to Uint8Array
-     * @param colors Arrray of Color3
-     * @returns Uin8Array of colors [r, g, b, a, r, g, b, a, ...]
+     * Gets a number array from a Vector3 array.
+     * You can you for example to convert your Vector3[] offsets to the required number[] for the offsets option.
+     * @param array Vector3 array
+     * @returns an array of x, y, z coordinates as numbers [x, y, z, x, y, z, x, y, z, ....]
      */
-    public static Color3toRGBAUint8(colors: Color3[]) {
-        const colorTable: Uint8Array = new Uint8Array(colors.length * 4);
-        for (let i = 0, j = 0; i < colors.length; i++) {
-            colorTable[j++] = colors[i].r * 255;
-            colorTable[j++] = colors[i].g * 255;
-            colorTable[j++] = colors[i].b * 255;
-            colorTable[j++] = 255;
-        }
-
-        return colorTable;
-    }
-
-    /**
-     * Converts GreasedLinePoints to number[][]
-     * @param points GreasedLinePoints
-     * @returns number[][] with x, y, z coordinates of the points, like [[x, y, z, x, y, z, ...], [x, y, z, ...]]
-     */
-    public static ConvertPoints(points: GreasedLinePoints): number[][] {
-        if (points.length && !Array.isArray(points[0]) && points[0] instanceof Vector3) {
-            const positions: number[] = [];
-            for (let j = 0; j < points.length; j++) {
-                const p = points[j] as Vector3;
-                positions.push(p.x, p.y, p.z);
-            }
-            return [positions];
-        } else if (points.length > 0 && Array.isArray(points[0]) && points[0].length > 0 && points[0][0] instanceof Vector3) {
-            const positions: number[][] = [];
-            const vectorPoints = points as Vector3[][];
-            vectorPoints.forEach((p) => {
-                positions.push(p.flatMap((p2) => [p2.x, p2.y, p2.z]));
-            });
-            return positions;
-        } else if (points instanceof Float32Array) {
-            return [Array.from(points)];
-        } else if (points.length && points[0] instanceof Float32Array) {
-            const positions: number[][] = [];
-            points.forEach((p) => {
-                positions.push(Array.from(p as Float32Array));
-            });
-            return positions;
-        }
-
-        return [];
+    public static Vector3ArrayToNumberArray(array: Vector3[]) {
+        return array instanceof Array<Vector3> ? (<Vector3[]>array).flatMap((v) => [v.x, v.y, v.z]) : array;
     }
 
     /**
@@ -396,7 +394,6 @@ export class GreasedLineMeshBuilder {
      * @returns normalized array of Color3
      */
     public static NormalizeColorTable(pointCount: number, colors: Color3[], colorDistribution: GreasedLineMeshColorDistribution, defaultColor: Color3): Color3[] {
-
         const missingCount = pointCount - colors.length;
         if (missingCount < 0) {
             return colors.slice(0, pointCount);
@@ -500,25 +497,11 @@ export class GreasedLineMeshBuilder {
             if (instance.greasedLineMaterial) {
                 const currentColors = instance.greasedLineMaterial.getOptions().colors;
                 if (currentColors) {
-                    const colorsUint8 = GreasedLineMeshBuilder.Color3toRGBAUint8(colors);
-                    const newColors = GreasedLineMeshBuilder._MergeColorTables(currentColors, colorsUint8);
+                    const newColors = currentColors.concat(colors);
                     instance.greasedLineMaterial.setColors(newColors, instance.isLazy());
                 }
             }
         }
-    }
-
-    /**
-     * Merges two color tables.
-     * @param existingColors existing color table
-     * @param colorsToAppend color table to append
-     * @returns
-     */
-    private static _MergeColorTables(existingColors: Uint8Array, colorsToAppend: Uint8Array) {
-        const tmp = new Uint8Array(existingColors.byteLength + colorsToAppend.byteLength);
-        tmp.set(new Uint8Array(existingColors), 0);
-        tmp.set(new Uint8Array(colorsToAppend), existingColors.byteLength);
-        return tmp;
     }
 
     /**

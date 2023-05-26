@@ -1,7 +1,7 @@
+import { Curve3 } from './../Maths/math.path';
 import { VertexBuffer } from "./../Buffers/buffer";
 import { TmpVectors, Vector3 } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
-import { Curve3 } from "..";
 
 /**
  * Tool functions for GreasedLine
@@ -143,10 +143,10 @@ export class GreasedLineTools {
      * Creates lines in a shape of circle/arc.
      * A segment is a part of the line between it's two points.
      * @param radiusX radiusX of the circle
-     * @param radiusY radiusY of the circle - you can draw an oval if using different values
      * @param segments number of segments in the circle
-     * @param segmentAngle angle offset of the segments. Defaults to Math.PI * 2 / segments. Change this value to draw a part of the circle.
      * @param z z coordinate of the points. Defaults to 0.
+     * @param radiusY radiusY of the circle - you can draw an oval if using different values
+     * @param segmentAngle angle offset of the segments. Defaults to Math.PI * 2 / segments. Change this value to draw a part of the circle.
      * @returns line points
      */
     public static GetCircleLinePoints(radiusX: number, segments: number, z = 0, radiusY = radiusX, segmentAngle = (Math.PI * 2) / segments) {

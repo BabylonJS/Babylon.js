@@ -1,3 +1,4 @@
+import { StandardMaterial } from "core/Materials/standardMaterial";
 import { Engine } from "../Engines/engine";
 import { RawTexture } from "./Textures/rawTexture";
 import { MaterialPluginBase } from "./materialPluginBase";
@@ -7,10 +8,12 @@ import type { Vector2 } from "../Maths/math.vector";
 import { TmpVectors } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
 import type { Nullable } from "../types";
-import { serialize, serializeAsTexture } from "../Misc/decorators";
 import type { Material } from "./material";
 import { MaterialDefines } from "./materialDefines";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import { PBRMaterial } from "./PBR/pbrMaterial";
+import { DeepCopier } from "../Misc/deepCopier";
+import type { BaseTexture } from "./Textures/baseTexture";
 
 export enum GreasedLineMeshMaterialType {
     MATERIAL_TYPE_STANDARD = 0,
@@ -55,10 +58,10 @@ export interface GreasedLineMaterialOptions {
      */
     colorMode?: GreasedLineMeshColorMode;
     /**
-     * Colors of the line segments. RGBA
+     * Colors of the line segments.
      * Defaults to empty.
      */
-    colors?: Uint8Array;
+    colors?: Color3[];
     /**
      * If true, @see colors are used, otherwise they're ignored.
      * Defaults to false.
@@ -96,13 +99,24 @@ export interface GreasedLineMaterialOptions {
     resolution?: Vector2;
 }
 
-const GREASED_LINE_MATERIAL_NAME = "GreasedLine";
-
 /**
  * @internal
  */
 export class MaterialGreasedLineDefines extends MaterialDefines {
+    /**
+     * The material has a color option specified
+     */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     GREASED_LINE_HAS_COLOR = false;
+    /**
+     * The material has a color option specified
+     */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    GREASED_LINE_HAS_COLORS = false;
+    /**
+     * The material's size attenuation optiom
+     */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     GREASED_LINE_SIZE_ATTENUATION = false;
 }
 
@@ -110,15 +124,20 @@ export class MaterialGreasedLineDefines extends MaterialDefines {
  * GreasedLinePluginMaterial for GreasedLineMesh
  */
 export class GreasedLinePluginMaterial extends MaterialPluginBase {
-    @serializeAsTexture()
+    /**
+     * Plugin name
+     */
+    public static readonly GREASED_LINE_MATERIAL_NAME = "GreasedLine";
+
     private _colorsTexture?: RawTexture;
 
     private _dashArray = 0;
 
-    @serialize()
     private _options: GreasedLineMaterialOptions;
 
     private _engine: Engine;
+
+    private static _EmptyColorsTexture: RawTexture
 
     constructor(
         material: Material,
@@ -129,13 +148,16 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
         const defines = new MaterialGreasedLineDefines();
         defines.GREASED_LINE_HAS_COLOR = !!options.color;
         defines.GREASED_LINE_SIZE_ATTENUATION = options.sizeAttenuation ?? false;
+        // defines.GREASED_LINE_HAS_COLORS = (options.colors?.length ?? 0) > 0
 
-        super(material, GREASED_LINE_MATERIAL_NAME, 200, defines);
+        super(material, GreasedLinePluginMaterial.GREASED_LINE_MATERIAL_NAME, 200, defines);
 
         this._engine = this._scene.getEngine();
 
         if (options.colors) {
             this._createColorsTexture(`${material.name}-colors-texture`, options.colors);
+        } else {
+            GreasedLinePluginMaterial._PrepareEmptyColorsTexture(_scene);
         }
 
         this._options = options;
@@ -155,26 +177,35 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
         samplers.push("grl_colors");
     }
 
-    getUniforms() {
-        return {
-            ubo: [
-                { name: "grl_projection", size: 16, type: "mat4" },
-                { name: "grl_singleColor", size: 3, type: "vec3" },
-                { name: "grl_resolution_lineWidth", size: 3, type: "vec3" },
-                { name: "grl_dashOptions", size: 4, type: "vec4" },
-                { name: "grl_colorMode_visibility_colorsWidth_useColors", size: 4, type: "vec4" },
-            ],
-            vertex: `
-      uniform vec3 grl_resolution_lineWidth;
-      uniform mat4 grl_projection;
-      `,
-            fragment: `
-      uniform vec4 grl_dashOptions;
-      uniform vec4 grl_colorMode_visibility_colorsWidth_useColors;
+    public getActiveTextures(activeTextures: BaseTexture[]): void {
+        if (this._colorsTexture) {
+            activeTextures.push(this._colorsTexture);
+        }
+    }
 
-      uniform sampler2D grl_colors;
-      uniform vec3 grl_singleColor;
-      `,
+    getUniforms() {
+        const ubo = [
+            { name: "grl_projection", size: 16, type: "mat4" },
+            { name: "grl_singleColor", size: 3, type: "vec3" },
+            { name: "grl_resolution_lineWidth", size: 3, type: "vec3" },
+            { name: "grl_dashOptions", size: 4, type: "vec4" },
+            { name: "grl_colorMode_visibility_colorsWidth_useColors", size: 4, type: "vec4" },
+        ];
+        // if (this._options.colors) {
+        //     ubo.push({ name: "grl_colors", size: this._options.colors?.length, type: "sampler2DArray" });
+        // }
+        return {
+            ubo,
+            vertex: `
+                uniform vec3 grl_resolution_lineWidth;
+                uniform mat4 grl_projection;
+                `,
+            fragment: `
+                uniform vec4 grl_dashOptions;
+                uniform vec4 grl_colorMode_visibility_colorsWidth_useColors;
+                uniform sampler2D grl_colors;
+                uniform vec3 grl_singleColor;
+                `,
         };
     }
 
@@ -225,6 +256,8 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
 
         if (this._colorsTexture) {
             uniformBuffer.setTexture("grl_colors", this._colorsTexture);
+        } else if (this._engine.isWebGPU) {
+            uniformBuffer.setTexture("grl_colors", GreasedLinePluginMaterial._EmptyColorsTexture )
         }
 
         uniformBuffer.update();
@@ -232,12 +265,13 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
 
     prepareDefines(defines: MaterialGreasedLineDefines, _scene: Scene, _mesh: AbstractMesh) {
         const options = this._options;
-        defines["GREASED_LINE_HAS_COLOR"] = !!options.color;
-        defines["GREASED_LINE_SIZE_ATTENUATION"] = options.sizeAttenuation ?? false;
+        defines.GREASED_LINE_HAS_COLOR = !!options.color;
+        // defines.GREASED_LINE_HAS_COLORS = (options.colors?.length ?? 0) > 0
+        defines.GREASED_LINE_SIZE_ATTENUATION = options.sizeAttenuation ?? false;
     }
 
     getClassName() {
-        return GREASED_LINE_MATERIAL_NAME;
+        return GreasedLinePluginMaterial.GREASED_LINE_MATERIAL_NAME;
     }
 
     getCustomCode(shaderType: string): Nullable<{ [pointName: string]: string }> {
@@ -250,10 +284,11 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
                     attribute float grl_widths;
                     attribute vec3 grl_offsets;
 
-                    varying vec3 vNormal;
-                    varying vec4 vColor;
-                    varying float vCounters;
-                    flat out int vColorPointers;
+                    out vec3 vNormal;
+                    // varying vec4 vColor;
+                    out float grlCounters;
+                    // varying int grlColorPointer; // flat
+                    flat out int grlColorPointer; // flat
 
                     vec2 fix( vec4 i, float aspect ) {
                         vec2 res = i.xy / i.w;
@@ -263,49 +298,58 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
                 `,
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 CUSTOM_VERTEX_UPDATE_POSITION: `
-                    vec3 positionOffset = grl_offsets;
-                    positionUpdated += positionOffset;
+                    vec3 grlPositionOffset = grl_offsets;
+                    positionUpdated += grlPositionOffset;
                 `,
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 CUSTOM_VERTEX_MAIN_END: `
-                    vColorPointers = gl_VertexID;
-                    vCounters = grl_nextAndCounters.w;
+                    // grlColorPointer = float(gl_VertexID);
+                    grlColorPointer = gl_VertexID;
 
-                    float aspect = grl_resolution_lineWidth.x / grl_resolution_lineWidth.y;
+                    vec2 grlResolution = grl_resolution_lineWidth.xy;
+                    float grlBaseWidth = grl_resolution_lineWidth.z;
 
-                    mat4 m = viewProjection * world;
-                    vec4 finalPosition = m * vec4( positionUpdated , 1.0 );
-                    vec4 prevPos = m * vec4( grl_previousAndSide.xyz, 1.0 );
-                    vec4 nextPos = m * vec4( grl_nextAndCounters.xyz, 1.0 );
+                    vec3 grlPrevious = grl_previousAndSide.xyz;
+                    float grlSide = grl_previousAndSide.w;
 
-                    vec2 currentP = fix( finalPosition, aspect );
-                    vec2 prevP = fix( prevPos, aspect );
-                    vec2 nextP = fix( nextPos, aspect );
+                    vec3 grlNext = grl_nextAndCounters.xyz;
+                    grlCounters = grl_nextAndCounters.w;
 
-                    float w = grl_resolution_lineWidth.z * grl_widths;
+                    float grlAspect = grlResolution.x / grlResolution.y;
 
-                    vec2 dir;
-                    if( nextP == currentP ) dir = normalize( currentP - prevP );
-                    else if( prevP == currentP ) dir = normalize( nextP - currentP );
+                    mat4 grlMatrix = viewProjection * world;
+                    vec4 grlFinalPosition = grlMatrix * vec4( positionUpdated , 1.0 );
+                    vec4 grlPrevPos = grlMatrix * vec4( grlPrevious + grlPositionOffset, 1.0 );
+                    vec4 grlNextPos = grlMatrix * vec4( grlNext + grlPositionOffset, 1.0 );
+
+                    vec2 grlCurrentP = fix( grlFinalPosition, grlAspect );
+                    vec2 grlPrevP = fix( grlPrevPos, grlAspect );
+                    vec2 grlNextP = fix( grlNextPos, grlAspect );
+
+                    float grlWidth = grlBaseWidth * grl_widths;
+
+                    vec2 grlDir;
+                    if( grlNextP == grlCurrentP ) grlDir = normalize( grlCurrentP - grlPrevP );
+                    else if( grlPrevP == grlCurrentP ) grlDir = normalize( grlNextP - grlCurrentP );
                     else {
-                        vec2 dir1 = normalize( currentP - prevP );
-                        vec2 dir2 = normalize( nextP - currentP );
-                        dir = normalize( dir1 + dir2 );
+                        vec2 grlDir1 = normalize( grlCurrentP - grlPrevP );
+                        vec2 grlDir2 = normalize( grlNextP - grlCurrentP );
+                        grlDir = normalize( grlDir1 + grlDir2 );
                     }
-                    vec4 normal = vec4( -dir.y, dir.x, 0., 1. );
-                    normal.xy *= .5 * w;
-                    normal *= grl_projection;
+                    vec4 grlNormal = vec4( -grlDir.y, grlDir.x, 0., 1. );
+                    grlNormal.xy *= .5 * grlWidth;
+                    grlNormal *= grl_projection;
                     #ifdef GREASED_LINE_SIZE_ATTENUATION
-                        normal.xy *= finalPosition.w;
-                        normal.xy /= ( vec4( grl_resolution_lineWidth.xy, 0., 1. ) * grl_projection ).xy;
+                        grlNormal.xy *= grlFinalPosition.w;
+                        grlNormal.xy /= ( vec4( grlResolution, 0., 1. ) * grl_projection ).xy;
                     #endif
 
-                    finalPosition.xy += normal.xy * grl_previousAndSide.w;
+                    grlFinalPosition.xy += grlNormal.xy * grlSide;
 
-                    gl_Position = finalPosition;
+                    gl_Position = grlFinalPosition;
 
-                    vNormal= normal.xyz;
-                    vPositionW = vec3(finalPosition);
+                    vNormal= grlNormal.xyz;
+                    vPositionW = vec3(grlFinalPosition);
                 `,
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 "!gl_Position\\=viewProjection\\*worldPos;": "//", // remove
@@ -316,37 +360,50 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
             return {
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 CUSTOM_FRAGMENT_DEFINITIONS: `
-                    varying float vCounters;
-                    flat in int vColorPointers;
+                    in float grlCounters;
+                    flat in int grlColorPointer; // flat
+                    // flat in int grlColorPointer; // flat
+
                 `,
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 CUSTOM_FRAGMENT_MAIN_END: `
-                    gl_FragColor.a *= step(vCounters, grl_colorMode_visibility_colorsWidth_useColors.y);
+                    // int grlColorPointerFlat = int(grlColorPointer);
+                    int grlColorPointerFlat = grlColorPointer;
+                    float grlColorMode = grl_colorMode_visibility_colorsWidth_useColors.x;
+                    float grlVisibility = grl_colorMode_visibility_colorsWidth_useColors.y;
+                    float grlColorsWidth = grl_colorMode_visibility_colorsWidth_useColors.z;
+                    float grlUseColors = grl_colorMode_visibility_colorsWidth_useColors.w;
+
+                    float grlUseDash = grl_dashOptions.x;
+                    float grlDashArray = grl_dashOptions.y;
+                    float grlDashOffset = grl_dashOptions.z;
+                    float grlDashRatio = grl_dashOptions.w;
+
+                    gl_FragColor.a *= step(grlCounters, grlVisibility);
                     if( gl_FragColor.a == 0. ) discard;
 
-                    if(grl_dashOptions.x == 1.){
-                        gl_FragColor.a *= ceil(mod(vCounters + grl_dashOptions.z, grl_dashOptions.y) - (grl_dashOptions.y * grl_dashOptions.w));
-                        if(gl_FragColor.a == 0.) discard;
+                    if(grlUseDash == 1.){
+                        gl_FragColor.a *= ceil(mod(grlCounters + grlDashOffset, grlDashArray) - (grlDashArray * grlDashRatio));
+                        if (gl_FragColor.a == 0.) discard;
                     }
 
                     #ifdef GREASED_LINE_HAS_COLOR
-                        if (grl_colorMode_visibility_colorsWidth_useColors.x == ${GreasedLineMeshColorMode.COLOR_MODE_SET}.) {
+                        if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_SET}.) {
                             gl_FragColor.rgb = grl_singleColor;
-                        } else if (grl_colorMode_visibility_colorsWidth_useColors.x == ${GreasedLineMeshColorMode.COLOR_MODE_ADD}.) {
+                        } else if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_ADD}.) {
                             gl_FragColor.rgb += grl_singleColor;
-                        } else if (grl_colorMode_visibility_colorsWidth_useColors.x == ${GreasedLineMeshColorMode.COLOR_MODE_MULTIPLY}.) {
+                        } else if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_MULTIPLY}.) {
                             gl_FragColor.rgb *= grl_singleColor;
                         }
                     #else
-                        if (grl_colorMode_visibility_colorsWidth_useColors.w == 1.) {
-                            vec4 c = texture2D(grl_colors, vec2(float(vColorPointers)/(grl_colorMode_visibility_colorsWidth_useColors.z), 0.));;
-
-                        if (grl_colorMode_visibility_colorsWidth_useColors.x == ${GreasedLineMeshColorMode.COLOR_MODE_SET}.) {
-                            gl_FragColor = c;
-                        } else if (grl_colorMode_visibility_colorsWidth_useColors.x == ${GreasedLineMeshColorMode.COLOR_MODE_ADD}.) {
-                            gl_FragColor += c;
-                        } else if (grl_colorMode_visibility_colorsWidth_useColors.x == ${GreasedLineMeshColorMode.COLOR_MODE_MULTIPLY}.) {
-                            gl_FragColor *= c;
+                        if (grlUseColors == 1.) {
+                            vec4 grlColor = texture2D(grl_colors, vec2(float(grlColorPointerFlat)/(grlColorsWidth), 0.));;
+                        if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_SET}.) {
+                            gl_FragColor = grlColor;
+                        } else if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_ADD}.) {
+                            gl_FragColor += grlColor;
+                        } else if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_MULTIPLY}.) {
+                            gl_FragColor *= grlColor;
                         }
                         }
                     #endif
@@ -367,12 +424,30 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
     }
 
     /**
+     * Converts an array of Color3 to Uint8Array
+     * @param colors Arrray of Color3
+     * @returns Uin8Array of colors [r, g, b, a, r, g, b, a, ...]
+     */
+    private static _Color3toRGBAUint8(colors: Color3[]) {
+        const colorTable: Uint8Array = new Uint8Array(colors.length * 4);
+        for (let i = 0, j = 0; i < colors.length; i++) {
+            colorTable[j++] = colors[i].r * 255;
+            colorTable[j++] = colors[i].g * 255;
+            colorTable[j++] = colors[i].b * 255;
+            colorTable[j++] = 255;
+        }
+
+        return colorTable;
+    }
+
+    /**
      * Creates a RawTexture from an RGBA color array and sets it on the plugin material instance.
      * @param name name of the texture
      * @param colors Uint8Array of colors
      */
-    private _createColorsTexture(name: string, colors: Uint8Array) {
-        this._colorsTexture = new RawTexture(colors, colors.length / 4, 1, Engine.TEXTUREFORMAT_RGBA, this._scene, false, true, RawTexture.NEAREST_NEAREST);
+    private _createColorsTexture(name: string, colors: Color3[]) {
+        const colorsArray = GreasedLinePluginMaterial._Color3toRGBAUint8(colors);
+        this._colorsTexture = new RawTexture(colorsArray, colors.length, 1, Engine.TEXTUREFORMAT_RGBA, this._scene, false, true, RawTexture.NEAREST_NEAREST);
         this._colorsTexture.name = name;
     }
 
@@ -399,7 +474,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
      * @param forceUpdate force creation of a new texture
      * @returns
      */
-    public setColors(colors: Nullable<Uint8Array>, lazy = false, forceUpdate = false): void {
+    public setColors(colors: Nullable<Color3[]>, lazy = false, forceUpdate = false): void {
         if (colors === null || colors.length === 0) {
             this._colorsTexture?.dispose();
             return;
@@ -414,10 +489,10 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
         }
 
         if (this._colorsTexture && origColorsCount === colors.length && !forceUpdate) {
-            this._colorsTexture.update(colors);
+            const colorArray = GreasedLinePluginMaterial._Color3toRGBAUint8(colors);
+            this._colorsTexture.update(colorArray);
         } else {
             this._colorsTexture?.dispose();
-
             this._createColorsTexture(`${this._material.name}-colors-texture`, colors);
         }
     }
@@ -511,10 +586,55 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
     }
 
     /**
-     * Sets the mixing mode of the color paramater. Default value is GreasedLineMeshColorMode.SET TODO: describe modes
+     * Sets the mixing mode of the color paramater. Default value is GreasedLineMeshColorMode.SET
+     * @see GreasedLineMeshColorMode
      * @param value color mode
      */
     public setColorMode(value: GreasedLineMeshColorMode) {
         this._options.colorMode = value;
+    }
+
+    /**
+     * Clones the plugin material.
+     * @param name New name for the cloned plugin material.
+     * @returns The cloned plugin material.
+     */
+    public clone(name: string = `${this.name}-cloned`) {
+        const materialOptions = {};
+        DeepCopier.DeepCopy(this.getOptions(), materialOptions);
+
+        const material =
+            (<GreasedLineMaterialOptions>materialOptions).materialType === GreasedLineMeshMaterialType.MATERIAL_TYPE_PBR
+                ? new PBRMaterial(name, this._scene)
+                : new StandardMaterial(name, this._scene);
+        const pluginMaterial = new GreasedLinePluginMaterial(material, this._scene, materialOptions);
+        return pluginMaterial;
+    }
+
+    /**
+     * Serializes this plugin material
+     * @returns serializationObjec
+     */
+    public serialize(): any {
+        const serializationObject = super.serialize();
+        serializationObject.materialOptions = this._options;
+        return serializationObject;
+    }
+
+    // public parse(source: any, scene: Scene, rootUrl: string): void {
+    //     // const materialOptions = <GreasedLineMaterialOptions>source.materialOptions;
+    // }
+
+    /**
+     * WebGPU
+     * A minimum size texture for the colors sampler2D.
+     * WebGPU requires a bound texture if the sampler is defined in the shader.
+     * For fast switching using the useColors property without the need to use defines.
+     * @param scene Scene
+     */
+    private static _PrepareEmptyColorsTexture(scene: Scene) {
+        const colorsArray = new Uint8Array(4);
+        this._EmptyColorsTexture = new RawTexture(colorsArray, 1, 1, Engine.TEXTUREFORMAT_RGBA, scene, false, false, RawTexture.NEAREST_NEAREST);
+        this._EmptyColorsTexture.name = 'grlEmptyColorsWebGPUTexture';
     }
 }
