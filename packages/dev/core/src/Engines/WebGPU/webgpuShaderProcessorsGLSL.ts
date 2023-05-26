@@ -67,18 +67,29 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
         return alreadyInjected ? code : ubDeclaration + code;
     }
 
+    public varyingCheck(varying: string, isFragment: boolean) {
+        const outRegex = /(flat\s)?\s*out/;
+        const inRegex = /(flat\s)?\s*in/;
+        const varyingRegex = /(flat\s)?\s*varying/;
+
+        const regex = isFragment && this._fragmentIsGLES3 ? inRegex : !isFragment && this._vertexIsGLES3 ? outRegex : varyingRegex;
+
+        return regex.test(varying);
+    }
+
     public varyingProcessor(varying: string, isFragment: boolean, preProcessors: { [key: string]: string }) {
         this._preProcessors = preProcessors;
 
-        const outRegex = /\s*out\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s+(\S+)\s*;/gm;
-        const inRegex = /\s*in\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s+(\S+)\s*;/gm;
-        const varyingRegex = /\s*varying\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s+(\S+)\s*;/gm;
+        const outRegex = /\s*(flat)?\s*out\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s+(\S+)\s*;/gm;
+        const inRegex = /\s*(flat)?\s*in\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s+(\S+)\s*;/gm;
+        const varyingRegex = /\s*(flat)?\s*varying\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s+(\S+)\s*;/gm;
 
         const regex = isFragment && this._fragmentIsGLES3 ? inRegex : !isFragment && this._vertexIsGLES3 ? outRegex : varyingRegex;
         const match = regex.exec(varying);
         if (match !== null) {
-            const varyingType = match[1];
-            const name = match[2];
+            const interpolationQualifier = match[1] ?? "";
+            const varyingType = match[2];
+            const name = match[3];
             let location: number;
             if (isFragment) {
                 location = this._webgpuProcessingContext.availableVaryings[name];
@@ -89,10 +100,13 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
             } else {
                 location = this._webgpuProcessingContext.getVaryingNextLocation(varyingType, this._getArraySize(name, varyingType, preProcessors)[2]);
                 this._webgpuProcessingContext.availableVaryings[name] = location;
-                this._missingVaryings[location] = `layout(location = ${location}) in ${varyingType} ${name};`;
+                this._missingVaryings[location] = `layout(location = ${location}) ${interpolationQualifier} in ${varyingType} ${name};`;
             }
 
-            varying = varying.replace(match[0], location === undefined ? "" : `layout(location = ${location}) ${isFragment ? "in" : "out"} ${varyingType} ${name};`);
+            varying = varying.replace(
+                match[0],
+                location === undefined ? "" : `layout(location = ${location}) ${interpolationQualifier} ${isFragment ? "in" : "out"} ${varyingType} ${name};`
+            );
         }
         return varying;
     }
