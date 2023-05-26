@@ -164,9 +164,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
                             // Undo directional light positional offset
                             if (babylonLight instanceof DirectionalLight) {
                                 nodeLocalTranslation.subtractInPlace(
-                                    this._exporter._babylonScene.useRightHandedSystem
-                                        ? babylonLight.direction
-                                        : babylonLight.direction.multiplyByFloats(1, 1, -1)
+                                    this._exporter._babylonScene.useRightHandedSystem ? babylonLight.direction : babylonLight.direction.multiplyByFloats(1, 1, -1)
                                 );
                             }
                             const nodeLocalRotation = this._exporter._babylonScene.useRightHandedSystem ? Quaternion.Identity() : new Quaternion(0, 1, 0, 0);

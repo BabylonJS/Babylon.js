@@ -138,23 +138,9 @@ export class _GLTFAnimation {
                 );
             } else {
                 if (interpolation === AnimationSamplerInterpolation.LINEAR || interpolation === AnimationSamplerInterpolation.STEP) {
-                    _GLTFAnimation._CreateLinearOrStepAnimation(
-                        babylonTransformNode,
-                        animation,
-                        animationChannelTargetPath,
-                        inputs,
-                        outputs,
-                        useQuaternion
-                    );
+                    _GLTFAnimation._CreateLinearOrStepAnimation(babylonTransformNode, animation, animationChannelTargetPath, inputs, outputs, useQuaternion);
                 } else if (interpolation === AnimationSamplerInterpolation.CUBICSPLINE) {
-                    _GLTFAnimation._CreateCubicSplineAnimation(
-                        babylonTransformNode,
-                        animation,
-                        animationChannelTargetPath,
-                        inputs,
-                        outputs,
-                        useQuaternion
-                    );
+                    _GLTFAnimation._CreateCubicSplineAnimation(babylonTransformNode, animation, animationChannelTargetPath, inputs, outputs, useQuaternion);
                 } else {
                     _GLTFAnimation._CreateBakedAnimation(
                         babylonTransformNode,
@@ -563,13 +549,7 @@ export class _GLTFAnimation {
         animationSampleRate: number,
         morphAnimationChannels?: number
     ) {
-        const animationData = _GLTFAnimation._CreateNodeAnimation(
-            babylonTransformNode,
-            animation,
-            animationChannelTargetPath,
-            useQuaternion,
-            animationSampleRate
-        );
+        const animationData = _GLTFAnimation._CreateNodeAnimation(babylonTransformNode, animation, animationChannelTargetPath, useQuaternion, animationSampleRate);
         let bufferView: IBufferView;
         let accessor: IAccessor;
         let keyframeAccessorIndex: number;
@@ -741,17 +721,7 @@ export class _GLTFAnimation {
                     };
                     value = animation._interpolate(f, state);
 
-                    _GLTFAnimation._SetInterpolatedValue(
-                        babylonTransformNode,
-                        value,
-                        time,
-                        animation,
-                        animationChannelTargetPath,
-                        quaternionCache,
-                        inputs,
-                        outputs,
-                        useQuaternion
-                    );
+                    _GLTFAnimation._SetInterpolatedValue(babylonTransformNode, value, time, animation, animationChannelTargetPath, quaternionCache, inputs, outputs, useQuaternion);
                 }
             }
         }
@@ -767,11 +737,7 @@ export class _GLTFAnimation {
         animationChannelTargetPath: AnimationChannelTargetPath,
         useQuaternion: boolean
     ): Vector3 | Quaternion {
-        const basePositionRotationOrScale = _GLTFAnimation._GetBasePositionRotationOrScale(
-            babylonTransformNode,
-            animationChannelTargetPath,
-            useQuaternion
-        );
+        const basePositionRotationOrScale = _GLTFAnimation._GetBasePositionRotationOrScale(babylonTransformNode, animationChannelTargetPath, useQuaternion);
         // handles single component x, y, z or w component animation by using a base property and animating over a component.
         const property = animation.targetProperty.split(".");
         const componentName = property ? property[1] : ""; // x, y, z, or w component
@@ -816,13 +782,7 @@ export class _GLTFAnimation {
         }
 
         if (animation.dataType === Animation.ANIMATIONTYPE_FLOAT) {
-            value = this._ConvertFactorToVector3OrQuaternion(
-                value as number,
-                babylonTransformNode,
-                animation,
-                animationChannelTargetPath,
-                useQuaternion
-            );
+            value = this._ConvertFactorToVector3OrQuaternion(value as number, babylonTransformNode, animation, animationChannelTargetPath, useQuaternion);
         }
 
         if (animationChannelTargetPath === AnimationChannelTargetPath.ROTATION) {
@@ -883,32 +843,14 @@ export class _GLTFAnimation {
     ) {
         animation.getKeys().forEach(function (keyFrame) {
             inputs.push(keyFrame.frame / animation.framePerSecond); // keyframes in seconds.
-            _GLTFAnimation._AddSplineTangent(
-                _TangentType.INTANGENT,
-                outputs,
-                animationChannelTargetPath,
-                AnimationSamplerInterpolation.CUBICSPLINE,
-                keyFrame,
-                useQuaternion,
-            );
+            _GLTFAnimation._AddSplineTangent(_TangentType.INTANGENT, outputs, animationChannelTargetPath, AnimationSamplerInterpolation.CUBICSPLINE, keyFrame, useQuaternion);
             _GLTFAnimation._AddKeyframeValue(keyFrame, animation, outputs, animationChannelTargetPath, babylonTransformNode, useQuaternion);
 
-            _GLTFAnimation._AddSplineTangent(
-                _TangentType.OUTTANGENT,
-                outputs,
-                animationChannelTargetPath,
-                AnimationSamplerInterpolation.CUBICSPLINE,
-                keyFrame,
-                useQuaternion,
-            );
+            _GLTFAnimation._AddSplineTangent(_TangentType.OUTTANGENT, outputs, animationChannelTargetPath, AnimationSamplerInterpolation.CUBICSPLINE, keyFrame, useQuaternion);
         });
     }
 
-    private static _GetBasePositionRotationOrScale(
-        babylonTransformNode: Node,
-        animationChannelTargetPath: AnimationChannelTargetPath,
-        useQuaternion: boolean
-    ) {
+    private static _GetBasePositionRotationOrScale(babylonTransformNode: Node, animationChannelTargetPath: AnimationChannelTargetPath, useQuaternion: boolean) {
         let basePositionRotationOrScale: number[];
         if (animationChannelTargetPath === AnimationChannelTargetPath.ROTATION) {
             if (useQuaternion) {
@@ -1060,7 +1002,7 @@ export class _GLTFAnimation {
         animationChannelTargetPath: AnimationChannelTargetPath,
         interpolation: AnimationSamplerInterpolation,
         keyFrame: IAnimationKey,
-        useQuaternion: boolean,
+        useQuaternion: boolean
     ) {
         let tangent: number[];
         const tangentValue: Vector3 | Quaternion | number = tangentType === _TangentType.INTANGENT ? keyFrame.inTangent : keyFrame.outTangent;
