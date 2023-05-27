@@ -22,3 +22,4 @@ export * from "./decalBuilder";
 export * from "./icoSphereBuilder";
 export * from "./capsuleBuilder";
 export * from "./greasedLineBuilder";
+export * from "./textBuilder";

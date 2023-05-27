@@ -136,6 +136,14 @@ export class PerfCounter {
         }
     }
 
+    /**
+     * Call this method to end the monitoring of a frame.
+     * This scenario is typically used when you accumulate monitoring time many times for a single frame, you call this method at the end of the frame, after beginMonitoring to start recording and endMonitoring(false) to accumulated the recorded time to the PerfCounter or addCount() to accumulate a monitored count.
+     */
+    public endFrame() {
+        this._fetchResult();
+    }
+
     private _fetchResult() {
         this._totalAccumulated += this._current;
         this._lastSecAccumulated += this._current;

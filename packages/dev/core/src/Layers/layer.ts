@@ -230,13 +230,10 @@ export class Layer {
     }
 
     /**
-     * Renders the layer in the scene.
+     * Checks if the layer is ready to be rendered
+     * @returns true if the layer is ready. False otherwise.
      */
-    public render(): void {
-        if (!this.isEnabled) {
-            return;
-        }
-
+    public isReady() {
         const engine = this._scene.getEngine();
 
         let defines = "";
@@ -253,12 +250,28 @@ export class Layer {
             this._previousDefines = defines;
             this._drawWrapper.effect = engine.createEffect("layer", [VertexBuffer.PositionKind], ["textureMatrix", "color", "scale", "offset"], ["textureSampler"], defines);
         }
+
         const currentEffect = this._drawWrapper.effect;
 
-        // Check
-        if (!currentEffect || !currentEffect.isReady() || !this.texture || !this.texture.isReady()) {
+        return currentEffect?.isReady() && this.texture?.isReady();
+    }
+
+    /**
+     * Renders the layer in the scene.
+     */
+    public render(): void {
+        if (!this.isEnabled) {
             return;
         }
+
+        const engine = this._scene.getEngine();
+
+        // Check
+        if (!this.isReady()) {
+            return;
+        }
+
+        const currentEffect = this._drawWrapper.effect!;
 
         this.onBeforeRenderObservable.notifyObservers(this);
 
@@ -268,7 +281,7 @@ export class Layer {
 
         // Texture
         currentEffect.setTexture("textureSampler", this.texture);
-        currentEffect.setMatrix("textureMatrix", this.texture.getTextureMatrix());
+        currentEffect.setMatrix("textureMatrix", this.texture!.getTextureMatrix());
 
         // Color
         currentEffect.setFloat4("color", this.color.r, this.color.g, this.color.b, this.color.a);

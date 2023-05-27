@@ -414,16 +414,11 @@ export class SpriteManager implements ISpriteManager {
         contactPoint.scaleInPlace(distance);
         contactPoint.addInPlace(ray.origin);
 
-        const contactPointU = (contactPoint.x - min.x) / (max.x - min.x) - 0.5;
-        const contactPointV = 1.0 - (contactPoint.y - min.y) / (max.y - min.y) - 0.5;
+        const contactPointU = (contactPoint.x - min.x) / (max.x - min.x);
+        const contactPointV = 1.0 - (contactPoint.y - min.y) / (max.y - min.y);
 
-        // Rotate
-        const angle = sprite.angle;
-        const rotatedU = 0.5 + (contactPointU * Math.cos(angle) - contactPointV * Math.sin(angle));
-        const rotatedV = 0.5 + (contactPointU * Math.sin(angle) + contactPointV * Math.cos(angle));
-
-        const u = (sprite._xOffset * textureSize.width + rotatedU * sprite._xSize) | 0;
-        const v = (sprite._yOffset * textureSize.height + rotatedV * sprite._ySize) | 0;
+        const u = (sprite._xOffset * textureSize.width + contactPointU * sprite._xSize) | 0;
+        const v = (sprite._yOffset * textureSize.height + contactPointV * sprite._ySize) | 0;
 
         const alpha = this._textureContent![(u + v * textureSize.width) * 4 + 3];
 
@@ -470,7 +465,7 @@ export class SpriteManager implements ISpriteManager {
                 // Create a rotation matrix to rotate the ray to the sprite's rotation
                 Matrix.TranslationToRef(-cameraSpacePosition.x, -cameraSpacePosition.y, 0, TmpVectors.Matrix[1]);
                 Matrix.TranslationToRef(cameraSpacePosition.x, cameraSpacePosition.y, 0, TmpVectors.Matrix[2]);
-                Matrix.RotationZToRef(sprite.angle, TmpVectors.Matrix[3]);
+                Matrix.RotationZToRef(-sprite.angle, TmpVectors.Matrix[3]);
 
                 // inv translation x rotation x translation
                 TmpVectors.Matrix[1].multiplyToRef(TmpVectors.Matrix[3], TmpVectors.Matrix[4]);

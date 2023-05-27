@@ -604,6 +604,13 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     />
                     {material.anisotropy.isEnabled && (
                         <div className="fragment">
+                            <CheckBoxLineComponent
+                                label="Legacy Mode"
+                                target={material.anisotropy}
+                                propertyName="legacy"
+                                onValueChanged={() => this.forceUpdate()}
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
                             <SliderLineComponent
                                 lockObject={this.props.lockObject}
                                 label="Intensity"

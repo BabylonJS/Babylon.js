@@ -1310,12 +1310,20 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         const pivotA = options.pivotA ? this._bVecToV3(options.pivotA) : this._bVecToV3(Vector3.Zero());
         const axisA = options.axisA ?? new Vector3(1, 0, 0);
         const perpAxisA = this._tmpVec3[0];
-        axisA?.getNormalToRef(perpAxisA);
+        if (options.perpAxisA) {
+            perpAxisA.copyFrom(options.perpAxisA);
+        } else {
+            axisA.getNormalToRef(perpAxisA);
+        }
         this._hknp.HP_Constraint_SetAnchorInParent(jointId, pivotA, this._bVecToV3(axisA), this._bVecToV3(perpAxisA));
         const pivotB = options.pivotB ? this._bVecToV3(options.pivotB) : this._bVecToV3(Vector3.Zero());
         const axisB = options.axisB ?? new Vector3(1, 0, 0);
         const perpAxisB = this._tmpVec3[0];
-        axisB.getNormalToRef(perpAxisB);
+        if (options.perpAxisB) {
+            perpAxisB.copyFrom(options.perpAxisB);
+        } else {
+            axisB.getNormalToRef(perpAxisB);
+        }
         this._hknp.HP_Constraint_SetAnchorInChild(jointId, pivotB, this._bVecToV3(axisB), this._bVecToV3(perpAxisB));
 
         if (type == PhysicsConstraintType.LOCK) {

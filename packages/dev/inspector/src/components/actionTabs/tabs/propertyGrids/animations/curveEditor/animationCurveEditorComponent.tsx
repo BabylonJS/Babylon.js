@@ -61,6 +61,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
     private _onKeyDown(evt: KeyboardEvent) {
         switch (evt.key) {
             case "Delete":
+            case "Backspace":
                 if (this.props.context.activeKeyPoints?.length && !this.props.context.focusedInput) {
                     this.props.context.onDeleteKeyActiveKeyPoints.notifyObservers();
                 }
