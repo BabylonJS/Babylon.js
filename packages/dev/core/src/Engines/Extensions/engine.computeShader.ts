@@ -79,6 +79,12 @@ declare module "../../Engines/thinEngine" {
         areAllComputeEffectsReady(): boolean;
 
         /**
+        * Returns a promise that resolves when all compute effects are ready
+        * @returns A promise that resolves when all compute effects are ready
+        */
+        whenAllComputeEffectsReadyAsync(): Promise<void>;
+
+        /**
          * Forces the engine to release all cached compute effects. This means that next effect compilation will have to be done completely even if a similar effect was already compiled
          */
         releaseComputeEffects(): void;
@@ -132,6 +138,10 @@ ThinEngine.prototype.computeDispatch = function (
 
 ThinEngine.prototype.areAllComputeEffectsReady = function (): boolean {
     return true;
+};
+
+ThinEngine.prototype.whenAllComputeEffectsReadyAsync = function (): Promise<void> {
+    return Promise.resolve();
 };
 
 ThinEngine.prototype.releaseComputeEffects = function (): void {};

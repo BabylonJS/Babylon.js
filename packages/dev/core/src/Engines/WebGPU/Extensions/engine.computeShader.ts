@@ -54,6 +54,20 @@ WebGPUEngine.prototype.areAllComputeEffectsReady = function (): boolean {
     return true;
 };
 
+WebGPUEngine.prototype.whenAllComputeEffectsReadyAsync = async function () {
+    return new Promise((resolve) => {
+        const check = () => {
+            if (this.areAllComputeEffectsReady()) {
+                resolve();
+            }
+            else {
+                setTimeout(check, 100);
+            }
+        };
+        check();
+    });
+};
+
 WebGPUEngine.prototype.computeDispatch = function (
     effect: ComputeEffect,
     context: IComputeContext,
