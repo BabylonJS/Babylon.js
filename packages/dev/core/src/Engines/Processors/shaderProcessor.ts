@@ -206,58 +206,62 @@ export class ShaderProcessor {
         while (cursor.canRead) {
             cursor.lineIndex++;
             const line = cursor.currentLine;
-            const matches = ShaderProcessor.moveCursorRegex.exec(line);
 
-            if (matches && matches.length) {
-                const keyword = matches[0];
+            if (line.indexOf("#") >= 0) {
+                const matches = ShaderProcessor.moveCursorRegex.exec(line);
 
-                switch (keyword) {
-                    case "#ifdef": {
-                        const newRootNode = new ShaderCodeConditionNode();
-                        rootNode.children.push(newRootNode);
+                if (matches && matches.length) {
+                    const keyword = matches[0];
 
-                        const ifNode = this._BuildExpression(line, 6);
-                        newRootNode.children.push(ifNode);
-                        this._MoveCursorWithinIf(cursor, newRootNode, ifNode);
-                        break;
+                    switch (keyword) {
+                        case "#ifdef": {
+                            const newRootNode = new ShaderCodeConditionNode();
+                            rootNode.children.push(newRootNode);
+
+                            const ifNode = this._BuildExpression(line, 6);
+                            newRootNode.children.push(ifNode);
+                            this._MoveCursorWithinIf(cursor, newRootNode, ifNode);
+                            break;
+                        }
+                        case "#else":
+                        case "#elif":
+                            return true;
+                        case "#endif":
+                            return false;
+                        case "#ifndef": {
+                            const newRootNode = new ShaderCodeConditionNode();
+                            rootNode.children.push(newRootNode);
+
+                            const ifNode = this._BuildExpression(line, 7);
+                            newRootNode.children.push(ifNode);
+                            this._MoveCursorWithinIf(cursor, newRootNode, ifNode);
+                            break;
+                        }
+                        case "#if": {
+                            const newRootNode = new ShaderCodeConditionNode();
+                            const ifNode = this._BuildExpression(line, 3);
+                            rootNode.children.push(newRootNode);
+
+                            newRootNode.children.push(ifNode);
+                            this._MoveCursorWithinIf(cursor, newRootNode, ifNode);
+                            break;
+                        }
                     }
-                    case "#else":
-                    case "#elif":
-                        return true;
-                    case "#endif":
-                        return false;
-                    case "#ifndef": {
-                        const newRootNode = new ShaderCodeConditionNode();
-                        rootNode.children.push(newRootNode);
-
-                        const ifNode = this._BuildExpression(line, 7);
-                        newRootNode.children.push(ifNode);
-                        this._MoveCursorWithinIf(cursor, newRootNode, ifNode);
-                        break;
-                    }
-                    case "#if": {
-                        const newRootNode = new ShaderCodeConditionNode();
-                        const ifNode = this._BuildExpression(line, 3);
-                        rootNode.children.push(newRootNode);
-
-                        newRootNode.children.push(ifNode);
-                        this._MoveCursorWithinIf(cursor, newRootNode, ifNode);
-                        break;
-                    }
+                    continue;
                 }
-            } else {
-                const newNode = new ShaderCodeNode();
-                newNode.line = line;
-                rootNode.children.push(newNode);
+            }
 
-                // Detect additional defines
-                if (line[0] === "#" && line[1] === "d") {
-                    const split = line.replace(";", "").split(" ");
-                    newNode.additionalDefineKey = split[1];
+            const newNode = new ShaderCodeNode();
+            newNode.line = line;
+            rootNode.children.push(newNode);
 
-                    if (split.length === 3) {
-                        newNode.additionalDefineValue = split[2];
-                    }
+            // Detect additional defines
+            if (line[0] === "#" && line[1] === "d") {
+                const split = line.replace(";", "").split(" ");
+                newNode.additionalDefineKey = split[1];
+
+                if (split.length === 3) {
+                    newNode.additionalDefineValue = split[2];
                 }
             }
         }
