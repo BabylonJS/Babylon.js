@@ -719,7 +719,9 @@ export class Sound {
     /** @internal */
     public updateDistanceFromListener() {
         if (Engine.audioEngine?.canUseWebAudio && this._connectedTransformNode && this.useCustomAttenuation && this._soundGain && this._scene.activeCamera) {
-            const distance = this._connectedTransformNode.getDistanceToCamera(this._scene.activeCamera);
+            const distance = this._scene.audioListenerPositionProvider
+                ? this._connectedTransformNode.position.subtract(this._scene.audioListenerPositionProvider()).length()
+                : this._connectedTransformNode.getDistanceToCamera(this._scene.activeCamera);
             this._soundGain.gain.value = this._customAttenuationFunction(this._volume, distance, this.maxDistance, this.refDistance, this.rolloffFactor);
         }
     }
