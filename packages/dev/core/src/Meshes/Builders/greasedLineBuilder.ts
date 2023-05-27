@@ -3,135 +3,15 @@ import type { GreasedLineMaterialOptions } from "../../Materials/greasedLinePlug
 import { GreasedLineMeshColorMode, GreasedLineMeshMaterialType, GreasedLinePluginMaterial } from "../../Materials/greasedLinePluginMaterial";
 import { StandardMaterial } from "./../../Materials/standardMaterial";
 import { PBRMaterial } from "../../Materials/PBR/pbrMaterial";
-import type { Vector2 } from "../../Maths/math.vector";
 import { Vector3 } from "../../Maths/math.vector";
 import type { Nullable } from "../../types";
-import type { GreasedLineMeshOptions, GreasedLinePoints } from "../greasedLineMesh";
+import type { GreasedLineMeshOptions } from "../greasedLineMesh";
 import { GreasedLineMeshColorDistribution, GreasedLineMeshWidthDistribution, GreasedLineMesh } from "../greasedLineMesh";
 import type { Scene } from "../../scene";
 import { EngineStore } from "../../Engines/engineStore";
 
 /**
- * Options for GreasedLineBuilder
- */
-export interface GreasedLineBuilderOptions2 {
-    // mesh related
-    /**
-     * Points of the line.
-     */
-    points: GreasedLinePoints;
-    /**
-     * Each line segmment (from point to point) can have it's width multiplier. Final width = widths[segmentIdx] * width.
-     * Defaults to empty array.
-     */
-    widths?: number[];
-    /**
-     * How to distribute the widths if the width table contains fewer entries than there are line segments.
-     * Defaults to undefined. No normalization will be performed.
-     * @see NormalizeWidthTable
-     */
-    widthsDistribution?: GreasedLineMeshWidthDistribution;
-    /**
-     * Each line point can have an offset.
-     * Defaults to empty array.
-     */
-    offsets?: number[] | Vector3[];
-    /**
-     * If instance is specified, lines are added to the specified instance.
-     * Defaults to undefined.
-     */
-    instance?: GreasedLineMesh;
-    /**
-     * If true, offsets and widths are updatable.
-     * Defaults to false.
-     */
-    updatable?: boolean;
-
-    // material related
-    /**
-     * Line width.
-     * Defaults to 1.
-     */
-    width?: number;
-    /**
-     * If false then width units = scene units. If true then line will width be reduced for better perspective view.
-     * Defaults to false.
-     */
-    sizeAttenuation?: boolean;
-    /**
-     * Type of the material to use to render the line.
-     * Defaults to StandardMaterial.
-     */
-    materialType?: GreasedLineMeshMaterialType;
-    /**
-     * Color of the line. Applies to all line segments.
-     * Defaults to white.
-     */
-    color?: Color3;
-    /**
-     * Color mode of the line. Applient to all line segments. Default value is @see GreasedLineMeshColorMode.ADD
-     * The pixel color from the material shader will be modified with the value of @see color using the colorMode.
-     * Defaults to SET mode. The color of the pixel will be not affected by lights nor textures.
-     */
-    colorMode?: GreasedLineMeshColorMode;
-    /**
-     * Colors of the line segments.
-     * Defaults to empty array.
-     */
-    colors?: Color3[];
-    /**
-     * If true, @see colors are used, otherwise they're ignored.
-     * Defaults to false.
-     */
-    useColors?: boolean;
-    /**
-     * How to distribute the colors in case the number of colors is smaller than the number of line segments.
-     * Defaults to undefined. No color distribution will be performed.
-     * @see GreasedLineMeshColorDistribution
-     */
-    colorDistribution?: GreasedLineMeshColorDistribution;
-    /**
-     * If true, dashing is used.
-     * Default to false.
-     */
-    useDash?: boolean;
-    /**
-     * Defaults to 1.
-     * @see GreasedLinePluginMaterial.setDashCount
-     */
-    dashCount?: number;
-    /**
-     * Defaults to 0.
-     * @see GreasedLinePluginMaterial.setDashOffset
-     */
-    dashOffset?: number;
-    /**
-     * Defaults to 0.5.
-     * @see GreasedLinePluginMaterial.setDashRatio
-     */
-    dashRatio?: number;
-    /**
-     * Defaults to 1.
-     * @see GreasedLinePluginMaterial.setVisibility
-     */
-    visibility?: number;
-    /**
-     * Defaults to engine.getRenderWidth() and engine.getRenderHeight()
-     * Rendering resolution
-     */
-    resolution?: Vector2; // TODO: This should be somewhere in the original shaders already?!
-
-    // mesh & material related
-    /**
-     * Use when @see instance is specified.
-     * If true, the line will be rendered only after calling instance.updateLazy(). If false, line will be rerendered after every call to @see CreateGreasedLine
-     * Defaults to false.
-     */
-    lazy?: boolean;
-}
-
-/**
- * Materail options for GreasedLneBuilder
+ * Material options for GreasedLneBuilder
  */
 export interface GreasedLineMaterialBuilderOptions extends GreasedLineMaterialOptions {
     /**
@@ -149,7 +29,7 @@ export class GreasedLineMeshBuilder {
     private static _DEFAULT_COLOR = Color3.White();
 
     /**
-     *
+     * Creates a new @see GreasedLinePluginMaterial
      * @param name name of the material
      * @param options material options @see GreasedLineMaterialOptions
      * @param scene scene or null to use the last scene
@@ -510,7 +390,7 @@ export class GreasedLineMeshBuilder {
      * @param segmentWidths width table
      */
     private static _SetSegmentWidths(instance: GreasedLineMesh, segmentWidths: number[]) {
-        const currentWidths = instance.getSegmentWidths();
+        const currentWidths = instance.options.widths;
 
         if (currentWidths) {
             const newWidths = [...currentWidths];

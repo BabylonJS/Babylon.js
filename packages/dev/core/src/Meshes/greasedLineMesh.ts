@@ -1,17 +1,14 @@
 import type { Scene } from "../scene";
-import type { Matrix } from "../Maths/math.vector";
+import type { Matrix} from "../Maths/math.vector";
 import { TmpVectors, Vector3 } from "../Maths/math.vector";
 import { GreasedLinePluginMaterial } from "../Materials/greasedLinePluginMaterial";
-import { BoundingSphere } from "../Culling/boundingSphere";
 import { Mesh } from "./mesh";
-import type { Ray } from "../Culling/ray";
+import type { Ray, TrianglePickingPredicate } from "../Culling/ray";
 import { Buffer, VertexBuffer } from "../Buffers/buffer";
 import { VertexData } from "./mesh.vertexData";
 import { PickingInfo } from "../Collisions/pickingInfo";
 import type { Nullable } from "../types";
 import type { Node } from "../node";
-import { PBRMaterial } from "../Materials/PBR/pbrMaterial";
-import { StandardMaterial } from "../Materials/standardMaterial";
 import { DeepCopier } from "../Misc/deepCopier";
 
 export type GreasedLinePoints = Vector3[] | Vector3[][] | Float32Array | Float32Array[] | number[][];
@@ -82,7 +79,7 @@ export class GreasedLineMesh extends Mesh {
     private _offsets?: number[];
     private _previousAndSide: number[];
     private _nextAndCounters: number[];
-    private _widths: number[];
+    // private _widths: number[];
 
     private _indices: number[];
     private _uvs: number[];
@@ -91,16 +88,13 @@ export class GreasedLineMesh extends Mesh {
     private _offsetsBuffer?: Buffer;
     private _widthsBuffer?: Buffer;
 
-    private _matrixWorld: Matrix;
-
-    private _boundingSphere: BoundingSphere;
     private _lazy = false;
-    private _updatable: boolean = false;
+    private _updatable = false;
 
     /**
      * Treshold used to pick the mesh
      */
-    public intersectionThreshold = 10; // TODO: tune default value
+    public intersectionThreshold = 0.1;
 
     constructor(public readonly name: string, scene: Scene, private _options: GreasedLineMeshOptions) {
         super(name, scene, null, null, false, false);
@@ -115,11 +109,7 @@ export class GreasedLineMesh extends Mesh {
 
         this._previousAndSide = [];
         this._nextAndCounters = [];
-        this._widths = _options.widths ?? new Array(_options.points.length).fill(1);
-
-        this._matrixWorld = this.getWorldMatrix();
-
-        this._boundingSphere = new BoundingSphere(Vector3.Zero(), Vector3.Zero(), this._matrixWorld);
+        _options.widths = _options.widths ?? new Array(_options.points.length).fill(1);
 
         if (_options.points) {
             this.addPoints(GreasedLineMesh.ConvertPoints(_options.points));
@@ -175,7 +165,7 @@ export class GreasedLineMesh extends Mesh {
     public updateLazy() {
         this.setPoints(this._points);
         this._createVertexBuffers();
-        this._updateRaycastBoundingInfo();
+        this.refreshBoundingInfo();
 
         this.greasedLineMaterial?.updateLazy();
     }
@@ -184,7 +174,6 @@ export class GreasedLineMesh extends Mesh {
      * Dispose the line and it's resources
      */
     public dispose() {
-        this.greasedLineMaterial?.dispose();
         super.dispose();
     }
 
@@ -198,18 +187,27 @@ export class GreasedLineMesh extends Mesh {
 
     /**
      *
-     * @returns currente segment widths
+     * @returns options of the line
      */
-    public getSegmentWidths(): number[] {
-        return this._widths;
+    get options(): GreasedLineMeshOptions {
+        return this._options;
     }
 
     /**
-     *
-     * @returns options of the line
+     * Calculates the sum of points of every line and the number of points in each line.
+     * This function is useful when you are drawing multiple lines in one mesh and you want
+     * to know the counts. For example for creating an offsets table.
+     * @param points point array
+     * @returns points count info
      */
-    public getOptions(): GreasedLineMeshOptions {
-        return this._options;
+    public static GetPointsCountInfo(points: number[][]): { total: number; counts: number[] } {
+        const counts = new Array(points.length);
+        let total = 0;
+        for (let n = points.length; n--; ) {
+            counts[n] = points[n].length / 3;
+            total += counts[n];
+        }
+        return { total, counts };
     }
 
     /**
@@ -225,7 +223,7 @@ export class GreasedLineMesh extends Mesh {
      * @param widths width table [widthUpper,widthLower, widthUpper,widthLower, ...]
      */
     public setSegmentWidths(widths: number[]) {
-        this._widths = widths;
+        this._options.widths = widths;
         if (!this._lazy) {
             this._widthsBuffer && this._widthsBuffer.update(widths);
         }
@@ -235,9 +233,7 @@ export class GreasedLineMesh extends Mesh {
      * Gets the pluginMaterial associated with line
      */
     get greasedLineMaterial() {
-        if (this.material instanceof StandardMaterial || this.material instanceof PBRMaterial) {
-            return <GreasedLinePluginMaterial>this.material?.pluginManager?.getPlugin(GreasedLinePluginMaterial.GREASED_LINE_MATERIAL_NAME);
-        }
+        return <GreasedLinePluginMaterial>this.material?.pluginManager?.getPlugin(GreasedLinePluginMaterial.GREASED_LINE_MATERIAL_NAME);
         return null;
     }
 
@@ -287,7 +283,12 @@ export class GreasedLineMesh extends Mesh {
 
             indiceOffset += (p.length / 3) * 2;
 
-            const { previous, next, uvs, side } = this._preprocess(positions);
+            const previous: number[] = [];
+            const next: number[] = [];
+            const side: number[] = [];
+            const uvs: number[] = [];
+
+            this._preprocess(positions, previous, next, side, uvs);
 
             this._vertexPositions.push(...positions);
             this._indices.push(...indices);
@@ -301,7 +302,7 @@ export class GreasedLineMesh extends Mesh {
 
         if (!this._lazy) {
             this._createVertexBuffers();
-            this._updateRaycastBoundingInfo();
+            this.refreshBoundingInfo();
         }
     }
 
@@ -320,11 +321,13 @@ export class GreasedLineMesh extends Mesh {
             cloned.parent = newParent;
         }
 
+        cloned.material = this.material;
+
         return cloned;
     }
 
     /**
-     * Serializes this ground mesh
+     * Serializes this GreasedLineMesh
      * @param serializationObject object to write serialization to
      */
     public serialize(serializationObject: any): void {
@@ -334,10 +337,10 @@ export class GreasedLineMesh extends Mesh {
     }
 
     /**
-     * Parses a serialized ground mesh
-     * @param parsedMesh the serialized mesh
-     * @param scene the scene to create the ground mesh in
-     * @returns the created ground mesh
+     * Parses a serialized GreasedLineMesh
+     * @param parsedMesh the serialized GreasedLineMesh
+     * @param scene the scene to create the GreasedLineMesh in
+     * @returns the created GreasedLineMesh
      */
     public static Parse(parsedMesh: any, scene: Scene): Mesh {
         const lineOptions = <GreasedLineMeshOptions>parsedMesh.lineOptions;
@@ -346,12 +349,19 @@ export class GreasedLineMesh extends Mesh {
         return result;
     }
 
-    // TODO: which parameters to suppport?
-    public intersects(
-        ray: Ray
-    ): PickingInfo {
+    /**
+     * Checks whether a ray is intersecting this GreasedLineMesh
+     * @param ray ray to check the intersection of this mesh with
+     * @param fastCheck not supported
+     * @param trianglePredicate not supported
+     * @param onlyBoundingInfo defines a boolean indicating if picking should only happen using bounding info (false by default)
+     * @param worldToUse not supported
+     * @param skipBoundingInfo a boolean indicating if we should skip the bounding info check
+     * @returns the picking info
+     */
+    public intersects(ray: Ray, fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate, onlyBoundingInfo = false, worldToUse?: Matrix, skipBoundingInfo = false): PickingInfo {
         const pickingInfo = new PickingInfo();
-        const intersections = this.getIntersections(ray, true);
+        const intersections = this.getIntersections(ray, fastCheck, trianglePredicate, onlyBoundingInfo, worldToUse, skipBoundingInfo, true);
         if (intersections?.length === 1) {
             const intersection = intersections[0];
             pickingInfo.hit = true;
@@ -360,18 +370,22 @@ export class GreasedLineMesh extends Mesh {
             pickingInfo.pickedMesh = this;
             pickingInfo.pickedPoint = intersection.point;
         }
-
         return pickingInfo;
     }
 
     /**
-     * Gets all intersections of a ray and the line.
-     * @param ray Ray
-     * @param firstOnly If true, the first and only intersection is immediatelly returned if found.
+     * Gets all intersections of a ray and the line
+     * @param ray Ray to check the intersection of this mesh with
+     * @param _fastCheck not supported
+     * @param _trianglePredicate not supported
+     * @param onlyBoundingInfo defines a boolean indicating if picking should only happen using bounding info (false by default)
+     * @param _worldToUse not supported
+     * @param skipBoundingInfo a boolean indicating if we should skip the bounding info check
+     * @param firstOnly If true, the first and only intersection is immediatelly returned if found
      * @returns intersection(s)
      */
-    public getIntersections(ray: Ray, firstOnly = false): { distance: number; point: Vector3 }[] | undefined {
-        if (this._boundingSphere && ray.intersectsSphere(this._boundingSphere, this.intersectionThreshold) === false) {
+    public getIntersections(ray: Ray, _fastCheck?: boolean, _trianglePredicate?: TrianglePickingPredicate, onlyBoundingInfo = false, _worldToUse?: Matrix, skipBoundingInfo = false, firstOnly = false): { distance: number; point: Vector3 }[] | undefined {
+        if (onlyBoundingInfo && !skipBoundingInfo && ray.intersectsSphere(this._boundingSphere, this.intersectionThreshold) === false) {
             return;
         }
 
@@ -382,12 +396,12 @@ export class GreasedLineMesh extends Mesh {
 
         const indices = this.getIndices();
         const positions = this.getVerticesData(VertexBuffer.PositionKind);
-        const widths = this._widths;
+        const widths = this._options.widths;
 
         const lineWidth = this.greasedLineMaterial?.getOptions().width ?? 1;
 
         const intersects = [];
-        if (indices !== null && positions !== null) {
+        if (indices && positions && widths) {
             let i = 0,
                 l = 0;
             for (i = 0, l = indices.length - 1; i < l; i += 3) {
@@ -433,9 +447,8 @@ export class GreasedLineMesh extends Mesh {
         this._uvs = [];
     }
 
-    private _updateRaycastBoundingInfo() {
-        const boundingInfo = this.getBoundingInfo();
-        this._boundingSphere.reConstruct(boundingInfo.minimum, boundingInfo.maximum, this._matrixWorld);
+    private get _boundingSphere() {
+        return this.getBoundingInfo().boundingSphere;
     }
 
     private static _CompareV3(positionIdx1: number, positionIdx2: number, positions: number[]) {
@@ -449,15 +462,10 @@ export class GreasedLineMesh extends Mesh {
         return [positions[arrayIdx], positions[arrayIdx + 1], positions[arrayIdx + 2]];
     }
 
-    private _preprocess(positions: number[]) {
+    private _preprocess(positions: number[], previous: number[], next: number[], side: number[], uvs: number[]) {
         const l = positions.length / 6;
 
         let v: number[] = [];
-
-        const previous = [];
-        const next = [];
-        const side = [];
-        const uvs = [];
 
         if (GreasedLineMesh._CompareV3(0, l - 1, positions)) {
             v = GreasedLineMesh._CopyV3(l - 2, positions);
@@ -518,7 +526,7 @@ export class GreasedLineMesh extends Mesh {
         const nextAndCountersBuffer = new Buffer(engine, this._nextAndCounters, false, 4);
         this.setVerticesBuffer(nextAndCountersBuffer.createVertexBuffer("grl_nextAndCounters", 0, 4));
 
-        const widthBuffer = new Buffer(engine, this._widths, this._updatable, 1);
+        const widthBuffer = new Buffer(engine, this._options.widths!, this._updatable, 1);
         this.setVerticesBuffer(widthBuffer.createVertexBuffer("grl_widths", 0, 1));
         this._widthsBuffer = widthBuffer;
 

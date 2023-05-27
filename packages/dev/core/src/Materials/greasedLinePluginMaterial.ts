@@ -515,7 +515,9 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
     }
 
     /**
-     * Sets the line length visibility. 0 - 0% of the line will be visible, 1 - 100% of the line will be visible
+     * Sets the line length visibility.
+     * 0 - 0% of the line will be visible
+     * 1 - 100% of the line will be visible
      * @param value
      */
     public setVisibility(value: number) {
