@@ -24,6 +24,8 @@ const regexShaderInclude = /#include\s?<(.+)>(\((.*)\))*(\[(.*)\])*/g;
 
 /** @internal */
 export class ShaderProcessor {
+    private static moveCursorRegex = /(#ifdef)|(#else)|(#elif)|(#endif)|(#ifndef)|(#if)/;
+
     public static Initialize(options: ProcessingOptions): void {
         if (options.processor && options.processor.initializeShaders) {
             options.processor.initializeShaders(options.processingContext);
@@ -204,8 +206,7 @@ export class ShaderProcessor {
         while (cursor.canRead) {
             cursor.lineIndex++;
             const line = cursor.currentLine;
-            const keywords = /(#ifdef)|(#else)|(#elif)|(#endif)|(#ifndef)|(#if)/;
-            const matches = keywords.exec(line);
+            const matches = ShaderProcessor.moveCursorRegex.exec(line);
 
             if (matches && matches.length) {
                 const keyword = matches[0];
