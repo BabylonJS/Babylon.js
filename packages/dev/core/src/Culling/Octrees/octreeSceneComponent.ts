@@ -14,20 +14,20 @@ declare type Collider = import("../../Collisions/collider").Collider;
 declare module "../../scene" {
     export interface Scene {
         /**
-         * @hidden
+         * @internal
          * Backing Filed
          */
         _selectionOctree: Octree<AbstractMesh>;
 
         /**
          * Gets the octree used to boost mesh selection (picking)
-         * @see https://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
+         * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/optimizeOctrees
          */
         selectionOctree: Octree<AbstractMesh>;
 
         /**
          * Creates or updates the octree used to boost selection (picking)
-         * @see https://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
+         * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/optimizeOctrees
          * @param maxCapacity defines the maximum capacity per leaf
          * @param maxDepth defines the maximum depth of the octree
          * @returns an octree of AbstractMesh
@@ -66,7 +66,7 @@ Object.defineProperty(Scene.prototype, "selectionOctree", {
 declare module "../../Meshes/abstractMesh" {
     export interface AbstractMesh {
         /**
-         * @hidden
+         * @internal
          * Backing Field
          */
         _submeshesOctree: Octree<SubMesh>;
@@ -78,7 +78,7 @@ declare module "../../Meshes/abstractMesh" {
          * @param maxDepth defines the maximum depth to use (no more than 2 levels by default)
          * @returns the new octree
          * @see https://www.babylonjs-playground.com/#NA4OQ#12
-         * @see https://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
+         * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/optimizeOctrees
          */
         createOrUpdateSubmeshesOctree(maxCapacity?: number, maxDepth?: number): Octree<SubMesh>;
     }
@@ -91,7 +91,7 @@ declare module "../../Meshes/abstractMesh" {
  * @param maxDepth defines the maximum depth to use (no more than 2 levels by default)
  * @returns the new octree
  * @see https://www.babylonjs-playground.com/#NA4OQ#12
- * @see https://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/optimizeOctrees
  */
 AbstractMesh.prototype.createOrUpdateSubmeshesOctree = function (maxCapacity = 64, maxDepth = 2): Octree<SubMesh> {
     const scene = this.getScene();
@@ -182,11 +182,7 @@ export class OctreeSceneComponent {
      * @returns the list of active meshes
      */
     public getActiveMeshCandidates(): ISmartArrayLike<AbstractMesh> {
-        if (this.scene._selectionOctree) {
-            const selection = this.scene._selectionOctree.select(this.scene.frustumPlanes);
-            return selection;
-        }
-        return this.scene._getDefaultMeshCandidates();
+        return this.scene._selectionOctree?.select(this.scene.frustumPlanes) || this.scene._getDefaultMeshCandidates();
     }
 
     /**

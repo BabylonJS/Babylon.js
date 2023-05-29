@@ -16,7 +16,7 @@ export interface IOctreeContainer<T> {
 
 /**
  * Class used to store a cell in an octree
- * @see https://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/optimizeOctrees
  */
 export class OctreeBlock<T> {
     /**
@@ -225,18 +225,11 @@ export class OctreeBlock<T> {
      */
     public createInnerBlocks(): void {
         OctreeBlock._CreateBlocks(this._minPoint, this._maxPoint, this.entries, this._capacity, this._depth, this._maxDepth, this, this._creationFunc);
+        this.entries.splice(0);
     }
 
     /**
-     * @param worldMin
-     * @param worldMax
-     * @param entries
-     * @param maxBlockCapacity
-     * @param currentDepth
-     * @param maxDepth
-     * @param target
-     * @param creationFunc
-     * @hidden
+     * @internal
      */
     public static _CreateBlocks<T>(
         worldMin: Vector3,

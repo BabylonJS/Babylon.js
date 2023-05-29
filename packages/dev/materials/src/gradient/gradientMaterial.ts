@@ -19,6 +19,7 @@ import { RegisterClass } from "core/Misc/typeStore";
 import "./gradient.fragment";
 import "./gradient.vertex";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
+import { addClipPlaneUniforms, bindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
 
 class GradientMaterialDefines extends MaterialDefines {
     public EMISSIVE = false;
@@ -104,7 +105,7 @@ export class GradientMaterial extends PushMaterial {
     // Methods
     public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
         if (this.isFrozen) {
-            if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
+            if (subMesh.effect && subMesh.effect._wasPreviouslyReady && subMesh.effect._wasPreviouslyUsingInstances === useInstances) {
                 return true;
             }
         }
@@ -122,7 +123,7 @@ export class GradientMaterial extends PushMaterial {
 
         const engine = scene.getEngine();
 
-        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
+        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, this, defines, useInstances ? true : false);
 
         MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
 
@@ -189,18 +190,13 @@ export class GradientMaterial extends PushMaterial {
                 "vFogColor",
                 "pointSize",
                 "mBones",
-                "vClipPlane",
-                "vClipPlane2",
-                "vClipPlane3",
-                "vClipPlane4",
-                "vClipPlane5",
-                "vClipPlane6",
                 "topColor",
                 "bottomColor",
                 "offset",
                 "smoothness",
                 "scale",
             ];
+            addClipPlaneUniforms(uniforms);
             const samplers: string[] = [];
             const uniformBuffers = new Array<string>();
 
@@ -238,6 +234,7 @@ export class GradientMaterial extends PushMaterial {
 
         defines._renderId = scene.getRenderId();
         subMesh.effect._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyUsingInstances = !!useInstances;
 
         return true;
     }
@@ -266,7 +263,7 @@ export class GradientMaterial extends PushMaterial {
 
         if (this._mustRebind(scene, effect)) {
             // Clip plane
-            MaterialHelper.BindClipPlane(effect, scene);
+            bindClipPlane(effect, this, scene);
 
             // Point size
             if (this.pointsCloud) {

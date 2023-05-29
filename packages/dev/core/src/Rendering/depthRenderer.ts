@@ -14,6 +14,7 @@ import { Constants } from "../Engines/constants";
 import "../Shaders/depth.fragment";
 import "../Shaders/depth.vertex";
 import { _WarnImport } from "../Misc/devTools";
+import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
 
 declare type Material = import("../Materials/material").Material;
 declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
@@ -26,7 +27,10 @@ export class DepthRenderer {
     private _scene: Scene;
     private _depthMap: RenderTargetTexture;
     private readonly _storeNonLinearDepth: boolean;
-    private readonly _clearColor: Color4;
+    private readonly _storeCameraSpaceZ: boolean;
+
+    /** Color used to clear the depth texture. Default: (1,0,0,1) */
+    public clearColor: Color4;
 
     /** Get if the depth renderer is using packed depth or not */
     public readonly isPacked: boolean;
@@ -46,9 +50,13 @@ export class DepthRenderer {
      */
     public useOnlyInActiveCamera: boolean = false;
 
+    /** If true, reverse the culling of materials before writing to the depth texture.
+     * So, basically, when "true", back facing instead of front facing faces are rasterized into the texture
+     */
+    public reverseCulling = false;
+
     /**
-     * @param _
-     * @hidden
+     * @internal
      */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
         throw _WarnImport("DepthRendererSceneComponent");
@@ -69,22 +77,27 @@ export class DepthRenderer {
      * @param type The texture type of the depth map (default: Engine.TEXTURETYPE_FLOAT)
      * @param camera The camera to be used to render the depth map (default: scene's active camera)
      * @param storeNonLinearDepth Defines whether the depth is stored linearly like in Babylon Shadows or directly like glFragCoord.z
-     * @param samplingMode The sampling mode to be used with the render target (Linear, Nearest...)
+     * @param samplingMode The sampling mode to be used with the render target (Linear, Nearest...) (default: TRILINEAR_SAMPLINGMODE)
+     * @param storeCameraSpaceZ Defines whether the depth stored is the Z coordinate in camera space. If true, storeNonLinearDepth has no effect. (Default: false)
+     * @param name Name of the render target (default: DepthRenderer)
      */
     constructor(
         scene: Scene,
         type: number = Constants.TEXTURETYPE_FLOAT,
         camera: Nullable<Camera> = null,
         storeNonLinearDepth = false,
-        samplingMode = Texture.TRILINEAR_SAMPLINGMODE
+        samplingMode = Texture.TRILINEAR_SAMPLINGMODE,
+        storeCameraSpaceZ = false,
+        name?: string
     ) {
         this._scene = scene;
         this._storeNonLinearDepth = storeNonLinearDepth;
+        this._storeCameraSpaceZ = storeCameraSpaceZ;
         this.isPacked = type === Constants.TEXTURETYPE_UNSIGNED_BYTE;
         if (this.isPacked) {
-            this._clearColor = new Color4(1.0, 1.0, 1.0, 1.0);
+            this.clearColor = new Color4(1.0, 1.0, 1.0, 1.0);
         } else {
-            this._clearColor = new Color4(1.0, 0.0, 0.0, 1.0);
+            this.clearColor = new Color4(storeCameraSpaceZ ? 1e8 : 1.0, 0.0, 0.0, 1.0);
         }
 
         DepthRenderer._SceneComponentInitialization(this._scene);
@@ -105,7 +118,7 @@ export class DepthRenderer {
         // Render target
         const format = this.isPacked || !engine._features.supportExtendedTextureFormats ? Constants.TEXTUREFORMAT_RGBA : Constants.TEXTUREFORMAT_R;
         this._depthMap = new RenderTargetTexture(
-            "DepthRenderer",
+            name ?? "DepthRenderer",
             { width: engine.getRenderWidth(), height: engine.getRenderHeight() },
             this._scene,
             false,
@@ -123,6 +136,7 @@ export class DepthRenderer {
         this._depthMap.refreshRate = 1;
         this._depthMap.renderParticles = false;
         this._depthMap.renderList = null;
+        this._depthMap.noPrePassRenderer = true;
 
         // Camera to get depth map from to support multiple concurrent cameras
         this._depthMap.activeCamera = this._camera;
@@ -131,7 +145,7 @@ export class DepthRenderer {
 
         // set default depth value to 1.0 (far away)
         this._depthMap.onClearObservable.add((engine) => {
-            engine.clear(this._clearColor, true, true, true);
+            engine.clear(this.clearColor, true, true, true);
         });
 
         this._depthMap.onBeforeBindObservable.add(() => {
@@ -142,12 +156,8 @@ export class DepthRenderer {
             engine._debugPopGroup?.(1);
         });
 
-        this._depthMap.customIsReadyFunction = (mesh: AbstractMesh, refreshRate: number) => {
-            if (!mesh.isReady(false)) {
-                return false;
-            }
-            if (refreshRate === 0 && mesh.subMeshes) {
-                // full check: check that the effects are ready
+        this._depthMap.customIsReadyFunction = (mesh: AbstractMesh, refreshRate: number, preWarm?: boolean) => {
+            if ((preWarm || refreshRate === 0) && mesh.subMeshes) {
                 for (let i = 0; i < mesh.subMeshes.length; ++i) {
                     const subMesh = mesh.subMeshes[i];
                     const renderingMesh = subMesh.getRenderingMesh();
@@ -191,7 +201,7 @@ export class DepthRenderer {
             }
             const reverseSideOrientation = sideOrientation === Constants.MATERIAL_ClockWiseSideOrientation;
 
-            engine.setState(material.backFaceCulling, 0, false, reverseSideOrientation, material.cullBackFaces);
+            engine.setState(material.backFaceCulling, 0, false, reverseSideOrientation, this.reverseCulling ? !material.cullBackFaces : material.cullBackFaces);
 
             // Managing instances
             const batch = renderingMesh._getInstancesRenderList(subMesh._id, !!subMesh.getReplacementMesh());
@@ -231,6 +241,9 @@ export class DepthRenderer {
                 if (!renderingMaterial) {
                     effect.setMatrix("viewProjection", scene.getTransformMatrix());
                     effect.setMatrix("world", effectiveMesh.getWorldMatrix());
+                    if (this._storeCameraSpaceZ) {
+                        effect.setMatrix("view", scene.getViewMatrix());
+                    }
                 } else {
                     renderingMaterial.bindForSubMesh(effectiveMesh.getWorldMatrix(), effectiveMesh as Mesh, subMesh);
                 }
@@ -249,7 +262,7 @@ export class DepthRenderer {
 
                 if (!renderingMaterial) {
                     // Alpha test
-                    if (material && material.needAlphaTesting()) {
+                    if (material.needAlphaTesting()) {
                         const alphaTexture = material.getAlphaTestTexture();
 
                         if (alphaTexture) {
@@ -274,6 +287,9 @@ export class DepthRenderer {
                             effect.setMatrices("mBones", skeleton.getTransformMatrices(renderingMesh));
                         }
                     }
+
+                    // Clip planes
+                    bindClipPlane(effect, material, scene);
 
                     // Morph targets
                     MaterialHelper.BindMorphTargetParameters(renderingMesh, effect);
@@ -332,6 +348,7 @@ export class DepthRenderer {
     public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
         const engine = this._scene.getEngine();
         const mesh = subMesh.getMesh();
+        const scene = mesh.getScene();
 
         const renderingMaterial = mesh._internalAbstractMeshDataInfo._materialForRenderPass?.[engine.currentRenderPassId];
 
@@ -413,38 +430,42 @@ export class DepthRenderer {
             defines.push("#define NONLINEARDEPTH");
         }
 
+        // Store camera space Z coordinate instead of NDC Z
+        if (this._storeCameraSpaceZ) {
+            defines.push("#define STORE_CAMERASPACE_Z");
+        }
+
         // Float Mode
         if (this.isPacked) {
             defines.push("#define PACKED");
         }
+
+        // Clip planes
+        prepareStringDefinesForClipPlanes(material, scene, defines);
 
         // Get correct effect
         const drawWrapper = subMesh._getDrawWrapper(undefined, true)!;
         const cachedDefines = drawWrapper.defines;
         const join = defines.join("\n");
         if (cachedDefines !== join) {
+            const uniforms = [
+                "world",
+                "mBones",
+                "boneTextureWidth",
+                "viewProjection",
+                "view",
+                "diffuseMatrix",
+                "depthValues",
+                "morphTargetInfluences",
+                "morphTargetTextureInfo",
+                "morphTargetTextureIndices",
+            ];
+            addClipPlaneUniforms(uniforms);
+
             drawWrapper.setEffect(
-                engine.createEffect(
-                    "depth",
-                    attribs,
-                    [
-                        "world",
-                        "mBones",
-                        "boneTextureWidth",
-                        "viewProjection",
-                        "diffuseMatrix",
-                        "depthValues",
-                        "morphTargetInfluences",
-                        "morphTargetTextureInfo",
-                        "morphTargetTextureIndices",
-                    ],
-                    ["diffuseSampler", "morphTargets", "boneSampler"],
-                    join,
-                    undefined,
-                    undefined,
-                    undefined,
-                    { maxSimultaneousMorphTargets: numMorphInfluencers }
-                ),
+                engine.createEffect("depth", attribs, uniforms, ["diffuseSampler", "morphTargets", "boneSampler"], join, undefined, undefined, undefined, {
+                    maxSimultaneousMorphTargets: numMorphInfluencers,
+                }),
                 join
             );
         }

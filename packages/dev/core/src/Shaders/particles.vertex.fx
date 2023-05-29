@@ -39,6 +39,7 @@ varying vec4 remapRanges;
 uniform mat4 invView;
 #endif
 #include<clipPlaneVertexDeclaration>
+#include<logDepthDeclaration>
 
 #ifdef BILLBOARD
 	uniform vec3 eyePosition;
@@ -62,11 +63,16 @@ vec3 rotate(vec3 yaxis, vec3 rotatedCorner) {
 vec3 rotateAlign(vec3 toCamera, vec3 rotatedCorner) {
 	vec3 normalizedToCamera = normalize(toCamera);
 	vec3 normalizedCrossDirToCamera = normalize(cross(normalize(direction), normalizedToCamera));
-	vec3 crossProduct = normalize(cross(normalizedToCamera, normalizedCrossDirToCamera));
 
 	vec3 row0 = vec3(normalizedCrossDirToCamera.x, normalizedCrossDirToCamera.y, normalizedCrossDirToCamera.z);
-	vec3 row1 = vec3(crossProduct.x, crossProduct.y, crossProduct.z);
 	vec3 row2 = vec3(normalizedToCamera.x, normalizedToCamera.y, normalizedToCamera.z);
+
+#ifdef BILLBOARDSTRETCHED_LOCAL
+	vec3 row1 = direction;
+#else
+	vec3 crossProduct = normalize(cross(normalizedToCamera, normalizedCrossDirToCamera));
+	vec3 row1 = vec3(crossProduct.x, crossProduct.y, crossProduct.z);
+#endif
 
 	mat3 rotMatrix =  mat3(row0, row1, row2);
 
@@ -156,7 +162,8 @@ void main(void) {
     vec4 worldPos = vec4(vPositionW, 1.0);
 #endif
 	#include<clipPlaneVertex>
-
+	#include<logDepthVertex>
+	
 #define CUSTOM_VERTEX_MAIN_END
 
 }

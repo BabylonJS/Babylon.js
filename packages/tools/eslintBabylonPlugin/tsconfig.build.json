@@ -1,0 +1,15 @@
+{
+    "extends": "../../../tsconfig.build.json",
+
+    "compilerOptions": {
+        "target": "es5",
+        "module": "commonjs",
+        "composite": true,
+        "outDir": "./dist",
+        "rootDir": "./src",
+        "skipLibCheck": true
+    },
+
+    "include": ["./src/**/*.ts", "./src/**/*.tsx"],
+    "exclude": ["**/node_modules", "**/dist"]
+}

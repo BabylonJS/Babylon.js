@@ -1,0 +1,17 @@
+{
+    "$schema": "https://developer.microsoft.com/json-schemas/tsdoc/v0/tsdoc.schema.json",
+    "tagDefinitions": [
+        {
+            "tagName": "@hidden",
+            "syntaxKind": "modifier"
+        },
+        {
+            "tagName": "@since",
+            "syntaxKind": "modifier"
+        },
+        {
+            "tagName": "@ignorenaming",
+            "syntaxKind": "modifier"
+        }
+    ]
+}

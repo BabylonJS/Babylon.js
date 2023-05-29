@@ -1,7 +1,7 @@
 Babylon.js Materials Library
 =====================
 
-For usage documentation please visit http://doc.babylonjs.com/extensions and choose "materials library".
+For usage documentation please visit https://doc.babylonjs.com/extensions and choose "materials library".
 
 # Installation instructions
 

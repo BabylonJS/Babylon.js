@@ -18,7 +18,7 @@ import { RadioButton } from "gui/2D/controls/radioButton";
 import { ImageBasedSlider } from "gui/2D/controls/sliders/imageBasedSlider";
 
 export class GUINodeTools {
-    public static ImageControlDefaultUrl = "./imageControlDefault.jpg";
+    public static ImageControlDefaultUrl = "https://assets.babylonjs.com/textures/Checker_albedo.png";
 
     public static CreateControlFromString(data: string) {
         let element;

@@ -9,7 +9,7 @@ import { Viewport } from "../../Maths/math.viewport";
 
 /**
  * Camera used to simulate stereoscopic rendering on real screens (based on UniversalCamera)
- * @see https://doc.babylonjs.com/features/cameras
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras
  */
 export class StereoscopicScreenUniversalCamera extends UniversalCamera {
     private _distanceToProjectionPlane: number;
@@ -64,8 +64,7 @@ export class StereoscopicScreenUniversalCamera extends UniversalCamera {
     }
 
     /**
-     * @param name
-     * @hidden
+     * @internal
      */
     public createRigCamera(name: string): Nullable<Camera> {
         const camera = new TargetCamera(name, Vector3.Zero(), this.getScene());
@@ -78,7 +77,7 @@ export class StereoscopicScreenUniversalCamera extends UniversalCamera {
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public _updateRigCameras() {
         for (let cameraIndex = 0; cameraIndex < this._rigCameras.length; cameraIndex++) {

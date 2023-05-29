@@ -15,17 +15,23 @@ export class NormalBlendBlock extends NodeMaterialBlock {
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Neutral);
 
-        this.registerInput("normalMap0", NodeMaterialBlockConnectionPointTypes.Vector3);
-        this.registerInput("normalMap1", NodeMaterialBlockConnectionPointTypes.Vector3);
+        this.registerInput("normalMap0", NodeMaterialBlockConnectionPointTypes.AutoDetect);
+        this.registerInput("normalMap1", NodeMaterialBlockConnectionPointTypes.AutoDetect);
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Vector3);
 
-        this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Color3);
-        this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Color4);
-        this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector4);
+        this._inputs[0].addExcludedConnectionPointFromAllowedTypes(
+            NodeMaterialBlockConnectionPointTypes.Color3 |
+                NodeMaterialBlockConnectionPointTypes.Color4 |
+                NodeMaterialBlockConnectionPointTypes.Vector3 |
+                NodeMaterialBlockConnectionPointTypes.Vector4
+        );
 
-        this._inputs[1].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Color3);
-        this._inputs[1].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Color4);
-        this._inputs[1].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector4);
+        this._inputs[1].addExcludedConnectionPointFromAllowedTypes(
+            NodeMaterialBlockConnectionPointTypes.Color3 |
+                NodeMaterialBlockConnectionPointTypes.Color4 |
+                NodeMaterialBlockConnectionPointTypes.Vector3 |
+                NodeMaterialBlockConnectionPointTypes.Vector4
+        );
     }
 
     /**

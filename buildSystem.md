@@ -45,7 +45,7 @@ It is recommended to run `npm run build:dev` before starting to work to make sur
 
 ### TL;dr guide (or - I want to start already!)
 
-Using VSCode? Install the recommended extensions and start `Run and Watch Dev Host` to compile and get started with the esm dev host. TO use the classic UMD-based development (and have the BABYLON namespace available), run `Run and Watch Babylon Server`.
+Using VSCode? Install the recommended extensions and start `Run and Watch Dev Host` to compile and get started with the esm dev host. To use the classic UMD-based development (and have the BABYLON namespace available), run `Run and Watch Babylon Server`.
 
 To build the dev sources, shaders, and assets, run `npm run build:dev`.
 
@@ -94,6 +94,8 @@ The babylon server offers 2 variants - js and ts. To load the js version (the de
 The files to edit are sceneJs.js and sceneTs.ts in the source folder of the babylon server package.
 
 As described in the next section, the babylon server also offers a playground-snippet debugging.
+
+To run the babylon server using the render loop of the visualization tests, set the flag `VIS_TEST_MODE` to true (for example in the .env file)
 
 ### debug a playground snippet
 
@@ -779,7 +781,7 @@ To build each and every package available in the repository, run `npm run build 
 
 It will run the build in sequence (because of the predefined dependencies), but will skip building a package if it hasn't changed since the last build call. So calling `npx nx run build babylonjs` will build dev, lts, and public, but those 3 will be ready when building babylonjs-gui and will not build again.
 
-This should be used only when you want to build the public packages in the repository, and will mainly be used by the CI. However, nx is available to you and is a very powerful tool. In the future we might integrate it more in the repository. TO read more about nx: <https://nx.dev/getting-started/intro>
+This should be used only when you want to build the public packages in the repository, and will mainly be used by the CI. However, nx is available to you and is a very powerful tool. In the future we might integrate it more in the repository. To read more about nx: <https://nx.dev/getting-started/intro>
 
 ## Testing
 
@@ -908,6 +910,20 @@ For example:
 ```shell
 npm run test:visualization -- -i "webgl2" -t "Particle subemitters"
 ```
+
+## Changlog
+
+The changelog is generated automatically based on a script in the ./scripts/ directory and the `changelog.json` file located in the `.build` directory. It is generated on every npm publish (once a week).
+
+The changelog uses tags from the PR on github to decide what category an issue belongs to. The tags are:
+
+- `breaking change` - a breaking change
+- `feature` - a new feature
+- `bug` - a bug fix
+
+If a PR was not yet published to npm you can still add or remove tags from the PR and the changelog will be updated accordingly. However, if a PR was already published to npm you will need to edit the `changelog.json` file manually.
+
+To do that, fine the corresponding PR in `changelog.json` and change the "tags" array. Add or remove a tag from the array and the changelog will be updated accordingly. The update will happen on the next publish (which is when the .md file is generated).
 
 ## Build tools
 

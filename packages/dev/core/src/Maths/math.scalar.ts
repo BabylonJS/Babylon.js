@@ -345,7 +345,7 @@ export class Scalar {
     /**
      * Returns the angle converted to equivalent value between -Math.PI and Math.PI radians.
      * @param angle The angle to normalize in radian.
-     * @return The converted angle.
+     * @returns The converted angle.
      */
     public static NormalizeRadians(angle: number): number {
         // More precise but slower version kept for reference.
@@ -365,7 +365,7 @@ export class Scalar {
      * Returns the highest common factor of two integers.
      * @param a first parameter
      * @param b second parameter
-     * @return HCF of a and b
+     * @returns HCF of a and b
      */
     public static HCF(a: number, b: number): number {
         const r: number = a % b;

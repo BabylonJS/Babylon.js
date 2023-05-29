@@ -9,9 +9,12 @@ import { Node } from "../node";
 import type { Bone } from "../Bones/bone";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Space } from "../Maths/math.axis";
+
+const convertRHSToLHS = Matrix.Compose(Vector3.One(), Quaternion.FromEulerAngles(0, Math.PI, 0), Vector3.Zero());
+
 /**
  * A TransformNode is an object that is not rendered but can be used as a center of transformation. This can decrease memory usage and increase rendering speed compared to using an empty mesh as a parent and is less complicated than using a pivot matrix.
- * @see https://doc.babylonjs.com/how_to/transformnode
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/transforms/parent_pivot/transform_node
  */
 export class TransformNode extends Node {
     // Statics
@@ -39,6 +42,10 @@ export class TransformNode extends Node {
      * Object will rotate to face the camera's position instead of orientation
      */
     public static BILLBOARDMODE_USE_POSITION = 128;
+    /**
+     * Child transform with Billboard flags should or should not apply parent rotation (default if off)
+     */
+    public static BillboardUseParentOrientation: boolean = false;
 
     private static _TmpRotation = Quaternion.Zero();
     private static _TmpScaling = Vector3.Zero();
@@ -88,6 +95,8 @@ export class TransformNode extends Node {
             return;
         }
         this._billboardMode = value;
+        this._cache.useBillboardPosition = (this._billboardMode & TransformNode.BILLBOARDMODE_USE_POSITION) !== 0;
+        this._computeUseBillboardPath();
     }
 
     private _preserveParentRotationForBillboard = false;
@@ -104,6 +113,11 @@ export class TransformNode extends Node {
             return;
         }
         this._preserveParentRotationForBillboard = value;
+        this._computeUseBillboardPath();
+    }
+
+    private _computeUseBillboardPath(): void {
+        this._cache.useBillboardPath = this._billboardMode !== TransformNode.BILLBOARDMODE_NONE && !this.preserveParentRotationForBillboard;
     }
 
     /**
@@ -144,9 +158,9 @@ export class TransformNode extends Node {
     public reIntegrateRotationIntoRotationQuaternion = false;
 
     // Cache
-    /** @hidden */
+    /** @internal */
     public _poseMatrix: Nullable<Matrix> = null;
-    /** @hidden */
+    /** @internal */
     public _localMatrix = Matrix.Zero();
 
     private _usePivotMatrix = false;
@@ -155,12 +169,12 @@ export class TransformNode extends Node {
     private _absoluteRotationQuaternion = Quaternion.Identity();
     private _pivotMatrix = Matrix.Identity();
     private _pivotMatrixInverse: Matrix;
-    /** @hidden */
+    /** @internal */
     public _postMultiplyPivotMatrix = false;
 
     protected _isWorldMatrixFrozen = false;
 
-    /** @hidden */
+    /** @internal */
     public _indexInSceneTransformNodesArray = -1;
 
     /**
@@ -219,7 +233,7 @@ export class TransformNode extends Node {
     }
 
     /**
-     * Gets or sets the scaling property : a Vector3 defining the node scaling along each local axis X, Y, Z (default is (0.0, 0.0, 0.0)).
+     * Gets or sets the scaling property : a Vector3 defining the node scaling along each local axis X, Y, Z (default is (1.0, 1.0, 1.0)).
      */
     public get scaling(): Vector3 {
         return this._scaling;
@@ -296,11 +310,11 @@ export class TransformNode extends Node {
         return this._poseMatrix;
     }
 
-    /** @hidden */
+    /** @internal */
     public _isSynchronized(): boolean {
         const cache = this._cache;
 
-        if (this.billboardMode !== cache.billboardMode || this.billboardMode !== TransformNode.BILLBOARDMODE_NONE) {
+        if (this._billboardMode !== cache.billboardMode || this._billboardMode !== TransformNode.BILLBOARDMODE_NONE) {
             return false;
         }
 
@@ -308,26 +322,26 @@ export class TransformNode extends Node {
             return false;
         }
 
-        if (this.infiniteDistance) {
+        if (this._infiniteDistance) {
             return false;
         }
 
-        if (this.position._isDirty) {
+        if (this._position._isDirty) {
             return false;
         }
 
-        if (this.scaling._isDirty) {
+        if (this._scaling._isDirty) {
             return false;
         }
 
-        if ((this._rotationQuaternion && this._rotationQuaternion._isDirty) || this.rotation._isDirty) {
+        if ((this._rotationQuaternion && this._rotationQuaternion._isDirty) || this._rotation._isDirty) {
             return false;
         }
 
         return true;
     }
 
-    /** @hidden */
+    /** @internal */
     public _initCache() {
         super._initCache();
 
@@ -335,6 +349,8 @@ export class TransformNode extends Node {
         cache.localMatrixUpdated = false;
         cache.billboardMode = -1;
         cache.infiniteDistance = false;
+        cache.useBillboardPosition = false;
+        cache.useBillboardPath = false;
     }
 
     /**
@@ -409,13 +425,13 @@ export class TransformNode extends Node {
      * Instantiate (when possible) or clone that node with its hierarchy
      * @param newParent defines the new parent to use for the instance (or clone)
      * @param options defines options to configure how copy is done
-     * @param options.doNotInstantiate
+     * @param options.doNotInstantiate defines if the model must be instantiated or just cloned
      * @param onNewNodeCreated defines an option callback to call when a clone or an instance is created
      * @returns an instance (or a clone) of the current node with its hierarchy
      */
     public instantiateHierarchy(
         newParent: Nullable<TransformNode> = null,
-        options?: { doNotInstantiate: boolean },
+        options?: { doNotInstantiate: boolean | ((node: TransformNode) => boolean) },
         onNewNodeCreated?: (source: TransformNode, clone: TransformNode) => void
     ): Nullable<TransformNode> {
         const clone = this.clone("Clone of " + (this.name || this.id), newParent || this.parent, true);
@@ -727,6 +743,10 @@ export class TransformNode extends Node {
      * @returns this  node
      */
     public markAsDirty(property?: string): Node {
+        if (this._isDirty) {
+            return this;
+        }
+
         // We need to explicitly update the children
         // as the scene.evaluateActiveMeshes will not poll the transform nodes
         if (this._children) {
@@ -742,12 +762,14 @@ export class TransformNode extends Node {
      * The node will remain exactly where it is and its position / rotation will be updated accordingly.
      * Note that if the mesh has a pivot matrix / point defined it will be applied after the parent was updated.
      * In that case the node will not remain in the same space as it is, as the pivot will be applied.
-     * @see https://doc.babylonjs.com/how_to/parenting
+     * To avoid this, you can set updatePivot to true and the pivot will be updated to identity
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/transforms/parent_pivot/parent
      * @param node the node ot set as the parent
      * @param preserveScalingSign if true, keep scaling sign of child. Otherwise, scaling sign might change.
+     * @param updatePivot if true, update the pivot matrix to keep the node in the same space as before
      * @returns this TransformNode.
      */
-    public setParent(node: Nullable<Node>, preserveScalingSign: boolean = false): TransformNode {
+    public setParent(node: Nullable<Node>, preserveScalingSign: boolean = false, updatePivot = false): TransformNode {
         if (!node && !this.parent) {
             return this;
         }
@@ -789,6 +811,11 @@ export class TransformNode extends Node {
         this.position.copyFrom(position);
 
         this.parent = node;
+
+        if (updatePivot) {
+            this.setPivotMatrix(Matrix.Identity());
+        }
+
         return this;
     }
 
@@ -801,8 +828,7 @@ export class TransformNode extends Node {
     }
 
     /**
-     * @param value
-     * @hidden
+     * @internal
      */
     public _updateNonUniformScalingState(value: boolean): boolean {
         if (this._nonUniformScaling === value) {
@@ -988,31 +1014,39 @@ export class TransformNode extends Node {
     }
 
     /**
-     * @hidden
+     * @internal
      */
     protected _getEffectiveParent(): Nullable<Node> {
         return this.parent;
     }
 
     /**
+     * Returns whether the transform node world matrix computation needs the camera information to be computed.
+     * This is the case when the node is a billboard or has an infinite distance for instance.
+     * @returns true if the world matrix computation needs the camera information to be computed
+     */
+    public isWorldMatrixCameraDependent(): boolean {
+        return (this._infiniteDistance && !this.parent) || (this._billboardMode !== TransformNode.BILLBOARDMODE_NONE && !this.preserveParentRotationForBillboard);
+    }
+
+    /**
      * Computes the world matrix of the node
      * @param force defines if the cache version should be invalidated forcing the world matrix to be created from scratch
+     * @param camera defines the camera used if different from the scene active camera (This is used with modes like Billboard or infinite distance)
      * @returns the world matrix
      */
-    public computeWorldMatrix(force?: boolean): Matrix {
+    public computeWorldMatrix(force: boolean = false, camera: Nullable<Camera> = null): Matrix {
         if (this._isWorldMatrixFrozen && !this._isDirty) {
             return this._worldMatrix;
         }
 
         const currentRenderId = this.getScene().getRenderId();
-        if (!this._isDirty && !force && this.isSynchronized()) {
+        if (!this._isDirty && !force && (this._currentRenderId === currentRenderId || this.isSynchronized())) {
             this._currentRenderId = currentRenderId;
             return this._worldMatrix;
         }
 
-        const camera = <Camera>this.getScene().activeCamera;
-        const useBillboardPosition = (this._billboardMode & TransformNode.BILLBOARDMODE_USE_POSITION) !== 0;
-        const useBillboardPath = this._billboardMode !== TransformNode.BILLBOARDMODE_NONE && !this.preserveParentRotationForBillboard;
+        camera = camera || this.getScene().activeCamera;
 
         this._updateCache();
         const cache = this._cache;
@@ -1092,7 +1126,7 @@ export class TransformNode extends Node {
             if (force) {
                 parent.computeWorldMatrix(force);
             }
-            if (useBillboardPath) {
+            if (cache.useBillboardPath) {
                 if (this._transformToBoneReferal) {
                     parent.getWorldMatrix().multiplyToRef(this._transformToBoneReferal.getWorldMatrix(), TmpVectors.Matrix[7]);
                 } else {
@@ -1102,9 +1136,16 @@ export class TransformNode extends Node {
                 // Extract scaling and translation from parent
                 const translation = TmpVectors.Vector3[5];
                 const scale = TmpVectors.Vector3[6];
-                TmpVectors.Matrix[7].decompose(scale, undefined, translation);
+                const orientation = TmpVectors.Quaternion[0];
+                TmpVectors.Matrix[7].decompose(scale, orientation, translation);
                 Matrix.ScalingToRef(scale.x, scale.y, scale.z, TmpVectors.Matrix[7]);
                 TmpVectors.Matrix[7].setTranslation(translation);
+
+                if (TransformNode.BillboardUseParentOrientation) {
+                    // set localMatrix translation to be transformed against parent's orientation.
+                    this._position.applyRotationQuaternionToRef(orientation, translation);
+                    this._localMatrix.setTranslation(translation);
+                }
 
                 this._localMatrix.multiplyToRef(TmpVectors.Matrix[7], this._worldMatrix);
             } else {
@@ -1121,12 +1162,17 @@ export class TransformNode extends Node {
         }
 
         // Billboarding based on camera orientation (testing PG:http://www.babylonjs-playground.com/#UJEIL#13)
-        if (useBillboardPath && camera && this.billboardMode && !useBillboardPosition) {
+        if (cache.useBillboardPath && camera && this.billboardMode && !cache.useBillboardPosition) {
             const storedTranslation = TmpVectors.Vector3[0];
             this._worldMatrix.getTranslationToRef(storedTranslation); // Save translation
 
             // Cancel camera rotation
             TmpVectors.Matrix[1].copyFrom(camera.getViewMatrix());
+
+            if (this._scene.useRightHandedSystem) {
+                TmpVectors.Matrix[1].multiplyToRef(convertRHSToLHS, TmpVectors.Matrix[1]);
+            }
+
             TmpVectors.Matrix[1].setTranslationFromFloats(0, 0, 0);
             TmpVectors.Matrix[1].invertToRef(TmpVectors.Matrix[0]);
 
@@ -1156,7 +1202,7 @@ export class TransformNode extends Node {
             this._worldMatrix.setTranslation(TmpVectors.Vector3[0]);
         }
         // Billboarding based on camera position
-        else if (useBillboardPath && camera && this.billboardMode && useBillboardPosition) {
+        else if (cache.useBillboardPath && camera && cache.useBillboardPosition) {
             const storedTranslation = TmpVectors.Vector3[0];
             // Save translation
             this._worldMatrix.getTranslationToRef(storedTranslation);
@@ -1364,17 +1410,12 @@ export class TransformNode extends Node {
 
         // Parent
         if (this.parent) {
-            serializationObject.parentId = this.parent.uniqueId;
+            this.parent._serializeAsParent(serializationObject);
         }
 
         serializationObject.localMatrix = this.getPivotMatrix().asArray();
 
         serializationObject.isEnabled = this.isEnabled();
-
-        // Parent
-        if (this.parent) {
-            serializationObject.parentId = this.parent.uniqueId;
-        }
 
         return serializationObject;
     }
@@ -1398,9 +1439,15 @@ export class TransformNode extends Node {
 
         transformNode.setEnabled(parsedTransformNode.isEnabled);
 
+        transformNode._waitingParsedUniqueId = parsedTransformNode.uniqueId;
+
         // Parent
         if (parsedTransformNode.parentId !== undefined) {
             transformNode._waitingParentId = parsedTransformNode.parentId;
+        }
+
+        if (parsedTransformNode.parentInstanceIndex !== undefined) {
+            transformNode._waitingParentInstanceIndex = parsedTransformNode.parentInstanceIndex;
         }
 
         return transformNode;

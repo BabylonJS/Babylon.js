@@ -49,7 +49,7 @@ export enum PointerInput {
     Move = 12,
 }
 
-/** @hidden */
+/** @internal */
 export enum NativePointerInput {
     /** Horizontal Axis */
     Horizontal = PointerInput.Horizontal,

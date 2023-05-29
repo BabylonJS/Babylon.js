@@ -38,8 +38,8 @@ export class CanvasComponent extends React.Component<ICanvasComponentProps, ICan
     public render() {
         return (
             <div id="canvas-zone">
-                <GraphComponent globalState={this.props.globalState} context={this.props.context} />
                 <FrameBarComponent globalState={this.props.globalState} context={this.props.context} />
+                <GraphComponent globalState={this.props.globalState} context={this.props.context} />
                 <PlayHeadComponent context={this.props.context} globalState={this.props.globalState} />
                 <RangeFrameBarComponent context={this.props.context} globalState={this.props.globalState} />
                 {this.props.context.activeAnimations.length > 0 && <div id="angle-mode" />}

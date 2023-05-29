@@ -13,6 +13,7 @@ import { SliderLineComponent } from "shared-ui-components/lines/sliderLineCompon
 import type { GlobalState } from "../../../../globalState";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
+import { CustomPropertyGridComponent } from "../customPropertyGridComponent";
 
 interface ICommonPostProcessPropertyGridComponentProps {
     globalState: GlobalState;
@@ -31,6 +32,12 @@ export class CommonPostProcessPropertyGridComponent extends React.Component<ICom
 
         return (
             <div>
+                <CustomPropertyGridComponent
+                    globalState={this.props.globalState}
+                    target={postProcess}
+                    lockObject={this.props.lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                />
                 <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
                     <TextLineComponent label="Class" value={postProcess.getClassName()} />
                     <TextInputLineComponent
@@ -45,6 +52,7 @@ export class CommonPostProcessPropertyGridComponent extends React.Component<ICom
                     <CheckBoxLineComponent label="Auto clear" target={postProcess} propertyName="autoClear" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     {postProcess.clearColor && (
                         <Color3LineComponent
+                            lockObject={this.props.lockObject}
                             label="Clear color"
                             target={postProcess}
                             propertyName="clearColor"
@@ -64,6 +72,7 @@ export class CommonPostProcessPropertyGridComponent extends React.Component<ICom
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Samples"
                         target={postProcess}
                         propertyName="samples"

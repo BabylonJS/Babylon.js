@@ -7,6 +7,8 @@ import { RegisterClass } from "core/Misc/typeStore";
 import { serialize } from "core/Misc/decorators";
 import type { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import type { TextBlock } from "./textBlock";
+import { TextWrapping } from "./textBlock";
 
 /**
  * Class used to create a 2D stack panel container
@@ -115,9 +117,7 @@ export class StackPanel extends Container {
     }
 
     /**
-     * @param parentMeasure
-     * @param context
-     * @hidden
+     * @internal
      */
     protected _preMeasure(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         for (const child of this._children) {
@@ -179,7 +179,13 @@ export class StackPanel extends Container {
                     child._left.ignoreAdaptiveScaling = true;
                 }
 
-                if (child._width.isPercentage && !child._automaticSize) {
+                if (
+                    child._width.isPercentage &&
+                    !child._automaticSize &&
+                    child.getClassName() === "TextBlock" &&
+                    (child as TextBlock).textWrapping !== TextWrapping.Clip &&
+                    !(child as TextBlock).forceResizeWidth
+                ) {
                     if (!this.ignoreLayoutWarnings) {
                         Tools.Warn(`Control (Name:${child.name}, UniqueId:${child.uniqueId}) is using width in percentage mode inside a horizontal StackPanel`);
                     }
@@ -200,13 +206,13 @@ export class StackPanel extends Container {
         let panelWidthChanged = false;
         let panelHeightChanged = false;
 
-        if (!this._manualHeight && this._isVertical) {
+        if ((!this._manualHeight || this.adaptHeightToChildren) && this._isVertical) {
             // do not specify height if strictly defined by user
             const previousHeight = this.height;
             this.height = stackHeight + "px";
             panelHeightChanged = previousHeight !== this.height || !this._height.ignoreAdaptiveScaling;
         }
-        if (!this._manualWidth && !this._isVertical) {
+        if ((!this._manualWidth || this.adaptWidthToChildren) && !this._isVertical) {
             // do not specify width if strictly defined by user
             const previousWidth = this.width;
             this.width = stackWidth + "px";
@@ -241,9 +247,7 @@ export class StackPanel extends Container {
     }
 
     /**
-     * @param serializedObject
-     * @param host
-     * @hidden
+     * @internal
      */
     public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
         this._manualWidth = serializedObject.manualWidth;

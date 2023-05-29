@@ -1,6 +1,6 @@
 ﻿# Materials library
 
-To get a detailed tutorial, please read the [documentation](https://doc.babylonjs.com/how_to/how_to_create_a_material_for_materialslibrary)
+To get a detailed tutorial, please read the [documentation](https://doc.babylonjs.com/divingDeeper/developWithBjs/matForMatLibrary)
 
 For every material, you can find a detailled documentation [here](https://doc.babylonjs.com/extensions) under **materials library** tag.
 

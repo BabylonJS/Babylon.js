@@ -8,7 +8,7 @@ import type { IPipelineContext } from "../Engines/IPipelineContext";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import { ShaderProcessor } from "../Engines/Processors/shaderProcessor";
 import type { ProcessingOptions, ShaderCustomProcessingFunction, ShaderProcessingContext } from "../Engines/Processors/shaderProcessingOptions";
-import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from "../Maths/math.like";
+import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IQuaternionLike } from "../Maths/math.like";
 import type { ThinEngine } from "../Engines/thinEngine";
 import type { IEffectFallbacks } from "./iEffectFallbacks";
 import { ShaderStore as EngineShaderStore } from "../Engines/shaderStore";
@@ -137,14 +137,29 @@ export class Effect implements IDisposable {
      */
     public onErrorObservable = new Observable<Effect>();
 
-    /** @hidden */
+    /** @internal */
     public _onBindObservable: Nullable<Observable<Effect>> = null;
 
     /**
-     * @hidden
+     * @internal
      * Specifies if the effect was previously ready
      */
     public _wasPreviouslyReady = false;
+
+    /**
+     * @internal
+     * Forces the code from bindForSubMesh to be fully run the next time it is called
+     * It is used in frozen mode to make sure the effect is properly rebound when a new effect is created
+     */
+    public _forceRebindOnNextCall = false;
+
+    /**
+     * @internal
+     * Specifies if the effect was previously using instances
+     */
+    public _wasPreviouslyUsingInstances: Nullable<boolean> = null;
+
+    private _isDisposed = false;
 
     /**
      * Observable that will be called when effect is bound.
@@ -157,17 +172,17 @@ export class Effect implements IDisposable {
         return this._onBindObservable;
     }
 
-    /** @hidden */
+    /** @internal */
     public _bonesComputationForcedToCPU = false;
-    /** @hidden */
+    /** @internal */
     public _uniformBuffersNames: { [key: string]: number } = {};
-    /** @hidden */
+    /** @internal */
     public _samplerList: string[];
-    /** @hidden */
+    /** @internal */
     public _multiTarget: boolean = false;
 
     private static _UniqueIdSeed = 0;
-    /** @hidden */
+    /** @internal */
     public _engine: Engine;
     private _uniformBuffersNamesList: string[];
     private _uniformsNames: string[];
@@ -181,7 +196,7 @@ export class Effect implements IDisposable {
     private _uniforms: { [key: string]: Nullable<WebGLUniformLocation> } = {};
     /**
      * Key for the effect.
-     * @hidden
+     * @internal
      */
     public _key: string = "";
     private _indexParameters: any;
@@ -192,17 +207,22 @@ export class Effect implements IDisposable {
     private _shaderLanguage: ShaderLanguage;
     /**
      * Compiled shader to webGL program.
-     * @hidden
+     * @internal
      */
     public _pipelineContext: Nullable<IPipelineContext> = null;
-    /** @hidden */
+    /** @internal */
     public _vertexSourceCode: string = "";
-    /** @hidden */
+    /** @internal */
     public _fragmentSourceCode: string = "";
 
-    /** @hidden */
+    /** @internal */
+    private _vertexSourceCodeBeforeMigration: string = "";
+    /** @internal */
+    private _fragmentSourceCodeBeforeMigration: string = "";
+
+    /** @internal */
     private _rawVertexSourceCode: string = "";
-    /** @hidden */
+    /** @internal */
     private _rawFragmentSourceCode: string = "";
 
     private static _BaseCache: { [key: number]: DataBuffer } = {};
@@ -320,7 +340,7 @@ export class Effect implements IDisposable {
 
         this._processingContext = this._engine._getShaderProcessingContext(this._shaderLanguage);
 
-        const processorOptions: ProcessingOptions = {
+        let processorOptions: ProcessingOptions = {
             defines: this.defines.split("\n"),
             indexParameters: this._indexParameters,
             isFragment: false,
@@ -345,11 +365,13 @@ export class Effect implements IDisposable {
                 ShaderProcessor.Process(
                     fragmentCode,
                     processorOptions,
-                    (migratedFragmentCode) => {
+                    (migratedFragmentCode, codeBeforeMigration) => {
+                        this._fragmentSourceCodeBeforeMigration = codeBeforeMigration;
                         if (processFinalCode) {
                             migratedFragmentCode = processFinalCode("fragment", migratedFragmentCode);
                         }
                         const finalShaders = ShaderProcessor.Finalize(migratedVertexCode, migratedFragmentCode, processorOptions);
+                        processorOptions = null as any;
                         this._useFinalCode(finalShaders.vertexCode, finalShaders.fragmentCode, baseName);
                     },
                     this._engine
@@ -361,8 +383,9 @@ export class Effect implements IDisposable {
             ShaderProcessor.Process(
                 vertexCode,
                 processorOptions,
-                (migratedVertexCode) => {
+                (migratedVertexCode, codeBeforeMigration) => {
                     this._rawVertexSourceCode = vertexCode;
+                    this._vertexSourceCodeBeforeMigration = codeBeforeMigration;
                     if (processFinalCode) {
                         migratedVertexCode = processFinalCode("vertex", migratedVertexCode);
                     }
@@ -569,6 +592,10 @@ export class Effect implements IDisposable {
             return;
         }
 
+        if (this._isDisposed) {
+            return;
+        }
+
         setTimeout(() => {
             this._checkIsReady(previousPipelineContext);
         }, 16);
@@ -624,6 +651,7 @@ export class Effect implements IDisposable {
 
     /**
      * Gets the vertex shader source code of this effect
+     * This is the final source code that will be compiled, after all the processing has been done (pre-processing applied, code injection/replacement, etc)
      */
     public get vertexSourceCode(): string {
         return this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride
@@ -633,6 +661,7 @@ export class Effect implements IDisposable {
 
     /**
      * Gets the fragment shader source code of this effect
+     * This is the final source code that will be compiled, after all the processing has been done (pre-processing applied, code injection/replacement, etc)
      */
     public get fragmentSourceCode(): string {
         return this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride
@@ -641,14 +670,32 @@ export class Effect implements IDisposable {
     }
 
     /**
-     * Gets the vertex shader source code before it has been processed by the preprocessor
+     * Gets the vertex shader source code before migration.
+     * This is the source code after the include directives have been replaced by their contents but before the code is migrated, i.e. before ShaderProcess._ProcessShaderConversion is executed.
+     * This method is, among other things, responsible for parsing #if/#define directives as well as converting GLES2 syntax to GLES3 (in the case of WebGL).
+     */
+    public get vertexSourceCodeBeforeMigration(): string {
+        return this._vertexSourceCodeBeforeMigration;
+    }
+
+    /**
+     * Gets the fragment shader source code before migration.
+     * This is the source code after the include directives have been replaced by their contents but before the code is migrated, i.e. before ShaderProcess._ProcessShaderConversion is executed.
+     * This method is, among other things, responsible for parsing #if/#define directives as well as converting GLES2 syntax to GLES3 (in the case of WebGL).
+     */
+    public get fragmentSourceCodeBeforeMigration(): string {
+        return this._fragmentSourceCodeBeforeMigration;
+    }
+
+    /**
+     * Gets the vertex shader source code before it has been modified by any processing
      */
     public get rawVertexSourceCode(): string {
         return this._rawVertexSourceCode;
     }
 
     /**
-     * Gets the fragment shader source code before it has been processed by the preprocessor
+     * Gets the fragment shader source code before it has been modified by any processing
      */
     public get rawFragmentSourceCode(): string {
         return this._rawFragmentSourceCode;
@@ -660,7 +707,7 @@ export class Effect implements IDisposable {
      * @param fragmentSourceCode The source code for the fragment shader.
      * @param onCompiled Callback called when completed.
      * @param onError Callback called on error.
-     * @hidden
+     * @internal
      */
     public _rebuildProgram(vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (pipelineContext: IPipelineContext) => void, onError: (message: string) => void) {
         this._isReady = false;
@@ -688,7 +735,7 @@ export class Effect implements IDisposable {
 
     /**
      * Prepares the effect
-     * @hidden
+     * @internal
      */
     public _prepareEffect() {
         const attributesNames = this._attributesNames;
@@ -847,15 +894,22 @@ export class Effect implements IDisposable {
             }
         }
         Logger.Error("Error: " + this._compilationError);
-        if (previousPipelineContext) {
-            this._pipelineContext = previousPipelineContext;
-            this._isReady = true;
+
+        const notifyErrors = () => {
             if (this.onError) {
                 this.onError(this, this._compilationError);
             }
             this.onErrorObservable.notifyObservers(this);
+        };
+
+        // In case a previous compilation was successful, we need to restore the previous pipeline context
+        if (previousPipelineContext) {
+            this._pipelineContext = previousPipelineContext;
+            this._isReady = true;
+            notifyErrors();
         }
 
+        // Lets try to compile fallbacks as long as we have some.
         if (fallbacks) {
             this._pipelineContext = null;
             if (fallbacks.hasMoreFallbacks) {
@@ -866,10 +920,7 @@ export class Effect implements IDisposable {
             } else {
                 // Sorry we did everything we can
                 this._allFallbacksProcessed = true;
-                if (this.onError) {
-                    this.onError(this, this._compilationError);
-                }
-                this.onErrorObservable.notifyObservers(this);
+                notifyErrors();
                 this.onErrorObservable.clear();
 
                 // Unbind mesh reference in fallbacks
@@ -879,6 +930,11 @@ export class Effect implements IDisposable {
             }
         } else {
             this._allFallbacksProcessed = true;
+
+            // In case of error, without any prior successful compilation, let s notify observers
+            if (!previousPipelineContext) {
+                notifyErrors();
+            }
         }
     }
 
@@ -893,7 +949,7 @@ export class Effect implements IDisposable {
      * Binds a texture to the engine to be used as output of the shader.
      * @param channel Name of the output variable.
      * @param texture Texture to bind.
-     * @hidden
+     * @internal
      */
     public _bindTexture(channel: string, texture: Nullable<InternalTexture>): void {
         this._engine._bindTexture(this._samplers[channel], texture, channel);
@@ -1075,6 +1131,100 @@ export class Effect implements IDisposable {
      */
     public setIntArray4(uniformName: string, array: Int32Array): Effect {
         this._pipelineContext!.setIntArray4(uniformName, array);
+        return this;
+    }
+
+    /**
+     * Sets an unsigned integer value on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param value Value to be set.
+     * @returns this effect.
+     */
+    public setUInt(uniformName: string, value: number): Effect {
+        this._pipelineContext!.setInt(uniformName, value);
+        return this;
+    }
+
+    /**
+     * Sets an unsigned int2 value on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param x First unsigned int in uint2.
+     * @param y Second unsigned int in uint2.
+     * @returns this effect.
+     */
+    public setUInt2(uniformName: string, x: number, y: number): Effect {
+        this._pipelineContext!.setInt2(uniformName, x, y);
+        return this;
+    }
+
+    /**
+     * Sets an unsigned int3 value on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param x First unsigned int in uint3.
+     * @param y Second unsigned int in uint3.
+     * @param z Third unsigned int in uint3.
+     * @returns this effect.
+     */
+    public setUInt3(uniformName: string, x: number, y: number, z: number): Effect {
+        this._pipelineContext!.setInt3(uniformName, x, y, z);
+        return this;
+    }
+
+    /**
+     * Sets an unsigned int4 value on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param x First unsigned int in uint4.
+     * @param y Second unsigned int in uint4.
+     * @param z Third unsigned int in uint4.
+     * @param w Fourth unsigned int in uint4.
+     * @returns this effect.
+     */
+    public setUInt4(uniformName: string, x: number, y: number, z: number, w: number): Effect {
+        this._pipelineContext!.setInt4(uniformName, x, y, z, w);
+        return this;
+    }
+
+    /**
+     * Sets an unsigned int array on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param array array to be set.
+     * @returns this effect.
+     */
+    public setUIntArray(uniformName: string, array: Uint32Array): Effect {
+        this._pipelineContext!.setUIntArray(uniformName, array);
+        return this;
+    }
+
+    /**
+     * Sets an unsigned int array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
+     * @param uniformName Name of the variable.
+     * @param array array to be set.
+     * @returns this effect.
+     */
+    public setUIntArray2(uniformName: string, array: Uint32Array): Effect {
+        this._pipelineContext!.setUIntArray2(uniformName, array);
+        return this;
+    }
+
+    /**
+     * Sets an unsigned int array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
+     * @param uniformName Name of the variable.
+     * @param array array to be set.
+     * @returns this effect.
+     */
+    public setUIntArray3(uniformName: string, array: Uint32Array): Effect {
+        this._pipelineContext!.setUIntArray3(uniformName, array);
+        return this;
+    }
+
+    /**
+     * Sets an unsigned int array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
+     * @param uniformName Name of the variable.
+     * @param array array to be set.
+     * @returns this effect.
+     */
+    public setUIntArray4(uniformName: string, array: Uint32Array): Effect {
+        this._pipelineContext!.setUIntArray4(uniformName, array);
         return this;
     }
 
@@ -1293,6 +1443,17 @@ export class Effect implements IDisposable {
     }
 
     /**
+     * Sets a Quaternion on a uniform variable.
+     * @param uniformName Name of the variable.
+     * @param quaternion Value to be set.
+     * @returns this effect.
+     */
+    public setQuaternion(uniformName: string, quaternion: IQuaternionLike): Effect {
+        this._pipelineContext!.setQuaternion(uniformName, quaternion);
+        return this;
+    }
+
+    /**
      * Sets a float4 on a uniform variable.
      * @param uniformName Name of the variable.
      * @param x First float in float4.
@@ -1348,6 +1509,8 @@ export class Effect implements IDisposable {
             this._pipelineContext.dispose();
         }
         this._engine._releaseEffect(this);
+
+        this._isDisposed = true;
     }
 
     /**

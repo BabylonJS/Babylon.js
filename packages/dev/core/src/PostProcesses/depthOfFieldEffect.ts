@@ -9,6 +9,7 @@ import { CircleOfConfusionPostProcess } from "./circleOfConfusionPostProcess";
 import { DepthOfFieldBlurPostProcess } from "./depthOfFieldBlurPostProcess";
 import { DepthOfFieldMergePostProcess } from "./depthOfFieldMergePostProcess";
 import type { Scene } from "../scene";
+import { Constants } from "../Engines/constants";
 
 /**
  * Specifies the level of max blur that should be applied when using the depth of field effect
@@ -33,14 +34,14 @@ export enum DepthOfFieldEffectBlurLevel {
 export class DepthOfFieldEffect extends PostProcessRenderEffect {
     private _circleOfConfusion: CircleOfConfusionPostProcess;
     /**
-     * @hidden Internal, blurs from high to low
+     * @internal Internal, blurs from high to low
      */
     public _depthOfFieldBlurX: Array<DepthOfFieldBlurPostProcess>;
     private _depthOfFieldBlurY: Array<DepthOfFieldBlurPostProcess>;
     private _dofMerge: Nullable<DepthOfFieldMergePostProcess>;
 
     /**
-     * @hidden Internal post processes in depth of field effect
+     * @internal Internal post processes in depth of field effect
      */
     public _effects: Array<PostProcess> = [];
 
@@ -104,6 +105,12 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
             },
             true
         );
+
+        // Use R-only formats if supported to store the circle of confusion values.
+        // This should be more space and bandwidth efficient than using RGBA.
+        const engine = scene.getEngine();
+        const circleOfConfusionTextureFormat = engine.isWebGPU || engine.webGLVersion > 1 ? Constants.TEXTUREFORMAT_RED : Constants.TEXTUREFORMAT_RGBA;
+
         // Circle of confusion value for each pixel is used to determine how much to blur that pixel
         this._circleOfConfusion = new CircleOfConfusionPostProcess(
             "circleOfConfusion",
@@ -111,7 +118,7 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
             1,
             null,
             Texture.BILINEAR_SAMPLINGMODE,
-            scene.getEngine(),
+            engine,
             false,
             pipelineTextureType,
             blockCompilation
@@ -154,10 +161,11 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
                 this._circleOfConfusion,
                 i == 0 ? this._circleOfConfusion : null,
                 Texture.BILINEAR_SAMPLINGMODE,
-                scene.getEngine(),
+                engine,
                 false,
                 pipelineTextureType,
-                blockCompilation
+                blockCompilation,
+                i == 0 ? circleOfConfusionTextureFormat : Constants.TEXTUREFORMAT_RGBA
             );
             blurY.autoClear = false;
             ratio = 0.75 / Math.pow(2, i);
@@ -171,7 +179,7 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
                 this._circleOfConfusion,
                 null,
                 Texture.BILINEAR_SAMPLINGMODE,
-                scene.getEngine(),
+                engine,
                 false,
                 pipelineTextureType,
                 blockCompilation
@@ -197,7 +205,7 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
             ratio,
             null,
             Texture.BILINEAR_SAMPLINGMODE,
-            scene.getEngine(),
+            engine,
             false,
             pipelineTextureType,
             blockCompilation
@@ -232,7 +240,7 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
     }
 
     /**
-     * @hidden Internal
+     * @internal Internal
      */
     public _updateEffects() {
         for (let effectIndex = 0; effectIndex < this._effects.length; effectIndex++) {
@@ -243,7 +251,7 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
     /**
      * Internal
      * @returns if all the contained post processes are ready.
-     * @hidden
+     * @internal
      */
     public _isReady() {
         for (let effectIndex = 0; effectIndex < this._effects.length; effectIndex++) {

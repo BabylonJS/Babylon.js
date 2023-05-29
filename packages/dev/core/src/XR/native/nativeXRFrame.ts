@@ -1,13 +1,13 @@
 import { RegisterNativeTypeAsync } from "../../Engines/nativeEngine";
 
-/** @hidden */
+/** @internal */
 interface INativeXRFrame extends XRFrame {
     // Native-only helper functions
     getPoseData: (space: XRSpace, baseSpace: XRReferenceSpace, vectorBuffer: ArrayBuffer, matrixBuffer: ArrayBuffer) => XRPose;
     _imageTrackingResults?: XRImageTrackingResult[];
 }
 
-/** @hidden */
+/** @internal */
 export class NativeXRFrame implements XRFrame {
     private readonly _xrTransform = new XRRigidTransform();
     private readonly _xrPose: XRPose = {
@@ -80,6 +80,11 @@ export class NativeXRFrame implements XRFrame {
     public readonly getImageTrackingResults = (): XRImageTrackingResult[] => {
         return this._nativeImpl._imageTrackingResults ?? [];
     };
+
+    public getDepthInformation(view: XRView): XRCPUDepthInformation | undefined {
+        throw new Error("This function is not available in Babylon Native");
+        // return this._nativeImpl.getDepthInformation(view);
+    }
 }
 
 RegisterNativeTypeAsync("NativeXRFrame", NativeXRFrame);

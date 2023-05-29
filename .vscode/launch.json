@@ -132,7 +132,7 @@
             "type": "pwa-msedge",
             "request": "launch",
             "name": "Sandbox development (Edge)",
-            "url": "http://localhost:1338",
+            "url": "http://localhost:1339",
             "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Sandbox Serve (Dev)"
         },
@@ -144,7 +144,7 @@
             "type": "pwa-chrome",
             "request": "launch",
             "name": "Sandbox development (Chrome)",
-            "url": "http://localhost:1338",
+            "url": "http://localhost:1339",
             "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Sandbox Serve (Dev)"
         },
@@ -155,7 +155,7 @@
             "type": "pwa-msedge",
             "request": "launch",
             "name": "Launch Sandbox (Edge)",
-            "url": "http://localhost:1338",
+            "url": "http://localhost:1339",
             "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Sandbox Serve for core (Dev)"
         },
@@ -166,7 +166,7 @@
             "type": "pwa-chrome",
             "request": "launch",
             "name": "Launch Sandbox (Chrome)",
-            "url": "http://localhost:1338",
+            "url": "http://localhost:1339",
             "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Sandbox Serve for core (Dev)"
         },
@@ -174,7 +174,7 @@
             "type": "pwa-msedge",
             "request": "launch",
             "name": "GUI Editor development (Edge)",
-            "url": "http://localhost:1338",
+            "url": "http://localhost:1341",
             "webRoot": "${workspaceFolder}",
             "preLaunchTask": "GUI Editor Serve (Dev)"
         },
@@ -182,7 +182,7 @@
             "type": "pwa-chrome",
             "request": "launch",
             "name": "GUI Editor development (Chrome)",
-            "url": "http://localhost:1338",
+            "url": "http://localhost:1341",
             "webRoot": "${workspaceFolder}",
             "preLaunchTask": "GUI Editor Serve (Dev)"
         },
@@ -193,7 +193,7 @@
             "type": "pwa-msedge",
             "request": "launch",
             "name": "Launch GUI Editor (Edge)",
-            "url": "http://localhost:1338",
+            "url": "http://localhost:1341",
             "webRoot": "${workspaceFolder}",
             "preLaunchTask": "GUI Editor Serve for core (Dev)"
         },
@@ -204,7 +204,7 @@
             "type": "pwa-chrome",
             "request": "launch",
             "name": "Launch GUI Editor (Chrome)",
-            "url": "http://localhost:1338",
+            "url": "http://localhost:1341",
             "webRoot": "${workspaceFolder}",
             "preLaunchTask": "GUI Editor Serve for core (Dev)"
         },
@@ -212,7 +212,7 @@
             "type": "pwa-msedge",
             "request": "launch",
             "name": "Node Editor development (Edge)",
-            "url": "http://localhost:1338",
+            "url": "http://localhost:1340",
             "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Node Editor Serve (Dev)"
         },
@@ -220,7 +220,7 @@
             "type": "pwa-chrome",
             "request": "launch",
             "name": "Node Editor development (Chrome)",
-            "url": "http://localhost:1338",
+            "url": "http://localhost:1340",
             "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Node Editor Serve (Dev)"
         },
@@ -231,7 +231,7 @@
             "type": "pwa-msedge",
             "request": "launch",
             "name": "Launch Node Editor (Edge)",
-            "url": "http://localhost:1338",
+            "url": "http://localhost:1340",
             "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Node Editor Serve for core (Dev)"
         },
@@ -242,9 +242,41 @@
             "type": "pwa-chrome",
             "request": "launch",
             "name": "Launch Node Editor (Chrome)",
-            "url": "http://localhost:1338",
+            "url": "http://localhost:1340",
             "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Node Editor Serve for core (Dev)"
+        },
+        {
+            "type": "pwa-msedge",
+            "request": "launch",
+            "name": "VSM development (Edge)",
+            "url": "http://localhost:1342",
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "VSM Serve (Dev)"
+        },
+        {
+            "type": "pwa-chrome",
+            "request": "launch",
+            "name": "VSM development (Chrome)",
+            "url": "http://localhost:1342",
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "VSM Serve (Dev)"
+        },
+        {
+            "type": "pwa-msedge",
+            "request": "launch",
+            "name": "Launch VSM (Edge)",
+            "url": "http://localhost:1342",
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "VSM Serve for core (Dev)"
+        },
+        {
+            "type": "pwa-chrome",
+            "request": "launch",
+            "name": "Launch VSM (Chrome)",
+            "url": "http://localhost:1342",
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "VSM Serve for core (Dev)"
         },
         {
             /*
@@ -309,6 +341,38 @@
             */
             "type": "node",
             "request": "launch",
+            "name": "Run single validation test - WebGL2 (Dev)",
+            "runtimeArgs": ["--inspect-brk", "${workspaceRoot}/node_modules/jest/bin/jest.js", "--runInBand", "--selectProjects", "visualization", "-i", "webgl2", "-t", "${input:testName}"],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "port": 9229,
+            // "outFiles": ["${workspaceRoot}/**/dist/**/*"], // debugging sources
+            // "envFile": "${workspaceRoot}/.env",
+            "preLaunchTask": "CDN Serve (Dev)"
+        },
+        {
+            /*
+            Launch tests
+            https://jestjs.io/docs/troubleshooting#debugging-in-vs-code
+            */
+            "type": "node",
+            "request": "launch",
+            "name": "Update single validation test - WebGL2 (Dev)",
+            "runtimeArgs": ["--inspect-brk", "${workspaceRoot}/node_modules/jest/bin/jest.js", "--runInBand", "--selectProjects", "visualization", "-i", "webgl2", "-t", "${input:testName}" , "-u"],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "port": 9229,
+            // "outFiles": ["${workspaceRoot}/**/dist/**/*"], // debugging sources
+            // "envFile": "${workspaceRoot}/.env",
+            "preLaunchTask": "CDN Serve (Dev)"
+        },
+        {
+            /*
+            Launch tests
+            https://jestjs.io/docs/troubleshooting#debugging-in-vs-code
+            */
+            "type": "node",
+            "request": "launch",
             "name": "Run validation tests - WebGL1 (Dev)",
             "runtimeArgs": ["--inspect-brk", "${workspaceRoot}/node_modules/jest/bin/jest.js", "--runInBand", "--selectProjects", "visualization", "-i", "webgl1"],
             "console": "integratedTerminal",
@@ -344,6 +408,20 @@
             */
             "type": "node",
             "request": "launch",
+            "name": "Run interactions tests (Dev)",
+            "runtimeArgs": ["--inspect-brk", "${workspaceRoot}/node_modules/jest/bin/jest.js", "--runInBand", "--selectProjects", "interactions"],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "port": 9229,
+            "preLaunchTask": "CDN Serve (Dev)"
+        },
+        {
+            /*
+            Launch tests
+            https://jestjs.io/docs/troubleshooting#debugging-in-vs-code
+            */
+            "type": "node",
+            "request": "launch",
             "name": "Run and Debug integration tests (Dev)",
             "runtimeArgs": ["--inspect-brk", "${workspaceRoot}/node_modules/jest/bin/jest.js", "--runInBand", "--selectProjects", "integration"],
             "console": "integratedTerminal",
@@ -355,6 +433,13 @@
             // "outFiles": ["${workspaceRoot}/**/dist/**/*"], // debugging sources
             // "envFile": "${workspaceRoot}/.env",
             "preLaunchTask": "CDN Serve Prod (Dev)"
+        }
+    ], 
+    "inputs": [
+        {
+            "id": "testName",
+            "type": "promptString",
+            "description": "Enter test name"
         }
     ]
 }

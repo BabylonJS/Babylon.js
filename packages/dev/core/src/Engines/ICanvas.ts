@@ -72,6 +72,12 @@ export interface IImage {
      * thereby enabling the configuration of the CORS requests for the element's fetched data.
      */
     crossOrigin: string | null;
+
+    /**
+     * provides support for referrer policy on xhr load request,
+     * it is used to control the request header.
+     */
+    referrerPolicy: string;
 }
 
 /**
@@ -128,7 +134,7 @@ export interface ICanvasRenderingContext {
     /**
      * Color or style to use for the lines around shapes. Default #000 (black).
      */
-    strokeStyle: string;
+    strokeStyle: string | ICanvasGradient;
 
     /**
      * Color or style to use inside shapes. Default #000 (black).
@@ -386,6 +392,18 @@ export interface ICanvasRenderingContext {
      * @returns ICanvasGradient A linear ICanvasGradient initialized with the specified line.
      */
     createLinearGradient(x0: number, y0: number, x1: number, y1: number): ICanvasGradient;
+
+    /**
+     * Creates a linear gradient along the line given by the coordinates represented by the parameters.
+     * @param x0 The x-axis coordinate of the start circle.
+     * @param y0 The y-axis coordinate of the start circle.
+     * @param r0 The radius of the start circle. Must be non-negative and finite.
+     * @param x1 The x-axis coordinate of the end point.
+     * @param y1 The y-axis coordinate of the end point.
+     * @param r1 The radius of the end circle. Must be non-negative and finite.
+     * @returns ICanvasGradient A linear ICanvasGradient initialized with the two specified circles.
+     */
+    createRadialGradient(x0: number, y0: number, r0: number, x1: number, y1: number, r1: number): ICanvasGradient;
 
     /**
      * Resets the current transform to matrix composed with a, b, c, d, e, f.

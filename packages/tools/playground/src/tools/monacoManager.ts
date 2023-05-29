@@ -43,15 +43,14 @@ export class MonacoManager {
         globalState.onNewRequiredObservable.add(() => {
             if (Utilities.CheckSafeMode("Are you sure you want to create a new playground?")) {
                 this._setNewContent();
-                this._isDirty = true;
+                this._resetEditor(true);
             }
         });
 
         globalState.onClearRequiredObservable.add(() => {
             if (Utilities.CheckSafeMode("Are you sure you want to remove all your code?")) {
                 this._editor?.setValue("");
-                location.hash = "";
-                this._isDirty = true;
+                this._resetEditor();
             }
         });
 
@@ -169,11 +168,20 @@ class Playground {
 
         this.globalState.onRunRequiredObservable.notifyObservers();
 
-        location.hash = "";
         if (location.pathname.indexOf("pg/") !== -1) {
             // reload to create a new pg if in full-path playground mode.
             window.location.pathname = "";
         }
+    }
+
+    private _resetEditor(resetMetadata?: boolean) {
+        location.hash = "";
+        if (resetMetadata) {
+            this.globalState.currentSnippetTitle = "";
+            this.globalState.currentSnippetDescription = "";
+            this.globalState.currentSnippetTags = "";
+        }
+        this._isDirty = true;
     }
 
     private _createEditor() {
@@ -236,6 +244,7 @@ class Playground {
             "https://preview.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.d.ts",
             "https://preview.babylonjs.com/serializers/babylonjs.serializers.d.ts",
             "https://preview.babylonjs.com/inspector/babylon.inspector.d.ts",
+            "https://preview.babylonjs.com/accessibility/babylon.accessibility.d.ts",
         ];
 
         let snapshot = "";
@@ -289,6 +298,15 @@ class Playground {
                 libContent += await response.text();
             }
         }
+        libContent += `
+interface Window {
+    engine: BABYLON.Engine;
+    canvas: HTMLCanvasElement;
+};
+
+declare var engine: BABYLON.Engine;
+declare var canvas: HTMLCanvasElement;
+        `;
 
         this._createEditor();
 
@@ -452,6 +470,7 @@ class Playground {
             typescript.javascriptDefaults.setCompilerOptions({
                 noLib: false,
                 allowNonTsExtensions: true, // required to prevent Uncaught Error: Could not find file: 'inmemory://model/1'.
+                allowJs: true,
             });
 
             typescript.javascriptDefaults.addExtraLib(libContent, "babylon.d.ts");
@@ -609,7 +628,7 @@ class Playground {
     // So we need to be super fast.
     private async _hookMonacoCompletionProvider() {
         const oldProvideCompletionItems = languageFeatures.SuggestAdapter.prototype.provideCompletionItems;
-        // tslint:disable-next-line:no-this-assignment
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         const owner = this;
 
         languageFeatures.SuggestAdapter.prototype.provideCompletionItems = async function (model: any, position: any, context: any, token: any) {

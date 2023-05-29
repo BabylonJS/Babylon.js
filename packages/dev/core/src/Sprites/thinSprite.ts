@@ -4,7 +4,7 @@ import type { Nullable } from "../types";
 /**
  * ThinSprite Class used to represent a thin sprite
  * This is the base class for sprites but can also directly be used with ThinEngine
- * @see https://doc.babylonjs.com/babylon101/sprites
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/sprites
  */
 export class ThinSprite {
     /** Gets or sets the cell index in the sprite sheet */
@@ -55,13 +55,13 @@ export class ThinSprite {
         return Math.max(this._delay, 1);
     }
 
-    /** @hidden */
+    /** @internal */
     public _xOffset: number;
-    /** @hidden */
+    /** @internal */
     public _yOffset: number;
-    /** @hidden */
+    /** @internal */
     public _xSize: number;
-    /** @hidden */
+    /** @internal */
     public _ySize: number;
 
     private _animationStarted = false;
@@ -115,8 +115,7 @@ export class ThinSprite {
     }
 
     /**
-     * @param deltaTime
-     * @hidden
+     * @internal
      */
     public _animate(deltaTime: number): void {
         if (!this._animationStarted) {

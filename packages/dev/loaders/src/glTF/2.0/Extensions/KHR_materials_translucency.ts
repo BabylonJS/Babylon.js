@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 import type { Nullable } from "core/types";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { Material } from "core/Materials/material";
@@ -14,6 +13,7 @@ const NAME = "KHR_materials_translucency";
  * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1825)
  * !!! Experimental Extension Subject to Changes !!!
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_materials_translucency implements IGLTFLoaderExtension {
     /**
      * The name of this extension.
@@ -33,8 +33,7 @@ export class KHR_materials_translucency implements IGLTFLoaderExtension {
     private _loader: GLTFLoader;
 
     /**
-     * @param loader
-     * @hidden
+     * @internal
      */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
@@ -44,16 +43,13 @@ export class KHR_materials_translucency implements IGLTFLoaderExtension {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public dispose() {
         (this._loader as any) = null;
     }
 
     /**
-     * @param context
-     * @param material
-     * @param babylonMaterial
-     * @hidden
+     * @internal
      */
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IKHRMaterialsTranslucency>(context, material, this.name, (extensionContext, extension) => {

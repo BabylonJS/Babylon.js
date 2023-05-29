@@ -3,8 +3,8 @@
         "baseUrl": "packages",
         "importHelpers": true,
         "moduleResolution": "node",
-        "module": "es2020",
-        "target": "es2017", // esnext has an issue with class generation and our decoders. TODO - avoid using decorators until in standard
+        "module": "ES2020",
+        "target": "es2021", // esnext has an issue with class generation and our decoders. TODO - avoid using decorators until in standard
         "declaration": true,
         "sourceMap": true,
         "inlineSources": true,
@@ -31,14 +31,12 @@
             "shared-ui-components/*": ["dev/sharedUiComponents/dist/*"],
             "node-editor/*": ["tools/nodeEditor/dist/*"],
             "gui-editor/*": ["tools/guiEditor/dist/*"],
+            "accessibility/*": ["tools/accessibility/dist/*"],
             "viewer/*": ["tools/viewer/dist/*"],
             "ktx2decoder/*": ["tools/ktx2Decoder/dist/*"],
+            "vsm": ["tools/vsm/dist/*"]
         }
     },
 
-    "exclude": [
-        "**/node_modules",
-        "**/dist",
-        "**/test",
-    ],
+    "exclude": ["**/node_modules", "**/dist"]
 }

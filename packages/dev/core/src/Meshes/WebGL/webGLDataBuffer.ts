@@ -1,7 +1,7 @@
 import { DataBuffer } from "../../Buffers/dataBuffer";
 import type { Nullable } from "../../types";
 
-/** @hidden */
+/** @internal */
 export class WebGLDataBuffer extends DataBuffer {
     private _buffer: Nullable<WebGLBuffer>;
 

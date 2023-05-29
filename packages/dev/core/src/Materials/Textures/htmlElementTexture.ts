@@ -3,9 +3,11 @@ import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Constants } from "../../Engines/constants";
 import { Matrix } from "../../Maths/math.vector";
 import { Observable } from "../../Misc/observable";
+import type { ExternalTexture } from "./externalTexture";
 
 import "../../Engines/Extensions/engine.dynamicTexture";
 import "../../Engines/Extensions/engine.videoTexture";
+import "../../Engines/Extensions/engine.externalTexture";
 
 declare type ThinEngine = import("../../Engines/thinEngine").ThinEngine;
 declare type Scene = import("../../scene").Scene;
@@ -22,6 +24,10 @@ export interface IHtmlElementTextureOptions {
      * Defines the sampling mode of the texture.
      */
     samplingMode?: number;
+    /**
+     * Defines the associated texture format.
+     */
+    format?: number;
     /**
      * Defines the engine instance to use the texture with. It is not mandatory if you define a scene.
      */
@@ -55,14 +61,17 @@ export class HtmlElementTexture extends BaseTexture {
     private static readonly _DefaultOptions: IHtmlElementTextureOptions = {
         generateMipMaps: false,
         samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+        format: Constants.TEXTUREFORMAT_RGBA,
         engine: null,
         scene: null,
     };
 
+    private readonly _format: number;
     private _textureMatrix: Matrix;
     private _isVideo: boolean;
     private _generateMipMaps: boolean;
     private _samplingMode: number;
+    private _externalTexture: Nullable<ExternalTexture>;
 
     /**
      * Instantiates a HtmlElementTexture from the following parameters.
@@ -86,10 +95,12 @@ export class HtmlElementTexture extends BaseTexture {
         this._generateMipMaps = options.generateMipMaps!;
         this._samplingMode = options.samplingMode!;
         this._textureMatrix = Matrix.Identity();
+        this._format = options.format!;
 
         this.name = name;
         this.element = element;
-        this._isVideo = element instanceof HTMLVideoElement;
+        this._isVideo = !!(element as HTMLVideoElement).getVideoPlaybackQuality;
+        this._externalTexture = this._isVideo ? this._engine?.createExternalTexture(element as HTMLVideoElement) ?? null : null;
 
         this.anisotropicFilteringLevel = 1;
 
@@ -110,6 +121,7 @@ export class HtmlElementTexture extends BaseTexture {
         const engine = this._getEngine();
         if (engine) {
             this._texture = engine.createDynamicTexture(width, height, this._generateMipMaps, this._samplingMode);
+            this._texture.format = this._format;
         }
 
         this.update();
@@ -139,10 +151,10 @@ export class HtmlElementTexture extends BaseTexture {
                 return;
             }
 
-            engine.updateVideoTexture(this._texture, videoElement, invertY === null ? true : invertY);
+            engine.updateVideoTexture(this._texture, this._externalTexture ? this._externalTexture : videoElement, invertY === null ? true : invertY);
         } else {
             const canvasElement = this.element as HTMLCanvasElement;
-            engine.updateDynamicTexture(this._texture, canvasElement, invertY === null ? true : invertY, false);
+            engine.updateDynamicTexture(this._texture, canvasElement, invertY === null ? true : invertY, false, this._format);
         }
 
         if (!wasReady && this.isReady()) {

@@ -84,7 +84,7 @@ export class TextureBlock extends NodeMaterialBlock {
      * Gets a boolean indicating that this block is linked to an ImageSourceBlock
      */
     public get hasImageSource(): boolean {
-        return !!this._imageSource;
+        return this.source.isConnected;
     }
 
     private _convertToGammaSpace = false;
@@ -144,7 +144,7 @@ export class TextureBlock extends NodeMaterialBlock {
 
         this._fragmentOnly = fragmentOnly;
 
-        this.registerInput("uv", NodeMaterialBlockConnectionPointTypes.Vector2, false, NodeMaterialBlockTargets.VertexAndFragment);
+        this.registerInput("uv", NodeMaterialBlockConnectionPointTypes.AutoDetect, false, NodeMaterialBlockTargets.VertexAndFragment);
         this.registerInput(
             "source",
             NodeMaterialBlockConnectionPointTypes.Object,
@@ -152,6 +152,8 @@ export class TextureBlock extends NodeMaterialBlock {
             NodeMaterialBlockTargets.VertexAndFragment,
             new NodeMaterialConnectionPointCustomObject("source", this, NodeMaterialConnectionPointDirection.Input, ImageSourceBlock, "ImageSourceBlock")
         );
+        this.registerInput("layer", NodeMaterialBlockConnectionPointTypes.Float, true);
+        this.registerInput("lod", NodeMaterialBlockConnectionPointTypes.Float, true);
 
         this.registerOutput("rgba", NodeMaterialBlockConnectionPointTypes.Color4, NodeMaterialBlockTargets.Neutral);
         this.registerOutput("rgb", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Neutral);
@@ -162,8 +164,9 @@ export class TextureBlock extends NodeMaterialBlock {
 
         this.registerOutput("level", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Neutral);
 
-        this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector3);
-        this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector4);
+        this._inputs[0].addExcludedConnectionPointFromAllowedTypes(
+            NodeMaterialBlockConnectionPointTypes.Vector2 | NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4
+        );
 
         this._inputs[0]._prioritizeVertex = !fragmentOnly;
     }
@@ -188,6 +191,20 @@ export class TextureBlock extends NodeMaterialBlock {
      */
     public get source(): NodeMaterialConnectionPoint {
         return this._inputs[1];
+    }
+
+    /**
+     * Gets the layer input component
+     */
+    public get layer(): NodeMaterialConnectionPoint {
+        return this._inputs[2];
+    }
+
+    /**
+     * Gets the LOD input component
+     */
+    public get lod(): NodeMaterialConnectionPoint {
+        return this._inputs[3];
     }
 
     /**
@@ -417,13 +434,36 @@ export class TextureBlock extends NodeMaterialBlock {
         }
     }
 
+    private _getUVW(uvName: string): string {
+        let coords = uvName;
+
+        const is2DArrayTexture = this._texture?._texture?.is2DArray ?? false;
+
+        if (is2DArrayTexture) {
+            const layerValue = this.layer.isConnected ? this.layer.associatedVariableName : "0";
+            coords = `vec3(${uvName}, ${layerValue})`;
+        }
+
+        return coords;
+    }
+
+    private get _samplerFunc() {
+        return this.lod.isConnected ? "texture2DLodEXT" : "texture2D";
+    }
+
+    private get _samplerLodSuffix() {
+        return this.lod.isConnected ? `, ${this.lod.associatedVariableName}` : "";
+    }
+
     private _generateTextureLookup(state: NodeMaterialBuildState): void {
         const samplerName = this.samplerName;
 
         state.compilationString += `#ifdef ${this._defineName}\r\n`;
-        state.compilationString += `vec4 ${this._tempTextureRead} = texture2D(${samplerName}, ${this._transformedUVName});\r\n`;
+        state.compilationString += `vec4 ${this._tempTextureRead} = ${this._samplerFunc}(${samplerName}, ${this._getUVW(this._transformedUVName)}${this._samplerLodSuffix});\r\n`;
         state.compilationString += `#elif defined(${this._mainUVDefineName})\r\n`;
-        state.compilationString += `vec4 ${this._tempTextureRead} = texture2D(${samplerName}, ${this._mainUVName ? this._mainUVName : this.uv.associatedVariableName});\r\n`;
+        state.compilationString += `vec4 ${this._tempTextureRead} = ${this._samplerFunc}(${samplerName}, ${this._getUVW(
+            this._mainUVName ? this._mainUVName : this.uv.associatedVariableName
+        )}${this._samplerLodSuffix});\r\n`;
         state.compilationString += `#endif\r\n`;
     }
 
@@ -440,7 +480,9 @@ export class TextureBlock extends NodeMaterialBlock {
         }
 
         if (this.uv.ownerBlock.target === NodeMaterialBlockTargets.Fragment) {
-            state.compilationString += `vec4 ${this._tempTextureRead} = texture2D(${this.samplerName}, ${uvInput.associatedVariableName});\r\n`;
+            state.compilationString += `vec4 ${this._tempTextureRead} = ${this._samplerFunc}(${this.samplerName}, ${this._getUVW(uvInput.associatedVariableName)}${
+                this._samplerLodSuffix
+            });\r\n`;
             return;
         }
 
@@ -499,7 +541,7 @@ export class TextureBlock extends NodeMaterialBlock {
             this._imageSource = null;
         }
 
-        if (state.target === NodeMaterialBlockTargets.Vertex || this._fragmentOnly || (state.target === NodeMaterialBlockTargets.Fragment && this._tempTextureRead === undefined)) {
+        if (state.target === NodeMaterialBlockTargets.Vertex || this._fragmentOnly || state.target === NodeMaterialBlockTargets.Fragment) {
             this._tempTextureRead = state._getFreeVariableName("tempTextureRead");
             this._linearDefineName = state._getFreeDefineName("ISLINEAR");
             this._gammaDefineName = state._getFreeDefineName("ISGAMMA");
@@ -509,7 +551,11 @@ export class TextureBlock extends NodeMaterialBlock {
             if (!this._imageSource) {
                 this._samplerName = state._getFreeVariableName(this.name + "Sampler");
 
-                state._emit2DSampler(this._samplerName);
+                if (this._texture?._texture?.is2DArray) {
+                    state._emit2DArraySampler(this._samplerName);
+                } else {
+                    state._emit2DSampler(this._samplerName);
+                }
             }
 
             // Declarations
@@ -532,7 +578,11 @@ export class TextureBlock extends NodeMaterialBlock {
 
         if (this._isMixed && !this._imageSource) {
             // Reexport the sampler
-            state._emit2DSampler(this._samplerName);
+            if (this._texture?._texture?.is2DArray) {
+                state._emit2DArraySampler(this._samplerName);
+            } else {
+                state._emit2DSampler(this._samplerName);
+            }
         }
 
         const comments = `//${this.name}`;

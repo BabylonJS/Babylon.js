@@ -31,7 +31,7 @@ export class BlackAndWhitePostProcess extends PostProcess {
 
     /**
      * Creates a black and white post process
-     * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses#black-and-white
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/usePostProcesses#black-and-white
      * @param name The name of the effect.
      * @param options The required width/height ratio to downsize to before computing the render pass.
      * @param camera The camera to apply the render pass to.
@@ -39,7 +39,7 @@ export class BlackAndWhitePostProcess extends PostProcess {
      * @param engine The engine which the post process will be applied. (default: current engine)
      * @param reusable If the post process can be reused on the same frame. (default: false)
      */
-    constructor(name: string, options: number | PostProcessOptions, camera: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean) {
+    constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean) {
         super(name, "blackAndWhite", ["degree"], null, options, camera, samplingMode, engine, reusable);
 
         this.onApplyObservable.add((effect: Effect) => {
@@ -48,11 +48,7 @@ export class BlackAndWhitePostProcess extends PostProcess {
     }
 
     /**
-     * @param parsedPostProcess
-     * @param targetCamera
-     * @param scene
-     * @param rootUrl
-     * @hidden
+     * @internal
      */
     public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<BlackAndWhitePostProcess> {
         return SerializationHelper.Parse(

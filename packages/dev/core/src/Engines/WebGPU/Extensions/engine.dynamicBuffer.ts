@@ -7,24 +7,10 @@ WebGPUEngine.prototype.updateDynamicIndexBuffer = function (indexBuffer: DataBuf
     const gpuBuffer = indexBuffer as WebGPUDataBuffer;
 
     let view: ArrayBufferView;
-    if (indices instanceof Uint16Array) {
-        if (indexBuffer.is32Bits) {
-            view = Uint32Array.from(indices);
-        } else {
-            view = indices;
-        }
-    } else if (indices instanceof Uint32Array) {
-        if (indexBuffer.is32Bits) {
-            view = indices;
-        } else {
-            view = Uint16Array.from(indices);
-        }
+    if (indexBuffer.is32Bits) {
+        view = indices instanceof Uint32Array ? indices : new Uint32Array(indices);
     } else {
-        if (indexBuffer.is32Bits) {
-            view = new Uint32Array(indices);
-        } else {
-            view = new Uint16Array(indices);
-        }
+        view = indices instanceof Uint16Array ? indices : new Uint16Array(indices);
     }
 
     this._bufferManager.setSubData(gpuBuffer, offset, view);

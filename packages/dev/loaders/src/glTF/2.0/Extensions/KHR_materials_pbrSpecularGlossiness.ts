@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 import type { Nullable } from "core/types";
 import { Color3 } from "core/Maths/math.color";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
@@ -12,8 +11,9 @@ import type { IKHRMaterialsPbrSpecularGlossiness } from "babylonjs-gltf2interfac
 const NAME = "KHR_materials_pbrSpecularGlossiness";
 
 /**
- * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness)
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Archived/KHR_materials_pbrSpecularGlossiness/README.md)
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_materials_pbrSpecularGlossiness implements IGLTFLoaderExtension {
     /**
      * The name of this extension.
@@ -33,24 +33,20 @@ export class KHR_materials_pbrSpecularGlossiness implements IGLTFLoaderExtension
     private _loader: GLTFLoader;
 
     /**
-     * @param loader
-     * @hidden
+     * @internal
      */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
         this.enabled = this._loader.isExtensionUsed(NAME);
     }
 
-    /** @hidden */
+    /** @internal */
     public dispose() {
         (this._loader as any) = null;
     }
 
     /**
-     * @param context
-     * @param material
-     * @param babylonMaterial
-     * @hidden
+     * @internal
      */
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IKHRMaterialsPbrSpecularGlossiness>(context, material, this.name, (extensionContext, extension) => {
@@ -96,10 +92,10 @@ export class KHR_materials_pbrSpecularGlossiness implements IGLTFLoaderExtension
                 this._loader.loadTextureInfoAsync(`${context}/specularGlossinessTexture`, properties.specularGlossinessTexture, (texture) => {
                     texture.name = `${babylonMaterial.name} (Specular Glossiness)`;
                     babylonMaterial.reflectivityTexture = texture;
+                    babylonMaterial.reflectivityTexture.hasAlpha = true;
                 })
             );
 
-            babylonMaterial.reflectivityTexture.hasAlpha = true;
             babylonMaterial.useMicroSurfaceFromReflectivityMapAlpha = true;
         }
 

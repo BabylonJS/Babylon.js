@@ -14,7 +14,7 @@ import { RegisterClass } from "../../Misc/typeStore";
  *
  * This offers the main features of a standard PBR material.
  * For more information, please refer to the documentation :
- * https://doc.babylonjs.com/how_to/physically_based_rendering
+ * https://doc.babylonjs.com/features/featuresDeepDive/materials/using/introToPBR
  */
 export class PBRMaterial extends PBRBaseMaterial {
     /**
@@ -88,14 +88,14 @@ export class PBRMaterial extends PBRBaseMaterial {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public albedoTexture: BaseTexture;
+    public albedoTexture: Nullable<BaseTexture>;
 
     /**
      * AKA Occlusion Texture in other nomenclature.
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public ambientTexture: BaseTexture;
+    public ambientTexture: Nullable<BaseTexture>;
 
     /**
      * AKA Occlusion Texture Intensity in other nomenclature.
@@ -118,7 +118,7 @@ export class PBRMaterial extends PBRBaseMaterial {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
-    public opacityTexture: BaseTexture;
+    public opacityTexture: Nullable<BaseTexture>;
 
     /**
      * Stores the reflection values in a texture.
@@ -132,21 +132,21 @@ export class PBRMaterial extends PBRBaseMaterial {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public emissiveTexture: BaseTexture;
+    public emissiveTexture: Nullable<BaseTexture>;
 
     /**
      * AKA Specular texture in other nomenclature.
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public reflectivityTexture: BaseTexture;
+    public reflectivityTexture: Nullable<BaseTexture>;
 
     /**
      * Used to switch from specular/glossiness to metallic/roughness workflow.
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public metallicTexture: BaseTexture;
+    public metallicTexture: Nullable<BaseTexture>;
 
     /**
      * Specifies the metallic scalar of the metallic/roughness workflow.
@@ -223,21 +223,21 @@ export class PBRMaterial extends PBRBaseMaterial {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public microSurfaceTexture: BaseTexture;
+    public microSurfaceTexture: Nullable<BaseTexture>;
 
     /**
      * Stores surface normal data used to displace a mesh in a texture.
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public bumpTexture: BaseTexture;
+    public bumpTexture: Nullable<BaseTexture>;
 
     /**
      * Stores the pre-calculated light information of a mesh in a texture.
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty", null)
-    public lightmapTexture: BaseTexture;
+    public lightmapTexture: Nullable<BaseTexture>;
 
     /**
      * Stores the refracted light information in a texture.
@@ -762,9 +762,10 @@ export class PBRMaterial extends PBRBaseMaterial {
     /**
      * Makes a duplicate of the current material.
      * @param name - name to use for the new material.
+     * @param cloneTexturesOnlyOnce - if a texture is used in more than one channel (e.g diffuse and opacity), only clone it once and reuse it on the other channels. Default false.
      */
-    public clone(name: string): PBRMaterial {
-        const clone = SerializationHelper.Clone(() => new PBRMaterial(name, this.getScene()), this);
+    public clone(name: string, cloneTexturesOnlyOnce: boolean = true): PBRMaterial {
+        const clone = SerializationHelper.Clone(() => new PBRMaterial(name, this.getScene()), this, { cloneTexturesOnlyOnce });
 
         clone.id = name;
         clone.name = name;
@@ -775,6 +776,7 @@ export class PBRMaterial extends PBRBaseMaterial {
         this.brdf.copyTo(clone.brdf);
         this.sheen.copyTo(clone.sheen);
         this.subSurface.copyTo(clone.subSurface);
+        this.iridescence.copyTo(clone.iridescence);
 
         return clone;
     }
@@ -792,6 +794,7 @@ export class PBRMaterial extends PBRBaseMaterial {
         serializationObject.brdf = this.brdf.serialize();
         serializationObject.sheen = this.sheen.serialize();
         serializationObject.subSurface = this.subSurface.serialize();
+        serializationObject.iridescence = this.iridescence.serialize();
 
         return serializationObject;
     }
@@ -823,6 +826,9 @@ export class PBRMaterial extends PBRBaseMaterial {
         }
         if (source.subSurface) {
             material.subSurface.parse(source.subSurface, scene, rootUrl);
+        }
+        if (source.iridescence) {
+            material.iridescence.parse(source.iridescence, scene, rootUrl);
         }
         return material;
     }

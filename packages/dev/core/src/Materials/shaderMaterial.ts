@@ -1,7 +1,7 @@
 import { SerializationHelper } from "../Misc/decorators";
 import type { Nullable } from "../types";
 import type { Scene } from "../scene";
-import { Matrix, Vector3, Vector2, Vector4 } from "../Maths/math.vector";
+import { Matrix, Vector3, Vector2, Vector4, Quaternion } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { Mesh } from "../Meshes/mesh";
 import type { SubMesh } from "../Meshes/subMesh";
@@ -20,6 +20,8 @@ import type { TextureSampler } from "./Textures/textureSampler";
 import type { StorageBuffer } from "../Buffers/storageBuffer";
 import { PushMaterial } from "./pushMaterial";
 import { EngineStore } from "../Engines/engineStore";
+import { Constants } from "../Engines/constants";
+import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
 
 declare type ExternalTexture = import("./Textures/externalTexture").ExternalTexture;
 
@@ -95,7 +97,7 @@ export interface IShaderMaterialOptions {
  *
  * This returned material effects how the mesh will look based on the code in the shaders.
  *
- * @see https://doc.babylonjs.com/advanced_topics/shaders/shaderMaterial
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/shaders/shaderMaterial
  */
 export class ShaderMaterial extends PushMaterial {
     private _shaderPath: any;
@@ -105,6 +107,7 @@ export class ShaderMaterial extends PushMaterial {
     private _externalTextures: { [name: string]: ExternalTexture } = {};
     private _floats: { [name: string]: number } = {};
     private _ints: { [name: string]: number } = {};
+    private _uints: { [name: string]: number } = {};
     private _floatsArrays: { [name: string]: number[] } = {};
     private _colors3: { [name: string]: Color3 } = {};
     private _colors3Arrays: { [name: string]: number[] } = {};
@@ -113,6 +116,8 @@ export class ShaderMaterial extends PushMaterial {
     private _vectors2: { [name: string]: Vector2 } = {};
     private _vectors3: { [name: string]: Vector3 } = {};
     private _vectors4: { [name: string]: Vector4 } = {};
+    private _quaternions: { [name: string]: Quaternion } = {};
+    private _quaternionsArrays: { [name: string]: number[] } = {};
     private _matrices: { [name: string]: Matrix } = {};
     private _matrixArrays: { [name: string]: Float32Array | Array<number> } = {};
     private _matrices3x3: { [name: string]: Float32Array | Array<number> } = {};
@@ -126,10 +131,9 @@ export class ShaderMaterial extends PushMaterial {
     private _cachedWorldViewMatrix = new Matrix();
     private _cachedWorldViewProjectionMatrix = new Matrix();
     private _multiview: boolean = false;
-    private _effectUsesInstances: boolean;
 
     /** Define the Url to load snippets */
-    public static SnippetUrl = "https://snippet.babylonjs.com";
+    public static SnippetUrl = Constants.SnippetUrl;
 
     /** Snippet ID if the material was created from the snippet server */
     public snippetId: string;
@@ -138,7 +142,7 @@ export class ShaderMaterial extends PushMaterial {
      * Instantiate a new shader material.
      * The ShaderMaterial object has the necessary methods to pass data from your scene to the Vertex and Fragment Shaders and returns a material that can be applied to any mesh.
      * This returned material effects how the mesh will look based on the code in the shaders.
-     * @see https://doc.babylonjs.com/how_to/shader_material
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/shaders/shaderMaterial
      * @param name Define the name of the material in the scene
      * @param scene Define the scene the material belongs to
      * @param shaderPath Defines  the route to the shader code in one of three ways:
@@ -228,7 +232,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a texture in the shader.
      * @param name Define the name of the uniform samplers as defined in the shader
      * @param texture Define the texture to bind to this sampler
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setTexture(name: string, texture: BaseTexture): ShaderMaterial {
         if (this._options.samplers.indexOf(name) === -1) {
@@ -243,7 +247,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a texture array in the shader.
      * @param name Define the name of the uniform sampler array as defined in the shader
      * @param textures Define the list of textures to bind to this sampler
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setTextureArray(name: string, textures: BaseTexture[]): ShaderMaterial {
         if (this._options.samplers.indexOf(name) === -1) {
@@ -261,7 +265,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set an internal texture in the shader.
      * @param name Define the name of the uniform samplers as defined in the shader
      * @param texture Define the texture to bind to this sampler
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setExternalTexture(name: string, texture: ExternalTexture): ShaderMaterial {
         if (this._options.externalTextures.indexOf(name) === -1) {
@@ -276,7 +280,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a float in the shader.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setFloat(name: string, value: number): ShaderMaterial {
         this._checkUniform(name);
@@ -289,7 +293,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a int in the shader.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setInt(name: string, value: number): ShaderMaterial {
         this._checkUniform(name);
@@ -299,10 +303,23 @@ export class ShaderMaterial extends PushMaterial {
     }
 
     /**
-     * Set an array of floats in the shader.
+     * Set a unsigned int in the shader.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
      * @return the material itself allowing "fluent" like uniform updates
+     */
+    public setUInt(name: string, value: number): ShaderMaterial {
+        this._checkUniform(name);
+        this._uints[name] = value;
+
+        return this;
+    }
+
+    /**
+     * Set an array of floats in the shader.
+     * @param name Define the name of the uniform as defined in the shader
+     * @param value Define the value to give to the uniform
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setFloats(name: string, value: number[]): ShaderMaterial {
         this._checkUniform(name);
@@ -315,7 +332,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a vec3 in the shader from a Color3.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setColor3(name: string, value: Color3): ShaderMaterial {
         this._checkUniform(name);
@@ -328,7 +345,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a vec3 array in the shader from a Color3 array.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setColor3Array(name: string, value: Color3[]): ShaderMaterial {
         this._checkUniform(name);
@@ -343,7 +360,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a vec4 in the shader from a Color4.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setColor4(name: string, value: Color4): ShaderMaterial {
         this._checkUniform(name);
@@ -356,7 +373,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a vec4 array in the shader from a Color4 array.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setColor4Array(name: string, value: Color4[]): ShaderMaterial {
         this._checkUniform(name);
@@ -371,7 +388,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a vec2 in the shader from a Vector2.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setVector2(name: string, value: Vector2): ShaderMaterial {
         this._checkUniform(name);
@@ -384,7 +401,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a vec3 in the shader from a Vector3.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setVector3(name: string, value: Vector3): ShaderMaterial {
         this._checkUniform(name);
@@ -397,7 +414,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a vec4 in the shader from a Vector4.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setVector4(name: string, value: Vector4): ShaderMaterial {
         this._checkUniform(name);
@@ -407,10 +424,38 @@ export class ShaderMaterial extends PushMaterial {
     }
 
     /**
+     * Set a vec4 in the shader from a Quaternion.
+     * @param name Define the name of the uniform as defined in the shader
+     * @param value Define the value to give to the uniform
+     * @returns the material itself allowing "fluent" like uniform updates
+     */
+    public setQuaternion(name: string, value: Quaternion): ShaderMaterial {
+        this._checkUniform(name);
+        this._quaternions[name] = value;
+
+        return this;
+    }
+
+    /**
+     * Set a vec4 array in the shader from a Quaternion array.
+     * @param name Define the name of the uniform as defined in the shader
+     * @param value Define the value to give to the uniform
+     * @returns the material itself allowing "fluent" like uniform updates
+     */
+    public setQuaternionArray(name: string, value: Quaternion[]): ShaderMaterial {
+        this._checkUniform(name);
+        this._quaternionsArrays[name] = value.reduce((arr, quaternion) => {
+            quaternion.toArray(arr, arr.length);
+            return arr;
+        }, []);
+        return this;
+    }
+
+    /**
      * Set a mat4 in the shader from a Matrix.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setMatrix(name: string, value: Matrix): ShaderMaterial {
         this._checkUniform(name);
@@ -423,7 +468,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a float32Array in the shader from a matrix array.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setMatrices(name: string, value: Matrix[]): ShaderMaterial {
         this._checkUniform(name);
@@ -445,7 +490,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a mat3 in the shader from a Float32Array.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setMatrix3x3(name: string, value: Float32Array | Array<number>): ShaderMaterial {
         this._checkUniform(name);
@@ -458,7 +503,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a mat2 in the shader from a Float32Array.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setMatrix2x2(name: string, value: Float32Array | Array<number>): ShaderMaterial {
         this._checkUniform(name);
@@ -471,7 +516,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a vec2 array in the shader from a number array.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setArray2(name: string, value: number[]): ShaderMaterial {
         this._checkUniform(name);
@@ -484,7 +529,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a vec3 array in the shader from a number array.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setArray3(name: string, value: number[]): ShaderMaterial {
         this._checkUniform(name);
@@ -497,7 +542,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a vec4 array in the shader from a number array.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setArray4(name: string, value: number[]): ShaderMaterial {
         this._checkUniform(name);
@@ -510,7 +555,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a uniform buffer in the shader
      * @param name Define the name of the uniform as defined in the shader
      * @param buffer Define the value to give to the uniform
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setUniformBuffer(name: string, buffer: UniformBuffer): ShaderMaterial {
         if (this._options.uniformBuffers.indexOf(name) === -1) {
@@ -525,7 +570,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a texture sampler in the shader
      * @param name Define the name of the uniform as defined in the shader
      * @param sampler Define the value to give to the uniform
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setTextureSampler(name: string, sampler: TextureSampler): ShaderMaterial {
         if (this._options.samplerObjects.indexOf(name) === -1) {
@@ -540,7 +585,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a storage buffer in the shader
      * @param name Define the name of the storage buffer as defined in the shader
      * @param buffer Define the value to give to the uniform
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setStorageBuffer(name: string, buffer: StorageBuffer): ShaderMaterial {
         if (this._options.storageBuffers.indexOf(name) === -1) {
@@ -579,7 +624,7 @@ export class ShaderMaterial extends PushMaterial {
                 }
             } else {
                 const effect = this._drawWrapper.effect;
-                if (effect && effect._wasPreviouslyReady && this._effectUsesInstances === useInstances) {
+                if (effect && effect._wasPreviouslyReady && effect._wasPreviouslyUsingInstances === useInstances) {
                     return true;
                 }
             }
@@ -762,46 +807,10 @@ export class ShaderMaterial extends PushMaterial {
         }
 
         // Clip planes
-        if ((this._options.useClipPlane === null && !!scene.clipPlane) || this._options.useClipPlane) {
-            defines.push("#define CLIPPLANE");
-            if (uniforms.indexOf("vClipPlane") === -1) {
-                uniforms.push("vClipPlane");
-            }
-        }
+        if (this._options.useClipPlane !== false) {
+            addClipPlaneUniforms(uniforms);
 
-        if ((this._options.useClipPlane === null && !!scene.clipPlane2) || this._options.useClipPlane) {
-            defines.push("#define CLIPPLANE2");
-            if (uniforms.indexOf("vClipPlane2") === -1) {
-                uniforms.push("vClipPlane2");
-            }
-        }
-
-        if ((this._options.useClipPlane === null && !!scene.clipPlane3) || this._options.useClipPlane) {
-            defines.push("#define CLIPPLANE3");
-            if (uniforms.indexOf("vClipPlane3") === -1) {
-                uniforms.push("vClipPlane3");
-            }
-        }
-
-        if ((this._options.useClipPlane === null && !!scene.clipPlane4) || this._options.useClipPlane) {
-            defines.push("#define CLIPPLANE4");
-            if (uniforms.indexOf("vClipPlane4") === -1) {
-                uniforms.push("vClipPlane4");
-            }
-        }
-
-        if ((this._options.useClipPlane === null && !!scene.clipPlane5) || this._options.useClipPlane) {
-            defines.push("#define CLIPPLANE5");
-            if (uniforms.indexOf("vClipPlane5") === -1) {
-                uniforms.push("vClipPlane5");
-            }
-        }
-
-        if ((this._options.useClipPlane === null && !!scene.clipPlane6) || this._options.useClipPlane) {
-            defines.push("#define CLIPPLANE6");
-            if (uniforms.indexOf("vClipPlane6") === -1) {
-                uniforms.push("vClipPlane6");
-            }
+            prepareStringDefinesForClipPlanes(this, scene, defines);
         }
 
         if (this.customShaderNameResolve) {
@@ -848,7 +857,7 @@ export class ShaderMaterial extends PushMaterial {
             }
         }
 
-        this._effectUsesInstances = !!useInstances;
+        effect!._wasPreviouslyUsingInstances = !!useInstances;
 
         if (!effect?.isReady() ?? true) {
             return false;
@@ -971,7 +980,7 @@ export class ShaderMaterial extends PushMaterial {
             MaterialHelper.BindBonesParameters(mesh, effect);
 
             // Clip plane
-            MaterialHelper.BindClipPlane(effect, this.getScene());
+            bindClipPlane(effect, this, this.getScene());
 
             let name: string;
             // Texture
@@ -992,6 +1001,11 @@ export class ShaderMaterial extends PushMaterial {
             // Int
             for (name in this._ints) {
                 effect.setInt(name, this._ints[name]);
+            }
+
+            // UInt
+            for (name in this._uints) {
+                effect.setUInt(name, this._uints[name]);
             }
 
             // Float
@@ -1040,6 +1054,11 @@ export class ShaderMaterial extends PushMaterial {
                 effect.setVector4(name, this._vectors4[name]);
             }
 
+            // Quaternion
+            for (name in this._quaternions) {
+                effect.setQuaternion(name, this._quaternions[name]);
+            }
+
             // Matrix
             for (name in this._matrices) {
                 effect.setMatrix(name, this._matrices[name]);
@@ -1075,6 +1094,11 @@ export class ShaderMaterial extends PushMaterial {
                 effect.setArray4(name, this._vectors4Arrays[name]);
             }
 
+            // QuaternionArray
+            for (name in this._quaternionsArrays) {
+                effect.setArray4(name, this._quaternionsArrays[name]);
+            }
+
             // Uniform buffers
             for (name in this._uniformBuffers) {
                 const buffer = this._uniformBuffers[name].getBuffer();
@@ -1104,7 +1128,7 @@ export class ShaderMaterial extends PushMaterial {
             const bvaManager = (<Mesh>mesh).bakedVertexAnimationManager;
 
             if (bvaManager && bvaManager.isEnabled) {
-                mesh.bakedVertexAnimationManager?.bind(effect, this._effectUsesInstances);
+                mesh.bakedVertexAnimationManager?.bind(effect, !!effect._wasPreviouslyUsingInstances);
             }
         }
 
@@ -1209,6 +1233,11 @@ export class ShaderMaterial extends PushMaterial {
             result.setInt(key, this._ints[key]);
         }
 
+        // UInt
+        for (const key in this._uints) {
+            result.setUInt(key, this._uints[key]);
+        }
+
         // Float
         for (const key in this._floats) {
             result.setFloat(key, this._floats[key]);
@@ -1252,6 +1281,16 @@ export class ShaderMaterial extends PushMaterial {
         // Vector4
         for (const key in this._vectors4) {
             result.setVector4(key, this._vectors4[key]);
+        }
+
+        // Quaternion
+        for (const key in this._quaternions) {
+            result.setQuaternion(key, this._quaternions[key]);
+        }
+
+        // QuaternionArray
+        for (const key in this._quaternionsArrays) {
+            result._quaternionsArrays[key] = this._quaternionsArrays[key];
         }
 
         // Matrix
@@ -1373,6 +1412,12 @@ export class ShaderMaterial extends PushMaterial {
             serializationObject.ints[name] = this._ints[name];
         }
 
+        // UInt
+        serializationObject.uints = {};
+        for (name in this._uints) {
+            serializationObject.uints[name] = this._uints[name];
+        }
+
         // Float
         serializationObject.floats = {};
         for (name in this._floats) {
@@ -1427,6 +1472,12 @@ export class ShaderMaterial extends PushMaterial {
             serializationObject.vectors4[name] = this._vectors4[name].asArray();
         }
 
+        // Quaternion
+        serializationObject.quaternions = {};
+        for (name in this._quaternions) {
+            serializationObject.quaternions[name] = this._quaternions[name].asArray();
+        }
+
         // Matrix
         serializationObject.matrices = {};
         for (name in this._matrices) {
@@ -1467,6 +1518,12 @@ export class ShaderMaterial extends PushMaterial {
         serializationObject.vectors4Arrays = {};
         for (name in this._vectors4Arrays) {
             serializationObject.vectors4Arrays[name] = this._vectors4Arrays[name];
+        }
+
+        // QuaternionArray
+        serializationObject.quaternionsArrays = {};
+        for (name in this._quaternionsArrays) {
+            serializationObject.quaternionsArrays[name] = this._quaternionsArrays[name];
         }
 
         return serializationObject;
@@ -1513,6 +1570,11 @@ export class ShaderMaterial extends PushMaterial {
         // Int
         for (name in source.ints) {
             material.setInt(name, source.ints[name]);
+        }
+
+        // UInt
+        for (name in source.uints) {
+            material.setUInt(name, source.uints[name]);
         }
 
         // Float
@@ -1580,6 +1642,11 @@ export class ShaderMaterial extends PushMaterial {
             material.setVector4(name, Vector4.FromArray(source.vectors4[name]));
         }
 
+        // Quaternion
+        for (name in source.quaternions) {
+            material.setQuaternion(name, Quaternion.FromArray(source.quaternions[name]));
+        }
+
         // Matrix
         for (name in source.matrices) {
             material.setMatrix(name, Matrix.FromArray(source.matrices[name]));
@@ -1613,6 +1680,11 @@ export class ShaderMaterial extends PushMaterial {
         // Vector4Array
         for (name in source.vectors4Arrays) {
             material.setArray4(name, source.vectors4Arrays[name]);
+        }
+
+        // QuaternionArray
+        for (name in source.quaternionsArrays) {
+            material.setArray4(name, source.quaternionsArrays[name]);
         }
 
         return material;
@@ -1658,7 +1730,7 @@ export class ShaderMaterial extends PushMaterial {
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
      * @returns a promise that will resolve to the new ShaderMaterial
      */
-    public static CreateFromSnippetAsync(snippetId: string, scene: Scene, rootUrl: string = ""): Promise<ShaderMaterial> {
+    public static ParseFromSnippetAsync(snippetId: string, scene: Scene, rootUrl: string = ""): Promise<ShaderMaterial> {
         return new Promise((resolve, reject) => {
             const request = new WebRequest();
             request.addEventListener("readystatechange", () => {
@@ -1681,6 +1753,16 @@ export class ShaderMaterial extends PushMaterial {
             request.send();
         });
     }
+
+    /**
+     * Creates a ShaderMaterial from a snippet saved by the Inspector
+     * @deprecated Please use ParseFromSnippetAsync instead
+     * @param snippetId defines the snippet to load
+     * @param scene defines the hosting scene
+     * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @returns a promise that will resolve to the new ShaderMaterial
+     */
+    public static CreateFromSnippetAsync = ShaderMaterial.ParseFromSnippetAsync;
 }
 
 RegisterClass("BABYLON.ShaderMaterial", ShaderMaterial);

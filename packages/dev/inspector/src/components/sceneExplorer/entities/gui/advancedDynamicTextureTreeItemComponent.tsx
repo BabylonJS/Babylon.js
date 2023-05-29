@@ -66,7 +66,7 @@ export class AdvancedDynamicTextureTreeItemComponent extends React.Component<IAd
         return (
             <div className="adtextureTools">
                 <TreeItemLabelComponent label={this.props.texture.name} onClick={() => this.props.onClick()} icon={faImage} color="mediumpurple" />
-                <div className={"icon edit"} onClick={() => EditAdvancedDynamicTexture(this.props.texture)} title="Edit">
+                <div className={"icon edit"} onClick={() => EditAdvancedDynamicTexture(this.props.texture, true)} title="Edit">
                     <FontAwesomeIcon icon={faPen} />
                 </div>
                 <div

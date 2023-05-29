@@ -33,20 +33,54 @@ const runScene = async () => {
         }
     }
 
-    // Register a render loop to repeatedly render the scene
-    engine.runRenderLoop(function () {
-        if (scene.activeCamera || (scene.activeCameras && scene.activeCameras.length > 0)) {
-            scene.render();
-        }
+    window.addEventListener("resize", resize);
+    window.addEventListener("hashchange", runScene);
+    window.addEventListener("keydown", openInspector);
+    scene.onDisposeObservable.add(() => {
+        window.removeEventListener("resize", resize);
+        window.removeEventListener("hashchange", runScene);
+        window.removeEventListener("keydown", openInspector);
     });
 
-    // Watch for browser/canvas resize events
+    const runInVisualizationTestMode = (typeof process !== "undefined" && process.env.VIS_TEST_MODE === "true") || false;
+    if (runInVisualizationTestMode) {
+        let renderCount = 1;
+        scene.useConstantAnimationDeltaTime = true;
+
+        scene.executeWhenReady(function () {
+            if (!scene || !engine) {
+                return;
+            }
+            if (scene.activeCamera && scene.activeCamera.useAutoRotationBehavior) {
+                scene.activeCamera.useAutoRotationBehavior = false;
+            }
+            engine.runRenderLoop(function () {
+                try {
+                    if (renderCount === 0) {
+                        engine && engine.stopRenderLoop();
+                    } else {
+                        scene && scene.render();
+                        renderCount--;
+                    }
+                } catch (e) {
+                    engine && engine.stopRenderLoop();
+                    console.error(e);
+                    return;
+                }
+            });
+        }, true);
+    } else {
+        // Register a render loop to repeatedly render the scene
+        engine.runRenderLoop(function () {
+            if (scene.activeCamera || (scene.activeCameras && scene.activeCameras.length > 0)) {
+                scene.render();
+            }
+        });
+    }
+
+    // Register a render loop to repeatedly render the scene
 };
 
 runScene();
-
-window.addEventListener("resize", resize);
-window.addEventListener("hashchange", runScene);
-window.addEventListener("keydown", openInspector);
 
 console.log("Open the inspector using Ctrl+Shift+U (or Command+Shift+U on Mac)");

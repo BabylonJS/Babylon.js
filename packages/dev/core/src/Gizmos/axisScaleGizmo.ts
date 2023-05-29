@@ -2,7 +2,7 @@ import type { Observer } from "../Misc/observable";
 import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
 import type { PointerInfo } from "../Events/pointerEvents";
-import { Vector3, Matrix } from "../Maths/math.vector";
+import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { Node } from "../node";
 import { Mesh } from "../Meshes/mesh";
@@ -11,7 +11,7 @@ import { CreateBox } from "../Meshes/Builders/boxBuilder";
 import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
-import type { GizmoAxisCache } from "./gizmo";
+import type { GizmoAxisCache, IGizmo } from "./gizmo";
 import { Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import type { ScaleGizmo } from "./scaleGizmo";
@@ -19,14 +19,44 @@ import { Color3 } from "../Maths/math.color";
 import type { TransformNode } from "../Meshes/transformNode";
 
 /**
+ * Interface for axis scale gizmo
+ */
+export interface IAxisScaleGizmo extends IGizmo {
+    /** Drag behavior responsible for the gizmos dragging interactions */
+    dragBehavior: PointerDragBehavior;
+    /** Drag distance in babylon units that the gizmo will snap to when dragged */
+    snapDistance: number;
+    /**
+     * Event that fires each time the gizmo snaps to a new location.
+     * * snapDistance is the the change in distance
+     */
+    onSnapObservable: Observable<{ snapDistance: number }>;
+    /** If the scaling operation should be done on all axis */
+    uniformScaling: boolean;
+    /** Custom sensitivity value for the drag strength */
+    sensitivity: number;
+    /** The magnitude of the drag strength (scaling factor) */
+    dragScale: number;
+    /** If the gizmo is enabled */
+    isEnabled: boolean;
+
+    /** Default material used to render when gizmo is not disabled or hovered */
+    coloredMaterial: StandardMaterial;
+    /** Material used to render when gizmo is hovered with mouse*/
+    hoverMaterial: StandardMaterial;
+    /** Material used to render when gizmo is disabled. typically grey.*/
+    disableMaterial: StandardMaterial;
+}
+
+/**
  * Single axis scale gizmo
  */
-export class AxisScaleGizmo extends Gizmo {
+export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
     /**
      * Drag behavior responsible for the gizmos dragging interactions
      */
     public dragBehavior: PointerDragBehavior;
-    private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
+    protected _pointerObserver: Nullable<Observer<PointerInfo>> = null;
     /**
      * Scale distance in babylon units that the gizmo will snap to when dragged (Default: 0)
      */
@@ -49,18 +79,30 @@ export class AxisScaleGizmo extends Gizmo {
      */
     public dragScale = 1;
 
-    private _isEnabled: boolean = true;
-    private _parent: Nullable<ScaleGizmo> = null;
+    protected _isEnabled: boolean = true;
+    protected _parent: Nullable<ScaleGizmo> = null;
 
-    private _gizmoMesh: Mesh;
-    private _coloredMaterial: StandardMaterial;
-    private _hoverMaterial: StandardMaterial;
-    private _disableMaterial: StandardMaterial;
-    private _dragging: boolean = false;
-    private _tmpVector = new Vector3();
-    private _tmpMatrix = new Matrix();
-    private _tmpMatrix2 = new Matrix();
+    protected _gizmoMesh: Mesh;
+    protected _coloredMaterial: StandardMaterial;
+    protected _hoverMaterial: StandardMaterial;
+    protected _disableMaterial: StandardMaterial;
+    protected _dragging: boolean = false;
+    private _tmpVector = new Vector3(0, 0, 0);
 
+    /** Default material used to render when gizmo is not disabled or hovered */
+    public get coloredMaterial() {
+        return this._coloredMaterial;
+    }
+
+    /** Material used to render when gizmo is hovered with mouse*/
+    public get hoverMaterial() {
+        return this._hoverMaterial;
+    }
+
+    /** Material used to render when gizmo is disabled. typically grey.*/
+    public get disableMaterial() {
+        return this._disableMaterial;
+    }
     /**
      * Creates an AxisScaleGizmo
      * @param dragAxis The axis which the gizmo will be able to scale on
@@ -124,17 +166,18 @@ export class AxisScaleGizmo extends Gizmo {
         // Add drag behavior to handle events when the gizmo is dragged
         this.dragBehavior = new PointerDragBehavior({ dragAxis: dragAxis });
         this.dragBehavior.moveAttached = false;
+        this.dragBehavior.updateDragPlane = false;
         this._rootMesh.addBehavior(this.dragBehavior);
 
         let currentSnapDragDistance = 0;
-        const tmpVector = new Vector3();
+
         const tmpSnapEvent = { snapDistance: 0 };
         this.dragBehavior.onDragObservable.add((event) => {
             if (this.attachedNode) {
                 this._handlePivot();
                 // Drag strength is modified by the scale of the gizmo (eg. for small objects like boombox the strength will be increased to match the behavior of larger objects)
                 const dragStrength = this.sensitivity * event.dragDistance * ((this.scaleRatio * 3) / this._rootMesh.scaling.length());
-
+                const tmpVector = this._tmpVector;
                 // Snapping logic
                 let snapped = false;
                 let dragSteps = 0;
@@ -160,15 +203,15 @@ export class AxisScaleGizmo extends Gizmo {
                     }
                 }
 
-                Matrix.ScalingToRef(1 + tmpVector.x, 1 + tmpVector.y, 1 + tmpVector.z, this._tmpMatrix2);
+                Matrix.ScalingToRef(1 + tmpVector.x, 1 + tmpVector.y, 1 + tmpVector.z, TmpVectors.Matrix[2]);
 
-                this._tmpMatrix2.multiplyToRef(this.attachedNode.getWorldMatrix(), this._tmpMatrix);
+                TmpVectors.Matrix[2].multiplyToRef(this.attachedNode.getWorldMatrix(), TmpVectors.Matrix[1]);
                 const transformNode = (<Mesh>this.attachedNode)._isMesh ? (this.attachedNode as TransformNode) : undefined;
-                this._tmpMatrix.decompose(this._tmpVector, undefined, undefined, Gizmo.PreserveScaling ? transformNode : undefined);
+                TmpVectors.Matrix[1].decompose(TmpVectors.Vector3[1], undefined, undefined, Gizmo.PreserveScaling ? transformNode : undefined);
 
                 const maxScale = 100000;
-                if (Math.abs(this._tmpVector.x) < maxScale && Math.abs(this._tmpVector.y) < maxScale && Math.abs(this._tmpVector.z) < maxScale) {
-                    this.attachedNode.getWorldMatrix().copyFrom(this._tmpMatrix);
+                if (Math.abs(TmpVectors.Vector3[1].x) < maxScale && Math.abs(TmpVectors.Vector3[1].y) < maxScale && Math.abs(TmpVectors.Vector3[1].z) < maxScale) {
+                    this.attachedNode.getWorldMatrix().copyFrom(TmpVectors.Matrix[1]);
                 }
 
                 if (snapped) {
@@ -225,7 +268,7 @@ export class AxisScaleGizmo extends Gizmo {
      * @param thickness
      * @param isCollider
      */
-    private _createGizmoMesh(parentMesh: AbstractMesh, thickness: number, isCollider = false) {
+    protected _createGizmoMesh(parentMesh: AbstractMesh, thickness: number, isCollider = false) {
         const arrowMesh = CreateBox("yPosMesh", { size: 0.4 * (1 + (thickness - 1) / 4) }, this.gizmoLayer.utilityLayerScene);
         const arrowTail = CreateCylinder(
             "cylinder",

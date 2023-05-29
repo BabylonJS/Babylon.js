@@ -11,7 +11,7 @@ import { RegisterClass } from "../Misc/typeStore";
 /**
  * This defines an action responsible to change the value of a property
  * by interpolating between its current value and the newly set one once triggered.
- * @see https://doc.babylonjs.com/how_to/how_to_use_actions
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions
  */
 export class InterpolateValueAction extends Action {
     /**
@@ -79,7 +79,7 @@ export class InterpolateValueAction extends Action {
         this._target = this._effectiveTarget = target;
     }
 
-    /** @hidden */
+    /** @internal */
     public _prepare(): void {
         this._effectiveTarget = this._getEffectiveTarget(this._effectiveTarget, this.propertyPath);
         this._property = this._getProperty(this.propertyPath);

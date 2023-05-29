@@ -67,6 +67,12 @@ export const prepareSnapshot = () => {
     const timestampFile = path.join(snapshotDirectory, "timestamp.js");
     fs.writeFileSync(timestampFile, `if(typeof globalThis !== "undefined") globalThis.__babylonSnapshotTimestamp__ = ${timestamp};`);
 
+    // if fileSizes.json exists, copy it as well
+    const fileSizesPath = path.join(baseDirectory, "packages", "tools", "tests", "dist", "fileSizes.json");
+    if (fs.existsSync(fileSizesPath)) {
+        copyFile(fileSizesPath, path.join(snapshotDirectory, "fileSizes.json"), true);
+    }
+
     // copy the es6 builds
     // removed for now
     // {

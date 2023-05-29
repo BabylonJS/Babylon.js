@@ -23,7 +23,7 @@ declare type Scene = import("../../scene").Scene;
 declare type PBRBaseMaterial = import("./pbrBaseMaterial").PBRBaseMaterial;
 
 /**
- * @hidden
+ * @internal
  */
 export class MaterialSubSurfaceDefines extends MaterialDefines {
     public SUBSURFACE = false;
@@ -163,7 +163,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public refractionTexture: Nullable<BaseTexture> = null;
 
-    /** @hidden */
+    /** @internal */
     public _indexOfRefraction = 1.5;
     /**
      * Index of refraction of the material base layer.
@@ -210,7 +210,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public invertRefractionY = false;
 
-    /** @hidden */
+    /** @internal */
     public _linkRefractionWithTransparency = false;
     /**
      * This parameters will make the material used its opacity to control how much it is refracting against not.
@@ -301,16 +301,16 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public useGltfStyleTextures: boolean = false;
 
-    /** @hidden */
+    /** @internal */
     private _internalMarkAllSubMeshesAsTexturesDirty: () => void;
     private _internalMarkScenePrePassDirty: () => void;
 
-    /** @hidden */
+    /** @internal */
     public _markAllSubMeshesAsTexturesDirty(): void {
         this._enable(this._isRefractionEnabled || this._isTranslucencyEnabled || this._isScatteringEnabled);
         this._internalMarkAllSubMeshesAsTexturesDirty();
     }
-    /** @hidden */
+    /** @internal */
     public _markScenePrePassDirty(): void {
         this._internalMarkAllSubMeshesAsTexturesDirty();
         this._internalMarkScenePrePassDirty();
@@ -351,12 +351,34 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         return true;
     }
 
-    public prepareDefines(defines: MaterialSubSurfaceDefines, scene: Scene): void {
+    public prepareDefinesBeforeAttributes(defines: MaterialSubSurfaceDefines, scene: Scene): void {
         if (!this._isRefractionEnabled && !this._isTranslucencyEnabled && !this._isScatteringEnabled) {
             defines.SUBSURFACE = false;
             defines.SS_TRANSLUCENCY = false;
             defines.SS_SCATTERING = false;
             defines.SS_REFRACTION = false;
+            defines.SS_REFRACTION_USE_INTENSITY_FROM_TEXTURE = false;
+            defines.SS_TRANSLUCENCY_USE_INTENSITY_FROM_TEXTURE = false;
+            defines.SS_THICKNESSANDMASK_TEXTURE = false;
+            defines.SS_THICKNESSANDMASK_TEXTUREDIRECTUV = 0;
+            defines.SS_HAS_THICKNESS = false;
+            defines.SS_REFRACTIONINTENSITY_TEXTURE = false;
+            defines.SS_REFRACTIONINTENSITY_TEXTUREDIRECTUV = 0;
+            defines.SS_TRANSLUCENCYINTENSITY_TEXTURE = false;
+            defines.SS_TRANSLUCENCYINTENSITY_TEXTUREDIRECTUV = 0;
+            defines.SS_REFRACTIONMAP_3D = false;
+            defines.SS_REFRACTIONMAP_OPPOSITEZ = false;
+            defines.SS_LODINREFRACTIONALPHA = false;
+            defines.SS_GAMMAREFRACTION = false;
+            defines.SS_RGBDREFRACTION = false;
+            defines.SS_LINEARSPECULARREFRACTION = false;
+            defines.SS_LINKREFRACTIONTOTRANSPARENCY = false;
+            defines.SS_ALBEDOFORREFRACTIONTINT = false;
+            defines.SS_ALBEDOFORTRANSLUCENCYTINT = false;
+            defines.SS_USE_LOCAL_REFRACTIONMAP_CUBIC = false;
+            defines.SS_USE_THICKNESS_AS_DEPTH = false;
+            defines.SS_MASK_FROM_THICKNESS_TEXTURE = false;
+            defines.SS_USE_GLTF_TEXTURES = false;
             return;
         }
 
@@ -435,7 +457,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
                         defines.SS_GAMMAREFRACTION = refractionTexture.gammaSpace;
                         defines.SS_RGBDREFRACTION = refractionTexture.isRGBD;
                         defines.SS_LINEARSPECULARREFRACTION = refractionTexture.linearSpecularLOD;
-                        defines.SS_REFRACTIONMAP_OPPOSITEZ = refractionTexture.invertZ;
+                        defines.SS_REFRACTIONMAP_OPPOSITEZ = this._scene.useRightHandedSystem && refractionTexture.isCube ? !refractionTexture.invertZ : refractionTexture.invertZ;
                         defines.SS_LODINREFRACTIONALPHA = refractionTexture.lodLevelInAlpha;
                         defines.SS_LINKREFRACTIONTOTRANSPARENCY = this._linkRefractionWithTransparency;
                         defines.SS_ALBEDOFORREFRACTIONTINT = this.useAlbedoToTintRefraction;
@@ -500,7 +522,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
             }
 
             if (refractionTexture && MaterialFlags.RefractionTextureEnabled) {
-                uniformBuffer.updateMatrix("refractionMatrix", refractionTexture.getReflectionTextureMatrix());
+                uniformBuffer.updateMatrix("refractionMatrix", refractionTexture.getRefractionTextureMatrix());
 
                 let depth = 1.0;
                 if (!refractionTexture.isCube) {

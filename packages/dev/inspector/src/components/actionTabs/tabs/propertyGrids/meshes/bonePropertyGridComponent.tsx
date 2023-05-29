@@ -36,7 +36,7 @@ export class BonePropertyGridComponent extends React.Component<IBonePropertyGrid
         const bone = this.props.bone;
 
         return (
-            <div className="pane">
+            <>
                 <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
                     <TextLineComponent label="Name" value={bone.name} />
                     <TextLineComponent label="Index" value={bone.getIndex().toString()} />
@@ -51,9 +51,16 @@ export class BonePropertyGridComponent extends React.Component<IBonePropertyGrid
                     {bone.getTransformNode() && <TextLineComponent label="Linked node" value={bone.getTransformNode()!.name} onLink={() => this.onTransformNodeLink()} />}
                 </LineContainerComponent>
                 <LineContainerComponent title="TRANSFORMATIONS" selection={this.props.globalState}>
-                    <Vector3LineComponent label="Position" target={bone} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Vector3LineComponent
+                        lockObject={this.props.lockObject}
+                        label="Position"
+                        target={bone}
+                        propertyName="position"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                     {!bone.rotationQuaternion && (
                         <Vector3LineComponent
+                            lockObject={this.props.lockObject}
                             label="Rotation"
                             useEuler={this.props.globalState.onlyUseEulers}
                             target={bone}
@@ -64,6 +71,7 @@ export class BonePropertyGridComponent extends React.Component<IBonePropertyGrid
                     )}
                     {bone.rotationQuaternion && (
                         <QuaternionLineComponent
+                            lockObject={this.props.lockObject}
                             label="Rotation"
                             useEuler={this.props.globalState.onlyUseEulers}
                             target={bone}
@@ -71,9 +79,15 @@ export class BonePropertyGridComponent extends React.Component<IBonePropertyGrid
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         />
                     )}
-                    <Vector3LineComponent label="Scaling" target={bone} propertyName="scaling" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Vector3LineComponent
+                        lockObject={this.props.lockObject}
+                        label="Scaling"
+                        target={bone}
+                        propertyName="scaling"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

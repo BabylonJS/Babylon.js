@@ -14,11 +14,14 @@ import sizeIcon from "shared-ui-components/imgs/sizeIcon.svg";
 import strokeWeightIcon from "shared-ui-components/imgs/strokeWeightIcon.svg";
 import { IconComponent } from "shared-ui-components/lines/iconComponent";
 import { UnitButton } from "shared-ui-components/lines/unitButton";
+import type { GlobalState } from "../../../../globalState";
 
 interface ICheckboxPropertyGridComponentProps {
     checkboxes: Checkbox[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    onFontsParsedObservable?: Observable<void>;
+    globalState?: GlobalState;
 }
 
 export class CheckboxPropertyGridComponent extends React.Component<ICheckboxPropertyGridComponentProps> {
@@ -31,7 +34,13 @@ export class CheckboxPropertyGridComponent extends React.Component<ICheckboxProp
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={checkboxes} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent
+                    lockObject={this.props.lockObject}
+                    controls={checkboxes}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    onFontsParsedObservable={this.props.onFontsParsedObservable}
+                    globalState={this.props.globalState}
+                />
                 <hr />
                 <TextLineComponent label="CHECKBOX" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">

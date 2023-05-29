@@ -1,7 +1,7 @@
 #ifdef NUM_SAMPLES
     #if NUM_SAMPLES > 0
 
-    #if defined(WEBGL2) || defined(WEBGPU)
+    #if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
         // https://learnopengl.com/PBR/IBL/Specular-IBL
         // Hammersley
         float radicalInverse_VdC(uint bits) 
@@ -184,7 +184,7 @@
             float dim0 = filteringInfo.x;
             float omegaP = (4. * PI) / (6. * dim0 * dim0);
 
-            #if defined(WEBGL2) || defined(WEBGPU)
+            #if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
             for(uint i = 0u; i < NUM_SAMPLES; ++i)
             #else
             for(int i = 0; i < NUM_SAMPLES; ++i)
@@ -243,7 +243,7 @@
                 float omegaP = (4. * PI) / (6. * dim0 * dim0);
 
                 float weight = 0.;
-                #if defined(WEBGL2) || defined(WEBGPU)
+                #if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
                 for(uint i = 0u; i < NUM_SAMPLES; ++i)
                 #else
                 for(int i = 0; i < NUM_SAMPLES; ++i)

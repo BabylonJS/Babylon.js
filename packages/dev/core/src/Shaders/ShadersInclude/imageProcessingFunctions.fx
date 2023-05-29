@@ -93,7 +93,11 @@
 	}
 #endif
 
+#define CUSTOM_IMAGEPROCESSINGFUNCTIONS_DEFINITIONS
+
 vec4 applyImageProcessing(vec4 result) {
+
+	#define CUSTOM_IMAGEPROCESSINGFUNCTIONS_UPDATERESULT_ATSTART
 
 #ifdef EXPOSURE
 	result.rgb *= exposureLinear;
@@ -167,6 +171,14 @@ vec4 applyImageProcessing(vec4 result) {
 	result.rgb *= colorCurve.rgb;
 	result.rgb = mix(vec3(luma), result.rgb, colorCurve.a);
 #endif
+
+#ifdef DITHER
+	float rand = getRand(gl_FragCoord.xy * vInverseScreenSize);
+	float dither = mix(-ditherIntensity, ditherIntensity, rand);
+	result.rgb = saturate(result.rgb + vec3(dither));
+#endif
+
+	#define CUSTOM_IMAGEPROCESSINGFUNCTIONS_UPDATERESULT_ATEND
 
 	return result;
 }

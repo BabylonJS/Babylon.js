@@ -11,9 +11,9 @@ export interface IColor3LineComponentProps {
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     isLinear?: boolean;
     icon?: string;
-    lockObject?: LockObject;
+    lockObject: LockObject;
     iconLabel?: string;
-    onValueChange?: (value: string) => void;
+    onChange?: () => void;
 }
 
 export class Color3LineComponent extends React.Component<IColor3LineComponentProps> {

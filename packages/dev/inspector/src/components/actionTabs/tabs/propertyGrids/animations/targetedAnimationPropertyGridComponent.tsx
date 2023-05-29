@@ -28,11 +28,14 @@ export class TargetedAnimationGridComponent extends React.Component<ITargetedAni
 
     constructor(props: ITargetedAnimationGridComponentProps) {
         super(props);
+    }
+
+    findAnimationGroup = () => {
         this._animationGroup = this.props.scene.animationGroups.find((ag) => {
             const ta = ag.targetedAnimations.find((ta) => ta === this.props.targetedAnimation);
             return ta !== undefined;
         });
-    }
+    };
 
     playOrPause = () => {
         if (this._animationGroup) {
@@ -61,22 +64,36 @@ export class TargetedAnimationGridComponent extends React.Component<ITargetedAni
         }
     };
 
+    updateContextFromProps = () => {
+        if (!this._animationCurveEditorContext) {
+            this._animationCurveEditorContext = new Context();
+        }
+        this._animationCurveEditorContext.title = (this.props.targetedAnimation.target as any).name || "";
+        this._animationCurveEditorContext.animations = [this.props.targetedAnimation.animation];
+        this._animationCurveEditorContext.target = this.props.targetedAnimation.target;
+        this._animationCurveEditorContext.scene = this.props.scene;
+        if (this._animationGroup) {
+            this._animationCurveEditorContext.rootAnimationGroup = this._animationGroup;
+        }
+    };
+
+    componentDidMount() {
+        this.findAnimationGroup();
+        this.updateContextFromProps();
+    }
+
+    componentDidUpdate(prevProps: Readonly<ITargetedAnimationGridComponentProps>, prevState: Readonly<{}>, snapshot?: any): void {
+        if (prevProps.targetedAnimation !== this.props.targetedAnimation) {
+            this.findAnimationGroup();
+            this.updateContextFromProps();
+        }
+    }
+
     render() {
         const targetedAnimation = this.props.targetedAnimation;
 
-        if (!this._animationCurveEditorContext) {
-            this._animationCurveEditorContext = new Context();
-            this._animationCurveEditorContext.title = (this.props.targetedAnimation.target as any).name || "";
-            this._animationCurveEditorContext.animations = [this.props.targetedAnimation.animation];
-            this._animationCurveEditorContext.target = this.props.targetedAnimation.target;
-            this._animationCurveEditorContext.scene = this.props.scene;
-            if (this._animationGroup) {
-                this._animationCurveEditorContext.rootAnimationGroup = this._animationGroup;
-            }
-        }
-
         return (
-            <div className="pane">
+            <>
                 <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
                     <TextLineComponent label="Class" value={targetedAnimation.getClassName()} />
                     <TextInputLineComponent
@@ -93,10 +110,10 @@ export class TargetedAnimationGridComponent extends React.Component<ITargetedAni
                             onLink={() => this.props.globalState.onSelectionChangedObservable.notifyObservers(targetedAnimation)}
                         />
                     )}
-                    <AnimationCurveEditorComponent globalState={this.props.globalState} context={this._animationCurveEditorContext} />
+                    {this._animationCurveEditorContext && <AnimationCurveEditorComponent globalState={this.props.globalState} context={this._animationCurveEditorContext} />}
                     <ButtonLineComponent label="Dispose" onClick={this.deleteAnimation} />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

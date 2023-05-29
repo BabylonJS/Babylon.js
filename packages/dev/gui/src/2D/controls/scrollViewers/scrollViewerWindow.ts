@@ -6,7 +6,7 @@ import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
 
 /**
  * Class used to hold a the container for ScrollViewer
- * @hidden
+ * @internal
  */
 export class _ScrollViewerWindow extends Container {
     public parentClientWidth: number;
@@ -183,9 +183,7 @@ export class _ScrollViewerWindow extends Container {
     }
 
     /**
-     * @param parentMeasure
-     * @param context
-     * @hidden
+     * @internal
      */
     protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         super._additionalProcessing(parentMeasure, context);
@@ -200,9 +198,7 @@ export class _ScrollViewerWindow extends Container {
     }
 
     /**
-     * @param parentMeasure
-     * @param context
-     * @hidden
+     * @internal
      */
     public _layout(parentMeasure: Measure, context: ICanvasRenderingContext): boolean {
         if (this._freezeControls) {
@@ -252,9 +248,7 @@ export class _ScrollViewerWindow extends Container {
     }
 
     /**
-     * @param context
-     * @param invalidatedRectangle
-     * @hidden
+     * @internal
      */
     public _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Measure): void {
         if (!this._freezeControls) {

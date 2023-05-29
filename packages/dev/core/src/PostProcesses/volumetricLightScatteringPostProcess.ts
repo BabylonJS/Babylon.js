@@ -26,20 +26,18 @@ import "../Shaders/volumetricLightScatteringPass.fragment";
 import { Color4, Color3 } from "../Maths/math.color";
 import { Viewport } from "../Maths/math.viewport";
 import { RegisterClass } from "../Misc/typeStore";
-import { DrawWrapper } from "../Materials/drawWrapper";
+import type { Nullable } from "../types";
 
 declare type Engine = import("../Engines/engine").Engine;
 
 /**
- *  Inspired by http://http.developer.nvidia.com/GPUGems3/gpugems3_ch13.html
+ *  Inspired by https://developer.nvidia.com/gpugems/gpugems3/part-ii-light-and-shadows/chapter-13-volumetric-light-scattering-post-process
  */
 export class VolumetricLightScatteringPostProcess extends PostProcess {
     // Members
-    private _volumetricLightScatteringPass: DrawWrapper;
     private _volumetricLightScatteringRTT: RenderTargetTexture;
     private _viewPort: Viewport;
     private _screenCoordinates: Vector2 = Vector2.Zero();
-    private _cachedDefines: string;
 
     /**
      * If not undefined, the mesh position is computed from the attached node position
@@ -71,7 +69,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
     public mesh: Mesh;
 
     /**
-     * @hidden
+     * @internal
      * VolumetricLightScatteringPostProcess.useDiffuseColor is no longer used, use the mesh material directly instead
      */
     public get useDiffuseColor(): boolean {
@@ -88,6 +86,13 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
      */
     @serialize()
     public excludedMeshes = new Array<AbstractMesh>();
+
+    /**
+     * Array containing the only meshes rendered in the internal pass.
+     * If this array is not empty, only the meshes from this array are rendered in the internal pass
+     */
+    @serialize()
+    public includedMeshes = new Array<AbstractMesh>();
 
     /**
      * Controls the overall intensity of the post-process
@@ -128,7 +133,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
     constructor(
         name: string,
         ratio: any,
-        camera: Camera,
+        camera: Nullable<Camera>,
         mesh?: Mesh,
         samples: number = 100,
         samplingMode: number = Texture.BILINEAR_SAMPLINGMODE,
@@ -148,14 +153,13 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
             reusable,
             "#define NUM_SAMPLES " + samples
         );
-        scene = camera?.getScene() ?? scene; // parameter "scene" can be null.
+        scene = camera?.getScene() ?? scene ?? this._scene; // parameter "scene" can be null.
 
         engine = scene.getEngine();
         this._viewPort = new Viewport(0, 0, 1, 1).toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
 
         // Configure mesh
         this.mesh = mesh ?? VolumetricLightScatteringPostProcess.CreateDefaultMesh("VolumetricLightScatteringMesh", scene);
-        this._volumetricLightScatteringPass = new DrawWrapper(engine);
 
         // Configure
         this._createPass(scene, ratio.passRatio || ratio);
@@ -194,6 +198,12 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
         // Render this.mesh as default
         if (mesh === this.mesh && mesh.material) {
             return mesh.material.isReady(mesh);
+        }
+
+        const renderingMaterial = mesh._internalAbstractMeshDataInfo._materialForRenderPass?.[this._scene.getEngine().currentRenderPassId];
+
+        if (renderingMaterial) {
+            return renderingMaterial.isReadyForSubMesh(mesh, subMesh, useInstances);
         }
 
         const defines = [];
@@ -236,26 +246,30 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
         }
 
         // Get correct effect
+        const drawWrapper = subMesh._getDrawWrapper(undefined, true)!;
+        const cachedDefines = drawWrapper.defines;
         const join = defines.join("\n");
-        if (this._cachedDefines !== join) {
-            this._cachedDefines = join;
-            this._volumetricLightScatteringPass.effect = mesh
-                .getScene()
-                .getEngine()
-                .createEffect(
-                    "volumetricLightScatteringPass",
-                    attribs,
-                    ["world", "mBones", "viewProjection", "diffuseMatrix"],
-                    ["diffuseSampler"],
-                    join,
-                    undefined,
-                    undefined,
-                    undefined,
-                    { maxSimultaneousMorphTargets: mesh.numBoneInfluencers }
-                );
+        if (cachedDefines !== join) {
+            drawWrapper.setEffect(
+                mesh
+                    .getScene()
+                    .getEngine()
+                    .createEffect(
+                        "volumetricLightScatteringPass",
+                        attribs,
+                        ["world", "mBones", "viewProjection", "diffuseMatrix"],
+                        ["diffuseSampler"],
+                        join,
+                        undefined,
+                        undefined,
+                        undefined,
+                        { maxSimultaneousMorphTargets: mesh.numBoneInfluencers }
+                    ),
+                join
+            );
         }
 
-        return this._volumetricLightScatteringPass.effect!.isReady();
+        return drawWrapper.effect!.isReady();
     }
 
     /**
@@ -268,7 +282,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
 
     /**
      * Returns the light position for light scattering effect
-     * @return Vector3 The custom light position
+     * @returns Vector3 The custom light position
      */
     public getCustomMeshPosition(): Vector3 {
         return this.customMeshPosition;
@@ -290,7 +304,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
 
     /**
      * Returns the render target texture used by the post-process
-     * @return the render target texture used by the post-process
+     * @returns the render target texture used by the post-process
      */
     public getPass(): RenderTargetTexture {
         return this._volumetricLightScatteringRTT;
@@ -298,7 +312,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
 
     // Private methods
     private _meshExcluded(mesh: AbstractMesh) {
-        if (this.excludedMeshes.length > 0 && this.excludedMeshes.indexOf(mesh) !== -1) {
+        if ((this.includedMeshes.length > 0 && this.includedMeshes.indexOf(mesh) === -1) || (this.excludedMeshes.length > 0 && this.excludedMeshes.indexOf(mesh) !== -1)) {
             return true;
         }
 
@@ -361,13 +375,15 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
             const hardwareInstancedRendering = engine.getCaps().instancedArrays && (batch.visibleInstances[subMesh._id] !== null || renderingMesh.hasThinInstances);
 
             if (this._isReady(subMesh, hardwareInstancedRendering)) {
-                let drawWrapper: DrawWrapper = this._volumetricLightScatteringPass;
-                if (renderingMesh === this.mesh) {
-                    if (subMesh.effect) {
-                        drawWrapper = subMesh._drawWrapper;
-                    } else {
-                        drawWrapper = material._getDrawWrapper();
-                    }
+                const renderingMaterial = effectiveMesh._internalAbstractMeshDataInfo._materialForRenderPass?.[engine.currentRenderPassId];
+
+                let drawWrapper = subMesh._getDrawWrapper();
+                if (renderingMesh === this.mesh && !drawWrapper) {
+                    drawWrapper = material._getDrawWrapper();
+                }
+
+                if (!drawWrapper) {
+                    return;
                 }
 
                 const effect = drawWrapper.effect!;
@@ -379,6 +395,8 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
 
                 if (renderingMesh === this.mesh) {
                     material.bind(effectiveMesh.getWorldMatrix(), renderingMesh);
+                } else if (renderingMaterial) {
+                    renderingMaterial.bindForSubMesh(effectiveMesh.getWorldMatrix(), effectiveMesh as Mesh, subMesh);
                 } else {
                     effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
@@ -425,12 +443,8 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
             scene.clearColor = savedSceneClearColor;
         });
 
-        this._volumetricLightScatteringRTT.customIsReadyFunction = (mesh: AbstractMesh, refreshRate: number) => {
-            if (!mesh.isReady(false)) {
-                return false;
-            }
-            if (refreshRate === 0 && mesh.subMeshes) {
-                // full check: check that the effects are ready
+        this._volumetricLightScatteringRTT.customIsReadyFunction = (mesh: AbstractMesh, refreshRate: number, preWarm?: boolean) => {
+            if ((preWarm || refreshRate === 0) && mesh.subMeshes) {
                 for (let i = 0; i < mesh.subMeshes.length; ++i) {
                     const subMesh = mesh.subMeshes[i];
                     const material = subMesh.getMaterial();
@@ -547,7 +561,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
      * Creates a default mesh for the Volumeric Light Scattering post-process
      * @param name The mesh name
      * @param scene The scene where to create the mesh
-     * @return the default mesh
+     * @returns the default mesh
      */
     public static CreateDefaultMesh(name: string, scene: Scene): Mesh {
         const mesh = CreatePlane(name, { size: 1 }, scene);

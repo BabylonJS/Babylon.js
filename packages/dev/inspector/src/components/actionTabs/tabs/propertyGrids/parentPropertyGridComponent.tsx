@@ -5,10 +5,10 @@ import type { Observable } from "core/Misc/observable";
 import type { PropertyChangedEvent } from "../../../propertyChangedEvent";
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import type { GlobalState } from "../../../globalState";
-import { Node } from "core/node";
+import type { Node } from "core/node";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
-import { TransformNode } from "core/Meshes/transformNode";
+import type { TransformNode } from "core/Meshes/transformNode";
 
 interface IParentPropertyGridComponentProps {
     globalState: GlobalState;
@@ -22,6 +22,11 @@ export class ParentPropertyGridComponent extends React.Component<IParentProperty
         super(props);
     }
 
+    private _getNameForSorting(node: any) {
+        const isNameAString = node.name && typeof node.name === "string";
+        return isNameAString ? node.name : "no name";
+    }
+
     render() {
         const node = this.props.node;
         const scene = node.getScene();
@@ -29,7 +34,10 @@ export class ParentPropertyGridComponent extends React.Component<IParentProperty
         const sortedNodes = scene
             .getNodes()
             .filter((n) => n !== node)
-            .sort((a, b) => (a.name || "no name").localeCompare(b.name || "no name"));
+            .map((n) => this._getNameForSorting(n))
+            .sort((aName, bName) => {
+                return aName.localeCompare(bName);
+            });
 
         const nodeOptions = sortedNodes.map((m, i) => {
             return {
@@ -55,16 +63,16 @@ export class ParentPropertyGridComponent extends React.Component<IParentProperty
                     target={node}
                     propertyName="parent"
                     noDirectUpdate={true}
-                    onSelect={(value: number) => {
+                    onSelect={(value) => {
                         const nodeAsTransform = node as TransformNode;
-                        if (value < 0) {
+                        if (typeof value !== "number" || value < 0) {
                             if (nodeAsTransform.setParent) {
                                 nodeAsTransform.setParent(null);
                             } else {
                                 node.parent = null;
                             }
                         } else {
-                            const newParent = sortedNodes[value];
+                            const newParent = sortedNodes[value as number];
                             if (nodeAsTransform.setParent) {
                                 nodeAsTransform.setParent(newParent);
                             } else {

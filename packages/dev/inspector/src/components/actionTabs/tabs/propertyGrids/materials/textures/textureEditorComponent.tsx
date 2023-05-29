@@ -63,9 +63,6 @@ export interface IToolParameters {
     setMetadata: (data: any) => void;
     /** Returns the texture coordinates under the cursor */
     getMouseCoordinates: (pointerInfo: PointerInfo) => Vector2;
-    /** Provides access to the BABYLON namespace */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    BABYLON: any;
     /** Provides a canvas that you can use the canvas API to paint on. */
     startPainting: () => Promise<CanvasRenderingContext2D>;
     /** After you have painted on your canvas, call this method to push the updates back to the texture. */
@@ -203,7 +200,7 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
 
     textureDidUpdate() {
         if (this._timer != null) {
-            clearTimeout(this._timer);
+            window.clearTimeout(this._timer);
         }
         this._timer = window.setTimeout(() => {
             this.props.onUpdate();
@@ -244,8 +241,6 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
             setMetadata: (data: any) => this.setMetadata(data),
             getMouseCoordinates: (pointerInfo: PointerInfo) => this._textureCanvasManager.getMouseCoordinates(pointerInfo),
             interactionEnabled: () => this._textureCanvasManager.toolInteractionEnabled(),
-            // eslint-disable-next-line @typescript-eslint/naming-convention
-            BABYLON: BABYLON,
         };
     }
 

@@ -2,14 +2,14 @@ import type { Observer } from "../Misc/observable";
 import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
 import type { PointerInfo } from "../Events/pointerEvents";
-import { Quaternion, Matrix, Vector3 } from "../Maths/math.vector";
+import { Quaternion, Matrix, Vector3, TmpVectors } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
 import "../Meshes/Builders/linesBuilder";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import type { Node } from "../node";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
-import type { GizmoAxisCache } from "./gizmo";
+import type { GizmoAxisCache, IGizmo } from "./gizmo";
 import { Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from "../Materials/standardMaterial";
@@ -18,16 +18,44 @@ import { ShaderMaterial } from "../Materials/shaderMaterial";
 import { Effect } from "../Materials/effect";
 import { CreatePlane } from "../Meshes/Builders/planeBuilder";
 import { CreateTorus } from "../Meshes/Builders/torusBuilder";
+import { Epsilon } from "../Maths/math.constants";
+import { Logger } from "../Misc/logger";
+
+/**
+ * Interface for plane rotation gizmo
+ */
+export interface IPlaneRotationGizmo extends IGizmo {
+    /** Drag behavior responsible for the gizmos dragging interactions */
+    dragBehavior: PointerDragBehavior;
+    /** Drag distance in babylon units that the gizmo will snap to when dragged */
+    snapDistance: number;
+    /**
+     * Event that fires each time the gizmo snaps to a new location.
+     * * snapDistance is the the change in distance
+     */
+    onSnapObservable: Observable<{ snapDistance: number }>;
+    /** Accumulated relative angle value for rotation on the axis. */
+    angle: number;
+    /** If the gizmo is enabled */
+    isEnabled: boolean;
+
+    /** Default material used to render when gizmo is not disabled or hovered */
+    coloredMaterial: StandardMaterial;
+    /** Material used to render when gizmo is hovered with mouse*/
+    hoverMaterial: StandardMaterial;
+    /** Material used to render when gizmo is disabled. typically grey.*/
+    disableMaterial: StandardMaterial;
+}
 
 /**
  * Single plane rotation gizmo
  */
-export class PlaneRotationGizmo extends Gizmo {
+export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
     /**
      * Drag behavior responsible for the gizmos dragging interactions
      */
     public dragBehavior: PointerDragBehavior;
-    private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
+    protected _pointerObserver: Nullable<Observer<PointerInfo>> = null;
 
     /**
      * Rotation distance in radians that the gizmo will snap to (Default: 0)
@@ -50,17 +78,31 @@ export class PlaneRotationGizmo extends Gizmo {
      */
     public angle: number = 0;
 
-    private _isEnabled: boolean = true;
-    private _parent: Nullable<RotationGizmo> = null;
-    private _coloredMaterial: StandardMaterial;
-    private _hoverMaterial: StandardMaterial;
-    private _disableMaterial: StandardMaterial;
-    private _gizmoMesh: Mesh;
-    private _rotationDisplayPlane: Mesh;
-    private _dragging: boolean = false;
-    private _angles = new Vector3();
+    /** Default material used to render when gizmo is not disabled or hovered */
+    public get coloredMaterial() {
+        return this._coloredMaterial;
+    }
 
-    private static _RotationGizmoVertexShader = `
+    /** Material used to render when gizmo is hovered with mouse*/
+    public get hoverMaterial() {
+        return this._hoverMaterial;
+    }
+
+    /** Material used to render when gizmo is disabled. typically grey.*/
+    public get disableMaterial() {
+        return this._disableMaterial;
+    }
+    protected _isEnabled: boolean = true;
+    protected _parent: Nullable<RotationGizmo> = null;
+    protected _coloredMaterial: StandardMaterial;
+    protected _hoverMaterial: StandardMaterial;
+    protected _disableMaterial: StandardMaterial;
+    protected _gizmoMesh: Mesh;
+    protected _rotationDisplayPlane: Mesh;
+    protected _dragging: boolean = false;
+    protected _angles = new Vector3();
+
+    protected static _RotationGizmoVertexShader = `
         precision highp float;
         attribute vec3 position;
         attribute vec2 uv;
@@ -72,7 +114,7 @@ export class PlaneRotationGizmo extends Gizmo {
             vUV = uv;
         }`;
 
-    private static _RotationGizmoFragmentShader = `
+    protected static _RotationGizmoFragmentShader = `
         precision highp float;
         varying vec2 vUV;
         varying vec3 vPosition;
@@ -101,7 +143,7 @@ export class PlaneRotationGizmo extends Gizmo {
             gl_FragColor = vec4(1.,1.,0., min(intensity * 0.25, 0.8)) * opacity;
         }`;
 
-    private _rotationShaderMaterial: ShaderMaterial;
+    protected _rotationShaderMaterial: ShaderMaterial;
 
     /**
      * Creates a PlaneRotationGizmo
@@ -217,10 +259,22 @@ export class PlaneRotationGizmo extends Gizmo {
                 const nodeQuaternion = new Quaternion(0, 0, 0, 1);
                 const nodeTranslation = new Vector3(0, 0, 0);
                 this._handlePivot();
-                this.attachedNode.getWorldMatrix().decompose(nodeScale, nodeQuaternion, nodeTranslation);
 
-                const newVector = event.dragPlanePoint.subtract(nodeTranslation).normalize();
-                const originalVector = lastDragPosition.subtract(nodeTranslation).normalize();
+                this.attachedNode.getWorldMatrix().decompose(nodeScale, nodeQuaternion, nodeTranslation);
+                // uniform scaling of absolute value of components
+                // (-1,1,1) is uniform but (1,1.001,1) is not
+                const uniformScaling = Math.abs(Math.abs(nodeScale.x) - Math.abs(nodeScale.y)) <= Epsilon && Math.abs(Math.abs(nodeScale.x) - Math.abs(nodeScale.z)) <= Epsilon;
+                if (!uniformScaling && this.updateGizmoRotationToMatchAttachedMesh) {
+                    Logger.Warn(
+                        "Unable to use a rotation gizmo matching mesh rotation with non uniform scaling. Use uniform scaling or set updateGizmoRotationToMatchAttachedMesh to false."
+                    );
+                    return;
+                }
+                nodeQuaternion.normalize();
+
+                const nodeTranslationForOperation = this.updateGizmoPositionToMatchAttachedMesh ? nodeTranslation : this._rootMesh.absolutePosition;
+                const newVector = event.dragPlanePoint.subtract(nodeTranslationForOperation).normalize();
+                const originalVector = lastDragPosition.subtract(nodeTranslationForOperation).normalize();
                 const cross = Vector3.Cross(newVector, originalVector);
                 const dot = Vector3.Dot(newVector, originalVector);
                 let angle = Math.atan2(cross.length(), dot);
@@ -233,7 +287,7 @@ export class PlaneRotationGizmo extends Gizmo {
                 // Flip up vector depending on which side the camera is on
                 let cameraFlipped = false;
                 if (gizmoLayer.utilityLayerScene.activeCamera) {
-                    const camVec = gizmoLayer.utilityLayerScene.activeCamera.position.subtract(nodeTranslation).normalize();
+                    const camVec = gizmoLayer.utilityLayerScene.activeCamera.position.subtract(nodeTranslationForOperation).normalize();
                     if (Vector3.Dot(camVec, localPlaneNormalTowardsCamera) > 0) {
                         planeNormalTowardsCamera.scaleInPlace(-1);
                         localPlaneNormalTowardsCamera.scaleInPlace(-1);
@@ -281,13 +335,13 @@ export class PlaneRotationGizmo extends Gizmo {
                 if (this.updateGizmoRotationToMatchAttachedMesh) {
                     // Rotate selected mesh quaternion over fixed axis
                     nodeQuaternion.multiplyToRef(amountToRotate, nodeQuaternion);
+                    // recompose matrix
+                    Matrix.ComposeToRef(nodeScale, nodeQuaternion, nodeTranslation, this.attachedNode.getWorldMatrix());
                 } else {
                     // Rotate selected mesh quaternion over rotated axis
-                    amountToRotate.multiplyToRef(nodeQuaternion, nodeQuaternion);
+                    amountToRotate.toRotationMatrix(TmpVectors.Matrix[0]);
+                    TmpVectors.Matrix[0].multiplyToRef(this.attachedNode.getWorldMatrix(), this.attachedNode.getWorldMatrix());
                 }
-
-                // recompose matrix
-                this.attachedNode.getWorldMatrix().copyFrom(Matrix.Compose(nodeScale, nodeQuaternion, nodeTranslation));
 
                 lastDragPosition.copyFrom(event.dragPlanePoint);
                 if (snapped) {
@@ -339,7 +393,7 @@ export class PlaneRotationGizmo extends Gizmo {
      * @param thickness
      * @param tessellation
      */
-    private _createGizmoMesh(parentMesh: AbstractMesh, thickness: number, tessellation: number) {
+    protected _createGizmoMesh(parentMesh: AbstractMesh, thickness: number, tessellation: number) {
         const collider = CreateTorus(
             "ignore",
             {

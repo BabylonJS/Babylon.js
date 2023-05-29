@@ -1,12 +1,13 @@
 import { DataBuffer } from "../../Buffers/dataBuffer";
 import type { Nullable } from "../../types";
 
-/** @hidden */
+/** @internal */
 export class WebGPUDataBuffer extends DataBuffer {
     private _buffer: Nullable<GPUBuffer>;
 
-    public constructor(resource: GPUBuffer) {
+    public constructor(resource: GPUBuffer, capacity = 0) {
         super();
+        this.capacity = capacity;
         this._buffer = resource;
     }
 

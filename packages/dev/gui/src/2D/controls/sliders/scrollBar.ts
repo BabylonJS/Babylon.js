@@ -5,6 +5,11 @@ import { Measure } from "../../measure";
 import type { PointerInfoBase } from "core/Events/pointerEvents";
 import { serialize } from "core/Misc/decorators";
 import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import type { Nullable } from "core/types";
+import type { BaseGradient } from "../gradient/BaseGradient";
+import type { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
+import { Tools } from "core/Misc/tools";
+import { RegisterClass } from "core/Misc/typeStore";
 
 /**
  * Class used to create slider controls
@@ -13,6 +18,8 @@ export class ScrollBar extends BaseSlider {
     private _background = "black";
     private _borderColor = "white";
     private _tempMeasure = new Measure(0, 0, 0, 0);
+    private _invertScrollDirection = false;
+    private _backgroundGradient: Nullable<BaseGradient> = null;
 
     /** Gets or sets border color */
     @serialize()
@@ -44,6 +51,30 @@ export class ScrollBar extends BaseSlider {
         this._markAsDirty();
     }
 
+    /** Gets or sets background gradient. Takes precedence over gradient. */
+    public get backgroundGradient(): Nullable<BaseGradient> {
+        return this._backgroundGradient;
+    }
+
+    public set backgroundGradient(value: Nullable<BaseGradient>) {
+        if (this._backgroundGradient === value) {
+            return;
+        }
+
+        this._backgroundGradient = value;
+        this._markAsDirty();
+    }
+
+    /** Inverts the scrolling direction (default: false) */
+    @serialize()
+    public get invertScrollDirection() {
+        return this._invertScrollDirection;
+    }
+
+    public set invertScrollDirection(invert: boolean) {
+        this._invertScrollDirection = invert;
+    }
+
     /**
      * Creates a new Slider
      * @param name defines the control name
@@ -66,6 +97,10 @@ export class ScrollBar extends BaseSlider {
         return thumbThickness;
     }
 
+    private _getBackgroundColor(context: ICanvasRenderingContext) {
+        return this._backgroundGradient ? this._backgroundGradient.getCanvasGradient(context) : this._background;
+    }
+
     public _draw(context: ICanvasRenderingContext): void {
         context.save();
 
@@ -74,12 +109,12 @@ export class ScrollBar extends BaseSlider {
         const left = this._renderLeft;
 
         const thumbPosition = this._getThumbPosition();
-        context.fillStyle = this._background;
+        context.fillStyle = this._getBackgroundColor(context);
 
         context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
 
         // Value bar
-        context.fillStyle = this.color;
+        context.fillStyle = this._getColor(context);
 
         // Thumb
         if (this.isVertical) {
@@ -104,9 +139,7 @@ export class ScrollBar extends BaseSlider {
     private _originY: number;
 
     /**
-     * @param x
-     * @param y
-     * @hidden
+     * @internal
      */
     protected _updateValueFromPointer(x: number, y: number): void {
         if (this.rotation != 0) {
@@ -114,6 +147,8 @@ export class ScrollBar extends BaseSlider {
             x = this._transformedPosition.x;
             y = this._transformedPosition.y;
         }
+
+        const sign = this._invertScrollDirection ? -1 : 1;
 
         if (this._first) {
             this._first = false;
@@ -143,7 +178,7 @@ export class ScrollBar extends BaseSlider {
             delta = (x - this._originX) / (this._currentMeasure.width - this._effectiveThumbThickness);
         }
 
-        this.value += delta * (this.maximum - this.minimum);
+        this.value += sign * delta * (this.maximum - this.minimum);
 
         this._originX = x;
         this._originY = y;
@@ -154,4 +189,24 @@ export class ScrollBar extends BaseSlider {
 
         return super._onPointerDown(target, coordinates, pointerId, buttonIndex, pi);
     }
+
+    public serialize(serializationObject: any) {
+        super.serialize(serializationObject);
+
+        if (this.backgroundGradient) {
+            serializationObject.backgroundGradient = {};
+            this.backgroundGradient.serialize(serializationObject.backgroundGradient);
+        }
+    }
+
+    public _parseFromContent(serializationObject: any, host: AdvancedDynamicTexture) {
+        super._parseFromContent(serializationObject, host);
+
+        if (serializationObject.backgroundGradient) {
+            const className = Tools.Instantiate("BABYLON.GUI." + serializationObject.backgroundGradient.className);
+            this.backgroundGradient = new className();
+            this.backgroundGradient!.parse(serializationObject.backgroundGradient);
+        }
+    }
 }
+RegisterClass("BABYLON.GUI.Scrollbar", ScrollBar);

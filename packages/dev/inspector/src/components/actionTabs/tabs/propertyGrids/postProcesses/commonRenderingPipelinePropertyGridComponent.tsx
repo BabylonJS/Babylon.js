@@ -9,6 +9,7 @@ import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObj
 import type { PostProcessRenderPipeline } from "core/PostProcesses/RenderPipeline/postProcessRenderPipeline";
 import type { GlobalState } from "../../../../globalState";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
+import { CustomPropertyGridComponent } from "../customPropertyGridComponent";
 
 interface ICommonRenderingPipelinePropertyGridComponentProps {
     globalState: GlobalState;
@@ -28,14 +29,21 @@ export class CommonRenderingPipelinePropertyGridComponent extends React.Componen
 
         return (
             <div>
+                <CustomPropertyGridComponent
+                    globalState={this.props.globalState}
+                    target={renderPipeline}
+                    lockObject={this.props.lockObject}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                />
                 <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
                     <TextLineComponent label="Name" value={renderPipeline.name} />
                     <TextLineComponent label="Class" value={renderPipeline.getClassName()} />
                     {renderPipelineAsAny.samples !== undefined && (
                         <SliderLineComponent
+                            lockObject={this.props.lockObject}
                             label="Samples"
                             minimum={1}
-                            maximum={8}
+                            maximum={64}
                             step={1}
                             decimalCount={0}
                             target={renderPipeline}

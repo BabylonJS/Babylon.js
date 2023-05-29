@@ -8,6 +8,7 @@ import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import type { PropertyChangedEvent } from "../propertyChangedEvent";
 import { SliderLineComponent } from "../lines/sliderLineComponent";
 import { Tools } from "core/Misc/tools";
+import type { LockObject } from "../tabs/propertyGrids/lockObject";
 
 interface IVector3LineComponentProps {
     label: string;
@@ -20,6 +21,7 @@ interface IVector3LineComponentProps {
     noSlider?: boolean;
     icon?: string;
     iconLabel?: string;
+    lockObject: LockObject;
 }
 
 export class Vector3LineComponent extends React.Component<IVector3LineComponentProps, { isExpanded: boolean; value: Vector3 }> {
@@ -125,14 +127,33 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
                 </div>
                 {this.state.isExpanded && !this.props.useEuler && (
                     <div className="secondLine">
-                        <NumericInputComponent label="x" step={this.props.step} value={this.state.value.x} onChange={(value) => this.updateStateX(value)} />
-                        <NumericInputComponent label="y" step={this.props.step} value={this.state.value.y} onChange={(value) => this.updateStateY(value)} />
-                        <NumericInputComponent label="z" step={this.props.step} value={this.state.value.z} onChange={(value) => this.updateStateZ(value)} />
+                        <NumericInputComponent
+                            label="x"
+                            lockObject={this.props.lockObject}
+                            step={this.props.step}
+                            value={this.state.value.x}
+                            onChange={(value) => this.updateStateX(value)}
+                        />
+                        <NumericInputComponent
+                            label="y"
+                            lockObject={this.props.lockObject}
+                            step={this.props.step}
+                            value={this.state.value.y}
+                            onChange={(value) => this.updateStateY(value)}
+                        />
+                        <NumericInputComponent
+                            label="z"
+                            lockObject={this.props.lockObject}
+                            step={this.props.step}
+                            value={this.state.value.z}
+                            onChange={(value) => this.updateStateZ(value)}
+                        />
                     </div>
                 )}
                 {this.state.isExpanded && this.props.useEuler && !this.props.noSlider && (
                     <div className="secondLine">
                         <SliderLineComponent
+                            lockObject={this.props.lockObject}
                             margin={true}
                             label="x"
                             minimum={0}
@@ -142,6 +163,7 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
                             onChange={(value) => this.updateStateX(Tools.ToRadians(value))}
                         />
                         <SliderLineComponent
+                            lockObject={this.props.lockObject}
                             margin={true}
                             label="y"
                             minimum={0}
@@ -151,6 +173,7 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
                             onChange={(value) => this.updateStateY(Tools.ToRadians(value))}
                         />
                         <SliderLineComponent
+                            lockObject={this.props.lockObject}
                             margin={true}
                             label="z"
                             minimum={0}
@@ -164,18 +187,21 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
                 {this.state.isExpanded && this.props.useEuler && this.props.noSlider && (
                     <div className="secondLine">
                         <NumericInputComponent
+                            lockObject={this.props.lockObject}
                             label="x"
                             step={this.props.step}
                             value={Tools.ToDegrees(this.state.value.x)}
                             onChange={(value) => this.updateStateX(Tools.ToRadians(value))}
                         />
                         <NumericInputComponent
+                            lockObject={this.props.lockObject}
                             label="y"
                             step={this.props.step}
                             value={Tools.ToDegrees(this.state.value.y)}
                             onChange={(value) => this.updateStateY(Tools.ToRadians(value))}
                         />
                         <NumericInputComponent
+                            lockObject={this.props.lockObject}
                             label="z"
                             step={this.props.step}
                             value={Tools.ToDegrees(this.state.value.z)}

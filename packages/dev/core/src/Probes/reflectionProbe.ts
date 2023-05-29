@@ -12,7 +12,7 @@ declare module "../abstractScene" {
     export interface AbstractScene {
         /**
          * The list of reflection probes added to the scene
-         * @see https://doc.babylonjs.com/how_to/how_to_use_reflection_probes
+         * @see https://doc.babylonjs.com/features/featuresDeepDive/environment/reflectionProbes
          */
         reflectionProbes: Array<ReflectionProbe>;
 
@@ -54,7 +54,7 @@ AbstractScene.prototype.addReflectionProbe = function (newReflectionProbe: Refle
 
 /**
  * Class used to generate realtime reflection / refraction cube textures
- * @see https://doc.babylonjs.com/how_to/how_to_use_reflection_probes
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/environment/reflectionProbes
  */
 export class ReflectionProbe {
     private _scene: Scene;
@@ -74,7 +74,12 @@ export class ReflectionProbe {
     @serializeAsVector3()
     public position = Vector3.Zero();
 
-    /** @hidden */
+    /**
+     * Gets or sets an object used to store user defined information for the reflection probe.
+     */
+    public metadata: any = null;
+
+    /** @internal */
     public _parentContainer: Nullable<AbstractScene> = null;
 
     /**
@@ -121,6 +126,7 @@ export class ReflectionProbe {
         }
         this._renderTargetTexture = new RenderTargetTexture(name, size, scene, generateMipMaps, true, textureType, true);
         this._renderTargetTexture.gammaSpace = !linearSpace;
+        this._renderTargetTexture.invertZ = scene.useRightHandedSystem;
 
         const useReverseDepthBuffer = scene.getEngine().useReverseDepthBuffer;
 
@@ -318,6 +324,7 @@ export class ReflectionProbe {
     public serialize(): any {
         const serializationObject = SerializationHelper.Serialize(this, this._renderTargetTexture.serialize());
         serializationObject.isReflectionProbe = true;
+        serializationObject.metadata = this.metadata;
 
         return serializationObject;
     }
@@ -351,6 +358,10 @@ export class ReflectionProbe {
 
         if (parsedReflectionProbe._attachedMesh) {
             reflectionProbe.attachToMesh(scene.getMeshById(parsedReflectionProbe._attachedMesh));
+        }
+
+        if (parsedReflectionProbe.metadata) {
+            reflectionProbe.metadata = parsedReflectionProbe.metadata;
         }
 
         return reflectionProbe;

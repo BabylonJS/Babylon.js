@@ -18,7 +18,7 @@ declare type Scene = import("../../scene").Scene;
 declare type PBRBaseMaterial = import("./pbrBaseMaterial").PBRBaseMaterial;
 
 /**
- * @hidden
+ * @internal
  */
 export class MaterialSheenDefines extends MaterialDefines {
     public SHEEN = false;
@@ -115,10 +115,10 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public albedoScaling = false;
 
-    /** @hidden */
+    /** @internal */
     private _internalMarkAllSubMeshesAsTexturesDirty: () => void;
 
-    /** @hidden */
+    /** @internal */
     public _markAllSubMeshesAsTexturesDirty(): void {
         this._enable(this._isEnabled);
         this._internalMarkAllSubMeshesAsTexturesDirty();
@@ -154,7 +154,7 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
         return true;
     }
 
-    public prepareDefines(defines: MaterialSheenDefines, scene: Scene): void {
+    public prepareDefinesBeforeAttributes(defines: MaterialSheenDefines, scene: Scene): void {
         if (this._isEnabled) {
             defines.SHEEN = true;
             defines.SHEEN_LINKWITHALBEDO = this._linkSheenWithAlbedo;
@@ -189,6 +189,9 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
             defines.SHEEN_ALBEDOSCALING = false;
             defines.SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE = false;
             defines.SHEEN_TEXTURE_ROUGHNESS_IDENTICAL = false;
+            defines.SHEEN_GAMMATEXTURE = false;
+            defines.SHEEN_TEXTUREDIRECTUV = 0;
+            defines.SHEEN_TEXTURE_ROUGHNESSDIRECTUV = 0;
         }
     }
 

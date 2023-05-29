@@ -38,10 +38,11 @@ import { Color3 } from "../../Maths/math.color";
 import "../../Shaders/background.fragment";
 import "../../Shaders/background.vertex";
 import { EffectFallbacks } from "../effectFallbacks";
+import { addClipPlaneUniforms, bindClipPlane } from "../clipPlaneMaterialHelper";
 
 /**
  * Background material defines definition.
- * @hidden Mainly internal Use
+ * @internal Mainly internal Use
  */
 class BackgroundMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
     /**
@@ -133,6 +134,7 @@ class BackgroundMaterialDefines extends MaterialDefines implements IImageProcess
     public COLORGRADING3D = false;
     public SAMPLER3DGREENDEPTH = false;
     public SAMPLER3DBGRMAP = false;
+    public DITHER = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public SKIPFINALCOLORCLAMP = false;
     public EXPOSURE = false;
@@ -680,7 +682,7 @@ export class BackgroundMaterial extends PushMaterial {
      */
     public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances: boolean = false): boolean {
         if (subMesh.effect && this.isFrozen) {
-            if (subMesh.effect._wasPreviouslyReady) {
+            if (subMesh.effect._wasPreviouslyReady && subMesh.effect._wasPreviouslyUsingInstances === useInstances) {
                 return true;
             }
         }
@@ -724,6 +726,7 @@ export class BackgroundMaterial extends PushMaterial {
                     defines.OPACITYFRESNEL = this._opacityFresnel;
                 } else {
                     defines.DIFFUSE = false;
+                    defines.DIFFUSEDIRECTUV = 0;
                     defines.DIFFUSEHASALPHA = false;
                     defines.GAMMADIFFUSE = false;
                     defines.OPACITYFRESNEL = false;
@@ -739,7 +742,6 @@ export class BackgroundMaterial extends PushMaterial {
                     defines.GAMMAREFLECTION = reflectionTexture.gammaSpace;
                     defines.RGBDREFLECTION = reflectionTexture.isRGBD;
                     defines.REFLECTIONBLUR = this._reflectionBlur > 0;
-                    defines.REFLECTIONMAP_OPPOSITEZ = this.getScene().useRightHandedSystem ? !reflectionTexture.invertZ : reflectionTexture.invertZ;
                     defines.LODINREFLECTIONALPHA = reflectionTexture.lodLevelInAlpha;
                     defines.EQUIRECTANGULAR_RELFECTION_FOV = this.useEquirectangularFOV;
                     defines.REFLECTIONBGR = this.switchToBGR;
@@ -749,6 +751,7 @@ export class BackgroundMaterial extends PushMaterial {
                     }
 
                     defines.REFLECTIONMAP_3D = reflectionTexture.isCube;
+                    defines.REFLECTIONMAP_OPPOSITEZ = defines.REFLECTIONMAP_3D && this.getScene().useRightHandedSystem ? !reflectionTexture.invertZ : reflectionTexture.invertZ;
 
                     switch (reflectionTexture.coordinatesMode) {
                         case Texture.EXPLICIT_MODE:
@@ -839,7 +842,7 @@ export class BackgroundMaterial extends PushMaterial {
         MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
 
         // Values that need to be evaluated on every frame
-        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances, null, subMesh.getRenderingMesh().hasThinInstances);
+        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, this, defines, useInstances, null, subMesh.getRenderingMesh().hasThinInstances);
 
         // Attribs
         if (MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, true, false)) {
@@ -899,12 +902,6 @@ export class BackgroundMaterial extends PushMaterial {
                 "vFogInfos",
                 "vFogColor",
                 "pointSize",
-                "vClipPlane",
-                "vClipPlane2",
-                "vClipPlane3",
-                "vClipPlane4",
-                "vClipPlane5",
-                "vClipPlane6",
                 "mBones",
 
                 "vPrimaryColor",
@@ -924,6 +921,7 @@ export class BackgroundMaterial extends PushMaterial {
                 "diffuseMatrix",
             ];
 
+            addClipPlaneUniforms(uniforms);
             const samplers = ["diffuseSampler", "reflectionSampler", "reflectionSamplerLow", "reflectionSamplerHigh"];
             const uniformBuffers = ["Material", "Scene"];
 
@@ -967,6 +965,9 @@ export class BackgroundMaterial extends PushMaterial {
 
         defines._renderId = scene.getRenderId();
         subMesh.effect._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyUsingInstances = useInstances;
+
+        this._checkScenePerformancePriority();
 
         return true;
     }
@@ -982,7 +983,7 @@ export class BackgroundMaterial extends PushMaterial {
         this._primaryColor.copyFrom(this.__perceptualColor);
 
         // Revert gamma space.
-        this._primaryColor.toLinearSpaceToRef(this._primaryColor);
+        this._primaryColor.toLinearSpaceToRef(this._primaryColor, this.getScene().getEngine().useExactSrgbConversions);
 
         // Revert image processing configuration.
         if (this._imageProcessingConfiguration) {
@@ -1053,7 +1054,7 @@ export class BackgroundMaterial extends PushMaterial {
      * @param world The world matrix to bind.
      */
     public bindOnlyWorldMatrix(world: Matrix): void {
-        this._activeEffect.setMatrix("world", world);
+        this._activeEffect!.setMatrix("world", world);
     }
 
     /**
@@ -1161,7 +1162,7 @@ export class BackgroundMaterial extends PushMaterial {
             }
 
             // Clip plane
-            MaterialHelper.BindClipPlane(this._activeEffect, scene);
+            bindClipPlane(this._activeEffect, this, scene);
 
             scene.bindEyePosition(effect);
         } else if (scene.getEngine()._features.needToAlwaysBindUniformBuffers) {
@@ -1250,7 +1251,7 @@ export class BackgroundMaterial extends PushMaterial {
      * @returns The JSON representation.
      */
     public serialize(): any {
-        const serializationObject = SerializationHelper.Serialize(this);
+        const serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.BackgroundMaterial";
         return serializationObject;
     }

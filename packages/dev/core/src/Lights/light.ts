@@ -11,6 +11,7 @@ import type { IShadowGenerator } from "./Shadows/shadowGenerator";
 import { GetClass } from "../Misc/typeStore";
 import type { ISortableLight } from "./lightConstants";
 import { LightConstants } from "./lightConstants";
+import type { Camera } from "../Cameras/camera";
 
 /**
  * Base class of all the lights in Babylon. It groups all the generic information about lights.
@@ -314,35 +315,35 @@ export abstract class Light extends Node implements ISortableLight {
     }
 
     /**
-     * Shadow generator associated to the light.
-     * @hidden Internal use only.
+     * Shadow generators associated to the light.
+     * @internal Internal use only.
      */
-    public _shadowGenerator: Nullable<IShadowGenerator>;
+    public _shadowGenerators: Nullable<Map<Nullable<Camera>, IShadowGenerator>> = null;
 
     /**
-     * @hidden Internal use only.
+     * @internal Internal use only.
      */
     public _excludedMeshesIds = new Array<string>();
 
     /**
-     * @hidden Internal use only.
+     * @internal Internal use only.
      */
     public _includedOnlyMeshesIds = new Array<string>();
 
     /**
      * The current light uniform buffer.
-     * @hidden Internal use only.
+     * @internal Internal use only.
      */
     public _uniformBuffer: UniformBuffer;
 
-    /** @hidden */
+    /** @internal */
     public _renderId: number;
 
     private _lastUseSpecular: boolean;
 
     /**
      * Creates a Light object in the scene.
-     * Documentation : https://doc.babylonjs.com/babylon101/lights
+     * Documentation : https://doc.babylonjs.com/features/featuresDeepDive/lights/lights_introduction
      * @param name The friendly name of the light
      * @param scene The scene the light belongs too
      */
@@ -416,7 +417,7 @@ export abstract class Light extends Node implements ISortableLight {
 
         // Shadows
         if (scene.shadowsEnabled && this.shadowEnabled && receiveShadows) {
-            const shadowGenerator = this.getShadowGenerator();
+            const shadowGenerator = this.getShadowGenerator(scene.activeCamera) ?? this.getShadowGenerator();
             if (shadowGenerator) {
                 shadowGenerator.bindShadowLight(iAsString, effect);
                 needUpdate = true;
@@ -446,7 +447,7 @@ export abstract class Light extends Node implements ISortableLight {
         return "Light";
     }
 
-    /** @hidden */
+    /** @internal */
     public readonly _isLight = true;
 
     /**
@@ -465,7 +466,7 @@ export abstract class Light extends Node implements ISortableLight {
         return ret;
     }
 
-    /** @hidden */
+    /** @internal */
     protected _syncParentEnabledState() {
         super._syncParentEnabledState();
         if (!this.isDisposed()) {
@@ -485,10 +486,23 @@ export abstract class Light extends Node implements ISortableLight {
 
     /**
      * Returns the Light associated shadow generator if any.
-     * @return the associated shadow generator.
+     * @param camera Camera for which the shadow generator should be retrieved (default: null). If null, retrieves the default shadow generator
+     * @returns the associated shadow generator.
      */
-    public getShadowGenerator(): Nullable<IShadowGenerator> {
-        return this._shadowGenerator;
+    public getShadowGenerator(camera: Nullable<Camera> = null): Nullable<IShadowGenerator> {
+        if (this._shadowGenerators === null) {
+            return null;
+        }
+
+        return this._shadowGenerators.get(camera) ?? null;
+    }
+
+    /**
+     * Returns all the shadow generators associated to this light
+     * @returns
+     */
+    public getShadowGenerators(): Nullable<Map<Nullable<Camera>, IShadowGenerator>> {
+        return this._shadowGenerators;
     }
 
     /**
@@ -502,7 +516,7 @@ export abstract class Light extends Node implements ISortableLight {
     /**
      * Specifies if the light will affect the passed mesh.
      * @param mesh The mesh to test against the light
-     * @return true the mesh is affected otherwise, false.
+     * @returns true the mesh is affected otherwise, false.
      */
     public canAffectMesh(mesh: AbstractMesh): boolean {
         if (!mesh) {
@@ -534,9 +548,13 @@ export abstract class Light extends Node implements ISortableLight {
      * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
      */
     public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void {
-        if (this._shadowGenerator) {
-            this._shadowGenerator.dispose();
-            this._shadowGenerator = null;
+        if (this._shadowGenerators) {
+            const iterator = this._shadowGenerators.values();
+            for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
+                const shadowGenerator = key.value;
+                shadowGenerator.dispose();
+            }
+            this._shadowGenerators = null;
         }
 
         // Animations
@@ -617,7 +635,7 @@ export abstract class Light extends Node implements ISortableLight {
 
         // Parent
         if (this.parent) {
-            serializationObject.parentId = this.parent.uniqueId;
+            this.parent._serializeAsParent(serializationObject);
         }
 
         // Inclusion / exclusions
@@ -690,6 +708,10 @@ export abstract class Light extends Node implements ISortableLight {
         // Parent
         if (parsedLight.parentId !== undefined) {
             light._waitingParentId = parsedLight.parentId;
+        }
+
+        if (parsedLight.parentInstanceIndex !== undefined) {
+            light._waitingParentInstanceIndex = parsedLight.parentInstanceIndex;
         }
 
         // Falloff
@@ -784,7 +806,7 @@ export abstract class Light extends Node implements ISortableLight {
 
     /**
      * Forces the meshes to update their light related information in their rendering used effects
-     * @hidden Internal Use Only
+     * @internal Internal Use Only
      */
     public _markMeshesAsLightDirty() {
         for (const mesh of this.getScene().meshes) {
@@ -864,7 +886,7 @@ export abstract class Light extends Node implements ISortableLight {
 
     /**
      * Reorder the light in the scene according to their defined priority.
-     * @hidden Internal Use Only
+     * @internal Internal Use Only
      */
     public _reorderLightsInScene(): void {
         const scene = this.getScene();

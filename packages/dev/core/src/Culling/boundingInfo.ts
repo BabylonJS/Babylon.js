@@ -1,6 +1,7 @@
 import type { DeepImmutable } from "../types";
 import { ArrayTools } from "../Misc/arrayTools";
 import type { Matrix } from "../Maths/math.vector";
+import { TmpVectors } from "../Maths/math.vector";
 import { Vector3 } from "../Maths/math.vector";
 import { Constants } from "../Engines/constants";
 import { BoundingBox } from "./boundingBox";
@@ -31,7 +32,7 @@ const axisOverlap = (axis: DeepImmutable<Vector3>, box0: DeepImmutable<BoundingB
 
 /**
  * Interface for cullable objects
- * @see https://doc.babylonjs.com/babylon101/materials#back-face-culling
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/materials_introduction#back-face-culling
  */
 export interface ICullable {
     /**
@@ -144,7 +145,7 @@ export class BoundingInfo implements ICullable {
 
     /**
      * Grows the bounding info to include the given point.
-     * @param point The point that will be included in the current bounding info
+     * @param point The point that will be included in the current bounding info (in local space)
      * @returns the current bounding info
      */
     public encapsulate(point: Vector3): BoundingInfo {
@@ -161,8 +162,16 @@ export class BoundingInfo implements ICullable {
      * @returns the current bounding info
      */
     public encapsulateBoundingInfo(toEncapsulate: BoundingInfo): BoundingInfo {
-        this.encapsulate(toEncapsulate.boundingBox.centerWorld.subtract(toEncapsulate.boundingBox.extendSizeWorld));
-        this.encapsulate(toEncapsulate.boundingBox.centerWorld.add(toEncapsulate.boundingBox.extendSizeWorld));
+        const invw = TmpVectors.Matrix[0];
+        this.boundingBox.getWorldMatrix().invertToRef(invw);
+
+        const v = TmpVectors.Vector3[0];
+
+        Vector3.TransformCoordinatesToRef(toEncapsulate.boundingBox.minimumWorld, invw, v);
+        this.encapsulate(v);
+
+        Vector3.TransformCoordinatesToRef(toEncapsulate.boundingBox.maximumWorld, invw, v);
+        this.encapsulate(v);
 
         return this;
     }
@@ -183,6 +192,11 @@ export class BoundingInfo implements ICullable {
      * Returns `true` if the bounding info is within the frustum defined by the passed array of planes.
      * @param frustumPlanes defines the frustum to test
      * @param strategy defines the strategy to use for the culling (default is BABYLON.AbstractMesh.CULLINGSTRATEGY_STANDARD)
+     * The different strategies available are:
+     * * BABYLON.AbstractMesh.CULLINGSTRATEGY_STANDARD most accurate but slower @see https://doc.babylonjs.com/typedoc/classes/BABYLON.AbstractMesh#CULLINGSTRATEGY_STANDARD
+     * * BABYLON.AbstractMesh.CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY faster but less accurate @see https://doc.babylonjs.com/typedoc/classes/BABYLON.AbstractMesh#CULLINGSTRATEGY_BOUNDINGSPHERE_ONLY
+     * * BABYLON.AbstractMesh.CULLINGSTRATEGY_OPTIMISTIC_INCLUSION can be faster if always visible @see https://doc.babylonjs.com/typedoc/classes/BABYLON.AbstractMesh#CULLINGSTRATEGY_OPTIMISTIC_INCLUSION
+     * * BABYLON.AbstractMesh.CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY can be faster if always visible @see https://doc.babylonjs.com/typedoc/classes/BABYLON.AbstractMesh#CULLINGSTRATEGY_OPTIMISTIC_INCLUSION_THEN_BSPHERE_ONLY
      * @returns true if the bounding info is in the frustum planes
      */
     public isInFrustum(frustumPlanes: Array<DeepImmutable<Plane>>, strategy: number = Constants.MESHES_CULLINGSTRATEGY_STANDARD): boolean {
@@ -226,8 +240,7 @@ export class BoundingInfo implements ICullable {
         return this.boundingBox.isCompletelyInFrustum(frustumPlanes);
     }
     /**
-     * @param collider
-     * @hidden
+     * @internal
      */
     public _checkCollision(collider: Collider): boolean {
         return collider._canDoCollision(this.boundingSphere.centerWorld, this.boundingSphere.radiusWorld, this.boundingBox.minimumWorld, this.boundingBox.maximumWorld);
@@ -235,7 +248,7 @@ export class BoundingInfo implements ICullable {
 
     /**
      * Checks if a point is inside the bounding box and bounding sphere or the mesh
-     * @see https://doc.babylonjs.com/babylon101/intersect_collisions_-_mesh
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/interactions/mesh_intersect
      * @param point the point to check intersection with
      * @returns if the point intersects
      */
@@ -257,7 +270,7 @@ export class BoundingInfo implements ICullable {
 
     /**
      * Checks if another bounding info intersects the bounding box and bounding sphere or the mesh
-     * @see https://doc.babylonjs.com/babylon101/intersect_collisions_-_mesh
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/interactions/mesh_intersect
      * @param boundingInfo the bounding info to check intersection with
      * @param precise if the intersection should be done using OBB
      * @returns if the bounding info intersects

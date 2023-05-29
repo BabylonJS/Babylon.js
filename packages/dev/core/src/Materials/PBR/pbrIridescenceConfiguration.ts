@@ -17,7 +17,7 @@ declare type Scene = import("../../scene").Scene;
 declare type PBRBaseMaterial = import("./pbrBaseMaterial").PBRBaseMaterial;
 
 /**
- * @hidden
+ * @internal
  */
 export class MaterialIridescenceDefines extends MaterialDefines {
     public IRIDESCENCE = false;
@@ -37,21 +37,21 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
     /**
      * The default minimum thickness of the thin-film layer given in nanometers (nm).
      * Defaults to 100 nm.
-     * @hidden
+     * @internal
      */
     public static readonly _DefaultMinimumThickness = 100;
 
     /**
      * The default maximum thickness of the thin-film layer given in nanometers (nm).
      * Defaults to 400 nm.
-     * @hidden
+     * @internal
      */
     public static readonly _DefaultMaximumThickness = 400;
 
     /**
      * The default index of refraction of the thin-film layer.
      * Defaults to 1.3
-     * @hidden
+     * @internal
      */
     public static readonly _DefaultIndexOfRefraction = 1.3;
 
@@ -103,10 +103,10 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public thicknessTexture: Nullable<BaseTexture> = null;
 
-    /** @hidden */
+    /** @internal */
     private _internalMarkAllSubMeshesAsTexturesDirty: () => void;
 
-    /** @hidden */
+    /** @internal */
     public _markAllSubMeshesAsTexturesDirty(): void {
         this._enable(this._isEnabled);
         this._internalMarkAllSubMeshesAsTexturesDirty();
@@ -142,7 +142,7 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
         return true;
     }
 
-    public prepareDefines(defines: MaterialIridescenceDefines, scene: Scene): void {
+    public prepareDefinesBeforeAttributes(defines: MaterialIridescenceDefines, scene: Scene): void {
         if (this._isEnabled) {
             defines.IRIDESCENCE = true;
             defines.IRIDESCENCE_USE_THICKNESS_FROM_MAINTEXTURE =
@@ -168,6 +168,8 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
             defines.IRIDESCENCE_TEXTURE = false;
             defines.IRIDESCENCE_THICKNESS_TEXTURE = false;
             defines.IRIDESCENCE_USE_THICKNESS_FROM_MAINTEXTURE = false;
+            defines.IRIDESCENCE_TEXTUREDIRECTUV = 0;
+            defines.IRIDESCENCE_THICKNESS_TEXTUREDIRECTUV = 0;
         }
     }
 

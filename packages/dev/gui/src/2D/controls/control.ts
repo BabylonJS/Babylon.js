@@ -17,16 +17,21 @@ import { ValueAndUnit } from "../valueAndUnit";
 import { Measure } from "../measure";
 import type { Style } from "../style";
 import { Matrix2D, Vector2WithInfo } from "../math2D";
-import { RegisterClass } from "core/Misc/typeStore";
+import { GetClass, RegisterClass } from "core/Misc/typeStore";
 import { SerializationHelper, serialize } from "core/Misc/decorators";
-import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import type { ICanvasGradient, ICanvasRenderingContext } from "core/Engines/ICanvas";
 import { EngineStore } from "core/Engines/engineStore";
+import type { IAccessibilityTag } from "core/IAccessibilityTag";
+import type { IPointerEvent } from "core/Events/deviceInputEvents";
+import type { IAnimatable } from "core/Animations/animatable.interface";
+import type { Animation } from "core/Animations/animation";
+import type { BaseGradient } from "./gradient/BaseGradient";
 
 /**
  * Root class used for all 2D controls
- * @see https://doc.babylonjs.com/how_to/gui#controls
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#controls
  */
-export class Control {
+export class Control implements IAnimatable {
     /**
      * Gets or sets a boolean indicating if alpha must be an inherited value (false by default)
      */
@@ -35,61 +40,61 @@ export class Control {
     private _alpha = 1;
     private _alphaSet = false;
     private _zIndex = 0;
-    /** @hidden */
+    /** @internal */
     public _host: AdvancedDynamicTexture;
     /** Gets or sets the control parent */
     public parent: Nullable<Container>;
-    /** @hidden */
+    /** @internal */
     public _currentMeasure = Measure.Empty();
-    /** @hidden */
+    /** @internal */
     public _tempPaddingMeasure = Measure.Empty();
     private _fontFamily = "Arial";
     private _fontStyle = "";
     private _fontWeight = "";
     private _fontSize = new ValueAndUnit(18, ValueAndUnit.UNITMODE_PIXEL, false);
     private _font: string;
-    /** @hidden */
+    /** @internal */
     public _width = new ValueAndUnit(1, ValueAndUnit.UNITMODE_PERCENTAGE, false);
-    /** @hidden */
+    /** @internal */
     public _height = new ValueAndUnit(1, ValueAndUnit.UNITMODE_PERCENTAGE, false);
-    /** @hidden */
+    /** @internal */
     protected _fontOffset: { ascent: number; height: number; descent: number };
     private _color = "";
     private _style: Nullable<Style> = null;
     private _styleObserver: Nullable<Observer<Style>>;
-    /** @hidden */
+    /** @internal */
     protected _horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
-    /** @hidden */
+    /** @internal */
     protected _verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
-    /** @hidden */
+    /** @internal */
     protected _isDirty = true;
-    /** @hidden */
+    /** @internal */
     protected _wasDirty = false;
-    /** @hidden */
+    /** @internal */
     public _tempParentMeasure = Measure.Empty();
-    /** @hidden */
+    /** @internal */
     public _prevCurrentMeasureTransformedIntoGlobalSpace = Measure.Empty();
-    /** @hidden */
-    protected _cachedParentMeasure = Measure.Empty();
+    /** @internal */
+    public _cachedParentMeasure = Measure.Empty();
     private _descendantsOnlyPadding = false;
     private _paddingLeft = new ValueAndUnit(0);
     private _paddingRight = new ValueAndUnit(0);
     private _paddingTop = new ValueAndUnit(0);
     private _paddingBottom = new ValueAndUnit(0);
-    /** @hidden */
+    /** @internal */
     public _left = new ValueAndUnit(0);
-    /** @hidden */
+    /** @internal */
     public _top = new ValueAndUnit(0);
     private _scaleX = 1.0;
     private _scaleY = 1.0;
     private _rotation = 0;
     private _transformCenterX = 0.5;
     private _transformCenterY = 0.5;
-    /** @hidden */
+    /** @internal */
     public _transformMatrix = Matrix2D.Identity();
-    /** @hidden */
+    /** @internal */
     protected _invertTransformMatrix = Matrix2D.Identity();
-    /** @hidden */
+    /** @internal */
     protected _transformedPosition = Vector2.Zero();
     private _isMatrixDirty = true;
     private _cachedOffsetX: number;
@@ -98,7 +103,7 @@ export class Control {
     private _isHighlighted = false;
     private _highlightColor = "#4affff";
     protected _highlightLineWidth = 2;
-    /** @hidden */
+    /** @internal */
     public _linkedMesh: Nullable<TransformNode>;
     private _fontSet = false;
     private _dummyVector2 = Vector2.Zero();
@@ -112,19 +117,20 @@ export class Control {
     protected _disabledColor = "#9a9a9a";
     protected _disabledColorItem = "#6a6a6a";
     protected _isReadOnly = false;
-    /** @hidden */
+    private _gradient: Nullable<BaseGradient> = null;
+    /** @internal */
     protected _rebuildLayout = false;
 
-    /** @hidden */
+    /** @internal */
     public _customData: any = {};
 
-    /** @hidden */
+    /** @internal */
     public _isClipped = false;
 
-    /** @hidden */
+    /** @internal */
     public _automaticSize = false;
 
-    /** @hidden */
+    /** @internal */
     public _tag: any;
 
     /**
@@ -160,26 +166,46 @@ export class Control {
     /** Gets or sets a boolean indicating if the control can be hit with pointer events */
     @serialize()
     public isHitTestVisible = true;
-    /** Gets or sets a boolean indicating if the control can block pointer events */
+    /** Gets or sets a boolean indicating if the control can block pointer events. False by default except on the following controls:
+     * * Button controls (Button, RadioButton, ToggleButton)
+     * * Checkbox
+     * * ColorPicker
+     * * InputText
+     * * Slider
+     */
     @serialize()
     public isPointerBlocker = false;
     /** Gets or sets a boolean indicating if the control can be focusable */
     @serialize()
     public isFocusInvisible = false;
 
+    protected _clipChildren = true;
     /**
-     * Gets or sets a boolean indicating if the children are clipped to the current control bounds.
+     * Sets/Gets a boolean indicating if the children are clipped to the current control bounds.
      * Please note that not clipping children may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
      */
-    @serialize()
-    public clipChildren = true;
+    public set clipChildren(value: boolean) {
+        this._clipChildren = value;
+    }
 
-    /**
-     * Gets or sets a boolean indicating that control content must be clipped
-     * Please note that not clipping children may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
-     */
     @serialize()
-    public clipContent = true;
+    public get clipChildren() {
+        return this._clipChildren;
+    }
+
+    protected _clipContent = true;
+    /**
+     * Sets/Gets a boolean indicating that control content must be clipped
+     * Please note that not clipping content may generate issues with adt.useInvalidateRectOptimization so it is recommended to turn this optimization off if you want to use unclipped children
+     */
+    public set clipContent(value: boolean) {
+        this._clipContent = value;
+    }
+
+    @serialize()
+    public get clipContent() {
+        return this._clipContent;
+    }
 
     /**
      * Gets or sets a boolean indicating that the current control should cache its rendering (useful when the control does not change often)
@@ -260,9 +286,9 @@ export class Control {
     @serialize()
     public hoverCursor = "";
 
-    /** @hidden */
+    /** @internal */
     protected _linkOffsetX = new ValueAndUnit(0);
-    /** @hidden */
+    /** @internal */
     protected _linkOffsetY = new ValueAndUnit(0);
 
     // Properties
@@ -279,6 +305,23 @@ export class Control {
     public getClassName(): string {
         return this._getTypeName();
     }
+
+    /**
+     * Gets or sets the accessibility tag to describe the control for accessibility purpose.
+     * By default, GUI controls already indicate accessibility info, but one can override the info using this tag.
+     */
+    public set accessibilityTag(value: Nullable<IAccessibilityTag>) {
+        this._accessibilityTag = value;
+        this.onAccessibilityTagChangedObservable.notifyObservers(value);
+    }
+
+    public get accessibilityTag() {
+        return this._accessibilityTag;
+    }
+
+    protected _accessibilityTag: Nullable<IAccessibilityTag> = null;
+
+    public onAccessibilityTagChangedObservable = new Observable<Nullable<IAccessibilityTag>>();
 
     /**
      * An event triggered when pointer wheel is scrolled
@@ -333,6 +376,11 @@ export class Control {
      * An event triggered when the control has been disposed
      */
     public onDisposeObservable = new Observable<Control>();
+
+    /**
+     * An event triggered when the control isVisible is changed
+     */
+    public onIsVisibleChangedObservable = new Observable<boolean>();
 
     /**
      * Get the hosting AdvancedDynamicTexture
@@ -415,7 +463,7 @@ export class Control {
     }
 
     /** Gets or sets a value indicating the scale factor on X axis (1 by default)
-     * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#rotation-and-scaling
      */
     @serialize()
     public get scaleX(): number {
@@ -433,7 +481,7 @@ export class Control {
     }
 
     /** Gets or sets a value indicating the scale factor on Y axis (1 by default)
-     * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#rotation-and-scaling
      */
     @serialize()
     public get scaleY(): number {
@@ -451,7 +499,7 @@ export class Control {
     }
 
     /** Gets or sets the rotation angle (0 by default)
-     * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#rotation-and-scaling
      */
     @serialize()
     public get rotation(): number {
@@ -469,7 +517,7 @@ export class Control {
     }
 
     /** Gets or sets the transformation center on Y axis (0 by default)
-     * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#rotation-and-scaling
      */
     @serialize()
     public get transformCenterY(): number {
@@ -487,7 +535,7 @@ export class Control {
     }
 
     /** Gets or sets the transformation center on X axis (0 by default)
-     * @see https://doc.babylonjs.com/how_to/gui#rotation-and-scaling
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#rotation-and-scaling
      */
     @serialize()
     public get transformCenterX(): number {
@@ -506,7 +554,7 @@ export class Control {
 
     /**
      * Gets or sets the horizontal alignment
-     * @see https://doc.babylonjs.com/how_to/gui#alignments
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#alignments
      */
     @serialize()
     public get horizontalAlignment(): number {
@@ -524,7 +572,7 @@ export class Control {
 
     /**
      * Gets or sets the vertical alignment
-     * @see https://doc.babylonjs.com/how_to/gui#alignments
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#alignments
      */
     @serialize()
     public get verticalAlignment(): number {
@@ -549,11 +597,11 @@ export class Control {
     @serialize()
     public fixedRatio = 0;
 
-    private _fixedRatioMasterIsWidth = true;
+    protected _fixedRatioMasterIsWidth = true;
 
     /**
      * Gets or sets control width
-     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     @serialize()
     public get width(): string | number {
@@ -574,7 +622,7 @@ export class Control {
 
     /**
      * Gets or sets the control width in pixel
-     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     public get widthInPixels(): number {
         return this._width.getValueInPixel(this._host, this._cachedParentMeasure.width);
@@ -590,7 +638,7 @@ export class Control {
 
     /**
      * Gets or sets control height
-     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     @serialize()
     public get height(): string | number {
@@ -611,7 +659,7 @@ export class Control {
 
     /**
      * Gets or sets control height in pixel
-     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     public get heightInPixels(): number {
         return this._height.getValueInPixel(this._host, this._cachedParentMeasure.height);
@@ -669,7 +717,7 @@ export class Control {
 
     /**
      * Gets or sets style
-     * @see https://doc.babylonjs.com/how_to/gui#styles
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#styles
      */
     @serialize()
     public get style(): Nullable<Style> {
@@ -695,7 +743,7 @@ export class Control {
         this._resetFontCache();
     }
 
-    /** @hidden */
+    /** @internal */
     public get _isFontSizeInPercentage(): boolean {
         return this._fontSize.isPercentage;
     }
@@ -749,6 +797,21 @@ export class Control {
         this._markAsDirty();
     }
 
+    /** Gets or sets gradient. Setting a gradient will override the color */
+    @serialize()
+    public get gradient(): Nullable<BaseGradient> {
+        return this._gradient;
+    }
+
+    public set gradient(value: Nullable<BaseGradient>) {
+        if (this._gradient === value) {
+            return;
+        }
+
+        this._gradient = value;
+        this._markAsDirty();
+    }
+
     /** Gets or sets z index which is used to reorder controls on the z axis */
     @serialize()
     public get zIndex(): number {
@@ -795,6 +858,8 @@ export class Control {
 
         this._isVisible = value;
         this._markAsDirty(true);
+
+        this.onIsVisibleChangedObservable.notifyObservers(value);
     }
 
     /** Gets a boolean indicating that the control needs to update its rendering */
@@ -829,7 +894,7 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the padding to use on the left of the control
-     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     @serialize()
     public get paddingLeft(): string | number {
@@ -844,7 +909,7 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the padding in pixels to use on the left of the control
-     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     public get paddingLeftInPixels(): number {
         return this._paddingLeft.getValueInPixel(this._host, this._cachedParentMeasure.width);
@@ -857,7 +922,7 @@ export class Control {
         this.paddingLeft = value + "px";
     }
 
-    /** @hidden */
+    /** @internal */
     public get _paddingLeftInPixels(): number {
         if (this._descendantsOnlyPadding) {
             return 0;
@@ -868,7 +933,7 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the padding to use on the right of the control
-     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     @serialize()
     public get paddingRight(): string | number {
@@ -883,7 +948,7 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the padding in pixels to use on the right of the control
-     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     public get paddingRightInPixels(): number {
         return this._paddingRight.getValueInPixel(this._host, this._cachedParentMeasure.width);
@@ -896,7 +961,7 @@ export class Control {
         this.paddingRight = value + "px";
     }
 
-    /** @hidden */
+    /** @internal */
     public get _paddingRightInPixels(): number {
         if (this._descendantsOnlyPadding) {
             return 0;
@@ -907,7 +972,7 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the padding to use on the top of the control
-     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     @serialize()
     public get paddingTop(): string | number {
@@ -922,7 +987,7 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the padding in pixels to use on the top of the control
-     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     public get paddingTopInPixels(): number {
         return this._paddingTop.getValueInPixel(this._host, this._cachedParentMeasure.height);
@@ -935,7 +1000,7 @@ export class Control {
         this.paddingTop = value + "px";
     }
 
-    /** @hidden */
+    /** @internal */
     public get _paddingTopInPixels(): number {
         if (this._descendantsOnlyPadding) {
             return 0;
@@ -946,7 +1011,7 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the padding to use on the bottom of the control
-     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     @serialize()
     public get paddingBottom(): string | number {
@@ -961,7 +1026,7 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the padding in pixels to use on the bottom of the control
-     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     public get paddingBottomInPixels(): number {
         return this._paddingBottom.getValueInPixel(this._host, this._cachedParentMeasure.height);
@@ -974,7 +1039,7 @@ export class Control {
         this.paddingBottom = value + "px";
     }
 
-    /** @hidden */
+    /** @internal */
     public get _paddingBottomInPixels(): number {
         if (this._descendantsOnlyPadding) {
             return 0;
@@ -985,7 +1050,7 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the left coordinate of the control
-     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     @serialize()
     public get left(): string | number {
@@ -1000,7 +1065,7 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the left coordinate in pixels of the control
-     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     public get leftInPixels(): number {
         return this._left.getValueInPixel(this._host, this._cachedParentMeasure.width);
@@ -1015,7 +1080,7 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the top coordinate of the control
-     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     @serialize()
     public get top(): string | number {
@@ -1030,7 +1095,7 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the top coordinate in pixels of the control
-     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     public get topInPixels(): number {
         return this._top.getValueInPixel(this._host, this._cachedParentMeasure.height);
@@ -1045,7 +1110,7 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the offset on X axis to the linked mesh
-     * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#tracking-positions
      */
     @serialize()
     public get linkOffsetX(): string | number {
@@ -1060,7 +1125,7 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the offset in pixels on X axis to the linked mesh
-     * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#tracking-positions
      */
     public get linkOffsetXInPixels(): number {
         return this._linkOffsetX.getValueInPixel(this._host, this._cachedParentMeasure.width);
@@ -1075,7 +1140,7 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the offset on Y axis to the linked mesh
-     * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#tracking-positions
      */
     @serialize()
     public get linkOffsetY(): string | number {
@@ -1090,7 +1155,7 @@ export class Control {
 
     /**
      * Gets or sets a value indicating the offset in pixels on Y axis to the linked mesh
-     * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#tracking-positions
      */
     public get linkOffsetYInPixels(): number {
         return this._linkOffsetY.getValueInPixel(this._host, this._cachedParentMeasure.height);
@@ -1176,7 +1241,7 @@ export class Control {
      * Gets/sets the overlap group of the control.
      * Controls with overlapGroup set to a number can be deoverlapped.
      * Controls with overlapGroup set to undefined are not deoverlapped.
-     * @see https://doc.babylonjs.com/how_to/gui#deoverlapping
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#deoverlapping
      */
     @serialize()
     public overlapGroup?: number;
@@ -1185,6 +1250,11 @@ export class Control {
      */
     @serialize()
     public overlapDeltaMultiplier?: number;
+
+    /**
+     * Array of animations
+     */
+    animations: Nullable<Animation[]> = null;
 
     // Functions
 
@@ -1197,7 +1267,7 @@ export class Control {
         public name?: string
     ) {}
 
-    /** @hidden */
+    /** @internal */
     protected _getTypeName(): string {
         return "Control";
     }
@@ -1234,7 +1304,7 @@ export class Control {
         this._markAllAsDirty();
     }
 
-    /** @hidden */
+    /** @internal */
     public _resetFontCache(): void {
         this._fontSet = true;
         this._markAsDirty();
@@ -1311,7 +1381,7 @@ export class Control {
         this.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
 
         const globalViewport = this._host._getGlobalViewport();
-        const projectedPosition = Vector3.Project(position, Matrix.Identity(), scene.getTransformMatrix(), globalViewport);
+        const projectedPosition = Vector3.Project(position, Matrix.IdentityReadOnly, scene.getTransformMatrix(), globalViewport);
 
         this._moveToProjectedPosition(projectedPosition);
 
@@ -1336,7 +1406,7 @@ export class Control {
      * Will return all controls that have this control as ascendant
      * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
      * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
-     * @return all child controls
+     * @returns all child controls
      */
     public getDescendants(directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): Control[] {
         const results = new Array<Control>();
@@ -1349,7 +1419,7 @@ export class Control {
     /**
      * Link current control with a target mesh
      * @param mesh defines the mesh to link with
-     * @see https://doc.babylonjs.com/how_to/gui#tracking-positions
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#tracking-positions
      */
     public linkWithMesh(mesh: Nullable<TransformNode>): void {
         if (!this._host || (this.parent && this.parent !== this._host._rootContainer)) {
@@ -1382,7 +1452,7 @@ export class Control {
      * @param { string | number} paddingRight - The value of the right padding. If omitted, top is used.
      * @param { string | number} paddingBottom - The value of the bottom padding. If omitted, top is used.
      * @param { string | number} paddingLeft - The value of the left padding. If omitted, right is used.
-     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     public setPadding(paddingTop: string | number, paddingRight?: string | number, paddingBottom?: string | number, paddingLeft?: string | number) {
         const top = paddingTop;
@@ -1402,7 +1472,7 @@ export class Control {
      * @param { number} paddingRight - The value in pixels of the right padding. If omitted, top is used.
      * @param { number} paddingBottom - The value in pixels of the bottom padding. If omitted, top is used.
      * @param { number} paddingLeft - The value in pixels of the left padding. If omitted, right is used.
-     * @see https://doc.babylonjs.com/how_to/gui#position-and-size
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     public setPaddingInPixels(paddingTop: number, paddingRight?: number, paddingBottom?: number, paddingLeft?: number) {
         const top = paddingTop;
@@ -1417,8 +1487,7 @@ export class Control {
     }
 
     /**
-     * @param projectedPosition
-     * @hidden
+     * @internal
      */
     public _moveToProjectedPosition(projectedPosition: Vector3): void {
         const oldLeft = this._left.getValue(this._host);
@@ -1432,7 +1501,8 @@ export class Control {
         let newLeft = projectedPosition.x + this._linkOffsetX.getValue(this._host) - this._currentMeasure.width / 2;
         let newTop = projectedPosition.y + this._linkOffsetY.getValue(this._host) - this._currentMeasure.height / 2;
 
-        if (this._left.ignoreAdaptiveScaling && this._top.ignoreAdaptiveScaling) {
+        const leftAndTopIgnoreAdaptiveScaling = this._left.ignoreAdaptiveScaling && this._top.ignoreAdaptiveScaling;
+        if (leftAndTopIgnoreAdaptiveScaling) {
             if (Math.abs(newLeft - oldLeft) < 0.5) {
                 newLeft = oldLeft;
             }
@@ -1440,6 +1510,10 @@ export class Control {
             if (Math.abs(newTop - oldTop) < 0.5) {
                 newTop = oldTop;
             }
+        }
+
+        if (!leftAndTopIgnoreAdaptiveScaling && oldLeft === newLeft && oldTop === newTop) {
+            return;
         }
 
         this.left = newLeft + "px";
@@ -1451,8 +1525,7 @@ export class Control {
     }
 
     /**
-     * @param offset
-     * @hidden
+     * @internal
      */
     public _offsetLeft(offset: number) {
         this._isDirty = true;
@@ -1460,29 +1533,26 @@ export class Control {
     }
 
     /**
-     * @param offset
-     * @hidden
+     * @internal
      */
     public _offsetTop(offset: number) {
         this._isDirty = true;
         this._currentMeasure.top += offset;
     }
 
-    /** @hidden */
+    /** @internal */
     public _markMatrixAsDirty(): void {
         this._isMatrixDirty = true;
         this._flagDescendantsAsMatrixDirty();
     }
 
-    /** @hidden */
+    /** @internal */
     public _flagDescendantsAsMatrixDirty(): void {
         // No child
     }
 
     /**
-     * @param rect
-     * @param context
-     * @hidden
+     * @internal
      */
     public _intersectsRect(rect: Measure, context?: ICanvasRenderingContext) {
         // make sure we are transformed correctly before checking intersections. no-op if nothing is dirty.
@@ -1506,19 +1576,19 @@ export class Control {
         return true;
     }
 
-    /** @hidden */
+    /** @internal */
     protected _computeAdditionnalOffsetX() {
         return 0;
     }
 
-    /** @hidden */
+    /** @internal */
     protected _computeAdditionnalOffsetY() {
         return 0;
     }
 
-    /** @hidden */
+    /** @internal */
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    protected invalidateRect() {
+    public invalidateRect() {
         this._transform();
         if (this.host && this.host.useInvalidateRectOptimization) {
             // Rotate by transform to get the measure transformed to global space
@@ -1550,8 +1620,7 @@ export class Control {
     }
 
     /**
-     * @param force
-     * @hidden
+     * @internal
      */
     public _markAsDirty(force = false): void {
         if (!this._isVisible && !force) {
@@ -1567,7 +1636,7 @@ export class Control {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _markAllAsDirty(): void {
         this._markAsDirty();
 
@@ -1577,8 +1646,7 @@ export class Control {
     }
 
     /**
-     * @param host
-     * @hidden
+     * @internal
      */
     public _link(host: AdvancedDynamicTexture): void {
         this._host = host;
@@ -1588,8 +1656,7 @@ export class Control {
     }
 
     /**
-     * @param context
-     * @hidden
+     * @internal
      */
     protected _transform(context?: ICanvasRenderingContext): void {
         if (!this._isMatrixDirty && this._scaleX === 1 && this._scaleY === 1 && this._rotation === 0) {
@@ -1626,8 +1693,7 @@ export class Control {
     }
 
     /**
-     * @param context
-     * @hidden
+     * @internal
      */
     public _renderHighlight(context: ICanvasRenderingContext): void {
         if (!this.isHighlighted) {
@@ -1643,16 +1709,18 @@ export class Control {
     }
 
     /**
-     * @param context
-     * @hidden
+     * @internal
      */
     public _renderHighlightSpecific(context: ICanvasRenderingContext): void {
         context.strokeRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
     }
 
+    protected _getColor(context: ICanvasRenderingContext): string | ICanvasGradient {
+        return this.gradient ? this.gradient.getCanvasGradient(context) : this.color;
+    }
+
     /**
-     * @param context
-     * @hidden
+     * @internal
      */
     protected _applyStates(context: ICanvasRenderingContext): void {
         if (this._isFontSizeInPercentage) {
@@ -1672,8 +1740,8 @@ export class Control {
             context.font = this._font;
         }
 
-        if (this._color) {
-            context.fillStyle = this._color;
+        if (this._color || this.gradient) {
+            context.fillStyle = this._getColor(context);
         }
 
         if (Control.AllowAlphaInheritance) {
@@ -1684,9 +1752,7 @@ export class Control {
     }
 
     /**
-     * @param parentMeasure
-     * @param context
-     * @hidden
+     * @internal
      */
     public _layout(parentMeasure: Measure, context: ICanvasRenderingContext): boolean {
         if (!this.isDirty && (!this.isVisible || this.notRenderable)) {
@@ -1732,9 +1798,7 @@ export class Control {
     }
 
     /**
-     * @param parentMeasure
-     * @param context
-     * @hidden
+     * @internal
      */
     protected _processMeasures(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         this._tempPaddingMeasure.copyFrom(parentMeasure);
@@ -1773,6 +1837,8 @@ export class Control {
     }
 
     protected _evaluateClippingState(parentMeasure: Measure) {
+        // Since transformMatrix is used here, we need to have it freshly computed
+        this._transform();
         this._currentMeasure.transformToRef(this._transformMatrix, this._evaluatedMeasure);
         if (this.parent && this.parent.clipChildren) {
             parentMeasure.transformToRef(this.parent._transformMatrix, this._evaluatedParentMeasure);
@@ -1801,7 +1867,7 @@ export class Control {
         this._isClipped = false;
     }
 
-    /** @hidden */
+    /** @internal */
     public _measure(): void {
         // Width / Height
         if (this._width.isPixel) {
@@ -1826,9 +1892,7 @@ export class Control {
     }
 
     /**
-     * @param parentMeasure
-     * @param context
-     * @hidden
+     * @internal
      */
     protected _computeAlignment(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         const width = this._currentMeasure.width;
@@ -1912,26 +1976,21 @@ export class Control {
     }
 
     /**
-     * @param parentMeasure
-     * @param context
-     * @hidden
+     * @internal
      */
     protected _preMeasure(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         // Do nothing
     }
 
     /**
-     * @param parentMeasure
-     * @param context
-     * @hidden
+     * @internal
      */
     protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         // Do nothing
     }
 
     /**
-     * @param context
-     * @hidden
+     * @internal
      */
     protected _clipForChildren(context: ICanvasRenderingContext): void {
         // DO nothing
@@ -1979,9 +2038,7 @@ export class Control {
     }
 
     /**
-     * @param context
-     * @param invalidatedRectangle
-     * @hidden
+     * @internal
      */
     public _render(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): boolean {
         if (!this.isVisible || this.notRenderable || this._isClipped) {
@@ -2029,9 +2086,7 @@ export class Control {
     }
 
     /**
-     * @param context
-     * @param invalidatedRectangle
-     * @hidden
+     * @internal
      */
     public _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Nullable<Measure>): void {
         // Do nothing
@@ -2074,15 +2129,7 @@ export class Control {
     }
 
     /**
-     * @param x
-     * @param y
-     * @param pi
-     * @param type
-     * @param pointerId
-     * @param buttonIndex
-     * @param deltaX
-     * @param deltaY
-     * @hidden
+     * @internal
      */
     public _processPicking(x: number, y: number, pi: Nullable<PointerInfoBase>, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
         if (!this._isEnabled) {
@@ -2102,24 +2149,18 @@ export class Control {
     }
 
     /**
-     * @param target
-     * @param coordinates
-     * @param pointerId
-     * @param pi
-     * @hidden
+     * @internal
      */
     public _onPointerMove(target: Control, coordinates: Vector2, pointerId: number, pi: Nullable<PointerInfoBase>): void {
         const canNotify: boolean = this.onPointerMoveObservable.notifyObservers(coordinates, -1, target, this, pi);
 
-        if (canNotify && this.parent != null) {
+        if (canNotify && this.parent != null && !this.isPointerBlocker) {
             this.parent._onPointerMove(target, coordinates, pointerId, pi);
         }
     }
 
     /**
-     * @param target
-     * @param pi
-     * @hidden
+     * @internal
      */
     public _onPointerEnter(target: Control, pi: Nullable<PointerInfoBase>): boolean {
         if (!this._isEnabled) {
@@ -2137,7 +2178,7 @@ export class Control {
 
         const canNotify: boolean = this.onPointerEnterObservable.notifyObservers(this, -1, target, this, pi);
 
-        if (canNotify && this.parent != null) {
+        if (canNotify && this.parent != null && !this.isPointerBlocker) {
             this.parent._onPointerEnter(target, pi);
         }
 
@@ -2145,10 +2186,7 @@ export class Control {
     }
 
     /**
-     * @param target
-     * @param pi
-     * @param force
-     * @hidden
+     * @internal
      */
     public _onPointerOut(target: Control, pi: Nullable<PointerInfoBase>, force = false): void {
         if (!force && (!this._isEnabled || target === this)) {
@@ -2162,18 +2200,13 @@ export class Control {
             canNotify = this.onPointerOutObservable.notifyObservers(this, -1, target, this, pi);
         }
 
-        if (canNotify && this.parent != null) {
+        if (canNotify && this.parent != null && !this.isPointerBlocker) {
             this.parent._onPointerOut(target, pi, force);
         }
     }
 
     /**
-     * @param target
-     * @param coordinates
-     * @param pointerId
-     * @param buttonIndex
-     * @param pi
-     * @hidden
+     * @internal
      */
     public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: Nullable<PointerInfoBase>): boolean {
         // Prevent pointerout to lose control context.
@@ -2190,21 +2223,19 @@ export class Control {
 
         const canNotify: boolean = this.onPointerDownObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this, pi);
 
-        if (canNotify && this.parent != null) {
+        if (canNotify && this.parent != null && !this.isPointerBlocker) {
             this.parent._onPointerDown(target, coordinates, pointerId, buttonIndex, pi);
+        }
+
+        if (pi && this.uniqueId !== this._host.rootContainer.uniqueId) {
+            this._host._capturedPointerIds.add((pi.event as IPointerEvent).pointerId);
         }
 
         return true;
     }
 
     /**
-     * @param target
-     * @param coordinates
-     * @param pointerId
-     * @param buttonIndex
-     * @param notifyClick
-     * @param pi
-     * @hidden
+     * @internal
      */
     public _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean, pi?: Nullable<PointerInfoBase>): void {
         if (!this._isEnabled) {
@@ -2220,14 +2251,17 @@ export class Control {
         }
         const canNotify: boolean = this.onPointerUpObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this, pi);
 
-        if (canNotify && this.parent != null) {
+        if (canNotify && this.parent != null && !this.isPointerBlocker) {
             this.parent._onPointerUp(target, coordinates, pointerId, buttonIndex, canNotifyClick, pi);
+        }
+
+        if (pi && this.uniqueId !== this._host.rootContainer.uniqueId) {
+            this._host._capturedPointerIds.delete((pi.event as IPointerEvent).pointerId);
         }
     }
 
     /**
-     * @param pointerId
-     * @hidden
+     * @internal
      */
     public _forcePointerUp(pointerId: Nullable<number> = null) {
         if (pointerId !== null) {
@@ -2240,9 +2274,7 @@ export class Control {
     }
 
     /**
-     * @param deltaX
-     * @param deltaY
-     * @hidden
+     * @internal
      */
     public _onWheelScroll(deltaX?: number, deltaY?: number): void {
         if (!this._isEnabled) {
@@ -2255,19 +2287,11 @@ export class Control {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _onCanvasBlur(): void {}
 
     /**
-     * @param type
-     * @param x
-     * @param y
-     * @param pi
-     * @param pointerId
-     * @param buttonIndex
-     * @param deltaX
-     * @param deltaY
-     * @hidden
+     * @internal
      */
     public _processObservables(
         type: number,
@@ -2342,6 +2366,38 @@ export class Control {
     }
 
     /**
+     * Clones a control and its descendants
+     * @param host the texture where the control will be instantiated. Can be empty, in which case the control will be created on the same texture
+     * @returns the cloned control
+     */
+    public clone(host?: AdvancedDynamicTexture): Control {
+        const serialization: any = {};
+        this.serialize(serialization);
+
+        const controlType = Tools.Instantiate("BABYLON.GUI." + serialization.className);
+        const cloned = new controlType();
+        cloned.parse(serialization, host);
+
+        return cloned;
+    }
+
+    /**
+     * Parses a serialized object into this control
+     * @param serializedObject the object with the serialized properties
+     * @param host the texture where the control will be instantiated. Can be empty, in which case the control will be created on the same texture
+     * @returns this control
+     */
+    public parse(serializedObject: any, host?: AdvancedDynamicTexture): Control {
+        SerializationHelper.Parse(() => this, serializedObject, null);
+
+        this.name = serializedObject.name;
+
+        this._parseFromContent(serializedObject, host ?? this._host);
+
+        return this;
+    }
+
+    /**
      * Serializes the current control
      * @param serializationObject defined the JSON serialized object
      */
@@ -2350,18 +2406,26 @@ export class Control {
         serializationObject.name = this.name;
         serializationObject.className = this.getClassName();
 
+        // Call prepareFont to guarantee the font is properly set before serializing
+        this._prepareFont();
         if (this._font) {
             serializationObject.fontFamily = this._fontFamily;
             serializationObject.fontSize = this.fontSize;
             serializationObject.fontWeight = this.fontWeight;
             serializationObject.fontStyle = this.fontStyle;
         }
+
+        if (this._gradient) {
+            serializationObject.gradient = {};
+            this._gradient.serialize(serializationObject.gradient);
+        }
+
+        // Animations
+        SerializationHelper.AppendSerializedAnimations(this, serializationObject);
     }
 
     /**
-     * @param serializedObject
-     * @param host
-     * @hidden
+     * @internal
      */
     public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
         if (serializedObject.fontFamily) {
@@ -2378,6 +2442,37 @@ export class Control {
 
         if (serializedObject.fontStyle) {
             this.fontStyle = serializedObject.fontStyle;
+        }
+
+        // Gradient
+        if (serializedObject.gradient) {
+            const className = Tools.Instantiate("BABYLON.GUI." + serializedObject.gradient.className);
+            this._gradient = new className();
+            this._gradient?.parse(serializedObject.gradient);
+        }
+
+        // Animations
+        if (serializedObject.animations) {
+            this.animations = [];
+            for (let animationIndex = 0; animationIndex < serializedObject.animations.length; animationIndex++) {
+                const parsedAnimation = serializedObject.animations[animationIndex];
+                const internalClass = GetClass("BABYLON.Animation");
+                if (internalClass) {
+                    this.animations.push(internalClass.Parse(parsedAnimation));
+                }
+            }
+
+            if (serializedObject.autoAnimate && this._host && this._host.getScene()) {
+                this._host
+                    .getScene()!
+                    .beginAnimation(
+                        this,
+                        serializedObject.autoAnimateFrom,
+                        serializedObject.autoAnimateTo,
+                        serializedObject.autoAnimateLoop,
+                        serializedObject.autoAnimateSpeed || 1.0
+                    );
+            }
         }
     }
 
@@ -2458,8 +2553,7 @@ export class Control {
     private static _FontHeightSizes: { [key: string]: { ascent: number; height: number; descent: number } } = {};
 
     /**
-     * @param font
-     * @hidden
+     * @internal
      */
     public static _GetFontOffset(font: string): { ascent: number; height: number; descent: number } {
         if (Control._FontHeightSizes[font]) {
@@ -2497,12 +2591,7 @@ export class Control {
     public static AddHeader: (control: Control, text: string, size: string | number, options: { isHorizontal: boolean; controlFirst: boolean }) => any = () => {};
 
     /**
-     * @param x
-     * @param y
-     * @param width
-     * @param height
-     * @param context
-     * @hidden
+     * @internal
      */
     protected static drawEllipse(x: number, y: number, width: number, height: number, context: ICanvasRenderingContext): void {
         context.translate(x, y);
@@ -2514,6 +2603,15 @@ export class Control {
 
         context.scale(1 / width, 1 / height);
         context.translate(-x, -y);
+    }
+
+    /**
+     * Returns true if the control is ready to be used
+     * @returns
+     */
+    public isReady(): boolean {
+        // Most controls are ready by default, so the default implementation is to return true
+        return true;
     }
 }
 RegisterClass("BABYLON.GUI.Control", Control);

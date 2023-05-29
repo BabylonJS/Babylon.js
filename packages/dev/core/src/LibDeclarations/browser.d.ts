@@ -22,6 +22,12 @@ interface Window {
     setImmediate(handler: (...args: any[]) => void): number;
 }
 
+interface WorkerGlobalScope {
+    importScripts: (...args: string[]) => void;
+}
+
+type WorkerSelf = WindowOrWorkerGlobalScope & WorkerGlobalScope;
+
 interface HTMLCanvasElement {
     requestPointerLock(): void;
     msRequestPointerLock?(): void;
@@ -81,4 +87,38 @@ interface OffscreenCanvas extends EventTarget {
 declare var OffscreenCanvas: {
     prototype: OffscreenCanvas;
     new (width: number, height: number): OffscreenCanvas;
+};
+
+// Experimental Pressure API https://wicg.github.io/compute-pressure/
+type PressureSource = "cpu";
+
+type PressureState = "nominal" | "fair" | "serious" | "critical";
+
+type PressureFactor = "thermal" | "power-supply";
+
+interface PressureRecord {
+    source: PressureSource;
+    state: PressureState;
+    factors: ReadonlyArray<PressureFactor>;
+    time: number;
+}
+
+interface PressureObserver {
+    observe(source: PressureSource): void;
+    unobserve(source: PressureSource): void;
+    disconnect(): void;
+    takeRecords(): Array<PressureRecord>;
+}
+
+interface PressureObserverOptions {
+    sampleRate?: number;
+}
+
+type PressureUpdateCallback = (changes: Array<PressureRecord>, observer: PressureObserver) => void;
+
+declare const PressureObserver: {
+    prototype: PressureObserver;
+    new (callback: PressureUpdateCallback, options?: PressureObserverOptions): PressureObserver;
+
+    supportedSources: ReadonlyArray<PressureSource>;
 };

@@ -51,6 +51,7 @@ export class BackgroundMaterialPropertyGridComponent extends React.Component<IBa
                 />
                 {material.reflectionTexture && (
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Reflection blur"
                         target={material}
                         propertyName="reflectionBlur"
@@ -68,7 +69,7 @@ export class BackgroundMaterialPropertyGridComponent extends React.Component<IBa
         const material = this.props.material;
 
         return (
-            <div className="pane">
+            <>
                 <CommonMaterialPropertyGridComponent
                     globalState={this.props.globalState}
                     lockObject={this.props.lockObject}
@@ -76,8 +77,15 @@ export class BackgroundMaterialPropertyGridComponent extends React.Component<IBa
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
                 <LineContainerComponent title="LIGHTING & COLORS" selection={this.props.globalState}>
-                    <Color3LineComponent label="Primary" target={material} propertyName="primaryColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Color3LineComponent
+                        lockObject={this.props.lockObject}
+                        label="Primary"
+                        target={material}
+                        propertyName="primaryColor"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Shadow level"
                         target={material}
                         propertyName="primaryColorShadowLevel"
@@ -87,6 +95,7 @@ export class BackgroundMaterialPropertyGridComponent extends React.Component<IBa
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Highlight level"
                         target={material}
                         propertyName="primaryColorHighlightLevel"
@@ -112,6 +121,7 @@ export class BackgroundMaterialPropertyGridComponent extends React.Component<IBa
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Reflection amount"
                         target={material}
                         propertyName="reflectionAmount"
@@ -121,7 +131,7 @@ export class BackgroundMaterialPropertyGridComponent extends React.Component<IBa
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

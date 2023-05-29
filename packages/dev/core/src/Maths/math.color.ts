@@ -4,6 +4,28 @@ import { ToLinearSpace, ToGammaSpace } from "./math.constants";
 import { ArrayTools } from "../Misc/arrayTools";
 import { RegisterClass } from "../Misc/typeStore";
 
+function colorChannelToLinearSpace(color: number): number {
+    return Math.pow(color, ToLinearSpace);
+}
+
+function colorChannelToLinearSpaceExact(color: number): number {
+    if (color <= 0.04045) {
+        return 0.0773993808 * color;
+    }
+    return Math.pow(0.947867299 * (color + 0.055), 2.4);
+}
+
+function colorChannelToGammaSpace(color: number): number {
+    return Math.pow(color, ToGammaSpace);
+}
+
+function colorChannelToGammaSpaceExact(color: number): number {
+    if (color <= 0.0031308) {
+        return 12.92 * color;
+    }
+    return 1.055 * Math.pow(color, 0.41666) - 0.055;
+}
+
 /**
  * Class used to hold a RGB color
  */
@@ -151,12 +173,24 @@ export class Color3 {
     }
 
     /**
-     * Multiplies in place each rgb value by scale
-     * @param scale defines the scaling factor
-     * @returns the updated Color3
+     * Creates a new Color3 with the current Color3 values multiplied by scale
+     * @param scale defines the scaling factor to apply
+     * @returns a new Color3 object
      */
     public scale(scale: number): Color3 {
         return new Color3(this.r * scale, this.g * scale, this.b * scale);
+    }
+
+    /**
+     * Multiplies the Color3 values by the float "scale"
+     * @param scale defines the scaling factor to apply
+     * @returns the current updated Color3
+     */
+    public scaleInPlace(scale: number): Color3 {
+        this.r *= scale;
+        this.g *= scale;
+        this.b *= scale;
+        return this;
     }
 
     /**
@@ -300,16 +334,6 @@ export class Color3 {
     }
 
     /**
-     * Computes a new Color3 converted from the current one to linear space
-     * @returns a new Color3 object
-     */
-    public toLinearSpace(): Color3 {
-        const convertedColor = new Color3();
-        this.toLinearSpaceToRef(convertedColor);
-        return convertedColor;
-    }
-
-    /**
      * Converts current color in rgb space to HSV values
      * @returns a new color3 representing the HSV values
      */
@@ -362,36 +386,62 @@ export class Color3 {
     }
 
     /**
+     * Computes a new Color3 converted from the current one to linear space
+     * @param exact defines if the conversion will be done in an exact way which is slower but more accurate (default is false)
+     * @returns a new Color3 object
+     */
+    public toLinearSpace(exact = false): Color3 {
+        const convertedColor = new Color3();
+        this.toLinearSpaceToRef(convertedColor, exact);
+        return convertedColor;
+    }
+
+    /**
      * Converts the Color3 values to linear space and stores the result in "convertedColor"
      * @param convertedColor defines the Color3 object where to store the linear space version
+     * @param exact defines if the conversion will be done in an exact way which is slower but more accurate (default is false)
      * @returns the unmodified Color3
      */
-    public toLinearSpaceToRef(convertedColor: Color3): Color3 {
-        convertedColor.r = Math.pow(this.r, ToLinearSpace);
-        convertedColor.g = Math.pow(this.g, ToLinearSpace);
-        convertedColor.b = Math.pow(this.b, ToLinearSpace);
+    public toLinearSpaceToRef(convertedColor: Color3, exact = false): Color3 {
+        if (exact) {
+            convertedColor.r = colorChannelToLinearSpaceExact(this.r);
+            convertedColor.g = colorChannelToLinearSpaceExact(this.g);
+            convertedColor.b = colorChannelToLinearSpaceExact(this.b);
+        } else {
+            convertedColor.r = colorChannelToLinearSpace(this.r);
+            convertedColor.g = colorChannelToLinearSpace(this.g);
+            convertedColor.b = colorChannelToLinearSpace(this.b);
+        }
         return this;
     }
 
     /**
      * Computes a new Color3 converted from the current one to gamma space
+     * @param exact defines if the conversion will be done in an exact way which is slower but more accurate (default is false)
      * @returns a new Color3 object
      */
-    public toGammaSpace(): Color3 {
+    public toGammaSpace(exact = false): Color3 {
         const convertedColor = new Color3();
-        this.toGammaSpaceToRef(convertedColor);
+        this.toGammaSpaceToRef(convertedColor, exact);
         return convertedColor;
     }
 
     /**
      * Converts the Color3 values to gamma space and stores the result in "convertedColor"
      * @param convertedColor defines the Color3 object where to store the gamma space version
+     * @param exact defines if the conversion will be done in an exact way which is slower but more accurate (default is false)
      * @returns the unmodified Color3
      */
-    public toGammaSpaceToRef(convertedColor: Color3): Color3 {
-        convertedColor.r = Math.pow(this.r, ToGammaSpace);
-        convertedColor.g = Math.pow(this.g, ToGammaSpace);
-        convertedColor.b = Math.pow(this.b, ToGammaSpace);
+    public toGammaSpaceToRef(convertedColor: Color3, exact = false): Color3 {
+        if (exact) {
+            convertedColor.r = colorChannelToGammaSpaceExact(this.r);
+            convertedColor.g = colorChannelToGammaSpaceExact(this.g);
+            convertedColor.b = colorChannelToGammaSpaceExact(this.b);
+        } else {
+            convertedColor.r = colorChannelToGammaSpace(this.r);
+            convertedColor.g = colorChannelToGammaSpace(this.g);
+            convertedColor.b = colorChannelToGammaSpace(this.b);
+        }
         return this;
     }
 
@@ -400,7 +450,7 @@ export class Color3 {
     private static _BlackReadOnly = Color3.Black() as DeepImmutable<Color3>;
 
     /**
-     * Convert Hue, saturation and value to a Color3 (RGB)
+     * Converts Hue, saturation and value to a Color3 (RGB)
      * @param hue defines the hue
      * @param saturation defines the saturation
      * @param value defines the value
@@ -436,6 +486,19 @@ export class Color3 {
 
         const m = value - chroma;
         result.set(r + m, g + m, b + m);
+    }
+
+    /**
+     * Converts Hue, saturation and value to a new Color3 (RGB)
+     * @param hue defines the hue (value between 0 and 360)
+     * @param saturation defines the saturation (value between 0 and 1)
+     * @param value defines the value (value between 0 and 1)
+     * @returns a new Color3 object
+     */
+    public static FromHSV(hue: number, saturation: number, value: number): Color3 {
+        const result = new Color3(0, 0, 0);
+        Color3.HSVtoRGBToRef(hue, saturation, value, result);
+        return result;
     }
 
     /**
@@ -800,6 +863,19 @@ export class Color4 {
     }
 
     /**
+     * Multiplies the Color4 values by the float "scale"
+     * @param scale defines the scaling factor to apply
+     * @returns the current updated Color4
+     */
+    public scaleInPlace(scale: number): Color4 {
+        this.r *= scale;
+        this.g *= scale;
+        this.b *= scale;
+        this.a *= scale;
+        return this;
+    }
+
+    /**
      * Multiplies the current Color4 values by scale and stores the result in "result"
      * @param scale defines the scaling factor to apply
      * @param result defines the Color4 object where to store the result
@@ -962,46 +1038,62 @@ export class Color4 {
 
     /**
      * Computes a new Color4 converted from the current one to linear space
+     * @param exact defines if the conversion will be done in an exact way which is slower but more accurate (default is false)
      * @returns a new Color4 object
      */
-    public toLinearSpace(): Color4 {
+    public toLinearSpace(exact = false): Color4 {
         const convertedColor = new Color4();
-        this.toLinearSpaceToRef(convertedColor);
+        this.toLinearSpaceToRef(convertedColor, exact);
         return convertedColor;
     }
 
     /**
      * Converts the Color4 values to linear space and stores the result in "convertedColor"
      * @param convertedColor defines the Color4 object where to store the linear space version
+     * @param exact defines if the conversion will be done in an exact way which is slower but more accurate (default is false)
      * @returns the unmodified Color4
      */
-    public toLinearSpaceToRef(convertedColor: Color4): Color4 {
-        convertedColor.r = Math.pow(this.r, ToLinearSpace);
-        convertedColor.g = Math.pow(this.g, ToLinearSpace);
-        convertedColor.b = Math.pow(this.b, ToLinearSpace);
+    public toLinearSpaceToRef(convertedColor: Color4, exact = false): Color4 {
+        if (exact) {
+            convertedColor.r = colorChannelToLinearSpaceExact(this.r);
+            convertedColor.g = colorChannelToLinearSpaceExact(this.g);
+            convertedColor.b = colorChannelToLinearSpaceExact(this.b);
+        } else {
+            convertedColor.r = colorChannelToLinearSpace(this.r);
+            convertedColor.g = colorChannelToLinearSpace(this.g);
+            convertedColor.b = colorChannelToLinearSpace(this.b);
+        }
         convertedColor.a = this.a;
         return this;
     }
 
     /**
      * Computes a new Color4 converted from the current one to gamma space
+     * @param exact defines if the conversion will be done in an exact way which is slower but more accurate (default is false)
      * @returns a new Color4 object
      */
-    public toGammaSpace(): Color4 {
+    public toGammaSpace(exact = false): Color4 {
         const convertedColor = new Color4();
-        this.toGammaSpaceToRef(convertedColor);
+        this.toGammaSpaceToRef(convertedColor, exact);
         return convertedColor;
     }
 
     /**
      * Converts the Color4 values to gamma space and stores the result in "convertedColor"
      * @param convertedColor defines the Color4 object where to store the gamma space version
+     * @param exact defines if the conversion will be done in an exact way which is slower but more accurate (default is false)
      * @returns the unmodified Color4
      */
-    public toGammaSpaceToRef(convertedColor: Color4): Color4 {
-        convertedColor.r = Math.pow(this.r, ToGammaSpace);
-        convertedColor.g = Math.pow(this.g, ToGammaSpace);
-        convertedColor.b = Math.pow(this.b, ToGammaSpace);
+    public toGammaSpaceToRef(convertedColor: Color4, exact = false): Color4 {
+        if (exact) {
+            convertedColor.r = colorChannelToGammaSpaceExact(this.r);
+            convertedColor.g = colorChannelToGammaSpaceExact(this.g);
+            convertedColor.b = colorChannelToGammaSpaceExact(this.b);
+        } else {
+            convertedColor.r = colorChannelToGammaSpace(this.r);
+            convertedColor.g = colorChannelToGammaSpace(this.g);
+            convertedColor.b = colorChannelToGammaSpace(this.b);
+        }
         convertedColor.a = this.a;
         return this;
     }
@@ -1206,7 +1298,7 @@ export class Color4 {
 }
 
 /**
- * @hidden
+ * @internal
  */
 export class TmpColors {
     public static Color3: Color3[] = ArrayTools.BuildArray(3, Color3.Black);

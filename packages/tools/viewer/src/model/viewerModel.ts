@@ -5,7 +5,7 @@ import { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { IParticleSystem } from "core/Particles/IParticleSystem";
 import type { Skeleton } from "core/Bones/skeleton";
 import { Observable } from "core/Misc/observable";
-
+import "core/Misc/observable.extensions";
 import { AnimationGroup } from "core/Animations/animationGroup";
 import type { Animatable } from "core/Animations/index";
 import {
@@ -577,7 +577,7 @@ export class ViewerModel implements IDisposable {
     /**
      * Apply a material configuration to a material
      * @param material Material to apply configuration to
-     * @hidden
+     * @internal
      */
     public _applyModelMaterialConfiguration(material: Material) {
         if (!this._modelConfiguration.material) {
@@ -704,7 +704,7 @@ export class ViewerModel implements IDisposable {
     /**
      * Creates and returns a Babylon easing funtion object based on a string representing the Easing function
      * @param easingFunctionID The enum of the easing funtion to create
-     * @return The newly created Babylon easing function object
+     * @returns The newly created Babylon easing function object
      */
     private _createEasingFunction(easingFunctionID?: number): any {
         let easingFunction;

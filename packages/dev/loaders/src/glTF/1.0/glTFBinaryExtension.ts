@@ -20,7 +20,10 @@ interface IGLTFBinaryExtensionImage {
     width: number;
 }
 
-/** @hidden */
+/**
+ * @internal
+ * @deprecated
+ */
 export class GLTFBinaryExtension extends GLTFLoaderExtension {
     private _bin: IDataBuffer;
 

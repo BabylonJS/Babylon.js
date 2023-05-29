@@ -185,7 +185,7 @@ export class TextureUtils {
      * @param automaticMipmaps Pass true to enable automatic mipmap generation where possible (requires power of images)
      * @param environment Specifies that the texture will be used as an environment
      * @param singleLod Specifies that the texture will be a singleLod (for environment)
-     * @return Babylon cube texture
+     * @returns Babylon cube texture
      */
     public static GetBabylonCubeTexture(scene: Scene, textureCube: TextureCube, automaticMipmaps: boolean, environment = false, singleLod = false): CubeTexture {
         if (!textureCube) {

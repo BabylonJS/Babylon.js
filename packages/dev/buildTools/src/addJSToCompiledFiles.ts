@@ -5,7 +5,9 @@ import { checkArgs } from "./utils";
 
 function processSource(sourceCode: string, forceMJS: boolean) {
     const extension = forceMJS ? ".mjs" : ".js";
-    return sourceCode.replace(/((import|export).*["'](@babylonjs\/.*\/|\.{1,2}\/).*)("|');/g, `$1${extension}$4;`).replace(new RegExp(`(${extension}){2,}`, "g"), extension);
+    return sourceCode
+        .replace(/((import|export).*["'](@babylonjs\/.*\/|\.{1,2}\/)((?!\.scss|\.svg|\.png|\.jpg).)*)("|');/g, `$1${extension}$5;`)
+        .replace(new RegExp(`(${extension}){2,}`, "g"), extension);
 }
 
 export function addJsExtensionsToCompiledFiles(files: string[], forceMJS: boolean) {
@@ -31,7 +33,7 @@ export const addJsExtensionsToCompiledFilesCommand = () => {
     let pathForFiles = checkArgs(["--path-of-sources", "-pos"], false, true);
     const forceMJS = !!checkArgs("--mjs", true);
     if (!pathForFiles) {
-        pathForFiles = "./dist/**/*.js";
+        pathForFiles = "./**/*.js";
         console.log("No path specified, using default: " + pathForFiles);
     }
     if (typeof pathForFiles === "string") {

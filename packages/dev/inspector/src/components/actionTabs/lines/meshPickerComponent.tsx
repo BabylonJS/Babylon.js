@@ -41,14 +41,14 @@ export class MeshPickerComponent extends React.Component<IMeshPickerComponentPro
                     target={this.props.target}
                     propertyName={this.props.property}
                     noDirectUpdate={true}
-                    onSelect={(value: number) => {
+                    onSelect={(value) => {
                         const currentState = this.props.target[this.props.property];
                         switch (value) {
                             case -1:
                                 this.props.target[this.props.property] = null;
                                 break;
                             default:
-                                this.props.target[this.props.property] = meshEmitters[value];
+                                this.props.target[this.props.property] = meshEmitters[value as number];
                         }
 
                         if (this.props.onPropertyChangedObservable) {

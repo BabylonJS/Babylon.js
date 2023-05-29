@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 import type { Nullable } from "core/types";
 import { Vector3 } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
@@ -40,8 +39,10 @@ interface ILoaderAnimationEvents {
 }
 
 /**
- * [Specification](https://github.com/najadojo/glTF/tree/MSFT_audio_emitter/extensions/2.0/Vendor/MSFT_audio_emitter)
+ * [Specification](https://github.com/najadojo/glTF/blob/MSFT_audio_emitter/extensions/2.0/Vendor/MSFT_audio_emitter/README.md)
+ * !!! Experimental Extension Subject to Changes !!!
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class MSFT_audio_emitter implements IGLTFLoaderExtension {
     /**
      * The name of this extension.
@@ -58,22 +59,21 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
     private _emitters: Array<ILoaderEmitter>;
 
     /**
-     * @param loader
-     * @hidden
+     * @internal
      */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
         this.enabled = this._loader.isExtensionUsed(NAME);
     }
 
-    /** @hidden */
+    /** @internal */
     public dispose() {
         (this._loader as any) = null;
         (this._clips as any) = null;
         (this._emitters as any) = null;
     }
 
-    /** @hidden */
+    /** @internal */
     public onLoading(): void {
         const extensions = this._loader.gltf.extensions;
         if (extensions && extensions[this.name]) {
@@ -88,9 +88,7 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
     }
 
     /**
-     * @param context
-     * @param scene
-     * @hidden
+     * @internal
      */
     public loadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IMSFTAudioEmitter_EmittersReference>(context, scene, this.name, (extensionContext, extension) => {
@@ -119,10 +117,7 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
     }
 
     /**
-     * @param context
-     * @param node
-     * @param assign
-     * @hidden
+     * @internal
      */
     public loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>> {
         return GLTFLoader.LoadExtensionAsync<IMSFTAudioEmitter_EmittersReference, TransformNode>(context, node, this.name, (extensionContext, extension) => {
@@ -160,9 +155,7 @@ export class MSFT_audio_emitter implements IGLTFLoaderExtension {
     }
 
     /**
-     * @param context
-     * @param animation
-     * @hidden
+     * @internal
      */
     public loadAnimationAsync(context: string, animation: IAnimation): Nullable<Promise<AnimationGroup>> {
         return GLTFLoader.LoadExtensionAsync<ILoaderAnimationEvents, AnimationGroup>(context, animation, this.name, (extensionContext, extension) => {

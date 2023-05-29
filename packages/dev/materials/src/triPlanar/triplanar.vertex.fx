@@ -42,7 +42,7 @@ varying vec3 vPositionW;
 varying mat3 tangentSpace;
 #endif
 
-#if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR)
+#if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR) && defined(INSTANCES)
 varying vec4 vColor;
 #endif
 
@@ -117,11 +117,7 @@ void main(void)
 	#include<shadowsVertex>[0..maxSimultaneousLights]
 
 	// Vertex color
-#ifdef VERTEXCOLOR
-	vColor = color;
-#elif INSTANCESCOLOR
-	vColor = instanceColor;
-#endif
+#include<vertexColorMixing>
 
 	// Point size
 #if defined(POINTSIZE) && !defined(WEBGPU)

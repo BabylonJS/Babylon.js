@@ -2,14 +2,17 @@
     "extends": "../../../../tsconfig.build.json",
 
     "compilerOptions": {
-        "outDir": "./dist",
+        "outDir": "./",
         "rootDir": "../../../lts/core/generated",
         "declaration": true,
-        "target": "es5",
+        "target": "ES2018",
         "importHelpers": true,
         "plugins": [
             { "transform": "../../../dev/buildTools/src/pathTransform.ts", "buildType": "es6", "basePackage": "@babylonjs/core", "appendJS": true },
-        ]
+        ],
+        "paths": {
+            "core/*": ["lts/core/generated/*"],
+        }
     },
 
     "include": ["../../../lts/core/generated/**/*"]

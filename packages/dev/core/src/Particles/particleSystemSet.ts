@@ -116,7 +116,7 @@ export class ParticleSystemSet implements IDisposable {
             system.dispose();
         }
 
-        this.systems = [];
+        this.systems.length = 0;
 
         if (this._emitterNode) {
             if ((this._emitterNode as AbstractMesh).dispose) {

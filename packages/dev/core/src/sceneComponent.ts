@@ -14,7 +14,7 @@ declare type RenderTargetTexture = import("./Materials/Textures/renderTargetText
 
 /**
  * Groups all the scene component constants in one place to ease maintenance.
- * @hidden
+ * @internal
  */
 export class SceneComponentConstants {
     public static readonly NAME_EFFECTLAYER = "EffectLayer";
@@ -37,6 +37,7 @@ export class SceneComponentConstants {
     public static readonly NAME_OCTREE = "Octree";
     public static readonly NAME_PHYSICSENGINE = "PhysicsEngine";
     public static readonly NAME_AUDIO = "Audio";
+    public static readonly NAME_FLUIDRENDERER = "FluidRenderer";
 
     public static readonly STEP_ISREADYFORMESH_EFFECTLAYER = 0;
 
@@ -68,6 +69,9 @@ export class SceneComponentConstants {
     public static readonly STEP_BEFORECAMERAUPDATE_GAMEPAD = 1;
 
     public static readonly STEP_BEFORECLEAR_PROCEDURALTEXTURE = 0;
+    public static readonly STEP_BEFORECLEAR_PREPASS = 1;
+
+    public static readonly STEP_BEFORERENDERTARGETCLEAR_PREPASS = 0;
 
     public static readonly STEP_AFTERRENDERTARGETDRAW_PREPASS = 0;
     public static readonly STEP_AFTERRENDERTARGETDRAW_LAYER = 1;
@@ -77,6 +81,11 @@ export class SceneComponentConstants {
     public static readonly STEP_AFTERCAMERADRAW_LENSFLARESYSTEM = 2;
     public static readonly STEP_AFTERCAMERADRAW_EFFECTLAYER_DRAW = 3;
     public static readonly STEP_AFTERCAMERADRAW_LAYER = 4;
+    public static readonly STEP_AFTERCAMERADRAW_FLUIDRENDERER = 5;
+
+    public static readonly STEP_AFTERCAMERAPOSTPROCESS_LAYER = 0;
+
+    public static readonly STEP_AFTERRENDERTARGETPOSTPROCESS_LAYER = 0;
 
     public static readonly STEP_AFTERRENDER_AUDIO = 0;
 
@@ -86,9 +95,7 @@ export class SceneComponentConstants {
     public static readonly STEP_GATHERRENDERTARGETS_POSTPROCESSRENDERPIPELINEMANAGER = 3;
 
     public static readonly STEP_GATHERACTIVECAMERARENDERTARGETS_DEPTHRENDERER = 0;
-
-    public static readonly STEP_BEFORECLEARSTAGE_PREPASS = 0;
-    public static readonly STEP_BEFORERENDERTARGETCLEARSTAGE_PREPASS = 0;
+    public static readonly STEP_GATHERACTIVECAMERARENDERTARGETS_FLUIDRENDERER = 1;
 
     public static readonly STEP_POINTERMOVE_SPRITE = 0;
     public static readonly STEP_POINTERDOWN_SPRITE = 0;
@@ -219,11 +226,17 @@ export type PointerMoveStageAction = (
 /**
  * Strong typing of a pointer up/down action.
  */
-export type PointerUpDownStageAction = (unTranslatedPointerX: number, unTranslatedPointerY: number, pickResult: Nullable<PickingInfo>, evt: IPointerEvent) => Nullable<PickingInfo>;
+export type PointerUpDownStageAction = (
+    unTranslatedPointerX: number,
+    unTranslatedPointerY: number,
+    pickResult: Nullable<PickingInfo>,
+    evt: IPointerEvent,
+    doubleClick: boolean
+) => Nullable<PickingInfo>;
 
 /**
  * Representation of a stage in the scene (Basically a list of ordered steps)
- * @hidden
+ * @internal
  */
 export class Stage<T extends Function> extends Array<{ index: number; component: ISceneComponent; action: T }> {
     /**

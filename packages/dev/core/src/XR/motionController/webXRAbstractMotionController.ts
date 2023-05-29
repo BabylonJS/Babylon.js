@@ -295,7 +295,7 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
          */
         public handedness: MotionControllerHandedness,
         /**
-         * @hidden
+         * @internal
          */
         public _doNotLoadControllerMesh: boolean = false,
         private _controllerCache?: Array<{
@@ -327,7 +327,7 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
     /**
      * Returns all components of specific type
      * @param type the type to search for
-     * @return an array of components with this type
+     * @returns an array of components with this type
      */
     public getAllComponentsOfType(type: MotionControllerComponentType): WebXRControllerComponent[] {
         return this.getComponentIds()
@@ -355,7 +355,7 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
     /**
      * Get the first component of specific type
      * @param type type of component to find
-     * @return a controller component or null if not found
+     * @returns a controller component or null if not found
      */
     public getComponentOfType(type: MotionControllerComponentType): Nullable<WebXRControllerComponent> {
         return this.getAllComponentsOfType(type)[0] || null;
@@ -479,8 +479,7 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
      * Moves the axis on the controller mesh based on its current state
      * @param axisMap
      * @param axisValue the value of the axis which determines the meshes new position
-     * @param fixValueCoordinates
-     * @hidden
+     * @internal
      */
     protected _lerpTransform(axisMap: IMotionControllerMeshMap, axisValue: number, fixValueCoordinates?: boolean): void {
         if (!axisMap.minMesh || !axisMap.maxMesh || !axisMap.valueMesh) {

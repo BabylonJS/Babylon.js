@@ -20,6 +20,7 @@ import { RegisterClass } from "core/Misc/typeStore";
 import "./lava.fragment";
 import "./lava.vertex";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
+import { addClipPlaneUniforms, bindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
 
 class LavaMaterialDefines extends MaterialDefines {
     public DIFFUSE = false;
@@ -158,7 +159,7 @@ export class LavaMaterial extends PushMaterial {
     // Methods
     public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
         if (this.isFrozen) {
-            if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
+            if (subMesh.effect && subMesh.effect._wasPreviouslyReady && subMesh.effect._wasPreviouslyUsingInstances === useInstances) {
                 return true;
             }
         }
@@ -200,7 +201,7 @@ export class LavaMaterial extends PushMaterial {
         MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
 
         // Values that need to be evaluated on every frame
-        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
+        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, this, defines, useInstances ? true : false);
 
         // Attribs
         MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
@@ -262,12 +263,6 @@ export class LavaMaterial extends PushMaterial {
                 "pointSize",
                 "vDiffuseInfos",
                 "mBones",
-                "vClipPlane",
-                "vClipPlane2",
-                "vClipPlane3",
-                "vClipPlane4",
-                "vClipPlane5",
-                "vClipPlane6",
                 "diffuseMatrix",
                 "time",
                 "speed",
@@ -276,6 +271,7 @@ export class LavaMaterial extends PushMaterial {
                 "fogDensity",
                 "lowFrequencySpeed",
             ];
+            addClipPlaneUniforms(uniforms);
 
             const samplers = ["diffuseSampler", "noiseTexture"];
             const uniformBuffers = new Array<string>();
@@ -314,6 +310,7 @@ export class LavaMaterial extends PushMaterial {
 
         defines._renderId = scene.getRenderId();
         subMesh.effect._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyUsingInstances = !!useInstances;
 
         return true;
     }
@@ -356,7 +353,7 @@ export class LavaMaterial extends PushMaterial {
             }
 
             // Clip plane
-            MaterialHelper.BindClipPlane(this._activeEffect, scene);
+            bindClipPlane(effect, this, scene);
 
             // Point size
             if (this.pointsCloud) {

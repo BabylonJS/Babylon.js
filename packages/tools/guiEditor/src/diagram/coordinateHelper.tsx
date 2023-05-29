@@ -7,8 +7,20 @@ import { Vector2 } from "core/Maths/math.vector";
 import type { Observable } from "core/Misc/observable";
 import type { GlobalState } from "../globalState";
 import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import { Measure } from "gui/2D/measure";
 
-export type DimensionProperties = "width" | "left" | "height" | "top" | "paddingLeft" | "paddingRight" | "paddingTop" | "paddingBottom" | "fontSize";
+export type DimensionProperties =
+    | "width"
+    | "left"
+    | "height"
+    | "top"
+    | "paddingLeft"
+    | "paddingRight"
+    | "paddingTop"
+    | "paddingBottom"
+    | "fontSize"
+    | "linkOffsetX"
+    | "linkOffsetY";
 
 export class Rect {
     public top: number;
@@ -82,6 +94,22 @@ export class CoordinateHelper {
         return rotation;
     }
 
+    public static GetParentSizes(guiControl: Control): Measure {
+        const parentMeasure = new Measure(0, 0, 0, 0);
+        if (guiControl.parent) {
+            parentMeasure.copyFrom(guiControl.parent._currentMeasure);
+            if (guiControl.parent.typeName === "Grid") {
+                const cellInfo = (guiControl.parent as Grid).getChildCellInfo(guiControl);
+                const cell = (guiControl.parent as Grid).cells[cellInfo];
+                if (cell) {
+                    parentMeasure.width = cell.widthInPixels;
+                    parentMeasure.height = cell.heightInPixels;
+                }
+            }
+        }
+        return parentMeasure;
+    }
+
     /**
      * This function calculates a local matrix for a node, including it's full transformation and pivot point
      *
@@ -92,8 +120,15 @@ export class CoordinateHelper {
     public static GetNodeMatrix(node: Control, storedValues?: Rect): Matrix2D {
         const size = this.GlobalState.guiTexture.getSize();
         // parent should always be defined, but stay safe
-        const parentWidth = node.parent ? node.parent._currentMeasure.width : size.width;
-        const parentHeight = node.parent ? node.parent._currentMeasure.height : size.height;
+        let parentWidth, parentHeight;
+        if (node.parent) {
+            const parentSizes = CoordinateHelper.GetParentSizes(node);
+            parentWidth = parentSizes.width;
+            parentHeight = parentSizes.height;
+        } else {
+            parentWidth = size.width;
+            parentHeight = size.height;
+        }
         let x = 0;
         let y = 0;
 
@@ -209,7 +244,7 @@ export class CoordinateHelper {
         return new Vector2(x + engine.getRenderWidth() / 2, y + engine.getRenderHeight() / 2);
     }
 
-    public static MousePointerToRTTSpace(node: Control, x?: number, y?: number) {
+    public static MousePointerToRTTSpace(_node?: Control, x?: number, y?: number) {
         const scene = this.GlobalState.workbench._scene;
         const engine = scene.getEngine();
         return new Vector2((x || scene.pointerX) - engine.getRenderWidth() / 2, (y || scene.pointerY) - engine.getRenderHeight() / 2);
@@ -277,7 +312,8 @@ export class CoordinateHelper {
         onPropertyChangedObservable?: Observable<PropertyChangedEvent>
     ) {
         // make sure we are using the latest measures for the control
-        (guiControl as any)._processMeasures(guiControl.parent?._currentMeasure, guiControl.host);
+        const parentMeasure = CoordinateHelper.GetParentSizes(guiControl);
+        (guiControl as any)._processMeasures(parentMeasure, guiControl.host);
         for (const property of properties) {
             const initialValue = guiControl[property];
             guiControl[`_${property}`] = new ValueAndUnit(this.Round(guiControl[`${property}InPixels`]), ValueAndUnit.UNITMODE_PIXEL);

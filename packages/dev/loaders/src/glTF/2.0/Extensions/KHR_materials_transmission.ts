@@ -18,7 +18,7 @@ import type { Color4 } from "core/Maths/math.color";
 
 interface ITransmissionHelperHolder {
     /**
-     * @hidden
+     * @internal
      */
     _transmissionHelper: TransmissionHelper | undefined;
 }
@@ -153,6 +153,9 @@ class TransmissionHelper {
         }
     }
 
+    /**
+     * Gets the opaque render target texture or null if not available.
+     */
     public getOpaqueTarget(): Nullable<Texture> {
         return this._opaqueRenderTarget;
     }
@@ -175,9 +178,13 @@ class TransmissionHelper {
         Tools.SetImmediate(() => {
             if (this._shouldRenderAsTransmission(mesh.material)) {
                 (mesh.material as PBRMaterial).refractionTexture = this._opaqueRenderTarget;
-                this._transparentMeshesCache.push(mesh);
+                if (this._transparentMeshesCache.indexOf(mesh) === -1) {
+                    this._transparentMeshesCache.push(mesh);
+                }
             } else {
-                this._opaqueMeshesCache.push(mesh);
+                if (this._opaqueMeshesCache.indexOf(mesh) === -1) {
+                    this._opaqueMeshesCache.push(mesh);
+                }
             }
         });
     }
@@ -262,7 +269,7 @@ class TransmissionHelper {
             this._scene.environmentIntensity = 1.0;
             sceneImageProcessingapplyByPostProcess = this._scene.imageProcessingConfiguration.applyByPostProcess;
             if (!this._options.clearColor) {
-                this._scene.clearColor.toLinearSpaceToRef(opaqueRenderTarget.clearColor);
+                this._scene.clearColor.toLinearSpaceToRef(opaqueRenderTarget.clearColor, this._scene.getEngine().useExactSrgbConversions);
             } else {
                 opaqueRenderTarget.clearColor.copyFrom(this._options.clearColor);
             }
@@ -298,7 +305,7 @@ class TransmissionHelper {
 const NAME = "KHR_materials_transmission";
 
 /**
- * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_materials_transmission/README.md)
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_transmission/README.md)
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_materials_transmission implements IGLTFLoaderExtension {
@@ -320,8 +327,7 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
     private _loader: GLTFLoader;
 
     /**
-     * @param loader
-     * @hidden
+     * @internal
      */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
@@ -331,16 +337,13 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public dispose() {
         (this._loader as any) = null;
     }
 
     /**
-     * @param context
-     * @param material
-     * @param babylonMaterial
-     * @hidden
+     * @internal
      */
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IKHRMaterialsTransmission>(context, material, this.name, (extensionContext, extension) => {

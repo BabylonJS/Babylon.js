@@ -237,7 +237,7 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
         }
     }
 
-    private _processWebXRHitTestResult(hitTestResults: XRHitTestResult[], inputSource?: XRInputSource) {
+    private _processWebXRHitTestResult(hitTestResults: readonly XRHitTestResult[], inputSource?: XRInputSource) {
         const results: IWebXRHitResult[] = [];
         hitTestResults.forEach((hitTestResult) => {
             const pose = hitTestResult.getPose(this._xrSessionManager.referenceSpace);

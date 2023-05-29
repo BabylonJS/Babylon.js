@@ -11,10 +11,10 @@ import type { ThinEngine } from "../../Engines/thinEngine";
 import { TimingTools } from "../../Misc/timingTools";
 import { InstantiationTools } from "../../Misc/instantiationTools";
 import { Plane } from "../../Maths/math.plane";
-import { EncodeArrayBufferToBase64, StartsWith } from "../../Misc/stringTools";
+import { EncodeArrayBufferToBase64 } from "../../Misc/stringTools";
 import { GenerateBase64StringFromTexture, GenerateBase64StringFromTextureAsync } from "../../Misc/copyTools";
 import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
-import { InternalTexture } from "./internalTexture";
+import type { InternalTexture } from "./internalTexture";
 
 declare type CubeTexture = import("../../Materials/Textures/cubeTexture").CubeTexture;
 declare type MirrorTexture = import("../../Materials/Textures/mirrorTexture").MirrorTexture;
@@ -67,7 +67,7 @@ export interface ITextureCreationOptions {
 
 /**
  * This represents a texture in babylon. It can be easily loaded from a network, base64 or html input.
- * @see https://doc.babylonjs.com/babylon101/materials#texture
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/materials_introduction#texture
  */
 export class Texture extends BaseTexture {
     /**
@@ -86,46 +86,37 @@ export class Texture extends BaseTexture {
      */
     public static OnTextureLoadErrorObservable = new Observable<BaseTexture>();
 
+    /** @internal */
+    public static _SerializeInternalTextureUniqueId = false;
+
     /**
-     * @param jsonTexture
-     * @param scene
-     * @param rootUrl
-     * @hidden
+     * @internal
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static _CubeTextureParser = (jsonTexture: any, scene: Scene, rootUrl: string): CubeTexture => {
         throw _WarnImport("CubeTexture");
     };
     /**
-     * @param name
-     * @param renderTargetSize
-     * @param scene
-     * @param generateMipMaps
-     * @hidden
+     * @internal
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static _CreateMirror = (name: string, renderTargetSize: number, scene: Scene, generateMipMaps: boolean): MirrorTexture => {
         throw _WarnImport("MirrorTexture");
     };
     /**
-     * @param name
-     * @param renderTargetSize
-     * @param scene
-     * @param generateMipMaps
-     * @param creationFlags
-     * @hidden
+     * @internal
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static _CreateRenderTargetTexture = (name: string, renderTargetSize: number, scene: Scene, generateMipMaps: boolean, creationFlags?: number): RenderTargetTexture => {
         throw _WarnImport("RenderTargetTexture");
     };
 
-    /** nearest is mag = nearest and min = nearest and mip = linear */
+    /** nearest is mag = nearest and min = nearest and no mip */
     public static readonly NEAREST_SAMPLINGMODE = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
     /** nearest is mag = nearest and min = nearest and mip = linear */
     public static readonly NEAREST_NEAREST_MIPLINEAR = Constants.TEXTURE_NEAREST_NEAREST_MIPLINEAR; // nearest is mag = nearest and min = nearest and mip = linear
 
-    /** Bilinear is mag = linear and min = linear and mip = nearest */
+    /** Bilinear is mag = linear and min = linear and no mip */
     public static readonly BILINEAR_SAMPLINGMODE = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
     /** Bilinear is mag = linear and min = linear and mip = nearest */
     public static readonly LINEAR_LINEAR_MIPNEAREST = Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST; // Bilinear is mag = linear and min = linear and mip = nearest
@@ -195,28 +186,28 @@ export class Texture extends BaseTexture {
 
     /**
      * Define an offset on the texture to offset the u coordinates of the UVs
-     * @see https://doc.babylonjs.com/how_to/more_materials#offsetting
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/moreMaterials#offsetting
      */
     @serialize()
     public uOffset = 0;
 
     /**
      * Define an offset on the texture to offset the v coordinates of the UVs
-     * @see https://doc.babylonjs.com/how_to/more_materials#offsetting
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/moreMaterials#offsetting
      */
     @serialize()
     public vOffset = 0;
 
     /**
      * Define an offset on the texture to scale the u coordinates of the UVs
-     * @see https://doc.babylonjs.com/how_to/more_materials#tiling
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/moreMaterials#tiling
      */
     @serialize()
     public uScale = 1.0;
 
     /**
      * Define an offset on the texture to scale the v coordinates of the UVs
-     * @see https://doc.babylonjs.com/how_to/more_materials#tiling
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/moreMaterials#tiling
      */
     @serialize()
     public vScale = 1.0;
@@ -224,7 +215,7 @@ export class Texture extends BaseTexture {
     /**
      * Define an offset on the texture to rotate around the u coordinates of the UVs
      * The angle is defined in radians.
-     * @see https://doc.babylonjs.com/how_to/more_materials
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/moreMaterials
      */
     @serialize()
     public uAng = 0;
@@ -232,7 +223,7 @@ export class Texture extends BaseTexture {
     /**
      * Define an offset on the texture to rotate around the v coordinates of the UVs
      * The angle is defined in radians.
-     * @see https://doc.babylonjs.com/how_to/more_materials
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/moreMaterials
      */
     @serialize()
     public vAng = 0;
@@ -240,7 +231,7 @@ export class Texture extends BaseTexture {
     /**
      * Define an offset on the texture to rotate around the w coordinates of the UVs (in case of 3d texture)
      * The angle is defined in radians.
-     * @see https://doc.babylonjs.com/how_to/more_materials
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/moreMaterials
      */
     @serialize()
     public wAng = 0;
@@ -278,12 +269,13 @@ export class Texture extends BaseTexture {
 
     /**
      * List of inspectable custom properties (used by the Inspector)
-     * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
+     * @see https://doc.babylonjs.com/toolsAndResources/inspector#extensibility
      */
     public inspectableCustomProperties: Nullable<IInspectable[]> = null;
 
-    private _noMipmap: boolean = false;
-    /** @hidden */
+    /** @internal */
+    public _noMipmap: boolean = false;
+    /** @internal */
     public _invertY: boolean = false;
     private _rowGenerationMatrix: Nullable<Matrix> = null;
     private _cachedTextureMatrix: Nullable<Matrix> = null;
@@ -299,14 +291,20 @@ export class Texture extends BaseTexture {
     private _cachedUAng: number = -1;
     private _cachedVAng: number = -1;
     private _cachedWAng: number = -1;
-    private _cachedProjectionMatrixId: number = -1;
+    private _cachedReflectionProjectionMatrixId: number = -1;
     private _cachedURotationCenter: number = -1;
     private _cachedVRotationCenter: number = -1;
     private _cachedWRotationCenter: number = -1;
     private _cachedHomogeneousRotationInUVTransform: boolean = false;
-    private _cachedCoordinatesMode: number = -1;
 
-    /** @hidden */
+    private _cachedReflectionTextureMatrix: Nullable<Matrix> = null;
+    private _cachedReflectionUOffset = -1;
+    private _cachedReflectionVOffset = -1;
+    private _cachedReflectionUScale = 0;
+    private _cachedReflectionVScale = 0;
+    private _cachedReflectionCoordinatesMode = -1;
+
+    /** @internal */
     public _buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null;
     private _deleteBuffer: boolean = false;
     protected _format: Nullable<number> = null;
@@ -315,7 +313,9 @@ export class Texture extends BaseTexture {
     private _mimeType?: string;
     private _loaderOptions?: any;
     private _creationFlags?: number;
-    private _useSRGBBuffer?: boolean;
+    /** @internal */
+    public _useSRGBBuffer?: boolean;
+    private _forcedExtension?: string;
 
     /** Returns the texture mime type if it was defined by a loader (undefined else) */
     public get mimeType() {
@@ -350,7 +350,7 @@ export class Texture extends BaseTexture {
     /**
      * Instantiates a new texture.
      * This represents a texture in babylon. It can be easily loaded from a network, base64 or html input.
-     * @see https://doc.babylonjs.com/babylon101/materials#texture
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/materials_introduction#texture
      * @param url defines the url of the picture to load as a texture
      * @param sceneOrEngine defines the scene or engine the texture will belong to
      * @param noMipmapOrOptions defines if the texture will require mip maps or not or set of all options to create the texture
@@ -364,6 +364,7 @@ export class Texture extends BaseTexture {
      * @param mimeType defines an optional mime type information
      * @param loaderOptions options to be passed to the loader
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
+     * @param forcedExtension defines the extension to use to pick the right loader
      */
     constructor(
         url: Nullable<string>,
@@ -378,7 +379,8 @@ export class Texture extends BaseTexture {
         format?: number,
         mimeType?: string,
         loaderOptions?: any,
-        creationFlags?: number
+        creationFlags?: number,
+        forcedExtension?: string
     ) {
         super(sceneOrEngine);
 
@@ -416,6 +418,7 @@ export class Texture extends BaseTexture {
         this._loaderOptions = loaderOptions;
         this._creationFlags = creationFlags;
         this._useSRGBBuffer = useSRGBBuffer;
+        this._forcedExtension = forcedExtension;
         if (format) {
             this._format = format;
         }
@@ -471,7 +474,7 @@ export class Texture extends BaseTexture {
             Texture.OnTextureLoadErrorObservable.notifyObservers(this);
         };
 
-        if (!this.url) {
+        if (!this.url && !internalTexture) {
             this._delayedOnLoad = load;
             this._delayedOnError = errorHandler;
             return;
@@ -493,7 +496,7 @@ export class Texture extends BaseTexture {
                         this._buffer,
                         undefined,
                         this._format,
-                        null,
+                        this._forcedExtension,
                         mimeType,
                         loaderOptions,
                         creationFlags,
@@ -530,18 +533,25 @@ export class Texture extends BaseTexture {
      * @param url the url of the texture
      * @param buffer the buffer of the texture (defaults to null)
      * @param onLoad callback called when the texture is loaded  (defaults to null)
+     * @param forcedExtension defines the extension to use to pick the right loader
      */
-    public updateURL(url: string, buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob> = null, onLoad?: () => void): void {
+    public updateURL(
+        url: string,
+        buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null,
+        onLoad?: () => void,
+        forcedExtension?: string
+    ): void {
         if (this.url) {
             this.releaseInternalTexture();
             this.getScene()!.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
         }
 
-        if (!this.name || StartsWith(this.name, "data:")) {
+        if (!this.name || this.name.startsWith("data:")) {
             this.name = url;
         }
         this.url = url;
         this._buffer = buffer;
+        this._forcedExtension = forcedExtension;
         this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
 
         if (onLoad) {
@@ -552,7 +562,7 @@ export class Texture extends BaseTexture {
 
     /**
      * Finish the loading sequence of a texture flagged as delayed load.
-     * @hidden
+     * @internal
      */
     public delayLoad(): void {
         if (this.delayLoadState !== Constants.DELAYLOADSTATE_NOTLOADED) {
@@ -581,7 +591,7 @@ export class Texture extends BaseTexture {
                     this._buffer,
                     null,
                     this._format,
-                    null,
+                    this._forcedExtension,
                     this._mimeType,
                     this._loaderOptions,
                     this._creationFlags,
@@ -729,11 +739,13 @@ export class Texture extends BaseTexture {
             return this._cachedTextureMatrix;
         }
 
-        // We flag the materials that are using this texture as "texture dirty" because depending on the fact that the matrix is the identity or not, some defines
-        // will get different values (see MaterialHelper.PrepareDefinesForMergedUV), meaning we should regenerate the effect accordingly
-        scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
-            return mat.hasTexture(this);
-        });
+        if (this.optimizeUVAllocation) {
+            // We flag the materials that are using this texture as "texture dirty" because depending on the fact that the matrix is the identity or not, some defines
+            // will get different values (see MaterialHelper.PrepareDefinesForMergedUV), meaning we should regenerate the effect accordingly
+            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+                return mat.hasTexture(this);
+            });
+        }
 
         return this._cachedTextureMatrix;
     }
@@ -746,60 +758,60 @@ export class Texture extends BaseTexture {
         const scene = this.getScene();
 
         if (!scene) {
-            return this._cachedTextureMatrix!;
+            return this._cachedReflectionTextureMatrix!;
         }
 
         if (
-            this.uOffset === this._cachedUOffset &&
-            this.vOffset === this._cachedVOffset &&
-            this.uScale === this._cachedUScale &&
-            this.vScale === this._cachedVScale &&
-            this.coordinatesMode === this._cachedCoordinatesMode
+            this.uOffset === this._cachedReflectionUOffset &&
+            this.vOffset === this._cachedReflectionVOffset &&
+            this.uScale === this._cachedReflectionUScale &&
+            this.vScale === this._cachedReflectionVScale &&
+            this.coordinatesMode === this._cachedReflectionCoordinatesMode
         ) {
             if (this.coordinatesMode === Texture.PROJECTION_MODE) {
-                if (this._cachedProjectionMatrixId === scene.getProjectionMatrix().updateFlag) {
-                    return this._cachedTextureMatrix!;
+                if (this._cachedReflectionProjectionMatrixId === scene.getProjectionMatrix().updateFlag) {
+                    return this._cachedReflectionTextureMatrix!;
                 }
             } else {
-                return this._cachedTextureMatrix!;
+                return this._cachedReflectionTextureMatrix!;
             }
         }
 
-        if (!this._cachedTextureMatrix) {
-            this._cachedTextureMatrix = Matrix.Zero();
+        if (!this._cachedReflectionTextureMatrix) {
+            this._cachedReflectionTextureMatrix = Matrix.Zero();
         }
 
         if (!this._projectionModeMatrix) {
             this._projectionModeMatrix = Matrix.Zero();
         }
 
-        const flagMaterialsAsTextureDirty = this._cachedCoordinatesMode !== this.coordinatesMode;
+        const flagMaterialsAsTextureDirty = this._cachedReflectionCoordinatesMode !== this.coordinatesMode;
 
-        this._cachedUOffset = this.uOffset;
-        this._cachedVOffset = this.vOffset;
-        this._cachedUScale = this.uScale;
-        this._cachedVScale = this.vScale;
-        this._cachedCoordinatesMode = this.coordinatesMode;
+        this._cachedReflectionUOffset = this.uOffset;
+        this._cachedReflectionVOffset = this.vOffset;
+        this._cachedReflectionUScale = this.uScale;
+        this._cachedReflectionVScale = this.vScale;
+        this._cachedReflectionCoordinatesMode = this.coordinatesMode;
 
         switch (this.coordinatesMode) {
             case Texture.PLANAR_MODE: {
-                Matrix.IdentityToRef(this._cachedTextureMatrix);
-                (<any>this._cachedTextureMatrix)[0] = this.uScale;
-                (<any>this._cachedTextureMatrix)[5] = this.vScale;
-                (<any>this._cachedTextureMatrix)[12] = this.uOffset;
-                (<any>this._cachedTextureMatrix)[13] = this.vOffset;
+                Matrix.IdentityToRef(this._cachedReflectionTextureMatrix);
+                (<any>this._cachedReflectionTextureMatrix)[0] = this.uScale;
+                (<any>this._cachedReflectionTextureMatrix)[5] = this.vScale;
+                (<any>this._cachedReflectionTextureMatrix)[12] = this.uOffset;
+                (<any>this._cachedReflectionTextureMatrix)[13] = this.vOffset;
                 break;
             }
             case Texture.PROJECTION_MODE: {
                 Matrix.FromValuesToRef(0.5, 0.0, 0.0, 0.0, 0.0, -0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 1.0, 1.0, this._projectionModeMatrix);
 
                 const projectionMatrix = scene.getProjectionMatrix();
-                this._cachedProjectionMatrixId = projectionMatrix.updateFlag;
-                projectionMatrix.multiplyToRef(this._projectionModeMatrix, this._cachedTextureMatrix);
+                this._cachedReflectionProjectionMatrixId = projectionMatrix.updateFlag;
+                projectionMatrix.multiplyToRef(this._projectionModeMatrix, this._cachedReflectionTextureMatrix);
                 break;
             }
             default:
-                Matrix.IdentityToRef(this._cachedTextureMatrix);
+                Matrix.IdentityToRef(this._cachedReflectionTextureMatrix);
                 break;
         }
 
@@ -811,7 +823,7 @@ export class Texture extends BaseTexture {
             });
         }
 
-        return this._cachedTextureMatrix;
+        return this._cachedReflectionTextureMatrix;
     }
 
     /**
@@ -847,16 +859,16 @@ export class Texture extends BaseTexture {
         const savedName = this.name;
 
         if (!Texture.SerializeBuffers) {
-            if (StartsWith(this.name, "data:")) {
+            if (this.name.startsWith("data:")) {
                 this.name = "";
             }
         }
 
-        if (StartsWith(this.name, "data:") && this.url === this.name) {
+        if (this.name.startsWith("data:") && this.url === this.name) {
             this.url = "";
         }
 
-        const serializationObject = super.serialize();
+        const serializationObject = super.serialize(Texture._SerializeInternalTextureUniqueId);
 
         if (!serializationObject) {
             return null;
@@ -866,9 +878,9 @@ export class Texture extends BaseTexture {
             if (typeof this._buffer === "string" && (this._buffer as string).substr(0, 5) === "data:") {
                 serializationObject.base64String = this._buffer;
                 serializationObject.name = serializationObject.name.replace("data:", "");
-            } else if (this.url && StartsWith(this.url, "data:") && this._buffer instanceof Uint8Array) {
+            } else if (this.url && this.url.startsWith("data:") && this._buffer instanceof Uint8Array) {
                 serializationObject.base64String = "data:image/png;base64," + EncodeArrayBufferToBase64(this._buffer);
-            } else if (Texture.ForceSerializeBuffers || (this.url && StartsWith(this.url, "blob:")) || this._forceSerialize) {
+            } else if (Texture.ForceSerializeBuffers || (this.url && this.url.startsWith("blob:")) || this._forceSerialize) {
                 serializationObject.base64String =
                     !this._engine || this._engine._features.supportSyncTextureRead ? GenerateBase64StringFromTexture(this) : GenerateBase64StringFromTextureAsync(this);
             }
@@ -878,6 +890,9 @@ export class Texture extends BaseTexture {
         serializationObject.samplingMode = this.samplingMode;
         serializationObject._creationFlags = this._creationFlags;
         serializationObject._useSRGBBuffer = this._useSRGBBuffer;
+        if (Texture._SerializeInternalTextureUniqueId) {
+            serializationObject.internalTextureUniqueId = this._texture?.uniqueId ?? undefined;
+        }
 
         this.name = savedName;
 
@@ -902,6 +917,7 @@ export class Texture extends BaseTexture {
 
         this._delayedOnLoad = null;
         this._delayedOnError = null;
+        this._buffer = null;
     }
 
     /**
@@ -928,11 +944,25 @@ export class Texture extends BaseTexture {
             return Texture._CubeTextureParser(parsedTexture, scene, rootUrl);
         }
 
-        if (!parsedTexture.name && !parsedTexture.isRenderTarget) {
+        const hasInternalTextureUniqueId = parsedTexture.internalTextureUniqueId !== undefined;
+
+        if (!parsedTexture.name && !parsedTexture.isRenderTarget && !hasInternalTextureUniqueId) {
             return null;
         }
 
-        const onLoaded = () => {
+        let internalTexture: InternalTexture | undefined;
+
+        if (hasInternalTextureUniqueId) {
+            const cache = scene.getEngine().getLoadedTexturesCache();
+            for (const texture of cache) {
+                if (texture.uniqueId === parsedTexture.internalTextureUniqueId) {
+                    internalTexture = texture;
+                    break;
+                }
+            }
+        }
+
+        const onLoaded = (texture: Texture | null) => {
             // Clear cache
             if (texture && texture._texture) {
                 texture._texture._cachedWrapU = null;
@@ -957,6 +987,10 @@ export class Texture extends BaseTexture {
                     }
                 }
             }
+
+            if (hasInternalTextureUniqueId && !internalTexture) {
+                texture?._texture?._setUniqueId(parsedTexture.internalTextureUniqueId);
+            }
         };
 
         const texture = SerializationHelper.Parse(
@@ -969,7 +1003,7 @@ export class Texture extends BaseTexture {
                     const mirrorTexture = Texture._CreateMirror(parsedTexture.name, parsedTexture.renderTargetSize, scene, generateMipMaps);
                     mirrorTexture._waitingRenderList = parsedTexture.renderList;
                     mirrorTexture.mirrorPlane = Plane.FromArray(parsedTexture.mirrorPlane);
-                    onLoaded();
+                    onLoaded(mirrorTexture);
                     return mirrorTexture;
                 } else if (parsedTexture.isRenderTarget) {
                     let renderTargetTexture: Nullable<RenderTargetTexture> = null;
@@ -993,35 +1027,52 @@ export class Texture extends BaseTexture {
                         );
                         renderTargetTexture._waitingRenderList = parsedTexture.renderList;
                     }
-                    onLoaded();
+                    onLoaded(renderTargetTexture);
                     return renderTargetTexture;
                 } else {
                     let texture: Texture;
 
-                    if (parsedTexture.base64String) {
+                    if (parsedTexture.base64String && !internalTexture) {
+                        // name and url are the same to ensure caching happens from the actual base64 string
                         texture = Texture.CreateFromBase64String(
                             parsedTexture.base64String,
-                            parsedTexture.name,
+                            parsedTexture.base64String,
                             scene,
                             !generateMipMaps,
                             parsedTexture.invertY,
                             parsedTexture.samplingMode,
-                            onLoaded,
+                            () => {
+                                onLoaded(texture);
+                            },
                             parsedTexture._creationFlags ?? 0,
                             parsedTexture._useSRGBBuffer ?? false
                         );
+
+                        // prettier name to fit with the loaded data
+                        texture.name = parsedTexture.name;
                     } else {
                         let url: string;
-                        if (parsedTexture.name && parsedTexture.name.indexOf("://") > 0) {
+                        if (parsedTexture.name && (parsedTexture.name.indexOf("://") > 0 || parsedTexture.name.startsWith("data:"))) {
                             url = parsedTexture.name;
                         } else {
                             url = rootUrl + parsedTexture.name;
                         }
 
-                        if (StartsWith(parsedTexture.url, "data:") || (Texture.UseSerializedUrlIfAny && parsedTexture.url)) {
+                        if (parsedTexture.url && (parsedTexture.url.startsWith("data:") || Texture.UseSerializedUrlIfAny)) {
                             url = parsedTexture.url;
                         }
-                        texture = new Texture(url, scene, !generateMipMaps, parsedTexture.invertY, parsedTexture.samplingMode, onLoaded);
+
+                        const options: ITextureCreationOptions = {
+                            noMipmap: !generateMipMaps,
+                            invertY: parsedTexture.invertY,
+                            samplingMode: parsedTexture.samplingMode,
+                            onLoad: () => {
+                                onLoaded(texture);
+                            },
+                            internalTexture,
+                        };
+
+                        texture = new Texture(url, scene, options);
                     }
 
                     return texture;

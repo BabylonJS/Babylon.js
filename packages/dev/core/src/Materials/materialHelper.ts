@@ -7,7 +7,8 @@ import { EngineStore } from "../Engines/engineStore";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { Mesh } from "../Meshes/mesh";
 import { VertexBuffer } from "../Buffers/buffer";
-import { Light } from "../Lights/light";
+import type { Light } from "../Lights/light";
+import { LightConstants } from "../Lights/lightConstants";
 import { Constants } from "../Engines/constants";
 import type { PrePassConfiguration } from "../Materials/prePassConfiguration";
 
@@ -17,7 +18,8 @@ import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import type { MaterialDefines } from "./materialDefines";
 import { Color3 } from "../Maths/math.color";
 import type { EffectFallbacks } from "./effectFallbacks";
-import { ThinMaterialHelper } from "./thinMaterialHelper";
+import { prepareDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
+import type { Material } from "./material";
 
 /**
  * "Static Class" containing the most commonly used helper while dealing with material for rendering purpose.
@@ -46,7 +48,7 @@ export class MaterialHelper {
     public static PrepareDefinesForMergedUV(texture: BaseTexture, defines: any, key: string): void {
         defines._needUVs = true;
         defines[key] = true;
-        if (texture.getTextureMatrix().isIdentityAs3x2()) {
+        if (texture.optimizeUVAllocation && texture.getTextureMatrix().isIdentityAs3x2()) {
             defines[key + "DIRECTUV"] = texture.coordinatesIndex + 1;
             defines["MAINUV" + (texture.coordinatesIndex + 1)] = true;
         } else {
@@ -105,9 +107,35 @@ export class MaterialHelper {
     }
 
     /**
+     * Helper used to prepare the defines relative to the active camera
+     * @param scene defines the current scene
+     * @param defines specifies the list of active defines
+     * @returns true if the defines have been updated, else false
+     */
+    public static PrepareDefinesForCamera(scene: Scene, defines: any): boolean {
+        let changed = false;
+
+        if (scene.activeCamera) {
+            const wasOrtho = defines["CAMERA_ORTHOGRAPHIC"] ? 1 : 0;
+            const wasPersp = defines["CAMERA_PERSPECTIVE"] ? 1 : 0;
+            const isOrtho = scene.activeCamera.mode === Camera.ORTHOGRAPHIC_CAMERA ? 1 : 0;
+            const isPersp = scene.activeCamera.mode === Camera.PERSPECTIVE_CAMERA ? 1 : 0;
+
+            if (wasOrtho ^ isOrtho || wasPersp ^ isPersp) {
+                defines["CAMERA_ORTHOGRAPHIC"] = isOrtho === 1;
+                defines["CAMERA_PERSPECTIVE"] = isPersp === 1;
+                changed = true;
+            }
+        }
+
+        return changed;
+    }
+
+    /**
      * Helper used to prepare the list of defines associated with frame values for shader compilation
      * @param scene defines the current scene
      * @param engine defines the current engine
+     * @param material defines the material we are compiling the shader for
      * @param defines specifies the list of active defines
      * @param useInstances defines if instances have to be turned on
      * @param useClipPlane defines if clip plane have to be turned on
@@ -116,54 +144,16 @@ export class MaterialHelper {
     public static PrepareDefinesForFrameBoundValues(
         scene: Scene,
         engine: Engine,
+        material: Material,
         defines: any,
         useInstances: boolean,
         useClipPlane: Nullable<boolean> = null,
         useThinInstances: boolean = false
     ): void {
-        let changed = false;
-        let useClipPlane1 = false;
-        let useClipPlane2 = false;
-        let useClipPlane3 = false;
-        let useClipPlane4 = false;
-        let useClipPlane5 = false;
-        let useClipPlane6 = false;
+        let changed = MaterialHelper.PrepareDefinesForCamera(scene, defines);
 
-        useClipPlane1 = useClipPlane == null ? scene.clipPlane !== undefined && scene.clipPlane !== null : useClipPlane;
-        useClipPlane2 = useClipPlane == null ? scene.clipPlane2 !== undefined && scene.clipPlane2 !== null : useClipPlane;
-        useClipPlane3 = useClipPlane == null ? scene.clipPlane3 !== undefined && scene.clipPlane3 !== null : useClipPlane;
-        useClipPlane4 = useClipPlane == null ? scene.clipPlane4 !== undefined && scene.clipPlane4 !== null : useClipPlane;
-        useClipPlane5 = useClipPlane == null ? scene.clipPlane5 !== undefined && scene.clipPlane5 !== null : useClipPlane;
-        useClipPlane6 = useClipPlane == null ? scene.clipPlane6 !== undefined && scene.clipPlane6 !== null : useClipPlane;
-
-        if (defines["CLIPPLANE"] !== useClipPlane1) {
-            defines["CLIPPLANE"] = useClipPlane1;
-            changed = true;
-        }
-
-        if (defines["CLIPPLANE2"] !== useClipPlane2) {
-            defines["CLIPPLANE2"] = useClipPlane2;
-            changed = true;
-        }
-
-        if (defines["CLIPPLANE3"] !== useClipPlane3) {
-            defines["CLIPPLANE3"] = useClipPlane3;
-            changed = true;
-        }
-
-        if (defines["CLIPPLANE4"] !== useClipPlane4) {
-            defines["CLIPPLANE4"] = useClipPlane4;
-            changed = true;
-        }
-
-        if (defines["CLIPPLANE5"] !== useClipPlane5) {
-            defines["CLIPPLANE5"] = useClipPlane5;
-            changed = true;
-        }
-
-        if (defines["CLIPPLANE6"] !== useClipPlane6) {
-            defines["CLIPPLANE6"] = useClipPlane6;
-            changed = true;
+        if (useClipPlane !== false) {
+            changed = prepareDefinesForClipPlanes(material, scene, defines);
         }
 
         if (defines["DEPTHPREPASS"] !== !engine.getColorWrite()) {
@@ -173,12 +163,6 @@ export class MaterialHelper {
 
         if (defines["INSTANCES"] !== useInstances) {
             defines["INSTANCES"] = useInstances;
-            changed = true;
-        }
-
-        // ensure defines.INSTANCESCOLOR is not out of sync with instances
-        if (defines["INSTANCESCOLOR"] && !defines["INSTANCES"]) {
-            defines["INSTANCESCOLOR"] = false;
             changed = true;
         }
 
@@ -218,6 +202,9 @@ export class MaterialHelper {
         } else {
             defines["NUM_BONE_INFLUENCERS"] = 0;
             defines["BonesPerMesh"] = 0;
+            if (defines["BONETEXTURE"] !== undefined) {
+                defines["BONETEXTURE"] = false;
+            }
         }
     }
 
@@ -298,7 +285,7 @@ export class MaterialHelper {
             defines["VERTEXALPHA"] = mesh.hasVertexAlpha && hasVertexColors && useVertexAlpha;
         }
 
-        if (mesh.isVerticesDataPresent(VertexBuffer.ColorInstanceKind)) {
+        if (mesh.isVerticesDataPresent(VertexBuffer.ColorInstanceKind) && (mesh.hasInstances || mesh.hasThinInstances)) {
             defines["INSTANCESCOLOR"] = true;
         }
 
@@ -478,13 +465,13 @@ export class MaterialHelper {
         defines["LIGHT_FALLOFF_STANDARD" + lightIndex] = false;
 
         switch (light.falloffType) {
-            case Light.FALLOFF_GLTF:
+            case LightConstants.FALLOFF_GLTF:
                 defines["LIGHT_FALLOFF_GLTF" + lightIndex] = true;
                 break;
-            case Light.FALLOFF_PHYSICAL:
+            case LightConstants.FALLOFF_PHYSICAL:
                 defines["LIGHT_FALLOFF_PHYSICAL" + lightIndex] = true;
                 break;
-            case Light.FALLOFF_STANDARD:
+            case LightConstants.FALLOFF_STANDARD:
                 defines["LIGHT_FALLOFF_STANDARD" + lightIndex] = true;
                 break;
         }
@@ -512,7 +499,7 @@ export class MaterialHelper {
         defines["SHADOWMEDIUMQUALITY" + lightIndex] = false;
 
         if (mesh && mesh.receiveShadows && scene.shadowsEnabled && light.shadowEnabled) {
-            const shadowGenerator = light.getShadowGenerator();
+            const shadowGenerator = light.getShadowGenerator(scene.activeCamera) ?? light.getShadowGenerator();
             if (shadowGenerator) {
                 const shadowMap = shadowGenerator.getShadowMap();
                 if (shadowMap) {
@@ -524,10 +511,10 @@ export class MaterialHelper {
             }
         }
 
-        if (light.lightmapMode != Light.LIGHTMAP_DEFAULT) {
+        if (light.lightmapMode != LightConstants.LIGHTMAP_DEFAULT) {
             state.lightmapMode = true;
             defines["LIGHTMAPEXCLUDED" + lightIndex] = true;
-            defines["LIGHTMAPNOSPECULAR" + lightIndex] = light.lightmapMode == Light.LIGHTMAP_SHADOWSONLY;
+            defines["LIGHTMAPNOSPECULAR" + lightIndex] = light.lightmapMode == LightConstants.LIGHTMAP_SHADOWSONLY;
         } else {
             defines["LIGHTMAPEXCLUDED" + lightIndex] = false;
             defines["LIGHTMAPNOSPECULAR" + lightIndex] = false;
@@ -551,7 +538,7 @@ export class MaterialHelper {
 
         let lightIndex = 0;
         const state = {
-            needNormals: false,
+            needNormals: defines._needNormals, // prevents overriding previous reflection or other needs for normals
             needRebuild: false,
             lightmapMode: false,
             shadowEnabled: false,
@@ -864,6 +851,10 @@ export class MaterialHelper {
         if (defines["INSTANCES"] || defines["THIN_INSTANCES"]) {
             this.PushAttributesForInstances(attribs, !!defines["PREPASS_VELOCITY"]);
         }
+
+        if (defines.INSTANCESCOLOR) {
+            attribs.push(VertexBuffer.ColorInstanceKind);
+        }
     }
 
     /**
@@ -937,7 +928,7 @@ export class MaterialHelper {
             effect.setFloat4("vFogInfos", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
             // Convert fog color to linear space if used in a linear space computed shader.
             if (linearSpace) {
-                scene.fogColor.toLinearSpaceToRef(this._TempFogColor);
+                scene.fogColor.toLinearSpaceToRef(this._TempFogColor, scene.getEngine().useExactSrgbConversions);
                 effect.setColor3("vFogColor", this._TempFogColor);
             } else {
                 effect.setColor3("vFogColor", scene.fogColor);
@@ -1011,21 +1002,12 @@ export class MaterialHelper {
      * @param scene The scene we are willing to render with logarithmic scale for
      */
     public static BindLogDepth(defines: any, effect: Effect, scene: Scene): void {
-        if (!defines || defines["LOGARITHMICDEPTH"]) {
+        if (!defines || defines["LOGARITHMICDEPTH"] || (defines.indexOf && defines.indexOf("LOGARITHMICDEPTH") >= 0)) {
             const camera = <Camera>scene.activeCamera;
             if (camera.mode === Camera.ORTHOGRAPHIC_CAMERA) {
                 Logger.Error("Logarithmic depth is not compatible with orthographic cameras!", 20);
             }
             effect.setFloat("logarithmicDepthConstant", 2.0 / (Math.log(camera.maxZ + 1.0) / Math.LN2));
         }
-    }
-
-    /**
-     * Binds the clip plane information from the scene to the effect.
-     * @param effect The effect we are binding the data to
-     * @param scene The scene the clip plane information are extracted from
-     */
-    public static BindClipPlane(effect: Effect, scene: Scene): void {
-        ThinMaterialHelper.BindClipPlane(effect, scene);
     }
 }

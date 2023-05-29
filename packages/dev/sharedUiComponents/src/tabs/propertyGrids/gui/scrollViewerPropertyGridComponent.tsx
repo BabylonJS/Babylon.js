@@ -23,7 +23,7 @@ export class ScrollViewerPropertyGridComponent extends React.Component<IScrollVi
         const scrollViewer = this.props.scrollViewer;
 
         return (
-            <div className="pane">
+            <>
                 <CommonControlPropertyGridComponent
                     lockObject={this.props.lockObject}
                     control={scrollViewer}
@@ -75,7 +75,7 @@ export class ScrollViewerPropertyGridComponent extends React.Component<IScrollVi
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

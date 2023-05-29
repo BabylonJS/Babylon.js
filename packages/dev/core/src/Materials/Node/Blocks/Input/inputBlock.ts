@@ -15,6 +15,7 @@ import { Color3, Color4, TmpColors } from "../../../../Maths/math";
 import { AnimatedInputBlockTypes } from "./animatedInputBlockTypes";
 import { Observable } from "../../../../Misc/observable";
 import type { NodeMaterial } from "../../nodeMaterial";
+import { PrecisionDate } from "core/Misc/precisionDate";
 
 const remapAttributeName: { [name: string]: string } = {
     position2d: "position",
@@ -58,7 +59,7 @@ export class InputBlock extends NodeMaterialBlock {
     /** Gets or sets a value used by the Node Material editor to determine how to configure the current value if it is a matrix */
     public matrixMode: number = 0;
 
-    /** @hidden */
+    /** @internal */
     public _systemValue: Nullable<NodeMaterialSystemValues> = null;
 
     /** Gets or sets a boolean indicating that the value of this input will not change after a build */
@@ -113,7 +114,6 @@ export class InputBlock extends NodeMaterialBlock {
                 switch (this.name) {
                     case "position":
                     case "normal":
-                    case "tangent":
                     case "particle_positionw":
                         this._type = NodeMaterialBlockConnectionPointTypes.Vector3;
                         return this._type;
@@ -129,13 +129,17 @@ export class InputBlock extends NodeMaterialBlock {
                         return this._type;
                     case "matricesIndices":
                     case "matricesWeights":
+                    case "matricesIndicesExtra":
+                    case "matricesWeightsExtra":
                     case "world0":
                     case "world1":
                     case "world2":
                     case "world3":
+                    case "tangent":
                         this._type = NodeMaterialBlockConnectionPointTypes.Vector4;
                         return this._type;
                     case "color":
+                    case "instanceColor":
                     case "particle_color":
                     case "particle_texturemask":
                         this._type = NodeMaterialBlockConnectionPointTypes.Color4;
@@ -376,6 +380,12 @@ export class InputBlock extends NodeMaterialBlock {
                 }
                 break;
             }
+            case AnimatedInputBlockTypes.RealTime: {
+                if (this.type === NodeMaterialBlockConnectionPointTypes.Float) {
+                    this.value = (PrecisionDate.Now - scene.getEngine().startTime) / 1000;
+                }
+                break;
+            }
         }
     }
 
@@ -433,19 +443,19 @@ export class InputBlock extends NodeMaterialBlock {
             case NodeMaterialBlockConnectionPointTypes.Color3:
                 TmpColors.Color3[0].set(this.value.r, this.value.g, this.value.b);
                 if (this.convertToGammaSpace) {
-                    TmpColors.Color3[0].toGammaSpaceToRef(TmpColors.Color3[0]);
+                    TmpColors.Color3[0].toGammaSpaceToRef(TmpColors.Color3[0], state.sharedData.scene.getEngine().useExactSrgbConversions);
                 }
                 if (this.convertToLinearSpace) {
-                    TmpColors.Color3[0].toLinearSpaceToRef(TmpColors.Color3[0]);
+                    TmpColors.Color3[0].toLinearSpaceToRef(TmpColors.Color3[0], state.sharedData.scene.getEngine().useExactSrgbConversions);
                 }
                 return `vec3(${TmpColors.Color3[0].r}, ${TmpColors.Color3[0].g}, ${TmpColors.Color3[0].b})`;
             case NodeMaterialBlockConnectionPointTypes.Color4:
                 TmpColors.Color4[0].set(this.value.r, this.value.g, this.value.b, this.value.a);
                 if (this.convertToGammaSpace) {
-                    TmpColors.Color4[0].toGammaSpaceToRef(TmpColors.Color4[0]);
+                    TmpColors.Color4[0].toGammaSpaceToRef(TmpColors.Color4[0], state.sharedData.scene.getEngine().useExactSrgbConversions);
                 }
                 if (this.convertToLinearSpace) {
-                    TmpColors.Color4[0].toLinearSpaceToRef(TmpColors.Color4[0]);
+                    TmpColors.Color4[0].toLinearSpaceToRef(TmpColors.Color4[0], state.sharedData.scene.getEngine().useExactSrgbConversions);
                 }
                 return `vec4(${TmpColors.Color4[0].r}, ${TmpColors.Color4[0].g}, ${TmpColors.Color4[0].b}, ${TmpColors.Color4[0].a})`;
         }
@@ -453,7 +463,7 @@ export class InputBlock extends NodeMaterialBlock {
         return "";
     }
 
-    /** @hidden */
+    /** @internal */
     public get _noContextSwitch(): boolean {
         return attributeInFragmentOnly[this.name];
     }
@@ -550,11 +560,7 @@ export class InputBlock extends NodeMaterialBlock {
     }
 
     /**
-     * @param effect
-     * @param world
-     * @param worldView
-     * @param worldViewProjection
-     * @hidden
+     * @internal
      */
     public _transmitWorld(effect: Effect, world: Matrix, worldView: Matrix, worldViewProjection: Matrix) {
         if (!this._systemValue) {
@@ -576,10 +582,7 @@ export class InputBlock extends NodeMaterialBlock {
     }
 
     /**
-     * @param effect
-     * @param scene
-     * @param material
-     * @hidden
+     * @internal
      */
     public _transmit(effect: Effect, scene: Scene, material: NodeMaterial) {
         if (this.isAttribute) {
@@ -645,20 +648,20 @@ export class InputBlock extends NodeMaterialBlock {
             case NodeMaterialBlockConnectionPointTypes.Color3:
                 TmpColors.Color3[0].set(this.value.r, this.value.g, this.value.b);
                 if (this.convertToGammaSpace) {
-                    TmpColors.Color3[0].toGammaSpaceToRef(TmpColors.Color3[0]);
+                    TmpColors.Color3[0].toGammaSpaceToRef(TmpColors.Color3[0], scene.getEngine().useExactSrgbConversions);
                 }
                 if (this.convertToLinearSpace) {
-                    TmpColors.Color3[0].toLinearSpaceToRef(TmpColors.Color3[0]);
+                    TmpColors.Color3[0].toLinearSpaceToRef(TmpColors.Color3[0], scene.getEngine().useExactSrgbConversions);
                 }
                 effect.setColor3(variableName, TmpColors.Color3[0]);
                 break;
             case NodeMaterialBlockConnectionPointTypes.Color4:
                 TmpColors.Color4[0].set(this.value.r, this.value.g, this.value.b, this.value.a);
                 if (this.convertToGammaSpace) {
-                    TmpColors.Color4[0].toGammaSpaceToRef(TmpColors.Color4[0]);
+                    TmpColors.Color4[0].toGammaSpaceToRef(TmpColors.Color4[0], scene.getEngine().useExactSrgbConversions);
                 }
                 if (this.convertToLinearSpace) {
-                    TmpColors.Color4[0].toLinearSpaceToRef(TmpColors.Color4[0]);
+                    TmpColors.Color4[0].toLinearSpaceToRef(TmpColors.Color4[0], scene.getEngine().useExactSrgbConversions);
                 }
                 effect.setDirectColor4(variableName, TmpColors.Color4[0]);
                 break;
@@ -812,6 +815,15 @@ export class InputBlock extends NodeMaterialBlock {
         this.groupInInspector = serializationObject.groupInInspector || "";
         this.convertToGammaSpace = !!serializationObject.convertToGammaSpace;
         this.convertToLinearSpace = !!serializationObject.convertToLinearSpace;
+
+        // Tangents back compat
+        if (
+            serializationObject.name === "tangent" &&
+            serializationObject.mode === NodeMaterialBlockConnectionPointMode.Attribute &&
+            serializationObject.type === NodeMaterialBlockConnectionPointTypes.Vector3
+        ) {
+            this._type = NodeMaterialBlockConnectionPointTypes.Vector4;
+        }
 
         if (!serializationObject.valueType) {
             return;

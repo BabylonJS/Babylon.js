@@ -14,7 +14,7 @@ import { EngineStore } from "../Engines/engineStore";
 /**
  * Defines a sound that can be played in the application.
  * The sound can either be an ambient track or a simple sound played in reaction to a user action.
- * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic
  */
 export class Sound {
     /**
@@ -46,7 +46,7 @@ export class Sound {
     /**
      * Does the sound use a custom attenuation curve to simulate the falloff
      * happening when the source gets further away from the camera.
-     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-your-own-custom-attenuation-function
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic#creating-your-own-custom-attenuation-function
      */
     public useCustomAttenuation: boolean = false;
     /**
@@ -63,26 +63,26 @@ export class Sound {
     public isPaused: boolean = false;
     /**
      * Define the reference distance the sound should be heard perfectly.
-     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic#creating-a-spatial-3d-sound
      */
     public refDistance: number = 1;
     /**
      * Define the roll off factor of spatial sounds.
-     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic#creating-a-spatial-3d-sound
      */
     public rolloffFactor: number = 1;
     /**
      * Define the max distance the sound should be heard (intensity just became 0 at this point).
-     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic#creating-a-spatial-3d-sound
      */
     public maxDistance: number = 100;
     /**
      * Define the distance attenuation model the sound will follow.
-     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic#creating-a-spatial-3d-sound
      */
     public distanceModel: string = "linear";
     /**
-     * @hidden
+     * @internal
      * Back Compat
      **/
     public onended: () => any;
@@ -104,23 +104,26 @@ export class Sound {
             return this._htmlAudioElement.currentTime;
         }
 
-        let currentTime: number = this._startOffset;
-        if (this.isPlaying && Engine.audioEngine?.audioContext) {
-            currentTime += Engine.audioEngine.audioContext.currentTime - this._startTime;
+        if (Engine.audioEngine?.audioContext && (this.isPlaying || this.isPaused)) {
+            // The `_currentTime` member is only updated when the sound is paused. Add the time since the last start
+            // to get the actual current time.
+            const timeSinceLastStart = this.isPaused ? 0 : Engine.audioEngine.audioContext.currentTime - this._startTime;
+            return this._currentTime + timeSinceLastStart;
         }
-        return currentTime;
+
+        return 0;
     }
 
     /**
      * Does this sound enables spatial sound.
-     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic#creating-a-spatial-3d-sound
      */
     public get spatialSound(): boolean {
         return this._spatialSound;
     }
     /**
      * Does this sound enables spatial sound.
-     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic#creating-a-spatial-3d-sound
      */
     public set spatialSound(newValue: boolean) {
         this._spatialSound = newValue;
@@ -133,7 +136,7 @@ export class Sound {
     private _playbackRate: number = 1;
     private _streaming: boolean = false;
     private _startTime: number = 0;
-    private _startOffset: number = 0;
+    private _currentTime: number = 0;
     private _position: Vector3 = Vector3.Zero();
     private _localDirection: Vector3 = new Vector3(1, 0, 0);
     private _volume: number = 1;
@@ -158,13 +161,12 @@ export class Sound {
     private _registerFunc: Nullable<(connectedMesh: TransformNode) => void>;
     private _isOutputConnected = false;
     private _htmlAudioElement: HTMLAudioElement;
-    private _urlType: "Unknown" | "String" | "Array" | "ArrayBuffer" | "MediaStream" | "MediaElement" = "Unknown";
+    private _urlType: "Unknown" | "String" | "Array" | "ArrayBuffer" | "MediaStream" | "AudioBuffer" | "MediaElement" = "Unknown";
     private _length?: number;
     private _offset?: number;
 
     /**
-     * @param _
-     * @hidden
+     * @internal
      */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
         throw _WarnImport("AudioSceneComponent");
@@ -173,7 +175,7 @@ export class Sound {
     /**
      * Create a sound and attach it to a scene
      * @param name Name of your sound
-     * @param urlOrArrayBuffer Url to the sound to load async or ArrayBuffer, it also works with MediaStreams
+     * @param urlOrArrayBuffer Url to the sound to load async or ArrayBuffer, it also works with MediaStreams and AudioBuffers
      * @param scene defines the scene the sound belongs to
      * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
      * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
@@ -238,6 +240,8 @@ export class Sound {
                         this._urlType = "MediaElement";
                     } else if (urlOrArrayBuffer instanceof MediaStream) {
                         this._urlType = "MediaStream";
+                    } else if (urlOrArrayBuffer instanceof AudioBuffer) {
+                        this._urlType = "AudioBuffer";
                     } else if (Array.isArray(urlOrArrayBuffer)) {
                         this._urlType = "Array";
                     }
@@ -277,6 +281,9 @@ export class Sound {
                                 codecSupportedFound = true;
                                 this._soundLoaded(urlOrArrayBuffer);
                             }
+                            break;
+                        case "AudioBuffer":
+                            this._audioBufferLoaded(urlOrArrayBuffer);
                             break;
                         case "String":
                             urls.push(urlOrArrayBuffer);
@@ -351,7 +358,7 @@ export class Sound {
                             this._isReadyToPlay = true;
                             // Simulating a ready to play event to avoid breaking code path
                             if (this._readyToPlayCallback) {
-                                window.setTimeout(() => {
+                                setTimeout(() => {
                                     if (this._readyToPlayCallback) {
                                         this._readyToPlayCallback();
                                     }
@@ -373,7 +380,7 @@ export class Sound {
             }
             // Simulating a ready to play event to avoid breaking code for non web audio browsers
             if (this._readyToPlayCallback) {
-                window.setTimeout(() => {
+                setTimeout(() => {
                     if (this._readyToPlayCallback) {
                         this._readyToPlayCallback();
                     }
@@ -443,6 +450,20 @@ export class Sound {
         return "Sound";
     }
 
+    private _audioBufferLoaded(buffer: AudioBuffer) {
+        if (!Engine.audioEngine?.audioContext) {
+            return;
+        }
+        this._audioBuffer = buffer;
+        this._isReadyToPlay = true;
+        if (this.autoplay) {
+            this.play(0, this._offset, this._length);
+        }
+        if (this._readyToPlayCallback) {
+            this._readyToPlayCallback();
+        }
+    }
+
     private _soundLoaded(audioData: ArrayBuffer) {
         if (!Engine.audioEngine?.audioContext) {
             return;
@@ -450,14 +471,7 @@ export class Sound {
         Engine.audioEngine.audioContext.decodeAudioData(
             audioData,
             (buffer) => {
-                this._audioBuffer = buffer;
-                this._isReadyToPlay = true;
-                if (this.autoplay) {
-                    this.play(0, this._offset, this._length);
-                }
-                if (this._readyToPlayCallback) {
-                    this._readyToPlayCallback();
-                }
+                this._audioBufferLoaded(buffer);
             },
             (err: any) => {
                 Logger.Error("Error while decoding audio data for: " + this.name + " / Error: " + err);
@@ -490,7 +504,7 @@ export class Sound {
             this.distanceModel = options.distanceModel ?? this.distanceModel;
             this._playbackRate = options.playbackRate ?? this._playbackRate;
             this._length = options.length ?? undefined;
-            this._offset = options.offset ?? undefined;
+            this._setOffset(options.offset ?? undefined);
             this.setVolume(options.volume ?? this._volume);
             this._updateSpatialParameters();
             if (this.isPlaying) {
@@ -553,7 +567,7 @@ export class Sound {
     /**
      * Switch the panning model to HRTF:
      * Renders a stereo output of higher quality than equalpower — it uses a convolution with measured impulse responses from human subjects.
-     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic#creating-a-spatial-3d-sound
      */
     public switchPanningModelToHRTF() {
         this._panningModel = "HRTF";
@@ -563,7 +577,7 @@ export class Sound {
     /**
      * Switch the panning model to Equal Power:
      * Represents the equal-power panning algorithm, generally regarded as simple and efficient. equalpower is the default value.
-     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-a-spatial-3d-sound
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic#creating-a-spatial-3d-sound
      */
     public switchPanningModelToEqualPower() {
         this._panningModel = "equalpower";
@@ -702,10 +716,12 @@ export class Sound {
         this._soundPanner.orientationZ.value = direction.z;
     }
 
-    /** @hidden */
+    /** @internal */
     public updateDistanceFromListener() {
         if (Engine.audioEngine?.canUseWebAudio && this._connectedTransformNode && this.useCustomAttenuation && this._soundGain && this._scene.activeCamera) {
-            const distance = this._connectedTransformNode.getDistanceToCamera(this._scene.activeCamera);
+            const distance = this._scene.audioListenerPositionProvider
+                ? this._connectedTransformNode.position.subtract(this._scene.audioListenerPositionProvider()).length()
+                : this._connectedTransformNode.getDistanceToCamera(this._scene.activeCamera);
             this._soundGain.gain.value = this._customAttenuationFunction(this._volume, distance, this.maxDistance, this.refDistance, this.rolloffFactor);
         }
     }
@@ -713,7 +729,7 @@ export class Sound {
     /**
      * Sets a new custom attenuation function for the sound.
      * @param callback Defines the function used for the attenuation
-     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#creating-your-own-custom-attenuation-function
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic#creating-your-own-custom-attenuation-function
      */
     public setAttenuationFunction(callback: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number): void {
         this._customAttenuationFunction = callback;
@@ -728,10 +744,6 @@ export class Sound {
     public play(time?: number, offset?: number, length?: number): void {
         if (this._isReadyToPlay && this._scene.audioEnabled && Engine.audioEngine?.audioContext) {
             try {
-                if (this._startOffset < 0) {
-                    time = -this._startOffset;
-                    this._startOffset = 0;
-                }
                 let startTime = time ? Engine.audioEngine?.audioContext.currentTime + time : Engine.audioEngine?.audioContext.currentTime;
                 if (!this._soundSource || !this._streamingSource) {
                     if (this._spatialSound && this._soundPanner) {
@@ -801,7 +813,10 @@ export class Sound {
                     const tryToPlay = () => {
                         if (Engine.audioEngine?.audioContext) {
                             length = length || this._length;
-                            offset = offset || this._offset;
+
+                            if (offset !== undefined) {
+                                this._setOffset(offset);
+                            }
 
                             if (this._soundSource) {
                                 const oldSource = this._soundSource;
@@ -825,7 +840,7 @@ export class Sound {
                                     this._onended();
                                 };
                                 startTime = time ? Engine.audioEngine?.audioContext!.currentTime + time : Engine.audioEngine.audioContext!.currentTime;
-                                const actualOffset = this.isPaused ? this._startOffset % this._soundSource!.buffer!.duration : offset ? offset : 0;
+                                const actualOffset = ((this.isPaused ? this.currentTime : 0) + (this._offset ?? 0)) % this._soundSource!.buffer!.duration;
                                 this._soundSource!.start(startTime, actualOffset, this.loop ? undefined : length);
                             }
                         }
@@ -862,7 +877,8 @@ export class Sound {
 
     private _onended() {
         this.isPlaying = false;
-        this._startOffset = 0;
+        this._startTime = 0;
+        this._currentTime = 0;
         if (this.onended) {
             this.onended();
         }
@@ -888,19 +904,22 @@ export class Sound {
                 this.isPlaying = false;
             } else if (Engine.audioEngine?.audioContext && this._soundSource) {
                 const stopTime = time ? Engine.audioEngine.audioContext.currentTime + time : undefined;
-                this._soundSource.stop(stopTime);
-                if (stopTime === undefined) {
+                this._soundSource.onended = () => {
                     this.isPlaying = false;
-                    this._soundSource.onended = () => void 0;
-                } else {
-                    this._soundSource.onended = () => {
-                        this.isPlaying = false;
-                    };
-                }
-                if (!this.isPaused) {
-                    this._startOffset = 0;
-                }
+                    this.isPaused = false;
+                    this._startTime = 0;
+                    this._currentTime = 0;
+                    if (this._soundSource) {
+                        this._soundSource.onended = () => void 0;
+                    }
+                    this._onended();
+                };
+                this._soundSource.stop(stopTime);
             }
+        } else if (this.isPaused) {
+            this.isPaused = false;
+            this._startTime = 0;
+            this._currentTime = 0;
         }
     }
 
@@ -909,7 +928,6 @@ export class Sound {
      */
     public pause(): void {
         if (this.isPlaying) {
-            this.isPaused = true;
             if (this._streaming) {
                 if (this._htmlAudioElement) {
                     this._htmlAudioElement.pause();
@@ -917,9 +935,13 @@ export class Sound {
                     this._streamingSource.disconnect();
                 }
                 this.isPlaying = false;
-            } else if (Engine.audioEngine?.audioContext) {
-                this.stop(0);
-                this._startOffset += Engine.audioEngine.audioContext.currentTime - this._startTime;
+                this.isPaused = true;
+            } else if (Engine.audioEngine?.audioContext && this._soundSource) {
+                this._soundSource.onended = () => void 0;
+                this._soundSource.stop();
+                this.isPlaying = false;
+                this.isPaused = true;
+                this._currentTime += Engine.audioEngine.audioContext.currentTime - this._startTime;
             }
         }
     }
@@ -958,6 +980,14 @@ export class Sound {
     }
 
     /**
+     * Gets the sound play back rate.
+     * @returns the  play back rate of the sound
+     */
+    public getPlaybackRate(): number {
+        return this._playbackRate;
+    }
+
+    /**
      * Gets the volume of the sound.
      * @returns the volume of the sound
      */
@@ -968,7 +998,7 @@ export class Sound {
     /**
      * Attach the sound to a dedicated mesh
      * @param transformNode The transform node to connect the sound with
-     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#attaching-a-sound-to-a-mesh
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic#attaching-a-sound-to-a-mesh
      */
     public attachToMesh(transformNode: TransformNode): void {
         if (this._connectedTransformNode && this._registerFunc) {
@@ -991,7 +1021,7 @@ export class Sound {
 
     /**
      * Detach the sound from the previously attached mesh
-     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music#attaching-a-sound-to-a-mesh
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic#attaching-a-sound-to-a-mesh
      */
     public detachFromMesh() {
         if (this._connectedTransformNode && this._registerFunc) {
@@ -1028,7 +1058,7 @@ export class Sound {
                         clonedSound.play(0, this._offset, this._length);
                     }
                 } else {
-                    window.setTimeout(setBufferAndRun, 300);
+                    setTimeout(setBufferAndRun, 300);
                 }
             };
 
@@ -1163,11 +1193,11 @@ export class Sound {
                 soundUrl,
                 scene,
                 () => {
-                    scene._removePendingData(newSound);
+                    scene.removePendingData(newSound);
                 },
                 options
             );
-            scene._addPendingData(newSound);
+            scene.addPendingData(newSound);
         } else {
             const setBufferAndRun = () => {
                 if (sourceSound._isReadyToPlay) {
@@ -1177,7 +1207,7 @@ export class Sound {
                         newSound.play(0, newSound._offset, newSound._length);
                     }
                 } else {
-                    window.setTimeout(setBufferAndRun, 300);
+                    setTimeout(setBufferAndRun, 300);
                 }
             };
 
@@ -1208,5 +1238,16 @@ export class Sound {
         }
 
         return newSound;
+    }
+
+    private _setOffset(value?: number) {
+        if (this._offset === value) {
+            return;
+        }
+        if (this.isPaused) {
+            this.stop();
+            this.isPaused = false;
+        }
+        this._offset = value;
     }
 }

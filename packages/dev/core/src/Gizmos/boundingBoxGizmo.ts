@@ -11,27 +11,102 @@ import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
 import { CreateBox } from "../Meshes/Builders/boxBuilder";
 import { CreateLines } from "../Meshes/Builders/linesBuilder";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
+import type { IGizmo } from "./gizmo";
 import { Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { PivotTools } from "../Misc/pivotTools";
 import { Color3 } from "../Maths/math.color";
-
 import type { LinesMesh } from "../Meshes/linesMesh";
 import { Epsilon } from "../Maths/math.constants";
 import type { IPointerEvent } from "../Events/deviceInputEvents";
 
 /**
+ * Interface for bounding box gizmo
+ */
+export interface IBoundingBoxGizmo extends IGizmo {
+    /**
+     * If child meshes should be ignored when calculating the bounding box. This should be set to true to avoid perf hits with heavily nested meshes.
+     */
+    ignoreChildren: boolean;
+    /**
+     * Returns true if a descendant should be included when computing the bounding box. When null, all descendants are included. If ignoreChildren is set this will be ignored.
+     */
+    includeChildPredicate: Nullable<(abstractMesh: AbstractMesh) => boolean>;
+    /** The size of the rotation spheres attached to the bounding box */
+    rotationSphereSize: number;
+    /** The size of the scale boxes attached to the bounding box */
+    scaleBoxSize: number;
+    /**
+     * If set, the rotation spheres and scale boxes will increase in size based on the distance away from the camera to have a consistent screen size
+     * Note : fixedDragMeshScreenSize takes precedence over fixedDragMeshBoundsSize if both are true
+     */
+    fixedDragMeshScreenSize: boolean;
+    /**
+     * If set, the rotation spheres and scale boxes will increase in size based on the size of the bounding box
+     * Note : fixedDragMeshScreenSize takes precedence over fixedDragMeshBoundsSize if both are true
+     */
+    fixedDragMeshBoundsSize: boolean;
+    /**
+     * The distance away from the object which the draggable meshes should appear world sized when fixedDragMeshScreenSize is set to true
+     */
+    fixedDragMeshScreenSizeDistanceFactor: number;
+    /** Fired when a rotation sphere or scale box is dragged */
+    onDragStartObservable: Observable<{}>;
+    /** Fired when a scale box is dragged */
+    onScaleBoxDragObservable: Observable<{}>;
+    /** Fired when a scale box drag is ended */
+    onScaleBoxDragEndObservable: Observable<{}>;
+    /** Fired when a rotation sphere is dragged */
+    onRotationSphereDragObservable: Observable<{}>;
+    /** Fired when a rotation sphere drag is ended */
+    onRotationSphereDragEndObservable: Observable<{}>;
+    /** Relative bounding box pivot used when scaling the attached node. */
+    scalePivot: Nullable<Vector3>;
+    /** Scale factor vector used for masking some axis */
+    axisFactor: Vector3;
+    /** Scale factor scalar affecting all axes' drag speed */
+    scaleDragSpeed: number;
+    /**
+     * Sets the color of the bounding box gizmo
+     * @param color the color to set
+     */
+    setColor(color: Color3): void;
+    /** Returns an array containing all boxes used for scaling (in increasing x, y and z orders) */
+    getScaleBoxes(): AbstractMesh[];
+    /** Updates the bounding box information for the Gizmo */
+    updateBoundingBox(): void;
+    /**
+     * Enables rotation on the specified axis and disables rotation on the others
+     * @param axis The list of axis that should be enabled (eg. "xy" or "xyz")
+     */
+    setEnabledRotationAxis(axis: string): void;
+    /**
+     * Enables/disables scaling
+     * @param enable if scaling should be enabled
+     * @param homogeneousScaling defines if scaling should only be homogeneous
+     */
+    setEnabledScaling(enable: boolean, homogeneousScaling?: boolean): void;
+    /** Enables a pointer drag behavior on the bounding box of the gizmo */
+    enableDragBehavior(): void;
+
+    /** Default material used to render when gizmo is not disabled or hovered */
+    coloredMaterial: StandardMaterial;
+    /** Material used to render when gizmo is hovered with mouse*/
+    hoverMaterial: StandardMaterial;
+}
+
+/**
  * Bounding box gizmo
  */
-export class BoundingBoxGizmo extends Gizmo {
-    private _lineBoundingBox: AbstractMesh;
-    private _rotateSpheresParent: AbstractMesh;
-    private _scaleBoxesParent: AbstractMesh;
-    private _boundingDimensions = new Vector3(1, 1, 1);
-    private _renderObserver: Nullable<Observer<Scene>> = null;
-    private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
-    private _scaleDragSpeed = 0.2;
+export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
+    protected _lineBoundingBox: AbstractMesh;
+    protected _rotateSpheresParent: AbstractMesh;
+    protected _scaleBoxesParent: AbstractMesh;
+    protected _boundingDimensions = new Vector3(1, 1, 1);
+    protected _renderObserver: Nullable<Observer<Scene>> = null;
+    protected _pointerObserver: Nullable<Observer<PointerInfo>> = null;
+    protected _scaleDragSpeed = 0.2;
 
     private _tmpQuaternion = new Quaternion();
     private _tmpVector = new Vector3(0, 0, 0);
@@ -94,7 +169,7 @@ export class BoundingBoxGizmo extends Gizmo {
     /**
      * Scale factor used for masking some axis
      */
-    private _axisFactor = new Vector3(1, 1, 1);
+    protected _axisFactor = new Vector3(1, 1, 1);
 
     /**
      * Sets the axis factor
@@ -150,16 +225,32 @@ export class BoundingBoxGizmo extends Gizmo {
     /**
      * Mesh used as a pivot to rotate the attached node
      */
-    private _anchorMesh: AbstractMesh;
+    protected _anchorMesh: AbstractMesh;
 
-    private _existingMeshScale = new Vector3();
+    protected _existingMeshScale = new Vector3();
 
     // Dragging
-    private _dragMesh: Nullable<Mesh> = null;
-    private _pointerDragBehavior = new PointerDragBehavior();
+    protected _dragMesh: Nullable<Mesh> = null;
+    protected _pointerDragBehavior = new PointerDragBehavior();
 
-    private _coloredMaterial: StandardMaterial;
-    private _hoverColoredMaterial: StandardMaterial;
+    protected _coloredMaterial: StandardMaterial;
+    protected _hoverColoredMaterial: StandardMaterial;
+
+    /** Default material used to render when gizmo is not disabled or hovered */
+    public get coloredMaterial() {
+        return this._coloredMaterial;
+    }
+
+    /** Material used to render when gizmo is hovered with mouse*/
+    public get hoverMaterial() {
+        return this._hoverColoredMaterial;
+    }
+    /**
+     * Get the pointerDragBehavior
+     */
+    public get pointerDragBehavior(): PointerDragBehavior {
+        return this._pointerDragBehavior;
+    }
 
     /**
      * Sets the color of the bounding box gizmo
@@ -358,6 +449,9 @@ export class BoundingBoxGizmo extends Gizmo {
 
                         // Rotate around center of bounding box
                         this._anchorMesh.addChild(this.attachedMesh, Gizmo.PreserveScaling);
+                        if (this._anchorMesh.getScene().useRightHandedSystem) {
+                            this._tmpQuaternion.conjugateInPlace();
+                        }
                         this._anchorMesh.rotationQuaternion!.multiplyToRef(this._tmpQuaternion, this._anchorMesh.rotationQuaternion!);
                         this._anchorMesh.removeChild(this.attachedMesh, Gizmo.PreserveScaling);
                         this.attachedMesh.setParent(originalParent, Gizmo.PreserveScaling);
@@ -374,10 +468,11 @@ export class BoundingBoxGizmo extends Gizmo {
                 this.onDragStartObservable.notifyObservers({});
                 this._selectNode(sphere);
             });
-            _dragBehavior.onDragEndObservable.add(() => {
+            _dragBehavior.onDragEndObservable.add((event) => {
                 this.onRotationSphereDragEndObservable.notifyObservers({});
                 this._selectNode(null);
                 this._updateDummy();
+                this._unhoverMeshOnTouchUp(event.pointerInfo, sphere);
             });
 
             this._rotateSpheresParent.addChild(sphere);
@@ -398,7 +493,7 @@ export class BoundingBoxGizmo extends Gizmo {
 
                     const box = CreateBox("", { size: 1 }, gizmoLayer.utilityLayerScene);
                     box.material = this._coloredMaterial;
-                    box.metadata = zeroAxisCount === 2; // None homogenous scale handle
+                    box._internalMetadata = zeroAxisCount === 2; // None homogenous scale handle
                     box.isNearGrabbable = true;
 
                     // Dragging logic
@@ -459,10 +554,11 @@ export class BoundingBoxGizmo extends Gizmo {
                         this.onDragStartObservable.notifyObservers({});
                         this._selectNode(box);
                     });
-                    _dragBehavior.onDragEndObservable.add(() => {
+                    _dragBehavior.onDragEndObservable.add((event) => {
                         this.onScaleBoxDragEndObservable.notifyObservers({});
                         this._selectNode(null);
                         this._updateDummy();
+                        this._unhoverMeshOnTouchUp(event.pointerInfo, box);
                     });
 
                     this._scaleBoxesParent.addChild(box);
@@ -533,13 +629,27 @@ export class BoundingBoxGizmo extends Gizmo {
         }
     }
 
-    private _selectNode(selectedMesh: Nullable<Mesh>) {
+    protected _selectNode(selectedMesh: Nullable<Mesh>) {
         this._rotateSpheresParent
             .getChildMeshes()
             .concat(this._scaleBoxesParent.getChildMeshes())
             .forEach((m) => {
                 m.isVisible = !selectedMesh || m == selectedMesh;
             });
+    }
+
+    protected _unhoverMeshOnTouchUp(pointerInfo: Nullable<PointerInfo>, selectedMesh: AbstractMesh) {
+        // force unhover mesh if not a mouse event
+        if (pointerInfo?.event instanceof PointerEvent && pointerInfo?.event.pointerType === "touch") {
+            selectedMesh.material = this._coloredMaterial;
+        }
+    }
+
+    /**
+     * returns an array containing all boxes used for scaling (in increasing x, y and z orders)
+     */
+    public getScaleBoxes() {
+        return this._scaleBoxesParent.getChildMeshes();
     }
 
     /**
@@ -605,7 +715,7 @@ export class BoundingBoxGizmo extends Gizmo {
         }
     }
 
-    private _updateRotationSpheres() {
+    protected _updateRotationSpheres() {
         const rotateSpheres = this._rotateSpheresParent.getChildMeshes();
         for (let i = 0; i < 3; i++) {
             for (let j = 0; j < 2; j++) {
@@ -650,7 +760,7 @@ export class BoundingBoxGizmo extends Gizmo {
         }
     }
 
-    private _updateScaleBoxes() {
+    protected _updateScaleBoxes() {
         const scaleBoxes = this._scaleBoxesParent.getChildMeshes();
         let index = 0;
         for (let i = 0; i < 3; i++) {
@@ -708,14 +818,14 @@ export class BoundingBoxGizmo extends Gizmo {
         this._scaleBoxesParent.getChildMeshes().forEach((m) => {
             let enableMesh = enable;
             // Disable heterogeneous scale handles if requested.
-            if (homogeneousScaling && m.metadata === true) {
+            if (homogeneousScaling && m._internalMetadata === true) {
                 enableMesh = false;
             }
             m.setEnabled(enableMesh);
         });
     }
 
-    private _updateDummy() {
+    protected _updateDummy() {
         if (this._dragMesh) {
             this._dragMesh.position.copyFrom(this._lineBoundingBox.getAbsolutePosition());
             this._dragMesh.scaling.copyFrom(this._lineBoundingBox.scaling);

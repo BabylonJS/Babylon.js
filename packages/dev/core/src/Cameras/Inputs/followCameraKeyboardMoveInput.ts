@@ -12,7 +12,7 @@ import { Tools } from "../../Misc/tools";
 
 /**
  * Manage the keyboard inputs to control the movement of a follow camera.
- * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
  */
 export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera> {
     /**
@@ -152,7 +152,7 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
         this._engine = this._scene.getEngine();
 
         this._onCanvasBlurObserver = this._engine.onCanvasBlurObservable.add(() => {
-            this._keys = [];
+            this._keys.length = 0;
         });
 
         this._onKeyboardObserver = this._scene.onKeyboardObservable.add((info) => {
@@ -224,7 +224,7 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
             this._onCanvasBlurObserver = null;
         }
 
-        this._keys = [];
+        this._keys.length = 0;
     }
 
     /**

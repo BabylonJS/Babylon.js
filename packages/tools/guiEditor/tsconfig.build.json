@@ -4,6 +4,13 @@
     "compilerOptions": {
         "outDir": "./dist",
         "rootDir": "./src",
+        "composite": true,
+        "paths": {
+            "core/*": ["dev/core/dist/*"],
+            "gui/*": ["dev/gui/dist/*"],
+            "shared-ui-components/*": ["dev/sharedUiComponents/dist/*"],
+            "gui-editor/*": ["tools/guiEditor/src/*"]
+        }
     },
 
     "references": [
@@ -12,12 +19,12 @@
         },
         {
             "path": "../../dev/gui/tsconfig.build.json"
+        },
+        {
+            "path": "../../dev/sharedUiComponents/tsconfig.build.json"
         }
     ],
 
     "include": ["./src/**/*.ts", "./src/**/*.tsx"],
-    "exclude": [
-        "**/node_modules",
-        "**/dist",
-    ]
+    "exclude": ["**/node_modules", "**/dist"]
 }

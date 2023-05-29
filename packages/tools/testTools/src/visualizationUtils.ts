@@ -37,6 +37,9 @@ export const evaluateInitEngineForVisualization = async (engineName: string, use
         wasmZSTDDecoder: baseUrl + "/zstddec.wasm",
     };
 
+    BABYLON.BasisToolsOptions.JSModuleURL = baseUrl + "/basisTranscoder/1/basis_transcoder.js";
+    BABYLON.BasisToolsOptions.WasmModuleURL = baseUrl + "/basisTranscoder/1/basis_transcoder.wasm";
+
     window.forceUseReverseDepthBuffer = useReverseDepthBuffer === 1 || useReverseDepthBuffer === "true";
     window.forceUseNonCompatibilityMode = useNonCompatibilityMode === 1 || useNonCompatibilityMode === "true";
 
@@ -53,19 +56,9 @@ export const evaluateInitEngineForVisualization = async (engineName: string, use
         };
 
         const options = {
-            deviceDescriptor: {
-                requiredFeatures: [
-                    "depth-clip-control",
-                    "depth24unorm-stencil8",
-                    "depth32float-stencil8",
-                    "texture-compression-bc",
-                    "texture-compression-etc2",
-                    "texture-compression-astc",
-                    "timestamp-query",
-                    "indirect-first-instance",
-                ],
-            },
-            antialiasing: false,
+            enableAllFeatures: true,
+            setMaximumLimits: true,
+            antialias: false,
         };
 
         const engine = new BABYLON.WebGPUEngine(window.canvas, options);
@@ -88,6 +81,7 @@ export const evaluateInitEngineForVisualization = async (engineName: string, use
         window.engine = engine;
     }
     window.engine!.renderEvenInBackground = true;
+    window.engine.getCaps().parallelShaderCompile = undefined;
     return {
         forceUseReverseDepthBuffer: window.forceUseReverseDepthBuffer,
         forceUseNonCompatibilityMode: window.forceUseNonCompatibilityMode,
@@ -116,7 +110,6 @@ export const evaluatePrepareScene = async (
         return x - Math.floor(x);
     };
     BABYLON.SceneLoader.OnPluginActivatedObservable.clear();
-    window.engine!.beginFrame();
     BABYLON.SceneLoader.ShowLoadingScreen = false;
     BABYLON.SceneLoader.ForceFullSceneLoadingForIncremental = true;
     if (sceneMetadata.sceneFolder) {
@@ -135,7 +128,7 @@ export const evaluatePrepareScene = async (
             const snippet = await data.json();
             let code = JSON.parse(snippet.jsonPayload).code.toString();
             code = code
-                .replace(/\/textures\//g, globalConfig.pgRoot + "/textures/")
+                .replace(/"\/textures\//g, '"' + globalConfig.pgRoot + "/textures/")
                 .replace(/"textures\//g, '"' + globalConfig.pgRoot + "/textures/")
                 .replace(/\/scenes\//g, globalConfig.pgRoot + "/scenes/")
                 .replace(/"scenes\//g, '"' + globalConfig.pgRoot + "/scenes/")
@@ -219,8 +212,6 @@ export const evaluateRenderSceneForVisualization = async (renderCount: number) =
         BABYLON.SceneLoader.ShowLoadingScreen = false;
         window.scene.useConstantAnimationDeltaTime = true;
 
-        window.engine.endFrame();
-
         window.scene.executeWhenReady(function () {
             if (!window.scene || !window.engine) {
                 return resolve(false);
@@ -228,13 +219,27 @@ export const evaluateRenderSceneForVisualization = async (renderCount: number) =
             if (window.scene.activeCamera && (window.scene.activeCamera as any).useAutoRotationBehavior) {
                 (window.scene.activeCamera as any).useAutoRotationBehavior = false;
             }
+            const sceneAdts: any[] = window.scene!.textures.filter((t: any) => t.getClassName() === "AdvancedDynamicTexture");
+            const adtsAreReady = () => {
+                return sceneAdts.every((adt: any) => adt.guiIsReady());
+            };
+            let renderAfterGuiIsReadyCount = 1;
             window.engine.runRenderLoop(function () {
                 try {
-                    window.scene && window.scene.render();
-                    renderCount--;
-                    if (renderCount <= 0 && window.scene!.isReady()) {
-                        window.engine && window.engine.stopRenderLoop();
-                        return resolve(true);
+                    if (renderCount <= 0 && renderAfterGuiIsReadyCount <= 0) {
+                        if (window.scene!.isReady()) {
+                            window.engine && window.engine.stopRenderLoop();
+                            return resolve(true);
+                        } else {
+                            console.error("Scene is not ready after rendering is done");
+                            return resolve(false);
+                        }
+                    } else {
+                        window.scene && window.scene.render();
+                        renderCount--;
+                        if (adtsAreReady()) {
+                            renderAfterGuiIsReadyCount--;
+                        }
                     }
                 } catch (e) {
                     window.engine && window.engine.stopRenderLoop();

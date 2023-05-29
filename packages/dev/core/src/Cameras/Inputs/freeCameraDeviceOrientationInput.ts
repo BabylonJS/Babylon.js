@@ -11,24 +11,29 @@ import { Observable } from "../../Misc/observable";
 declare module "../../Cameras/freeCameraInputsManager" {
     export interface FreeCameraInputsManager {
         /**
-         * @hidden
+         * @internal
          */
         _deviceOrientationInput: Nullable<FreeCameraDeviceOrientationInput>;
         /**
          * Add orientation input support to the input manager.
+         * @param smoothFactor deviceOrientation smoothing. 0: no smoothing, 1: new data ignored, 0.9 recommended for smoothing
          * @returns the current input manager
          */
-        addDeviceOrientation(): FreeCameraInputsManager;
+        addDeviceOrientation(smoothFactor?: number): FreeCameraInputsManager;
     }
 }
 
 /**
  * Add orientation input support to the input manager.
+ * @param smoothFactor deviceOrientation smoothing. 0: no smoothing, 1: new data ignored, 0.9 recommended for smoothing
  * @returns the current input manager
  */
-FreeCameraInputsManager.prototype.addDeviceOrientation = function (): FreeCameraInputsManager {
+FreeCameraInputsManager.prototype.addDeviceOrientation = function (smoothFactor?: number): FreeCameraInputsManager {
     if (!this._deviceOrientationInput) {
         this._deviceOrientationInput = new FreeCameraDeviceOrientationInput();
+        if (smoothFactor) {
+            this._deviceOrientationInput.smoothFactor = smoothFactor;
+        }
         this.add(this._deviceOrientationInput);
     }
 
@@ -38,7 +43,7 @@ FreeCameraInputsManager.prototype.addDeviceOrientation = function (): FreeCamera
 /**
  * Takes information about the orientation of the device as reported by the deviceorientation event to orient the camera.
  * Screen rotation is taken into account.
- * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
  */
 export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera> {
     private _camera: FreeCamera;
@@ -51,6 +56,9 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
     private _alpha: number = 0;
     private _beta: number = 0;
     private _gamma: number = 0;
+
+    /** alpha+beta+gamma smoothing. 0: no smoothing, 1: new data ignored, 0.9 recommended for smoothing */
+    public smoothFactor: number = 0;
 
     /**
      * Can be used to detect if a device orientation sensor is available on a device
@@ -96,12 +104,12 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public _onDeviceOrientationChangedObservable = new Observable<void>();
     /**
      * Instantiates a new input
-     * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
      */
     constructor() {
         this._constantTranform = new Quaternion(-Math.sqrt(0.5), 0, 0, Math.sqrt(0.5));
@@ -172,9 +180,16 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
     };
 
     private _deviceOrientation = (evt: DeviceOrientationEvent) => {
-        this._alpha = evt.alpha !== null ? evt.alpha : 0;
-        this._beta = evt.beta !== null ? evt.beta : 0;
-        this._gamma = evt.gamma !== null ? evt.gamma : 0;
+        if (this.smoothFactor) {
+            this._alpha = evt.alpha !== null ? Tools.SmoothAngleChange(this._alpha, evt.alpha, this.smoothFactor) : 0;
+            this._beta = evt.beta !== null ? Tools.SmoothAngleChange(this._beta, evt.beta, this.smoothFactor) : 0;
+            this._gamma = evt.gamma !== null ? Tools.SmoothAngleChange(this._gamma, evt.gamma, this.smoothFactor) : 0;
+        } else {
+            this._alpha = evt.alpha !== null ? evt.alpha : 0;
+            this._beta = evt.beta !== null ? evt.beta : 0;
+            this._gamma = evt.gamma !== null ? evt.gamma : 0;
+        }
+
         if (evt.alpha !== null) {
             this._onDeviceOrientationChangedObservable.notifyObservers();
         }

@@ -1,0 +1,27 @@
+.link {
+    stroke-width: 4px;
+    &.selected {
+        stroke: white !important;
+        stroke-dasharray: 10, 2;
+    }
+}
+
+.target-candidate {
+    filter: brightness(1.5);
+    stroke-width: 6px;
+}
+
+.selection-link {
+    pointer-events: all;
+    stroke-width: 16px;
+    opacity: 0;
+    transition: opacity 75ms;
+    stroke: transparent;
+    cursor: pointer;
+
+    &:hover,
+    &.selected {
+        stroke: white !important;
+        opacity: 0.4;
+    }
+}

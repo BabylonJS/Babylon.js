@@ -15,6 +15,7 @@ import type { PickingInfo } from "../../Collisions/pickingInfo";
 import { Camera } from "../../Cameras/camera";
 import type { Ray } from "../../Culling/ray";
 import type { IPointerEvent } from "../../Events/deviceInputEvents";
+import type { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 
 /**
  * Data store to track virtual pointers movement
@@ -296,7 +297,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                 this._virtualMeshesInfo[pointerId] = this._createVirtualMeshInfo();
             }
             const virtualMeshesInfo = this._virtualMeshesInfo[pointerId];
-            const isXRPointer = (<IPointerEvent>pointerInfo.event).pointerType === "xr";
+            const isXRNearPointer = (<IPointerEvent>pointerInfo.event).pointerType === "xr-near";
 
             if (pointerInfo.type == PointerEventTypes.POINTERDOWN) {
                 if (
@@ -306,7 +307,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                     pointerInfo.pickInfo.pickedMesh &&
                     pointerInfo.pickInfo.pickedPoint &&
                     pointerInfo.pickInfo.ray &&
-                    (!isXRPointer || pointerInfo.pickInfo.aimTransform) &&
+                    (!isXRNearPointer || pointerInfo.pickInfo.aimTransform) &&
                     pickPredicate(pointerInfo.pickInfo.pickedMesh)
                 ) {
                     if (!this.allowMultiPointer && this.currentDraggingPointerIds.length > 0) {
@@ -325,7 +326,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                     this._ownerNode.computeWorldMatrix(true);
                     const virtualMeshesInfo = this._virtualMeshesInfo[pointerId];
 
-                    if (isXRPointer) {
+                    if (isXRNearPointer) {
                         this._dragging = pointerInfo.pickInfo.originMesh ? this._dragType.NEAR_DRAG : this._dragType.DRAG_WITH_CONTROLLER;
                         virtualMeshesInfo.originMesh.position.copyFrom(pointerInfo.pickInfo.aimTransform!.position);
                         if (this._dragging === this._dragType.NEAR_DRAG && pointerInfo.pickInfo.gripTransform) {
@@ -351,7 +352,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                     virtualMeshesInfo.startingOrientation.copyFrom(virtualMeshesInfo.dragMesh.rotationQuaternion!);
                     virtualMeshesInfo.startingPivotOrientation.copyFrom(virtualMeshesInfo.pivotMesh.rotationQuaternion!);
 
-                    if (isXRPointer) {
+                    if (isXRNearPointer) {
                         virtualMeshesInfo.originMesh.addChild(virtualMeshesInfo.dragMesh);
                         virtualMeshesInfo.originMesh.addChild(virtualMeshesInfo.pivotMesh);
                     } else {
@@ -392,7 +393,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
 
                         // Reattach camera controls
                         if (this.detachCameraControls && this._attachedToElement && this._pointerCamera && !this._pointerCamera.leftCamera) {
-                            this._pointerCamera.attachControl(true);
+                            this._reattachCameraControls();
                             this._attachedToElement = false;
                         }
                     }
@@ -415,7 +416,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                     }
 
                     this._ownerNode.computeWorldMatrix(true);
-                    if (!isXRPointer) {
+                    if (!isXRNearPointer) {
                         this._pointerUpdate2D(pointerInfo.pickInfo.ray!, pointerId, zDragFactor);
                     } else {
                         this._pointerUpdateXR(pointerInfo.pickInfo.aimTransform!, pointerInfo.pickInfo.gripTransform, pointerId, zDragFactor);
@@ -462,13 +463,31 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
         // Herited classes can override that
     }
 
+    protected _reattachCameraControls() {
+        if (this._pointerCamera) {
+            // If the camera is an ArcRotateCamera, preserve the settings from the camera
+            // when reattaching control
+            if (this._pointerCamera.getClassName() === "ArcRotateCamera") {
+                const arcRotateCamera = this._pointerCamera as ArcRotateCamera;
+                arcRotateCamera.attachControl(
+                    arcRotateCamera.inputs ? arcRotateCamera.inputs.noPreventDefault : true,
+                    arcRotateCamera._useCtrlForPanning,
+                    arcRotateCamera._panningMouseButton
+                );
+            } else {
+                // preserve the settings from the camera when reattaching control
+                this._pointerCamera.attachControl(this._pointerCamera.inputs ? this._pointerCamera.inputs.noPreventDefault : true);
+            }
+        }
+    }
+
     /**
      * Detaches the behavior from the mesh
      */
     public detach(): void {
         if (this._scene) {
             if (this.detachCameraControls && this._attachedToElement && this._pointerCamera && !this._pointerCamera.leftCamera) {
-                this._pointerCamera.attachControl(true);
+                this._reattachCameraControls();
                 this._attachedToElement = false;
             }
             this._scene.onPointerObservable.remove(this._pointerObserver);

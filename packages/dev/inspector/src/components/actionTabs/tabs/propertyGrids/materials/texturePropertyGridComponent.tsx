@@ -63,6 +63,8 @@ const textureFormat = [
     { label: "Depth32 float", normalizable: 0, hideType: true, value: Constants.TEXTUREFORMAT_DEPTH32_FLOAT },
     { label: "Depth16", normalizable: 0, value: Constants.TEXTUREFORMAT_DEPTH16 },
     { label: "Depth24", normalizable: 0, value: Constants.TEXTUREFORMAT_DEPTH24 },
+    { label: "Depth24Unorm/Stencil8", normalizable: 0, hideType: true, value: Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 },
+    { label: "Depth32Float/Stencil8", normalizable: 0, hideType: true, value: Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8 },
     { label: "RGBA BPTC UNorm", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM },
     { label: "RGB BPTC UFloat", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT },
     { label: "RGB BPTC SFloat", normalizable: 0, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT },
@@ -270,7 +272,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
         }
 
         return (
-            <div className="pane">
+            <>
                 <LineContainerComponent title="PREVIEW" selection={this.props.globalState}>
                     <TextureLineComponent ref={this._textureLineRef} texture={texture} width={256} height={256} globalState={this.props.globalState} />
                     <FileButtonLineComponent label="Load texture from file" onClick={(file) => this.updateTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
@@ -315,6 +317,8 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                 <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
                     <TextLineComponent label="Width" value={texture.getSize().width.toString()} />
                     <TextLineComponent label="Height" value={texture.getSize().height.toString()} />
+                    {texture.is2DArray && <TextLineComponent label="Layers" value={texture._texture?.depth.toString() ?? "?"} />}
+                    {texture.is3D && <TextLineComponent label="Depth" value={texture._texture?.depth.toString() ?? "?"} />}
                     {texture.isRenderTarget && (
                         <ButtonLineComponent
                             label="Scale up"
@@ -364,6 +368,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                     {texture instanceof Texture && <TextLineComponent label="Stored as inverted on Y" value={texture.invertY ? "Yes" : "No"} />}
                     <TextLineComponent label="Has mipmaps" value={!texture.noMipmap ? "Yes" : "No"} />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="UV set"
                         target={texture}
                         propertyName="coordinatesIndex"
@@ -379,9 +384,10 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                         target={texture}
                         propertyName="coordinatesMode"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        onSelect={(value) => (texture.coordinatesMode = value)}
+                        onSelect={(value) => (texture.coordinatesMode = value as number)}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Level"
                         target={texture}
                         propertyName="level"
@@ -398,7 +404,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                             noDirectUpdate={true}
                             propertyName="samplingMode"
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                            onSelect={(value) => texture.updateSamplingMode(value)}
+                            onSelect={(value) => texture.updateSamplingMode(value as number)}
                         />
                     )}
                 </LineContainerComponent>
@@ -410,6 +416,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                         <ValueLineComponent label="Last layout time" value={this._adtInstrumentation!.renderTimeCounter.current} units="ms" />
                         <ValueLineComponent label="Last render time" value={this._adtInstrumentation!.layoutTimeCounter.current} units="ms" />
                         <SliderLineComponent
+                            lockObject={this.props.lockObject}
                             label="Render scale"
                             minimum={0.1}
                             maximum={5}
@@ -528,6 +535,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                     {texture.isCube && (
                         <div>
                             <SliderLineComponent
+                                lockObject={this.props.lockObject}
                                 label="Rotation Y"
                                 useEuler={this.props.globalState.onlyUseEulers}
                                 minimum={0}
@@ -539,7 +547,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                         </div>
                     )}
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

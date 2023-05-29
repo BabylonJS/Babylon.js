@@ -18,15 +18,27 @@ declare type BaseTexture = import("../Materials/Textures/baseTexture").BaseTextu
 const __decoratorInitialStore = {};
 const __mergedStore = {};
 
-const _copySource = function <T>(creationFunction: () => T, source: T, instanciate: boolean): T {
+/** @internal */
+export interface CopySourceOptions {
+    /*
+     * if a texture is used in more than one channel (e.g diffuse and opacity),
+     * only clone it once and reuse it on the other channels. Default false
+     */
+    cloneTexturesOnlyOnce?: boolean;
+}
+
+const _copySource = function <T>(creationFunction: () => T, source: T, instanciate: boolean, options: CopySourceOptions = {}): T {
     const destination = creationFunction();
 
     // Tags
-    if (Tags) {
-        Tags.AddTagsTo(destination, (<any>source).tags);
+    if (Tags && Tags.HasTags(source)) {
+        Tags.AddTagsTo(destination, Tags.GetTags(source, true));
     }
 
     const classStore = getMergedStore(destination);
+
+    // Map from source texture uniqueId to destination texture
+    const textureMap: Record<number, any> = {};
 
     // Properties
     for (const property in classStore) {
@@ -42,7 +54,12 @@ const _copySource = function <T>(creationFunction: () => T, source: T, instancia
                     (<any>destination)[property] = sourceProperty;
                     break;
                 case 1: // Texture
-                    (<any>destination)[property] = instanciate || sourceProperty.isRenderTarget ? sourceProperty : sourceProperty.clone();
+                    if (options.cloneTexturesOnlyOnce && textureMap[sourceProperty.uniqueId]) {
+                        (<any>destination)[property] = textureMap[sourceProperty.uniqueId];
+                    } else {
+                        (<any>destination)[property] = instanciate || sourceProperty.isRenderTarget ? sourceProperty : sourceProperty.clone();
+                        textureMap[sourceProperty.uniqueId] = (<any>destination)[property];
+                    }
                     break;
                 case 2: // Color3
                 case 3: // FresnelParameters
@@ -228,34 +245,28 @@ export class SerializationHelper {
     public static AllowLoadingUniqueId = false;
 
     /**
-     * @param sourceProperty
-     * @hidden
+     * @internal
      */
     public static _ImageProcessingConfigurationParser = (sourceProperty: any): ImageProcessingConfiguration => {
         throw _WarnImport("ImageProcessingConfiguration");
     };
 
     /**
-     * @param sourceProperty
-     * @hidden
+     * @internal
      */
     public static _FresnelParametersParser = (sourceProperty: any): FresnelParameters => {
         throw _WarnImport("FresnelParameters");
     };
 
     /**
-     * @param sourceProperty
-     * @hidden
+     * @internal
      */
     public static _ColorCurvesParser = (sourceProperty: any): ColorCurves => {
         throw _WarnImport("ColorCurves");
     };
 
     /**
-     * @param sourceProperty
-     * @param scene
-     * @param rootUrl
-     * @hidden
+     * @internal
      */
     public static _TextureParser = (sourceProperty: any, scene: Scene, rootUrl: string): Nullable<BaseTexture> => {
         throw _WarnImport("Texture");
@@ -351,23 +362,15 @@ export class SerializationHelper {
     }
 
     /**
-     * Creates a new entity from a serialization data object
-     * @param creationFunction defines a function used to instanciated the new entity
-     * @param source defines the source serialization data
-     * @param scene defines the hosting scene
-     * @param rootUrl defines the root url for resources
-     * @returns a new entity
+     * Given a source json and a destination object in a scene, this function will parse the source and will try to apply its content to the destination object
+     * @param source the source json data
+     * @param destination the destination object
+     * @param scene the scene where the object is
+     * @param rootUrl root url to use to load assets
      */
-    public static Parse<T>(creationFunction: () => T, source: any, scene: Nullable<Scene>, rootUrl: Nullable<string> = null): T {
-        const destination = creationFunction();
-
+    public static ParseProperties(source: any, destination: any, scene: Nullable<Scene>, rootUrl: Nullable<string>) {
         if (!rootUrl) {
             rootUrl = "";
-        }
-
-        // Tags
-        if (Tags) {
-            Tags.AddTagsTo(destination, source.tags);
         }
 
         const classStore = getMergedStore(destination);
@@ -429,6 +432,25 @@ export class SerializationHelper {
                 }
             }
         }
+    }
+
+    /**
+     * Creates a new entity from a serialization data object
+     * @param creationFunction defines a function used to instanciated the new entity
+     * @param source defines the source serialization data
+     * @param scene defines the hosting scene
+     * @param rootUrl defines the root url for resources
+     * @returns a new entity
+     */
+    public static Parse<T>(creationFunction: () => T, source: any, scene: Nullable<Scene>, rootUrl: Nullable<string> = null): T {
+        const destination = creationFunction();
+
+        // Tags
+        if (Tags) {
+            Tags.AddTagsTo(destination, source.tags);
+        }
+
+        SerializationHelper.ParseProperties(source, destination, scene, rootUrl);
 
         return destination;
     }
@@ -439,8 +461,8 @@ export class SerializationHelper {
      * @param source defines the source object
      * @returns the cloned object
      */
-    public static Clone<T>(creationFunction: () => T, source: T): T {
-        return _copySource(creationFunction, source, false);
+    public static Clone<T>(creationFunction: () => T, source: T, options: CopySourceOptions = {}): T {
+        return _copySource(creationFunction, source, false, options);
     }
 
     /**
@@ -454,16 +476,12 @@ export class SerializationHelper {
     }
 }
 
-/** @hidden */
+/** @internal */
 declare const _native: any;
 
 /**
  * Decorator used to redirect a function to a native implementation if available.
- * @param target
- * @param propertyKey
- * @param descriptor
- * @param predicate
- * @hidden
+ * @internal
  */
 export function nativeOverride<T extends (...params: any[]) => boolean>(
     target: any,
@@ -506,7 +524,7 @@ export function nativeOverride<T extends (...params: any[]) => boolean>(
  * @param predicate
  * @example @nativeOverride.filter((...[arg1]: Parameters<typeof someClass.someMethod>) => arg1.length > 20)
  *          public someMethod(arg1: string, arg2: number): string {
- * @hidden
+ * @internal
  */
 nativeOverride.filter = function <T extends (...params: any) => boolean>(predicate: T) {
     return (target: any, propertyKey: string, descriptor: TypedPropertyDescriptor<(...params: Parameters<T>) => unknown>) =>

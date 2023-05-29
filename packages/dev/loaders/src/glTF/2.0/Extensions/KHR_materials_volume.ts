@@ -6,20 +6,15 @@ import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
+import type { IKHRMaterialsVolume } from "babylonjs-gltf2interface";
 
 const NAME = "KHR_materials_volume";
 
-interface IMaterialsTransmission {
-    attenuationColor?: number[];
-    attenuationDistance?: number;
-    thicknessTexture?: ITextureInfo;
-    thicknessFactor?: number;
-}
-
 /**
- * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_volume)
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_volume/README.md)
  * @since 5.0.0
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_materials_volume implements IGLTFLoaderExtension {
     /**
      * The name of this extension.
@@ -39,8 +34,7 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
     private _loader: GLTFLoader;
 
     /**
-     * @param loader
-     * @hidden
+     * @internal
      */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
@@ -51,7 +45,7 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public dispose() {
         if (this.enabled) {
             this._loader._disableInstancedMesh--;
@@ -60,13 +54,10 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
     }
 
     /**
-     * @param context
-     * @param material
-     * @param babylonMaterial
-     * @hidden
+     * @internal
      */
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
-        return GLTFLoader.LoadExtensionAsync<IMaterialsTransmission>(context, material, this.name, (extensionContext, extension) => {
+        return GLTFLoader.LoadExtensionAsync<IKHRMaterialsVolume>(context, material, this.name, (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
             promises.push(this._loader.loadMaterialBasePropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
@@ -75,7 +66,7 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
         });
     }
 
-    private _loadVolumePropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, extension: IMaterialsTransmission): Promise<void> {
+    private _loadVolumePropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, extension: IKHRMaterialsVolume): Promise<void> {
         if (!(babylonMaterial instanceof PBRMaterial)) {
             throw new Error(`${context}: Material type not supported`);
         }

@@ -23,6 +23,7 @@ import { DepthReducer } from "../../Misc/depthReducer";
 
 import { Logger } from "../../Misc/logger";
 import { EngineStore } from "../../Engines/engineStore";
+import type { Camera } from "../../Cameras/camera";
 
 interface ICascade {
     prevBreakDistance: number;
@@ -67,11 +68,11 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     /**
      * Defines the minimum number of cascades used by the CSM.
      */
-    public static readonly MIN_CASCADES_COUNT = 2;
+    public static MIN_CASCADES_COUNT = 2;
     /**
      * Defines the maximum number of cascades used by the CSM.
      */
-    public static readonly MAX_CASCADES_COUNT = 4;
+    public static MAX_CASCADES_COUNT = 4;
 
     protected _validateFilter(filter: number): number {
         if (filter === ShadowGenerator.FILTER_NONE || filter === ShadowGenerator.FILTER_PCF || filter === ShadowGenerator.FILTER_PCSS) {
@@ -295,7 +296,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
      * It defaults to camera.maxZ
      */
     public get shadowMaxZ(): number {
-        if (!this._scene || !this._scene.activeCamera) {
+        if (!this._getCamera()) {
             return 0;
         }
         return this._shadowMaxZ;
@@ -304,11 +305,12 @@ export class CascadedShadowGenerator extends ShadowGenerator {
      * Sets the shadow max z distance.
      */
     public set shadowMaxZ(value: number) {
-        if (!this._scene || !this._scene.activeCamera) {
+        const camera = this._getCamera();
+        if (!camera) {
             this._shadowMaxZ = value;
             return;
         }
-        if (this._shadowMaxZ === value || value < this._scene.activeCamera.minZ || value > this._scene.activeCamera.maxZ) {
+        if (this._shadowMaxZ === value || value < camera.minZ || value > camera.maxZ) {
             return;
         }
         this._shadowMaxZ = value;
@@ -447,7 +449,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     }
 
     public set autoCalcDepthBounds(value: boolean) {
-        const camera = this._scene.activeCamera;
+        const camera = this._getCamera();
 
         if (!camera) {
             return;
@@ -508,13 +510,13 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     }
 
     private _splitFrustum(): void {
-        const camera = this._scene.activeCamera;
+        const camera = this._getCamera();
         if (!camera) {
             return;
         }
 
         const near = camera.minZ,
-            far = camera.maxZ,
+            far = camera.maxZ || this._shadowMaxZ, // account for infinite far plane (ie. maxZ = 0)
             cameraRange = far - near,
             minDistance = this._minDistance,
             maxDistance = this._shadowMaxZ < far && this._shadowMaxZ >= near ? Math.min((this._shadowMaxZ - near) / (far - near), this._maxDistance) : this._maxDistance;
@@ -545,7 +547,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     private _computeMatrices(): void {
         const scene = this._scene;
 
-        const camera = scene.activeCamera;
+        const camera = this._getCamera();
         if (!camera) {
             return;
         }
@@ -624,7 +626,8 @@ export class CascadedShadowGenerator extends ShadowGenerator {
 
     // Get the 8 points of the view frustum in world space
     private _computeFrustumInWorldSpace(cascadeIndex: number): void {
-        if (!this._scene.activeCamera) {
+        const camera = this._getCamera();
+        if (!camera) {
             return;
         }
 
@@ -633,9 +636,23 @@ export class CascadedShadowGenerator extends ShadowGenerator {
 
         const isNDCHalfZRange = this._scene.getEngine().isNDCHalfZRange;
 
-        this._scene.activeCamera.getViewMatrix(); // make sure the transformation matrix we get when calling 'getTransformationMatrix()' is calculated with an up to date view matrix
+        camera.getViewMatrix(); // make sure the transformation matrix we get when calling 'getTransformationMatrix()' is calculated with an up to date view matrix
 
-        const invViewProj = Matrix.Invert(this._scene.activeCamera.getTransformationMatrix());
+        const cameraInfiniteFarPlane = camera.maxZ === 0;
+        const saveCameraMaxZ = camera.maxZ;
+
+        if (cameraInfiniteFarPlane) {
+            camera.maxZ = this._shadowMaxZ;
+            camera.getProjectionMatrix(true);
+        }
+
+        const invViewProj = Matrix.Invert(camera.getTransformationMatrix());
+
+        if (cameraInfiniteFarPlane) {
+            camera.maxZ = saveCameraMaxZ;
+            camera.getProjectionMatrix(true);
+        }
+
         const cornerIndexOffset = this._scene.getEngine().useReverseDepthBuffer ? 4 : 0;
         for (let cornerIndex = 0; cornerIndex < CascadedShadowGenerator._FrustumCornersNDCSpace.length; ++cornerIndex) {
             tmpv1.copyFrom(CascadedShadowGenerator._FrustumCornersNDCSpace[(cornerIndex + cornerIndexOffset) % CascadedShadowGenerator._FrustumCornersNDCSpace.length]);
@@ -663,7 +680,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         this._cascadeMaxExtents[cascadeIndex].copyFromFloats(Number.MIN_VALUE, Number.MIN_VALUE, Number.MIN_VALUE);
         this._frustumCenter[cascadeIndex].copyFromFloats(0, 0, 0);
 
-        const camera = this._scene.activeCamera;
+        const camera = this._getCamera();
 
         if (!camera) {
             return;
@@ -727,8 +744,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     }
 
     /**
-     * @param _
-     * @hidden
+     * @internal
      */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
         throw _WarnImport("ShadowGeneratorSceneComponent");
@@ -742,14 +758,15 @@ export class CascadedShadowGenerator extends ShadowGenerator {
      * @param mapSize The size of the texture what stores the shadows. Example : 1024.
      * @param light The directional light object generating the shadows.
      * @param usefulFloatFirst By default the generator will try to use half float textures but if you need precision (for self shadowing for instance), you can use this option to enforce full float texture.
+     * @param camera Camera associated with this shadow generator (default: null). If null, takes the scene active camera at the time we need to access it
      */
-    constructor(mapSize: number, light: DirectionalLight, usefulFloatFirst?: boolean) {
+    constructor(mapSize: number, light: DirectionalLight, usefulFloatFirst?: boolean, camera?: Nullable<Camera>) {
         if (!CascadedShadowGenerator.IsSupported) {
             Logger.Error("CascadedShadowMap is not supported by the current engine.");
             return;
         }
 
-        super(mapSize, light, usefulFloatFirst);
+        super(mapSize, light, usefulFloatFirst, camera);
 
         this.usePercentageCloserFiltering = true;
     }
@@ -767,7 +784,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         this._minDistance = this._minDistance ?? 0;
         this._maxDistance = this._maxDistance ?? 1;
         this._currentLayer = this._currentLayer ?? 0;
-        this._shadowMaxZ = this._shadowMaxZ ?? this._scene.activeCamera?.maxZ ?? 10000;
+        this._shadowMaxZ = this._shadowMaxZ ?? this._getCamera()?.maxZ ?? 10000;
         this._debug = this._debug ?? false;
         this._depthClamp = this._depthClamp ?? true;
         this._cascadeBlendPercentage = this._cascadeBlendPercentage ?? 0.1;
@@ -796,6 +813,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
             undefined /*, Constants.TEXTUREFORMAT_RED*/
         );
         this._shadowMap.createDepthStencilTexture(engine.useReverseDepthBuffer ? Constants.GREATER : Constants.LESS, true);
+        this._shadowMap.noPrePassRenderer = true;
     }
 
     protected _initializeShadowMap(): void {
@@ -901,9 +919,9 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         defines["SHADOWCSMNUM_CASCADES" + lightIndex] = this.numCascades;
         defines["SHADOWCSM_RIGHTHANDED" + lightIndex] = scene.useRightHandedSystem;
 
-        const camera = scene.activeCamera;
+        const camera = this._getCamera();
 
-        if (camera && this._shadowMaxZ < camera.maxZ) {
+        if (camera && this._shadowMaxZ <= (camera.maxZ || this._shadowMaxZ)) {
             defines["SHADOWCSMUSESHADOWMAXZ" + lightIndex] = true;
         }
 
@@ -926,7 +944,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
             return;
         }
 
-        const camera = scene.activeCamera;
+        const camera = this._getCamera();
         if (!camera) {
             return;
         }
@@ -1056,7 +1074,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         const shadowGenerator = ShadowGenerator.Parse(
             parsedShadowGenerator,
             scene,
-            (mapSize: number, light: IShadowLight) => new CascadedShadowGenerator(mapSize, <DirectionalLight>light)
+            (mapSize: number, light: IShadowLight, camera: Nullable<Camera>) => new CascadedShadowGenerator(mapSize, <DirectionalLight>light, undefined, camera)
         ) as CascadedShadowGenerator;
 
         if (parsedShadowGenerator.numCascades !== undefined) {

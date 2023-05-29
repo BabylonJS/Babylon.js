@@ -16,12 +16,15 @@ import strokeWeightIcon from "shared-ui-components/imgs/strokeWeightIcon.svg";
 import addImageButtonIcon from "shared-ui-components/imgs/addImageButtonIcon.svg";
 import addTextButtonIcon from "shared-ui-components/imgs/addTextButtonIcon.svg";
 import { IconComponent } from "shared-ui-components/lines/iconComponent";
+import type { GlobalState } from "../../../../globalState";
 
 interface IButtonPropertyGridComponentProps {
     rectangles: Rectangle[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     onAddComponent: (newComponent: string) => void;
+    onFontsParsedObservable?: Observable<void>;
+    globalState?: GlobalState;
 }
 
 export class ButtonPropertyGridComponent extends React.Component<IButtonPropertyGridComponentProps> {
@@ -35,7 +38,13 @@ export class ButtonPropertyGridComponent extends React.Component<IButtonProperty
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={lockObject} controls={rectangles} onPropertyChangedObservable={onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent
+                    lockObject={lockObject}
+                    controls={rectangles}
+                    onPropertyChangedObservable={onPropertyChangedObservable}
+                    onFontsParsedObservable={this.props.onFontsParsedObservable}
+                    globalState={this.props.globalState}
+                />
                 <hr />
                 <TextLineComponent label="BUTTON" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">

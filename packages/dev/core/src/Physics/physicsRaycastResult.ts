@@ -1,8 +1,9 @@
 import { Vector3 } from "../Maths/math.vector";
+import type { PhysicsBody } from "./v2/physicsBody";
 
 /**
  * Holds the data for the raycast result
- * @see https://doc.babylonjs.com/how_to/using_the_physics_engine
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
  */
 export class PhysicsRaycastResult {
     private _hasHit: boolean = false;
@@ -12,6 +13,15 @@ export class PhysicsRaycastResult {
     private _hitPointWorld: Vector3 = Vector3.Zero();
     private _rayFromWorld: Vector3 = Vector3.Zero();
     private _rayToWorld: Vector3 = Vector3.Zero();
+
+    /**
+     * The Physics body that the ray hit
+     */
+    public body?: PhysicsBody;
+    /**
+     * The body Index in case the Physics body is using instances
+     */
+    public bodyIndex?: number;
 
     /**
      * Gets if there was a hit
@@ -62,8 +72,8 @@ export class PhysicsRaycastResult {
      */
     public setHitData(hitNormalWorld: IXYZ, hitPointWorld: IXYZ) {
         this._hasHit = true;
-        this._hitNormalWorld = new Vector3(hitNormalWorld.x, hitNormalWorld.y, hitNormalWorld.z);
-        this._hitPointWorld = new Vector3(hitPointWorld.x, hitPointWorld.y, hitPointWorld.z);
+        this._hitNormalWorld.set(hitNormalWorld.x, hitNormalWorld.y, hitNormalWorld.z);
+        this._hitPointWorld.set(hitPointWorld.x, hitPointWorld.y, hitPointWorld.z);
     }
 
     /**
@@ -87,14 +97,14 @@ export class PhysicsRaycastResult {
      * @param to The to point on world space
      */
     public reset(from: Vector3 = Vector3.Zero(), to: Vector3 = Vector3.Zero()) {
-        this._rayFromWorld = from;
-        this._rayToWorld = to;
+        this._rayFromWorld.copyFrom(from);
+        this._rayToWorld.copyFrom(to);
 
         this._hasHit = false;
         this._hitDistance = 0;
 
-        this._hitNormalWorld = Vector3.Zero();
-        this._hitPointWorld = Vector3.Zero();
+        this._hitNormalWorld.setAll(0);
+        this._hitPointWorld.setAll(0);
     }
 }
 

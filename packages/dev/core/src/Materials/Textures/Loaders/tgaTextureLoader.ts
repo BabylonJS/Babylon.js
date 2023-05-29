@@ -2,11 +2,10 @@ import { GetTGAHeader, UploadContent } from "../../../Misc/tga";
 import { Engine } from "../../../Engines/engine";
 import type { InternalTexture } from "../../../Materials/Textures/internalTexture";
 import type { IInternalTextureLoader } from "../../../Materials/Textures/internalTextureLoader";
-import { EndsWith } from "../../../Misc/stringTools";
 
 /**
  * Implementation of the TGA Texture Loader.
- * @hidden
+ * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class _TGATextureLoader implements IInternalTextureLoader {
@@ -21,7 +20,7 @@ export class _TGATextureLoader implements IInternalTextureLoader {
      * @returns true if the loader can load the specified file
      */
     public canLoad(extension: string): boolean {
-        return EndsWith(extension, ".tga");
+        return extension.endsWith(".tga");
     }
 
     /**

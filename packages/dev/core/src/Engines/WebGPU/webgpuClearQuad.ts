@@ -15,7 +15,7 @@ import { renderableTextureFormatToIndex, WebGPUTextureHelper } from "./webgpuTex
 import "../../Shaders/clearQuad.vertex";
 import "../../Shaders/clearQuad.fragment";
 
-/** @hidden */
+/** @internal */
 export class WebGPUClearQuad {
     private _device: GPUDevice;
     private _engine: WebGPUEngine;
@@ -31,7 +31,7 @@ export class WebGPUClearQuad {
         this._cacheRenderPipeline.setDepthStencilFormat(format);
     }
 
-    public setColorFormat(format: GPUTextureFormat): void {
+    public setColorFormat(format: GPUTextureFormat | null): void {
         this._cacheRenderPipeline.setColorFormat(format);
     }
 
@@ -70,7 +70,7 @@ export class WebGPUClearQuad {
             let idx = 0;
             this._keyTemp.length = 0;
             for (let i = 0; i < this._cacheRenderPipeline.colorFormats.length; ++i) {
-                this._keyTemp[idx++] = renderableTextureFormatToIndex[this._cacheRenderPipeline.colorFormats[i]];
+                this._keyTemp[idx++] = renderableTextureFormatToIndex[this._cacheRenderPipeline.colorFormats[i] ?? ""];
             }
 
             const depthStencilFormatIndex = renderableTextureFormatToIndex[this._depthTextureFormat ?? 0];
@@ -125,7 +125,7 @@ export class WebGPUClearQuad {
         let bindGroups = this._bindGroups[key];
 
         if (!bindGroups) {
-            const bindGroupLayouts = webgpuPipelineContext.bindGroupLayouts;
+            const bindGroupLayouts = webgpuPipelineContext.bindGroupLayouts[0];
             bindGroups = this._bindGroups[key] = [];
             bindGroups.push(
                 this._device.createBindGroup({

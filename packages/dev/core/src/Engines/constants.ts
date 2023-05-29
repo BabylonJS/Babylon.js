@@ -172,6 +172,12 @@ export class Constants {
     public static readonly TEXTUREFORMAT_DEPTH16 = 15;
     /** Depth 24 bits */
     public static readonly TEXTUREFORMAT_DEPTH24 = 16;
+    /** Depth 24 bits unorm + Stencil 8 bits */
+    public static readonly TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 = 17;
+    /** Depth 32 bits float + Stencil 8 bits */
+    public static readonly TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8 = 18;
+    /** Stencil 8 bits */
+    public static readonly TEXTUREFORMAT_STENCIL8 = 19;
 
     /** Compressed BC7 */
     public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM = 36492;
@@ -252,6 +258,17 @@ export class Constants {
     public static readonly TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV = 15;
     /** UNDEFINED */
     public static readonly TEXTURETYPE_UNDEFINED = 16;
+
+    /** 2D Texture target*/
+    public static readonly TEXTURE_2D = 3553;
+    /** 2D Array Texture target */
+    public static readonly TEXTURE_2D_ARRAY = 35866;
+    /** Cube Map Texture target */
+    public static readonly TEXTURE_CUBE_MAP = 34067;
+    /** Cube Map Array Texture target */
+    public static readonly TEXTURE_CUBE_MAP_ARRAY = 0xdeadbeef;
+    /** 3D Texture target */
+    public static readonly TEXTURE_3D = 32879;
 
     /** nearest is mag = nearest and min = nearest and no mip */
     public static readonly TEXTURE_NEAREST_SAMPLINGMODE = 1;
@@ -406,88 +423,88 @@ export class Constants {
 
     /**
      * Nothing
-     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
     public static readonly ACTION_NothingTrigger = 0;
     /**
      * On pick
-     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
     public static readonly ACTION_OnPickTrigger = 1;
     /**
      * On left pick
-     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
     public static readonly ACTION_OnLeftPickTrigger = 2;
     /**
      * On right pick
-     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
     public static readonly ACTION_OnRightPickTrigger = 3;
     /**
      * On center pick
-     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
     public static readonly ACTION_OnCenterPickTrigger = 4;
     /**
      * On pick down
-     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
     public static readonly ACTION_OnPickDownTrigger = 5;
     /**
      * On double pick
-     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
     public static readonly ACTION_OnDoublePickTrigger = 6;
     /**
      * On pick up
-     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
     public static readonly ACTION_OnPickUpTrigger = 7;
     /**
      * On pick out.
      * This trigger will only be raised if you also declared a OnPickDown
-     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
     public static readonly ACTION_OnPickOutTrigger = 16;
     /**
      * On long press
-     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
     public static readonly ACTION_OnLongPressTrigger = 8;
     /**
      * On pointer over
-     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
     public static readonly ACTION_OnPointerOverTrigger = 9;
     /**
      * On pointer out
-     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
     public static readonly ACTION_OnPointerOutTrigger = 10;
     /**
      * On every frame
-     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
     public static readonly ACTION_OnEveryFrameTrigger = 11;
     /**
      * On intersection enter
-     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
     public static readonly ACTION_OnIntersectionEnterTrigger = 12;
     /**
      * On intersection exit
-     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
     public static readonly ACTION_OnIntersectionExitTrigger = 13;
     /**
      * On key down
-     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
     public static readonly ACTION_OnKeyDownTrigger = 14;
     /**
      * On key up
-     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
     public static readonly ACTION_OnKeyUpTrigger = 15;
 
@@ -503,6 +520,10 @@ export class Constants {
      * Special billboard mode where the particle will be biilboard to the camera but rotated to align with direction
      */
     public static readonly PARTICLES_BILLBOARDMODE_STRETCHED = 8;
+    /**
+     * Special billboard mode where the particle will be billboard to the camera but only around the axis of the direction of particle emission
+     */
+    public static readonly PARTICLES_BILLBOARDMODE_STRETCHED_LOCAL = 9;
 
     /** Default culling strategy : this is an exclusion test and it's the more accurate.
      *  Test order :
@@ -616,7 +637,7 @@ export class Constants {
      * Prefixes used by the engine for sub mesh draw wrappers
      */
 
-    /** @hidden */
+    /** @internal */
     public static readonly RENDERPASS_MAIN = 0;
 
     /**
@@ -761,4 +782,7 @@ export class Constants {
     public static readonly GL_ALPHA_FUNCTION_CONSTANT_ALPHA = 0x8003;
     /** Alpha blend function: ONE_MINUS_CONSTANT_ALPHA */
     public static readonly GL_ALPHA_FUNCTION_ONE_MINUS_CONSTANT_ALPHA = 0x8004;
+
+    /** URL to the snippet server. Points to the public snippet server by default */
+    public static SnippetUrl = "https://snippet.babylonjs.com";
 }

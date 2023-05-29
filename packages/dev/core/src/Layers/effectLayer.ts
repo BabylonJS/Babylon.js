@@ -28,6 +28,7 @@ import { _WarnImport } from "../Misc/devTools";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import { EffectFallbacks } from "../Materials/effectFallbacks";
 import { DrawWrapper } from "../Materials/drawWrapper";
+import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
 
 /**
  * Effect layer options. This helps customizing the behaviour
@@ -36,29 +37,34 @@ import { DrawWrapper } from "../Materials/drawWrapper";
 export interface IEffectLayerOptions {
     /**
      * Multiplication factor apply to the canvas size to compute the render target size
-     * used to generated the objects (the smaller the faster).
+     * used to generated the objects (the smaller the faster). Default: 0.5
      */
     mainTextureRatio: number;
 
     /**
-     * Enforces a fixed size texture to ensure effect stability across devices.
+     * Enforces a fixed size texture to ensure effect stability across devices. Default: undefined
      */
     mainTextureFixedSize?: number;
 
     /**
-     * Alpha blending mode used to apply the blur. Default depends of the implementation.
+     * Alpha blending mode used to apply the blur. Default depends of the implementation. Default: ALPHA_COMBINE
      */
     alphaBlendingMode: number;
 
     /**
-     * The camera attached to the layer.
+     * The camera attached to the layer. Default: null
      */
     camera: Nullable<Camera>;
 
     /**
-     * The rendering group to draw the layer in.
+     * The rendering group to draw the layer in. Default: -1
      */
     renderingGroupId: number;
+
+    /**
+     * The type of the main texture. Default: TEXTURETYPE_UNSIGNED_INT
+     */
+    mainTextureType: number;
 }
 
 /**
@@ -84,6 +90,7 @@ export abstract class EffectLayer {
     protected _postProcesses: PostProcess[] = [];
     protected _textures: BaseTexture[] = [];
     protected _emissiveTextureAndColor: { texture: Nullable<BaseTexture>; color: Color4 } = { texture: null, color: new Color4() };
+    protected _effectIntensity: { [meshUniqueId: number]: number } = {};
 
     /**
      * The name of the layer
@@ -171,8 +178,7 @@ export abstract class EffectLayer {
     }
 
     /**
-     * @param _
-     * @hidden
+     * @internal
      */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
         throw _WarnImport("EffectLayerSceneComponent");
@@ -206,6 +212,24 @@ export abstract class EffectLayer {
     }
 
     /**
+     * Gets the intensity of the effect for a specific mesh.
+     * @param mesh The mesh to get the effect intensity for
+     * @returns The intensity of the effect for the mesh
+     */
+    public getEffectIntensity(mesh: AbstractMesh) {
+        return this._effectIntensity[mesh.uniqueId] ?? 1;
+    }
+
+    /**
+     * Sets the intensity of the effect for a specific mesh.
+     * @param mesh The mesh to set the effect intensity for
+     * @param intensity The intensity of the effect for the mesh
+     */
+    public setEffectIntensity(mesh: AbstractMesh, intensity: number): void {
+        this._effectIntensity[mesh.uniqueId] = intensity;
+    }
+
+    /**
      * Instantiates a new effect Layer and references it in the scene.
      * @param name The name of the layer
      * @param scene The scene to use the layer in
@@ -233,7 +257,7 @@ export abstract class EffectLayer {
 
     /**
      * Get the effect name of the layer.
-     * @return The effect name
+     * @returns The effect name
      */
     public abstract getEffectName(): string;
 
@@ -241,7 +265,7 @@ export abstract class EffectLayer {
      * Checks for the readiness of the element composing the layer.
      * @param subMesh the mesh to check for
      * @param useInstances specify whether or not to use instances to render the mesh
-     * @return true if ready otherwise, false
+     * @returns true if ready otherwise, false
      */
     public abstract isReady(subMesh: SubMesh, useInstances: boolean): boolean;
 
@@ -307,6 +331,7 @@ export abstract class EffectLayer {
             alphaBlendingMode: Constants.ALPHA_COMBINE,
             camera: null,
             renderingGroupId: -1,
+            mainTextureType: Constants.TEXTURETYPE_UNSIGNED_INT,
             ...options,
         };
 
@@ -384,7 +409,7 @@ export abstract class EffectLayer {
             this._scene,
             false,
             true,
-            Constants.TEXTURETYPE_UNSIGNED_INT
+            this._effectLayerOptions.mainTextureType
         );
         this._mainTexture.activeCamera = this._effectLayerOptions.camera;
         this._mainTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
@@ -400,12 +425,8 @@ export abstract class EffectLayer {
             this._mainTexture.setMaterialForRendering(mesh, material);
         }
 
-        this._mainTexture.customIsReadyFunction = (mesh: AbstractMesh, refreshRate: number) => {
-            if (!mesh.isReady(false)) {
-                return false;
-            }
-            if (refreshRate === 0 && mesh.subMeshes) {
-                // full check: check that the effects are ready
+        this._mainTexture.customIsReadyFunction = (mesh: AbstractMesh, refreshRate: number, preWarm?: boolean) => {
+            if ((preWarm || refreshRate === 0) && mesh.subMeshes) {
                 for (let i = 0; i < mesh.subMeshes.length; ++i) {
                     const subMesh = mesh.subMeshes[i];
                     const material = subMesh.getMaterial();
@@ -499,7 +520,7 @@ export abstract class EffectLayer {
      * @param subMesh the mesh to check for
      * @param useInstances specify whether or not to use instances to render the mesh
      * @param emissiveTexture the associated emissive texture used to generate the glow
-     * @return true if ready otherwise, false
+     * @returns true if ready otherwise, false
      */
     protected _isReady(subMesh: SubMesh, useInstances: boolean, emissiveTexture: Nullable<BaseTexture>): boolean {
         const engine = this._scene.getEngine();
@@ -584,7 +605,7 @@ export abstract class EffectLayer {
         }
 
         // Vertex
-        if (mesh.isVerticesDataPresent(VertexBuffer.ColorKind) && mesh.hasVertexAlpha) {
+        if (mesh.useVertexColors && mesh.isVerticesDataPresent(VertexBuffer.ColorKind) && mesh.hasVertexAlpha && material.transparencyMode !== Material.MATERIAL_OPAQUE) {
             attribs.push(VertexBuffer.ColorKind);
             defines.push("#define VERTEXALPHA");
         }
@@ -648,6 +669,9 @@ export abstract class EffectLayer {
             }
         }
 
+        // ClipPlanes
+        prepareStringDefinesForClipPlanes(material, this._scene, defines);
+
         this._addCustomEffectDefines(defines);
 
         // Get correct effect
@@ -655,24 +679,29 @@ export abstract class EffectLayer {
         const cachedDefines = drawWrapper.defines as string;
         const join = defines.join("\n");
         if (cachedDefines !== join) {
+            const uniforms = [
+                "world",
+                "mBones",
+                "viewProjection",
+                "glowColor",
+                "morphTargetInfluences",
+                "boneTextureWidth",
+                "diffuseMatrix",
+                "emissiveMatrix",
+                "opacityMatrix",
+                "opacityIntensity",
+                "morphTargetTextureInfo",
+                "morphTargetTextureIndices",
+                "glowIntensity",
+            ];
+
+            addClipPlaneUniforms(uniforms);
+
             drawWrapper.setEffect(
                 this._engine.createEffect(
                     "glowMapGeneration",
                     attribs,
-                    [
-                        "world",
-                        "mBones",
-                        "viewProjection",
-                        "glowColor",
-                        "morphTargetInfluences",
-                        "boneTextureWidth",
-                        "diffuseMatrix",
-                        "emissiveMatrix",
-                        "opacityMatrix",
-                        "opacityIntensity",
-                        "morphTargetTextureInfo",
-                        "morphTargetTextureIndices",
-                    ],
+                    uniforms,
                     ["diffuseSampler", "emissiveSampler", "opacitySampler", "boneSampler", "morphTargets"],
                     join,
                     fallbacks,
@@ -862,7 +891,7 @@ export abstract class EffectLayer {
         this.onBeforeRenderMeshToEffect.notifyObservers(ownerMesh);
 
         if (this._useMeshMaterial(renderingMesh)) {
-            renderingMesh.render(subMesh, hardwareInstancedRendering, replacementMesh || undefined);
+            renderingMesh.render(subMesh, enableAlphaMode, replacementMesh || undefined);
         } else if (this._isReady(subMesh, hardwareInstancedRendering, this._emissiveTextureAndColor.texture)) {
             const renderingMaterial = effectiveMesh._internalAbstractMeshDataInfo._materialForRenderPass?.[engine.currentRenderPassId];
 
@@ -879,8 +908,7 @@ export abstract class EffectLayer {
 
             engine.enableEffect(drawWrapper);
             if (!hardwareInstancedRendering) {
-                const fillMode = scene.forcePointsCloud ? Material.PointFillMode : scene.forceWireframe ? Material.WireFrameFillMode : material.fillMode;
-                renderingMesh._bind(subMesh, effect, fillMode);
+                renderingMesh._bind(subMesh, effect, material.fillMode);
             }
 
             if (!renderingMaterial) {
@@ -956,6 +984,12 @@ export abstract class EffectLayer {
                 if (enableAlphaMode) {
                     engine.setAlphaMode(material.alphaMode);
                 }
+
+                // Intensity of effect
+                effect.setFloat("glowIntensity", this.getEffectIntensity(renderingMesh));
+
+                // Clip planes
+                bindClipPlane(effect, material, scene);
             }
 
             // Draw
@@ -981,7 +1015,7 @@ export abstract class EffectLayer {
 
     /**
      * Rebuild the required buffers.
-     * @hidden Internal use only.
+     * @internal Internal use only.
      */
     public _rebuild(): void {
         const vb = this._vertexBuffers[VertexBuffer.PositionKind];

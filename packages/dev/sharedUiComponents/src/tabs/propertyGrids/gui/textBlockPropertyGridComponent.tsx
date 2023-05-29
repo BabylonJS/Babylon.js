@@ -42,10 +42,11 @@ export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPr
             { label: "Clip", value: TextWrapping.Clip },
             { label: "Ellipsis", value: TextWrapping.Ellipsis },
             { label: "Word wrap", value: TextWrapping.WordWrap },
+            { label: "Word wrap ellipsis", value: TextWrapping.WordWrapEllipsis },
         ];
 
         return (
-            <div className="pane">
+            <>
                 <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={textBlock} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent title="TEXTBLOCK">
                     <TextInputLineComponent
@@ -106,7 +107,7 @@ export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPr
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

@@ -1,12 +1,11 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 import { DracoCompression } from "core/Meshes/Compression/dracoCompression";
 import type { Nullable } from "core/types";
 import { VertexBuffer } from "core/Buffers/buffer";
 import { Geometry } from "core/Meshes/geometry";
 import type { Mesh } from "core/Meshes/mesh";
 
-import type { IKHRDracoMeshCompression } from "babylonjs-gltf2interface";
 import { MeshPrimitiveMode, AccessorComponentType } from "babylonjs-gltf2interface";
+import type { IKHRDracoMeshCompression } from "babylonjs-gltf2interface";
 import type { IMeshPrimitive, IBufferView } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
@@ -18,8 +17,9 @@ interface IBufferViewDraco extends IBufferView {
 }
 
 /**
- * [Specification](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression)
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_draco_mesh_compression/README.md)
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
     /**
      * The name of this extension.
@@ -39,25 +39,21 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
     private _loader: GLTFLoader;
 
     /**
-     * @param loader
-     * @hidden
+     * @internal
      */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
         this.enabled = DracoCompression.DecoderAvailable && this._loader.isExtensionUsed(NAME);
     }
 
-    /** @hidden */
+    /** @internal */
     public dispose(): void {
         delete this.dracoCompression;
         (this._loader as any) = null;
     }
 
     /**
-     * @param context
-     * @param primitive
-     * @param babylonMesh
-     * @hidden
+     * @internal
      */
     public _loadVertexDataAsync(context: string, primitive: IMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<Geometry>> {
         return GLTFLoader.LoadExtensionAsync<IKHRDracoMeshCompression, Geometry>(context, primitive, this.name, (extensionContext, extension) => {

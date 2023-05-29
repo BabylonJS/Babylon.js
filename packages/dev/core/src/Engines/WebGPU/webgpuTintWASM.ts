@@ -21,7 +21,7 @@ export interface TwgslOptions {
     wasmPath?: string;
 }
 
-/** @hidden */
+/** @internal */
 export class WebGPUTintWASM {
     // Default twgsl options.
     private static readonly _TWgslDefaultOptions: TwgslOptions = {
@@ -29,9 +29,17 @@ export class WebGPUTintWASM {
         wasmPath: "https://preview.babylonjs.com/twgsl/twgsl.wasm",
     };
 
-    private _twgsl: any = null;
+    public static ShowWGSLShaderCode = false;
+
+    public static DisableUniformityAnalysis = false;
+
+    private static _twgsl: any = null;
 
     public async initTwgsl(twgslOptions?: TwgslOptions): Promise<void> {
+        if (WebGPUTintWASM._twgsl) {
+            return;
+        }
+
         twgslOptions = twgslOptions || {};
         twgslOptions = {
             ...WebGPUTintWASM._TWgslDefaultOptions,
@@ -39,7 +47,7 @@ export class WebGPUTintWASM {
         };
 
         if (twgslOptions.twgsl) {
-            this._twgsl = twgslOptions.twgsl;
+            WebGPUTintWASM._twgsl = twgslOptions.twgsl;
             return Promise.resolve();
         }
 
@@ -52,14 +60,19 @@ export class WebGPUTintWASM {
         }
 
         if ((self as any).twgsl) {
-            this._twgsl = await (self as any).twgsl(twgslOptions!.wasmPath);
+            WebGPUTintWASM._twgsl = await (self as any).twgsl(twgslOptions!.wasmPath);
             return Promise.resolve();
         }
 
         return Promise.reject("twgsl is not available.");
     }
 
-    public convertSpirV2WGSL(code: Uint32Array): string {
-        return this._twgsl.convertSpirV2WGSL(code);
+    public convertSpirV2WGSL(code: Uint32Array, disableUniformityAnalysis = false): string {
+        const ccode = WebGPUTintWASM._twgsl.convertSpirV2WGSL(code);
+        if (WebGPUTintWASM.ShowWGSLShaderCode) {
+            console.log(ccode);
+            console.log("***********************************************");
+        }
+        return WebGPUTintWASM.DisableUniformityAnalysis || disableUniformityAnalysis ? "diagnostic(off, derivative_uniformity);\n" + ccode : ccode;
     }
 }

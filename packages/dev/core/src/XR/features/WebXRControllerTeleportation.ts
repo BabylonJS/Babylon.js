@@ -24,7 +24,7 @@ import type { PickingInfo } from "../../Collisions/pickingInfo";
 import { Curve3 } from "../../Maths/math.path";
 import { CreateLines } from "../../Meshes/Builders/linesBuilder";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
-import { Color3 } from "../../Maths/math.color";
+import { Color3, Color4 } from "../../Maths/math.color";
 import type { Scene } from "../../scene";
 import { UtilityLayerRenderer } from "../../Rendering/utilityLayerRenderer";
 import { PointerEventTypes } from "../../Events/pointerEvents";
@@ -63,6 +63,10 @@ export interface IWebXRTeleportationOptions {
          * Override the default material of the torus and arrow
          */
         torusArrowMaterial?: Material;
+        /**
+         * Override the default material of the Landing Zone
+         */
+        teleportationCircleMaterial?: Material;
     };
     /**
      * A list of meshes to use as floor meshes.
@@ -120,6 +124,12 @@ export interface IWebXRTeleportationOptions {
     pickBlockerMeshes?: AbstractMesh[];
 
     /**
+     * Color of the teleportation ray when it is blocked by a mesh in the pickBlockerMeshes array
+     * Defaults to red.
+     */
+    blockedRayColor?: Color4;
+
+    /**
      * Should teleport work only on a specific hand?
      */
     forceHandedness?: XRHandedness;
@@ -146,6 +156,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                 currentRotation: number;
                 baseRotation: number;
                 rotating: boolean;
+                blocked: boolean;
             };
             onAxisChangedObserver?: Nullable<Observer<IWebXRMotionControllerAxesValue>>;
             onButtonChangedObserver?: Nullable<Observer<WebXRControllerComponent>>;
@@ -158,6 +169,8 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
     private _snapToPositions: Vector3[];
     private _snappedToPoint: boolean = false;
     private _teleportationRingMaterial?: StandardMaterial;
+    private _blockedRayColor: Color4;
+    private _cachedColor4White = new Color4(1, 1, 1, 1);
     private _tmpRay = new Ray(new Vector3(), new Vector3());
     private _tmpVector = new Vector3();
     private _tmpQuaternion = new Quaternion();
@@ -267,6 +280,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
 
         this._floorMeshes = this._options.floorMeshes || [];
         this._snapToPositions = this._options.snapPositions || [];
+        this._blockedRayColor = this._options.blockedRayColor || new Color4(1, 0, 0, 0.75);
 
         this._setTargetMeshVisibility(false);
     }
@@ -462,8 +476,12 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                         return this._floorMeshes[index].absolutePosition.y < this._options.xrInput.xrCamera.globalPosition.y;
                     });
                     if (pick && pick.pickedMesh && this._options.pickBlockerMeshes && this._options.pickBlockerMeshes.indexOf(pick.pickedMesh) !== -1) {
+                        controllerData.teleportationState.blocked = true;
+                        this._setTargetMeshVisibility(false);
+                        this._showParabolicPath(pick);
                         return;
                     } else if (pick && pick.pickedPoint) {
+                        controllerData.teleportationState.blocked = false;
                         hitPossible = true;
                         this._setTargetMeshPosition(pick);
                         this._setTargetMeshVisibility(true);
@@ -491,8 +509,12 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                         return this._floorMeshes.indexOf(o) !== -1;
                     });
                     if (pick && pick.pickedMesh && this._options.pickBlockerMeshes && this._options.pickBlockerMeshes.indexOf(pick.pickedMesh) !== -1) {
+                        controllerData.teleportationState.blocked = true;
+                        this._setTargetMeshVisibility(false);
+                        this._showParabolicPath(pick);
                         return;
                     } else if (pick && pick.pickedPoint) {
+                        controllerData.teleportationState.blocked = false;
                         hitPossible = true;
                         this._setTargetMeshPosition(pick);
                         this._setTargetMeshVisibility(true);
@@ -506,6 +528,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                 this._setTargetMeshVisibility(false);
             }
         } else {
+            this._disposeBezierCurve();
             this._setTargetMeshVisibility(false);
         }
     }
@@ -523,6 +546,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                 rotating: false,
                 currentRotation: 0,
                 baseRotation: 0,
+                blocked: false,
             },
         };
         const controllerData = this._controllers[xrController.uniqueId];
@@ -649,6 +673,10 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                             }
 
                             if (axesData.x === 0 && axesData.y === 0) {
+                                if (controllerData.teleportationState.blocked) {
+                                    controllerData.teleportationState.blocked = false;
+                                    this._setTargetMeshVisibility(false);
+                                }
                                 if (controllerData.teleportationState.forward) {
                                     this._teleportForward(xrController.uniqueId);
                                 }
@@ -697,25 +725,31 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
             : this._xrSessionManager.scene;
         const teleportationTarget = CreateGround("teleportationTarget", { width: 2, height: 2, subdivisions: 2 }, sceneToRenderTo);
         teleportationTarget.isPickable = false;
-        const length = 512;
-        const dynamicTexture = new DynamicTexture("teleportationPlaneDynamicTexture", length, sceneToRenderTo, true);
-        dynamicTexture.hasAlpha = true;
-        const context = dynamicTexture.getContext();
-        const centerX = length / 2;
-        const centerY = length / 2;
-        const radius = 200;
-        context.beginPath();
-        context.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
-        context.fillStyle = this._options.defaultTargetMeshOptions.teleportationFillColor || "#444444";
-        context.fill();
-        context.lineWidth = 10;
-        context.strokeStyle = this._options.defaultTargetMeshOptions.teleportationBorderColor || "#FFFFFF";
-        context.stroke();
-        context.closePath();
-        dynamicTexture.update();
-        const teleportationCircleMaterial = new StandardMaterial("teleportationPlaneMaterial", sceneToRenderTo);
-        teleportationCircleMaterial.diffuseTexture = dynamicTexture;
-        teleportationTarget.material = teleportationCircleMaterial;
+
+        if (this._options.defaultTargetMeshOptions.teleportationCircleMaterial) {
+            teleportationTarget.material = this._options.defaultTargetMeshOptions.teleportationCircleMaterial;
+        } else {
+            const length = 512;
+            const dynamicTexture = new DynamicTexture("teleportationPlaneDynamicTexture", length, sceneToRenderTo, true);
+            dynamicTexture.hasAlpha = true;
+            const context = dynamicTexture.getContext();
+            const centerX = length / 2;
+            const centerY = length / 2;
+            const radius = 200;
+            context.beginPath();
+            context.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
+            context.fillStyle = this._options.defaultTargetMeshOptions.teleportationFillColor || "#444444";
+            context.fill();
+            context.lineWidth = 10;
+            context.strokeStyle = this._options.defaultTargetMeshOptions.teleportationBorderColor || "#FFFFFF";
+            context.stroke();
+            context.closePath();
+            dynamicTexture.update();
+            const teleportationCircleMaterial = new StandardMaterial("teleportationPlaneMaterial", sceneToRenderTo);
+            teleportationCircleMaterial.diffuseTexture = dynamicTexture;
+            teleportationTarget.material = teleportationCircleMaterial;
+        }
+
         const torus = CreateTorus(
             "torusTeleportation",
             {
@@ -784,6 +818,8 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         }
 
         this._options.teleportationTargetMesh = teleportationTarget;
+        // hide the teleportation target mesh right after creating it.
+        this._setTargetMeshVisibility(false);
     }
 
     private _detachController(xrControllerUniqueId: string) {
@@ -836,11 +872,11 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         this.onTargetMeshPositionUpdatedObservable.notifyObservers(pickInfo);
     }
 
-    private _setTargetMeshVisibility(visible: boolean) {
+    private _setTargetMeshVisibility(visible: boolean, force?: boolean) {
         if (!this._options.teleportationTargetMesh) {
             return;
         }
-        if (this._options.teleportationTargetMesh.isVisible === visible) {
+        if (this._options.teleportationTargetMesh.isVisible === visible && !force) {
             return;
         }
         this._options.teleportationTargetMesh.isVisible = visible;
@@ -863,8 +899,15 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         }
     }
 
+    private _disposeBezierCurve() {
+        if (this._quadraticBezierCurve) {
+            this._quadraticBezierCurve.dispose();
+            this._quadraticBezierCurve = null;
+        }
+    }
+
     private _showParabolicPath(pickInfo: PickingInfo) {
-        if (!pickInfo.pickedPoint) {
+        if (!pickInfo.pickedPoint || !this._currentTeleportationControllerId) {
             return;
         }
 
@@ -875,10 +918,12 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         const controllerData = this._controllers[this._currentTeleportationControllerId];
 
         const quadraticBezierVectors = Curve3.CreateQuadraticBezier(controllerData.xrController.pointer.absolutePosition, pickInfo.ray!.origin, pickInfo.pickedPoint, 25);
+        const color = controllerData.teleportationState.blocked ? this._blockedRayColor : undefined;
+        const colorsArray = new Array(26).fill(color || this._cachedColor4White);
         if (!this._options.generateRayPathMesh) {
             this._quadraticBezierCurve = CreateLines(
                 "teleportation path line",
-                { points: quadraticBezierVectors.getPoints(), instance: this._quadraticBezierCurve as LinesMesh, updatable: true },
+                { points: quadraticBezierVectors.getPoints(), instance: this._quadraticBezierCurve as LinesMesh, updatable: true, colors: colorsArray },
                 sceneToRenderTo
             );
         } else {

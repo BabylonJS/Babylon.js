@@ -14,14 +14,14 @@ import type { Scene } from "core/scene";
  * This is a babylon scene loader plugin.
  */
 export class STLFileLoader implements ISceneLoaderPlugin {
-    /** @hidden */
+    /** @internal */
     public solidPattern = /solid (\S*)([\S\s]*?)endsolid[ ]*(\S*)/g;
 
-    /** @hidden */
+    /** @internal */
     public facetsPattern = /facet([\s\S]*?)endfacet/g;
-    /** @hidden */
+    /** @internal */
     public normalPattern = /normal[\s]+([-+]?[0-9]+\.?[0-9]*([eE][-+]?[0-9]+)?)+[\s]+([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)+[\s]+([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)+/g;
-    /** @hidden */
+    /** @internal */
     public vertexPattern = /vertex[\s]+([-+]?[0-9]+\.?[0-9]*([eE][-+]?[0-9]+)?)+[\s]+([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)+[\s]+([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)+/g;
 
     /**
@@ -84,7 +84,7 @@ export class STLFileLoader implements ISceneLoaderPlugin {
         while ((matches = this.solidPattern.exec(data))) {
             let meshName = matches[1];
             const meshNameFromEnd = matches[3];
-            if (meshName != meshNameFromEnd) {
+            if (meshNameFromEnd && meshName != meshNameFromEnd) {
                 Tools.Error("Error in STL, solid name != endsolid name");
                 return false;
             }
@@ -159,10 +159,10 @@ export class STLFileLoader implements ISceneLoaderPlugin {
             return true;
         }
 
-        // check characters higher than ASCII to confirm binary
-        const fileLength = reader.byteLength;
-        for (let index = 0; index < fileLength; index++) {
-            if (reader.getUint8(index) > 127) {
+        // US-ASCII begin with 's', 'o', 'l', 'i', 'd'
+        const ascii = [115, 111, 108, 105, 100];
+        for (let off = 0; off < 5; off++) {
+            if (reader.getUint8(off) !== ascii[off]) {
                 return true;
             }
         }
@@ -213,9 +213,17 @@ export class STLFileLoader implements ISceneLoaderPlugin {
 
                 offset += 3;
             }
-            indices[indicesCount] = indicesCount++;
-            indices[indicesCount] = indicesCount++;
-            indices[indicesCount] = indicesCount++;
+
+            if (STLFileLoader.DO_NOT_ALTER_FILE_COORDINATES) {
+                indices[indicesCount] = indicesCount;
+                indices[indicesCount + 1] = indicesCount + 2;
+                indices[indicesCount + 2] = indicesCount + 1;
+                indicesCount += 3;
+            } else {
+                indices[indicesCount] = indicesCount++;
+                indices[indicesCount] = indicesCount++;
+                indices[indicesCount] = indicesCount++;
+            }
         }
 
         mesh.setVerticesData(VertexBuffer.PositionKind, positions);
@@ -255,7 +263,12 @@ export class STLFileLoader implements ISceneLoaderPlugin {
                     normals.push(normal[0], normal[2], normal[1]);
                 }
             }
-            indices.push(indicesCount++, indicesCount++, indicesCount++);
+            if (STLFileLoader.DO_NOT_ALTER_FILE_COORDINATES) {
+                indices.push(indicesCount, indicesCount + 2, indicesCount + 1);
+                indicesCount += 3;
+            } else {
+                indices.push(indicesCount++, indicesCount++, indicesCount++);
+            }
             this.vertexPattern.lastIndex = 0;
         }
 

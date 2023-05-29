@@ -1,8 +1,8 @@
-import { serialize, serializeAsMatrix, SerializationHelper } from "../../Misc/decorators";
+import { serialize, serializeAsMatrix, SerializationHelper, serializeAsVector3 } from "../../Misc/decorators";
 import { Tools } from "../../Misc/tools";
 import type { Nullable } from "../../types";
 import type { Scene } from "../../scene";
-import { Matrix, Vector3 } from "../../Maths/math.vector";
+import { Matrix, TmpVectors, Vector3 } from "../../Maths/math.vector";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../../Materials/Textures/texture";
 import { Constants } from "../../Engines/constants";
@@ -10,7 +10,6 @@ import { GetClass, RegisterClass } from "../../Misc/typeStore";
 import type { ThinEngine } from "../../Engines/thinEngine";
 
 import "../../Engines/Extensions/engine.cubeTexture";
-import { StartsWith } from "../../Misc/stringTools";
 import { Observable } from "../../Misc/observable";
 
 /**
@@ -36,8 +35,9 @@ export class CubeTexture extends BaseTexture {
     /**
      * Gets or sets the center of the bounding box associated with the cube texture.
      * It must define where the camera used to render the texture was set
-     * @see https://doc.babylonjs.com/how_to/reflect#using-local-cubemap-mode
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/reflectionTexture#using-local-cubemap-mode
      */
+    @serializeAsVector3()
     public boundingBoxPosition = Vector3.Zero();
 
     private _boundingBoxSize: Vector3;
@@ -60,8 +60,9 @@ export class CubeTexture extends BaseTexture {
     }
     /**
      * Returns the bounding box size
-     * @see https://doc.babylonjs.com/how_to/reflect#using-local-cubemap-mode
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/reflectionTexture#using-local-cubemap-mode
      */
+    @serializeAsVector3()
     public get boundingBoxSize(): Vector3 {
         return this._boundingBoxSize;
     }
@@ -92,8 +93,9 @@ export class CubeTexture extends BaseTexture {
 
     private _noMipmap: boolean;
 
+    /** @internal */
     @serialize("files")
-    private _files: Nullable<string[]> = null;
+    public _files: Nullable<string[]> = null;
 
     @serialize("forcedExtension")
     protected _forcedExtension: Nullable<string> = null;
@@ -110,6 +112,9 @@ export class CubeTexture extends BaseTexture {
 
     @serializeAsMatrix("textureMatrix")
     private _textureMatrix: Matrix;
+
+    @serializeAsMatrix("textureMatrixRefraction")
+    private _textureMatrixRefraction: Matrix = new Matrix();
 
     private _format: number;
     private _createPolynomials: boolean;
@@ -137,7 +142,7 @@ export class CubeTexture extends BaseTexture {
      * @param scene defines the scene the texture is attached to
      * @param forcedExtension defines the extension of the file if different from the url
      * @param createPolynomials defines whether or not to create polynomial harmonics from the texture data if necessary
-     * @return the prefiltered texture
+     * @returns the prefiltered texture
      */
     public static CreateFromPrefilteredData(url: string, scene: Scene, forcedExtension: any = null, createPolynomials: boolean = true) {
         const oldValue = scene.useDelayedTextureLoading;
@@ -168,7 +173,7 @@ export class CubeTexture extends BaseTexture {
      * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
      * @param loaderOptions options to be passed to the loader
      * @param useSRGBBuffer Defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU) (default: false)
-     * @return the cube texture
+     * @returns the cube texture
      */
     constructor(
         rootUrl: string,
@@ -242,15 +247,20 @@ export class CubeTexture extends BaseTexture {
         delayLoad = false,
         files: Nullable<string[]> = null
     ): void {
-        if (!this.name || StartsWith(this.name, "data:")) {
+        if (!this.name || this.name.startsWith("data:")) {
             this.name = url;
         }
         this.url = url;
+
+        if (forcedExtension) {
+            this._forcedExtension = forcedExtension;
+        }
 
         const lastDot = url.lastIndexOf(".");
         const extension = forcedExtension ? forcedExtension : lastDot > -1 ? url.substring(lastDot).toLowerCase() : "";
         const isDDS = extension.indexOf(".dds") === 0;
         const isEnv = extension.indexOf(".env") === 0;
+        const isBasis = extension.indexOf(".basis") === 0;
 
         if (isEnv) {
             this.gammaSpace = false;
@@ -268,7 +278,7 @@ export class CubeTexture extends BaseTexture {
         if (files) {
             this._files = files;
         } else {
-            if (!isEnv && !isDDS && !extensions) {
+            if (!isBasis && !isEnv && !isDDS && !extensions) {
                 extensions = ["_px.jpg", "_py.jpg", "_pz.jpg", "_nx.jpg", "_ny.jpg", "_nz.jpg"];
             }
 
@@ -330,12 +340,36 @@ export class CubeTexture extends BaseTexture {
         }
 
         this._textureMatrix = value;
+
+        if (!this.getScene()?.useRightHandedSystem) {
+            return;
+        }
+
+        const scale = TmpVectors.Vector3[0];
+        const quat = TmpVectors.Quaternion[0];
+        const trans = TmpVectors.Vector3[1];
+
+        this._textureMatrix.decompose(scale, quat, trans);
+
+        quat.z *= -1; // these two operations correspond to negating the x and y euler angles
+        quat.w *= -1;
+
+        Matrix.ComposeToRef(scale, quat, trans, this._textureMatrixRefraction);
+    }
+
+    /**
+     * Gets a suitable rotate/transform matrix when the texture is used for refraction.
+     * There's a separate function from getReflectionTextureMatrix because refraction requires a special configuration of the matrix in right-handed mode.
+     * @returns The refraction matrix
+     */
+    public getRefractionTextureMatrix(): Matrix {
+        return this.getScene()?.useRightHandedSystem ? this._textureMatrixRefraction : this._textureMatrix;
     }
 
     private _loadTexture(onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null) {
         const scene = this.getScene();
         const oldTexture = this._texture;
-        this._texture = this._getFromCache(this.url, this._noMipmap, undefined, undefined, this._useSRGBBuffer);
+        this._texture = this._getFromCache(this.url, this._noMipmap, undefined, undefined, this._useSRGBBuffer, this.isCube);
 
         const onLoadProcessing = () => {
             this.onLoadObservable.notifyObservers(this);

@@ -1,7 +1,9 @@
 import type { ProcessingOptions } from "./shaderProcessingOptions";
-import { StartsWith } from "../../Misc/stringTools";
 
-/** @hidden */
+const defaultAttributeKeywordName = "attribute";
+const defaultVaryingKeywordName = "varying";
+
+/** @internal */
 export class ShaderCodeNode {
     line: string;
     children: ShaderCodeNode[] = [];
@@ -24,9 +26,20 @@ export class ShaderCodeNode {
                     value = processor.lineProcessor(value, options.isFragment, options.processingContext);
                 }
 
-                if (processor.attributeProcessor && StartsWith(this.line, "attribute")) {
+                const attributeKeyword = options.processor?.attributeKeywordName ?? defaultAttributeKeywordName;
+                const varyingKeyword =
+                    options.isFragment && options.processor?.varyingFragmentKeywordName
+                        ? options.processor?.varyingFragmentKeywordName
+                        : !options.isFragment && options.processor?.varyingVertexKeywordName
+                        ? options.processor?.varyingVertexKeywordName
+                        : defaultVaryingKeywordName;
+
+                if (!options.isFragment && processor.attributeProcessor && this.line.startsWith(attributeKeyword)) {
                     value = processor.attributeProcessor(this.line, preprocessors, options.processingContext);
-                } else if (processor.varyingProcessor && StartsWith(this.line, "varying")) {
+                } else if (
+                    processor.varyingProcessor &&
+                    (processor.varyingCheck?.(this.line, options.isFragment) || (!processor.varyingCheck && this.line.startsWith(varyingKeyword)))
+                ) {
                     value = processor.varyingProcessor(this.line, options.isFragment, preprocessors, options.processingContext);
                 } else if (processor.uniformProcessor && processor.uniformRegexp && processor.uniformRegexp.test(this.line)) {
                     if (!options.lookForClosingBracketForUniformBuffer) {
@@ -39,7 +52,7 @@ export class ShaderCodeNode {
                     }
                 } else if (processor.textureProcessor && processor.textureRegexp && processor.textureRegexp.test(this.line)) {
                     value = processor.textureProcessor(this.line, options.isFragment, preprocessors, options.processingContext);
-                } else if ((processor.uniformProcessor || processor.uniformBufferProcessor) && StartsWith(this.line, "uniform") && !options.lookForClosingBracketForUniformBuffer) {
+                } else if ((processor.uniformProcessor || processor.uniformBufferProcessor) && this.line.startsWith("uniform") && !options.lookForClosingBracketForUniformBuffer) {
                     const regex = /uniform\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s+(\S+)\s*;/;
 
                     if (regex.test(this.line)) {

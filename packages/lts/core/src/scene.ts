@@ -18,21 +18,21 @@ declare module "core/scene" {
         /**
          * Sets the active camera of the scene using its Id
          * @param id defines the camera's Id
-         * @return the new active camera or null if none found.
+         * @returns the new active camera or null if none found.
          * @deprecated Please use setActiveCameraById instead
          */
         setActiveCameraByID(id: string): Nullable<Camera>;
         /**
          * Get a material using its id
          * @param id defines the material's Id
-         * @return the material or null if none found.
+         * @returns the material or null if none found.
          * @deprecated Please use getMaterialById instead
          */
         getMaterialByID(id: string): Nullable<Material>;
         /**
          * Gets a the last added material using a given id
          * @param id defines the material's Id
-         * @return the last material with the given id or null if none found.
+         * @returns the last material with the given id or null if none found.
          * @deprecated Please use getLastMaterialById instead
          */
         getLastMaterialByID(id: string): Nullable<Material>;
@@ -40,7 +40,7 @@ declare module "core/scene" {
         /**
          * Get a texture using its unique id
          * @param uniqueId defines the texture's unique id
-         * @return the texture or null if none found.
+         * @returns the texture or null if none found.
          * @deprecated Please use getTextureByUniqueId instead
          */
         getTextureByUniqueID(uniqueId: number): Nullable<BaseTexture>;
@@ -61,56 +61,56 @@ declare module "core/scene" {
         /**
          * Gets a bone using its Id
          * @param id defines the bone's Id
-         * @return the bone or null if not found
+         * @returns the bone or null if not found
          * @deprecated Please use getBoneById instead
          */
         getBoneByID(id: string): Nullable<Bone>;
         /**
          * Gets a light node using its Id
          * @param id defines the light's Id
-         * @return the light or null if none found.
+         * @returns the light or null if none found.
          * @deprecated Please use getLightById instead
          */
         getLightByID(id: string): Nullable<Light>;
         /**
          * Gets a light node using its scene-generated unique Id
          * @param uniqueId defines the light's unique Id
-         * @return the light or null if none found.
+         * @returns the light or null if none found.
          * @deprecated Please use getLightByUniqueId instead
          */
         getLightByUniqueID(uniqueId: number): Nullable<Light>;
         /**
          * Gets a particle system by Id
          * @param id defines the particle system Id
-         * @return the corresponding system or null if none found
+         * @returns the corresponding system or null if none found
          * @deprecated Please use getParticleSystemById instead
          */
         getParticleSystemByID(id: string): Nullable<IParticleSystem>;
         /**
          * Gets a geometry using its Id
          * @param id defines the geometry's Id
-         * @return the geometry or null if none found.
+         * @returns the geometry or null if none found.
          * @deprecated Please use getGeometryById instead
          */
         getGeometryByID(id: string): Nullable<Geometry>;
         /**
          * Gets the first added mesh found of a given Id
          * @param id defines the Id to search for
-         * @return the mesh found or null if not found at all
+         * @returns the mesh found or null if not found at all
          * @deprecated Please use getMeshById instead
          */
         getMeshByID(id: string): Nullable<AbstractMesh>;
         /**
          * Gets a mesh with its auto-generated unique Id
          * @param uniqueId defines the unique Id to search for
-         * @return the found mesh or null if not found at all.
+         * @returns the found mesh or null if not found at all.
          * @deprecated Please use getMeshByUniqueId instead
          */
         getMeshByUniqueID(uniqueId: number): Nullable<AbstractMesh>;
         /**
          * Gets a the last added mesh using a given Id
          * @param id defines the Id to search for
-         * @return the found mesh or null if not found at all.
+         * @returns the found mesh or null if not found at all.
          * @deprecated Please use getLastMeshById instead
          */
         getLastMeshByID(id: string): Nullable<AbstractMesh>;
@@ -124,14 +124,14 @@ declare module "core/scene" {
         /**
          * Gets the first added transform node found of a given Id
          * @param id defines the Id to search for
-         * @return the found transform node or null if not found at all.
+         * @returns the found transform node or null if not found at all.
          * @deprecated Please use getTransformNodeById instead
          */
         getTransformNodeByID(id: string): Nullable<TransformNode>;
         /**
          * Gets a transform node with its auto-generated unique Id
          * @param uniqueId defines the unique Id to search for
-         * @return the found transform node or null if not found at all.
+         * @returns the found transform node or null if not found at all.
          * @deprecated Please use getTransformNodeByUniqueId instead
          */
         getTransformNodeByUniqueID(uniqueId: number): Nullable<TransformNode>;
@@ -145,21 +145,21 @@ declare module "core/scene" {
         /**
          * Gets a node (Mesh, Camera, Light) using a given Id
          * @param id defines the Id to search for
-         * @return the found node or null if not found at all
+         * @returns the found node or null if not found at all
          * @deprecated Please use getNodeById instead
          */
         getNodeByID(id: string): Nullable<Node>;
         /**
          * Gets a the last added node (Mesh, Camera, Light) using a given Id
          * @param id defines the Id to search for
-         * @return the found node or null if not found at all
+         * @returns the found node or null if not found at all
          * @deprecated Please use getLastEntryById instead
          */
         getLastEntryByID(id: string): Nullable<Node>;
         /**
          * Gets a skeleton using a given Id (if many are found, this function will pick the last one)
          * @param id defines the Id to search for
-         * @return the found skeleton or null if not found at all.
+         * @returns the found skeleton or null if not found at all.
          * @deprecated Please use getLastSkeletonById instead
          */
         getLastSkeletonByID(id: string): Nullable<Skeleton>;
@@ -167,8 +167,7 @@ declare module "core/scene" {
 }
 
 /**
- * @param id
- * @hidden
+ * @internal
  */
 Scene.prototype.setActiveCameraByID = function (id: string): Nullable<Camera> {
     return this.setActiveCameraById(id);

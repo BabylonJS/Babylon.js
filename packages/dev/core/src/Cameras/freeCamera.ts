@@ -15,13 +15,13 @@ declare type Collider = import("../Collisions/collider").Collider;
 /**
  * This represents a free type of camera. It can be useful in First Person Shooter game for instance.
  * Please consider using the new UniversalCamera instead as it adds more functionality like the gamepad.
- * @see https://doc.babylonjs.com/features/cameras#universal-camera
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_introduction#universal-camera
  */
 export class FreeCamera extends TargetCamera {
     /**
      * Define the collision ellipsoid of the camera.
      * This is helpful to simulate a camera body like the player body around the camera
-     * @see https://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity#arcrotatecamera
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_collisions#arcrotatecamera
      */
     @serializeAsVector3()
     public ellipsoid = new Vector3(0.5, 1, 0.5);
@@ -228,6 +228,44 @@ export class FreeCamera extends TargetCamera {
     }
 
     /**
+     * Gets or Set the list of keyboard keys used to control the up rotation move of the camera.
+     */
+    public get keysRotateUp(): number[] {
+        const keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        if (keyboard) {
+            return keyboard.keysRotateUp;
+        }
+
+        return [];
+    }
+
+    public set keysRotateUp(value: number[]) {
+        const keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        if (keyboard) {
+            keyboard.keysRotateUp = value;
+        }
+    }
+
+    /**
+     * Gets or Set the list of keyboard keys used to control the down rotation move of the camera.
+     */
+    public get keysRotateDown(): number[] {
+        const keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        if (keyboard) {
+            return keyboard.keysRotateDown;
+        }
+
+        return [];
+    }
+
+    public set keysRotateDown(value: number[]) {
+        const keyboard = <FreeCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
+        if (keyboard) {
+            keyboard.keysRotateDown = value;
+        }
+    }
+
+    /**
      * Event raised when the camera collide with a mesh in the scene.
      */
     public onCollide: (collidedMesh: AbstractMesh) => void;
@@ -238,16 +276,16 @@ export class FreeCamera extends TargetCamera {
     private _diffPosition = Vector3.Zero();
     private _newPosition = Vector3.Zero();
 
-    /** @hidden */
+    /** @internal */
     public _localDirection: Vector3;
-    /** @hidden */
+    /** @internal */
     public _transformedDirection: Vector3;
 
     /**
      * Instantiates a Free Camera.
      * This represents a free type of camera. It can be useful in First Person Shooter game for instance.
      * Please consider using the new UniversalCamera instead as it adds more functionality like touch to this camera.
-     * @see https://doc.babylonjs.com/features/cameras#universal-camera
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_introduction#universal-camera
      * @param name Define the name of the camera in the scene
      * @param position Define the start position of the camera in the scene
      * @param scene Define the scene the camera belongs to
@@ -307,8 +345,7 @@ export class FreeCamera extends TargetCamera {
     }
 
     /**
-     * @param displacement
-     * @hidden
+     * @internal
      */
     public _collideWithWorld(displacement: Vector3): void {
         let globalPosition: Vector3;
@@ -359,7 +396,7 @@ export class FreeCamera extends TargetCamera {
         updatePosition(newPosition);
     };
 
-    /** @hidden */
+    /** @internal */
     public _checkInputs(): void {
         if (!this._localDirection) {
             this._localDirection = Vector3.Zero();
@@ -371,12 +408,12 @@ export class FreeCamera extends TargetCamera {
         super._checkInputs();
     }
 
-    /** @hidden */
+    /** @internal */
     public _decideIfNeedsToMove(): boolean {
         return this._needMoveForGravity || Math.abs(this.cameraDirection.x) > 0 || Math.abs(this.cameraDirection.y) > 0 || Math.abs(this.cameraDirection.z) > 0;
     }
 
-    /** @hidden */
+    /** @internal */
     public _updatePosition(): void {
         if (this.checkCollisions && this.getScene().collisionsEnabled) {
             this._collideWithWorld(this.cameraDirection);
@@ -395,7 +432,7 @@ export class FreeCamera extends TargetCamera {
 
     /**
      * Gets the current object class name.
-     * @return the class name
+     * @returns the class name
      */
     public getClassName(): string {
         return "FreeCamera";

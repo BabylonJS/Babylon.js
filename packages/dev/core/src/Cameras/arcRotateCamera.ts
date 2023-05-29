@@ -29,7 +29,7 @@ Node.AddNodeConstructor("ArcRotateCamera", (name, scene) => {
  *
  * This camera always points towards a given target position and can be rotated around that target with the target as the centre of rotation. It can be controlled with cursors and mouse, or with touch events.
  * Think of this camera as one orbiting its target position, or more imaginatively as a spy satellite orbiting the earth. Its position relative to the target (earth) can be set by three parameters, alpha (radians) the longitudinal rotation, beta (radians) the latitudinal rotation and radius the distance from the target position.
- * @see https://doc.babylonjs.com/babylon101/cameras#arc-rotate-camera
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_introduction#arc-rotate-camera
  */
 export class ArcRotateCamera extends TargetCamera {
     /**
@@ -182,14 +182,14 @@ export class ArcRotateCamera extends TargetCamera {
      * This can help limiting how the Camera is able to move in the scene.
      */
     @serialize()
-    public lowerBetaLimit = 0.01;
+    public lowerBetaLimit: Nullable<number> = 0.01;
 
     /**
      * Maximum allowed angle on the latitudinal axis.
      * This can help limiting how the Camera is able to move in the scene.
      */
     @serialize()
-    public upperBetaLimit = Math.PI - 0.01;
+    public upperBetaLimit: Nullable<number> = Math.PI - 0.01;
 
     /**
      * Minimum allowed distance of the camera to the target (The camera can not get closer).
@@ -531,11 +531,11 @@ export class ArcRotateCamera extends TargetCamera {
     @serialize()
     public useInputToRestoreState = true;
 
-    /** @hidden */
+    /** @internal */
     public _viewMatrix = new Matrix();
-    /** @hidden */
+    /** @internal */
     public _useCtrlForPanning: boolean;
-    /** @hidden */
+    /** @internal */
     public _panningMouseButton: number;
 
     /**
@@ -543,7 +543,7 @@ export class ArcRotateCamera extends TargetCamera {
      */
     public inputs: ArcRotateCameraInputsManager;
 
-    /** @hidden */
+    /** @internal */
     public _reset: () => void;
 
     /**
@@ -562,7 +562,7 @@ export class ArcRotateCamera extends TargetCamera {
 
     /**
      * Gets the bouncing behavior of the camera if it has been enabled.
-     * @see https://doc.babylonjs.com/how_to/camera_behaviors#bouncing-behavior
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/behaviors/cameraBehaviors#bouncing-behavior
      */
     public get bouncingBehavior(): Nullable<BouncingBehavior> {
         return this._bouncingBehavior;
@@ -570,7 +570,7 @@ export class ArcRotateCamera extends TargetCamera {
 
     /**
      * Defines if the bouncing behavior of the camera is enabled on the camera.
-     * @see https://doc.babylonjs.com/how_to/camera_behaviors#bouncing-behavior
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/behaviors/cameraBehaviors#bouncing-behavior
      */
     public get useBouncingBehavior(): boolean {
         return this._bouncingBehavior != null;
@@ -594,7 +594,7 @@ export class ArcRotateCamera extends TargetCamera {
 
     /**
      * Gets the framing behavior of the camera if it has been enabled.
-     * @see https://doc.babylonjs.com/how_to/camera_behaviors#framing-behavior
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/behaviors/cameraBehaviors#framing-behavior
      */
     public get framingBehavior(): Nullable<FramingBehavior> {
         return this._framingBehavior;
@@ -602,7 +602,7 @@ export class ArcRotateCamera extends TargetCamera {
 
     /**
      * Defines if the framing behavior of the camera is enabled on the camera.
-     * @see https://doc.babylonjs.com/how_to/camera_behaviors#framing-behavior
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/behaviors/cameraBehaviors#framing-behavior
      */
     public get useFramingBehavior(): boolean {
         return this._framingBehavior != null;
@@ -626,7 +626,7 @@ export class ArcRotateCamera extends TargetCamera {
 
     /**
      * Gets the auto rotation behavior of the camera if it has been enabled.
-     * @see https://doc.babylonjs.com/how_to/camera_behaviors#autorotation-behavior
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/behaviors/cameraBehaviors#autorotation-behavior
      */
     public get autoRotationBehavior(): Nullable<AutoRotationBehavior> {
         return this._autoRotationBehavior;
@@ -634,7 +634,7 @@ export class ArcRotateCamera extends TargetCamera {
 
     /**
      * Defines if the auto rotation behavior of the camera is enabled on the camera.
-     * @see https://doc.babylonjs.com/how_to/camera_behaviors#autorotation-behavior
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/behaviors/cameraBehaviors#autorotation-behavior
      */
     public get useAutoRotationBehavior(): boolean {
         return this._autoRotationBehavior != null;
@@ -666,14 +666,14 @@ export class ArcRotateCamera extends TargetCamera {
 
     /**
      * Defines whether the camera should check collision with the objects oh the scene.
-     * @see https://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity#how-can-i-do-this
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_collisions#how-can-i-do-this-
      */
     public checkCollisions = false;
 
     /**
      * Defines the collision radius of the camera.
      * This simulates a sphere around the camera.
-     * @see https://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity#arcrotatecamera
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_collisions#arcrotatecamera
      */
     public collisionRadius = new Vector3(0.5, 0.5, 0.5);
 
@@ -719,7 +719,7 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     // Cache
-    /** @hidden */
+    /** @internal */
     public _initCache(): void {
         super._initCache();
         this._cache._target = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
@@ -730,8 +730,7 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     /**
-     * @param ignoreParentClass
-     * @hidden
+     * @internal
      */
     public _updateCache(ignoreParentClass?: boolean): void {
         if (!ignoreParentClass) {
@@ -785,7 +784,7 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     /**
-     * @hidden
+     * @internal
      * Restored camera state. You must call storeState() first
      */
     public _restoreStateValues(): boolean {
@@ -809,7 +808,7 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     // Synchronized
-    /** @hidden */
+    /** @internal */
     public _isSynchronizedViewMatrix(): boolean {
         if (!super._isSynchronizedViewMatrix()) {
             return false;
@@ -901,7 +900,7 @@ export class ArcRotateCamera extends TargetCamera {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _checkInputs(): void {
         //if (async) collision inspection was triggered, don't update the camera's position - until the collision callback was called.
         if (this._collisionTriggered) {
@@ -911,6 +910,7 @@ export class ArcRotateCamera extends TargetCamera {
         this.inputs.checkInputs();
         // Inertia
         if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset !== 0) {
+            const directionModifier = this.invertRotation ? -1 : 1;
             let inertialAlphaOffset = this.inertialAlphaOffset;
             if (this.beta <= 0) {
                 inertialAlphaOffset *= -1;
@@ -921,9 +921,9 @@ export class ArcRotateCamera extends TargetCamera {
             if (this.parent && this.parent._getWorldMatrixDeterminant() < 0) {
                 inertialAlphaOffset *= -1;
             }
-            this.alpha += inertialAlphaOffset;
+            this.alpha += inertialAlphaOffset * directionModifier;
 
-            this.beta += this.inertialBetaOffset;
+            this.beta += this.inertialBetaOffset * directionModifier;
 
             this.radius -= this.inertialRadiusOffset;
             this.inertialAlphaOffset *= this.inertia;
@@ -1112,7 +1112,7 @@ export class ArcRotateCamera extends TargetCamera {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _getViewMatrix(): Matrix {
         // Compute
         const cosa = Math.cos(this.alpha);
@@ -1270,11 +1270,18 @@ export class ArcRotateCamera extends TargetCamera {
         rigCam.isRigCamera = true;
         rigCam.rigParent = this;
         rigCam.upVector = this.upVector;
+
+        rigCam.mode = this.mode;
+        rigCam.orthoLeft = this.orthoLeft;
+        rigCam.orthoRight = this.orthoRight;
+        rigCam.orthoBottom = this.orthoBottom;
+        rigCam.orthoTop = this.orthoTop;
+
         return rigCam;
     }
 
     /**
-     * @hidden
+     * @internal
      * @override
      * Override Camera._updateRigCameras
      */
@@ -1311,7 +1318,7 @@ export class ArcRotateCamera extends TargetCamera {
 
     /**
      * Gets the current object class name.
-     * @return the class name
+     * @returns the class name
      */
     public getClassName(): string {
         return "ArcRotateCamera";

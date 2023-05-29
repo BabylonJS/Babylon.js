@@ -19,6 +19,10 @@ void albedoOpacityBlock(
     in vec4 detailColor,
     in vec4 vDetailInfos,
 #endif
+#ifdef DECAL
+    in vec4 decalColor,
+    in vec4 vDecalInfos,
+#endif
     out albedoOpacityOutParams outParams
 )
 {
@@ -40,7 +44,9 @@ void albedoOpacityBlock(
         surfaceAlbedo *= albedoInfos.y;
     #endif
 
-    #if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR)
+    #include<decalFragment>
+
+    #if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR) && defined(INSTANCES)
         surfaceAlbedo *= vColor.rgb;
     #endif
 
@@ -62,7 +68,7 @@ void albedoOpacityBlock(
         alpha *= vOpacityInfos.y;
     #endif
 
-    #ifdef VERTEXALPHA
+    #if defined(VERTEXALPHA) || defined(INSTANCESCOLOR) && defined(INSTANCES)
         alpha *= vColor.a;
     #endif
 

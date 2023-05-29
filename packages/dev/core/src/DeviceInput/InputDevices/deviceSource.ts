@@ -1,7 +1,7 @@
 import type { DeviceType } from "./deviceEnums";
 import { Observable } from "../../Misc/observable";
 import type { DeviceInput } from "./deviceTypes";
-import type { IDeviceInputSystem } from "./inputInterfaces";
+import type { IDeviceInputSystem } from "../inputInterfaces";
 import type { IKeyboardEvent, IPointerEvent, IWheelEvent } from "../../Events/deviceInputEvents";
 
 /**

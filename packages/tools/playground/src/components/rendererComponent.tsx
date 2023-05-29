@@ -3,7 +3,7 @@ import type { GlobalState } from "../globalState";
 import { RuntimeMode } from "../globalState";
 import { Utilities } from "../tools/utilities";
 import { DownloadManager } from "../tools/downloadManager";
-import { Engine, WebGPUEngine, UnregisterAllMaterialPlugins } from "@dev/core";
+import { Engine, WebGPUEngine } from "@dev/core";
 
 declare type Nullable<T> = import("@dev/core").Nullable<T>;
 declare type Scene = import("@dev/core").Scene;
@@ -16,6 +16,8 @@ interface IRenderingComponentProps {
 
 declare const Ammo: any;
 declare const Recast: any;
+declare const HavokPhysics: any;
+declare const HK: any;
 
 export class RenderingComponent extends React.Component<IRenderingComponentProps> {
     private _engine: Nullable<Engine>;
@@ -67,13 +69,6 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             this._engine?.switchFullscreen(false);
         });
 
-        if (this.props.globalState.runtimeMode !== RuntimeMode.Editor) {
-            this.props.globalState.onCodeLoaded.add((code) => {
-                this.props.globalState.currentCode = code;
-                this.props.globalState.onRunRequiredObservable.notifyObservers();
-            });
-        }
-
         window.addEventListener("resize", () => {
             if (!this._engine) {
                 return;
@@ -103,11 +98,6 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
     private async _compileAndRunAsync() {
         this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
         this.props.globalState.onErrorObservable.notifyObservers(null);
-
-        // Check to make sure this function exists before calling as this function doesn't exist with older versions.
-        if (UnregisterAllMaterialPlugins) {
-            UnregisterAllMaterialPlugins();
-        }
 
         const displayInspector = this._scene?.debugLayer.isVisible();
 
@@ -150,18 +140,8 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             if (useWebGPU) {
                 globalObject.createDefaultEngine = async function () {
                     const engine = new WebGPUEngine(canvas, {
-                        deviceDescriptor: {
-                            requiredFeatures: [
-                                "depth-clip-control",
-                                "depth24unorm-stencil8",
-                                "depth32float-stencil8",
-                                "texture-compression-bc",
-                                "texture-compression-etc2",
-                                "texture-compression-astc",
-                                "timestamp-query",
-                                "indirect-first-instance",
-                            ],
-                        },
+                        enableAllFeatures: true,
+                        setMaximumLimits: true,
                     });
                     await engine.initAsync();
                     return engine;
@@ -203,6 +183,11 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             let recastInit = "";
             if (code.indexOf("RecastJSPlugin") > -1 && typeof Recast === "function") {
                 recastInit = "await Recast();";
+            }
+
+            let havokInit = "";
+            if (code.includes("HavokPlugin") && typeof HavokPhysics === "function" && typeof HK === "undefined") {
+                havokInit = "globalThis.HK = await HavokPhysics();";
             }
 
             // Check for Unity Toolkit
@@ -248,6 +233,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 code += `
                 window.initFunction = async function() {
                     ${ammoInit}
+                    ${havokInit}
                     ${recastInit}
                     var asyncEngineCreation = async function() {
                         try {

@@ -15,7 +15,7 @@ import type { Camera } from "../Cameras/camera";
  * This represents the object necessary to create a rendering group.
  * This is exclusively used and created by the rendering manager.
  * To modify the behavior, you use the available helpers in your scene or meshes.
- * @hidden
+ * @internal
  */
 export class RenderingGroup {
     private static _ZeroVector: DeepImmutable<Vector3> = Vector3.Zero();
@@ -35,10 +35,10 @@ export class RenderingGroup {
     private _renderAlphaTest: (subMeshes: SmartArray<SubMesh>) => void;
     private _renderTransparent: (subMeshes: SmartArray<SubMesh>) => void;
 
-    /** @hidden */
+    /** @internal */
     public _empty = true;
 
-    /** @hidden */
+    /** @internal */
     public _edgesRenderers = new SmartArrayNoDuplicate<IEdgesRenderer>(16);
 
     public onBeforeTransparentRendering: () => void;
@@ -48,12 +48,12 @@ export class RenderingGroup {
      * If null the sub meshes will be render in the order they were created
      */
     public set opaqueSortCompareFn(value: Nullable<(a: SubMesh, b: SubMesh) => number>) {
-        this._opaqueSortCompareFn = value;
         if (value) {
-            this._renderOpaque = this._renderOpaqueSorted;
+            this._opaqueSortCompareFn = value;
         } else {
-            this._renderOpaque = RenderingGroup._RenderUnsorted;
+            this._opaqueSortCompareFn = RenderingGroup.PainterSortCompare;
         }
+        this._renderOpaque = this._renderOpaqueSorted;
     }
 
     /**
@@ -61,12 +61,12 @@ export class RenderingGroup {
      * If null the sub meshes will be render in the order they were created
      */
     public set alphaTestSortCompareFn(value: Nullable<(a: SubMesh, b: SubMesh) => number>) {
-        this._alphaTestSortCompareFn = value;
         if (value) {
-            this._renderAlphaTest = this._renderAlphaTestSorted;
+            this._alphaTestSortCompareFn = value;
         } else {
-            this._renderAlphaTest = RenderingGroup._RenderUnsorted;
+            this._alphaTestSortCompareFn = RenderingGroup.PainterSortCompare;
         }
+        this._renderAlphaTest = this._renderAlphaTestSorted;
     }
 
     /**
@@ -237,13 +237,16 @@ export class RenderingGroup {
         let subIndex = 0;
         let subMesh: SubMesh;
         const cameraPosition = camera ? camera.globalPosition : RenderingGroup._ZeroVector;
-        for (; subIndex < subMeshes.length; subIndex++) {
-            subMesh = subMeshes.data[subIndex];
-            subMesh._alphaIndex = subMesh.getMesh().alphaIndex;
-            subMesh._distanceToCamera = Vector3.Distance(subMesh.getBoundingInfo().boundingSphere.centerWorld, cameraPosition);
+
+        if (transparent) {
+            for (; subIndex < subMeshes.length; subIndex++) {
+                subMesh = subMeshes.data[subIndex];
+                subMesh._alphaIndex = subMesh.getMesh().alphaIndex;
+                subMesh._distanceToCamera = Vector3.Distance(subMesh.getBoundingInfo().boundingSphere.centerWorld, cameraPosition);
+            }
         }
 
-        const sortedArray = subMeshes.data.slice(0, subMeshes.length);
+        const sortedArray = subMeshes.length === subMeshes.data.length ? subMeshes.data : subMeshes.data.slice(0, subMeshes.length);
 
         if (sortCompareFn) {
             sortedArray.sort(sortCompareFn);
@@ -270,23 +273,6 @@ export class RenderingGroup {
             }
 
             subMesh.render(transparent);
-        }
-    }
-
-    /**
-     * Renders the submeshes in the order they were dispatched (no sort applied).
-     * @param subMeshes The submeshes to render
-     */
-    private static _RenderUnsorted(subMeshes: SmartArray<SubMesh>): void {
-        const scene = subMeshes.data[0].getMesh().getScene();
-        for (let subIndex = 0; subIndex < subMeshes.length; subIndex++) {
-            const submesh = subMeshes.data[subIndex];
-
-            if (scene._activeMeshesFrozenButKeepClipping && !submesh.isInFrustum(scene._frustumPlanes)) {
-                continue;
-            }
-
-            submesh.render(false);
         }
     }
 
@@ -355,6 +341,25 @@ export class RenderingGroup {
     }
 
     /**
+     * Build in function which can be applied to ensure meshes of a special queue (opaque, alpha test, transparent)
+     * are grouped by material then geometry.
+     *
+     * @param a The first submesh
+     * @param b The second submesh
+     * @returns The result of the comparison
+     */
+    public static PainterSortCompare(a: SubMesh, b: SubMesh): number {
+        const meshA = a.getMesh();
+        const meshB = b.getMesh();
+
+        if (meshA.material && meshB.material) {
+            return meshA.material.uniqueId - meshB.material.uniqueId;
+        }
+
+        return meshA.uniqueId - meshB.uniqueId;
+    }
+
+    /**
      * Resets the different lists of submeshes to prepare a new frame.
      */
     public prepare(): void {
@@ -363,9 +368,16 @@ export class RenderingGroup {
         this._alphaTestSubMeshes.reset();
         this._depthOnlySubMeshes.reset();
         this._particleSystems.reset();
-        this._spriteManagers.reset();
+        this.prepareSprites();
         this._edgesRenderers.reset();
         this._empty = true;
+    }
+
+    /**
+     * Resets the different lists of sprites to prepare a new frame.
+     */
+    public prepareSprites(): void {
+        this._spriteManagers.reset();
     }
 
     public dispose(): void {

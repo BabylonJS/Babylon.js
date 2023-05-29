@@ -1,7 +1,7 @@
 declare module BABYLON {
     /**
      * Babylon scene manager class
-     * @class SceneManager - All rights reserved (c) 2020 Mackey Kinard
+     * SceneManager - All rights reserved (c) 2020 Mackey Kinard
      */
     class SceneManager {
         /** Gets the toolkit framework version number */
@@ -1887,43 +1887,43 @@ declare class CVTOOLS_unity_metadata implements BABYLON.GLTF2.IGLTFLoaderExtensi
     private _hideLoader;
     private _fileName;
     private _rootUrl;
-    /** @hidden */
+    /** @internal */
     constructor(loader: BABYLON.GLTF2.GLTFLoader);
-    /** @hidden */
+    /** @internal */
     dispose(): void;
-    /** @hidden */
+    /** @internal */
     onLoading(): void;
-    /** @hidden */
+    /** @internal */
     onReady(): void;
-    /** @hidden */
+    /** @internal */
     onComplete(): void;
-    /** @hidden */
+    /** @internal */
     onValidate(): void;
-    /** @hidden */
+    /** @internal */
     onCleanup(): void;
-    /** @hidden */
+    /** @internal */
     setupLoader(): void;
-    /** @hidden */
+    /** @internal */
     startParsing(): void;
-    /** @hidden */
+    /** @internal */
     loadSceneAsync(context: string, scene: BABYLON.GLTF2.IScene): BABYLON.Nullable<Promise<void>>;
     private loadSceneExAsync;
     private _processActiveMeshes;
     private _processUnityMeshes;
     private _processPreloadTimeout;
-    /** @hidden */
+    /** @internal */
     loadNodeAsync(context: string, node: BABYLON.GLTF2.INode, assign: (babylonMesh: BABYLON.TransformNode) => void): BABYLON.Nullable<Promise<BABYLON.TransformNode>>;
-    /** @hidden */
+    /** @internal */
     loadMaterialPropertiesAsync(context: string, material: BABYLON.GLTF2.IMaterial, babylonMaterial: BABYLON.Material): BABYLON.Nullable<Promise<void>>;
     private _getCachedMaterialByIndex;
     private _getCachedLightmapByIndex;
-    /** @hidden */
+    /** @internal */
     createMaterial(context: string, material: BABYLON.GLTF2.IMaterial, babylonDrawMode: number): BABYLON.Nullable<BABYLON.Material>;
-    /** @hidden */
+    /** @internal */
     _loadSkinAsync(context: string, node: BABYLON.GLTF2.INode, skin: BABYLON.GLTF2.ISkin): Promise<void>;
-    /** @hidden */
+    /** @internal */
     loadAnimationAsync(context: string, animation: BABYLON.GLTF2.IAnimation): Promise<BABYLON.AnimationGroup>;
-    /** @hidden */
+    /** @internal */
     _loadMeshPrimitiveAsync(context: string, name: string, node: BABYLON.GLTF2.INode, mesh: BABYLON.GLTF2.IMesh, primitive: BABYLON.GLTF2.IMeshPrimitive, assign: (babylonMesh: BABYLON.AbstractMesh) => void): Promise<BABYLON.AbstractMesh>;
     private _setupBabylonMesh;
     private _processLevelOfDetail;
@@ -1949,9 +1949,9 @@ declare class CVTOOLS_babylon_mesh implements BABYLON.GLTF2.IGLTFLoaderExtension
     /** Defines whether this extension is enabled. */
     enabled: boolean;
     private _loader;
-    /** @hidden */
+    /** @internal */
     constructor(loader: BABYLON.GLTF2.GLTFLoader);
-    /** @hidden */
+    /** @internal */
     dispose(): void;
 }
 /**
@@ -1965,8 +1965,8 @@ declare class CVTOOLS_left_handed implements BABYLON.GLTF2.IGLTFLoaderExtension 
     /** Defines whether this extension is enabled. */
     enabled: boolean;
     private _loader;
-    /** @hidden */
+    /** @internal */
     constructor(loader: BABYLON.GLTF2.GLTFLoader);
-    /** @hidden */
+    /** @internal */
     dispose(): void;
 }

@@ -16,7 +16,7 @@ import { RegisterClass } from "../Misc/typeStore";
 
 import "../ShadersWGSL/gpuUpdateParticles.compute";
 
-/** @hidden */
+/** @internal */
 export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
     private _parent: GPUParticleSystem;
     private _engine: ThinEngine;
@@ -166,7 +166,7 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
             this._bufferComputeShader[i].dispose();
         }
 
-        this._bufferComputeShader = [];
+        this._bufferComputeShader.length = 0;
 
         this._simParamsComputeShader?.dispose();
         (<any>this._simParamsComputeShader) = null;
@@ -175,7 +175,7 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
     }
 
     public releaseVertexBuffers(): void {
-        this._renderVertexBuffers = [];
+        this._renderVertexBuffers.length = 0;
     }
 }
 

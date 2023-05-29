@@ -104,39 +104,39 @@ export interface VRExperienceHelperOptions extends WebVROptions {
 }
 
 class VRExperienceHelperGazer implements IDisposable {
-    /** @hidden */
+    /** @internal */
     public _gazeTracker: Mesh;
 
-    /** @hidden */
+    /** @internal */
     public _currentMeshSelected: Nullable<AbstractMesh>;
-    /** @hidden */
+    /** @internal */
     public _currentHit: Nullable<PickingInfo>;
 
     public static _IdCounter = 0;
-    /** @hidden */
+    /** @internal */
     public _id: number;
 
-    /** @hidden */
+    /** @internal */
     public _pointerDownOnMeshAsked: boolean = false;
-    /** @hidden */
+    /** @internal */
     public _isActionableMesh: boolean = false;
 
-    /** @hidden */
+    /** @internal */
     public _interactionsEnabled: boolean;
-    /** @hidden */
+    /** @internal */
     public _teleportationEnabled: boolean;
-    /** @hidden */
+    /** @internal */
     public _teleportationRequestInitiated = false;
-    /** @hidden */
+    /** @internal */
     public _teleportationBackRequestInitiated = false;
-    /** @hidden */
+    /** @internal */
     public _rotationRightAsked = false;
-    /** @hidden */
+    /** @internal */
     public _rotationLeftAsked = false;
-    /** @hidden */
+    /** @internal */
     public _dpadPressed = true;
 
-    /** @hidden */
+    /** @internal */
     public _activePointer = false;
 
     constructor(public scene: Scene, gazeTrackerToClone: Nullable<Mesh> = null) {
@@ -168,14 +168,13 @@ class VRExperienceHelperGazer implements IDisposable {
     }
 
     /**
-     * @param length
-     * @hidden
+     * @internal
      */
     public _getForwardRay(length: number): Ray {
         return new Ray(Vector3.Zero(), new Vector3(0, 0, length));
     }
 
-    /** @hidden */
+    /** @internal */
     public _selectionPointerDown() {
         this._pointerDownOnMeshAsked = true;
         if (this._currentHit) {
@@ -183,7 +182,7 @@ class VRExperienceHelperGazer implements IDisposable {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _selectionPointerUp() {
         if (this._currentHit) {
             this.scene.simulatePointerUp(this._currentHit, { pointerId: this._id });
@@ -191,19 +190,18 @@ class VRExperienceHelperGazer implements IDisposable {
         this._pointerDownOnMeshAsked = false;
     }
 
-    /** @hidden */
+    /** @internal */
     public _activatePointer() {
         this._activePointer = true;
     }
 
-    /** @hidden */
+    /** @internal */
     public _deactivatePointer() {
         this._activePointer = false;
     }
 
     /**
-     * @param distance
-     * @hidden
+     * @internal
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public _updatePointerDistance(distance: number = 100) {}
@@ -264,37 +262,34 @@ class VRExperienceHelperControllerGazer extends VRExperienceHelperGazer {
         return this.webVRController.getForwardRay(length);
     }
 
-    /** @hidden */
+    /** @internal */
     public _activatePointer() {
         super._activatePointer();
         this._laserPointer.isVisible = true;
     }
 
-    /** @hidden */
+    /** @internal */
     public _deactivatePointer() {
         super._deactivatePointer();
         this._laserPointer.isVisible = false;
     }
 
     /**
-     * @param color
-     * @hidden
+     * @internal
      */
     public _setLaserPointerColor(color: Color3) {
         (<StandardMaterial>this._laserPointer.material).emissiveColor = color;
     }
 
     /**
-     * @param disabled
-     * @hidden
+     * @internal
      */
     public _setLaserPointerLightingDisabled(disabled: boolean) {
         (<StandardMaterial>this._laserPointer.material).disableLighting = disabled;
     }
 
     /**
-     * @param mesh
-     * @hidden
+     * @internal
      */
     public _setLaserPointerParent(mesh: AbstractMesh) {
         const makeNotPick = (root: AbstractMesh) => {
@@ -359,7 +354,7 @@ export class OnAfterEnteringVRObservableEvent {
 
 /**
  * Helps to quickly add VR support to an existing scene.
- * See https://doc.babylonjs.com/divingDeeper/cameras/webVRHelper
+ * See https://doc.babylonjs.com/features/featuresDeepDive/cameras/webVRHelper
  * @deprecated
  */
 export class VRExperienceHelper {
@@ -554,7 +549,7 @@ export class VRExperienceHelper {
     /**
      * The mesh used to display where the user is selecting, this mesh will be cloned and set as the gazeTracker for the left and right controller
      * when set bakeCurrentTransformIntoVertices will be called on the mesh.
-     * See https://doc.babylonjs.com/resources/baking_transformations
+     * See https://doc.babylonjs.com/features/featuresDeepDive/mesh/transforms/center_origin/bakingTransforms
      */
     public get gazeTrackerMesh(): Mesh {
         return this._cameraGazer._gazeTracker;
@@ -961,10 +956,6 @@ export class VRExperienceHelper {
 
         hostWindow.addEventListener("resize", this._onResize);
         document.addEventListener("fullscreenchange", this._onFullscreenChange, false);
-        document.addEventListener("mozfullscreenchange", this._onFullscreenChange, false);
-        document.addEventListener("webkitfullscreenchange", this._onFullscreenChange, false);
-        document.addEventListener("msfullscreenchange", this._onFullscreenChange, false);
-        (<any>document).onmsfullscreenchange = this._onFullscreenChange;
 
         // Display vr button when headset is connected
         if (webVROptions.createFallbackVRDeviceOrientationFreeCamera) {
@@ -1077,18 +1068,7 @@ export class VRExperienceHelper {
     };
 
     private _onFullscreenChange = () => {
-        const anyDoc = document as any;
-        if (anyDoc.fullscreen !== undefined) {
-            this._fullscreenVRpresenting = (<any>document).fullscreen;
-        } else if (anyDoc.mozFullScreen !== undefined) {
-            this._fullscreenVRpresenting = anyDoc.mozFullScreen;
-        } else if (anyDoc.webkitIsFullScreen !== undefined) {
-            this._fullscreenVRpresenting = anyDoc.webkitIsFullScreen;
-        } else if (anyDoc.msIsFullScreen !== undefined) {
-            this._fullscreenVRpresenting = anyDoc.msIsFullScreen;
-        } else if ((<any>document).msFullscreenElement !== undefined) {
-            this._fullscreenVRpresenting = (<any>document).msFullscreenElement;
-        }
+        this._fullscreenVRpresenting = !!document.fullscreenElement;
         if (!this._fullscreenVRpresenting && this._inputElement) {
             this.exitVR();
             if (!this._useCustomVRButton && this._btnVR) {
@@ -2390,17 +2370,13 @@ export class VRExperienceHelper {
             this.xr.dispose();
         }
 
-        this._floorMeshesCollection = [];
+        this._floorMeshesCollection.length = 0;
 
         document.removeEventListener("keydown", this._onKeyDown);
         window.removeEventListener("vrdisplaypresentchange", this._onVrDisplayPresentChangeBind);
 
         window.removeEventListener("resize", this._onResize);
         document.removeEventListener("fullscreenchange", this._onFullscreenChange);
-        document.removeEventListener("mozfullscreenchange", this._onFullscreenChange);
-        document.removeEventListener("webkitfullscreenchange", this._onFullscreenChange);
-        document.removeEventListener("msfullscreenchange", this._onFullscreenChange);
-        (<any>document).onmsfullscreenchange = null;
 
         this._scene.getEngine().onVRDisplayChangedObservable.removeCallback(this._onVRDisplayChangedBind);
         this._scene.getEngine().onVRRequestPresentStart.removeCallback(this._onVRRequestPresentStart);

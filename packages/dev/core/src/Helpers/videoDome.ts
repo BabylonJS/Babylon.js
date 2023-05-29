@@ -64,11 +64,9 @@ export class VideoDome extends TextureDome<VideoTexture> {
         );
         // optional configuration
         if (options.clickToPlay) {
-            this._pointerObserver = scene.onPointerObservable.add((pointerInfo) => {
-                if (pointerInfo.type !== PointerEventTypes.POINTERUP) {
-                    this._texture.video.play();
-                }
-            });
+            this._pointerObserver = scene.onPointerObservable.add((data) => {
+                data.pickInfo?.pickedMesh === this.mesh && this._texture.video.play();
+            }, PointerEventTypes.POINTERDOWN);
         }
         this._textureObserver = texture.onLoadObservable.add(() => {
             this.onLoadObservable.notifyObservers();

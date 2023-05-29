@@ -12,12 +12,17 @@ import type { Mesh } from "../../../../Meshes/mesh";
 import type { Light } from "../../../../Lights/light";
 import { PointLight } from "../../../../Lights/pointLight";
 import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
+import type { ShadowGenerator } from "../../../../Lights/Shadows/shadowGenerator";
+import type { ShadowLight } from "../../../../Lights";
+
 /**
  * Block used to get data information from a light
  */
 export class LightInformationBlock extends NodeMaterialBlock {
     private _lightDataUniformName: string;
     private _lightColorUniformName: string;
+    private _lightShadowUniformName: string;
+    private _lightShadowExtraUniformName: string;
     private _lightTypeDefineName: string;
     private _forcePrepareDefines: boolean;
 
@@ -37,6 +42,10 @@ export class LightInformationBlock extends NodeMaterialBlock {
         this.registerOutput("direction", NodeMaterialBlockConnectionPointTypes.Vector3);
         this.registerOutput("color", NodeMaterialBlockConnectionPointTypes.Color3);
         this.registerOutput("intensity", NodeMaterialBlockConnectionPointTypes.Float);
+        this.registerOutput("shadowBias", NodeMaterialBlockConnectionPointTypes.Float);
+        this.registerOutput("shadowNormalBias", NodeMaterialBlockConnectionPointTypes.Float);
+        this.registerOutput("shadowDepthScale", NodeMaterialBlockConnectionPointTypes.Float);
+        this.registerOutput("shadowDepthRange", NodeMaterialBlockConnectionPointTypes.Vector2);
     }
 
     /**
@@ -75,12 +84,40 @@ export class LightInformationBlock extends NodeMaterialBlock {
         return this._outputs[2];
     }
 
+    /**
+     * Gets the shadow bias output component
+     */
+    public get shadowBias(): NodeMaterialConnectionPoint {
+        return this._outputs[3];
+    }
+
+    /**
+     * Gets the shadow normal bias output component
+     */
+    public get shadowNormalBias(): NodeMaterialConnectionPoint {
+        return this._outputs[4];
+    }
+
+    /**
+     * Gets the shadow depth scale component
+     */
+    public get shadowDepthScale(): NodeMaterialConnectionPoint {
+        return this._outputs[5];
+    }
+
+    /**
+     * Gets the shadow depth range component
+     */
+    public get shadowDepthRange(): NodeMaterialConnectionPoint {
+        return this._outputs[6];
+    }
+
     public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         if (!mesh) {
             return;
         }
 
-        if (this.light && this.light.isDisposed) {
+        if (this.light && this.light.isDisposed()) {
             this.light = null;
         }
 
@@ -101,6 +138,28 @@ export class LightInformationBlock extends NodeMaterialBlock {
         light.transferToNodeMaterialEffect(effect, this._lightDataUniformName);
 
         effect.setColor4(this._lightColorUniformName, light.diffuse, light.intensity);
+
+        const generator = light.getShadowGenerator() as ShadowGenerator;
+        if (this.shadowBias.hasEndpoints || this.shadowNormalBias.hasEndpoints || this.shadowDepthScale.hasEndpoints) {
+            if (generator) {
+                effect.setFloat3(this._lightShadowUniformName, generator.bias, generator.normalBias, generator.depthScale);
+            } else {
+                effect.setFloat3(this._lightShadowUniformName, 0, 0, 0);
+            }
+        }
+
+        if (this.shadowDepthRange) {
+            if (generator && scene.activeCamera) {
+                const shadowLight = light as ShadowLight;
+                effect.setFloat2(
+                    this._lightShadowExtraUniformName,
+                    shadowLight.getDepthMinZ(scene.activeCamera),
+                    shadowLight.getDepthMinZ(scene.activeCamera) + shadowLight.getDepthMaxZ(scene.activeCamera)
+                );
+            } else {
+                effect.setFloat2(this._lightShadowExtraUniformName, 0, 0);
+            }
+        }
     }
 
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
@@ -123,9 +182,15 @@ export class LightInformationBlock extends NodeMaterialBlock {
         const direction = this.direction;
         const color = this.color;
         const intensity = this.intensity;
+        const shadowBias = this.shadowBias;
+        const shadowNormalBias = this.shadowNormalBias;
+        const shadowDepthScale = this.shadowDepthScale;
+        const shadowDepthRange = this.shadowDepthRange;
 
         this._lightDataUniformName = state._getFreeVariableName("lightData");
         this._lightColorUniformName = state._getFreeVariableName("lightColor");
+        this._lightShadowUniformName = state._getFreeVariableName("shadowData");
+        this._lightShadowExtraUniformName = state._getFreeVariableName("shadowExtraData");
         this._lightTypeDefineName = state._getFreeDefineName("LIGHTPOINTTYPE");
 
         state._emitUniformFromString(this._lightDataUniformName, "vec3");
@@ -139,6 +204,24 @@ export class LightInformationBlock extends NodeMaterialBlock {
 
         state.compilationString += this._declareOutput(color, state) + ` = ${this._lightColorUniformName}.rgb;\r\n`;
         state.compilationString += this._declareOutput(intensity, state) + ` = ${this._lightColorUniformName}.a;\r\n`;
+
+        if (shadowBias.hasEndpoints || shadowNormalBias.hasEndpoints || shadowDepthScale.hasEndpoints) {
+            state._emitUniformFromString(this._lightShadowUniformName, "vec3");
+            if (shadowBias.hasEndpoints) {
+                state.compilationString += this._declareOutput(shadowBias, state) + ` = ${this._lightShadowUniformName}.x;\r\n`;
+            }
+            if (shadowNormalBias.hasEndpoints) {
+                state.compilationString += this._declareOutput(shadowNormalBias, state) + ` = ${this._lightShadowUniformName}.y;\r\n`;
+            }
+            if (shadowDepthScale.hasEndpoints) {
+                state.compilationString += this._declareOutput(shadowDepthScale, state) + ` = ${this._lightShadowUniformName}.z;\r\n`;
+            }
+        }
+
+        if (shadowDepthRange.hasEndpoints) {
+            state._emitUniformFromString(this._lightShadowExtraUniformName, "vec2");
+            state.compilationString += this._declareOutput(shadowDepthRange, state) + ` = ${this._lightShadowUniformName};\r\n`;
+        }
 
         return this;
     }

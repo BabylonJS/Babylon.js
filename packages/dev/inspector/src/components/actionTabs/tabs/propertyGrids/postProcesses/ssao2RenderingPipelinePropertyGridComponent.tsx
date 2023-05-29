@@ -9,6 +9,7 @@ import { SliderLineComponent } from "shared-ui-components/lines/sliderLineCompon
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import type { SSAO2RenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline";
 import type { GlobalState } from "../../../../globalState";
+import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 
 interface ISSAO2RenderingPipelinePropertyGridComponentProps {
     globalState: GlobalState;
@@ -28,7 +29,7 @@ export class SSAO2RenderingPipelinePropertyGridComponent extends React.Component
         const camera = renderPipeline.scene.activeCamera!;
 
         return (
-            <div className="pane">
+            <>
                 <CommonRenderingPipelinePropertyGridComponent
                     globalState={this.props.globalState}
                     lockObject={this.props.lockObject}
@@ -37,6 +38,7 @@ export class SSAO2RenderingPipelinePropertyGridComponent extends React.Component
                 />
                 <LineContainerComponent title="SSAO" selection={this.props.globalState}>
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Strength"
                         minimum={0}
                         maximum={2}
@@ -46,6 +48,7 @@ export class SSAO2RenderingPipelinePropertyGridComponent extends React.Component
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Base"
                         minimum={0}
                         maximum={1}
@@ -55,6 +58,7 @@ export class SSAO2RenderingPipelinePropertyGridComponent extends React.Component
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Max Z"
                         minimum={0}
                         maximum={camera.maxZ}
@@ -64,6 +68,7 @@ export class SSAO2RenderingPipelinePropertyGridComponent extends React.Component
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Min Z aspect"
                         minimum={0}
                         maximum={0.5}
@@ -73,6 +78,7 @@ export class SSAO2RenderingPipelinePropertyGridComponent extends React.Component
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Radius"
                         minimum={0}
                         maximum={10}
@@ -81,8 +87,62 @@ export class SSAO2RenderingPipelinePropertyGridComponent extends React.Component
                         propertyName="radius"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
+                    <SliderLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Epsilon"
+                        minimum={0}
+                        maximum={1}
+                        step={0.001}
+                        target={renderPipeline}
+                        propertyName="epsilon"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                 </LineContainerComponent>
-            </div>
+                <LineContainerComponent title="Denoiser">
+                    <CheckBoxLineComponent
+                        label="Bypass Blur"
+                        propertyName="bypassBlur"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        target={renderPipeline}
+                    />
+                    <CheckBoxLineComponent
+                        label="Expensive Blur"
+                        propertyName="expensiveBlur"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        target={renderPipeline}
+                    />
+                    <SliderLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Samples"
+                        minimum={2}
+                        maximum={32}
+                        step={1}
+                        target={renderPipeline}
+                        propertyName="bilateralSamples"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <SliderLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Soften"
+                        minimum={0}
+                        maximum={1}
+                        step={0.01}
+                        target={renderPipeline}
+                        propertyName="bilateralSoften"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <SliderLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Tolerance"
+                        minimum={0}
+                        maximum={1}
+                        step={0.01}
+                        target={renderPipeline}
+                        propertyName="bilateralTolerance"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                </LineContainerComponent>
+            </>
         );
     }
 }

@@ -28,8 +28,9 @@ import { DataReader } from "core/Misc/dataReader";
 import { GLTFValidation } from "./glTFValidation";
 import type { LoadFileError } from "core/Misc/fileTools";
 import { DecodeBase64UrlToBinary } from "core/Misc/fileTools";
-import { StringTools } from "core/Misc/stringTools";
 import { RuntimeError, ErrorCodes } from "core/Misc/error";
+import type { TransformNode } from "core/Meshes/transformNode";
+import type { MorphTargetManager } from "core/Morph/morphTargetManager";
 
 interface IFileRequestInfo extends IFileRequest {
     _lengthComputable?: boolean;
@@ -136,7 +137,7 @@ export enum GLTFLoaderState {
     COMPLETE,
 }
 
-/** @hidden */
+/** @internal */
 export interface IGLTFLoader extends IDisposable {
     importMeshAsync: (
         meshesNames: any,
@@ -154,10 +155,10 @@ export interface IGLTFLoader extends IDisposable {
  * File loader for loading glTF files into a scene.
  */
 export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISceneLoaderPluginFactory {
-    /** @hidden */
+    /** @internal */
     public static _CreateGLTF1Loader: (parent: GLTFFileLoader) => IGLTFLoader;
 
-    /** @hidden */
+    /** @internal */
     public static _CreateGLTF2Loader: (parent: GLTFFileLoader) => IGLTFLoader;
 
     // --------------
@@ -189,14 +190,14 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
      * Set this property to false to disable incremental loading which delays the loader from calling the success callback until after loading the meshes and shaders.
      * Textures always loads asynchronously. For example, the success callback can compute the bounding information of the loaded meshes when incremental loading is disabled.
      * Defaults to true.
-     * @hidden
+     * @internal
      */
     public static IncrementalLoading = true;
 
     /**
      * Set this property to true in order to work with homogeneous coordinates, available with some converters and exporters.
      * Defaults to false. See https://en.wikipedia.org/wiki/Homogeneous_coordinates.
-     * @hidden
+     * @internal
      */
     public static HomogeneousCoordinates = false;
 
@@ -308,6 +309,14 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         }
         this._onMeshLoadedObserver = this.onMeshLoadedObservable.add(callback);
     }
+
+    /**
+     * Callback raised when the loader creates a skin after parsing the glTF properties of the skin node.
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/importers/glTF/glTFSkinning#ignoring-the-transform-of-the-skinned-mesh
+     * @param node - the transform node that corresponds to the original glTF skin node used for animations
+     * @param skinnedNode - the transform node that is the skinned mesh itself or the parent of the skinned meshes
+     */
+    public readonly onSkinLoadedObservable = new Observable<{ node: TransformNode; skinnedNode: TransformNode }>();
 
     /**
      * Observable raised when the loader creates a texture after parsing the glTF properties of the texture.
@@ -511,7 +520,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
      */
     public name = "gltf";
 
-    /** @hidden */
+    /** @internal */
     public extensions: ISceneLoaderPluginExtensions = {
         ".gltf": { isBinary: false },
         ".glb": { isBinary: true },
@@ -537,6 +546,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         this.preprocessUrlAsync = (url) => Promise.resolve(url);
 
         this.onMeshLoadedObservable.clear();
+        this.onSkinLoadedObservable.clear();
         this.onTextureLoadedObservable.clear();
         this.onMaterialLoadedObservable.clear();
         this.onCameraLoadedObservable.clear();
@@ -548,13 +558,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     }
 
     /**
-     * @param scene
-     * @param fileOrUrl
-     * @param onSuccess
-     * @param onProgress
-     * @param useArrayBuffer
-     * @param onError
-     * @hidden
+     * @internal
      */
     public loadFile(
         scene: Scene,
@@ -648,13 +652,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     }
 
     /**
-     * @param meshesNames
-     * @param scene
-     * @param data
-     * @param rootUrl
-     * @param onProgress
-     * @param fileName
-     * @hidden
+     * @internal
      */
     public importMeshAsync(
         meshesNames: any,
@@ -675,12 +673,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     }
 
     /**
-     * @param scene
-     * @param data
-     * @param rootUrl
-     * @param onProgress
-     * @param fileName
-     * @hidden
+     * @internal
      */
     public loadAsync(scene: Scene, data: any, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<void> {
         return Promise.resolve().then(() => {
@@ -694,12 +687,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     }
 
     /**
-     * @param scene
-     * @param data
-     * @param rootUrl
-     * @param onProgress
-     * @param fileName
-     * @hidden
+     * @internal
      */
     public loadAssetContainerAsync(scene: Scene, data: any, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<AssetContainer> {
         return Promise.resolve().then(() => {
@@ -726,6 +714,13 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
                 cameras.push(camera);
             });
 
+            const morphTargetManagers: Array<MorphTargetManager> = [];
+            this.onMeshLoadedObservable.add((mesh) => {
+                if (mesh.morphTargetManager) {
+                    morphTargetManagers.push(mesh.morphTargetManager);
+                }
+            });
+
             return this._loader.importMeshAsync(null, scene, container, data, rootUrl, onProgress, fileName).then((result) => {
                 Array.prototype.push.apply(container.geometries, result.geometries);
                 Array.prototype.push.apply(container.meshes, result.meshes);
@@ -737,36 +732,34 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
                 Array.prototype.push.apply(container.lights, result.lights);
                 Array.prototype.push.apply(container.transformNodes, result.transformNodes);
                 Array.prototype.push.apply(container.cameras, cameras);
+                Array.prototype.push.apply(container.morphTargetManagers, morphTargetManagers);
                 return container;
             });
         });
     }
 
     /**
-     * @param data
-     * @hidden
+     * @internal
      */
     public canDirectLoad(data: string): boolean {
         return (
             (data.indexOf("asset") !== -1 && data.indexOf("version") !== -1) ||
-            StringTools.StartsWith(data, "data:base64," + GLTFFileLoader._MagicBase64Encoded) || // this is technically incorrect, but will continue to support for backcompat.
-            StringTools.StartsWith(data, "data:;base64," + GLTFFileLoader._MagicBase64Encoded) ||
-            StringTools.StartsWith(data, "data:application/octet-stream;base64," + GLTFFileLoader._MagicBase64Encoded) ||
-            StringTools.StartsWith(data, "data:model/gltf-binary;base64," + GLTFFileLoader._MagicBase64Encoded)
+            data.startsWith("data:base64," + GLTFFileLoader._MagicBase64Encoded) || // this is technically incorrect, but will continue to support for backcompat.
+            data.startsWith("data:;base64," + GLTFFileLoader._MagicBase64Encoded) ||
+            data.startsWith("data:application/octet-stream;base64," + GLTFFileLoader._MagicBase64Encoded) ||
+            data.startsWith("data:model/gltf-binary;base64," + GLTFFileLoader._MagicBase64Encoded)
         );
     }
 
     /**
-     * @param scene
-     * @param data
-     * @hidden
+     * @internal
      */
     public directLoad(scene: Scene, data: string): Promise<any> {
         if (
-            StringTools.StartsWith(data, "base64," + GLTFFileLoader._MagicBase64Encoded) || // this is technically incorrect, but will continue to support for backcompat.
-            StringTools.StartsWith(data, ";base64," + GLTFFileLoader._MagicBase64Encoded) ||
-            StringTools.StartsWith(data, "application/octet-stream;base64," + GLTFFileLoader._MagicBase64Encoded) ||
-            StringTools.StartsWith(data, "model/gltf-binary;base64," + GLTFFileLoader._MagicBase64Encoded)
+            data.startsWith("base64," + GLTFFileLoader._MagicBase64Encoded) || // this is technically incorrect, but will continue to support for backcompat.
+            data.startsWith(";base64," + GLTFFileLoader._MagicBase64Encoded) ||
+            data.startsWith("application/octet-stream;base64," + GLTFFileLoader._MagicBase64Encoded) ||
+            data.startsWith("model/gltf-binary;base64," + GLTFFileLoader._MagicBase64Encoded)
         ) {
             const arrayBuffer = DecodeBase64UrlToBinary(data);
 
@@ -791,7 +784,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
      */
     public rewriteRootURL?(rootUrl: string, responseURL?: string): string;
 
-    /** @hidden */
+    /** @internal */
     public createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync {
         return new GLTFFileLoader();
     }
@@ -824,8 +817,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     }
 
     /**
-     * @param state
-     * @hidden
+     * @internal
      */
     public _setState(state: GLTFLoaderState): void {
         if (this._state === state) {
@@ -838,13 +830,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     }
 
     /**
-     * @param scene
-     * @param fileOrUrl
-     * @param onSuccess
-     * @param useArrayBuffer
-     * @param onError
-     * @param onOpened
-     * @hidden
+     * @internal
      */
     public _loadFile(
         scene: Scene,
@@ -988,8 +974,8 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
             }
 
             const length = dataReader.readUint32();
-            if (dataReader.buffer.byteLength !== 0 && length !== dataReader.buffer.byteLength) {
-                throw new Error(`Length in header does not match actual data length: ${length} != ${dataReader.buffer.byteLength}`);
+            if (!this.useRangeRequests && length !== dataReader.buffer.byteLength) {
+                Logger.Warn(`Length in header does not match actual data length: ${length} != ${dataReader.buffer.byteLength}`);
             }
 
             let unpacked: Promise<IGLTFLoaderData>;
@@ -1137,19 +1123,18 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     private _logIndentLevel = 0;
     private _loggingEnabled = false;
 
-    /** @hidden */
+    /** @internal */
     public _log = this._logDisabled;
 
     /**
-     * @param message
-     * @hidden
+     * @internal
      */
     public _logOpen(message: string): void {
         this._log(message);
         this._logIndentLevel++;
     }
 
-    /** @hidden */
+    /** @internal */
     public _logClose(): void {
         --this._logIndentLevel;
     }
@@ -1163,10 +1148,10 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
 
     private _capturePerformanceCounters = false;
 
-    /** @hidden */
+    /** @internal */
     public _startPerformanceCounter = this._startPerformanceCounterDisabled;
 
-    /** @hidden */
+    /** @internal */
     public _endPerformanceCounter = this._endPerformanceCounterDisabled;
 
     private _startPerformanceCounterEnabled(counterName: string): void {

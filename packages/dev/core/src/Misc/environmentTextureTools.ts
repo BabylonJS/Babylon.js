@@ -20,6 +20,7 @@ import "../Materials/Textures/baseTexture.polynomial";
 
 import "../Shaders/rgbdEncode.fragment";
 import "../Shaders/rgbdDecode.fragment";
+import { DumpTools } from "../Misc/dumpTools";
 
 const DefaultEnvironmentTextureImageType = "image/png";
 const CurrentVersion = 2;
@@ -217,7 +218,7 @@ export function normalizeEnvInfo(info: EnvironmentTextureInfo): EnvironmentTextu
  * @param options options for the conversion process
  * @param options.imageType the mime type for the encoded images, with support for "image/png" (default) and "image/webp"
  * @param options.imageQuality the image quality of encoded WebP images.
- * @return a promise containing the environment data if successful.
+ * @returns a promise containing the environment data if successful.
  */
 export async function CreateEnvTextureAsync(texture: BaseTexture, options: CreateEnvTextureOptions = {}): Promise<ArrayBuffer> {
     const internalTexture = texture.getInternalTexture();
@@ -248,6 +249,12 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
         }
     }
 
+    // sphericalPolynomial is lazy loaded so simply accessing it should trigger the computation.
+    texture.sphericalPolynomial;
+
+    // Lets keep track of the polynomial promise so we can wait for it to be ready before generating the pixels.
+    const sphericalPolynomialPromise = texture.getInternalTexture()?._sphericalPolynomialPromise;
+
     const cubeWidth = internalTexture.width;
     const hostingScene = new Scene(engine);
     const specularTextures: { [key: number]: ArrayBuffer } = {};
@@ -271,6 +278,12 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
                     faceDataFloat[i] = Math.pow(faceDataFloat[i], 2.2);
                 }
                 faceData = faceDataFloat;
+            } else if (faceData && texture.gammaSpace) {
+                const floatData = faceData as Float32Array;
+                for (let i = 0; i < floatData.length; i++) {
+                    // Gamma to linear
+                    floatData[i] = Math.pow(floatData[i], 2.2);
+                }
             }
 
             const tempTexture = engine.createRawTexture(
@@ -289,7 +302,7 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
 
             const rgbdEncodedData = await engine._readTexturePixels(tempTexture, faceWidth, faceWidth);
 
-            const imageEncodedData = await Tools.DumpDataAsync(faceWidth, faceWidth, rgbdEncodedData, imageType, undefined, false, true, options.imageQuality);
+            const imageEncodedData = await DumpTools.DumpDataAsync(faceWidth, faceWidth, rgbdEncodedData, imageType, undefined, false, true, options.imageQuality);
 
             specularTextures[i * 6 + face] = imageEncodedData as ArrayBuffer;
 
@@ -299,6 +312,11 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
 
     // We can delete the hosting scene keeping track of all the creation objects
     hostingScene.dispose();
+
+    // Ensure completion of the polynomial creation promise.
+    if (sphericalPolynomialPromise) {
+        await sphericalPolynomialPromise;
+    }
 
     // Creates the json header for the env texture
     const info: EnvironmentTextureInfo = {
@@ -367,7 +385,7 @@ export async function CreateEnvTextureAsync(texture: BaseTexture, options: Creat
 /**
  * Creates a JSON representation of the spherical data.
  * @param texture defines the texture containing the polynomials
- * @return the JSON representation of the spherical info
+ * @returns the JSON representation of the spherical info
  */
 function _CreateEnvTextureIrradiance(texture: BaseTexture): Nullable<EnvironmentTextureIrradianceInfoV1> {
     const polynmials = texture.sphericalPolynomial;
@@ -394,7 +412,7 @@ function _CreateEnvTextureIrradiance(texture: BaseTexture): Nullable<Environment
  * Creates the ArrayBufferViews used for initializing environment texture image data.
  * @param data the image data
  * @param info parameters that determine what views will be created for accessing the underlying buffer
- * @return the views described by info providing access to the underlying buffer
+ * @returns the views described by info providing access to the underlying buffer
  */
 export function CreateImageDataArrayBufferViews(data: ArrayBufferView, info: EnvironmentTextureInfo): Array<Array<ArrayBufferView>> {
     info = normalizeEnvInfo(info);
@@ -615,7 +633,7 @@ export function UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBuff
 
                 // Wrap in a base texture for easy binding.
                 const lodTexture = new BaseTexture(null);
-                lodTexture.isCube = true;
+                lodTexture._isCube = true;
                 lodTexture._texture = glTextureFromLod;
                 lodTextures![mipmapIndex] = lodTexture;
 
@@ -750,12 +768,7 @@ export function UploadEnvSpherical(texture: InternalTexture, info: EnvironmentTe
 }
 
 /**
- * @param internalTexture
- * @param data
- * @param sphericalPolynomial
- * @param lodScale
- * @param lodOffset
- * @hidden
+ * @internal
  */
 export function _UpdateRGBDAsync(
     internalTexture: InternalTexture,
@@ -815,7 +828,7 @@ export const EnvironmentTextureTools = {
      * @param options options for the conversion process
      * @param options.imageType the mime type for the encoded images, with support for "image/png" (default) and "image/webp"
      * @param options.imageQuality the image quality of encoded WebP images.
-     * @return a promise containing the environment data if successful.
+     * @returns a promise containing the environment data if successful.
      */
     CreateEnvTextureAsync,
 
@@ -823,7 +836,7 @@ export const EnvironmentTextureTools = {
      * Creates the ArrayBufferViews used for initializing environment texture image data.
      * @param data the image data
      * @param info parameters that determine what views will be created for accessing the underlying buffer
-     * @return the views described by info providing access to the underlying buffer
+     * @returns the views described by info providing access to the underlying buffer
      */
     CreateImageDataArrayBufferViews,
 

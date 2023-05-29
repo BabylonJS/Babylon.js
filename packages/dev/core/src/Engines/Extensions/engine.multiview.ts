@@ -93,24 +93,24 @@ Engine.prototype.bindMultiviewFramebuffer = function (_multiviewTexture: RenderT
 declare module "../../Cameras/camera" {
     export interface Camera {
         /**
-         * @hidden
+         * @internal
          * For cameras that cannot use multiview images to display directly. (e.g. webVR camera will render to multiview texture, then copy to each eye texture and go from there)
          */
         _useMultiviewToSingleView: boolean;
         /**
-         * @hidden
+         * @internal
          * For cameras that cannot use multiview images to display directly. (e.g. webVR camera will render to multiview texture, then copy to each eye texture and go from there)
          */
         _multiviewTexture: Nullable<RenderTargetTexture>;
 
         /**
-         * @hidden
+         * @internal
          * For WebXR cameras that are rendering to multiview texture arrays.
          */
         _renderingMultiview: boolean;
 
         /**
-         * @hidden
+         * @internal
          * ensures the multiview texture of the camera exists and has the specified width/height
          * @param width height to set on the multiview texture
          * @param height width to set on the multiview texture
@@ -134,15 +134,15 @@ Camera.prototype._resizeOrCreateMultiviewTexture = function (width: number, heig
 
 declare module "../../scene" {
     export interface Scene {
-        /** @hidden */
+        /** @internal */
         _transformMatrixR: Matrix;
-        /** @hidden */
+        /** @internal */
         _multiviewSceneUbo: Nullable<UniformBuffer>;
-        /** @hidden */
+        /** @internal */
         _createMultiviewUbo(): void;
-        /** @hidden */
+        /** @internal */
         _updateMultiviewUbo(viewR?: Matrix, projectionR?: Matrix): void;
-        /** @hidden */
+        /** @internal */
         _renderMultiviewToSingleView(camera: Camera): void;
     }
 }

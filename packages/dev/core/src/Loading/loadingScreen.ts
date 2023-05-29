@@ -2,7 +2,7 @@ import type { Nullable } from "../types";
 import { Engine } from "../Engines/engine";
 /**
  * Interface used to present a loading screen while loading a scene
- * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
  */
 export interface ILoadingScreen {
     /**
@@ -25,11 +25,11 @@ export interface ILoadingScreen {
 
 /**
  * Class used for the default loading screen
- * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
  */
 export class DefaultLoadingScreen implements ILoadingScreen {
     private _loadingDiv: Nullable<HTMLDivElement>;
-    private _loadingTextDiv: HTMLDivElement;
+    private _loadingTextDiv: Nullable<HTMLDivElement>;
     private _style: Nullable<HTMLStyleElement>;
 
     /** Gets or sets the logo url to use for the default loading screen */
@@ -184,16 +184,16 @@ export class DefaultLoadingScreen implements ILoadingScreen {
         }
 
         const onTransitionEnd = () => {
+            if (this._loadingTextDiv) {
+                this._loadingTextDiv.remove();
+                this._loadingTextDiv = null;
+            }
             if (this._loadingDiv) {
-                if (this._loadingDiv.parentElement) {
-                    this._loadingDiv.parentElement.removeChild(this._loadingDiv);
-                }
+                this._loadingDiv.remove();
                 this._loadingDiv = null;
             }
             if (this._style) {
-                if (this._style.parentElement) {
-                    this._style.parentElement.removeChild(this._style);
-                }
+                this._style.remove();
                 this._style = null;
             }
             window.removeEventListener("resize", this._resizeLoadingUI);

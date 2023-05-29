@@ -20,8 +20,9 @@ declare type ThinEngine = import("../thinEngine").ThinEngine;
 
 const regexSE = /defined\s*?\((.+?)\)/g;
 const regexSERevert = /defined\s*?\[(.+?)\]/g;
+const regexShaderInclude = /#include\s?<(.+)>(\((.*)\))*(\[(.*)\])*/g;
 
-/** @hidden */
+/** @internal */
 export class ShaderProcessor {
     public static Initialize(options: ProcessingOptions): void {
         if (options.processor && options.processor.initializeShaders) {
@@ -29,7 +30,7 @@ export class ShaderProcessor {
         }
     }
 
-    public static Process(sourceCode: string, options: ProcessingOptions, callback: (migratedCode: string) => void, engine: ThinEngine) {
+    public static Process(sourceCode: string, options: ProcessingOptions, callback: (migratedCode: string, codeBeforeMigration: string) => void, engine: ThinEngine) {
         if (options.processor?.preProcessShaderCode) {
             sourceCode = options.processor.preProcessShaderCode(sourceCode, options.isFragment);
         }
@@ -38,11 +39,11 @@ export class ShaderProcessor {
                 codeWithIncludes = options.processCodeAfterIncludes(options.isFragment ? "fragment" : "vertex", codeWithIncludes);
             }
             const migratedCode = this._ProcessShaderConversion(codeWithIncludes, options, engine);
-            callback(migratedCode);
+            callback(migratedCode, codeWithIncludes);
         });
     }
 
-    public static PreProcess(sourceCode: string, options: ProcessingOptions, callback: (migratedCode: string) => void, engine: ThinEngine) {
+    public static PreProcess(sourceCode: string, options: ProcessingOptions, callback: (migratedCode: string, codeBeforeMigration: string) => void, engine: ThinEngine) {
         if (options.processor?.preProcessShaderCode) {
             sourceCode = options.processor.preProcessShaderCode(sourceCode, options.isFragment);
         }
@@ -51,7 +52,7 @@ export class ShaderProcessor {
                 codeWithIncludes = options.processCodeAfterIncludes(options.isFragment ? "fragment" : "vertex", codeWithIncludes);
             }
             const migratedCode = this._ApplyPreProcessing(codeWithIncludes, options, engine);
-            callback(migratedCode);
+            callback(migratedCode, codeWithIncludes);
         });
     }
 
@@ -306,7 +307,10 @@ export class ShaderProcessor {
 
         // Already converted
         if (options.processor.shaderLanguage === ShaderLanguage.GLSL && preparedSourceCode.indexOf("#version 3") !== -1) {
-            return preparedSourceCode.replace("#version 300 es", "");
+            preparedSourceCode = preparedSourceCode.replace("#version 300 es", "");
+            if (!options.processor.parseGLES3) {
+                return preparedSourceCode;
+            }
         }
 
         const defines = options.defines;
@@ -361,7 +365,6 @@ export class ShaderProcessor {
     }
 
     private static _ProcessIncludes(sourceCode: string, options: ProcessingOptions, callback: (data: any) => void): void {
-        const regexShaderInclude = /#include\s?<(.+)>(\((.*)\))*(\[(.*)\])*/g;
         let match = regexShaderInclude.exec(sourceCode);
 
         let returnValue = new String(sourceCode);
@@ -461,7 +464,7 @@ export class ShaderProcessor {
      * @param useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
      * @param onError callback called when the file fails to load
      * @returns a file request object
-     * @hidden
+     * @internal
      */
     public static _FileToolsLoadFile(
         url: string,

@@ -24,6 +24,7 @@ import { MaterialHelper } from "./materialHelper";
 import type { IMaterialContext } from "../Engines/IMaterialContext";
 import { DrawWrapper } from "./drawWrapper";
 import { MaterialStencilState } from "./materialStencilState";
+import { ScenePerformancePriority } from "../scene";
 import type { Scene } from "../scene";
 import type { AbstractScene } from "../abstractScene";
 import type {
@@ -44,6 +45,7 @@ import type {
 } from "./materialPluginEvent";
 import { MaterialPluginEvent } from "./materialPluginEvent";
 import type { ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
+import type { IClipPlanesHolder } from "../Misc/interfaces/iClipPlanesHolder";
 
 declare type PrePassRenderer = import("../Rendering/prePassRenderer").PrePassRenderer;
 declare type Mesh = import("../Meshes/mesh").Mesh;
@@ -80,7 +82,7 @@ export interface ICustomShaderNameResolveOptions {
 /**
  * Base class for the main features of a material in Babylon.js
  */
-export class Material implements IAnimatable {
+export class Material implements IAnimatable, IClipPlanesHolder {
     /**
      * Returns the triangle fill mode
      */
@@ -238,7 +240,7 @@ export class Material implements IAnimatable {
     @serialize()
     public uniqueId: number;
 
-    /** @hidden */
+    /** @internal */
     public _loadedUniqueId: string;
 
     /**
@@ -252,6 +254,9 @@ export class Material implements IAnimatable {
      */
     @serialize()
     public metadata: any = null;
+
+    /** @internal */
+    public _internalMetadata: any;
 
     /**
      * For internal use only. Please do not use.
@@ -293,7 +298,7 @@ export class Material implements IAnimatable {
 
     /**
      * List of inspectable custom properties (used by the Inspector)
-     * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
+     * @see https://doc.babylonjs.com/toolsAndResources/inspector#extensibility
      */
     public inspectableCustomProperties: IInspectable[];
 
@@ -304,8 +309,14 @@ export class Material implements IAnimatable {
         if (this._alpha === value) {
             return;
         }
+
+        const oldValue = this._alpha;
         this._alpha = value;
-        this.markAsDirty(Material.MiscDirtyFlag);
+
+        // Only call dirty when there is a state change (no alpha / alpha)
+        if (oldValue === 1 || value === 1) {
+            this.markAsDirty(Material.MiscDirtyFlag + Material.PrePassDirtyFlag);
+        }
     }
 
     /**
@@ -363,6 +374,43 @@ export class Material implements IAnimatable {
         return this._cullBackFaces;
     }
 
+    private _blockDirtyMechanism = false;
+
+    /**
+     * Block the dirty-mechanism for this specific material
+     * When set to false after being true the material will be marked as dirty.
+     */
+    public get blockDirtyMechanism(): boolean {
+        return this._blockDirtyMechanism;
+    }
+
+    public set blockDirtyMechanism(value: boolean) {
+        if (this._blockDirtyMechanism === value) {
+            return;
+        }
+
+        this._blockDirtyMechanism = value;
+
+        if (!value) {
+            this.markDirty();
+        }
+    }
+
+    /**
+     * This allows you to modify the material without marking it as dirty after every change.
+     * This function should be used if you need to make more than one dirty-enabling change to the material - adding a texture, setting a new fill mode and so on.
+     * The callback will pass the material as an argument, so you can make your changes to it.
+     * @param callback the callback to be executed that will update the material
+     */
+    public atomicMaterialsUpdate(callback: (material: this) => void): void {
+        this.blockDirtyMechanism = true;
+        try {
+            callback(this);
+        } finally {
+            this.blockDirtyMechanism = false;
+        }
+    }
+
     /**
      * Stores the value for side orientation
      */
@@ -399,7 +447,7 @@ export class Material implements IAnimatable {
     public doNotSerialize = false;
 
     /**
-     * @hidden
+     * @internal
      */
     public _storeEffectOnSubMeshes = false;
 
@@ -686,24 +734,53 @@ export class Material implements IAnimatable {
     }
 
     /**
+     * Gets or sets the active clipplane 1
+     */
+    public clipPlane: Nullable<Plane>;
+
+    /**
+     * Gets or sets the active clipplane 2
+     */
+    public clipPlane2: Nullable<Plane>;
+
+    /**
+     * Gets or sets the active clipplane 3
+     */
+    public clipPlane3: Nullable<Plane>;
+
+    /**
+     * Gets or sets the active clipplane 4
+     */
+    public clipPlane4: Nullable<Plane>;
+
+    /**
+     * Gets or sets the active clipplane 5
+     */
+    public clipPlane5: Nullable<Plane>;
+
+    /**
+     * Gets or sets the active clipplane 6
+     */
+    public clipPlane6: Nullable<Plane>;
+
+    /**
      * Gives access to the stencil properties of the material
      */
     public readonly stencil = new MaterialStencilState();
 
     /**
-     * @hidden
+     * @internal
      * Stores the effects for the material
      */
     protected _materialContext: IMaterialContext | undefined;
 
     protected _drawWrapper: DrawWrapper;
-    /** @hidden */
+    /** @internal */
     public _getDrawWrapper(): DrawWrapper {
         return this._drawWrapper;
     }
     /**
-     * @param drawWrapper
-     * @hidden
+     * @internal
      */
     public _setDrawWrapper(drawWrapper: DrawWrapper) {
         this._drawWrapper = drawWrapper;
@@ -742,23 +819,23 @@ export class Material implements IAnimatable {
 
     /**
      * Stores the uniform buffer
-     * @hidden
+     * @internal
      */
     public _uniformBuffer: UniformBuffer;
 
-    /** @hidden */
+    /** @internal */
     public _indexInSceneMaterialArray = -1;
 
-    /** @hidden */
+    /** @internal */
     public meshMap: Nullable<{ [id: string]: AbstractMesh | undefined }> = null;
 
-    /** @hidden */
+    /** @internal */
     public _parentContainer: Nullable<AbstractScene> = null;
 
-    /** @hidden */
+    /** @internal */
     public _dirtyCallbacks: { [code: number]: () => void };
 
-    /** @hidden */
+    /** @internal */
     public _uniformBufferLayoutBuilt = false;
 
     protected _eventInfo: MaterialPluginCreated &
@@ -776,7 +853,7 @@ export class Material implements IAnimatable {
         MaterialPluginHasRenderTargetTextures &
         MaterialPluginHardBindForSubMesh = {} as any; // will be initialized before each event notification
 
-    /** @hidden */
+    /** @internal */
     public _callbackPluginEventGeneric: (
         id: number,
         info:
@@ -788,17 +865,19 @@ export class Material implements IAnimatable {
             | MaterialPluginPrepareEffect
             | MaterialPluginPrepareUniformBuffer
     ) => void = () => void 0;
-    /** @hidden */
+    /** @internal */
     public _callbackPluginEventIsReadyForSubMesh: (eventData: MaterialPluginIsReadyForSubMesh) => void = () => void 0;
-    /** @hidden */
+    /** @internal */
     public _callbackPluginEventPrepareDefines: (eventData: MaterialPluginPrepareDefines) => void = () => void 0;
-    /** @hidden */
+    /** @internal */
+    public _callbackPluginEventPrepareDefinesBeforeAttributes: (eventData: MaterialPluginPrepareDefines) => void = () => void 0;
+    /** @internal */
     public _callbackPluginEventHardBindForSubMesh: (eventData: MaterialPluginHardBindForSubMesh) => void = () => void 0;
-    /** @hidden */
+    /** @internal */
     public _callbackPluginEventBindForSubMesh: (eventData: MaterialPluginBindForSubMesh) => void = () => void 0;
-    /** @hidden */
+    /** @internal */
     public _callbackPluginEventHasRenderTargetTextures: (eventData: MaterialPluginHasRenderTargetTextures) => void = () => void 0;
-    /** @hidden */
+    /** @internal */
     public _callbackPluginEventFillRenderTargetTextures: (eventData: MaterialPluginFillRenderTargetTextures) => void = () => void 0;
 
     /**
@@ -867,6 +946,11 @@ export class Material implements IAnimatable {
      */
     public getClassName(): string {
         return "Material";
+    }
+
+    /** @internal */
+    public get _isMaterial() {
+        return true;
     }
 
     /**
@@ -1006,11 +1090,15 @@ export class Material implements IAnimatable {
      * @returns a boolean specifying if alpha blending is needed for the mesh
      */
     public needAlphaBlendingForMesh(mesh: AbstractMesh): boolean {
-        if (this._disableAlphaBlending && mesh.visibility >= 1.0) {
+        if (mesh.visibility < 1.0) {
+            return true;
+        }
+
+        if (this._disableAlphaBlending) {
             return false;
         }
 
-        return this.needAlphaBlending() || mesh.visibility < 1.0 || mesh.hasVertexAlpha;
+        return mesh.hasVertexAlpha || this.needAlphaBlending();
     }
 
     /**
@@ -1043,8 +1131,9 @@ export class Material implements IAnimatable {
 
     /**
      * Marks the material to indicate that it needs to be re-calculated
+     * @param forceMaterialDirty - Forces the material to be marked as dirty for all components (same as this.markAsDirty(Material.AllDirtyFlag)). You should use this flag if the material is frozen and you want to force a recompilation.
      */
-    public markDirty(): void {
+    public markDirty(forceMaterialDirty = false): void {
         const meshes = this.getScene().meshes;
         for (const mesh of meshes) {
             if (!mesh.subMeshes) {
@@ -1060,14 +1149,18 @@ export class Material implements IAnimatable {
                 }
 
                 subMesh.effect._wasPreviouslyReady = false;
+                subMesh.effect._wasPreviouslyUsingInstances = null;
+                subMesh.effect._forceRebindOnNextCall = forceMaterialDirty;
             }
+        }
+
+        if (forceMaterialDirty) {
+            this.markAsDirty(Material.AllDirtyFlag);
         }
     }
 
     /**
-     * @param effect
-     * @param overrideOrientation
-     * @hidden
+     * @internal
      */
     public _preBind(effect?: Effect | DrawWrapper, overrideOrientation: Nullable<number> = null): boolean {
         const engine = this._scene.getEngine();
@@ -1076,7 +1169,15 @@ export class Material implements IAnimatable {
         const reverse = orientation === Material.ClockWiseSideOrientation;
 
         engine.enableEffect(effect ? effect : this._getDrawWrapper());
-        engine.setState(this.backFaceCulling, this.zOffset, false, reverse, this.cullBackFaces, this.stencil, this.zOffsetUnits);
+        engine.setState(
+            this.backFaceCulling,
+            this.zOffset,
+            false,
+            reverse,
+            this._scene._mirroredCameraPosition ? !this.cullBackFaces : this.cullBackFaces,
+            this.stencil,
+            this.zOffsetUnits
+        );
 
         return reverse;
     }
@@ -1117,6 +1218,7 @@ export class Material implements IAnimatable {
 
         this._eventInfo.subMesh = subMesh;
         this._callbackPluginEventBindForSubMesh(this._eventInfo);
+        effect._forceRebindOnNextCall = false;
     }
 
     /**
@@ -1426,7 +1528,7 @@ export class Material implements IAnimatable {
      * @param flag defines a flag used to determine which parts of the material have to be marked as dirty
      */
     public markAsDirty(flag: number): void {
-        if (this.getScene().blockMaterialDirtyMechanism) {
+        if (this.getScene().blockMaterialDirtyMechanism || this._blockDirtyMechanism) {
             return;
         }
 
@@ -1487,7 +1589,7 @@ export class Material implements IAnimatable {
      * @param func defines a function which checks material defines against the submeshes
      */
     protected _markAllSubMeshesAsDirty(func: (defines: MaterialDefines) => void) {
-        if (this.getScene().blockMaterialDirtyMechanism) {
+        if (this.getScene().blockMaterialDirtyMechanism || this._blockDirtyMechanism) {
             return;
         }
 
@@ -1498,7 +1600,7 @@ export class Material implements IAnimatable {
             }
             for (const subMesh of mesh.subMeshes) {
                 // We want to skip the submeshes which are not using this material or which have not yet rendered at least once
-                if (mesh._renderId === 0 || subMesh.getMaterial() !== this) {
+                if (subMesh.getMaterial(false) !== this) {
                     continue;
                 }
 
@@ -1518,7 +1620,7 @@ export class Material implements IAnimatable {
      * Indicates that the scene should check if the rendering now needs a prepass
      */
     protected _markScenePrePassDirty() {
-        if (this.getScene().blockMaterialDirtyMechanism) {
+        if (this.getScene().blockMaterialDirtyMechanism || this._blockDirtyMechanism) {
             return;
         }
 
@@ -1596,6 +1698,20 @@ export class Material implements IAnimatable {
      */
     protected _markAllSubMeshesAsTexturesAndMiscDirty() {
         this._markAllSubMeshesAsDirty(Material._TextureAndMiscDirtyCallBack);
+    }
+
+    protected _checkScenePerformancePriority() {
+        if (this._scene.performancePriority !== ScenePerformancePriority.BackwardCompatible) {
+            this.checkReadyOnlyOnce = true;
+            // re-set the flag when the perf priority changes
+            const observer = this._scene.onScenePerformancePriorityChangedObservable.addOnce(() => {
+                this.checkReadyOnlyOnce = false;
+            });
+            // if this material is disposed before the scene is disposed, cleanup the observer
+            this.onDisposeObservable.add(() => {
+                this._scene.onScenePerformancePriorityChangedObservable.remove(observer);
+            });
+        }
     }
 
     /**
@@ -1684,12 +1800,14 @@ export class Material implements IAnimatable {
         if (this._onEffectCreatedObservable) {
             this._onEffectCreatedObservable.clear();
         }
+
+        if (this._eventInfo) {
+            this._eventInfo = {} as any;
+        }
     }
 
     /**
-     * @param mesh
-     * @param forceDisposeEffect
-     * @hidden
+     * @internal
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     private releaseVertexArrayObject(mesh: AbstractMesh, forceDisposeEffect?: boolean) {

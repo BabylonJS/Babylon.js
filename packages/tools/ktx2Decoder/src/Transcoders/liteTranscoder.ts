@@ -1,10 +1,11 @@
-import type { sourceTextureFormat, transcodeTarget } from "../transcoder";
+import type * as KTX2 from "core/Materials/Textures/ktx2decoderTypes";
+
 import { Transcoder } from "../transcoder";
 import { WASMMemoryManager } from "../wasmMemoryManager";
 import type { KTX2FileReader, IKTX2_ImageDesc } from "../ktx2FileReader";
 
 /**
- * @hidden
+ * @internal
  */
 export class LiteTranscoder extends Transcoder {
     private _modulePath: string;
@@ -51,8 +52,8 @@ export class LiteTranscoder extends Transcoder {
     }
 
     public transcode(
-        src: sourceTextureFormat,
-        dst: transcodeTarget,
+        src: KTX2.SourceTextureFormat,
+        dst: KTX2.TranscodeTarget,
         level: number,
         width: number,
         height: number,
@@ -74,12 +75,12 @@ export class LiteTranscoder extends Transcoder {
         height: number,
         uncompressedByteLength: number,
         encodedData: Uint8Array,
-        forceRGBA = false
+        uncompressedNumComponents?: number
     ): [Uint8Array, Uint8Array | null, number] {
         const nBlocks = ((width + 3) >> 2) * ((height + 3) >> 2);
 
-        if (forceRGBA) {
-            uncompressedByteLength = width * ((height + 3) >> 2) * 4 * 4;
+        if (uncompressedNumComponents !== undefined) {
+            uncompressedByteLength = width * ((height + 3) >> 2) * 4 * uncompressedNumComponents;
         }
 
         const texMemoryPages = ((nBlocks * 16 + 65535 + (this._transcodeInPlace ? 0 : uncompressedByteLength)) >> 16) + 1;
@@ -88,7 +89,11 @@ export class LiteTranscoder extends Transcoder {
 
         const uncompressedTextureView = this._transcodeInPlace
             ? null
-            : new Uint8Array(this._memoryManager.wasmMemory.buffer, 65536 + nBlocks * 16, forceRGBA ? width * height * 4 : uncompressedByteLength);
+            : new Uint8Array(
+                  this._memoryManager.wasmMemory.buffer,
+                  65536 + nBlocks * 16,
+                  uncompressedNumComponents !== undefined ? width * height * uncompressedNumComponents : uncompressedByteLength
+              );
 
         textureView.set(encodedData);
 

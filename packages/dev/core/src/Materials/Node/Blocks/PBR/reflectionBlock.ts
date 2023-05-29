@@ -22,16 +22,16 @@ import { Scalar } from "../../../../Maths/math.scalar";
  * Block used to implement the reflection module of the PBR material
  */
 export class ReflectionBlock extends ReflectionTextureBaseBlock {
-    /** @hidden */
+    /** @internal */
     public _defineLODReflectionAlpha: string;
-    /** @hidden */
+    /** @internal */
     public _defineLinearSpecularReflection: string;
     private _vEnvironmentIrradianceName: string;
-    /** @hidden */
+    /** @internal */
     public _vReflectionMicrosurfaceInfosName: string;
-    /** @hidden */
+    /** @internal */
     public _vReflectionInfosName: string;
-    /** @hidden */
+    /** @internal */
     public _vReflectionFilteringInfoName: string;
     private _scene: Scene;
 
@@ -41,13 +41,13 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
      * It's less burden on the user side in the editor part.
      */
 
-    /** @hidden */
+    /** @internal */
     public worldPositionConnectionPoint: NodeMaterialConnectionPoint;
-    /** @hidden */
+    /** @internal */
     public worldNormalConnectionPoint: NodeMaterialConnectionPoint;
-    /** @hidden */
+    /** @internal */
     public cameraPositionConnectionPoint: NodeMaterialConnectionPoint;
-    /** @hidden */
+    /** @internal */
     public viewConnectionPoint: NodeMaterialConnectionPoint;
 
     /**
@@ -63,6 +63,26 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
     @editableInPropertyPage("Force irradiance in fragment", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { update: true } })
     public forceIrradianceInFragment: boolean = false;
 
+    protected _onGenerateOnlyFragmentCodeChanged(): boolean {
+        if (this.position.isConnected) {
+            this.generateOnlyFragmentCode = !this.generateOnlyFragmentCode;
+            console.error("The position input must not be connected to be able to switch!");
+            return false;
+        }
+
+        this._setTarget();
+
+        return true;
+    }
+
+    protected _setTarget(): void {
+        super._setTarget();
+        this.getInputByName("position")!.target = this.generateOnlyFragmentCode ? NodeMaterialBlockTargets.Fragment : NodeMaterialBlockTargets.Vertex;
+        if (this.generateOnlyFragmentCode) {
+            this.forceIrradianceInFragment = true;
+        }
+    }
+
     /**
      * Create a new ReflectionBlock
      * @param name defines the block name
@@ -72,7 +92,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
 
         this._isUnique = true;
 
-        this.registerInput("position", NodeMaterialBlockConnectionPointTypes.Vector3, false, NodeMaterialBlockTargets.Vertex);
+        this.registerInput("position", NodeMaterialBlockConnectionPointTypes.AutoDetect, false, NodeMaterialBlockTargets.Vertex);
         this.registerInput("world", NodeMaterialBlockConnectionPointTypes.Matrix, false, NodeMaterialBlockTargets.Vertex);
         this.registerInput("color", NodeMaterialBlockConnectionPointTypes.Color3, true, NodeMaterialBlockTargets.Fragment);
 
@@ -81,6 +101,10 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
             NodeMaterialBlockConnectionPointTypes.Object,
             NodeMaterialBlockTargets.Fragment,
             new NodeMaterialConnectionPointCustomObject("reflection", this, NodeMaterialConnectionPointDirection.Output, ReflectionBlock, "ReflectionBlock")
+        );
+
+        this.position.addExcludedConnectionPointFromAllowedTypes(
+            NodeMaterialBlockConnectionPointTypes.Color3 | NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4
         );
     }
 
@@ -368,7 +392,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
             reflectionOutParams reflectionOut;
 
             reflectionBlock(
-                ${"v_" + this.worldPosition.associatedVariableName + ".xyz"},
+                ${this.generateOnlyFragmentCode ? this._worldPositionNameInFragmentOnlyMode : "v_" + this.worldPosition.associatedVariableName}.xyz,
                 ${normalVarName},
                 alphaG,
                 ${this._vReflectionMicrosurfaceInfosName},

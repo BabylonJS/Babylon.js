@@ -15,11 +15,14 @@ import linePoint2Icon from "shared-ui-components/imgs/linePoint2Icon.svg";
 import lineDashIcon from "shared-ui-components/imgs/lineDashIcon.svg";
 import { IconComponent } from "shared-ui-components/lines/iconComponent";
 import { UnitButton } from "shared-ui-components/lines/unitButton";
+import type { GlobalState } from "../../../../globalState";
 
 interface ILinePropertyGridComponentProps {
     lines: Line[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    onFontsParsedObservable?: Observable<void>;
+    globalState?: GlobalState;
 }
 
 export class LinePropertyGridComponent extends React.Component<ILinePropertyGridComponentProps> {
@@ -84,7 +87,14 @@ export class LinePropertyGridComponent extends React.Component<ILinePropertyGrid
                     <TextInputLineComponent lockObject={lockObject} label="" target={proxy} value={dashString} onChange={(newValue) => this.onDashChange(newValue)} />
                 </div>
                 <hr />
-                <CommonControlPropertyGridComponent hideDimensions lockObject={lockObject} controls={lines} onPropertyChangedObservable={onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent
+                    hideDimensions
+                    lockObject={lockObject}
+                    controls={lines}
+                    onPropertyChangedObservable={onPropertyChangedObservable}
+                    onFontsParsedObservable={this.props.onFontsParsedObservable}
+                    globalState={this.props.globalState}
+                />
             </div>
         );
     }

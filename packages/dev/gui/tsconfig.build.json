@@ -4,7 +4,11 @@
     "compilerOptions": {
         "composite": true,
         "outDir": "./dist",
-        "rootDir": "./src"
+        "rootDir": "./src",
+        "paths": {
+            "core/*": ["dev/core/dist/*"],
+            "gui/*": ["dev/gui/src/*"],
+        }
     },
 
     "references": [

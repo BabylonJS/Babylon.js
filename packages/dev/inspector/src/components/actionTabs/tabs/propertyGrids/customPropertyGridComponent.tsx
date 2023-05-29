@@ -7,6 +7,7 @@ import type { IInspectable } from "core/Misc/iInspectable";
 import { InspectableType } from "core/Misc/iInspectable";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
+import { Vector2LineComponent } from "shared-ui-components/lines/vector2LineComponent";
 import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
 import { QuaternionLineComponent } from "../../lines/quaternionLineComponent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
@@ -15,6 +16,8 @@ import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObj
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import { FileButtonLineComponent } from "shared-ui-components/lines/fileButtonLineComponent";
+import { Logger } from "core/Misc/logger";
 
 interface ICustomPropertyGridComponentProps {
     globalState: GlobalState;
@@ -44,6 +47,7 @@ export class CustomPropertyGridComponent extends React.Component<ICustomProperty
             case InspectableType.Slider:
                 return (
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         key={inspectable.label}
                         label={inspectable.label}
                         target={this.props.target}
@@ -54,9 +58,21 @@ export class CustomPropertyGridComponent extends React.Component<ICustomProperty
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 );
+            case InspectableType.Vector2:
+                return (
+                    <Vector2LineComponent
+                        lockObject={this.props.lockObject}
+                        key={inspectable.label}
+                        label={inspectable.label}
+                        target={this.props.target}
+                        propertyName={inspectable.propertyName}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
             case InspectableType.Vector3:
                 return (
                     <Vector3LineComponent
+                        lockObject={this.props.lockObject}
                         key={inspectable.label}
                         label={inspectable.label}
                         target={this.props.target}
@@ -67,6 +83,7 @@ export class CustomPropertyGridComponent extends React.Component<ICustomProperty
             case InspectableType.Quaternion:
                 return (
                     <QuaternionLineComponent
+                        lockObject={this.props.lockObject}
                         useEuler={this.props.globalState.onlyUseEulers}
                         key={inspectable.label}
                         label={inspectable.label}
@@ -78,6 +95,7 @@ export class CustomPropertyGridComponent extends React.Component<ICustomProperty
             case InspectableType.Color3:
                 return (
                     <Color3LineComponent
+                        lockObject={this.props.lockObject}
                         key={inspectable.label}
                         label={inspectable.label}
                         target={this.props.target}
@@ -127,6 +145,20 @@ export class CustomPropertyGridComponent extends React.Component<ICustomProperty
                 );
             case InspectableType.Tab:
                 return <TextLineComponent key={inspectable.label} label={inspectable.label} value={" "} />;
+            case InspectableType.FileButton:
+                return (
+                    <FileButtonLineComponent
+                        key={inspectable.label}
+                        label={inspectable.label}
+                        onClick={
+                            inspectable.fileCallback ||
+                            function () {
+                                Logger.Warn("no file call back function added");
+                            }
+                        }
+                        accept={inspectable.accept || "*"}
+                    />
+                );
         }
 
         return null;

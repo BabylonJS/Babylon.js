@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import type { Nullable, float } from "../types";
+import type { Nullable } from "../types";
 import { Observable } from "./observable";
 import { GetDOMTextContent, IsNavigatorAvailable, IsWindowObjectExist } from "./domManagement";
 import { Logger } from "./logger";
@@ -20,22 +20,15 @@ import {
     SetCorsBehavior,
 } from "./fileTools";
 import type { IOfflineProvider } from "../Offline/IOfflineProvider";
-import { PromisePolyfill } from "./promise";
 import { TimingTools } from "./timingTools";
 import { InstantiationTools } from "./instantiationTools";
 import { RandomGUID } from "./guid";
 import type { IScreenshotSize } from "./interfaces/screenshotSize";
-import { SliceTools } from "./sliceTools";
+import type { Engine } from "../Engines/engine";
+import type { Camera } from "../Cameras/camera";
+import type { IColor4Like } from "../Maths/math.like";
 
-declare type Camera = import("../Cameras/camera").Camera;
-declare type Engine = import("../Engines/engine").Engine;
-
-interface IColor4Like {
-    r: float;
-    g: float;
-    b: float;
-    a: float;
-}
+declare function importScripts(...urls: string[]): void;
 
 /**
  * Class containing a set of static utilities functions
@@ -152,7 +145,7 @@ export class Tools {
      * @param a The lower value (returned when alpha = 0)
      * @param b The upper value (returned when alpha = 1)
      * @param alpha The interpolation-factor
-     * @return The mixed value
+     * @returns The mixed value
      */
     public static Mix(a: number, b: number, alpha: number): number {
         return a * (1 - alpha) + b * alpha;
@@ -165,29 +158,6 @@ export class Tools {
      */
     public static Instantiate(className: string): any {
         return InstantiationTools.Instantiate(className);
-    }
-
-    /**
-     * Provides a slice function that will work even on IE
-     * @param data defines the array to slice
-     * @param start defines the start of the data (optional)
-     * @param end defines the end of the data (optional)
-     * @returns the new sliced array
-     */
-    public static Slice<T>(data: T, start?: number, end?: number): T {
-        return SliceTools.Slice(data, start, end);
-    }
-
-    /**
-     * Provides a slice function that will work even on IE
-     * The difference between this and Slice is that this will force-convert to array
-     * @param data defines the array to slice
-     * @param start defines the start of the data (optional)
-     * @param end defines the end of the data (optional)
-     * @returns the new sliced array
-     */
-    public static SliceToArray<T, P>(data: T, start?: number, end?: number): Array<P> {
-        return SliceTools.SliceToArray(data, start, end);
     }
 
     /**
@@ -286,6 +256,25 @@ export class Tools {
     }
 
     /**
+     * Smooth angle changes (kind of low-pass filter), in particular for device orientation "shaking"
+     * Use trigonometric functions to avoid discontinuity (0/360, -180/180)
+     * @param previousAngle defines last angle value, in degrees
+     * @param newAngle defines new angle value, in degrees
+     * @param smoothFactor defines smoothing sensitivity; min 0: no smoothing, max 1: new data ignored
+     * @returns the angle in degrees
+     */
+    public static SmoothAngleChange(previousAngle: number, newAngle: number, smoothFactor = 0.9): number {
+        const previousAngleRad = this.ToRadians(previousAngle);
+        const newAngleRad = this.ToRadians(newAngle);
+        return this.ToDegrees(
+            Math.atan2(
+                (1 - smoothFactor) * Math.sin(newAngleRad) + smoothFactor * Math.sin(previousAngleRad),
+                (1 - smoothFactor) * Math.cos(newAngleRad) + smoothFactor * Math.cos(previousAngleRad)
+            )
+        );
+    }
+
+    /**
      * Returns an array if obj is not an array
      * @param obj defines the object to evaluate as an array
      * @param allowsNullUndefined defines a boolean indicating if obj is allowed to be null or undefined
@@ -333,6 +322,16 @@ export class Tools {
      */
     public static SetCorsBehavior(url: string | string[], element: { crossOrigin: string | null }): void {
         SetCorsBehavior(url, element);
+    }
+
+    /**
+     * Sets the referrerPolicy behavior on a dom element.
+     * @param referrerPolicy define the referrer policy to use
+     * @param element define the dom element where to configure the referrer policy
+     * @param element.referrerPolicy
+     */
+    public static SetReferrerPolicyBehavior(referrerPolicy: Nullable<ReferrerPolicy>, element: { referrerPolicy: string | null }): void {
+        element.referrerPolicy = referrerPolicy;
     }
 
     // External files
@@ -432,7 +431,16 @@ export class Tools {
      * @param scriptId defines the id of the script element
      */
     public static LoadScript(scriptUrl: string, onSuccess: () => void, onError?: (message?: string, exception?: any) => void, scriptId?: string) {
-        if (!IsWindowObjectExist()) {
+        if (typeof importScripts === "function") {
+            try {
+                importScripts(scriptUrl);
+                onSuccess();
+            } catch (e) {
+                onError?.(`Unable to load script '${scriptUrl}' in worker`, e);
+            }
+            return;
+        } else if (!IsWindowObjectExist()) {
+            onError?.(`Cannot load script '${scriptUrl}' outside of a window or a worker`);
             return;
         }
         const head = document.getElementsByTagName("head")[0];
@@ -472,7 +480,7 @@ export class Tools {
                     resolve();
                 },
                 (message, exception) => {
-                    reject(exception);
+                    reject(exception || new Error(message));
                 }
             );
         });
@@ -535,7 +543,7 @@ export class Tools {
      */
     public static FileAsURL(content: string): string {
         const fileBlob = new Blob([content]);
-        const url = window.URL || window.webkitURL;
+        const url = window.URL;
         const link: string = url.createObjectURL(fileBlob);
         return link;
     }
@@ -616,11 +624,6 @@ export class Tools {
     }
 
     /**
-     * @ignore
-     */
-    public static _ScreenshotCanvas: HTMLCanvasElement;
-
-    /**
      * Dumps the current bound framebuffer
      * @param width defines the rendering width
      * @param height defines the rendering height
@@ -628,7 +631,7 @@ export class Tools {
      * @param successCallback defines the callback triggered once the data are available
      * @param mimeType defines the mime type of the result
      * @param fileName defines the filename to download. If present, the result will automatically be downloaded
-     * @return a void promise
+     * @returns a void promise
      */
     public static async DumpFramebuffer(
         width: number,
@@ -638,12 +641,7 @@ export class Tools {
         mimeType: string = "image/png",
         fileName?: string
     ) {
-        // Read the contents of the framebuffer
-        const bufferView = await engine.readPixels(0, 0, width, height);
-
-        const data = new Uint8Array(bufferView.buffer);
-
-        Tools.DumpData(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true);
+        throw _WarnImport("DumpTools");
     }
 
     /**
@@ -669,71 +667,7 @@ export class Tools {
         toArrayBuffer = false,
         quality?: number
     ) {
-        // Create a 2D canvas to store the result
-        if (!Tools._ScreenshotCanvas) {
-            Tools._ScreenshotCanvas = document.createElement("canvas");
-        }
-        Tools._ScreenshotCanvas.width = width;
-        Tools._ScreenshotCanvas.height = height;
-        const context = Tools._ScreenshotCanvas.getContext("2d");
-
-        if (context) {
-            // Convert if data are float32
-            if (data instanceof Float32Array) {
-                const data2 = new Uint8Array(data.length);
-                let n = data.length;
-                while (n--) {
-                    const v = data[n];
-                    data2[n] = v < 0 ? 0 : v > 1 ? 1 : Math.round(v * 255);
-                }
-                data = data2;
-            }
-
-            // Copy the pixels to a 2D canvas
-            const imageData = context.createImageData(width, height);
-            const castData = <any>imageData.data;
-            castData.set(data);
-            context.putImageData(imageData, 0, 0);
-
-            let canvas = Tools._ScreenshotCanvas;
-
-            if (invertY) {
-                const canvas2 = document.createElement("canvas");
-                canvas2.width = width;
-                canvas2.height = height;
-
-                const ctx2 = canvas2.getContext("2d");
-                if (!ctx2) {
-                    return;
-                }
-
-                ctx2.translate(0, height);
-                ctx2.scale(1, -1);
-                ctx2.drawImage(Tools._ScreenshotCanvas, 0, 0);
-
-                canvas = canvas2;
-            }
-
-            if (toArrayBuffer) {
-                Tools.ToBlob(
-                    canvas,
-                    (blob) => {
-                        const fileReader = new FileReader();
-                        fileReader.onload = (event: any) => {
-                            const arrayBuffer = event.target!.result as ArrayBuffer;
-                            if (successCallback) {
-                                successCallback(arrayBuffer);
-                            }
-                        };
-                        fileReader.readAsArrayBuffer(blob!);
-                    },
-                    mimeType,
-                    quality
-                );
-            } else {
-                Tools.EncodeScreenshotCanvasData(successCallback, mimeType, fileName, canvas, quality);
-            }
-        }
+        throw _WarnImport("DumpTools");
     }
 
     /**
@@ -746,7 +680,7 @@ export class Tools {
      * @param invertY true to invert the picture in the Y dimension
      * @param toArrayBuffer true to convert the data to an ArrayBuffer (encoded as `mimeType`) instead of a base64 string
      * @param quality defines the quality of the result
-     * @return a promise that resolve to the final data
+     * @returns a promise that resolve to the final data
      */
     public static DumpDataAsync(
         width: number,
@@ -758,22 +692,24 @@ export class Tools {
         toArrayBuffer = false,
         quality?: number
     ): Promise<string | ArrayBuffer> {
-        return new Promise((resolve) => {
-            Tools.DumpData(width, height, data, (result) => resolve(result), mimeType, fileName, invertY, toArrayBuffer, quality);
-        });
+        throw _WarnImport("DumpTools");
+    }
+
+    private static _IsOffScreenCanvas(canvas: HTMLCanvasElement | OffscreenCanvas): canvas is OffscreenCanvas {
+        return (canvas as OffscreenCanvas).convertToBlob !== undefined;
     }
 
     /**
      * Converts the canvas data to blob.
      * This acts as a polyfill for browsers not supporting the to blob function.
-     * @param canvas Defines the canvas to extract the data from
+     * @param canvas Defines the canvas to extract the data from (can be an offscreen canvas)
      * @param successCallback Defines the callback triggered once the data are available
      * @param mimeType Defines the mime type of the result
      * @param quality defines the quality of the result
      */
-    static ToBlob(canvas: HTMLCanvasElement, successCallback: (blob: Nullable<Blob>) => void, mimeType: string = "image/png", quality?: number): void {
+    static ToBlob(canvas: HTMLCanvasElement | OffscreenCanvas, successCallback: (blob: Nullable<Blob>) => void, mimeType: string = "image/png", quality?: number): void {
         // We need HTMLCanvasElement.toBlob for HD screenshots
-        if (!canvas.toBlob) {
+        if (!Tools._IsOffScreenCanvas(canvas) && !canvas.toBlob) {
             //  low performance polyfill based on toDataURL (https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob)
             canvas.toBlob = function (callback, type, quality) {
                 setTimeout(() => {
@@ -788,73 +724,107 @@ export class Tools {
                 });
             };
         }
-        canvas.toBlob(
-            function (blob) {
-                successCallback(blob);
-            },
-            mimeType,
-            quality
-        );
+        if (Tools._IsOffScreenCanvas(canvas)) {
+            canvas
+                .convertToBlob({
+                    type: mimeType,
+                    quality,
+                })
+                .then((blob) => successCallback(blob));
+        } else {
+            canvas.toBlob(
+                function (blob) {
+                    successCallback(blob);
+                },
+                mimeType,
+                quality
+            );
+        }
     }
 
     /**
-     * Encodes the canvas data to base 64 or automatically download the result if filename is defined
-     * @param successCallback defines the callback triggered once the data are available
-     * @param mimeType defines the mime type of the result
-     * @param fileName defines he filename to download. If present, the result will automatically be downloaded
-     * @param canvas canvas to get the data from. If not provided, use the default screenshot canvas
-     * @param quality defines the quality of the result
+     * Download a Blob object
+     * @param blob the Blob object
+     * @param fileName the file name to download
+     * @returns
+     */
+    static DownloadBlob(blob: Blob, fileName?: string) {
+        //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
+        if ("download" in document.createElement("a")) {
+            if (!fileName) {
+                const date = new Date();
+                const stringDate =
+                    (date.getFullYear() + "-" + (date.getMonth() + 1)).slice(2) + "-" + date.getDate() + "_" + date.getHours() + "-" + ("0" + date.getMinutes()).slice(-2);
+                fileName = "screenshot_" + stringDate + ".png";
+            }
+            Tools.Download(blob, fileName);
+        } else {
+            if (blob && typeof URL !== "undefined") {
+                const url = URL.createObjectURL(blob);
+
+                const newWindow = window.open("");
+                if (!newWindow) {
+                    return;
+                }
+                const img = newWindow.document.createElement("img");
+                img.onload = function () {
+                    // no longer need to read the blob so it's revoked
+                    URL.revokeObjectURL(url);
+                };
+                img.src = url;
+                newWindow.document.body.appendChild(img);
+            }
+        }
+    }
+
+    /**
+     * Encodes the canvas data to base 64, or automatically downloads the result if `fileName` is defined.
+     * @param canvas The canvas to get the data from, which can be an offscreen canvas.
+     * @param successCallback The callback which is triggered once the data is available. If `fileName` is defined, the callback will be invoked after the download occurs, and the `data` argument will be an empty string.
+     * @param mimeType The mime type of the result.
+     * @param fileName The name of the file to download. If defined, the result will automatically be downloaded. If not defined, and `successCallback` is also not defined, the result will automatically be downloaded with an auto-generated file name.
+     * @param quality The quality of the result. See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
      */
     static EncodeScreenshotCanvasData(
+        canvas: HTMLCanvasElement | OffscreenCanvas,
         successCallback?: (data: string) => void,
         mimeType: string = "image/png",
         fileName?: string,
-        canvas?: HTMLCanvasElement,
         quality?: number
     ): void {
-        if (successCallback) {
-            const base64Image = (canvas ?? Tools._ScreenshotCanvas).toDataURL(mimeType, quality);
-            successCallback(base64Image);
-        } else {
+        if (typeof fileName === "string" || !successCallback) {
             this.ToBlob(
-                canvas ?? Tools._ScreenshotCanvas,
+                canvas,
                 function (blob) {
-                    //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
-                    if ("download" in document.createElement("a")) {
-                        if (!fileName) {
-                            const date = new Date();
-                            const stringDate =
-                                (date.getFullYear() + "-" + (date.getMonth() + 1)).slice(2) +
-                                "-" +
-                                date.getDate() +
-                                "_" +
-                                date.getHours() +
-                                "-" +
-                                ("0" + date.getMinutes()).slice(-2);
-                            fileName = "screenshot_" + stringDate + ".png";
-                        }
-                        Tools.Download(blob!, fileName);
-                    } else {
-                        if (blob) {
-                            const url = URL.createObjectURL(blob);
-
-                            const newWindow = window.open("");
-                            if (!newWindow) {
-                                return;
-                            }
-                            const img = newWindow.document.createElement("img");
-                            img.onload = function () {
-                                // no longer need to read the blob so it's revoked
-                                URL.revokeObjectURL(url);
-                            };
-                            img.src = url;
-                            newWindow.document.body.appendChild(img);
-                        }
+                    if (blob) {
+                        Tools.DownloadBlob(blob, fileName);
+                    }
+                    if (successCallback) {
+                        successCallback("");
                     }
                 },
                 mimeType,
                 quality
             );
+        } else if (successCallback) {
+            if (Tools._IsOffScreenCanvas(canvas)) {
+                canvas
+                    .convertToBlob({
+                        type: mimeType,
+                        quality,
+                    })
+                    .then((blob) => {
+                        const reader = new FileReader();
+                        reader.readAsDataURL(blob);
+                        reader.onloadend = () => {
+                            const base64data = reader.result;
+                            successCallback(base64data as string);
+                        };
+                    });
+                return;
+            }
+            const base64Image = canvas.toDataURL(mimeType, quality);
+            successCallback(base64Image);
         }
     }
 
@@ -864,8 +834,7 @@ export class Tools {
      * @param fileName defines the name of the downloaded file
      */
     public static Download(blob: Blob, fileName: string): void {
-        if (navigator && (navigator as any).msSaveBlob) {
-            (navigator as any).msSaveBlob(blob, fileName);
+        if (typeof URL === "undefined") {
             return;
         }
 
@@ -904,7 +873,7 @@ export class Tools {
 
     /**
      * Captures a screenshot of the current rendering
-     * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
      * @param engine defines the rendering engine
      * @param camera defines the source camera
      * @param size This parameter can be set to a single number or to an object with the
@@ -925,7 +894,7 @@ export class Tools {
 
     /**
      * Captures a screenshot of the current rendering
-     * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
      * @param engine defines the rendering engine
      * @param camera defines the source camera
      * @param size This parameter can be set to a single number or to an object with the
@@ -945,7 +914,7 @@ export class Tools {
 
     /**
      * Generates an image screenshot from the specified camera.
-     * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
      * @param engine The engine to use for rendering
      * @param camera The camera to use for rendering
      * @param size This parameter can be set to a single number or to an object with the
@@ -978,7 +947,7 @@ export class Tools {
 
     /**
      * Generates an image screenshot from the specified camera.
-     * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
      * @param engine The engine to use for rendering
      * @param camera The camera to use for rendering
      * @param size This parameter can be set to a single number or to an object with the
@@ -1021,7 +990,7 @@ export class Tools {
      * Test if the given uri is a base64 string
      * @deprecated Please use FileTools.IsBase64DataUrl instead.
      * @param uri The uri to test
-     * @return True if the uri is a base64 string or false otherwise
+     * @returns True if the uri is a base64 string or false otherwise
      */
     public static IsBase64(uri: string): boolean {
         return IsBase64DataUrl(uri);
@@ -1031,7 +1000,7 @@ export class Tools {
      * Decode the given base64 uri.
      * @deprecated Please use FileTools.DecodeBase64UrlToBinary instead.
      * @param uri The uri to decode
-     * @return The decoded base64 data.
+     * @returns The decoded base64 data.
      */
     public static DecodeBase64(uri: string): ArrayBuffer {
         return DecodeBase64UrlToBinary(uri);
@@ -1286,7 +1255,7 @@ export class Tools {
      * It will works only on Javascript basic data types (number, string, ...) and instance of class declared with the @className decorator or implementing a method getClassName():string (in which case the module won't be specified).
      * @param object the object to get the class name from
      * @param isType defines if the object is actually a type
-     * @return a string that can have two forms: "moduleName.className" if module was specified when the class' Name was registered or "className" if there was not module specified.
+     * @returns a string that can have two forms: "moduleName.className" if module was specified when the class' Name was registered or "className" if there was not module specified.
      * @ignorenaming
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -1474,6 +1443,3 @@ export class AsyncLoop {
 // Will only be define if Tools is imported freeing up some space when only engine is required
 EngineStore.FallbackTexture =
     "data:image/jpg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/4QBmRXhpZgAATU0AKgAAAAgABAEaAAUAAAABAAAAPgEbAAUAAAABAAAARgEoAAMAAAABAAIAAAExAAIAAAAQAAAATgAAAAAAAABgAAAAAQAAAGAAAAABcGFpbnQubmV0IDQuMC41AP/bAEMABAIDAwMCBAMDAwQEBAQFCQYFBQUFCwgIBgkNCw0NDQsMDA4QFBEODxMPDAwSGBITFRYXFxcOERkbGRYaFBYXFv/bAEMBBAQEBQUFCgYGChYPDA8WFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFv/AABEIAQABAAMBIgACEQEDEQH/xAAfAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgv/xAC1EAACAQMDAgQDBQUEBAAAAX0BAgMABBEFEiExQQYTUWEHInEUMoGRoQgjQrHBFVLR8CQzYnKCCQoWFxgZGiUmJygpKjQ1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4eLj5OXm5+jp6vHy8/T19vf4+fr/xAAfAQADAQEBAQEBAQEBAAAAAAAAAQIDBAUGBwgJCgv/xAC1EQACAQIEBAMEBwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYnKCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/2gAMAwEAAhEDEQA/APH6KKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76CiiigD5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BQooooA+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/voKKKKAPl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FCiiigD6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++gooooA+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gUKKKKAPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76Pl+iiivuj+BT6gooor4U/vo+X6KKK+6P4FPqCiiivhT++j5fooor7o/gU+oKKKK+FP76P//Z";
-
-// Register promise fallback for IE
-PromisePolyfill.Apply();

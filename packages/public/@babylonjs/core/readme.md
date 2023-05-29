@@ -90,18 +90,14 @@ engine.runRenderLoop(() => {
 });
 ```
 
-## Preview release
-
-Preview version of **4.0** can be found [here](https://github.com/BabylonJS/Babylon.js/tree/master/dist/preview%20release).
-If you want to contribute, please read our [contribution guidelines](https://github.com/BabylonJS/Babylon.js/blob/master/contributing.md) first.
-
 ## Documentation
 
 - [Documentation](https://doc.babylonjs.com)
 - [Examples](https://doc.babylonjs.com/examples)
 
 ## Contributing
-Please see the [Contributing Guidelines](./contributing.md)
+
+Please see the [contribution guidelines](https://github.com/BabylonJS/Babylon.js/blob/master/contributing.md).
 
 ## Useful links
 
@@ -118,7 +114,3 @@ Please see the [Contributing Guidelines](./contributing.md)
 ## Features
 
 To get a complete list of supported features, please visit our [website](https://www.babylonjs.com/#specifications).
-
-## Build
-
-Babylon.js is automatically built using [Gulp](https://gulpjs.com/). For further instructions see the readme at [/Tools/Gulp](https://github.com/BabylonJS/Babylon.js/tree/master/Tools/Gulp).

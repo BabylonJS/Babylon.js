@@ -27,7 +27,7 @@ declare type TrianglePickingPredicate = import("../Culling/ray").TrianglePicking
  */
 export class SubMesh implements ICullable {
     private _engine: Engine;
-    /** @hidden */
+    /** @internal */
     public _drawWrappers: Array<DrawWrapper>; // index in this array = pass id
     private _mainDrawWrapperOverride: Nullable<DrawWrapper> = null;
 
@@ -47,9 +47,7 @@ export class SubMesh implements ICullable {
     }
 
     /**
-     * @param passId
-     * @param createIfNotExisting
-     * @hidden
+     * @internal
      */
     public _getDrawWrapper(passId?: number, createIfNotExisting = false): DrawWrapper | undefined {
         passId = passId ?? this._engine.currentRenderPassId;
@@ -61,9 +59,7 @@ export class SubMesh implements ICullable {
     }
 
     /**
-     * @param passId
-     * @param disposeWrapper
-     * @hidden
+     * @internal
      */
     public _removeDrawWrapper(passId: number, disposeWrapper = true) {
         if (disposeWrapper) {
@@ -79,19 +75,18 @@ export class SubMesh implements ICullable {
         return this._mainDrawWrapperOverride ? this._mainDrawWrapperOverride.effect : this._getDrawWrapper()?.effect ?? null;
     }
 
-    /** @hidden */
+    /** @internal */
     public get _drawWrapper(): DrawWrapper {
         return this._mainDrawWrapperOverride ?? this._getDrawWrapper(undefined, true)!;
     }
 
-    /** @hidden */
+    /** @internal */
     public get _drawWrapperOverride(): Nullable<DrawWrapper> {
         return this._mainDrawWrapperOverride;
     }
 
     /**
-     * @param wrapper
-     * @hidden
+     * @internal
      */
     public _setMainDrawWrapperOverride(wrapper: Nullable<DrawWrapper>): void {
         this._mainDrawWrapperOverride = wrapper;
@@ -134,26 +129,28 @@ export class SubMesh implements ICullable {
         this._drawWrappers = [];
     }
 
-    /** @hidden */
+    /** @internal */
     public _linesIndexCount: number = 0;
     private _mesh: AbstractMesh;
     private _renderingMesh: Mesh;
     private _boundingInfo: BoundingInfo;
     private _linesIndexBuffer: Nullable<DataBuffer> = null;
-    /** @hidden */
+    /** @internal */
     public _lastColliderWorldVertices: Nullable<Vector3[]> = null;
-    /** @hidden */
+    /** @internal */
     public _trianglePlanes: Plane[];
-    /** @hidden */
+    /** @internal */
     public _lastColliderTransformMatrix: Nullable<Matrix> = null;
+    /** @internal */
+    public _wasDispatched = false;
 
-    /** @hidden */
+    /** @internal */
     public _renderId = 0;
-    /** @hidden */
+    /** @internal */
     public _alphaIndex: number = 0;
-    /** @hidden */
+    /** @internal */
     public _distanceToCamera: number = 0;
-    /** @hidden */
+    /** @internal */
     public _id: number;
 
     private _currentMaterial: Nullable<Material> = null;
@@ -235,7 +232,7 @@ export class SubMesh implements ICullable {
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public get IsGlobal(): boolean {
-        return this.verticesStart === 0 && this.verticesCount === this._mesh.getTotalVertices();
+        return this.verticesStart === 0 && this.verticesCount === this._mesh.getTotalVertices() && this.indexStart === 0 && this.indexCount === this._mesh.getTotalIndices();
     }
 
     /**
@@ -262,7 +259,7 @@ export class SubMesh implements ICullable {
 
     /**
      * Returns the mesh of the current submesh
-     * @return the parent mesh
+     * @returns the parent mesh
      */
     public getMesh(): AbstractMesh {
         return this._mesh;
@@ -296,13 +293,14 @@ export class SubMesh implements ICullable {
 
     /**
      * Returns the submesh material
+     * @param getDefaultMaterial Defines whether or not to get the default material if nothing has been defined.
      * @returns null or the current material
      */
-    public getMaterial(): Nullable<Material> {
+    public getMaterial(getDefaultMaterial = true): Nullable<Material> {
         const rootMaterial = this._renderingMesh.getMaterialForRenderPass(this._engine.currentRenderPassId) ?? this._renderingMesh.material;
 
         if (!rootMaterial) {
-            return this._mesh.getScene().defaultMaterial;
+            return getDefaultMaterial ? this._mesh.getScene().defaultMaterial : null;
         } else if (this._isMultiMaterial(rootMaterial)) {
             const effectiveMaterial = rootMaterial.getSubMaterial(this.materialIndex);
 
@@ -366,8 +364,7 @@ export class SubMesh implements ICullable {
     }
 
     /**
-     * @param collider
-     * @hidden
+     * @internal
      */
     public _checkCollision(collider: Collider): boolean {
         const boundingInfo = this.getBoundingInfo();
@@ -432,9 +429,7 @@ export class SubMesh implements ICullable {
     }
 
     /**
-     * @param indices
-     * @param engine
-     * @hidden
+     * @internal
      */
     public _getLinesIndexBuffer(indices: IndicesArray, engine: Engine): DataBuffer {
         if (!this._linesIndexBuffer) {
@@ -513,12 +508,7 @@ export class SubMesh implements ICullable {
     }
 
     /**
-     * @param ray
-     * @param positions
-     * @param indices
-     * @param intersectionThreshold
-     * @param fastCheck
-     * @hidden
+     * @internal
      */
     private _intersectLines(ray: Ray, positions: Vector3[], indices: IndicesArray, intersectionThreshold: number, fastCheck?: boolean): Nullable<IntersectionInfo> {
         let intersectInfo: Nullable<IntersectionInfo> = null;
@@ -545,12 +535,7 @@ export class SubMesh implements ICullable {
     }
 
     /**
-     * @param ray
-     * @param positions
-     * @param indices
-     * @param intersectionThreshold
-     * @param fastCheck
-     * @hidden
+     * @internal
      */
     private _intersectUnIndexedLines(ray: Ray, positions: Vector3[], indices: IndicesArray, intersectionThreshold: number, fastCheck?: boolean): Nullable<IntersectionInfo> {
         let intersectInfo: Nullable<IntersectionInfo> = null;
@@ -578,14 +563,7 @@ export class SubMesh implements ICullable {
     }
 
     /**
-     * @param ray
-     * @param positions
-     * @param indices
-     * @param step
-     * @param checkStopper
-     * @param fastCheck
-     * @param trianglePredicate
-     * @hidden
+     * @internal
      */
     private _intersectTriangles(
         ray: Ray,
@@ -620,7 +598,7 @@ export class SubMesh implements ICullable {
                 continue;
             }
 
-            if (trianglePredicate && !trianglePredicate(p0, p1, p2, ray)) {
+            if (trianglePredicate && !trianglePredicate(p0, p1, p2, ray, indexA, indexB, indexC)) {
                 continue;
             }
 
@@ -645,12 +623,7 @@ export class SubMesh implements ICullable {
     }
 
     /**
-     * @param ray
-     * @param positions
-     * @param indices
-     * @param fastCheck
-     * @param trianglePredicate
-     * @hidden
+     * @internal
      */
     private _intersectUnIndexedTriangles(
         ray: Ray,
@@ -666,7 +639,7 @@ export class SubMesh implements ICullable {
             const p1 = positions[index + 1];
             const p2 = positions[index + 2];
 
-            if (trianglePredicate && !trianglePredicate(p0, p1, p2, ray)) {
+            if (trianglePredicate && !trianglePredicate(p0, p1, p2, ray, -1, -1, -1)) {
                 continue;
             }
 
@@ -690,7 +663,7 @@ export class SubMesh implements ICullable {
         return intersectInfo;
     }
 
-    /** @hidden */
+    /** @internal */
     public _rebuild(): void {
         if (this._linesIndexBuffer) {
             this._linesIndexBuffer = null;

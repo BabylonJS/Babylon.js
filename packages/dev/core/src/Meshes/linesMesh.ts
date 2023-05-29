@@ -8,6 +8,7 @@ import { Mesh } from "../Meshes/mesh";
 import { InstancedMesh } from "../Meshes/instancedMesh";
 import { Material } from "../Materials/material";
 import { ShaderMaterial } from "../Materials/shaderMaterial";
+import type { Effect } from "../Materials/effect";
 
 import "../Shaders/color.fragment";
 import "../Shaders/color.vertex";
@@ -18,7 +19,7 @@ Mesh._LinesMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
 
 /**
  * Line mesh
- * @see https://doc.babylonjs.com/babylon101/parametric_shapes
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param
  */
 export class LinesMesh extends Mesh {
     /**
@@ -89,7 +90,7 @@ export class LinesMesh extends Mesh {
         const defines: string[] = [];
         const options = {
             attributes: [VertexBuffer.PositionKind],
-            uniforms: ["vClipPlane", "vClipPlane2", "vClipPlane3", "vClipPlane4", "vClipPlane5", "vClipPlane6", "world", "viewProjection"],
+            uniforms: ["world", "viewProjection"],
             needAlphaBlending: true,
             defines: defines,
             useClipPlane: null,
@@ -97,6 +98,8 @@ export class LinesMesh extends Mesh {
 
         if (useVertexAlpha === false) {
             options.needAlphaBlending = false;
+        } else {
+            options.defines.push("#define VERTEXALPHA");
         }
 
         if (!useVertexColor) {
@@ -111,6 +114,7 @@ export class LinesMesh extends Mesh {
             this.material = material;
         } else {
             this.material = new ShaderMaterial("colorShader", this.getScene(), "color", options, false);
+            this.material.doNotSerialize = true;
         }
     }
 
@@ -130,14 +134,14 @@ export class LinesMesh extends Mesh {
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public get material(): Material {
         return this._lineMaterial;
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public set material(value: Material) {
         this._lineMaterial = value;
@@ -145,7 +149,7 @@ export class LinesMesh extends Mesh {
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public get checkCollisions(): boolean {
         return false;
@@ -156,13 +160,12 @@ export class LinesMesh extends Mesh {
     }
 
     /**
-     * @hidden
+     * @internal
      */
-    public _bind(): Mesh {
+    public _bind(_subMesh: SubMesh, colorEffect: Effect): Mesh {
         if (!this._geometry) {
             return this;
         }
-        const colorEffect = this._lineMaterial.getEffect();
 
         // VBOs
         const indexToBind = this.isUnIndexed ? null : this._geometry.getIndexBuffer();
@@ -183,10 +186,7 @@ export class LinesMesh extends Mesh {
     }
 
     /**
-     * @param subMesh
-     * @param fillMode
-     * @param instancesCount
-     * @hidden
+     * @internal
      */
     public _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number): Mesh {
         if (!this._geometry || !this._geometry.getVertexBuffers() || (!this._unIndexed && !this._geometry.getIndexBuffer())) {
@@ -208,9 +208,14 @@ export class LinesMesh extends Mesh {
     /**
      * Disposes of the line mesh
      * @param doNotRecurse If children should be disposed
+     * @param disposeMaterialAndTextures This parameter is not used by the LineMesh class
+     * @param doNotDisposeMaterial If the material should not be disposed (default: false, meaning the material is disposed)
      */
-    public dispose(doNotRecurse?: boolean): void {
-        this._lineMaterial.dispose(false, false, true);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false, doNotDisposeMaterial?: boolean): void {
+        if (!doNotDisposeMaterial) {
+            this._lineMaterial.dispose(false, false, true);
+        }
         super.dispose(doNotRecurse);
     }
 
@@ -226,7 +231,7 @@ export class LinesMesh extends Mesh {
 
     /**
      * Creates a new InstancedLinesMesh object from the mesh model.
-     * @see https://doc.babylonjs.com/divingDeeper/mesh/copies/instances
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/copies/instances
      * @param name defines the name of the new instance
      * @returns a new InstancedLinesMesh
      */

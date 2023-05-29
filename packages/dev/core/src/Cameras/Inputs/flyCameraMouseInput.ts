@@ -13,7 +13,7 @@ import { Tools } from "../../Misc/tools";
 import type { IPointerEvent } from "../../Events/deviceInputEvents";
 /**
  * Listen to mouse events to control the camera.
- * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
  */
 export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
     /**
@@ -71,7 +71,7 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
 
     /**
      * Listen to mouse events to control the camera.
-     * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
      */
     constructor() {}
 
@@ -84,7 +84,7 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         this._noPreventDefault = noPreventDefault;
 
-        this._observer = this.camera.getScene().onPointerObservable.add((p: any) => {
+        this._observer = this.camera.getScene()._inputManager._addCameraPointerObserver((p: any) => {
             this._pointerInput(p);
         }, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);
 
@@ -101,7 +101,7 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
      */
     public detachControl(): void {
         if (this._observer) {
-            this.camera.getScene().onPointerObservable.remove(this._observer);
+            this.camera.getScene()._inputManager._removeCameraPointerObserver(this._observer);
 
             this.camera.getScene().onBeforeRenderObservable.remove(this._rollObserver);
 
@@ -148,7 +148,7 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
             return;
         }
 
-        const srcElement = <HTMLElement>(e.srcElement || e.target);
+        const srcElement = <HTMLElement>e.target;
 
         // Mouse down.
         if (p.type === PointerEventTypes.POINTERDOWN) {
@@ -225,8 +225,8 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
             return;
         }
 
-        const offsetX = e.movementX || e.mozMovementX || e.webkitMovementX || e.msMovementX || 0;
-        const offsetY = e.movementY || e.mozMovementY || e.webkitMovementY || e.msMovementY || 0;
+        const offsetX = e.movementX;
+        const offsetY = e.movementY;
 
         this._rotateCamera(offsetX, offsetY);
 

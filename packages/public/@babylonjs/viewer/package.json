@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/viewer",
-    "version": "5.3.0",
+    "version": "6.5.0",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -15,18 +15,17 @@
         "build": "npm run clean && npm run compile",
         "clean": "rimraf dist && rimraf *.tsbuildinfo && rimraf \"./**/*.!(md|json|build.json)\"",
         "compile": "tsc -b tsconfig.build.json --verbose",
-        "postcompile": "build-tools -c add-js-to-es6",
-        "prepublishOnly": "build-tools -c prepare-es6-build"
+        "postcompile": "build-tools -c add-js-to-es6"
     },
     "dependencies": {
-        "@babylonjs/core": "^5.3.0",
-        "@babylonjs/loaders": "^5.3.0",
-        "babylonjs-gltf2interface": "^5.3.0",
-        "babylonjs-viewer-assets": "^5.3.0",
+        "@babylonjs/core": "^6.5.0",
+        "@babylonjs/loaders": "^6.5.0",
+        "babylonjs-gltf2interface": "^6.5.0",
+        "babylonjs-viewer-assets": "^6.5.0",
         "deepmerge": "~4.2.2",
         "handlebars": "~4.7.7",
-        "pepjs": "~0.4.3",
-        "tslib": "^2.3.1"
+        "pepjs": "~0.5.3",
+        "tslib": "^2.4.0"
     },
     "devDependencies": {
         "@dev/build-tools": "^1.0.0",

@@ -20,6 +20,7 @@ import "./shadowOnly.fragment";
 import "./shadowOnly.vertex";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import type { CascadedShadowGenerator } from "core/Lights/Shadows/cascadedShadowGenerator";
+import { addClipPlaneUniforms, bindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
 
 class ShadowOnlyMaterialDefines extends MaterialDefines {
     public CLIPPLANE = false;
@@ -85,7 +86,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
     // Methods
     public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
         if (this.isFrozen) {
-            if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
+            if (subMesh.effect && subMesh.effect._wasPreviouslyReady && subMesh.effect._wasPreviouslyUsingInstances === useInstances) {
                 return true;
             }
         }
@@ -122,7 +123,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
             }
         }
 
-        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
+        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, this, defines, useInstances ? true : false);
 
         MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
 
@@ -173,29 +174,12 @@ export class ShadowOnlyMaterial extends PushMaterial {
 
             const shaderName = "shadowOnly";
             const join = defines.toString();
-            const uniforms = [
-                "world",
-                "view",
-                "viewProjection",
-                "vEyePosition",
-                "vLightsType",
-                "vFogInfos",
-                "vFogColor",
-                "pointSize",
-                "alpha",
-                "shadowColor",
-                "mBones",
-                "vClipPlane",
-                "vClipPlane2",
-                "vClipPlane3",
-                "vClipPlane4",
-                "vClipPlane5",
-                "vClipPlane6",
-            ];
+            const uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vFogInfos", "vFogColor", "pointSize", "alpha", "shadowColor", "mBones"];
             const samplers = new Array<string>();
 
             const uniformBuffers = new Array<string>();
 
+            addClipPlaneUniforms(uniforms);
             MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,
                 uniformBuffersNames: uniformBuffers,
@@ -230,6 +214,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
 
         defines._renderId = scene.getRenderId();
         subMesh.effect._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyUsingInstances = !!useInstances;
 
         return true;
     }
@@ -257,7 +242,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
 
         if (this._mustRebind(scene, effect)) {
             // Clip plane
-            MaterialHelper.BindClipPlane(this._activeEffect, scene);
+            bindClipPlane(effect, this, scene);
 
             // Point size
             if (this.pointsCloud) {

@@ -36,13 +36,18 @@ export class InstancedMesh extends AbstractMesh {
     private _currentLOD: Mesh;
     private _billboardWorldMatrix: Matrix;
 
-    /** @hidden */
+    /** @internal */
     public _indexInSourceMeshInstanceArray = -1;
-    /** @hidden */
+    /** @internal */
     public _distanceToCamera: number = 0;
-    /** @hidden */
+    /** @internal */
     public _previousWorldMatrix: Nullable<Matrix>;
 
+    /**
+     * Creates a new InstancedMesh object from the mesh source.
+     * @param name defines the name of the instance
+     * @param source the mesh to create the instance from
+     */
     constructor(name: string, source: Mesh) {
         super(name, source.getScene());
 
@@ -60,7 +65,7 @@ export class InstancedMesh extends AbstractMesh {
             this.rotationQuaternion = source.rotationQuaternion.clone();
         }
 
-        this.animations = Tools.Slice(source.animations);
+        this.animations = source.animations.slice();
         for (const range of source.getAnimationRanges()) {
             if (range != null) {
                 this.createAnimationRange(range.name, range.from, range.to);
@@ -107,11 +112,23 @@ export class InstancedMesh extends AbstractMesh {
         return this._sourceMesh.receiveShadows;
     }
 
+    public set receiveShadows(_value: boolean) {
+        if (this._sourceMesh?.receiveShadows !== _value) {
+            Tools.Warn("Setting receiveShadows on an instanced mesh has no effect");
+        }
+    }
+
     /**
      * The material of the source mesh
      */
     public get material(): Nullable<Material> {
         return this._sourceMesh.material;
+    }
+
+    public set material(_value: Nullable<Material>) {
+        if (this._sourceMesh?.material !== _value) {
+            Tools.Warn("Setting material on an instanced mesh has no effect");
+        }
     }
 
     /**
@@ -121,11 +138,23 @@ export class InstancedMesh extends AbstractMesh {
         return this._sourceMesh.visibility;
     }
 
+    public set visibility(_value: number) {
+        if (this._sourceMesh?.visibility !== _value) {
+            Tools.Warn("Setting visibility on an instanced mesh has no effect");
+        }
+    }
+
     /**
      * Skeleton of the source mesh
      */
     public get skeleton(): Nullable<Skeleton> {
         return this._sourceMesh.skeleton;
+    }
+
+    public set skeleton(_value: Nullable<Skeleton>) {
+        if (this._sourceMesh?.skeleton !== _value) {
+            Tools.Warn("Setting skeleton on an instanced mesh has no effect");
+        }
     }
 
     /**
@@ -168,7 +197,7 @@ export class InstancedMesh extends AbstractMesh {
 
     /**
      * Creates a new InstancedMesh object from the mesh model.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_instances
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/copies/instances
      * @param name defines the name of the new instance
      * @returns a new InstancedMesh
      */
@@ -179,7 +208,7 @@ export class InstancedMesh extends AbstractMesh {
     /**
      * Is this node ready to be used/rendered
      * @param completeCheck defines if a complete check (including materials and lights) has to be done (false by default)
-     * @return {boolean} is it ready
+     * @returns {boolean} is it ready
      */
     public isReady(completeCheck = false): boolean {
         return this._sourceMesh.isReady(completeCheck, true);
@@ -189,10 +218,11 @@ export class InstancedMesh extends AbstractMesh {
      * Returns an array of integers or a typed array (Int32Array, Uint32Array, Uint16Array) populated with the mesh indices.
      * @param kind kind of verticies to retrieve (eg. positions, normals, uvs, etc.)
      * @param copyWhenShared If true (default false) and and if the mesh geometry is shared among some other meshes, the returned array is a copy of the internal one.
+     * @param forceCopy defines a boolean forcing the copy of the buffer no matter what the value of copyWhenShared is
      * @returns a float array or a Float32Array of the requested kind of data : positions, normals, uvs, etc.
      */
-    public getVerticesData(kind: string, copyWhenShared?: boolean): Nullable<FloatArray> {
-        return this._sourceMesh.getVerticesData(kind, copyWhenShared);
+    public getVerticesData(kind: string, copyWhenShared?: boolean, forceCopy?: boolean): Nullable<FloatArray> {
+        return this._sourceMesh.getVerticesData(kind, copyWhenShared, forceCopy);
     }
 
     /**
@@ -318,7 +348,7 @@ export class InstancedMesh extends AbstractMesh {
         return this;
     }
 
-    /** @hidden */
+    /** @internal */
     public _preActivate(): InstancedMesh {
         if (this._currentLOD) {
             this._currentLOD._preActivate();
@@ -327,11 +357,11 @@ export class InstancedMesh extends AbstractMesh {
     }
 
     /**
-     * @param renderId
-     * @param intermediateRendering
-     * @hidden
+     * @internal
      */
     public _activate(renderId: number, intermediateRendering: boolean): boolean {
+        super._activate(renderId, intermediateRendering);
+
         if (!this._sourceMesh.subMeshes) {
             Logger.Warn("Instances should only be created for meshes with geometry.");
         }
@@ -361,7 +391,7 @@ export class InstancedMesh extends AbstractMesh {
         return false;
     }
 
-    /** @hidden */
+    /** @internal */
     public _postActivate(): void {
         if (this._sourceMesh.edgesShareWithInstances && this._sourceMesh._edgesRenderer && this._sourceMesh._edgesRenderer.isEnabled && this._sourceMesh._renderingGroup) {
             // we are using the edge renderer of the source mesh
@@ -416,14 +446,13 @@ export class InstancedMesh extends AbstractMesh {
     }
 
     /**
-     * @param renderId
-     * @hidden
+     * @internal
      */
     public _preActivateForIntermediateRendering(renderId: number): Mesh {
         return <Mesh>this.sourceMesh._preActivateForIntermediateRendering(renderId);
     }
 
-    /** @hidden */
+    /** @internal */
     public _syncSubMeshes(): InstancedMesh {
         this.releaseSubMeshes();
         if (this._sourceMesh.subMeshes) {
@@ -434,12 +463,12 @@ export class InstancedMesh extends AbstractMesh {
         return this;
     }
 
-    /** @hidden */
+    /** @internal */
     public _generatePointsArray(): boolean {
         return this._sourceMesh._generatePointsArray();
     }
 
-    /** @hidden */
+    /** @internal */
     public _updateBoundingInfo(): AbstractMesh {
         if (this.hasBoundingInfo) {
             this.getBoundingInfo().update(this.worldMatrixFromCache);
@@ -452,17 +481,16 @@ export class InstancedMesh extends AbstractMesh {
 
     /**
      * Creates a new InstancedMesh from the current mesh.
-     * - name (string) : the cloned mesh name
-     * - newParent (optional Node) : the optional Node to parent the clone to.
-     * - doNotCloneChildren (optional boolean, default `false`) : if `true` the model children aren't cloned.
      *
      * Returns the clone.
-     * @param name
-     * @param newParent
-     * @param doNotCloneChildren
+     * @param name the cloned mesh name
+     * @param newParent the optional Node to parent the clone to.
+     * @param doNotCloneChildren if `true` the model children aren't cloned.
+     * @param newSourceMesh if set this mesh will be used as the source mesh instead of ths instance's one
+     * @returns the clone
      */
-    public clone(name: string, newParent: Nullable<Node> = null, doNotCloneChildren?: boolean): InstancedMesh {
-        const result = this._sourceMesh.createInstance(name);
+    public clone(name: string, newParent: Nullable<Node> = null, doNotCloneChildren?: boolean, newSourceMesh?: Mesh): InstancedMesh {
+        const result = (newSourceMesh || this._sourceMesh).createInstance(name);
 
         // Deep copy
         DeepCopier.DeepCopy(
@@ -498,6 +526,7 @@ export class InstancedMesh extends AbstractMesh {
                 "behaviors",
                 "worldMatrixFromCache",
                 "hasThinInstances",
+                "hasBoundingInfo",
             ],
             []
         );
@@ -539,13 +568,52 @@ export class InstancedMesh extends AbstractMesh {
         this._sourceMesh.removeInstance(this);
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
     }
+
+    /**
+     * @internal
+     */
+    public _serializeAsParent(serializationObject: any) {
+        super._serializeAsParent(serializationObject);
+
+        serializationObject.parentId = this._sourceMesh.uniqueId;
+        serializationObject.parentInstanceIndex = this._indexInSourceMeshInstanceArray;
+    }
+
+    /**
+     * Instantiate (when possible) or clone that node with its hierarchy
+     * @param newParent defines the new parent to use for the instance (or clone)
+     * @param options defines options to configure how copy is done
+     * @param options.doNotInstantiate defines if the model must be instantiated or just cloned
+     * @param options.newSourcedMesh newSourcedMesh the new source mesh for the instance (or clone)
+     * @param onNewNodeCreated defines an option callback to call when a clone or an instance is created
+     * @returns an instance (or a clone) of the current node with its hierarchy
+     */
+    public instantiateHierarchy(
+        newParent: Nullable<TransformNode> = null,
+        options?: { doNotInstantiate: boolean | ((node: TransformNode) => boolean); newSourcedMesh?: Mesh },
+        onNewNodeCreated?: (source: TransformNode, clone: TransformNode) => void
+    ): Nullable<TransformNode> {
+        const clone = this.clone("Clone of " + (this.name || this.id), newParent || this.parent, true, options && options.newSourcedMesh);
+
+        if (clone) {
+            if (onNewNodeCreated) {
+                onNewNodeCreated(this, clone);
+            }
+        }
+
+        for (const child of this.getChildTransformNodes(true)) {
+            child.instantiateHierarchy(clone, options, onNewNodeCreated);
+        }
+
+        return clone;
+    }
 }
 
 declare module "./mesh" {
     export interface Mesh {
         /**
          * Register a custom buffer that will be instanced
-         * @see https://doc.babylonjs.com/how_to/how_to_use_instances#custom-buffers
+         * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/copies/instances#custom-buffers
          * @param kind defines the buffer kind
          * @param stride defines the stride in floats
          */
@@ -561,7 +629,7 @@ declare module "./mesh" {
          */
         edgesShareWithInstances: boolean;
 
-        /** @hidden */
+        /** @internal */
         _userInstancedBuffersStorage: {
             data: { [key: string]: Float32Array };
             sizes: { [key: string]: number };
@@ -576,13 +644,11 @@ declare module "./abstractMesh" {
     export interface AbstractMesh {
         /**
          * Object used to store instanced buffers defined by user
-         * @see https://doc.babylonjs.com/how_to/how_to_use_instances#custom-buffers
+         * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/copies/instances#custom-buffers
          */
         instancedBuffers: { [key: string]: any };
     }
 }
-
-Mesh.prototype.edgesShareWithInstances = false;
 
 Mesh.prototype.registerInstancedBuffer = function (kind: string, stride: number): void {
     // Remove existing one
@@ -596,13 +662,15 @@ Mesh.prototype.registerInstancedBuffer = function (kind: string, stride: number)
             instance.instancedBuffers = {};
         }
 
-        this._userInstancedBuffersStorage = {
-            data: {},
-            vertexBuffers: {},
-            strides: {},
-            sizes: {},
-            vertexArrayObjects: this.getEngine().getCaps().vertexArrayObject ? {} : undefined,
-        };
+        if (!this._userInstancedBuffersStorage) {
+            this._userInstancedBuffersStorage = {
+                data: {},
+                vertexBuffers: {},
+                strides: {},
+                sizes: {},
+                vertexArrayObjects: this.getEngine().getCaps().vertexArrayObject ? {} : undefined,
+            };
+        }
     }
 
     // Creates an empty property for this kind
@@ -618,10 +686,12 @@ Mesh.prototype.registerInstancedBuffer = function (kind: string, stride: number)
     }
 
     this._invalidateInstanceVertexArrayObject();
+
+    this._markSubMeshesAsAttributesDirty();
 };
 
-Mesh.prototype._processInstancedBuffers = function (visibleInstances: InstancedMesh[], renderSelf: boolean) {
-    const instanceCount = visibleInstances.length;
+Mesh.prototype._processInstancedBuffers = function (visibleInstances: Nullable<InstancedMesh[]>, renderSelf: boolean) {
+    const instanceCount = visibleInstances ? visibleInstances.length : 0;
 
     for (const kind in this.instancedBuffers) {
         let size = this._userInstancedBuffersStorage.sizes[kind];
@@ -662,7 +732,7 @@ Mesh.prototype._processInstancedBuffers = function (visibleInstances: InstancedM
         }
 
         for (let instanceIndex = 0; instanceIndex < instanceCount; instanceIndex++) {
-            const instance = visibleInstances[instanceIndex]!;
+            const instance = visibleInstances![instanceIndex]!;
 
             const value = instance.instancedBuffers[kind];
 

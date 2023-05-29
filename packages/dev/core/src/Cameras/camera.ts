@@ -26,13 +26,11 @@ declare type Ray = import("../Culling/ray").Ray;
 
 /**
  * This is the base class of all the camera used in the application.
- * @see https://doc.babylonjs.com/features/cameras
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras
  */
 export class Camera extends Node {
     /**
-     * @param name
-     * @param scene
-     * @hidden
+     * @internal
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static _CreateDefaultParsedCamera = (name: string, scene: Scene): Camera => {
@@ -110,7 +108,7 @@ export class Camera extends Node {
      */
     public inputs: CameraInputsManager<Camera>;
 
-    /** @hidden */
+    /** @internal */
     @serializeAsVector3("position")
     public _position = Vector3.Zero();
 
@@ -169,29 +167,77 @@ export class Camera extends Node {
      * Define the current limit on the left side for an orthographic camera
      * In scene unit
      */
+    private _orthoLeft: Nullable<number> = null;
+
+    public set orthoLeft(value: Nullable<number>) {
+        this._orthoLeft = value;
+
+        for (const rigCamera of this._rigCameras) {
+            rigCamera.orthoLeft = value;
+        }
+    }
+
     @serialize()
-    public orthoLeft: Nullable<number> = null;
+    public get orthoLeft(): Nullable<number> {
+        return this._orthoLeft;
+    }
 
     /**
      * Define the current limit on the right side for an orthographic camera
      * In scene unit
      */
+    private _orthoRight: Nullable<number> = null;
+
+    public set orthoRight(value: Nullable<number>) {
+        this._orthoRight = value;
+
+        for (const rigCamera of this._rigCameras) {
+            rigCamera.orthoRight = value;
+        }
+    }
+
     @serialize()
-    public orthoRight: Nullable<number> = null;
+    public get orthoRight(): Nullable<number> {
+        return this._orthoRight;
+    }
 
     /**
      * Define the current limit on the bottom side for an orthographic camera
      * In scene unit
      */
+    private _orthoBottom: Nullable<number> = null;
+
+    public set orthoBottom(value: Nullable<number>) {
+        this._orthoBottom = value;
+
+        for (const rigCamera of this._rigCameras) {
+            rigCamera.orthoBottom = value;
+        }
+    }
+
     @serialize()
-    public orthoBottom: Nullable<number> = null;
+    public get orthoBottom(): Nullable<number> {
+        return this._orthoBottom;
+    }
 
     /**
      * Define the current limit on the top side for an orthographic camera
      * In scene unit
      */
+    private _orthoTop: Nullable<number> = null;
+
+    public set orthoTop(value: Nullable<number>) {
+        this._orthoTop = value;
+
+        for (const rigCamera of this._rigCameras) {
+            rigCamera.orthoTop = value;
+        }
+    }
+
     @serialize()
-    public orthoTop: Nullable<number> = null;
+    public get orthoTop(): Nullable<number> {
+        return this._orthoTop;
+    }
 
     /**
      * Field Of View is set in Radians. (default is 0.8)
@@ -233,8 +279,20 @@ export class Camera extends Node {
     /**
      * Define the mode of the camera (Camera.PERSPECTIVE_CAMERA or Camera.ORTHOGRAPHIC_CAMERA)
      */
+    private _mode = Camera.PERSPECTIVE_CAMERA;
+    set mode(mode: number) {
+        this._mode = mode;
+
+        // Pass the mode down to the rig cameras
+        for (const rigCamera of this._rigCameras) {
+            rigCamera.mode = mode;
+        }
+    }
+
     @serialize()
-    public mode = Camera.PERSPECTIVE_CAMERA;
+    get mode(): number {
+        return this._mode;
+    }
 
     /**
      * Define whether the camera is intermediate.
@@ -329,29 +387,29 @@ export class Camera extends Node {
      */
     public renderPassId: number;
 
-    /** @hidden */
+    /** @internal */
     public _cameraRigParams: any;
-    /** @hidden */
+    /** @internal */
     public _rigCameras = new Array<Camera>();
-    /** @hidden */
+    /** @internal */
     public _rigPostProcess: Nullable<PostProcess>;
 
     protected _webvrViewMatrix = Matrix.Identity();
-    /** @hidden */
+    /** @internal */
     public _skipRendering = false;
 
-    /** @hidden */
+    /** @internal */
     public _projectionMatrix = new Matrix();
 
-    /** @hidden */
+    /** @internal */
     public _postProcesses = new Array<Nullable<PostProcess>>();
 
-    /** @hidden */
+    /** @internal */
     public _activeMeshes = new SmartArray<AbstractMesh>(256);
 
     protected _globalPosition = Vector3.Zero();
 
-    /** @hidden */
+    /** @internal */
     public _computedViewMatrix = Matrix.Identity();
     private _doNotComputeProjectionMatrix = false;
     private _transformMatrix = Matrix.Zero();
@@ -364,7 +422,7 @@ export class Camera extends Node {
     /**
      * Instantiates a new camera object.
      * This should not be used directly but through the inherited cameras: ArcRotate, Free...
-     * @see https://doc.babylonjs.com/features/cameras
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras
      * @param name Defines the name of the camera in the scene
      * @param position Defines the position of the camera
      * @param scene Defines the scene the camera belongs too
@@ -428,7 +486,7 @@ export class Camera extends Node {
         return "Camera";
     }
 
-    /** @hidden */
+    /** @internal */
     public readonly _isCamera = true;
 
     /**
@@ -483,7 +541,7 @@ export class Camera extends Node {
     /**
      * Is this camera ready to be used/rendered
      * @param completeCheck defines if a complete check (including post processes) has to be done (false by default)
-     * @return true if the camera is ready
+     * @returns true if the camera is ready
      */
     public isReady(completeCheck = false): boolean {
         if (completeCheck) {
@@ -496,7 +554,7 @@ export class Camera extends Node {
         return super.isReady(completeCheck);
     }
 
-    /** @hidden */
+    /** @internal */
     public _initCache() {
         super._initCache();
 
@@ -520,8 +578,7 @@ export class Camera extends Node {
     }
 
     /**
-     * @param ignoreParentClass
-     * @hidden
+     * @internal
      */
     public _updateCache(ignoreParentClass?: boolean): void {
         if (!ignoreParentClass) {
@@ -532,12 +589,12 @@ export class Camera extends Node {
         this._cache.upVector.copyFrom(this.upVector);
     }
 
-    /** @hidden */
+    /** @internal */
     public _isSynchronized(): boolean {
         return this._isSynchronizedViewMatrix() && this._isSynchronizedProjectionMatrix();
     }
 
-    /** @hidden */
+    /** @internal */
     public _isSynchronizedViewMatrix(): boolean {
         if (!super._isSynchronized()) {
             return false;
@@ -546,7 +603,7 @@ export class Camera extends Node {
         return this._cache.position.equals(this.position) && this._cache.upVector.equals(this.upVector) && this.isSynchronizedWithParent();
     }
 
-    /** @hidden */
+    /** @internal */
     public _isSynchronizedProjectionMatrix(): boolean {
         let check = this._cache.mode === this.mode && this._cache.minZ === this.minZ && this._cache.maxZ === this.maxZ;
 
@@ -619,14 +676,20 @@ export class Camera extends Node {
         if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
             this._updateRigCameras();
         }
+
+        // Attempt to update the camera's view and projection matrices.
+        // This call is being made because these matrices are no longer being updated
+        // as a part of the picking ray process (in addition to scene.render).
+        this.getViewMatrix();
+        this.getProjectionMatrix();
     }
 
-    /** @hidden */
+    /** @internal */
     public _checkInputs(): void {
         this.onAfterCheckInputsObservable.notifyObservers(this);
     }
 
-    /** @hidden */
+    /** @internal */
     public get rigCameras(): Camera[] {
         return this._rigCameras;
     }
@@ -680,7 +743,7 @@ export class Camera extends Node {
 
     /**
      * Attach a post process to the camera.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses#attach-postprocess
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/usePostProcesses#attach-postprocess
      * @param postProcess The post process to attach to the camera
      * @param insertAt The position of the post process in case several of them are in use in the scene
      * @returns the position the post process has been inserted at
@@ -710,7 +773,7 @@ export class Camera extends Node {
 
     /**
      * Detach a post process to the camera.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_postprocesses#attach-postprocess
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/usePostProcesses#attach-postprocess
      * @param postProcess The post process to detach from the camera
      */
     public detachPostProcess(postProcess: PostProcess): void {
@@ -741,7 +804,7 @@ export class Camera extends Node {
         return this._worldMatrix;
     }
 
-    /** @hidden */
+    /** @internal */
     public _getViewMatrix(): Matrix {
         return Matrix.Identity();
     }
@@ -819,6 +882,7 @@ export class Camera extends Node {
 
         const engine = this.getEngine();
         const scene = this.getScene();
+        const reverseDepth = engine.useReverseDepthBuffer;
         if (this.mode === Camera.PERSPECTIVE_CAMERA) {
             this._cache.fov = this.fov;
             this._cache.fovMode = this.fovMode;
@@ -829,7 +893,6 @@ export class Camera extends Node {
                 this.minZ = 0.1;
             }
 
-            const reverseDepth = engine.useReverseDepthBuffer;
             let getProjectionMatrix: (
                 fov: number,
                 aspect: number,
@@ -856,7 +919,7 @@ export class Camera extends Node {
                 this.fovMode === Camera.FOVMODE_VERTICAL_FIXED,
                 engine.isNDCHalfZRange,
                 this.projectionPlaneTilt,
-                engine.useReverseDepthBuffer
+                reverseDepth
             );
         } else {
             const halfWidth = engine.getRenderWidth() / 2.0;
@@ -867,8 +930,8 @@ export class Camera extends Node {
                     this.orthoRight ?? halfWidth,
                     this.orthoBottom ?? -halfHeight,
                     this.orthoTop ?? halfHeight,
-                    this.minZ,
-                    this.maxZ,
+                    reverseDepth ? this.maxZ : this.minZ,
+                    reverseDepth ? this.minZ : this.maxZ,
                     this._projectionMatrix,
                     engine.isNDCHalfZRange
                 );
@@ -878,8 +941,8 @@ export class Camera extends Node {
                     this.orthoRight ?? halfWidth,
                     this.orthoBottom ?? -halfHeight,
                     this.orthoTop ?? halfHeight,
-                    this.minZ,
-                    this.maxZ,
+                    reverseDepth ? this.maxZ : this.minZ,
+                    reverseDepth ? this.minZ : this.maxZ,
                     this._projectionMatrix,
                     engine.isNDCHalfZRange
                 );
@@ -1023,10 +1086,10 @@ export class Camera extends Node {
         if (this._rigPostProcess) {
             this._rigPostProcess.dispose(this);
             this._rigPostProcess = null;
-            this._postProcesses = [];
+            this._postProcesses.length = 0;
         } else if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
             this._rigPostProcess = null;
-            this._postProcesses = [];
+            this._postProcesses.length = 0;
         } else {
             let i = this._postProcesses.length;
             while (--i >= 0) {
@@ -1042,7 +1105,7 @@ export class Camera extends Node {
         while (--i >= 0) {
             this.customRenderTargets[i].dispose();
         }
-        this.customRenderTargets = [];
+        this.customRenderTargets.length = 0;
 
         // Active Meshes
         this._activeMeshes.dispose();
@@ -1052,7 +1115,7 @@ export class Camera extends Node {
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
     }
 
-    /** @hidden */
+    /** @internal */
     public _isLeftCamera = false;
     /**
      * Gets the left camera of a rig setup in case of Rigged Camera
@@ -1061,7 +1124,7 @@ export class Camera extends Node {
         return this._isLeftCamera;
     }
 
-    /** @hidden */
+    /** @internal */
     public _isRightCamera = false;
     /**
      * Gets the right camera of a rig setup in case of Rigged Camera
@@ -1113,9 +1176,7 @@ export class Camera extends Node {
     }
 
     /**
-     * @param mode
-     * @param rigParams
-     * @hidden
+     * @internal
      */
     public setCameraRigMode(mode: number, rigParams: any): void {
         if (this.cameraRigMode === mode) {
@@ -1163,7 +1224,7 @@ export class Camera extends Node {
         // no-op
     }
 
-    /** @hidden */
+    /** @internal */
     public _getVRProjectionMatrix(): Matrix {
         Matrix.PerspectiveFovLHToRef(
             this._cameraRigParams.vrMetrics.aspectRatioFov,
@@ -1189,7 +1250,7 @@ export class Camera extends Node {
     /**
      * This function MUST be overwritten by the different WebVR cameras available.
      * The context in which it is running is the RIG camera. So 'this' is the TargetCamera, left or right.
-     * @hidden
+     * @internal
      */
     public _getWebVRProjectionMatrix(): Matrix {
         return Matrix.Identity();
@@ -1198,16 +1259,14 @@ export class Camera extends Node {
     /**
      * This function MUST be overwritten by the different WebVR cameras available.
      * The context in which it is running is the RIG camera. So 'this' is the TargetCamera, left or right.
-     * @hidden
+     * @internal
      */
     public _getWebVRViewMatrix(): Matrix {
         return Matrix.Identity();
     }
 
     /**
-     * @param name
-     * @param value
-     * @hidden
+     * @internal
      */
     public setCameraRigParameter(name: string, value: any) {
         if (!this._cameraRigParams) {
@@ -1222,9 +1281,7 @@ export class Camera extends Node {
 
     /**
      * needs to be overridden by children so sub has required properties to be copied
-     * @param name
-     * @param cameraIndex
-     * @hidden
+     * @internal
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public createRigCamera(name: string, cameraIndex: number): Nullable<Camera> {
@@ -1233,7 +1290,7 @@ export class Camera extends Node {
 
     /**
      * May need to be overridden by children
-     * @hidden
+     * @internal
      */
     public _updateRigCameras() {
         for (let i = 0; i < this._rigCameras.length; i++) {
@@ -1249,7 +1306,7 @@ export class Camera extends Node {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _setupInputs() {}
 
     /**
@@ -1265,7 +1322,7 @@ export class Camera extends Node {
 
         // Parent
         if (this.parent) {
-            serializationObject.parentId = this.parent.uniqueId;
+            this.parent._serializeAsParent(serializationObject);
         }
 
         if (this.inputs) {
@@ -1283,14 +1340,16 @@ export class Camera extends Node {
     /**
      * Clones the current camera.
      * @param name The cloned camera name
+     * @param newParent The cloned camera's new parent (none by default)
      * @returns the cloned camera
      */
-    public clone(name: string): Camera {
+    public clone(name: string, newParent: Nullable<Node> = null): Camera {
         const camera = SerializationHelper.Clone(
             Camera.GetConstructorFromName(this.getClassName(), name, this.getScene(), this.interaxialDistance, this.isStereoscopicSideBySide),
             this
         );
         camera.name = name;
+        camera.parent = newParent;
 
         this.onClonedObservable.notifyObservers(camera);
 
@@ -1300,7 +1359,7 @@ export class Camera extends Node {
     /**
      * Gets the direction of the camera relative to a given local axis.
      * @param localAxis Defines the reference axis to provide a relative direction.
-     * @return the direction
+     * @returns the direction
      */
     public getDirection(localAxis: Vector3): Vector3 {
         const result = Vector3.Zero();
@@ -1376,6 +1435,11 @@ export class Camera extends Node {
         // Parent
         if (parsedCamera.parentId !== undefined) {
             camera._waitingParentId = parsedCamera.parentId;
+        }
+
+        // Parent instance index
+        if (parsedCamera.parentInstanceIndex !== undefined) {
+            camera._waitingParentInstanceIndex = parsedCamera.parentInstanceIndex;
         }
 
         //If camera has an input manager, let it parse inputs settings

@@ -27,6 +27,15 @@ export const externalsFunction = (excludePackages: string[] = [], type: BuildTyp
             const packages = getPackageMappingByDevName(devPackageName, true);
             const buildTypePackage = getPublicPackageName(packages[type], request);
             const namespaceName = getPublicPackageName(packages.namespace, request);
+            // check if the "external"  is actually a local dependency
+            const umdPackageName = getPublicPackageName(packages["umd"], request) as UMDPackageName;
+            const directoryToExpect = umdPackageMapping[umdPackageName].baseDir || "core";
+            if (directoryToExpect && context.replace(/\\/g, "/").includes("/" + directoryToExpect + "/")) {
+                return callback(null);
+            }
+            if (request.indexOf("ktx2decoderTypes") !== -1) {
+                return callback(null);
+            }
             if (type === "umd" || type === "es6") {
                 return callback(null, {
                     root: namespaceName.indexOf(".") !== -1 ? namespaceName.split(".") : namespaceName,
@@ -52,6 +61,7 @@ export const getRules = (
         };
         resourceType?: "asset/inline" | "asset/resource";
         extraRules?: RuleSetRule[];
+        mode?: "development" | "production";
     } = {
         includeAssets: true,
         includeCSS: true,
@@ -86,13 +96,36 @@ export const getRules = (
         rules.push(
             {
                 sideEffects: options.sideEffects,
-                test: /\.s[ac]ss$/i,
+                test: /(?<!modules)\.s[ac]ss$/i,
                 use: [
                     "style-loader",
                     {
                         loader: "css-loader",
                         options: {
                             sourceMap: true,
+                            modules: "global",
+                        },
+                    },
+                    {
+                        loader: "sass-loader",
+                        options: {
+                            sourceMap: true,
+                        },
+                    },
+                ],
+            },
+            {
+                sideEffects: options.sideEffects,
+                test: /\.modules\.s[ac]ss$/i,
+                use: [
+                    "style-loader",
+                    {
+                        loader: "css-loader",
+                        options: {
+                            sourceMap: true,
+                            modules: {
+                                localIdentName: options.mode === "production" ? "[hash:base64]" : "[path][name]__[local]",
+                            },
                         },
                     },
                     {
@@ -189,6 +222,7 @@ export const commonUMDWebpackConfiguration = (options: {
                 sideEffects: true,
                 includeAssets: true,
                 includeCSS: true,
+                mode: options.mode || "development",
             }),
         },
         ...options.extendedWebpackConfig,

@@ -62,13 +62,13 @@ export class BoundingBox implements ICullable {
     private static readonly _TmpVector3 = ArrayTools.BuildArray(3, Vector3.Zero);
 
     /**
-     * @hidden
+     * @internal
      */
     public _tag: number;
 
-    /** @hidden */
+    /** @internal */
     public _drawWrapperFront: Nullable<DrawWrapper> = null;
-    /** @hidden */
+    /** @internal */
     public _drawWrapperBack: Nullable<DrawWrapper> = null;
 
     /**
@@ -148,8 +148,7 @@ export class BoundingBox implements ICullable {
     }
 
     /**
-     * @param world
-     * @hidden
+     * @internal
      */
     public _update(world: DeepImmutable<Matrix>): void {
         const minWorld = this.minimumWorld;
@@ -327,7 +326,7 @@ export class BoundingBox implements ICullable {
      * Tests if a bounding box defined with 8 vectors is entirely inside frustum planes
      * @param boundingVectors defines an array of 8 vectors representing a bounding box
      * @param frustumPlanes defines the frustum planes to test
-     * @return true if there is an inclusion
+     * @returns true if there is an inclusion
      */
     public static IsCompletelyInFrustum(boundingVectors: Array<DeepImmutable<Vector3>>, frustumPlanes: Array<DeepImmutable<Plane>>): boolean {
         for (let p = 0; p < 6; ++p) {
@@ -345,7 +344,7 @@ export class BoundingBox implements ICullable {
      * Tests if a bounding box defined with 8 vectors intersects frustum planes
      * @param boundingVectors defines an array of 8 vectors representing a bounding box
      * @param frustumPlanes defines the frustum planes to test
-     * @return true if there is an intersection
+     * @returns true if there is an intersection
      */
     public static IsInFrustum(boundingVectors: Array<DeepImmutable<Vector3>>, frustumPlanes: Array<DeepImmutable<Plane>>): boolean {
         for (let p = 0; p < 6; ++p) {

@@ -96,6 +96,7 @@ export class BlurPostProcess extends PostProcess {
      * @param textureType Type of textures used when performing the post process. (default: 0)
      * @param defines
      * @param _blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
+     * @param textureFormat Format of textures used when performing the post process. (default: TEXTUREFORMAT_RGBA)
      */
     constructor(
         name: string,
@@ -106,14 +107,15 @@ export class BlurPostProcess extends PostProcess {
         samplingMode: number = Texture.BILINEAR_SAMPLINGMODE,
         engine?: Engine,
         reusable?: boolean,
-        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        textureType = Constants.TEXTURETYPE_UNSIGNED_INT,
         defines = "",
-        private _blockCompilation = false
+        private _blockCompilation = false,
+        textureFormat = Constants.TEXTUREFORMAT_RGBA
     ) {
         super(
             name,
             "kernelBlur",
-            ["delta", "direction", "cameraMinMaxZ"],
+            ["delta", "direction"],
             ["circleOfConfusionSampler"],
             options,
             camera,
@@ -124,7 +126,8 @@ export class BlurPostProcess extends PostProcess {
             textureType,
             "kernelBlur",
             { varyingCount: 0, depCount: 0 },
-            true
+            true,
+            textureFormat
         );
         this._staticDefines = defines;
         this.direction = direction;
@@ -272,7 +275,7 @@ export class BlurPostProcess extends PostProcess {
      * want to minimize kernel changes, having gaps between physical kernels is helpful in that regard.
      * The gaps between physical kernels are compensated for in the weighting of the samples
      * @param idealKernel Ideal blur kernel.
-     * @return Nearest best kernel.
+     * @returns Nearest best kernel.
      */
     protected _nearestBestKernel(idealKernel: number): number {
         const v = Math.round(idealKernel);
@@ -287,7 +290,7 @@ export class BlurPostProcess extends PostProcess {
     /**
      * Calculates the value of a Gaussian distribution with sigma 3 at a given point.
      * @param x The point on the Gaussian distribution to sample.
-     * @return the value of the Gaussian function at x.
+     * @returns the value of the Gaussian function at x.
      */
     protected _gaussianWeight(x: number): number {
         //reference: Engines/ImageProcessingBlur.cpp #dcc760
@@ -308,18 +311,14 @@ export class BlurPostProcess extends PostProcess {
      * Generates a string that can be used as a floating point number in GLSL.
      * @param x Value to print.
      * @param decimalFigures Number of decimal places to print the number to (excluding trailing 0s).
-     * @return GLSL float string.
+     * @returns GLSL float string.
      */
     protected _glslFloat(x: number, decimalFigures = 8) {
         return x.toFixed(decimalFigures).replace(/0+$/, "");
     }
 
     /**
-     * @param parsedPostProcess
-     * @param targetCamera
-     * @param scene
-     * @param rootUrl
-     * @hidden
+     * @internal
      */
     public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<BlurPostProcess> {
         return SerializationHelper.Parse(

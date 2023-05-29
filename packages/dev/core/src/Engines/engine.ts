@@ -292,7 +292,7 @@ export class Engine extends ThinEngine {
         return EngineStore.LastCreatedScene;
     }
 
-    /** @hidden */
+    /** @internal */
     /**
      * Engine abstraction for loading and creating an image bitmap from a given source string.
      * @param imageSource source to load the image from.
@@ -396,11 +396,16 @@ export class Engine extends ThinEngine {
     public disableManifestCheck = false;
 
     /**
+     * Gets or sets a boolean to enable/disable the context menu (right-click) from appearing on the main canvas
+     */
+    public disableContextMenu: boolean = true;
+
+    /**
      * Gets the list of created scenes
      */
     public scenes = new Array<Scene>();
 
-    /** @hidden */
+    /** @internal */
     public _virtualScenes = new Array<Scene>();
 
     /**
@@ -467,7 +472,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Gets the audio engine
-     * @see https://doc.babylonjs.com/how_to/playing_sounds_and_music
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic
      * @ignorenaming
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -491,7 +496,7 @@ export class Engine extends ThinEngine {
 
     private _loadingScreen: ILoadingScreen;
     private _pointerLockRequested: boolean;
-    private _rescalePostProcess: PostProcess;
+    private _rescalePostProcess: Nullable<PostProcess>;
 
     // Deterministic lockstepMaxSteps
     protected _deterministicLockstep: boolean = false;
@@ -506,7 +511,7 @@ export class Engine extends ThinEngine {
     private _fps = 60;
     private _deltaTime = 0;
 
-    /** @hidden */
+    /** @internal */
     public _drawCalls = new PerfCounter();
 
     /** Gets or sets the tab index to set to the rendering canvas. 1 is the minimum value to set to be able to capture keyboard events */
@@ -520,7 +525,7 @@ export class Engine extends ThinEngine {
     private _performanceMonitor = new PerformanceMonitor();
     /**
      * Gets the performance monitor attached to this engine
-     * @see https://doc.babylonjs.com/how_to/optimizing_your_scene#engineinstrumentation
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/optimize_your_scene#engineinstrumentation
      */
     public get performanceMonitor(): PerformanceMonitor {
         return this._performanceMonitor;
@@ -532,6 +537,7 @@ export class Engine extends ThinEngine {
     private _onCanvasPointerOut: (event: PointerEvent) => void;
     private _onCanvasBlur: () => void;
     private _onCanvasFocus: () => void;
+    private _onCanvasContextMenu: (evt: Event) => void;
 
     private _onFullscreenChange: () => void;
     private _onPointerLockChange: () => void;
@@ -541,7 +547,7 @@ export class Engine extends ThinEngine {
     /**
      * (WebGPU only) True (default) to be in compatibility mode, meaning rendering all existing scenes without artifacts (same rendering than WebGL).
      * Setting the property to false will improve performances but may not work in some scenes if some precautions are not taken.
-     * See https://doc.babylonjs.com/advanced_topics/webGPU/webGPUOptimization/webGPUNonCompatibilityMode for more details
+     * See https://doc.babylonjs.com/setup/support/webGPU/webGPUOptimization/webGPUNonCompatibilityMode for more details
      */
     public get compatibilityMode() {
         return this._compatibilityMode;
@@ -590,61 +596,9 @@ export class Engine extends ThinEngine {
         if ((<any>canvasOrContext).getContext) {
             const canvas = <HTMLCanvasElement>canvasOrContext;
 
-            this._sharedInit(canvas, !!options.doNotHandleTouchAction, options.audioEngine!);
-
-            if (IsWindowObjectExist()) {
-                const anyDoc = document as any;
-
-                // Fullscreen
-                this._onFullscreenChange = () => {
-                    if (anyDoc.fullscreen !== undefined) {
-                        this.isFullscreen = anyDoc.fullscreen;
-                    } else if (anyDoc.mozFullScreen !== undefined) {
-                        this.isFullscreen = anyDoc.mozFullScreen;
-                    } else if (anyDoc.webkitIsFullScreen !== undefined) {
-                        this.isFullscreen = anyDoc.webkitIsFullScreen;
-                    } else if (anyDoc.msIsFullScreen !== undefined) {
-                        this.isFullscreen = anyDoc.msIsFullScreen;
-                    }
-
-                    // Pointer lock
-                    if (this.isFullscreen && this._pointerLockRequested && canvas) {
-                        Engine._RequestPointerlock(canvas);
-                    }
-                };
-
-                document.addEventListener("fullscreenchange", this._onFullscreenChange, false);
-                document.addEventListener("mozfullscreenchange", this._onFullscreenChange, false);
-                document.addEventListener("webkitfullscreenchange", this._onFullscreenChange, false);
-                document.addEventListener("msfullscreenchange", this._onFullscreenChange, false);
-
-                // Pointer lock
-                this._onPointerLockChange = () => {
-                    this.isPointerLock =
-                        anyDoc.mozPointerLockElement === canvas ||
-                        anyDoc.webkitPointerLockElement === canvas ||
-                        anyDoc.msPointerLockElement === canvas ||
-                        anyDoc.pointerLockElement === canvas;
-                };
-
-                document.addEventListener("pointerlockchange", this._onPointerLockChange, false);
-                document.addEventListener("mspointerlockchange", this._onPointerLockChange, false);
-                document.addEventListener("mozpointerlockchange", this._onPointerLockChange, false);
-                document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
-
-                // Create Audio Engine if needed.
-                if (!Engine.audioEngine && options.audioEngine && Engine.AudioEngineFactory) {
-                    Engine.audioEngine = Engine.AudioEngineFactory(this.getRenderingCanvas(), this.getAudioContext(), this.getAudioDestination());
-                }
-            }
+            this._sharedInit(canvas);
 
             this._connectVREvents();
-
-            this.enableOfflineSupport = Engine.OfflineProviderFactory !== undefined;
-
-            this._deterministicLockstep = !!options.deterministicLockstep;
-            this._lockstepMaxSteps = options.lockstepMaxSteps || 0;
-            this._timeStep = options.timeStep || 1 / 60;
         }
 
         // Load WebVR Devices
@@ -654,14 +608,18 @@ export class Engine extends ThinEngine {
         }
     }
 
+    protected _initGLContext(): void {
+        super._initGLContext();
+
+        this._rescalePostProcess = null;
+    }
+
     /**
      * Shared initialization across engines types.
      * @param canvas The canvas associated with this instance of the engine.
-     * @param doNotHandleTouchAction Defines that engine should ignore modifying touch action attribute and style
-     * @param audioEngine Defines if an audio engine should be created by default
      */
-    protected _sharedInit(canvas: HTMLCanvasElement, doNotHandleTouchAction: boolean, audioEngine: boolean) {
-        super._sharedInit(canvas, doNotHandleTouchAction, audioEngine);
+    protected _sharedInit(canvas: HTMLCanvasElement) {
+        super._sharedInit(canvas);
 
         this._onCanvasFocus = () => {
             this.onCanvasFocusObservable.notifyObservers(this);
@@ -671,8 +629,15 @@ export class Engine extends ThinEngine {
             this.onCanvasBlurObservable.notifyObservers(this);
         };
 
+        this._onCanvasContextMenu = (evt: Event) => {
+            if (this.disableContextMenu) {
+                evt.preventDefault();
+            }
+        };
+
         canvas.addEventListener("focus", this._onCanvasFocus);
         canvas.addEventListener("blur", this._onCanvasBlur);
+        canvas.addEventListener("contextmenu", this._onCanvasContextMenu);
 
         this._onBlur = () => {
             if (this.disablePerformanceMonitorInBackground) {
@@ -696,24 +661,55 @@ export class Engine extends ThinEngine {
             }
         };
 
-        if (IsWindowObjectExist()) {
-            const hostWindow = this.getHostWindow();
-            if (hostWindow) {
-                hostWindow.addEventListener("blur", this._onBlur);
-                hostWindow.addEventListener("focus", this._onFocus);
-            }
+        const hostWindow = this.getHostWindow(); // it calls IsWindowObjectExist()
+        if (hostWindow && typeof hostWindow.addEventListener === "function") {
+            hostWindow.addEventListener("blur", this._onBlur);
+            hostWindow.addEventListener("focus", this._onFocus);
         }
 
         canvas.addEventListener("pointerout", this._onCanvasPointerOut);
 
-        if (!doNotHandleTouchAction) {
+        if (!this._creationOptions.doNotHandleTouchAction) {
             this._disableTouchAction();
         }
 
         // Create Audio Engine if needed.
-        if (!Engine.audioEngine && audioEngine && Engine.AudioEngineFactory) {
+        if (!Engine.audioEngine && this._creationOptions.audioEngine && Engine.AudioEngineFactory) {
             Engine.audioEngine = Engine.AudioEngineFactory(this.getRenderingCanvas(), this.getAudioContext(), this.getAudioDestination());
         }
+        if (IsDocumentAvailable()) {
+            // Fullscreen
+            this._onFullscreenChange = () => {
+                this.isFullscreen = !!document.fullscreenElement;
+
+                // Pointer lock
+                if (this.isFullscreen && this._pointerLockRequested && canvas) {
+                    Engine._RequestPointerlock(canvas);
+                }
+            };
+
+            document.addEventListener("fullscreenchange", this._onFullscreenChange, false);
+            document.addEventListener("webkitfullscreenchange", this._onFullscreenChange, false);
+
+            // Pointer lock
+            this._onPointerLockChange = () => {
+                this.isPointerLock = document.pointerLockElement === canvas;
+            };
+
+            document.addEventListener("pointerlockchange", this._onPointerLockChange, false);
+            document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
+        }
+
+        this.enableOfflineSupport = Engine.OfflineProviderFactory !== undefined;
+
+        this._deterministicLockstep = !!this._creationOptions.deterministicLockstep;
+        this._lockstepMaxSteps = this._creationOptions.lockstepMaxSteps || 0;
+        this._timeStep = this._creationOptions.timeStep || 1 / 60;
+    }
+
+    /** @internal */
+    public _verifyPointerLock(): void {
+        this._onPointerLockChange?.();
     }
 
     /**
@@ -759,7 +755,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Gets a boolean indicating that the engine is running in deterministic lock step mode
-     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#deterministic-lockstep
      * @returns true if engine is in deterministic lock step mode
      */
     public isDeterministicLockStep(): boolean {
@@ -768,7 +764,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Gets the max steps when engine is running in deterministic lock step
-     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#deterministic-lockstep
      * @returns the max steps
      */
     public getLockstepMaxSteps(): number {
@@ -800,22 +796,6 @@ export class Engine extends ThinEngine {
     }
 
     /** States */
-
-    /**
-     * Gets a boolean indicating if depth testing is enabled
-     * @returns the current state
-     */
-    public getDepthBuffer(): boolean {
-        return this._depthCullingState.depthTest;
-    }
-
-    /**
-     * Enable or disable depth buffering
-     * @param enable defines the state to set
-     */
-    public setDepthBuffer(enable: boolean): void {
-        this._depthCullingState.depthTest = enable;
-    }
 
     /**
      * Gets a boolean indicating if depth writing is enabled
@@ -1069,7 +1049,7 @@ export class Engine extends ThinEngine {
      * @param y defines the y coordinate of the viewport (in screen space)
      * @param width defines the width of the viewport (in screen space)
      * @param height defines the height of the viewport (in screen space)
-     * @return the current viewport Object (if any) that is being replaced by this call. You can restore this viewport later on to go back to the original state
+     * @returns the current viewport Object (if any) that is being replaced by this call. You can restore this viewport later on to go back to the original state
      */
     public setDirectViewport(x: number, y: number, width: number, height: number): Nullable<IViewportLike> {
         const currentViewport = this._cachedViewport;
@@ -1082,7 +1062,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Executes a scissor clear (ie. a clear on a specific portion of the screen)
-     * @param x defines the x-coordinate of the top left corner of the clear rectangle
+     * @param x defines the x-coordinate of the bottom left corner of the clear rectangle
      * @param y defines the y-coordinate of the corner of the clear rectangle
      * @param width defines the width of the clear rectangle
      * @param height defines the height of the clear rectangle
@@ -1096,7 +1076,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Enable scissor test on a specific rectangle (ie. render will only be executed on a specific portion of the screen)
-     * @param x defines the x-coordinate of the top left corner of the clear rectangle
+     * @param x defines the x-coordinate of the bottom left corner of the clear rectangle
      * @param y defines the y-coordinate of the corner of the clear rectangle
      * @param width defines the width of the clear rectangle
      * @param height defines the height of the clear rectangle
@@ -1119,8 +1099,7 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * @param numDrawCalls
-     * @hidden
+     * @internal
      */
     public _reportDrawCall(numDrawCalls = 1) {
         this._drawCalls.addCount(numDrawCalls, false);
@@ -1135,29 +1114,27 @@ export class Engine extends ThinEngine {
         throw _WarnImport("WebVRCamera");
     }
 
-    /** @hidden */
+    /** @internal */
     public _prepareVRComponent() {
         // Do nothing as the engine side effect will overload it
     }
 
     /**
-     * @param canvas
-     * @param document
-     * @hidden
+     * @internal
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public _connectVREvents(canvas?: HTMLCanvasElement, document?: any) {
         // Do nothing as the engine side effect will overload it
     }
 
-    /** @hidden */
+    /** @internal */
     public _submitVRFrame() {
         // Do nothing as the engine side effect will overload it
     }
     /**
      * Call this function to leave webVR mode
      * Will do nothing if webVR is not supported or if there is no webVR device
-     * @see https://doc.babylonjs.com/how_to/webvr_camera
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/webVRCamera
      */
     public disableVR() {
         // Do nothing as the engine side effect will overload it
@@ -1171,16 +1148,13 @@ export class Engine extends ThinEngine {
         return false;
     }
 
-    /** @hidden */
+    /** @internal */
     public _requestVRFrame() {
         // Do nothing as the engine side effect will overload it
     }
 
     /**
-     * @param url
-     * @param offlineProvider
-     * @param useArrayBuffer
-     * @hidden
+     * @internal
      */
     public _loadFileAsync(url: string, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
         return new Promise((resolve, reject) => {
@@ -1261,10 +1235,10 @@ export class Engine extends ThinEngine {
     public setTextureFromPostProcess(channel: number, postProcess: Nullable<PostProcess>, name: string): void {
         let postProcessInput = null;
         if (postProcess) {
-            if (postProcess._textures.data[postProcess._currentRenderTextureInd]) {
-                postProcessInput = postProcess._textures.data[postProcess._currentRenderTextureInd];
-            } else if (postProcess._forcedOutputTexture) {
+            if (postProcess._forcedOutputTexture) {
                 postProcessInput = postProcess._forcedOutputTexture;
+            } else if (postProcess._textures.data[postProcess._currentRenderTextureInd]) {
+                postProcessInput = postProcess._textures.data[postProcess._currentRenderTextureInd];
             }
         }
 
@@ -1298,7 +1272,7 @@ export class Engine extends ThinEngine {
         super._rebuildBuffers();
     }
 
-    /** @hidden */
+    /** @internal */
     public _renderFrame() {
         for (let index = 0; index < this._activeRenderLoops.length; index++) {
             const renderFunction = this._activeRenderLoops[index];
@@ -1310,7 +1284,7 @@ export class Engine extends ThinEngine {
     public _renderLoop(): void {
         if (!this._contextWasLost) {
             let shouldRender = true;
-            if (!this.renderEvenInBackground && this._windowIsBackground) {
+            if (this.isDisposed || (!this.renderEvenInBackground && this._windowIsBackground)) {
                 shouldRender = false;
             }
 
@@ -1347,7 +1321,7 @@ export class Engine extends ThinEngine {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _renderViews() {
         return false;
     }
@@ -1542,16 +1516,14 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * @param texture
-     * @hidden
+     * @internal
      */
     public _releaseTexture(texture: InternalTexture): void {
         super._releaseTexture(texture);
     }
 
     /**
-     * @param rtWrapper
-     * @hidden
+     * @internal
      */
     public _releaseRenderTargetWrapper(rtWrapper: RenderTargetWrapper): void {
         super._releaseRenderTargetWrapper(rtWrapper);
@@ -1633,7 +1605,7 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * @hidden
+     * @internal
      * Rescales a texture
      * @param source input texture
      * @param destination destination texture
@@ -1665,29 +1637,31 @@ export class Engine extends ThinEngine {
             this._rescalePostProcess = Engine._RescalePostProcessFactory(this);
         }
 
-        this._rescalePostProcess.externalTextureSamplerBinding = true;
-        this._rescalePostProcess.getEffect().executeWhenCompiled(() => {
-            this._rescalePostProcess.onApply = function (effect) {
-                effect._bindTexture("textureSampler", source);
-            };
+        if (this._rescalePostProcess) {
+            this._rescalePostProcess.externalTextureSamplerBinding = true;
+            this._rescalePostProcess.getEffect().executeWhenCompiled(() => {
+                this._rescalePostProcess!.onApply = function (effect) {
+                    effect._bindTexture("textureSampler", source);
+                };
 
-            let hostingScene: Scene = scene;
+                let hostingScene: Scene = scene;
 
-            if (!hostingScene) {
-                hostingScene = this.scenes[this.scenes.length - 1];
-            }
-            hostingScene.postProcessManager.directRender([this._rescalePostProcess], rtt, true);
+                if (!hostingScene) {
+                    hostingScene = this.scenes[this.scenes.length - 1];
+                }
+                hostingScene.postProcessManager.directRender([this._rescalePostProcess!], rtt, true);
 
-            this._bindTextureDirectly(this._gl.TEXTURE_2D, destination, true);
-            this._gl.copyTexImage2D(this._gl.TEXTURE_2D, 0, internalFormat, 0, 0, destination.width, destination.height, 0);
+                this._bindTextureDirectly(this._gl.TEXTURE_2D, destination, true);
+                this._gl.copyTexImage2D(this._gl.TEXTURE_2D, 0, internalFormat, 0, 0, destination.width, destination.height, 0);
 
-            this.unBindFramebuffer(rtt);
-            rtt.dispose();
+                this.unBindFramebuffer(rtt);
+                rtt.dispose();
 
-            if (onComplete) {
-                onComplete();
-            }
-        });
+                if (onComplete) {
+                    onComplete();
+                }
+            });
+        }
     }
 
     // FPS
@@ -1717,22 +1691,22 @@ export class Engine extends ThinEngine {
     /**
      * Wraps an external web gl texture in a Babylon texture.
      * @param texture defines the external texture
+     * @param hasMipMaps defines whether the external texture has mip maps (default: false)
+     * @param samplingMode defines the sampling mode for the external texture (default: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE)
      * @returns the babylon internal texture
      */
-    wrapWebGLTexture(texture: WebGLTexture): InternalTexture {
+    public wrapWebGLTexture(texture: WebGLTexture, hasMipMaps: boolean = false, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE): InternalTexture {
         const hardwareTexture = new WebGLHardwareTexture(texture, this._gl);
         const internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
         internalTexture._hardwareTexture = hardwareTexture;
         internalTexture.isReady = true;
+        internalTexture.useMipMaps = hasMipMaps;
+        this.updateTextureSamplingMode(samplingMode, internalTexture);
         return internalTexture;
     }
 
     /**
-     * @param texture
-     * @param image
-     * @param faceIndex
-     * @param lod
-     * @hidden
+     * @internal
      */
     public _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement | ImageBitmap, faceIndex: number = 0, lod: number = 0) {
         const gl = this._gl;
@@ -1851,14 +1825,7 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * @param x
-     * @param y
-     * @param w
-     * @param h
-     * @param format
-     * @param type
-     * @param outputBuffer
-     * @hidden
+     * @internal
      */
     public _readPixelsAsync(x: number, y: number, w: number, h: number, format: number, type: number, outputBuffer: ArrayBufferView) {
         if (this._webGLVersion < 2) {
@@ -1916,7 +1883,7 @@ export class Engine extends ThinEngine {
         }
 
         // Release audio engine
-        if (Engine.Instances.length === 1 && Engine.audioEngine) {
+        if (EngineStore.Instances.length === 1 && Engine.audioEngine) {
             Engine.audioEngine.dispose();
             Engine.audioEngine = null;
         }
@@ -1925,35 +1892,42 @@ export class Engine extends ThinEngine {
         this.disableVR();
 
         // Events
-        if (IsWindowObjectExist()) {
-            window.removeEventListener("blur", this._onBlur);
-            window.removeEventListener("focus", this._onFocus);
+        const hostWindow = this.getHostWindow(); // it calls IsWindowObjectExist()
+        if (hostWindow && typeof hostWindow.removeEventListener === "function") {
+            hostWindow.removeEventListener("blur", this._onBlur);
+            hostWindow.removeEventListener("focus", this._onFocus);
+        }
 
-            if (this._renderingCanvas) {
-                this._renderingCanvas.removeEventListener("focus", this._onCanvasFocus);
-                this._renderingCanvas.removeEventListener("blur", this._onCanvasBlur);
-                this._renderingCanvas.removeEventListener("pointerout", this._onCanvasPointerOut);
-            }
+        if (this._renderingCanvas) {
+            this._renderingCanvas.removeEventListener("focus", this._onCanvasFocus);
+            this._renderingCanvas.removeEventListener("blur", this._onCanvasBlur);
+            this._renderingCanvas.removeEventListener("pointerout", this._onCanvasPointerOut);
+            this._renderingCanvas.removeEventListener("contextmenu", this._onCanvasContextMenu);
+        }
 
-            if (IsDocumentAvailable()) {
-                document.removeEventListener("fullscreenchange", this._onFullscreenChange);
-                document.removeEventListener("mozfullscreenchange", this._onFullscreenChange);
-                document.removeEventListener("webkitfullscreenchange", this._onFullscreenChange);
-                document.removeEventListener("msfullscreenchange", this._onFullscreenChange);
-                document.removeEventListener("pointerlockchange", this._onPointerLockChange);
-                document.removeEventListener("mspointerlockchange", this._onPointerLockChange);
-                document.removeEventListener("mozpointerlockchange", this._onPointerLockChange);
-                document.removeEventListener("webkitpointerlockchange", this._onPointerLockChange);
-            }
+        if (IsDocumentAvailable()) {
+            document.removeEventListener("fullscreenchange", this._onFullscreenChange);
+            document.removeEventListener("mozfullscreenchange", this._onFullscreenChange);
+            document.removeEventListener("webkitfullscreenchange", this._onFullscreenChange);
+            document.removeEventListener("msfullscreenchange", this._onFullscreenChange);
+            document.removeEventListener("pointerlockchange", this._onPointerLockChange);
+            document.removeEventListener("mspointerlockchange", this._onPointerLockChange);
+            document.removeEventListener("mozpointerlockchange", this._onPointerLockChange);
+            document.removeEventListener("webkitpointerlockchange", this._onPointerLockChange);
         }
 
         super.dispose();
 
         // Remove from Instances
-        const index = Engine.Instances.indexOf(this);
+        const index = EngineStore.Instances.indexOf(this);
 
         if (index >= 0) {
-            Engine.Instances.splice(index, 1);
+            EngineStore.Instances.splice(index, 1);
+        }
+
+        // no more engines left in the engine store? Notify!
+        if (!Engine.Instances.length) {
+            EngineStore.OnEnginesDisposedObservable.notifyObservers(this);
         }
 
         // Observables
@@ -1972,14 +1946,14 @@ export class Engine extends ThinEngine {
 
         this._renderingCanvas.setAttribute("touch-action", "none");
         this._renderingCanvas.style.touchAction = "none";
-        (this._renderingCanvas.style as any).msTouchAction = "none";
+        (this._renderingCanvas.style as any).webkitTapHighlightColor = "transparent";
     }
 
     // Loading screen
 
     /**
      * Display the loading screen
-     * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
      */
     public displayLoadingUI(): void {
         if (!IsWindowObjectExist()) {
@@ -1993,7 +1967,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Hide the loading screen
-     * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
      */
     public hideLoadingUI(): void {
         if (!IsWindowObjectExist()) {
@@ -2007,7 +1981,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Gets the current loading screen object
-     * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
      */
     public get loadingScreen(): ILoadingScreen {
         if (!this._loadingScreen && this._renderingCanvas) {
@@ -2018,7 +1992,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Sets the current loading screen object
-     * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
      */
     public set loadingScreen(loadingScreen: ILoadingScreen) {
         this._loadingScreen = loadingScreen;
@@ -2026,7 +2000,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Sets the current loading screen text
-     * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
      */
     public set loadingUIText(text: string) {
         this.loadingScreen.loadingUIText = text;
@@ -2034,7 +2008,7 @@ export class Engine extends ThinEngine {
 
     /**
      * Sets the current loading screen background color
-     * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
      */
     public set loadingUIBackgroundColor(color: string) {
         this.loadingScreen.loadingUIBackgroundColor = color;
@@ -2057,11 +2031,17 @@ export class Engine extends ThinEngine {
      * @param element defines the DOM element to promote
      */
     static _RequestPointerlock(element: HTMLElement): void {
-        element.requestPointerLock =
-            element.requestPointerLock || (<any>element).msRequestPointerLock || (<any>element).mozRequestPointerLock || (<any>element).webkitRequestPointerLock;
         if (element.requestPointerLock) {
-            element.requestPointerLock();
-            element.focus();
+            // In some browsers, requestPointerLock returns a promise.
+            // Handle possible rejections to avoid an unhandled top-level exception.
+            const promise: unknown = element.requestPointerLock();
+            if (promise instanceof Promise)
+                promise
+                    .then(() => {
+                        element.focus();
+                    })
+                    .catch(() => {});
+            else element.focus();
         }
     }
 
@@ -2069,9 +2049,6 @@ export class Engine extends ThinEngine {
      * Asks the browser to exit pointerlock mode
      */
     static _ExitPointerlock(): void {
-        const anyDoc = document as any;
-        document.exitPointerLock = document.exitPointerLock || anyDoc.msExitPointerLock || anyDoc.mozExitPointerLock || anyDoc.webkitExitPointerLock;
-
         if (document.exitPointerLock) {
             document.exitPointerLock();
         }
@@ -2082,7 +2059,7 @@ export class Engine extends ThinEngine {
      * @param element defines the DOM element to promote
      */
     static _RequestFullscreen(element: HTMLElement): void {
-        const requestFunction = element.requestFullscreen || (<any>element).msRequestFullscreen || (<any>element).webkitRequestFullscreen || (<any>element).mozRequestFullScreen;
+        const requestFunction = element.requestFullscreen || (<any>element).webkitRequestFullscreen;
         if (!requestFunction) {
             return;
         }
@@ -2097,19 +2074,15 @@ export class Engine extends ThinEngine {
 
         if (document.exitFullscreen) {
             document.exitFullscreen();
-        } else if (anyDoc.mozCancelFullScreen) {
-            anyDoc.mozCancelFullScreen();
         } else if (anyDoc.webkitCancelFullScreen) {
             anyDoc.webkitCancelFullScreen();
-        } else if (anyDoc.msCancelFullScreen) {
-            anyDoc.msCancelFullScreen();
         }
     }
 
     /**
      * Get Font size information
      * @param font font name
-     * @return an object containing ascent, height and descent
+     * @returns an object containing ascent, height and descent
      */
     public getFontOffset(font: string): { ascent: number; height: number; descent: number } {
         const text = document.createElement("span");

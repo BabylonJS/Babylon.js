@@ -37,13 +37,15 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
         const animationGroup = this.props.animationGroup;
         this.state = { playButtonText: animationGroup.isPlaying ? "Pause" : "Play", currentFrame: 0 };
 
+        this._timelineRef = React.createRef();
+    }
+
+    componentDidMount(): void {
         this.connect(this.props.animationGroup);
 
         this._onBeforeRenderObserver = this.props.scene.onBeforeRenderObservable.add(() => {
             this.updateCurrentFrame(this.props.animationGroup);
         });
-
-        this._timelineRef = React.createRef();
     }
 
     disconnect(animationGroup: AnimationGroup) {
@@ -73,9 +75,9 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
     updateCurrentFrame(animationGroup: AnimationGroup) {
         const targetedAnimations = animationGroup.targetedAnimations;
         if (targetedAnimations.length > 0) {
-            const runtimeAnimations = animationGroup.targetedAnimations[0].animation.runtimeAnimations;
-            if (runtimeAnimations.length > 0) {
-                this.setState({ currentFrame: runtimeAnimations[0].currentFrame });
+            const runtimeAnimation = targetedAnimations[0].animation.runtimeAnimations.find((rA) => rA.target === targetedAnimations[0].target);
+            if (runtimeAnimation) {
+                this.setState({ currentFrame: runtimeAnimation.currentFrame });
             } else {
                 this.setState({ currentFrame: 0 });
             }
@@ -107,7 +109,6 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
             animationGroup.pause();
         } else {
             this.setState({ playButtonText: "Pause" });
-            this.props.scene.animationGroups.forEach((grp) => grp.pause());
             animationGroup.play(true);
         }
     }
@@ -141,7 +142,7 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
         }
 
         return (
-            <div className="pane">
+            <>
                 <LineContainerComponent title="GENERAL">
                     <TextLineComponent label="Class" value={animationGroup.getClassName()} />
                     <TextInputLineComponent
@@ -155,6 +156,7 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
                 <LineContainerComponent title="CONTROLS">
                     <ButtonLineComponent label={playButtonText} onClick={() => this.playOrPause()} />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Speed ratio"
                         minimum={0}
                         maximum={10}
@@ -164,6 +166,7 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         ref={this._timelineRef}
                         label="Current frame"
                         minimum={animationGroup.from}
@@ -180,7 +183,7 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
                     <TextLineComponent label="To" value={animationGroup.to.toFixed(2)} />
                     <TextLineComponent label="Unique ID" value={animationGroup.uniqueId.toString()} />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

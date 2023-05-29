@@ -2,37 +2,37 @@
  * Manages the defines for the Material
  */
 export class MaterialDefines {
-    /** @hidden */
-    protected _keys: string[];
+    /** @internal */
+    protected _keys: string[] = [];
     private _isDirty = true;
-    /** @hidden */
+    /** @internal */
     public _renderId: number;
 
-    /** @hidden */
+    /** @internal */
     public _areLightsDirty = true;
-    /** @hidden */
+    /** @internal */
     public _areLightsDisposed = false;
-    /** @hidden */
+    /** @internal */
     public _areAttributesDirty = true;
-    /** @hidden */
+    /** @internal */
     public _areTexturesDirty = true;
-    /** @hidden */
+    /** @internal */
     public _areFresnelDirty = true;
-    /** @hidden */
+    /** @internal */
     public _areMiscDirty = true;
-    /** @hidden */
+    /** @internal */
     public _arePrePassDirty = true;
-    /** @hidden */
+    /** @internal */
     public _areImageProcessingDirty = true;
 
-    /** @hidden */
+    /** @internal */
     public _normals = false;
-    /** @hidden */
+    /** @internal */
     public _uvs = false;
 
-    /** @hidden */
+    /** @internal */
     public _needNormals = false;
-    /** @hidden */
+    /** @internal */
     public _needUVs = false;
 
     protected _externalProperties?: { [name: string]: { type: string; default: any } };
@@ -94,6 +94,7 @@ export class MaterialDefines {
         this._areLightsDirty = true;
         this._areFresnelDirty = true;
         this._areMiscDirty = true;
+        this._arePrePassDirty = false;
         this._areImageProcessingDirty = true;
         this._isDirty = true;
     }
@@ -160,7 +161,7 @@ export class MaterialDefines {
      * Rebuilds the material defines
      */
     public rebuild() {
-        this._keys = [];
+        this._keys.length = 0;
 
         for (const key of Object.keys(this)) {
             if (key[0] === "_") {

@@ -182,7 +182,7 @@ export class RollingAverage {
     /**
      * Returns previously added values or null if outside of history or outside the sliding window domain
      * @param i Index in history. For example, pass 0 for the most recent value and 1 for the value before that
-     * @return Value previously recorded with add() or null if outside of range
+     * @returns Value previously recorded with add() or null if outside of range
      */
     public history(i: number): number {
         if (i >= this._sampleCount || i >= this._samples.length) {
@@ -195,7 +195,7 @@ export class RollingAverage {
 
     /**
      * Returns true if enough samples have been taken to completely fill the sliding window
-     * @return true if sample-set saturated
+     * @returns true if sample-set saturated
      */
     public isSaturated(): boolean {
         return this._sampleCount >= this._samples.length;
@@ -215,7 +215,7 @@ export class RollingAverage {
     /**
      * Wraps a value around the sample range boundaries
      * @param i Position in sample range, for example if the sample length is 5, and i is -3, then 2 will be returned.
-     * @return Wrapped position in sample range
+     * @returns Wrapped position in sample range
      */
     protected _wrapPosition(i: number): number {
         const max = this._samples.length;

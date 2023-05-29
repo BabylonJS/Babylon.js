@@ -19,7 +19,7 @@ uniform mat4 viewProjection;
 #endif
 
 // Output
-#if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR)
+#if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR) && defined(INSTANCES)
 varying vec4 vColor;
 #endif
 
@@ -47,11 +47,7 @@ void main(void) {
 
 #include<clipPlaneVertex>
 
-#ifdef VERTEXCOLOR
-	vColor = color;
-#elif INSTANCESCOLOR
-	vColor = instanceColor;
-#endif
+#include<vertexColorMixing>
 
 #define CUSTOM_VERTEX_MAIN_END
 }

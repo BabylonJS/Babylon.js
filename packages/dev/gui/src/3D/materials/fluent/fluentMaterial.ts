@@ -19,7 +19,7 @@ import { Color3, Color4 } from "core/Maths/math.color";
 import "./shaders/fluent.vertex";
 import "./shaders/fluent.fragment";
 
-/** @hidden */
+/** @internal */
 export class FluentMaterialDefines extends MaterialDefines {
     public INNERGLOW = false;
     public BORDER = false;
@@ -88,7 +88,7 @@ export class FluentMaterial extends PushMaterial {
     public renderHoverLight = false;
 
     /**
-     * Gets or sets the radius used to render the hover light (default is 1.0)
+     * Gets or sets the radius used to render the hover light (default is 0.01)
      */
     @serialize()
     public hoverRadius = 0.01;

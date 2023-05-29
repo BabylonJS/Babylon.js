@@ -6,13 +6,13 @@ import type { ICameraInput } from "../../Cameras/cameraInputsManager";
 import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import type { PointerInfo } from "../../Events/pointerEvents";
 import { PointerEventTypes } from "../../Events/pointerEvents";
-import { Tools } from "../../Misc/tools";
 import { Plane } from "../../Maths/math.plane";
 import { Vector3, Matrix, TmpVectors } from "../../Maths/math.vector";
 import { Epsilon } from "../../Maths/math.constants";
 import type { IWheelEvent } from "../../Events/deviceInputEvents";
 import { EventConstants } from "../../Events/deviceInputEvents";
 import { Scalar } from "../../Maths/math.scalar";
+import { Tools } from "../../Misc/tools";
 
 /**
  * Firefox uses a different scheme to report scroll distances to other
@@ -25,7 +25,7 @@ const ffMultiplier = 40;
 
 /**
  * Manage the mouse wheel inputs to control an arc rotate camera.
- * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
  */
 export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCamera> {
     /**
@@ -78,8 +78,6 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
     public attachControl(noPreventDefault?: boolean): void {
-        // was there a second variable defined?
-        // eslint-disable-next-line prefer-rest-params
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         this._wheel = (p) => {
             //sanity check - this should be a PointerWheel event.
@@ -88,18 +86,9 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
             }
             const event = <IWheelEvent>p.event;
             let delta = 0;
-
-            const mouseWheelLegacyEvent = event as any;
-            let wheelDelta = 0;
-
             const platformScale = event.deltaMode === EventConstants.DOM_DELTA_LINE ? ffMultiplier : 1; // If this happens to be set to DOM_DELTA_LINE, adjust accordingly
-            if (event.deltaY !== undefined) {
-                wheelDelta = -(event.deltaY * platformScale);
-            } else if ((<any>event).wheelDeltaY !== undefined) {
-                wheelDelta = -((<any>event).wheelDeltaY * platformScale);
-            } else {
-                wheelDelta = mouseWheelLegacyEvent.wheelDelta;
-            }
+
+            const wheelDelta = -(event.deltaY * platformScale);
 
             if (this.customComputeDeltaFromMouseWheel) {
                 delta = this.customComputeDeltaFromMouseWheel(wheelDelta, this, event);
@@ -125,7 +114,14 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
             }
 
             if (delta) {
-                if (this.zoomToMouseLocation && this._hitPlane) {
+                if (this.zoomToMouseLocation) {
+                    // If we are zooming to the mouse location, then we need to get the hit plane at the start of the zoom gesture if it doesn't exist
+                    // The hit plane is normally calculated after the first motion and each time there's motion so if we don't do this first,
+                    // the first zoom will be to the center of the screen
+                    if (!this._hitPlane) {
+                        this._updateHitPlane();
+                    }
+
                     this._zoomToMouse(delta);
                 } else {
                     this.camera.inertialRadiusOffset += delta;
@@ -139,7 +135,7 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
             }
         };
 
-        this._observer = this.camera.getScene().onPointerObservable.add(this._wheel, PointerEventTypes.POINTERWHEEL);
+        this._observer = this.camera.getScene()._inputManager._addCameraPointerObserver(this._wheel, PointerEventTypes.POINTERWHEEL);
 
         if (this.zoomToMouseLocation) {
             this._inertialPanning.setAll(0);
@@ -151,7 +147,7 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
      */
     public detachControl(): void {
         if (this._observer) {
-            this.camera.getScene().onPointerObservable.remove(this._observer);
+            this.camera.getScene()._inputManager._removeCameraPointerObserver(this._observer);
             this._observer = null;
             this._wheel = null;
         }
@@ -213,6 +209,9 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
         // we don't have to worry about this ray shooting off to infinity. This ray creates
         // a vector defining where we want to zoom to.
         const ray = scene.createPickingRay(scene.pointerX, scene.pointerY, Matrix.Identity(), camera, false);
+        // Since the camera is the origin of the picking ray, we need to offset it by the camera's offset manually
+        ray.origin.x -= camera.targetScreenOffset.x;
+        ray.origin.y -= camera.targetScreenOffset.y;
         let distance = 0;
         if (this._hitPlane) {
             distance = ray.intersectsPlane(this._hitPlane) ?? 0;

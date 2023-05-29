@@ -16,7 +16,7 @@ import { Animation } from "../../Animations/animation";
 
 /**
  * The framing behavior (FramingBehavior) is designed to automatically position an ArcRotateCamera when its target is set to a mesh. It is also useful if you want to prevent the camera to go under a virtual horizontal plane.
- * @see https://doc.babylonjs.com/how_to/camera_behaviors#framing-behavior
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/behaviors/cameraBehaviors#framing-behavior
  */
 export class FramingBehavior implements Behavior<ArcRotateCamera> {
     /**
@@ -388,7 +388,7 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
      * Calculates the lowest radius for the camera based on the bounding box of the mesh.
      * @param minimumWorld
      * @param maximumWorld
-     * @return The minimum distance from the primary mesh's center point at which the camera must be kept in order
+     * @returns The minimum distance from the primary mesh's center point at which the camera must be kept in order
      *		 to fully enclose the mesh in the viewing frustum.
      */
     protected _calculateLowerRadiusFromModelBoundingSphere(minimumWorld: Vector3, maximumWorld: Vector3): number {

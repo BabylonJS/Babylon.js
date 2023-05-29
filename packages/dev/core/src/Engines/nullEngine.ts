@@ -38,13 +38,13 @@ export class NullEngineOptions {
 
     /**
      * If delta time between frames should be constant
-     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#deterministic-lockstep
      */
     public deterministicLockstep = false;
 
     /**
      * Maximum about of steps between frames (Default: 4)
-     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#deterministic-lockstep
      */
     public lockstepMaxSteps = 4;
 
@@ -63,7 +63,7 @@ export class NullEngine extends Engine {
 
     /**
      * Gets a boolean indicating that the engine is running in deterministic lock step mode
-     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#deterministic-lockstep
      * @returns true if engine is in deterministic lock step mode
      */
     public isDeterministicLockStep(): boolean {
@@ -72,7 +72,7 @@ export class NullEngine extends Engine {
 
     /**
      * Gets the max steps when engine is running in deterministic lock step
-     * @see https://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#deterministic-lockstep
      * @returns the max steps
      */
     public getLockstepMaxSteps(): number {
@@ -138,6 +138,7 @@ export class NullEngine extends Engine {
             textureHalfFloatLinearFiltering: false,
             textureHalfFloatRender: false,
             textureLOD: false,
+            texelFetch: false,
             drawBuffersExtension: false,
             depthTextureExtension: false,
             vertexArrayObject: false,
@@ -152,6 +153,8 @@ export class NullEngine extends Engine {
             supportSRGBBuffers: false,
             supportTransformFeedbacks: false,
             textureMaxLevel: false,
+            texture2DArrayMaxLayerCount: 128,
+            disableMorphTargetTexture: false,
         };
 
         this._features = {
@@ -177,6 +180,7 @@ export class NullEngine extends Engine {
             needShaderCodeInlining: false,
             needToAlwaysBindUniformBuffers: false,
             supportRenderPasses: true,
+            supportSpriteInstancing: false,
             _collectUbosUpdatedInFrame: false,
         };
 
@@ -547,7 +551,7 @@ export class NullEngine extends Engine {
      * Sets the current alpha mode
      * @param mode defines the mode to use (one of the Engine.ALPHA_XXX)
      * @param noDepthWriteChange defines if depth writing state should remains unchanged (false by default)
-     * @see https://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/advanced/transparent_rendering
      */
     public setAlphaMode(mode: number, noDepthWriteChange: boolean = false): void {
         if (this._alphaMode === mode) {
@@ -622,14 +626,13 @@ export class NullEngine extends Engine {
      */
     public drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number): void {}
 
-    /** @hidden */
+    /** @internal */
     protected _createTexture(): WebGLTexture {
         return {};
     }
 
     /**
-     * @param texture
-     * @hidden
+     * @internal
      */
     public _releaseTexture(texture: InternalTexture): void {}
 
@@ -659,7 +662,7 @@ export class NullEngine extends Engine {
         invertY: boolean,
         scene: Nullable<ISceneLike>,
         samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
-        onLoad: Nullable<() => void> = null,
+        onLoad: Nullable<(texture: InternalTexture) => void> = null,
         onError: Nullable<(message: string, exception: any) => void> = null,
         buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null,
         fallback: Nullable<InternalTexture> = null,
@@ -685,7 +688,9 @@ export class NullEngine extends Engine {
         texture.isReady = true;
 
         if (onLoad) {
-            onLoad();
+            setTimeout(() => {
+                onLoad(texture);
+            });
         }
 
         this._internalTexturesCache.push(texture);
@@ -694,10 +699,7 @@ export class NullEngine extends Engine {
     }
 
     /**
-     * @param isMulti
-     * @param isCube
-     * @param size
-     * @hidden
+     * @internal
      */
     public _createHardwareRenderTargetWrapper(isMulti: boolean, isCube: boolean, size: number | { width: number; height: number; layers?: number }): RenderTargetWrapper {
         const rtWrapper = new RenderTargetWrapper(isMulti, isCube, size, this);
@@ -753,6 +755,54 @@ export class NullEngine extends Engine {
     }
 
     /**
+     * Creates a new render target wrapper
+     * @param size defines the size of the texture
+     * @param options defines the options used to create the texture
+     * @returns a new render target wrapper
+     */
+    public createRenderTargetCubeTexture(size: number, options?: RenderTargetCreationOptions): RenderTargetWrapper {
+        const rtWrapper = this._createHardwareRenderTargetWrapper(false, true, size);
+
+        const fullOptions = {
+            generateMipMaps: true,
+            generateDepthBuffer: true,
+            generateStencilBuffer: false,
+            type: Constants.TEXTURETYPE_UNSIGNED_INT,
+            samplingMode: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+            format: Constants.TEXTUREFORMAT_RGBA,
+            ...options,
+        };
+        fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && fullOptions.generateStencilBuffer;
+
+        if (fullOptions.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+            // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
+            fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        } else if (fullOptions.type === Constants.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+            // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
+            fullOptions.samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        }
+
+        rtWrapper._generateDepthBuffer = fullOptions.generateDepthBuffer;
+        rtWrapper._generateStencilBuffer = fullOptions.generateStencilBuffer ? true : false;
+
+        const texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
+        texture.baseWidth = size;
+        texture.baseHeight = size;
+        texture.width = size;
+        texture.height = size;
+        texture.isReady = true;
+        texture.isCube = true;
+        texture.samples = 1;
+        texture.generateMipMaps = fullOptions.generateMipMaps ? true : false;
+        texture.samplingMode = fullOptions.samplingMode;
+        texture.type = fullOptions.type;
+
+        this._internalTexturesCache.push(texture);
+
+        return rtWrapper;
+    }
+
+    /**
      * Update the sampling mode of a given texture
      * @param samplingMode defines the required sampling mode
      * @param texture defines the texture to update
@@ -773,6 +823,7 @@ export class NullEngine extends Engine {
      * @param compression defines the compression used (null by default)
      * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
+     * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
      * @returns the raw texture inside an InternalTexture
      */
     public createRawTexture(
@@ -785,7 +836,8 @@ export class NullEngine extends Engine {
         samplingMode: number,
         compression: Nullable<string> = null,
         type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
-        creationFlags = 0
+        creationFlags = 0,
+        useSRGBBuffer = false
     ): InternalTexture {
         const texture = new InternalTexture(this, InternalTextureSource.Raw);
         texture.baseWidth = width;
@@ -798,6 +850,7 @@ export class NullEngine extends Engine {
         texture.invertY = invertY;
         texture._compression = compression;
         texture.type = type;
+        texture._useSRGBBuffer = useSRGBBuffer;
 
         if (!this._doNotHandleContextLost) {
             texture._bufferView = data;
@@ -814,6 +867,7 @@ export class NullEngine extends Engine {
      * @param invertY defines if data must be stored with Y axis inverted
      * @param compression defines the compression used (null by default)
      * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+     * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
      */
     public updateRawTexture(
         texture: Nullable<InternalTexture>,
@@ -821,7 +875,8 @@ export class NullEngine extends Engine {
         format: number,
         invertY: boolean,
         compression: Nullable<string> = null,
-        type: number = Constants.TEXTURETYPE_UNSIGNED_INT
+        type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+        useSRGBBuffer: boolean = false
     ): void {
         if (texture) {
             texture._bufferView = data;
@@ -829,6 +884,7 @@ export class NullEngine extends Engine {
             texture.invertY = invertY;
             texture._compression = compression;
             texture.type = type;
+            texture._useSRGBBuffer = useSRGBBuffer;
         }
     }
 
@@ -897,7 +953,7 @@ export class NullEngine extends Engine {
     }
 
     /**
-     * @hidden
+     * @internal
      * Get the current error code of the webGL context
      * @returns the error code
      * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getError
@@ -906,14 +962,13 @@ export class NullEngine extends Engine {
         return 0;
     }
 
-    /** @hidden */
+    /** @internal */
     public _getUnpackAlignement(): number {
         return 1;
     }
 
     /**
-     * @param value
-     * @hidden
+     * @internal
      */
     public _unpackFlipY(value: boolean) {}
 
@@ -935,9 +990,7 @@ export class NullEngine extends Engine {
     public updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, vertices: FloatArray, byteOffset?: number, byteLength?: number): void {}
 
     /**
-     * @param target
-     * @param texture
-     * @hidden
+     * @internal
      */
     public _bindTextureDirectly(target: number, texture: InternalTexture): boolean {
         if (this._boundTexturesCache[this._activeChannel] !== texture) {
@@ -948,9 +1001,7 @@ export class NullEngine extends Engine {
     }
 
     /**
-     * @param channel
-     * @param texture
-     * @hidden
+     * @internal
      */
     public _bindTexture(channel: number, texture: InternalTexture): void {
         if (channel < 0) {
@@ -974,14 +1025,7 @@ export class NullEngine extends Engine {
     public set loadingUIText(_: string) {}
 
     /**
-     * @param texture
-     * @param internalFormat
-     * @param width
-     * @param height
-     * @param data
-     * @param faceIndex
-     * @param lod
-     * @hidden
+     * @internal
      */
     public _uploadCompressedDataToTextureDirectly(
         texture: InternalTexture,
@@ -994,29 +1038,17 @@ export class NullEngine extends Engine {
     ) {}
 
     /**
-     * @param texture
-     * @param imageData
-     * @param faceIndex
-     * @param lod
-     * @hidden
+     * @internal
      */
     public _uploadDataToTextureDirectly(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0): void {}
 
     /**
-     * @param texture
-     * @param imageData
-     * @param faceIndex
-     * @param lod
-     * @hidden
+     * @internal
      */
     public _uploadArrayBufferViewToTexture(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0): void {}
 
     /**
-     * @param texture
-     * @param image
-     * @param faceIndex
-     * @param lod
-     * @hidden
+     * @internal
      */
     public _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement, faceIndex: number = 0, lod: number = 0) {}
 }

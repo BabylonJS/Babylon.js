@@ -15,7 +15,7 @@ Node.AddNodeConstructor("Light_Type_0", (name, scene) => {
  * A point light is a light defined by an unique point in world space.
  * The light is emitted in every direction from this point.
  * A good example of a point light is a standard light bulb.
- * Documentation: https://doc.babylonjs.com/babylon101/lights
+ * Documentation: https://doc.babylonjs.com/features/featuresDeepDive/lights/lights_introduction
  */
 export class PointLight extends ShadowLight {
     private _shadowAngle = Math.PI / 2;
@@ -54,8 +54,12 @@ export class PointLight extends ShadowLight {
     public set direction(value: Vector3) {
         const previousNeedCube = this.needCube();
         this._direction = value;
-        if (this.needCube() !== previousNeedCube && this._shadowGenerator) {
-            this._shadowGenerator.recreateShadowMap();
+        if (this.needCube() !== previousNeedCube && this._shadowGenerators) {
+            const iterator = this._shadowGenerators.values();
+            for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
+                const shadowGenerator = key.value;
+                shadowGenerator.recreateShadowMap();
+            }
         }
     }
 
@@ -67,7 +71,7 @@ export class PointLight extends ShadowLight {
      * ```javascript
      * var pointLight = new PointLight("pl", camera.position, scene);
      * ```
-     * Documentation : https://doc.babylonjs.com/babylon101/lights
+     * Documentation : https://doc.babylonjs.com/features/featuresDeepDive/lights/lights_introduction
      * @param name The light friendly name
      * @param position The position of the point light in the scene
      * @param scene The scene the lights belongs to

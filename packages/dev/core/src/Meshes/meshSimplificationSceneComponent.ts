@@ -7,12 +7,12 @@ import { SceneComponentConstants } from "../sceneComponent";
 
 declare module "../scene" {
     export interface Scene {
-        /** @hidden (Backing field) */
+        /** @internal (Backing field) */
         _simplificationQueue: SimplificationQueue;
 
         /**
          * Gets or sets the simplification queue attached to the scene
-         * @see https://doc.babylonjs.com/how_to/in-browser_mesh_simplification
+         * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/simplifyingMeshes
          */
         simplificationQueue: SimplificationQueue;
     }

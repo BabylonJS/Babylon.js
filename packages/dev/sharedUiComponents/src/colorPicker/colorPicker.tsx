@@ -2,6 +2,7 @@ import * as React from "react";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { ColorComponentEntry } from "./colorComponentEntry";
 import { HexColor } from "./hexColor";
+import type { LockObject } from "../tabs/propertyGrids/lockObject";
 
 import "./colorPicker.scss";
 
@@ -13,6 +14,7 @@ export interface IColorPickerProps {
     linearhint?: boolean;
     debugMode?: boolean;
     onColorChanged?: (color: Color3 | Color4) => void;
+    lockObject: LockObject;
 }
 
 /**
@@ -140,7 +142,9 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
     }
 
     public render() {
-        const colorHex = this.state.color.toHexString();
+        const color4 = Color4.FromColor3(this.state.color);
+        color4.a = this.state.alpha;
+        const colorHex = color4.toHexString();
         const hsv = this.state.color.toHSV();
         const colorRef = new Color3();
         Color3.HSVtoRGBToRef(hsv.r, 1, 1, colorRef);
@@ -196,6 +200,7 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
                 <div className="color-picker-rgb">
                     <div className="red">
                         <ColorComponentEntry
+                            lockObject={this.props.lockObject}
                             label="R"
                             min={0}
                             max={255}
@@ -208,6 +213,7 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
                     </div>
                     <div className="green">
                         <ColorComponentEntry
+                            lockObject={this.props.lockObject}
                             label="G"
                             min={0}
                             max={255}
@@ -220,6 +226,7 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
                     </div>
                     <div className="blue">
                         <ColorComponentEntry
+                            lockObject={this.props.lockObject}
                             label="B"
                             min={0}
                             max={255}
@@ -232,6 +239,7 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
                     </div>
                     <div className={"alpha" + (hasAlpha ? "" : " grayed")}>
                         <ColorComponentEntry
+                            lockObject={this.props.lockObject}
                             label="A"
                             min={0}
                             max={255}
@@ -247,6 +255,7 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
                     <div className="color-picker-hex-label">Hex</div>
                     <div className="color-picker-hex-value">
                         <HexColor
+                            lockObject={this.props.lockObject}
                             expectedLength={hasAlpha ? 8 : 6}
                             value={colorHex}
                             onChange={(value) => {

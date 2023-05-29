@@ -7,9 +7,7 @@ import { Logger } from "../../Misc/logger";
 import { Viewport } from "../../Maths/math.viewport";
 
 /**
- * @param camera
- * @param rigParams
- * @hidden
+ * @internal
  */
 export function setVRRigMode(camera: Camera, rigParams: any) {
     const metrics = <VRCameraMetrics>rigParams.vrCameraMetrics || VRCameraMetrics.GetDefault();

@@ -54,13 +54,13 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
         }
 
         return (
-            <div className="pane">
+            <>
                 <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={grid} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent title="GRID">
                     {this.renderRows()}
                     {this.renderColumns()}
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

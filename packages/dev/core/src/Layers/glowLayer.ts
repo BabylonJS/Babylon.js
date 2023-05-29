@@ -29,16 +29,16 @@ import "../Layers/effectLayerSceneComponent";
 declare module "../abstractScene" {
     export interface AbstractScene {
         /**
-         * Return a the first highlight layer of the scene with a given name.
-         * @param name The name of the highlight layer to look for.
-         * @return The highlight layer if found otherwise null.
+         * Return the first glow layer of the scene with a given name.
+         * @param name The name of the glow layer to look for.
+         * @returns The glow layer if found otherwise null.
          */
         getGlowLayerByName(name: string): Nullable<GlowLayer>;
     }
 }
 
 AbstractScene.prototype.getGlowLayerByName = function (name: string): Nullable<GlowLayer> {
-    for (let index = 0; index < this.effectLayers.length; index++) {
+    for (let index = 0; index < this.effectLayers?.length; index++) {
         if (this.effectLayers[index].name === name && this.effectLayers[index].getEffectName() === GlowLayer.EffectName) {
             return (<any>this.effectLayers[index]) as GlowLayer;
         }
@@ -54,44 +54,49 @@ AbstractScene.prototype.getGlowLayerByName = function (name: string): Nullable<G
 export interface IGlowLayerOptions {
     /**
      * Multiplication factor apply to the canvas size to compute the render target size
-     * used to generated the glowing objects (the smaller the faster).
+     * used to generated the glowing objects (the smaller the faster). Default: 0.5
      */
     mainTextureRatio: number;
 
     /**
-     * Enforces a fixed size texture to ensure resize independent blur.
+     * Enforces a fixed size texture to ensure resize independent blur. Default: undefined
      */
     mainTextureFixedSize?: number;
 
     /**
-     * How big is the kernel of the blur texture.
+     * How big is the kernel of the blur texture. Default: 32
      */
     blurKernelSize: number;
 
     /**
-     * The camera attached to the layer.
+     * The camera attached to the layer. Default: null
      */
     camera: Nullable<Camera>;
 
     /**
-     * Enable MSAA by choosing the number of samples.
+     * Enable MSAA by choosing the number of samples. Default: 1
      */
     mainTextureSamples?: number;
 
     /**
-     * The rendering group to draw the layer in.
+     * The rendering group to draw the layer in. Default: -1
      */
     renderingGroupId: number;
 
     /**
-     * Forces the merge step to be done in ldr (clamp values > 1)
+     * Forces the merge step to be done in ldr (clamp values > 1). Default: false
      */
     ldrMerge?: boolean;
 
     /**
-     * Defines the blend mode used by the merge
+     * Defines the blend mode used by the merge. Default: ALPHA_ADD
      */
     alphaBlendingMode?: number;
+
+    /**
+     * The type of the main texture. Default: TEXTURETYPE_UNSIGNED_INT
+     */
+    mainTextureType: number;
 }
 
 /**
@@ -99,7 +104,7 @@ export interface IGlowLayerOptions {
  *
  * Once instantiated in a scene, by default, all the emissive meshes will glow.
  *
- * Documentation: https://doc.babylonjs.com/how_to/glow_layer
+ * Documentation: https://doc.babylonjs.com/features/featuresDeepDive/mesh/glowLayer
  */
 export class GlowLayer extends EffectLayer {
     /**
@@ -121,10 +126,17 @@ export class GlowLayer extends EffectLayer {
      * Sets the kernel size of the blur.
      */
     public set blurKernelSize(value: number) {
-        this._horizontalBlurPostprocess1.kernel = value;
-        this._verticalBlurPostprocess1.kernel = value;
-        this._horizontalBlurPostprocess2.kernel = value;
-        this._verticalBlurPostprocess2.kernel = value;
+        if (value === this._options.blurKernelSize) {
+            return;
+        }
+
+        this._options.blurKernelSize = value;
+
+        const effectiveKernel = this._getEffectiveBlurKernelSize();
+        this._horizontalBlurPostprocess1.kernel = effectiveKernel;
+        this._verticalBlurPostprocess1.kernel = effectiveKernel;
+        this._horizontalBlurPostprocess2.kernel = effectiveKernel;
+        this._verticalBlurPostprocess2.kernel = effectiveKernel;
     }
 
     /**
@@ -132,7 +144,7 @@ export class GlowLayer extends EffectLayer {
      */
     @serialize()
     public get blurKernelSize(): number {
-        return this._horizontalBlurPostprocess1.kernel;
+        return this._options.blurKernelSize;
     }
 
     /**
@@ -196,6 +208,7 @@ export class GlowLayer extends EffectLayer {
             renderingGroupId: -1,
             ldrMerge: false,
             alphaBlendingMode: Constants.ALPHA_ADD,
+            mainTextureType: Constants.TEXTURETYPE_UNSIGNED_INT,
             ...options,
         };
 
@@ -206,12 +219,13 @@ export class GlowLayer extends EffectLayer {
             mainTextureFixedSize: this._options.mainTextureFixedSize,
             mainTextureRatio: this._options.mainTextureRatio,
             renderingGroupId: this._options.renderingGroupId,
+            mainTextureType: this._options.mainTextureType,
         });
     }
 
     /**
      * Get the effect name of the layer.
-     * @return The effect name
+     * @returns The effect name
      */
     public getEffectName(): string {
         return GlowLayer.EffectName;
@@ -286,10 +300,11 @@ export class GlowLayer extends EffectLayer {
 
         this._textures = [this._blurTexture1, this._blurTexture2];
 
+        const effectiveKernel = this._getEffectiveBlurKernelSize();
         this._horizontalBlurPostprocess1 = new BlurPostProcess(
             "GlowLayerHBP1",
             new Vector2(1.0, 0),
-            this._options.blurKernelSize / 2,
+            effectiveKernel,
             {
                 width: blurTextureWidth,
                 height: blurTextureHeight,
@@ -310,7 +325,7 @@ export class GlowLayer extends EffectLayer {
         this._verticalBlurPostprocess1 = new BlurPostProcess(
             "GlowLayerVBP1",
             new Vector2(0, 1.0),
-            this._options.blurKernelSize / 2,
+            effectiveKernel,
             {
                 width: blurTextureWidth,
                 height: blurTextureHeight,
@@ -325,7 +340,7 @@ export class GlowLayer extends EffectLayer {
         this._horizontalBlurPostprocess2 = new BlurPostProcess(
             "GlowLayerHBP2",
             new Vector2(1.0, 0),
-            this._options.blurKernelSize / 2,
+            effectiveKernel,
             {
                 width: blurTextureWidth2,
                 height: blurTextureHeight2,
@@ -346,7 +361,7 @@ export class GlowLayer extends EffectLayer {
         this._verticalBlurPostprocess2 = new BlurPostProcess(
             "GlowLayerVBP2",
             new Vector2(0, 1.0),
-            this._options.blurKernelSize / 2,
+            effectiveKernel,
             {
                 width: blurTextureWidth2,
                 height: blurTextureHeight2,
@@ -383,10 +398,18 @@ export class GlowLayer extends EffectLayer {
     }
 
     /**
+     * @returns The blur kernel size used by the glow.
+     * Note: The value passed in the options is divided by 2 for back compatibility.
+     */
+    private _getEffectiveBlurKernelSize() {
+        return this._options.blurKernelSize / 2;
+    }
+
+    /**
      * Checks for the readiness of the element composing the layer.
      * @param subMesh the mesh to check for
      * @param useInstances specify whether or not to use instances to render the mesh
-     * @return true if ready otherwise, false
+     * @returns true if ready otherwise, false
      */
     public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
         const material = subMesh.getMaterial();
@@ -604,7 +627,7 @@ export class GlowLayer extends EffectLayer {
      * Free any resources and references associated to a mesh.
      * Internal use
      * @param mesh The mesh to free.
-     * @hidden
+     * @internal
      */
     public _disposeMesh(mesh: Mesh): void {
         this.removeIncludedOnlyMesh(mesh);

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 import type { Nullable } from "core/types";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
@@ -23,8 +22,9 @@ interface IExtensionMetadata {
 }
 
 /**
- * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_materials_variants/README.md)
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_variants/README.md)
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_materials_variants implements IGLTFLoaderExtension {
     /**
      * The name of this extension.
@@ -41,15 +41,14 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
     private _variants?: Array<IKHRMaterialVariants_Variant>;
 
     /**
-     * @param loader
-     * @hidden
+     * @internal
      */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
         this.enabled = this._loader.isExtensionUsed(NAME);
     }
 
-    /** @hidden */
+    /** @internal */
     public dispose() {
         (this._loader as any) = null;
     }
@@ -166,10 +165,10 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
     }
 
     private static _GetExtensionMetadata(rootMesh: Nullable<Mesh>): Nullable<IExtensionMetadata> {
-        return rootMesh?.metadata?.gltf?.[NAME] || null;
+        return rootMesh?._internalMetadata?.gltf?.[NAME] || null;
     }
 
-    /** @hidden */
+    /** @internal */
     public onLoading(): void {
         const extensions = this._loader.gltf.extensions;
         if (extensions && extensions[this.name]) {
@@ -179,13 +178,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
     }
 
     /**
-     * @param context
-     * @param name
-     * @param node
-     * @param mesh
-     * @param primitive
-     * @param assign
-     * @hidden
+     * @internal
      */
     public _loadMeshPrimitiveAsync(
         context: string,
@@ -205,7 +198,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
                         const babylonDrawMode = GLTFLoader._GetDrawMode(context, primitive.mode);
 
                         const root = this._loader.rootBabylonMesh;
-                        const metadata = root ? (root.metadata = root.metadata || {}) : {};
+                        const metadata = root ? (root._internalMetadata = root._internalMetadata || {}) : {};
                         const gltf = (metadata.gltf = metadata.gltf || {});
                         const extensionMetadata: IExtensionMetadata = (gltf[NAME] = gltf[NAME] || { lastSelected: null, original: [], variants: {} });
 
@@ -245,30 +238,30 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
                                             // Need to clone the metadata on the root (first time only)
                                             if (root && metadata === KHR_materials_variants._GetExtensionMetadata(root)) {
                                                 // Copy main metadata
-                                                newRoot.metadata = {};
-                                                for (const key in root.metadata) {
-                                                    newRoot.metadata[key] = root.metadata[key];
+                                                newRoot._internalMetadata = {};
+                                                for (const key in root._internalMetadata) {
+                                                    newRoot._internalMetadata[key] = root._internalMetadata[key];
                                                 }
 
                                                 // Copy the gltf metadata
-                                                newRoot.metadata.gltf = [];
-                                                for (const key in root.metadata.gltf) {
-                                                    newRoot.metadata.gltf[key] = root.metadata.gltf[key];
+                                                newRoot._internalMetadata.gltf = [];
+                                                for (const key in root._internalMetadata.gltf) {
+                                                    newRoot._internalMetadata.gltf[key] = root._internalMetadata.gltf[key];
                                                 }
 
                                                 // Duplicate the extension specific metadata
-                                                newRoot.metadata.gltf[NAME] = { lastSelected: null, original: [], variants: {} };
+                                                newRoot._internalMetadata.gltf[NAME] = { lastSelected: null, original: [], variants: {} };
                                                 for (const original of metadata.original) {
-                                                    newRoot.metadata.gltf[NAME].original.push({
+                                                    newRoot._internalMetadata.gltf[NAME].original.push({
                                                         mesh: original.mesh,
                                                         material: original.material,
                                                     });
                                                 }
                                                 for (const key in metadata.variants) {
                                                     if (Object.prototype.hasOwnProperty.call(metadata.variants, key)) {
-                                                        newRoot.metadata.gltf[NAME].variants[key] = [];
+                                                        newRoot._internalMetadata.gltf[NAME].variants[key] = [];
                                                         for (const variantEntry of metadata.variants[key]) {
-                                                            newRoot.metadata.gltf[NAME].variants[key].push({
+                                                            newRoot._internalMetadata.gltf[NAME].variants[key].push({
                                                                 mesh: variantEntry.mesh,
                                                                 material: variantEntry.material,
                                                             });
@@ -276,7 +269,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
                                                     }
                                                 }
 
-                                                metadata = newRoot.metadata.gltf[NAME];
+                                                metadata = newRoot._internalMetadata.gltf[NAME];
                                             }
 
                                             // Relocate

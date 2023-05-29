@@ -14,11 +14,11 @@ import type { Nullable } from "../../types";
  * Note : This is an internal class, and you should NOT need to instanciate this.
  * Only the `PrePassRenderer` should instanciate this class.
  * It is more likely that you need a regular `MultiRenderTarget`
- * @hidden
+ * @internal
  */
 export class PrePassRenderTarget extends MultiRenderTarget {
     /**
-     * @hidden
+     * @internal
      */
     public _beforeCompositionPostProcesses: PostProcess[] = [];
     /**
@@ -27,22 +27,22 @@ export class PrePassRenderTarget extends MultiRenderTarget {
     public imageProcessingPostProcess: ImageProcessingPostProcess;
 
     /**
-     * @hidden
+     * @internal
      */
     public _engine: Engine;
 
     /**
-     * @hidden
+     * @internal
      */
     public _scene: Scene;
 
     /**
-     * @hidden
+     * @internal
      */
     public _outputPostProcess: Nullable<PostProcess>;
 
     /**
-     * @hidden
+     * @internal
      */
     public _internalTextureDirty = false;
 
@@ -65,7 +65,7 @@ export class PrePassRenderTarget extends MultiRenderTarget {
 
     /**
      * Creates a composition effect for this RT
-     * @hidden
+     * @internal
      */
     public _createCompositionEffect() {
         this.imageProcessingPostProcess = new ImageProcessingPostProcess("prePassComposition", 1, null, undefined, this._engine);
@@ -74,7 +74,7 @@ export class PrePassRenderTarget extends MultiRenderTarget {
 
     /**
      * Checks that the size of this RT is still adapted to the desired render size.
-     * @hidden
+     * @internal
      */
     public _checkSize() {
         const requiredWidth = this._engine.getRenderWidth(true);
@@ -104,10 +104,10 @@ export class PrePassRenderTarget extends MultiRenderTarget {
 
     /**
      * Resets the post processes chains applied to this RT.
-     * @hidden
+     * @internal
      */
     public _resetPostProcessChain() {
-        this._beforeCompositionPostProcesses = [];
+        this._beforeCompositionPostProcesses.length = 0;
     }
 
     /**

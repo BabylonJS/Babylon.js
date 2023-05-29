@@ -3,6 +3,7 @@ dist
 .tempChromeCanaryProfileForDebug
 .tempChromeProfileForDebug
 node_modules
+.idea
 .tsbuildinfo
 .snapshot
 generated
@@ -22,3 +23,4 @@ junit.xml
 *.pem
 packages/tools/babylonServer/public/localDev
 packages/tools/babylonServer/public/localDevWebGPU
+packages/tools/playground/public/temp

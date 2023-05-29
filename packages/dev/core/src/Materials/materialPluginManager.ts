@@ -17,6 +17,8 @@ import type {
     MaterialPluginFillRenderTargetTextures,
 } from "./materialPluginEvent";
 import { MaterialPluginEvent } from "./materialPluginEvent";
+import type { Observer } from "core/Misc/observable";
+import { EngineStore } from "../Engines/engineStore";
 
 declare type Scene = import("../scene").Scene;
 declare type Engine = import("../Engines/engine").Engine;
@@ -31,11 +33,17 @@ declare module "./material" {
     }
 }
 
+const rxOption = new RegExp("^([gimus]+)!");
+
 /**
  * Class that manages the plugins of a material
  * @since 5.0
  */
 export class MaterialPluginManager {
+    /** Map a plugin class name to a #define name (used in the vertex/fragment shaders as a marker of the plugin usage) */
+    private static _MaterialPluginClassToMainDefine: { [name: string]: string } = {};
+    private static _MaterialPluginCounter: number = 0;
+
     protected _material: Material;
     protected _scene: Scene;
     protected _engine: Engine;
@@ -51,6 +59,12 @@ export class MaterialPluginManager {
     protected _samplerList: string[];
     protected _uboList: string[];
 
+    static {
+        EngineStore.OnEnginesDisposedObservable.add(() => {
+            UnregisterAllMaterialPlugins();
+        });
+    }
+
     /**
      * Creates a new instance of the plugin manager
      * @param material material that this manager will manage the plugins for
@@ -62,8 +76,7 @@ export class MaterialPluginManager {
     }
 
     /**
-     * @param plugin
-     * @hidden
+     * @internal
      */
     public _addPlugin(plugin: MaterialPluginBase): void {
         for (let i = 0; i < this._plugins.length; ++i) {
@@ -76,6 +89,11 @@ export class MaterialPluginManager {
             throw `The plugin "${plugin.name}" can't be added to the material "${this._material.name}" because this material has already been used for rendering! Please add plugins to materials before any rendering with this material occurs.`;
         }
 
+        const pluginClassName = plugin.getClassName();
+        if (!MaterialPluginManager._MaterialPluginClassToMainDefine[pluginClassName]) {
+            MaterialPluginManager._MaterialPluginClassToMainDefine[pluginClassName] = "MATERIALPLUGIN_" + ++MaterialPluginManager._MaterialPluginCounter;
+        }
+
         this._material._callbackPluginEventGeneric = this._handlePluginEvent.bind(this);
 
         this._plugins.push(plugin);
@@ -83,23 +101,23 @@ export class MaterialPluginManager {
 
         this._codeInjectionPoints = {};
 
-        const defineNamesFromPlugins = {};
+        const defineNamesFromPlugins: { [name: string]: { type: string; default: any } } = {};
+        defineNamesFromPlugins[MaterialPluginManager._MaterialPluginClassToMainDefine[pluginClassName]] = {
+            type: "boolean",
+            default: true,
+        };
+
         for (const plugin of this._plugins) {
             plugin.collectDefines(defineNamesFromPlugins);
             this._collectPointNames("vertex", plugin.getCustomCode("vertex"));
             this._collectPointNames("fragment", plugin.getCustomCode("fragment"));
         }
 
-        if (Object.keys(defineNamesFromPlugins).length > 0) {
-            this._defineNamesFromPlugins = defineNamesFromPlugins;
-        } else {
-            delete this._defineNamesFromPlugins;
-        }
+        this._defineNamesFromPlugins = defineNamesFromPlugins;
     }
 
     /**
-     * @param plugin
-     * @hidden
+     * @internal
      */
     public _activatePlugin(plugin: MaterialPluginBase): void {
         if (this._activePlugins.indexOf(plugin) === -1) {
@@ -107,6 +125,7 @@ export class MaterialPluginManager {
             this._activePlugins.sort((a, b) => a.priority - b.priority);
 
             this._material._callbackPluginEventIsReadyForSubMesh = this._handlePluginEventIsReadyForSubMesh.bind(this);
+            this._material._callbackPluginEventPrepareDefinesBeforeAttributes = this._handlePluginEventPrepareDefinesBeforeAttributes.bind(this);
             this._material._callbackPluginEventPrepareDefines = this._handlePluginEventPrepareDefines.bind(this);
             this._material._callbackPluginEventBindForSubMesh = this._handlePluginEventBindForSubMesh.bind(this);
 
@@ -140,6 +159,12 @@ export class MaterialPluginManager {
             isReady = isReady && plugin.isReadyForSubMesh(eventData.defines, this._scene, this._engine, eventData.subMesh);
         }
         eventData.isReadyForSubMesh = isReady;
+    }
+
+    protected _handlePluginEventPrepareDefinesBeforeAttributes(eventData: MaterialPluginPrepareDefines): void {
+        for (const plugin of this._activePlugins) {
+            plugin.prepareDefinesBeforeAttributes(eventData.defines, this._scene, eventData.mesh);
+        }
     }
 
     protected _handlePluginEventPrepareDefines(eventData: MaterialPluginPrepareDefines): void {
@@ -236,6 +261,7 @@ export class MaterialPluginManager {
                 const eventData = info as MaterialPluginPrepareEffect;
                 for (const plugin of this._activePlugins) {
                     eventData.fallbackRank = plugin.addFallbacks(eventData.defines, eventData.fallbacks, eventData.fallbackRank);
+                    plugin.getAttributes(eventData.attributes, this._scene, eventData.mesh);
                 }
                 if (this._uniformList.length > 0) {
                     eventData.uniforms.push(...this._uniformList);
@@ -263,8 +289,11 @@ export class MaterialPluginManager {
                     if (uniforms) {
                         if (uniforms.ubo) {
                             for (const uniform of uniforms.ubo) {
-                                eventData.ubo.addUniform(uniform.name, uniform.size);
-                                this._uboDeclaration += `${uniform.type} ${uniform.name};\r\n`;
+                                if (uniform.size && uniform.type) {
+                                    const arraySize = uniform.arraySize ?? 0;
+                                    eventData.ubo.addUniform(uniform.name, uniform.size, arraySize);
+                                    this._uboDeclaration += `${uniform.type} ${uniform.name}${arraySize > 0 ? `[${arraySize}]` : ""};\r\n`;
+                                }
                                 this._uniformList.push(uniform.name);
                             }
                         }
@@ -313,7 +342,7 @@ export class MaterialPluginManager {
             if (!points) {
                 return code;
             }
-            for (const pointName in points) {
+            for (let pointName in points) {
                 let injectedCode = "";
                 for (const plugin of this._activePlugins) {
                     const customCode = plugin.getCustomCode(shaderType);
@@ -324,11 +353,37 @@ export class MaterialPluginManager {
                 if (injectedCode.length > 0) {
                     if (pointName.charAt(0) === "!") {
                         // pointName is a regular expression
-                        const rx = new RegExp(pointName.substring(1), "g");
-                        let match = rx.exec(code);
+                        pointName = pointName.substring(1);
+
+                        let regexFlags = "g";
+                        if (pointName.charAt(0) === "!") {
+                            // no flags
+                            regexFlags = "";
+                            pointName = pointName.substring(1);
+                        } else {
+                            // get the flag(s)
+                            const matchOption = rxOption.exec(pointName);
+                            if (matchOption && matchOption.length >= 2) {
+                                regexFlags = matchOption[1];
+                                pointName = pointName.substring(regexFlags.length + 1);
+                            }
+                        }
+
+                        if (regexFlags.indexOf("g") < 0) {
+                            // we force the "g" flag so that the regexp object is stateful!
+                            regexFlags += "g";
+                        }
+
+                        const sourceCode = code;
+                        const rx = new RegExp(pointName, regexFlags);
+                        let match = rx.exec(sourceCode);
                         while (match !== null) {
-                            code = code.replace(match[0], injectedCode);
-                            match = rx.exec(code);
+                            let newCode = injectedCode;
+                            for (let i = 0; i < match.length; ++i) {
+                                newCode = newCode.replace("$" + i, match[i]);
+                            }
+                            code = code.replace(match[0], newCode);
+                            match = rx.exec(sourceCode);
                         }
                     } else {
                         const fullPointName = "#define " + pointName;
@@ -348,6 +403,7 @@ export type PluginMaterialFactory = (material: Material) => Nullable<MaterialPlu
 
 const plugins: Array<[string, PluginMaterialFactory]> = [];
 let inited = false;
+let observer: Nullable<Observer<Material>> = null;
 
 /**
  * Registers a new material plugin through a factory, or updates it. This makes the plugin available to all materials instantiated after its registration.
@@ -357,7 +413,7 @@ let inited = false;
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function RegisterMaterialPlugin(pluginName: string, factory: PluginMaterialFactory): void {
     if (!inited) {
-        Material.OnEventObservable.add((material: Material) => {
+        observer = Material.OnEventObservable.add((material: Material) => {
             for (const [, factory] of plugins) {
                 factory(material);
             }
@@ -382,6 +438,9 @@ export function UnregisterMaterialPlugin(pluginName: string): boolean {
     for (let i = 0; i < plugins.length; ++i) {
         if (plugins[i][0] === pluginName) {
             plugins.splice(i, 1);
+            if (plugins.length === 0) {
+                UnregisterAllMaterialPlugins();
+            }
             return true;
         }
     }
@@ -394,4 +453,7 @@ export function UnregisterMaterialPlugin(pluginName: string): boolean {
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function UnregisterAllMaterialPlugins(): void {
     plugins.length = 0;
+    inited = false;
+    Material.OnEventObservable.remove(observer);
+    observer = null;
 }

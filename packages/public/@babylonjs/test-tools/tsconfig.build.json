@@ -1,0 +1,13 @@
+{
+    "extends": "../../../../tsconfig.build.json",
+
+    "compilerOptions": {
+        "outDir": "./dist",
+        "rootDir": "./src",
+        "declaration": true,
+        "target": "es5",
+        "importHelpers": true,
+    },
+
+    "include": ["./src/**/*"]
+}

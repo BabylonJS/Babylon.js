@@ -75,5 +75,10 @@
         &:focus {
             outline: none;
         }
+
+        &:disabled {
+            background: #444444;
+            border: #555555 solid 1px;
+        }
     }
 }

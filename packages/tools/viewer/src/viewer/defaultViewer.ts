@@ -51,9 +51,6 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
             this.sceneManager.onLightsConfiguredObservable.add(() => {
                 this._configureLights();
             });
-        });
-
-        this.onInitDoneObservable.add(() => {
             this.sceneManager.setDefaultMaterial = function (sceneConfig: ISceneConfiguration) {
                 const conf = sceneConfig.defaultMaterial;
                 if (!conf) {

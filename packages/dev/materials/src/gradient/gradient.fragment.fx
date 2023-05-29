@@ -93,7 +93,7 @@ void main(void) {
     
 #include<lightFragment>[0..maxSimultaneousLights]
 
-#ifdef VERTEXALPHA
+#if defined(VERTEXALPHA) || defined(INSTANCESCOLOR) && defined(INSTANCES)
 	alpha *= vColor.a;
 #endif
 

@@ -1,12 +1,14 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+
 /**
  * Checks for a matching suffix at the end of a string (for ES5 and lower)
  * @param str Source string
  * @param suffix Suffix to search for in the source string
  * @returns Boolean indicating whether the suffix was found (true) or not (false)
+ * @deprecated Please use native string function instead
  */
 export const EndsWith = (str: string, suffix: string): boolean => {
-    return str.indexOf(suffix, str.length - suffix.length) !== -1;
+    return str.endsWith(suffix);
 };
 
 /**
@@ -14,12 +16,13 @@ export const EndsWith = (str: string, suffix: string): boolean => {
  * @param str Source string
  * @param suffix Suffix to search for in the source string
  * @returns Boolean indicating whether the suffix was found (true) or not (false)
+ * @deprecated Please use native string function instead
  */
 export const StartsWith = (str: string, suffix: string): boolean => {
     if (!str) {
         return false;
     }
-    return str.indexOf(suffix) === 0;
+    return str.startsWith(suffix);
 };
 
 /**

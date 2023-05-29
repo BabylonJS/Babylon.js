@@ -21,7 +21,7 @@ import type { Viewport } from "../Maths/math.viewport";
 /**
  * This represents a Lens Flare System or the shiny effect created by the light reflection on the  camera lenses.
  * It is usually composed of several `lensFlare`.
- * @see https://doc.babylonjs.com/how_to/how_to_use_lens_flares
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/environment/lenseFlare
  */
 export class LensFlareSystem {
     /**
@@ -69,8 +69,7 @@ export class LensFlareSystem {
     private _isEnabled = true;
 
     /**
-     * @param _
-     * @hidden
+     * @internal
      */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
         throw _WarnImport("LensFlareSystemSceneComponent");
@@ -80,7 +79,7 @@ export class LensFlareSystem {
      * Instantiates a lens flare system.
      * This represents a Lens Flare System or the shiny effect created by the light reflection on the  camera lenses.
      * It is usually composed of several `lensFlare`.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_lens_flares
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/environment/lenseFlare
      * @param name Define the name of the lens flare system in the scene
      * @param emitter Define the source (the emitter) of the lens flares (it can be a camera, a light or a mesh).
      * @param scene Define the scene the lens flare system belongs to
@@ -178,8 +177,7 @@ export class LensFlareSystem {
     }
 
     /**
-     * @param globalViewport
-     * @hidden
+     * @internal
      */
     public computeEffectivePosition(globalViewport: Viewport): boolean {
         let position = this.getEmitterPosition();
@@ -217,7 +215,7 @@ export class LensFlareSystem {
         return false;
     }
 
-    /** @hidden */
+    /** @internal */
     public _isVisible(): boolean {
         if (!this._isEnabled || !this._scene.activeCamera) {
             return false;
@@ -235,7 +233,7 @@ export class LensFlareSystem {
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public render(): boolean {
         if (!this._scene.activeCamera) {

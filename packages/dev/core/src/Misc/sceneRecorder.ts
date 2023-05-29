@@ -114,6 +114,9 @@ export class SceneRecorder {
                         deleteId: originalObject.id || originalObject.name,
                     },
                 };
+                if (!deltaJSON[key]) {
+                    deltaJSON[key] = [];
+                }
                 deltaJSON[key].push(newObject);
             }
         }
@@ -192,11 +195,17 @@ export class SceneRecorder {
     }
 
     private static GetShadowGeneratorById(scene: Scene, id: string) {
-        const generators = scene.lights.map((l) => l.getShadowGenerator());
+        const allGenerators = scene.lights.map((l) => l.getShadowGenerators());
 
-        for (const generator of generators) {
-            if (generator && generator.id === id) {
-                return generator;
+        for (const generators of allGenerators) {
+            if (generators) {
+                const iterator = generators.values();
+                for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
+                    const generator = key.value;
+                    if (generator && generator.id === id) {
+                        return generator;
+                    }
+                }
             }
         }
 
@@ -295,7 +304,10 @@ export class SceneRecorder {
                 const targetEntity = finder(source.__state.id);
 
                 if (targetEntity) {
+                    // This first pass applies properties that aren't on the serialization list
                     this._ApplyPropertiesToEntity(source, targetEntity);
+                    // The second pass applies the serializable properties
+                    SerializationHelper.ParseProperties(source, targetEntity, scene, null);
                 }
             } else if (source.__state && source.__state.deleteId !== undefined) {
                 const target = finder(source.__state.deleteId);

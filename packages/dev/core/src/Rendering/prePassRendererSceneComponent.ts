@@ -14,7 +14,7 @@ import type { PrePassRenderTarget } from "../Materials/Textures/prePassRenderTar
 
 declare module "../abstractScene" {
     export interface AbstractScene {
-        /** @hidden (Backing field) */
+        /** @internal (Backing field) */
         _prePassRenderer: Nullable<PrePassRenderer>;
 
         /**
@@ -37,7 +37,11 @@ declare module "../abstractScene" {
 
 declare module "../Materials/Textures/renderTargetTexture" {
     export interface RenderTargetTexture {
-        /** @hidden */
+        /**
+         * Gets or sets a boolean indicating that the prepass renderer should not be used with this render target
+         */
+        noPrePassRenderer: boolean;
+        /** @internal */
         _prePassRenderTarget: Nullable<PrePassRenderTarget>;
     }
 }
@@ -111,28 +115,28 @@ export class PrePassRendererSceneComponent implements ISceneComponent {
         this.scene._beforeRenderTargetDrawStage.registerStep(SceneComponentConstants.STEP_BEFORERENDERTARGETDRAW_PREPASS, this, this._beforeRenderTargetDraw);
         this.scene._afterRenderTargetDrawStage.registerStep(SceneComponentConstants.STEP_AFTERCAMERADRAW_PREPASS, this, this._afterRenderTargetDraw);
 
-        this.scene._beforeClearStage.registerStep(SceneComponentConstants.STEP_BEFORECLEARSTAGE_PREPASS, this, this._beforeClearStage);
-        this.scene._beforeRenderTargetClearStage.registerStep(SceneComponentConstants.STEP_BEFORERENDERTARGETCLEARSTAGE_PREPASS, this, this._beforeRenderTargetClearStage);
+        this.scene._beforeClearStage.registerStep(SceneComponentConstants.STEP_BEFORECLEAR_PREPASS, this, this._beforeClearStage);
+        this.scene._beforeRenderTargetClearStage.registerStep(SceneComponentConstants.STEP_BEFORERENDERTARGETCLEAR_PREPASS, this, this._beforeRenderTargetClearStage);
 
         this.scene._beforeRenderingMeshStage.registerStep(SceneComponentConstants.STEP_BEFORERENDERINGMESH_PREPASS, this, this._beforeRenderingMeshStage);
         this.scene._afterRenderingMeshStage.registerStep(SceneComponentConstants.STEP_AFTERRENDERINGMESH_PREPASS, this, this._afterRenderingMeshStage);
     }
 
     private _beforeRenderTargetDraw(renderTarget: RenderTargetTexture, faceIndex?: number, layer?: number) {
-        if (this.scene.prePassRenderer) {
+        if (this.scene.prePassRenderer && !renderTarget.noPrePassRenderer) {
             this.scene.prePassRenderer._setRenderTarget(renderTarget._prePassRenderTarget);
             this.scene.prePassRenderer._beforeDraw(undefined, faceIndex, layer);
         }
     }
 
     private _afterRenderTargetDraw(renderTarget: RenderTargetTexture, faceIndex?: number, layer?: number) {
-        if (this.scene.prePassRenderer) {
+        if (this.scene.prePassRenderer && !renderTarget.noPrePassRenderer) {
             this.scene.prePassRenderer._afterDraw(faceIndex, layer);
         }
     }
 
     private _beforeRenderTargetClearStage(renderTarget: RenderTargetTexture) {
-        if (this.scene.prePassRenderer) {
+        if (this.scene.prePassRenderer && !renderTarget.noPrePassRenderer) {
             if (!renderTarget._prePassRenderTarget) {
                 renderTarget._prePassRenderTarget = this.scene.prePassRenderer._createRenderTarget(renderTarget.name + "_prePassRTT", renderTarget);
             }

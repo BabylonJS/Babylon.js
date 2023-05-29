@@ -23,6 +23,7 @@ import type { ViewerConfiguration } from "../configuration/configuration";
 import type { IObserversConfiguration } from "../configuration/interfaces/observersConfiguration";
 import type { IModelConfiguration } from "../configuration/interfaces/modelConfiguration";
 import type { GLTFFileLoader } from "loaders/glTF/glTFFileLoader";
+import "core/Misc/observable.extensions";
 
 /**
  * The AbstractViewer is the center of Babylon's viewer.

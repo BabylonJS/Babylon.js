@@ -16,6 +16,7 @@ import { SpriteRenderer } from "./spriteRenderer";
 import type { ThinSprite } from "./thinSprite";
 import type { ISize } from "../Maths/math.size";
 import { EngineStore } from "../Engines/engineStore";
+import { Constants } from "../Engines/constants";
 
 declare type Ray = import("../Culling/ray").Ray;
 
@@ -49,7 +50,7 @@ export interface ISpriteManager extends IDisposable {
 
     /**
      * Specifies the rendering group id for this mesh (0 by default)
-     * @see https://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered#rendering-groups
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/advanced/transparent_rendering#rendering-groups
      */
     renderingGroupId: number;
 
@@ -67,6 +68,9 @@ export interface ISpriteManager extends IDisposable {
     cellWidth: number;
     /** Defines the default height of a cell in the spritesheet */
     cellHeight: number;
+
+    /** @internal */
+    _wasDispatched: boolean;
 
     /**
      * Tests the intersection of a sprite with a specific ray.
@@ -100,11 +104,11 @@ export interface ISpriteManager extends IDisposable {
 
 /**
  * Class used to manage multiple sprites on the same spritesheet
- * @see https://doc.babylonjs.com/babylon101/sprites
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/sprites
  */
 export class SpriteManager implements ISpriteManager {
     /** Define the Url to load snippets */
-    public static SnippetUrl = "https://snippet.babylonjs.com";
+    public static SnippetUrl = Constants.SnippetUrl;
 
     /** Snippet ID if the manager was created from the snippet server */
     public snippetId: string;
@@ -117,6 +121,14 @@ export class SpriteManager implements ISpriteManager {
     public layerMask: number = 0x0fffffff;
     /** Gets or sets a boolean indicating if the sprites are pickable */
     public isPickable = false;
+
+    /**
+     * Gets or sets an object used to store user defined information for the sprite manager
+     */
+    public metadata: any = null;
+
+    /** @internal */
+    public _wasDispatched = false;
 
     /**
      * An event triggered when the manager is disposed.
@@ -222,6 +234,22 @@ export class SpriteManager implements ISpriteManager {
         this._spriteRenderer.disableDepthWrite = value;
     }
 
+    /**
+     * Gets or sets a boolean indicating if the renderer must render sprites with pixel perfect rendering
+     * In this mode, sprites are rendered as "pixel art", which means that they appear as pixelated but remain stable when moving or when rotated or scaled.
+     * Note that for this mode to work as expected, the sprite texture must use the BILINEAR sampling mode, not NEAREST!
+     */
+    public get pixelPerfect() {
+        return this._spriteRenderer.pixelPerfect;
+    }
+
+    public set pixelPerfect(value: boolean) {
+        this._spriteRenderer.pixelPerfect = value;
+        if (value && this.texture.samplingMode !== Constants.TEXTURE_TRILINEAR_SAMPLINGMODE) {
+            this.texture.updateSamplingMode(Constants.TEXTURE_TRILINEAR_SAMPLINGMODE);
+        }
+    }
+
     private _spriteRenderer: SpriteRenderer;
     /** Associative array from JSON sprite data file */
     private _cellData: any;
@@ -282,7 +310,7 @@ export class SpriteManager implements ISpriteManager {
             return;
         }
 
-        this._scene.spriteManagers.push(this);
+        this._scene.spriteManagers && this._scene.spriteManagers.push(this);
         this.uniqueId = this.scene.getUniqueId();
 
         if (imgUrl) {
@@ -386,16 +414,11 @@ export class SpriteManager implements ISpriteManager {
         contactPoint.scaleInPlace(distance);
         contactPoint.addInPlace(ray.origin);
 
-        const contactPointU = (contactPoint.x - min.x) / (max.x - min.x) - 0.5;
-        const contactPointV = 1.0 - (contactPoint.y - min.y) / (max.y - min.y) - 0.5;
+        const contactPointU = (contactPoint.x - min.x) / (max.x - min.x);
+        const contactPointV = 1.0 - (contactPoint.y - min.y) / (max.y - min.y);
 
-        // Rotate
-        const angle = sprite.angle;
-        const rotatedU = 0.5 + (contactPointU * Math.cos(angle) - contactPointV * Math.sin(angle));
-        const rotatedV = 0.5 + (contactPointU * Math.sin(angle) + contactPointV * Math.cos(angle));
-
-        const u = (sprite._xOffset * textureSize.width + rotatedU * sprite._xSize) | 0;
-        const v = (sprite._yOffset * textureSize.height + rotatedV * sprite._ySize) | 0;
+        const u = (sprite._xOffset * textureSize.width + contactPointU * sprite._xSize) | 0;
+        const v = (sprite._yOffset * textureSize.height + contactPointV * sprite._ySize) | 0;
 
         const alpha = this._textureContent![(u + v * textureSize.width) * 4 + 3];
 
@@ -442,7 +465,7 @@ export class SpriteManager implements ISpriteManager {
                 // Create a rotation matrix to rotate the ray to the sprite's rotation
                 Matrix.TranslationToRef(-cameraSpacePosition.x, -cameraSpacePosition.y, 0, TmpVectors.Matrix[1]);
                 Matrix.TranslationToRef(cameraSpacePosition.x, cameraSpacePosition.y, 0, TmpVectors.Matrix[2]);
-                Matrix.RotationZToRef(sprite.angle, TmpVectors.Matrix[3]);
+                Matrix.RotationZToRef(-sprite.angle, TmpVectors.Matrix[3]);
 
                 // inv translation x rotation x translation
                 TmpVectors.Matrix[1].multiplyToRef(TmpVectors.Matrix[3], TmpVectors.Matrix[4]);
@@ -616,12 +639,16 @@ export class SpriteManager implements ISpriteManager {
         this._textureContent = null;
 
         // Remove from scene
-        const index = this._scene.spriteManagers.indexOf(this);
-        this._scene.spriteManagers.splice(index, 1);
+        if (this._scene.spriteManagers) {
+            const index = this._scene.spriteManagers.indexOf(this);
+            this._scene.spriteManagers.splice(index, 1);
+        }
 
         // Callback
         this.onDisposeObservable.notifyObservers(this);
         this.onDisposeObservable.clear();
+
+        this.metadata = null;
     }
 
     /**
@@ -636,6 +663,10 @@ export class SpriteManager implements ISpriteManager {
         serializationObject.capacity = this.capacity;
         serializationObject.cellWidth = this.cellWidth;
         serializationObject.cellHeight = this.cellHeight;
+        serializationObject.fogEnabled = this.fogEnabled;
+        serializationObject.blendMode = this.blendMode;
+        serializationObject.disableDepthWrite = this.disableDepthWrite;
+        serializationObject.pixelPerfect = this.pixelPerfect;
 
         if (this.texture) {
             if (serializeTexture) {
@@ -651,6 +682,8 @@ export class SpriteManager implements ISpriteManager {
         for (const sprite of this.sprites) {
             serializationObject.sprites.push(sprite.serialize());
         }
+
+        serializationObject.metadata = this.metadata;
 
         return serializationObject;
     }
@@ -673,6 +706,23 @@ export class SpriteManager implements ISpriteManager {
             },
             scene
         );
+
+        if (parsedManager.fogEnabled !== undefined) {
+            manager.fogEnabled = parsedManager.fogEnabled;
+        }
+        if (parsedManager.blendMode !== undefined) {
+            manager.blendMode = parsedManager.blendMode;
+        }
+        if (parsedManager.disableDepthWrite !== undefined) {
+            manager.disableDepthWrite = parsedManager.disableDepthWrite;
+        }
+        if (parsedManager.pixelPerfect !== undefined) {
+            manager.pixelPerfect = parsedManager.pixelPerfect;
+        }
+
+        if (parsedManager.metadata !== undefined) {
+            manager.metadata = parsedManager.metadata;
+        }
 
         if (parsedManager.texture) {
             manager.texture = Texture.Parse(parsedManager.texture, scene, rootUrl) as Texture;
@@ -727,7 +777,7 @@ export class SpriteManager implements ISpriteManager {
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
      * @returns a promise that will resolve to the new sprite manager
      */
-    public static CreateFromSnippetAsync(snippetId: string, scene: Scene, rootUrl: string = ""): Promise<SpriteManager> {
+    public static ParseFromSnippetAsync(snippetId: string, scene: Scene, rootUrl: string = ""): Promise<SpriteManager> {
         if (snippetId === "_BLANK") {
             return Promise.resolve(new SpriteManager("Default sprite manager", "//playground.babylonjs.com/textures/player.png", 500, 64, scene));
         }
@@ -754,4 +804,14 @@ export class SpriteManager implements ISpriteManager {
             request.send();
         });
     }
+
+    /**
+     * Creates a sprite manager from a snippet saved by the sprite editor
+     * @deprecated Please use ParseFromSnippetAsync instead
+     * @param snippetId defines the snippet to load (can be set to _BLANK to create a default one)
+     * @param scene defines the hosting scene
+     * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @returns a promise that will resolve to the new sprite manager
+     */
+    public static CreateFromSnippetAsync = SpriteManager.ParseFromSnippetAsync;
 }

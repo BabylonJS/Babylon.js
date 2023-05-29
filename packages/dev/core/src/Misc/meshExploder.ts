@@ -9,7 +9,7 @@ export class MeshExploder {
     private _meshes: Array<Mesh>;
     private _meshesOrigins: Array<Vector3> = [];
     private _toCenterVectors: Array<Vector3> = [];
-    private _scaledDirection = Vector3.Zero();
+    private _scaledDirection = new Vector3(1, 1, 1);
     private _newPosition = Vector3.Zero();
     private _centerPosition = Vector3.Zero();
 
@@ -26,6 +26,8 @@ export class MeshExploder {
         } else {
             this._setCenterMesh();
         }
+        this._centerMesh.computeWorldMatrix(true);
+
         const centerMeshIndex = this._meshes.indexOf(this._centerMesh);
         if (centerMeshIndex >= 0) {
             this._meshes.splice(centerMeshIndex, 1);
@@ -37,6 +39,7 @@ export class MeshExploder {
                 this._meshesOrigins[index] = mesh.getAbsolutePosition().clone();
                 this._toCenterVectors[index] = Vector3.Zero();
                 if (mesh.hasBoundingInfo && this._centerMesh.hasBoundingInfo) {
+                    mesh.computeWorldMatrix(true);
                     mesh.getBoundingInfo().boundingBox.centerWorld.subtractToRef(this._centerMesh.getBoundingInfo().boundingBox.centerWorld, this._toCenterVectors[index]);
                 }
             }

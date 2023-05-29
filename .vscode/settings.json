@@ -13,4 +13,7 @@
         "**/*.vertex.ts": true,
         "**/*.compute.ts": true,
     },
+    "[typescript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
 }

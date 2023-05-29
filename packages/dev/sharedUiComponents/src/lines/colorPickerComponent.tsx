@@ -1,6 +1,7 @@
 import * as React from "react";
 import type { Color4, Color3 } from "core/Maths/math.color";
 import { ColorPicker } from "../colorPicker/colorPicker";
+import type { LockObject } from "../tabs/propertyGrids/lockObject";
 
 export interface IColorPickerComponentProps {
     value: Color4 | Color3;
@@ -9,6 +10,7 @@ export interface IColorPickerComponentProps {
     icon?: string;
     iconLabel?: string;
     shouldPopRight?: boolean;
+    lockObject?: LockObject;
 }
 
 interface IColorPickerComponentState {
@@ -96,6 +98,7 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
                         >
                             <div className="color-picker-float" ref={this._floatRef}>
                                 <ColorPicker
+                                    lockObject={this.props.lockObject || ({} as any)}
                                     color={this.state.color}
                                     linearhint={this.props.linearHint}
                                     onColorChanged={(color: Color3 | Color4) => {

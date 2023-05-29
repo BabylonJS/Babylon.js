@@ -1,6 +1,6 @@
 import * as React from "react";
-import { Observable, Observer } from "core/Misc/observable";
-import { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import type { Observable, Observer } from "core/Misc/observable";
+import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { Image } from "gui/2D/controls/image";
@@ -20,11 +20,14 @@ import sizeIcon from "shared-ui-components/imgs/sizeIcon.svg";
 import animationSheetIcon from "shared-ui-components/imgs/animationSheetIcon.svg";
 import { IconComponent } from "shared-ui-components/lines/iconComponent";
 import { UnitButton } from "shared-ui-components/lines/unitButton";
+import type { GlobalState } from "../../../../globalState";
 
 interface IImagePropertyGridComponentProps {
     images: Image[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    onFontsParsedObservable?: Observable<void>;
+    globalState?: GlobalState;
 }
 
 export class ImagePropertyGridComponent extends React.Component<IImagePropertyGridComponentProps> {
@@ -112,7 +115,13 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} controls={images} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent
+                    lockObject={this.props.lockObject}
+                    controls={images}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    onFontsParsedObservable={this.props.onFontsParsedObservable}
+                    globalState={this.props.globalState}
+                />
                 <hr />
                 <TextLineComponent label="IMAGE" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider double">

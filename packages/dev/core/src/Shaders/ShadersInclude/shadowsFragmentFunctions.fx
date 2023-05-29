@@ -1,4 +1,10 @@
 #ifdef SHADOWS
+    #if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
+        #define TEXTUREFUNC(s, c, l) texture2DLodEXT(s, c, l)
+    #else
+        #define TEXTUREFUNC(s, c, b) texture2D(s, c, b)
+    #endif
+
     #ifndef SHADOWFLOAT
         // Duplicate to prevent include in include issues
         float unpack(vec4 color)
@@ -113,7 +119,7 @@
         return esm;
     }
 
-    #if defined(WEBGL2) || defined(WEBGPU)
+    #if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
         #define inline
         float computeShadowCSM(float layer, vec4 vPositionFromLight, float depthMetric, highp sampler2DArray shadowSampler, float darkness, float frustumEdgeFalloff)
         {
@@ -148,9 +154,9 @@
             float shadowPixelDepth = clamp(depthMetric, 0., 1.0);
 
             #ifndef SHADOWFLOAT
-                float shadow = unpack(texture2D(shadowSampler, uv));
+                float shadow = unpack(TEXTUREFUNC(shadowSampler, uv, 0.));
             #else
-                float shadow = texture2D(shadowSampler, uv).x;
+                float shadow = TEXTUREFUNC(shadowSampler, uv, 0.).x;
             #endif
 
             return shadowPixelDepth > shadow ? computeFallOff(darkness, clipSpace.xy, frustumEdgeFalloff) : 1.;
@@ -182,15 +188,15 @@
             // Poisson Sampling
 
             #ifndef SHADOWFLOAT
-                if (unpack(texture2D(shadowSampler, uv + poissonDisk[0] * mapSize)) < shadowPixelDepth) visibility -= 0.25;
-                if (unpack(texture2D(shadowSampler, uv + poissonDisk[1] * mapSize)) < shadowPixelDepth) visibility -= 0.25;
-                if (unpack(texture2D(shadowSampler, uv + poissonDisk[2] * mapSize)) < shadowPixelDepth) visibility -= 0.25;
-                if (unpack(texture2D(shadowSampler, uv + poissonDisk[3] * mapSize)) < shadowPixelDepth) visibility -= 0.25;
+                if (unpack(TEXTUREFUNC(shadowSampler, uv + poissonDisk[0] * mapSize, 0.)) < shadowPixelDepth) visibility -= 0.25;
+                if (unpack(TEXTUREFUNC(shadowSampler, uv + poissonDisk[1] * mapSize, 0.)) < shadowPixelDepth) visibility -= 0.25;
+                if (unpack(TEXTUREFUNC(shadowSampler, uv + poissonDisk[2] * mapSize, 0.)) < shadowPixelDepth) visibility -= 0.25;
+                if (unpack(TEXTUREFUNC(shadowSampler, uv + poissonDisk[3] * mapSize, 0.)) < shadowPixelDepth) visibility -= 0.25;
             #else
-                if (texture2D(shadowSampler, uv + poissonDisk[0] * mapSize).x < shadowPixelDepth) visibility -= 0.25;
-                if (texture2D(shadowSampler, uv + poissonDisk[1] * mapSize).x < shadowPixelDepth) visibility -= 0.25;
-                if (texture2D(shadowSampler, uv + poissonDisk[2] * mapSize).x < shadowPixelDepth) visibility -= 0.25;
-                if (texture2D(shadowSampler, uv + poissonDisk[3] * mapSize).x < shadowPixelDepth) visibility -= 0.25;
+                if (TEXTUREFUNC(shadowSampler, uv + poissonDisk[0] * mapSize, 0.).x < shadowPixelDepth) visibility -= 0.25;
+                if (TEXTUREFUNC(shadowSampler, uv + poissonDisk[1] * mapSize, 0.).x < shadowPixelDepth) visibility -= 0.25;
+                if (TEXTUREFUNC(shadowSampler, uv + poissonDisk[2] * mapSize, 0.).x < shadowPixelDepth) visibility -= 0.25;
+                if (TEXTUREFUNC(shadowSampler, uv + poissonDisk[3] * mapSize, 0.).x < shadowPixelDepth) visibility -= 0.25;
             #endif
 
             return computeFallOff(min(1.0, visibility + darkness), clipSpace.xy, frustumEdgeFalloff);
@@ -212,9 +218,9 @@
             float shadowPixelDepth = clamp(depthMetric, 0., 1.0);
 
             #ifndef SHADOWFLOAT
-                float shadowMapSample = unpack(texture2D(shadowSampler, uv));
+                float shadowMapSample = unpack(TEXTUREFUNC(shadowSampler, uv, 0.));
             #else
-                float shadowMapSample = texture2D(shadowSampler, uv).x;
+                float shadowMapSample = TEXTUREFUNC(shadowSampler, uv, 0.).x;
             #endif
             
             float esm = 1.0 - clamp(exp(min(87., depthScale * shadowPixelDepth)) * shadowMapSample, 0., 1. - darkness);
@@ -238,9 +244,9 @@
             float shadowPixelDepth = clamp(depthMetric, 0., 1.0);		
             
             #ifndef SHADOWFLOAT
-                float shadowMapSample = unpack(texture2D(shadowSampler, uv));
+                float shadowMapSample = unpack(TEXTUREFUNC(shadowSampler, uv, 0.));
             #else
-                float shadowMapSample = texture2D(shadowSampler, uv).x;
+                float shadowMapSample = TEXTUREFUNC(shadowSampler, uv, 0.).x;
             #endif
             
             float esm = clamp(exp(min(87., -depthScale * (shadowPixelDepth - shadowMapSample))), darkness, 1.);
@@ -255,7 +261,7 @@
         #define ZINCLIP uvDepth.z
     #endif
 
-    #if defined(WEBGL2) || defined(WEBGPU)
+    #if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
         #define GREATEST_LESS_THAN_ONE 0.99999994
 
         // Shadow PCF kernel size 1 with a single tap (lowest quality)
@@ -366,8 +372,9 @@
                 vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
                 uvDepth.z = ZINCLIP;
 
-                float shadow = texture2D(shadowSampler, uvDepth);
+                float shadow = TEXTUREFUNC(shadowSampler, uvDepth, 0.);
                 shadow = mix(darkness, 1., shadow);
+
                 return computeFallOff(shadow, clipSpace.xy, frustumEdgeFalloff);
             }
         }
@@ -403,13 +410,14 @@
                 vec2 v = vec2((2. - st.y) / uvw0.y - 1., st.y / uvw1.y + 1.) * shadowMapSizeAndInverse.y;
 
                 float shadow = 0.;
-                shadow += uvw0.x * uvw0.y * texture2D(shadowSampler, vec3(base_uv.xy + vec2(u[0], v[0]), uvDepth.z));
-                shadow += uvw1.x * uvw0.y * texture2D(shadowSampler, vec3(base_uv.xy + vec2(u[1], v[0]), uvDepth.z));
-                shadow += uvw0.x * uvw1.y * texture2D(shadowSampler, vec3(base_uv.xy + vec2(u[0], v[1]), uvDepth.z));
-                shadow += uvw1.x * uvw1.y * texture2D(shadowSampler, vec3(base_uv.xy + vec2(u[1], v[1]), uvDepth.z));
+                shadow += uvw0.x * uvw0.y * TEXTUREFUNC(shadowSampler, vec3(base_uv.xy + vec2(u[0], v[0]), uvDepth.z), 0.);
+                shadow += uvw1.x * uvw0.y * TEXTUREFUNC(shadowSampler, vec3(base_uv.xy + vec2(u[1], v[0]), uvDepth.z), 0.);
+                shadow += uvw0.x * uvw1.y * TEXTUREFUNC(shadowSampler, vec3(base_uv.xy + vec2(u[0], v[1]), uvDepth.z), 0.);
+                shadow += uvw1.x * uvw1.y * TEXTUREFUNC(shadowSampler, vec3(base_uv.xy + vec2(u[1], v[1]), uvDepth.z), 0.);
                 shadow = shadow / 16.;
 
                 shadow = mix(darkness, 1., shadow);
+
                 return computeFallOff(shadow, clipSpace.xy, frustumEdgeFalloff);
             }
         }
@@ -445,18 +453,19 @@
                 vec3 v = vec3((3. - 2. * st.y) / uvw0.y - 2., (3. + st.y) / uvw1.y, st.y / uvw2.y + 2.) * shadowMapSizeAndInverse.y;
 
                 float shadow = 0.;
-                shadow += uvw0.x * uvw0.y * texture2D(shadowSampler, vec3(base_uv.xy + vec2(u[0], v[0]), uvDepth.z));
-                shadow += uvw1.x * uvw0.y * texture2D(shadowSampler, vec3(base_uv.xy + vec2(u[1], v[0]), uvDepth.z));
-                shadow += uvw2.x * uvw0.y * texture2D(shadowSampler, vec3(base_uv.xy + vec2(u[2], v[0]), uvDepth.z));
-                shadow += uvw0.x * uvw1.y * texture2D(shadowSampler, vec3(base_uv.xy + vec2(u[0], v[1]), uvDepth.z));
-                shadow += uvw1.x * uvw1.y * texture2D(shadowSampler, vec3(base_uv.xy + vec2(u[1], v[1]), uvDepth.z));
-                shadow += uvw2.x * uvw1.y * texture2D(shadowSampler, vec3(base_uv.xy + vec2(u[2], v[1]), uvDepth.z));
-                shadow += uvw0.x * uvw2.y * texture2D(shadowSampler, vec3(base_uv.xy + vec2(u[0], v[2]), uvDepth.z));
-                shadow += uvw1.x * uvw2.y * texture2D(shadowSampler, vec3(base_uv.xy + vec2(u[1], v[2]), uvDepth.z));
-                shadow += uvw2.x * uvw2.y * texture2D(shadowSampler, vec3(base_uv.xy + vec2(u[2], v[2]), uvDepth.z));
+                shadow += uvw0.x * uvw0.y * TEXTUREFUNC(shadowSampler, vec3(base_uv.xy + vec2(u[0], v[0]), uvDepth.z), 0.);
+                shadow += uvw1.x * uvw0.y * TEXTUREFUNC(shadowSampler, vec3(base_uv.xy + vec2(u[1], v[0]), uvDepth.z), 0.);
+                shadow += uvw2.x * uvw0.y * TEXTUREFUNC(shadowSampler, vec3(base_uv.xy + vec2(u[2], v[0]), uvDepth.z), 0.);
+                shadow += uvw0.x * uvw1.y * TEXTUREFUNC(shadowSampler, vec3(base_uv.xy + vec2(u[0], v[1]), uvDepth.z), 0.);
+                shadow += uvw1.x * uvw1.y * TEXTUREFUNC(shadowSampler, vec3(base_uv.xy + vec2(u[1], v[1]), uvDepth.z), 0.);
+                shadow += uvw2.x * uvw1.y * TEXTUREFUNC(shadowSampler, vec3(base_uv.xy + vec2(u[2], v[1]), uvDepth.z), 0.);
+                shadow += uvw0.x * uvw2.y * TEXTUREFUNC(shadowSampler, vec3(base_uv.xy + vec2(u[0], v[2]), uvDepth.z), 0.);
+                shadow += uvw1.x * uvw2.y * TEXTUREFUNC(shadowSampler, vec3(base_uv.xy + vec2(u[1], v[2]), uvDepth.z), 0.);
+                shadow += uvw2.x * uvw2.y * TEXTUREFUNC(shadowSampler, vec3(base_uv.xy + vec2(u[2], v[2]), uvDepth.z), 0.);
                 shadow = shadow / 144.;
 
                 shadow = mix(darkness, 1., shadow);
+
                 return computeFallOff(shadow, clipSpace.xy, frustumEdgeFalloff);
             }
         }
@@ -622,39 +631,39 @@
                 }
             }
 
+            float avgBlockerDepth = sumBlockerDepth / numBlocker;
+
+            // Offset preventing aliasing on contact.
+            float AAOffset = shadowMapSizeInverse * 10.;
+            // Do not dividing by z despite being physically incorrect looks better due to the limited kernel size.
+            // float penumbraRatio = (depthMetric - avgBlockerDepth) / avgBlockerDepth;
+            float penumbraRatio = ((depthMetric - avgBlockerDepth) * depthCorrection + AAOffset);
+            vec4 filterRadius = vec4(penumbraRatio * lightSizeUV * lightSizeUVCorrection * shadowMapSizeInverse, 0., 0.);
+
+            float random = getRand(vPositionFromLight.xy);
+            float rotationAngle = random * 3.1415926;
+            vec2 rotationVector = vec2(cos(rotationAngle), sin(rotationAngle));
+
+            float shadow = 0.;
+            for (int i = 0; i < pcfTapCount; i++) {
+                vec4 offset = vec4(poissonSamplers[i], 0.);
+                // Rotated offset.
+                offset = vec4(offset.x * rotationVector.x - offset.y * rotationVector.y, offset.y * rotationVector.x + offset.x * rotationVector.y, 0., 0.);
+                shadow += texture2D(shadowSampler, uvDepthLayer + offset * filterRadius);
+            }
+            shadow /= float(pcfTapCount);
+
+            // Blocker distance falloff
+            shadow = mix(shadow, 1., min((depthMetric - avgBlockerDepth) * depthCorrection * penumbraDarkness, 1.));
+
+            // Apply darkness
+            shadow = mix(darkness, 1., shadow);
+
             if (numBlocker < 1.0) {
                 return 1.0;
             }
             else
             {
-                float avgBlockerDepth = sumBlockerDepth / numBlocker;
-
-                // Offset preventing aliasing on contact.
-                float AAOffset = shadowMapSizeInverse * 10.;
-                // Do not dividing by z despite being physically incorrect looks better due to the limited kernel size.
-                // float penumbraRatio = (depthMetric - avgBlockerDepth) / avgBlockerDepth;
-                float penumbraRatio = ((depthMetric - avgBlockerDepth) * depthCorrection + AAOffset);
-                vec4 filterRadius = vec4(penumbraRatio * lightSizeUV * lightSizeUVCorrection * shadowMapSizeInverse, 0., 0.);
-
-                float random = getRand(vPositionFromLight.xy);
-                float rotationAngle = random * 3.1415926;
-                vec2 rotationVector = vec2(cos(rotationAngle), sin(rotationAngle));
-
-                float shadow = 0.;
-                for (int i = 0; i < pcfTapCount; i++) {
-                    vec4 offset = vec4(poissonSamplers[i], 0.);
-                    // Rotated offset.
-                    offset = vec4(offset.x * rotationVector.x - offset.y * rotationVector.y, offset.y * rotationVector.x + offset.x * rotationVector.y, 0., 0.);
-                    shadow += texture2D(shadowSampler, uvDepthLayer + offset * filterRadius);
-                }
-                shadow /= float(pcfTapCount);
-
-                // Blocker distance falloff
-                shadow = mix(shadow, 1., min((depthMetric - avgBlockerDepth) * depthCorrection * penumbraDarkness, 1.));
-
-                // Apply darkness
-                shadow = mix(darkness, 1., shadow);
-
                 // Apply light frustrum fallof
                 return computeFallOff(shadow, clipSpace.xy, frustumEdgeFalloff);
             }
@@ -681,7 +690,7 @@
                 float sumBlockerDepth = 0.0;
                 float numBlocker = 0.0;
                 for (int i = 0; i < searchTapCount; i ++) {
-                    blockerDepth = texture2D(depthSampler, uvDepth.xy + (lightSizeUV * shadowMapSizeInverse * PoissonSamplers32[i].xy)).r;
+                    blockerDepth = TEXTUREFUNC(depthSampler, uvDepth.xy + (lightSizeUV * shadowMapSizeInverse * PoissonSamplers32[i].xy), 0.).r;
                     if (blockerDepth < depthMetric) {
                         sumBlockerDepth += blockerDepth;
                         numBlocker++;
@@ -711,7 +720,7 @@
                         vec3 offset = poissonSamplers[i];
                         // Rotated offset.
                         offset = vec3(offset.x * rotationVector.x - offset.y * rotationVector.y, offset.y * rotationVector.x + offset.x * rotationVector.y, 0.);
-                        shadow += texture2D(shadowSampler, uvDepth + offset * filterRadius);
+                        shadow += TEXTUREFUNC(shadowSampler, uvDepth + offset * filterRadius, 0.);
                     }
                     shadow /= float(pcfTapCount);
 

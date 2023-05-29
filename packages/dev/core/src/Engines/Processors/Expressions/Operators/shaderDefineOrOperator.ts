@@ -1,6 +1,6 @@
 import { ShaderDefineExpression } from "../shaderDefineExpression";
 
-/** @hidden */
+/** @internal */
 export class ShaderDefineOrOperator extends ShaderDefineExpression {
     public leftOperand: ShaderDefineExpression;
     public rightOperand: ShaderDefineExpression;

@@ -48,11 +48,11 @@ export class CloudPoint {
     public translateFromPivot: boolean = false;
     /**
      * Index of this particle in the global "positions" array (Internal use)
-     * @hidden
+     * @internal
      */
     public _pos: number = 0;
     /**
-     * @hidden Index of this particle in the global "indices" array (Internal use)
+     * @internal Index of this particle in the global "indices" array (Internal use)
      */
     public _ind: number = 0;
     /**
@@ -68,19 +68,19 @@ export class CloudPoint {
      */
     public idxInGroup: number = 0;
     /**
-     * @hidden Particle BoundingInfo object (Internal use)
+     * @internal Particle BoundingInfo object (Internal use)
      */
     public _boundingInfo: BoundingInfo;
     /**
-     * @hidden Reference to the PCS that the particle belongs to (Internal use)
+     * @internal Reference to the PCS that the particle belongs to (Internal use)
      */
     public _pcs: PointsCloudSystem;
     /**
-     * @hidden Still set as invisible in order to skip useless computations (Internal use)
+     * @internal Still set as invisible in order to skip useless computations (Internal use)
      */
     public _stillInvisible: boolean = false;
     /**
-     * @hidden Last computed particle rotation matrix
+     * @internal Last computed particle rotation matrix
      */
     public _rotationMatrix: number[] = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0];
     /**
@@ -89,7 +89,7 @@ export class CloudPoint {
      */
     public parentId: Nullable<number> = null;
     /**
-     * @hidden Internal global position in the PCS.
+     * @internal Internal global position in the PCS.
      */
     public _globalPosition: Vector3 = Vector3.Zero();
 
@@ -149,35 +149,34 @@ export class CloudPoint {
         if (!target.hasBoundingInfo) {
             return false;
         }
-        isSphere = isSphere ? isSphere : false;
+
+        if (!this._pcs.mesh) {
+            throw new Error("Point Cloud System doesnt contain the Mesh");
+        }
 
         if (isSphere) {
             return target.getBoundingInfo().boundingSphere.intersectsPoint(this.position.add(this._pcs.mesh.position));
-        } else {
-            let maxX = 0;
-            let minX = 0;
-            let maxY = 0;
-            let minY = 0;
-            let maxZ = 0;
-            let minZ = 0;
-            maxX = target.getBoundingInfo().boundingBox.maximumWorld.x;
-            minX = target.getBoundingInfo().boundingBox.minimumWorld.x;
-            maxY = target.getBoundingInfo().boundingBox.maximumWorld.y;
-            minY = target.getBoundingInfo().boundingBox.minimumWorld.y;
-            maxZ = target.getBoundingInfo().boundingBox.maximumWorld.z;
-            minZ = target.getBoundingInfo().boundingBox.minimumWorld.z;
-
-            const x = this.position.x + this._pcs.mesh.position.x;
-            const y = this.position.y + this._pcs.mesh.position.y;
-            const z = this.position.z + this._pcs.mesh.position.z;
-            return minX <= x && x <= maxX && minY <= y && y <= maxY && minZ <= z && z <= maxZ;
         }
+
+        const bbox = target.getBoundingInfo().boundingBox;
+
+        const maxX = bbox.maximumWorld.x;
+        const minX = bbox.minimumWorld.x;
+        const maxY = bbox.maximumWorld.y;
+        const minY = bbox.minimumWorld.y;
+        const maxZ = bbox.maximumWorld.z;
+        const minZ = bbox.minimumWorld.z;
+
+        const x = this.position.x + this._pcs.mesh.position.x;
+        const y = this.position.y + this._pcs.mesh.position.y;
+        const z = this.position.z + this._pcs.mesh.position.z;
+
+        return minX <= x && x <= maxX && minY <= y && y <= maxY && minZ <= z && z <= maxZ;
     }
 
     /**
      * get the rotation matrix of the particle
-     * @param m
-     * @hidden
+     * @internal
      */
     public getRotationMatrix(m: Matrix) {
         let quaternion: Quaternion;
@@ -210,46 +209,44 @@ export class PointsGroup {
     }
     /**
      * The group id
-     * @hidden
+     * @internal
      */
     public groupId: number;
     /**
      * image data for group (internal use)
-     * @hidden
+     * @internal
      */
     public _groupImageData: Nullable<ArrayBufferView>;
     /**
      * Image Width (internal use)
-     * @hidden
+     * @internal
      */
     public _groupImgWidth: number;
     /**
      * Image Height (internal use)
-     * @hidden
+     * @internal
      */
     public _groupImgHeight: number;
     /**
      * Custom position function (internal use)
-     * @hidden
+     * @internal
      */
     public _positionFunction: Nullable<(particle: CloudPoint, i?: number, s?: number) => void>;
     /**
      * density per facet for surface points
-     * @hidden
+     * @internal
      */
     public _groupDensity: number[];
     /**
      * Only when points are colored by texture carries pointer to texture list array
-     * @hidden
+     * @internal
      */
     public _textureNb: number;
 
     /**
      * Creates a points group object. This is an internal reference to produce particles for the PCS.
      * PCS internal tool, don't use it manually.
-     * @param id
-     * @param posFunction
-     * @hidden
+     * @internal
      */
     constructor(id: number, posFunction: Nullable<(particle: CloudPoint, i?: number, s?: number) => void>) {
         this.groupId = id;

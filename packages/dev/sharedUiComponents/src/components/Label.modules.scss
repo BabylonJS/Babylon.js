@@ -1,0 +1,15 @@
+@import "Colors.scss";
+:local .label {
+    composes: fontRegular from "Fonts.scss";
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+:local .dark {
+    color: dark-color;
+}
+
+:local .light {
+    color: light-color;
+}

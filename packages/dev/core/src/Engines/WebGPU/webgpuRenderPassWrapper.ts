@@ -1,13 +1,13 @@
 import type { Nullable } from "../../types";
 import type { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
 
-/** @hidden */
+/** @internal */
 export class WebGPURenderPassWrapper {
     public renderPassDescriptor: Nullable<GPURenderPassDescriptor>;
     public renderPass: Nullable<GPURenderPassEncoder>;
     public colorAttachmentViewDescriptor: Nullable<GPUTextureViewDescriptor>;
     public depthAttachmentViewDescriptor: Nullable<GPUTextureViewDescriptor>;
-    public colorAttachmentGPUTextures: WebGPUHardwareTexture[] = [];
+    public colorAttachmentGPUTextures: (WebGPUHardwareTexture | null)[] = [];
     public depthTextureFormat: GPUTextureFormat | undefined;
 
     constructor() {

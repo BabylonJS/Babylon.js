@@ -7,7 +7,7 @@ import { WebXRLayerRenderTargetTextureProvider } from "./webXRRenderTargetTextur
 
 /**
  * Wraps xr webgl layers.
- * @hidden
+ * @internal
  */
 export class WebXRWebGLLayerWrapper extends WebXRLayerWrapper {
     /**
@@ -27,7 +27,7 @@ export class WebXRWebGLLayerWrapper extends WebXRLayerWrapper {
 
 /**
  * Provides render target textures and other important rendering information for a given XRWebGLLayer.
- * @hidden
+ * @internal
  */
 export class WebXRWebGLLayerRenderTargetTextureProvider extends WebXRLayerRenderTargetTextureProvider {
     // The dimensions will always be defined in this class.
@@ -47,6 +47,9 @@ export class WebXRWebGLLayerRenderTargetTextureProvider extends WebXRLayerRender
 
     public trySetViewportForView(viewport: Viewport, view: XRView): boolean {
         const xrViewport = this._layer.getViewport(view);
+        if (!xrViewport) {
+            return false;
+        }
         const framebufferWidth = this._framebufferDimensions.framebufferWidth;
         const framebufferHeight = this._framebufferDimensions.framebufferHeight;
         viewport.x = xrViewport.x / framebufferWidth;

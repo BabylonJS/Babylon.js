@@ -11,13 +11,13 @@ import type { IGLTFExporterExtension } from "../glTFFileExporter";
 import type { Material } from "core/Materials/material";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 
-/** @hidden */
+/** @internal */
 // eslint-disable-next-line no-var, @typescript-eslint/naming-convention
 export var __IGLTFExporterExtensionV2 = 0; // I am here to allow dts to be created
 
 /**
  * Interface for a glTF exporter extension
- * @hidden
+ * @internal
  */
 export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDisposable {
     /**
@@ -27,7 +27,7 @@ export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDispo
      * @param mimeType The mime-type of the generated image
      * @returns A promise that resolves with the exported texture
      */
-    preExportTextureAsync?(context: string, babylonTexture: Nullable<Texture>, mimeType: ImageMimeType): Promise<Texture>;
+    preExportTextureAsync?(context: string, babylonTexture: Nullable<Texture>, mimeType: ImageMimeType): Promise<Nullable<Texture>>;
 
     /**
      * Define this method to get notified when a texture info is created
@@ -54,7 +54,7 @@ export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDispo
      * @param babylonNode BabylonJS node
      * @returns nullable INode promise
      */
-    postExportNodeAsync?(context: string, node: Nullable<INode>, babylonNode: Node, nodeMap?: { [key: number]: number }): Promise<Nullable<INode>>;
+    postExportNodeAsync?(context: string, node: Nullable<INode>, babylonNode: Node, nodeMap?: { [key: number]: number }, binaryWriter?: _BinaryWriter): Promise<Nullable<INode>>;
 
     /**
      * Define this method to modify the default behavior when exporting a material

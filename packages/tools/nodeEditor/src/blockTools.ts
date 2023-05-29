@@ -42,9 +42,11 @@ import { LightInformationBlock } from "core/Materials/Node/Blocks/Vertex/lightIn
 import { MaxBlock } from "core/Materials/Node/Blocks/maxBlock";
 import { MinBlock } from "core/Materials/Node/Blocks/minBlock";
 import { PerturbNormalBlock } from "core/Materials/Node/Blocks/Fragment/perturbNormalBlock";
+import { TBNBlock } from "core/Materials/Node/Blocks/Fragment/TBNBlock";
 import { LengthBlock } from "core/Materials/Node/Blocks/lengthBlock";
 import { DistanceBlock } from "core/Materials/Node/Blocks/distanceBlock";
 import { FrontFacingBlock } from "core/Materials/Node/Blocks/Fragment/frontFacingBlock";
+import { MeshAttributeExistsBlock } from "core/Materials/Node/Blocks/meshAttributeExistsBlock";
 import { NegateBlock } from "core/Materials/Node/Blocks/negateBlock";
 import { PowBlock } from "core/Materials/Node/Blocks/powBlock";
 import type { Scene } from "core/scene";
@@ -84,13 +86,23 @@ import { ImageSourceBlock } from "core/Materials/Node/Blocks/Dual/imageSourceBlo
 import { CloudBlock } from "core/Materials/Node/Blocks/cloudBlock";
 import { VoronoiNoiseBlock } from "core/Materials/Node/Blocks/voronoiNoiseBlock";
 import { ScreenSpaceBlock } from "core/Materials/Node/Blocks/Fragment/screenSpaceBlock";
+import { HeightToNormalBlock } from "core/Materials/Node/Blocks/Fragment/heightToNormalBlock";
 import { TwirlBlock } from "core/Materials/Node/Blocks/Fragment/twirlBlock";
 import { ElbowBlock } from "core/Materials/Node/Blocks/elbowBlock";
 import { ClipPlanesBlock } from "core/Materials/Node/Blocks/Dual/clipPlanesBlock";
+import { FragDepthBlock } from "core/Materials/Node/Blocks/Fragment/fragDepthBlock";
+import { ShadowMapBlock } from "core/Materials/Node/Blocks/Fragment/shadowMapBlock";
+import { TriPlanarBlock } from "core/Materials/Node/Blocks/triPlanarBlock";
+import { BiPlanarBlock } from "core/Materials/Node/Blocks/biPlanarBlock";
+import { MatrixDeterminantBlock } from "core/Materials/Node/Blocks/matrixDeterminantBlock";
+import { MatrixTransposeBlock } from "core/Materials/Node/Blocks/matrixTransposeBlock";
+import { CurveBlock } from "core/Materials/Node/Blocks/curveBlock";
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
         switch (data) {
+            case "HeightToNormalBlock":
+                return new HeightToNormalBlock("HeightToNormal");
             case "ElbowBlock":
                 return new ElbowBlock("");
             case "TwirlBlock":
@@ -210,6 +222,8 @@ export class BlockTools {
                 return new NegateBlock("Negate");
             case "PerturbNormalBlock":
                 return new PerturbNormalBlock("Perturb normal");
+            case "TBNBlock":
+                return new TBNBlock("TBN");
             case "RandomNumberBlock":
                 return new RandomNumberBlock("Random number");
             case "ReplaceColorBlock":
@@ -222,6 +236,8 @@ export class BlockTools {
                 return new GradientBlock("Gradient");
             case "FrontFacingBlock":
                 return new FrontFacingBlock("Front facing");
+            case "MeshAttributeExistsBlock":
+                return new MeshAttributeExistsBlock("Attribute exists");
             case "CosBlock": {
                 const cosBlock = new TrigonometryBlock("Cos");
                 cosBlock.operation = TrigonometryBlockOperations.Cos;
@@ -395,6 +411,11 @@ export class BlockTools {
                 meshColor.setAsAttribute("color");
                 return meshColor;
             }
+            case "InstanceColorBlock": {
+                const meshColor = new InputBlock("Instance Color");
+                meshColor.setAsAttribute("instanceColor");
+                return meshColor;
+            }
             case "NormalBlock": {
                 const meshNormal = new InputBlock("normal");
                 meshNormal.setAsAttribute("normal");
@@ -415,10 +436,25 @@ export class BlockTools {
                 meshMatrixWeights.setAsAttribute("matricesWeights");
                 return meshMatrixWeights;
             }
+            case "MatrixIndicesExtraBlock": {
+                const meshMatrixIndices = new InputBlock("matricesIndicesExtra");
+                meshMatrixIndices.setAsAttribute("matricesIndicesExtra");
+                return meshMatrixIndices;
+            }
+            case "MatrixWeightsExtraBlock": {
+                const meshMatrixWeights = new InputBlock("matricesWeightsExtra");
+                meshMatrixWeights.setAsAttribute("matricesWeightsExtra");
+                return meshMatrixWeights;
+            }
             case "TimeBlock": {
                 const timeBlock = new InputBlock("Time", undefined, NodeMaterialBlockConnectionPointTypes.Float);
                 timeBlock.animationType = AnimatedInputBlockTypes.Time;
                 return timeBlock;
+            }
+            case "RealTimeBlock": {
+                const realTimeBlock = new InputBlock("RealTime", undefined, NodeMaterialBlockConnectionPointTypes.Float);
+                realTimeBlock.animationType = AnimatedInputBlockTypes.RealTime;
+                return realTimeBlock;
             }
             case "DeltaTimeBlock": {
                 const deltaTimeBlock = new InputBlock("Delta time");
@@ -587,6 +623,20 @@ export class BlockTools {
                 return new ImageSourceBlock("ImageSource");
             case "ClipPlanesBlock":
                 return new ClipPlanesBlock("ClipPlanes");
+            case "FragDepthBlock":
+                return new FragDepthBlock("FragDepth");
+            case "ShadowMapBlock":
+                return new ShadowMapBlock("ShadowMap");
+            case "TriPlanarBlock":
+                return new TriPlanarBlock("TriPlanarTexture");
+            case "BiPlanarBlock":
+                return new BiPlanarBlock("BiPlanarTexture");
+            case "MatrixTransposeBlock":
+                return new MatrixTransposeBlock("Transpose");
+            case "MatrixDeterminantBlock":
+                return new MatrixDeterminantBlock("Determinant");
+            case "CurveBlock":
+                return new CurveBlock("Curve");
         }
 
         return null;

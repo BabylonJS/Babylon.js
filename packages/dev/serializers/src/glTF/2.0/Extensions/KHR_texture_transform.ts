@@ -1,23 +1,17 @@
 import type { ITextureInfo, IKHRTextureTransform } from "babylonjs-gltf2interface";
 import { Tools } from "core/Misc/tools";
 import type { Texture } from "core/Materials/Textures/texture";
-import { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
-import type { Scene } from "core/scene";
-
+import type { Nullable } from "core/types";
 import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { _Exporter } from "../glTFExporter";
 
 const NAME = "KHR_texture_transform";
 
-import "../shaders/textureTransform.fragment";
-
 /**
- * @hidden
+ * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
-    private _recordedTextures: ProceduralTexture[] = [];
-
     /** Name of this extension */
     public readonly name = NAME;
 
@@ -32,13 +26,9 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
 
     constructor() {}
 
-    public dispose() {
-        for (const texture of this._recordedTextures) {
-            texture.dispose();
-        }
-    }
+    public dispose() {}
 
-    /** @hidden */
+    /** @internal */
     public get wasUsed() {
         return this._wasUsed;
     }
@@ -64,7 +54,7 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
             }
 
             if (babylonTexture.wAng !== 0) {
-                textureTransform.rotation = babylonTexture.wAng;
+                textureTransform.rotation = -babylonTexture.wAng;
                 transformIsRequired = true;
             }
 
@@ -85,7 +75,7 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
         }
     }
 
-    public preExportTextureAsync(context: string, babylonTexture: Texture): Promise<Texture> {
+    public preExportTextureAsync(context: string, babylonTexture: Texture): Promise<Nullable<Texture>> {
         return new Promise((resolve, reject) => {
             const scene = babylonTexture.getScene();
             if (!scene) {
@@ -93,68 +83,18 @@ export class KHR_texture_transform implements IGLTFExporterExtensionV2 {
                 return;
             }
 
-            let bakeTextureTransform = false;
-
             /*
-             * The KHR_texture_transform schema only supports rotation around the origin.
-             * the texture must be baked to preserve appearance.
-             * see: https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_texture_transform#gltf-schema-updates
+             * The KHR_texture_transform schema only supports w rotation around the origin.
+             * See https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_texture_transform#gltf-schema-updates.
              */
-            if (
-                (babylonTexture.uAng !== 0 || babylonTexture.wAng !== 0 || babylonTexture.vAng !== 0) &&
-                (babylonTexture.uRotationCenter !== 0 || babylonTexture.vRotationCenter !== 0)
-            ) {
-                bakeTextureTransform = true;
-            }
-
-            if (!bakeTextureTransform) {
-                resolve(babylonTexture);
-                return;
-            }
-
-            return this._textureTransformTextureAsync(babylonTexture, scene)
-                .then((proceduralTexture) => {
-                    resolve(proceduralTexture);
-                })
-                .catch((e) => {
-                    reject(e);
-                });
-        });
-    }
-
-    /**
-     * Transform the babylon texture by the offset, rotation and scale parameters using a procedural texture
-     * @param babylonTexture
-     * @param scene
-     */
-    private _textureTransformTextureAsync(babylonTexture: Texture, scene: Scene): Promise<Texture> {
-        return new Promise((resolve) => {
-            const proceduralTexture = new ProceduralTexture(`${babylonTexture.name}`, babylonTexture.getSize(), "textureTransform", scene);
-            if (!proceduralTexture) {
-                Tools.Log(`Cannot create procedural texture for ${babylonTexture.name}!`);
-                resolve(babylonTexture);
-            }
-
-            proceduralTexture.reservedDataStore = {
-                hidden: true,
-                source: babylonTexture,
-            };
-
-            this._recordedTextures.push(proceduralTexture);
-
-            proceduralTexture.coordinatesIndex = babylonTexture.coordinatesIndex;
-            proceduralTexture.setTexture("textureSampler", babylonTexture);
-            proceduralTexture.setMatrix("textureTransformMat", babylonTexture.getTextureMatrix());
-
-            // isReady trigger creation of effect if it doesnt exist yet
-            if (proceduralTexture.isReady()) {
-                proceduralTexture.render();
-                resolve(proceduralTexture);
+            if (babylonTexture.uAng !== 0 || babylonTexture.vAng !== 0) {
+                Tools.Warn(`${context}: Texture ${babylonTexture.name} with rotation in the u or v axis is not supported in glTF.`);
+                resolve(null);
+            } else if (babylonTexture.wAng !== 0 && (babylonTexture.uRotationCenter !== 0 || babylonTexture.vRotationCenter !== 0)) {
+                Tools.Warn(`${context}: Texture ${babylonTexture.name} with rotation not centered at the origin cannot be exported with ${NAME}`);
+                resolve(null);
             } else {
-                proceduralTexture.getEffect().executeWhenCompiled(() => {
-                    proceduralTexture.render();
-                    resolve(proceduralTexture);
-                });
+                resolve(babylonTexture);
             }
         });
     }

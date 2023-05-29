@@ -2,6 +2,16 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "MeshBuilder.CreateText",
+            "playgroundId": "#6I2RMN#2",
+            "referenceImage": "createText.png"
+        },        
+        {
+            "title": "Negative scaling with instances",
+            "playgroundId": "#Z3YS9T#0",
+            "referenceImage": "negative scaling with instances.png"
+        },
+        {
             "title": "Iridescence",
             "playgroundId": "#2FDQT5#1505",
             "referenceImage": "iridescence.png"
@@ -9,7 +19,9 @@
         {
             "title": "Iridescence NME",
             "playgroundId": "#2FDQT5#1507",
-            "referenceImage": "iridescence_nme.png"
+            "referenceImage": "iridescence_nme.png",
+            "excludedEngines": ["webgl1"],
+            "excludeFromAutomaticTesting": true
         },
         {
             "title": "Iridescence GLTF",
@@ -85,7 +97,7 @@
         },
         {
             "title": "Node material 2",
-            "playgroundId": "#WYM31D#12",
+            "playgroundId": "#WYM31D#13",
             "referenceImage": "node-material2.png"
         },
         {
@@ -105,7 +117,7 @@
         },
         {
             "title": "Node material 6",
-            "playgroundId": "#2XY3Z4#1",
+            "playgroundId": "#2XY3Z4#3",
             "referenceImage": "node-material6.png"
         },
         {
@@ -155,6 +167,11 @@
             "title": "Clear Coat",
             "playgroundId": "#YACNQS#2",
             "referenceImage": "clearCoat.png"
+        },
+        {
+            "title": "Dynamic Texture context clip",
+            "playgroundId": "#FU0ES5#37",
+            "referenceImage": "dynamicTextureClip.png"
         },
         {
             "title": "GUI Transform StackPanel",
@@ -215,7 +232,7 @@
         },
         {
             "title": "Simulate pointer",
-            "playgroundId": "#8MGKWK#269",
+            "playgroundId": "#8MGKWK#574",
             "referenceImage": "simulatePointer.png"
         },
         {
@@ -260,13 +277,13 @@
         },
         {
             "title": "Chibi Rex",
-            "playgroundId": "#NZ2RZY#2",
+            "playgroundId": "#NZ2RZY#3",
             "renderCount": 50,
             "referenceImage": "chibi_rex.png"
         },
         {
             "title": "Yeti",
-            "playgroundId": "#QATUCH#27",
+            "playgroundId": "#QATUCH#32",
             "renderCount": 150,
             "referenceImage": "yeti.png"
         },
@@ -376,7 +393,7 @@
         },
         {
             "title": "Fresnel",
-            "playgroundId": "#603JUZ#1",
+            "playgroundId": "#603JUZ#3",
             "referenceImage": "fresnel.png"
         },
         {
@@ -714,6 +731,11 @@
             "referenceImage": "glTFSerializerKhrMaterialsClearcoat.png"
         },
         {
+            "title": "GLTF Serializer KHR gpu instancing",
+            "playgroundId": "#1Q2BWN#10",
+            "referenceImage": "glTFSerializerKhrGpuInstancing.png"
+        },
+        {
             "title": "GLTF Buggy with Draco Mesh Compression",
             "playgroundId": "#JNW207#1",
             "referenceImage": "gltfBuggyDraco.png"
@@ -815,7 +837,7 @@
         {
             "title": "Particles",
             "renderCount": 100,
-            "playgroundId": "#G3ZYFU#2",
+            "playgroundId": "#G3ZYFU#7",
             "referenceImage": "particles.png"
         },
         {
@@ -928,7 +950,7 @@
         {
             "title": "GlowLayer",
             "renderCount": 5,
-            "playgroundId": "#LRFB2D#1",
+            "playgroundId": "#LRFB2D#262",
             "referenceImage": "GlowLayer.png"
         },
         {
@@ -940,7 +962,7 @@
         {
             "title": "TGA",
             "renderCount": 5,
-            "playgroundId": "#ZI77S7#0",
+            "playgroundId": "#ZI77S7#4",
             "referenceImage": "tga.png"
         },
         {
@@ -965,7 +987,7 @@
         },
         {
             "title": "MeshSimplification",
-            "playgroundId": "#1ED15P#35",
+            "playgroundId": "#1ED15P#46",
             "referenceImage": "meshSimplification.png"
         },
         {
@@ -984,12 +1006,12 @@
         },
         {
             "title": "Edges",
-            "playgroundId": "#TYAHX#114",
+            "playgroundId": "#TYAHX#244",
             "referenceImage": "edges.png"
         },
         {
             "title": "Outline",
-            "playgroundId": "#10WJ5S#6",
+            "playgroundId": "#10WJ5S#14",
             "referenceImage": "outline.png"
         },
         {
@@ -1037,7 +1059,7 @@
         },
         {
             "title": "Screen space reflections",
-            "playgroundId": "#PIZ1GK#172",
+            "playgroundId": "#PIZ1GK#1059",
             "referenceImage": "ssr.png",
             "renderCount": 10,
             "excludedEngines": ["webgl1"],
@@ -1087,14 +1109,14 @@
         {
             "title": "Prepass SSAO + particles",
             "renderCount": 50,
-            "playgroundId": "#65MUMZ#46",
+            "playgroundId": "#65MUMZ#47",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-particles.png"
         },
         {
             "title": "Prepass SSAO + instances",
             "renderCount": 10,
-            "playgroundId": "#YB006J#383",
+            "playgroundId": "#YB006J#545",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-instances.png"
         },
@@ -1115,14 +1137,14 @@
         {
             "title": "Prepass + mirror, without postprocess",
             "renderCount": 10,
-            "playgroundId": "#PIZ1GK#352",
+            "playgroundId": "#PIZ1GK#1084",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-mirror-without-pp.png"
         },
         {
             "title": "Prepass + mirror, with postprocesses",
             "renderCount": 10,
-            "playgroundId": "#PIZ1GK#340",
+            "playgroundId": "#PIZ1GK#1085",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-mirror-with-pp.png"
         },
@@ -1136,7 +1158,7 @@
         {
             "title": "Prepass SSAO + glow layer",
             "renderCount": 30,
-            "playgroundId": "#LRFB2D#114",
+            "playgroundId": "#LRFB2D#263",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-glow-layer.png"
         },
@@ -1274,14 +1296,14 @@
         {
             "title": "Instances + motion blur",
             "renderCount": 10,
-            "playgroundId": "#YB006J#404",
+            "playgroundId": "#YB006J#547",
             "excludedEngines": ["webgl1"],
             "referenceImage": "instances-mb.png"
         },
         {
             "title": "Instances + GBR + motion blur",
             "renderCount": 10,
-            "playgroundId": "#YB006J#403",
+            "playgroundId": "#YB006J#549",
             "excludedEngines": ["webgl1"],
             "referenceImage": "instances-gbr-mb.png"
         },
@@ -1367,9 +1389,16 @@
             "referenceImage": "multiCamerasOutputRenderTarget.png"
         },
         {
+            "title": "Multi cameras and output render target with depth texture (D24)",
+            "renderCount": 2,
+            "playgroundId": "#BCYE7J#36",
+            "excludedEngines": ["webgl1"],
+            "referenceImage": "multiCamerasOutputRenderTarget.png"
+        },
+        {
             "title": "Sample depth texture",
             "renderCount": 5,
-            "playgroundId": "#8RU8Q3#108",
+            "playgroundId": "#8RU8Q3#158",
             "excludedEngines": ["webgl1"],
             "referenceImage": "sampleDepthTexture.png"
         },
@@ -1416,6 +1445,176 @@
             "playgroundId": "#EVX1DH#80",
             "excludedEngines": ["webgl1"],
             "referenceImage": "testUpdateTextureData.png"
+        },
+        {
+            "title": "Material Plugin",
+            "playgroundId": "#22HT5Z#10",
+            "referenceImage": "materialPlugin.png"
+        },
+        {
+            "title": "Serialize and Load Instanced Hierarchy",
+            "playgroundId": "#3ZQ1SL#7",
+            "referenceImage": "serializeAndLoadInstancedHierarchy.png"
+        },
+        {
+            "title": "Picking Visual Test",
+            "renderCount": 2,
+            "playgroundId": "#4J7Y7V#1",
+            "referenceImage": "pickingVisualTest.png"
+        },
+        {
+            "title": "GUI Input Test",
+            "renderCount": 2,
+            "playgroundId": "#UB4F3B#7",
+            "referenceImage": "guiInputTest.png"
+        },
+        {
+            "title": "Serialize and Load Hierarchy",
+            "playgroundId": "#3ZQ1SL#8",
+            "referenceImage": "serializeAndLoadHierarchy.png"
+        },
+        {
+            "title": "Serialize scene without materials",
+            "playgroundId": "#PH4DEZ#1",
+            "referenceImage": "serializeWithoutMaterials.png"
+        },
+        {
+            "title": "UI unaffected by post-process",
+            "playgroundId": "#XJVHWQ",
+            "referenceImage": "uiUnaffected.png"
+        },
+        {
+            "title": "Billboard with scaled parent",
+            "playgroundId": "#1ZMALK",
+            "referenceImage": "billboardParentScale.png"
+        },
+        {
+            "title": "Load GUI snippet with unicode",
+            "playgroundId": "#YS93KY",
+            "referenceImage": "loadGuiSnippetWithUnicode.png",
+            "renderCount": 50
+        },
+        {
+            "title": "Parse GUI json with unicode",
+            "playgroundId": "#ERVGT5",
+            "referenceImage": "parseGuiJsonWithUnicode.png",
+            "renderCount": 50
+        },
+        {
+            "title": "Multi shadow generators per light",
+            "playgroundId": "#LMQGSX#2",
+            "referenceImage": "multiSGPerLight.png",
+            "errorRatio": 2,
+            "renderCount": 5,
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "Fluid rendering particle system",
+            "playgroundId": "#544N0Q#67",
+            "referenceImage": "fluidParticleSystem.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "Fluid rendering box sphere",
+            "playgroundId": "#PCMH7A#2",
+            "referenceImage": "fluidBoxSphere.png",
+            "renderCount": 120,
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "Export GLTF Extension KHR_texture_transform",
+            "playgroundId": "#20OAV9#9228",
+            "referenceImage": "exportGltfKHRTextureTransform.png",
+            "renderCount": 15
+        },
+        {
+            "title": "GUI Input Text Area Inside ScrollViewer",
+            "playgroundId": "#NVAEWD#69"
+        },
+        {
+            "title": "GUI Images in Grid",
+            "playgroundId": "#8Y0XJL#1"
+        },
+        {
+            "title": "GUI Force Resize Width",
+            "playgroundId": "#XCPP9Y#17259"
+        },
+        {
+            "title": "GUI Gradient Linear",
+            "playgroundId": "#XCPP9Y#17227"
+        },
+        {
+            "title": "GUI Gradient Radial",
+            "playgroundId": "#4Z7EK3"
+        },
+        {
+            "title": "GUI Gradient Linear with transparency",
+            "playgroundId": "#PFK1Z5"
+        },
+        {
+            "title": "Load babylon files with same geometry uniqueId",
+            "playgroundId": "#3UCFHS"
+        },
+        {
+            "title": "Asset Container Instantiate to Scene",
+            "playgroundId": "#5NFRVE#142"
+        },
+        {
+            "title": "Asset Container Instantiate to Scene 2",
+            "playgroundId": "#5NFRVE#161"
+        },
+        {
+            "title": "Loading glTF model with KTX2 textures",
+            "playgroundId": "#YD2TXP#35",
+            "excludeFromAutomaticTesting": true
+        },
+        {
+            "title": "Instantiate Hierarchy", 
+            "playgroundId": "#BET11L"
+        },
+        {
+            "title": "Screen Space Reflections 2",
+            "playgroundId": "#PIZ1GK#977",
+            "renderCount": 5,
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "MultiRenderTarget with different texture types",
+            "playgroundId": "#XSNYAU#22",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "Decal Map", 
+            "playgroundId": "#9BVW2S#43"
+        },
+        {
+            "title": "GUI Text Block with resizeToFit and forceResizeWidth",
+            "playgroundId": "#XCPP9Y#17810"
+        },
+        {
+            "title": "GUI Horizontal Stack Panel and Text Block with resizeToFit and forceResizeWidth",
+            "playgroundId": "#XCPP9Y#17811"
+        },
+        {
+            "title": "Scene Recorder Apply Delta",
+            "playgroundId": "#9ZS92P#9"
+        },
+        {
+            "title": "Sprites Pixel Perfect",
+            "playgroundId": "#ZX8DJ3#10",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "Rounding values on controls inside StackPanel",
+            "playgroundId": "#XCPP9Y#18325"
+        },
+        {
+            "title": "Rounding cell widths on Grid",
+            "playgroundId": "#PQ4G5G#2"
+        },
+        {
+            "title": "GUI for Mesh cloning",
+            "playgroundId": "#ZUAPLL#2"
         }
     ]
 }

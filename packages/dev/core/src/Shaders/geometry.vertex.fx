@@ -9,6 +9,8 @@ precision highp float;
 #include<instancesDeclaration>
 #include<__decl__geometryVertex>
 
+#include<clipPlaneVertexDeclaration>
+
 attribute vec3 position;
 attribute vec3 normal;
 
@@ -24,7 +26,9 @@ attribute vec3 normal;
 	#endif
 	#ifdef REFLECTIVITY
 	uniform mat4 reflectivityMatrix;
+	uniform mat4 albedoMatrix;
 	varying vec2 vReflectivityUV;
+	varying vec2 vAlbedoUV;
 	#endif
 
 	#ifdef UV1
@@ -83,7 +87,7 @@ void main(void)
 
 #include<bonesVertex>
 #include<bakedVertexAnimation>
-	vec4 pos = vec4(finalWorld * vec4(positionUpdated, 1.0));
+	vec4 worldPos = vec4(finalWorld * vec4(positionUpdated, 1.0));
 
 	#ifdef BUMP
 	vWorldView = view * finalWorld;
@@ -92,7 +96,7 @@ void main(void)
 	vNormalV = normalize(vec3((view * finalWorld) * vec4(normalUpdated, 0.0)));
 	#endif
 
-	vViewPos = view * pos;
+	vViewPos = view * worldPos;
 
 	#if defined(VELOCITY) && defined(BONES_VELOCITY_ENABLED)
 		vCurrentPosition = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
@@ -130,10 +134,12 @@ void main(void)
 	#endif
 
 	#if defined(POSITION) || defined(BUMP)
-	vPositionW = pos.xyz / pos.w;
+	vPositionW = worldPos.xyz / worldPos.w;
 	#endif
 
 	gl_Position = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
+
+	#include<clipPlaneVertex>
 
 	#ifdef NEED_UV
 		#ifdef UV1
@@ -149,6 +155,9 @@ void main(void)
 			#ifdef REFLECTIVITY_UV1
 			vReflectivityUV = vec2(reflectivityMatrix * vec4(uvUpdated, 1.0, 0.0));
 			#endif
+			#ifdef ALBEDO_UV1
+			vAlbedoUV = vec2(albedoMatrix * vec4(uvUpdated, 1.0, 0.0));
+			#endif
 		#endif
 		#ifdef UV2
 			#if defined(ALPHATEST) && defined(ALPHATEST_UV2)
@@ -162,6 +171,9 @@ void main(void)
 			#endif
 			#ifdef REFLECTIVITY_UV2
 			vReflectivityUV = vec2(reflectivityMatrix * vec4(uv2, 1.0, 0.0));
+			#endif
+			#ifdef ALBEDO_UV2
+			vAlbedoUV = vec2(albedoMatrix * vec4(uv2, 1.0, 0.0));
 			#endif
 		#endif
 	#endif

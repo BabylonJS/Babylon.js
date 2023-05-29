@@ -1,3 +1,5 @@
+import type { InternalTexture } from "./internalTexture";
+
 /**
  * Define options used to create an internal texture
  */
@@ -20,6 +22,10 @@ export interface InternalTextureCreationOptions {
     samples?: number;
     /** Texture creation flags */
     creationFlags?: number;
+    /** Creates the RTT in sRGB space */
+    useSRGBBuffer?: boolean;
+    /** Label of the texture (used for debugging only) */
+    label?: string;
 }
 
 /**
@@ -30,6 +36,10 @@ export interface RenderTargetCreationOptions extends InternalTextureCreationOpti
     generateDepthBuffer?: boolean;
     /** Specifies whether or not a stencil should be allocated in the texture (false by default)*/
     generateStencilBuffer?: boolean;
+    /** Specifies that no color target should be bound to the render target (useful if you only want to write to the depth buffer, for eg) */
+    noColorAttachment?: boolean;
+    /** Specifies the internal texture to use directly instead of creating one (ignores `noColorAttachment` flag when set) **/
+    colorAttachment?: InternalTexture;
 }
 
 /**
@@ -48,6 +58,8 @@ export interface DepthTextureCreationOptions {
     samples?: number;
     /** Specifies the depth texture format to use */
     depthTextureFormat?: number;
+    /** Label of the texture (used for debugging only) */
+    label?: string;
 }
 
 /**

@@ -4,6 +4,8 @@ import { Logger } from "../../Misc/logger";
 import type { Nullable } from "../../types";
 import type { Scene } from "../../scene";
 import { Texture } from "../../Materials/Textures/texture";
+import { Constants } from "../../Engines/constants";
+import type { ExternalTexture } from "./externalTexture";
 
 import "../../Engines/Extensions/engine.videoTexture";
 import "../../Engines/Extensions/engine.dynamicTexture";
@@ -52,12 +54,23 @@ export interface VideoTextureSettings {
      * Image src displayed during the video loading or until the user interacts with the video.
      */
     poster?: string;
+
+    /**
+     * Defines the associated texture format.
+     */
+    format?: number;
+
+    /**
+     * Notify babylon to not modify any video settings and not control the video's playback.
+     * Set this to true if you are controlling the way the video is being played, stopped and paused.
+     */
+    independentVideoSource?: boolean;
 }
 
 /**
  * If you want to display a video in your scene, this is the special texture for that.
  * This special texture works similar to other textures, with the exception of a few parameters.
- * @see https://doc.babylonjs.com/divingDeeper/materials/using/videoTexture
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/videoTexture
  */
 export class VideoTexture extends Texture {
     /**
@@ -70,6 +83,7 @@ export class VideoTexture extends Texture {
      */
     public readonly video: HTMLVideoElement;
 
+    private _externalTexture: Nullable<ExternalTexture>;
     private _onUserActionRequestedObservable: Nullable<Observable<Texture>> = null;
 
     /**
@@ -128,7 +142,7 @@ export class VideoTexture extends Texture {
      * Creates a video texture.
      * If you want to display a video in your scene, this is the special texture for that.
      * This special texture works similar to other textures, with the exception of a few parameters.
-     * @see https://doc.babylonjs.com/how_to/video_texture
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/videoTexture
      * @param name optional name, will detect from video source, if not defined
      * @param src can be used to provide an url, array of urls or an already setup HTML video element.
      * @param scene is obviously the current scene.
@@ -137,6 +151,7 @@ export class VideoTexture extends Texture {
      * @param samplingMode controls the sampling method and is set to TRILINEAR_SAMPLINGMODE by default
      * @param settings allows finer control over video usage
      * @param onError defines a callback triggered when an error occurred during the loading session
+     * @param format defines the texture format to use (Engine.TEXTUREFORMAT_RGBA by default)
      */
     constructor(
         name: Nullable<string>,
@@ -146,7 +161,8 @@ export class VideoTexture extends Texture {
         invertY = false,
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
         settings: Partial<VideoTextureSettings> = {},
-        onError?: Nullable<(message?: string, exception?: any) => void>
+        onError?: Nullable<(message?: string, exception?: any) => void>,
+        format: number = Constants.TEXTUREFORMAT_RGBA
     ) {
         super(null, scene, !generateMipMaps, invertY);
 
@@ -166,30 +182,34 @@ export class VideoTexture extends Texture {
         this._currentSrc = src;
         this.name = name || this._getName(src);
         this.video = this._getVideo(src);
+        this._externalTexture = this._engine?.createExternalTexture(this.video) ?? null;
+        if (!this._settings.independentVideoSource) {
+            if (this._settings.poster) {
+                this.video.poster = this._settings.poster;
+            }
+            if (this._settings.autoPlay !== undefined) {
+                this.video.autoplay = this._settings.autoPlay;
+            }
+            if (this._settings.loop !== undefined) {
+                this.video.loop = this._settings.loop;
+            }
+            if (this._settings.muted !== undefined) {
+                this.video.muted = this._settings.muted;
+            }
 
-        if (this._settings.poster) {
-            this.video.poster = this._settings.poster;
-        }
-        if (this._settings.autoPlay !== undefined) {
-            this.video.autoplay = this._settings.autoPlay;
-        }
-        if (this._settings.loop !== undefined) {
-            this.video.loop = this._settings.loop;
-        }
-        if (this._settings.muted !== undefined) {
-            this.video.muted = this._settings.muted;
+            this.video.setAttribute("playsinline", "");
+            this.video.addEventListener("paused", this._updateInternalTexture);
+            this.video.addEventListener("seeked", this._updateInternalTexture);
+            this.video.addEventListener("emptied", this._reset);
+
+            if (this._settings.autoPlay) {
+                this._handlePlay();
+            }
         }
 
-        this.video.setAttribute("playsinline", "");
-        this.video.addEventListener("paused", this._updateInternalTexture);
-        this.video.addEventListener("seeked", this._updateInternalTexture);
-        this.video.addEventListener("emptied", this._reset);
         this._createInternalTextureOnEvent = this._settings.poster && !this._settings.autoPlay ? "play" : "canplay";
         this.video.addEventListener(this._createInternalTextureOnEvent, this._createInternalTexture);
-
-        if (this._settings.autoPlay) {
-            this._handlePlay();
-        }
+        this._format = format;
 
         const videoHasEnoughData = this.video.readyState >= this.video.HAVE_CURRENT_DATA;
         if (this._settings.poster && (!this._settings.autoPlay || !videoHasEnoughData)) {
@@ -248,14 +268,10 @@ export class VideoTexture extends Texture {
         return video;
     }
 
-    private _createInternalTexture = (): void => {
+    private _resizeInternalTexture = (): void => {
+        // Cleanup the old texture before replacing it
         if (this._texture != null) {
-            if (this._displayingPosterTexture) {
-                this._texture.dispose();
-                this._displayingPosterTexture = false;
-            } else {
-                return;
-            }
+            this._texture.dispose();
         }
 
         if (!this._getEngine()!.needPOTTextures || (Tools.IsExponentOfTwo(this.video.videoWidth) && Tools.IsExponentOfTwo(this.video.videoHeight))) {
@@ -268,20 +284,45 @@ export class VideoTexture extends Texture {
         }
 
         this._texture = this._getEngine()!.createDynamicTexture(this.video.videoWidth, this.video.videoHeight, this._generateMipMaps, this.samplingMode);
+        this._texture.format = this._format ?? Constants.TEXTUREFORMAT_RGBA;
 
-        if (!this.video.autoplay && !this._settings.poster) {
+        // Reset the frame ID and update the new texture to ensure it pulls in the current video frame
+        this._frameId = -1;
+        this._updateInternalTexture();
+    };
+
+    private _createInternalTexture = (): void => {
+        if (this._texture != null) {
+            if (this._displayingPosterTexture) {
+                this._displayingPosterTexture = false;
+            } else {
+                return;
+            }
+        }
+
+        this.video.addEventListener("resize", this._resizeInternalTexture);
+        this._resizeInternalTexture();
+
+        if (!this.video.autoplay && !this._settings.poster && !this._settings.independentVideoSource) {
             const oldHandler = this.video.onplaying;
             const oldMuted = this.video.muted;
             this.video.muted = true;
             this.video.onplaying = () => {
-                this.video.muted = oldMuted;
-                this.video.onplaying = oldHandler;
-                this._updateInternalTexture();
-                if (!this._errorFound) {
-                    this.video.pause();
-                }
-                if (this.onLoadObservable.hasObservers()) {
-                    this.onLoadObservable.notifyObservers(this);
+                const uploadAndPause = () => {
+                    this.video.onplaying = oldHandler;
+                    this._updateInternalTexture();
+                    if (!this._errorFound) {
+                        this.video.pause();
+                    }
+                    this.video.muted = oldMuted;
+                    if (this.onLoadObservable.hasObservers()) {
+                        this.onLoadObservable.notifyObservers(this);
+                    }
+                };
+                if (this.video.requestVideoFrameCallback) {
+                    this.video.requestVideoFrameCallback(uploadAndPause);
+                } else {
+                    uploadAndPause();
                 }
             };
             this._handlePlay();
@@ -305,7 +346,7 @@ export class VideoTexture extends Texture {
     };
 
     /**
-     * @hidden Internal method to initiate `update`.
+     * @internal Internal method to initiate `update`.
      */
     public _rebuild(): void {
         this.update();
@@ -342,7 +383,7 @@ export class VideoTexture extends Texture {
         if (this._texture == null) {
             return;
         }
-        if (this.video.readyState < this.video.HAVE_CURRENT_DATA) {
+        if (this.video.readyState < this.video.HAVE_ENOUGH_DATA) {
             return;
         }
         if (this._displayingPosterTexture) {
@@ -356,7 +397,7 @@ export class VideoTexture extends Texture {
 
         this._frameId = frameId;
 
-        this._getEngine()!.updateVideoTexture(this._texture, this.video, this._invertY);
+        this._getEngine()!.updateVideoTexture(this._texture, this._externalTexture ? this._externalTexture : this.video, this._invertY);
     };
 
     /**
@@ -390,10 +431,15 @@ export class VideoTexture extends Texture {
         }
 
         this.video.removeEventListener(this._createInternalTextureOnEvent, this._createInternalTexture);
-        this.video.removeEventListener("paused", this._updateInternalTexture);
-        this.video.removeEventListener("seeked", this._updateInternalTexture);
-        this.video.removeEventListener("emptied", this._reset);
-        this.video.pause();
+        if (!this._settings.independentVideoSource) {
+            this.video.removeEventListener("paused", this._updateInternalTexture);
+            this.video.removeEventListener("seeked", this._updateInternalTexture);
+            this.video.removeEventListener("emptied", this._reset);
+            this.video.removeEventListener("resize", this._resizeInternalTexture);
+            this.video.pause();
+        }
+
+        this._externalTexture?.dispose();
     }
 
     /**
@@ -422,14 +468,15 @@ export class VideoTexture extends Texture {
         video.setAttribute("playsinline", "");
         video.muted = true;
 
-        if (video.mozSrcObject !== undefined) {
+        if (video.isNative) {
+            // No additional configuration needed for native
+        } else if (video.mozSrcObject !== undefined) {
             // hack for Firefox < 19
             video.mozSrcObject = stream;
         } else {
             if (typeof video.srcObject == "object") {
                 video.srcObject = stream;
             } else {
-                window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
                 // older API. See https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL#using_object_urls_for_media_streams
                 video.src = window.URL && window.URL.createObjectURL(stream as any);
             }
@@ -437,7 +484,7 @@ export class VideoTexture extends Texture {
 
         return new Promise<VideoTexture>((resolve) => {
             const onPlaying = () => {
-                const videoTexture = new VideoTexture("video", video, scene, true, invertY);
+                const videoTexture = new VideoTexture("video", video, scene, true, invertY, undefined, undefined, undefined, Constants.TEXTUREFORMAT_RGB);
                 if (scene.getEngine()._badOS) {
                     videoTexture.onDisposeObservable.addOnce(() => {
                         video.remove();
@@ -464,7 +511,7 @@ export class VideoTexture extends Texture {
      * @param invertY Defines if the video should be stored with invert Y set to true (true by default)
      * @returns The created video texture as a promise
      */
-    public static CreateFromWebCamAsync(
+    public static async CreateFromWebCamAsync(
         scene: Scene,
         constraints: {
             minWidth: number;
@@ -476,49 +523,20 @@ export class VideoTexture extends Texture {
         audioConstaints: boolean | MediaTrackConstraints = false,
         invertY = true
     ): Promise<VideoTexture> {
-        let constraintsDeviceId;
-        if (constraints && constraints.deviceId) {
-            constraintsDeviceId = {
-                exact: constraints.deviceId,
-            };
-        }
-
         if (navigator.mediaDevices) {
-            return navigator.mediaDevices
-                .getUserMedia({
-                    video: constraints,
-                    audio: audioConstaints,
-                })
-                .then((stream) => {
-                    return this.CreateFromStreamAsync(scene, stream, constraints, invertY);
-                });
-        } else {
-            const getUserMedia = (navigator as any).getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: constraints,
+                audio: audioConstaints,
+            });
 
-            if (getUserMedia) {
-                getUserMedia(
-                    {
-                        video: {
-                            deviceId: constraintsDeviceId,
-                            width: {
-                                min: (constraints && constraints.minWidth) || 256,
-                                max: (constraints && constraints.maxWidth) || 640,
-                            },
-                            height: {
-                                min: (constraints && constraints.minHeight) || 256,
-                                max: (constraints && constraints.maxHeight) || 480,
-                            },
-                        },
-                        audio: audioConstaints,
-                    },
-                    (stream: any) => {
-                        return this.CreateFromStreamAsync(scene, stream, constraints, invertY);
-                    },
-                    function (e: any) {
-                        Logger.Error(e.name);
-                    }
-                );
-            }
+            const videoTexture = await this.CreateFromStreamAsync(scene, stream, constraints, invertY);
+            videoTexture.onDisposeObservable.addOnce(() => {
+                stream.getTracks().forEach((track) => {
+                    track.stop();
+                });
+            });
+
+            return videoTexture;
         }
 
         return Promise.reject("No support for userMedia on this device");

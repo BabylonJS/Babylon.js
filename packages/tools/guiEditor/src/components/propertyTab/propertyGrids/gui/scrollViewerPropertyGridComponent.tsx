@@ -17,11 +17,14 @@ import strokeWeightIcon from "shared-ui-components/imgs/strokeWeightIcon.svg";
 import scrollViewerPrecisionIcon from "shared-ui-components/imgs/scrollViewerPrecisionIcon.svg"; // TODO: replace
 import { IconComponent } from "shared-ui-components/lines/iconComponent";
 import { UnitButton } from "shared-ui-components/lines/unitButton";
+import type { GlobalState } from "../../../../globalState";
 
 interface IScrollViewerPropertyGridComponentProps {
     scrollViewers: ScrollViewer[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    onFontsParsedObservable?: Observable<void>;
+    globalState?: GlobalState;
 }
 
 export class ScrollViewerPropertyGridComponent extends React.Component<IScrollViewerPropertyGridComponentProps> {
@@ -35,7 +38,13 @@ export class ScrollViewerPropertyGridComponent extends React.Component<IScrollVi
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={lockObject} controls={scrollViewers} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent
+                    lockObject={lockObject}
+                    controls={scrollViewers}
+                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    onFontsParsedObservable={this.props.onFontsParsedObservable}
+                    globalState={this.props.globalState}
+                />
                 <hr />
                 <TextLineComponent label="SCROLLVIEWER" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">

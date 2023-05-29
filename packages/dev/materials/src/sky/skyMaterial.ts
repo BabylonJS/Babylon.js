@@ -18,8 +18,9 @@ import { RegisterClass } from "core/Misc/typeStore";
 import "./sky.fragment";
 import "./sky.vertex";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
+import { addClipPlaneUniforms, bindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
 
-/** @hidden */
+/** @internal */
 class SkyMaterialDefines extends MaterialDefines {
     public CLIPPLANE = false;
     public CLIPPLANE2 = false;
@@ -33,6 +34,7 @@ class SkyMaterialDefines extends MaterialDefines {
     public VERTEXALPHA = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public SKIPFINALCOLORCLAMP = false;
+    public DITHER = false;
 
     constructor() {
         super();
@@ -42,7 +44,7 @@ class SkyMaterialDefines extends MaterialDefines {
 
 /**
  * This is the sky material which allows to create dynamic and texture free effects for skyboxes.
- * @see https://doc.babylonjs.com/extensions/sky
+ * @see https://doc.babylonjs.com/toolsAndResources/assetLibraries/materialsLibrary/skyMat
  */
 export class SkyMaterial extends PushMaterial {
     /**
@@ -122,6 +124,12 @@ export class SkyMaterial extends PushMaterial {
     @serializeAsVector3()
     public up: Vector3 = Vector3.Up();
 
+    /**
+     * Defines if sky should be dithered.
+     */
+    @serialize()
+    public dithering: boolean = false;
+
     // Private members
     private _cameraPosition: Vector3 = Vector3.Zero();
     private _skyOrientation: Quaternion = new Quaternion();
@@ -130,7 +138,7 @@ export class SkyMaterial extends PushMaterial {
      * Instantiates a new sky material.
      * This material allows to create dynamic and texture free
      * effects for skyboxes by taking care of the atmosphere state.
-     * @see https://doc.babylonjs.com/extensions/sky
+     * @see https://doc.babylonjs.com/toolsAndResources/assetLibraries/materialsLibrary/skyMat
      * @param name Define the name of the material in the scene
      * @param scene Define the scene the material belong to
      */
@@ -196,6 +204,10 @@ export class SkyMaterial extends PushMaterial {
             defines.markAsMiscDirty();
         }
 
+        if (defines.DITHER !== this.dithering) {
+            defines.markAsMiscDirty();
+        }
+
         // Get correct effect
         if (defines.isDirty) {
             defines.markAsProcessed();
@@ -209,6 +221,7 @@ export class SkyMaterial extends PushMaterial {
             }
 
             defines.IMAGEPROCESSINGPOSTPROCESS = scene.imageProcessingConfiguration.applyByPostProcess;
+            defines.DITHER = this.dithering;
 
             //Attributes
             const attribs = [VertexBuffer.PositionKind];
@@ -219,45 +232,26 @@ export class SkyMaterial extends PushMaterial {
 
             const shaderName = "sky";
 
+            const uniforms = [
+                "world",
+                "viewProjection",
+                "view",
+                "vFogInfos",
+                "vFogColor",
+                "pointSize",
+                "luminance",
+                "turbidity",
+                "rayleigh",
+                "mieCoefficient",
+                "mieDirectionalG",
+                "sunPosition",
+                "cameraPosition",
+                "cameraOffset",
+                "up",
+            ];
+            addClipPlaneUniforms(uniforms);
             const join = defines.toString();
-            subMesh.setEffect(
-                scene
-                    .getEngine()
-                    .createEffect(
-                        shaderName,
-                        attribs,
-                        [
-                            "world",
-                            "viewProjection",
-                            "view",
-                            "vFogInfos",
-                            "vFogColor",
-                            "pointSize",
-                            "vClipPlane",
-                            "vClipPlane2",
-                            "vClipPlane3",
-                            "vClipPlane4",
-                            "vClipPlane5",
-                            "vClipPlane6",
-                            "luminance",
-                            "turbidity",
-                            "rayleigh",
-                            "mieCoefficient",
-                            "mieDirectionalG",
-                            "sunPosition",
-                            "cameraPosition",
-                            "cameraOffset",
-                            "up",
-                        ],
-                        [],
-                        join,
-                        fallbacks,
-                        this.onCompiled,
-                        this.onError
-                    ),
-                defines,
-                this._materialContext
-            );
+            subMesh.setEffect(scene.getEngine().createEffect(shaderName, attribs, uniforms, [], join, fallbacks, this.onCompiled, this.onError), defines, this._materialContext);
         }
 
         if (!subMesh.effect || !subMesh.effect.isReady()) {
@@ -295,7 +289,7 @@ export class SkyMaterial extends PushMaterial {
         this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
 
         if (this._mustRebind(scene, effect)) {
-            MaterialHelper.BindClipPlane(this._activeEffect, scene);
+            bindClipPlane(effect, this, scene);
 
             // Point size
             if (this.pointsCloud) {

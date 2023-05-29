@@ -18,12 +18,14 @@ import type { PBRMetallicRoughnessBlock } from "./pbrMetallicRoughnessBlock";
 import type { PerturbNormalBlock } from "../Fragment/perturbNormalBlock";
 import { PBRClearCoatConfiguration } from "../../../PBR/pbrClearCoatConfiguration";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
+import { TBNBlock } from "../Fragment/TBNBlock";
 
 /**
  * Block used to implement the clear coat module of the PBR material
  */
 export class ClearCoatBlock extends NodeMaterialBlock {
     private _scene: Scene;
+    private _tangentCorrectionFactorName = "";
 
     /**
      * Create a new ClearCoatBlock
@@ -43,8 +45,17 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         this.registerInput("tintAtDistance", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("tintThickness", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
         this.registerInput("worldTangent", NodeMaterialBlockConnectionPointTypes.Vector4, true);
-        this.registerInput("worldNormal", NodeMaterialBlockConnectionPointTypes.Vector4, true);
-        this.worldNormal.acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector3);
+        this.registerInput("worldNormal", NodeMaterialBlockConnectionPointTypes.AutoDetect, true);
+        this.worldNormal.addExcludedConnectionPointFromAllowedTypes(
+            NodeMaterialBlockConnectionPointTypes.Color4 | NodeMaterialBlockConnectionPointTypes.Vector4 | NodeMaterialBlockConnectionPointTypes.Vector3
+        );
+        this.registerInput(
+            "TBN",
+            NodeMaterialBlockConnectionPointTypes.Object,
+            true,
+            NodeMaterialBlockTargets.VertexAndFragment,
+            new NodeMaterialConnectionPointCustomObject("TBN", this, NodeMaterialConnectionPointDirection.Input, TBNBlock, "TBNBlock")
+        );
 
         this.registerOutput(
             "clearcoat",
@@ -152,6 +163,14 @@ export class ClearCoatBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets the TBN input component
+     */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public get TBN(): NodeMaterialConnectionPoint {
+        return this._inputs[10];
+    }
+
+    /**
      * Gets the clear coat object output component
      */
     public get clearcoat(): NodeMaterialConnectionPoint {
@@ -204,6 +223,10 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         } else {
             effect.setFloat2("vClearCoatTangentSpaceParams", perturbedNormalBlock?.invertX ? -1.0 : 1.0, perturbedNormalBlock?.invertY ? -1.0 : 1.0);
         }
+
+        if (mesh) {
+            effect.setFloat(this._tangentCorrectionFactorName, mesh.getWorldMatrix().determinant() < 0 ? -1 : 1);
+        }
     }
 
     private _generateTBNSpace(state: NodeMaterialBuildState, worldPositionVarName: string, worldNormalVarName: string) {
@@ -216,10 +239,17 @@ export class ClearCoatBlock extends NodeMaterialBlock {
 
         const tangentReplaceString = { search: /defined\(TANGENT\)/g, replace: worldTangent.isConnected ? "defined(TANGENT)" : "defined(IGNORE)" };
 
-        if (worldTangent.isConnected) {
+        const TBN = this.TBN;
+        if (TBN.isConnected) {
+            state.compilationString += `
+            #ifdef TBNBLOCK
+            mat3 vTBN = ${TBN.associatedVariableName};
+            #endif
+            `;
+        } else if (worldTangent.isConnected) {
             code += `vec3 tbnNormal = normalize(${worldNormalVarName}.xyz);\r\n`;
             code += `vec3 tbnTangent = normalize(${worldTangent.associatedVariableName}.xyz);\r\n`;
-            code += `vec3 tbnBitangent = cross(tbnNormal, tbnTangent);\r\n`;
+            code += `vec3 tbnBitangent = cross(tbnNormal, tbnTangent) * ${this._tangentCorrectionFactorName};\r\n`;
             code += `mat3 vTBN = mat3(tbnTangent, tbnBitangent, tbnNormal);\r\n`;
         }
 
@@ -359,6 +389,9 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         if (state.target === NodeMaterialBlockTargets.Fragment) {
             state.sharedData.bindableBlocks.push(this);
             state.sharedData.blocksWithDefines.push(this);
+
+            this._tangentCorrectionFactorName = state._getFreeDefineName("tangentCorrectionFactor");
+            state._emitUniformFromString(this._tangentCorrectionFactorName, "float");
         }
 
         return this;

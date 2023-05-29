@@ -1,58 +1,76 @@
 import type { HardwareTextureWrapper } from "../../Materials/Textures/hardwareTextureWrapper";
-import { InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import { Scalar } from "../../Maths/math.scalar";
 import type { Nullable } from "../../types";
 import * as WebGPUConstants from "./webgpuConstants";
 
 declare type WebGPUBundleList = import("./webgpuBundleList").WebGPUBundleList;
 
-/** @hidden */
+/** @internal */
 export class WebGPUHardwareTexture implements HardwareTextureWrapper {
     /**
      * List of bundles collected in the snapshot rendering mode when the texture is a render target texture
      * The index in this array is the current layer we are rendering into
-     * @hidden
+     * @internal
      */
     public _bundleLists: WebGPUBundleList[];
     /**
      * Current layer we are rendering into when in snapshot rendering mode (if the texture is a render target texture)
-     * @hidden
+     * @internal
      */
     public _currentLayer: number;
 
     /**
      * Cache of RenderPassDescriptor and BindGroup used when generating mipmaps (see WebGPUTextureHelper.generateMipmaps)
-     * @hidden
+     * @internal
      */
     public _mipmapGenRenderPassDescr: GPURenderPassDescriptor[][];
-    /** @hidden */
+    /** @internal */
     public _mipmapGenBindGroup: GPUBindGroup[][];
 
     /**
      * Cache for the invertYPreMultiplyAlpha function (see WebGPUTextureHelper)
-     * @hidden
+     * @internal
      */
     public _copyInvertYTempTexture?: GPUTexture;
-    /** @hidden */
+    /** @internal */
     public _copyInvertYRenderPassDescr: GPURenderPassDescriptor;
-    /** @hidden */
+    /** @internal */
     public _copyInvertYBindGroup: GPUBindGroup;
-    /** @hidden */
+    /** @internal */
     public _copyInvertYBindGroupWithOfst: GPUBindGroup;
 
     private _webgpuTexture: Nullable<GPUTexture>;
-    private _webgpuMSAATexture: Nullable<GPUTexture>;
+    // There can be multiple MSAA textures for a single WebGPU texture because different layers of a 2DArrayTexture / 3DTexture
+    // or different faces of a cube texture can be bound to different render targets at the same time (in a multi RenderTargetWrapper)
+    private _webgpuMSAATexture: Nullable<GPUTexture[]>;
 
     public get underlyingResource(): Nullable<GPUTexture> {
         return this._webgpuTexture;
     }
 
-    public get msaaTexture(): Nullable<GPUTexture> {
-        return this._webgpuMSAATexture;
+    public getMSAATexture(index = 0): Nullable<GPUTexture> {
+        return this._webgpuMSAATexture?.[index] ?? null;
     }
 
-    public set msaaTexture(texture: Nullable<GPUTexture>) {
-        this._webgpuMSAATexture = texture;
+    public setMSAATexture(texture: GPUTexture, index = -1) {
+        if (!this._webgpuMSAATexture) {
+            this._webgpuMSAATexture = [];
+        }
+
+        if (index === -1) {
+            index = this._webgpuMSAATexture.length;
+        }
+
+        this._webgpuMSAATexture![index] = texture;
+    }
+
+    public releaseMSAATexture() {
+        if (this._webgpuMSAATexture) {
+            for (const texture of this._webgpuMSAATexture) {
+                texture?.destroy();
+            }
+            this._webgpuMSAATexture = null;
+        }
     }
 
     public view: Nullable<GPUTextureView>;
@@ -72,9 +90,7 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
         this._webgpuTexture = hardwareTexture;
     }
 
-    public setUsage(textureSource: number, generateMipMaps: boolean, isCube: boolean, width: number, height: number): void {
-        generateMipMaps = textureSource === InternalTextureSource.RenderTarget ? false : generateMipMaps;
-
+    public setUsage(_textureSource: number, generateMipMaps: boolean, isCube: boolean, width: number, height: number): void {
         this.createView({
             format: this.format,
             dimension: isCube ? WebGPUConstants.TextureViewDimension.Cube : WebGPUConstants.TextureViewDimension.E2d,
@@ -105,7 +121,7 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
 
     public release(): void {
         this._webgpuTexture?.destroy();
-        this._webgpuMSAATexture?.destroy();
+        this.releaseMSAATexture();
         this._copyInvertYTempTexture?.destroy();
         this.reset();
     }

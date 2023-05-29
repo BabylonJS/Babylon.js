@@ -3,8 +3,7 @@ import { NodeMaterialBlockTargets } from "./Enums/nodeMaterialBlockTargets";
 import type { Nullable } from "../../types";
 import type { InputBlock } from "./Blocks/Input/inputBlock";
 import { Observable } from "../../Misc/observable";
-
-declare type NodeMaterialBlock = import("./nodeMaterialBlock").NodeMaterialBlock;
+import type { NodeMaterialBlock } from "./nodeMaterialBlock";
 
 /**
  * Enum used to define the compatibility state between two connection points
@@ -71,30 +70,30 @@ export class NodeMaterialConnectionPoint {
         return false;
     }
 
-    /** @hidden */
+    /** @internal */
     public _ownerBlock: NodeMaterialBlock;
-    /** @hidden */
+    /** @internal */
     public _connectedPoint: Nullable<NodeMaterialConnectionPoint> = null;
 
     private _endpoints = new Array<NodeMaterialConnectionPoint>();
     private _associatedVariableName: string;
     private _direction: NodeMaterialConnectionPointDirection;
 
-    /** @hidden */
+    /** @internal */
     public _typeConnectionSource: Nullable<NodeMaterialConnectionPoint> = null;
 
-    /** @hidden */
+    /** @internal */
     public _defaultConnectionPointType: Nullable<NodeMaterialBlockConnectionPointTypes> = null;
 
-    /** @hidden */
+    /** @internal */
     public _linkedConnectionSource: Nullable<NodeMaterialConnectionPoint> = null;
 
-    /** @hidden */
+    /** @internal */
     public _acceptedConnectionPointType: Nullable<NodeMaterialConnectionPoint> = null;
 
     private _type = NodeMaterialBlockConnectionPointTypes.Float;
 
-    /** @hidden */
+    /** @internal */
     public _enforceAssociatedVariableName = false;
 
     /** Gets the direction of the point */
@@ -213,7 +212,7 @@ export class NodeMaterialConnectionPoint {
      */
     public define: string;
 
-    /** @hidden */
+    /** @internal */
     public _prioritizeVertex = false;
 
     private _target: NodeMaterialBlockTargets = NodeMaterialBlockTargets.VertexAndFragment;
@@ -514,6 +513,20 @@ export class NodeMaterialConnectionPoint {
         this._enforceAssociatedVariableName = false;
         endpoint._enforceAssociatedVariableName = false;
         return this;
+    }
+
+    /**
+     * Fill the list of excluded connection point types with all types other than those passed in the parameter
+     * @param mask Types (ORed values of NodeMaterialBlockConnectionPointTypes) that are allowed, and thus will not be pushed to the excluded list
+     */
+    public addExcludedConnectionPointFromAllowedTypes(mask: number): void {
+        let bitmask = 1;
+        while (bitmask < NodeMaterialBlockConnectionPointTypes.All) {
+            if (!(mask & bitmask)) {
+                this.excludedConnectionPointTypes.push(bitmask);
+            }
+            bitmask = bitmask << 1;
+        }
     }
 
     /**

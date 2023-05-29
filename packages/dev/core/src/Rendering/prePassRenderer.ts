@@ -23,8 +23,7 @@ import { GeometryBufferRenderer } from "../Rendering/geometryBufferRenderer";
  */
 export class PrePassRenderer {
     /**
-     * @param _
-     * @hidden
+     * @internal
      */
     public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
         throw _WarnImport("PrePassRendererSceneComponent");
@@ -50,6 +49,7 @@ export class PrePassRenderer {
      */
     public mrtCount: number = 0;
 
+    private _mrtTypes: number[] = [];
     private _mrtFormats: number[] = [];
     private _mrtLayout: number[] = [];
     private _mrtNames: string[] = [];
@@ -58,11 +58,12 @@ export class PrePassRenderer {
     private _multiRenderAttachments: number[];
     private _defaultAttachments: number[];
     private _clearAttachments: number[];
+    private _clearDepthAttachments: number[];
 
     /**
      * Returns the index of a texture in the multi render target texture array.
      * @param type Texture type
-     * @return The index
+     * @returns The index
      */
     public getIndex(type: number): number {
         return this._textureIndices[type];
@@ -79,45 +80,75 @@ export class PrePassRenderer {
         this.defaultRT.samples = n;
     }
 
-    private static _TextureFormats = [
+    private _useSpecificClearForDepthTexture = false;
+
+    /**
+     * If set to true (default: false), the depth texture will be cleared with the depth value corresponding to the far plane (1 in normal mode, 0 in reverse depth buffer mode)
+     * If set to false, the depth texture is always cleared with 0.
+     */
+    public get useSpecificClearForDepthTexture() {
+        return this._useSpecificClearForDepthTexture;
+    }
+
+    public set useSpecificClearForDepthTexture(value: boolean) {
+        if (this._useSpecificClearForDepthTexture === value) {
+            return;
+        }
+
+        this._useSpecificClearForDepthTexture = value;
+        this._isDirty = true;
+    }
+
+    /**
+     * Describes the types and formats of the textures used by the pre-pass renderer
+     */
+    public static TextureFormats = [
         {
-            type: Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,
-            format: Constants.TEXTURETYPE_HALF_FLOAT,
+            purpose: Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,
+            type: Constants.TEXTURETYPE_HALF_FLOAT,
+            format: Constants.TEXTUREFORMAT_RGBA,
             name: "prePass_Irradiance",
         },
         {
-            type: Constants.PREPASS_POSITION_TEXTURE_TYPE,
-            format: Constants.TEXTURETYPE_HALF_FLOAT,
+            purpose: Constants.PREPASS_POSITION_TEXTURE_TYPE,
+            type: Constants.TEXTURETYPE_HALF_FLOAT,
+            format: Constants.TEXTUREFORMAT_RGBA,
             name: "prePass_Position",
         },
         {
-            type: Constants.PREPASS_VELOCITY_TEXTURE_TYPE,
-            format: Constants.TEXTURETYPE_UNSIGNED_INT,
+            purpose: Constants.PREPASS_VELOCITY_TEXTURE_TYPE,
+            type: Constants.TEXTURETYPE_UNSIGNED_INT,
+            format: Constants.TEXTUREFORMAT_RGBA,
             name: "prePass_Velocity",
         },
         {
-            type: Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE,
-            format: Constants.TEXTURETYPE_UNSIGNED_INT,
+            purpose: Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE,
+            type: Constants.TEXTURETYPE_UNSIGNED_INT,
+            format: Constants.TEXTUREFORMAT_RGBA,
             name: "prePass_Reflectivity",
         },
         {
-            type: Constants.PREPASS_COLOR_TEXTURE_TYPE,
-            format: Constants.TEXTURETYPE_HALF_FLOAT,
+            purpose: Constants.PREPASS_COLOR_TEXTURE_TYPE,
+            type: Constants.TEXTURETYPE_HALF_FLOAT,
+            format: Constants.TEXTUREFORMAT_RGBA,
             name: "prePass_Color",
         },
         {
-            type: Constants.PREPASS_DEPTH_TEXTURE_TYPE,
-            format: Constants.TEXTURETYPE_HALF_FLOAT,
+            purpose: Constants.PREPASS_DEPTH_TEXTURE_TYPE,
+            type: Constants.TEXTURETYPE_FLOAT,
+            format: Constants.TEXTUREFORMAT_R,
             name: "prePass_Depth",
         },
         {
-            type: Constants.PREPASS_NORMAL_TEXTURE_TYPE,
-            format: Constants.TEXTURETYPE_HALF_FLOAT,
+            purpose: Constants.PREPASS_NORMAL_TEXTURE_TYPE,
+            type: Constants.TEXTURETYPE_HALF_FLOAT,
+            format: Constants.TEXTUREFORMAT_RGBA,
             name: "prePass_Normal",
         },
         {
-            type: Constants.PREPASS_ALBEDO_SQRT_TEXTURE_TYPE,
-            format: Constants.TEXTURETYPE_UNSIGNED_INT,
+            purpose: Constants.PREPASS_ALBEDO_SQRT_TEXTURE_TYPE,
+            type: Constants.TEXTURETYPE_UNSIGNED_INT,
+            format: Constants.TEXTUREFORMAT_RGBA,
             name: "prePass_Albedo",
         },
     ];
@@ -135,7 +166,7 @@ export class PrePassRenderer {
     private _effectConfigurations: PrePassEffectConfiguration[] = [];
 
     /**
-     * @return the prepass render target for the rendering pass.
+     * @returns the prepass render target for the rendering pass.
      * If we are currently rendering a render target, it returns the PrePassRenderTarget
      * associated with that render target. Otherwise, it returns the scene default PrePassRenderTarget
      */
@@ -144,7 +175,7 @@ export class PrePassRenderer {
     }
 
     /**
-     * @hidden
+     * @internal
      * Managed by the scene component
      * @param prePassRenderTarget
      */
@@ -153,8 +184,8 @@ export class PrePassRenderer {
             this._currentTarget = prePassRenderTarget;
         } else {
             this._currentTarget = this.defaultRT;
+            this._engine.currentRenderPassId = this._scene.activeCamera?.renderPassId ?? this._currentTarget.renderPassId;
         }
-        this._engine.currentRenderPassId = this._currentTarget.renderPassId;
     }
 
     /**
@@ -200,6 +231,7 @@ export class PrePassRenderer {
     public renderTargets: PrePassRenderTarget[] = [];
 
     private readonly _clearColor = new Color4(0, 0, 0, 0);
+    private readonly _clearDepthColor = new Color4(1e8, 0, 0, 1); // "infinity" value - depth in the depth texture is view.z, not a 0..1 value!
 
     private _enabled: boolean = false;
 
@@ -228,6 +260,21 @@ export class PrePassRenderer {
         this._scene = scene;
         this._engine = scene.getEngine();
 
+        let type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+        if (this._engine._caps.textureFloat && this._engine._caps.textureFloatLinearFiltering) {
+            type = Constants.TEXTURETYPE_FLOAT;
+        } else if (this._engine._caps.textureHalfFloat && this._engine._caps.textureHalfFloatLinearFiltering) {
+            type = Constants.TEXTURETYPE_HALF_FLOAT;
+        }
+
+        if (type !== Constants.TEXTURETYPE_FLOAT) {
+            for (let i = 0; i < PrePassRenderer.TextureFormats.length; ++i) {
+                if (PrePassRenderer.TextureFormats[i].type === Constants.TEXTURETYPE_FLOAT) {
+                    PrePassRenderer.TextureFormats[Constants.PREPASS_DEPTH_TEXTURE_TYPE].type = type;
+                }
+            }
+        }
+
         PrePassRenderer._SceneComponentInitialization(this._scene);
         this.defaultRT = this._createRenderTarget("sceneprePassRT", null);
         this._currentTarget = this.defaultRT;
@@ -239,7 +286,7 @@ export class PrePassRenderer {
      * @param name Name of the `PrePassRenderTarget`
      * @param renderTargetTexture RenderTarget the `PrePassRenderTarget` will be attached to.
      * Can be `null` if the created `PrePassRenderTarget` is attached to the scene (default framebuffer).
-     * @hidden
+     * @internal
      */
     public _createRenderTarget(name: string, renderTargetTexture: Nullable<RenderTargetTexture>): PrePassRenderTarget {
         const rt = new PrePassRenderTarget(name, renderTargetTexture, { width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() }, 0, this._scene, {
@@ -251,6 +298,11 @@ export class PrePassRenderer {
         });
 
         this.renderTargets.push(rt);
+
+        if (this._enabled) {
+            // The pre-pass renderer is already enabled, so make sure we create the render target with the correct number of textures
+            this._update();
+        }
 
         return rt;
     }
@@ -292,31 +344,40 @@ export class PrePassRenderer {
     private _reinitializeAttachments() {
         const multiRenderLayout = [];
         const clearLayout = [false];
+        const clearDepthLayout = [false];
         const defaultLayout = [true];
 
         for (let i = 0; i < this.mrtCount; i++) {
             multiRenderLayout.push(true);
 
             if (i > 0) {
-                clearLayout.push(true);
+                if (this._useSpecificClearForDepthTexture && this._mrtLayout[i] === Constants.PREPASS_DEPTH_TEXTURE_TYPE) {
+                    clearLayout.push(false);
+                    clearDepthLayout.push(true);
+                } else {
+                    clearLayout.push(true);
+                    clearDepthLayout.push(false);
+                }
                 defaultLayout.push(false);
             }
         }
 
         this._multiRenderAttachments = this._engine.buildTextureLayout(multiRenderLayout);
         this._clearAttachments = this._engine.buildTextureLayout(clearLayout);
+        this._clearDepthAttachments = this._engine.buildTextureLayout(clearDepthLayout);
         this._defaultAttachments = this._engine.buildTextureLayout(defaultLayout);
     }
 
     private _resetLayout() {
-        for (let i = 0; i < PrePassRenderer._TextureFormats.length; i++) {
-            this._textureIndices[PrePassRenderer._TextureFormats[i].type] = -1;
+        for (let i = 0; i < PrePassRenderer.TextureFormats.length; i++) {
+            this._textureIndices[PrePassRenderer.TextureFormats[i].purpose] = -1;
         }
 
         this._textureIndices[Constants.PREPASS_COLOR_TEXTURE_TYPE] = 0;
         this._mrtLayout = [Constants.PREPASS_COLOR_TEXTURE_TYPE];
-        this._mrtFormats = [PrePassRenderer._TextureFormats[Constants.PREPASS_COLOR_TEXTURE_TYPE].format];
-        this._mrtNames = [PrePassRenderer._TextureFormats[Constants.PREPASS_COLOR_TEXTURE_TYPE].name];
+        this._mrtTypes = [PrePassRenderer.TextureFormats[Constants.PREPASS_COLOR_TEXTURE_TYPE].type];
+        this._mrtFormats = [PrePassRenderer.TextureFormats[Constants.PREPASS_COLOR_TEXTURE_TYPE].format];
+        this._mrtNames = [PrePassRenderer.TextureFormats[Constants.PREPASS_COLOR_TEXTURE_TYPE].name];
         this.mrtCount = 1;
     }
 
@@ -384,10 +445,7 @@ export class PrePassRenderer {
     }
 
     /**
-     * @param camera
-     * @param faceIndex
-     * @param layer
-     * @hidden
+     * @internal
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public _beforeDraw(camera?: Camera, faceIndex?: number, layer?: number) {
@@ -418,6 +476,24 @@ export class PrePassRenderer {
         }
     }
 
+    /**
+     * Sets an intermediary texture between prepass and postprocesses. This texture
+     * will be used as input for post processes
+     * @param rt
+     * @returns true if there are postprocesses that will use this texture,
+     * false if there is no postprocesses - and the function has no effect
+     */
+    public setCustomOutput(rt: RenderTargetTexture) {
+        const firstPP = this._postProcessesSourceForThisPass[0];
+        if (!firstPP) {
+            return false;
+        }
+
+        firstPP.inputTexture = rt.renderTarget!;
+
+        return true;
+    }
+
     private _renderPostProcesses(prePassRenderTarget: PrePassRenderTarget, faceIndex?: number) {
         const firstPP = this._postProcessesSourceForThisPass[0];
         const outputTexture = firstPP ? firstPP.inputTexture : prePassRenderTarget.renderTargetTexture ? prePassRenderTarget.renderTargetTexture.renderTarget : null;
@@ -437,9 +513,7 @@ export class PrePassRenderer {
     }
 
     /**
-     * @param faceIndex
-     * @param layer
-     * @hidden
+     * @internal
      */
     public _afterDraw(faceIndex?: number, layer?: number) {
         if (this._enabled && this._currentTarget.enabled) {
@@ -450,7 +524,7 @@ export class PrePassRenderer {
 
     /**
      * Clears the current prepass render target (in the sense of settings pixels to the scene clear color value)
-     * @hidden
+     * @internal
      */
     public _clear() {
         if (this._enabled && this._currentTarget.enabled) {
@@ -459,6 +533,10 @@ export class PrePassRenderer {
             // Clearing other attachment with 0 on all other attachments
             this._engine.bindAttachments(this._clearAttachments);
             this._engine.clear(this._clearColor, true, false, false);
+            if (this._useSpecificClearForDepthTexture) {
+                this._engine.bindAttachments(this._clearDepthAttachments);
+                this._engine.clear(this._clearDepthColor, true, false, false);
+            }
             // Regular clear color with the scene clear color of the 1st attachment
             this._engine.bindAttachments(this._defaultAttachments);
         }
@@ -491,7 +569,7 @@ export class PrePassRenderer {
      * If an effect has already been added, it won't add it twice and will return the configuration
      * already present.
      * @param cfg the effect configuration
-     * @return the effect configuration now used by the prepass
+     * @returns the effect configuration now used by the prepass
      */
     public addEffectConfiguration(cfg: PrePassEffectConfiguration): PrePassEffectConfiguration {
         // Do not add twice
@@ -516,7 +594,7 @@ export class PrePassRenderer {
 
         for (let i = 0; i < this.renderTargets.length; i++) {
             if (this.mrtCount !== previousMrtCount || this.renderTargets[i].count !== this.mrtCount) {
-                this.renderTargets[i].updateCount(this.mrtCount, { types: this._mrtFormats }, this._mrtNames.concat("prePass_DepthBuffer"));
+                this.renderTargets[i].updateCount(this.mrtCount, { types: this._mrtTypes, formats: this._mrtFormats }, this._mrtNames.concat("prePass_DepthBuffer"));
             }
 
             this.renderTargets[i]._resetPostProcessChain();
@@ -630,8 +708,7 @@ export class PrePassRenderer {
     }
 
     /**
-     * @param prePassRenderTarget
-     * @hidden
+     * @internal
      */
     public _unlinkInternalTexture(prePassRenderTarget: PrePassRenderTarget) {
         if (prePassRenderTarget._outputPostProcess) {
@@ -701,14 +778,24 @@ export class PrePassRenderer {
                 this._textureIndices[type] = this._mrtLayout.length;
                 this._mrtLayout.push(type);
 
-                this._mrtFormats.push(PrePassRenderer._TextureFormats[type].format);
-                this._mrtNames.push(PrePassRenderer._TextureFormats[type].name);
+                this._mrtTypes.push(PrePassRenderer.TextureFormats[type].type);
+                this._mrtFormats.push(PrePassRenderer.TextureFormats[type].format);
+                this._mrtNames.push(PrePassRenderer.TextureFormats[type].name);
                 this.mrtCount++;
             }
 
             if (type === Constants.PREPASS_VELOCITY_TEXTURE_TYPE) {
                 this._scene.needsPreviousWorldMatrices = true;
             }
+        }
+    }
+
+    /**
+     * Makes sure that the prepass renderer is up to date if it has been dirtified.
+     */
+    public update() {
+        if (this._isDirty) {
+            this._update();
         }
     }
 

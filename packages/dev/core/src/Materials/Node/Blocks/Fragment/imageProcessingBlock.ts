@@ -26,10 +26,16 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
     public constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Fragment);
 
-        this.registerInput("color", NodeMaterialBlockConnectionPointTypes.Color4);
+        this.registerInput("color", NodeMaterialBlockConnectionPointTypes.AutoDetect);
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Color4);
+        this.registerOutput("rgb", NodeMaterialBlockConnectionPointTypes.Color3);
 
-        this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Color3);
+        this._inputs[0].addExcludedConnectionPointFromAllowedTypes(
+            NodeMaterialBlockConnectionPointTypes.Color3 |
+                NodeMaterialBlockConnectionPointTypes.Color4 |
+                NodeMaterialBlockConnectionPointTypes.Vector3 |
+                NodeMaterialBlockConnectionPointTypes.Vector4
+        );
     }
 
     /**
@@ -61,6 +67,13 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets the rgb component
+     */
+    public get rgb(): NodeMaterialConnectionPoint {
+        return this._outputs[1];
+    }
+
+    /**
      * Initialize the block and prepare the context for build
      * @param state defines the state that will be used for the build
      */
@@ -75,6 +88,7 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
         state._excludeVariableName("vCameraColorCurvePositive");
         state._excludeVariableName("txColorTransform");
         state._excludeVariableName("colorTransformSettings");
+        state._excludeVariableName("ditherIntensity");
     }
 
     public isReady(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
@@ -127,6 +141,7 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
         state.uniforms.push("vCameraColorCurvePositive");
         state.uniforms.push("txColorTransform");
         state.uniforms.push("colorTransformSettings");
+        state.uniforms.push("ditherIntensity");
 
         // Emit code
         const color = this.color;
@@ -137,23 +152,29 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
         state._emitFunctionFromInclude("imageProcessingDeclaration", comments);
         state._emitFunctionFromInclude("imageProcessingFunctions", comments);
 
-        if (color.connectedPoint!.type === NodeMaterialBlockConnectionPointTypes.Color4 || color.connectedPoint!.type === NodeMaterialBlockConnectionPointTypes.Vector4) {
-            state.compilationString += `${this._declareOutput(output, state)} = ${color.associatedVariableName};\r\n`;
-        } else {
-            state.compilationString += `${this._declareOutput(output, state)} = vec4(${color.associatedVariableName}, 1.0);\r\n`;
+        if (color.connectedPoint?.isConnected) {
+            if (color.connectedPoint!.type === NodeMaterialBlockConnectionPointTypes.Color4 || color.connectedPoint!.type === NodeMaterialBlockConnectionPointTypes.Vector4) {
+                state.compilationString += `${this._declareOutput(output, state)} = ${color.associatedVariableName};\r\n`;
+            } else {
+                state.compilationString += `${this._declareOutput(output, state)} = vec4(${color.associatedVariableName}, 1.0);\r\n`;
+            }
+            state.compilationString += `#ifdef IMAGEPROCESSINGPOSTPROCESS\r\n`;
+            if (this.convertInputToLinearSpace) {
+                state.compilationString += `${output.associatedVariableName}.rgb = toLinearSpace(${color.associatedVariableName}.rgb);\r\n`;
+            }
+            state.compilationString += `#else\r\n`;
+            state.compilationString += `#ifdef IMAGEPROCESSING\r\n`;
+            if (this.convertInputToLinearSpace) {
+                state.compilationString += `${output.associatedVariableName}.rgb = toLinearSpace(${color.associatedVariableName}.rgb);\r\n`;
+            }
+            state.compilationString += `${output.associatedVariableName} = applyImageProcessing(${output.associatedVariableName});\r\n`;
+            state.compilationString += `#endif\r\n`;
+            state.compilationString += `#endif\r\n`;
+
+            if (this.rgb.hasEndpoints) {
+                state.compilationString += this._declareOutput(this.rgb, state) + ` = ${this.output.associatedVariableName}.xyz;\r\n`;
+            }
         }
-        state.compilationString += `#ifdef IMAGEPROCESSINGPOSTPROCESS\r\n`;
-        if (this.convertInputToLinearSpace) {
-            state.compilationString += `${output.associatedVariableName}.rgb = toLinearSpace(${color.associatedVariableName}.rgb);\r\n`;
-        }
-        state.compilationString += `#else\r\n`;
-        state.compilationString += `#ifdef IMAGEPROCESSING\r\n`;
-        if (this.convertInputToLinearSpace) {
-            state.compilationString += `${output.associatedVariableName}.rgb = toLinearSpace(${color.associatedVariableName}.rgb);\r\n`;
-        }
-        state.compilationString += `${output.associatedVariableName} = applyImageProcessing(${output.associatedVariableName});\r\n`;
-        state.compilationString += `#endif\r\n`;
-        state.compilationString += `#endif\r\n`;
 
         return this;
     }

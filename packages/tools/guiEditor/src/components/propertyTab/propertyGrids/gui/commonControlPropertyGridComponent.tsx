@@ -20,7 +20,7 @@ import { Vector2 } from "core/Maths/math";
 
 import type { Nullable } from "core/types";
 import { IconComponent } from "shared-ui-components/lines/iconComponent";
-import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { OptionsLineComponent } from "shared-ui-components/components/lines/OptionsLineComponent";
 
 import sizeIcon from "shared-ui-components/imgs/sizeIcon.svg";
 import verticalMarginIcon from "shared-ui-components/imgs/verticalMarginIcon.svg";
@@ -39,6 +39,7 @@ import shadowColorIcon from "shared-ui-components/imgs/shadowColorIcon.svg";
 import shadowOffsetXIcon from "shared-ui-components/imgs/shadowOffsetXIcon.svg";
 import colorIcon from "shared-ui-components/imgs/colorIcon.svg";
 import fillColorIcon from "shared-ui-components/imgs/fillColorIcon.svg";
+import linkedMeshOffsetIcon from "shared-ui-components/imgs/linkedMeshOffsetIcon.svg";
 
 import hAlignCenterIcon from "shared-ui-components/imgs/hAlignCenterIcon.svg";
 import hAlignLeftIcon from "shared-ui-components/imgs/hAlignLeftIcon.svg";
@@ -47,24 +48,47 @@ import vAlignCenterIcon from "shared-ui-components/imgs/vAlignCenterIcon.svg";
 import vAlignTopIcon from "shared-ui-components/imgs/vAlignTopIcon.svg";
 import vAlignBottomIcon from "shared-ui-components/imgs/vAlignBottomIcon.svg";
 import descendantsOnlyPaddingIcon from "shared-ui-components/imgs/descendantsOnlyPaddingIcon.svg";
-import { StackPanel } from "gui/2D/controls/stackPanel";
+import type { StackPanel } from "gui/2D/controls/stackPanel";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { UnitButton } from "shared-ui-components/lines/unitButton";
+import type { IInspectableOptions } from "core/Misc/iInspectable";
+
+import { WorkbenchComponent } from "../../../../diagram/workbench";
+import type { GlobalState } from "../../../../globalState";
 
 interface ICommonControlPropertyGridComponentProps {
     controls: Control[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     hideDimensions?: boolean;
+    onFontsParsedObservable?: Observable<void>;
+    globalState?: GlobalState;
+}
+interface ICommonControlPropertyGridComponentState {
+    fontFamilyOptions: IInspectableOptions[];
 }
 
-type ControlProperty = keyof Control | "_paddingLeft" | "_paddingRight" | "_paddingTop" | "_paddingBottom" | "_fontSize";
+type ControlProperty = keyof Control | "_paddingLeft" | "_paddingRight" | "_paddingTop" | "_paddingBottom" | "_fontSize" | "_linkOffsetX" | "_linkOffsetY";
 
-export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps> {
+export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps, ICommonControlPropertyGridComponentState> {
     private _onPropertyChangedObserver: Nullable<Observer<PropertyChangedEvent>> | undefined;
+    private _onFontsParsedObserver: Nullable<Observer<void>> | undefined;
 
     constructor(props: ICommonControlPropertyGridComponentProps) {
         super(props);
+        this.state = {
+            fontFamilyOptions: JSON.parse(String(window.sessionStorage.getItem("fonts"))) ?? [
+                { label: "Arial", value: 1 },
+                { label: "Verdana", value: 2 },
+                { label: "Helvetica", value: 3 },
+                { label: "Trebuchet MS", value: 4 },
+                { label: "Times New Roman", value: 5 },
+                { label: "Georgia", value: 6 },
+                { label: "Garamond", value: 7 },
+                { label: "Courier New", value: 8 },
+                { label: "Brush Script MT", value: 9 },
+            ],
+        };
 
         const controls = this.props.controls;
         for (const control of controls) {
@@ -74,7 +98,9 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
             }
             control.metadata._previousCenter = transformed;
         }
-
+        this._onFontsParsedObserver = this.props.onFontsParsedObservable?.add(() => {
+            this._checkFontsInLayout();
+        });
         this._onPropertyChangedObserver = this.props.onPropertyChangedObservable?.add((event) => {
             const isTransformEvent = event.property === "transformCenterX" || event.property === "transformCenterY";
             for (const control of controls) {
@@ -96,6 +122,41 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 }
             }
         });
+    }
+
+    componentWillMount() {
+        this._checkFontsInLayout();
+    }
+
+    private _checkFontsInLayout() {
+        const correctFonts: IInspectableOptions[] = [];
+        for (const font of this.state.fontFamilyOptions.values()) {
+            if (document.fonts.check(`12px "${font.label}"`) && font.label != "Custom Font") {
+                correctFonts.push(font);
+            }
+        }
+
+        const moreFonts = WorkbenchComponent.addedFonts;
+        for (let i = 0; i < moreFonts.length; i++) {
+            const fontName = moreFonts[i].trim();
+            correctFonts.push({ label: fontName, value: fontName });
+        }
+        this.setState({
+            fontFamilyOptions: correctFonts,
+        });
+        window.sessionStorage.setItem("fonts", JSON.stringify(correctFonts));
+    }
+
+    private _addFont(fontValue: string) {
+        const fontName = fontValue.trim();
+        if (fontName.length > 0) {
+            if (!this.state.fontFamilyOptions.find(({ value }) => value === fontValue)) {
+                this.setState((state) => {
+                    state.fontFamilyOptions.push({ label: fontName, value: fontName });
+                    return state;
+                }, this._checkFontsInLayout);
+            }
+        }
     }
 
     private _getTransformedReferenceCoordinate(control: Control) {
@@ -165,6 +226,19 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         if (this._onPropertyChangedObserver) {
             this.props.onPropertyChangedObservable?.remove(this._onPropertyChangedObserver);
         }
+        if (this._onFontsParsedObserver) {
+            this.props.onFontsParsedObservable?.remove(this._onFontsParsedObserver);
+        }
+    }
+
+    _filterFontDuplicates(array: { label: string; value: string; id: string }[]) {
+        const seen = new Set();
+        return array.filter((item) => {
+            const val = item.value;
+            const duplicate = seen.has(val);
+            seen.add(val);
+            return !duplicate;
+        });
     }
 
     render() {
@@ -185,7 +259,8 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
             verticalAlignment = (firstControl as TextBlock).textVerticalAlignment;
         }
 
-        const showTextProperties = firstControl instanceof Container || firstControl.typeName === "TextBlock";
+        const showTextProperties =
+            firstControl instanceof Container || firstControl.typeName === "TextBlock" || firstControl.typeName === "InputText" || firstControl.typeName === "InputPassword";
 
         const proxy = makeTargetsProxy(controls, this.props.onPropertyChangedObservable);
         const getValue = (propertyName: ControlProperty) => {
@@ -247,9 +322,9 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         };
 
         const fontStyleOptions = [
-            { label: "regular", value: 0 },
-            { label: "italic", value: 1 },
-            { label: "oblique", value: 2 },
+            { label: "normal", value: "normal", id: "0" },
+            { label: "italic", value: "italic", id: "1" },
+            { label: "oblique", value: "oblique", id: "2" },
         ];
 
         let horizontalDisabled = false,
@@ -258,6 +333,11 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
             heightUnitsLocked = false;
 
         const parent = controls[0].parent;
+
+        const fonts = this._filterFontDuplicates(
+            this.state.fontFamilyOptions.filter(({ label }) => label !== "Custom Font").map(({ label, value }) => ({ label, value: label, id: value.toString() }))
+        );
+
         if (parent?.getClassName() === "StackPanel" || parent?.getClassName() === "VirtualKeyboard") {
             if ((parent as StackPanel).isVertical) {
                 verticalDisabled = true;
@@ -267,7 +347,6 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 widthUnitsLocked = true;
             }
         }
-
         return (
             <div>
                 {!this.props.hideDimensions && (
@@ -480,6 +559,37 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         <hr className="ge" />
                     </>
                 )}
+                {parent?.name === "root" && (
+                    <>
+                        <TextLineComponent label="LINK OFFSET" value=" " color="grey"></TextLineComponent>
+                        <div className="ge-divider double">
+                            <IconComponent icon={linkedMeshOffsetIcon} label={"Link offset"} />
+                            <TextInputLineComponent
+                                numbersOnly={true}
+                                lockObject={this.props.lockObject}
+                                label="X"
+                                delayInput={true}
+                                value={getValue("_linkOffsetX")}
+                                onChange={(newValue) => this._checkAndUpdateValues("linkOffsetX", newValue)}
+                                unit={<UnitButton unit={getUnitString("_linkOffsetX")} onClick={(unit) => convertUnits(unit, "linkOffsetX")} />}
+                                arrows={true}
+                                arrowsIncrement={(amount) => increment("linkOffsetX", amount)}
+                            />
+                            <TextInputLineComponent
+                                numbersOnly={true}
+                                lockObject={this.props.lockObject}
+                                label="Y"
+                                delayInput={true}
+                                value={getValue("_linkOffsetY")}
+                                onChange={(newValue) => this._checkAndUpdateValues("linkOffsetY", newValue)}
+                                unit={<UnitButton unit={getUnitString("_linkOffsetY")} onClick={(unit) => convertUnits(unit, "linkOffsetY")} />}
+                                arrows={true}
+                                arrowsIncrement={(amount) => increment("linkOffsetY", amount)}
+                            />
+                        </div>
+                        <hr className="ge" />
+                    </>
+                )}
                 <TextLineComponent tooltip="" label="TRANSFORMATION" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider double">
                     <IconComponent icon={scaleIcon} label={"Scale"} />
@@ -563,7 +673,23 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         <TextLineComponent tooltip="" label="FONT STYLE" value=" " color="grey"></TextLineComponent>
                         <div className="ge-divider">
                             <IconComponent icon={fontFamilyIcon} label={"Font Family"} />
-                            <TextInputLineComponent lockObject={this.props.lockObject} label="" target={proxy} propertyName="fontFamily" />
+                            <OptionsLineComponent
+                                options={fonts}
+                                selectedOptionValue={proxy.fontFamily}
+                                onOptionSelected={(selectedFontValue) => {
+                                    proxy.fontFamily = selectedFontValue;
+                                }}
+                                onOptionAdded={({ value }) => {
+                                    this._addFont(value);
+                                }}
+                                addOptionPlaceholder={"Add new font..."}
+                                validateNewOptionValue={(newFontValue) => {
+                                    if (newFontValue.length > 0 && !fonts.find((f) => f.label === newFontValue)) {
+                                        return document.fonts.check(`12px ${newFontValue}`);
+                                    }
+                                    return false;
+                                }}
+                            />
                         </div>
                         <div className="ge-divider">
                             <IconComponent icon={fontWeightIcon} label={"Font Weight"} />
@@ -572,22 +698,10 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         <div className="ge-divider">
                             <IconComponent icon={fontStyleIcon} label={"Font Style"} />
                             <OptionsLineComponent
-                                label=""
-                                target={proxy}
-                                propertyName="fontStyle"
                                 options={fontStyleOptions}
-                                onSelect={(newValue) => {
-                                    proxy.fontStyle = ["", "italic", "oblique"][newValue];
-                                }}
-                                extractValue={() => {
-                                    switch (proxy.fontStyle) {
-                                        case "italic":
-                                            return 1;
-                                        case "oblique":
-                                            return 2;
-                                        default:
-                                            return 0;
-                                    }
+                                selectedOptionValue={proxy.fontStyle}
+                                onOptionSelected={(value) => {
+                                    proxy.fontStyle = value;
                                 }}
                             />
                         </div>

@@ -13,9 +13,9 @@ module.exports = (env) => {
             devtoolModuleFilenameTemplate: production ? "webpack://[namespace]/[resource-path]?[loaders]" : "file:///[absolute-resource-path]",
         },
         resolve: {
-            extensions: [".js", ".ts", ".tsx"],
+            extensions: [".js", ".ts", ".tsx", ".scss", "*.svg"],
             alias: {
-                "shared-ui-components": path.resolve("../../dev/sharedUiComponents/dist"),
+                "shared-ui-components": path.resolve("../../dev/sharedUiComponents/src"),
             },
         },
         externals: [
@@ -32,7 +32,17 @@ module.exports = (env) => {
             // React, react dom etc'
         ],
         module: {
-            rules: webpackTools.getRules(),
+            rules: webpackTools.getRules({
+                includeCSS: true,
+                includeAssets: true,
+                sideEffects: true,
+                tsOptions: {
+                    compilerOptions: {
+                        rootDir: "../../",
+                    },
+                },
+                mode: production ? "production" : "development",
+            }),
         },
         devServer: {
             static: {
@@ -40,7 +50,7 @@ module.exports = (env) => {
                 watch: false,
             },
             // hot: true,
-            port: process.env.TOOLS_PORT || 1338,
+            port: process.env.NME_PORT || 1340,
             server: env.enableHttps !== undefined || process.env.ENABLE_HTTPS === "true" ? "https" : "http",
             hot: (env.enableHotReload !== undefined || process.env.ENABLE_HOT_RELOAD === "true") && !production ? true : false,
             liveReload: (env.enableLiveReload !== undefined || process.env.ENABLE_LIVE_RELOAD === "true") && !production ? true : false,

@@ -12,6 +12,10 @@ export class MultiviewRenderTarget extends RenderTargetTexture {
         this._samples = value;
     }
 
+    public get samples(): number {
+        return this._samples;
+    }
+
     /**
      * Creates a multiview render target
      * @param scene scene used with the render target
@@ -28,7 +32,7 @@ export class MultiviewRenderTarget extends RenderTargetTexture {
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public _bindFrameBuffer() {
         if (!this._renderTarget) {

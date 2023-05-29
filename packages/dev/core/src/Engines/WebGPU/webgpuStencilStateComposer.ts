@@ -2,7 +2,7 @@ import type { WebGPUCacheRenderPipeline } from "./webgpuCacheRenderPipeline";
 import { StencilStateComposer } from "../../States/stencilStateComposer";
 
 /**
- * @hidden
+ * @internal
  **/
 export class WebGPUStencilStateComposer extends StencilStateComposer {
     private _cache: WebGPUCacheRenderPipeline;

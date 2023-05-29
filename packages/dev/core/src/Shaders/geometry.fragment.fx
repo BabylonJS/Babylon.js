@@ -33,23 +33,46 @@ uniform vec3 vBumpInfos;
 uniform vec2 vTangentSpaceParams;
 #endif
 
-#if defined(REFLECTIVITY) && (defined(HAS_SPECULAR) || defined(HAS_REFLECTIVITY))
-varying vec2 vReflectivityUV;
-uniform sampler2D reflectivitySampler;
+#if defined(REFLECTIVITY)
+    #if defined(ORMTEXTURE) || defined(SPECULARGLOSSINESSTEXTURE) || defined(REFLECTIVITYTEXTURE)
+        uniform sampler2D reflectivitySampler;
+        varying vec2 vReflectivityUV;
+    #endif
+    #ifdef ALBEDOTEXTURE
+        varying vec2 vAlbedoUV;
+        uniform sampler2D albedoSampler;
+    #endif
+    #ifdef REFLECTIVITYCOLOR
+        uniform vec3 reflectivityColor;
+    #endif
+    #ifdef ALBEDOCOLOR
+        uniform vec3 albedoColor;
+    #endif
+    #ifdef METALLIC
+        uniform float metallic;
+    #endif
+    #if defined(ROUGHNESS) || defined(GLOSSINESS)
+        uniform float glossiness;
+    #endif
 #endif
 
-#ifdef ALPHATEST
+#if defined(ALPHATEST) && defined(NEED_UV)
 uniform sampler2D diffuseSampler;
 #endif
+
+#include<clipPlaneFragmentDeclaration>
 
 #include<mrtFragmentDeclaration>[RENDER_TARGET_COUNT]
 #include<bumpFragmentMainFunctions>
 #include<bumpFragmentFunctions>
+#include<helperFunctions>
 
 void main() {
+    #include<clipPlaneFragment>
+
     #ifdef ALPHATEST
-	if (texture2D(diffuseSampler, vUV).a < 0.4)
-		discard;
+    if (texture2D(diffuseSampler, vUV).a < 0.4)
+        discard;
     #endif
 
     vec3 normalOutput;
@@ -89,16 +112,66 @@ void main() {
     #endif
 
     #ifdef REFLECTIVITY
-        #ifdef HAS_SPECULAR
-            // Specular
-            vec4 reflectivity = texture2D(reflectivitySampler, vReflectivityUV);
-        #elif HAS_REFLECTIVITY
-            // Reflectivity
-            vec4 reflectivity = vec4(texture2D(reflectivitySampler, vReflectivityUV).rgb, 1.0);
-        #else
-            vec4 reflectivity = vec4(0.0, 0.0, 0.0, 1.0);
-        #endif
+        vec4 reflectivity = vec4(0.0, 0.0, 0.0, 1.0);
 
+        #ifdef METALLICWORKFLOW
+            // Reflectivity calculus for metallic-roughness model based on:
+            // https://marmoset.co/posts/pbr-texture-conversion/
+            // https://substance3d.adobe.com/tutorials/courses/the-pbr-guide-part-2
+            // https://learnopengl.com/PBR/Theory
+
+            float metal = 1.0;
+            float roughness = 1.0;
+
+            #ifdef ORMTEXTURE
+                // Used as if :
+                // pbr.useRoughnessFromMetallicTextureAlpha = false;
+                // pbr.useRoughnessFromMetallicTextureGreen = true;
+                // pbr.useMetallnessFromMetallicTextureBlue = true;
+                metal *= texture2D(reflectivitySampler, vReflectivityUV).b;
+                roughness *= texture2D(reflectivitySampler, vReflectivityUV).g;
+            #endif
+
+            #ifdef METALLIC
+                metal *= metallic;
+            #endif
+
+            #ifdef ROUGHNESS
+                roughness *= (1.0 - glossiness); // roughness = 1.0 - glossiness
+            #endif
+
+            reflectivity.a -= roughness;
+
+            vec3 color = vec3(1.0);
+            #ifdef ALBEDOTEXTURE
+                color = texture2D(albedoSampler, vAlbedoUV).rgb;
+                #ifdef GAMMAALBEDO
+                    color = toLinearSpace(color);
+                #endif
+            #endif
+            #ifdef ALBEDOCOLOR
+                color *= albedoColor.xyz;
+            //#else // albedo color suposed to be white
+            #endif
+        
+            reflectivity.rgb = mix(vec3(0.04), color, metal);
+        #else
+            // SpecularGlossiness Model + standard material
+            #if defined(SPECULARGLOSSINESSTEXTURE) || defined(REFLECTIVITYTEXTURE)
+                reflectivity = texture2D(reflectivitySampler, vReflectivityUV);
+                #ifdef GAMMAREFLECTIVITYTEXTURE
+                    reflectivity.rgb = toLinearSpace(reflectivity.rgb);
+                #endif
+            #else 
+                #ifdef REFLECTIVITYCOLOR
+                    reflectivity.rgb = toLinearSpace(reflectivityColor.xyz);
+                    reflectivity.a = 1.0;
+                #endif
+            #endif
+            #ifdef GLOSSINESSS
+                reflectivity.a *= glossiness; 
+            #endif
+        #endif
         gl_FragData[REFLECTIVITY_INDEX] = reflectivity;
     #endif
 }

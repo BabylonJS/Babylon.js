@@ -1,4 +1,4 @@
-**Use Github issues ONLY for validated bugs. PLEASE DISCUSS THEM ON THE FORUM FIRST!**
+**Use Github issues ONLY for bugs validated on the forum first!!**
 
 We have a really active forum to help answering questions (https://forum.babylonjs.com/)
 

@@ -11,7 +11,7 @@ import { WebXRWebGLLayerWrapper } from "../webXRWebGLLayer";
 
 /**
  * Wraps xr composition layers.
- * @hidden
+ * @internal
  */
 export class WebXRCompositionLayerWrapper extends WebXRLayerWrapper {
     constructor(
@@ -28,7 +28,7 @@ export class WebXRCompositionLayerWrapper extends WebXRLayerWrapper {
 
 /**
  * Provides render target textures and other important rendering information for a given XRCompositionLayer.
- * @hidden
+ * @internal
  */
 class WebXRCompositionLayerRenderTargetTextureProvider extends WebXRLayerRenderTargetTextureProvider {
     protected _lastSubImages = new Map<XREye, XRWebGLSubImage>();
@@ -109,7 +109,7 @@ class WebXRCompositionLayerRenderTargetTextureProvider extends WebXRLayerRenderT
 
 /**
  * Wraps xr projection layers.
- * @hidden
+ * @internal
  */
 export class WebXRProjectionLayerWrapper extends WebXRCompositionLayerWrapper {
     constructor(public readonly layer: XRProjectionLayer, isMultiview: boolean, xrGLBinding: XRWebGLBinding) {
@@ -126,7 +126,7 @@ export class WebXRProjectionLayerWrapper extends WebXRCompositionLayerWrapper {
 
 /**
  * Provides render target textures and other important rendering information for a given XRProjectionLayer.
- * @hidden
+ * @internal
  */
 class WebXRProjectionLayerRenderTargetTextureProvider extends WebXRCompositionLayerRenderTargetTextureProvider {
     private readonly _projectionLayer: XRProjectionLayer;
@@ -223,7 +223,7 @@ export class WebXRLayers extends WebXRAbstractFeature {
         const engine = this._xrSessionManager.scene.getEngine();
         this._glContext = engine._gl;
         this._xrWebGLBinding = new XRWebGLBinding(this._xrSessionManager.session, this._glContext);
-        this._existingLayers = [];
+        this._existingLayers.length = 0;
 
         const projectionLayerInit = { ...defaultXRProjectionLayerInit };
         const projectionLayerMultiview = this._options.preferMultiviewOnInit && engine.getCaps().multiview;

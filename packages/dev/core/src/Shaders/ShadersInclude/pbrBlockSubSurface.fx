@@ -260,7 +260,7 @@ struct subSurfaceOutParams
                 float requestedRefractionLOD = refractionLOD;
             #endif
 
-            #ifdef REALTIME_FILTERING
+            #if defined(REALTIME_FILTERING) && defined(SS_REFRACTIONMAP_3D)
                 environmentRefraction = vec4(radiance(alphaG, refractionSampler, refractionCoords, vRefractionFilteringInfo), 1.0);
             #else
                 environmentRefraction = sampleRefractionLod(refractionSampler, refractionCoords, requestedRefractionLOD);

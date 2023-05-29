@@ -69,6 +69,8 @@ export interface EngineCapabilities {
     textureHalfFloatRender: boolean;
     /** Defines if textureLOD shader command is supported */
     textureLOD: boolean;
+    /** Defines if texelFetch shader command is supported */
+    texelFetch: boolean;
     /** Defines if draw buffers extension is supported */
     drawBuffersExtension: boolean;
     /** Defines if depth textures are supported */
@@ -106,4 +108,9 @@ export interface EngineCapabilities {
     supportTransformFeedbacks: boolean;
     /** Defines if texture max level are supported */
     textureMaxLevel: boolean;
+
+    /** Defines the maximum layer count for a 2D Texture array. */
+    texture2DArrayMaxLayerCount: number;
+    /** Defines if the morph target texture is supported. */
+    disableMorphTargetTexture: boolean;
 }

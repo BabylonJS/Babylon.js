@@ -2,7 +2,7 @@ import type { WebGPUBufferManager } from "./webgpuBufferManager";
 import * as WebGPUConstants from "./webgpuConstants";
 import type { QueryType } from "./webgpuConstants";
 
-/** @hidden */
+/** @internal */
 export class WebGPUQuerySet {
     private _device: GPUDevice;
     private _bufferManager: WebGPUBufferManager;

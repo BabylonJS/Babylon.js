@@ -38,6 +38,14 @@ export enum InspectableType {
      * Tab
      */
     Tab = 8,
+    /**
+     * File button
+     */
+    FileButton = 9,
+    /**
+     * Vector2
+     */
+    Vector2 = 10,
 }
 
 /**
@@ -62,7 +70,7 @@ export interface IInspectableOptions {
 /**
  * Interface used to define custom inspectable properties.
  * This interface is used by the inspector to display custom property grids
- * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
+ * @see https://doc.babylonjs.com/toolsAndResources/inspector#extensibility
  */
 export interface IInspectable {
     /**
@@ -94,7 +102,16 @@ export interface IInspectable {
      */
     callback?: () => void;
     /**
+     * Gets the callback function when using "FileButton" mode
+     */
+    fileCallback?: (file: File) => void;
+    /**
      * Gets the list of options when using "Option" mode
      */
-    options?: [];
+    options?: IInspectableOptions[];
+    /**
+     * Gets the extensions to accept when using "FileButton" mode.
+     * The value should be a comma separated string with the list of extensions to accept e.g., ".jpg, .png, .tga, .dds, .env".
+     */
+    accept?: string;
 }

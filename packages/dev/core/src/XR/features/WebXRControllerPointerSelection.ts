@@ -348,8 +348,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
     }
 
     /**
-     * @param id
-     * @hidden
+     * @internal
      */
     public _getPointerSelectionDisabledByPointerId(id: number): boolean {
         const keys = Object.keys(this._controllers);
@@ -363,9 +362,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
     }
 
     /**
-     * @param id
-     * @param state
-     * @hidden
+     * @internal
      */
     public _setPointerSelectionDisabledByPointerId(id: number, state: boolean) {
         const keys = Object.keys(this._controllers);
@@ -730,7 +727,8 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             Object.keys(controllerData.eventListeners).forEach((eventName: string) => {
                 const func = controllerData.eventListeners && controllerData.eventListeners[eventName as XREventType];
                 if (func) {
-                    this._xrSessionManager.session.removeEventListener(eventName as XREventType, func);
+                    // For future reference - this is an issue in the WebXR typings.
+                    this._xrSessionManager.session.removeEventListener(eventName as XREventType, func as any);
                 }
             });
         }
@@ -743,7 +741,8 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             };
             this._xrSessionManager.runInXRFrame(() => {
                 this._augmentPointerInit(pointerEventInit, controllerData.id, controllerData.screenCoordinates);
-                this._scene.simulatePointerUp(new PickingInfo(), pointerEventInit);
+                this._scene.simulatePointerUp(controllerData.pick || new PickingInfo(), pointerEventInit);
+                controllerData.finalPointerUpTriggered = true;
             });
         }
         this._xrSessionManager.scene.onBeforeRenderObservable.addOnce(() => {
@@ -862,7 +861,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public get lasterPointerDefaultColor(): Color3 {
         // here due to a typo
         return this.laserPointerDefaultColor;

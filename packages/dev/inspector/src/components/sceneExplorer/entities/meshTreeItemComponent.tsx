@@ -39,6 +39,12 @@ export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponen
         this.props.mesh.isVisible = newState;
     }
 
+    // mesh.name can fail the type check when we're in javascript, so
+    // we can check to avoid crashing
+    private _getNameForLabel(): string {
+        return typeof this.props.mesh.name === "string" ? this.props.mesh.name : "no name";
+    }
+
     render() {
         const mesh = this.props.mesh;
 
@@ -46,7 +52,7 @@ export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponen
 
         return (
             <div className="meshTools">
-                <TreeItemLabelComponent label={mesh.name} onClick={() => this.props.onClick()} icon={faCube} color="dodgerblue" />
+                <TreeItemLabelComponent label={this._getNameForLabel()} onClick={() => this.props.onClick()} icon={faCube} color="dodgerblue" />
                 <div
                     className={this.state.isBoundingBoxEnabled ? "bounding-box selected icon" : "bounding-box icon"}
                     onClick={() => this.showBoundingBox()}

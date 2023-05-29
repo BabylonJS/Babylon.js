@@ -17,7 +17,7 @@ class WebGPUBindGroupCacheNode {
     }
 }
 
-/** @hidden */
+/** @internal */
 export class WebGPUCacheBindGroups {
     public static NumBindGroupsCreatedTotal = 0;
     public static NumBindGroupsCreatedLastFrame = 0;
@@ -131,7 +131,7 @@ export class WebGPUCacheBindGroups {
         WebGPUCacheBindGroups.NumBindGroupsCreatedTotal++;
         WebGPUCacheBindGroups._NumBindGroupsCreatedCurrentFrame++;
 
-        const bindGroupLayouts = webgpuPipelineContext.bindGroupLayouts;
+        const bindGroupLayouts = webgpuPipelineContext.bindGroupLayouts[materialContext.textureState];
         for (let i = 0; i < webgpuPipelineContext.shaderProcessingContext.bindGroupLayoutEntries.length; i++) {
             const setDefinition = webgpuPipelineContext.shaderProcessingContext.bindGroupLayoutEntries[i];
 

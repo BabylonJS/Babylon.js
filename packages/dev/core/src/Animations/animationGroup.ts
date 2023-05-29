@@ -60,7 +60,7 @@ export class AnimationGroup implements IDisposable {
     private _loopAnimation = false;
     private _isAdditive = false;
 
-    /** @hidden */
+    /** @internal */
     public _parentContainer: Nullable<AbstractScene> = null;
 
     /**
@@ -218,7 +218,7 @@ export class AnimationGroup implements IDisposable {
     /**
      * Instantiates a new Animation Group.
      * This helps managing several animations at once.
-     * @see https://doc.babylonjs.com/divingDeeper/animation/groupAnimations
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/groupAnimations
      * @param name Defines the name of the group
      * @param scene Defines the scene the group belongs to
      */
@@ -309,7 +309,7 @@ export class AnimationGroup implements IDisposable {
     }
 
     private _animationLoopCount: number;
-    private _animationLoopFlags: boolean[];
+    private _animationLoopFlags: boolean[] = [];
 
     private _processLoop(animatable: Animatable, targetedAnimation: TargetedAnimation, index: number) {
         animatable.onAnimationLoop = () => {
@@ -325,7 +325,7 @@ export class AnimationGroup implements IDisposable {
             if (this._animationLoopCount === this._targetedAnimations.length) {
                 this.onAnimationGroupLoopObservable.notifyObservers(this);
                 this._animationLoopCount = 0;
-                this._animationLoopFlags = [];
+                this._animationLoopFlags.length = 0;
             }
         };
     }
@@ -347,7 +347,7 @@ export class AnimationGroup implements IDisposable {
         this._loopAnimation = loop;
 
         this._animationLoopCount = 0;
-        this._animationLoopFlags = [];
+        this._animationLoopFlags.length = 0;
 
         for (let index = 0; index < this._targetedAnimations.length; index++) {
             const targetedAnimation = this._targetedAnimations[index];
@@ -475,8 +475,18 @@ export class AnimationGroup implements IDisposable {
 
         const list = this._animatables.slice();
         for (let index = 0; index < list.length; index++) {
-            list[index].stop();
+            list[index].stop(undefined, undefined, true);
         }
+
+        // We will take care of removing all stopped animatables
+        let curIndex = 0;
+        for (let index = 0; index < this._scene._activeAnimatables.length; index++) {
+            const animatable = this._scene._activeAnimatables[index];
+            if (animatable._runtimeAnimations.length > 0) {
+                this._scene._activeAnimatables[curIndex++] = animatable;
+            }
+        }
+        this._scene._activeAnimatables.length = curIndex;
 
         this._isStarted = false;
 
@@ -486,8 +496,8 @@ export class AnimationGroup implements IDisposable {
     /**
      * Set animation weight for all animatables
      * @param weight defines the weight to use
-     * @return the animationGroup
-     * @see https://doc.babylonjs.com/babylon101/animations#animation-weights
+     * @returns the animationGroup
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#animation-weights
      */
     public setWeightForAllAnimatables(weight: number): AnimationGroup {
         for (let index = 0; index < this._animatables.length; index++) {
@@ -501,8 +511,8 @@ export class AnimationGroup implements IDisposable {
     /**
      * Synchronize and normalize all animatables with a source animatable
      * @param root defines the root animatable to synchronize with (null to stop synchronizing)
-     * @return the animationGroup
-     * @see https://doc.babylonjs.com/babylon101/animations#animation-weights
+     * @returns the animationGroup
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#animation-weights
      */
     public syncAllAnimationsWith(root: Nullable<Animatable>): AnimationGroup {
         for (let index = 0; index < this._animatables.length; index++) {
@@ -516,7 +526,7 @@ export class AnimationGroup implements IDisposable {
     /**
      * Goes to a specific frame in this animation group
      * @param frame the frame number to go to
-     * @return the animationGroup
+     * @returns the animationGroup
      */
     public goToFrame(frame: number): AnimationGroup {
         if (!this._isStarted) {
@@ -535,8 +545,8 @@ export class AnimationGroup implements IDisposable {
      * Dispose all associated resources
      */
     public dispose(): void {
-        this._targetedAnimations = [];
-        this._animatables = [];
+        this._targetedAnimations.length = 0;
+        this._animatables.length = 0;
 
         // Remove from scene
         const index = this._scene.animationGroups.indexOf(this);

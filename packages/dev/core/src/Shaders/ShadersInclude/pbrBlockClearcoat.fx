@@ -213,7 +213,7 @@ struct clearcoatOutParams
 
         #ifdef CLEARCOAT_TINT
             // Used later on in the light fragment and ibl.
-            vec3 clearCoatVRefract = -refract(vPositionW, clearCoatNormalW, vClearCoatRefractionParams.y);
+            vec3 clearCoatVRefract = refract(-viewDirectionW, clearCoatNormalW, vClearCoatRefractionParams.y);
             // The order 1886 page 3.
             outParams.clearCoatNdotVRefract = absEps(dot(clearCoatNormalW, clearCoatVRefract));
         #endif
@@ -280,11 +280,6 @@ struct clearcoatOutParams
             // _________________________ Clear Coat Environment Oclusion __________________________
             #if defined(ENVIRONMENTBRDF) && !defined(REFLECTIONMAP_SKYBOX)
                 vec3 clearCoatEnvironmentReflectance = getReflectanceFromBRDFLookup(vec3(vClearCoatRefractionParams.x), environmentClearCoatBrdf);
-
-                #ifdef RADIANCEOCCLUSION
-                    float clearCoatSeo = environmentRadianceOcclusion(ambientMonochrome, clearCoatNdotVUnclamped);
-                    clearCoatEnvironmentReflectance *= clearCoatSeo;
-                #endif
 
                 #ifdef HORIZONOCCLUSION
                     #ifdef BUMP

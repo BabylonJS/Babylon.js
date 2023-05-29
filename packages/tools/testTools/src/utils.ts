@@ -21,9 +21,9 @@ export const countCurrentObjects = async (initialValues: CountValues, classes = 
         const stacks = current.eventsRegistered[eventName].stackTraces;
         const numberOfActiveListeners = current.eventsRegistered[eventName].numberAdded - current.eventsRegistered[eventName].numberRemoved;
         if (flip) {
-            expect(numberOfActiveListeners, `event ${eventName} is not removed ${numberOfActiveListeners} time(s). ${stacks.join("\n")}`).toBeGreaterThanOrEqual(0);
+            expect(numberOfActiveListeners, `event ${eventName} is not removed ${numberOfActiveListeners} time(s). ${(stacks || []).join("\n")}`).toBeGreaterThanOrEqual(0);
         } else {
-            expect(numberOfActiveListeners, `event ${eventName} is not removed ${numberOfActiveListeners} time(s). ${stacks.join("\n")}`).toBeLessThanOrEqual(0);
+            expect(numberOfActiveListeners, `event ${eventName} is not removed ${numberOfActiveListeners} time(s). ${(stacks || []).join("\n")}`).toBeLessThanOrEqual(0);
         }
     });
 
@@ -57,7 +57,7 @@ export const countCurrentObjects = async (initialValues: CountValues, classes = 
     }
 };
 
-export const evaluateInitEngine = async (engineName: string, baseUrl: string) => {
+export const evaluateInitEngine = async (engineName: string, baseUrl: string, parallelCompilation: boolean = true) => {
     // run garbage collection
     window.gc && window.gc();
     engineName = engineName ? engineName.toLowerCase() : "webgl2";
@@ -74,6 +74,10 @@ export const evaluateInitEngine = async (engineName: string, baseUrl: string) =>
             url: baseUrl + "/meshopt_decoder.js",
         };
     }
+
+    BABYLON.BasisToolsOptions.JSModuleURL = baseUrl + "/basisTranscoder/1/basis_transcoder.js";
+    BABYLON.BasisToolsOptions.WasmModuleURL = baseUrl + "/basisTranscoder/1/basis_transcoder.wasm";
+
     const canvas = document.getElementById("babylon-canvas") as HTMLCanvasElement;
     if (!canvas) return;
     window.canvas = canvas;
@@ -89,7 +93,7 @@ export const evaluateInitEngine = async (engineName: string, baseUrl: string) =>
         };
 
         const options = {
-            antialiasing: false,
+            antialias: false,
         };
 
         const engine = new BABYLON.WebGPUEngine(canvas, options);
@@ -103,6 +107,8 @@ export const evaluateInitEngine = async (engineName: string, baseUrl: string) =>
         engine.enableOfflineSupport = false;
         window.engine = engine;
     }
+    window.engine!.renderEvenInBackground = true;
+    window.engine.getCaps().parallelShaderCompile = undefined;
     return !!window.engine;
 };
 
@@ -136,21 +142,27 @@ export const evaluateEventListenerAugmentation = async () => {
             if (window.sourceMappedStackTrace) {
                 window.sourcemapPromises = window.sourcemapPromises || [];
                 const promise = new Promise<null>((resolve) => {
-                    window.sourceMappedStackTrace.mapStackTrace(
-                        err.stack,
-                        (stackArray) => {
-                            window.eventsRegistered[a].stackTraces = window.eventsRegistered[a].stackTraces || [];
-                            window.eventsRegistered[a].stackTraces!.push(stackArray.join("\n").replace(/^Error\n/, "Stacktrace\n") + "\n>>\n");
-                            resolve(null);
-                        },
-                        {
-                            sync: true,
-                            cacheGlobally: true,
-                            filter: (line: string) => {
-                                return line.indexOf("puppeteer") === -1;
+                    try {
+                        window.sourceMappedStackTrace.mapStackTrace(
+                            err.stack,
+                            (stackArray) => {
+                                window.eventsRegistered[a].stackTraces = window.eventsRegistered[a].stackTraces || [];
+                                window.eventsRegistered[a].stackTraces!.push(stackArray.join("\n").replace(/^Error\n/, "Stacktrace\n") + "\n>>\n");
+                                resolve(null);
                             },
-                        }
-                    );
+                            {
+                                sync: true,
+                                cacheGlobally: true,
+                                filter: (line: string) => {
+                                    return line.indexOf("puppeteer") === -1;
+                                },
+                            }
+                        );
+                    } catch (err) {
+                        window.eventsRegistered[a].stackTraces = window.eventsRegistered[a].stackTraces || [];
+                        window.eventsRegistered[a].stackTraces!.push(err.stack.replace(/^Error\n/, "Stacktrace\n") + "\n>>\n");
+                        resolve(null);
+                    }
                 });
                 window.sourcemapPromises.push(promise);
             } else {
@@ -254,16 +266,22 @@ export const prepareLeakDetection = async (classes: string[] = classesToCheck) =
             if (window.sourceMappedStackTrace) {
                 window.sourcemapPromises = window.sourcemapPromises || [];
                 const promise = new Promise<StacktracedObject>((resolve) => {
-                    window.sourceMappedStackTrace.mapStackTrace(
-                        err.stack,
-                        (stackArray) => {
-                            const stackTrace = "\n" + stackArray.slice(4, stackArray.length - 1).join("\n");
-                            target.__stackStrace = stackTrace;
-                            window.classesConstructed[id] = { id: id, stackTrace: stackTrace, className: target.getClassName ? target.getClassName() : "unknown" };
-                            resolve(window.classesConstructed[id]);
-                        },
-                        { cacheGlobally: true, sync: true }
-                    );
+                    try {
+                        window.sourceMappedStackTrace.mapStackTrace(
+                            err.stack,
+                            (stackArray) => {
+                                const stackTrace = "\n" + stackArray.slice(4, stackArray.length - 1).join("\n");
+                                target.__stackStrace = stackTrace;
+                                window.classesConstructed[id] = { id: id, stackTrace: stackTrace, className: target.getClassName ? target.getClassName() : "unknown" };
+                                resolve(window.classesConstructed[id]);
+                            },
+                            { cacheGlobally: true, sync: true }
+                        );
+                    } catch (e) {
+                        target.__stackStrace = err.stack;
+                        window.classesConstructed[id] = { id: id, stackTrace: err.stack, className: target.getClassName ? target.getClassName() : "unknown" };
+                        resolve(window.classesConstructed[id]);
+                    }
                 });
                 window.sourcemapPromises.push(promise);
             } else {

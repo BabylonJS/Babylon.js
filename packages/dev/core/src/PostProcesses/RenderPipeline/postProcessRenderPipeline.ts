@@ -10,24 +10,24 @@ declare type PrePassRenderer = import("../../Rendering/prePassRenderer").PrePass
 
 /**
  * PostProcessRenderPipeline
- * @see https://doc.babylonjs.com/how_to/how_to_use_postprocessrenderpipeline
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/postProcessRenderPipeline
  */
 export class PostProcessRenderPipeline {
-    private _renderEffects: { [key: string]: PostProcessRenderEffect };
-    private _renderEffectsForIsolatedPass: PostProcessRenderEffect[];
+    protected _renderEffects: { [key: string]: PostProcessRenderEffect };
+    protected _renderEffectsForIsolatedPass: PostProcessRenderEffect[];
 
     /**
      * List of inspectable custom properties (used by the Inspector)
-     * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
+     * @see https://doc.babylonjs.com/toolsAndResources/inspector#extensibility
      */
     public inspectableCustomProperties: IInspectable[];
 
     /**
-     * @hidden
+     * @internal
      */
     protected _cameras: Camera[];
 
-    /** @hidden */
+    /** @internal */
     @serialize()
     public _name: string;
 
@@ -90,17 +90,15 @@ export class PostProcessRenderPipeline {
 
     // private
 
-    /** @hidden */
+    /** @internal */
     public _rebuild() {}
 
-    /** @hidden */
+    /** @internal */
     public _enableEffect(renderEffectName: string, cameras: Camera): void;
-    /** @hidden */
+    /** @internal */
     public _enableEffect(renderEffectName: string, cameras: Camera[]): void;
     /**
-     * @param renderEffectName
-     * @param cameras
-     * @hidden
+     * @internal
      */
     public _enableEffect(renderEffectName: string, cameras: any): void {
         const renderEffects: PostProcessRenderEffect = (<any>this._renderEffects)[renderEffectName];
@@ -112,14 +110,12 @@ export class PostProcessRenderPipeline {
         renderEffects._enable(Tools.MakeArray(cameras || this._cameras));
     }
 
-    /** @hidden */
+    /** @internal */
     public _disableEffect(renderEffectName: string, cameras: Nullable<Camera[]>): void;
-    /** @hidden */
+    /** @internal */
     public _disableEffect(renderEffectName: string, cameras: Nullable<Camera[]>): void;
     /**
-     * @param renderEffectName
-     * @param cameras
-     * @hidden
+     * @internal
      */
     public _disableEffect(renderEffectName: string, cameras: Nullable<Camera[]>): void {
         const renderEffects: PostProcessRenderEffect = (<any>this._renderEffects)[renderEffectName];
@@ -131,14 +127,12 @@ export class PostProcessRenderPipeline {
         renderEffects._disable(Tools.MakeArray(cameras || this._cameras));
     }
 
-    /** @hidden */
+    /** @internal */
     public _attachCameras(cameras: Camera, unique: boolean): void;
-    /** @hidden */
+    /** @internal */
     public _attachCameras(cameras: Camera[], unique: boolean): void;
     /**
-     * @param cameras
-     * @param unique
-     * @hidden
+     * @internal
      */
     public _attachCameras(cameras: any, unique: boolean): void {
         const cams = Tools.MakeArray(cameras || this._cameras);
@@ -154,10 +148,9 @@ export class PostProcessRenderPipeline {
             if (!camera) {
                 continue;
             }
-            const cameraName = camera.name;
 
             if (this._cameras.indexOf(camera) === -1) {
-                this._cameras[cameraName] = camera;
+                this._cameras.push(camera);
             } else if (unique) {
                 indicesToDelete.push(i);
             }
@@ -174,13 +167,12 @@ export class PostProcessRenderPipeline {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _detachCameras(cameras: Camera): void;
-    /** @hidden */
+    /** @internal */
     public _detachCameras(cameras: Nullable<Camera[]>): void;
     /**
-     * @param cameras
-     * @hidden
+     * @internal
      */
     public _detachCameras(cameras: any): void {
         const cams = Tools.MakeArray(cameras || this._cameras);
@@ -200,7 +192,7 @@ export class PostProcessRenderPipeline {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _update(): void {
         for (const renderEffectName in this._renderEffects) {
             if (Object.prototype.hasOwnProperty.call(this._renderEffects, renderEffectName)) {
@@ -219,7 +211,7 @@ export class PostProcessRenderPipeline {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _reset(): void {
         this._renderEffects = {};
         this._renderEffectsForIsolatedPass = new Array<PostProcessRenderEffect>();

@@ -23,7 +23,7 @@ import { Constants } from "core/Engines/constants";
 import "./shaders/mrdlSliderBar.fragment";
 import "./shaders/mrdlSliderBar.vertex";
 
-/** @hidden */
+/** @internal */
 class MRDLSliderBarMaterialDefines extends MaterialDefines {
     /*
         "SKY_ENABLED", "BLOB_ENABLE_2", "IRIDESCENCE_ENABLED"
@@ -49,6 +49,9 @@ export class MRDLSliderBarMaterial extends PushMaterial {
      */
     public static BLUE_GRADIENT_TEXTURE_URL = "https://assets.babylonjs.com/meshes/MRTK/MRDL/mrtk-mrdl-blue-gradient.png";
     private _blueGradientTexture: Texture;
+    private _decalTexture: Texture;
+    private _reflectionMapTexture: Texture;
+    private _indirectEnvTexture: Texture;
 
     /**
      * Gets or sets the corner Radius on the slider bar.
@@ -430,52 +433,52 @@ export class MRDLSliderBarMaterial extends PushMaterial {
     public iridescenceIntensity = 0;
 
     /**
-     * @hidden
+     * @internal
      */
     public useGlobalLeftIndex = 1.0;
 
     /**
-     * @hidden
+     * @internal
      */
     public useGlobalRightIndex = 1.0;
 
     /**
-     * @hidden
+     * @internal
      */
     public globalLeftIndexTipProximity = 0.0;
 
     /**
-     * @hidden
+     * @internal
      */
     public globalRightIndexTipProximity = 0.0;
 
     /**
-     * @hidden
+     * @internal
      */
     public globalLeftIndexTipPosition = new Vector4(0.5, 0.0, -0.55, 1.0);
 
     /**
-     * @hidden
+     * @internal
      */
     public globaRightIndexTipPosition = new Vector4(0.0, 0.0, 0.0, 1.0);
 
     /**
-     * @hidden
+     * @internal
      */
     public globalLeftThumbTipPosition = new Vector4(0.5, 0.0, -0.55, 1.0);
 
     /**
-     * @hidden
+     * @internal
      */
     public globalRightThumbTipPosition = new Vector4(0.0, 0.0, 0.0, 1.0);
 
     /**
-     * @hidden
+     * @internal
      */
     public globalLeftIndexMiddlePosition = new Vector4(0.5, 0.0, -0.55, 1.0);
 
     /**
-     * @hidden
+     * @internal
      */
     public globalRightIndexMiddlePosition = new Vector4(0.0, 0.0, 0.0, 1.0);
 
@@ -484,6 +487,9 @@ export class MRDLSliderBarMaterial extends PushMaterial {
         this.alphaMode = Constants.ALPHA_DISABLE;
         this.backFaceCulling = false;
         this._blueGradientTexture = new Texture(MRDLSliderBarMaterial.BLUE_GRADIENT_TEXTURE_URL, this.getScene(), true, false, Texture.NEAREST_SAMPLINGMODE);
+        this._decalTexture = new Texture("", this.getScene());
+        this._reflectionMapTexture = new Texture("", this.getScene());
+        this._indirectEnvTexture = new Texture("", this.getScene());
     }
 
     public needAlphaBlending(): boolean {
@@ -759,8 +765,8 @@ export class MRDLSliderBarMaterial extends PushMaterial {
 
         // "Mapped Environment"
         //define ENV_ENABLE false;
-        this._activeEffect.setTexture("_Reflection_Map_", new Texture("", this.getScene()));
-        this._activeEffect.setTexture("_Indirect_Environment_", new Texture("", this.getScene()));
+        this._activeEffect.setTexture("_Reflection_Map_", this._reflectionMapTexture);
+        this._activeEffect.setTexture("_Indirect_Environment_", this._indirectEnvTexture);
 
         // "FingerOcclusion"
         //define OCCLUSION_ENABLED false;
@@ -804,7 +810,7 @@ export class MRDLSliderBarMaterial extends PushMaterial {
 
         // "Decal Texture"
         //define DECAL_ENABLE false;
-        this._activeEffect.setTexture("_Decal_", new Texture("", this.getScene()));
+        this._activeEffect.setTexture("_Decal_", this._decalTexture);
         this._activeEffect.setVector2("_Decal_Scale_XY_", this.decalScaleXY);
         this._activeEffect.setFloat("_Decal_Front_Only_", this.decalFrontOnly ? 1.0 : 0.0);
 
@@ -849,6 +855,10 @@ export class MRDLSliderBarMaterial extends PushMaterial {
 
     public dispose(forceDisposeEffect?: boolean): void {
         super.dispose(forceDisposeEffect);
+        this._reflectionMapTexture.dispose();
+        this._indirectEnvTexture.dispose();
+        this._blueGradientTexture.dispose();
+        this._decalTexture.dispose();
     }
 
     public clone(name: string): MRDLSliderBarMaterial {

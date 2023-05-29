@@ -119,7 +119,7 @@ export class EnvironmentDeserializer {
     /**
      * Parses an arraybuffer into a new PBREnvironment object
      * @param arrayBuffer The arraybuffer of the Spectre environment file
-     * @return a PBREnvironment object
+     * @returns a PBREnvironment object
      */
     public static Parse(arrayBuffer: ArrayBuffer): PBREnvironment {
         const environment: PBREnvironment = {

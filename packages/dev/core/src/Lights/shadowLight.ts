@@ -306,14 +306,14 @@ export abstract class ShadowLight extends Light implements IShadowLight {
         this._needProjectionMatrixCompute = true;
     }
 
-    /** @hidden */
+    /** @internal */
     public _initCache() {
         super._initCache();
 
         this._cache.position = Vector3.Zero();
     }
 
-    /** @hidden */
+    /** @internal */
     public _isSynchronized(): boolean {
         if (!this._cache.position.equals(this.position)) {
             return false;
@@ -386,5 +386,14 @@ export abstract class ShadowLight extends Light implements IShadowLight {
             this._setDefaultShadowProjectionMatrix(matrix, viewMatrix, renderList);
         }
         return this;
+    }
+
+    /** @internal */
+    protected _syncParentEnabledState() {
+        super._syncParentEnabledState();
+        if (!this.parent || !this.parent.getWorldMatrix) {
+            (this.transformedPosition as any) = null;
+            (this.transformedDirection as any) = null;
+        }
     }
 }

@@ -293,7 +293,7 @@ export class Ray {
     }
 
     /**
-     * Checks if ray intersects a mesh
+     * Checks if ray intersects a mesh. The ray is defined in WORLD space.
      * @param mesh the mesh to check
      * @param fastCheck defines if the first intersection will be used (and not the closest)
      * @returns picking info of the intersection
@@ -357,7 +357,7 @@ export class Ray {
      * @param sega the first point of the segment to test the intersection against
      * @param segb the second point of the segment to test the intersection against
      * @param threshold the tolerance margin, if the ray doesn't intersect the segment but is close to the given threshold, the intersection is successful
-     * @return the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
+     * @returns the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
      */
     intersectionSegment(sega: DeepImmutable<Vector3>, segb: DeepImmutable<Vector3>, threshold: number): number {
         const o = this.origin;
@@ -630,36 +630,36 @@ export class Ray {
 /**
  * Type used to define predicate used to select faces when a mesh intersection is detected
  */
-export type TrianglePickingPredicate = (p0: Vector3, p1: Vector3, p2: Vector3, ray: Ray) => boolean;
+export type TrianglePickingPredicate = (p0: Vector3, p1: Vector3, p2: Vector3, ray: Ray, i0: number, i1: number, i2: number) => boolean;
 
 declare module "../scene" {
     export interface Scene {
-        /** @hidden */
+        /** @internal */
         _tempPickingRay: Nullable<Ray>;
 
-        /** @hidden */
+        /** @internal */
         _cachedRayForTransform: Ray;
 
-        /** @hidden */
+        /** @internal */
         _pickWithRayInverseMatrix: Matrix;
 
-        /** @hidden */
+        /** @internal */
         _internalPick(
             rayFunction: (world: Matrix, enableDistantPicking: boolean) => Ray,
             predicate?: (mesh: AbstractMesh) => boolean,
             fastCheck?: boolean,
             onlyBoundingInfo?: boolean,
             trianglePredicate?: TrianglePickingPredicate
-        ): Nullable<PickingInfo>;
+        ): PickingInfo;
 
-        /** @hidden */
+        /** @internal */
         _internalMultiPick(
             rayFunction: (world: Matrix, enableDistantPicking: boolean) => Ray,
             predicate?: (mesh: AbstractMesh) => boolean,
             trianglePredicate?: TrianglePickingPredicate
         ): Nullable<PickingInfo[]>;
 
-        /** @hidden */
+        /** @internal */
         _internalPickForMesh(
             pickingInfo: Nullable<PickingInfo>,
             rayFunction: (world: Matrix, enableDistantPicking: boolean) => Ray,
@@ -784,12 +784,11 @@ Scene.prototype._internalPick = function (
     fastCheck?: boolean,
     onlyBoundingInfo?: boolean,
     trianglePredicate?: TrianglePickingPredicate
-): Nullable<PickingInfo> {
-    if (!PickingInfo) {
-        return null;
-    }
-
+): PickingInfo {
     let pickingInfo = null;
+
+    const computeWorldMatrixForCamera = !!(this.activeCameras && this.activeCameras.length > 1 && this.cameraToUseForPointers !== this.activeCamera);
+    const currentCamera = this.cameraToUseForPointers || this.activeCamera;
 
     for (let meshIndex = 0; meshIndex < this.meshes.length; meshIndex++) {
         const mesh = this.meshes[meshIndex];
@@ -802,7 +801,8 @@ Scene.prototype._internalPick = function (
             continue;
         }
 
-        const world = mesh.getWorldMatrix();
+        const forceCompute = computeWorldMatrixForCamera && mesh.isWorldMatrixCameraDependent();
+        const world = mesh.computeWorldMatrix(forceCompute, currentCamera);
 
         if (mesh.hasThinInstances && (mesh as Mesh).thinInstanceEnablePicking) {
             // first check if the ray intersects the whole bounding box/sphere of the mesh
@@ -854,6 +854,8 @@ Scene.prototype._internalMultiPick = function (
         return null;
     }
     const pickingInfos = new Array<PickingInfo>();
+    const computeWorldMatrixForCamera = !!(this.activeCameras && this.activeCameras.length > 1 && this.cameraToUseForPointers !== this.activeCamera);
+    const currentCamera = this.cameraToUseForPointers || this.activeCamera;
 
     for (let meshIndex = 0; meshIndex < this.meshes.length; meshIndex++) {
         const mesh = this.meshes[meshIndex];
@@ -866,7 +868,8 @@ Scene.prototype._internalMultiPick = function (
             continue;
         }
 
-        const world = mesh.getWorldMatrix();
+        const forceCompute = computeWorldMatrixForCamera && mesh.isWorldMatrixCameraDependent();
+        const world = mesh.computeWorldMatrix(forceCompute, currentCamera);
 
         if (mesh.hasThinInstances && (mesh as Mesh).thinInstanceEnablePicking) {
             const result = this._internalPickForMesh(null, rayFunction, mesh, world, true, true, trianglePredicate);
@@ -925,6 +928,12 @@ Scene.prototype.pickWithBoundingInfo = function (
     return result;
 };
 
+Object.defineProperty(Scene.prototype, "_pickingAvailable", {
+    get: () => true,
+    enumerable: false,
+    configurable: false,
+});
+
 Scene.prototype.pick = function (
     x: number,
     y: number,
@@ -933,10 +942,7 @@ Scene.prototype.pick = function (
     camera?: Nullable<Camera>,
     trianglePredicate?: TrianglePickingPredicate,
     _enableDistantPicking = false
-): Nullable<PickingInfo> {
-    if (!PickingInfo) {
-        return null;
-    }
+): PickingInfo {
     const result = this._internalPick(
         (world, enableDistantPicking) => {
             if (!this._tempPickingRay) {
@@ -998,7 +1004,7 @@ Scene.prototype.multiPick = function (
     return this._internalMultiPick((world) => this.createPickingRay(x, y, world, camera || null), predicate, trianglePredicate);
 };
 
-Scene.prototype.multiPickWithRay = function (ray: Ray, predicate: (mesh: AbstractMesh) => boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
+Scene.prototype.multiPickWithRay = function (ray: Ray, predicate?: (mesh: AbstractMesh) => boolean, trianglePredicate?: TrianglePickingPredicate): Nullable<PickingInfo[]> {
     return this._internalMultiPick(
         (world) => {
             if (!this._pickWithRayInverseMatrix) {

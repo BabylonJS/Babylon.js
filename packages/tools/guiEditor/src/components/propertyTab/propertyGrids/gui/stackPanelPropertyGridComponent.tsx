@@ -16,11 +16,14 @@ import { IconComponent } from "shared-ui-components/lines/iconComponent";
 import { ValueAndUnit } from "gui/2D/valueAndUnit";
 import { CoordinateHelper } from "../../../../diagram/coordinateHelper";
 import { UnitButton } from "shared-ui-components/lines/unitButton";
+import type { GlobalState } from "../../../../globalState";
 
 interface IStackPanelPropertyGridComponentProps {
     stackPanels: StackPanel[];
     lockObject: LockObject;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    onFontsParsedObservable?: Observable<void>;
+    globalState?: GlobalState;
 }
 
 export class StackPanelPropertyGridComponent extends React.Component<IStackPanelPropertyGridComponentProps> {
@@ -34,7 +37,13 @@ export class StackPanelPropertyGridComponent extends React.Component<IStackPanel
 
         return (
             <div className="pane">
-                <CommonControlPropertyGridComponent lockObject={lockObject} controls={stackPanels} onPropertyChangedObservable={onPropertyChangedObservable} />
+                <CommonControlPropertyGridComponent
+                    lockObject={lockObject}
+                    controls={stackPanels}
+                    onPropertyChangedObservable={onPropertyChangedObservable}
+                    onFontsParsedObservable={this.props.onFontsParsedObservable}
+                    globalState={this.props.globalState}
+                />
                 <hr />
                 <TextLineComponent label="STACKPANEL" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">

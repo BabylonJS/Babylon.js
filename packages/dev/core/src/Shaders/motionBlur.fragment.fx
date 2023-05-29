@@ -13,6 +13,7 @@ uniform sampler2D depthSampler;
 
 uniform mat4 inverseViewProjection;
 uniform mat4 prevViewProjection;
+uniform mat4 projection;
 #endif
 
 
@@ -41,7 +42,11 @@ void main(void)
                     break;
                 
                 vec2 offset = vUV + velocity * (hlim + float(i));
-                result += texture2D(textureSampler, offset);
+                #if defined(WEBGPU)
+                    result += texture2DLodEXT(textureSampler, offset, 0.0);
+                #else
+                    result += texture2D(textureSampler, offset);
+                #endif
             }
 
             gl_FragColor = result / float(samplesCount);
@@ -49,12 +54,14 @@ void main(void)
         #else
             vec2 texelSize = 1.0 / screenSize;
             float depth = texture2D(depthSampler, vUV).r;
+            depth = projection[2].z + projection[3].z / depth; // convert from view linear z to NDC z
 
             vec4 cpos = vec4(vUV * 2.0 - 1.0, depth, 1.0);
-            cpos = cpos * inverseViewProjection;
+            cpos = inverseViewProjection * cpos;
+            cpos /= cpos.w;
 
-            vec4 ppos = cpos * prevViewProjection;
-            ppos.xyz /= ppos.w;
+            vec4 ppos = prevViewProjection * cpos;
+            ppos /= ppos.w;
             ppos.xy = ppos.xy * 0.5 + 0.5;
 
             vec2 velocity = (ppos.xy - vUV) * motionScale * motionStrength;
@@ -68,7 +75,11 @@ void main(void)
                     break;
                 
                 vec2 offset1 = vUV + velocity * (float(i) / float(nSamples - 1) - 0.5);
-                result += texture2D(textureSampler, offset1);
+                #if defined(WEBGPU)
+                    result += texture2DLodEXT(textureSampler, offset1, 0.0);
+                #else
+                    result += texture2D(textureSampler, offset1);
+                #endif
             }
 
             gl_FragColor = result / float(nSamples);

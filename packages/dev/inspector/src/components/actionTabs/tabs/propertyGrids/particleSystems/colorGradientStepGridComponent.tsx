@@ -81,6 +81,7 @@ export class ColorGradientStepGridComponent extends React.Component<IColorGradie
                 <div className="step">{`#${this.props.lineIndex}`}</div>
                 <div className="color1">
                     <ColorPickerLineComponent
+                        lockObject={this.props.lockObject}
                         value={gradient instanceof Color3Gradient ? gradient.color : gradient.color1}
                         onColorChanged={(color) => {
                             this.updateColor1(color);
@@ -90,6 +91,7 @@ export class ColorGradientStepGridComponent extends React.Component<IColorGradie
                 {this.props.host instanceof ParticleSystem && gradient instanceof ColorGradient && (
                     <div className="color2">
                         <ColorPickerLineComponent
+                            lockObject={this.props.lockObject}
                             value={gradient.color2 ? gradient.color2 : new Color4()}
                             onColorChanged={(color) => {
                                 this.updateColor2(color);

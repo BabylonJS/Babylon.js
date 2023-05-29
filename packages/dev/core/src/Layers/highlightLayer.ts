@@ -36,7 +36,7 @@ declare module "../abstractScene" {
         /**
          * Return a the first highlight layer of the scene with a given name.
          * @param name The name of the highlight layer to look for.
-         * @return The highlight layer if found otherwise null.
+         * @returns The highlight layer if found otherwise null.
          */
         getHighlightLayerByName(name: string): Nullable<HighlightLayer>;
     }
@@ -84,50 +84,55 @@ class GlowBlurPostProcess extends PostProcess {
 export interface IHighlightLayerOptions {
     /**
      * Multiplication factor apply to the canvas size to compute the render target size
-     * used to generated the glowing objects (the smaller the faster).
+     * used to generated the glowing objects (the smaller the faster). Default: 0.5
      */
     mainTextureRatio: number;
 
     /**
-     * Enforces a fixed size texture to ensure resize independent blur.
+     * Enforces a fixed size texture to ensure resize independent blur. Default: undefined
      */
     mainTextureFixedSize?: number;
 
     /**
      * Multiplication factor apply to the main texture size in the first step of the blur to reduce the size
-     * of the picture to blur (the smaller the faster).
+     * of the picture to blur (the smaller the faster). Default: 0.5
      */
     blurTextureSizeRatio: number;
 
     /**
-     * How big in texel of the blur texture is the vertical blur.
+     * How big in texel of the blur texture is the vertical blur. Default: 1
      */
     blurVerticalSize: number;
 
     /**
-     * How big in texel of the blur texture is the horizontal blur.
+     * How big in texel of the blur texture is the horizontal blur. Default: 1
      */
     blurHorizontalSize: number;
 
     /**
-     * Alpha blending mode used to apply the blur. Default is combine.
+     * Alpha blending mode used to apply the blur.  Default: ALPHA_COMBINE
      */
     alphaBlendingMode: number;
 
     /**
-     * The camera attached to the layer.
+     * The camera attached to the layer. Default: null
      */
     camera: Nullable<Camera>;
 
     /**
-     * Should we display highlight as a solid stroke?
+     * Should we display highlight as a solid stroke? Default: false
      */
     isStroke?: boolean;
 
     /**
-     * The rendering group to draw the layer in.
+     * The rendering group to draw the layer in. Default: -1
      */
     renderingGroupId: number;
+
+    /**
+     * The type of the main texture. Default: TEXTURETYPE_UNSIGNED_INT
+     */
+    mainTextureType: number;
 }
 
 /**
@@ -173,6 +178,10 @@ interface IHighlightLayerExcludedMesh {
      * The mesh render callback use to restore previous stencil use
      */
     afterRender: Nullable<Observer<Mesh>>;
+    /**
+     * Current stencil state of the engine
+     */
+    stencilState: boolean;
 }
 
 /**
@@ -295,6 +304,7 @@ export class HighlightLayer extends EffectLayer {
             alphaBlendingMode: Constants.ALPHA_COMBINE,
             camera: null,
             renderingGroupId: -1,
+            mainTextureType: Constants.TEXTURETYPE_UNSIGNED_INT,
             ...options,
         };
 
@@ -305,6 +315,7 @@ export class HighlightLayer extends EffectLayer {
             mainTextureFixedSize: this._options.mainTextureFixedSize,
             mainTextureRatio: this._options.mainTextureRatio,
             renderingGroupId: this._options.renderingGroupId,
+            mainTextureType: this._options.mainTextureType,
         });
 
         // Do not render as long as no meshes have been added
@@ -313,7 +324,7 @@ export class HighlightLayer extends EffectLayer {
 
     /**
      * Get the effect name of the layer.
-     * @return The effect name
+     * @returns The effect name
      */
     public getEffectName(): string {
         return HighlightLayer.EffectName;
@@ -477,7 +488,7 @@ export class HighlightLayer extends EffectLayer {
      * Checks for the readiness of the element composing the layer.
      * @param subMesh the mesh to check for
      * @param useInstances specify whether or not to use instances to render the mesh
-     * @return true if ready otherwise, false
+     * @returns true if ready otherwise, false
      */
     public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
         const material = subMesh.getMaterial();
@@ -618,15 +629,23 @@ export class HighlightLayer extends EffectLayer {
 
         const meshExcluded = this._excludedMeshes[mesh.uniqueId];
         if (!meshExcluded) {
-            this._excludedMeshes[mesh.uniqueId] = {
+            const obj: IHighlightLayerExcludedMesh = {
                 mesh: mesh,
-                beforeBind: mesh.onBeforeBindObservable.add((mesh: Mesh) => {
-                    mesh.getEngine().setStencilBuffer(false);
-                }),
-                afterRender: mesh.onAfterRenderObservable.add((mesh: Mesh) => {
-                    mesh.getEngine().setStencilBuffer(true);
-                }),
+                beforeBind: null,
+                afterRender: null,
+                stencilState: false,
             };
+
+            obj.beforeBind = mesh.onBeforeBindObservable.add((mesh: Mesh) => {
+                obj.stencilState = mesh.getEngine().getStencilBuffer();
+                mesh.getEngine().setStencilBuffer(false);
+            });
+
+            obj.afterRender = mesh.onAfterRenderObservable.add((mesh: Mesh) => {
+                mesh.getEngine().setStencilBuffer(obj.stencilState);
+            });
+
+            this._excludedMeshes[mesh.uniqueId] = obj;
         }
     }
 
@@ -774,7 +793,7 @@ export class HighlightLayer extends EffectLayer {
      * Free any resources and references associated to a mesh.
      * Internal use
      * @param mesh The mesh to free.
-     * @hidden
+     * @internal
      */
     public _disposeMesh(mesh: Mesh): void {
         this.removeMesh(mesh);

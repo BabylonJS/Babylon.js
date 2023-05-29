@@ -8,3 +8,7 @@ export * from "./fragCoordBlock";
 export * from "./screenSizeBlock";
 export * from "./screenSpaceBlock";
 export * from "./twirlBlock";
+export * from "./TBNBlock";
+export * from "./heightToNormalBlock";
+export * from "./fragDepthBlock";
+export * from "./shadowMapBlock";

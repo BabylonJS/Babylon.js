@@ -12,6 +12,30 @@ import { ReflectionTextureBaseBlock } from "./reflectionTextureBaseBlock";
  * Block used to read a reflection texture from a sampler
  */
 export class ReflectionTextureBlock extends ReflectionTextureBaseBlock {
+    protected _onGenerateOnlyFragmentCodeChanged(): boolean {
+        if (this.position.isConnected) {
+            this.generateOnlyFragmentCode = !this.generateOnlyFragmentCode;
+            console.error("The position input must not be connected to be able to switch!");
+            return false;
+        }
+
+        if (this.worldPosition.isConnected) {
+            this.generateOnlyFragmentCode = !this.generateOnlyFragmentCode;
+            console.error("The worldPosition input must not be connected to be able to switch!");
+            return false;
+        }
+
+        this._setTarget();
+
+        return true;
+    }
+
+    protected _setTarget(): void {
+        super._setTarget();
+        this.getInputByName("position")!.target = this.generateOnlyFragmentCode ? NodeMaterialBlockTargets.Fragment : NodeMaterialBlockTargets.Vertex;
+        this.getInputByName("worldPosition")!.target = this.generateOnlyFragmentCode ? NodeMaterialBlockTargets.Fragment : NodeMaterialBlockTargets.Vertex;
+    }
+
     /**
      * Create a new ReflectionTextureBlock
      * @param name defines the block name
@@ -19,7 +43,7 @@ export class ReflectionTextureBlock extends ReflectionTextureBaseBlock {
     public constructor(name: string) {
         super(name);
 
-        this.registerInput("position", NodeMaterialBlockConnectionPointTypes.Vector3, false, NodeMaterialBlockTargets.Vertex);
+        this.registerInput("position", NodeMaterialBlockConnectionPointTypes.AutoDetect, false, NodeMaterialBlockTargets.Vertex);
         this.registerInput("worldPosition", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Vertex);
         this.registerInput("worldNormal", NodeMaterialBlockConnectionPointTypes.Vector4, false, NodeMaterialBlockTargets.Fragment); // Flagging as fragment as the normal can be changed by fragment code
         this.registerInput("world", NodeMaterialBlockConnectionPointTypes.Matrix, false, NodeMaterialBlockTargets.Vertex);
@@ -34,7 +58,9 @@ export class ReflectionTextureBlock extends ReflectionTextureBaseBlock {
         this.registerOutput("b", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Fragment);
         this.registerOutput("a", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Fragment);
 
-        this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector4);
+        this._inputs[0].addExcludedConnectionPointFromAllowedTypes(
+            NodeMaterialBlockConnectionPointTypes.Color3 | NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4
+        );
     }
 
     /**
@@ -147,13 +173,17 @@ export class ReflectionTextureBlock extends ReflectionTextureBaseBlock {
         super._buildBlock(state);
 
         if (!this.texture) {
-            state.compilationString += this.writeOutputs(state, "vec3(0.)");
+            state.compilationString += this.writeOutputs(state, "vec4(0.)");
             return this;
         }
 
         if (state.target !== NodeMaterialBlockTargets.Fragment) {
             state.compilationString += this.handleVertexSide(state);
             return this;
+        }
+
+        if (this.generateOnlyFragmentCode) {
+            state.compilationString += this.handleVertexSide(state);
         }
 
         this.handleFragmentSideInits(state);

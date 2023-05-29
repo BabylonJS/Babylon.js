@@ -45,7 +45,7 @@ const FinalizeSingleMesh = (mesh: Mesh, serializationObject: any) => {
     if (mesh.delayLoadState === Constants.DELAYLOADSTATE_LOADED || mesh.delayLoadState === Constants.DELAYLOADSTATE_NONE) {
         const serializeMaterial = (material: Material) => {
             serializationObject.materials = serializationObject.materials || [];
-            if (!serializationObject.materials.some((mat: Material) => mat.id === (<Material>mesh.material).id)) {
+            if (mesh.material && !serializationObject.materials.some((mat: Material) => mat.id === (<Material>mesh.material).id)) {
                 serializationObject.materials.push(material.serialize());
             }
         };
@@ -243,8 +243,12 @@ export class SceneSerializer {
 
         // Environment texture
         if (scene.environmentTexture) {
-            serializationObject.environmentTexture = scene.environmentTexture.name;
-            serializationObject.environmentTextureRotationY = (scene.environmentTexture as CubeTexture).rotationY;
+            if ((scene.environmentTexture as CubeTexture)._files) {
+                serializationObject.environmentTexture = scene.environmentTexture.serialize();
+            } else {
+                serializationObject.environmentTexture = scene.environmentTexture.name;
+                serializationObject.environmentTextureRotationY = (scene.environmentTexture as CubeTexture).rotationY;
+            }
         }
 
         // Environment Intensity

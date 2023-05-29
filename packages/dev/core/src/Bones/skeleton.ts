@@ -19,7 +19,7 @@ import type { AbstractScene } from "../abstractScene";
 
 /**
  * Class used to handle skinning animations
- * @see https://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/bonesSkeletons
  */
 export class Skeleton implements IAnimatable {
     /**
@@ -51,18 +51,18 @@ export class Skeleton implements IAnimatable {
 
     private _ranges: { [name: string]: Nullable<AnimationRange> } = {};
 
-    private _lastAbsoluteTransformsUpdateId = -1;
+    private _absoluteTransformIsDirty = true;
 
     private _canUseTextureForBones = false;
     private _uniqueId = 0;
 
-    /** @hidden */
+    /** @internal */
     public _numBonesWithLinkedTransformNode = 0;
 
-    /** @hidden */
+    /** @internal */
     public _hasWaitingData: Nullable<boolean> = null;
 
-    /** @hidden */
+    /** @internal */
     public _parentContainer: Nullable<AbstractScene> = null;
 
     /**
@@ -102,7 +102,7 @@ export class Skeleton implements IAnimatable {
 
     /**
      * List of inspectable custom properties (used by the Inspector)
-     * @see https://doc.babylonjs.com/how_to/debug_layer#extensibility
+     * @see https://doc.babylonjs.com/toolsAndResources/inspector#extensibility
      */
     public inspectableCustomProperties: IInspectable[];
 
@@ -156,7 +156,7 @@ export class Skeleton implements IAnimatable {
 
     /**
      * Gets the current object class name.
-     * @return the class name
+     * @returns the class name
      */
     public getClassName(): string {
         return "Skeleton";
@@ -185,7 +185,7 @@ export class Skeleton implements IAnimatable {
             return mesh._bonesTransformMatrices!;
         }
 
-        if (!this._transformMatrices) {
+        if (!this._transformMatrices || this._isDirty) {
             this.prepare();
         }
 
@@ -241,7 +241,7 @@ export class Skeleton implements IAnimatable {
     /**
      * Get bone's index searching by name
      * @param name defines bone's name to search for
-     * @return the indice of the bone. Returns -1 if not found
+     * @returns the indice of the bone. Returns -1 if not found
      */
     public getBoneIndexByName(name: string): number {
         for (let boneIndex = 0, cache = this.bones.length; boneIndex < cache; boneIndex++) {
@@ -449,22 +449,21 @@ export class Skeleton implements IAnimatable {
         return skeleton;
     }
 
-    /** @hidden */
+    /** @internal */
     public _markAsDirty(): void {
         this._isDirty = true;
+        this._absoluteTransformIsDirty = true;
     }
 
     /**
-     * @param mesh
-     * @hidden
+     * @internal
      */
     public _registerMeshWithPoseMatrix(mesh: AbstractMesh): void {
         this._meshesWithPoseMatrix.push(mesh);
     }
 
     /**
-     * @param mesh
-     * @hidden
+     * @internal
      */
     public _unregisterMeshWithPoseMatrix(mesh: AbstractMesh): void {
         const index = this._meshesWithPoseMatrix.indexOf(mesh);
@@ -509,9 +508,14 @@ export class Skeleton implements IAnimatable {
         if (this._numBonesWithLinkedTransformNode > 0) {
             for (const bone of this.bones) {
                 if (bone._linkedTransformNode) {
-                    // Computing the world matrix also computes the local matrix.
-                    bone._linkedTransformNode.computeWorldMatrix();
-                    bone._matrix = bone._linkedTransformNode._localMatrix;
+                    const node = bone._linkedTransformNode;
+                    bone.position = node.position;
+                    if (node.rotationQuaternion) {
+                        bone.rotationQuaternion = node.rotationQuaternion;
+                    } else {
+                        bone.rotation = node.rotation;
+                    }
+                    bone.scaling = node.scaling;
                 }
             }
         }
@@ -671,7 +675,7 @@ export class Skeleton implements IAnimatable {
     /**
      * Enable animation blending for this skeleton
      * @param blendingSpeed defines the blending speed to apply
-     * @see https://doc.babylonjs.com/babylon101/animations#animation-blending
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#animation-blending
      */
     public enableBlending(blendingSpeed = 0.01) {
         this.bones.forEach((bone) => {
@@ -686,7 +690,7 @@ export class Skeleton implements IAnimatable {
      * Releases all resources associated with the current skeleton
      */
     public dispose() {
-        this._meshesWithPoseMatrix = [];
+        this._meshesWithPoseMatrix.length = 0;
 
         // Animations
         this.getScene().stopAnimation(this);
@@ -835,11 +839,9 @@ export class Skeleton implements IAnimatable {
      * @param forceUpdate defines if computation must be done even if cache is up to date
      */
     public computeAbsoluteTransforms(forceUpdate = false): void {
-        const renderId = this._scene.getRenderId();
-
-        if (this._lastAbsoluteTransformsUpdateId != renderId || forceUpdate) {
+        if (this._absoluteTransformIsDirty || forceUpdate) {
             this.bones[0].computeAbsoluteTransforms();
-            this._lastAbsoluteTransformsUpdateId = renderId;
+            this._absoluteTransformIsDirty = false;
         }
     }
 

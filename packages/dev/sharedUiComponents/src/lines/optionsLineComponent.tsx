@@ -12,15 +12,18 @@ export interface IOptionsLineComponentProps {
     propertyName: string;
     options: IInspectableOptions[];
     noDirectUpdate?: boolean;
-    onSelect?: (value: number) => void;
-    extractValue?: () => number;
+    onSelect?: (value: number | string) => void;
+    extractValue?: (target: any) => number | string;
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
     allowNullValue?: boolean;
     icon?: string;
     iconLabel?: string;
+    className?: string;
+    valuesAreStrings?: boolean;
+    defaultIfNull?: number;
 }
 
-export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, { value: number }> {
+export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, { value: number | string }> {
     private _localChange = false;
 
     private _remapValueIn(value: number | null): number {
@@ -31,10 +34,17 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
         return this.props.allowNullValue && value === Null_Value ? null : value;
     }
 
+    private _getValue(props: IOptionsLineComponentProps) {
+        if (props.extractValue) {
+            return props.extractValue(props.target);
+        }
+        return props.target && props.propertyName ? props.target[props.propertyName] : props.options[props.defaultIfNull || 0];
+    }
+
     constructor(props: IOptionsLineComponentProps) {
         super(props);
 
-        this.state = { value: this._remapValueIn(this.props.extractValue ? this.props.extractValue() : props.target[props.propertyName]) };
+        this.state = { value: this._remapValueIn(this._getValue(props)) };
     }
 
     shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: { value: number }) {
@@ -43,7 +53,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
             return true;
         }
 
-        const newValue = this._remapValueIn(nextProps.extractValue ? nextProps.extractValue() : nextProps.target[nextProps.propertyName]);
+        const newValue = this._remapValueIn(nextProps.extractValue ? nextProps.extractValue(this.props.target) : nextProps.target[nextProps.propertyName]);
         if (newValue != null && newValue !== nextState.value) {
             nextState.value = newValue;
             return true;
@@ -65,14 +75,18 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
         });
     }
 
+    setValue(value: string | number) {
+        this.setState({ value: value });
+    }
+
     updateValue(valueString: string) {
-        const value = parseInt(valueString);
+        const value = this.props.valuesAreStrings ? valueString : parseInt(valueString);
         this._localChange = true;
 
-        const store = this.props.extractValue ? this.props.extractValue() : this.props.target[this.props.propertyName];
+        const store = this.props.extractValue ? this.props.extractValue(this.props.target) : this.props.target[this.props.propertyName];
 
         if (!this.props.noDirectUpdate) {
-            this.props.target[this.props.propertyName] = this._remapValueOut(value);
+            this.props.target[this.props.propertyName] = this._remapValueOut(value as number);
         }
         this.setState({ value: value });
 
@@ -80,14 +94,14 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
             this.props.onSelect(value);
         }
 
-        const newValue = this.props.extractValue ? this.props.extractValue() : this.props.target[this.props.propertyName];
+        const newValue = this.props.extractValue ? this.props.extractValue(this.props.target) : this.props.target[this.props.propertyName];
 
         this.raiseOnPropertyChanged(newValue, store);
     }
 
     render() {
         return (
-            <div className="listLine">
+            <div className={"listLine" + (this.props.className ? " " + this.props.className : "")}>
                 {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} color="black" className="icon" />}
                 <div className="label" title={this.props.label}>
                     {this.props.label}

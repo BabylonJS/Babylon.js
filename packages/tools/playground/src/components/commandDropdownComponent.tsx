@@ -20,17 +20,17 @@ interface ICommandDropdownComponentProps {
         isActive?: boolean;
         defaultValue?: boolean | string;
         subItems?: string[];
+        validate?: () => boolean;
     }[];
     toRight?: boolean;
 }
 
-export class CommandDropdownComponent extends React.Component<ICommandDropdownComponentProps, { isExpanded: boolean; activeState: string }> {
+export class CommandDropdownComponent extends React.Component<ICommandDropdownComponentProps, { isExpanded: boolean }> {
     public constructor(props: ICommandDropdownComponentProps) {
         super(props);
 
         this.state = {
             isExpanded: false,
-            activeState: Utilities.ReadStringFromStore(this.props.storeKey || this.props.tooltip, this.props.defaultValue!, this.props.useSessionStorage),
         };
 
         this.props.globalState.onNewDropdownButtonClicked.add((source) => {
@@ -44,6 +44,7 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
 
     public render() {
         const engineVersion = Engine.Version.split("-")[0];
+        const activeState = Utilities.ReadStringFromStore(this.props.storeKey || this.props.tooltip, this.props.defaultValue!, this.props.useSessionStorage);
 
         return (
             <>
@@ -76,9 +77,7 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                                 <img src={"imgs/" + this.props.icon + ".svg"} />
                             </div>
                         )}
-                        {(!this.props.icon || this.props.hamburgerMode) && (
-                            <div className="command-dropdown-active">{this.state.activeState === "Latest" ? engineVersion : this.state.activeState}</div>
-                        )}
+                        {(!this.props.icon || this.props.hamburgerMode) && <div className="command-dropdown-active">{activeState === "Latest" ? engineVersion : activeState}</div>}
                     </div>
                     {this.state.isExpanded && (
                         <div className={"command-dropdown-content sub1" + (this.props.toRight ? " toRight" : "")}>
@@ -88,6 +87,10 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                                         className={"command-dropdown-label" + (m.isActive ? " active" : "")}
                                         key={m.label}
                                         onClick={() => {
+                                            if (m.validate && !m.validate()) {
+                                                return;
+                                            }
+
                                             if (!m.onClick) {
                                                 const newValue = !Utilities.ReadBoolFromStore(m.storeKey!, (m.defaultValue as boolean) || false);
                                                 Utilities.StoreBoolToStore(m.storeKey!, newValue);
@@ -98,7 +101,7 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                                             if (!m.subItems) {
                                                 m.onClick();
                                                 Utilities.StoreStringToStore(this.props.storeKey || this.props.tooltip, m.label);
-                                                this.setState({ isExpanded: false, activeState: m.label });
+                                                this.setState({ isExpanded: false });
                                             }
                                         }}
                                         title={m.tooltip || m.label}
@@ -130,6 +133,10 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                                                                     : "")
                                                             }
                                                             onClick={() => {
+                                                                if (m.validate && !m.validate()) {
+                                                                    return;
+                                                                }
+
                                                                 if (m.storeKey) {
                                                                     Utilities.StoreStringToStore(m.storeKey, s, this.props.useSessionStorage);
                                                                 }

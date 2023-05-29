@@ -17,7 +17,7 @@ declare type NodeMaterial = import("../../nodeMaterial").NodeMaterial;
  * @since 5.0.0
  */
 export class SceneDepthBlock extends NodeMaterialBlock {
-    private _samplerName = "textureSampler";
+    private _samplerName: string;
     private _mainUVName: string;
     private _tempTextureRead: string;
 
@@ -25,9 +25,41 @@ export class SceneDepthBlock extends NodeMaterialBlock {
      * Defines if the depth renderer should be setup in non linear mode
      */
     @editableInPropertyPage("Use non linear depth", PropertyTypeForEdition.Boolean, "ADVANCED", {
-        notifiers: { activatePreviewCommand: true, callback: (scene) => scene.disableDepthRenderer() },
+        notifiers: {
+            activatePreviewCommand: true,
+            callback: (scene, block) => {
+                const sceneDepthBlock = block as SceneDepthBlock;
+                let retVal = false;
+                if (sceneDepthBlock.useNonLinearDepth) {
+                    sceneDepthBlock.storeCameraSpaceZ = false;
+                    retVal = true;
+                }
+                scene.disableDepthRenderer();
+                return retVal;
+            },
+        },
     })
     public useNonLinearDepth = false;
+
+    /**
+     * Defines if the depth renderer should be setup in camera space Z mode (if set, useNonLinearDepth has no effect)
+     */
+    @editableInPropertyPage("Store Camera space Z", PropertyTypeForEdition.Boolean, "ADVANCED", {
+        notifiers: {
+            activatePreviewCommand: true,
+            callback: (scene, block) => {
+                const sceneDepthBlock = block as SceneDepthBlock;
+                let retVal = false;
+                if (sceneDepthBlock.storeCameraSpaceZ) {
+                    sceneDepthBlock.useNonLinearDepth = false;
+                    retVal = true;
+                }
+                scene.disableDepthRenderer();
+                return retVal;
+            },
+        },
+    })
+    public storeCameraSpaceZ = false;
 
     /**
      * Defines if the depth renderer should be setup in full 32 bits float mode
@@ -46,12 +78,13 @@ export class SceneDepthBlock extends NodeMaterialBlock {
 
         this._isUnique = true;
 
-        this.registerInput("uv", NodeMaterialBlockConnectionPointTypes.Vector2, false, NodeMaterialBlockTargets.VertexAndFragment);
+        this.registerInput("uv", NodeMaterialBlockConnectionPointTypes.AutoDetect, false, NodeMaterialBlockTargets.VertexAndFragment);
 
         this.registerOutput("depth", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Neutral);
 
-        this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector3);
-        this._inputs[0].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Vector4);
+        this._inputs[0].addExcludedConnectionPointFromAllowedTypes(
+            NodeMaterialBlockConnectionPointTypes.Vector2 | NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4
+        );
 
         this._inputs[0]._prioritizeVertex = false;
     }
@@ -99,7 +132,7 @@ export class SceneDepthBlock extends NodeMaterialBlock {
     }
 
     private _getTexture(scene: Scene): BaseTexture {
-        const depthRenderer = scene.enableDepthRenderer(undefined, this.useNonLinearDepth, this.force32itsFloat);
+        const depthRenderer = scene.enableDepthRenderer(undefined, this.useNonLinearDepth, this.force32itsFloat, undefined, this.storeCameraSpaceZ);
 
         return depthRenderer.getDepthMap();
     }
@@ -184,6 +217,7 @@ export class SceneDepthBlock extends NodeMaterialBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
+        this._samplerName = state._getFreeVariableName(this.name + "Sampler");
         this._tempTextureRead = state._getFreeVariableName("tempTextureRead");
 
         if (state.sharedData.bindableBlocks.indexOf(this) < 0) {
@@ -219,6 +253,7 @@ export class SceneDepthBlock extends NodeMaterialBlock {
         const serializationObject = super.serialize();
 
         serializationObject.useNonLinearDepth = this.useNonLinearDepth;
+        serializationObject.storeCameraSpaceZ = this.storeCameraSpaceZ;
         serializationObject.force32itsFloat = this.force32itsFloat;
 
         return serializationObject;
@@ -228,6 +263,7 @@ export class SceneDepthBlock extends NodeMaterialBlock {
         super._deserialize(serializationObject, scene, rootUrl);
 
         this.useNonLinearDepth = serializationObject.useNonLinearDepth;
+        this.storeCameraSpaceZ = !!serializationObject.storeCameraSpaceZ;
         this.force32itsFloat = serializationObject.force32itsFloat;
     }
 }

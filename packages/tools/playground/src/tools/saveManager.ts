@@ -41,7 +41,7 @@ export class SaveManager {
                         }
                     } else {
                         // default behavior!
-                        const baseUrl = location.href.replace(location.hash, "").replace(location.search, "");
+                        const baseUrl = location.href.replace(location.hash, "");
                         let newUrl = baseUrl + "#" + snippet.id;
                         newUrl = newUrl.replace("##", "#");
                         this.globalState.currentSnippetToken = snippet.id;

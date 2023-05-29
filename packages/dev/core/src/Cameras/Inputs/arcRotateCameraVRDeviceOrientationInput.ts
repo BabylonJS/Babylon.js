@@ -26,7 +26,7 @@ ArcRotateCameraInputsManager.prototype.addVRDeviceOrientation = function (): Arc
 
 /**
  * Manage the device orientation inputs (gyroscope) to control an arc rotate camera.
- * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
  */
 export class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<ArcRotateCamera> {
     /**
@@ -91,8 +91,7 @@ export class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<Arc
     }
 
     /**
-     * @param evt
-     * @hidden
+     * @internal
      */
     public _onOrientationEvent(evt: DeviceOrientationEvent): void {
         if (evt.alpha !== null) {

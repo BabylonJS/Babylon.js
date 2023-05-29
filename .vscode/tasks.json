@@ -83,7 +83,7 @@
                     "HEADLESS": "false"
                 }
             },
-            "args": ["run", "test", "-w", "@tools/visualization-tests"],
+            "args": ["run", "test:visualization"],
             "presentation": {
                 "group": "test"
             },
@@ -100,7 +100,7 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": ["run", "test", "-w", "@tools/visualization-tests"],
+            "args": ["run", "test:visualization"],
             "presentation": {
                 "group": "test"
             }
@@ -369,6 +369,42 @@
                 "cwd": "${workspaceFolder}"
             },
             "args": ["run", "serve", "-w", "@tools/node-editor"],
+            "isBackground": true,
+            "presentation": {
+                "group": "serve"
+            },
+            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+        },
+        {
+            "label": "VSM Serve for core (Dev)",
+            "type": "shell",
+            "command": "npm",
+            "dependsOn": "CDN Serve and watch (Dev)",
+            "runOptions": {
+                "instanceLimit": 1
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "args": ["run", "serve", "-w", "@tools/visual-state-manager"],
+            "isBackground": true,
+            "presentation": {
+                "group": "serve"
+            },
+            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+        },
+        {
+            "label": "VSM Serve (Dev)",
+            "type": "shell",
+            "command": "npm",
+            "dependsOn": "CDN Serve (Dev)",
+            "runOptions": {
+                "instanceLimit": 1
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "args": ["run", "serve", "-w", "@tools/visual-state-manager"],
             "isBackground": true,
             "presentation": {
                 "group": "serve"

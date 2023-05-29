@@ -38,7 +38,7 @@ class MathHelpers {
  * @param indexStart defines the start index
  * @param indexCount defines the end index
  * @param bias defines bias value to add to the result
- * @return minimum and maximum values
+ * @returns minimum and maximum values
  */
 export function extractMinAndMaxIndexed(
     positions: FloatArray,
@@ -74,7 +74,7 @@ export function extractMinAndMaxIndexed(
  * @param count defines the number of positions to handle
  * @param bias defines bias value to add to the result
  * @param stride defines the stride size to use (distance between two positions in the positions array)
- * @return minimum and maximum values
+ * @returns minimum and maximum values
  */
 export function extractMinAndMax(positions: FloatArray, start: number, count: number, bias: Nullable<Vector2> = null, stride?: number): { minimum: Vector3; maximum: Vector3 } {
     const minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);

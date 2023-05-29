@@ -11,7 +11,7 @@ export class ValueAndUnit {
 
     /**
      * Gets or sets a value indicating that this value will not scale accordingly with adaptive scaling property
-     * @see https://doc.babylonjs.com/how_to/gui#adaptive-scaling
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#adaptive-scaling
      */
     public ignoreAdaptiveScaling = false;
 
@@ -124,11 +124,11 @@ export class ValueAndUnit {
             let height: number = 0;
 
             if (host.idealWidth) {
-                width = (this._value * host.getSize().width) / host.idealWidth;
+                width = Math.ceil((this._value * host.getSize().width) / host.idealWidth);
             }
 
             if (host.idealHeight) {
-                height = (this._value * host.getSize().height) / host.idealHeight;
+                height = Math.ceil((this._value * host.getSize().height) / host.idealHeight);
             }
 
             if (host.useSmallestIdeal && host.idealWidth && host.idealHeight) {

@@ -21,12 +21,12 @@ export class ExtractHighlightsPostProcess extends PostProcess {
     @serialize()
     public threshold = 0.9;
 
-    /** @hidden */
+    /** @internal */
     public _exposure = 1;
 
     /**
      * Post process which has the input texture to be used when performing highlight extraction
-     * @hidden
+     * @internal
      */
     public _inputPostProcess: Nullable<PostProcess> = null;
 

@@ -5,7 +5,7 @@ import type { INative } from "../Engines/Native/nativeInterfaces";
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare const _native: INative;
 
-/** @hidden */
+/** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 function createXMLHttpRequest(): XMLHttpRequest {
     // If running in Babylon Native, then defer to the native XMLHttpRequest, which has the same public contract
@@ -33,13 +33,24 @@ export class WebRequest implements IWebRequest {
      */
     public static CustomRequestModifiers = new Array<(request: XMLHttpRequest, url: string) => void>();
 
+    public static SkipRequestModificationForBabylonCDN = true;
+
+    private _requestURL: string = "";
+
     private _injectCustomRequestHeaders(): void {
+        if (this._shouldSkipRequestModifications(this._requestURL)) {
+            return;
+        }
         for (const key in WebRequest.CustomRequestHeaders) {
             const val = WebRequest.CustomRequestHeaders[key];
             if (val) {
                 this._xhr.setRequestHeader(key, val);
             }
         }
+    }
+
+    private _shouldSkipRequestModifications(url: string): boolean {
+        return WebRequest.SkipRequestModificationForBabylonCDN && (url.includes("preview.babylonjs.com") || url.includes("cdn.babylonjs.com"));
     }
 
     /**
@@ -117,7 +128,7 @@ export class WebRequest implements IWebRequest {
         this._xhr.timeout = value;
     }
 
-    /** @hidden */
+    /** @internal */
     public addEventListener<K extends keyof XMLHttpRequestEventMap>(
         type: K,
         listener: (this: XMLHttpRequest, ev: XMLHttpRequestEventMap[K]) => any,
@@ -127,7 +138,7 @@ export class WebRequest implements IWebRequest {
         this._xhr.addEventListener(type, listener, options);
     }
 
-    /** @hidden */
+    /** @internal */
     public removeEventListener<K extends keyof XMLHttpRequestEventMap>(
         type: K,
         listener: (this: XMLHttpRequest, ev: XMLHttpRequestEventMap[K]) => any,
@@ -163,12 +174,17 @@ export class WebRequest implements IWebRequest {
      */
     public open(method: string, url: string): void {
         for (const update of WebRequest.CustomRequestModifiers) {
+            if (this._shouldSkipRequestModifications(url)) {
+                return;
+            }
             update(this._xhr, url);
         }
 
         // Clean url
         url = url.replace("file:http:", "http:");
         url = url.replace("file:https:", "https:");
+
+        this._requestURL = url;
 
         return this._xhr.open(method, url, true);
     }

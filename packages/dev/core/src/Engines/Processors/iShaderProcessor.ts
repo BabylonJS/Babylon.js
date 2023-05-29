@@ -4,7 +4,7 @@ import type { ShaderProcessingContext } from "./shaderProcessingOptions";
 
 declare type ThinEngine = import("../thinEngine").ThinEngine;
 
-/** @hidden */
+/** @internal */
 export interface IShaderProcessor {
     shaderLanguage: ShaderLanguage;
 
@@ -12,9 +12,15 @@ export interface IShaderProcessor {
     uniformBufferRegexp?: RegExp;
     textureRegexp?: RegExp;
     noPrecision?: boolean;
+    parseGLES3?: boolean;
+
+    attributeKeywordName?: string;
+    varyingVertexKeywordName?: string;
+    varyingFragmentKeywordName?: string;
 
     preProcessShaderCode?: (code: string, isFragment: boolean) => string;
     attributeProcessor?: (attribute: string, preProcessors: { [key: string]: string }, processingContext: Nullable<ShaderProcessingContext>) => string;
+    varyingCheck?: (varying: string, isFragment: boolean) => boolean;
     varyingProcessor?: (varying: string, isFragment: boolean, preProcessors: { [key: string]: string }, processingContext: Nullable<ShaderProcessingContext>) => string;
     uniformProcessor?: (uniform: string, isFragment: boolean, preProcessors: { [key: string]: string }, processingContext: Nullable<ShaderProcessingContext>) => string;
     uniformBufferProcessor?: (uniformBuffer: string, isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>) => string;

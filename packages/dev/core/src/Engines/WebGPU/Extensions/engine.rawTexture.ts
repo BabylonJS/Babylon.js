@@ -18,7 +18,8 @@ WebGPUEngine.prototype.createRawTexture = function (
     samplingMode: number,
     compression: Nullable<string> = null,
     type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
-    creationFlags: number = 0
+    creationFlags: number = 0,
+    useSRGBBuffer: boolean = false
 ): InternalTexture {
     const texture = new InternalTexture(this, InternalTextureSource.Raw);
     texture.baseWidth = width;
@@ -31,6 +32,7 @@ WebGPUEngine.prototype.createRawTexture = function (
     texture.invertY = invertY;
     texture._compression = compression;
     texture.type = type;
+    texture._useSRGBBuffer = useSRGBBuffer;
 
     if (!this._doNotHandleContextLost) {
         texture._bufferView = data;
@@ -38,7 +40,7 @@ WebGPUEngine.prototype.createRawTexture = function (
 
     this._textureHelper.createGPUTextureForInternalTexture(texture, width, height, undefined, creationFlags);
 
-    this.updateRawTexture(texture, data, format, invertY, compression, type);
+    this.updateRawTexture(texture, data, format, invertY, compression, type, useSRGBBuffer);
 
     this._internalTexturesCache.push(texture);
 
@@ -51,7 +53,8 @@ WebGPUEngine.prototype.updateRawTexture = function (
     format: number,
     invertY: boolean,
     compression: Nullable<string> = null,
-    type: number = Constants.TEXTURETYPE_UNSIGNED_INT
+    type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
+    useSRGBBuffer: boolean = false
 ): void {
     if (!texture) {
         return;
@@ -61,6 +64,7 @@ WebGPUEngine.prototype.updateRawTexture = function (
         texture._bufferView = bufferView;
         texture.invertY = invertY;
         texture._compression = compression;
+        texture._useSRGBBuffer = useSRGBBuffer;
     }
 
     if (bufferView) {
@@ -120,6 +124,8 @@ WebGPUEngine.prototype.createRawCubeTexture = function (
     if (!this._doNotHandleContextLost) {
         texture._bufferViewArray = data;
     }
+    texture.invertY = invertY;
+    texture._compression = compression;
     texture._cachedWrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
     texture._cachedWrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
 
@@ -128,6 +134,8 @@ WebGPUEngine.prototype.createRawCubeTexture = function (
     if (data) {
         this.updateRawCubeTexture(texture, data, format, type, invertY, compression);
     }
+
+    texture.isReady = true;
 
     return texture;
 };
@@ -179,13 +187,13 @@ WebGPUEngine.prototype.createRawCubeTextureFromUrl = function (
     invertY: boolean = false
 ): InternalTexture {
     const texture = this.createRawCubeTexture(null, size, format, type, !noMipmap, invertY, samplingMode, null);
-    scene?._addPendingData(texture);
+    scene?.addPendingData(texture);
     texture.url = url;
 
     this._internalTexturesCache.push(texture);
 
     const onerror = (request?: IWebRequest, exception?: any) => {
-        scene?._removePendingData(texture);
+        scene?.removePendingData(texture);
         if (onError && request) {
             onError(request.status + " " + request.statusText, exception);
         }
@@ -227,7 +235,7 @@ WebGPUEngine.prototype.createRawCubeTextureFromUrl = function (
         }
 
         texture.isReady = true;
-        scene?._removePendingData(texture);
+        scene?.removePendingData(texture);
 
         if (onLoad) {
             onLoad();
@@ -399,11 +407,7 @@ WebGPUEngine.prototype.updateRawTexture2DArray = function (
 };
 
 /**
- * @param rgbData
- * @param width
- * @param height
- * @param textureType
- * @hidden
+ * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 function _convertRGBtoRGBATextureData(rgbData: any, width: number, height: number, textureType: number): ArrayBufferView {

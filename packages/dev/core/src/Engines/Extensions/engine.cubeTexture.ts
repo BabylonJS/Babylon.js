@@ -110,7 +110,7 @@ declare module "../../Engines/thinEngine" {
             lodOffset: number
         ): InternalTexture;
 
-        /** @hidden */
+        /** @internal */
         createCubeTextureBase(
             rootUrl: string,
             scene: Nullable<Scene>,
@@ -129,7 +129,7 @@ declare module "../../Engines/thinEngine" {
             useSRGBBuffer: boolean
         ): InternalTexture;
 
-        /** @hidden */
+        /** @internal */
         _partialLoadFile(
             url: string,
             index: number,
@@ -138,10 +138,10 @@ declare module "../../Engines/thinEngine" {
             onErrorCallBack: Nullable<(message?: string, exception?: any) => void>
         ): void;
 
-        /** @hidden */
+        /** @internal */
         _cascadeLoadFiles(scene: Nullable<Scene>, onfinish: (images: ArrayBuffer[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void>): void;
 
-        /** @hidden */
+        /** @internal */
         _cascadeLoadImgs(
             scene: Nullable<Scene>,
             texture: InternalTexture,
@@ -151,7 +151,7 @@ declare module "../../Engines/thinEngine" {
             mimeType?: string
         ): void;
 
-        /** @hidden */
+        /** @internal */
         _partialLoadImg(
             url: string,
             index: number,
@@ -164,7 +164,7 @@ declare module "../../Engines/thinEngine" {
         ): void;
 
         /**
-         * @hidden
+         * @internal
          */
         _setCubeMapTextureParams(texture: InternalTexture, loadMipmap: boolean, maxLevel?: number): void;
     }
@@ -282,7 +282,7 @@ ThinEngine.prototype._partialLoadImg = function (
         (<any>loadedImages)._internalCount++;
 
         if (scene) {
-            scene._removePendingData(tokenPendingData);
+            scene.removePendingData(tokenPendingData);
         }
 
         if ((<any>loadedImages)._internalCount === 6 && onfinish) {
@@ -292,7 +292,7 @@ ThinEngine.prototype._partialLoadImg = function (
 
     const onerror = (message?: string, exception?: any) => {
         if (scene) {
-            scene._removePendingData(tokenPendingData);
+            scene.removePendingData(tokenPendingData);
         }
 
         if (onErrorCallBack) {
@@ -302,7 +302,7 @@ ThinEngine.prototype._partialLoadImg = function (
 
     LoadImage(url, onload, onerror, scene ? scene.offlineProvider : null, mimeType);
     if (scene) {
-        scene._addPendingData(tokenPendingData);
+        scene.addPendingData(tokenPendingData);
     }
 };
 
@@ -346,6 +346,9 @@ ThinEngine.prototype.createCubeTextureBase = function (
     texture._lodGenerationScale = lodScale;
     texture._lodGenerationOffset = lodOffset;
     texture._useSRGBBuffer = !!useSRGBBuffer && this._caps.supportSRGBBuffers && (this.webGLVersion > 1 || this.isWebGPU || !!noMipmap);
+    if (texture !== fallback) {
+        texture.label = rootUrl.substring(0, 60); // default label, can be overriden by the caller
+    }
 
     if (!this._doNotHandleContextLost) {
         texture._extension = forcedExtension;
@@ -357,8 +360,9 @@ ThinEngine.prototype.createCubeTextureBase = function (
         rootUrl = this._transformTextureUrl(rootUrl);
     }
 
-    const lastDot = rootUrl.lastIndexOf(".");
-    const extension = forcedExtension ? forcedExtension : lastDot > -1 ? rootUrl.substring(lastDot).toLowerCase() : "";
+    const rootUrlWithoutUriParams = rootUrl.split("?")[0];
+    const lastDot = rootUrlWithoutUriParams.lastIndexOf(".");
+    const extension = forcedExtension ? forcedExtension : lastDot > -1 ? rootUrlWithoutUriParams.substring(lastDot).toLowerCase() : "";
 
     let loader: Nullable<IInternalTextureLoader> = null;
     for (const availableLoader of ThinEngine._TextureLoaders) {
@@ -487,7 +491,7 @@ ThinEngine.prototype.createCubeTexture = function (
             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
             this._unpackFlipY(false);
 
-            const internalFormat = format ? this._getInternalFormat(format, texture._useSRGBBuffer) : texture._useSRGBBuffer ? gl.SRGB8_ALPHA8 : gl.RGBA;
+            const internalFormat = format ? this._getInternalFormat(format, texture._useSRGBBuffer) : texture._useSRGBBuffer ? this._glSRGBExtensionValues.SRGB8_ALPHA8 : gl.RGBA;
             let texelFormat = format ? this._getInternalFormat(format) : gl.RGBA;
 
             if (texture._useSRGBBuffer && this.webGLVersion === 1) {

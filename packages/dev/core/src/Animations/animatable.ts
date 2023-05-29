@@ -16,13 +16,15 @@ export class Animatable {
     private _localDelayOffset: Nullable<number> = null;
     private _pausedDelay: Nullable<number> = null;
     private _manualJumpDelay: Nullable<number> = null;
-    private _runtimeAnimations = new Array<RuntimeAnimation>();
+    /** @hidden */
+    public _runtimeAnimations = new Array<RuntimeAnimation>();
     private _paused = false;
     private _scene: Scene;
     private _speedRatio = 1;
     private _weight = -1.0;
     private _syncRoot: Nullable<Animatable> = null;
-    private _frameToSyncFromJump: Nullable<number> = 0;
+    private _frameToSyncFromJump: Nullable<number> = null;
+    private _goToFrame: Nullable<number> = null;
 
     /**
      * Gets or sets a boolean indicating if the animatable must be disposed and removed at the end of the animation.
@@ -96,6 +98,11 @@ export class Animatable {
             animation._prepareForSpeedRatioChange(value);
         }
         this._speedRatio = value;
+
+        // Resync _manualJumpDelay in case goToFrame was called before speedRatio was set.
+        if (this._goToFrame !== null) {
+            this.goToFrame(this._goToFrame);
+        }
     }
 
     /**
@@ -240,7 +247,7 @@ export class Animatable {
 
     /**
      * Allows the animatable to blend with current running animations
-     * @see https://doc.babylonjs.com/babylon101/animations#animation-blending
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#animation-blending
      * @param blendingSpeed defines the blending speed to use
      */
     public enableBlending(blendingSpeed: number): void {
@@ -254,7 +261,7 @@ export class Animatable {
 
     /**
      * Disable animation blending
-     * @see https://doc.babylonjs.com/babylon101/animations#animation-blending
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#animation-blending
      */
     public disableBlending(): void {
         const runtimeAnimations = this._runtimeAnimations;
@@ -281,6 +288,8 @@ export class Animatable {
         for (let index = 0; index < runtimeAnimations.length; index++) {
             runtimeAnimations[index].goToFrame(frame);
         }
+
+        this._goToFrame = frame;
     }
 
     /**
@@ -311,9 +320,10 @@ export class Animatable {
     /**
      * Stop and delete the current animation
      * @param animationName defines a string used to only stop some of the runtime animations instead of all
-     * @param targetMask - a function that determines if the animation should be stopped based on its target (all animations will be stopped if both this and animationName are empty)
+     * @param targetMask a function that determines if the animation should be stopped based on its target (all animations will be stopped if both this and animationName are empty)
+     * @param useGlobalSplice if true, the animatables will be removed by the caller of this function (false by default)
      */
-    public stop(animationName?: string, targetMask?: (target: any) => boolean): void {
+    public stop(animationName?: string, targetMask?: (target: any) => boolean, useGlobalSplice = false): void {
         if (animationName || targetMask) {
             const idx = this._scene._activeAnimatables.indexOf(this);
 
@@ -334,7 +344,9 @@ export class Animatable {
                 }
 
                 if (runtimeAnimations.length == 0) {
-                    this._scene._activeAnimatables.splice(idx, 1);
+                    if (!useGlobalSplice) {
+                        this._scene._activeAnimatables.splice(idx, 1);
+                    }
                     this._raiseOnAnimationEnd();
                 }
             }
@@ -342,12 +354,16 @@ export class Animatable {
             const index = this._scene._activeAnimatables.indexOf(this);
 
             if (index > -1) {
-                this._scene._activeAnimatables.splice(index, 1);
+                if (!useGlobalSplice) {
+                    this._scene._activeAnimatables.splice(index, 1);
+                }
                 const runtimeAnimations = this._runtimeAnimations;
 
                 for (let index = 0; index < runtimeAnimations.length; index++) {
                     runtimeAnimations[index].dispose();
                 }
+
+                this._runtimeAnimations.length = 0;
 
                 this._raiseOnAnimationEnd();
             }
@@ -373,8 +389,7 @@ export class Animatable {
     }
 
     /**
-     * @param delay
-     * @hidden
+     * @internal
      */
     public _animate(delay: number): boolean {
         if (this._paused) {
@@ -398,6 +413,8 @@ export class Animatable {
             this._manualJumpDelay = null;
             this._frameToSyncFromJump = null;
         }
+
+        this._goToFrame = null;
 
         if (this._weight === 0) {
             // We consider that an animation with a weight === 0 is "actively" paused
@@ -445,10 +462,10 @@ export class Animatable {
 
 declare module "../scene" {
     export interface Scene {
-        /** @hidden */
+        /** @internal */
         _registerTargetForLateAnimationBinding(runtimeAnimation: RuntimeAnimation, originalValue: any): void;
 
-        /** @hidden */
+        /** @internal */
         _processLateAnimationBindingsForMatrices(holder: {
             totalWeight: number;
             totalAdditiveWeight: number;
@@ -457,7 +474,7 @@ declare module "../scene" {
             originalValue: Matrix;
         }): any;
 
-        /** @hidden */
+        /** @internal */
         _processLateAnimationBindingsForQuaternions(
             holder: {
                 totalWeight: number;
@@ -469,7 +486,7 @@ declare module "../scene" {
             refQuaternion: Quaternion
         ): Quaternion;
 
-        /** @hidden */
+        /** @internal */
         _processLateAnimationBindings(): void;
 
         /**
@@ -856,9 +873,9 @@ Scene.prototype.stopAnimation = function (target: any, animationName?: string, t
 Scene.prototype.stopAllAnimations = function (): void {
     if (this._activeAnimatables) {
         for (let i = 0; i < this._activeAnimatables.length; i++) {
-            this._activeAnimatables[i].stop();
+            this._activeAnimatables[i].stop(undefined, undefined, true);
         }
-        this._activeAnimatables = [];
+        this._activeAnimatables.length = 0;
     }
 
     for (const group of this.animationGroups) {
@@ -952,10 +969,13 @@ Scene.prototype._processLateAnimationBindingsForMatrices = function (holder: {
             const currentQuaternion = TmpVectors.Quaternion[1];
 
             runtimeAnimation.currentValue.decompose(currentScaling, currentQuaternion, currentPosition);
+
             currentScaling.scaleAndAddToRef(scale, finalScaling);
-            currentQuaternion.scaleAndAddToRef(scale, finalQuaternion);
+            currentQuaternion.scaleAndAddToRef(Quaternion.Dot(finalQuaternion, currentQuaternion) > 0 ? scale : -scale, finalQuaternion);
             currentPosition.scaleAndAddToRef(scale, finalPosition);
         }
+
+        finalQuaternion.normalize();
     }
 
     // Add up the additive animations
@@ -1085,7 +1105,9 @@ Scene.prototype._processLateAnimationBindings = function (): void {
             const holder = target._lateAnimationHolders[path];
             const originalAnimation: RuntimeAnimation = holder.animations[0];
             const originalValue = holder.originalValue;
-
+            if (originalValue === undefined || originalValue === null) {
+                continue;
+            }
             const matrixDecomposeMode = Animation.AllowMatrixDecomposeForInterpolation && originalValue.m; // ie. data is matrix
 
             let finalValue: any = target[path];

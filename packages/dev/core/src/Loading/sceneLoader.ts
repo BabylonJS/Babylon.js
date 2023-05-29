@@ -19,7 +19,6 @@ import { IsBase64DataUrl } from "../Misc/fileTools";
 import type { TransformNode } from "../Meshes/transformNode";
 import type { Geometry } from "../Meshes/geometry";
 import type { Light } from "../Lights/light";
-import { StartsWith } from "../Misc/stringTools";
 import { RuntimeError, ErrorCodes } from "../Misc/error";
 
 /**
@@ -118,7 +117,7 @@ export interface ISceneLoaderPluginFactory {
 
     /**
      * Function called to create a new plugin
-     * @return the new plugin
+     * @returns the new plugin
      */
     createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
 
@@ -344,7 +343,7 @@ interface IFileInfo {
 
 /**
  * Class used to load scene from various file formats using registered plugins
- * @see https://doc.babylonjs.com/how_to/load_from_any_file_type
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/importers/loadingFileTypes
  */
 export class SceneLoader {
     /**
@@ -441,7 +440,7 @@ export class SceneLoader {
         Logger.Warn(
             "Unable to find a plugin to load " +
                 extension +
-                " files. Trying to use .babylon default plugin. To load from a specific filetype (eg. gltf) see: https://doc.babylonjs.com/how_to/load_from_any_file_type"
+                " files. Trying to use .babylon default plugin. To load from a specific filetype (eg. gltf) see: https://doc.babylonjs.com/features/featuresDeepDive/importers/loadingFileTypes"
         );
         return SceneLoader.GetDefaultPlugin();
     }
@@ -623,7 +622,7 @@ export class SceneLoader {
             url = `file:${sceneFile.name}`;
             name = sceneFile.name;
             file = sceneFile;
-        } else if (typeof sceneFilename === "string" && StartsWith(sceneFilename, "data:")) {
+        } else if (typeof sceneFilename === "string" && sceneFilename.startsWith("data:")) {
             url = sceneFilename;
             name = "";
         } else {
@@ -720,10 +719,10 @@ export class SceneLoader {
         }
 
         const loadingToken = {};
-        scene._addPendingData(loadingToken);
+        scene.addPendingData(loadingToken);
 
         const disposeHandler = () => {
-            scene._removePendingData(loadingToken);
+            scene.removePendingData(loadingToken);
         };
 
         const errorHandler = (message?: string, exception?: any) => {
@@ -760,7 +759,7 @@ export class SceneLoader {
                 }
             }
 
-            scene._removePendingData(loadingToken);
+            scene.removePendingData(loadingToken);
         };
 
         return SceneLoader._LoadData(
@@ -946,6 +945,13 @@ export class SceneLoader {
             return null;
         }
 
+        const loadingToken = {};
+        scene.addPendingData(loadingToken);
+
+        const disposeHandler = () => {
+            scene.removePendingData(loadingToken);
+        };
+
         if (SceneLoader.ShowLoadingScreen && !this._ShowingLoadingScreen) {
             this._ShowingLoadingScreen = true;
             scene.getEngine().displayLoadingUI();
@@ -954,13 +960,6 @@ export class SceneLoader {
                 this._ShowingLoadingScreen = false;
             });
         }
-
-        const loadingToken = {};
-        scene._addPendingData(loadingToken);
-
-        const disposeHandler = () => {
-            scene._removePendingData(loadingToken);
-        };
 
         const errorHandler = (message?: string, exception?: any) => {
             const errorMessage = SceneLoader._FormatErrorMessage(fileInfo, message, exception);
@@ -994,7 +993,7 @@ export class SceneLoader {
                 }
             }
 
-            scene._removePendingData(loadingToken);
+            scene.removePendingData(loadingToken);
         };
 
         return SceneLoader._LoadData(
@@ -1093,10 +1092,10 @@ export class SceneLoader {
         }
 
         const loadingToken = {};
-        scene._addPendingData(loadingToken);
+        scene.addPendingData(loadingToken);
 
         const disposeHandler = () => {
-            scene._removePendingData(loadingToken);
+            scene.removePendingData(loadingToken);
         };
 
         const errorHandler = (message?: string, exception?: any) => {
@@ -1131,7 +1130,7 @@ export class SceneLoader {
                 }
             }
 
-            scene._removePendingData(loadingToken);
+            scene.removePendingData(loadingToken);
         };
 
         return SceneLoader._LoadData(

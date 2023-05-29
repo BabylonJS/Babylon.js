@@ -22,19 +22,20 @@ import { Color4 } from "../Maths/math.color";
 import type { ThinEngine } from "../Engines/thinEngine";
 
 import "../Engines/Extensions/engine.dynamicBuffer";
-
-declare type Animation = import("../Animations/animation").Animation;
-declare type Scene = import("../scene").Scene;
-declare type ProceduralTexture = import("../Materials/Textures/Procedurals/proceduralTexture").ProceduralTexture;
-declare type RawTexture = import("../Materials/Textures/rawTexture").RawTexture;
+import type { IClipPlanesHolder } from "../Misc/interfaces/iClipPlanesHolder";
+import type { Plane } from "../Maths/math.plane";
+import type { Animation } from "../Animations/animation";
+import type { Scene } from "../scene";
+import type { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
+import type { RawTexture } from "../Materials/Textures/rawTexture";
 
 /**
  * This represents the base class for particle system in Babylon.
  * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
  * Particles can take different shapes while emitted like box, sphere, cone or you can write your custom function.
- * @example https://doc.babylonjs.com/babylon101/particles
+ * @example https://doc.babylonjs.com/features/featuresDeepDive/particles/particle_system/particle_system_intro
  */
-export class BaseParticleSystem {
+export class BaseParticleSystem implements IClipPlanesHolder {
     /**
      * Source color is added to the destination color without alpha affecting the result
      */
@@ -202,6 +203,9 @@ export class BaseParticleSystem {
      */
     public preventAutoStart: boolean = false;
 
+    /** @internal */
+    _wasDispatched = false;
+
     protected _rootUrl = "";
     private _noiseTexture: Nullable<ProceduralTexture>;
 
@@ -278,7 +282,7 @@ export class BaseParticleSystem {
     /** Gets or sets a Vector2 used to move the pivot (by default (0,0)) */
     public translationPivot = new Vector2(0, 0);
 
-    /** @hidden */
+    /** @internal */
     public _isAnimationSheetEnabled: boolean;
 
     /**
@@ -307,6 +311,36 @@ export class BaseParticleSystem {
     public worldOffset = new Vector3(0, 0, 0);
 
     /**
+     * Gets or sets the active clipplane 1
+     */
+    public clipPlane: Nullable<Plane>;
+
+    /**
+     * Gets or sets the active clipplane 2
+     */
+    public clipPlane2: Nullable<Plane>;
+
+    /**
+     * Gets or sets the active clipplane 3
+     */
+    public clipPlane3: Nullable<Plane>;
+
+    /**
+     * Gets or sets the active clipplane 4
+     */
+    public clipPlane4: Nullable<Plane>;
+
+    /**
+     * Gets or sets the active clipplane 5
+     */
+    public clipPlane5: Nullable<Plane>;
+
+    /**
+     * Gets or sets the active clipplane 6
+     */
+    public clipPlane6: Nullable<Plane>;
+
+    /**
      * Gets or sets whether an animation sprite sheet is enabled or not on the particle system
      */
     public get isAnimationSheetEnabled(): boolean {
@@ -321,6 +355,19 @@ export class BaseParticleSystem {
         this._isAnimationSheetEnabled = value;
 
         this._reset();
+    }
+
+    private _useLogarithmicDepth: boolean = false;
+
+    /**
+     * Gets or sets a boolean enabling the use of logarithmic depth buffers, which is good for wide depth buffers.
+     */
+    public get useLogarithmicDepth(): boolean {
+        return this._useLogarithmicDepth;
+    }
+
+    public set useLogarithmicDepth(value: boolean) {
+        this._useLogarithmicDepth = value && this.getScene()!.getEngine().getCaps().fragmentDepthSupported;
     }
 
     /**
@@ -560,10 +607,10 @@ export class BaseParticleSystem {
      */
     public particleEmitterType: IParticleEmitterType;
 
-    /** @hidden */
+    /** @internal */
     public _isSubEmitter = false;
 
-    /** @hidden */
+    /** @internal */
     public _billboardMode = Constants.PARTICLES_BILLBOARDMODE_ALL;
     /**
      * Gets or sets the billboard mode to use when isBillboardBased = true.
@@ -582,7 +629,7 @@ export class BaseParticleSystem {
         this._reset();
     }
 
-    /** @hidden */
+    /** @internal */
     public _isBillboardBased = true;
     /**
      * Gets or sets a boolean indicating if the particles must be rendered as billboard or aligned with the direction
@@ -653,14 +700,11 @@ export class BaseParticleSystem {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     protected _reset() {}
 
     /**
-     * @param gradient
-     * @param gradients
-     * @param texture
-     * @hidden
+     * @internal
      */
     protected _removeGradientAndTexture(gradient: number, gradients: Nullable<IValueGradient[]>, texture: Nullable<RawTexture>): BaseParticleSystem {
         if (!gradients) {

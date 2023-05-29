@@ -141,8 +141,18 @@ export class HDRFiltering {
         this._engine._releaseTexture(texture._texture!);
 
         // Internal Swap
+        const type = outputTexture.texture!.type;
+        const format = outputTexture.texture!.format;
+
         outputTexture._swapAndDie(texture._texture!);
 
+        texture._texture!.type = type;
+        texture._texture!.format = format;
+
+        // New settings
+        texture.gammaSpace = false;
+        texture.lodGenerationOffset = this._lodGenerationOffset;
+        texture.lodGenerationScale = this._lodGenerationScale;
         texture._prefiltered = true;
 
         return texture;
@@ -187,7 +197,7 @@ export class HDRFiltering {
      * See http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf for more information
      * @param texture Texture to filter
      * @param onFinished Callback when filtering is done
-     * @return Promise called when prefiltering is done
+     * @returns Promise called when prefiltering is done
      */
     public prefilter(texture: BaseTexture, onFinished: Nullable<() => void> = null): Promise<void> {
         if (!this._engine._features.allowTexturePrefiltering) {

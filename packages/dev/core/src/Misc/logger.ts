@@ -31,6 +31,14 @@ export class Logger {
 
     private static _LogCache = "";
     private static _LogLimitOutputs: { [message: string]: { limit: number; current: number } } = {};
+    // levels according to the (binary) numbering.
+    private static _Levels = [
+        {},
+        { color: "white", logFunc: console.log, name: "Log" },
+        { color: "orange", logFunc: console.warn, name: "Warn" },
+        {},
+        { color: "red", logFunc: console.error, name: "Error" },
+    ];
 
     /**
      * Gets a value indicating the number of loading errors
@@ -55,23 +63,14 @@ export class Logger {
         return entry.current <= entry.limit;
     }
 
-    private static _GenerateLimitMessage(message: string, messageType: number): void {
+    private static _GenerateLimitMessage(message: string, level: number = 1): void {
         const entry = Logger._LogLimitOutputs[message];
         if (!entry || !Logger.MessageLimitReached) {
             return;
         }
+        const type = this._Levels[level];
         if (entry.current === entry.limit) {
-            switch (messageType) {
-                case 0:
-                    Logger.Log(Logger.MessageLimitReached.replace(/%LIMIT%/g, "" + entry.limit).replace(/%TYPE%/g, "log"));
-                    break;
-                case 1:
-                    Logger.Warn(Logger.MessageLimitReached.replace(/%LIMIT%/g, "" + entry.limit).replace(/%TYPE%/g, "warning"));
-                    break;
-                case 2:
-                    Logger.Error(Logger.MessageLimitReached.replace(/%LIMIT%/g, "" + entry.limit).replace(/%TYPE%/g, "error"));
-                    break;
-            }
+            Logger[type.name as "Log" | "Warn" | "Error"](Logger.MessageLimitReached.replace(/%LIMIT%/g, "" + entry.limit).replace(/%TYPE%/g, type.name ?? ""));
         }
     }
 
@@ -94,71 +93,34 @@ export class Logger {
     private static _LogDisabled(message: string, limit?: number): void {
         // nothing to do
     }
-    private static _LogEnabled(message: string, limit?: number): void {
+    private static _LogEnabled(level: number = 1, message: string, limit?: number): void {
         if (limit !== undefined && !Logger._CheckLimit(message, limit)) {
             return;
         }
 
         const formattedMessage = Logger._FormatMessage(message);
-        console.log("BJS - " + formattedMessage);
+        const type = this._Levels[level];
+        type.logFunc && type.logFunc("BJS - " + formattedMessage);
 
-        const entry = "<div style='color:white'>" + formattedMessage + "</div><br>";
+        const entry = `<div style='color:${type.color}'>${formattedMessage}</div><br>`;
         Logger._AddLogEntry(entry);
-
-        Logger._GenerateLimitMessage(message, 0);
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private static _WarnDisabled(message: string, limit?: number): void {
-        // nothing to do
-    }
-    private static _WarnEnabled(message: string, limit?: number): void {
-        if (limit !== undefined && !Logger._CheckLimit(message, limit)) {
-            return;
-        }
-
-        const formattedMessage = Logger._FormatMessage(message);
-        console.warn("BJS - " + formattedMessage);
-
-        const entry = "<div style='color:orange'>" + message + "</div><br>";
-        Logger._AddLogEntry(entry);
-
-        Logger._GenerateLimitMessage(message, 1);
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private static _ErrorDisabled(message: string, limit?: number): void {
-        // nothing to do
-    }
-    private static _ErrorEnabled(message: string, limit?: number): void {
-        if (limit !== undefined && !Logger._CheckLimit(message, limit)) {
-            return;
-        }
-
-        const formattedMessage = Logger._FormatMessage(message);
-        Logger.errorsCount++;
-        console.error("BJS - " + formattedMessage);
-
-        const entry = "<div style='color:red'>" + formattedMessage + "</div><br>";
-        Logger._AddLogEntry(entry);
-
-        Logger._GenerateLimitMessage(message, 2);
+        Logger._GenerateLimitMessage(message, level);
     }
 
     /**
      * Log a message to the console
      */
-    public static Log: (message: string, limit?: number) => void = Logger._LogEnabled;
+    public static Log: (message: string, limit?: number) => void = Logger._LogEnabled.bind(Logger, Logger.MessageLogLevel);
 
     /**
      * Write a warning message to the console
      */
-    public static Warn: (message: string, limit?: number) => void = Logger._WarnEnabled;
+    public static Warn: (message: string, limit?: number) => void = Logger._LogEnabled.bind(Logger, Logger.WarningLogLevel);
 
     /**
      * Write an error message to the console
      */
-    public static Error: (message: string, limit?: number) => void = Logger._ErrorEnabled;
+    public static Error: (message: string, limit?: number) => void = Logger._LogEnabled.bind(Logger, Logger.ErrorLogLevel);
 
     /**
      * Gets current log cache (list of logs)
@@ -180,22 +142,14 @@ export class Logger {
      * Sets the current log level (MessageLogLevel / WarningLogLevel / ErrorLogLevel)
      */
     public static set LogLevels(level: number) {
-        if ((level & Logger.MessageLogLevel) === Logger.MessageLogLevel) {
-            Logger.Log = Logger._LogEnabled;
-        } else {
-            Logger.Log = Logger._LogDisabled;
-        }
-
-        if ((level & Logger.WarningLogLevel) === Logger.WarningLogLevel) {
-            Logger.Warn = Logger._WarnEnabled;
-        } else {
-            Logger.Warn = Logger._WarnDisabled;
-        }
-
-        if ((level & Logger.ErrorLogLevel) === Logger.ErrorLogLevel) {
-            Logger.Error = Logger._ErrorEnabled;
-        } else {
-            Logger.Error = Logger._ErrorDisabled;
-        }
+        Logger.Log = Logger._LogDisabled;
+        Logger.Warn = Logger._LogDisabled;
+        Logger.Error = Logger._LogDisabled;
+        [Logger.MessageLogLevel, Logger.WarningLogLevel, Logger.ErrorLogLevel].forEach((l) => {
+            if ((level & l) === l) {
+                const type = this._Levels[l];
+                Logger[type.name as "Log" | "Warn" | "Error"] = Logger._LogEnabled.bind(Logger, l);
+            }
+        });
     }
 }

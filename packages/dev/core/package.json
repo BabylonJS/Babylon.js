@@ -23,7 +23,7 @@
         "compile:assets": "build-tools -c process-assets --isCore",
         "watch:assets": "build-tools -c process-assets --isCore --watch",
         "watch:source": "tsc -b tsconfig.build.json -w",
-        "watch": "build-tools -c dev-watch --package \"core\" -wa"
+        "watch": "build-tools -c dev-watch --packages \"core\" -wa"
     },
     "sideEffects": false,
     "devDependencies": {

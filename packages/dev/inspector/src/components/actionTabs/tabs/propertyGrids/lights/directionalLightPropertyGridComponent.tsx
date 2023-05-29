@@ -54,7 +54,7 @@ export class DirectionalLightPropertyGridComponent extends React.Component<IDire
         const displayFrustum = (light as any)._displayFrustum ?? false;
 
         return (
-            <div className="pane">
+            <>
                 <CommonLightPropertyGridComponent
                     globalState={this.props.globalState}
                     lockObject={this.props.lockObject}
@@ -62,10 +62,34 @@ export class DirectionalLightPropertyGridComponent extends React.Component<IDire
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
                 <LineContainerComponent title="SETUP" selection={this.props.globalState}>
-                    <Color3LineComponent label="Diffuse" target={light} propertyName="diffuse" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <Color3LineComponent label="Specular" target={light} propertyName="specular" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <Vector3LineComponent label="Position" target={light} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <Vector3LineComponent label="Direction" target={light} propertyName="direction" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Color3LineComponent
+                        lockObject={this.props.lockObject}
+                        label="Diffuse"
+                        target={light}
+                        propertyName="diffuse"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <Color3LineComponent
+                        lockObject={this.props.lockObject}
+                        label="Specular"
+                        target={light}
+                        propertyName="specular"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <Vector3LineComponent
+                        lockObject={this.props.lockObject}
+                        label="Position"
+                        target={light}
+                        propertyName="position"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <Vector3LineComponent
+                        lockObject={this.props.lockObject}
+                        label="Direction"
+                        target={light}
+                        propertyName="direction"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                     {!hideAutoCalcShadowZBounds && (
                         <CheckBoxLineComponent
                             label="Auto Calc Shadow ZBounds"
@@ -84,7 +108,7 @@ export class DirectionalLightPropertyGridComponent extends React.Component<IDire
                 <LineContainerComponent title="DEBUG" closed={true} selection={this.props.globalState}>
                     <CheckBoxLineComponent label="Display frustum" isSelected={() => displayFrustum} onSelect={() => this.displayFrustum()} />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

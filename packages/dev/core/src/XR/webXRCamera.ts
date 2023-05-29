@@ -10,7 +10,7 @@ import { WebXRTrackingState } from "./webXRTypes";
 
 /**
  * WebXR Camera which holds the views for the xrSession
- * @see https://doc.babylonjs.com/how_to/webxr_camera
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/webXR/webXRCamera
  */
 export class WebXRCamera extends FreeCamera {
     private static _ScaleReadOnly = Vector3.One();
@@ -43,7 +43,7 @@ export class WebXRCamera extends FreeCamera {
 
     /**
      * The last XRViewerPose from the current XRFrame
-     * @hidden
+     * @internal
      */
     public _lastXRViewerPose?: XRViewerPose;
 
@@ -114,7 +114,7 @@ export class WebXRCamera extends FreeCamera {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _updateForDualEyeDebugging(/*pupilDistance = 0.01*/) {
         // Create initial camera rigs
         this._updateNumberOfRigCameras(2);
@@ -154,6 +154,22 @@ export class WebXRCamera extends FreeCamera {
         return "WebXRCamera";
     }
 
+    /**
+     * Set the target for the camera to look at.
+     * Note that this only rotates around the Y axis, as opposed to the default behavior of other cameras
+     * @param target the target to set the camera to look at
+     */
+    public setTarget(target: Vector3): void {
+        // only rotate around the y axis!
+        const tmpVector = TmpVectors.Vector3[1];
+        target.subtractToRef(this.position, tmpVector);
+        tmpVector.y = 0;
+        tmpVector.normalize();
+        const yRotation = Math.atan2(tmpVector.x, tmpVector.z);
+        this.rotationQuaternion.toEulerAnglesToRef(tmpVector);
+        Quaternion.FromEulerAnglesToRef(tmpVector.x, yRotation, tmpVector.z, this.rotationQuaternion);
+    }
+
     public dispose() {
         super.dispose();
         this._lastXRViewerPose = undefined;
@@ -172,6 +188,19 @@ export class WebXRCamera extends FreeCamera {
         // Set the tracking state. if it didn't change it is a no-op
         const trackingState = pose.emulatedPosition ? WebXRTrackingState.TRACKING_LOST : WebXRTrackingState.TRACKING;
         this._setTrackingState(trackingState);
+
+        // check min/max Z and update if not the same as in cache
+        if (this.minZ !== this._cache.minZ || this.maxZ !== this._cache.maxZ) {
+            const xrRenderState: XRRenderStateInit = {
+                // if maxZ is 0 it should be "Infinity", but it doesn't work with the WebXR API. Setting to a large number.
+                depthFar: this.maxZ || 10000,
+                depthNear: this.minZ,
+            };
+
+            this._xrSessionManager.updateRenderState(xrRenderState);
+            this._cache.minZ = this.minZ;
+            this._cache.maxZ = this.maxZ;
+        }
 
         if (pose.transform) {
             const orientation = pose.transform.orientation;
@@ -263,6 +292,9 @@ export class WebXRCamera extends FreeCamera {
                 // Set cameras to render to the session's render target
                 currentRig.outputRenderTarget = renderTargetTexture || this._xrSessionManager.getRenderTargetTextureForView(view);
             }
+
+            // Replicate parent rig camera behavior
+            currentRig.layerMask = this.layerMask;
         });
     }
 

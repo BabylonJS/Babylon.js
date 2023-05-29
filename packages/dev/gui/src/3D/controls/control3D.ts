@@ -17,14 +17,16 @@ declare type TouchButton3D = import("./touchButton3D").TouchButton3D;
  * Class used as base class for controls
  */
 export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
-    /** @hidden */
-    public _host: GUI3DManager;
     private _node: Nullable<TransformNode>;
     private _downCount = 0;
     private _enterCount = -1;
     private _downPointerIds: { [id: number]: number } = {}; // Store number of pointer downs per ID, from near and far interactions
-    private _isVisible = true;
-    /** @hidden */
+
+    protected _isVisible = true;
+
+    /** @internal */
+    public _host: GUI3DManager;
+    /** @internal */
     public _isScaledByManager = false;
 
     /** Gets or sets the control position in world space */
@@ -111,7 +113,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
 
     /**
      * Gets the list of attached behaviors
-     * @see https://doc.babylonjs.com/features/behaviour
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/behaviors
      */
     public get behaviors(): Behavior<Control3D>[] {
         return this._behaviors;
@@ -119,7 +121,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
 
     /**
      * Attach a behavior to the control
-     * @see https://doc.babylonjs.com/features/behaviour
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/behaviors
      * @param behavior defines the behavior to attach
      * @returns the current control
      */
@@ -147,7 +149,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
 
     /**
      * Remove an attached behavior
-     * @see https://doc.babylonjs.com/features/behaviour
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/behaviors
      * @param behavior defines the behavior to attach
      * @returns the current control
      */
@@ -167,7 +169,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
     /**
      * Gets an attached behavior by name
      * @param name defines the name of the behavior to look for
-     * @see https://doc.babylonjs.com/features/behaviour
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/behaviors
      * @returns null if behavior was not found else the requested behavior
      */
     public getBehaviorByName(name: string): Nullable<Behavior<Control3D>> {
@@ -257,8 +259,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
     }
 
     /**
-     * @param scene
-     * @hidden*
+     * @internal*
      */
     public _prepareNode(scene: Scene): void {
         if (!this._node) {
@@ -311,17 +312,14 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
     // Pointers
 
     /**
-     * @param target
-     * @param coordinates
-     * @hidden
+     * @internal
      */
     public _onPointerMove(target: Control3D, coordinates: Vector3): void {
         this.onPointerMoveObservable.notifyObservers(coordinates, -1, target, this);
     }
 
     /**
-     * @param target
-     * @hidden
+     * @internal
      */
     public _onPointerEnter(target: Control3D): boolean {
         if (this._enterCount === -1) {
@@ -345,8 +343,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
     }
 
     /**
-     * @param target
-     * @hidden
+     * @internal
      */
     public _onPointerOut(target: Control3D): void {
         this._enterCount--;
@@ -365,11 +362,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
     }
 
     /**
-     * @param target
-     * @param coordinates
-     * @param pointerId
-     * @param buttonIndex
-     * @hidden
+     * @internal
      */
     public _onPointerDown(target: Control3D, coordinates: Vector3, pointerId: number, buttonIndex: number): boolean {
         this._downCount++;
@@ -389,12 +382,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
     }
 
     /**
-     * @param target
-     * @param coordinates
-     * @param pointerId
-     * @param buttonIndex
-     * @param notifyClick
-     * @hidden
+     * @internal
      */
     public _onPointerUp(target: Control3D, coordinates: Vector3, pointerId: number, buttonIndex: number, notifyClick: boolean): void {
         this._downCount--;
@@ -423,8 +411,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
     }
 
     /**
-     * @param pointerId
-     * @hidden
+     * @internal
      */
     public forcePointerUp(pointerId: Nullable<number> = null) {
         if (pointerId !== null) {
@@ -441,12 +428,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
     }
 
     /**
-     * @param type
-     * @param pickedPoint
-     * @param originMeshPosition
-     * @param pointerId
-     * @param buttonIndex
-     * @hidden
+     * @internal
      */
     public _processObservables(type: number, pickedPoint: Vector3, originMeshPosition: Nullable<Vector3>, pointerId: number, buttonIndex: number): boolean {
         if (this._isTouchButton3D(this) && originMeshPosition) {
@@ -487,7 +469,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
         return false;
     }
 
-    /** @hidden */
+    /** @internal */
     public _disposeNode(): void {
         if (this._node) {
             this._node.dispose();

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 import type { Nullable } from "core/types";
 import { Scalar } from "core/Maths/math.scalar";
 import { SphericalHarmonics, SphericalPolynomial } from "core/Maths/sphericalPolynomial";
@@ -14,7 +13,8 @@ import { GLTFLoader, ArrayItem } from "../glTFLoader";
 const NAME = "EXT_lights_image_based";
 
 declare module "babylonjs-gltf2interface" {
-    /** @hidden */
+    /** @internal */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     interface IEXTLightsImageBased_LightImageBased {
         _babylonTexture?: BaseTexture;
         _loaded?: Promise<void>;
@@ -22,8 +22,9 @@ declare module "babylonjs-gltf2interface" {
 }
 
 /**
- * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Vendor/EXT_lights_image_based/README.md)
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_lights_image_based/README.md)
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class EXT_lights_image_based implements IGLTFLoaderExtension {
     /**
      * The name of this extension.
@@ -39,21 +40,20 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
     private _lights?: IEXTLightsImageBased_LightImageBased[];
 
     /**
-     * @param loader
-     * @hidden
+     * @internal
      */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
         this.enabled = this._loader.isExtensionUsed(NAME);
     }
 
-    /** @hidden */
+    /** @internal */
     public dispose() {
         (this._loader as any) = null;
         delete this._lights;
     }
 
-    /** @hidden */
+    /** @internal */
     public onLoading(): void {
         const extensions = this._loader.gltf.extensions;
         if (extensions && extensions[this.name]) {
@@ -63,9 +63,7 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
     }
 
     /**
-     * @param context
-     * @param scene
-     * @hidden
+     * @internal
      */
     public loadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IEXTLightsImageBased_LightReferenceImageBased>(context, scene, this.name, (extensionContext, extension) => {

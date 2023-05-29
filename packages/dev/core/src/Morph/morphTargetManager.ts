@@ -12,11 +12,14 @@ import { RawTexture2DArray } from "../Materials/Textures/rawTexture2DArray";
 import type { AbstractScene } from "../abstractScene";
 /**
  * This class is used to deform meshes using morphing between different targets
- * @see https://doc.babylonjs.com/how_to/how_to_use_morphtargets
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/morphTargets
  */
 export class MorphTargetManager implements IDisposable {
     /** Enable storing morph target data into textures when set to true (true by default) */
     public static EnableTextureStorage = true;
+
+    /** Maximum number of active morph targets supported in the "vertex attribute" mode (i.e., not the "texture" mode) */
+    public static MaxActiveMorphTargetsInVertexAttributeMode = 8;
 
     private _targets = new Array<MorphTarget>();
     private _targetInfluenceChangedObservers = new Array<Nullable<Observer<boolean>>>();
@@ -37,10 +40,10 @@ export class MorphTargetManager implements IDisposable {
     private _canUseTextureForTargets = false;
     private _blockCounter = 0;
 
-    /** @hidden */
+    /** @internal */
     public _parentContainer: Nullable<AbstractScene> = null;
 
-    /** @hidden */
+    /** @internal */
     public _targetStoreTexture: Nullable<RawTexture2DArray>;
 
     /**
@@ -95,12 +98,13 @@ export class MorphTargetManager implements IDisposable {
         this._scene = scene;
 
         if (this._scene) {
-            this._scene.morphTargetManagers.push(this);
+            this._scene.addMorphTargetManager(this);
 
             this._uniqueId = this._scene.getUniqueId();
 
             const engineCaps = this._scene.getEngine().getCaps();
-            this._canUseTextureForTargets = engineCaps.canUseGLVertexID && engineCaps.textureFloat && engineCaps.maxVertexTextureImageUnits > 0;
+            this._canUseTextureForTargets =
+                engineCaps.canUseGLVertexID && engineCaps.textureFloat && engineCaps.maxVertexTextureImageUnits > 0 && engineCaps.texture2DArrayMaxLayerCount > 1;
         }
     }
 
@@ -177,7 +181,12 @@ export class MorphTargetManager implements IDisposable {
      * Gets a boolean indicating that the targets are stored into a texture (instead of as attributes)
      */
     public get isUsingTextureForTargets() {
-        return MorphTargetManager.EnableTextureStorage && this.useTextureToStoreTargets && this._canUseTextureForTargets;
+        return (
+            MorphTargetManager.EnableTextureStorage &&
+            this.useTextureToStoreTargets &&
+            this._canUseTextureForTargets &&
+            !this._scene?.getEngine().getCaps().disableMorphTargetTexture
+        );
     }
 
     /**
@@ -230,11 +239,14 @@ export class MorphTargetManager implements IDisposable {
             target._onDataLayoutChanged.remove(this._targetDataLayoutChangedObservers.splice(index, 1)[0]);
             this._syncActiveTargets(true);
         }
+
+        if (this._scene) {
+            this._scene.stopAnimation(target);
+        }
     }
 
     /**
-     * @param effect
-     * @hidden
+     * @internal
      */
     public _bind(effect: Effect) {
         effect.setFloat3("morphTargetTextureInfo", this._textureVertexStride, this._textureWidth, this._textureHeight);
@@ -289,6 +301,10 @@ export class MorphTargetManager implements IDisposable {
         this._supportsUVs = true;
         this._vertexCount = 0;
 
+        if (this._scene && this._targets.length > this._scene.getEngine().getCaps().texture2DArrayMaxLayerCount) {
+            this.useTextureToStoreTargets = false;
+        }
+
         if (!this._morphTargetTextureIndices || this._morphTargetTextureIndices.length !== this._targets.length) {
             this._morphTargetTextureIndices = new Float32Array(this._targets.length);
         }
@@ -298,6 +314,10 @@ export class MorphTargetManager implements IDisposable {
             targetIndex++;
             if (target.influence === 0 && this.optimizeInfluencers) {
                 continue;
+            }
+
+            if (this._activeTargets.length >= MorphTargetManager.MaxActiveMorphTargetsInVertexAttributeMode && !this.isUsingTextureForTargets) {
+                break;
             }
 
             this._activeTargets.push(target);
@@ -318,6 +338,10 @@ export class MorphTargetManager implements IDisposable {
                     return;
                 }
             }
+        }
+
+        if (this._morphTargetTextureIndices.length !== influenceCount) {
+            this._morphTargetTextureIndices = this._morphTargetTextureIndices.slice(0, influenceCount);
         }
 
         if (!this._influences || this._influences.length !== influenceCount) {
@@ -469,6 +493,10 @@ export class MorphTargetManager implements IDisposable {
                     this._parentContainer.morphTargetManagers.splice(index, 1);
                 }
                 this._parentContainer = null;
+            }
+
+            for (const morph of this._targets) {
+                this._scene.stopAnimation(morph);
             }
         }
     }

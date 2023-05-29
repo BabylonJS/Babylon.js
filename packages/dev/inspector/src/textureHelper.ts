@@ -67,7 +67,12 @@ export class TextureHelper {
 
         if (rtt.renderTarget && internalTexture) {
             const samplingMode = internalTexture.samplingMode;
-            texture.updateSamplingMode(Texture.NEAREST_NEAREST_MIPNEAREST);
+            if (lod !== 0) {
+                texture.updateSamplingMode(Texture.NEAREST_NEAREST_MIPNEAREST);
+            } else {
+                texture.updateSamplingMode(Texture.NEAREST_NEAREST);
+            }
+
             scene.postProcessManager.directRender([lodPostProcess], rtt.renderTarget, true);
             texture.updateSamplingMode(samplingMode);
 

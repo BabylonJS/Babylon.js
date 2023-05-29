@@ -7,10 +7,11 @@ import type { ComputeBindingList, ComputeBindingMapping } from "../../Extensions
 import { WebGPUEngine } from "../../webgpuEngine";
 import { WebGPUComputeContext } from "../webgpuComputeContext";
 import { WebGPUComputePipelineContext } from "../webgpuComputePipelineContext";
+import * as WebGPUConstants from "../webgpuConstants";
 
 declare module "../../webgpuEngine" {
     export interface WebGPUEngine {
-        /** @hidden */
+        /** @internal */
         _createComputePipelineStageDescriptor(computeShader: string, defines: Nullable<string>, entryPoint: string): GPUProgrammableStage;
     }
 }
@@ -76,6 +77,7 @@ WebGPUEngine.prototype.computeDispatch = function (
 
     if (!contextPipeline.computePipeline) {
         contextPipeline.computePipeline = this._device.createComputePipeline({
+            layout: WebGPUConstants.AutoLayoutMode.Auto,
             compute: contextPipeline.stage!,
         });
     }
@@ -94,7 +96,7 @@ WebGPUEngine.prototype.computeDispatch = function (
         computePass.setBindGroup(i, bindGroup);
     }
 
-    computePass.dispatch(x, y, z);
+    computePass.dispatchWorkgroups(x, y, z);
     computePass.end();
 };
 

@@ -29,7 +29,7 @@ export class ArcRotateCameraPropertyGridComponent extends React.Component<IArcRo
         const camera = this.props.camera;
 
         return (
-            <div className="pane">
+            <>
                 <CommonCameraPropertyGridComponent
                     globalState={this.props.globalState}
                     lockObject={this.props.lockObject}
@@ -37,8 +37,15 @@ export class ArcRotateCameraPropertyGridComponent extends React.Component<IArcRo
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
                 <LineContainerComponent title="TRANSFORMS" selection={this.props.globalState}>
-                    <Vector3LineComponent label="Target" target={camera} propertyName="target" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Vector3LineComponent
+                        lockObject={this.props.lockObject}
+                        label="Target"
+                        target={camera}
+                        propertyName="target"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Alpha"
                         useEuler={this.props.globalState.onlyUseEulers}
                         target={camera}
@@ -49,6 +56,7 @@ export class ArcRotateCameraPropertyGridComponent extends React.Component<IArcRo
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Beta"
                         useEuler={this.props.globalState.onlyUseEulers}
                         target={camera}
@@ -118,6 +126,7 @@ export class ArcRotateCameraPropertyGridComponent extends React.Component<IArcRo
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <Vector3LineComponent
+                        lockObject={this.props.lockObject}
                         label="Collision radius"
                         target={camera}
                         propertyName="collisionRadius"
@@ -183,7 +192,7 @@ export class ArcRotateCameraPropertyGridComponent extends React.Component<IArcRo
                     />
                     <CheckBoxLineComponent label="Framing" target={camera} propertyName="useFramingBehavior" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

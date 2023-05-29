@@ -16,15 +16,16 @@ interface IDropUpButtonProps {
     activeEntry: () => string;
     selectedOption?: string;
     onOptionPicked: (option: string, index: number) => void;
+    searchPlaceholder?: string;
 }
 
-export class DropUpButton extends React.Component<IDropUpButtonProps, { isOpen: boolean }> {
+export class DropUpButton extends React.Component<IDropUpButtonProps, { isOpen: boolean; searchText: string }> {
     private _onClickInterceptorClickedObserver: Nullable<Observer<void>>;
 
     public constructor(props: IDropUpButtonProps) {
         super(props);
 
-        this.state = { isOpen: false };
+        this.state = { isOpen: false, searchText: "" };
 
         this._onClickInterceptorClickedObserver = props.globalState.onClickInterceptorClicked.add(() => {
             this.setState({ isOpen: false });
@@ -45,10 +46,18 @@ export class DropUpButton extends React.Component<IDropUpButtonProps, { isOpen: 
         this.props.onOptionPicked(option, index);
     }
 
+    onChangeSearchText = (evt: React.ChangeEvent<HTMLInputElement>) => {
+        const text = evt.target.value;
+
+        this.setState({ searchText: text });
+    };
+
     public render() {
         if (!this.props.enabled) {
             return null;
         }
+
+        const searchPlaceholder = this.props.searchPlaceholder ?? "Search...";
 
         return (
             <div className="dropup">
@@ -68,20 +77,25 @@ export class DropUpButton extends React.Component<IDropUpButtonProps, { isOpen: 
                 )}
                 {this.state.isOpen && (
                     <div className={"dropup-content" + (this.props.selectedOption ? " long-mode" : "")}>
-                        {this.props.options.map((o, i) => {
-                            return (
-                                <div key={o} onClick={() => this.clickOption(o, i)} className="dropup-content-line">
-                                    <div
-                                        style={{
-                                            opacity: this.props.activeEntry() === o ? "1.0" : "0.8",
-                                            fontSize: this.props.activeEntry() === o ? "var(--active-font-size)" : "var(--font-size)",
-                                        }}
-                                    >
-                                        {o}
+                        <input type="text" placeholder={searchPlaceholder} value={this.state.searchText} onChange={this.onChangeSearchText} />
+                        {this.props.options
+                            .filter((o) => {
+                                return !this.state.searchText || o.toLowerCase().indexOf(this.state.searchText.toLowerCase().trim()) > -1;
+                            })
+                            .map((o, i) => {
+                                return (
+                                    <div title={o} key={o} onClick={() => this.clickOption(o, i)} className="dropup-content-line">
+                                        <div
+                                            style={{
+                                                opacity: this.props.activeEntry() === o ? "1.0" : "0.8",
+                                                fontSize: this.props.activeEntry() === o ? "var(--active-font-size)" : "var(--font-size)",
+                                            }}
+                                        >
+                                            {o}
+                                        </div>
                                     </div>
-                                </div>
-                            );
-                        })}
+                                );
+                            })}
                     </div>
                 )}
             </div>

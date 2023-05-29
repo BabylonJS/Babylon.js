@@ -31,7 +31,7 @@ import "../../../Shaders/standard.fragment";
 /**
  * Standard rendering pipeline
  * Default pipeline should be used going forward but the standard pipeline will be kept for backwards compatibility.
- * @see https://doc.babylonjs.com/how_to/using_standard_rendering_pipeline
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/standardRenderingPipeline
  */
 export class StandardRenderingPipeline extends PostProcessRenderPipeline implements IDisposable, IAnimatable {
     /**
@@ -1621,9 +1621,9 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
         this.fxaaPostProcess = null;
         this.screenSpaceReflectionPostProcess = null;
 
-        this.luminanceDownSamplePostProcesses = [];
-        this.blurHPostProcesses = [];
-        this.blurVPostProcesses = [];
+        this.luminanceDownSamplePostProcesses.length = 0;
+        this.blurHPostProcesses.length = 0;
+        this.blurVPostProcesses.length = 0;
     }
 
     /**

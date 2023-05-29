@@ -29,6 +29,7 @@ import "./water.fragment";
 import "./water.vertex";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import { CreateGround } from "core/Meshes/Builders/groundBuilder";
+import { addClipPlaneUniforms, bindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
 
 class WaterMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
     public BUMP = false;
@@ -72,6 +73,7 @@ class WaterMaterialDefines extends MaterialDefines implements IImageProcessingCo
     public COLORGRADING3D = false;
     public SAMPLER3DGREENDEPTH = false;
     public SAMPLER3DBGRMAP = false;
+    public DITHER = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public SKIPFINALCOLORCLAMP = false;
 
@@ -317,7 +319,7 @@ export class WaterMaterial extends PushMaterial {
 
     public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
         if (this.isFrozen) {
-            if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
+            if (subMesh.effect && subMesh.effect._wasPreviouslyReady && subMesh.effect._wasPreviouslyUsingInstances === useInstances) {
                 return true;
             }
         }
@@ -354,7 +356,7 @@ export class WaterMaterial extends PushMaterial {
             }
         }
 
-        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
+        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, this, defines, useInstances ? true : false);
 
         MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
 
@@ -460,12 +462,6 @@ export class WaterMaterial extends PushMaterial {
                 "pointSize",
                 "vNormalInfos",
                 "mBones",
-                "vClipPlane",
-                "vClipPlane2",
-                "vClipPlane3",
-                "vClipPlane4",
-                "vClipPlane5",
-                "vClipPlane6",
                 "normalMatrix",
                 "logarithmicDepthConstant",
 
@@ -497,6 +493,8 @@ export class WaterMaterial extends PushMaterial {
                 ImageProcessingConfiguration.PrepareUniforms(uniforms, defines);
                 ImageProcessingConfiguration.PrepareSamplers(samplers, defines);
             }
+
+            addClipPlaneUniforms(uniforms);
 
             MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,
@@ -531,6 +529,7 @@ export class WaterMaterial extends PushMaterial {
 
         defines._renderId = scene.getRenderId();
         subMesh.effect._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyUsingInstances = !!useInstances;
 
         return true;
     }
@@ -565,7 +564,7 @@ export class WaterMaterial extends PushMaterial {
                 this._activeEffect.setMatrix("normalMatrix", this.bumpTexture.getTextureMatrix());
             }
             // Clip plane
-            MaterialHelper.BindClipPlane(this._activeEffect, scene);
+            bindClipPlane(effect, this, scene);
 
             // Point size
             if (this.pointsCloud) {
@@ -660,7 +659,7 @@ export class WaterMaterial extends PushMaterial {
             if (!this.disableClipPlane) {
                 clipPlane = scene.clipPlane;
 
-                const positiony = this._mesh ? this._mesh.position.y : 0.0;
+                const positiony = this._mesh ? this._mesh.absolutePosition.y : 0.0;
                 scene.clipPlane = Plane.FromPositionAndNormal(new Vector3(0, positiony + 0.05, 0), new Vector3(0, 1, 0));
             }
         };
@@ -686,7 +685,7 @@ export class WaterMaterial extends PushMaterial {
             if (!this.disableClipPlane) {
                 clipPlane = scene.clipPlane;
 
-                const positiony = this._mesh ? this._mesh.position.y : 0.0;
+                const positiony = this._mesh ? this._mesh.absolutePosition.y : 0.0;
                 scene.clipPlane = Plane.FromPositionAndNormal(new Vector3(0, positiony - 0.05, 0), new Vector3(0, -1, 0));
 
                 Matrix.ReflectionToRef(scene.clipPlane, mirrorMatrix);
@@ -697,7 +696,6 @@ export class WaterMaterial extends PushMaterial {
 
             mirrorMatrix.multiplyToRef(savedViewMatrix, this._reflectionTransform);
             scene.setTransformMatrix(this._reflectionTransform, scene.getProjectionMatrix());
-            scene.getEngine().cullBackFaces = false;
             scene._mirroredCameraPosition = Vector3.TransformCoordinates((<Camera>scene.activeCamera).position, mirrorMatrix);
         };
 
@@ -711,7 +709,6 @@ export class WaterMaterial extends PushMaterial {
 
             // Transform
             scene.setTransformMatrix(savedViewMatrix, scene.getProjectionMatrix());
-            scene.getEngine().cullBackFaces = null;
             scene._mirroredCameraPosition = null;
         };
     }

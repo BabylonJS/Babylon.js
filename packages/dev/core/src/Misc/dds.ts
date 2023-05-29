@@ -416,16 +416,7 @@ export class DDSTools {
 
     /**
      * Uploads DDS Levels to a Babylon Texture
-     * @param engine
-     * @param texture
-     * @param data
-     * @param info
-     * @param loadMipmaps
-     * @param faces
-     * @param lodIndex
-     * @param currentFace
-     * @param destTypeMustBeFilterable
-     * @hidden
+     * @internal
      */
     public static UploadDDSLevels(
         engine: ThinEngine,
@@ -842,7 +833,7 @@ ThinEngine.prototype.createPrefilteredCubeTexture = function (
 
             // Wrap in a base texture for easy binding.
             const lodTexture = new BaseTexture(scene);
-            lodTexture.isCube = true;
+            lodTexture._isCube = true;
             lodTexture._texture = glTextureFromLod;
 
             glTextureFromLod.isReady = true;

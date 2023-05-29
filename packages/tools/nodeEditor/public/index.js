@@ -41,7 +41,7 @@ const Versions = {
         "https://preview.babylonjs.com/babylon.js",
         "https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js",
     ],
-    local: ["//localhost:1337/babylon.js", "//localhost:1337/loaders/babylonjs.loaders.min.js"],
+    local: [`//${window.location.hostname}:1337/babylon.js`, `//${window.location.hostname}:1337/loaders/babylonjs.loaders.min.js`],
 };
 
 let loadInSequence = async function (versions, index, resolve) {

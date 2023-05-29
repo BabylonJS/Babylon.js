@@ -1,14 +1,9 @@
 import type { NodeMaterialConnectionPoint } from "./nodeMaterialBlockConnectionPoint";
 import type { NodeMaterialBlock } from "./nodeMaterialBlock";
 import type { InputBlock } from "./Blocks/Input/inputBlock";
-import type { TextureBlock } from "./Blocks/Dual/textureBlock";
-import type { ReflectionTextureBaseBlock } from "./Blocks/Dual/reflectionTextureBaseBlock";
-import type { RefractionBlock } from "./Blocks/PBR/refractionBlock";
-import type { CurrentScreenBlock } from "./Blocks/Dual/currentScreenBlock";
-import type { ParticleTextureBlock } from "./Blocks/Particle/particleTextureBlock";
 import type { Scene } from "../../scene";
-import type { ImageSourceBlock } from "./Blocks/Dual/imageSourceBlock";
 import type { Immutable } from "../../types";
+import type { NodeMaterialTextureBlocks } from "./nodeMaterial";
 
 /**
  * Class used to store shared data between 2 NodeMaterialBuildState
@@ -42,7 +37,7 @@ export class NodeMaterialBuildStateSharedData {
     /**
      * Input blocks
      */
-    public textureBlocks = new Array<TextureBlock | ReflectionTextureBaseBlock | RefractionBlock | CurrentScreenBlock | ParticleTextureBlock | ImageSourceBlock>();
+    public textureBlocks = new Array<NodeMaterialTextureBlocks>();
 
     /**
      * Bindable blocks (Blocks that need to set data to the effect)

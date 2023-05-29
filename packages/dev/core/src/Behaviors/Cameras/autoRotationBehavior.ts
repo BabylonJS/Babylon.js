@@ -6,10 +6,11 @@ import type { Observer } from "../../Misc/observable";
 import type { PointerInfoPre } from "../../Events/pointerEvents";
 import { PointerEventTypes } from "../../Events/pointerEvents";
 import { PrecisionDate } from "../../Misc/precisionDate";
+import { Epsilon } from "../../Maths/math.constants";
 
 /**
  * The autoRotation behavior (AutoRotationBehavior) is designed to create a smooth rotation of an ArcRotateCamera when there is no user interaction.
- * @see https://doc.babylonjs.com/how_to/camera_behaviors#autorotation-behavior
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/behaviors/cameraBehaviors#autorotation-behavior
  */
 export class AutoRotationBehavior implements Behavior<ArcRotateCamera> {
     /**
@@ -23,6 +24,8 @@ export class AutoRotationBehavior implements Behavior<ArcRotateCamera> {
     private _idleRotationSpeed = 0.05;
     private _idleRotationWaitTime = 2000;
     private _idleRotationSpinupTime = 2000;
+
+    public targetAlpha: Nullable<number> = null;
 
     /**
      * Sets the flag that indicates if user zooming should stop animation.
@@ -123,6 +126,9 @@ export class AutoRotationBehavior implements Behavior<ArcRotateCamera> {
         });
 
         this._onAfterCheckInputsObserver = camera.onAfterCheckInputsObservable.add(() => {
+            if (this._reachTargetAlpha()) {
+                return;
+            }
             const now = PrecisionDate.Now;
             let dt = 0;
             if (this._lastFrameTime != null) {
@@ -170,8 +176,19 @@ export class AutoRotationBehavior implements Behavior<ArcRotateCamera> {
     }
 
     /**
+     * Returns true if camera alpha reaches the target alpha
+     * @returns true if camera alpha reaches the target alpha
+     */
+    private _reachTargetAlpha(): boolean {
+        if (this._attachedCamera && this.targetAlpha) {
+            return Math.abs(this._attachedCamera.alpha - this.targetAlpha) < Epsilon;
+        }
+        return false;
+    }
+
+    /**
      * Returns true if user is scrolling.
-     * @return true if user is scrolling.
+     * @returns true if user is scrolling.
      */
     private _userIsZooming(): boolean {
         if (!this._attachedCamera) {

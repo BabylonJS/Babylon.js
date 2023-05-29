@@ -48,7 +48,7 @@ const filterNoMipToBits = [
     1 << 7, // TEXTURE_LINEAR_NEAREST
 ];
 
-/** @hidden */
+/** @internal */
 export class WebGPUCacheSampler {
     private _samplers: { [hash: number]: GPUSampler } = {};
     private _device: GPUDevice;

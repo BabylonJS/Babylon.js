@@ -21,6 +21,8 @@ export class RangeFrameBarComponent extends React.Component<IRangeFrameBarCompon
     private _isMounted = false;
 
     private _onActiveAnimationChangedObserver: Nullable<Observer<IActiveAnimationChangedOptions>>;
+    private _onPlayheadMovedObserver: Nullable<Observer<number>>;
+    private _onFrameManuallyEnteredObserver: Nullable<Observer<number>>;
 
     constructor(props: IRangeFrameBarComponentProps) {
         super(props);
@@ -42,7 +44,19 @@ export class RangeFrameBarComponent extends React.Component<IRangeFrameBarCompon
             this.forceUpdate();
         });
 
+        this._onPlayheadMovedObserver = this.props.context.onPlayheadMoved.add(() => {
+            this.forceUpdate();
+        });
+
         this.props.context.onFrameSet.add(() => {
+            if (!this._isMounted) {
+                return;
+            }
+
+            this.forceUpdate();
+        });
+
+        this._onFrameManuallyEnteredObserver = this.props.context.onFrameManuallyEntered.add(() => {
             if (!this._isMounted) {
                 return;
             }
@@ -67,6 +81,12 @@ export class RangeFrameBarComponent extends React.Component<IRangeFrameBarCompon
         if (this._onActiveAnimationChangedObserver) {
             this.props.context.onActiveAnimationChanged.remove(this._onActiveAnimationChangedObserver);
         }
+        if (this._onPlayheadMovedObserver) {
+            this.props.context.onPlayheadMoved.remove(this._onPlayheadMovedObserver);
+        }
+        if (this._onFrameManuallyEnteredObserver) {
+            this.props.context.onFrameManuallyEntered.remove(this._onFrameManuallyEnteredObserver);
+        }
 
         this._isMounted = false;
     }
@@ -77,6 +97,7 @@ export class RangeFrameBarComponent extends React.Component<IRangeFrameBarCompon
         }
 
         this._viewWidth = this._svgHost.current.clientWidth;
+        this.props.context.onRangeFrameBarResized.notifyObservers(this._viewWidth);
         this.forceUpdate();
     }
 
@@ -104,6 +125,34 @@ export class RangeFrameBarComponent extends React.Component<IRangeFrameBarCompon
                 ></line>
             );
         });
+    }
+
+    private _buildActiveFrame() {
+        if (this.props.context.activeFrame === null || this.props.context.activeFrame === undefined) {
+            return null;
+        }
+
+        const from = this.props.context.fromKey;
+        const to = this.props.context.toKey;
+
+        const range = to - from;
+        const convertRatio = range / this._viewWidth;
+
+        const x = (this.props.context.activeFrame - from) / convertRatio;
+
+        return (
+            <line
+                key={"line-activeFrame"}
+                x1={x}
+                y1="0px"
+                x2={x}
+                y2="40px"
+                style={{
+                    stroke: "#ffffff",
+                    strokeWidth: 0.5,
+                }}
+            ></line>
+        );
     }
 
     private _buildFrames() {
@@ -178,6 +227,7 @@ export class RangeFrameBarComponent extends React.Component<IRangeFrameBarCompon
                     {this.props.context.activeAnimations.map((a) => {
                         return this._dropKeyFrames(a);
                     })}
+                    {this._buildActiveFrame()}
                 </svg>
             </div>
         );

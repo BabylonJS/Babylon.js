@@ -6,6 +6,9 @@
         "outDir": "./dist",
         "rootDir": "./src",
         "skipLibCheck": true,
+        "paths": {
+            "core/*": ["dev/core/src/*"],
+        }
     },
 
     "include": ["./src/**/*.ts", "./src/**/*.tsx"],

@@ -18,7 +18,7 @@ import type { IPointerEvent } from "core/Events/deviceInputEvents";
 
 /**
  * Class used to manage 3D user interface
- * @see https://doc.babylonjs.com/how_to/gui3d
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui3D
  */
 export class GUI3DManager implements IDisposable {
     private _scene: Scene;
@@ -28,11 +28,11 @@ export class GUI3DManager implements IDisposable {
     private _pointerObserver: Nullable<Observer<PointerInfo>>;
     private _pointerOutObserver: Nullable<Observer<number>>;
     private _customControlScaling = 1.0;
-    /** @hidden */
+    /** @internal */
     public _lastPickedControl: Control3D;
-    /** @hidden */
+    /** @internal */
     public _lastControlOver: { [pointerId: number]: Control3D } = {};
-    /** @hidden */
+    /** @internal */
     public _lastControlDown: { [pointerId: number]: Control3D } = {};
 
     protected static MRTK_REALISTIC_SCALING: number = 0.032;
@@ -48,10 +48,10 @@ export class GUI3DManager implements IDisposable {
     public onPickingObservable = new Observable<Nullable<AbstractMesh>>();
 
     // Shared resources
-    /** @hidden */
+    /** @internal */
     public _sharedMaterials: { [key: string]: Material } = {};
 
-    /** @hidden */
+    /** @internal */
     public _touchSharedMaterials: { [key: string]: Material } = {};
 
     /** Gets the hosting scene */
@@ -192,7 +192,7 @@ export class GUI3DManager implements IDisposable {
                 delete this._lastControlDown[pointerEvent.pointerId];
             }
 
-            if (pointerEvent.pointerType === "touch") {
+            if (pointerEvent.pointerType === "touch" || (pointerEvent.pointerType === "xr" && this._scene.getEngine().hostInformation.isMobile)) {
                 this._handlePointerOut(pointerId, false);
             }
         }

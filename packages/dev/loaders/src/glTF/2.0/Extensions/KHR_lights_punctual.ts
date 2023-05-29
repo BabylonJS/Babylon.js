@@ -8,17 +8,18 @@ import { SpotLight } from "core/Lights/spotLight";
 import { Light } from "core/Lights/light";
 import type { TransformNode } from "core/Meshes/transformNode";
 
-import type { IKHRLightsPunctual_LightReference, IKHRLightsPunctual_Light, IKHRLightsPunctual } from "babylonjs-gltf2interface";
-import { IKHRLightsPunctual_LightType } from "babylonjs-gltf2interface";
-import type { INode } from "../glTFLoaderInterfaces";
+import type { IKHRLightsPunctual_LightReference } from "babylonjs-gltf2interface";
+import { KHRLightsPunctual_LightType } from "babylonjs-gltf2interface";
+import type { INode, IKHRLightsPunctual_Light } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
 
 const NAME = "KHR_lights_punctual";
 
 /**
- * [Specification](https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_lights_punctual)
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_lights_punctual/README.md)
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_lights implements IGLTFLoaderExtension {
     /**
      * The name of this extension.
@@ -30,38 +31,36 @@ export class KHR_lights implements IGLTFLoaderExtension {
      */
     public enabled: boolean;
 
+    /** hidden */
     private _loader: GLTFLoader;
     private _lights?: IKHRLightsPunctual_Light[];
 
     /**
-     * @param loader
-     * @hidden
+     * @internal
      */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
         this.enabled = this._loader.isExtensionUsed(NAME);
     }
 
-    /** @hidden */
+    /** @internal */
     public dispose() {
         (this._loader as any) = null;
         delete this._lights;
     }
 
-    /** @hidden */
+    /** @internal */
     public onLoading(): void {
         const extensions = this._loader.gltf.extensions;
         if (extensions && extensions[this.name]) {
-            const extension = extensions[this.name] as IKHRLightsPunctual;
+            const extension = extensions[this.name] as any;
             this._lights = extension.lights;
+            ArrayItem.Assign(this._lights);
         }
     }
 
     /**
-     * @param context
-     * @param node
-     * @param assign
-     * @hidden
+     * @internal
      */
     public loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>> {
         return GLTFLoader.LoadExtensionAsync<IKHRLightsPunctual_LightReference, TransformNode>(context, node, this.name, (extensionContext, extension) => {
@@ -74,15 +73,15 @@ export class KHR_lights implements IGLTFLoaderExtension {
                 this._loader.babylonScene._blockEntityCollection = !!this._loader._assetContainer;
 
                 switch (light.type) {
-                    case IKHRLightsPunctual_LightType.DIRECTIONAL: {
+                    case KHRLightsPunctual_LightType.DIRECTIONAL: {
                         babylonLight = new DirectionalLight(name, Vector3.Backward(), this._loader.babylonScene);
                         break;
                     }
-                    case IKHRLightsPunctual_LightType.POINT: {
+                    case KHRLightsPunctual_LightType.POINT: {
                         babylonLight = new PointLight(name, Vector3.Zero(), this._loader.babylonScene);
                         break;
                     }
-                    case IKHRLightsPunctual_LightType.SPOT: {
+                    case KHRLightsPunctual_LightType.SPOT: {
                         const babylonSpotLight = new SpotLight(name, Vector3.Zero(), Vector3.Backward(), 0, 1, this._loader.babylonScene);
                         babylonSpotLight.angle = ((light.spot && light.spot.outerConeAngle) || Math.PI / 4) * 2;
                         babylonSpotLight.innerAngle = ((light.spot && light.spot.innerConeAngle) || 0) * 2;
@@ -97,6 +96,8 @@ export class KHR_lights implements IGLTFLoaderExtension {
 
                 babylonLight._parentContainer = this._loader._assetContainer;
                 this._loader.babylonScene._blockEntityCollection = false;
+                light._babylonLight = babylonLight;
+
                 babylonLight.falloffType = Light.FALLOFF_GLTF;
                 babylonLight.diffuse = light.color ? Color3.FromArray(light.color) : Color3.White();
                 babylonLight.intensity = light.intensity == undefined ? 1 : light.intensity;

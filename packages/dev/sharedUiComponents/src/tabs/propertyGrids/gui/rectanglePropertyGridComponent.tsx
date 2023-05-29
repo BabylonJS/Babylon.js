@@ -23,7 +23,7 @@ export class RectanglePropertyGridComponent extends React.Component<IRectanglePr
         const rectangle = this.props.rectangle;
 
         return (
-            <div className="pane">
+            <>
                 <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={rectangle} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent title="RECTANGLE">
                     <CheckBoxLineComponent
@@ -47,7 +47,7 @@ export class RectanglePropertyGridComponent extends React.Component<IRectanglePr
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

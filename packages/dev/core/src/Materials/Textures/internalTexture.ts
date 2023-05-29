@@ -103,7 +103,7 @@ export class InternalTexture extends TextureSampler {
      * Gets the URL used to load this texture
      */
     public url: string = "";
-    /** @hidden */
+    /** @internal */
     public _originalUrl: string; // not empty only if different from url
     /**
      * Gets a boolean indicating if the texture needs mipmaps generation
@@ -177,89 +177,98 @@ export class InternalTexture extends TextureSampler {
      * Gets a boolean indicating if the texture is inverted on Y axis
      */
     public invertY: boolean = false;
+    /**
+     * Used for debugging purpose only
+     */
+    public label?: string;
 
     // Private
-    /** @hidden */
+    /** @internal */
     public _invertVScale = false;
-    /** @hidden */
+    /** @internal */
     public _associatedChannel = -1;
-    /** @hidden */
+    /** @internal */
     public _source = InternalTextureSource.Unknown;
-    /** @hidden */
+    /** @internal */
     public _buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null;
-    /** @hidden */
+    /** @internal */
     public _bufferView: Nullable<ArrayBufferView> = null;
-    /** @hidden */
+    /** @internal */
     public _bufferViewArray: Nullable<ArrayBufferView[]> = null;
-    /** @hidden */
+    /** @internal */
     public _bufferViewArrayArray: Nullable<ArrayBufferView[][]> = null;
-    /** @hidden */
+    /** @internal */
     public _size: number = 0;
-    /** @hidden */
+    /** @internal */
     public _extension: string = "";
-    /** @hidden */
+    /** @internal */
     public _files: Nullable<string[]> = null;
-    /** @hidden */
+    /** @internal */
     public _workingCanvas: Nullable<ICanvas> = null;
-    /** @hidden */
+    /** @internal */
     public _workingContext: Nullable<ICanvasRenderingContext> = null;
-    /** @hidden */
+    /** @internal */
     public _cachedCoordinatesMode: Nullable<number> = null;
-    /** @hidden */
+    /** @internal */
     public _isDisabled: boolean = false;
-    /** @hidden */
+    /** @internal */
     public _compression: Nullable<string> = null;
-    /** @hidden */
+    /** @internal */
     public _sphericalPolynomial: Nullable<SphericalPolynomial> = null;
-    /** @hidden */
+    /** @internal */
     public _sphericalPolynomialPromise: Nullable<Promise<SphericalPolynomial>> = null;
-    /** @hidden */
+    /** @internal */
     public _sphericalPolynomialComputed = false;
-    /** @hidden */
+    /** @internal */
     public _lodGenerationScale: number = 0;
-    /** @hidden */
+    /** @internal */
     public _lodGenerationOffset: number = 0;
-    /** @hidden */
+    /** @internal */
     public _useSRGBBuffer: boolean = false;
 
     // The following three fields helps sharing generated fixed LODs for texture filtering
     // In environment not supporting the textureLOD extension like EDGE. They are for internal use only.
     // They are at the level of the gl texture to benefit from the cache.
-    /** @hidden */
+    /** @internal */
     public _lodTextureHigh: Nullable<BaseTexture> = null;
-    /** @hidden */
+    /** @internal */
     public _lodTextureMid: Nullable<BaseTexture> = null;
-    /** @hidden */
+    /** @internal */
     public _lodTextureLow: Nullable<BaseTexture> = null;
-    /** @hidden */
+    /** @internal */
     public _isRGBD: boolean = false;
 
-    /** @hidden */
+    /** @internal */
     public _linearSpecularLOD: boolean = false;
-    /** @hidden */
+    /** @internal */
     public _irradianceTexture: Nullable<BaseTexture> = null;
 
-    /** @hidden */
+    /** @internal */
     public _hardwareTexture: Nullable<HardwareTextureWrapper> = null;
 
-    /** @hidden */
+    /** @internal */
     public _maxLodLevel: Nullable<number> = null;
 
-    /** @hidden */
+    /** @internal */
     public _references: number = 1;
 
-    /** @hidden */
+    /** @internal */
     public _gammaSpace: Nullable<boolean> = null;
 
     private _engine: ThinEngine;
     private _uniqueId: number;
 
-    /** @hidden */
+    /** @internal */
     public static _Counter = 0;
 
     /** Gets the unique id of the internal texture */
     public get uniqueId() {
         return this._uniqueId;
+    }
+
+    /** @internal */
+    public _setUniqueId(id: number) {
+        this._uniqueId = id;
     }
 
     /**
@@ -322,7 +331,7 @@ export class InternalTexture extends TextureSampler {
         this._size = width * height * depth;
     }
 
-    /** @hidden */
+    /** @internal */
     public _rebuild(): void {
         this.isReady = false;
         this._cachedCoordinatesMode = null;
@@ -356,8 +365,10 @@ export class InternalTexture extends TextureSampler {
                     this.invertY,
                     null,
                     this.samplingMode,
-                    () => {
-                        proxy._swapAndDie(this, false);
+                    // Do not use Proxy here as it could be fully synchronous
+                    // and proxy would be undefined.
+                    (temp) => {
+                        temp._swapAndDie(this, false);
                         this.isReady = true;
                     },
                     null,
@@ -382,7 +393,9 @@ export class InternalTexture extends TextureSampler {
                     this.invertY,
                     this.samplingMode,
                     this._compression,
-                    this.type
+                    this.type,
+                    undefined,
+                    this._useSRGBBuffer
                 );
                 proxy._swapAndDie(this, false);
 
@@ -497,9 +510,7 @@ export class InternalTexture extends TextureSampler {
     }
 
     /**
-     * @param target
-     * @param swapAll
-     * @hidden
+     * @internal
      */
     public _swapAndDie(target: InternalTexture, swapAll = true): void {
         // TODO what about refcount on target?

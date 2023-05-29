@@ -62,7 +62,7 @@ export interface IBakedVertexAnimationManager {
 
 /**
  * This class is used to animate meshes using a baked vertex animation texture
- * @see https://doc.babylonjs.com/divingDeeper/animation/baked_texture_animations
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/baked_texture_animations
  * @since 5.0
  */
 export class BakedVertexAnimationManager implements IBakedVertexAnimationManager {
@@ -109,7 +109,7 @@ export class BakedVertexAnimationManager implements IBakedVertexAnimationManager
         this.animationParameters = new Vector4(0, 0, 0, 30);
     }
 
-    /** @hidden */
+    /** @internal */
     public _markSubMeshesAsAttributesDirty(): void {
         for (const mesh of this._scene.meshes) {
             if ((<any>mesh).bakedVertexAnimationManager === this) {

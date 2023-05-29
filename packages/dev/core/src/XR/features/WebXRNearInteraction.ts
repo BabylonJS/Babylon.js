@@ -614,7 +614,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         const controllerData = this._controllers[xrController.uniqueId];
         const pointerEventInit: PointerEventInit = {
             pointerId: controllerData.id,
-            pointerType: "xr",
+            pointerType: "xr-near",
         };
         controllerData.onFrameObserver = this._xrSessionManager.onXRFrameObservable.add(() => {
             if (
@@ -755,7 +755,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             Object.keys(controllerData.eventListeners).forEach((eventName: string) => {
                 const func = controllerData.eventListeners && controllerData.eventListeners[eventName as XREventType];
                 if (func) {
-                    this._xrSessionManager.session.removeEventListener(eventName as XREventType, func);
+                    this._xrSessionManager.session.removeEventListener(eventName as XREventType, func as any);
                 }
             });
         }
@@ -766,7 +766,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             // Fire a pointerup
             const pointerEventInit: PointerEventInit = {
                 pointerId: controllerData.id,
-                pointerType: "xr",
+                pointerType: "xr-near",
             };
             this._scene.simulatePointerUp(new PickingInfo(), pointerEventInit);
         });

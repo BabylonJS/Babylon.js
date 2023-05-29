@@ -9,7 +9,7 @@ declare type ActionEvent = import("./actionEvent").ActionEvent;
 
 /**
  * This defines an action responsible to toggle a boolean once triggered.
- * @see https://doc.babylonjs.com/how_to/how_to_use_actions
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions
  */
 export class SwitchBooleanAction extends Action {
     /**
@@ -34,7 +34,7 @@ export class SwitchBooleanAction extends Action {
         this._target = this._effectiveTarget = target;
     }
 
-    /** @hidden */
+    /** @internal */
     public _prepare(): void {
         this._effectiveTarget = this._getEffectiveTarget(this._effectiveTarget, this.propertyPath);
         this._property = this._getProperty(this.propertyPath);
@@ -66,7 +66,7 @@ export class SwitchBooleanAction extends Action {
 /**
  * This defines an action responsible to set a the state field of the target
  *  to a desired value once triggered.
- * @see https://doc.babylonjs.com/how_to/how_to_use_actions
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions
  */
 export class SetStateAction extends Action {
     /**
@@ -115,7 +115,7 @@ export class SetStateAction extends Action {
 /**
  * This defines an action responsible to set a property of the target
  *  to a desired value once triggered.
- * @see https://doc.babylonjs.com/how_to/how_to_use_actions
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions
  */
 export class SetValueAction extends Action {
     /**
@@ -147,7 +147,7 @@ export class SetValueAction extends Action {
         this._target = this._effectiveTarget = target;
     }
 
-    /** @hidden */
+    /** @internal */
     public _prepare(): void {
         this._effectiveTarget = this._getEffectiveTarget(this._effectiveTarget, this.propertyPath);
         this._property = this._getProperty(this.propertyPath);
@@ -187,7 +187,7 @@ export class SetValueAction extends Action {
 /**
  * This defines an action responsible to increment the target value
  *  to a desired value once triggered.
- * @see https://doc.babylonjs.com/how_to/how_to_use_actions
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions
  */
 export class IncrementValueAction extends Action {
     /**
@@ -219,7 +219,7 @@ export class IncrementValueAction extends Action {
         this._target = this._effectiveTarget = target;
     }
 
-    /** @hidden */
+    /** @internal */
     public _prepare(): void {
         this._effectiveTarget = this._getEffectiveTarget(this._effectiveTarget, this.propertyPath);
         this._property = this._getProperty(this.propertyPath);
@@ -262,7 +262,7 @@ export class IncrementValueAction extends Action {
 
 /**
  * This defines an action responsible to start an animation once triggered.
- * @see https://doc.babylonjs.com/how_to/how_to_use_actions
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions
  */
 export class PlayAnimationAction extends Action {
     /**
@@ -299,7 +299,7 @@ export class PlayAnimationAction extends Action {
         this._target = target;
     }
 
-    /** @hidden */
+    /** @internal */
     public _prepare(): void {}
 
     /**
@@ -333,7 +333,7 @@ export class PlayAnimationAction extends Action {
 
 /**
  * This defines an action responsible to stop an animation once triggered.
- * @see https://doc.babylonjs.com/how_to/how_to_use_actions
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions
  */
 export class StopAnimationAction extends Action {
     private _target: any;
@@ -349,7 +349,7 @@ export class StopAnimationAction extends Action {
         this._target = target;
     }
 
-    /** @hidden */
+    /** @internal */
     public _prepare(): void {}
 
     /**
@@ -378,7 +378,7 @@ export class StopAnimationAction extends Action {
 
 /**
  * This defines an action responsible that does nothing once triggered.
- * @see https://doc.babylonjs.com/how_to/how_to_use_actions
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions
  */
 export class DoNothingAction extends Action {
     /**
@@ -413,7 +413,7 @@ export class DoNothingAction extends Action {
 
 /**
  * This defines an action responsible to trigger several actions once triggered.
- * @see https://doc.babylonjs.com/how_to/how_to_use_actions
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions
  */
 export class CombineAction extends Action {
     /**
@@ -439,7 +439,7 @@ export class CombineAction extends Action {
         this.enableChildrenConditions = enableChildrenConditions;
     }
 
-    /** @hidden */
+    /** @internal */
     public _prepare(): void {
         for (let index = 0; index < this.children.length; index++) {
             this.children[index]._actionManager = this._actionManager;
@@ -484,7 +484,7 @@ export class CombineAction extends Action {
 
 /**
  * This defines an action responsible to run code (external event) once triggered.
- * @see https://doc.babylonjs.com/how_to/how_to_use_actions
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions
  */
 export class ExecuteCodeAction extends Action {
     /**
@@ -514,7 +514,7 @@ export class ExecuteCodeAction extends Action {
 
 /**
  * This defines an action responsible to set the parent property of the target once triggered.
- * @see https://doc.babylonjs.com/how_to/how_to_use_actions
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions
  */
 export class SetParentAction extends Action {
     private _parent: any;
@@ -533,7 +533,7 @@ export class SetParentAction extends Action {
         this._parent = parent;
     }
 
-    /** @hidden */
+    /** @internal */
     public _prepare(): void {}
 
     /**
@@ -577,3 +577,5 @@ RegisterClass("BABYLON.IncrementValueAction", IncrementValueAction);
 RegisterClass("BABYLON.SetValueAction", SetValueAction);
 RegisterClass("BABYLON.SetStateAction", SetStateAction);
 RegisterClass("BABYLON.SetParentAction", SetParentAction);
+RegisterClass("BABYLON.SwitchBooleanAction", SwitchBooleanAction);
+RegisterClass("BABYLON.CombineAction", CombineAction);

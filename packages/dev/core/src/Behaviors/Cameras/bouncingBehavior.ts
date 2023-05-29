@@ -10,7 +10,7 @@ import { Animation } from "../../Animations/animation";
 
 /**
  * Add a bouncing effect to an ArcRotateCamera when reaching a specified minimum and maximum radius
- * @see https://doc.babylonjs.com/how_to/camera_behaviors#bouncing-behavior
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/behaviors/cameraBehaviors#bouncing-behavior
  */
 export class BouncingBehavior implements Behavior<ArcRotateCamera> {
     /**
@@ -147,7 +147,7 @@ export class BouncingBehavior implements Behavior<ArcRotateCamera> {
     /**
      * Checks if the camera radius is at the specified limit. Takes into account animation locks.
      * @param radiusLimit The limit to check against.
-     * @return Bool to indicate if at limit.
+     * @returns Bool to indicate if at limit.
      */
     private _isRadiusAtLimit(radiusLimit: Nullable<number>): boolean {
         if (!this._attachedCamera) {

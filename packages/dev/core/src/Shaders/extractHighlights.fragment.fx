@@ -12,6 +12,6 @@ uniform float exposure;
 void main(void) 
 {
 	gl_FragColor = texture2D(textureSampler, vUV);
-	float luma = getLuminance(gl_FragColor.rgb * exposure);
+	float luma = dot(LuminanceEncodeApprox, gl_FragColor.rgb * exposure);
 	gl_FragColor.rgb = step(threshold, luma) * gl_FragColor.rgb;
 }

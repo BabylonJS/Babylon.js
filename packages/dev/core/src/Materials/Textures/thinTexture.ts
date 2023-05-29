@@ -6,6 +6,7 @@ import type { ISize } from "../../Maths/math.size";
 import { Size } from "../../Maths/math.size";
 
 import type { ThinEngine } from "../../Engines/thinEngine";
+import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 
 /**
  * Base class of all the textures in babylon.
@@ -84,7 +85,7 @@ export class ThinTexture {
         return this._texture.isCube;
     }
 
-    public set isCube(value: boolean) {
+    protected set isCube(value: boolean) {
         if (!this._texture) {
             return;
         }
@@ -103,7 +104,7 @@ export class ThinTexture {
         return this._texture.is3D;
     }
 
-    public set is3D(value: boolean) {
+    protected set is3D(value: boolean) {
         if (!this._texture) {
             return;
         }
@@ -122,7 +123,7 @@ export class ThinTexture {
         return this._texture.is2DArray;
     }
 
-    public set is2DArray(value: boolean) {
+    protected set is2DArray(value: boolean) {
         if (!this._texture) {
             return;
         }
@@ -138,7 +139,7 @@ export class ThinTexture {
         return "ThinTexture";
     }
 
-    /** @hidden */
+    /** @internal */
     public _texture: Nullable<InternalTexture> = null;
 
     protected _engine: Nullable<ThinEngine> = null;
@@ -146,14 +147,18 @@ export class ThinTexture {
     private _cachedSize: ISize = Size.Zero();
     private _cachedBaseSize: ISize = Size.Zero();
 
+    private static _IsRenderTargetWrapper(texture: Nullable<InternalTexture> | Nullable<RenderTargetWrapper>): texture is RenderTargetWrapper {
+        return (texture as RenderTargetWrapper)?._shareDepth !== undefined;
+    }
+
     /**
      * Instantiates a new ThinTexture.
      * Base class of all the textures in babylon.
      * This can be used as an internal texture wrapper in ThinEngine to benefit from the cache
-     * @param internalTexture Define the internalTexture to wrap
+     * @param internalTexture Define the internalTexture to wrap. You can also pass a RenderTargetWrapper, in which case the texture will be the render target's texture
      */
-    constructor(internalTexture: Nullable<InternalTexture>) {
-        this._texture = internalTexture;
+    constructor(internalTexture: Nullable<InternalTexture | RenderTargetWrapper>) {
+        this._texture = ThinTexture._IsRenderTargetWrapper(internalTexture) ? internalTexture.texture : internalTexture;
         if (this._texture) {
             this._engine = this._texture.getEngine();
         }
@@ -234,7 +239,7 @@ export class ThinTexture {
         return this._cachedBaseSize;
     }
 
-    /** @hidden */
+    /** @internal */
     protected _initialSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
 
     /**

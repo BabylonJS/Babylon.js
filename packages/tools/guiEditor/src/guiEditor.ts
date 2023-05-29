@@ -11,7 +11,7 @@ import type { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
  */
 export interface IGUIEditorOptions {
     liveGuiTexture?: AdvancedDynamicTexture;
-    customLoad: { label: string; action: (data: string) => Promise<string> } | undefined;
+    customLoad?: { label: string; action: (data: string) => Promise<string> } | undefined;
     hostElement?: HTMLElement;
     customSave?: { label: string; action: (data: string) => Promise<string> };
     currentSnippetToken?: string;
@@ -26,8 +26,9 @@ export class GUIEditor {
     /**
      * Show the gui editor
      * @param options defines the options to use to configure the gui editor
+     * @param embed defines whether editor is being opened from the Playground
      */
-    public static async Show(options: IGUIEditorOptions) {
+    public static async Show(options: IGUIEditorOptions, embed?: boolean) {
         let hostElement = options.hostElement;
 
         // if we are in a standalone window and we have some current state, just load the GUI from the snippet server, don't do anything else
@@ -68,7 +69,7 @@ export class GUIEditor {
         ReactDOM.render(graphEditor, hostElement);
         // create the middle workbench canvas
         if (!globalState.guiTexture) {
-            globalState.workbench.createGUICanvas();
+            globalState.workbench.createGUICanvas(embed);
             if (options.currentSnippetToken) {
                 try {
                     await globalState.workbench.loadFromSnippet(options.currentSnippetToken);

@@ -3,14 +3,18 @@ import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialB
 import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
 import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
+import type { Mesh } from "../../../../Meshes/mesh";
 import { InputBlock } from "../Input/inputBlock";
 import type { Effect } from "../../../effect";
 import type { Scene } from "../../../../scene";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
 import type { TextureBlock } from "../Dual/textureBlock";
+import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
+import { TBNBlock } from "./TBNBlock";
 
 import "../../../../Shaders/ShadersInclude/bumpFragmentMainFunctions";
 import "../../../../Shaders/ShadersInclude/bumpFragmentFunctions";
@@ -21,6 +25,8 @@ import "../../../../Shaders/ShadersInclude/bumpFragment";
  */
 export class PerturbNormalBlock extends NodeMaterialBlock {
     private _tangentSpaceParameterName = "";
+    private _tangentCorrectionFactorName = "";
+    private _worldMatrixName = "";
 
     /** Gets or sets a boolean indicating that normal should be inverted on X axis */
     @editableInPropertyPage("Invert X axis", PropertyTypeForEdition.Boolean, "PROPERTIES", { notifiers: { update: false } })
@@ -31,6 +37,9 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
     /** Gets or sets a boolean indicating that parallax occlusion should be enabled */
     @editableInPropertyPage("Use parallax occlusion", PropertyTypeForEdition.Boolean)
     public useParallaxOcclusion = false;
+    /** Gets or sets a boolean indicating that sampling mode is in Object space */
+    @editableInPropertyPage("Object Space Mode", PropertyTypeForEdition.Boolean, "PROPERTIES", { notifiers: { update: false } })
+    public useObjectSpaceNormalMap = false;
 
     /**
      * Create a new PerturbNormalBlock
@@ -51,6 +60,14 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         this.registerInput("viewDirection", NodeMaterialBlockConnectionPointTypes.Vector3, true);
         this.registerInput("parallaxScale", NodeMaterialBlockConnectionPointTypes.Float, true);
         this.registerInput("parallaxHeight", NodeMaterialBlockConnectionPointTypes.Float, true);
+        this.registerInput(
+            "TBN",
+            NodeMaterialBlockConnectionPointTypes.Object,
+            true,
+            NodeMaterialBlockTargets.VertexAndFragment,
+            new NodeMaterialConnectionPointCustomObject("TBN", this, NodeMaterialConnectionPointDirection.Input, TBNBlock, "TBNBlock")
+        );
+        this.registerInput("world", NodeMaterialBlockConnectionPointTypes.Matrix, true);
 
         // Fragment
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Vector4);
@@ -129,6 +146,21 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets the TBN input component
+     */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public get TBN(): NodeMaterialConnectionPoint {
+        return this._inputs[9];
+    }
+
+    /**
+     * Gets the World input component
+     */
+    public get world(): NodeMaterialConnectionPoint {
+        return this._inputs[10];
+    }
+
+    /**
      * Gets the output component
      */
     public get output(): NodeMaterialConnectionPoint {
@@ -149,13 +181,23 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         defines.setValue("BUMP", true);
         defines.setValue("PARALLAX", useParallax, true);
         defines.setValue("PARALLAXOCCLUSION", this.useParallaxOcclusion, true);
+        defines.setValue("OBJECTSPACE_NORMALMAP", this.useObjectSpaceNormalMap, true);
     }
 
-    public bind(effect: Effect, nodeMaterial: NodeMaterial) {
+    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         if (nodeMaterial.getScene()._mirroredCameraPosition) {
             effect.setFloat2(this._tangentSpaceParameterName, this.invertX ? 1.0 : -1.0, this.invertY ? 1.0 : -1.0);
         } else {
             effect.setFloat2(this._tangentSpaceParameterName, this.invertX ? -1.0 : 1.0, this.invertY ? -1.0 : 1.0);
+        }
+
+        if (mesh) {
+            effect.setFloat(this._tangentCorrectionFactorName, mesh.getWorldMatrix().determinant() < 0 ? -1 : 1);
+
+            if (this.useObjectSpaceNormalMap && !this.world.isConnected) {
+                // World default to the mesh world matrix
+                effect.setMatrix(this._worldMatrixName, mesh.getWorldMatrix());
+            }
         }
     }
 
@@ -193,7 +235,18 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
 
         state._emitUniformFromString(this._tangentSpaceParameterName, "vec2");
 
-        const normalSamplerName = (this.normalMapColor.connectedPoint!._ownerBlock as TextureBlock).samplerName;
+        this._tangentCorrectionFactorName = state._getFreeDefineName("tangentCorrectionFactor");
+
+        state._emitUniformFromString(this._tangentCorrectionFactorName, "float");
+
+        this._worldMatrixName = state._getFreeDefineName("perturbNormalWorldMatrix");
+
+        state._emitUniformFromString(this._worldMatrixName, "mat4");
+
+        let normalSamplerName = null;
+        if (this.normalMapColor.connectedPoint) {
+            normalSamplerName = (this.normalMapColor.connectedPoint!._ownerBlock as TextureBlock).samplerName;
+        }
         const useParallax = this.viewDirection.isConnected && ((this.useParallaxOcclusion && normalSamplerName) || (!this.useParallaxOcclusion && this.parallaxHeight.isConnected));
 
         const replaceForParallaxInfos = !this.parallaxScale.isConnectedToInputBlock
@@ -211,16 +264,24 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
 
         const tangentReplaceString = { search: /defined\(TANGENT\)/g, replace: worldTangent.isConnected ? "defined(TANGENT)" : "defined(IGNORE)" };
         const tbnVarying = { search: /varying mat3 vTBN/g, replace: "" };
+        const normalMatrixReplaceString = { search: /uniform mat4 normalMatrix;/g, replace: "" };
 
-        if (worldTangent.isConnected) {
+        const TBN = this.TBN;
+        if (TBN.isConnected) {
+            state.compilationString += `
+            #ifdef TBNBLOCK
+            mat3 vTBN = ${TBN.associatedVariableName};
+            #endif
+            `;
+        } else if (worldTangent.isConnected) {
             state.compilationString += `vec3 tbnNormal = normalize(${worldNormal.associatedVariableName}.xyz);\r\n`;
             state.compilationString += `vec3 tbnTangent = normalize(${worldTangent.associatedVariableName}.xyz);\r\n`;
-            state.compilationString += `vec3 tbnBitangent = cross(tbnNormal, tbnTangent);\r\n`;
+            state.compilationString += `vec3 tbnBitangent = cross(tbnNormal, tbnTangent) * ${this._tangentCorrectionFactorName};\r\n`;
             state.compilationString += `mat3 vTBN = mat3(tbnTangent, tbnBitangent, tbnNormal);\r\n`;
         }
 
         state._emitFunctionFromInclude("bumpFragmentMainFunctions", comments, {
-            replaceStrings: [tangentReplaceString, tbnVarying],
+            replaceStrings: [tangentReplaceString, tbnVarying, normalMatrixReplaceString],
         });
 
         state._emitFunctionFromInclude("bumpFragmentFunctions", comments, {
@@ -242,6 +303,11 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         state.compilationString += this._declareOutput(this.output, state) + " = vec4(0.);\r\n";
         state.compilationString += state._emitCodeFromInclude("bumpFragment", comments, {
             replaceStrings: [
+                { search: /texture2D\(bumpSampler,vBumpUV\)/g, replace: `${uvForPerturbNormal}` },
+                {
+                    search: /#define CUSTOM_FRAGMENT_BUMP_FRAGMENT/g,
+                    replace: `mat4 normalMatrix = toNormalMatrix(${this.world.isConnected ? this.world.associatedVariableName : this._worldMatrixName});`,
+                },
                 { search: /perturbNormal\(TBN,texture2D\(bumpSampler,vBumpUV\+uvOffset\).xyz,vBumpInfos.y\)/g, replace: `perturbNormal(TBN, ${uvForPerturbNormal}, vBumpInfos.y)` },
                 {
                     search: /parallaxOcclusion\(invTBN\*-viewDirectionW,invTBN\*normalW,vBumpUV,vBumpInfos.z\)/g,
@@ -274,6 +340,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
 
         codeString += `${this._codeVariableName}.invertY = ${this.invertY};\r\n`;
         codeString += `${this._codeVariableName}.useParallaxOcclusion = ${this.useParallaxOcclusion};\r\n`;
+        codeString += `${this._codeVariableName}.useObjectSpaceNormalMap = ${this.useObjectSpaceNormalMap};\r\n`;
 
         return codeString;
     }
@@ -284,6 +351,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         serializationObject.invertX = this.invertX;
         serializationObject.invertY = this.invertY;
         serializationObject.useParallaxOcclusion = this.useParallaxOcclusion;
+        serializationObject.useObjectSpaceNormalMap = this.useObjectSpaceNormalMap;
 
         return serializationObject;
     }
@@ -294,6 +362,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         this.invertX = serializationObject.invertX;
         this.invertY = serializationObject.invertY;
         this.useParallaxOcclusion = !!serializationObject.useParallaxOcclusion;
+        this.useObjectSpaceNormalMap = !!serializationObject.useObjectSpaceNormalMap;
     }
 }
 

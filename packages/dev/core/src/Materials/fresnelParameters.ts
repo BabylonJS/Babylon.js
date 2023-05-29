@@ -67,7 +67,7 @@ export type IFresnelParametersSerialized = {
 
 /**
  * This represents all the required information to add a fresnel effect on a material:
- * @see https://doc.babylonjs.com/divingDeeper/materials/using/fresnelParameters
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/fresnelParameters
  */
 export class FresnelParameters {
     private _isEnabled = true;
@@ -151,7 +151,7 @@ export class FresnelParameters {
 
     /**
      * Serializes the current fresnel parameters to a JSON representation.
-     * @return the JSON serialization
+     * @returns the JSON serialization
      */
     public serialize(): IFresnelParametersSerialized {
         return {

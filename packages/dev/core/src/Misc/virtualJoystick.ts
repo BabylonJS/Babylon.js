@@ -124,6 +124,7 @@ export class VirtualJoystick {
     private _alwaysVisible: boolean;
     private _puckImage: HTMLImageElement;
     private _containerImage: HTMLImageElement;
+    private _released = false;
 
     // size properties
     private _joystickPuckSize: number;
@@ -197,7 +198,6 @@ export class VirtualJoystick {
             VirtualJoystick.Canvas.style.top = "0px";
             VirtualJoystick.Canvas.style.left = "0px";
             VirtualJoystick.Canvas.style.zIndex = "5";
-            (VirtualJoystick.Canvas.style as any).msTouchAction = "none";
             VirtualJoystick.Canvas.style.touchAction = "none"; // fix https://forum.babylonjs.com/t/virtualjoystick-needs-to-set-style-touch-action-none-explicitly/9562
             // Support for jQuery PEP polyfill
             VirtualJoystick.Canvas.setAttribute("touch-action", "none");
@@ -544,12 +544,12 @@ export class VirtualJoystick {
             this._clearContainerSize
         );
 
-        // clear puck pixels
+        // clear puck pixels + 1 pixel for the change made before it moved
         VirtualJoystick._VJCanvasContext.clearRect(
-            this._joystickPreviousPointerPos.x - this._clearPuckSizeOffset,
-            this._joystickPreviousPointerPos.y - this._clearPuckSizeOffset,
-            this._clearPuckSize,
-            this._clearPuckSize
+            this._joystickPreviousPointerPos.x - this._clearPuckSizeOffset - 1,
+            this._joystickPreviousPointerPos.y - this._clearPuckSizeOffset - 1,
+            this._clearPuckSize + 2,
+            this._clearPuckSize + 2
         );
     }
 
@@ -627,6 +627,10 @@ export class VirtualJoystick {
     }
 
     private _drawVirtualJoystick() {
+        // canvas released? don't continue iterating
+        if (this._released) {
+            return;
+        }
         if (this.alwaysVisible) {
             this._drawContainer();
         }
@@ -675,5 +679,6 @@ export class VirtualJoystick {
             document.body.removeChild(VirtualJoystick.Canvas);
             VirtualJoystick.Canvas = null;
         }
+        this._released = true;
     }
 }

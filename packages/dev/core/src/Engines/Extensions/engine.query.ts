@@ -5,31 +5,31 @@ import { _TimeToken } from "../../Instrumentation/timeToken";
 import { PerfCounter } from "../../Misc/perfCounter";
 import type { Observer } from "../../Misc/observable";
 
-/** @hidden */
+/** @internal */
 export type OcclusionQuery = WebGLQuery | number;
 
-/** @hidden */
+/** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class _OcclusionDataStorage {
-    /** @hidden */
+    /** @internal */
     public occlusionInternalRetryCounter = 0;
 
-    /** @hidden */
+    /** @internal */
     public isOcclusionQueryInProgress = false;
 
-    /** @hidden */
+    /** @internal */
     public isOccluded = false;
 
-    /** @hidden */
+    /** @internal */
     public occlusionRetryCount = -1;
 
-    /** @hidden */
+    /** @internal */
     public occlusionType = AbstractMesh.OCCLUSION_TYPE_NONE;
 
-    /** @hidden */
+    /** @internal */
     public occlusionQueryAlgorithmType = AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE;
 
-    /** @hidden */
+    /** @internal */
     public forceRenderingWhenOccluded = false;
 }
 
@@ -37,14 +37,14 @@ declare module "../../Engines/engine" {
     export interface Engine {
         /**
          * Create a new webGL query (you must be sure that queries are supported by checking getCaps() function)
-         * @return the new query
+         * @returns the new query
          */
         createQuery(): OcclusionQuery;
 
         /**
          * Delete and release a webGL query
          * @param query defines the query to delete
-         * @return the current engine
+         * @returns the current engine
          */
         deleteQuery(query: OcclusionQuery): Engine;
 
@@ -67,13 +67,13 @@ declare module "../../Engines/engine" {
          * @param algorithmType defines the algorithm to use
          * @param query defines the query to use
          * @returns the current engine
-         * @see https://doc.babylonjs.com/features/occlusionquery
+         * @see https://doc.babylonjs.com/features/featuresDeepDive/occlusionQueries
          */
         beginOcclusionQuery(algorithmType: number, query: OcclusionQuery): boolean;
 
         /**
          * Ends an occlusion query
-         * @see https://doc.babylonjs.com/features/occlusionquery
+         * @see https://doc.babylonjs.com/features/featuresDeepDive/occlusionQueries
          * @param algorithmType defines the algorithm to use
          * @returns the current engine
          */
@@ -105,38 +105,42 @@ declare module "../../Engines/engine" {
          */
         captureGPUFrameTime(value: boolean): void;
 
-        /** @hidden */
+        /** @internal */
         _currentNonTimestampToken: Nullable<_TimeToken>;
-        /** @hidden */
+        /** @internal */
         _captureGPUFrameTime: boolean;
-        /** @hidden */
+        /** @internal */
         _gpuFrameTimeToken: Nullable<_TimeToken>;
-        /** @hidden */
+        /** @internal */
         _gpuFrameTime: PerfCounter;
-        /** @hidden */
+        /** @internal */
         _onBeginFrameObserver: Nullable<Observer<Engine>>;
-        /** @hidden */
+        /** @internal */
         _onEndFrameObserver: Nullable<Observer<Engine>>;
 
-        /** @hidden */
+        /** @internal */
         _createTimeQuery(): WebGLQuery;
 
-        /** @hidden */
+        /** @internal */
         _deleteTimeQuery(query: WebGLQuery): void;
 
-        /** @hidden */
+        /** @internal */
         _getGlAlgorithmType(algorithmType: number): number;
 
-        /** @hidden */
+        /** @internal */
         _getTimeQueryResult(query: WebGLQuery): any;
 
-        /** @hidden */
+        /** @internal */
         _getTimeQueryAvailability(query: WebGLQuery): any;
     }
 }
 
 Engine.prototype.createQuery = function (): OcclusionQuery {
-    return this._gl.createQuery();
+    const query = this._gl.createQuery();
+    if (!query) {
+        throw new Error("Unable to create Occlusion Query");
+    }
+    return query;
 };
 
 Engine.prototype.deleteQuery = function (query: OcclusionQuery): Engine {
@@ -259,6 +263,7 @@ Engine.prototype.endTimeQuery = function (token: _TimeToken): int {
             timerQuery.endQueryEXT(timerQuery.TIME_ELAPSED_EXT);
         } else {
             this._gl.endQuery(timerQuery.TIME_ELAPSED_EXT);
+            this._currentNonTimestampToken = null;
         }
         token._timeElapsedQueryEnded = true;
     }
@@ -294,7 +299,6 @@ Engine.prototype.endTimeQuery = function (token: _TimeToken): int {
             this._deleteTimeQuery(token._timeElapsedQuery);
             token._timeElapsedQuery = null;
             token._timeElapsedQueryEnded = false;
-            this._currentNonTimestampToken = null;
         }
         return result;
     }
@@ -351,21 +355,21 @@ declare module "../../Meshes/abstractMesh" {
     export interface AbstractMesh {
         /**
          * Backing filed
-         * @hidden
+         * @internal
          */
         // eslint-disable-next-line @typescript-eslint/naming-convention
         __occlusionDataStorage: _OcclusionDataStorage;
 
         /**
          * Access property
-         * @hidden
+         * @internal
          */
         _occlusionDataStorage: _OcclusionDataStorage;
 
         /**
          * This number indicates the number of allowed retries before stop the occlusion query, this is useful if the occlusion query is taking long time before to the query result is retrieved, the query result indicates if the object is visible within the scene or not and based on that Babylon.Js engine decides to show or hide the object.
          * The default value is -1 which means don't break the query and wait till the result
-         * @see https://doc.babylonjs.com/features/occlusionquery
+         * @see https://doc.babylonjs.com/features/featuresDeepDive/occlusionQueries
          */
         occlusionRetryCount: number;
 
@@ -374,7 +378,7 @@ declare module "../../Meshes/abstractMesh" {
          * * OCCLUSION_TYPE_NONE (Default Value): this option means no occlusion query within the Mesh.
          * * OCCLUSION_TYPE_OPTIMISTIC: this option is means use occlusion query and if occlusionRetryCount is reached and the query is broken show the mesh.
          * * OCCLUSION_TYPE_STRICT: this option is means use occlusion query and if occlusionRetryCount is reached and the query is broken restore the last state of the mesh occlusion if the mesh was visible then show the mesh if was hidden then hide don't show.
-         * @see https://doc.babylonjs.com/features/occlusionquery
+         * @see https://doc.babylonjs.com/features/featuresDeepDive/occlusionQueries
          */
         occlusionType: number;
 
@@ -382,25 +386,25 @@ declare module "../../Meshes/abstractMesh" {
          * This property determines the type of occlusion query algorithm to run in WebGl, you can use:
          * * AbstractMesh.OCCLUSION_ALGORITHM_TYPE_ACCURATE which is mapped to GL_ANY_SAMPLES_PASSED.
          * * AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE (Default Value) which is mapped to GL_ANY_SAMPLES_PASSED_CONSERVATIVE which is a false positive algorithm that is faster than GL_ANY_SAMPLES_PASSED but less accurate.
-         * @see https://doc.babylonjs.com/features/occlusionquery
+         * @see https://doc.babylonjs.com/features/featuresDeepDive/occlusionQueries
          */
         occlusionQueryAlgorithmType: number;
 
         /**
          * Gets or sets whether the mesh is occluded or not, it is used also to set the initial state of the mesh to be occluded or not
-         * @see https://doc.babylonjs.com/features/occlusionquery
+         * @see https://doc.babylonjs.com/features/featuresDeepDive/occlusionQueries
          */
         isOccluded: boolean;
 
         /**
          * Flag to check the progress status of the query
-         * @see https://doc.babylonjs.com/features/occlusionquery
+         * @see https://doc.babylonjs.com/features/featuresDeepDive/occlusionQueries
          */
         isOcclusionQueryInProgress: boolean;
 
         /**
          * Flag to force rendering the mesh even if occluded
-         * @see https://doc.babylonjs.com/features/occlusionquery
+         * @see https://doc.babylonjs.com/features/featuresDeepDive/occlusionQueries
          */
         forceRenderingWhenOccluded: boolean;
     }

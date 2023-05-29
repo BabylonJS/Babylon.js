@@ -1,0 +1,28 @@
+{
+    "name": "eslint-plugin-babylonjs",
+    "private": true,
+    "version": "1.0.0",
+    "description": "An ESLint plugin that validates TypeScript doc comments for the babylon repository",
+    "keywords": [
+        "TypeScript",
+        "documentation",
+        "doc",
+        "comments",
+        "JSDoc",
+        "TSDoc",
+        "ESLint",
+        "plugin"
+    ],
+    "license": "Apache-2.0",
+    "main": "dist/index.js",
+    "typings": "dist/index.d.ts",
+    "scripts": {
+        "build": "tsc -b tsconfig.build.json"
+    },
+    "dependencies": {
+        "@microsoft/tsdoc": "~0.14.1",
+        "@microsoft/tsdoc-config": "~0.16.1"
+    },
+    "devDependencies": {
+    }
+}

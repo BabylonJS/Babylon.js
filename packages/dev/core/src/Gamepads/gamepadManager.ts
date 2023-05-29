@@ -15,7 +15,7 @@ export class GamepadManager {
     private _babylonGamepads: Array<Gamepad> = [];
     private _oneGamepadConnected: boolean = false;
 
-    /** @hidden */
+    /** @internal */
     public _isMonitoring: boolean = false;
     private _gamepadEventSupported: boolean;
     private _gamepadSupport?: () => Array<any>;
@@ -42,7 +42,7 @@ export class GamepadManager {
             this._gamepadEventSupported = false;
         } else {
             this._gamepadEventSupported = "GamepadEvent" in window;
-            this._gamepadSupport = navigator && (navigator.getGamepads || navigator.webkitGetGamepads || navigator.msGetGamepads || navigator.webkitGamepads);
+            this._gamepadSupport = navigator && navigator.getGamepads;
         }
 
         this.onGamepadConnectedObservable = new Observable<Gamepad>((observer) => {
@@ -196,9 +196,7 @@ export class GamepadManager {
         if (!this._isMonitoring) {
             this._isMonitoring = true;
             //back-comp
-            if (!this._scene) {
-                this._checkGamepadsStatus();
-            }
+            this._checkGamepadsStatus();
         }
     }
 
@@ -208,7 +206,7 @@ export class GamepadManager {
 
     private _loggedErrors: number[];
 
-    /** @hidden */
+    /** @internal */
     public _checkGamepadsStatus() {
         // Hack to be compatible Chrome
         this._updateGamepadObjects();
@@ -228,7 +226,7 @@ export class GamepadManager {
             }
         }
 
-        if (this._isMonitoring && !this._scene) {
+        if (this._isMonitoring) {
             Engine.QueueNewFrame(() => {
                 this._checkGamepadsStatus();
             });
@@ -238,7 +236,7 @@ export class GamepadManager {
     // This function is called only on Chrome, which does not properly support
     // connection/disconnection events and forces you to recopy again the gamepad object
     private _updateGamepadObjects() {
-        const gamepads = navigator.getGamepads ? navigator.getGamepads() : navigator.webkitGetGamepads ? navigator.webkitGetGamepads() : [];
+        const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
         for (let i = 0; i < gamepads.length; i++) {
             const gamepad = gamepads[i];
             if (gamepad) {

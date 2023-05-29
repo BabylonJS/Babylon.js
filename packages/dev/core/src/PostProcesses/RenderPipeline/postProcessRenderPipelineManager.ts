@@ -2,14 +2,14 @@ import type { Camera } from "../../Cameras/camera";
 import type { PostProcessRenderPipeline } from "./postProcessRenderPipeline";
 /**
  * PostProcessRenderPipelineManager class
- * @see https://doc.babylonjs.com/how_to/how_to_use_postprocessrenderpipeline
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/postProcessRenderPipeline
  */
 export class PostProcessRenderPipelineManager {
     private _renderPipelines: { [Key: string]: PostProcessRenderPipeline };
 
     /**
      * Initializes a PostProcessRenderPipelineManager
-     * @see https://doc.babylonjs.com/how_to/how_to_use_postprocessrenderpipeline
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/postProcessRenderPipeline
      */
     constructor() {
         this._renderPipelines = {};
@@ -39,6 +39,14 @@ export class PostProcessRenderPipelineManager {
      */
     public addPipeline(renderPipeline: PostProcessRenderPipeline): void {
         this._renderPipelines[renderPipeline._name] = renderPipeline;
+    }
+
+    /**
+     * Remove the pipeline from the manager
+     * @param renderPipelineName the name of the pipeline to remove
+     */
+    public removePipeline(renderPipelineName: string): void {
+        delete this._renderPipelines[renderPipelineName];
     }
 
     /**
@@ -121,7 +129,7 @@ export class PostProcessRenderPipelineManager {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _rebuild(): void {
         for (const renderPipelineName in this._renderPipelines) {
             if (Object.prototype.hasOwnProperty.call(this._renderPipelines, renderPipelineName)) {

@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Nullable } from "../types";
 import type { Camera } from "../Cameras/camera";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
@@ -8,12 +7,17 @@ import { Constants } from "../Engines/constants";
 import { Logger } from "./logger";
 import { Tools } from "./tools";
 import type { IScreenshotSize } from "./interfaces/screenshotSize";
+import { DumpTools } from "./dumpTools";
+import type { Nullable } from "../types";
+import { ApplyPostProcess } from "./textureTools";
 
 declare type Engine = import("../Engines/engine").Engine;
 
+let screenshotCanvas: Nullable<HTMLCanvasElement> = null;
+
 /**
  * Captures a screenshot of the current rendering
- * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
  * @param engine defines the rendering engine
  * @param camera defines the source camera
  * @param size This parameter can be set to a single number or to an object with the
@@ -43,14 +47,14 @@ export function CreateScreenshot(
         return;
     }
 
-    if (!Tools._ScreenshotCanvas) {
-        Tools._ScreenshotCanvas = document.createElement("canvas");
+    if (!screenshotCanvas) {
+        screenshotCanvas = document.createElement("canvas");
     }
 
-    Tools._ScreenshotCanvas.width = width;
-    Tools._ScreenshotCanvas.height = height;
+    screenshotCanvas.width = width;
+    screenshotCanvas.height = height;
 
-    const renderContext = Tools._ScreenshotCanvas.getContext("2d");
+    const renderContext = screenshotCanvas.getContext("2d");
 
     const ratio = engine.getRenderWidth() / engine.getRenderHeight();
     let newWidth = width;
@@ -63,26 +67,51 @@ export function CreateScreenshot(
     const offsetX = Math.max(0, width - newWidth) / 2;
     const offsetY = Math.max(0, height - newHeight) / 2;
 
-    engine.onEndFrameObservable.addOnce(() => {
-        const renderingCanvas = engine.getRenderingCanvas();
-        if (renderContext && renderingCanvas) {
-            renderContext.drawImage(renderingCanvas, offsetX, offsetY, newWidth, newHeight);
-        }
-
-        if (forceDownload) {
-            Tools.EncodeScreenshotCanvasData(undefined, mimeType);
-            if (successCallback) {
-                successCallback("");
+    const scene = camera.getScene();
+    if (scene.activeCamera !== camera) {
+        CreateScreenshotUsingRenderTarget(
+            engine,
+            camera,
+            size,
+            (data) => {
+                if (forceDownload) {
+                    const blob = new Blob([data]);
+                    Tools.DownloadBlob(blob);
+                    if (successCallback) {
+                        successCallback("");
+                    }
+                } else if (successCallback) {
+                    successCallback(data);
+                }
+            },
+            mimeType,
+            1,
+            engine.getCreationOptions().antialias
+        );
+    } else {
+        engine.onEndFrameObservable.addOnce(() => {
+            const renderingCanvas = engine.getRenderingCanvas();
+            if (renderContext && renderingCanvas) {
+                renderContext.drawImage(renderingCanvas, offsetX, offsetY, newWidth, newHeight);
             }
-        } else {
-            Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
-        }
-    });
+
+            if (screenshotCanvas) {
+                if (forceDownload) {
+                    Tools.EncodeScreenshotCanvasData(screenshotCanvas, undefined, mimeType);
+                    if (successCallback) {
+                        successCallback("");
+                    }
+                } else {
+                    Tools.EncodeScreenshotCanvasData(screenshotCanvas, successCallback, mimeType);
+                }
+            }
+        });
+    }
 }
 
 /**
  * Captures a screenshot of the current rendering
- * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
  * @param engine defines the rendering engine
  * @param camera defines the source camera
  * @param size This parameter can be set to a single number or to an object with the
@@ -115,7 +144,7 @@ export function CreateScreenshotAsync(engine: Engine, camera: Camera, size: IScr
 
 /**
  * Captures a screenshot of the current rendering for a specific size. This will render the entire canvas but will generate a blink (due to canvas resize)
- * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
  * @param engine defines the rendering engine
  * @param camera defines the source camera
  * @param width defines the expected width
@@ -142,12 +171,12 @@ export function CreateScreenshotWithResizeAsync(engine: Engine, camera: Camera, 
 
 /**
  * Generates an image screenshot from the specified camera.
- * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
  * @param engine The engine to use for rendering
  * @param camera The camera to use for rendering
  * @param size This parameter can be set to a single number or to an object with the
- * following (optional) properties: precision, width, height. If a single number is passed,
- * it will be used for both width and height. If an object is passed, the screenshot size
+ * following (optional) properties: precision, width, height, finalWidth, finalHeight. If a single number is passed,
+ * it will be used for both width and height, as well as finalWidth, finalHeight. If an object is passed, the screenshot size
  * will be derived from the parameters. The precision property is a multiplier allowing
  * rendering at a higher or lower resolution
  * @param successCallback The callback receives a single parameter which contains the
@@ -160,6 +189,7 @@ export function CreateScreenshotWithResizeAsync(engine: Engine, camera: Camera, 
  * @param fileName A name for for the downloaded file.
  * @param renderSprites Whether the sprites should be rendered or not (default: false)
  * @param enableStencilBuffer Whether the stencil buffer should be enabled or not (default: false)
+ * @param useLayerMask if the camera's layer mask should be used to filter what should be rendered (default: true)
  */
 export function CreateScreenshotUsingRenderTarget(
     engine: Engine,
@@ -171,9 +201,10 @@ export function CreateScreenshotUsingRenderTarget(
     antialiasing: boolean = false,
     fileName?: string,
     renderSprites: boolean = false,
-    enableStencilBuffer: boolean = false
+    enableStencilBuffer: boolean = false,
+    useLayerMask: boolean = true
 ): void {
-    const { height, width } = _GetScreenshotSize(engine, camera, size);
+    const { height, width, finalWidth, finalHeight } = _GetScreenshotSize(engine, camera, size);
     const targetTextureSize = { width, height };
 
     if (!(height && width)) {
@@ -181,18 +212,10 @@ export function CreateScreenshotUsingRenderTarget(
         return;
     }
 
+    const originalSize = { width: engine.getRenderWidth(), height: engine.getRenderHeight() };
+    engine.setSize(width, height); // we need this call to trigger onResizeObservable with the screenshot width/height on all the subsystems that are observing this event and that needs to (re)create some resources with the right dimensions
+
     const scene = camera.getScene();
-    let previousCamera: Nullable<Camera> = null;
-    const previousCameras = scene.activeCameras;
-
-    scene.activeCameras = null;
-
-    if (scene.activeCamera !== camera) {
-        previousCamera = scene.activeCamera;
-        scene.activeCamera = camera;
-    }
-
-    scene.render(); // make sure the scene is ready to be rendered in the RTT with the right list of active meshes (which depends on the camera, that may have been changed above)
 
     // At this point size can be a number, or an object (according to engine.prototype.createRenderTargetTexture method)
     const texture = new RenderTargetTexture(
@@ -203,7 +226,7 @@ export function CreateScreenshotUsingRenderTarget(
         false,
         Constants.TEXTURETYPE_UNSIGNED_INT,
         false,
-        Texture.NEAREST_SAMPLINGMODE,
+        Texture.BILINEAR_SAMPLINGMODE,
         undefined,
         enableStencilBuffer,
         undefined,
@@ -211,16 +234,27 @@ export function CreateScreenshotUsingRenderTarget(
         undefined,
         samples
     );
-    texture.renderList = null;
+    texture.renderList = scene.meshes.slice();
     texture.samples = samples;
     texture.renderSprites = renderSprites;
+    texture.activeCamera = camera;
+    texture.forceLayerMaskCheck = useLayerMask;
 
     const renderToTexture = () => {
         engine.onEndFrameObservable.addOnce(() => {
-            texture.readPixels(undefined, undefined, undefined, false)!.then((data) => {
-                Tools.DumpData(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true);
-                texture.dispose();
-            });
+            if (finalWidth === width && finalHeight === height) {
+                texture.readPixels(undefined, undefined, undefined, false)!.then((data) => {
+                    DumpTools.DumpData(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true);
+                    texture.dispose();
+                });
+            } else {
+                ApplyPostProcess("pass", texture.getInternalTexture()!, scene, undefined, undefined, undefined, finalWidth, finalHeight).then((texture) => {
+                    engine._readTexturePixels(texture, finalWidth, finalHeight, -1, 0, null, true, false, 0, 0).then((data) => {
+                        DumpTools.DumpData(finalWidth, finalHeight, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true);
+                        texture.dispose();
+                    });
+                });
+            }
         });
 
         // render the RTT
@@ -232,10 +266,7 @@ export function CreateScreenshotUsingRenderTarget(
         // if the camera used for the RTT rendering stays in effect for the next frame (and if that camera was different from the original camera)
         scene.incrementRenderId();
         scene.resetCachedMaterial();
-        if (previousCamera) {
-            scene.activeCamera = previousCamera;
-        }
-        scene.activeCameras = previousCameras;
+        engine.setSize(originalSize.width, originalSize.height);
         camera.getProjectionMatrix(true); // Force cache refresh;
         scene.render();
     };
@@ -261,7 +292,7 @@ export function CreateScreenshotUsingRenderTarget(
 
 /**
  * Generates an image screenshot from the specified camera.
- * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
  * @param engine The engine to use for rendering
  * @param camera The camera to use for rendering
  * @param size This parameter can be set to a single number or to an object with the
@@ -275,6 +306,8 @@ export function CreateScreenshotUsingRenderTarget(
  * @param antialiasing Whether antialiasing should be turned on or not (default: false)
  * @param fileName A name for for the downloaded file.
  * @param renderSprites Whether the sprites should be rendered or not (default: false)
+ * @param enableStencilBuffer Whether the stencil buffer should be enabled or not (default: false)
+ * @param useLayerMask if the camera's layer mask should be used to filter what should be rendered (default: true)
  * @returns screenshot as a string of base64-encoded characters. This string can be assigned
  * to the src parameter of an <img> to display it
  */
@@ -286,7 +319,9 @@ export function CreateScreenshotUsingRenderTargetAsync(
     samples: number = 1,
     antialiasing: boolean = false,
     fileName?: string,
-    renderSprites: boolean = false
+    renderSprites: boolean = false,
+    enableStencilBuffer: boolean = false,
+    useLayerMask: boolean = true
 ): Promise<string> {
     return new Promise((resolve, reject) => {
         CreateScreenshotUsingRenderTarget(
@@ -304,7 +339,9 @@ export function CreateScreenshotUsingRenderTargetAsync(
             samples,
             antialiasing,
             fileName,
-            renderSprites
+            renderSprites,
+            enableStencilBuffer,
+            useLayerMask
         );
     });
 }
@@ -316,9 +353,11 @@ export function CreateScreenshotUsingRenderTargetAsync(
  * @param size
  * @private
  */
-function _GetScreenshotSize(engine: Engine, camera: Camera, size: IScreenshotSize | number): { height: number; width: number } {
+function _GetScreenshotSize(engine: Engine, camera: Camera, size: IScreenshotSize | number): { height: number; width: number; finalWidth: number; finalHeight: number } {
     let height = 0;
     let width = 0;
+    let finalWidth = 0;
+    let finalHeight = 0;
 
     //If a size value defined as object
     if (typeof size === "object") {
@@ -344,11 +383,32 @@ function _GetScreenshotSize(engine: Engine, camera: Camera, size: IScreenshotSiz
             width = Math.round(engine.getRenderWidth() * precision);
             height = Math.round(width / engine.getAspectRatio(camera));
         }
+
+        //If a finalWidth and finalHeight values is specified
+        if (size.finalWidth && size.finalHeight) {
+            finalHeight = size.finalHeight;
+            finalWidth = size.finalWidth;
+        }
+        //If passing only finalWidth, computing finalHeight to keep display canvas ratio.
+        else if (size.finalWidth && !size.finalHeight) {
+            finalWidth = size.finalWidth;
+            finalHeight = Math.round(finalWidth / engine.getAspectRatio(camera));
+        }
+        //If passing only finalHeight, computing finalWidth to keep display canvas ratio.
+        else if (size.finalHeight && !size.finalWidth) {
+            finalHeight = size.finalHeight;
+            finalWidth = Math.round(finalHeight * engine.getAspectRatio(camera));
+        } else {
+            finalWidth = width;
+            finalHeight = height;
+        }
     }
     //Assuming here that "size" parameter is a number
     else if (!isNaN(size)) {
         height = size;
         width = size;
+        finalWidth = size;
+        finalHeight = size;
     }
 
     // When creating the image data from the CanvasRenderingContext2D, the width and height is clamped to the size of the _gl context
@@ -361,8 +421,14 @@ function _GetScreenshotSize(engine: Engine, camera: Camera, size: IScreenshotSiz
     if (height) {
         height = Math.floor(height);
     }
+    if (finalWidth) {
+        finalWidth = Math.floor(finalWidth);
+    }
+    if (finalHeight) {
+        finalHeight = Math.floor(finalHeight);
+    }
 
-    return { height: height | 0, width: width | 0 };
+    return { height: height | 0, width: width | 0, finalWidth: finalWidth | 0, finalHeight: finalHeight | 0 };
 }
 
 /**
@@ -371,7 +437,7 @@ function _GetScreenshotSize(engine: Engine, camera: Camera, size: IScreenshotSiz
 export const ScreenshotTools = {
     /**
      * Captures a screenshot of the current rendering
-     * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
      * @param engine defines the rendering engine
      * @param camera defines the source camera
      * @param size This parameter can be set to a single number or to an object with the
@@ -390,7 +456,7 @@ export const ScreenshotTools = {
 
     /**
      * Captures a screenshot of the current rendering
-     * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
      * @param engine defines the rendering engine
      * @param camera defines the source camera
      * @param size This parameter can be set to a single number or to an object with the
@@ -407,7 +473,7 @@ export const ScreenshotTools = {
 
     /**
      * Captures a screenshot of the current rendering for a specific size. This will render the entire canvas but will generate a blink (due to canvas resize)
-     * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
      * @param engine defines the rendering engine
      * @param camera defines the source camera
      * @param width defines the expected width
@@ -421,7 +487,7 @@ export const ScreenshotTools = {
 
     /**
      * Generates an image screenshot from the specified camera.
-     * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
      * @param engine The engine to use for rendering
      * @param camera The camera to use for rendering
      * @param size This parameter can be set to a single number or to an object with the
@@ -444,7 +510,7 @@ export const ScreenshotTools = {
 
     /**
      * Generates an image screenshot from the specified camera.
-     * @see https://doc.babylonjs.com/how_to/render_scene_on_a_png
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
      * @param engine The engine to use for rendering
      * @param camera The camera to use for rendering
      * @param size This parameter can be set to a single number or to an object with the
@@ -468,7 +534,7 @@ export const ScreenshotTools = {
  * This will be executed automatically for UMD and es5.
  * If esm dev wants the side effects to execute they will have to run it manually
  * Once we build native modules those need to be exported.
- * @hidden
+ * @internal
  */
 const initSideEffects = () => {
     // References the dependencies.

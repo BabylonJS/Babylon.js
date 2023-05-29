@@ -1,4 +1,4 @@
-import type { Matrix } from "./math.vector";
+import type { Matrix, Vector3 } from "./math.vector";
 import type { DeepImmutable } from "../types";
 import { Plane } from "./math.plane";
 
@@ -127,5 +127,20 @@ export class Frustum {
 
         // Bottom
         Frustum.GetBottomPlaneToRef(transform, frustumPlanes[5]);
+    }
+
+    /**
+     * Tests if a point is located between the frustum planes.
+     * @param point defines the point to test
+     * @param frustumPlanes defines the frustum planes to test
+     * @returns true if the point is located between the frustum planes
+     */
+    public static IsPointInFrustum(point: Vector3, frustumPlanes: Array<DeepImmutable<Plane>>): boolean {
+        for (let i = 0; i < 6; i++) {
+            if (frustumPlanes[i].dotCoordinate(point) < 0) {
+                return false;
+            }
+        }
+        return true;
     }
 }

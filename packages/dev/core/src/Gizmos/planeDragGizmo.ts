@@ -9,21 +9,46 @@ import type { Node } from "../node";
 import type { Mesh } from "../Meshes/mesh";
 import { CreatePlane } from "../Meshes/Builders/planeBuilder";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
-import type { GizmoAxisCache } from "./gizmo";
+import type { GizmoAxisCache, IGizmo } from "./gizmo";
 import { Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import type { Scene } from "../scene";
 import type { PositionGizmo } from "./positionGizmo";
+
+/**
+ * Interface for plane drag gizmo
+ */
+export interface IPlaneDragGizmo extends IGizmo {
+    /** Drag behavior responsible for the gizmos dragging interactions */
+    dragBehavior: PointerDragBehavior;
+    /** Drag distance in babylon units that the gizmo will snap to when dragged */
+    snapDistance: number;
+    /**
+     * Event that fires each time the gizmo snaps to a new location.
+     * * snapDistance is the the change in distance
+     */
+    onSnapObservable: Observable<{ snapDistance: number }>;
+    /** If the gizmo is enabled */
+    isEnabled: boolean;
+
+    /** Default material used to render when gizmo is not disabled or hovered */
+    coloredMaterial: StandardMaterial;
+    /** Material used to render when gizmo is hovered with mouse*/
+    hoverMaterial: StandardMaterial;
+    /** Material used to render when gizmo is disabled. typically grey.*/
+    disableMaterial: StandardMaterial;
+}
+
 /**
  * Single plane drag gizmo
  */
-export class PlaneDragGizmo extends Gizmo {
+export class PlaneDragGizmo extends Gizmo implements IPlaneDragGizmo {
     /**
      * Drag behavior responsible for the gizmos dragging interactions
      */
     public dragBehavior: PointerDragBehavior;
-    private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
+    protected _pointerObserver: Nullable<Observer<PointerInfo>> = null;
     /**
      * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
      */
@@ -34,19 +59,31 @@ export class PlaneDragGizmo extends Gizmo {
      */
     public onSnapObservable = new Observable<{ snapDistance: number }>();
 
-    private _gizmoMesh: TransformNode;
-    private _coloredMaterial: StandardMaterial;
-    private _hoverMaterial: StandardMaterial;
-    private _disableMaterial: StandardMaterial;
+    protected _gizmoMesh: TransformNode;
+    protected _coloredMaterial: StandardMaterial;
+    protected _hoverMaterial: StandardMaterial;
+    protected _disableMaterial: StandardMaterial;
 
-    private _isEnabled: boolean = false;
-    private _parent: Nullable<PositionGizmo> = null;
-    private _dragging: boolean = false;
+    protected _isEnabled: boolean = false;
+    protected _parent: Nullable<PositionGizmo> = null;
+    protected _dragging: boolean = false;
 
+    /** Default material used to render when gizmo is not disabled or hovered */
+    public get coloredMaterial() {
+        return this._coloredMaterial;
+    }
+
+    /** Material used to render when gizmo is hovered with mouse*/
+    public get hoverMaterial() {
+        return this._hoverMaterial;
+    }
+
+    /** Material used to render when gizmo is disabled. typically grey.*/
+    public get disableMaterial() {
+        return this._disableMaterial;
+    }
     /**
-     * @param scene
-     * @param material
-     * @hidden
+     * @internal
      */
     public static _CreatePlane(scene: Scene, material: StandardMaterial): TransformNode {
         const plane = new TransformNode("plane", scene);

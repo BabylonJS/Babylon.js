@@ -54,34 +54,34 @@ export class Geometry implements IGetSetVerticesData {
     private _engine: Engine;
     private _meshes: Mesh[];
     private _totalVertices = 0;
-    /** @hidden */
+    /** @internal */
     public _loadedUniqueId: string;
-    /** @hidden */
+    /** @internal */
     public _indices: IndicesArray;
-    /** @hidden */
+    /** @internal */
     public _vertexBuffers: { [key: string]: VertexBuffer };
     private _isDisposed = false;
     private _extend: { minimum: Vector3; maximum: Vector3 };
     private _boundingBias: Vector2;
-    /** @hidden */
+    /** @internal */
     public _delayInfo: Array<string>;
     private _indexBuffer: Nullable<DataBuffer>;
     private _indexBufferIsUpdatable = false;
-    /** @hidden */
+    /** @internal */
     public _boundingInfo: Nullable<BoundingInfo>;
-    /** @hidden */
+    /** @internal */
     public _delayLoadingFunction: Nullable<(any: any, geometry: Geometry) => void>;
-    /** @hidden */
+    /** @internal */
     public _softwareSkinningFrameId: number;
     private _vertexArrayObjects: { [key: string]: WebGLVertexArrayObject };
     private _updatable: boolean;
 
     // Cache
-    /** @hidden */
+    /** @internal */
     public _positions: Nullable<Vector3[]>;
     private _positionsCache: Vector3[] = [];
 
-    /** @hidden */
+    /** @internal */
     public _parentContainer: Nullable<AbstractScene> = null;
 
     /**
@@ -155,7 +155,6 @@ export class Geometry implements IGetSetVerticesData {
             this.setAllVerticesData(vertexData, updatable);
         } else {
             this._totalVertices = 0;
-            this._indices = [];
         }
 
         if (this._engine.getCaps().vertexArrayObject) {
@@ -213,7 +212,7 @@ export class Geometry implements IGetSetVerticesData {
         return true;
     }
 
-    /** @hidden */
+    /** @internal */
     public _rebuild(): void {
         if (this._vertexArrayObjects) {
             this._vertexArrayObjects = {};
@@ -308,7 +307,7 @@ export class Geometry implements IGetSetVerticesData {
             for (let index = 0; index < numOfMeshes; index++) {
                 const mesh = meshes[index];
                 mesh.buildBoundingInfo(this._extend.minimum, this._extend.maximum);
-                mesh._createGlobalSubMesh(false);
+                mesh._createGlobalSubMesh(mesh.isUnIndexed);
                 mesh.computeWorldMatrix(true);
                 mesh.synchronizeInstances();
             }
@@ -384,9 +383,7 @@ export class Geometry implements IGetSetVerticesData {
     }
 
     /**
-     * @param effect
-     * @param indexToBind
-     * @hidden
+     * @internal
      */
     public _bind(
         effect: Nullable<Effect>,
@@ -479,7 +476,7 @@ export class Geometry implements IGetSetVerticesData {
 
     /**
      * Returns all vertex buffers
-     * @return an object holding all vertex buffers indexed by kind
+     * @returns an object holding all vertex buffers indexed by kind
      */
     public getVertexBuffers(): Nullable<{ [key: string]: VertexBuffer }> {
         if (!this.isReady()) {
@@ -606,13 +603,13 @@ export class Geometry implements IGetSetVerticesData {
         if (!forceCopy && (!copyWhenShared || this._meshes.length === 1)) {
             return orig;
         } else {
-            return Tools.Slice(orig);
+            return orig.slice();
         }
     }
 
     /**
      * Gets the index buffer
-     * @return the index buffer
+     * @returns the index buffer
      */
     public getIndexBuffer(): Nullable<DataBuffer> {
         if (!this.isReady()) {
@@ -622,8 +619,7 @@ export class Geometry implements IGetSetVerticesData {
     }
 
     /**
-     * @param effect
-     * @hidden
+     * @internal
      */
     public _releaseVertexArrayObject(effect: Nullable<Effect> = null) {
         if (!effect || !this._vertexArrayObjects) {
@@ -732,7 +728,7 @@ export class Geometry implements IGetSetVerticesData {
                 }
                 mesh.buildBoundingInfo(this._extend.minimum, this._extend.maximum);
 
-                mesh._createGlobalSubMesh(false);
+                mesh._createGlobalSubMesh(mesh.isUnIndexed);
 
                 //bounding info was just created again, world matrix should be applied again.
                 mesh._updateBoundingInfo();
@@ -792,7 +788,7 @@ export class Geometry implements IGetSetVerticesData {
             return;
         }
 
-        scene._addPendingData(this);
+        scene.addPendingData(this);
         scene._loadFile(
             this.delayLoadingFile,
             (data) => {
@@ -805,7 +801,7 @@ export class Geometry implements IGetSetVerticesData {
                 this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
                 this._delayInfo = [];
 
-                scene._removePendingData(this);
+                scene.removePendingData(this);
 
                 const meshes = this._meshes;
                 const numOfMeshes = meshes.length;
@@ -857,12 +853,12 @@ export class Geometry implements IGetSetVerticesData {
     }
 
     // Cache
-    /** @hidden */
+    /** @internal */
     public _resetPointsArrayCache(): void {
         this._positions = null;
     }
 
-    /** @hidden */
+    /** @internal */
     public _generatePointsArray(): boolean {
         if (this._positions) {
             return true;
@@ -923,7 +919,7 @@ export class Geometry implements IGetSetVerticesData {
         for (index = 0; index < numOfMeshes; index++) {
             this.releaseForMesh(meshes[index]);
         }
-        this._meshes = [];
+        this._meshes.length = 0;
 
         this._disposeVertexArrayObjects();
 
@@ -1018,7 +1014,7 @@ export class Geometry implements IGetSetVerticesData {
 
     /**
      * Serialize the current geometry info (and not the vertices data) into a JSON object
-     * @return a JSON representation of the current geometry data (without the vertices data)
+     * @returns a JSON representation of the current geometry data (without the vertices data)
      */
     public serialize(): any {
         const serializationObject: any = {};
@@ -1197,9 +1193,7 @@ export class Geometry implements IGetSetVerticesData {
     }
 
     /**
-     * @param parsedGeometry
-     * @param mesh
-     * @hidden
+     * @internal
      */
     public static _ImportGeometry(parsedGeometry: any, mesh: Mesh): void {
         const scene = mesh.getScene();

@@ -5,7 +5,7 @@ import { Control } from "./control";
 import { RegisterClass } from "core/Misc/typeStore";
 import type { Nullable } from "core/types";
 import { serialize } from "core/Misc/decorators";
-import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import type { ICanvasRenderingContext, ITextMetrics } from "core/Engines/ICanvas";
 import { EngineStore } from "core/Engines/engineStore";
 
 /**
@@ -49,6 +49,10 @@ export class TextBlock extends Control {
     private _outlineColor: string = "white";
     private _underline: boolean = false;
     private _lineThrough: boolean = false;
+    private _wordDivider: string = " ";
+    private _forceResizeWidth: boolean = false;
+    private _applyOutlineToUnderline: boolean = false;
+
     /**
      * An event triggered after the text is changed
      */
@@ -251,6 +255,22 @@ export class TextBlock extends Control {
     }
 
     /**
+     * If the outline should be applied to the underline/strike-through too. Has different behavior in Edge/Chrome vs Firefox.
+     */
+    @serialize()
+    public get applyOutlineToUnderline(): boolean {
+        return this._applyOutlineToUnderline;
+    }
+
+    public set applyOutlineToUnderline(value: boolean) {
+        if (this._applyOutlineToUnderline === value) {
+            return;
+        }
+        this._applyOutlineToUnderline = value;
+        this._markAsDirty();
+    }
+
+    /**
      * Gets or sets outlineColor of the text to display
      */
     @serialize()
@@ -266,6 +286,43 @@ export class TextBlock extends Control {
             return;
         }
         this._outlineColor = value;
+        this._markAsDirty();
+    }
+
+    /**
+     * Gets or sets word divider
+     */
+    @serialize()
+    public get wordDivider(): string {
+        return this._wordDivider;
+    }
+
+    /**
+     * Gets or sets word divider
+     */
+    public set wordDivider(value: string) {
+        if (this._wordDivider === value) {
+            return;
+        }
+        this._wordDivider = value;
+        this._markAsDirty();
+    }
+
+    /**
+     * By default, if a text block has text wrapping other than Clip, its width
+     * is not resized even if resizeToFit = true. This parameter forces the width
+     * to be resized.
+     */
+    @serialize()
+    public get forceResizeWidth(): boolean {
+        return this._forceResizeWidth;
+    }
+
+    public set forceResizeWidth(value: boolean) {
+        if (this._forceResizeWidth === value) {
+            return;
+        }
+        this._forceResizeWidth = value;
         this._markAsDirty();
     }
 
@@ -311,9 +368,9 @@ export class TextBlock extends Control {
         }
 
         if (this._resizeToFit) {
-            if (this._textWrapping === TextWrapping.Clip) {
-                const newWidth = (this._paddingLeftInPixels + this._paddingRightInPixels + maxLineWidth) | 0;
-                if (newWidth !== this._width.internalValue) {
+            if (this._textWrapping === TextWrapping.Clip || this._forceResizeWidth) {
+                const newWidth = Math.ceil(this._paddingLeftInPixels) + Math.ceil(this._paddingRightInPixels) + Math.ceil(maxLineWidth);
+                if (newWidth !== this._width.getValueInPixel(this._host, this._tempParentMeasure.width)) {
                     this._width.updateInPlace(newWidth, ValueAndUnit.UNITMODE_PIXEL);
                     this._rebuildLayout = true;
                 }
@@ -366,27 +423,33 @@ export class TextBlock extends Control {
         context.fillText(text, this._currentMeasure.left + x, y);
 
         if (this._underline) {
-            context.beginPath();
-            context.lineWidth = Math.round(this.fontSizeInPixels * 0.05);
-            context.moveTo(this._currentMeasure.left + x, y + 3);
-            context.lineTo(this._currentMeasure.left + x + textWidth, y + 3);
-            context.stroke();
-            context.closePath();
+            this._drawLine(this._currentMeasure.left + x, y + 3, this._currentMeasure.left + x + textWidth, y + 3, context);
         }
 
         if (this._lineThrough) {
-            context.beginPath();
-            context.lineWidth = Math.round(this.fontSizeInPixels * 0.05);
-            context.moveTo(this._currentMeasure.left + x, y - this.fontSizeInPixels / 3);
-            context.lineTo(this._currentMeasure.left + x + textWidth, y - this.fontSizeInPixels / 3);
-            context.stroke();
-            context.closePath();
+            this._drawLine(this._currentMeasure.left + x, y - this.fontSizeInPixels / 3, this._currentMeasure.left + x + textWidth, y - this.fontSizeInPixels / 3, context);
         }
     }
 
+    private _drawLine(xFrom: number, yFrom: number, xTo: number, yTo: number, context: ICanvasRenderingContext): void {
+        context.beginPath();
+        context.lineWidth = Math.round(this.fontSizeInPixels * 0.05);
+        context.moveTo(xFrom, yFrom);
+        context.lineTo(xTo, yTo);
+        if (this.outlineWidth && this.applyOutlineToUnderline) {
+            context.stroke();
+            context.fill();
+        } else {
+            const currentStroke = context.strokeStyle;
+            context.strokeStyle = context.fillStyle;
+            context.stroke();
+            context.strokeStyle = currentStroke;
+        }
+        context.closePath();
+    }
+
     /**
-     * @param context
-     * @hidden
+     * @internal
      */
     public _draw(context: ICanvasRenderingContext): void {
         context.save();
@@ -409,35 +472,35 @@ export class TextBlock extends Control {
         }
     }
 
+    private _linesTemp: object[] = [];
+
     protected _breakLines(refWidth: number, refHeight: number, context: ICanvasRenderingContext): object[] {
-        const lines = [];
+        this._linesTemp.length = 0;
         const _lines = this.text.split("\n");
 
         if (this._textWrapping === TextWrapping.Ellipsis) {
             for (const _line of _lines) {
-                lines.push(this._parseLineEllipsis(_line, refWidth, context));
+                this._linesTemp.push(this._parseLineEllipsis(_line, refWidth, context));
             }
         } else if (this._textWrapping === TextWrapping.WordWrap) {
             for (const _line of _lines) {
-                lines.push(...this._parseLineWordWrap(_line, refWidth, context));
+                this._linesTemp.push(...this._parseLineWordWrap(_line, refWidth, context));
             }
         } else if (this._textWrapping === TextWrapping.WordWrapEllipsis) {
             for (const _line of _lines) {
-                lines.push(...this._parseLineWordWrapEllipsis(_line, refWidth, refHeight!, context));
+                this._linesTemp.push(...this._parseLineWordWrapEllipsis(_line, refWidth, refHeight!, context));
             }
         } else {
             for (const _line of _lines) {
-                lines.push(this._parseLine(_line, context));
+                this._linesTemp.push(this._parseLine(_line, context));
             }
         }
 
-        return lines;
+        return this._linesTemp;
     }
 
     protected _parseLine(line: string = "", context: ICanvasRenderingContext): object {
-        const textMetrics = context.measureText(line);
-        const lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
-        return { text: line, width: lineWidth };
+        return { text: line, width: this._getTextMetricsWidth(context.measureText(line)) };
     }
 
     //Calculate how many characters approximately we need to remove
@@ -450,8 +513,7 @@ export class TextBlock extends Control {
     }
 
     protected _parseLineEllipsis(line: string = "", width: number, context: ICanvasRenderingContext): object {
-        let textMetrics = context.measureText(line);
-        let lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
+        let lineWidth = this._getTextMetricsWidth(context.measureText(line));
 
         let removeChars = this._getCharsToRemove(lineWidth, width, line.length);
 
@@ -462,8 +524,7 @@ export class TextBlock extends Control {
             // no array.from, use the old method
             while (line.length > 2 && lineWidth > width) {
                 line = line.slice(0, -removeChars);
-                textMetrics = context.measureText(line + "…");
-                lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
+                lineWidth = this._getTextMetricsWidth(context.measureText(line + "…"));
 
                 removeChars = this._getCharsToRemove(lineWidth, width, line.length);
             }
@@ -473,8 +534,7 @@ export class TextBlock extends Control {
             while (characters.length && lineWidth > width) {
                 characters.splice(characters.length - removeChars, removeChars);
                 line = `${characters.join("")}…`;
-                textMetrics = context.measureText(line);
-                lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
+                lineWidth = this._getTextMetricsWidth(context.measureText(line));
 
                 removeChars = this._getCharsToRemove(lineWidth, width, line.length);
             }
@@ -483,21 +543,25 @@ export class TextBlock extends Control {
         return { text: line, width: lineWidth };
     }
 
+    private _getTextMetricsWidth(textMetrics: ITextMetrics) {
+        if (textMetrics.actualBoundingBoxLeft !== undefined) {
+            return Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
+        }
+        return textMetrics.width;
+    }
+
     protected _parseLineWordWrap(line: string = "", width: number, context: ICanvasRenderingContext): object[] {
         const lines = [];
-        const words = this.wordSplittingFunction ? this.wordSplittingFunction(line) : line.split(" ");
-        let textMetrics = context.measureText(line);
-        let lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
+        const words = this.wordSplittingFunction ? this.wordSplittingFunction(line) : line.split(this._wordDivider);
+        let lineWidth = this._getTextMetricsWidth(context.measureText(line));
 
         for (let n = 0; n < words.length; n++) {
-            const testLine = n > 0 ? line + " " + words[n] : words[0];
-            const metrics = context.measureText(testLine);
-            const testWidth = Math.abs(metrics.actualBoundingBoxLeft) + Math.abs(metrics.actualBoundingBoxRight);
+            const testLine = n > 0 ? line + this._wordDivider + words[n] : words[0];
+            const testWidth = this._getTextMetricsWidth(context.measureText(testLine));
             if (testWidth > width && n > 0) {
                 lines.push({ text: line, width: lineWidth });
                 line = words[n];
-                textMetrics = context.measureText(line);
-                lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
+                lineWidth = this._getTextMetricsWidth(context.measureText(line));
             } else {
                 lineWidth = testWidth;
                 line = testLine;
@@ -515,7 +579,7 @@ export class TextBlock extends Control {
             if (currentHeight > height && n > 1) {
                 const lastLine = lines[n - 2] as { text: string; width: number };
                 const currentLine = lines[n - 1] as { text: string; width: number };
-                lines[n - 2] = this._parseLineEllipsis(`${lastLine.text + currentLine.text}`, width, context);
+                lines[n - 2] = this._parseLineEllipsis(lastLine.text + this._wordDivider + currentLine.text, width, context);
                 const linesToRemove = lines.length - n + 1;
                 for (let i = 0; i < linesToRemove; i++) {
                     lines.pop();
@@ -528,6 +592,9 @@ export class TextBlock extends Control {
     }
 
     protected _renderLines(context: ICanvasRenderingContext): void {
+        if (!this._fontOffset || !this._lines) {
+            return;
+        }
         const height = this._currentMeasure.height;
         let rootY = 0;
         switch (this._textVerticalAlignment) {

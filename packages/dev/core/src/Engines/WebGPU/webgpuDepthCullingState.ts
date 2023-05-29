@@ -3,7 +3,7 @@ import type { WebGPUCacheRenderPipeline } from "./webgpuCacheRenderPipeline";
 import { DepthCullingState } from "../../States/depthCullingState";
 
 /**
- * @hidden
+ * @internal
  **/
 export class WebGPUDepthCullingState extends DepthCullingState {
     private _cache: WebGPUCacheRenderPipeline;

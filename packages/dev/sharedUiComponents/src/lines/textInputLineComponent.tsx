@@ -27,7 +27,14 @@ export interface ITextInputLineComponentProps {
     max?: number;
     placeholder?: string;
     unit?: React.ReactNode;
+    validator?: (value: string) => boolean;
+    multilines?: boolean;
+    throttlePropertyChangedNotification?: boolean;
+    throttlePropertyChangedNotificationDelay?: number;
+    disabled?: boolean;
 }
+
+let throttleTimerId = -1;
 
 export class TextInputLineComponent extends React.Component<ITextInputLineComponentProps, { value: string; dragging: boolean }> {
     private _localChange = false;
@@ -100,7 +107,10 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
         return 0;
     }
 
-    updateValue(value: string) {
+    updateValue(value: string, valueToValidate?: string) {
+        if (this.props.disabled) {
+            return;
+        }
         if (this.props.numbersOnly) {
             if (/[^0-9.\p\x%-]/g.test(value)) {
                 return;
@@ -131,13 +141,29 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
 
         this._localChange = true;
         const store = this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!];
+
+        if (this.props.validator && valueToValidate) {
+            if (this.props.validator(valueToValidate) == false) {
+                value = store;
+            }
+        }
+
         this.setState({ value: value });
 
         if (this.props.propertyName && !this.props.delayInput) {
             this.props.target[this.props.propertyName] = value;
         }
 
-        this.raiseOnPropertyChanged(value, store);
+        if (this.props.throttlePropertyChangedNotification) {
+            if (throttleTimerId >= 0) {
+                window.clearTimeout(throttleTimerId);
+            }
+            throttleTimerId = window.setTimeout(() => {
+                this.raiseOnPropertyChanged(value, store);
+            }, this.props.throttlePropertyChangedNotificationDelay ?? 200);
+        } else {
+            this.raiseOnPropertyChanged(value, store);
+        }
     }
 
     incrementValue(amount: number) {
@@ -153,7 +179,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
     }
 
     onKeyDown(event: React.KeyboardEvent) {
-        if (this.props.arrows) {
+        if (!this.props.disabled && this.props.arrows) {
             if (event.key === "ArrowUp") {
                 this.incrementValue(1);
                 event.preventDefault();
@@ -169,36 +195,72 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
         const value = this.state.value === conflictingValuesPlaceholder ? "" : this.state.value;
         const placeholder = this.state.value === conflictingValuesPlaceholder ? conflictingValuesPlaceholder : this.props.placeholder || "";
         const step = this.props.step || (this.props.roundValues ? 1 : 0.01);
+        const className = this.props.multilines ? "textInputArea" : this.props.unit !== undefined ? "textInputLine withUnits" : "textInputLine";
         return (
-            <div className={this.props.unit !== undefined ? "textInputLine withUnits" : "textInputLine"}>
+            <div className={className}>
                 {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} color="black" className="icon" />}
                 {this.props.label !== undefined && (
                     <div className="label" title={this.props.label}>
                         {this.props.label}
                     </div>
                 )}
-                <div className={`value${this.props.noUnderline === true ? " noUnderline" : ""}${this.props.arrows ? " hasArrows" : ""}${this.state.dragging ? " dragging" : ""}`}>
-                    <input
-                        value={value}
-                        onBlur={() => {
-                            if (this.props.lockObject) {
-                                this.props.lockObject.lock = false;
-                            }
-                            this.updateValue((this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!]) || "");
-                        }}
-                        onFocus={() => {
-                            if (this.props.lockObject) {
-                                this.props.lockObject.lock = true;
-                            }
-                        }}
-                        onChange={(evt) => this.updateValue(evt.target.value)}
-                        onKeyDown={(evt) => this.onKeyDown(evt)}
-                        placeholder={placeholder}
-                        type={this.props.numeric ? "number" : "text"}
-                        step={step}
-                    />
-                    {this.props.arrows && <InputArrowsComponent incrementValue={(amount) => this.incrementValue(amount)} setDragging={(dragging) => this.setState({ dragging })} />}
-                </div>
+                {this.props.multilines && (
+                    <>
+                        <textarea
+                            className={this.props.disabled ? "disabled" : ""}
+                            value={this.state.value}
+                            onFocus={() => {
+                                if (this.props.lockObject) {
+                                    this.props.lockObject.lock = true;
+                                }
+                            }}
+                            onChange={(evt) => this.updateValue(evt.target.value)}
+                            onKeyDown={(evt) => {
+                                if (evt.keyCode !== 13) {
+                                    return;
+                                }
+                                this.updateValue(this.state.value);
+                            }}
+                            onBlur={(evt) => {
+                                this.updateValue(evt.target.value, evt.target.value);
+                                if (this.props.lockObject) {
+                                    this.props.lockObject.lock = false;
+                                }
+                            }}
+                            disabled={this.props.disabled}
+                        />
+                    </>
+                )}
+                {!this.props.multilines && (
+                    <div
+                        className={`value${this.props.noUnderline === true ? " noUnderline" : ""}${this.props.arrows ? " hasArrows" : ""}${this.state.dragging ? " dragging" : ""}`}
+                    >
+                        <input
+                            className={this.props.disabled ? "disabled" : ""}
+                            value={value}
+                            onBlur={(evt) => {
+                                if (this.props.lockObject) {
+                                    this.props.lockObject.lock = false;
+                                }
+                                this.updateValue((this.props.value !== undefined ? this.props.value : this.props.target[this.props.propertyName!]) || "", evt.target.value);
+                            }}
+                            onFocus={() => {
+                                if (this.props.lockObject) {
+                                    this.props.lockObject.lock = true;
+                                }
+                            }}
+                            onChange={(evt) => this.updateValue(evt.target.value)}
+                            onKeyDown={(evt) => this.onKeyDown(evt)}
+                            placeholder={placeholder}
+                            type={this.props.numeric ? "number" : "text"}
+                            step={step}
+                            disabled={this.props.disabled}
+                        />
+                        {this.props.arrows && (
+                            <InputArrowsComponent incrementValue={(amount) => this.incrementValue(amount)} setDragging={(dragging) => this.setState({ dragging })} />
+                        )}
+                    </div>
+                )}
                 {this.props.unit}
             </div>
         );

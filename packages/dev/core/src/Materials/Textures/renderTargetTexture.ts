@@ -1,6 +1,5 @@
 import type { Observer } from "../../Misc/observable";
 import { Observable } from "../../Misc/observable";
-import { Tools } from "../../Misc/tools";
 import type { SmartArray } from "../../Misc/smartArray";
 import type { Nullable, Immutable } from "../../types";
 import type { Camera } from "../../Cameras/camera";
@@ -21,8 +20,60 @@ import type { IRenderTargetTexture, RenderTargetWrapper } from "../../Engines/re
 import "../../Engines/Extensions/engine.renderTarget";
 import "../../Engines/Extensions/engine.renderTargetCube";
 import { Engine } from "../../Engines/engine";
+import { _ObserveArray } from "../../Misc/arrayTools";
+import { DumpTools } from "../../Misc/dumpTools";
 
 declare type Material = import("../material").Material;
+
+/**
+ * Options for the RenderTargetTexture constructor
+ */
+export interface RenderTargetTextureOptions {
+    /** True (default: false) if mipmaps need to be generated after render */
+    generateMipMaps?: boolean;
+
+    /** True (default) to not change the aspect ratio of the scene in the RTT */
+    doNotChangeAspectRatio?: boolean;
+
+    /** The type of the buffer in the RTT (byte (default), half float, float...) */
+    type?: number;
+
+    /** True (default: false) if a cube texture needs to be created */
+    isCube?: boolean;
+
+    /** The sampling mode to be used with the render target (Trilinear (default), Linear, Nearest...) */
+    samplingMode?: number;
+
+    /** True (default) to generate a depth buffer */
+    generateDepthBuffer?: boolean;
+
+    /** True (default: false) to generate a stencil buffer */
+    generateStencilBuffer?: boolean;
+
+    /** True (default: false) if multiple textures need to be created (Draw Buffers) */
+    isMulti?: boolean;
+
+    /** The internal format of the buffer in the RTT (RED, RG, RGB, RGBA (default), ALPHA...) */
+    format?: number;
+
+    /** True (default: false) if the texture allocation should be delayed */
+    delayAllocation?: boolean;
+
+    /** Sample count to use when creating the RTT */
+    samples?: number;
+
+    /** specific flags to use when creating the texture (e.g., Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures) */
+    creationFlags?: number;
+
+    /** True (default: false) to indicate that no color target should be created. (e.g., if you only want to write to the depth buffer) */
+    noColorAttachment?: boolean;
+
+    /** Specifies the internal texture to use directly instead of creating one (ignores `noColorAttachment` flag when set) **/
+    colorAttachment?: InternalTexture;
+
+    /** True (default: false) to create a SRGB texture */
+    useSRGBBuffer?: boolean;
+}
 
 /**
  * This Helps creating a texture that will be created from a camera in your scene.
@@ -51,6 +102,8 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     public renderListPredicate: (AbstractMesh: AbstractMesh) => boolean;
 
     private _renderList: Nullable<Array<AbstractMesh>>;
+    private _unObserveRenderList: Nullable<() => void> = null;
+
     /**
      * Use this list to define the list of mesh you want to render.
      */
@@ -59,12 +112,26 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     }
 
     public set renderList(value: Nullable<Array<AbstractMesh>>) {
-        this._renderList = value;
-
-        if (this._renderList) {
-            this._hookArray(this._renderList);
+        if (this._unObserveRenderList) {
+            this._unObserveRenderList();
+            this._unObserveRenderList = null;
         }
+
+        if (value) {
+            this._unObserveRenderList = _ObserveArray(value, this._renderListHasChanged);
+        }
+
+        this._renderList = value;
     }
+
+    private _renderListHasChanged = (_functionName: String, previousLength: number) => {
+        const newLength = this._renderList ? this._renderList.length : 0;
+        if ((previousLength === 0 && newLength > 0) || newLength === 0) {
+            this.getScene()?.meshes.forEach((mesh) => {
+                mesh._markSubMeshesAsLightDirty();
+            });
+        }
+    };
 
     /**
      * Use this function to overload the renderList array at rendering time.
@@ -77,36 +144,6 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      */
     public getCustomRenderList: (layerOrFace: number, renderList: Nullable<Immutable<Array<AbstractMesh>>>, renderListLength: number) => Nullable<Array<AbstractMesh>>;
 
-    private _hookArray(array: AbstractMesh[]): void {
-        const oldPush = array.push;
-        array.push = (...items: AbstractMesh[]) => {
-            const wasEmpty = array.length === 0;
-
-            const result = oldPush.apply(array, items);
-
-            if (wasEmpty) {
-                this.getScene()?.meshes.forEach((mesh) => {
-                    mesh._markSubMeshesAsLightDirty();
-                });
-            }
-
-            return result;
-        };
-
-        const oldSplice = array.splice;
-        array.splice = (index: number, deleteCount?: number) => {
-            const deleted = oldSplice.apply(array, [index, deleteCount]);
-
-            if (array.length === 0) {
-                this.getScene()?.meshes.forEach((mesh) => {
-                    mesh._markSubMeshesAsLightDirty();
-                });
-            }
-
-            return deleted;
-        };
-    }
-
     /**
      * Define if particles should be rendered in your texture.
      */
@@ -117,13 +154,18 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     public renderSprites = false;
 
     /**
+     * Force checking the layerMask property even if a custom list of meshes is provided (ie. if renderList is not undefined)
+     */
+    public forceLayerMaskCheck = false;
+
+    /**
      * Define the camera used to render the texture.
      */
     public activeCamera: Nullable<Camera>;
     /**
      * Override the mesh isReady function with your own one.
      */
-    public customIsReadyFunction: (mesh: AbstractMesh, refreshRate: number) => boolean;
+    public customIsReadyFunction: (mesh: AbstractMesh, refreshRate: number, preWarm?: boolean) => boolean;
     /**
      * Override the render function of the texture with your own one.
      */
@@ -243,16 +285,16 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     protected _size: TextureSize;
     protected _initialSizeParameter: number | { width: number; height: number } | { ratio: number };
     protected _sizeRatio: Nullable<number>;
-    /** @hidden */
+    /** @internal */
     public _generateMipMaps: boolean;
-    /** @hidden */
+    /** @internal */
     public _cleared = false;
     /**
      * Skip the initial clear of the rtt at the beginning of the frame render loop
      */
     public skipInitialClear = false;
     protected _renderingManager: RenderingManager;
-    /** @hidden */
+    /** @internal */
     public _waitingRenderList?: string[];
     protected _doNotChangeAspectRatio: boolean;
     protected _currentRefreshId = -1;
@@ -302,6 +344,14 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     }
 
     private _isCubeData: boolean;
+
+    /**
+     * Define if the texture has multiple draw buffers or if false a single draw buffer.
+     */
+    public get isMulti(): boolean {
+        return this._renderTarget?.isMulti ?? false;
+    }
+
     /**
      * Gets render target creation options that were used.
      */
@@ -364,25 +414,58 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      * or used a shadow, depth texture...
      * @param name The friendly name of the texture
      * @param size The size of the RTT (number if square, or {width: number, height:number} or {ratio:} to define a ratio from the main scene)
-     * @param scene The scene the RTT belongs to. The latest created scene will be used if not precised.
-     * @param generateMipMaps True if mip maps need to be generated after render.
-     * @param doNotChangeAspectRatio True to not change the aspect ratio of the scene in the RTT
-     * @param type The type of the buffer in the RTT (int, half float, float...)
-     * @param isCube True if a cube texture needs to be created
-     * @param samplingMode The sampling mode to be usedwith the render target (Linear, Nearest...)
-     * @param generateDepthBuffer True to generate a depth buffer
-     * @param generateStencilBuffer True to generate a stencil buffer
-     * @param isMulti True if multiple textures need to be created (Draw Buffers)
-     * @param format The internal format of the buffer in the RTT (RED, RG, RGB, RGBA, ALPHA...)
-     * @param delayAllocation if the texture allocation should be delayed (default: false)
-     * @param samples sample count to use when creating the RTT
-     * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
+     * @param scene The scene the RTT belongs to. Default is the last created scene.
+     * @param options The options for creating the render target texture.
+     */
+    constructor(name: string, size: number | { width: number; height: number; layers?: number } | { ratio: number }, scene?: Nullable<Scene>, options?: RenderTargetTextureOptions);
+
+    /**
+     * Instantiate a render target texture. This is mainly used to render of screen the scene to for instance apply post process
+     * or used a shadow, depth texture...
+     * @param name The friendly name of the texture
+     * @param size The size of the RTT (number if square, or {width: number, height:number} or {ratio:} to define a ratio from the main scene)
+     * @param scene The scene the RTT belongs to. Default is the last created scene
+     * @param generateMipMaps True (default: false) if mipmaps need to be generated after render
+     * @param doNotChangeAspectRatio True (default) to not change the aspect ratio of the scene in the RTT
+     * @param type The type of the buffer in the RTT (byte (default), half float, float...)
+     * @param isCube True (default: false) if a cube texture needs to be created
+     * @param samplingMode The sampling mode to be used with the render target (Trilinear (default), Linear, Nearest...)
+     * @param generateDepthBuffer True (default) to generate a depth buffer
+     * @param generateStencilBuffer True (default: false) to generate a stencil buffer
+     * @param isMulti True (default: false) if multiple textures need to be created (Draw Buffers)
+     * @param format The internal format of the buffer in the RTT (RED, RG, RGB, RGBA (default), ALPHA...)
+     * @param delayAllocation True (default: false) if the texture allocation should be delayed
+     * @param samples Sample count to use when creating the RTT
+     * @param creationFlags specific flags to use when creating the texture (e.g., Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures)
+     * @param noColorAttachment True (default: false) to indicate that no color target should be created. (e.g., if you only want to write to the depth buffer)
+     * @param useSRGBBuffer True (default: false) to create a SRGB texture
      */
     constructor(
         name: string,
         size: number | { width: number; height: number; layers?: number } | { ratio: number },
         scene?: Nullable<Scene>,
         generateMipMaps?: boolean,
+        doNotChangeAspectRatio?: boolean,
+        type?: number,
+        isCube?: boolean,
+        samplingMode?: number,
+        generateDepthBuffer?: boolean,
+        generateStencilBuffer?: boolean,
+        isMulti?: boolean,
+        format?: number,
+        delayAllocation?: boolean,
+        samples?: number,
+        creationFlags?: number,
+        noColorAttachment?: boolean,
+        useSRGBBuffer?: boolean
+    );
+
+    /** @internal */
+    constructor(
+        name: string,
+        size: number | { width: number; height: number; layers?: number } | { ratio: number },
+        scene?: Nullable<Scene>,
+        generateMipMaps: boolean | RenderTargetTextureOptions = false,
         doNotChangeAspectRatio: boolean = true,
         type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
         isCube = false,
@@ -393,9 +476,32 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         format = Constants.TEXTUREFORMAT_RGBA,
         delayAllocation = false,
         samples?: number,
-        creationFlags?: number
+        creationFlags?: number,
+        noColorAttachment = false,
+        useSRGBBuffer = false
     ) {
+        let colorAttachment: InternalTexture | undefined = undefined;
+        if (typeof generateMipMaps === "object") {
+            const options = generateMipMaps;
+            generateMipMaps = !!options.generateMipMaps;
+            doNotChangeAspectRatio = options.doNotChangeAspectRatio ?? true;
+            type = options.type ?? Constants.TEXTURETYPE_UNSIGNED_BYTE;
+            isCube = !!options.isCube;
+            samplingMode = options.samplingMode ?? Texture.TRILINEAR_SAMPLINGMODE;
+            generateDepthBuffer = options.generateDepthBuffer ?? true;
+            generateStencilBuffer = !!options.generateStencilBuffer;
+            isMulti = !!options.isMulti;
+            format = options.format ?? Constants.TEXTUREFORMAT_RGBA;
+            delayAllocation = !!options.delayAllocation;
+            samples = options.samples;
+            creationFlags = options.creationFlags;
+            noColorAttachment = !!options.noColorAttachment;
+            useSRGBBuffer = !!options.useSRGBBuffer;
+            colorAttachment = options.colorAttachment;
+        }
+
         super(null, scene, !generateMipMaps, undefined, samplingMode, undefined, undefined, undefined, undefined, format);
+
         scene = this.getScene();
         if (!scene) {
             return;
@@ -437,6 +543,10 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             generateStencilBuffer: generateStencilBuffer,
             samples,
             creationFlags,
+            noColorAttachment: noColorAttachment,
+            useSRGBBuffer,
+            colorAttachment: colorAttachment,
+            label: this.name,
         };
 
         if (this.samplingMode === Texture.NEAREST_SAMPLINGMODE) {
@@ -499,7 +609,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         }
     }
 
-    private _processSizeParameter(size: number | { width: number; height: number } | { ratio: number }): void {
+    protected _processSizeParameter(size: number | { width: number; height: number } | { ratio: number }, createRenderPassIds = true): void {
         if ((<{ ratio: number }>size).ratio) {
             this._sizeRatio = (<{ ratio: number }>size).ratio;
             const engine = this._getEngine()!;
@@ -511,7 +621,9 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             this._size = <number | { width: number; height: number; layers?: number }>size;
         }
 
-        this._createRenderPassId();
+        if (createRenderPassIds) {
+            this._createRenderPassId();
+        }
     }
 
     /**
@@ -607,7 +719,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _shouldRender(): boolean {
         if (this._currentRefreshId === -1) {
             // At least render once
@@ -725,7 +837,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             return;
         }
 
-        this._processSizeParameter(size);
+        this._processSizeParameter(size, false);
 
         if (wasCube) {
             this._renderTarget = scene.getEngine().createRenderTargetCubeTexture(this.getRenderSize(), this._renderTargetOptions);
@@ -756,7 +868,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
     /**
      * This function will check if the render target texture can be rendered (textures are loaded, shaders are compiled)
-     * @return true if all required resources are ready
+     * @returns true if all required resources are ready
      */
     public isReadyForRendering(): boolean {
         return this._render(false, false, true);
@@ -819,12 +931,14 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         // Set custom projection.
         // Needs to be before binding to prevent changing the aspect ratio.
         const camera: Nullable<Camera> = this.activeCamera ?? scene.activeCamera;
+        const sceneCamera = scene.activeCamera;
 
         if (camera) {
             if (camera !== scene.activeCamera) {
                 scene.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix(true));
+                scene.activeCamera = camera;
             }
-            engine.setViewport(camera.viewport, this.getRenderWidth(), this.getRenderHeight());
+            engine.setViewport(camera.rigParent ? camera.rigParent.viewport : camera.viewport, this.getRenderWidth(), this.getRenderHeight());
         }
 
         this._defaultRenderListPrepared = false;
@@ -832,13 +946,13 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         let returnValue = checkReadiness;
 
         if (!checkReadiness) {
-            if (this.is2DArray) {
+            if (this.is2DArray && !this.isMulti) {
                 for (let layer = 0; layer < this.getRenderLayers(); layer++) {
                     this._renderToTarget(0, useCameraPostProcess, dumpForDebug, layer, camera);
                     scene.incrementRenderId();
                     scene.resetCachedMaterial();
                 }
-            } else if (this.isCube) {
+            } else if (this.isCube && !this.isMulti) {
                 for (let face = 0; face < 6; face++) {
                     this._renderToTarget(face, useCameraPostProcess, dumpForDebug, undefined, camera);
                     scene.incrementRenderId();
@@ -882,17 +996,22 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                     }
 
                     if (this.customIsReadyFunction) {
-                        if (!this.customIsReadyFunction(mesh, this.refreshRate)) {
+                        if (!this.customIsReadyFunction(mesh, this.refreshRate, checkReadiness)) {
                             returnValue = false;
-                            break;
+                            continue;
                         }
                     } else if (!mesh.isReady(true)) {
                         returnValue = false;
-                        break;
+                        continue;
                     }
                 }
 
                 this.onAfterRenderObservable.notifyObservers(layer);
+
+                if (this.is2DArray || this.isCube) {
+                    scene.incrementRenderId();
+                    scene.resetCachedMaterial();
+                }
             }
         }
 
@@ -900,7 +1019,8 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
         engine.currentRenderPassId = currentRenderPassId;
 
-        if (scene.activeCamera) {
+        if (sceneCamera) {
+            scene.activeCamera = sceneCamera;
             // Do not avoid setting uniforms when multiple scenes are active as another camera may have overwrite these
             if (scene.getEngine().scenes.length > 1 || (this.activeCamera && this.activeCamera !== scene.activeCamera)) {
                 scene.setTransformMatrix(scene.activeCamera.getViewMatrix(), scene.activeCamera.getProjectionMatrix(true));
@@ -937,7 +1057,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
             if (mesh && !mesh.isBlocked) {
                 if (this.customIsReadyFunction) {
-                    if (!this.customIsReadyFunction(mesh, this.refreshRate)) {
+                    if (!this.customIsReadyFunction(mesh, this.refreshRate, false)) {
                         this.resetRefreshCounter();
                         continue;
                     }
@@ -994,18 +1114,17 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             const particleSystem = scene.particleSystems[particleIndex];
 
             const emitter: any = particleSystem.emitter;
-            if (!particleSystem.isStarted() || !emitter || !emitter.position || !emitter.isEnabled()) {
+
+            if (!particleSystem.isStarted() || !emitter || (emitter.position && !emitter.isEnabled())) {
                 continue;
             }
 
-            if (currentRenderList.indexOf(emitter) >= 0) {
-                this._renderingManager.dispatchParticles(particleSystem);
-            }
+            this._renderingManager.dispatchParticles(particleSystem);
         }
     }
 
     /**
-     * @hidden
+     * @internal
      * @param faceIndex face index to bind to if this is a cubetexture
      * @param layer defines the index of the texture to bind in the array
      */
@@ -1031,11 +1150,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     }
 
     /**
-     * @param scene
-     * @param faceIndex
-     * @param layer
-     * @param useCameraPostProcess
-     * @hidden
+     * @internal
      */
     public _prepareFrame(scene: Scene, faceIndex?: number, layer?: number, useCameraPostProcess?: boolean) {
         if (this._postProcessManager) {
@@ -1055,10 +1170,6 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         }
 
         const engine = scene.getEngine();
-
-        if (!this._texture) {
-            return;
-        }
 
         engine._debugPushGroup?.(`render to face #${faceIndex} layer #${layer}`, 1);
 
@@ -1089,13 +1200,13 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                 // No custom render list provided, we prepare the rendering for the default list, but check
                 // first if we did not already performed the preparation before so as to avoid re-doing it several times
                 if (!this._defaultRenderListPrepared) {
-                    this._prepareRenderingManager(defaultRenderList, defaultRenderListLength, camera, !this.renderList);
+                    this._prepareRenderingManager(defaultRenderList, defaultRenderListLength, camera, !this.renderList || this.forceLayerMaskCheck);
                     this._defaultRenderListPrepared = true;
                 }
                 currentRenderList = defaultRenderList;
             } else {
                 // Prepare the rendering for the custom render list provided
-                this._prepareRenderingManager(currentRenderList, currentRenderList.length, camera, false);
+                this._prepareRenderingManager(currentRenderList, currentRenderList.length, camera, this.forceLayerMaskCheck);
             }
 
             // Before clear
@@ -1129,11 +1240,13 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                 step.action(this, faceIndex, layer);
             }
 
-            const saveGenerateMipMaps = this._texture.generateMipMaps;
+            const saveGenerateMipMaps = this._texture?.generateMipMaps ?? false;
 
-            this._texture.generateMipMaps = false; // if left true, the mipmaps will be generated (if this._texture.generateMipMaps = true) when the first post process binds its own RTT: by doing so it will unbind the current RTT,
-            // which will trigger a mipmap generation. We don't want this because it's a wasted work, we will do an unbind of the current RTT at the end of the process (see unbindFrameBuffer) which will
-            // trigger the generation of the final mipmaps
+            if (this._texture) {
+                this._texture.generateMipMaps = false; // if left true, the mipmaps will be generated (if this._texture.generateMipMaps = true) when the first post process binds its own RTT: by doing so it will unbind the current RTT,
+                // which will trigger a mipmap generation. We don't want this because it's a wasted work, we will do an unbind of the current RTT at the end of the process (see unbindFrameBuffer) which will
+                // trigger the generation of the final mipmaps
+            }
 
             if (this._postProcessManager) {
                 this._postProcessManager._finalizeFrame(false, this._renderTarget ?? undefined, faceIndex, this._postProcesses, this.ignoreCameraViewport);
@@ -1141,7 +1254,13 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                 scene.postProcessManager._finalizeFrame(false, this._renderTarget ?? undefined, faceIndex);
             }
 
-            this._texture.generateMipMaps = saveGenerateMipMaps;
+            for (const step of scene._afterRenderTargetPostProcessStage) {
+                step.action(this, faceIndex, layer);
+            }
+
+            if (this._texture) {
+                this._texture.generateMipMaps = saveGenerateMipMaps;
+            }
 
             if (!this._doNotChangeAspectRatio) {
                 scene.updateTransformMatrix(true);
@@ -1149,7 +1268,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
             // Dump ?
             if (dumpForDebug) {
-                Tools.DumpFramebuffer(this.getRenderWidth(), this.getRenderHeight(), engine);
+                DumpTools.DumpFramebuffer(this.getRenderWidth(), this.getRenderHeight(), engine);
             }
         } else {
             // Clear
@@ -1165,7 +1284,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         // Unbind
         this._unbindFrameBuffer(engine, faceIndex);
 
-        if (this.isCube && faceIndex === 5) {
+        if (this._texture && this.isCube && faceIndex === 5) {
             engine.generateMipMapsForCubemap(this._texture);
         }
 
@@ -1333,7 +1452,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         super.dispose();
     }
 
-    /** @hidden */
+    /** @internal */
     public _rebuild(): void {
         if (this.refreshRate === RenderTargetTexture.REFRESHRATE_RENDER_ONCE) {
             this.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONCE;

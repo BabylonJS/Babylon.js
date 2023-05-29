@@ -38,10 +38,11 @@ import { Constants } from "../Engines/constants";
 import { EffectFallbacks } from "./effectFallbacks";
 import type { Effect, IEffectCreationOptions } from "./effect";
 import { DetailMapConfiguration } from "./material.detailMapConfiguration";
+import { addClipPlaneUniforms, bindClipPlane } from "./clipPlaneMaterialHelper";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
-/** @hidden */
+/** @internal */
 export class StandardMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
     public MAINUV1 = false;
     public MAINUV2 = false;
@@ -175,20 +176,23 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public COLORGRADING3D = false;
     public SAMPLER3DGREENDEPTH = false;
     public SAMPLER3DBGRMAP = false;
+    public DITHER = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public SKIPFINALCOLORCLAMP = false;
     public MULTIVIEW = false;
     public ORDER_INDEPENDENT_TRANSPARENCY = false;
     public ORDER_INDEPENDENT_TRANSPARENCY_16BITS = false;
+    public CAMERA_ORTHOGRAPHIC = false;
+    public CAMERA_PERSPECTIVE = false;
 
     /**
      * If the reflection texture on this material is in linear color space
-     * @hidden
+     * @internal
      */
     public IS_REFLECTION_LINEAR = false;
     /**
      * If the refraction texture on this material is in linear color space
-     * @hidden
+     * @internal
      */
     public IS_REFRACTION_LINEAR = false;
     public EXPOSURE = false;
@@ -225,7 +229,7 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
 /**
  * This is the default material used in Babylon. It is the best trade off between quality
  * and performances.
- * @see https://doc.babylonjs.com/babylon101/materials
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/materials_introduction
  */
 export class StandardMaterial extends PushMaterial {
     @serializeAsTexture("diffuseTexture")
@@ -258,7 +262,7 @@ export class StandardMaterial extends PushMaterial {
     private _reflectionTexture: Nullable<BaseTexture> = null;
     /**
      * Define the texture used to display the reflection.
-     * @see https://doc.babylonjs.com/how_to/reflect#how-to-obtain-reflections-and-refractions
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/reflectionTexture#how-to-obtain-reflections-and-refractions
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public reflectionTexture: Nullable<BaseTexture>;
@@ -285,7 +289,7 @@ export class StandardMaterial extends PushMaterial {
     /**
      * Bump mapping is a technique to simulate bump and dents on a rendered surface.
      * These are made by creating a normal map from an image. The means to do this can be found on the web, a search for 'normal map generator' will bring up free and paid for methods of doing this.
-     * @see https://doc.babylonjs.com/how_to/more_materials#bump-map
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/moreMaterials#bump-map
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public bumpTexture: Nullable<BaseTexture>;
@@ -295,7 +299,7 @@ export class StandardMaterial extends PushMaterial {
     /**
      * Complex lighting can be computationally expensive to compute at runtime.
      * To save on computation, lightmaps may be used to store calculated lighting in a texture which will be applied to a given mesh.
-     * @see https://doc.babylonjs.com/babylon101/lights#lightmaps
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/lights/lights_introduction#lightmaps
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public lightmapTexture: Nullable<BaseTexture>;
@@ -304,14 +308,14 @@ export class StandardMaterial extends PushMaterial {
     private _refractionTexture: Nullable<BaseTexture> = null;
     /**
      * Define the texture used to display the refraction.
-     * @see https://doc.babylonjs.com/how_to/reflect#how-to-obtain-reflections-and-refractions
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/reflectionTexture#how-to-obtain-reflections-and-refractions
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public refractionTexture: Nullable<BaseTexture>;
 
     /**
      * The color of the material lit by the environmental background lighting.
-     * @see https://doc.babylonjs.com/babylon101/materials#ambient-color-example
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/materials_introduction#ambient-color-example
      */
     @serializeAsColor3("ambient")
     public ambientColor = new Color3(0, 0, 0);
@@ -407,7 +411,7 @@ export class StandardMaterial extends PushMaterial {
     private _useParallax = false;
     /**
      * Is parallax enabled or not.
-     * @see https://doc.babylonjs.com/how_to/using_parallax_mapping
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/parallaxMapping
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public useParallax: boolean;
@@ -417,7 +421,7 @@ export class StandardMaterial extends PushMaterial {
     /**
      * Is parallax occlusion enabled or not.
      * If true, the outcome is way more realistic than traditional Parallax but you can expect a performance hit that worthes consideration.
-     * @see https://doc.babylonjs.com/how_to/using_parallax_mapping
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/parallaxMapping
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public useParallaxOcclusion: boolean;
@@ -438,7 +442,7 @@ export class StandardMaterial extends PushMaterial {
 
     /**
      * In case of refraction, define the value of the index of refraction.
-     * @see https://doc.babylonjs.com/how_to/reflect#how-to-obtain-reflections-and-refractions
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/reflectionTexture#how-to-obtain-reflections-and-refractions
      */
     @serialize()
     public indexOfRefraction = 0.98;
@@ -446,7 +450,7 @@ export class StandardMaterial extends PushMaterial {
     /**
      * Invert the refraction texture alongside the y axis.
      * It can be useful with procedural textures or probe for instance.
-     * @see https://doc.babylonjs.com/how_to/reflect#how-to-obtain-reflections-and-refractions
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/reflectionTexture#how-to-obtain-reflections-and-refractions
      */
     @serialize()
     public invertRefractionY = true;
@@ -470,7 +474,7 @@ export class StandardMaterial extends PushMaterial {
     private _diffuseFresnelParameters: FresnelParameters;
     /**
      * Define the diffuse fresnel parameters of the material.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_fresnelparameters
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/fresnelParameters
      */
     @expandToProperty("_markAllSubMeshesAsFresnelDirty")
     public diffuseFresnelParameters: FresnelParameters;
@@ -479,7 +483,7 @@ export class StandardMaterial extends PushMaterial {
     private _opacityFresnelParameters: FresnelParameters;
     /**
      * Define the opacity fresnel parameters of the material.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_fresnelparameters
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/fresnelParameters
      */
     @expandToProperty("_markAllSubMeshesAsFresnelAndMiscDirty")
     public opacityFresnelParameters: FresnelParameters;
@@ -488,7 +492,7 @@ export class StandardMaterial extends PushMaterial {
     private _reflectionFresnelParameters: FresnelParameters;
     /**
      * Define the reflection fresnel parameters of the material.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_fresnelparameters
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/fresnelParameters
      */
     @expandToProperty("_markAllSubMeshesAsFresnelDirty")
     public reflectionFresnelParameters: FresnelParameters;
@@ -497,7 +501,7 @@ export class StandardMaterial extends PushMaterial {
     private _refractionFresnelParameters: FresnelParameters;
     /**
      * Define the refraction fresnel parameters of the material.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_fresnelparameters
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/fresnelParameters
      */
     @expandToProperty("_markAllSubMeshesAsFresnelDirty")
     public refractionFresnelParameters: FresnelParameters;
@@ -506,7 +510,7 @@ export class StandardMaterial extends PushMaterial {
     private _emissiveFresnelParameters: FresnelParameters;
     /**
      * Define the emissive fresnel parameters of the material.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_fresnelparameters
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/fresnelParameters
      */
     @expandToProperty("_markAllSubMeshesAsFresnelDirty")
     public emissiveFresnelParameters: FresnelParameters;
@@ -515,7 +519,7 @@ export class StandardMaterial extends PushMaterial {
     private _useReflectionFresnelFromSpecular = false;
     /**
      * If true automatically deducts the fresnels values from the material specularity.
-     * @see https://doc.babylonjs.com/how_to/how_to_use_fresnelparameters
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/fresnelParameters
      */
     @expandToProperty("_markAllSubMeshesAsFresnelDirty")
     public useReflectionFresnelFromSpecular: boolean;
@@ -754,7 +758,7 @@ export class StandardMaterial extends PushMaterial {
      * Instantiates a new standard material.
      * This is the default material used in Babylon. It is the best trade off between quality
      * and performances.
-     * @see https://doc.babylonjs.com/babylon101/materials
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/materials_introduction
      * @param name Define the name of the material in the scene
      * @param scene Define the scene the material belong to
      */
@@ -812,7 +816,7 @@ export class StandardMaterial extends PushMaterial {
     /**
      * In case the depth buffer does not allow enough depth precision for your scene (might be the case in large scenes)
      * You can try switching to logarithmic depth.
-     * @see https://doc.babylonjs.com/how_to/using_logarithmic_depth_buffer
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/advanced/logarithmicDepthBuffer
      */
     @serialize()
     public get useLogarithmicDepth(): boolean {
@@ -890,7 +894,7 @@ export class StandardMaterial extends PushMaterial {
         }
 
         if (subMesh.effect && this.isFrozen) {
-            if (subMesh.effect._wasPreviouslyReady) {
+            if (subMesh.effect._wasPreviouslyReady && subMesh.effect._wasPreviouslyUsingInstances === useInstances) {
                 return true;
             }
         }
@@ -931,6 +935,14 @@ export class StandardMaterial extends PushMaterial {
                 defines["MAINUV" + i] = false;
             }
             if (scene.texturesEnabled) {
+                defines.DIFFUSEDIRECTUV = 0;
+                defines.BUMPDIRECTUV = 0;
+                defines.AMBIENTDIRECTUV = 0;
+                defines.OPACITYDIRECTUV = 0;
+                defines.EMISSIVEDIRECTUV = 0;
+                defines.SPECULARDIRECTUV = 0;
+                defines.LIGHTMAPDIRECTUV = 0;
+
                 if (this._diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
                     if (!this._diffuseTexture.isReadyOrNotBlocking()) {
                         return false;
@@ -973,8 +985,9 @@ export class StandardMaterial extends PushMaterial {
                         defines.REFLECTIONOVERALPHA = this._useReflectionOverAlpha;
                         defines.INVERTCUBICMAP = this._reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE;
                         defines.REFLECTIONMAP_3D = this._reflectionTexture.isCube;
+                        defines.REFLECTIONMAP_OPPOSITEZ =
+                            defines.REFLECTIONMAP_3D && this.getScene().useRightHandedSystem ? !this._reflectionTexture.invertZ : this._reflectionTexture.invertZ;
                         defines.RGBDREFLECTION = this._reflectionTexture.isRGBD;
-                        defines.REFLECTIONMAP_OPPOSITEZ = this.getScene().useRightHandedSystem ? !this._reflectionTexture.invertZ : this._reflectionTexture.invertZ;
 
                         switch (this._reflectionTexture.coordinatesMode) {
                             case Texture.EXPLICIT_MODE:
@@ -1062,6 +1075,8 @@ export class StandardMaterial extends PushMaterial {
                     defines.OBJECTSPACE_NORMALMAP = this._useObjectSpaceNormalMap;
                 } else {
                     defines.BUMP = false;
+                    defines.PARALLAX = false;
+                    defines.PARALLAXOCCLUSION = false;
                 }
 
                 if (this._refractionTexture && StandardMaterial.RefractionTextureEnabled) {
@@ -1108,6 +1123,7 @@ export class StandardMaterial extends PushMaterial {
 
         this._eventInfo.isReadyForSubMesh = true;
         this._eventInfo.defines = defines;
+        this._eventInfo.subMesh = subMesh;
         this._callbackPluginEventIsReadyForSubMesh(this._eventInfo);
 
         if (!this._eventInfo.isReadyForSubMesh) {
@@ -1166,18 +1182,23 @@ export class StandardMaterial extends PushMaterial {
             defines
         );
 
-        // Attribs
-        MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true);
-
         // Values that need to be evaluated on every frame
-        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances, null, subMesh.getRenderingMesh().hasThinInstances);
+        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, this, defines, useInstances, null, subMesh.getRenderingMesh().hasThinInstances);
 
         // External config
         this._eventInfo.defines = defines;
         this._eventInfo.mesh = mesh;
+        this._callbackPluginEventPrepareDefinesBeforeAttributes(this._eventInfo);
+
+        // Attribs
+        MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true);
+
+        // External config
         this._callbackPluginEventPrepareDefines(this._eventInfo);
 
         // Get correct effect
+        let forceWasNotReadyPreviously = false;
+
         if (defines.isDirty) {
             const lightDisposed = defines._areLightsDisposed;
             defines.markAsProcessed();
@@ -1271,10 +1292,6 @@ export class StandardMaterial extends PushMaterial {
                 attribs.push(VertexBuffer.ColorKind);
             }
 
-            if (defines.INSTANCESCOLOR) {
-                attribs.push(VertexBuffer.ColorInstanceKind);
-            }
-
             MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
             MaterialHelper.PrepareAttributesForInstances(attribs, defines);
             MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, defines);
@@ -1306,12 +1323,6 @@ export class StandardMaterial extends PushMaterial {
                 "vLightmapInfos",
                 "vRefractionInfos",
                 "mBones",
-                "vClipPlane",
-                "vClipPlane2",
-                "vClipPlane3",
-                "vClipPlane4",
-                "vClipPlane5",
-                "vClipPlane6",
                 "diffuseMatrix",
                 "ambientMatrix",
                 "opacityMatrix",
@@ -1367,9 +1378,11 @@ export class StandardMaterial extends PushMaterial {
             this._eventInfo.fallbackRank = 0;
             this._eventInfo.defines = defines;
             this._eventInfo.uniforms = uniforms;
+            this._eventInfo.attributes = attribs;
             this._eventInfo.samplers = samplers;
             this._eventInfo.uniformBuffersNames = uniformBuffers;
             this._eventInfo.customCode = undefined;
+            this._eventInfo.mesh = mesh;
             this._callbackPluginEventGeneric(MaterialPluginEvent.PrepareEffect, this._eventInfo);
 
             PrePassConfiguration.AddUniforms(uniforms);
@@ -1387,6 +1400,8 @@ export class StandardMaterial extends PushMaterial {
                 defines: defines,
                 maxSimultaneousLights: this._maxSimultaneousLights,
             });
+
+            addClipPlaneUniforms(uniforms);
 
             const csnrOptions: ICustomShaderNameResolveOptions = {};
 
@@ -1416,6 +1431,8 @@ export class StandardMaterial extends PushMaterial {
                 engine
             );
 
+            this._eventInfo.customCode = undefined;
+
             if (effect) {
                 if (this._onEffectCreatedObservable) {
                     onCreatedEffectParameters.effect = effect;
@@ -1427,6 +1444,8 @@ export class StandardMaterial extends PushMaterial {
                 if (this.allowShaderHotSwapping && previousEffect && !effect.isReady()) {
                     effect = previousEffect;
                     defines.markAsUnprocessed();
+
+                    forceWasNotReadyPreviously = this.isFrozen;
 
                     if (lightDisposed) {
                         // re register in case it takes more than one frame.
@@ -1445,7 +1464,10 @@ export class StandardMaterial extends PushMaterial {
         }
 
         defines._renderId = scene.getRenderId();
-        subMesh.effect._wasPreviouslyReady = true;
+        subMesh.effect._wasPreviouslyReady = forceWasNotReadyPreviously ? false : true;
+        subMesh.effect._wasPreviouslyUsingInstances = useInstances;
+
+        this._checkScenePerformancePriority();
 
         return true;
     }
@@ -1539,14 +1561,14 @@ export class StandardMaterial extends PushMaterial {
             this.bindOnlyNormalMatrix(this._normalMatrix);
         }
 
-        const mustRebind = this._mustRebind(scene, effect, mesh.visibility);
+        const mustRebind = effect._forceRebindOnNextCall || this._mustRebind(scene, effect, mesh.visibility);
 
         // Bones
         MaterialHelper.BindBonesParameters(mesh, effect);
         const ubo = this._uniformBuffer;
         if (mustRebind) {
             this.bindViewProjection(effect);
-            if (!ubo.useUbo || !this.isFrozen || !ubo.isSync) {
+            if (!ubo.useUbo || !this.isFrozen || !ubo.isSync || effect._forceRebindOnNextCall) {
                 if (StandardMaterial.FresnelEnabled && defines.FRESNEL) {
                     // Fresnel
                     if (this.diffuseFresnelParameters && this.diffuseFresnelParameters.isEnabled) {
@@ -1733,7 +1755,7 @@ export class StandardMaterial extends PushMaterial {
             this._callbackPluginEventBindForSubMesh(this._eventInfo);
 
             // Clip plane
-            MaterialHelper.BindClipPlane(effect, scene);
+            bindClipPlane(effect, this, scene);
 
             // Colors
             this.bindEyePosition(effect);
@@ -1748,7 +1770,13 @@ export class StandardMaterial extends PushMaterial {
             }
 
             // View
-            if ((scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) || this._reflectionTexture || this._refractionTexture || mesh.receiveShadows) {
+            if (
+                (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) ||
+                this._reflectionTexture ||
+                this._refractionTexture ||
+                mesh.receiveShadows ||
+                defines.PREPASS
+            ) {
                 this.bindView(effect);
             }
 
@@ -1948,10 +1976,11 @@ export class StandardMaterial extends PushMaterial {
     /**
      * Makes a duplicate of the material, and gives it a new name
      * @param name defines the new name for the duplicated material
+     * @param cloneTexturesOnlyOnce - if a texture is used in more than one channel (e.g diffuse and opacity), only clone it once and reuse it on the other channels. Default false.
      * @returns the cloned material
      */
-    public clone(name: string): StandardMaterial {
-        const result = SerializationHelper.Clone(() => new StandardMaterial(name, this.getScene()), this);
+    public clone(name: string, cloneTexturesOnlyOnce: boolean = true): StandardMaterial {
+        const result = SerializationHelper.Clone(() => new StandardMaterial(name, this.getScene()), this, { cloneTexturesOnlyOnce });
 
         result.name = name;
         result.id = name;

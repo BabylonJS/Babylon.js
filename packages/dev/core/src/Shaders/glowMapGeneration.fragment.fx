@@ -23,12 +23,16 @@ uniform sampler2D emissiveSampler;
 #endif
 
 uniform vec4 glowColor;
+uniform float glowIntensity;
 
+#include<clipPlaneFragmentDeclaration>
 
 #define CUSTOM_FRAGMENT_DEFINITIONS
 
 void main(void)
 {
+
+#include<clipPlaneFragment>
 
 vec4 finalColor = glowColor;
 
@@ -76,9 +80,9 @@ vec4 finalColor = glowColor;
     #ifdef EMISSIVE_ISLINEAR
         emissive = toGammaSpace(emissive);
     #endif
-    gl_FragColor = emissive * finalColor;
+    gl_FragColor = emissive * finalColor * glowIntensity;
 #else
-    gl_FragColor = finalColor;
+    gl_FragColor = finalColor * glowIntensity;
 #endif
 
 #ifdef HIGHLIGHT

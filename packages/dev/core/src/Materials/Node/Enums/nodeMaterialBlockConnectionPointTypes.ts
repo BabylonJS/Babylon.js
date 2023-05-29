@@ -3,25 +3,27 @@
  */
 export enum NodeMaterialBlockConnectionPointTypes {
     /** Float */
-    Float = 1,
+    Float = 0x0001,
     /** Int */
-    Int = 2,
+    Int = 0x0002,
     /** Vector2 */
-    Vector2 = 4,
+    Vector2 = 0x0004,
     /** Vector3 */
-    Vector3 = 8,
+    Vector3 = 0x0008,
     /** Vector4 */
-    Vector4 = 16,
+    Vector4 = 0x0010,
     /** Color3 */
-    Color3 = 32,
+    Color3 = 0x0020,
     /** Color4 */
-    Color4 = 64,
+    Color4 = 0x0040,
     /** Matrix */
-    Matrix = 128,
+    Matrix = 0x0080,
     /** Custom object */
-    Object = 256,
+    Object = 0x0100,
     /** Detect type based on connection */
-    AutoDetect = 1024,
+    AutoDetect = 0x0400,
     /** Output type that will be defined by input type */
-    BasedOnInput = 2048,
+    BasedOnInput = 0x0800,
+    /** Bitmask of all types */
+    All = 0x0fff,
 }

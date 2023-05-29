@@ -11,7 +11,7 @@ import { Tools } from "../../Misc/tools";
 import type { IPointerEvent } from "../../Events/deviceInputEvents";
 /**
  * Manage the touch inputs to control the movement of a free camera.
- * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
  */
 export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
     /**
@@ -45,10 +45,11 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
     private _pointerInput?: (p: PointerInfo, s: EventState) => void;
     private _observer: Nullable<Observer<PointerInfo>>;
     private _onLostFocus: Nullable<(e: FocusEvent) => any>;
+    private _isSafari: boolean;
 
     /**
      * Manage the touch inputs to control the movement of a free camera.
-     * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
      * @param allowMouse Defines if mouse events can be treated as touch events
      */
     constructor(
@@ -56,7 +57,9 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
          * Define if mouse events can be treated as touch events
          */
         public allowMouse = false
-    ) {}
+    ) {
+        this._isSafari = Tools.IsSafari();
+    }
 
     /**
      * Attach the input controls to a specific dom element to get the input from.
@@ -76,9 +79,9 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
             this._pointerInput = (p) => {
                 const evt = <IPointerEvent>p.event;
 
-                const isMouseEvent = !this.camera.getEngine().hostInformation.isMobile && evt instanceof MouseEvent;
+                const isMouseEvent = evt.pointerType === "mouse" || (this._isSafari && typeof evt.pointerType === "undefined");
 
-                if (!this.allowMouse && (evt.pointerType === "mouse" || isMouseEvent)) {
+                if (!this.allowMouse && isMouseEvent) {
                     return;
                 }
 
@@ -138,7 +141,7 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
 
         this._observer = this.camera
             .getScene()
-            .onPointerObservable.add(this._pointerInput, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);
+            ._inputManager._addCameraPointerObserver(this._pointerInput, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);
 
         if (this._onLostFocus) {
             const engine = this.camera.getEngine();
@@ -153,7 +156,7 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
     public detachControl(): void {
         if (this._pointerInput) {
             if (this._observer) {
-                this.camera.getScene().onPointerObservable.remove(this._observer);
+                this.camera.getScene()._inputManager._removeCameraPointerObserver(this._observer);
                 this._observer = null;
             }
 
@@ -163,7 +166,7 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
                 element && element.removeEventListener("blur", this._onLostFocus);
                 this._onLostFocus = null;
             }
-            this._pointerPressed = [];
+            this._pointerPressed.length = 0;
             this._offsetX = null;
             this._offsetY = null;
         }
@@ -190,7 +193,7 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
             camera.cameraRotation.x = -this._offsetY / this.touchAngularSensibility;
         } else {
             const speed = camera._computeLocalCameraSpeed();
-            const direction = new Vector3(0, 0, (speed * this._offsetY) / this.touchMoveSensibility);
+            const direction = new Vector3(0, 0, this.touchMoveSensibility !== 0 ? (speed * this._offsetY) / this.touchMoveSensibility : 0);
 
             Matrix.RotationYawPitchRollToRef(camera.rotation.y, camera.rotation.x, 0, camera._cameraRotationMatrix);
             camera.cameraDirection.addInPlace(Vector3.TransformCoordinates(direction, camera._cameraRotationMatrix));

@@ -100,11 +100,15 @@ export class Inspector {
                 overlay: options.overlay,
                 showExplorer: options.showExplorer,
                 showInspector: options.showInspector,
+                additionalNodes: options.additionalNodes,
                 embedMode: options.embedMode,
                 handleResize: options.handleResize,
                 enablePopup: options.enablePopup,
                 enableClose: options.enableClose,
                 explorerExtensibility: options.explorerExtensibility,
+                gizmoCamera: options.gizmoCamera,
+                contextMenu: options.contextMenu,
+                contextMenuOverride: options.contextMenuOverride,
             };
         }
 
@@ -131,8 +135,12 @@ export class Inspector {
             this._OpenedPane++;
             const sceneExplorerElement = React.createElement(SceneExplorerComponent, {
                 scene,
+                contextMenu: options.contextMenu,
+                contextMenuOverride: options.contextMenuOverride,
+                gizmoCamera: options.gizmoCamera,
                 globalState: this._GlobalState,
                 extensibilityGroups: options.explorerExtensibility,
+                additionalNodes: options.additionalNodes,
                 noClose: !options.enableClose,
                 noExpand: !options.enablePopup,
                 popupMode: options.popup,
@@ -255,6 +263,7 @@ export class Inspector {
                 globalState: this._GlobalState,
                 scene: scene,
                 extensibilityGroups: options.explorerExtensibility,
+                additionalNodes: options.additionalNodes,
                 noExpand: !options.enablePopup,
                 noClose: !options.enableClose,
                 popupMode: options.popup,

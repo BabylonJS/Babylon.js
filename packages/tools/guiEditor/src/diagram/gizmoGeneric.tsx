@@ -9,7 +9,9 @@ import { CoordinateHelper, Rect } from "./coordinateHelper";
 import type { Observer } from "core/Misc/observable";
 import type { Nullable } from "core/types";
 import { ValueAndUnit } from "gui/2D/valueAndUnit";
-import { GizmoScalePoint, IScalePoint, ScalePointPosition } from "./gizmoScalePoint";
+import type { IScalePoint } from "./gizmoScalePoint";
+import { GizmoScalePoint, ScalePointPosition } from "./gizmoScalePoint";
+import { MathTools } from "gui/2D/math2D";
 
 export interface IGuiGizmoProps {
     globalState: GlobalState;
@@ -100,14 +102,38 @@ export class GizmoGeneric extends React.Component<IGuiGizmoProps, IGuiGizmoState
 
     /**
      * Update the gizmo's positions
-     * @param force should the update be forced. otherwise it will be updated only when the pointer is down
      */
     updateGizmo() {
         const node = this.props.control;
         // Calculating the offsets for each scale point.
         const canvasBounds = new Rect(Number.MAX_VALUE, Number.MAX_VALUE, 0, 0);
         const localBounds = CoordinateHelper.ComputeLocalBounds(node);
-        this.state.scalePoints.forEach((scalePoint) => {
+
+        const totalPadding = {
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: 0,
+        };
+        let current = node.parent;
+        while (current !== null && current !== undefined) {
+            totalPadding.left += current.paddingLeftInPixels;
+            totalPadding.right += current.paddingRightInPixels;
+            totalPadding.top += current.paddingTopInPixels;
+            totalPadding.bottom += current.paddingBottomInPixels;
+
+            current = current.parent;
+        }
+
+        const horizontalAdjustment = (totalPadding.left - totalPadding.right) * 0.5;
+        localBounds.left += horizontalAdjustment;
+        localBounds.right += horizontalAdjustment;
+
+        const verticalAdjustment = (totalPadding.top - totalPadding.bottom) * 0.5;
+        localBounds.top += verticalAdjustment;
+        localBounds.bottom += verticalAdjustment;
+
+        const updatedPoints = this.state.scalePoints.map((scalePoint) => {
             const nodeSpace = new Vector2();
             switch (scalePoint.horizontalPosition) {
                 case ScalePointPosition.Left:
@@ -156,10 +182,11 @@ export class GizmoGeneric extends React.Component<IGuiGizmoProps, IGuiGizmoState
             scalePoint.position.x = canvas.x;
             scalePoint.position.y = canvas.y;
             scalePoint.rotation = CoordinateHelper.GetRotation(node) * (180 / Math.PI);
+            return scalePoint;
         });
         this.setState({
             canvasBounds,
-            scalePoints: [...this.state.scalePoints],
+            scalePoints: [...updatedPoints],
         });
     }
 
@@ -178,9 +205,8 @@ export class GizmoGeneric extends React.Component<IGuiGizmoProps, IGuiGizmoState
             const node = this.props.control;
             const inRTT = CoordinateHelper.MousePointerToRTTSpace(node, scene.pointerX, scene.pointerY);
             const inNodeSpace = CoordinateHelper.RttToLocalNodeSpace(node, inRTT.x, inRTT.y, undefined, this._storedValues);
-            this._dragLocalBounds(inNodeSpace);
+            this._dragLocalBounds(inNodeSpace, this.props.globalState.shiftKeyPressed);
             this._updateNodeFromLocalBounds();
-            this.props.globalState.workbench._liveGuiTextureRerender = false;
             this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
         }
         if (this.state.isRotating) {
@@ -200,13 +226,15 @@ export class GizmoGeneric extends React.Component<IGuiGizmoProps, IGuiGizmoState
         };
     }
 
-    private _dragLocalBounds(toPosition: Vector2) {
+    private _dragLocalBounds(toPosition: Vector2, preserveAspectRatio = false) {
         const scalePoint = this.state.scalePoints[this.state.scalePointDragging];
         const newBounds = this._localBounds.clone();
+        const currentAspectRatio = MathTools.Round(this._localBounds.width / this._localBounds.height);
+
         if (scalePoint.horizontalPosition === ScalePointPosition.Left) {
             newBounds.left = Math.min(this._localBounds.right - 1, toPosition.x);
         }
-        if (scalePoint.verticalPosition === ScalePointPosition.Left) {
+        if (scalePoint.verticalPosition === ScalePointPosition.Top) {
             newBounds.top = Math.min(this._localBounds.bottom - 1, toPosition.y);
         }
         if (scalePoint.horizontalPosition === ScalePointPosition.Right) {
@@ -215,6 +243,36 @@ export class GizmoGeneric extends React.Component<IGuiGizmoProps, IGuiGizmoState
         if (scalePoint.verticalPosition === ScalePointPosition.Bottom) {
             newBounds.bottom = Math.max(this._localBounds.top + 1, toPosition.y);
         }
+
+        if (preserveAspectRatio) {
+            const deltaWidth = newBounds.width - this._localBounds.width;
+            const deltaHeight = newBounds.height - this._localBounds.height;
+
+            const signInverted = scalePoint.horizontalPosition === ScalePointPosition.Center || scalePoint.verticalPosition === ScalePointPosition.Center;
+            const comparison = Math.abs(deltaWidth) > Math.abs(deltaHeight);
+            if (signInverted ? comparison : !comparison) {
+                const aspectRatioDeltaHeight = deltaWidth / currentAspectRatio;
+                if (scalePoint.verticalPosition === ScalePointPosition.Top) {
+                    newBounds.top = this._localBounds.top - aspectRatioDeltaHeight;
+                } else if (scalePoint.verticalPosition === ScalePointPosition.Bottom) {
+                    newBounds.bottom = this._localBounds.bottom + aspectRatioDeltaHeight;
+                } else {
+                    newBounds.top = this._localBounds.top - aspectRatioDeltaHeight / 2;
+                    newBounds.bottom = this._localBounds.bottom + aspectRatioDeltaHeight / 2;
+                }
+            } else {
+                const aspectRatioDeltaWidth = deltaHeight * currentAspectRatio;
+                if (scalePoint.horizontalPosition === ScalePointPosition.Left) {
+                    newBounds.left = this._localBounds.left - aspectRatioDeltaWidth;
+                } else if (scalePoint.horizontalPosition === ScalePointPosition.Right) {
+                    newBounds.right = this._localBounds.right + aspectRatioDeltaWidth;
+                } else {
+                    newBounds.left = this._localBounds.left - aspectRatioDeltaWidth / 2;
+                    newBounds.right = this._localBounds.right + aspectRatioDeltaWidth / 2;
+                }
+            }
+        }
+
         // apply bounds changes to all controls
         const edges: ["left", "top", "right", "bottom"] = ["left", "top", "right", "bottom"];
         for (const node of this.props.globalState.selectedControls) {

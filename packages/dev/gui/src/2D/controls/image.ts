@@ -13,6 +13,11 @@ import { EngineStore } from "core/Engines/engineStore";
  * Class used to create 2D images
  */
 export class Image extends Control {
+    /**
+     *  Specifies an alternate text for the image, if the image for some reason cannot be displayed.
+     */
+    public alt?: string;
+
     private _workingCanvas: Nullable<ICanvas> = null;
 
     private _domImage: IImage;
@@ -49,6 +54,11 @@ export class Image extends Control {
     } = { data: null, key: "" };
 
     /**
+     * Cache of images to avoid loading the same image multiple times
+     */
+    public static SourceImgCache = new Map<string, { img: IImage; timesUsed: number; loaded: boolean; waitingForLoadCallback: Array<() => void> }>();
+
+    /**
      * Observable notified when the content is loaded
      */
     public onImageLoadedObservable = new Observable<Image>();
@@ -59,10 +69,20 @@ export class Image extends Control {
     public onSVGAttributesComputedObservable = new Observable<Image>();
 
     /**
+     * Gets or sets the referrer policy to apply on the img element load request.
+     * You should set referrerPolicy before set the source of the image if you want to ensure the header will be present on the xhr loading request
+     */
+    public referrerPolicy: Nullable<ReferrerPolicy>;
+
+    /**
      * Gets a boolean indicating that the content is loaded
      */
     public get isLoaded(): boolean {
         return this._loaded;
+    }
+
+    public isReady(): boolean {
+        return this.isLoaded;
     }
 
     /**
@@ -272,7 +292,7 @@ export class Image extends Control {
 
     /**
      * Gets or sets a boolean indicating if the image can force its container to adapt its size
-     * @see https://doc.babylonjs.com/how_to/gui#image
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#image
      */
     @serialize()
     public get autoScale(): boolean {
@@ -308,9 +328,7 @@ export class Image extends Control {
     }
 
     /**
-     * @param n
-     * @param preserveProperties
-     * @hidden
+     * @internal
      */
     public _rotate90(n: number, preserveProperties: boolean = false): Image {
         const width = this._domImage.width;
@@ -500,12 +518,32 @@ export class Image extends Control {
     }
 
     /**
+     * Resets the internal Image Element cache. Can reduce memory usage.
+     */
+    public static ResetImageCache() {
+        Image.SourceImgCache.clear();
+    }
+
+    private _removeCacheUsage(source: Nullable<string>) {
+        const value = source && Image.SourceImgCache.get(source);
+        if (value) {
+            value.timesUsed -= 1;
+            // Since the image isn't being used anymore, we can clean it from the cache
+            if (value.timesUsed === 0) {
+                Image.SourceImgCache.delete(source);
+            }
+        }
+    }
+
+    /**
      * Gets or sets image source url
      */
     public set source(value: Nullable<string>) {
         if (this._source === value) {
             return;
         }
+
+        this._removeCacheUsage(this._source);
 
         this._loaded = false;
         this._source = value;
@@ -520,13 +558,39 @@ export class Image extends Control {
         if (!engine) {
             throw new Error("Invalid engine. Unable to create a canvas.");
         }
+        if (value && Image.SourceImgCache.has(value)) {
+            const cachedData = Image.SourceImgCache.get(value)!;
+            this._domImage = cachedData.img;
+            cachedData.timesUsed += 1;
+            if (cachedData.loaded) {
+                this._onImageLoaded();
+            } else {
+                cachedData.waitingForLoadCallback.push(this._onImageLoaded.bind(this));
+            }
+            return;
+        }
         this._domImage = engine.createCanvasImage();
+        if (value) {
+            Image.SourceImgCache.set(value, { img: this._domImage, timesUsed: 1, loaded: false, waitingForLoadCallback: [this._onImageLoaded.bind(this)] });
+        }
 
         this._domImage.onload = () => {
+            if (value) {
+                const cachedData = Image.SourceImgCache.get(value);
+                if (cachedData) {
+                    cachedData.loaded = true;
+                    for (const waitingCallback of cachedData.waitingForLoadCallback) {
+                        waitingCallback();
+                    }
+                    cachedData.waitingForLoadCallback.length = 0;
+                    return;
+                }
+            }
             this._onImageLoaded();
         };
         if (value) {
             Tools.SetCorsBehavior(value, this._domImage);
+            Tools.SetReferrerPolicyBehavior(this.referrerPolicy, this._domImage);
             this._domImage.src = value;
         }
     }
@@ -626,7 +690,7 @@ export class Image extends Control {
 
     /**
      * Gets or sets the cell width to use when animation sheet is enabled
-     * @see https://doc.babylonjs.com/how_to/gui#image
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#image
      */
     @serialize()
     get cellWidth(): number {
@@ -643,7 +707,7 @@ export class Image extends Control {
 
     /**
      * Gets or sets the cell height to use when animation sheet is enabled
-     * @see https://doc.babylonjs.com/how_to/gui#image
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#image
      */
     @serialize()
     get cellHeight(): number {
@@ -660,7 +724,7 @@ export class Image extends Control {
 
     /**
      * Gets or sets the cell id to use (this will turn on the animation sheet mode)
-     * @see https://doc.babylonjs.com/how_to/gui#image
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#image
      */
     @serialize()
     get cellId(): number {
@@ -876,20 +940,28 @@ export class Image extends Control {
         //Top Left
         this._drawImage(context, 0, 0, leftWidth, topHeight, this._currentMeasure.left, this._currentMeasure.top, leftWidth, topHeight);
         //Top
+        context.clearRect(centerLeftOffset, this._currentMeasure.top, targetCenterWidth, topHeight);
         this._drawImage(context, this._sliceLeft, 0, centerWidth, topHeight, centerLeftOffset, this._currentMeasure.top, targetCenterWidth, topHeight);
         //Top Right
-        this._drawImage(context, this.sliceRight, 0, rightWidth, topHeight, rightOffset, this._currentMeasure.top, rightWidth, topHeight);
+        context.clearRect(rightOffset, this._currentMeasure.top, rightWidth, topHeight);
+        this._drawImage(context, this._sliceRight, 0, rightWidth, topHeight, rightOffset, this._currentMeasure.top, rightWidth, topHeight);
         //Left
+        context.clearRect(this._currentMeasure.left, centerTopOffset, leftWidth, targetCenterHeight);
         this._drawImage(context, 0, this._sliceTop, leftWidth, centerHeight, this._currentMeasure.left, centerTopOffset, leftWidth, targetCenterHeight);
         // Center
+        context.clearRect(centerLeftOffset, centerTopOffset, targetCenterWidth, targetCenterHeight);
         this._drawImage(context, this._sliceLeft, this._sliceTop, centerWidth, centerHeight, centerLeftOffset, centerTopOffset, targetCenterWidth, targetCenterHeight);
         //Right
+        context.clearRect(rightOffset, centerTopOffset, rightWidth, targetCenterHeight);
         this._drawImage(context, this._sliceRight, this._sliceTop, rightWidth, centerHeight, rightOffset, centerTopOffset, rightWidth, targetCenterHeight);
         //Bottom Left
+        context.clearRect(this._currentMeasure.left, bottomOffset, leftWidth, bottomHeight);
         this._drawImage(context, 0, this._sliceBottom, leftWidth, bottomHeight, this._currentMeasure.left, bottomOffset, leftWidth, bottomHeight);
         //Bottom
+        context.clearRect(centerLeftOffset, bottomOffset, targetCenterWidth, bottomHeight);
         this._drawImage(context, this.sliceLeft, this._sliceBottom, centerWidth, bottomHeight, centerLeftOffset, bottomOffset, targetCenterWidth, bottomHeight);
         //Bottom Right
+        context.clearRect(rightOffset, bottomOffset, rightWidth, bottomHeight);
         this._drawImage(context, this._sliceRight, this._sliceBottom, rightWidth, bottomHeight, rightOffset, bottomOffset, rightWidth, bottomHeight);
     }
 
@@ -897,6 +969,7 @@ export class Image extends Control {
         super.dispose();
         this.onImageLoadedObservable.clear();
         this.onSVGAttributesComputedObservable.clear();
+        this._removeCacheUsage(this._source);
     }
 
     // Static

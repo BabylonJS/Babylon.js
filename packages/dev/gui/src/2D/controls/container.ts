@@ -11,25 +11,31 @@ import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
 import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { Constants } from "core/Engines/constants";
+import { Observable } from "core/Misc/observable";
+import type { BaseGradient } from "./gradient/BaseGradient";
+import { Tools } from "core/Misc/tools";
+import { Matrix2D } from "../math2D";
 
 /**
  * Root class for 2D containers
- * @see https://doc.babylonjs.com/how_to/gui#containers
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#containers
  */
 export class Container extends Control {
-    /** @hidden */
+    /** @internal */
     public _children = new Array<Control>();
-    /** @hidden */
+    /** @internal */
     protected _measureForChildren = Measure.Empty();
-    /** @hidden */
+    /** @internal */
     protected _background = "";
-    /** @hidden */
+    /** @internal */
+    protected _backgroundGradient: Nullable<BaseGradient> = null;
+    /** @internal */
     protected _adaptWidthToChildren = false;
-    /** @hidden */
+    /** @internal */
     protected _adaptHeightToChildren = false;
-    /** @hidden */
+    /** @internal */
     protected _renderToIntermediateTexture: boolean = false;
-    /** @hidden */
+    /** @internal */
     protected _intermediateTexture: Nullable<DynamicTexture> = null;
 
     /** Gets or sets boolean indicating if children should be rendered to an intermediate texture rather than directly to host, useful for alpha blending */
@@ -111,6 +117,20 @@ export class Container extends Control {
         this._markAsDirty();
     }
 
+    /** Gets or sets background gradient color. Takes precedence over background */
+    @serialize()
+    public get backgroundGradient() {
+        return this._backgroundGradient;
+    }
+
+    public set backgroundGradient(value: Nullable<BaseGradient>) {
+        if (this._backgroundGradient === value) {
+            return;
+        }
+        this._backgroundGradient = value;
+        this._markAsDirty();
+    }
+
     /** Gets the list of children */
     public get children(): Control[] {
         return this._children;
@@ -142,6 +162,7 @@ export class Container extends Control {
 
     public _flagDescendantsAsMatrixDirty(): void {
         for (const child of this.children) {
+            child._isClipped = false;
             child._markMatrixAsDirty();
         }
     }
@@ -208,6 +229,9 @@ export class Container extends Control {
         this._reOrderControl(control);
 
         this._markAsDirty();
+
+        this.onControlAddedObservable.notifyObservers(control);
+
         return this;
     }
 
@@ -246,14 +270,27 @@ export class Container extends Control {
         }
 
         this._markAsDirty();
+
+        this.onControlRemovedObservable.notifyObservers(control);
         return this;
     }
 
     /**
-     * @param control
-     * @hidden
+     * An event triggered when any control is added to this container.
+     */
+    public onControlAddedObservable = new Observable<Nullable<Control>>();
+
+    /**
+     * An event triggered when any control is removed from this container.
+     */
+    public onControlRemovedObservable = new Observable<Nullable<Control>>();
+
+    /**
+     * @internal
      */
     public _reOrderControl(control: Control): void {
+        const linkedMesh = control.linkedMesh;
+
         this.removeControl(control);
 
         let wasAdded = false;
@@ -271,12 +308,15 @@ export class Container extends Control {
 
         control.parent = this;
 
+        if (linkedMesh) {
+            control.linkWithMesh(linkedMesh);
+        }
+
         this._markAsDirty();
     }
 
     /**
-     * @param offset
-     * @hidden
+     * @internal
      */
     public _offsetLeft(offset: number) {
         super._offsetLeft(offset);
@@ -287,8 +327,7 @@ export class Container extends Control {
     }
 
     /**
-     * @param offset
-     * @hidden
+     * @internal
      */
     public _offsetTop(offset: number) {
         super._offsetTop(offset);
@@ -298,7 +337,7 @@ export class Container extends Control {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     public _markAllAsDirty(): void {
         super._markAllAsDirty();
 
@@ -307,12 +346,15 @@ export class Container extends Control {
         }
     }
 
+    protected _getBackgroundColor(context: ICanvasRenderingContext) {
+        return this._backgroundGradient ? this._backgroundGradient.getCanvasGradient(context) : this._background;
+    }
+
     /**
-     * @param context
-     * @hidden
+     * @internal
      */
     protected _localDraw(context: ICanvasRenderingContext): void {
-        if (this._background) {
+        if (this._background || this._backgroundGradient) {
             context.save();
             if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
                 context.shadowColor = this.shadowColor;
@@ -321,15 +363,15 @@ export class Container extends Control {
                 context.shadowOffsetY = this.shadowOffsetY;
             }
 
-            context.fillStyle = this._background;
+            context.fillStyle = this._getBackgroundColor(context);
+
             context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
             context.restore();
         }
     }
 
     /**
-     * @param host
-     * @hidden
+     * @internal
      */
     public _link(host: AdvancedDynamicTexture): void {
         super._link(host);
@@ -339,15 +381,13 @@ export class Container extends Control {
         }
     }
 
-    /** @hidden */
+    /** @internal */
     protected _beforeLayout() {
         // Do nothing
     }
 
     /**
-     * @param parentMeasure
-     * @param context
-     * @hidden
+     * @internal
      */
     protected _processMeasures(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
@@ -377,9 +417,7 @@ export class Container extends Control {
     }
 
     /**
-     * @param parentMeasure
-     * @param context
-     * @hidden
+     * @internal
      */
     public _layout(parentMeasure: Measure, context: ICanvasRenderingContext): boolean {
         if (!this.isDirty && (!this.isVisible || this.notRenderable)) {
@@ -465,10 +503,11 @@ export class Container extends Control {
         // Do nothing by default
     }
 
+    private _inverseTransformMatrix = Matrix2D.Identity();
+    private _inverseMeasure = new Measure(0, 0, 0, 0);
+
     /**
-     * @param context
-     * @param invalidatedRectangle
-     * @hidden
+     * @internal
      */
     public _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Measure): void {
         const renderToIntermediateTextureThisDraw = this._renderToIntermediateTexture && this._intermediateTexture;
@@ -478,7 +517,9 @@ export class Container extends Control {
             contextToDrawTo.save();
             contextToDrawTo.translate(-this._currentMeasure.left, -this._currentMeasure.top);
             if (invalidatedRectangle) {
-                contextToDrawTo.clearRect(invalidatedRectangle.left, invalidatedRectangle.top, invalidatedRectangle.width, invalidatedRectangle.height);
+                this._transformMatrix.invertToRef(this._inverseTransformMatrix);
+                invalidatedRectangle.transformToRef(this._inverseTransformMatrix, this._inverseMeasure);
+                contextToDrawTo.clearRect(this._inverseMeasure.left, this._inverseMeasure.top, this._inverseMeasure.width, this._inverseMeasure.height);
             } else {
                 contextToDrawTo.clearRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
             }
@@ -532,15 +573,7 @@ export class Container extends Control {
     }
 
     /**
-     * @param x
-     * @param y
-     * @param pi
-     * @param type
-     * @param pointerId
-     * @param buttonIndex
-     * @param deltaX
-     * @param deltaY
-     * @hidden
+     * @internal
      */
     public _processPicking(x: number, y: number, pi: Nullable<PointerInfoBase>, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
         if (!this._isEnabled || !this.isVisible || this.notRenderable) {
@@ -578,9 +611,7 @@ export class Container extends Control {
     }
 
     /**
-     * @param parentMeasure
-     * @param context
-     * @hidden
+     * @internal
      */
     protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         super._additionalProcessing(parentMeasure, context);
@@ -594,6 +625,12 @@ export class Container extends Control {
      */
     public serialize(serializationObject: any) {
         super.serialize(serializationObject);
+
+        if (this.backgroundGradient) {
+            serializationObject.backgroundGradient = {};
+            this.backgroundGradient.serialize(serializationObject.backgroundGradient);
+        }
+
         if (!this.children.length) {
             return;
         }
@@ -618,13 +655,18 @@ export class Container extends Control {
     }
 
     /**
-     * @param serializedObject
-     * @param host
-     * @hidden
+     * @internal
      */
     public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
         super._parseFromContent(serializedObject, host);
         this._link(host);
+
+        // Gradient
+        if (serializedObject.backgroundGradient) {
+            const className = Tools.Instantiate("BABYLON.GUI." + serializedObject.backgroundGradient.className);
+            this._backgroundGradient = new className();
+            this._backgroundGradient?.parse(serializedObject.backgroundGradient);
+        }
 
         if (!serializedObject.children) {
             return;
@@ -633,6 +675,16 @@ export class Container extends Control {
         for (const childData of serializedObject.children) {
             this.addControl(Control.Parse(childData, host));
         }
+    }
+
+    public isReady(): boolean {
+        for (const child of this.children) {
+            if (!child.isReady()) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
 RegisterClass("BABYLON.GUI.Container", Container);

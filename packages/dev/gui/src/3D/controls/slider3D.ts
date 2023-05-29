@@ -173,6 +173,17 @@ export class Slider3D extends Control3D {
         return this._sliderBackplateMaterial;
     }
 
+    /** Sets a boolean indicating if the control is visible */
+    public set isVisible(value: boolean) {
+        if (this._isVisible === value) {
+            return;
+        }
+
+        this._isVisible = value;
+
+        this.node?.setEnabled(value);
+    }
+
     // Mesh association
     protected _createNode(scene: Scene): TransformNode {
         const sliderBackplate = CreateBox(
@@ -189,6 +200,10 @@ export class Slider3D extends Control3D {
         sliderBackplate.scaling = new Vector3(1, 0.5, 0.8);
 
         SceneLoader.ImportMeshAsync(undefined, Slider3D.MODEL_BASE_URL, Slider3D.MODEL_FILENAME, scene).then((result) => {
+            // make all meshes not pickable. Required meshes' pickable state will be set later.
+            result.meshes.forEach((m) => {
+                m.isPickable = false;
+            });
             const sliderBackplateModel = result.meshes[1];
             const sliderBarModel = result.meshes[1].clone(`${this.name}_sliderbar`, sliderBackplate);
             const sliderThumbModel = result.meshes[1].clone(`${this.name}_sliderthumb`, sliderBackplate);
@@ -197,7 +212,6 @@ export class Slider3D extends Control3D {
             if (this._sliderBackplateVisible) {
                 sliderBackplateModel.visibility = 1;
                 sliderBackplateModel.name = `${this.name}_sliderbackplate`;
-                sliderBackplateModel.isPickable = false;
                 sliderBackplateModel.scaling.x = 1;
                 sliderBackplateModel.scaling.z = 0.2;
                 sliderBackplateModel.parent = sliderBackplate;
@@ -211,7 +225,6 @@ export class Slider3D extends Control3D {
                 sliderBarModel.parent = sliderBackplate;
                 sliderBarModel.position.z = -0.1;
                 sliderBarModel.scaling = new Vector3(SLIDER_SCALING - SLIDER_MARGIN, 0.04, 0.3);
-                sliderBarModel.isPickable = false;
                 if (this._sliderBarMaterial) {
                     sliderBarModel.material = this._sliderBarMaterial;
                 }
@@ -230,6 +243,11 @@ export class Slider3D extends Control3D {
                 }
                 this._sliderThumb = sliderThumbModel;
             }
+
+            this._injectGUI3DReservedDataStore(sliderBackplate).control = this;
+            sliderBackplate.getChildMeshes().forEach((mesh) => {
+                this._injectGUI3DReservedDataStore(mesh).control = this;
+            });
         });
 
         this._affectMaterial(sliderBackplate);

@@ -22,6 +22,6 @@ void main(void)
 }`;
 
 Effect.ShadersStore[name] = shader;
-/** @hidden */
+/** @internal */
 // eslint-disable-next-line no-var
 export var lodPixelShader = { name, shader };

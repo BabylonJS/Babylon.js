@@ -18,3 +18,4 @@ export * from "./WebXRLightEstimation";
 export * from "./WebXREyeTracking";
 export * from "./WebXRWalkingLocomotion";
 export * from "./WebXRLayers";
+export * from "./WebXRDepthSensing";

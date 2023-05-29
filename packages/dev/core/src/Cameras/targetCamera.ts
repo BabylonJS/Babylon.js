@@ -5,10 +5,11 @@ import type { Scene } from "../scene";
 import { Quaternion, Matrix, Vector3, Vector2, TmpVectors } from "../Maths/math.vector";
 import { Epsilon } from "../Maths/math.constants";
 import { Axis } from "../Maths/math.axis";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 /**
  * A target camera takes a mesh or position as a target and continues to look at it while it moves.
  * This is the base of the follow, arc rotate cameras and Free camera
- * @see https://doc.babylonjs.com/features/cameras
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras
  */
 export class TargetCamera extends Camera {
     private static _RigCamTransformMatrix = new Matrix();
@@ -77,25 +78,25 @@ export class TargetCamera extends Camera {
     @serializeAsMeshReference("lockedTargetId")
     public lockedTarget: any = null;
 
-    /** @hidden */
+    /** @internal */
     public _currentTarget = Vector3.Zero();
-    /** @hidden */
+    /** @internal */
     public _initialFocalDistance = 1;
-    /** @hidden */
+    /** @internal */
     public _viewMatrix = Matrix.Zero();
-    /** @hidden */
+    /** @internal */
     public _camMatrix = Matrix.Zero();
-    /** @hidden */
+    /** @internal */
     public _cameraTransformMatrix = Matrix.Zero();
-    /** @hidden */
+    /** @internal */
     public _cameraRotationMatrix = Matrix.Zero();
 
-    /** @hidden */
+    /** @internal */
     public _referencePoint = new Vector3(0, 0, 1);
-    /** @hidden */
+    /** @internal */
     public _transformedReferencePoint = Vector3.Zero();
 
-    /** @hidden */
+    /** @internal */
     public _reset: () => void;
 
     private _defaultUp = Vector3.Up();
@@ -103,7 +104,7 @@ export class TargetCamera extends Camera {
     /**
      * Instantiates a target camera that takes a mesh or position as a target and continues to look at it while it moves.
      * This is the base of the follow, arc rotate cameras and Free camera
-     * @see https://doc.babylonjs.com/features/cameras
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras
      * @param name Defines the name of the camera in the scene
      * @param position Defines the start position of the camera in the scene
      * @param scene Defines the scene the camera belongs to
@@ -126,14 +127,17 @@ export class TargetCamera extends Camera {
         return this.globalPosition.add(direction);
     }
 
-    /** @hidden */
+    /** @internal */
     public _getLockedTargetPosition(): Nullable<Vector3> {
         if (!this.lockedTarget) {
             return null;
         }
 
         if (this.lockedTarget.absolutePosition) {
-            this.lockedTarget.computeWorldMatrix();
+            const lockedTarget = this.lockedTarget as AbstractMesh;
+            const m = lockedTarget.computeWorldMatrix();
+            // in some cases the absolute position resets externally, but doesn't update since the matrix is cached.
+            m.getTranslationToRef(lockedTarget.absolutePosition);
         }
 
         return this.lockedTarget.absolutePosition || this.lockedTarget;
@@ -160,7 +164,7 @@ export class TargetCamera extends Camera {
     /**
      * Restored camera state. You must call storeState() first
      * @returns whether it was successful or not
-     * @hidden
+     * @internal
      */
     public _restoreStateValues(): boolean {
         if (!super._restoreStateValues()) {
@@ -180,7 +184,7 @@ export class TargetCamera extends Camera {
         return true;
     }
 
-    /** @hidden */
+    /** @internal */
     public _initCache() {
         super._initCache();
         this._cache.lockedTarget = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
@@ -189,8 +193,7 @@ export class TargetCamera extends Camera {
     }
 
     /**
-     * @param ignoreParentClass
-     * @hidden
+     * @internal
      */
     public _updateCache(ignoreParentClass?: boolean): void {
         if (!ignoreParentClass) {
@@ -215,7 +218,7 @@ export class TargetCamera extends Camera {
     }
 
     // Synchronized
-    /** @hidden */
+    /** @internal */
     public _isSynchronizedViewMatrix(): boolean {
         if (!super._isSynchronizedViewMatrix()) {
             return false;
@@ -230,7 +233,7 @@ export class TargetCamera extends Camera {
     }
 
     // Methods
-    /** @hidden */
+    /** @internal */
     public _computeLocalCameraSpeed(): number {
         const engine = this.getEngine();
         return this.speed * Math.sqrt(engine.getDeltaTime() / (engine.getFps() * 100.0));
@@ -304,12 +307,12 @@ export class TargetCamera extends Camera {
         return this._currentTarget;
     }
 
-    /** @hidden */
+    /** @internal */
     public _decideIfNeedsToMove(): boolean {
         return Math.abs(this.cameraDirection.x) > 0 || Math.abs(this.cameraDirection.y) > 0 || Math.abs(this.cameraDirection.z) > 0;
     }
 
-    /** @hidden */
+    /** @internal */
     public _updatePosition(): void {
         if (this.parent) {
             this.parent.getWorldMatrix().invertToRef(TmpVectors.Matrix[0]);
@@ -320,7 +323,7 @@ export class TargetCamera extends Camera {
         this.position.addInPlace(this.cameraDirection);
     }
 
-    /** @hidden */
+    /** @internal */
     public _checkInputs(): void {
         const directionMultiplier = this.invertRotation ? -this.inverseRotationSpeed : 1.0;
         const needToMove = this._decideIfNeedsToMove();
@@ -411,7 +414,7 @@ export class TargetCamera extends Camera {
 
     private _cachedRotationZ = 0;
     private _cachedQuaternionRotationZ = 0;
-    /** @hidden */
+    /** @internal */
     public _getViewMatrix(): Matrix {
         if (this.lockedTarget) {
             this.setTarget(this._getLockedTargetPosition()!);
@@ -486,9 +489,7 @@ export class TargetCamera extends Camera {
     }
 
     /**
-     * @param name
-     * @param cameraIndex
-     * @hidden
+     * @internal
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public createRigCamera(name: string, cameraIndex: number): Nullable<Camera> {
@@ -503,13 +504,20 @@ export class TargetCamera extends Camera {
                 rigCamera._cameraRigParams = {};
                 rigCamera.rotationQuaternion = new Quaternion();
             }
+
+            rigCamera.mode = this.mode;
+            rigCamera.orthoLeft = this.orthoLeft;
+            rigCamera.orthoRight = this.orthoRight;
+            rigCamera.orthoTop = this.orthoTop;
+            rigCamera.orthoBottom = this.orthoBottom;
+
             return rigCamera;
         }
         return null;
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public _updateRigCameras() {
         const camLeft = <TargetCamera>this._rigCameras[0];
@@ -565,7 +573,7 @@ export class TargetCamera extends Camera {
 
     /**
      * Gets the current object class name.
-     * @return the class name
+     * @returns the class name
      */
     public getClassName(): string {
         return "TargetCamera";

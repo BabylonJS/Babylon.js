@@ -16,21 +16,21 @@ export class GroundMesh extends Mesh {
 
     private _heightQuads: { slope: Vector2; facet1: Vector4; facet2: Vector4 }[];
 
-    /** @hidden */
+    /** @internal */
     public _subdivisionsX: number;
-    /** @hidden */
+    /** @internal */
     public _subdivisionsY: number;
-    /** @hidden */
+    /** @internal */
     public _width: number;
-    /** @hidden */
+    /** @internal */
     public _height: number;
-    /** @hidden */
+    /** @internal */
     public _minX: number;
-    /** @hidden */
+    /** @internal */
     public _maxX: number;
-    /** @hidden */
+    /** @internal */
     public _minZ: number;
-    /** @hidden */
+    /** @internal */
     public _maxZ: number;
 
     constructor(name: string, scene?: Scene) {
@@ -67,10 +67,11 @@ export class GroundMesh extends Mesh {
     }
 
     /**
-     * This function will update an octree to help to select the right submeshes for rendering, picking and collision computations.
-     * Please note that you must have a decent number of submeshes to get performance improvements when using an octree
-     * @param chunksCount the number of subdivisions for x and y
-     * @param octreeBlocksSize (Default: 32)
+     * This function will divide the mesh into submeshes and update an octree to help to select the right submeshes
+     * for rendering, picking and collision computations. Please note that you must have a decent number of submeshes
+     * to get performance improvements when using an octree.
+     * @param chunksCount the number of submeshes the mesh will be divided into
+     * @param octreeBlocksSize the maximum size of the octree blocks (Default: 32)
      */
     public optimize(chunksCount: number, octreeBlocksSize = 32): void {
         this._subdivisionsX = chunksCount;
@@ -99,7 +100,7 @@ export class GroundMesh extends Mesh {
         Vector3.TransformCoordinatesFromFloatsToRef(x, 0.0, z, invMat, tmpVect); // transform x,z in the mesh local space
         x = tmpVect.x;
         z = tmpVect.z;
-        if (x < this._minX || x > this._maxX || z < this._minZ || z > this._maxZ) {
+        if (x < this._minX || x >= this._maxX || z <= this._minZ || z > this._maxZ) {
             return this.position.y;
         }
         if (!this._heightQuads || this._heightQuads.length == 0) {

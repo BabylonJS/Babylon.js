@@ -279,10 +279,7 @@ export class VertexData {
     private readonly _applyTo = makeSyncFunction(this._applyToCoroutine.bind(this));
 
     /**
-     * @param meshOrGeometry
-     * @param updatable
-     * @param isAsync
-     * @hidden
+     * @internal
      */
     public *_applyToCoroutine(meshOrGeometry: IGetSetVerticesData, updatable: boolean = false, isAsync: boolean): Coroutine<VertexData> {
         if (this.positions) {
@@ -541,28 +538,27 @@ export class VertexData {
      * @returns the modified VertexData
      */
     public merge(others: VertexData | VertexData[], use32BitsIndices = false, forceCloneIndices = false) {
-        const vertexDatas: [vertexData: VertexData, transform?: Matrix][] = Array.isArray(others) ? others.map((other) => [other, undefined]) : [[others, undefined]];
+        const vertexDatas: { vertexData: VertexData; transform?: Matrix }[] = Array.isArray(others)
+            ? others.map((other) => {
+                  return { vertexData: other };
+              })
+            : [{ vertexData: others }];
         return runCoroutineSync(this._mergeCoroutine(undefined, vertexDatas, use32BitsIndices, false, forceCloneIndices));
     }
 
     /**
-     * @param transform
-     * @param vertexDatas
-     * @param use32BitsIndices
-     * @param isAsync
-     * @param forceCloneIndices
-     * @hidden
+     * @internal
      */
     public *_mergeCoroutine(
         transform: Matrix | undefined,
-        vertexDatas: (readonly [vertexData: VertexData, transform?: Matrix])[],
+        vertexDatas: { vertexData: VertexData; transform?: Matrix }[],
         use32BitsIndices = false,
         isAsync: boolean,
         forceCloneIndices: boolean
     ): Coroutine<VertexData> {
         this._validate();
 
-        const others = vertexDatas.map((vertexData) => vertexData[0]);
+        const others = vertexDatas.map((vertexData) => vertexData.vertexData);
 
         for (const other of others) {
             other._validate();
@@ -611,7 +607,7 @@ export class VertexData {
             }
 
             let positionsOffset = this.positions ? this.positions.length / 3 : 0;
-            for (const [other, transform] of vertexDatas) {
+            for (const { vertexData: other, transform } of vertexDatas) {
                 if (other.indices) {
                     for (let index = 0; index < other.indices.length; index++) {
                         indices[indicesOffset + index] = other.indices[index] + positionsOffset;
@@ -638,7 +634,7 @@ export class VertexData {
             VertexBuffer.PositionKind,
             this.positions,
             transform,
-            vertexDatas.map((other) => [other[0].positions, other[1]])
+            vertexDatas.map((other) => [other.vertexData.positions, other.transform])
         );
         if (isAsync) {
             yield;
@@ -647,7 +643,7 @@ export class VertexData {
             VertexBuffer.NormalKind,
             this.normals,
             transform,
-            vertexDatas.map((other) => [other[0].normals, other[1]])
+            vertexDatas.map((other) => [other.vertexData.normals, other.transform])
         );
         if (isAsync) {
             yield;
@@ -656,7 +652,7 @@ export class VertexData {
             VertexBuffer.TangentKind,
             this.tangents,
             transform,
-            vertexDatas.map((other) => [other[0].tangents, other[1]])
+            vertexDatas.map((other) => [other.vertexData.tangents, other.transform])
         );
         if (isAsync) {
             yield;
@@ -665,7 +661,7 @@ export class VertexData {
             VertexBuffer.UVKind,
             this.uvs,
             transform,
-            vertexDatas.map((other) => [other[0].uvs, other[1]])
+            vertexDatas.map((other) => [other.vertexData.uvs, other.transform])
         );
         if (isAsync) {
             yield;
@@ -674,7 +670,7 @@ export class VertexData {
             VertexBuffer.UV2Kind,
             this.uvs2,
             transform,
-            vertexDatas.map((other) => [other[0].uvs2, other[1]])
+            vertexDatas.map((other) => [other.vertexData.uvs2, other.transform])
         );
         if (isAsync) {
             yield;
@@ -683,7 +679,7 @@ export class VertexData {
             VertexBuffer.UV3Kind,
             this.uvs3,
             transform,
-            vertexDatas.map((other) => [other[0].uvs3, other[1]])
+            vertexDatas.map((other) => [other.vertexData.uvs3, other.transform])
         );
         if (isAsync) {
             yield;
@@ -692,7 +688,7 @@ export class VertexData {
             VertexBuffer.UV4Kind,
             this.uvs4,
             transform,
-            vertexDatas.map((other) => [other[0].uvs4, other[1]])
+            vertexDatas.map((other) => [other.vertexData.uvs4, other.transform])
         );
         if (isAsync) {
             yield;
@@ -701,7 +697,7 @@ export class VertexData {
             VertexBuffer.UV5Kind,
             this.uvs5,
             transform,
-            vertexDatas.map((other) => [other[0].uvs5, other[1]])
+            vertexDatas.map((other) => [other.vertexData.uvs5, other.transform])
         );
         if (isAsync) {
             yield;
@@ -710,7 +706,7 @@ export class VertexData {
             VertexBuffer.UV6Kind,
             this.uvs6,
             transform,
-            vertexDatas.map((other) => [other[0].uvs6, other[1]])
+            vertexDatas.map((other) => [other.vertexData.uvs6, other.transform])
         );
         if (isAsync) {
             yield;
@@ -719,7 +715,7 @@ export class VertexData {
             VertexBuffer.ColorKind,
             this.colors,
             transform,
-            vertexDatas.map((other) => [other[0].colors, other[1]])
+            vertexDatas.map((other) => [other.vertexData.colors, other.transform])
         );
         if (isAsync) {
             yield;
@@ -728,7 +724,7 @@ export class VertexData {
             VertexBuffer.MatricesIndicesKind,
             this.matricesIndices,
             transform,
-            vertexDatas.map((other) => [other[0].matricesIndices, other[1]])
+            vertexDatas.map((other) => [other.vertexData.matricesIndices, other.transform])
         );
         if (isAsync) {
             yield;
@@ -737,7 +733,7 @@ export class VertexData {
             VertexBuffer.MatricesWeightsKind,
             this.matricesWeights,
             transform,
-            vertexDatas.map((other) => [other[0].matricesWeights, other[1]])
+            vertexDatas.map((other) => [other.vertexData.matricesWeights, other.transform])
         );
         if (isAsync) {
             yield;
@@ -746,7 +742,7 @@ export class VertexData {
             VertexBuffer.MatricesIndicesExtraKind,
             this.matricesIndicesExtra,
             transform,
-            vertexDatas.map((other) => [other[0].matricesIndicesExtra, other[1]])
+            vertexDatas.map((other) => [other.vertexData.matricesIndicesExtra, other.transform])
         );
         if (isAsync) {
             yield;
@@ -755,7 +751,7 @@ export class VertexData {
             VertexBuffer.MatricesWeightsExtraKind,
             this.matricesWeightsExtra,
             transform,
-            vertexDatas.map((other) => [other[0].matricesWeightsExtra, other[1]])
+            vertexDatas.map((other) => [other.vertexData.matricesWeightsExtra, other.transform])
         );
 
         return this;
@@ -1891,14 +1887,7 @@ export class VertexData {
     }
 
     /**
-     * @param sideOrientation
-     * @param positions
-     * @param indices
-     * @param normals
-     * @param uvs
-     * @param frontUVs
-     * @param backUVs
-     * @hidden
+     * @internal
      */
     public static _ComputeSides(
         sideOrientation: number,

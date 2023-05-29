@@ -118,7 +118,7 @@ const processSourceFile = (packageName: string, relativeLTSFile: any, program: {
                     if (
                         symbol.getName().includes('"') ||
                         symbol.getName().includes("'") ||
-                        (node.decorators && node.decorators.find((c: { kind: any }) => c.kind === ts.SyntaxKind.DeclareKeyword))
+                        (ts.canHaveDecorators(node) && ts.getDecorators(node)?.find((c: { kind: any }) => c.kind === ts.SyntaxKind.DeclareKeyword))
                     ) {
                         const transformed = transformLocation(packageName, node.name.text, true);
                         if (transformed) {
@@ -162,7 +162,7 @@ const processSourceFile = (packageName: string, relativeLTSFile: any, program: {
         if (relativeSourceOnly) {
             return relativeLocation;
         }
-        // from relative to absolute to relative to unit style! FTW :-)
+        // from relative to absolute to relative to unix style! FTW :-)
         const abs = path.join(path.dirname(sourceFile), relativeLocation);
         let resolved = path.relative(path.dirname(sourceFile), abs);
         resolved = resolved[0] === "." ? resolved : "./" + resolved;

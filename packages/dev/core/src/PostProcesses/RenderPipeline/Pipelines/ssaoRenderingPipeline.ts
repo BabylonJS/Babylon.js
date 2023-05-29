@@ -187,9 +187,7 @@ export class SSAORenderingPipeline extends PostProcessRenderPipeline {
     }
 
     /**
-     * @param cameras
-     * @param unique
-     * @hidden
+     * @internal
      */
     public _attachCameras(cameras: any, unique: boolean): void {
         super._attachCameras(cameras, unique);
@@ -273,7 +271,7 @@ export class SSAORenderingPipeline extends PostProcessRenderPipeline {
         });
     }
 
-    /** @hidden */
+    /** @internal */
     public _rebuild() {
         this._firstUpdate = true;
         super._rebuild();
@@ -356,9 +354,9 @@ export class SSAORenderingPipeline extends PostProcessRenderPipeline {
 
         for (let x = 0; x < size; x++) {
             for (let y = 0; y < size; y++) {
-                randVector.x = Math.floor(rand(-1.0, 1.0) * 255);
-                randVector.y = Math.floor(rand(-1.0, 1.0) * 255);
-                randVector.z = Math.floor(rand(-1.0, 1.0) * 255);
+                randVector.x = Math.floor(Math.max(0.0, rand(-1.0, 1.0)) * 255);
+                randVector.y = Math.floor(Math.max(0.0, rand(-1.0, 1.0)) * 255);
+                randVector.z = Math.floor(Math.max(0.0, rand(-1.0, 1.0)) * 255);
 
                 context.fillStyle = "rgb(" + randVector.x + ", " + randVector.y + ", " + randVector.z + ")";
                 context.fillRect(x, y, 1, 1);

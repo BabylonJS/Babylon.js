@@ -2,7 +2,6 @@ import { NodeMaterialBlockConnectionPointTypes } from "./Enums/nodeMaterialBlock
 import { NodeMaterialBlockTargets } from "./Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialBuildStateSharedData } from "./nodeMaterialBuildStateSharedData";
 import { Effect } from "../effect";
-import { StartsWith } from "../../Misc/stringTools";
 
 /**
  * Class used to store node based material build state
@@ -49,24 +48,24 @@ export class NodeMaterialBuildState {
      */
     public sharedData: NodeMaterialBuildStateSharedData;
 
-    /** @hidden */
+    /** @internal */
     public _vertexState: NodeMaterialBuildState;
 
-    /** @hidden */
+    /** @internal */
     public _attributeDeclaration = "";
-    /** @hidden */
+    /** @internal */
     public _uniformDeclaration = "";
-    /** @hidden */
+    /** @internal */
     public _constantDeclaration = "";
-    /** @hidden */
+    /** @internal */
     public _samplerDeclaration = "";
-    /** @hidden */
+    /** @internal */
     public _varyingTransfer = "";
-    /** @hidden */
+    /** @internal */
     public _injectAtEnd = "";
 
     private _repeatableContentAnchorIndex = 0;
-    /** @hidden */
+    /** @internal */
     public _builtCompilationString = "";
 
     /**
@@ -121,6 +120,7 @@ export class NodeMaterialBuildState {
         }
 
         this.compilationString = "precision highp float;\r\n" + this.compilationString;
+        this.compilationString = "#if defined(WEBGL2) || defines(WEBGPU)\r\nprecision highp sampler2DArray;\r\n#endif\r\n" + this.compilationString;
 
         for (const extensionName in this.extensions) {
             const extension = this.extensions[extensionName];
@@ -130,14 +130,13 @@ export class NodeMaterialBuildState {
         this._builtCompilationString = this.compilationString;
     }
 
-    /** @hidden */
+    /** @internal */
     public get _repeatableContentAnchor(): string {
         return `###___ANCHOR${this._repeatableContentAnchorIndex++}___###`;
     }
 
     /**
-     * @param prefix
-     * @hidden
+     * @internal
      */
     public _getFreeVariableName(prefix: string): string {
         prefix = prefix.replace(/[^a-zA-Z_]+/g, "");
@@ -159,8 +158,7 @@ export class NodeMaterialBuildState {
     }
 
     /**
-     * @param prefix
-     * @hidden
+     * @internal
      */
     public _getFreeDefineName(prefix: string): string {
         if (this.sharedData.defineNames[prefix] === undefined) {
@@ -173,16 +171,14 @@ export class NodeMaterialBuildState {
     }
 
     /**
-     * @param name
-     * @hidden
+     * @internal
      */
     public _excludeVariableName(name: string) {
         this.sharedData.variableNames[name] = 0;
     }
 
     /**
-     * @param name
-     * @hidden
+     * @internal
      */
     public _emit2DSampler(name: string) {
         if (this.samplers.indexOf(name) < 0) {
@@ -192,8 +188,17 @@ export class NodeMaterialBuildState {
     }
 
     /**
-     * @param type
-     * @hidden
+     * @internal
+     */
+    public _emit2DArraySampler(name: string) {
+        if (this.samplers.indexOf(name) < 0) {
+            this._samplerDeclaration += `uniform sampler2DArray ${name};\r\n`;
+            this.samplers.push(name);
+        }
+    }
+
+    /**
+     * @internal
      */
     public _getGLType(type: NodeMaterialBlockConnectionPointTypes): string {
         switch (type) {
@@ -217,10 +222,7 @@ export class NodeMaterialBuildState {
     }
 
     /**
-     * @param name
-     * @param extension
-     * @param define
-     * @hidden
+     * @internal
      */
     public _emitExtension(name: string, extension: string, define: string = "") {
         if (this.extensions[name]) {
@@ -234,10 +236,7 @@ export class NodeMaterialBuildState {
     }
 
     /**
-     * @param name
-     * @param code
-     * @param comments
-     * @hidden
+     * @internal
      */
     public _emitFunction(name: string, code: string, comments: string) {
         if (this.functions[name]) {
@@ -252,12 +251,7 @@ export class NodeMaterialBuildState {
     }
 
     /**
-     * @param includeName
-     * @param comments
-     * @param options
-     * @param options.replaceStrings
-     * @param options.repeatKey
-     * @hidden
+     * @internal
      */
     public _emitCodeFromInclude(
         includeName: string,
@@ -265,10 +259,11 @@ export class NodeMaterialBuildState {
         options?: {
             replaceStrings?: { search: RegExp; replace: string }[];
             repeatKey?: string;
+            substitutionVars?: string;
         }
     ) {
         if (options && options.repeatKey) {
-            return `#include<${includeName}>[0..${options.repeatKey}]\r\n`;
+            return `#include<${includeName}>${options.substitutionVars ? "(" + options.substitutionVars + ")" : ""}[0..${options.repeatKey}]\r\n`;
         }
 
         let code = Effect.IncludesShadersStore[includeName] + "\r\n";
@@ -292,23 +287,14 @@ export class NodeMaterialBuildState {
     }
 
     /**
-     * @param includeName
-     * @param comments
-     * @param options
-     * @param options.repeatKey
-     * @param options.removeAttributes
-     * @param options.removeUniforms
-     * @param options.removeVaryings
-     * @param options.removeIfDef
-     * @param options.replaceStrings
-     * @param storeKey
-     * @hidden
+     * @internal
      */
     public _emitFunctionFromInclude(
         includeName: string,
         comments: string,
         options?: {
             repeatKey?: string;
+            substitutionVars?: string;
             removeAttributes?: boolean;
             removeUniforms?: boolean;
             removeVaryings?: boolean;
@@ -324,9 +310,9 @@ export class NodeMaterialBuildState {
 
         if (!options || (!options.removeAttributes && !options.removeUniforms && !options.removeVaryings && !options.removeIfDef && !options.replaceStrings)) {
             if (options && options.repeatKey) {
-                this.functions[key] = `#include<${includeName}>[0..${options.repeatKey}]\r\n`;
+                this.functions[key] = `#include<${includeName}>${options.substitutionVars ? "(" + options.substitutionVars + ")" : ""}[0..${options.repeatKey}]\r\n`;
             } else {
-                this.functions[key] = `#include<${includeName}>\r\n`;
+                this.functions[key] = `#include<${includeName}>${options?.substitutionVars ? "(" + options?.substitutionVars + ")" : ""}\r\n`;
             }
 
             if (this.sharedData.emitComments) {
@@ -370,8 +356,7 @@ export class NodeMaterialBuildState {
     }
 
     /**
-     * @param name
-     * @hidden
+     * @internal
      */
     public _registerTempVariable(name: string) {
         if (this.sharedData.temps.indexOf(name) !== -1) {
@@ -383,11 +368,7 @@ export class NodeMaterialBuildState {
     }
 
     /**
-     * @param name
-     * @param type
-     * @param define
-     * @param notDefine
-     * @hidden
+     * @internal
      */
     public _emitVaryingFromString(name: string, type: string, define: string = "", notDefine = false) {
         if (this.sharedData.varyings.indexOf(name) !== -1) {
@@ -397,7 +378,7 @@ export class NodeMaterialBuildState {
         this.sharedData.varyings.push(name);
 
         if (define) {
-            if (StartsWith(define, "defined(")) {
+            if (define.startsWith("defined(")) {
                 this.sharedData.varyingDeclaration += `#if ${define}\r\n`;
             } else {
                 this.sharedData.varyingDeclaration += `${notDefine ? "#ifndef" : "#ifdef"} ${define}\r\n`;
@@ -412,11 +393,7 @@ export class NodeMaterialBuildState {
     }
 
     /**
-     * @param name
-     * @param type
-     * @param define
-     * @param notDefine
-     * @hidden
+     * @internal
      */
     public _emitUniformFromString(name: string, type: string, define: string = "", notDefine = false) {
         if (this.uniforms.indexOf(name) !== -1) {
@@ -426,7 +403,7 @@ export class NodeMaterialBuildState {
         this.uniforms.push(name);
 
         if (define) {
-            if (StartsWith(define, "defined(")) {
+            if (define.startsWith("defined(")) {
                 this._uniformDeclaration += `#if ${define}\r\n`;
             } else {
                 this._uniformDeclaration += `${notDefine ? "#ifndef" : "#ifdef"} ${define}\r\n`;
@@ -439,8 +416,7 @@ export class NodeMaterialBuildState {
     }
 
     /**
-     * @param value
-     * @hidden
+     * @internal
      */
     public _emitFloat(value: number) {
         if (value.toString() === value.toFixed(0)) {

@@ -3,7 +3,7 @@ import * as WebGPUConstants from "./webgpuConstants";
 import { PerfCounter } from "../../Misc/perfCounter";
 import { WebGPUQuerySet } from "./webgpuQuerySet";
 
-/** @hidden */
+/** @internal */
 export class WebGPUTimestampQuery {
     private _device: GPUDevice;
     private _bufferManager: WebGPUBufferManager;
@@ -61,7 +61,7 @@ export class WebGPUTimestampQuery {
     }
 }
 
-/** @hidden */
+/** @internal */
 export class WebGPUDurationMeasure {
     private _querySet: WebGPUQuerySet;
 

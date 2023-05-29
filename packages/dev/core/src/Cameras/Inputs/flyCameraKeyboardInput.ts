@@ -13,7 +13,7 @@ import { Tools } from "../../Misc/tools";
 
 /**
  * Listen to keyboard events to control the camera.
- * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
  */
 export class FlyCameraKeyboardInput implements ICameraInput<FlyCamera> {
     /**
@@ -78,7 +78,7 @@ export class FlyCameraKeyboardInput implements ICameraInput<FlyCamera> {
         this._engine = this._scene.getEngine();
 
         this._onCanvasBlurObserver = this._engine.onCanvasBlurObservable.add(() => {
-            this._keys = [];
+            this._keys.length = 0;
         });
 
         this._onKeyboardObserver = this._scene.onKeyboardObservable.add((info) => {
@@ -139,7 +139,7 @@ export class FlyCameraKeyboardInput implements ICameraInput<FlyCamera> {
             this._onKeyboardObserver = null;
             this._onCanvasBlurObserver = null;
         }
-        this._keys = [];
+        this._keys.length = 0;
     }
 
     /**
@@ -151,10 +151,10 @@ export class FlyCameraKeyboardInput implements ICameraInput<FlyCamera> {
     }
 
     /**
-     * @hidden
+     * @internal
      */
     public _onLostFocus(): void {
-        this._keys = [];
+        this._keys.length = 0;
     }
 
     /**

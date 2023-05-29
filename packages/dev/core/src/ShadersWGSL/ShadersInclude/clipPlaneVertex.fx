@@ -1,23 +1,23 @@
 ﻿#ifdef CLIPPLANE
-	fClipDistance = dot(worldPos, uniforms.vClipPlane);
+	vertexOutputs.fClipDistance = dot(worldPos, uniforms.vClipPlane);
 #endif
 
 #ifdef CLIPPLANE2
-	fClipDistance2 = dot(worldPos, uniforms.vClipPlane2);
+	vertexOutputs.fClipDistance2 = dot(worldPos, uniforms.vClipPlane2);
 #endif
 
 #ifdef CLIPPLANE3
-	fClipDistance3 = dot(worldPos, uniforms.vClipPlane3);
+	vertexOutputs.fClipDistance3 = dot(worldPos, uniforms.vClipPlane3);
 #endif
 
 #ifdef CLIPPLANE4
-	fClipDistance4 = dot(worldPos, uniforms.vClipPlane4);
+	vertexOutputs.fClipDistance4 = dot(worldPos, uniforms.vClipPlane4);
 #endif
 
 #ifdef CLIPPLANE5
-	fClipDistance5 = dot(worldPos, uniforms.vClipPlane5);
+	vertexOutputs.fClipDistance5 = dot(worldPos, uniforms.vClipPlane5);
 #endif
 
 #ifdef CLIPPLANE6
-	fClipDistance6 = dot(worldPos, uniforms.vClipPlane6);
+	vertexOutputs.fClipDistance6 = dot(worldPos, uniforms.vClipPlane6);
 #endif

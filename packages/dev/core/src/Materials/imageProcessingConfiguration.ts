@@ -13,7 +13,7 @@ declare type Effect = import("../Materials/effect").Effect;
 /**
  * Interface to follow in your material defines to integrate easily the
  * Image processing functions.
- * @hidden
+ * @internal
  */
 export interface IImageProcessingConfigurationDefines {
     IMAGEPROCESSING: boolean;
@@ -29,12 +29,13 @@ export interface IImageProcessingConfigurationDefines {
     COLORGRADING3D: boolean;
     SAMPLER3DGREENDEPTH: boolean;
     SAMPLER3DBGRMAP: boolean;
+    DITHER: boolean;
     IMAGEPROCESSINGPOSTPROCESS: boolean;
     SKIPFINALCOLORCLAMP: boolean;
 }
 
 /**
- * @hidden
+ * @internal
  */
 export class ImageProcessingConfigurationDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
     public IMAGEPROCESSING = false;
@@ -49,6 +50,7 @@ export class ImageProcessingConfigurationDefines extends MaterialDefines impleme
     public COLORGRADING3D = false;
     public SAMPLER3DGREENDEPTH = false;
     public SAMPLER3DBGRMAP = false;
+    public DITHER = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public EXPOSURE = false;
     public SKIPFINALCOLORCLAMP = false;
@@ -182,7 +184,7 @@ export class ImageProcessingConfiguration {
         this._updateParameters();
     }
 
-    /** @hidden */
+    /** @internal */
     @serialize()
     public _exposure = 1.0;
     /**
@@ -270,16 +272,38 @@ export class ImageProcessingConfiguration {
     public vignetteStretch = 0;
 
     /**
-     * Vignette centre X Offset.
+     * Vignette center X Offset.
      */
     @serialize()
-    public vignetteCentreX = 0;
+    public vignetteCenterX = 0;
 
     /**
-     * Vignette centre Y Offset.
+     * Vignette center Y Offset.
      */
     @serialize()
-    public vignetteCentreY = 0;
+    public vignetteCenterY = 0;
+
+    /**
+     * Back Compat: Vignette center Y Offset.
+     * @deprecated use vignetteCenterY instead
+     */
+    public get vignetteCentreY(): number {
+        return this.vignetteCenterY;
+    }
+    public set vignetteCentreY(value: number) {
+        this.vignetteCenterY = value;
+    }
+
+    /**
+     * Back Compat: Vignette center X Offset.
+     * @deprecated use vignetteCenterX instead
+     */
+    public get vignetteCentreX(): number {
+        return this.vignetteCenterX;
+    }
+    public set vignetteCentreX(value: number) {
+        this.vignetteCenterX = value;
+    }
 
     /**
      * Vignette weight or intensity of the vignette effect.
@@ -340,7 +364,49 @@ export class ImageProcessingConfiguration {
         this._updateParameters();
     }
 
-    /** @hidden */
+    @serialize()
+    private _ditheringEnabled = false;
+    /**
+     * Gets whether the dithering effect is enabled.
+     * The dithering effect can be used to reduce banding.
+     */
+    public get ditheringEnabled(): boolean {
+        return this._ditheringEnabled;
+    }
+    /**
+     * Sets whether the dithering effect is enabled.
+     * The dithering effect can be used to reduce banding.
+     */
+    public set ditheringEnabled(value: boolean) {
+        if (this._ditheringEnabled === value) {
+            return;
+        }
+
+        this._ditheringEnabled = value;
+        this._updateParameters();
+    }
+
+    @serialize()
+    private _ditheringIntensity = 1.0 / 255.0;
+    /**
+     * Gets the dithering intensity. 0 is no dithering. Default is 1.0 / 255.0.
+     */
+    public get ditheringIntensity(): number {
+        return this._ditheringIntensity;
+    }
+    /**
+     * Sets the dithering intensity. 0 is no dithering. Default is 1.0 / 255.0.
+     */
+    public set ditheringIntensity(value: number) {
+        if (this._ditheringIntensity === value) {
+            return;
+        }
+
+        this._ditheringIntensity = value;
+        this._updateParameters();
+    }
+
+    /** @internal */
     @serialize()
     public _skipFinalColorClamp = false;
     /**
@@ -363,7 +429,7 @@ export class ImageProcessingConfiguration {
         this._updateParameters();
     }
 
-    /** @hidden */
+    /** @internal */
     @serialize()
     public _applyByPostProcess = false;
     /**
@@ -418,7 +484,7 @@ export class ImageProcessingConfiguration {
 
     /**
      * Gets the current class name.
-     * @return "ImageProcessingConfiguration"
+     * @returns "ImageProcessingConfiguration"
      */
     public getClassName(): string {
         return "ImageProcessingConfiguration";
@@ -439,13 +505,18 @@ export class ImageProcessingConfiguration {
         if (defines.COLORGRADING) {
             uniforms.push("colorTransformSettings");
         }
-        if (defines.VIGNETTE) {
+        if (defines.VIGNETTE || defines.DITHER) {
             uniforms.push("vInverseScreenSize");
+        }
+        if (defines.VIGNETTE) {
             uniforms.push("vignetteSettings1");
             uniforms.push("vignetteSettings2");
         }
         if (defines.COLORCURVES) {
             ColorCurves.PrepareUniforms(uniforms);
+        }
+        if (defines.DITHER) {
+            uniforms.push("ditherIntensity");
         }
     }
 
@@ -465,7 +536,7 @@ export class ImageProcessingConfiguration {
      * @param defines the list of defines to complete
      * @param forPostProcess Define if we are currently in post process mode or not
      */
-    public prepareDefines(defines: IImageProcessingConfigurationDefines, forPostProcess: boolean = false): void {
+    public prepareDefines(defines: IImageProcessingConfigurationDefines, forPostProcess = false): void {
         if (forPostProcess !== this.applyByPostProcess || !this._isEnabled) {
             defines.VIGNETTE = false;
             defines.TONEMAPPING = false;
@@ -475,6 +546,7 @@ export class ImageProcessingConfiguration {
             defines.COLORCURVES = false;
             defines.COLORGRADING = false;
             defines.COLORGRADING3D = false;
+            defines.DITHER = false;
             defines.IMAGEPROCESSING = false;
             defines.SKIPFINALCOLORCLAMP = this.skipFinalColorClamp;
             defines.IMAGEPROCESSINGPOSTPROCESS = this.applyByPostProcess && this._isEnabled;
@@ -506,9 +578,10 @@ export class ImageProcessingConfiguration {
         }
         defines.SAMPLER3DGREENDEPTH = this.colorGradingWithGreenDepth;
         defines.SAMPLER3DBGRMAP = this.colorGradingBGR;
+        defines.DITHER = this._ditheringEnabled;
         defines.IMAGEPROCESSINGPOSTPROCESS = this.applyByPostProcess;
         defines.SKIPFINALCOLORCLAMP = this.skipFinalColorClamp;
-        defines.IMAGEPROCESSING = defines.VIGNETTE || defines.TONEMAPPING || defines.CONTRAST || defines.EXPOSURE || defines.COLORCURVES || defines.COLORGRADING;
+        defines.IMAGEPROCESSING = defines.VIGNETTE || defines.TONEMAPPING || defines.CONTRAST || defines.EXPOSURE || defines.COLORCURVES || defines.COLORGRADING || defines.DITHER;
     }
 
     /**
@@ -531,25 +604,31 @@ export class ImageProcessingConfiguration {
             ColorCurves.Bind(this.colorCurves, effect);
         }
 
-        // Vignette
-        if (this._vignetteEnabled) {
+        // Vignette and dither handled together due to common uniform.
+        if (this._vignetteEnabled || this._ditheringEnabled) {
             const inverseWidth = 1 / effect.getEngine().getRenderWidth();
             const inverseHeight = 1 / effect.getEngine().getRenderHeight();
             effect.setFloat2("vInverseScreenSize", inverseWidth, inverseHeight);
 
-            const aspectRatio = overrideAspectRatio != null ? overrideAspectRatio : inverseHeight / inverseWidth;
+            if (this._ditheringEnabled) {
+                effect.setFloat("ditherIntensity", 0.5 * this._ditheringIntensity);
+            }
 
-            let vignetteScaleY = Math.tan(this.vignetteCameraFov * 0.5);
-            let vignetteScaleX = vignetteScaleY * aspectRatio;
+            if (this._vignetteEnabled) {
+                const aspectRatio = overrideAspectRatio != null ? overrideAspectRatio : inverseHeight / inverseWidth;
 
-            const vignetteScaleGeometricMean = Math.sqrt(vignetteScaleX * vignetteScaleY);
-            vignetteScaleX = Tools.Mix(vignetteScaleX, vignetteScaleGeometricMean, this.vignetteStretch);
-            vignetteScaleY = Tools.Mix(vignetteScaleY, vignetteScaleGeometricMean, this.vignetteStretch);
+                let vignetteScaleY = Math.tan(this.vignetteCameraFov * 0.5);
+                let vignetteScaleX = vignetteScaleY * aspectRatio;
 
-            effect.setFloat4("vignetteSettings1", vignetteScaleX, vignetteScaleY, -vignetteScaleX * this.vignetteCentreX, -vignetteScaleY * this.vignetteCentreY);
+                const vignetteScaleGeometricMean = Math.sqrt(vignetteScaleX * vignetteScaleY);
+                vignetteScaleX = Tools.Mix(vignetteScaleX, vignetteScaleGeometricMean, this.vignetteStretch);
+                vignetteScaleY = Tools.Mix(vignetteScaleY, vignetteScaleGeometricMean, this.vignetteStretch);
 
-            const vignettePower = -2.0 * this.vignetteWeight;
-            effect.setFloat4("vignetteSettings2", this.vignetteColor.r, this.vignetteColor.g, this.vignetteColor.b, vignettePower);
+                effect.setFloat4("vignetteSettings1", vignetteScaleX, vignetteScaleY, -vignetteScaleX * this.vignetteCenterX, -vignetteScaleY * this.vignetteCenterY);
+
+                const vignettePower = -2.0 * this.vignetteWeight;
+                effect.setFloat4("vignetteSettings2", this.vignetteColor.r, this.vignetteColor.g, this.vignetteColor.b, vignettePower);
+            }
         }
 
         // Exposure
@@ -575,7 +654,7 @@ export class ImageProcessingConfiguration {
 
     /**
      * Clones the current image processing instance.
-     * @return The cloned image processing
+     * @returns The cloned image processing
      */
     public clone(): ImageProcessingConfiguration {
         return SerializationHelper.Clone(() => new ImageProcessingConfiguration(), this);
@@ -583,7 +662,7 @@ export class ImageProcessingConfiguration {
 
     /**
      * Serializes the current image processing instance to a json representation.
-     * @return a JSON representation
+     * @returns a JSON representation
      */
     public serialize(): any {
         return SerializationHelper.Serialize(this);
@@ -592,10 +671,19 @@ export class ImageProcessingConfiguration {
     /**
      * Parses the image processing from a json representation.
      * @param source the JSON source to parse
-     * @return The parsed image processing
+     * @returns The parsed image processing
      */
     public static Parse(source: any): ImageProcessingConfiguration {
-        return SerializationHelper.Parse(() => new ImageProcessingConfiguration(), source, null, null);
+        const parsed = SerializationHelper.Parse(() => new ImageProcessingConfiguration(), source, null, null);
+        // Backward compatibility
+        if (source.vignetteCentreX !== undefined) {
+            parsed.vignetteCenterX = source.vignetteCentreX;
+        }
+        if (source.vignetteCentreY !== undefined) {
+            parsed.vignetteCenterY = source.vignetteCentreY;
+        }
+
+        return parsed;
     }
 
     // Static constants associated to the image processing.

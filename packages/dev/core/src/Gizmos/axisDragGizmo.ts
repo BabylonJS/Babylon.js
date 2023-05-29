@@ -2,28 +2,53 @@ import type { Observer } from "../Misc/observable";
 import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
 import type { PointerInfo } from "../Events/pointerEvents";
-import { Vector3 } from "../Maths/math.vector";
+import type { Vector3 } from "../Maths/math.vector";
 import { TransformNode } from "../Meshes/transformNode";
 import type { Node } from "../node";
 import { Mesh } from "../Meshes/mesh";
 import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder";
 import { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
-import type { GizmoAxisCache } from "./gizmo";
+import type { GizmoAxisCache, IGizmo } from "./gizmo";
 import { Gizmo } from "./gizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import type { Scene } from "../scene";
 import type { PositionGizmo } from "./positionGizmo";
 import { Color3 } from "../Maths/math.color";
+import { TmpVectors } from "../Maths/math.vector";
+/**
+ * Interface for axis drag gizmo
+ */
+export interface IAxisDragGizmo extends IGizmo {
+    /** Drag behavior responsible for the gizmos dragging interactions */
+    dragBehavior: PointerDragBehavior;
+    /** Drag distance in babylon units that the gizmo will snap to when dragged */
+    snapDistance: number;
+    /**
+     * Event that fires each time the gizmo snaps to a new location.
+     * * snapDistance is the the change in distance
+     */
+    onSnapObservable: Observable<{ snapDistance: number }>;
+    /** If the gizmo is enabled */
+    isEnabled: boolean;
+
+    /** Default material used to render when gizmo is not disabled or hovered */
+    coloredMaterial: StandardMaterial;
+    /** Material used to render when gizmo is hovered with mouse*/
+    hoverMaterial: StandardMaterial;
+    /** Material used to render when gizmo is disabled. typically grey.*/
+    disableMaterial: StandardMaterial;
+}
+
 /**
  * Single axis drag gizmo
  */
-export class AxisDragGizmo extends Gizmo {
+export class AxisDragGizmo extends Gizmo implements IAxisDragGizmo {
     /**
      * Drag behavior responsible for the gizmos dragging interactions
      */
     public dragBehavior: PointerDragBehavior;
-    private _pointerObserver: Nullable<Observer<PointerInfo>> = null;
+    protected _pointerObserver: Nullable<Observer<PointerInfo>> = null;
     /**
      * Drag distance in babylon units that the gizmo will snap to when dragged (Default: 0)
      */
@@ -34,21 +59,31 @@ export class AxisDragGizmo extends Gizmo {
      */
     public onSnapObservable = new Observable<{ snapDistance: number }>();
 
-    private _isEnabled: boolean = true;
-    private _parent: Nullable<PositionGizmo> = null;
+    protected _isEnabled: boolean = true;
+    protected _parent: Nullable<PositionGizmo> = null;
 
-    private _gizmoMesh: Mesh;
-    private _coloredMaterial: StandardMaterial;
-    private _hoverMaterial: StandardMaterial;
-    private _disableMaterial: StandardMaterial;
-    private _dragging: boolean = false;
+    protected _gizmoMesh: Mesh;
+    protected _coloredMaterial: StandardMaterial;
+    protected _hoverMaterial: StandardMaterial;
+    protected _disableMaterial: StandardMaterial;
+    protected _dragging: boolean = false;
 
+    /** Default material used to render when gizmo is not disabled or hovered */
+    public get coloredMaterial() {
+        return this._coloredMaterial;
+    }
+
+    /** Material used to render when gizmo is hovered with mouse*/
+    public get hoverMaterial() {
+        return this._hoverMaterial;
+    }
+
+    /** Material used to render when gizmo is disabled. typically grey.*/
+    public get disableMaterial() {
+        return this._disableMaterial;
+    }
     /**
-     * @param scene
-     * @param material
-     * @param thickness
-     * @param isCollider
-     * @hidden
+     * @internal
      */
     public static _CreateArrow(scene: Scene, material: StandardMaterial, thickness: number = 1, isCollider = false): TransformNode {
         const arrow = new TransformNode("arrow", scene);
@@ -74,9 +109,7 @@ export class AxisDragGizmo extends Gizmo {
     }
 
     /**
-     * @param scene
-     * @param arrow
-     * @hidden
+     * @internal
      */
     public static _CreateArrowInstance(scene: Scene, arrow: TransformNode): TransformNode {
         const instance = new TransformNode("arrow", scene);
@@ -131,12 +164,11 @@ export class AxisDragGizmo extends Gizmo {
         this._gizmoMesh.parent = this._rootMesh;
 
         let currentSnapDragDistance = 0;
-        const tmpVector = new Vector3();
-        const tmpVector2 = new Vector3();
         const tmpSnapEvent = { snapDistance: 0 };
         // Add drag behavior to handle events when the gizmo is dragged
         this.dragBehavior = new PointerDragBehavior({ dragAxis: dragAxis });
         this.dragBehavior.moveAttached = false;
+        this.dragBehavior.updateDragPlane = false;
         this._rootMesh.addBehavior(this.dragBehavior);
 
         this.dragBehavior.onDragObservable.add((event) => {
@@ -149,9 +181,9 @@ export class AxisDragGizmo extends Gizmo {
                 let matrixChanged: boolean = false;
                 // Snapping logic
                 if (this.snapDistance == 0) {
-                    this.attachedNode.getWorldMatrix().getTranslationToRef(tmpVector2);
-                    tmpVector2.addInPlace(event.delta);
-                    if (this.dragBehavior.validateDrag(tmpVector2)) {
+                    this.attachedNode.getWorldMatrix().getTranslationToRef(TmpVectors.Vector3[2]);
+                    TmpVectors.Vector3[2].addInPlace(event.delta);
+                    if (this.dragBehavior.validateDrag(TmpVectors.Vector3[2])) {
                         if ((this.attachedNode as any).position) {
                             // Required for nodes like lights
                             (this.attachedNode as any).position.addInPlaceFromFloats(event.delta.x, event.delta.y, event.delta.z);
@@ -167,13 +199,13 @@ export class AxisDragGizmo extends Gizmo {
                     if (Math.abs(currentSnapDragDistance) > this.snapDistance) {
                         const dragSteps = Math.floor(Math.abs(currentSnapDragDistance) / this.snapDistance);
                         currentSnapDragDistance = currentSnapDragDistance % this.snapDistance;
-                        event.delta.normalizeToRef(tmpVector);
-                        tmpVector.scaleInPlace(this.snapDistance * dragSteps);
+                        event.delta.normalizeToRef(TmpVectors.Vector3[1]);
+                        TmpVectors.Vector3[1].scaleInPlace(this.snapDistance * dragSteps);
 
-                        this.attachedNode.getWorldMatrix().getTranslationToRef(tmpVector2);
-                        tmpVector2.addInPlace(tmpVector);
-                        if (this.dragBehavior.validateDrag(tmpVector2)) {
-                            this.attachedNode.getWorldMatrix().addTranslationFromFloats(tmpVector.x, tmpVector.y, tmpVector.z);
+                        this.attachedNode.getWorldMatrix().getTranslationToRef(TmpVectors.Vector3[2]);
+                        TmpVectors.Vector3[2].addInPlace(TmpVectors.Vector3[1]);
+                        if (this.dragBehavior.validateDrag(TmpVectors.Vector3[2])) {
+                            this.attachedNode.getWorldMatrix().addTranslationFromFloats(TmpVectors.Vector3[1].x, TmpVectors.Vector3[1].y, TmpVectors.Vector3[1].z);
                             this.attachedNode.updateCache();
                             tmpSnapEvent.snapDistance = this.snapDistance * dragSteps;
                             this.onSnapObservable.notifyObservers(tmpSnapEvent);

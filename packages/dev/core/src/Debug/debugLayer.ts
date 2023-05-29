@@ -3,6 +3,8 @@ import { Observable } from "../Misc/observable";
 import { Scene } from "../scene";
 import { Engine } from "../Engines/engine";
 import { EngineStore } from "../Engines/engineStore";
+import type { IInspectable } from "../Misc/iInspectable";
+import type { Camera } from "../Cameras/camera";
 
 // declare INSPECTOR namespace for compilation issue
 declare let INSPECTOR: any;
@@ -21,6 +23,10 @@ export interface IExplorerExtensibilityOption {
      * Defines the action to execute on click
      */
     action: (entity: any) => void;
+    /**
+     * Keep popup open after click
+     */
+    keepOpenAfterClick?: boolean;
 }
 
 /**
@@ -35,6 +41,56 @@ export interface IExplorerExtensibilityGroup {
      * Gets the list of options added to a type
      */
     entries: IExplorerExtensibilityOption[];
+}
+
+/**
+ * Defines a new node that will be displayed as top level node in the explorer
+ */
+export interface IExplorerAdditionalChild {
+    /**
+     * Gets the name of the additional node
+     */
+    name: string;
+    /**
+     * Function used to return the class name of the child node
+     */
+    getClassName(): string;
+    /**
+     * List of inspectable custom properties (used by the Inspector)
+     * @see https://doc.babylonjs.com/toolsAndResources/inspector#extensibility
+     */
+    inspectableCustomProperties: IInspectable[];
+}
+
+/**
+ * Defines a new node that will be displayed as top level node in the explorer
+ */
+export interface IExplorerAdditionalNode {
+    /**
+     * Gets the name of the additional node
+     */
+    name: string;
+    /**
+     * Function used to return the list of child entries
+     */
+    getContent(): IExplorerAdditionalChild[];
+}
+
+export type IInspectorContextMenuType = "pipeline" | "node" | "materials" | "spriteManagers" | "particleSystems";
+
+/**
+ * Context menu item
+ */
+export interface IInspectorContextMenuItem {
+    /**
+     * Display label - menu item
+     */
+    label: string;
+    /**
+     * Callback function that will be called when the menu item is selected
+     * @param entity the entity that is currently selected in the scene explorer
+     */
+    action: (entity?: unknown) => void;
 }
 
 /**
@@ -78,6 +134,10 @@ export interface IInspectorOptions {
      */
     explorerExtensibility?: IExplorerExtensibilityGroup[];
     /**
+     * Optional list of additional top level nodes
+     */
+    additionalNodes?: IExplorerAdditionalNode[];
+    /**
      * Optional URL to get the inspector script from (by default it uses the babylonjs CDN).
      */
     inspectorURL?: string;
@@ -85,19 +145,31 @@ export interface IInspectorOptions {
      * Optional initial tab (default to DebugLayerTab.Properties)
      */
     initialTab?: DebugLayerTab;
+    /**
+     * Optional camera to use to render the gizmos from the inspector (default to the scene.activeCamera or the latest from scene.activeCameras)
+     */
+    gizmoCamera?: Camera;
+    /**
+     * Context menu for inspector tools such as "Post Process", "Nodes", "Materials", etc.
+     */
+    contextMenu?: Partial<Record<IInspectorContextMenuType, IInspectorContextMenuItem[]>>;
+    /**
+     * List of context menu items that should be completely overridden by custom items from the contextMenu property.
+     */
+    contextMenuOverride?: IInspectorContextMenuType[];
 }
 
 declare module "../scene" {
     export interface Scene {
         /**
-         * @hidden
+         * @internal
          * Backing field
          */
         _debugLayer: DebugLayer;
 
         /**
          * Gets the debug layer (aka Inspector) associated with the scene
-         * @see https://doc.babylonjs.com/features/playground_debuglayer
+         * @see https://doc.babylonjs.com/toolsAndResources/inspector
          */
         debugLayer: DebugLayer;
     }
@@ -142,7 +214,7 @@ export enum DebugLayerTab {
 /**
  * The debug layer (aka Inspector) is the go to tool in order to better understand
  * what is happening in your scene
- * @see https://doc.babylonjs.com/features/playground_debuglayer
+ * @see https://doc.babylonjs.com/toolsAndResources/inspector
  */
 export class DebugLayer {
     /**
@@ -193,7 +265,7 @@ export class DebugLayer {
      * Instantiates a new debug layer.
      * The debug layer (aka Inspector) is the go to tool in order to better understand
      * what is happening in your scene
-     * @see https://doc.babylonjs.com/features/playground_debuglayer
+     * @see https://doc.babylonjs.com/toolsAndResources/inspector
      * @param scene Defines the scene to inspect
      */
     constructor(scene?: Scene) {
@@ -311,7 +383,7 @@ export class DebugLayer {
     /**
      * Launch the debugLayer.
      * @param config Define the configuration of the inspector
-     * @return a promise fulfilled when the debug layer is visible
+     * @returns a promise fulfilled when the debug layer is visible
      */
     public show(config?: IInspectorOptions): Promise<DebugLayer> {
         return new Promise((resolve) => {

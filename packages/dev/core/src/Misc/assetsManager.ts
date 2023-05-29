@@ -1,8 +1,9 @@
 import type { Scene } from "../scene";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { TransformNode } from "../Meshes/transformNode";
 import type { IParticleSystem } from "../Particles/IParticleSystem";
 import type { Skeleton } from "../Bones/skeleton";
-import { SceneLoader } from "../Loading/sceneLoader";
+import { SceneLoader, SceneLoaderAnimationGroupLoadingMode } from "../Loading/sceneLoader";
 import { Tools } from "./tools";
 import { Observable } from "./observable";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
@@ -11,9 +12,11 @@ import { CubeTexture } from "../Materials/Textures/cubeTexture";
 import { HDRCubeTexture } from "../Materials/Textures/hdrCubeTexture";
 import { EquiRectangularCubeTexture } from "../Materials/Textures/equiRectangularCubeTexture";
 import { Logger } from "../Misc/logger";
+import type { Animatable } from "../Animations/animatable";
 import type { AnimationGroup } from "../Animations/animationGroup";
 import type { AssetContainer } from "../assetContainer";
 import { EngineStore } from "../Engines/engineStore";
+import type { Nullable } from "../types";
 
 /**
  * Defines the list of states available for a task inside a AssetsManager
@@ -88,9 +91,7 @@ export abstract class AbstractAssetTask {
 
     /**
      * Internal only
-     * @param message
-     * @param exception
-     * @hidden
+     * @internal
      */
     public _setErrorObject(message?: string, exception?: any) {
         if (this._errorObject) {
@@ -229,6 +230,10 @@ export class ContainerAssetTask extends AbstractAssetTask {
      */
     public loadedContainer: AssetContainer;
     /**
+     * Gets the list of loaded transforms
+     */
+    public loadedTransformNodes: Array<TransformNode>;
+    /**
      * Gets the list of loaded meshes
      */
     public loadedMeshes: Array<AbstractMesh>;
@@ -278,7 +283,11 @@ export class ContainerAssetTask extends AbstractAssetTask {
         /**
          * Defines the filename or File of the scene to load from
          */
-        public sceneFilename: string | File
+        public sceneFilename: string | File,
+        /**
+         * Defines the extension to use to load the scene (if not defined, ".babylon" will be used)
+         */
+        public extension?: string
     ) {
         super(name);
     }
@@ -297,6 +306,7 @@ export class ContainerAssetTask extends AbstractAssetTask {
             (container: AssetContainer) => {
                 this.loadedContainer = container;
                 this.loadedMeshes = container.meshes;
+                this.loadedTransformNodes = container.transformNodes;
                 this.loadedParticleSystems = container.particleSystems;
                 this.loadedSkeletons = container.skeletons;
                 this.loadedAnimationGroups = container.animationGroups;
@@ -305,7 +315,8 @@ export class ContainerAssetTask extends AbstractAssetTask {
             null,
             (scene, message, exception) => {
                 onError(message, exception);
-            }
+            },
+            this.extension
         );
     }
 }
@@ -314,6 +325,10 @@ export class ContainerAssetTask extends AbstractAssetTask {
  * Define a task used by AssetsManager to load meshes
  */
 export class MeshAssetTask extends AbstractAssetTask {
+    /**
+     * Gets the list of loaded transforms
+     */
+    public loadedTransformNodes: Array<TransformNode>;
     /**
      * Gets the list of loaded meshes
      */
@@ -364,7 +379,11 @@ export class MeshAssetTask extends AbstractAssetTask {
         /**
          * Defines the filename or File of the scene to load from
          */
-        public sceneFilename: string | File
+        public sceneFilename: string | File,
+        /**
+         * Defines the extension to use to load the scene (if not defined, ".babylon" will be used)
+         */
+        public extension?: string
     ) {
         super(name);
     }
@@ -381,8 +400,9 @@ export class MeshAssetTask extends AbstractAssetTask {
             this.rootUrl,
             this.sceneFilename,
             scene,
-            (meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[]) => {
+            (meshes: AbstractMesh[], particleSystems: IParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[], transformNodes: TransformNode[]) => {
                 this.loadedMeshes = meshes;
+                this.loadedTransformNodes = transformNodes;
                 this.loadedParticleSystems = particleSystems;
                 this.loadedSkeletons = skeletons;
                 this.loadedAnimationGroups = animationGroups;
@@ -391,7 +411,97 @@ export class MeshAssetTask extends AbstractAssetTask {
             null,
             (scene, message, exception) => {
                 onError(message, exception);
-            }
+            },
+            this.extension
+        );
+    }
+}
+
+/**
+ * Define a task used by AssetsManager to load animations
+ */
+export class AnimationAssetTask extends AbstractAssetTask {
+    /**
+     * Gets the list of loaded animation groups
+     */
+    public loadedAnimationGroups: Array<AnimationGroup>;
+    /**
+     * Gets the list of loaded animatables
+     */
+    public loadedAnimatables: Array<Animatable>;
+
+    /**
+     * Callback called when the task is successful
+     */
+    public onSuccess: (task: AnimationAssetTask) => void;
+
+    /**
+     * Callback called when the task is successful
+     */
+    public onError: (task: AnimationAssetTask, message?: string, exception?: any) => void;
+
+    /**
+     * Creates a new AnimationAssetTask
+     * @param name defines the name of the task
+     * @param rootUrl defines the root url to use as a base to load your meshes and associated resources
+     * @param filename defines the filename or File of the scene to load from
+     * @param targetConverter defines a function used to convert animation targets from loaded scene to current scene (default: search node by name)
+     */
+    constructor(
+        /**
+         * Defines the name of the task
+         */
+        public name: string,
+        /**
+         * Defines the root url to use as a base to load your meshes and associated resources
+         */
+        public rootUrl: string,
+        /**
+         * Defines the filename to load from
+         */
+        public filename: string | File,
+        /**
+         * Defines a function used to convert animation targets from loaded scene to current scene (default: search node by name)
+         */
+        public targetConverter?: Nullable<(target: any) => any>,
+        /**
+         * Defines the extension to use to load the scene (if not defined, ".babylon" will be used)
+         */
+        public extension?: string
+    ) {
+        super(name);
+    }
+
+    /**
+     * Execute the current task
+     * @param scene defines the scene where you want your assets to be loaded
+     * @param onSuccess is a callback called when the task is successfully executed
+     * @param onError is a callback called if an error occurs
+     */
+    public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
+        const startingIndexForNewAnimatables = scene.animatables.length;
+        const startingIndexForNewAnimationGroups = scene.animationGroups.length;
+        this.loadedAnimatables = [];
+        this.loadedAnimationGroups = [];
+
+        SceneLoader.ImportAnimations(
+            this.rootUrl,
+            this.filename,
+            scene,
+            false,
+            SceneLoaderAnimationGroupLoadingMode.NoSync,
+            this.targetConverter,
+            () => {
+                this.loadedAnimatables = scene.animatables.slice(startingIndexForNewAnimatables);
+                this.loadedAnimationGroups = scene.animationGroups.slice(startingIndexForNewAnimationGroups);
+
+                onSuccess();
+            },
+            null,
+            (scene, message, exception) => {
+                onError(message, exception);
+            },
+            this.extension
         );
     }
 }
@@ -890,7 +1000,7 @@ export class EquiRectangularCubeTextureAssetTask extends AbstractAssetTask imple
 
 /**
  * This class can be used to easily import assets into a scene
- * @see https://doc.babylonjs.com/how_to/how_to_use_assetsmanager
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/importers/assetManager
  */
 export class AssetsManager {
     private _scene: Scene;
@@ -942,7 +1052,7 @@ export class AssetsManager {
 
     /**
      * Gets or sets a boolean defining if the AssetsManager should use the default loading screen
-     * @see https://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
      */
     public useDefaultLoadingScreen = true;
 
@@ -967,10 +1077,11 @@ export class AssetsManager {
      * @param meshesNames defines the name of meshes to load
      * @param rootUrl defines the root url to use to locate files
      * @param sceneFilename defines the filename of the scene file or the File itself
+     * @param extension defines the extension to use to load the file
      * @returns a new ContainerAssetTask object
      */
-    public addContainerTask(taskName: string, meshesNames: any, rootUrl: string, sceneFilename: string | File): ContainerAssetTask {
-        const task = new ContainerAssetTask(taskName, meshesNames, rootUrl, sceneFilename);
+    public addContainerTask(taskName: string, meshesNames: any, rootUrl: string, sceneFilename: string | File, extension?: string): ContainerAssetTask {
+        const task = new ContainerAssetTask(taskName, meshesNames, rootUrl, sceneFilename, extension);
         this._tasks.push(task);
 
         return task;
@@ -982,10 +1093,11 @@ export class AssetsManager {
      * @param meshesNames defines the name of meshes to load
      * @param rootUrl defines the root url to use to locate files
      * @param sceneFilename defines the filename of the scene file or the File itself
+     * @param extension defines the extension to use to load the file
      * @returns a new MeshAssetTask object
      */
-    public addMeshTask(taskName: string, meshesNames: any, rootUrl: string, sceneFilename: string | File): MeshAssetTask {
-        const task = new MeshAssetTask(taskName, meshesNames, rootUrl, sceneFilename);
+    public addMeshTask(taskName: string, meshesNames: any, rootUrl: string, sceneFilename: string | File, extension?: string): MeshAssetTask {
+        const task = new MeshAssetTask(taskName, meshesNames, rootUrl, sceneFilename, extension);
         this._tasks.push(task);
 
         return task;
@@ -1035,7 +1147,7 @@ export class AssetsManager {
      * @param taskName defines the name of the new task
      * @param url defines the url of the file to load
      * @param noMipmap defines if the texture must not receive mipmaps (false by default)
-     * @param invertY defines if you want to invert Y axis of the loaded texture (false by default)
+     * @param invertY defines if you want to invert Y axis of the loaded texture (true by default)
      * @param samplingMode defines the sampling mode to use (Texture.TRILINEAR_SAMPLINGMODE by default)
      * @returns a new TextureAssetTask object
      */
@@ -1209,7 +1321,7 @@ export class AssetsManager {
 
     /**
      * Reset the AssetsManager and remove all tasks
-     * @return the current instance of the AssetsManager
+     * @returns the current instance of the AssetsManager
      */
     public reset(): AssetsManager {
         this._isLoading = false;
@@ -1219,7 +1331,7 @@ export class AssetsManager {
 
     /**
      * Start the loading process
-     * @return the current instance of the AssetsManager
+     * @returns the current instance of the AssetsManager
      */
     public load(): AssetsManager {
         if (this._isLoading) {
@@ -1254,7 +1366,7 @@ export class AssetsManager {
 
     /**
      * Start the loading process as an async operation
-     * @return a promise returning the list of failed tasks
+     * @returns a promise returning the list of failed tasks
      */
     public loadAsync(): Promise<void> {
         return new Promise((resolve, reject) => {

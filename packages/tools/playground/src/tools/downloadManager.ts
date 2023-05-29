@@ -124,8 +124,8 @@ export class DownloadManager {
         const zip = new JSZip();
 
         const scene = engine.scenes[0];
-        const textures = scene.textures as any;
-        const importedFiles = scene.importedMeshesFiles as string[];
+        const textures = scene.textures?.slice(0) as any;
+        const importedFiles = scene.importedMeshesFiles?.slice(0) as string[];
 
         const zipCode = this.globalState.zipCode;
 

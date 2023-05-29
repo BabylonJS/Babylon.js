@@ -11,6 +11,7 @@ import { LineWithFileButtonComponent } from "../../sharedComponents/lineWithFile
 import { Tools } from "core/Misc/tools";
 import addButton from "../../imgs/add.svg";
 import deleteButton from "../../imgs/delete.svg";
+import { NodeLedger } from "shared-ui-components/nodeGraphSystem/nodeLedger";
 
 import "./nodeList.scss";
 
@@ -19,7 +20,7 @@ interface INodeListComponentProps {
 }
 
 export class NodeListComponent extends React.Component<INodeListComponentProps, { filter: string }> {
-    private _onResetRequiredObserver: Nullable<Observer<void>>;
+    private _onResetRequiredObserver: Nullable<Observer<boolean>>;
 
     private static _Tooltips: { [key: string]: string } = {
         BonesBlock: "Provides a world matrix for each vertex, based on skeletal (bone/joint) animation",
@@ -50,7 +51,8 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         DeltaTimeBlock: "A float representing the time that has passed since the last frame was rendered",
         Float: "A floating point number representing a value with a fractional component",
         TextureBlock: "A node for reading a linked or embedded texture file",
-        TimeBlock: "A float value that represents the time that has passed since the scene was loaded",
+        TimeBlock: "A float value that represents the time that has passed since the scene was loaded (it is incremented by 0.6 each second)",
+        RealTimeBlock: "A float value that represents the number of seconds that have elapsed since the engine was initialized",
         Vector2: "a vector composed of X and Y channels",
         Vector3: "a vector composed of X, Y, and Z channels",
         Vector4: "a vector composed of X, Y, Z, and W channels",
@@ -65,9 +67,12 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         WorldMatrixBlock: "A matrix to remap points in 3D local space to 3D world space",
         WorldViewProjectionMatrixBlock: "A matrix to remap points in 3D local space to 3D world space, then to 2D camera space, and ending in 2D screen space",
         ColorBlock: "Outputs the RGBA color of each vertex in the mesh",
+        InstanceColorBlock: "Outputs the RGBA color of each instance",
         InstancesBlock: "Provides the world matrix for each instance to apply this material to all instances",
         MatrixIndicesBlock: "A Vector4 representing the vertex to bone skinning assignments",
         MatrixWeightsBlock: "A Vector4 representing the vertex to bone skinning weights",
+        MatrixIndicesExtraBlock: "A Vector4 representing the vertex to bone skinning assignments when the number of influences per bone is greater than 4",
+        MatrixWeightsExtraBlock: "A Vector4 representing the vertex to bone skinning weights when the number of influences per bone is greater than 4",
         NormalBlock: "A Vector3 representing the normal of each vertex of the attached mesh",
         PositionBlock: "A Vector3 representing the position of each vertex of the attached mesh",
         TangentBlock: "A Vector3 representing the tangent of each vertex of the attached mesh",
@@ -75,6 +80,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         WorldNormal: "A Vector4 representing the normal of each vertex of the attached mesh transformed into world space",
         WorldTangent: "A Vector4 representing the tangent of each vertex of the attached mesh transformed into world space",
         PerturbNormalBlock: "Creates high-frequency detail normal vectors based on a normal map, the world position, and world normal",
+        TBNBlock: "Creates a TBN matrix from normal, tangent, and bitangent vectors",
         NormalBlend: "Outputs the result of blending two normal maps together using a per-channel screen",
         WorldPosition: "A Vector4 representing the position of each vertex of the attached mesh transformed into world space",
         DiscardBlock: "A final node that will not output a pixel below the cutoff value",
@@ -165,6 +171,15 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         TwirlBlock: "Apply a twirl rotation",
         ElbowBlock: "Passthrough block mostly used to organize your graph",
         ClipPlanesBlock: "A node that add clip planes support",
+        HeightToNormalBlock: "Convert a height map into a normal map",
+        FragDepthBlock: "A final node that sets the fragment depth",
+        ShadowMapBlock: "Compute a depth value suitable for shadow map generation",
+        TriPlanarBlock: "A node for reading a texture with triplanar mapping",
+        BiPlanarBlock: "A node for reading a texture with biplanar mapping",
+        MatrixDeterminantBlock: "Compute the determinant of a matrix",
+        MatrixTransposeBlock: "Compute the transpose of a matrix",
+        MeshAttributeExistsBlock: "Falls back to secondary input if specified attribute doesn't exists on the rendered mesh",
+        CurveBlock: "Apply a curve function",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -211,7 +226,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 try {
                     localStorage.setItem(frameName, JSON.stringify(frameData));
                 } catch (error) {
-                    this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("Error Saving Frame");
+                    this.props.globalState.stateManager.onErrorMessageDialogRequiredObservable.notifyObservers("Error Saving Frame");
                     return;
                 }
 
@@ -255,7 +270,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 try {
                     localStorage.setItem(blockName, JSON.stringify(blockData));
                 } catch (error) {
-                    this.props.globalState.onErrorMessageDialogRequiredObservable.notifyObservers("Error Saving Block");
+                    this.props.globalState.stateManager.onErrorMessageDialogRequiredObservable.notifyObservers("Error Saving Block");
                     return;
                 }
 
@@ -314,11 +329,14 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "TextureBlock",
                 "ReflectionTextureBlock",
                 "TimeBlock",
+                "RealTimeBlock",
                 "DeltaTimeBlock",
                 "MaterialAlphaBlock",
                 "FragCoordBlock",
                 "ScreenSizeBlock",
                 "ImageSourceBlock",
+                "TriPlanarBlock",
+                "BiPlanarBlock",
             ],
             Interpolation: ["LerpBlock", "StepBlock", "SmoothStepBlock", "NLerpBlock"],
             Logical: ["EqualBlock", "NotEqualBlock", "LessThanBlock", "LessOrEqualBlock", "GreaterThanBlock", "GreaterOrEqualBlock", "XorBlock", "OrBlock", "AndBlock"],
@@ -344,6 +362,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "ArcTanBlock",
                 "ArcTan2Block",
                 "CosBlock",
+                "CurveBlock",
                 "DegreesToRadiansBlock",
                 "ExpBlock",
                 "Exp2Block",
@@ -380,26 +399,34 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "ViewProjectionMatrixBlock",
                 "ProjectionMatrixBlock",
                 "MatrixBuilderBlock",
+                "MatrixDeterminantBlock",
+                "MatrixTransposeBlock",
             ],
-            Misc: ["ElbowBlock"],
+            Misc: ["ElbowBlock", "ShadowMapBlock"],
             Mesh: [
                 "InstancesBlock",
                 "PositionBlock",
                 "UVBlock",
                 "ColorBlock",
+                "InstanceColorBlock",
                 "NormalBlock",
+                "HeightToNormalBlock",
+                "TBNBlock",
                 "PerturbNormalBlock",
                 "NormalBlendBlock",
                 "TangentBlock",
                 "MatrixIndicesBlock",
                 "MatrixWeightsBlock",
+                "MatrixIndicesExtraBlock",
+                "MatrixWeightsExtraBlock",
                 "WorldPositionBlock",
                 "WorldNormalBlock",
                 "WorldTangentBlock",
                 "FrontFacingBlock",
+                "MeshAttributeExistsBlock",
             ],
             Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock", "CloudBlock", "VoronoiNoiseBlock"],
-            Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock", "ClipPlanesBlock"],
+            Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock", "ClipPlanesBlock", "FragDepthBlock"],
             Particle: [
                 "ParticleBlendMultiplyBlock",
                 "ParticleColorBlock",
@@ -533,6 +560,18 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                     </LineContainerComponent>
                 );
             }
+
+            // Register blocks
+            const ledger = NodeLedger.RegisteredNodeNames;
+            for (const key in allBlocks) {
+                const blocks = allBlocks[key] as string[];
+                if (blocks.length) {
+                    ledger.push(...blocks);
+                }
+            }
+            NodeLedger.NameFormatter = (name) => {
+                return name.replace("Block", "");
+            };
         }
 
         return (
@@ -543,9 +582,9 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                             <input
                                 type="text"
                                 placeholder="Filter"
-                                onFocus={() => (this.props.globalState.blockKeyboardEvents = true)}
+                                onFocus={() => (this.props.globalState.lockObject.lock = true)}
                                 onBlur={() => {
-                                    this.props.globalState.blockKeyboardEvents = false;
+                                    this.props.globalState.lockObject.lock = false;
                                 }}
                                 onChange={(evt) => this.filterContent(evt.target.value)}
                             />

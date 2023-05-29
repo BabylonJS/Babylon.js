@@ -1,6 +1,8 @@
 import { ThinEngine } from "../../Engines/thinEngine";
 import type { InternalTexture } from "../../Materials/Textures/internalTexture";
 import type { Nullable } from "../../types";
+import { Constants } from "../constants";
+import type { ExternalTexture } from "../../Materials/Textures/externalTexture";
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
@@ -10,7 +12,7 @@ declare module "../../Engines/thinEngine" {
          * @param video defines the video element to use
          * @param invertY defines if data must be stored with Y axis inverted
          */
-        updateVideoTexture(texture: Nullable<InternalTexture>, video: HTMLVideoElement, invertY: boolean): void;
+        updateVideoTexture(texture: Nullable<InternalTexture>, video: HTMLVideoElement | Nullable<ExternalTexture>, invertY: boolean): void;
     }
 }
 
@@ -18,6 +20,9 @@ ThinEngine.prototype.updateVideoTexture = function (texture: Nullable<InternalTe
     if (!texture || texture._isDisabled) {
         return;
     }
+
+    const glformat = this._getInternalFormat(texture.format);
+    const internalFormat = this._getRGBABufferInternalSizedFormat(Constants.TEXTURETYPE_UNSIGNED_BYTE, texture.format);
 
     const wasPreviouslyBound = this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
     this._unpackFlipY(!invertY); // Video are upside down by default
@@ -28,7 +33,7 @@ ThinEngine.prototype.updateVideoTexture = function (texture: Nullable<InternalTe
             // clear old errors just in case.
             this._gl.getError();
 
-            this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, video);
+            this._gl.texImage2D(this._gl.TEXTURE_2D, 0, internalFormat, glformat, this._gl.UNSIGNED_BYTE, video);
 
             if (this._gl.getError() !== 0) {
                 this._videoTextureSupported = false;
@@ -55,9 +60,9 @@ ThinEngine.prototype.updateVideoTexture = function (texture: Nullable<InternalTe
             texture._workingContext!.clearRect(0, 0, texture.width, texture.height);
             texture._workingContext!.drawImage(video, 0, 0, video.videoWidth, video.videoHeight, 0, 0, texture.width, texture.height);
 
-            this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, texture._workingCanvas as TexImageSource);
+            this._gl.texImage2D(this._gl.TEXTURE_2D, 0, internalFormat, glformat, this._gl.UNSIGNED_BYTE, texture._workingCanvas as TexImageSource);
         } else {
-            this._gl.texImage2D(this._gl.TEXTURE_2D, 0, this._gl.RGBA, this._gl.RGBA, this._gl.UNSIGNED_BYTE, video);
+            this._gl.texImage2D(this._gl.TEXTURE_2D, 0, internalFormat, glformat, this._gl.UNSIGNED_BYTE, video);
         }
 
         if (texture.generateMipMaps) {

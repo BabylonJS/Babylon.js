@@ -1,13 +1,12 @@
 import * as React from "react";
 
 import type { Observable } from "core/Misc/observable";
-import { Tools } from "core/Misc/tools";
 import { Vector3, TmpVectors } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
 import type { Mesh } from "core/Meshes/mesh";
 import { VertexBuffer } from "core/Buffers/buffer";
 import { CreateLineSystem } from "core/Meshes/Builders/linesBuilder";
-import { PhysicsImpostor } from "core/Physics/physicsImpostor";
+import { PhysicsImpostor } from "core/Physics/v1/physicsImpostor";
 import { Scene } from "core/scene";
 
 import type { PropertyChangedEvent } from "../../../../propertyChangedEvent";
@@ -23,6 +22,7 @@ import type { GlobalState } from "../../../../globalState";
 import { CustomPropertyGridComponent } from "../customPropertyGridComponent";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
+import { Color4LineComponent } from "shared-ui-components/lines/color4LineComponent";
 import type { MorphTarget } from "core/Morph/morphTarget";
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
@@ -36,9 +36,13 @@ import { HexLineComponent } from "shared-ui-components/lines/hexLineComponent";
 import { SkeletonViewer } from "core/Debug/skeletonViewer";
 import type { ShaderMaterial } from "core/Materials/shaderMaterial";
 import type { IInspectableOptions } from "core/Misc/iInspectable";
+import { NormalMaterial } from "materials/normal/normalMaterial";
 
 import "core/Physics/physicsEngineComponent";
+import "core/Physics/v1/physicsEngineComponent";
+
 import { ParentPropertyGridComponent } from "../parentPropertyGridComponent";
+import { Tools } from "core/Misc/tools";
 
 interface IMeshPropertyGridComponentProps {
     globalState: GlobalState;
@@ -166,11 +170,8 @@ export class MeshPropertyGridComponent extends React.Component<
             mesh.reservedDataStore.originalMaterial = null;
             this.setState({ displayNormals: false });
         } else {
-            if (!(BABYLON as any).NormalMaterial) {
-                this.setState({ displayNormals: true });
-                Tools.LoadScript("https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.js", () => {
-                    this.displayNormals();
-                });
+            if (typeof NormalMaterial === "undefined") {
+                Tools.Warn("NormalMaterial not found. Make sure to load the materials library.");
                 return;
             }
 
@@ -182,7 +183,7 @@ export class MeshPropertyGridComponent extends React.Component<
                 mesh.reservedDataStore.originalMaterial = mesh.material;
             }
 
-            const normalMaterial = new (BABYLON as any).NormalMaterial("normalMaterial", scene);
+            const normalMaterial = new NormalMaterial("normalMaterial", scene);
             normalMaterial.disableLighting = true;
             if (mesh.material) {
                 normalMaterial.sideOrientation = mesh.material.sideOrientation;
@@ -400,7 +401,7 @@ export class MeshPropertyGridComponent extends React.Component<
             : [];
 
         return (
-            <div className="pane">
+            <>
                 <CustomPropertyGridComponent
                     globalState={this.props.globalState}
                     target={mesh}
@@ -453,11 +454,11 @@ export class MeshPropertyGridComponent extends React.Component<
                             target={mesh}
                             propertyName="material"
                             noDirectUpdate={true}
-                            onSelect={(value: number) => {
+                            onSelect={(value) => {
                                 if (value < 0) {
                                     mesh.material = null;
                                 } else {
-                                    mesh.material = sortedMaterials[value];
+                                    mesh.material = sortedMaterials[value as number];
                                 }
 
                                 this.forceUpdate();
@@ -478,9 +479,16 @@ export class MeshPropertyGridComponent extends React.Component<
                 <CommonPropertyGridComponent host={mesh} lockObject={this.props.lockObject} globalState={this.props.globalState} />
                 <VariantsPropertyGridComponent host={mesh} lockObject={this.props.lockObject} globalState={this.props.globalState} />
                 <LineContainerComponent title="TRANSFORMS" selection={this.props.globalState}>
-                    <Vector3LineComponent label="Position" target={mesh} propertyName="position" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Vector3LineComponent
+                        lockObject={this.props.lockObject}
+                        label="Position"
+                        target={mesh}
+                        propertyName="position"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                     {!mesh.rotationQuaternion && (
                         <Vector3LineComponent
+                            lockObject={this.props.lockObject}
                             label="Rotation"
                             useEuler={this.props.globalState.onlyUseEulers}
                             target={mesh}
@@ -491,6 +499,7 @@ export class MeshPropertyGridComponent extends React.Component<
                     )}
                     {mesh.rotationQuaternion && (
                         <QuaternionLineComponent
+                            lockObject={this.props.lockObject}
                             label="Rotation"
                             useEuler={this.props.globalState.onlyUseEulers}
                             target={mesh}
@@ -498,11 +507,18 @@ export class MeshPropertyGridComponent extends React.Component<
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         />
                     )}
-                    <Vector3LineComponent label="Scaling" target={mesh} propertyName="scaling" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Vector3LineComponent
+                        lockObject={this.props.lockObject}
+                        label="Scaling"
+                        target={mesh}
+                        propertyName="scaling"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                 </LineContainerComponent>
                 <LineContainerComponent title="DISPLAY" closed={true} selection={this.props.globalState}>
                     {!mesh.isAnInstance && (
                         <SliderLineComponent
+                            lockObject={this.props.lockObject}
                             label="Visibility"
                             target={mesh}
                             propertyName="visibility"
@@ -553,6 +569,7 @@ export class MeshPropertyGridComponent extends React.Component<
                         />
                     )}
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Rendering group ID"
                         decimalCount={0}
                         target={mesh}
@@ -576,6 +593,7 @@ export class MeshPropertyGridComponent extends React.Component<
                         {morphTargets.map((mt, i) => {
                             return (
                                 <SliderLineComponent
+                                    lockObject={this.props.lockObject}
                                     key={i}
                                     label={mt.name}
                                     target={mt}
@@ -646,6 +664,7 @@ export class MeshPropertyGridComponent extends React.Component<
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Retry count"
                         minimum={-1}
                         maximum={10}
@@ -678,6 +697,7 @@ export class MeshPropertyGridComponent extends React.Component<
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Edge width"
                         minimum={0}
                         maximum={10}
@@ -686,7 +706,13 @@ export class MeshPropertyGridComponent extends React.Component<
                         propertyName="edgesWidth"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
-                    <Color3LineComponent label="Edge color" target={mesh} propertyName="edgesColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <Color4LineComponent
+                        lockObject={this.props.lockObject}
+                        label="Edge color"
+                        target={mesh}
+                        propertyName="edgesColor"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                 </LineContainerComponent>
                 {!mesh.isAnInstance && (
                     <LineContainerComponent title="OUTLINE & OVERLAY" closed={true} selection={this.props.globalState}>
@@ -696,14 +722,26 @@ export class MeshPropertyGridComponent extends React.Component<
                             propertyName="renderOverlay"
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         />
-                        <Color3LineComponent label="Overlay color" target={mesh} propertyName="overlayColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <Color3LineComponent
+                            lockObject={this.props.lockObject}
+                            label="Overlay color"
+                            target={mesh}
+                            propertyName="overlayColor"
+                            onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        />
                         <CheckBoxLineComponent
                             label="Render outline"
                             target={mesh}
                             propertyName="renderOutline"
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         />
-                        <Color3LineComponent label="Outline color" target={mesh} propertyName="outlineColor" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                        <Color3LineComponent
+                            lockObject={this.props.lockObject}
+                            label="Outline color"
+                            target={mesh}
+                            propertyName="outlineColor"
+                            onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        />
                     </LineContainerComponent>
                 )}
                 <LineContainerComponent title="DEBUG" closed={true} selection={this.props.globalState}>
@@ -727,14 +765,15 @@ export class MeshPropertyGridComponent extends React.Component<
                             target={mesh.reservedDataStore}
                             propertyName="displayBoneIndex"
                             noDirectUpdate={true}
-                            onSelect={(value: number) => {
-                                this.onBoneDisplayIndexChange(value);
+                            onSelect={(value) => {
+                                this.onBoneDisplayIndexChange(value as number);
                                 this.forceUpdate();
                             }}
                         />
                     )}
                     {!mesh.isAnInstance && this.state.displayBoneWeights && mesh.skeleton && (
                         <SliderLineComponent
+                            lockObject={this.props.lockObject}
                             label="Target Bone"
                             decimalCount={0}
                             target={mesh.reservedDataStore}
@@ -752,7 +791,7 @@ export class MeshPropertyGridComponent extends React.Component<
                         <CheckBoxLineComponent label="Display SkeletonMap" isSelected={() => displaySkeletonMap} onSelect={() => this.displaySkeletonMap()} />
                     )}
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

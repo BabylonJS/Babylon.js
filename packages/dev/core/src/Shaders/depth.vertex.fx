@@ -6,6 +6,8 @@ attribute vec3 position;
 #include<morphTargetsVertexGlobalDeclaration>
 #include<morphTargetsVertexDeclaration>[0..maxSimultaneousMorphTargets]
 
+#include<clipPlaneVertexDeclaration>
+
 // Uniform
 #include<instancesDeclaration>
 
@@ -21,6 +23,11 @@ attribute vec2 uv;
 #ifdef UV2
 attribute vec2 uv2;
 #endif
+#endif
+
+#ifdef STORE_CAMERASPACE_Z
+	uniform mat4 view;
+	varying vec4 vViewPos;
 #endif
 
 varying float vDepthMetric;
@@ -43,13 +50,19 @@ void main(void)
 #include<bonesVertex>
 #include<bakedVertexAnimation>
 
-	gl_Position = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
+	vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
+	#include<clipPlaneVertex>
+	gl_Position = viewProjection * worldPos;
 
-    #ifdef USE_REVERSE_DEPTHBUFFER
-	    vDepthMetric = ((-gl_Position.z + depthValues.x) / (depthValues.y));
-    #else
-	    vDepthMetric = ((gl_Position.z + depthValues.x) / (depthValues.y));
-    #endif
+	#ifdef STORE_CAMERASPACE_Z
+		vViewPos = view * worldPos;
+	#else
+		#ifdef USE_REVERSE_DEPTHBUFFER
+			vDepthMetric = ((-gl_Position.z + depthValues.x) / (depthValues.y));
+		#else
+			vDepthMetric = ((gl_Position.z + depthValues.x) / (depthValues.y));
+		#endif
+	#endif
 
 #if defined(ALPHATEST) || defined(BASIC_RENDER)
 #ifdef UV1

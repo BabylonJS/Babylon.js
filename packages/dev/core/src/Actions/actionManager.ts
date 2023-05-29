@@ -19,109 +19,109 @@ import { Constants } from "../Engines/constants";
 /**
  * Action Manager manages all events to be triggered on a given mesh or the global scene.
  * A single scene can have many Action Managers to handle predefined actions on specific meshes.
- * @see https://doc.babylonjs.com/how_to/how_to_use_actions
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions
  */
 export class ActionManager extends AbstractActionManager {
     /**
      * Nothing
-     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
     public static readonly NothingTrigger = Constants.ACTION_NothingTrigger;
 
     /**
      * On pick
-     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
     public static readonly OnPickTrigger = Constants.ACTION_OnPickTrigger;
 
     /**
      * On left pick
-     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
     public static readonly OnLeftPickTrigger = Constants.ACTION_OnLeftPickTrigger;
 
     /**
      * On right pick
-     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
     public static readonly OnRightPickTrigger = Constants.ACTION_OnRightPickTrigger;
 
     /**
      * On center pick
-     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
     public static readonly OnCenterPickTrigger = Constants.ACTION_OnCenterPickTrigger;
 
     /**
      * On pick down
-     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
     public static readonly OnPickDownTrigger = Constants.ACTION_OnPickDownTrigger;
 
     /**
      * On double pick
-     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
     public static readonly OnDoublePickTrigger = Constants.ACTION_OnDoublePickTrigger;
 
     /**
      * On pick up
-     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
     public static readonly OnPickUpTrigger = Constants.ACTION_OnPickUpTrigger;
     /**
      * On pick out.
      * This trigger will only be raised if you also declared a OnPickDown
-     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
     public static readonly OnPickOutTrigger = Constants.ACTION_OnPickOutTrigger;
 
     /**
      * On long press
-     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
     public static readonly OnLongPressTrigger = Constants.ACTION_OnLongPressTrigger;
 
     /**
      * On pointer over
-     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
     public static readonly OnPointerOverTrigger = Constants.ACTION_OnPointerOverTrigger;
 
     /**
      * On pointer out
-     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
     public static readonly OnPointerOutTrigger = Constants.ACTION_OnPointerOutTrigger;
 
     /**
      * On every frame
-     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
     public static readonly OnEveryFrameTrigger = Constants.ACTION_OnEveryFrameTrigger;
     /**
      * On intersection enter
-     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
     public static readonly OnIntersectionEnterTrigger = Constants.ACTION_OnIntersectionEnterTrigger;
 
     /**
      * On intersection exit
-     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
     public static readonly OnIntersectionExitTrigger = Constants.ACTION_OnIntersectionExitTrigger;
 
     /**
      * On key down
-     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
     public static readonly OnKeyDownTrigger = Constants.ACTION_OnKeyDownTrigger;
 
     /**
      * On key up
-     * @see https://doc.babylonjs.com/how_to/how_to_use_actions#triggers
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/events/actions#triggers
      */
-    public static readonly OnKeyUpTrigger = 15;
+    public static readonly OnKeyUpTrigger = Constants.ACTION_OnKeyUpTrigger;
 
     // Members
     private _scene: Scene;
@@ -173,7 +173,7 @@ export class ActionManager extends AbstractActionManager {
     /**
      * Does this action manager handles actions of any of the given triggers
      * @param triggers defines the triggers to be tested
-     * @return a boolean indicating whether one (or more) of the triggers is handled
+     * @returns a boolean indicating whether one (or more) of the triggers is handled
      */
     public hasSpecificTriggers(triggers: number[]): boolean {
         for (let index = 0; index < this.actions.length; index++) {
@@ -192,7 +192,7 @@ export class ActionManager extends AbstractActionManager {
      * speed.
      * @param triggerA defines the trigger to be tested
      * @param triggerB defines the trigger to be tested
-     * @return a boolean indicating whether one (or more) of the triggers is handled
+     * @returns a boolean indicating whether one (or more) of the triggers is handled
      */
     public hasSpecificTriggers2(triggerA: number, triggerB: number): boolean {
         for (let index = 0; index < this.actions.length; index++) {
@@ -210,7 +210,7 @@ export class ActionManager extends AbstractActionManager {
      * Does this action manager handles actions of a given trigger
      * @param trigger defines the trigger to be tested
      * @param parameterPredicate defines an optional predicate to filter triggers by parameter
-     * @return whether the trigger is handled
+     * @returns whether the trigger is handled
      */
     public hasSpecificTrigger(trigger: number, parameterPredicate?: (parameter: any) => boolean): boolean {
         for (let index = 0; index < this.actions.length; index++) {
@@ -263,7 +263,7 @@ export class ActionManager extends AbstractActionManager {
     /**
      * Registers an action to this action manager
      * @param action defines the action to be registered
-     * @return the action amended (prepared) after registration
+     * @returns the action amended (prepared) after registration
      */
     public registerAction(action: IAction): Nullable<IAction> {
         if (action.trigger === ActionManager.OnEveryFrameTrigger) {
@@ -274,6 +274,7 @@ export class ActionManager extends AbstractActionManager {
         }
 
         this.actions.push(action);
+        this.getScene()._registeredActions++;
 
         if (ActionManager.Triggers[action.trigger]) {
             ActionManager.Triggers[action.trigger]++;
@@ -290,7 +291,7 @@ export class ActionManager extends AbstractActionManager {
     /**
      * Unregisters an action to this action manager
      * @param action defines the action to be unregistered
-     * @return a boolean indicating whether the action has been unregistered
+     * @returns a boolean indicating whether the action has been unregistered
      */
     public unregisterAction(action: IAction): Boolean {
         const index = this.actions.indexOf(action);
@@ -301,6 +302,7 @@ export class ActionManager extends AbstractActionManager {
                 delete ActionManager.Triggers[action.trigger];
             }
             action._actionManager = null;
+            this.getScene()._registeredActions--;
             return true;
         }
         return false;
@@ -320,7 +322,11 @@ export class ActionManager extends AbstractActionManager {
                     if (trigger === ActionManager.OnKeyUpTrigger || trigger === ActionManager.OnKeyDownTrigger) {
                         const parameter = action.getTriggerParameter();
 
-                        if (parameter && parameter !== evt.sourceEvent.keyCode) {
+                        if (typeof parameter === "function") {
+                            if (!parameter(evt)) {
+                                continue;
+                            }
+                        } else if (parameter && parameter !== evt.sourceEvent.keyCode) {
                             if (!parameter.toLowerCase) {
                                 continue;
                             }
@@ -343,9 +349,7 @@ export class ActionManager extends AbstractActionManager {
     }
 
     /**
-     * @param target
-     * @param propertyPath
-     * @hidden
+     * @internal
      */
     public _getEffectiveTarget(target: any, propertyPath: string): any {
         const properties = propertyPath.split(".");
@@ -358,8 +362,7 @@ export class ActionManager extends AbstractActionManager {
     }
 
     /**
-     * @param propertyPath
-     * @hidden
+     * @internal
      */
     public _getProperty(propertyPath: string): string {
         const properties = propertyPath.split(".");
@@ -393,7 +396,7 @@ export class ActionManager extends AbstractActionManager {
             if (triggerOptions && typeof triggerOptions !== "number") {
                 if (triggerOptions.parameter instanceof Node) {
                     triggerObject.properties.push(Action._GetTargetProperty(triggerOptions.parameter));
-                } else {
+                } else if (typeof triggerOptions.parameter === "object") {
                     const parameter = <any>{};
                     DeepCopier.DeepCopy(triggerOptions.parameter, parameter, ["mesh"]);
 
@@ -402,6 +405,8 @@ export class ActionManager extends AbstractActionManager {
                     }
 
                     triggerObject.properties.push({ name: "parameter", targetType: null, value: parameter });
+                } else {
+                    triggerObject.properties.push({ name: "parameter", targetType: null, value: triggerOptions.parameter });
                 }
             }
 
@@ -429,15 +434,10 @@ export class ActionManager extends AbstractActionManager {
             object.actionManager = actionManager;
         }
 
-        // instanciate a new object
-        const instanciate = (name: string, params: Array<any>): any => {
+        // instantiate a new object
+        const instantiate = (name: string, params: Array<any>): any => {
             const internalClassType = GetClass("BABYLON." + name);
-            if (internalClassType) {
-                const newInstance: Object = Object.create(internalClassType.prototype);
-                // eslint-disable-next-line prefer-spread
-                newInstance.constructor.apply(newInstance, params);
-                return newInstance;
-            }
+            return internalClassType && new internalClassType(...params);
         };
 
         const parseParameter = (name: string, value: string, target: any, propertyPath: Nullable<string>): any => {
@@ -525,8 +525,10 @@ export class ActionManager extends AbstractActionManager {
                     const targetType = parsedAction.properties[i].targetType;
 
                     if (name === "target") {
-                        if (targetType !== null && targetType === "SceneProperties") {
+                        if (targetType === "SceneProperties") {
                             value = target = scene;
+                        } else if (targetType === "MaterialProperties") {
+                            value = target = scene.getMaterialByName(value);
                         } else {
                             value = target = scene.getNodeByName(value);
                         }
@@ -565,7 +567,7 @@ export class ActionManager extends AbstractActionManager {
             }
 
             // Action or condition(s) and not CombineAction
-            let newAction = instanciate(parsedAction.name, parameters);
+            let newAction = instantiate(parsedAction.name, parameters);
 
             if (newAction instanceof Condition && condition !== null) {
                 const nothing = new DoNothingAction(trigger, condition);
@@ -633,37 +635,39 @@ export class ActionManager extends AbstractActionManager {
      */
     public static GetTriggerName(trigger: number): string {
         switch (trigger) {
-            case 0:
+            case Constants.ACTION_NothingTrigger:
                 return "NothingTrigger";
-            case 1:
+            case Constants.ACTION_OnPickTrigger:
                 return "OnPickTrigger";
-            case 2:
+            case Constants.ACTION_OnLeftPickTrigger:
                 return "OnLeftPickTrigger";
-            case 3:
+            case Constants.ACTION_OnRightPickTrigger:
                 return "OnRightPickTrigger";
-            case 4:
+            case Constants.ACTION_OnCenterPickTrigger:
                 return "OnCenterPickTrigger";
-            case 5:
+            case Constants.ACTION_OnPickDownTrigger:
                 return "OnPickDownTrigger";
-            case 6:
+            case Constants.ACTION_OnDoublePickTrigger:
+                return "OnDoublePickTrigger"; // start;
+            case Constants.ACTION_OnPickUpTrigger:
                 return "OnPickUpTrigger";
-            case 7:
+            case Constants.ACTION_OnLongPressTrigger:
                 return "OnLongPressTrigger";
-            case 8:
+            case Constants.ACTION_OnPointerOverTrigger:
                 return "OnPointerOverTrigger";
-            case 9:
+            case Constants.ACTION_OnPointerOutTrigger:
                 return "OnPointerOutTrigger";
-            case 10:
+            case Constants.ACTION_OnEveryFrameTrigger:
                 return "OnEveryFrameTrigger";
-            case 11:
+            case Constants.ACTION_OnIntersectionEnterTrigger:
                 return "OnIntersectionEnterTrigger";
-            case 12:
+            case Constants.ACTION_OnIntersectionExitTrigger:
                 return "OnIntersectionExitTrigger";
-            case 13:
+            case Constants.ACTION_OnKeyDownTrigger:
                 return "OnKeyDownTrigger";
-            case 14:
+            case Constants.ACTION_OnKeyUpTrigger:
                 return "OnKeyUpTrigger";
-            case 15:
+            case Constants.ACTION_OnPickOutTrigger:
                 return "OnPickOutTrigger";
             default:
                 return "";

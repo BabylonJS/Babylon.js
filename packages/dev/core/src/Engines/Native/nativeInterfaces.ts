@@ -1,12 +1,18 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { DeviceType } from "../../DeviceInput/InputDevices/deviceEnums";
-import type { IDeviceInputSystem } from "../../DeviceInput/InputDevices/inputInterfaces";
+import type { IDeviceInputSystem } from "../../DeviceInput/inputInterfaces";
 import type { InternalTexture } from "../../Materials/Textures/internalTexture";
 import type { Nullable } from "../../types";
 import type { ICanvas, IImage } from "../ICanvas";
 import type { NativeData, NativeDataStream } from "./nativeDataStream";
 
-/** @hidden */
+export type NativeTexture = NativeData;
+export type NativeFramebuffer = NativeData;
+export type NativeVertexArrayObject = NativeData;
+export type NativeProgram = NativeData;
+export type NativeUniform = NativeData;
+
+/** @internal */
 export interface INativeEngine {
     dispose(): void;
 
@@ -32,15 +38,17 @@ export interface INativeEngine {
     ): void;
     updateDynamicVertexBuffer(vertexBuffer: NativeData, bytes: ArrayBuffer, byteOffset: number, byteLength: number): void;
 
-    createProgram(vertexShader: string, fragmentShader: string): any;
-    getUniforms(shaderProgram: any, uniformsNames: string[]): WebGLUniformLocation[];
-    getAttributes(shaderProgram: any, attributeNames: string[]): number[];
+    createProgram(vertexShader: string, fragmentShader: string): NativeProgram;
+    createProgramAsync(vertexShader: string, fragmentShader: string, onSuccess: () => void, onError: (error: Error) => void): NativeProgram;
+    getUniforms(shaderProgram: NativeProgram, uniformsNames: string[]): WebGLUniformLocation[];
+    getAttributes(shaderProgram: NativeProgram, attributeNames: string[]): number[];
 
-    createTexture(): WebGLTexture;
-    loadTexture(texture: WebGLTexture, data: ArrayBufferView, generateMips: boolean, invertY: boolean, srgb: boolean, onSuccess: () => void, onError: () => void): void;
-    loadRawTexture(texture: WebGLTexture, data: ArrayBufferView, width: number, height: number, format: number, generateMips: boolean, invertY: boolean): void;
+    createTexture(): NativeTexture;
+    initializeTexture(texture: NativeTexture, width: number, height: number, hasMips: boolean, format: number, renderTarget: boolean, srgb: boolean): void;
+    loadTexture(texture: NativeTexture, data: ArrayBufferView, generateMips: boolean, invertY: boolean, srgb: boolean, onSuccess: () => void, onError: () => void): void;
+    loadRawTexture(texture: NativeTexture, data: ArrayBufferView, width: number, height: number, format: number, generateMips: boolean, invertY: boolean): void;
     loadRawTexture2DArray(
-        texture: WebGLTexture,
+        texture: NativeTexture,
         data: Nullable<ArrayBufferView>,
         width: number,
         height: number,
@@ -49,29 +57,32 @@ export interface INativeEngine {
         generateMipMaps: boolean,
         invertY: boolean
     ): void;
-    loadCubeTexture(texture: WebGLTexture, data: Array<ArrayBufferView>, generateMips: boolean, invertY: boolean, srgb: boolean, onSuccess: () => void, onError: () => void): void;
-    loadCubeTextureWithMips(texture: WebGLTexture, data: Array<Array<ArrayBufferView>>, invertY: boolean, srgb: boolean, onSuccess: () => void, onError: () => void): void;
-    getTextureWidth(texture: WebGLTexture): number;
-    getTextureHeight(texture: WebGLTexture): number;
-    copyTexture(desination: Nullable<WebGLTexture>, source: Nullable<WebGLTexture>): void;
-    deleteTexture(texture: Nullable<WebGLTexture>): void;
+    loadCubeTexture(texture: NativeTexture, data: Array<ArrayBufferView>, generateMips: boolean, invertY: boolean, srgb: boolean, onSuccess: () => void, onError: () => void): void;
+    loadCubeTextureWithMips(texture: NativeTexture, data: Array<Array<ArrayBufferView>>, invertY: boolean, srgb: boolean, onSuccess: () => void, onError: () => void): void;
+    getTextureWidth(texture: NativeTexture): number;
+    getTextureHeight(texture: NativeTexture): number;
+    copyTexture(desination: NativeTexture, source: NativeTexture): void;
+    deleteTexture(texture: NativeTexture): void;
+    readTexture(
+        texture: NativeTexture,
+        mipLevel: number,
+        x: number,
+        y: number,
+        width: number,
+        height: number,
+        buffer: Nullable<ArrayBuffer>,
+        bufferOffset: number,
+        bufferLength: number
+    ): Promise<ArrayBuffer>;
 
     createImageBitmap(data: ArrayBufferView | IImage): ImageBitmap;
     resizeImageBitmap(image: ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array;
 
-    createFrameBuffer(
-        texture: WebGLTexture,
-        width: number,
-        height: number,
-        format: number,
-        generateStencilBuffer: boolean,
-        generateDepthBuffer: boolean,
-        generateMips: boolean
-    ): WebGLFramebuffer;
+    createFrameBuffer(texture: Nullable<NativeTexture>, width: number, height: number, generateStencilBuffer: boolean, generateDepthBuffer: boolean): NativeFramebuffer;
 
     getRenderWidth(): number;
     getRenderHeight(): number;
-    getHardwareScalingLevel(): number;
+
     setHardwareScalingLevel(level: number): void;
 
     setViewPort(x: number, y: number, width: number, height: number): void;
@@ -80,12 +91,15 @@ export interface INativeEngine {
     submitCommands(): void;
 }
 
-/** @hidden */
+/** @internal */
 interface INativeEngineConstructor {
     prototype: INativeEngine;
     new (): INativeEngine;
 
     readonly PROTOCOL_VERSION: number;
+
+    readonly CAPS_LIMITS_MAX_TEXTURE_SIZE: number;
+    readonly CAPS_LIMITS_MAX_TEXTURE_LAYERS: number;
 
     readonly TEXTURE_NEAREST_NEAREST: number;
     readonly TEXTURE_LINEAR_LINEAR: number;
@@ -117,6 +131,7 @@ interface INativeEngineConstructor {
 
     readonly TEXTURE_FORMAT_RGB8: number;
     readonly TEXTURE_FORMAT_RGBA8: number;
+    readonly TEXTURE_FORMAT_RGBA16F: number;
     readonly TEXTURE_FORMAT_RGBA32F: number;
 
     readonly ATTRIB_TYPE_INT8: number;
@@ -214,21 +229,22 @@ interface INativeEngineConstructor {
     readonly COMMAND_DRAW: NativeData;
     readonly COMMAND_CLEAR: NativeData;
     readonly COMMAND_SETSTENCIL: NativeData;
+    readonly COMMAND_SETVIEWPORT: NativeData;
 }
 
-/** @hidden */
+/** @internal */
 export interface INativeCamera {
     createVideo(constraints: MediaTrackConstraints): any;
     updateVideoTexture(texture: Nullable<InternalTexture>, video: HTMLVideoElement, invertY: boolean): void;
 }
 
-/** @hidden */
+/** @internal */
 interface INativeCameraConstructor {
     prototype: INativeCamera;
     new (): INativeCamera;
 }
 
-/** @hidden */
+/** @internal */
 interface INativeCanvasConstructor {
     prototype: ICanvas;
     new (): ICanvas;
@@ -236,13 +252,13 @@ interface INativeCanvasConstructor {
     loadTTFAsync(fontName: string, buffer: ArrayBuffer): void;
 }
 
-/** @hidden */
+/** @internal */
 interface INativeImageConstructor {
     prototype: IImage;
     new (): IImage;
 }
 
-/** @hidden */
+/** @internal */
 interface IDeviceInputSystemConstructor {
     prototype: IDeviceInputSystem;
     new (
@@ -252,12 +268,12 @@ interface IDeviceInputSystemConstructor {
     ): IDeviceInputSystem;
 }
 
-/** @hidden */
+/** @internal */
 export interface INativeDataStream {
     writeBuffer(buffer: ArrayBuffer, length: number): void;
 }
 
-/** @hidden */
+/** @internal */
 interface INativeDataStreamConstructor {
     prototype: INativeDataStream;
     new (requestFlushCallback: () => void): INativeDataStream;
@@ -273,7 +289,7 @@ interface INativeDataStreamConstructor {
     readonly VALIDATION_BOOLEAN: number;
 }
 
-/** @hidden */
+/** @internal */
 export interface INative {
     Engine: INativeEngineConstructor;
     Camera: INativeCameraConstructor;

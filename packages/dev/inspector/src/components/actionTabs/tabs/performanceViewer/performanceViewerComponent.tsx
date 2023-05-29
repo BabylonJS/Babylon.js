@@ -12,7 +12,7 @@ import { Tools } from "core/Misc/tools";
 import "core/Misc/PerformanceViewer/performanceViewerSceneExtension";
 import { Inspector } from "../../../../inspector";
 import { PerformanceViewerPopupComponent } from "./performanceViewerPopupComponent";
-import { ComputePressureObserverWrapper } from "core/Misc/computePressure";
+import { PressureObserverWrapper } from "core/Misc/pressureObserverWrapper";
 
 import "./scss/performanceViewer.scss";
 
@@ -151,9 +151,21 @@ export const PerformanceViewerComponent: React.FC<IPerformanceViewerComponentPro
 
     const addStrategies = (perfCollector: PerformanceViewerCollector) => {
         perfCollector.addCollectionStrategies(...defaultStrategiesList);
-        if (ComputePressureObserverWrapper.IsAvailable) {
+        if (PressureObserverWrapper.IsAvailable) {
+            // Do not enable for now as the Pressure API does not
+            // report factors at the moment.
+            // perfCollector.addCollectionStrategies({
+            //     strategyCallback: PerfCollectionStrategy.ThermalStrategy(),
+            //     category: IPerfMetadataCategory.FrameSteps,
+            //     hidden: true,
+            // });
+            // perfCollector.addCollectionStrategies({
+            //     strategyCallback: PerfCollectionStrategy.PowerSupplyStrategy(),
+            //     category: IPerfMetadataCategory.FrameSteps,
+            //     hidden: true,
+            // });
             perfCollector.addCollectionStrategies({
-                strategyCallback: PerfCollectionStrategy.CpuStrategy(),
+                strategyCallback: PerfCollectionStrategy.PressureStrategy(),
                 category: IPerfMetadataCategory.FrameSteps,
                 hidden: true,
             });

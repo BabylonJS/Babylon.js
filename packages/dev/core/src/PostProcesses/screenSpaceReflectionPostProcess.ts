@@ -18,6 +18,7 @@ declare type Scene = import("../scene").Scene;
 /**
  * The ScreenSpaceReflectionPostProcess performs realtime reflections using only and only the available informations on the screen (positions and normals).
  * Basically, the screen space reflection post-process will compute reflections according the material's reflectivity.
+ * @deprecated Use the new SSRRenderingPipeline instead.
  */
 export class ScreenSpaceReflectionPostProcess extends PostProcess {
     /**
@@ -273,11 +274,7 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
     }
 
     /**
-     * @param parsedPostProcess
-     * @param targetCamera
-     * @param scene
-     * @param rootUrl
-     * @hidden
+     * @internal
      */
     public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string) {
         return SerializationHelper.Parse(

@@ -2,7 +2,6 @@ import * as React from "react";
 import type { GlobalState } from "../globalState";
 
 import { Engine } from "core/Engines/engine";
-import { StringTools } from "core/Misc/stringTools";
 import { SceneLoader } from "core/Loading/sceneLoader";
 import { Logger } from "core/Misc/logger";
 
@@ -27,7 +26,7 @@ class Reflector {
         this._webSocket.onmessage = (event) => {
             const message: string = event.data;
 
-            if (StringTools.StartsWith(message, Reflector._SERVER_PREFIX)) {
+            if (message.startsWith(Reflector._SERVER_PREFIX)) {
                 const serverMessage = message.substr(Reflector._SERVER_PREFIX.length);
                 Logger.Log(`[Reflector] Received server message: ${serverMessage}`);
                 this._handleServerMessage(serverMessage);

@@ -1,7 +1,7 @@
 import type { float, int, DeepImmutable } from "../types";
 
 /**
- * @hidden
+ * @internal
  */
 export interface IColor4Like {
     r: float;
@@ -11,7 +11,7 @@ export interface IColor4Like {
 }
 
 /**
- * @hidden
+ * @internal
  */
 export interface IColor3Like {
     r: float;
@@ -19,8 +19,15 @@ export interface IColor3Like {
     b: float;
 }
 
+export interface IQuaternionLike {
+    x: float;
+    y: float;
+    z: float;
+    w: float;
+}
+
 /**
- * @hidden
+ * @internal
  */
 export interface IVector4Like {
     x: float;
@@ -30,7 +37,7 @@ export interface IVector4Like {
 }
 
 /**
- * @hidden
+ * @internal
  */
 export interface IVector3Like {
     x: float;
@@ -39,7 +46,7 @@ export interface IVector3Like {
 }
 
 /**
- * @hidden
+ * @internal
  */
 export interface IVector2Like {
     x: float;
@@ -47,7 +54,7 @@ export interface IVector2Like {
 }
 
 /**
- * @hidden
+ * @internal
  */
 export interface IMatrixLike {
     toArray(): DeepImmutable<Float32Array | Array<number>>;
@@ -55,7 +62,7 @@ export interface IMatrixLike {
 }
 
 /**
- * @hidden
+ * @internal
  */
 export interface IViewportLike {
     x: float;
@@ -65,7 +72,7 @@ export interface IViewportLike {
 }
 
 /**
- * @hidden
+ * @internal
  */
 export interface IPlaneLike {
     normal: IVector3Like;

@@ -76,7 +76,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                 return;
             }
 
-            const srcElement = <HTMLElement>(evt.srcElement || evt.target);
+            const srcElement = <HTMLElement>evt.target;
 
             this._altKey = evt.altKey;
             this._ctrlKey = evt.ctrlKey;
@@ -85,12 +85,14 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
             this._buttonsPressed = evt.buttons;
 
             if (engine.isPointerLock) {
-                const offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
-                const offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
+                const offsetX = evt.movementX;
+                const offsetY = evt.movementY;
 
                 this.onTouch(null, offsetX, offsetY);
                 this._pointA = null;
                 this._pointB = null;
+            } else if (p.type !== PointerEventTypes.POINTERDOWN && isTouch && this._pointA?.pointerId !== evt.pointerId && this._pointB?.pointerId !== evt.pointerId) {
+                return; // If we get a non-down event for a touch that we're not tracking, ignore it
             } else if (p.type === PointerEventTypes.POINTERDOWN && (this._currentActiveButton === -1 || isTouch)) {
                 try {
                     srcElement?.setPointerCapture(evt.pointerId);
@@ -112,6 +114,8 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                         pointerId: evt.pointerId,
                         type: evt.pointerType,
                     };
+                } else {
+                    return; // We are already tracking two pointers so ignore this one
                 }
 
                 if (this._currentActiveButton === -1 && !isTouch) {
@@ -216,7 +220,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
 
         this._observer = this.camera
             .getScene()
-            .onPointerObservable.add(
+            ._inputManager._addCameraPointerObserver(
                 this._pointerInput,
                 PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE | PointerEventTypes.POINTERDOUBLETAP
             );
@@ -251,7 +255,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
         }
 
         if (this._observer) {
-            this.camera.getScene().onPointerObservable.remove(this._observer);
+            this.camera.getScene()._inputManager._removeCameraPointerObserver(this._observer);
             this._observer = null;
 
             if (this._contextMenuBind) {

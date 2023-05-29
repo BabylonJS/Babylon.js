@@ -1,6 +1,7 @@
 const exec = require("child_process").exec;
 const path = require("path");
 const fs = require("fs");
+const glob = require("glob");
 const generateChangelog = require("./generateChangelog");
 
 const branchName = process.argv[2];
@@ -40,9 +41,35 @@ const updateEngineVersion = async (version) => {
     if (!array) {
         throw new Error("Could not find babylonjs version in thinEngine.ts");
     }
-    const regexp = new RegExp(array[1], "g");
-    const newThinEngineData = thinEngineData.replace(regexp, version);
+
+    const regexp = new RegExp(array[1] + "\"", "g");
+    const newThinEngineData = thinEngineData.replace(regexp, version + "\"");
     fs.writeFileSync(thinEngineFile, newThinEngineData);
+};
+
+const updateSinceTag = (version) => {
+    // get all typescript files in the dev folder
+    const files = glob.sync(path.join(baseDirectory, "packages", "dev", "**", "*.ts"));
+    files.forEach((file) => {
+        try {
+            // check if file contains @since\n
+            const data = fs.readFileSync(file, "utf-8").replace(/\r/gm, "");
+            if (data.indexOf("* @since\n") !== -1) {
+                console.log(`Updating @since tag in ${file} to ${version}`);
+                // replace @since with @since version
+                const newData = data.replace(
+                    /\* @since\n/gm,
+                    `* @since ${version}
+`
+                );
+
+                // write file
+                fs.writeFileSync(file, newData);
+            }
+        } catch (e) {
+            console.log(e);
+        }
+    });
 };
 
 async function runTagsUpdate() {
@@ -55,8 +82,12 @@ async function runTagsUpdate() {
     fs.rmSync("package-lock.json");
     await runCommand("npm install");
     const version = getNewVersion();
+    // update engine version
     await updateEngineVersion(version);
+    // generate changelog
     await generateChangelog(version);
+    // update since tags
+    updateSinceTag(version);
     if (dryRun) {
         console.log("skipping", `git commit -m "Version update ${version}"`);
         console.log("skipping", `git tag -a ${version} -m ${version}`);

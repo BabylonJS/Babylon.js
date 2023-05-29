@@ -16,7 +16,7 @@ import type { ThinEngine } from "../Engines/thinEngine";
 
 /**
  * Manages an XRSession to work with Babylon's engine
- * @see https://doc.babylonjs.com/how_to/webxr_session_manager
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/webXR/webXRSessionManagers
  */
 export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextureProvider {
     private _engine: Nullable<Engine>;
@@ -365,8 +365,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
     }
 
     /**
-     * @param baseLayerWrapper
-     * @hidden
+     * @internal
      */
     public _setBaseLayerWrapper(baseLayerWrapper: Nullable<WebXRLayerWrapper>): void {
         if (this.isNative) {
@@ -482,5 +481,14 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
         if (this._baseLayerWrapper) {
             this._baseLayerWrapper.fixedFoveation = val;
         }
+    }
+
+    /**
+     * Get the features enabled on the current session
+     * This is only available in-session!
+     * @see https://www.w3.org/TR/webxr/#dom-xrsession-enabledfeatures
+     */
+    public get enabledFeatures(): Nullable<string[]> {
+        return this.session?.enabledFeatures ?? null;
     }
 }

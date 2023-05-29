@@ -90,6 +90,9 @@ export class Context {
 
     onSelectToActivated = new Observable<{ from: number; to: number }>();
 
+    onRangeFrameBarResized = new Observable<number>();
+    onPlayheadMoved = new Observable<number>();
+
     lockLastFrameValue: boolean = false;
     lockLastFrameFrame: boolean = false;
 

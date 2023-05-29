@@ -75,7 +75,7 @@ export class HDRTools {
      * https://en.wikipedia.org/wiki/RGBE_image_format
      *
      * @param uint8array The binary file stored in  native array.
-     * @return The header information.
+     * @returns The header information.
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public static RGBE_ReadHeader(uint8array: Uint8Array): HDRInfo {
@@ -141,14 +141,14 @@ export class HDRTools {
      *
      * @param buffer The binary file stored in an array buffer.
      * @param size The expected size of the extracted cubemap.
-     * @return The Cube Map information.
+     * @returns The Cube Map information.
      */
-    public static GetCubeMapTextureData(buffer: ArrayBuffer, size: number): CubeMapInfo {
+    public static GetCubeMapTextureData(buffer: ArrayBuffer, size: number, supersample = false): CubeMapInfo {
         const uint8array = new Uint8Array(buffer);
         const hdrInfo = this.RGBE_ReadHeader(uint8array);
         const data = this.RGBE_ReadPixels(uint8array, hdrInfo);
 
-        const cubeMapData = PanoramaToCubeMapTools.ConvertPanoramaToCubemap(data, hdrInfo.width, hdrInfo.height, size);
+        const cubeMapData = PanoramaToCubeMapTools.ConvertPanoramaToCubemap(data, hdrInfo.width, hdrInfo.height, size, supersample);
 
         return cubeMapData;
     }
@@ -162,7 +162,7 @@ export class HDRTools {
      *
      * @param uint8array The binary file stored in an array buffer.
      * @param hdrInfo The header information of the file.
-     * @return The pixels data in RGB right to left up to down order.
+     * @returns The pixels data in RGB right to left up to down order.
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public static RGBE_ReadPixels(uint8array: Uint8Array, hdrInfo: HDRInfo): Float32Array {

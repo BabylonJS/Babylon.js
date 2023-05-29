@@ -2,6 +2,24 @@ import { DecodeBase64ToBinary } from "@dev/core";
 import type { GlobalState } from "../globalState";
 import { Utilities } from "./utilities";
 
+const DecodeBase64ToString = (base64Data: string): string => {
+    return atob(base64Data);
+};
+
+// Taken from 5.X StringUtils and added so that older playgrounds can still be loaded
+// This can be removed once we no longer support loading playgrounds older than 5.X
+const DecodeBase64ToBinaryReproduced = (base64Data: string): ArrayBuffer => {
+    const decodedString = DecodeBase64ToString(base64Data);
+    const bufferLength = decodedString.length;
+    const bufferView = new Uint8Array(new ArrayBuffer(bufferLength));
+
+    for (let i = 0; i < bufferLength; i++) {
+        bufferView[i] = decodedString.charCodeAt(i);
+    }
+
+    return bufferView.buffer;
+};
+
 export class LoadManager {
     private _previousHash = "";
 
@@ -70,7 +88,7 @@ export class LoadManager {
                 parent.location.hash = pgHash;
             }
             this._previousHash = pgHash;
-            this._loadPlayground(pgHash.substr(1));
+            this._loadPlayground(pgHash.substring(1));
         }
     }
 
@@ -122,7 +140,7 @@ export class LoadManager {
                             const encodedData = payload.unicode;
                             const decoder = new TextDecoder("utf8");
 
-                            code = decoder.decode(DecodeBase64ToBinary(encodedData));
+                            code = decoder.decode((DecodeBase64ToBinary || DecodeBase64ToBinaryReproduced)(encodedData));
                         }
 
                         this.globalState.onCodeLoaded.notifyObservers(code);
@@ -133,13 +151,16 @@ export class LoadManager {
             };
 
             if (id[0] === "#") {
-                id = id.substr(1);
+                id = id.substring(1);
             }
 
             this.globalState.currentSnippetToken = id.split("#")[0];
             if (!id.split("#")[1]) {
                 id += "#0";
             }
+
+            // defensive-handling a safari issue
+            id.replace(/%23/g, "#");
 
             xmlHttp.open("GET", this.globalState.SnippetServerUrl + "/" + id.replace(/#/g, "/"));
             xmlHttp.send();

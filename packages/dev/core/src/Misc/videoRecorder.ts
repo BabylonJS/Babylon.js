@@ -67,7 +67,7 @@ export interface VideoRecorderOptions {
  * This can help with recording videos from BabylonJS.
  * This is based on the available WebRTC functionalities of the browser.
  *
- * @see https://doc.babylonjs.com/how_to/render_scene_on_a_video
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToVideo
  */
 export class VideoRecorder {
     private static readonly _DefaultOptions = {
@@ -160,7 +160,7 @@ export class VideoRecorder {
      * If null no automatic download will start and you can rely on the promise to get the data back.
      * @param maxDuration Defines the maximum recording time in seconds.
      * It defaults to 7 seconds. A value of zero will not stop automatically, you would need to call stopRecording manually.
-     * @return A promise callback at the end of the recording with the video data in Blob.
+     * @returns A promise callback at the end of the recording with the video data in Blob.
      */
     public startRecording(fileName: Nullable<string> = "babylonjs.webm", maxDuration = 7): Promise<Blob> {
         if (!this._canvas || !this._mediaRecorder) {

@@ -12,7 +12,7 @@ import { Tools } from "../../Misc/tools";
 
 /**
  * Manage the keyboard inputs to control the movement of an arc rotate camera.
- * @see https://doc.babylonjs.com/how_to/customizing_camera_inputs
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
  */
 export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateCamera> {
     /**
@@ -103,7 +103,7 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
         this._engine = this._scene.getEngine();
 
         this._onCanvasBlurObserver = this._engine.onCanvasBlurObservable.add(() => {
-            this._keys = [];
+            this._keys.length = 0;
         });
 
         this._onKeyboardObserver = this._scene.onKeyboardObservable.add((info) => {
@@ -172,7 +172,7 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
             this._onCanvasBlurObserver = null;
         }
 
-        this._keys = [];
+        this._keys.length = 0;
     }
 
     /**

@@ -16,13 +16,13 @@ declare module "../../Engines/thinEngine" {
          * Sets the current alpha mode
          * @param mode defines the mode to use (one of the Engine.ALPHA_XXX)
          * @param noDepthWriteChange defines if depth writing state should remains unchanged (false by default)
-         * @see https://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
+         * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/advanced/transparent_rendering
          */
         setAlphaMode(mode: number, noDepthWriteChange?: boolean): void;
 
         /**
          * Gets the current alpha mode
-         * @see https://doc.babylonjs.com/resources/transparency_and_how_meshes_are_rendered
+         * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/advanced/transparent_rendering
          * @returns the current alpha mode
          */
         getAlphaMode(): number;
@@ -47,6 +47,13 @@ ThinEngine.prototype.setAlphaConstants = function (r: number, g: number, b: numb
 
 ThinEngine.prototype.setAlphaMode = function (mode: number, noDepthWriteChange: boolean = false): void {
     if (this._alphaMode === mode) {
+        if (!noDepthWriteChange) {
+            // Make sure we still have the correct depth mask according to the alpha mode (a transparent material could have forced writting to the depth buffer, for instance)
+            const depthMask = mode === Constants.ALPHA_DISABLE;
+            if (this.depthCullingState.depthMask !== depthMask) {
+                this.depthCullingState.depthMask = depthMask;
+            }
+        }
         return;
     }
 
