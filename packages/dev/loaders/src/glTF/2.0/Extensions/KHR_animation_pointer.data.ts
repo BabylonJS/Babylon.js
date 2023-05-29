@@ -167,6 +167,10 @@ const materialsTree = {
                 iridescenceThicknessMinimum: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "iridescence.minimumThickness", getFloat, () => 1)],
                 iridescenceThicknessMaximum: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "iridescence.maximumThickness", getFloat, () => 1)],
             },
+            KHR_materials_anisotropy: {
+                anisotropyStrength: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "anisotropy.intensity", getFloat, () => 1)],
+                anisotropyRotation: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "anisotropy.angle", getFloat, () => 1)],
+            },
         },
     },
 };

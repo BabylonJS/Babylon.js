@@ -82,7 +82,7 @@ vec4 finalColor = glowColor;
     #endif
     gl_FragColor = emissive * finalColor * glowIntensity;
 #else
-    gl_FragColor = finalColor;
+    gl_FragColor = finalColor * glowIntensity;
 #endif
 
 #ifdef HIGHLIGHT

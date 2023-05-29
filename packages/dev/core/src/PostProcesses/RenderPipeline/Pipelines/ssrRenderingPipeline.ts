@@ -806,7 +806,6 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
                 this._depthRenderer = new DepthRenderer(this._scene, undefined, undefined, undefined, Constants.TEXTURE_NEAREST_SAMPLINGMODE, true, "SSRBackDepth");
                 this._depthRenderer.clearColor.r = 1e8; // "infinity": put a big value because we use the storeCameraSpaceZ mode
                 this._depthRenderer.reverseCulling = true; // we generate depth for the back faces
-                this._depthRenderer.getDepthMap().noPrePassRenderer = true; // we don't want the prepass renderer to attach to our depth buffer!
                 this._depthRenderer.forceDepthWriteTransparentMeshes = this._backfaceForceDepthWriteTransparentMeshes;
 
                 this._resizeDepthRenderer();

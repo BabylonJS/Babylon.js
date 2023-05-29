@@ -96,6 +96,7 @@ import { TriPlanarBlock } from "core/Materials/Node/Blocks/triPlanarBlock";
 import { BiPlanarBlock } from "core/Materials/Node/Blocks/biPlanarBlock";
 import { MatrixDeterminantBlock } from "core/Materials/Node/Blocks/matrixDeterminantBlock";
 import { MatrixTransposeBlock } from "core/Materials/Node/Blocks/matrixTransposeBlock";
+import { CurveBlock } from "core/Materials/Node/Blocks/curveBlock";
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
@@ -634,6 +635,8 @@ export class BlockTools {
                 return new MatrixTransposeBlock("Transpose");
             case "MatrixDeterminantBlock":
                 return new MatrixDeterminantBlock("Determinant");
+            case "CurveBlock":
+                return new CurveBlock("Curve");
         }
 
         return null;

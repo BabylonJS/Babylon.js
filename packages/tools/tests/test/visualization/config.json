@@ -2,6 +2,11 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "MeshBuilder.CreateText",
+            "playgroundId": "#6I2RMN#2",
+            "referenceImage": "createText.png"
+        },        
+        {
             "title": "Negative scaling with instances",
             "playgroundId": "#Z3YS9T#0",
             "referenceImage": "negative scaling with instances.png"

@@ -21,3 +21,4 @@ export * from "./goldbergBuilder";
 export * from "./decalBuilder";
 export * from "./icoSphereBuilder";
 export * from "./capsuleBuilder";
+export * from "./textBuilder";

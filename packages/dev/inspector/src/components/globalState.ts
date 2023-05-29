@@ -44,6 +44,7 @@ export class GlobalState {
         KHR_materials_pbrSpecularGlossiness: { enabled: true },
         KHR_materials_clearcoat: { enabled: true },
         KHR_materials_iridescence: { enabled: true },
+        KHR_materials_anisotropy: { enabled: true },
         KHR_materials_emissive_strength: { enabled: true },
         KHR_materials_ior: { enabled: true },
         KHR_materials_sheen: { enabled: true },

@@ -506,8 +506,19 @@ export class RuntimeAnimation {
         let offsetValue: any;
 
         // Compute ratio which represents the frame delta between from and to
-        const ratio = (delay * (animation.framePerSecond * speedRatio)) / 1000.0 + this._ratioOffset;
+        let ratio = (delay * (animation.framePerSecond * speedRatio)) / 1000.0 + this._ratioOffset;
         let highLimitValue = 0;
+
+        // Apply the yoyo function if required
+        if (loop && this._animationState.loopMode === Animation.ANIMATIONLOOPMODE_YOYO) {
+            const position = (ratio - from) / range;
+
+            // Apply the yoyo curve
+            const yoyoPosition = Math.abs(Math.sin(position * Math.PI));
+
+            // Map the yoyo position back to the range
+            ratio = yoyoPosition * range + from;
+        }
 
         this._previousDelay = delay;
         this._previousRatio = ratio;

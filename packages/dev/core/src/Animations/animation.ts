@@ -968,6 +968,7 @@ export class Animation {
                 switch (state.loopMode) {
                     case Animation.ANIMATIONLOOPMODE_CYCLE:
                     case Animation.ANIMATIONLOOPMODE_CONSTANT:
+                    case Animation.ANIMATIONLOOPMODE_YOYO:
                         return floatValue;
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
                         return state.offsetValue * state.repeatCount + floatValue;
@@ -982,6 +983,7 @@ export class Animation {
                 switch (state.loopMode) {
                     case Animation.ANIMATIONLOOPMODE_CYCLE:
                     case Animation.ANIMATIONLOOPMODE_CONSTANT:
+                    case Animation.ANIMATIONLOOPMODE_YOYO:
                         return quatValue;
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
                         return quatValue.addInPlace(state.offsetValue.scale(state.repeatCount));
@@ -997,6 +999,7 @@ export class Animation {
                 switch (state.loopMode) {
                     case Animation.ANIMATIONLOOPMODE_CYCLE:
                     case Animation.ANIMATIONLOOPMODE_CONSTANT:
+                    case Animation.ANIMATIONLOOPMODE_YOYO:
                         return vec3Value;
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
                         return vec3Value.add(state.offsetValue.scale(state.repeatCount));
@@ -1011,6 +1014,7 @@ export class Animation {
                 switch (state.loopMode) {
                     case Animation.ANIMATIONLOOPMODE_CYCLE:
                     case Animation.ANIMATIONLOOPMODE_CONSTANT:
+                    case Animation.ANIMATIONLOOPMODE_YOYO:
                         return vec2Value;
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
                         return vec2Value.add(state.offsetValue.scale(state.repeatCount));
@@ -1022,6 +1026,7 @@ export class Animation {
                 switch (state.loopMode) {
                     case Animation.ANIMATIONLOOPMODE_CYCLE:
                     case Animation.ANIMATIONLOOPMODE_CONSTANT:
+                    case Animation.ANIMATIONLOOPMODE_YOYO:
                         return this.sizeInterpolateFunction(startValue, endValue, gradient);
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
                         return this.sizeInterpolateFunction(startValue, endValue, gradient).add(state.offsetValue.scale(state.repeatCount));
@@ -1036,6 +1041,7 @@ export class Animation {
                 switch (state.loopMode) {
                     case Animation.ANIMATIONLOOPMODE_CYCLE:
                     case Animation.ANIMATIONLOOPMODE_CONSTANT:
+                    case Animation.ANIMATIONLOOPMODE_YOYO:
                         return color3Value;
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
                         return color3Value.add(state.offsetValue.scale(state.repeatCount));
@@ -1050,6 +1056,7 @@ export class Animation {
                 switch (state.loopMode) {
                     case Animation.ANIMATIONLOOPMODE_CYCLE:
                     case Animation.ANIMATIONLOOPMODE_CONSTANT:
+                    case Animation.ANIMATIONLOOPMODE_YOYO:
                         return color4Value;
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
                         return color4Value.add(state.offsetValue.scale(state.repeatCount));
@@ -1060,7 +1067,8 @@ export class Animation {
             case Animation.ANIMATIONTYPE_MATRIX: {
                 switch (state.loopMode) {
                     case Animation.ANIMATIONLOOPMODE_CYCLE:
-                    case Animation.ANIMATIONLOOPMODE_CONSTANT: {
+                    case Animation.ANIMATIONLOOPMODE_CONSTANT:
+                    case Animation.ANIMATIONLOOPMODE_YOYO: {
                         if (Animation.AllowMatricesInterpolation) {
                             return this.matrixInterpolateFunction(startValue, endValue, gradient, state.workValue);
                         }
@@ -1275,6 +1283,10 @@ export class Animation {
      * Constant Loop Mode
      */
     public static readonly ANIMATIONLOOPMODE_CONSTANT = 2;
+    /**
+     * Yoyo Loop Mode
+     */
+    public static readonly ANIMATIONLOOPMODE_YOYO = 4;
 
     /**
      * @internal
