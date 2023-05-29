@@ -635,7 +635,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      */
     public getEventMask(body: PhysicsBody, instanceIndex?: number): number {
         const pluginRef = this._getPluginReference(body, instanceIndex);
-        return this._hknp.HP_Body_GetEventMask(pluginRef)[1];
+        return this._hknp.HP_Body_GetEventMask(pluginRef.hpBodyId)[1];
     }
 
     private _fromMassPropertiesTuple(massPropsTuple: any[]): PhysicsMassProperties {
