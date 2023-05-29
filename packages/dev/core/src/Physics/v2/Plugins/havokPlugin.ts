@@ -143,7 +143,6 @@ class MeshAccumulator {
     private _collectIndices: boolean;
     private _vertices: Vector3[] = []; /// Vertices in body space
     private _indices: number[] = [];
-    private _bodyFromWorld: Matrix;
 }
 
 class BodyPluginData {
