@@ -56,7 +56,8 @@ class MeshAccumulator {
         const indexOffset = this._vertices.length;
         // Force absoluteScaling to be computed
         mesh.computeWorldMatrix(true);
-        const shapeFromBody = Matrix.Scaling(mesh.absoluteScaling.x, mesh.absoluteScaling.y, mesh.absoluteScaling.z);
+        const shapeFromBody = TmpVectors.Matrix[0];
+        Matrix.ScalingToRef(mesh.absoluteScaling.x, mesh.absoluteScaling.y, mesh.absoluteScaling.z, shapeFromBody);
 
         const vertexData = mesh.getVerticesData(VertexBuffer.PositionKind) || [];
         const numVerts = vertexData.length / 3;
