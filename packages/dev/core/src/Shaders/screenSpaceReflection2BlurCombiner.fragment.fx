@@ -51,13 +51,12 @@ void main()
 
     vec3 F0 = reflectivity.rgb;
     vec3 fresnel = fresnelSchlickGGX(max(dot(csNormal, -csViewDirection), 0.0), F0, vec3(1.));
-#endif
 
-#ifdef SSR_BLEND_WITH_FRESNEL
     vec3 reflectionMultiplier = clamp(pow(fresnel * strength, vec3(reflectionSpecularFalloffExponent)), 0.0, 1.0);
 #else
     vec3 reflectionMultiplier = clamp(pow(reflectivity.rgb * strength, vec3(reflectionSpecularFalloffExponent)), 0.0, 1.0);
 #endif
+
     vec3 colorMultiplier = 1.0 - reflectionMultiplier;
 
     vec3 finalColor = (color.rgb * colorMultiplier) + (SSR * reflectionMultiplier);
