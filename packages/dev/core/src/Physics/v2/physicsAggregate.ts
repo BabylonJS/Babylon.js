@@ -168,6 +168,10 @@ export class PhysicsAggregate {
         }
     }
 
+    private _isOfMeshType(node: TransformNode): boolean {
+        return node.getClassName() === "Mesh" || node.getClassName() === "InstancedMesh" || node.getClassName() === "GroundMesh";
+    }
+
     private _addSizeOptions(): void {
         this.transformNode.computeWorldMatrix(true);
         const bb = this._getObjectBoundingBox();
@@ -214,15 +218,9 @@ export class PhysicsAggregate {
                 break;
             case PhysicsShapeType.MESH:
             case PhysicsShapeType.CONVEX_HULL:
-                if (!this._options.mesh && (this.transformNode.getClassName() === "Mesh" || this.transformNode.getClassName() === "InstancedMesh")) {
+                if (!this._options.mesh && this._isOfMeshType(this.transformNode)) {
                     this._options.mesh = this.transformNode as Mesh;
-                } else if (
-                    !(
-                        this._options.mesh &&
-                        this._options.mesh.getClassName &&
-                        (this._options.mesh.getClassName() === "Mesh" || this._options.mesh.getClassName() === "InstancedMesh")
-                    )
-                ) {
+                } else if (!this._options.mesh || !this._isOfMeshType(this._options.mesh)) {
                     throw new Error("No valid mesh was provided for mesh or convex hull shape parameter.");
                 }
                 break;
