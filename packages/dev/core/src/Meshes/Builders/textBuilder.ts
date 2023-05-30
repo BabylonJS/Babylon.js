@@ -288,7 +288,7 @@ export function CreateText(
 
             // There is at least a hole but it was unaffected
             if (!holeVectors.length && holes.length) {
-                for (const hole of holes) {                    
+                for (const hole of holes) {
                     const points = hole.getPoints();
                     const holePoints: Vector3[] = [];
                     for (const point of points) {
