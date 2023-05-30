@@ -23,5 +23,6 @@
     },
     "sideEffects": false,
     "dependencies": {
+        "fflate": "^0.8.0"
     }
 }
