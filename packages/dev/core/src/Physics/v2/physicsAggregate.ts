@@ -168,6 +168,10 @@ export class PhysicsAggregate {
         }
     }
 
+    private _hasVertices(node: TransformNode): boolean {
+        return (node as any)?.getTotalVertices() > 0;
+    }
+
     private _addSizeOptions(): void {
         this.transformNode.computeWorldMatrix(true);
         const bb = this._getObjectBoundingBox();
@@ -214,16 +218,12 @@ export class PhysicsAggregate {
                 break;
             case PhysicsShapeType.MESH:
             case PhysicsShapeType.CONVEX_HULL:
-                if (!this._options.mesh && (this.transformNode.getClassName() === "Mesh" || this.transformNode.getClassName() === "InstancedMesh")) {
+                if (!this._options.mesh && this._hasVertices(this.transformNode)) {
                     this._options.mesh = this.transformNode as Mesh;
-                } else if (
-                    !(
-                        this._options.mesh &&
-                        this._options.mesh.getClassName &&
-                        (this._options.mesh.getClassName() === "Mesh" || this._options.mesh.getClassName() === "InstancedMesh")
-                    )
-                ) {
-                    throw new Error("No valid mesh was provided for mesh or convex hull shape parameter.");
+                } else if (!this._options.mesh || !this._hasVertices(this._options.mesh)) {
+                    throw new Error(
+                        "No valid mesh was provided for mesh or convex hull shape parameter. Please provide a mesh with valid geometry (number of vertices greater than 0)."
+                    );
                 }
                 break;
             case PhysicsShapeType.BOX:
