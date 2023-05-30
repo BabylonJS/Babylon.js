@@ -286,6 +286,18 @@ export function CreateText(
                 holes.splice(holes.indexOf(hole), 1);
             }
 
+            // There is at least a hole but it was unaffected
+            if (!holeVectors.length && holes.length) {
+                for (const hole of holes) {                    
+                    const points = hole.getPoints();
+                    const holePoints: Vector3[] = [];
+                    for (const point of points) {
+                        holePoints.push(new Vector3(point.x, 0, point.y)); // ExtrudePolygon expects data on the xz plane
+                    }
+                    holeVectors.push(holePoints);
+                }
+            }
+
             // Extrusion!
             const mesh = ExtrudePolygon(
                 name,
