@@ -39,25 +39,42 @@ vec2 getAARoughnessFactors(vec3 normalVector) {
 }
 
 #ifdef ANISOTROPIC
-    // Aniso parameter remapping
-    // https://blog.selfshadow.com/publications/s2017-shading-course/imageworks/s2017_pbs_imageworks_slides_v2.pdf page 24
-    vec2 getAnisotropicRoughness(float alphaG, float anisotropy) {
-        float alphaT = max(alphaG * (1.0 + anisotropy), MINIMUMVARIANCE);
-        float alphaB = max(alphaG * (1.0 - anisotropy), MINIMUMVARIANCE);
-        return vec2(alphaT, alphaB);
-    }
+    #ifdef ANISOTROPIC_LEGACY
+        // Aniso parameter remapping
+        // https://blog.selfshadow.com/publications/s2017-shading-course/imageworks/s2017_pbs_imageworks_slides_v2.pdf page 24
+        vec2 getAnisotropicRoughness(float alphaG, float anisotropy) {
+            float alphaT = max(alphaG * (1.0 + anisotropy), MINIMUMVARIANCE);
+            float alphaB = max(alphaG * (1.0 - anisotropy), MINIMUMVARIANCE);
+            return vec2(alphaT, alphaB);
+        }
+        // Aniso Bent Normals
+        // Mc Alley https://www.gdcvault.com/play/1022235/Rendering-the-World-of-Far 
+        vec3 getAnisotropicBentNormals(const vec3 T, const vec3 B, const vec3 N, const vec3 V, float anisotropy, float roughness) {
+            vec3 anisotropicFrameDirection = anisotropy >= 0.0 ? B : T;
+            vec3 anisotropicFrameTangent = cross(normalize(anisotropicFrameDirection), V);
+            vec3 anisotropicFrameNormal = cross(anisotropicFrameTangent, anisotropicFrameDirection);
+            vec3 anisotropicNormal = normalize(mix(N, anisotropicFrameNormal, abs(anisotropy)));
+            return anisotropicNormal;
 
-    // Aniso Bent Normals
-    // Mc Alley https://www.gdcvault.com/play/1022235/Rendering-the-World-of-Far 
-    vec3 getAnisotropicBentNormals(const vec3 T, const vec3 B, const vec3 N, const vec3 V, float anisotropy) {
-        vec3 anisotropicFrameDirection = anisotropy >= 0.0 ? B : T;
-        vec3 anisotropicFrameTangent = cross(normalize(anisotropicFrameDirection), V);
-        vec3 anisotropicFrameNormal = cross(anisotropicFrameTangent, anisotropicFrameDirection);
-        vec3 anisotropicNormal = normalize(mix(N, anisotropicFrameNormal, abs(anisotropy)));
-        return anisotropicNormal;
-
-        // should we also do http://advances.realtimerendering.com/s2018/Siggraph%202018%20HDRP%20talk_with%20notes.pdf page 80 ?
-    }
+            // should we also do http://advances.realtimerendering.com/s2018/Siggraph%202018%20HDRP%20talk_with%20notes.pdf page 80 ?
+        }
+    #else
+        // Aniso parameter remapping GLTF
+        // https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_anisotropy
+        vec2 getAnisotropicRoughness(float alphaG, float anisotropy) {
+            float alphaT = max(mix(alphaG, 1.0, anisotropy * anisotropy), MINIMUMVARIANCE);
+            float alphaB = max(alphaG, MINIMUMVARIANCE);
+            return vec2(alphaT, alphaB);
+        }
+        vec3 getAnisotropicBentNormals(const vec3 T, const vec3 B, const vec3 N, const vec3 V, float anisotropy, float roughness) {
+            vec3 bentNormal = cross(B, V);
+            bentNormal = normalize(cross(bentNormal, B));
+            // This heuristic can probably be improved upon
+            float a = square(square(1.0 - anisotropy * (1.0 - roughness)));
+            bentNormal = normalize(mix(bentNormal, N, a));
+            return bentNormal;
+        }
+    #endif
 #endif
 
 #if defined(CLEARCOAT) || defined(SS_REFRACTION)

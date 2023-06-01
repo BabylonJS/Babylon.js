@@ -26,7 +26,7 @@ import "../../Shaders/fluidRenderingBilateralBlur.fragment";
 import "../../Shaders/fluidRenderingStandardBlur.fragment";
 import "../../Shaders/fluidRenderingRender.fragment";
 
-declare module "core/abstractScene" {
+declare module "../../abstractScene" {
     export interface AbstractScene {
         /** @internal (Backing field) */
         _fluidRenderer: Nullable<FluidRenderer>;

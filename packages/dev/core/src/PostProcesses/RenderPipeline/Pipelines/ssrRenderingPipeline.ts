@@ -120,12 +120,29 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
     @serialize()
     public selfCollisionNumSkip = 1;
 
+    @serialize()
+    private _reflectivityThreshold = 0.04;
+
     /**
      * Gets or sets the minimum value for one of the reflectivity component of the material to consider it for SSR (default: 0.04).
      * If all r/g/b components of the reflectivity is below or equal this value, the pixel will not be considered reflective and SSR won't be applied.
      */
-    @serialize()
-    public reflectivityThreshold = 0.04;
+    public get reflectivityThreshold() {
+        return this._reflectivityThreshold;
+    }
+
+    public set reflectivityThreshold(threshold: number) {
+        if (threshold === this._reflectivityThreshold) {
+            return;
+        }
+
+        if ((threshold === 0 && this._reflectivityThreshold !== 0) || (threshold !== 0 && this._reflectivityThreshold === 0)) {
+            this._reflectivityThreshold = threshold;
+            this._buildPipeline();
+        } else {
+            this._reflectivityThreshold = threshold;
+        }
+    }
 
     @serialize("_ssrDownsample")
     private _ssrDownsample = 0;
@@ -358,6 +375,25 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         }
         this._clipToFrustum = clip;
         this._updateEffectDefines();
+    }
+
+    @serialize("useFresnel")
+    private _useFresnel = false;
+
+    /**
+     * Gets or sets a boolean indicating whether the blending between the current color pixel and the reflection color should be done with a Fresnel coefficient (default: false).
+     * It is more physically accurate to use the Fresnel coefficient (otherwise it uses the reflectivity of the material for blending), but it is also more expensive when you use blur (when blurDispersionStrength \> 0).
+     */
+    public get useFresnel() {
+        return this._useFresnel;
+    }
+
+    public set useFresnel(fresnel: boolean) {
+        if (this._useFresnel === fresnel) {
+            return;
+        }
+        this._useFresnel = fresnel;
+        this._buildPipeline();
     }
 
     @serialize("enableAutomaticThicknessComputation")
@@ -749,6 +785,12 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         if (this._generateOutputInGammaSpace) {
             defines.push("#define SSR_OUTPUT_IS_GAMMA_SPACE");
         }
+        if (this._useFresnel) {
+            defines.push("#define SSR_BLEND_WITH_FRESNEL");
+        }
+        if (this._reflectivityThreshold === 0) {
+            defines.push("#define SSR_DISABLE_REFLECTIVITY_TEST");
+        }
 
         this._ssrPostProcess?.updateEffect(defines.join("\n"));
     }
@@ -784,7 +826,6 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
                 this._depthRenderer = new DepthRenderer(this._scene, undefined, undefined, undefined, Constants.TEXTURE_NEAREST_SAMPLINGMODE, true, "SSRBackDepth");
                 this._depthRenderer.clearColor.r = 1e8; // "infinity": put a big value because we use the storeCameraSpaceZ mode
                 this._depthRenderer.reverseCulling = true; // we generate depth for the back faces
-                this._depthRenderer.getDepthMap().noPrePassRenderer = true; // we don't want the prepass renderer to attach to our depth buffer!
                 this._depthRenderer.forceDepthWriteTransparentMeshes = this._backfaceForceDepthWriteTransparentMeshes;
 
                 this._resizeDepthRenderer();
@@ -971,7 +1012,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
             effect.setFloat("nearPlaneZ", camera.minZ);
             effect.setFloat("maxDistance", this.maxDistance);
             effect.setFloat("selfCollisionNumSkip", this.selfCollisionNumSkip);
-            effect.setFloat("reflectivityThreshold", this.reflectivityThreshold);
+            effect.setFloat("reflectivityThreshold", this._reflectivityThreshold);
 
             const textureSize = this._getTextureSize();
 
@@ -1044,6 +1085,9 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
             effect.setFloat2("texelOffsetScale", 0, this._blurDispersionStrength / height);
         });
 
+        const uniformNames = ["strength", "reflectionSpecularFalloffExponent", "reflectivityThreshold"];
+        const samplerNames = ["textureSampler", "mainSampler", "reflectivitySampler"];
+
         let defines = "";
 
         if (this._debug) {
@@ -1055,12 +1099,21 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         if (this._generateOutputInGammaSpace) {
             defines += "#define SSR_OUTPUT_IS_GAMMA_SPACE\n";
         }
+        if (this.useFresnel) {
+            defines += "#define SSR_BLEND_WITH_FRESNEL\n";
+
+            uniformNames.push("projection", "invProjectionMatrix");
+            samplerNames.push("depthSampler", "normalSampler");
+        }
+        if (this._reflectivityThreshold === 0) {
+            defines += "#define SSR_DISABLE_REFLECTIVITY_TEST";
+        }
 
         this._blurCombinerPostProcess = new PostProcess(
             "SSRblurCombiner",
             "screenSpaceReflection2BlurCombiner",
-            ["strength", "reflectionSpecularFalloffExponent", "reflectivityThreshold"],
-            ["textureSampler", "mainSampler", "reflectivitySampler"],
+            uniformNames,
+            samplerNames,
             this._useBlur() ? 1 / (this._blurDownsample + 1) : 1,
             null,
             Constants.TEXTURE_NEAREST_SAMPLINGMODE,
@@ -1092,14 +1145,37 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
             if (geometryBufferRenderer) {
                 const roughnessIndex = geometryBufferRenderer.getTextureIndex(GeometryBufferRenderer.REFLECTIVITY_TEXTURE_TYPE);
                 effect.setTexture("reflectivitySampler", geometryBufferRenderer.getGBuffer().textures[roughnessIndex]);
+                if (this.useFresnel) {
+                    effect.setTexture("normalSampler", geometryBufferRenderer.getGBuffer().textures[1]);
+                    effect.setTexture("depthSampler", geometryBufferRenderer.getGBuffer().textures[0]);
+                }
             } else if (prePassRenderer) {
                 const roughnessIndex = prePassRenderer.getIndex(Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE);
                 effect.setTexture("reflectivitySampler", prePassRenderer.getRenderTarget().textures[roughnessIndex]);
+                if (this.useFresnel) {
+                    const depthIndex = prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
+                    const normalIndex = prePassRenderer.getIndex(Constants.PREPASS_NORMAL_TEXTURE_TYPE);
+
+                    effect.setTexture("normalSampler", prePassRenderer.getRenderTarget().textures[normalIndex]);
+                    effect.setTexture("depthSampler", prePassRenderer.getRenderTarget().textures[depthIndex]);
+                }
             }
 
             effect.setFloat("strength", this.strength);
             effect.setFloat("reflectionSpecularFalloffExponent", this.reflectionSpecularFalloffExponent);
-            effect.setFloat("reflectivityThreshold", this.reflectivityThreshold);
+            effect.setFloat("reflectivityThreshold", this._reflectivityThreshold);
+
+            if (this.useFresnel) {
+                const camera = this._scene.activeCamera;
+                if (camera) {
+                    const projectionMatrix = camera.getProjectionMatrix();
+
+                    projectionMatrix.invertToRef(TmpVectors.Matrix[0]);
+
+                    effect.setMatrix("projection", projectionMatrix);
+                    effect.setMatrix("invProjectionMatrix", TmpVectors.Matrix[0]);
+                }
+            }
         });
     }
 

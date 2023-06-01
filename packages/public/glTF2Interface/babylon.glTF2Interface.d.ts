@@ -1060,6 +1060,13 @@ declare module BABYLON.GLTF2 {
         iridescenceThicknessTexture?: ITextureInfo;
     }
 
+    /** @internal */
+    interface IKHRMaterialsAnisotropy extends IMaterialExtension {
+        anisotropyStrength?: number;
+        anisotropyRotation?: number;
+        anisotropyTexture?: ITextureInfo;
+    }
+
     /**
      * Interfaces from the KHR_materials_ior extension
      */
@@ -1215,7 +1222,6 @@ declare module BABYLON.GLTF2 {
     interface IKHRXmpJsonLd_Node {
         packet: number;
     }
-
 
     /**
      * Interfaces from the KHR_animation_pointer extension
