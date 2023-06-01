@@ -36,7 +36,10 @@ export class ShaderCodeNode {
 
                 if (!options.isFragment && processor.attributeProcessor && this.line.startsWith(attributeKeyword)) {
                     value = processor.attributeProcessor(this.line, preprocessors, options.processingContext);
-                } else if (processor.varyingProcessor && this.line.startsWith(varyingKeyword)) {
+                } else if (
+                    processor.varyingProcessor &&
+                    (processor.varyingCheck?.(this.line, options.isFragment) || (!processor.varyingCheck && this.line.startsWith(varyingKeyword)))
+                ) {
                     value = processor.varyingProcessor(this.line, options.isFragment, preprocessors, options.processingContext);
                 } else if (processor.uniformProcessor && processor.uniformRegexp && processor.uniformRegexp.test(this.line)) {
                     if (!options.lookForClosingBracketForUniformBuffer) {

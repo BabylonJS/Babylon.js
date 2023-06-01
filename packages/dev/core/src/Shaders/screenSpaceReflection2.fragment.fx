@@ -50,35 +50,14 @@ uniform float selfCollisionNumSkip;
 uniform float reflectivityThreshold;
 
 #include<helperFunctions>
+#include<pbrBRDFFunctions>
 #include<screenSpaceRayTrace>
-
-vec3 fresnelSchlick(float cosTheta, vec3 F0)
-{
-    return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
-}
 
 vec3 hash(vec3 a)
 {
     a = fract(a * 0.8);
     a += dot(a, a.yxz + 19.19);
     return fract((a.xxy + a.yxx) * a.zyx);
-}
-
-vec3 computeViewPosFromUVDepth(vec2 texCoord, float depth) {
-    vec4 ndc;
-    
-    ndc.xy = texCoord * 2.0 - 1.0;
-#ifdef SSRAYTRACE_RIGHT_HANDED_SCENE
-    ndc.z = -projection[2].z - projection[3].z / depth;
-#else
-    ndc.z = projection[2].z + projection[3].z / depth;
-#endif
-    ndc.w = 1.0;
-
-    vec4 eyePos = invProjectionMatrix * ndc;
-    eyePos.xyz /= eyePos.w;
-
-    return eyePos.xyz;
 }
 
 float computeAttenuationForIntersection(ivec2 hitPixel, vec2 hitUV, vec3 vsRayOrigin, vec3 vsHitPoint, vec3 reflectionVector, float maxRayDistance, float numIterations) {
@@ -124,6 +103,7 @@ void main()
     vec4 colorFull = TEXTUREFUNC(textureSampler, vUV, 0.0);
     vec3 color = colorFull.rgb;
     vec4 reflectivity = TEXTUREFUNC(reflectivitySampler, vUV, 0.0);
+#ifndef SSR_DISABLE_REFLECTIVITY_TEST
     if (max(reflectivity.r, max(reflectivity.g, reflectivity.b)) <= reflectivityThreshold) {
         #ifdef SSR_USE_BLUR
             gl_FragColor = vec4(0.);
@@ -132,6 +112,7 @@ void main()
         #endif
         return;
     }
+#endif
 
 #ifdef SSR_INPUT_IS_GAMMA_SPACE
     color = toLinearSpace(color);
@@ -142,7 +123,7 @@ void main()
     // Compute the reflected vector
     vec3 csNormal = texelFetch(normalSampler, ivec2(vUV * texSize), 0).xyz; // already normalized in the texture
     float depth = texelFetch(depthSampler, ivec2(vUV * texSize), 0).r;
-    vec3 csPosition = computeViewPosFromUVDepth(vUV, depth);
+    vec3 csPosition = computeViewPosFromUVDepth(vUV, depth, projection, invProjectionMatrix);
     vec3 csViewDirection = normalize(csPosition);
 
     vec3 csReflectedVector = reflect(csViewDirection, csNormal);
@@ -233,7 +214,7 @@ void main()
 
     // Fresnel
     vec3 F0 = reflectivity.rgb;
-    vec3 fresnel = fresnelSchlick(max(dot(csNormal, -csViewDirection), 0.0), F0);
+    vec3 fresnel = fresnelSchlickGGX(max(dot(csNormal, -csViewDirection), 0.0), F0, vec3(1.));
 
     // SSR color
     vec3 SSR = envColor;
@@ -246,7 +227,9 @@ void main()
         SSR = reflectedColor * reflectionAttenuation + (1.0 - reflectionAttenuation) * envColor;
     }
 
+#ifndef SSR_BLEND_WITH_FRESNEL
     SSR *= fresnel;
+#endif
 
     #ifdef SSR_USE_BLUR
         // from https://github.com/godotengine/godot/blob/master/servers/rendering/renderer_rd/shaders/effects/screen_space_reflection.glsl
@@ -274,7 +257,11 @@ void main()
         gl_FragColor = vec4(SSR, blur_radius / 255.0); // the render target is RGBA8 so we must fit the radius in the 0..1 range
     #else
         // Mix current color with SSR color
-        vec3 reflectionMultiplier = clamp(pow(reflectivity.rgb * strength, vec3(reflectionSpecularFalloffExponent)), 0.0, 1.0);
+        #ifdef SSR_BLEND_WITH_FRESNEL
+            vec3 reflectionMultiplier = clamp(pow(fresnel * strength, vec3(reflectionSpecularFalloffExponent)), 0.0, 1.0);
+        #else
+            vec3 reflectionMultiplier = clamp(pow(reflectivity.rgb * strength, vec3(reflectionSpecularFalloffExponent)), 0.0, 1.0);
+        #endif
         vec3 colorMultiplier = 1.0 - reflectionMultiplier;
 
         vec3 finalColor = (color * colorMultiplier) + (SSR * reflectionMultiplier);

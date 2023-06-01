@@ -315,3 +315,24 @@ bool traceScreenSpaceRay1(
 
     return hit;
 }
+
+/**
+    texCoord: in the [0, 1] range
+    depth: depth in view space (range [znear, zfar]])
+*/
+vec3 computeViewPosFromUVDepth(vec2 texCoord, float depth, mat4 projection, mat4 invProjectionMatrix) {
+    vec4 ndc;
+    
+    ndc.xy = texCoord * 2.0 - 1.0;
+#ifdef SSRAYTRACE_RIGHT_HANDED_SCENE
+    ndc.z = -projection[2].z - projection[3].z / depth;
+#else
+    ndc.z = projection[2].z + projection[3].z / depth;
+#endif
+    ndc.w = 1.0;
+
+    vec4 eyePos = invProjectionMatrix * ndc;
+    eyePos.xyz /= eyePos.w;
+
+    return eyePos.xyz;
+}

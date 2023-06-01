@@ -200,7 +200,7 @@ class CollisionEvent {
         eventOut.contactOnB.bodyId = BigInt(intBuf[offB]);
         eventOut.contactOnB.position.set(floatBuf[offB + 8], floatBuf[offB + 9], floatBuf[offB + 10]);
         eventOut.contactOnB.normal.set(floatBuf[offB + 11], floatBuf[offB + 12], floatBuf[offB + 13]);
-        eventOut.impulseApplied = floatBuf[offB + 13 + 2];
+        eventOut.impulseApplied = floatBuf[offB + 13 + 3];
     }
 }
 
@@ -635,7 +635,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      */
     public getEventMask(body: PhysicsBody, instanceIndex?: number): number {
         const pluginRef = this._getPluginReference(body, instanceIndex);
-        return this._hknp.HP_Body_GetEventMask(pluginRef)[1];
+        return this._hknp.HP_Body_GetEventMask(pluginRef.hpBodyId)[1];
     }
 
     private _fromMassPropertiesTuple(massPropsTuple: any[]): PhysicsMassProperties {

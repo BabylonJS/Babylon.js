@@ -115,6 +115,11 @@ export class BoneLookController {
     }
 
     /**
+     * Use the absolute value for yaw when checking the min/max constraints
+     */
+    public useAbsoluteValueForYaw = false;
+
+    /**
      * Gets or sets the minimum pitch angle that the bone can look to
      */
     get minPitch(): number {
@@ -186,6 +191,7 @@ export class BoneLookController {
             adjustYaw?: number;
             adjustPitch?: number;
             adjustRoll?: number;
+            useAbsoluteValueForYaw?: boolean;
         }
     ) {
         this.mesh = mesh;
@@ -262,6 +268,10 @@ export class BoneLookController {
 
                 this._transformYawPitchInv = this._transformYawPitch.clone();
                 this._transformYawPitch.invert();
+            }
+
+            if (options.useAbsoluteValueForYaw !== undefined) {
+                this.useAbsoluteValueForYaw = options.useAbsoluteValueForYaw;
             }
         }
 
@@ -379,9 +389,10 @@ export class BoneLookController {
                 Vector3.TransformCoordinatesToRef(localTarget, spaceMatInv, localTarget);
 
                 const yaw = Math.atan2(localTarget.x, localTarget.z);
+                const yawCheck = this.useAbsoluteValueForYaw ? Math.abs(yaw) : yaw;
                 let newYaw = yaw;
 
-                if (yaw > this._maxYaw || yaw < this._minYaw) {
+                if (yawCheck > this._maxYaw || yawCheck < this._minYaw) {
                     if (xzlen == null) {
                         xzlen = Math.sqrt(localTarget.x * localTarget.x + localTarget.z * localTarget.z);
                     }
@@ -397,13 +408,19 @@ export class BoneLookController {
                             newYaw = this._minYaw;
                         }
                     } else {
-                        if (yaw > this._maxYaw) {
+                        if (yawCheck > this._maxYaw) {
                             localTarget.z = this._maxYawCos * xzlen;
                             localTarget.x = this._maxYawSin * xzlen;
+                            if (yaw < 0 && this.useAbsoluteValueForYaw) {
+                                localTarget.x *= -1;
+                            }
                             newYaw = this._maxYaw;
-                        } else if (yaw < this._minYaw) {
+                        } else if (yawCheck < this._minYaw) {
                             localTarget.z = this._minYawCos * xzlen;
                             localTarget.x = this._minYawSin * xzlen;
+                            if (yaw < 0 && this.useAbsoluteValueForYaw) {
+                                localTarget.x *= -1;
+                            }
                             newYaw = this._minYaw;
                         }
                     }
