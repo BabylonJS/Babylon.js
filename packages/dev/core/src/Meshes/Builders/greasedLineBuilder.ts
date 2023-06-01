@@ -3,7 +3,7 @@ import type { GreasedLineMaterialOptions } from "../../Materials/greasedLinePlug
 import { GreasedLineMeshColorMode, GreasedLineMeshMaterialType, GreasedLinePluginMaterial } from "../../Materials/greasedLinePluginMaterial";
 import { StandardMaterial } from "./../../Materials/standardMaterial";
 import { PBRMaterial } from "../../Materials/PBR/pbrMaterial";
-import { Vector3 } from "../../Maths/math.vector";
+import type { Vector3 } from "../../Maths/math.vector";
 import type { Nullable } from "../../types";
 import type { GreasedLineMeshOptions } from "../greasedLineMesh";
 import { GreasedLineMeshColorDistribution, GreasedLineMeshWidthDistribution, GreasedLineMesh } from "../greasedLineMesh";
@@ -229,7 +229,6 @@ export class GreasedLineMeshBuilder {
                     widthsData.push(widths[i++]);
                     widthsData.push(widths[i++]);
 
-                    // TODO: with %
                     if (i === widths.length) {
                         i = 0;
                     }
@@ -333,7 +332,6 @@ export class GreasedLineMeshBuilder {
                     colorsData.push(colors[i]);
                     colorsData.push(colors[i]);
 
-                    // TODO: with %
                     i++;
 
                     if (i === colors.length) {

@@ -137,7 +137,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
 
     private _engine: Engine;
 
-    private static _EmptyColorsTexture: RawTexture
+    private static _EmptyColorsTexture: RawTexture;
 
     constructor(
         material: Material,
@@ -148,7 +148,6 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
         const defines = new MaterialGreasedLineDefines();
         defines.GREASED_LINE_HAS_COLOR = !!options.color;
         defines.GREASED_LINE_SIZE_ATTENUATION = options.sizeAttenuation ?? false;
-        // defines.GREASED_LINE_HAS_COLORS = (options.colors?.length ?? 0) > 0
 
         super(material, GreasedLinePluginMaterial.GREASED_LINE_MATERIAL_NAME, 200, defines);
 
@@ -257,7 +256,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
         if (this._colorsTexture) {
             uniformBuffer.setTexture("grl_colors", this._colorsTexture);
         } else if (this._engine.isWebGPU) {
-            uniformBuffer.setTexture("grl_colors", GreasedLinePluginMaterial._EmptyColorsTexture )
+            uniformBuffer.setTexture("grl_colors", GreasedLinePluginMaterial._EmptyColorsTexture);
         }
 
         uniformBuffer.update();
@@ -266,7 +265,6 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
     prepareDefines(defines: MaterialGreasedLineDefines, _scene: Scene, _mesh: AbstractMesh) {
         const options = this._options;
         defines.GREASED_LINE_HAS_COLOR = !!options.color;
-        // defines.GREASED_LINE_HAS_COLORS = (options.colors?.length ?? 0) > 0
         defines.GREASED_LINE_SIZE_ATTENUATION = options.sizeAttenuation ?? false;
     }
 
@@ -285,9 +283,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
                     attribute vec3 grl_offsets;
 
                     out vec3 vNormal;
-                    // varying vec4 vColor;
                     out float grlCounters;
-                    // varying int grlColorPointer; // flat
                     flat out int grlColorPointer; // flat
 
                     vec2 fix( vec4 i, float aspect ) {
@@ -303,7 +299,6 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
                 `,
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 CUSTOM_VERTEX_MAIN_END: `
-                    // grlColorPointer = float(gl_VertexID);
                     grlColorPointer = gl_VertexID;
 
                     vec2 grlResolution = grl_resolution_lineWidth.xy;
@@ -361,14 +356,11 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 CUSTOM_FRAGMENT_DEFINITIONS: `
                     in float grlCounters;
-                    flat in int grlColorPointer; // flat
-                    // flat in int grlColorPointer; // flat
+                    flat in int grlColorPointer;
 
                 `,
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 CUSTOM_FRAGMENT_MAIN_END: `
-                    // int grlColorPointerFlat = int(grlColorPointer);
-                    int grlColorPointerFlat = grlColorPointer;
                     float grlColorMode = grl_colorMode_visibility_colorsWidth_useColors.x;
                     float grlVisibility = grl_colorMode_visibility_colorsWidth_useColors.y;
                     float grlColorsWidth = grl_colorMode_visibility_colorsWidth_useColors.z;
@@ -397,7 +389,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
                         }
                     #else
                         if (grlUseColors == 1.) {
-                            vec4 grlColor = texture2D(grl_colors, vec2(float(grlColorPointerFlat)/(grlColorsWidth), 0.));;
+                            vec4 grlColor = texture2D(grl_colors, vec2(float(grlColorPointer)/(grlColorsWidth), 0.));;
                         if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_SET}.) {
                             gl_FragColor = grlColor;
                         } else if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_ADD}.) {
@@ -559,7 +551,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
 
     /**
      * Turn on/off attenuation of the width option and widths array.
-     * @param value false means 1 unit in width = 1 unit on scene, true means 1 unit in width = 1 pixel (TODO: not really - make better description of this option)
+     * @param value false means 1 unit in width = 1 unit on scene, true means 1 the width will be reduced
      */
     public setSizeAttenuation(value: boolean) {
         this._options.sizeAttenuation = value;
@@ -575,7 +567,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
     }
 
     /**
-     * Sets the color of the line. If set the whole line will be mixed with this color according to the colorMode option. TODO: describe better the mixing algorithm
+     * Sets the color of the line. If set the whole line will be mixed with this color according to the colorMode option.
      * @param value color
      */
     public setColor(value: Color3 | undefined) {
@@ -638,7 +630,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
         if (!this._EmptyColorsTexture) {
             const colorsArray = new Uint8Array(4);
             this._EmptyColorsTexture = new RawTexture(colorsArray, 1, 1, Engine.TEXTUREFORMAT_RGBA, scene, false, false, RawTexture.NEAREST_NEAREST);
-            this._EmptyColorsTexture.name = 'grlEmptyColorsWebGPUTexture';
+            this._EmptyColorsTexture.name = "grlEmptyColorsWebGPUTexture";
         }
     }
 }
