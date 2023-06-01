@@ -511,7 +511,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
 
                 const parent = transformNode.parent as TransformNode;
                 // transform position/orientation in parent space
-                if (parent && parent.absoluteRotationQuaternion) {
+                if (parent && !parent.getWorldMatrix().isIdentity()) {
                     quat.normalize();
                     const finalTransform = TmpVectors.Matrix[0];
                     const finalTranslation = TmpVectors.Vector3[0];
