@@ -58,7 +58,7 @@ export class PhysicsBody {
 
     /**
      * Constructs a new physics body for the given node.
-     * @param transformNode - The Transform Node to construct the physics body for.
+     * @param transformNode - The Transform Node to construct the physics body for. For better performance, it is advised that this node does not have a parent.
      * @param motionType - The motion type of the physics body. The options are:
      *  - PhysicsMotionType.STATIC - Static bodies are not moving and unaffected by forces or collisions. They are good for level boundaries or terrain.
      *  - PhysicsMotionType.DYNAMIC - Dynamic bodies are fully simulated. They can move and collide with other objects.
