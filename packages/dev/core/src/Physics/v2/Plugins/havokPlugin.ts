@@ -520,12 +520,10 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                     finalTranslation.copyFromFloats(bodyTranslation[0], bodyTranslation[1], bodyTranslation[2]);
                     Matrix.ComposeToRef(transformNode.absoluteScaling, quat, finalTranslation, finalTransform);
 
-                    const parentTransform = TmpVectors.Matrix[1];
-                    parentTransform.copyFrom(parent.getWorldMatrix());
-                    const parentInverseTransform = TmpVectors.Matrix[2];
-                    parentTransform.invertToRef(parentInverseTransform);
+                    const parentInverseTransform = TmpVectors.Matrix[1];
+                    parent.getWorldMatrix().invertToRef(parentInverseTransform);
 
-                    const localTransform = TmpVectors.Matrix[3];
+                    const localTransform = TmpVectors.Matrix[2];
                     finalTransform.multiplyToRef(parentInverseTransform, localTransform);
                     localTransform.decomposeToTransformNode(transformNode);
                     transformNode.rotationQuaternion?.normalize();
