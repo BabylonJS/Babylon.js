@@ -156,7 +156,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
 
         if (options.colors) {
             this._createColorsTexture(`${material.name}-colors-texture`, options.colors);
-        } else {
+        } else if (this._engine.isWebGPU) {
             GreasedLinePluginMaterial._PrepareEmptyColorsTexture(_scene);
         }
 
@@ -635,8 +635,10 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
      * @param scene Scene
      */
     private static _PrepareEmptyColorsTexture(scene: Scene) {
-        const colorsArray = new Uint8Array(4);
-        this._EmptyColorsTexture = new RawTexture(colorsArray, 1, 1, Engine.TEXTUREFORMAT_RGBA, scene, false, false, RawTexture.NEAREST_NEAREST);
-        this._EmptyColorsTexture.name = 'grlEmptyColorsWebGPUTexture';
+        if (!this._EmptyColorsTexture) {
+            const colorsArray = new Uint8Array(4);
+            this._EmptyColorsTexture = new RawTexture(colorsArray, 1, 1, Engine.TEXTUREFORMAT_RGBA, scene, false, false, RawTexture.NEAREST_NEAREST);
+            this._EmptyColorsTexture.name = 'grlEmptyColorsWebGPUTexture';
+        }
     }
 }
