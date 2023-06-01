@@ -33,14 +33,10 @@ export interface GreasedLineMaterialOptions {
     // material related
     /**
      * Line width.
-     * Default to 1.
+     * Default to 0.1.
      */
     width?: number;
     /**
-     * If false then width units = scene units. If true then line will width be reduced.
-     * Defaults to false.
-     */
-    sizeAttenuation?: boolean;
     /**
      * Type of the material to use to render the line.
      * Defaults to StandardMaterial.
@@ -113,11 +109,6 @@ export class MaterialGreasedLineDefines extends MaterialDefines {
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     GREASED_LINE_HAS_COLORS = false;
-    /**
-     * The material's size attenuation optiom
-     */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    GREASED_LINE_SIZE_ATTENUATION = false;
 }
 
 /**
@@ -147,7 +138,6 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
     ) {
         const defines = new MaterialGreasedLineDefines();
         defines.GREASED_LINE_HAS_COLOR = !!options.color;
-        defines.GREASED_LINE_SIZE_ATTENUATION = options.sizeAttenuation ?? false;
 
         super(material, GreasedLinePluginMaterial.GREASED_LINE_MATERIAL_NAME, 200, defines);
 
@@ -232,7 +222,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
             resolutionLineWidth.x = this._engine.getRenderWidth();
             resolutionLineWidth.y = this._engine.getRenderHeight();
         }
-        resolutionLineWidth.z = this._options.width ? this._options.width : this._options.sizeAttenuation ? 1 : 0.1;
+        resolutionLineWidth.z = this._options.width ?? 0.1;
         uniformBuffer.updateVector3("grl_resolution_lineWidth", resolutionLineWidth);
 
         const dashOptions = TmpVectors.Vector4[0];
@@ -265,7 +255,6 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
     prepareDefines(defines: MaterialGreasedLineDefines, _scene: Scene, _mesh: AbstractMesh) {
         const options = this._options;
         defines.GREASED_LINE_HAS_COLOR = !!options.color;
-        defines.GREASED_LINE_SIZE_ATTENUATION = options.sizeAttenuation ?? false;
     }
 
     getClassName() {
@@ -334,13 +323,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
                     vec4 grlNormal = vec4( -grlDir.y, grlDir.x, 0., 1. );
                     grlNormal.xy *= .5 * grlWidth;
                     grlNormal *= grl_projection;
-                    #ifdef GREASED_LINE_SIZE_ATTENUATION
-                        grlNormal.xy *= grlFinalPosition.w;
-                        grlNormal.xy /= ( vec4( grlResolution, 0., 1. ) * grl_projection ).xy;
-                    #endif
-
                     grlFinalPosition.xy += grlNormal.xy * grlSide;
-
                     gl_Position = grlFinalPosition;
 
                     vNormal= grlNormal.xyz;
@@ -547,15 +530,6 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
      */
     public setDashOffset(value: number) {
         this._options.dashOffset = value;
-    }
-
-    /**
-     * Turn on/off attenuation of the width option and widths array.
-     * @param value false means 1 unit in width = 1 unit on scene, true means 1 the width will be reduced
-     */
-    public setSizeAttenuation(value: boolean) {
-        this._options.sizeAttenuation = value;
-        this.markAllDefinesAsDirty();
     }
 
     /**

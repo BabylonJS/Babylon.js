@@ -95,7 +95,6 @@ export class GreasedLineMeshBuilder {
                     dashOffset: materialOptions.dashOffset,
                     dashRatio: materialOptions.dashRatio,
                     resolution: materialOptions.resolution,
-                    sizeAttenuation: materialOptions.sizeAttenuation,
                     useColors: materialOptions.useColors,
                     useDash: materialOptions.useDash,
                     visibility: materialOptions.visibility,

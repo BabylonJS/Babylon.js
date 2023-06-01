@@ -1,5 +1,5 @@
 import type { Scene } from "../scene";
-import type { Matrix} from "../Maths/math.vector";
+import type { Matrix } from "../Maths/math.vector";
 import { TmpVectors, Vector3 } from "../Maths/math.vector";
 import { GreasedLinePluginMaterial } from "../Materials/greasedLinePluginMaterial";
 import { Mesh } from "./mesh";
@@ -359,7 +359,14 @@ export class GreasedLineMesh extends Mesh {
      * @param skipBoundingInfo a boolean indicating if we should skip the bounding info check
      * @returns the picking info
      */
-    public intersects(ray: Ray, fastCheck?: boolean, trianglePredicate?: TrianglePickingPredicate, onlyBoundingInfo = false, worldToUse?: Matrix, skipBoundingInfo = false): PickingInfo {
+    public intersects(
+        ray: Ray,
+        fastCheck?: boolean,
+        trianglePredicate?: TrianglePickingPredicate,
+        onlyBoundingInfo = false,
+        worldToUse?: Matrix,
+        skipBoundingInfo = false
+    ): PickingInfo {
         const pickingInfo = new PickingInfo();
         const intersections = this.getIntersections(ray, fastCheck, trianglePredicate, onlyBoundingInfo, worldToUse, skipBoundingInfo, true);
         if (intersections?.length === 1) {
@@ -384,7 +391,15 @@ export class GreasedLineMesh extends Mesh {
      * @param firstOnly If true, the first and only intersection is immediatelly returned if found
      * @returns intersection(s)
      */
-    public getIntersections(ray: Ray, _fastCheck?: boolean, _trianglePredicate?: TrianglePickingPredicate, onlyBoundingInfo = false, _worldToUse?: Matrix, skipBoundingInfo = false, firstOnly = false): { distance: number; point: Vector3 }[] | undefined {
+    public getIntersections(
+        ray: Ray,
+        _fastCheck?: boolean,
+        _trianglePredicate?: TrianglePickingPredicate,
+        onlyBoundingInfo = false,
+        _worldToUse?: Matrix,
+        skipBoundingInfo = false,
+        firstOnly = false
+    ): { distance: number; point: Vector3 }[] | undefined {
         if (onlyBoundingInfo && !skipBoundingInfo && ray.intersectsSphere(this._boundingSphere, this.intersectionThreshold) === false) {
             return;
         }
@@ -422,7 +437,7 @@ export class GreasedLineMesh extends Mesh {
                 const width = widths[iFloored] !== undefined ? widths[iFloored] : 1;
                 const precision = this.intersectionThreshold + (lineWidth * width) / 2;
 
-                const distance = ray.intersectionSegment(vStart, vEnd, precision / 1000); // TODO: sizeAtt - keep in mind
+                const distance = ray.intersectionSegment(vStart, vEnd, precision);
                 if (distance !== -1) {
                     intersects.push({
                         distance: distance,
