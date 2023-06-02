@@ -375,7 +375,7 @@ export class ShaderProcessor {
     private static _ProcessIncludes(sourceCode: string, options: ProcessingOptions, callback: (data: any) => void): void {
         const matches = sourceCode.matchAll(regexShaderInclude);
 
-        let returnValue = new String(sourceCode);
+        let returnValue = String(sourceCode);
         let parts = [sourceCode];
 
         let keepProcessing = false;
