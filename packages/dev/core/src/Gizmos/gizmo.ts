@@ -10,7 +10,7 @@ import type { TargetCamera } from "../Cameras/targetCamera";
 import type { Node } from "../node";
 import type { Bone } from "../Bones/bone";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
-import { TransformNode } from "../Meshes/transformNode";
+import type { TransformNode } from "../Meshes/transformNode";
 import type { StandardMaterial } from "../Materials/standardMaterial";
 import type { PointerInfo } from "../Events/pointerEvents";
 import { PointerEventTypes } from "../Events/pointerEvents";
@@ -281,8 +281,8 @@ export class Gizmo implements IGizmo {
 
             // Position
             if (this.updateGizmoPositionToMatchAttachedMesh) {
-                if (this.anchorPoint == GizmoAnchorPoint.Pivot && effectiveNode instanceof TransformNode) {
-                    const position = effectiveNode.getAbsolutePivotPoint();
+                if (this.anchorPoint == GizmoAnchorPoint.Pivot && (<TransformNode>effectiveNode).getAbsolutePivotPoint) {
+                    const position = (<TransformNode>effectiveNode).getAbsolutePivotPoint();
                     this._rootMesh.position.copyFrom(position);
                 } else {
                     const row = effectiveNode.getWorldMatrix().getRow(3);
