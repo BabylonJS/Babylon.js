@@ -373,12 +373,12 @@ export class ShaderProcessor {
     }
 
     private static _ProcessIncludes(sourceCode: string, options: ProcessingOptions, callback: (data: any) => void): void {
-        let match = regexShaderInclude.exec(sourceCode);
+        const matches = sourceCode.matchAll(regexShaderInclude);
 
         let returnValue = new String(sourceCode);
         let keepProcessing = false;
 
-        while (match != null) {
+        for (const match of matches) {
             let includeFile = match[1];
 
             // Uniform declaration
@@ -451,8 +451,6 @@ export class ShaderProcessor {
                 });
                 return;
             }
-
-            match = regexShaderInclude.exec(sourceCode);
         }
 
         if (keepProcessing) {
