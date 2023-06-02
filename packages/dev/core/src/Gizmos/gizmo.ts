@@ -83,7 +83,7 @@ export interface IGizmo extends IDisposable {
      * Defines where the gizmo will be positioned if `updateGizmoPositionToMatchAttachedMesh` is enabled.
      * (Default: GizmoAnchorPoint.Origin)
      */
-    targetAnchorPoint: GizmoAnchorPoint;
+    anchorPoint: GizmoAnchorPoint;
     /**
      * When set, the gizmo will always appear the same size no matter where the camera is (default: true)
      */
@@ -191,7 +191,7 @@ export class Gizmo implements IGizmo {
 
     protected _updateGizmoRotationToMatchAttachedMesh = true;
     protected _updateGizmoPositionToMatchAttachedMesh = true;
-    protected _targetAnchorPoint = GizmoAnchorPoint.Origin;
+    protected _anchorPoint = GizmoAnchorPoint.Origin;
     protected _updateScale = true;
 
     /**
@@ -218,11 +218,11 @@ export class Gizmo implements IGizmo {
      * Defines where the gizmo will be positioned if `updateGizmoPositionToMatchAttachedMesh` is enabled.
      * (Default: GizmoAnchorPoint.Origin)
      */
-    public set targetAnchorPoint(value: GizmoAnchorPoint) {
-        this._targetAnchorPoint = value;
+    public set anchorPoint(value: GizmoAnchorPoint) {
+        this._anchorPoint = value;
     }
-    public get targetAnchorPoint() {
-        return this._targetAnchorPoint;
+    public get anchorPoint() {
+        return this._anchorPoint;
     }
     /**
      * When set, the gizmo will always appear the same size no matter where the camera is (default: true)
@@ -281,7 +281,7 @@ export class Gizmo implements IGizmo {
 
             // Position
             if (this.updateGizmoPositionToMatchAttachedMesh) {
-                if (this.targetAnchorPoint == GizmoAnchorPoint.Pivot && effectiveNode instanceof TransformNode) {
+                if (this.anchorPoint == GizmoAnchorPoint.Pivot && effectiveNode instanceof TransformNode) {
                     const position = effectiveNode.getAbsolutePivotPoint();
                     this._rootMesh.position.copyFrom(position);
                 } else {

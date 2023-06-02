@@ -229,14 +229,14 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
         return this._updateGizmoPositionToMatchAttachedMesh;
     }
 
-    public set targetAnchorPoint(value: GizmoAnchorPoint) {
-        this._targetAnchorPoint = value;
+    public set anchorPoint(value: GizmoAnchorPoint) {
+        this._anchorPoint = value;
         [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
-            gizmo.targetAnchorPoint = value;
+            gizmo.anchorPoint = value;
         });
     }
-    public get targetAnchorPoint() {
-        return this._targetAnchorPoint;
+    public get anchorPoint() {
+        return this._anchorPoint;
     }
 
     public set updateScale(value: boolean) {

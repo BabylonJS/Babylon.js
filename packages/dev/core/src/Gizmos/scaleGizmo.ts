@@ -248,16 +248,16 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
         return this._updateGizmoRotationToMatchAttachedMesh;
     }
 
-    public set targetAnchorPoint(value: GizmoAnchorPoint) {
-        this._targetAnchorPoint = value;
+    public set anchorPoint(value: GizmoAnchorPoint) {
+        this._anchorPoint = value;
         [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo].forEach((gizmo) => {
             if (gizmo) {
-                gizmo.targetAnchorPoint = value;
+                gizmo.anchorPoint = value;
             }
         });
     }
-    public get targetAnchorPoint() {
-        return this._targetAnchorPoint;
+    public get anchorPoint() {
+        return this._anchorPoint;
     }
 
     /**
