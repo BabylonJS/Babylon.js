@@ -146,7 +146,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
 
                             const translation = Vector3.FromArrayToRef(node.translation || [0, 0, 0], 0, TmpVectors.Vector3[2]);
                             const rotation = Quaternion.FromArrayToRef(node.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[1]);
-                            const matrix = Matrix.ComposeToRef(Vector3.One(), rotation, translation, TmpVectors.Matrix[1]);
+                            const matrix = Matrix.ComposeToRef(Vector3.OneReadOnly, rotation, translation, TmpVectors.Matrix[1]);
 
                             parentMatrix.multiplyToRef(matrix, matrix);
                             matrix.decompose(parentScale, parentRotation, parentTranslation);
