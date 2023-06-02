@@ -894,7 +894,7 @@ export class _GLTFAnimation {
             let value = keyFrame.value.asArray();
             if (animationChannelTargetPath === AnimationChannelTargetPath.ROTATION) {
                 const array = Vector3.FromArray(value);
-                let rotationQuaternion = Quaternion.RotationYawPitchRoll(array.y, array.x, array.z);
+                const rotationQuaternion = Quaternion.RotationYawPitchRoll(array.y, array.x, array.z);
                 value = rotationQuaternion.asArray();
             }
             outputs.push(value); // scale  vector.
@@ -912,7 +912,7 @@ export class _GLTFAnimation {
                 );
                 if (newPositionRotationOrScale) {
                     if (animationChannelTargetPath === AnimationChannelTargetPath.ROTATION) {
-                        let posRotScale = useQuaternion
+                        const posRotScale = useQuaternion
                             ? (newPositionRotationOrScale as Quaternion)
                             : Quaternion.RotationYawPitchRoll(newPositionRotationOrScale.y, newPositionRotationOrScale.x, newPositionRotationOrScale.z).normalize();
                         outputs.push(posRotScale.asArray());
