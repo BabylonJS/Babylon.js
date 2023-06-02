@@ -10,7 +10,7 @@ import type { TargetCamera } from "../Cameras/targetCamera";
 import type { Node } from "../node";
 import type { Bone } from "../Bones/bone";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
-import type { TransformNode } from "../Meshes/transformNode";
+import { TransformNode } from "../Meshes/transformNode";
 import type { StandardMaterial } from "../Materials/standardMaterial";
 import type { PointerInfo } from "../Events/pointerEvents";
 import { PointerEventTypes } from "../Events/pointerEvents";
@@ -37,6 +37,16 @@ export interface GizmoAxisCache {
     active: boolean;
     /** DragBehavior */
     dragBehavior: PointerDragBehavior;
+}
+
+/**
+ * Anchor options where the Gizmo can be positioned in relation to its anchored node
+ */
+export enum GizmoAnchorPoint {
+    /** The origin of the attached node */
+    Origin,
+    /** The pivot point of the attached node*/
+    Pivot,
 }
 
 /**
@@ -69,6 +79,11 @@ export interface IGizmo extends IDisposable {
      * If set the gizmo's position will be updated to match the attached mesh each frame (Default: true)
      */
     updateGizmoPositionToMatchAttachedMesh: boolean;
+    /**
+     * Defines where the gizmo will be positioned if `updateGizmoPositionToMatchAttachedMesh` is enabled.
+     * (Default: GizmoAnchorPoint.Origin)
+     */
+    targetAnchorPoint: GizmoAnchorPoint;
     /**
      * When set, the gizmo will always appear the same size no matter where the camera is (default: true)
      */
@@ -176,6 +191,7 @@ export class Gizmo implements IGizmo {
 
     protected _updateGizmoRotationToMatchAttachedMesh = true;
     protected _updateGizmoPositionToMatchAttachedMesh = true;
+    protected _targetAnchorPoint = GizmoAnchorPoint.Origin;
     protected _updateScale = true;
 
     /**
@@ -196,6 +212,17 @@ export class Gizmo implements IGizmo {
     }
     public get updateGizmoPositionToMatchAttachedMesh() {
         return this._updateGizmoPositionToMatchAttachedMesh;
+    }
+
+    /**
+     * Defines where the gizmo will be positioned if `updateGizmoPositionToMatchAttachedMesh` is enabled.
+     * (Default: GizmoAnchorPoint.Origin)
+     */
+    public set targetAnchorPoint(value: GizmoAnchorPoint) {
+        this._targetAnchorPoint = value;
+    }
+    public get targetAnchorPoint() {
+        return this._targetAnchorPoint;
     }
     /**
      * When set, the gizmo will always appear the same size no matter where the camera is (default: true)
@@ -254,9 +281,14 @@ export class Gizmo implements IGizmo {
 
             // Position
             if (this.updateGizmoPositionToMatchAttachedMesh) {
-                const row = effectiveNode.getWorldMatrix().getRow(3);
-                const position = row ? row.toVector3() : new Vector3(0, 0, 0);
-                this._rootMesh.position.copyFrom(position);
+                if (this.targetAnchorPoint == GizmoAnchorPoint.Pivot && effectiveNode instanceof TransformNode) {
+                    const position = effectiveNode.getAbsolutePivotPoint();
+                    this._rootMesh.position.copyFrom(position);
+                } else {
+                    let row = effectiveNode.getWorldMatrix().getRow(3);
+                    const position = row ? row.toVector3() : new Vector3(0, 0, 0);
+                    this._rootMesh.position.copyFrom(position);
+                }
             }
 
             // Rotation
