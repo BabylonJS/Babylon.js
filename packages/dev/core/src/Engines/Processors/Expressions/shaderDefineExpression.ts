@@ -34,6 +34,11 @@ export class ShaderDefineExpression {
     }
 
     public static infixToPostfix(infix: string): string[] {
+        // Is infix contain any operator
+        if (!infix.includes(")") && !infix.includes("(") && !infix.includes("||") && !infix.includes("&&")) {
+            return [infix];
+        }
+
         const result: string[] = [];
 
         let stackIdx = -1;
