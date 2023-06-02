@@ -385,8 +385,7 @@ export class ShaderProcessor {
             if (includeFile.indexOf("__decl__") !== -1) {
                 includeFile = includeFile.replace(regexShaderDecl, "");
                 if (options.supportsUniformBuffers) {
-                    includeFile = includeFile.replace(/Vertex/, "Ubo");
-                    includeFile = includeFile.replace(/Fragment/, "Ubo");
+                    includeFile = includeFile.replace("Vertex", "Ubo").replace("Fragment", "Ubo");
                 }
                 includeFile = includeFile + "Declaration";
             }
