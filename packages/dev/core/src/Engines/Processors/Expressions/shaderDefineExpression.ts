@@ -1,6 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 /** @internal */
 export class ShaderDefineExpression {
+    static _InfixToPostfixCache = new Map();
+    static infixToPostfixCacheLimitSize = 50000;
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public isTrue(preprocessors: { [key: string]: string }): boolean {
         return true;
@@ -34,6 +37,12 @@ export class ShaderDefineExpression {
     }
 
     public static infixToPostfix(infix: string): string[] {
+        // Is infix already in cache
+        const existedResult = this._InfixToPostfixCache.get(infix);
+        if (existedResult) {
+            return existedResult;
+        }
+
         // Is infix contain any operator
         if (!infix.includes(")") && !infix.includes("(") && !infix.includes("||") && !infix.includes("&&")) {
             return [infix];
@@ -98,6 +107,10 @@ export class ShaderDefineExpression {
             } else {
                 result.push(pop());
             }
+        }
+
+        if (this._InfixToPostfixCache.size < this.infixToPostfixCacheLimitSize) {
+            this._InfixToPostfixCache.set(infix, result);
         }
 
         return result;
