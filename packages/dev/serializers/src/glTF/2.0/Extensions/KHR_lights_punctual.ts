@@ -1,6 +1,6 @@
 import type { SpotLight } from "core/Lights/spotLight";
 import type { Nullable } from "core/types";
-import { Matrix, Quaternion, TmpVectors, Vector3 } from "core/Maths/math.vector";
+import { Vector3, Quaternion, TmpVectors, Matrix } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
 import { Light } from "core/Lights/light";
 import type { Node } from "core/node";
