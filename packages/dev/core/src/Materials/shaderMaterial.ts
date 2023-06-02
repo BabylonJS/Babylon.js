@@ -146,9 +146,9 @@ export class ShaderMaterial extends PushMaterial {
      * @param name Define the name of the material in the scene
      * @param scene Define the scene the material belongs to
      * @param shaderPath Defines  the route to the shader code in one of three ways:
-     *  * object: { vertex: "custom", fragment: "custom" }, used with Effect.ShadersStore["customVertexShader"] and Effect.ShadersStore["customFragmentShader"]
-     *  * object: { vertexElement: "vertexShaderCode", fragmentElement: "fragmentShaderCode" }, used with shader code in script tags
-     *  * object: { vertexSource: "vertex shader code string", fragmentSource: "fragment shader code string" } using with strings containing the shaders code
+     *  * object: \{ vertex: "custom", fragment: "custom" \}, used with Effect.ShadersStore["customVertexShader"] and Effect.ShadersStore["customFragmentShader"]
+     *  * object: \{ vertexElement: "vertexShaderCode", fragmentElement: "fragmentShaderCode" \}, used with shader code in script tags
+     *  * object: \{ vertexSource: "vertex shader code string", fragmentSource: "fragment shader code string" \} using with strings containing the shaders code
      *  * string: "./COMMON_NAME", used with external files COMMON_NAME.vertex.fx and COMMON_NAME.fragment.fx in index.html folder.
      * @param options Define the options used to create the shader
      * @param storeEffectOnSubMeshes true to store effect on submeshes, false to store the effect directly in the material class.
@@ -306,7 +306,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a unsigned int in the shader.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setUInt(name: string, value: number): ShaderMaterial {
         this._checkUniform(name);
@@ -592,6 +592,32 @@ export class ShaderMaterial extends PushMaterial {
             this._options.storageBuffers.push(name);
         }
         this._storageBuffers[name] = buffer;
+
+        return this;
+    }
+
+    /**
+     * Adds or removes the specified shader define. Note if the active defines do change,
+     * the shader will be recompiled and this can be expensive.
+     * @param define the define string e.g., "OUTPUT_TO_SRGB"
+     * @param isEnabled true if the define should be enabled, false if it should be disabled
+     * @returns the material itself allowing "fluent" like uniform updates
+     */
+    public setDefine(define: string, isEnabled: boolean): ShaderMaterial {
+        // If the define is already present and it's being enabled, nothing to do.
+        // Similarly, if define isn't present and it's being disabled, there's nothing to do.
+        const existingDefineIdx = this.options.defines.indexOf(define);
+        const hasDefine = existingDefineIdx >= 0;
+        if ((isEnabled && hasDefine) || (!isEnabled && !hasDefine)) {
+            return this;
+        }
+
+        // Otherwise, need to add a new define or remove an existing define.
+        if (isEnabled) {
+            this.options.defines.push(define);
+        } else {
+            this.options.defines.splice(existingDefineIdx, 1);
+        }
 
         return this;
     }
