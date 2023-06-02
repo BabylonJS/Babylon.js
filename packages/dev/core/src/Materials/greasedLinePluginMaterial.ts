@@ -180,9 +180,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
             { name: "grl_dashOptions", size: 4, type: "vec4" },
             { name: "grl_colorMode_visibility_colorsWidth_useColors", size: 4, type: "vec4" },
         ];
-        // if (this._options.colors) {
-        //     ubo.push({ name: "grl_colors", size: this._options.colors?.length, type: "sampler2DArray" });
-        // }
+
         return {
             ubo,
             vertex: `
@@ -192,8 +190,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
             fragment: `
                 uniform vec4 grl_dashOptions;
                 uniform vec4 grl_colorMode_visibility_colorsWidth_useColors;
-                uniform sampler2D grl_colors;
-                uniform vec3 grl_singleColor;
+                uniform vec3 grl_singleColor;                
                 `,
         };
     }
@@ -271,9 +268,9 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
                     attribute float grl_widths;
                     attribute vec3 grl_offsets;
 
-                    out vec3 vNormal;
-                    out float grlCounters;
-                    flat out int grlColorPointer; // flat
+                    varying vec3 vNormal;
+                    varying float grlCounters;
+                    flat varying int grlColorPointer;
 
                     vec2 fix( vec4 i, float aspect ) {
                         vec2 res = i.xy / i.w;
@@ -288,7 +285,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
                 `,
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 CUSTOM_VERTEX_MAIN_END: `
-                    grlColorPointer = gl_VertexID;
+                    grlColorPointer = int(gl_VertexID);
 
                     vec2 grlResolution = grl_resolution_lineWidth.xy;
                     float grlBaseWidth = grl_resolution_lineWidth.z;
@@ -338,9 +335,9 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
             return {
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 CUSTOM_FRAGMENT_DEFINITIONS: `
-                    in float grlCounters;
-                    flat in int grlColorPointer;
-
+                    varying float grlCounters;
+                    flat varying int grlColorPointer;
+                    uniform sampler2D grl_colors;
                 `,
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 CUSTOM_FRAGMENT_MAIN_END: `
@@ -372,14 +369,14 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
                         }
                     #else
                         if (grlUseColors == 1.) {
-                            vec4 grlColor = texture2D(grl_colors, vec2(float(grlColorPointer)/(grlColorsWidth), 0.));;
-                        if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_SET}.) {
-                            gl_FragColor = grlColor;
-                        } else if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_ADD}.) {
-                            gl_FragColor += grlColor;
-                        } else if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_MULTIPLY}.) {
-                            gl_FragColor *= grlColor;
-                        }
+                            vec4 grlColor = texture2D(grl_colors, vec2(float(grlColorPointer)/(grlColorsWidth), 0.));
+                            if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_SET}.) {
+                                gl_FragColor = grlColor;
+                            } else if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_ADD}.) {
+                                gl_FragColor += grlColor;
+                            } else if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_MULTIPLY}.) {
+                                gl_FragColor *= grlColor;
+                            }
                         }
                     #endif
                 `,
