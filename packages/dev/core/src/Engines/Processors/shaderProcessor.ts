@@ -21,6 +21,9 @@ declare type ThinEngine = import("../thinEngine").ThinEngine;
 const regexSE = /defined\s*?\((.+?)\)/g;
 const regexSERevert = /defined\s*?\[(.+?)\]/g;
 const regexShaderInclude = /#include\s?<(.+)>(\((.*)\))*(\[(.*)\])*/g;
+const regexShaderDecl = /__decl__/;
+const regexLightX = /light\{X\}.(\w*)/g;
+const regexX = /\{X\}/g;
 
 /** @internal */
 export class ShaderProcessor {
@@ -380,7 +383,7 @@ export class ShaderProcessor {
 
             // Uniform declaration
             if (includeFile.indexOf("__decl__") !== -1) {
-                includeFile = includeFile.replace(/__decl__/, "");
+                includeFile = includeFile.replace(regexShaderDecl, "");
                 if (options.supportsUniformBuffers) {
                     includeFile = includeFile.replace(/Vertex/, "Ubo");
                     includeFile = includeFile.replace(/Fragment/, "Ubo");
@@ -419,20 +422,20 @@ export class ShaderProcessor {
                         for (let i = minIndex; i < maxIndex; i++) {
                             if (!options.supportsUniformBuffers) {
                                 // Ubo replacement
-                                sourceIncludeContent = sourceIncludeContent.replace(/light\{X\}.(\w*)/g, (str: string, p1: string) => {
+                                sourceIncludeContent = sourceIncludeContent.replace(regexLightX, (str: string, p1: string) => {
                                     return p1 + "{X}";
                                 });
                             }
-                            includeContent += sourceIncludeContent.replace(/\{X\}/g, i.toString()) + "\n";
+                            includeContent += sourceIncludeContent.replace(regexX, i.toString()) + "\n";
                         }
                     } else {
                         if (!options.supportsUniformBuffers) {
                             // Ubo replacement
-                            includeContent = includeContent.replace(/light\{X\}.(\w*)/g, (str: string, p1: string) => {
+                            includeContent = includeContent.replace(regexLightX, (str: string, p1: string) => {
                                 return p1 + "{X}";
                             });
                         }
-                        includeContent = includeContent.replace(/\{X\}/g, indexString);
+                        includeContent = includeContent.replace(regexX, indexString);
                     }
                 }
 
