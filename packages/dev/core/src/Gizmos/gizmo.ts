@@ -285,7 +285,7 @@ export class Gizmo implements IGizmo {
                     const position = effectiveNode.getAbsolutePivotPoint();
                     this._rootMesh.position.copyFrom(position);
                 } else {
-                    let row = effectiveNode.getWorldMatrix().getRow(3);
+                    const row = effectiveNode.getWorldMatrix().getRow(3);
                     const position = row ? row.toVector3() : new Vector3(0, 0, 0);
                     this._rootMesh.position.copyFrom(position);
                 }
