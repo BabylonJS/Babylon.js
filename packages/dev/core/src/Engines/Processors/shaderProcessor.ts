@@ -376,6 +376,8 @@ export class ShaderProcessor {
         const matches = sourceCode.matchAll(regexShaderInclude);
 
         let returnValue = new String(sourceCode);
+        let parts = [sourceCode];
+
         let keepProcessing = false;
 
         for (const match of matches) {
@@ -439,7 +441,17 @@ export class ShaderProcessor {
                 }
 
                 // Replace
-                returnValue = returnValue.replace(match[0], includeContent);
+                // Split all parts on match[0] and intersperse the parts with the include content
+                const newParts = [];
+                for (const part of parts) {
+                    const splitPart = part.split(match[0]);
+                    for (let i = 0; i < splitPart.length - 1; i++) {
+                        newParts.push(splitPart[i]);
+                        newParts.push(includeContent);
+                    }
+                    newParts.push(splitPart[splitPart.length - 1]);
+                }
+                parts = newParts;
 
                 keepProcessing = keepProcessing || includeContent.indexOf("#include<") >= 0 || includeContent.indexOf("#include <") >= 0;
             } else {
@@ -452,6 +464,8 @@ export class ShaderProcessor {
                 return;
             }
         }
+
+        returnValue = parts.join("");
 
         if (keepProcessing) {
             this._ProcessIncludes(returnValue.toString(), options, callback);
