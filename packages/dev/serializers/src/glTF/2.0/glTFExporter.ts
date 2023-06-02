@@ -18,7 +18,7 @@ import type {
 } from "babylonjs-gltf2interface";
 import { AccessorType, ImageMimeType, MeshPrimitiveMode, AccessorComponentType, CameraType } from "babylonjs-gltf2interface";
 
-import type { FloatArray, Nullable } from "core/types";
+import type { FloatArray, IndicesArray, Nullable } from "core/types";
 import { Matrix, TmpVectors } from "core/Maths/math.vector";
 import { Vector2, Vector3, Vector4, Quaternion } from "core/Maths/math.vector";
 import { Color3, Color4 } from "core/Maths/math.color";
@@ -76,6 +76,33 @@ function isNoopNode(node: Node, useRightHandedSystem: boolean): boolean {
     }
 
     return true;
+}
+
+function convertNodeHandedness(node: INode): void {
+    const translation = Vector3.FromArrayToRef(node.translation || [0, 0, 0], 0, TmpVectors.Vector3[0]);
+    const rotation = Quaternion.FromArrayToRef(node.rotation || [0, 0, 0, 1], 0, TmpVectors.Quaternion[0]);
+    const scale = Vector3.FromArrayToRef(node.scale || [1, 1, 1], 0, TmpVectors.Vector3[1]);
+    const matrix = Matrix.ComposeToRef(scale, rotation, translation, TmpVectors.Matrix[0]).multiplyToRef(convertHandednessMatrix, TmpVectors.Matrix[0]);
+
+    matrix.decompose(scale, rotation, translation);
+
+    if (translation.equalsToFloats(0, 0, 0)) {
+        delete node.translation;
+    } else {
+        node.translation = translation.asArray();
+    }
+
+    if (Quaternion.IsIdentity(rotation)) {
+        delete node.rotation;
+    } else {
+        node.rotation = rotation.asArray();
+    }
+
+    if (scale.equalsToFloats(1, 1, 1)) {
+        delete node.scale;
+    } else {
+        node.scale = scale.asArray();
+    }
 }
 
 /**
@@ -257,8 +284,8 @@ export class _Exporter {
         context: string,
         node: Nullable<INode>,
         babylonNode: Node,
-        nodeMap?: { [key: number]: number },
-        binaryWriter?: _BinaryWriter
+        nodeMap: { [key: number]: number },
+        binaryWriter: _BinaryWriter
     ): Promise<Nullable<INode>> {
         return this._applyExtensions(node, (extension, node) => extension.postExportNodeAsync && extension.postExportNodeAsync(context, node, babylonNode, nodeMap, binaryWriter));
     }
@@ -420,6 +447,288 @@ export class _Exporter {
         }
 
         return true;
+    }
+
+    private _reorderIndicesBasedOnPrimitiveMode(submesh: SubMesh, primitiveMode: number, babylonIndices: IndicesArray, byteOffset: number, binaryWriter: _BinaryWriter) {
+        switch (primitiveMode) {
+            case Material.TriangleFillMode: {
+                if (!byteOffset) {
+                    byteOffset = 0;
+                }
+                for (let i = submesh.indexStart, length = submesh.indexStart + submesh.indexCount; i < length; i = i + 3) {
+                    const index = byteOffset + i * 4;
+                    // swap the second and third indices
+                    const secondIndex = binaryWriter.getUInt32(index + 4);
+                    const thirdIndex = binaryWriter.getUInt32(index + 8);
+                    binaryWriter.setUInt32(thirdIndex, index + 4);
+                    binaryWriter.setUInt32(secondIndex, index + 8);
+                }
+                break;
+            }
+            case Material.TriangleFanDrawMode: {
+                for (let i = submesh.indexStart + submesh.indexCount - 1, start = submesh.indexStart; i >= start; --i) {
+                    binaryWriter.setUInt32(babylonIndices[i], byteOffset);
+                    byteOffset += 4;
+                }
+                break;
+            }
+            case Material.TriangleStripDrawMode: {
+                if (submesh.indexCount >= 3) {
+                    binaryWriter.setUInt32(babylonIndices[submesh.indexStart + 2], byteOffset + 4);
+                    binaryWriter.setUInt32(babylonIndices[submesh.indexStart + 1], byteOffset + 8);
+                }
+                break;
+            }
+        }
+    }
+
+    /**
+     * Reorders the vertex attribute data based on the primitive mode.  This is necessary when indices are not available and the winding order is
+     * clock-wise during export to glTF
+     * @param submesh BabylonJS submesh
+     * @param primitiveMode Primitive mode of the mesh
+     * @param vertexBufferKind The type of vertex attribute
+     * @param meshAttributeArray The vertex attribute data
+     * @param byteOffset The offset to the binary data
+     * @param binaryWriter The binary data for the glTF file
+     */
+    private _reorderVertexAttributeDataBasedOnPrimitiveMode(
+        submesh: SubMesh,
+        primitiveMode: number,
+        vertexBufferKind: string,
+        meshAttributeArray: FloatArray,
+        byteOffset: number,
+        binaryWriter: _BinaryWriter
+    ): void {
+        switch (primitiveMode) {
+            case Material.TriangleFillMode: {
+                this._reorderTriangleFillMode(submesh, vertexBufferKind, meshAttributeArray, byteOffset, binaryWriter);
+                break;
+            }
+            case Material.TriangleStripDrawMode: {
+                this._reorderTriangleStripDrawMode(submesh, vertexBufferKind, meshAttributeArray, byteOffset, binaryWriter);
+                break;
+            }
+            case Material.TriangleFanDrawMode: {
+                this._reorderTriangleFanMode(submesh, vertexBufferKind, meshAttributeArray, byteOffset, binaryWriter);
+                break;
+            }
+        }
+    }
+
+    /**
+     * Reorders the vertex attributes in the correct triangle mode order .  This is necessary when indices are not available and the winding order is
+     * clock-wise during export to glTF
+     * @param submesh BabylonJS submesh
+     * @param vertexBufferKind The type of vertex attribute
+     * @param meshAttributeArray The vertex attribute data
+     * @param byteOffset The offset to the binary data
+     * @param binaryWriter The binary data for the glTF file
+     */
+    private _reorderTriangleFillMode(submesh: SubMesh, vertexBufferKind: string, meshAttributeArray: FloatArray, byteOffset: number, binaryWriter: _BinaryWriter) {
+        const vertexBuffer = this._getVertexBufferFromMesh(vertexBufferKind, submesh.getMesh() as Mesh);
+        if (vertexBuffer) {
+            const stride = vertexBuffer.byteStride / VertexBuffer.GetTypeByteLength(vertexBuffer.type);
+            if (submesh.verticesCount % 3 !== 0) {
+                Tools.Error("The submesh vertices for the triangle fill mode is not divisible by 3!");
+            } else {
+                const vertexData: Vector2[] | Vector3[] | Vector4[] = [];
+                let index = 0;
+                switch (vertexBufferKind) {
+                    case VertexBuffer.PositionKind:
+                    case VertexBuffer.NormalKind: {
+                        for (let x = submesh.verticesStart; x < submesh.verticesStart + submesh.verticesCount; x = x + 3) {
+                            index = x * stride;
+                            (vertexData as Vector3[]).push(Vector3.FromArray(meshAttributeArray, index));
+                            (vertexData as Vector3[]).push(Vector3.FromArray(meshAttributeArray, index + 2 * stride));
+                            (vertexData as Vector3[]).push(Vector3.FromArray(meshAttributeArray, index + stride));
+                        }
+                        break;
+                    }
+                    case VertexBuffer.TangentKind: {
+                        for (let x = submesh.verticesStart; x < submesh.verticesStart + submesh.verticesCount; x = x + 3) {
+                            index = x * stride;
+                            (vertexData as Vector4[]).push(Vector4.FromArray(meshAttributeArray, index));
+                            (vertexData as Vector4[]).push(Vector4.FromArray(meshAttributeArray, index + 2 * stride));
+                            (vertexData as Vector4[]).push(Vector4.FromArray(meshAttributeArray, index + stride));
+                        }
+                        break;
+                    }
+                    case VertexBuffer.ColorKind: {
+                        const size = vertexBuffer.getSize();
+                        for (let x = submesh.verticesStart; x < submesh.verticesStart + submesh.verticesCount; x = x + size) {
+                            index = x * stride;
+                            if (size === 4) {
+                                (vertexData as Vector4[]).push(Vector4.FromArray(meshAttributeArray, index));
+                                (vertexData as Vector4[]).push(Vector4.FromArray(meshAttributeArray, index + 2 * stride));
+                                (vertexData as Vector4[]).push(Vector4.FromArray(meshAttributeArray, index + stride));
+                            } else {
+                                (vertexData as Vector3[]).push(Vector3.FromArray(meshAttributeArray, index));
+                                (vertexData as Vector3[]).push(Vector3.FromArray(meshAttributeArray, index + 2 * stride));
+                                (vertexData as Vector3[]).push(Vector3.FromArray(meshAttributeArray, index + stride));
+                            }
+                        }
+                        break;
+                    }
+                    case VertexBuffer.UVKind:
+                    case VertexBuffer.UV2Kind: {
+                        for (let x = submesh.verticesStart; x < submesh.verticesStart + submesh.verticesCount; x = x + 3) {
+                            index = x * stride;
+                            (vertexData as Vector2[]).push(Vector2.FromArray(meshAttributeArray, index));
+                            (vertexData as Vector2[]).push(Vector2.FromArray(meshAttributeArray, index + 2 * stride));
+                            (vertexData as Vector2[]).push(Vector2.FromArray(meshAttributeArray, index + stride));
+                        }
+                        break;
+                    }
+                    default: {
+                        Tools.Error(`Unsupported Vertex Buffer type: ${vertexBufferKind}`);
+                    }
+                }
+                this._writeVertexAttributeData(vertexData, byteOffset, vertexBufferKind, binaryWriter);
+            }
+        } else {
+            Tools.Warn(`reorderTriangleFillMode: Vertex Buffer Kind ${vertexBufferKind} not present!`);
+        }
+    }
+
+    /**
+     * Reorders the vertex attributes in the correct triangle strip order.  This is necessary when indices are not available and the winding order is
+     * clock-wise during export to glTF
+     * @param submesh BabylonJS submesh
+     * @param vertexBufferKind The type of vertex attribute
+     * @param meshAttributeArray The vertex attribute data
+     * @param byteOffset The offset to the binary data
+     * @param binaryWriter The binary data for the glTF file
+     */
+    private _reorderTriangleStripDrawMode(submesh: SubMesh, vertexBufferKind: string, meshAttributeArray: FloatArray, byteOffset: number, binaryWriter: _BinaryWriter) {
+        const vertexBuffer = this._getVertexBufferFromMesh(vertexBufferKind, submesh.getMesh() as Mesh);
+        if (vertexBuffer) {
+            const stride = vertexBuffer.byteStride / VertexBuffer.GetTypeByteLength(vertexBuffer.type);
+
+            const vertexData: Vector2[] | Vector3[] | Vector4[] = [];
+            let index = 0;
+            switch (vertexBufferKind) {
+                case VertexBuffer.PositionKind:
+                case VertexBuffer.NormalKind: {
+                    index = submesh.verticesStart;
+                    (vertexData as Vector3[]).push(Vector3.FromArray(meshAttributeArray, index + 2 * stride));
+                    (vertexData as Vector3[]).push(Vector3.FromArray(meshAttributeArray, index + stride));
+                    break;
+                }
+                case VertexBuffer.TangentKind: {
+                    for (let x = submesh.verticesStart + submesh.verticesCount - 1; x >= submesh.verticesStart; --x) {
+                        index = x * stride;
+                        (vertexData as Vector4[]).push(Vector4.FromArray(meshAttributeArray, index));
+                    }
+                    break;
+                }
+                case VertexBuffer.ColorKind: {
+                    for (let x = submesh.verticesStart + submesh.verticesCount - 1; x >= submesh.verticesStart; --x) {
+                        index = x * stride;
+                        vertexBuffer.getSize() === 4
+                            ? (vertexData as Vector4[]).push(Vector4.FromArray(meshAttributeArray, index))
+                            : (vertexData as Vector3[]).push(Vector3.FromArray(meshAttributeArray, index));
+                    }
+                    break;
+                }
+                case VertexBuffer.UVKind:
+                case VertexBuffer.UV2Kind: {
+                    for (let x = submesh.verticesStart + submesh.verticesCount - 1; x >= submesh.verticesStart; --x) {
+                        index = x * stride;
+                        (vertexData as Vector2[]).push(Vector2.FromArray(meshAttributeArray, index));
+                    }
+                    break;
+                }
+                default: {
+                    Tools.Error(`Unsupported Vertex Buffer type: ${vertexBufferKind}`);
+                }
+            }
+            this._writeVertexAttributeData(vertexData, byteOffset + 12, vertexBufferKind, binaryWriter);
+        } else {
+            Tools.Warn(`reorderTriangleStripDrawMode: Vertex buffer kind ${vertexBufferKind} not present!`);
+        }
+    }
+
+    /**
+     * Reorders the vertex attributes in the correct triangle fan order.  This is necessary when indices are not available and the winding order is
+     * clock-wise during export to glTF
+     * @param submesh BabylonJS submesh
+     * @param vertexBufferKind The type of vertex attribute
+     * @param meshAttributeArray The vertex attribute data
+     * @param byteOffset The offset to the binary data
+     * @param binaryWriter The binary data for the glTF file
+     */
+    private _reorderTriangleFanMode(submesh: SubMesh, vertexBufferKind: string, meshAttributeArray: FloatArray, byteOffset: number, binaryWriter: _BinaryWriter) {
+        const vertexBuffer = this._getVertexBufferFromMesh(vertexBufferKind, submesh.getMesh() as Mesh);
+        if (vertexBuffer) {
+            const stride = vertexBuffer.byteStride / VertexBuffer.GetTypeByteLength(vertexBuffer.type);
+
+            const vertexData: Vector2[] | Vector3[] | Vector4[] = [];
+            let index = 0;
+            switch (vertexBufferKind) {
+                case VertexBuffer.PositionKind:
+                case VertexBuffer.NormalKind: {
+                    for (let x = submesh.verticesStart + submesh.verticesCount - 1; x >= submesh.verticesStart; --x) {
+                        index = x * stride;
+                        (vertexData as Vector3[]).push(Vector3.FromArray(meshAttributeArray, index));
+                    }
+                    break;
+                }
+                case VertexBuffer.TangentKind: {
+                    for (let x = submesh.verticesStart + submesh.verticesCount - 1; x >= submesh.verticesStart; --x) {
+                        index = x * stride;
+                        (vertexData as Vector4[]).push(Vector4.FromArray(meshAttributeArray, index));
+                    }
+                    break;
+                }
+                case VertexBuffer.ColorKind: {
+                    for (let x = submesh.verticesStart + submesh.verticesCount - 1; x >= submesh.verticesStart; --x) {
+                        index = x * stride;
+                        (vertexData as Vector4[]).push(Vector4.FromArray(meshAttributeArray, index));
+                        vertexBuffer.getSize() === 4
+                            ? (vertexData as Vector4[]).push(Vector4.FromArray(meshAttributeArray, index))
+                            : (vertexData as Vector3[]).push(Vector3.FromArray(meshAttributeArray, index));
+                    }
+                    break;
+                }
+                case VertexBuffer.UVKind:
+                case VertexBuffer.UV2Kind: {
+                    for (let x = submesh.verticesStart + submesh.verticesCount - 1; x >= submesh.verticesStart; --x) {
+                        index = x * stride;
+                        (vertexData as Vector2[]).push(Vector2.FromArray(meshAttributeArray, index));
+                    }
+                    break;
+                }
+                default: {
+                    Tools.Error(`Unsupported Vertex Buffer type: ${vertexBufferKind}`);
+                }
+            }
+            this._writeVertexAttributeData(vertexData, byteOffset, vertexBufferKind, binaryWriter);
+        } else {
+            Tools.Warn(`reorderTriangleFanMode: Vertex buffer kind ${vertexBufferKind} not present!`);
+        }
+    }
+
+    /**
+     * Writes the vertex attribute data to binary
+     * @param vertices The vertices to write to the binary writer
+     * @param byteOffset The offset into the binary writer to overwrite binary data
+     * @param vertexAttributeKind The vertex attribute type
+     * @param binaryWriter The writer containing the binary data
+     */
+    private _writeVertexAttributeData(vertices: Vector2[] | Vector3[] | Vector4[], byteOffset: number, vertexAttributeKind: string, binaryWriter: _BinaryWriter) {
+        for (const vertex of vertices) {
+            if (vertexAttributeKind === VertexBuffer.NormalKind) {
+                vertex.normalize();
+            } else if (vertexAttributeKind === VertexBuffer.TangentKind && vertex instanceof Vector4) {
+                _GLTFUtilities._NormalizeTangentFromRef(vertex);
+            }
+
+            for (const component of vertex.asArray()) {
+                binaryWriter.setFloat32(component, byteOffset);
+                byteOffset += 4;
+            }
+        }
     }
 
     /**
@@ -1368,6 +1677,7 @@ export class _Exporter {
                             }
                         }
                     }
+
                     if (indexBufferViewIndex) {
                         // Create accessor
                         const accessor = _GLTFUtilities._CreateAccessor(
@@ -1383,7 +1693,32 @@ export class _Exporter {
                         this._accessors.push(accessor);
                         meshPrimitive.indices = this._accessors.length - 1;
                     }
+
                     if (materialIndex != null && Object.keys(meshPrimitive.attributes).length > 0) {
+                        const sideOrientation = bufferMesh.overrideMaterialSideOrientation !== null ? bufferMesh.overrideMaterialSideOrientation : babylonMaterial.sideOrientation;
+
+                        if (sideOrientation == (this._babylonScene.useRightHandedSystem ? Material.ClockWiseSideOrientation : Material.CounterClockWiseSideOrientation)) {
+                            let byteOffset = indexBufferViewIndex != null ? this._bufferViews[indexBufferViewIndex].byteOffset : null;
+                            if (byteOffset == null) {
+                                byteOffset = 0;
+                            }
+                            let babylonIndices: Nullable<IndicesArray> = null;
+                            if (indexBufferViewIndex != null) {
+                                babylonIndices = bufferMesh.getIndices();
+                            }
+                            if (babylonIndices) {
+                                this._reorderIndicesBasedOnPrimitiveMode(submesh, primitiveMode, babylonIndices, byteOffset, binaryWriter);
+                            } else {
+                                for (const attribute of attributeData) {
+                                    const vertexData = bufferMesh.getVerticesData(attribute.kind, undefined, undefined, true);
+                                    if (vertexData) {
+                                        const byteOffset = this._bufferViews[vertexAttributeBufferViews[attribute.kind]].byteOffset || 0;
+                                        this._reorderVertexAttributeDataBasedOnPrimitiveMode(submesh, primitiveMode, attribute.kind, vertexData, byteOffset, binaryWriter);
+                                    }
+                                }
+                            }
+                        }
+
                         meshPrimitive.material = materialIndex;
                     }
                     if (morphTargetManager) {
@@ -1509,8 +1844,7 @@ export class _Exporter {
                                 Tools.Log("Omitting " + babylonNode.name + " from scene.");
                             } else {
                                 if (!babylonNode.parent && !this._babylonScene.useRightHandedSystem) {
-                                    glTFNode.scale ||= [1, 1, 1];
-                                    glTFNode.scale[0] = -glTFNode.scale[0];
+                                    convertNodeHandedness(glTFNode);
                                 }
 
                                 if (!babylonNode.parent || removedRootNodes.has(babylonNode.parent)) {

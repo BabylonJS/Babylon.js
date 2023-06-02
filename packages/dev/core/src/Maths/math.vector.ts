@@ -893,6 +893,7 @@ export class Vector3 {
     private static _RightReadOnly = Vector3.Right() as DeepImmutable<Vector3>;
     private static _LeftReadOnly = Vector3.Left() as DeepImmutable<Vector3>;
     private static _ZeroReadOnly = Vector3.Zero() as DeepImmutable<Vector3>;
+    private static _OneReadOnly = Vector3.One() as DeepImmutable<Vector3>;
 
     /** @internal */
     public _x: number;
@@ -2082,6 +2083,13 @@ export class Vector3 {
      */
     public static get ZeroReadOnly(): DeepImmutable<Vector3> {
         return Vector3._ZeroReadOnly;
+    }
+
+    /**
+     * Gets a one Vector3 that must not be updated
+     */
+    public static get OneReadOnly(): DeepImmutable<Vector3> {
+        return Vector3._OneReadOnly;
     }
 
     /**
