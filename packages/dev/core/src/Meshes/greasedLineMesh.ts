@@ -27,11 +27,6 @@ export interface GreasedLineMeshOptions {
      */
     widths?: number[];
     /**
-     * Each line point can have an offset.
-     * Defaults to empty array. This array can be mutated any time.
-     */
-    // offsets?: number[];
-    /**
      * If instance is specified, lines are added to the specified instance.
      * Defaults to undefined.
      */
@@ -47,24 +42,6 @@ export interface GreasedLineMeshOptions {
      * Defaults to false.
      */
     lazy?: boolean;
-}
-
-export enum GreasedLineMeshColorDistribution {
-    COLOR_DISTRIBUTION_NONE = 0,
-    COLOR_DISTRIBUTION_REPEAT = 1,
-    COLOR_DISTRIBUTION_EVEN = 2,
-    COLOR_DISTRIBUTION_START = 3,
-    COLOR_DISTRIBUTION_END = 4,
-    COLOR_DISTRIBUTION_START_END = 5,
-}
-
-export enum GreasedLineMeshWidthDistribution {
-    WIDTH_DISTRIBUTION_NONE = 0,
-    WIDTH_DISTRIBUTION_REPEAT = 1,
-    WIDTH_DISTRIBUTION_EVEN = 2,
-    WIDTH_DISTRIBUTION_START = 3,
-    WIDTH_DISTRIBUTION_END = 4,
-    WIDTH_DISTRIBUTION_START_END = 5,
 }
 
 Mesh._GreasedLineMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
@@ -289,6 +266,8 @@ export class GreasedLineMesh extends Mesh {
             const uvs: number[] = [];
 
             this._preprocess(positions, previous, next, side, uvs);
+
+            console.log(counters);
 
             this._vertexPositions.push(...positions);
             this._indices.push(...indices);

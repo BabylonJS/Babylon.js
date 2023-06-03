@@ -37,6 +37,10 @@ export interface GreasedLineMaterialOptions {
      */
     width?: number;
     /**
+     * If false then width units = scene units. If true then line will width be reduced.
+     * Defaults to false.
+     */
+    sizeAttenuation?: boolean;
     /**
      * Type of the material to use to render the line.
      * Defaults to StandardMaterial.
@@ -105,10 +109,10 @@ export class MaterialGreasedLineDefines extends MaterialDefines {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     GREASED_LINE_HAS_COLOR = false;
     /**
-     * The material has a color option specified
+     * The material's size attenuation optiom
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    GREASED_LINE_HAS_COLORS = false;
+    GREASED_LINE_SIZE_ATTENUATION = false;
 }
 
 /**
@@ -128,7 +132,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
 
     private _engine: Engine;
 
-    private static _EmptyColorsTexture: RawTexture;
+    private static _EmptyColorsTexture: BaseTexture;
 
     constructor(
         material: Material,
@@ -138,6 +142,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
     ) {
         const defines = new MaterialGreasedLineDefines();
         defines.GREASED_LINE_HAS_COLOR = !!options.color;
+        defines.GREASED_LINE_SIZE_ATTENUATION = options.sizeAttenuation ?? false;
 
         super(material, GreasedLinePluginMaterial.GREASED_LINE_MATERIAL_NAME, 200, defines);
 
@@ -219,7 +224,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
             resolutionLineWidth.x = this._engine.getRenderWidth();
             resolutionLineWidth.y = this._engine.getRenderHeight();
         }
-        resolutionLineWidth.z = this._options.width ?? 0.1;
+        resolutionLineWidth.z = this._options.width ? this._options.width : this._options.sizeAttenuation ? 1 : 0.1;
         uniformBuffer.updateVector3("grl_resolution_lineWidth", resolutionLineWidth);
 
         const dashOptions = TmpVectors.Vector4[0];
@@ -232,7 +237,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
         const colorModeVisibilityColorsWidthUseColors = TmpVectors.Vector4[1];
         colorModeVisibilityColorsWidthUseColors.x = this._options.colorMode ?? GreasedLineMeshColorMode.COLOR_MODE_SET;
         colorModeVisibilityColorsWidthUseColors.y = this._options.visibility ?? 1;
-        colorModeVisibilityColorsWidthUseColors.z = this._colorsTexture ? this._colorsTexture.getSize().width * 2 : 0;
+        colorModeVisibilityColorsWidthUseColors.z = this._colorsTexture ? this._colorsTexture.getSize().width : 0;
         colorModeVisibilityColorsWidthUseColors.w = GreasedLinePluginMaterial._BooleanToNumber(this._options.useColors);
         uniformBuffer.updateVector4("grl_colorMode_visibility_colorsWidth_useColors", colorModeVisibilityColorsWidthUseColors);
 
@@ -252,6 +257,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
     prepareDefines(defines: MaterialGreasedLineDefines, _scene: Scene, _mesh: AbstractMesh) {
         const options = this._options;
         defines.GREASED_LINE_HAS_COLOR = !!options.color;
+        defines.GREASED_LINE_SIZE_ATTENUATION = options.sizeAttenuation ?? false;
     }
 
     getClassName() {
@@ -268,11 +274,9 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
                     attribute float grl_widths;
                     attribute vec3 grl_offsets;
 
-                    varying vec3 vNormal;
                     varying float grlCounters;
-                    flat varying int grlColorPointer;
 
-                    vec2 fix( vec4 i, float aspect ) {
+                    vec2 grlFix( vec4 i, float aspect ) {
                         vec2 res = i.xy / i.w;
                         res.x *= aspect;
                         return res;
@@ -285,8 +289,6 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
                 `,
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 CUSTOM_VERTEX_MAIN_END: `
-                    grlColorPointer = int(gl_VertexID);
-
                     vec2 grlResolution = grl_resolution_lineWidth.xy;
                     float grlBaseWidth = grl_resolution_lineWidth.z;
 
@@ -303,9 +305,9 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
                     vec4 grlPrevPos = grlMatrix * vec4( grlPrevious + grlPositionOffset, 1.0 );
                     vec4 grlNextPos = grlMatrix * vec4( grlNext + grlPositionOffset, 1.0 );
 
-                    vec2 grlCurrentP = fix( grlFinalPosition, grlAspect );
-                    vec2 grlPrevP = fix( grlPrevPos, grlAspect );
-                    vec2 grlNextP = fix( grlNextPos, grlAspect );
+                    vec2 grlCurrentP = grlFix( grlFinalPosition, grlAspect );
+                    vec2 grlPrevP = grlFix( grlPrevPos, grlAspect );
+                    vec2 grlNextP = grlFix( grlNextPos, grlAspect );
 
                     float grlWidth = grlBaseWidth * grl_widths;
 
@@ -320,23 +322,28 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
                     vec4 grlNormal = vec4( -grlDir.y, grlDir.x, 0., 1. );
                     grlNormal.xy *= .5 * grlWidth;
                     grlNormal *= grl_projection;
+                    #ifdef GREASED_LINE_SIZE_ATTENUATION
+                        grlNormal.xy *= grlFinalPosition.w;
+                        grlNormal.xy /= ( vec4( grlResolution, 0., 1. ) * grl_projection ).xy;
+                    #endif
                     grlFinalPosition.xy += grlNormal.xy * grlSide;
                     gl_Position = grlFinalPosition;
 
-                    vNormal= grlNormal.xyz;
-                    vPositionW = vec3(grlFinalPosition);
+                  
+                    
                 `,
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 "!gl_Position\\=viewProjection\\*worldPos;": "//", // remove
             };
         }
 
+        // ${this._material instanceof PBRMaterial ? "vNormal= grlNormal.xyz;vPositionW = vec3(grlFinalPosition);" : ""}
+
         if (shaderType === "fragment") {
             return {
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 CUSTOM_FRAGMENT_DEFINITIONS: `
                     varying float grlCounters;
-                    flat varying int grlColorPointer;
                     uniform sampler2D grl_colors;
                 `,
                 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -369,7 +376,8 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
                         }
                     #else
                         if (grlUseColors == 1.) {
-                            vec4 grlColor = texture2D(grl_colors, vec2(float(grlColorPointer)/(grlColorsWidth), 0.));
+                            // vec4 grlColor = texture2D(grl_colors, vec2(float(grlColorPointer)/(grlColorsWidth), 0.));
+                            vec4 grlColor = texture2D(grl_colors, vec2(grlCounters, 0.), 0.);
                             if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_SET}.) {
                                 gl_FragColor = grlColor;
                             } else if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_ADD}.) {
@@ -535,6 +543,15 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
      */
     public setWidth(value: number) {
         this._options.width = value;
+    }
+
+    /**
+     * Turn on/off attenuation of the width option and widths array.
+     * @param value false means 1 unit in width = 1 unit on scene, true means 1 unit in width is reduced on the screen to make better looking lines
+     */
+    public setSizeAttenuation(value: boolean) {
+        this._options.sizeAttenuation = value;
+        this.markAllDefinesAsDirty();
     }
 
     /**
