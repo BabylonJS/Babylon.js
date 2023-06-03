@@ -267,8 +267,6 @@ export class GreasedLineMesh extends Mesh {
 
             this._preprocess(positions, previous, next, side, uvs);
 
-            console.log(counters);
-
             this._vertexPositions.push(...positions);
             this._indices.push(...indices);
 

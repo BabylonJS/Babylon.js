@@ -30,10 +30,9 @@ export enum GreasedLineMeshColorMode {
  * Options for GreasedLineMaterial
  */
 export interface GreasedLineMaterialOptions {
-    // material related
     /**
      * Line width.
-     * Default to 0.1.
+     * Default to 0.1 if @see sizeAttenuation is false, or to 1 if it's true.
      */
     width?: number;
     /**
@@ -73,10 +72,10 @@ export interface GreasedLineMaterialOptions {
      */
     useDash?: boolean;
     /**
-     * @see GreasedLinePluginMaterial.setDashCount
+     * @see GreasedLinePluginMaterial.setDashArray
      * Defaults to 1.
      */
-    dashCount?: number;
+    dashArray?: number;
     /**
      * Defaults to 0.
      * @see GreasedLinePluginMaterial.setDashOffset
@@ -155,7 +154,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
         }
 
         this._options = options;
-        this.setDashCount(options.dashCount ?? 1); // calculate the _dashArray value
+        this.setDashArray(options.dashArray ?? 1); // calculate the _dashArray value
 
         this._enable(true); // always enabled
     }
@@ -513,11 +512,11 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
     }
 
     /**
-     * Sets the dash count.
-     * @param value number of dashes
+     * Sets the dash array.
+     * @param value dash array
      */
-    public setDashCount(value: number) {
-        this._options.dashCount = value;
+    public setDashArray(value: number) {
+        this._options.dashArray = value;
         this._dashArray = 1 / (value * 2);
     }
 

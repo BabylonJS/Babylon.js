@@ -122,7 +122,7 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
         if (materialOptions) {
             const initialMaterialOptions: GreasedLineMaterialOptions = {
                 materialType: materialOptions.materialType,
-                dashCount: materialOptions.dashCount,
+                dashArray: materialOptions.dashArray,
                 dashOffset: materialOptions.dashOffset,
                 dashRatio: materialOptions.dashRatio,
                 resolution: materialOptions.resolution,
@@ -202,7 +202,7 @@ export function Vector3ArrayToNumberArray(array: Vector3[]) {
  * @param widthsDistribution how to distribute widths if the widths array has fewer entries than pointCount
  * @param defaultWidthUpper the default value which will be used to fill empty width entries - upper width
  * @param defaultWidthLower the default value which will be used to fill empty width entries - lower width
- * @returns normalized width table.
+ * @returns completed width table.
  */
 export function CompleteGreasedLineWidthTable(
     pointCount: number,
@@ -312,10 +312,9 @@ export function CompleteGreasedLineWidthTable(
  * @param colors array of Color3 for the color table
  * @param colorDistribution how to distribute colors if the colors array has fewer entries than pointCount
  * @param defaultColor default color to be used to fill empty entries in the color table
- * @returns normalized array of Color3
+ * @returns completed array of Color3s
  */
 export function CompleteGreasedLineColorTable(pointCount: number, colors: Color3[], colorDistribution: GreasedLineMeshColorDistribution, defaultColor: Color3): Color3[] {
-    debugger;
     const missingCount = pointCount - colors.length;
     if (missingCount < 0) {
         return colors.slice(0, pointCount);
@@ -331,48 +330,40 @@ export function CompleteGreasedLineColorTable(pointCount: number, colors: Color3
             // start sector
             for (let i = 0; i < halfCount; i++) {
                 colorsData.push(colors[i]);
-                colorsData.push(colors[i]);
             }
 
             // middle sector
             for (let i = 0; i < missingCount - 1; i++) {
-                colorsData.push(defaultColor);
                 colorsData.push(defaultColor);
             }
 
             // end sector
             for (let i = halfCount; i < colors.length; i++) {
                 colorsData.push(colors[i]);
-                colorsData.push(colors[i]);
             }
         } else if (colorDistribution === GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_START) {
             // start sector
             for (let i = 0; i < colors.length; i++) {
-                colorsData.push(colors[i]);
                 colorsData.push(colors[i]);
             }
 
             // end sector
             for (let i = 0; i < missingCount; i++) {
                 colorsData.push(defaultColor);
-                colorsData.push(defaultColor);
             }
         } else if (colorDistribution === GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_END) {
             // start sector
             for (let i = 0; i < missingCount - 1; i++) {
-                colorsData.push(defaultColor);
                 colorsData.push(defaultColor);
             }
 
             // end sector
             for (let i = 0; i < colors.length; i++) {
                 colorsData.push(colors[i]);
-                colorsData.push(colors[i]);
             }
         } else if (colorDistribution === GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_REPEAT) {
             let i = 0;
             for (let x = 0; x < pointCount; x++) {
-                colorsData.push(colors[i]);
                 colorsData.push(colors[i]);
 
                 i++;
@@ -388,19 +379,16 @@ export function CompleteGreasedLineColorTable(pointCount: number, colors: Color3
                 const i = Math.floor(j);
 
                 colorsData.push(colors[i]);
-                colorsData.push(colors[i]);
 
                 j += colorSectorLength;
             }
         } else if (colorDistribution === GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_NONE) {
             for (let i = 0; i < colors.length; i++) {
                 colorsData.push(colors[i]);
-                colorsData.push(colors[i]);
             }
         }
     } else {
         for (let i = 0; i < pointCount; i++) {
-            colorsData.push(colors[i]);
             colorsData.push(colors[i]);
         }
     }
