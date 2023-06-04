@@ -44,7 +44,7 @@ export class ShaderDefineExpression {
         }
 
         // Is infix contain any operator
-        if (!infix.includes("||") && !infix.includes("&&")) {
+        if (!infix.includes("&&") && !infix.includes("||")) {
             // ")" and "(" are not popular operators,
             // so we can skip them to improve performance of this condition
             return [infix];
