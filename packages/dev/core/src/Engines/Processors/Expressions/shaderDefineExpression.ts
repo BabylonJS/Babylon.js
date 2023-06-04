@@ -2,7 +2,7 @@
 /** @internal */
 export class ShaderDefineExpression {
     static _InfixToPostfixCache = new Map();
-    static infixToPostfixCacheLimitSize = 50000;
+    static InfixToPostfixCacheLimitSize = 50000;
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public isTrue(preprocessors: { [key: string]: string }): boolean {
@@ -109,7 +109,7 @@ export class ShaderDefineExpression {
             }
         }
 
-        if (this._InfixToPostfixCache.size < this.infixToPostfixCacheLimitSize) {
+        if (this._InfixToPostfixCache.size < this.InfixToPostfixCacheLimitSize) {
             this._InfixToPostfixCache.set(infix, result);
         }
 
