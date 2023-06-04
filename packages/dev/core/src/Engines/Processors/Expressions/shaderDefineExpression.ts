@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 /** @internal */
 export class ShaderDefineExpression {
-    static _InfixToPostfixCache = new Map();
     static InfixToPostfixCacheLimitSize = 50000;
+    protected static _InfixToPostfixCache = new Map();
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public isTrue(preprocessors: { [key: string]: string }): boolean {
