@@ -654,7 +654,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     /**
      * @internal
      */
-    public loadBinary(
+    loadBinary?(
         scene: Scene,
         data: ArrayBuffer,
         fileName: string,
