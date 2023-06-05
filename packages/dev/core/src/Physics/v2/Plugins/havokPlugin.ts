@@ -35,14 +35,6 @@ class MeshAccumulator {
      * Merge mesh and its children so whole hierarchy can be used as a mesh shape or convex hull
      */
     public constructor(mesh: Mesh, collectIndices: boolean, scene: Scene) {
-        const worldFromRoot = mesh.computeWorldMatrix(true);
-        const rootScale = new Vector3();
-        const rootOrientation = new Quaternion();
-        const rootTranslation = new Vector3();
-        worldFromRoot.decompose(rootScale, rootOrientation, rootTranslation);
-
-        this._bodyFromWorld = Matrix.Compose(Vector3.One(), mesh.rotationQuaternion ? mesh.rotationQuaternion : Quaternion.Identity(), mesh.position);
-        this._bodyFromWorld = this._bodyFromWorld.invert();
         this._isRightHanded = scene.useRightHandedSystem;
         this._collectIndices = collectIndices;
     }
@@ -62,8 +54,10 @@ class MeshAccumulator {
      */
     public addMesh(mesh: Mesh, includeChildren: boolean): void {
         const indexOffset = this._vertices.length;
-        const worldFromShape = mesh.computeWorldMatrix(true);
-        const shapeFromBody = worldFromShape.multiply(this._bodyFromWorld);
+        // Force absoluteScaling to be computed
+        mesh.computeWorldMatrix(true);
+        const shapeFromBody = TmpVectors.Matrix[0];
+        Matrix.ScalingToRef(mesh.absoluteScaling.x, mesh.absoluteScaling.y, mesh.absoluteScaling.z, shapeFromBody);
 
         const vertexData = mesh.getVerticesData(VertexBuffer.PositionKind) || [];
         const numVerts = vertexData.length / 3;
@@ -150,7 +144,6 @@ class MeshAccumulator {
     private _collectIndices: boolean;
     private _vertices: Vector3[] = []; /// Vertices in body space
     private _indices: number[] = [];
-    private _bodyFromWorld: Matrix;
 }
 
 class BodyPluginData {
@@ -518,22 +511,29 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
 
                 const parent = transformNode.parent as TransformNode;
                 // transform position/orientation in parent space
-                if (parent && parent.absoluteRotationQuaternion) {
-                    TmpVectors.Vector3[2].set(bodyTranslation[0], bodyTranslation[1], bodyTranslation[2]);
-                    parent.absoluteRotationQuaternion.conjugateToRef(TmpVectors.Quaternion[1]);
-                    quat.multiplyInPlace(TmpVectors.Quaternion[1]);
-                    TmpVectors.Vector3[2].subtractToRef(parent.absolutePosition, TmpVectors.Vector3[0]);
-                    const localPosition = TmpVectors.Vector3[1];
-                    TmpVectors.Vector3[0].rotateByQuaternionToRef(TmpVectors.Quaternion[1], localPosition);
-                    transformNode.position.set(localPosition.x, localPosition.y, localPosition.z); // use set so position._isDirty is true
+                if (parent && !parent.getWorldMatrix().isIdentity()) {
+                    parent.computeWorldMatrix(true);
+
+                    quat.normalize();
+                    const finalTransform = TmpVectors.Matrix[0];
+                    const finalTranslation = TmpVectors.Vector3[0];
+                    finalTranslation.copyFromFloats(bodyTranslation[0], bodyTranslation[1], bodyTranslation[2]);
+                    Matrix.ComposeToRef(transformNode.absoluteScaling, quat, finalTranslation, finalTransform);
+
+                    const parentInverseTransform = TmpVectors.Matrix[1];
+                    parent.getWorldMatrix().invertToRef(parentInverseTransform);
+
+                    const localTransform = TmpVectors.Matrix[2];
+                    finalTransform.multiplyToRef(parentInverseTransform, localTransform);
+                    localTransform.decomposeToTransformNode(transformNode);
+                    transformNode.rotationQuaternion?.normalize();
                 } else {
                     transformNode.position.set(bodyTranslation[0], bodyTranslation[1], bodyTranslation[2]);
-                }
-
-                if (transformNode.rotationQuaternion) {
-                    transformNode.rotationQuaternion.copyFrom(quat);
-                } else {
-                    quat.toEulerAnglesToRef(transformNode.rotation);
+                    if (transformNode.rotationQuaternion) {
+                        transformNode.rotationQuaternion.copyFrom(quat);
+                    } else {
+                        quat.toEulerAnglesToRef(transformNode.rotation);
+                    }
                 }
             } catch (e) {
                 console.log(`Syncing transform failed for node ${transformNode.name}: ${e.message}...`);
@@ -1165,7 +1165,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      */
     private _getTransformInfos(node: TransformNode): any[] {
         if (node.parent) {
-            node.computeWorldMatrix();
+            node.computeWorldMatrix(true);
             return [this._bVecToV3(node.absolutePosition), this._bQuatToV4(node.absoluteRotationQuaternion)];
         }
 

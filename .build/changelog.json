@@ -1,6 +1,402 @@
 {
-    "fromTag": "6.4.1",
+    "fromTag": "6.5.1",
     "changelog": {
+        "6.6.0": [
+            {
+                "pr": "13925",
+                "title": "Create snapshot of a scene not using the main canvas fails",
+                "description": "Fixes #13924\nIf canvas is not part of the document use the canvas' width and height directly.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "13923",
+                "title": "NME fix input style.",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
+        "6.5.1": [
+            {
+                "pr": "13919",
+                "title": "Fix type checking for mesh parameter in aggregate",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/physics-v2-replacement-for-ammojs-mesh-impostor/41232\r\nRelated playground: https://playground.babylonjs.com/#C0ILX9#3 (doesn't work in current version, will work with the fix)\r\nAlso changed the handling of this case: https://playground.babylonjs.com/#G7GU7W#2, which currently doesn't throw an error, but also doesn't display anything because the root node IS a mesh but doesn't have vertices. ",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/physicsAggregate.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "physics"
+                ]
+            },
+            {
+                "pr": "13921",
+                "title": "Check why # character is rendered incorrectly with TextBuilder",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Builders/textBuilder.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13918",
+                "title": "Havok Physics Plugin: Fix applied impulse in Collision Event",
+                "description": "https://forum.babylonjs.com/t/havok-collision-callback-how-to-interpret-provided-collision-info/41220/2\r\n\r\nRequires someone to take a look and make sure I read the information from the right address. ",
+                "author": {
+                    "name": "RaggarDK",
+                    "url": "https://github.com/RaggarDK"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "physics"
+                ]
+            },
+            {
+                "pr": "13917",
+                "title": "SSR: add the useFresnel property to generate more physically accurate results",
+                "description": "Extract from the `useFresnel` property doc:\r\n\r\n> Gets or sets a boolean indicating whether the blending between the current color pixel and the reflection color should be done with a Fresnel coefficient (default: false).\r\n> It is more physically accurate to use the Fresnel coefficient (otherwise it uses the reflectivity of the material for blending), but it is also more expensive when you use blur (when blurDispersionStrength \\> 0).\r\n\r\nI also disable the reflectivity test when the threshold is 0, to save some branching in the shader code.\r\n\r\nI'll update the documentation once the PR has been merged.\r\n\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssrRenderingPipeline.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/screenSpaceRayTrace.fx",
+                    "packages/dev/core/src/Shaders/screenSpaceReflection2.fragment.fx",
+                    "packages/dev/core/src/Shaders/screenSpaceReflection2BlurCombiner.fragment.fx"
+                ],
+                "tags": [
+                    "rendering engine",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13913",
+                "title": "Physics fix getEventMask",
+                "description": "Forum issue: https://forum.babylonjs.com/t/crash-when-calling-body-geteventmask/41187",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "physics"
+                ]
+            },
+            {
+                "pr": "13915",
+                "title": "Inspector fix parenting",
+                "description": "Fix a bad change from #13893",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/parentPropertyGridComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "13912",
+                "title": "Shader processor optimization",
+                "description": "Hi, I made two little optimization:\r\n1. Make regex as a static field, insted of building this regex in the while loop.\r\n2. Avoid regex test, when it need with simple condition with `indexOf(\"#\")`.\r\n\r\nWhy I made it. I has a pretty big scene, where by my performance tracker to the `_MoveCursor` was detected 51475 call times.\r\nI had 16 measurements and it takes from 31 to 58 ms for my scene for all calls, and 44.73ms for all measurements in average.\r\n\r\nThen I tried to move regex into static field, then I had 13 runs of my measurement tool and now `_MoveCursor` takes 40.74ms in average for same 51475 calls.\r\n\r\nThen I add condition with `indexOf(\"#\")` and for 18 runs the `_MoveCursor` takes 28.67ms in average.\r\n\r\nOne improtant moment: I don't now how to test this changes. I see that ShaderProcessor does not have own test file. Maybe it possible to test with screenshot tests, but how it runs now?\r\n\r\nP. S. Here is statistic of all measurements, if you want too see it:\r\n```\r\ndefault:\r\n\r\n{count: 51475, avg: 0.0010043710270455997, max: 0.20000004768371582, allTime: 51.69999861717224}\r\n{count: 51475, avg: 0.0009927149221930706, max: 0.20000004768371582, allTime: 51.10000061988831}\r\n{count: 51475, avg: 0.0005322972196233452, max: 0.20000004768371582, allTime: 27.39999938011169}\r\n{count: 51475, avg: 0.0010607092423367233, max: 0.20000004768371582, allTime: 54.60000824928284}\r\n{count: 51475, avg: 0.0006877125438525296, max: 0.2999999523162842, allTime: 35.40000319480896}\r\n{count: 51475, avg: 0.0009480331220807469, max: 0.20000004768371582, allTime: 48.800004959106445}\r\n{count: 51475, avg: 0.0009791161841475424, max: 0.20000004768371582, allTime: 50.400005578994744}\r\n{count: 51475, avg: 0.0006158329804815558, max: 1.2999999523162842, allTime: 31.700002670288086}\r\n{count: 51475, avg: 0.0006566294447318508, max: 1.4000000953674316, allTime: 33.80000066757202}\r\n{count: 51475, avg: 0.0010101990702083934, max: 0.2999999523162842, allTime: 51.99999713897705}\r\n{count: 51475, avg: 0.000617775604411084, max: 0.20000004768371582, allTime: 31.799999237060547}\r\n{count: 51475, avg: 0.0010140845033368652, max: 0.20000004768371582, allTime: 52.19999980926514}\r\n{count: 51475, avg: 0.0009402622743507448, max: 0.20000004768371582, allTime: 48.40000057220459}\r\n{count: 51475, avg: 0.0011403593801653112, max: 1.2000000476837158, allTime: 58.69999909400939}\r\n{count: 51475, avg: 0.0006041767320452297, max: 0.20000004768371582, allTime: 31.0999972820282}\r\n{count: 51475, avg: 0.0010995628788611333, max: 0.2999999523162842, allTime: 56.59999918937684}\r\n\r\navg allTime is 44.73ms (from 16 runs)\r\n\r\n-------------------------------------------------------------------------------\r\nregex to static field:\r\n\r\n{count: 51475, avg: 0.000592520631824436, max: 0.20000004768371582, allTime: 30.499999523162842}\r\n{count: 51475, avg: 0.0010373968566257206, max: 0.3000001907348633, allTime: 53.40000319480897}\r\n{count: 51475, avg: 0.0006158328322660234, max: 0.19999980926513672, allTime: 31.699995040893555}\r\n{count: 51475, avg: 0.0010801359448055436, max: 0.20000004768371582, allTime: 55.599997758865356}\r\n{count: 51475, avg: 0.0006119475983021733, max: 0.20000004768371582, allTime: 31.50000262260437}\r\n{count: 51475, avg: 0.0005672656685012588, max: 0.20000004768371582, allTime: 29.200000286102295}\r\n{count: 51475, avg: 0.0010859640481808974, max: 0.20000004768371582, allTime: 55.899999380111694}\r\n{count: 51475, avg: 0.0009402622604555386, max: 0.20000004768371582, allTime: 48.39999985694885}\r\n{count: 51475, avg: 0.0010451675746671316, max: 0.20000004768371582, allTime: 53.8000009059906}\r\n{count: 51475, avg: 0.0009616319388657765, max: 0.40000009536743164, allTime: 49.500004053115845}\r\n{count: 51475, avg: 0.0005322972196233452, max: 0.20000004768371582, allTime: 27.39999938011169}\r\n{count: 51475, avg: 0.0005828072991169674, max: 0.20000004768371582, allTime: 30.000005722045895}\r\n{count: 51475, avg: 0.0006352598126389669, max: 0.20000004768371582, allTime: 32.69999885559082}\r\n\r\navg allTime is 40.74ms (from 13 runs)\r\n\r\n-------------------------------------------------------------------------------\r\nadd indexOf statement:\r\n\r\n{count: 51475, avg: 0.0005186983796796387, max: 0.2999999523162842, allTime: 26.699999094009403}\r\n{count: 51475, avg: 0.000491500681265284, max: 0.20000004768371582, allTime: 25.299997568130493}\r\n{count: 51475, avg: 0.000693540475853674, max: 0.20000004768371582, allTime: 35.69999599456787}\r\n{count: 51475, avg: 0.000575036423596553, max: 0.2999999523162842, allTime: 29.59999990463257}\r\n{count: 51475, avg: 0.0006566294030462323, max: 0.9000000953674316, allTime: 33.79999852180481}\r\n{count: 51475, avg: 0.0005536669119287892, max: 0.20000004768371582, allTime: 28.500004291534424}\r\n{count: 51475, avg: 0.000573093716295788, max: 0.20000004768371582, allTime: 29.499999046325687}\r\n{count: 51475, avg: 0.0005614375836528465, max: 0.7999999523162842, allTime: 28.89999961853027}\r\n{count: 51475, avg: 0.0005050995443676674, max: 0.20000004768371582, allTime: 25.99999904632568}\r\n{count: 51475, avg: 0.0005322972196233452, max: 0.9000000953674316, allTime: 27.39999938011169}\r\n{count: 51475, avg: 0.0006488586850048212, max: 1.3999998569488525, allTime: 33.40000081062317}\r\n{count: 51475, avg: 0.0006002914286053488, max: 0.10000014305114746, allTime: 30.900001287460327}\r\n{count: 51475, avg: 0.000433220031945783, max: 0.20000004768371582, allTime: 22.30000114440918}\r\n{count: 51475, avg: 0.00048567270757852104, max: 0.20000004768371582, allTime: 25.00000262260437}\r\n{count: 51475, avg: 0.0005070422053510787, max: 0.3000001907348633, allTime: 26.099997520446774}\r\n{count: 51475, avg: 0.0006119475658800256, max: 0.2999999523162842, allTime: 31.50000095367432}\r\n{count: 51475, avg: 0.0005128702716725495, max: 0.2999999523162842, allTime: 26.399997234344486}\r\n{count: 51475, avg: 0.0005672656823964649, max: 0.20000004768371582, allTime: 29.200001001358032}\r\n\r\navg allTime is 28.67ms (from 18 runs)\r\n```",
+                "author": {
+                    "name": "Dok11",
+                    "url": "https://github.com/Dok11"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Processors/shaderProcessor.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13911",
+                "title": "Bone look controller: Add useAbsoluteValueForYaw property",
+                "description": "See https://forum.babylonjs.com/t/bonelookcontroller-attitude-limitation-problem/41151",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Bones/boneLookController.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "bones"
+                ]
+            },
+            {
+                "pr": "13910",
+                "title": "Fix sound distance not respecting Scene `audioListenerProvider` when set",
+                "description": "When the `Scene.audioListenerProvider` function is set, the Sound class's distance calculation continues to use the active camera instead of using the position returned by `scene.audioListenerProvider`. This change fixes the issue by calculating the sound's distance from the point returned by the scene's `audioListenerProvider` if it has been set; otherwise it uses the active camera, as before.\r\n\r\nTested on playground https://playground.babylonjs.com/#G4PMF3#1.\r\n\r\nReported on forum:\r\nhttps://forum.babylonjs.com/t/sounds-custom-attenuation-function-is-not-provided-with-distance-from-scene-audiolistenerpositionprovider-position/41164",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/Audio/sound.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "13908",
+                "title": "WebGPU: Support the flat qualifier on varyings",
+                "description": "See https://forum.babylonjs.com/t/webgpu-flat-in-out-shader-variable/41171\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Processors/iShaderProcessor.ts",
+                    "packages/dev/core/src/Engines/Processors/shaderCodeNode.ts",
+                    "packages/dev/core/src/Engines/WebGL/webGL2ShaderProcessors.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsGLSL.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "13906",
+                "title": "Effect layer: Intensity also affects emissive color",
+                "description": "See https://forum.babylonjs.com/t/neon-effect-using-an-imported-material-looks-good-from-up-close-but-not-far-away/40081/18",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/glowMapGeneration.fragment.fx"
+                ],
+                "tags": [
+                    "rendering engine",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13905",
+                "title": "Pre-pass renderer: Fix bloom and depth renderer",
+                "description": "See https://forum.babylonjs.com/t/prepassrenderer-fails-with-rendertargettexture-whose-active-camera-is-not-scene-activecamera/41143 and https://forum.babylonjs.com/t/enable-ssao2-scene-render-notify-error/40962/8",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssrRenderingPipeline.ts",
+                    "packages/dev/core/src/Rendering/depthRenderer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13904",
+                "title": "Add Backspace key to delete keyframe so it works on Mac",
+                "description": "Forum issue: https://forum.babylonjs.com/t/how-does-one-remove-a-keyframe-in-the-ace-ux/38938/3",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/curveEditor/animationCurveEditorComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "ace"
+                ]
+            },
+            {
+                "pr": "13902",
+                "title": "Add earcut entry point",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Builders/textBuilder.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13903",
+                "title": "Fix typo in files input class",
+                "description": null,
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/filesInput.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "13901",
+                "title": "Yoyo loop mode for animations",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animation.ts",
+                    "packages/dev/core/src/Animations/runtimeAnimation.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13900",
+                "title": "Asset manager needs addAnimationTask to load animation only files",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/assetsManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13899",
+                "title": "Add up/down arrow control to NME search results",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/searchBox.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/searchBox.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13896",
+                "title": "Scene: Make sure the layers are ready in scene.isReady",
+                "description": "See https://forum.babylonjs.com/t/problems-rendering-a-single-frame-when-using-multiple-cameras-and-layermasks/41112\r\n\r\nNote that I made a change in `isReady` so as not to return prematurely if some things are not ready: it is better to let all the code go through to make sure everything is checked, because some resources can be created during these checks, and we don't want to delay these creations.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Layers/layer.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13893",
+                "title": "Prevent crashing when a mesh's name is of the wrong type.",
+                "description": "A user can mistakenly set a mesh's name with the wrong type (not string), like this example: https://playground.babylonjs.com/#XT7L5S, where trying to open the Inspector makes it crash. This PR just adds some extra type checking to avoid it crashing, and also adds a quick check to warn the user when adding to a scene.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/parentPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/entities/meshTreeItemComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "13895",
+                "title": "MultiRenderTarget: Fix texture size calculation",
+                "description": "See https://forum.babylonjs.com/t/multirendertarget-with-size-set-to-ratio/41117",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/multiRenderTarget.ts",
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "13894",
+                "title": "Add GLTF Anisotropy extension.",
+                "description": "Implements https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_anisotropy\r\n\r\nCan be tested with:\r\n* https://github.com/DrX3D/glTF-Sample-Assets/tree/main/Models/AnisotropyStrengthTest\r\n* https://github.com/DrX3D/glTF-Sample-Assets/tree/main/Models/AnisotropyRotationTest\r\n* https://github.com/DrX3D/glTF-Sample-Assets/tree/main/Models/AnisotropyBarnLamp\r\n\r\nThis also fix a broken implementation of the aniso texture and implements the GLTF remapping of intensity by default.",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/anisotropyBlock.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrAnisotropicConfiguration.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockAnisotropic.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrHelperFunctions.fx",
+                    "packages/dev/core/src/Shaders/pbr.fragment.fx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/pbrMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/tools/gltfComponent.tsx",
+                    "packages/dev/inspector/src/components/globalState.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_animation_pointer.data.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_anisotropy.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/index.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_materials_anisotropy.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/index.ts",
+                    "packages/public/glTF2Interface/babylon.glTF2Interface.d.ts"
+                ],
+                "tags": [
+                    "glTF",
+                    "new feature",
+                    "breaking change"
+                ]
+            }
+        ],
         "6.5.0": [
             {
                 "pr": "13892",
