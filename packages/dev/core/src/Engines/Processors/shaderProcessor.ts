@@ -459,7 +459,7 @@ export class ShaderProcessor {
 
                 ShaderProcessor._FileToolsLoadFile(includeShaderUrl, (fileContent) => {
                     options.includesShadersStore[includeFile] = fileContent as string;
-                    this._ProcessIncludes(<string>returnValue, options, callback);
+                    this._ProcessIncludes(parts.join(""), options, callback);
                 });
                 return;
             }
