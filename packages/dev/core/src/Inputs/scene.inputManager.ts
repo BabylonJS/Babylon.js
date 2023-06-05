@@ -844,16 +844,16 @@ export class InputManager {
             this._startingPointerPosition.y = this._pointerY;
             this._startingPointerTime = Date.now();
 
-            // PreObservable support
-            if (this._checkPrePointerObservable(null, evt, PointerEventTypes.POINTERDOWN)) {
-                return;
-            }
-
             if (!scene.cameraToUseForPointers && !scene.activeCamera) {
                 return;
             }
 
             this._pointerCaptures[evt.pointerId] = true;
+
+            // PreObservable support
+            if (this._checkPrePointerObservable(null, evt, PointerEventTypes.POINTERDOWN)) {
+                return;
+            }
 
             if (!scene.pointerDownPredicate) {
                 scene.pointerDownPredicate = (mesh: AbstractMesh): boolean => {
@@ -907,6 +907,12 @@ export class InputManager {
                                 this._isSwiping = false;
                                 this._swipeButtonPressed = -1;
                             }
+
+                            // If we're going to skip the POINTERUP, we need to reset the pointer capture
+                            if (evt.buttons === 0) {
+                                this._pointerCaptures[evt.pointerId] = false;
+                            }
+
                             return;
                         }
                         if (!clickInfo.hasSwiped) {
