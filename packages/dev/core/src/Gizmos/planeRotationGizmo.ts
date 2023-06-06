@@ -343,7 +343,7 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
                     const translation = this.attachedNode.getWorldMatrix().getTranslation();
                     this.attachedNode.getWorldMatrix().multiplyToRef(TmpVectors.Matrix[0], this.attachedNode.getWorldMatrix());
                     this.attachedNode.getWorldMatrix().setTranslation(translation);
-                };
+                }
                 lastDragPosition.copyFrom(event.dragPlanePoint);
                 if (snapped) {
                     tmpSnapEvent.snapDistance = angle;
