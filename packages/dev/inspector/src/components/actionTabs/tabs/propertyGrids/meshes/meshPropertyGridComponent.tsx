@@ -344,6 +344,13 @@ export class MeshPropertyGridComponent extends React.Component<
         return "Unknown";
     }
 
+    private _getIdForDisplay(id: any) {
+        if (typeof id === "string") {
+            return id;
+        }
+        return "[INVALID ID]";
+    }
+
     render() {
         const mesh = this.props.mesh;
         const scene = mesh.getScene();
@@ -409,7 +416,7 @@ export class MeshPropertyGridComponent extends React.Component<
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
                 <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
-                    <TextLineComponent label="ID" value={mesh.id} />
+                    <TextLineComponent label="ID" value={this._getIdForDisplay(mesh.id)} />
                     <TextInputLineComponent
                         lockObject={this.props.lockObject}
                         label="Name"
