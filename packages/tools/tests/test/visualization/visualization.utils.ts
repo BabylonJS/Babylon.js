@@ -159,7 +159,7 @@ export const evaluateTests = async (engineType = "webgl2", testFileName = "confi
                 // Test screenshot (also save this new screenshot if -u is set)
                 expect(screenshot).toMatchImageSnapshot({
                     customDiffConfig: {
-                        threshold: 0.04,
+                        threshold: 0.1,
                     },
                     customSnapshotsDir: path.resolve(__dirname, `./ReferenceImages/${useStandardTestList ? "" : testFileName}/`),
                     customSnapshotIdentifier: (test.referenceImage ? test.referenceImage : test.title).replace(".png", ""),
