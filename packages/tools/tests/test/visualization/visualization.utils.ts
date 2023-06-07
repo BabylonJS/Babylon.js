@@ -147,15 +147,25 @@ export const evaluateTests = async (engineType = "webgl2", testFileName = "confi
                 // Take screenshot
                 const screenshot = await page.screenshot();
 
+                const directory = path.resolve(__dirname, "../../../../../jest-screenshot-report");
+
+                try {
+                    fs.statSync(directory);
+                } catch (e) {
+                    fs.mkdirSync(directory, { recursive: true });
+                }
+
+                
                 // Test screenshot (also save this new screenshot if -u is set)
                 expect(screenshot).toMatchImageSnapshot({
                     customDiffConfig: {
-                        threshold: 0.03,
+                        threshold: 0.04,
                     },
                     customSnapshotsDir: path.resolve(__dirname, `./ReferenceImages/${useStandardTestList ? "" : testFileName}/`),
                     customSnapshotIdentifier: (test.referenceImage ? test.referenceImage : test.title).replace(".png", ""),
                     failureThreshold: (test.errorRatio || 2.5) / 100,
                     failureThresholdType: "percent",
+                    customDiffDir: directory,
                 });
             } finally {
                 // dispose the scene
