@@ -562,12 +562,26 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
      */
     public loadFile(
         scene: Scene,
-        fileOrUrl: File | string,
+        fileOrUrl: File | string | ArrayBufferView,
         onSuccess: (data: any, responseURL?: string) => void,
         onProgress?: (ev: ISceneLoaderProgressEvent) => void,
         useArrayBuffer?: boolean,
-        onError?: (request?: WebRequest, exception?: LoadFileError) => void
+        onError?: (request?: WebRequest, exception?: LoadFileError) => void,
+        name?: string
     ): IFileRequest {
+
+        if(fileOrUrl as ArrayBufferView)
+        {
+            this._loadBinary(scene, fileOrUrl as ArrayBufferView, onSuccess, onError, name);
+            
+            const fileRequest: IFileRequest = {
+                abort: () => {},
+                onCompleteObservable: new Observable<IFileRequest>(),
+            };
+            
+            return fileRequest;
+        }
+
         this._progressCallback = onProgress;
 
         const rootUrl = (fileOrUrl as File).name ? "file:" : Tools.GetFolderPath(fileOrUrl as string);
@@ -589,7 +603,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
                         return new Promise<ArrayBufferView>((resolve, reject) => {
                             this._loadFile(
                                 scene,
-                                fileOrUrl,
+                                fileOrUrl as File | string,
                                 (data) => {
                                     resolve(new Uint8Array(data as ArrayBuffer));
                                 },
@@ -619,7 +633,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
 
             return this._loadFile(
                 scene,
-                fileOrUrl,
+                fileOrUrl as File | string,
                 (data) => {
                     this._validate(scene, data as ArrayBuffer, rootUrl, fileName);
                     this._unpackBinaryAsync(
@@ -641,7 +655,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
 
         return this._loadFile(
             scene,
-            fileOrUrl,
+            fileOrUrl as File | string,
             (data) => {
                 this._validate(scene, data, rootUrl, fileName);
                 onSuccess({ json: this._parseJson(data as string) });
@@ -654,19 +668,20 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     /**
      * @internal
      */
-    loadBinary?(
+    _loadBinary(
         scene: Scene,
-        data: ArrayBuffer,
-        fileName: string,
+        data: ArrayBufferView,
         onSuccess: (data: any, responseURL?: string) => void,
-        onError?: (request?: WebRequest, exception?: LoadFileError) => void
+        onError?: (request?: WebRequest, exception?: LoadFileError) => void,
+        fileName?: string,
     ): void {
         const rootUrl = "file:";
-        this._validate(scene, data as ArrayBuffer, rootUrl, fileName);
+        const arrayBuffer = data.buffer.slice(data.byteOffset, data.byteLength);
+        this._validate(scene, arrayBuffer, rootUrl, fileName);
         this._unpackBinaryAsync(
             new DataReader({
-                readAsync: (byteOffset, byteLength) => readAsync(data as ArrayBuffer, byteOffset, byteLength),
-                byteLength: (data as ArrayBuffer).byteLength,
+                readAsync: (byteOffset, byteLength) => readAsync(arrayBuffer, byteOffset, byteLength),
+                byteLength: (data as ArrayBufferView).byteLength,
             })
         ).then(
             (loaderData) => {

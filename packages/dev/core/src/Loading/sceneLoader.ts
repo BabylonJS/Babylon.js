@@ -155,30 +155,13 @@ export interface ISceneLoaderPluginBase {
      */
     loadFile?(
         scene: Scene,
-        fileOrUrl: File | string,
+        fileOrUrl: File | string | ArrayBufferView,
         onSuccess: (data: any, responseURL?: string) => void,
         onProgress?: (ev: ISceneLoaderProgressEvent) => void,
         useArrayBuffer?: boolean,
-        onError?: (request?: WebRequest, exception?: LoadFileError) => void
+        onError?: (request?: WebRequest, exception?: LoadFileError) => void,
+        name?: string,
     ): IFileRequest;
-
-    /**
-     * The callback called when loading from a url.
-     * @param scene scene loading this url
-     * @param fileOrUrl file or url to load
-     * @param onSuccess callback called when the file successfully loads
-     * @param onProgress callback called while file is loading (if the server supports this mode)
-     * @param useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
-     * @param onError callback called when the file fails to load
-     * @returns a file request object
-     */
-    loadBinary?(
-        scene: Scene, 
-        data: ArrayBuffer, 
-        fileName: string, 
-        onSuccess: (data: any, responseURL?: string) => void, 
-        onError?: (request?: WebRequest, exception?: LoadFileError) => void
-    ): void
 
     /**
      * The callback that returns true if the data can be directly loaded.
@@ -502,7 +485,8 @@ export class SceneLoader {
     }
 
     private static _FormatErrorMessage(fileInfo: IFileInfo, message?: string, exception?: any): string {
-        let errorMessage = "Unable to load from " + fileInfo.url;
+        let fromLoad = fileInfo.rawData ? " binary data" : fileInfo.url;     
+        let errorMessage = "Unable to load from " + fromLoad;
 
         if (message) {
             errorMessage += `: ${message}`;
@@ -511,79 +495,6 @@ export class SceneLoader {
         }
 
         return errorMessage;
-    }
-
-    private static _FormatErrorMessageString(fileInfo: string, message?: string, exception?: any): string {
-        let errorMessage = "Unable to load from " + fileInfo;
-
-        if (message) {
-            errorMessage += `: ${message}`;
-        } else if (exception) {
-            errorMessage += `: ${exception}`;
-        }
-
-        return errorMessage;
-    }
-
-
-    private static _LoadBinaryData(
-        binaryData: ArrayBufferView,
-        scene: Scene,
-        onSuccess: (plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync, data: any, responseURL?: string) => void,
-        onError: (message?: string, exception?: any) => void,
-        onDispose: () => void,
-        pluginExtension: string
-    ) : Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>
-    {
-        const registeredPlugin = SceneLoader._GetPluginForExtension(pluginExtension)
-
-        let plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync;
-        if ((registeredPlugin.plugin as ISceneLoaderPluginFactory).createPlugin !== undefined) {
-            plugin = (registeredPlugin.plugin as ISceneLoaderPluginFactory).createPlugin();
-        } else {
-            plugin = <any>registeredPlugin.plugin;
-        }
-
-        if (!plugin) {
-            throw "The loader plugin corresponding to the file type you are trying to load has not been found. If using es6, please import the plugin you wish to use before.";
-        }
-
-        SceneLoader.OnPluginActivatedObservable.notifyObservers(plugin);
-
-        let pluginDisposed = false;
-        const onDisposeObservable = (plugin as any).onDisposeObservable as Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        if (onDisposeObservable) {
-            onDisposeObservable.add(() => {
-                pluginDisposed = true;
-                onDispose();
-            });
-        }
-
-        const dataCallback = (data: any, responseURL?: string) => {
-            if (scene.isDisposed) {
-                onError("Scene has been disposed");
-                return;
-            }
-
-            onSuccess(plugin, data, responseURL);
-        };
-
-        const manifestChecked = () => {
-            if (pluginDisposed) {
-                return;
-            }
-
-            const errorCallback = (request?: WebRequest, exception?: LoadFileError) => {
-                onError(request?.statusText, exception);
-            };
-
-            if(plugin.loadBinary){
-                plugin.loadBinary(scene, binaryData, "", dataCallback, errorCallback)
-            }
-        };
-        
-        manifestChecked();
-        return plugin;
     }
 
     private static _LoadData(fileInfo: IFileInfo,
@@ -592,7 +503,8 @@ export class SceneLoader {
         onProgress: ((event: ISceneLoaderProgressEvent) => void) | undefined,
         onError: (message?: string, exception?: any) => void,
         onDispose: () => void,
-        pluginExtension: Nullable<string>
+        pluginExtension: Nullable<string>,
+        name: string
     ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
         const directLoad = SceneLoader._GetDirectLoad(fileInfo.url);
         
@@ -681,11 +593,14 @@ export class SceneLoader {
             const errorCallback = (request?: WebRequest, exception?: LoadFileError) => {
                 onError(request?.statusText, exception);
             };
+            
+            if(!plugin.loadFile && fileInfo.rawData) {
+                throw "Plugin does not support loading ArrayBufferView.";
+            }
 
-            const fileOrUrl = fileInfo.file || fileInfo.url;
             request = plugin.loadFile
-                ? plugin.loadFile(scene, fileOrUrl, dataCallback, onProgress, useArrayBuffer, errorCallback)
-                : scene._loadFile(fileOrUrl, dataCallback, onProgress, true, useArrayBuffer, errorCallback);
+                ? plugin.loadFile(scene, fileInfo.rawData || fileInfo.file || fileInfo.url, dataCallback, onProgress, useArrayBuffer, errorCallback, name)
+                : scene._loadFile(fileInfo.file || fileInfo.url, dataCallback, onProgress, true, useArrayBuffer, errorCallback);
         };
 
         const engine = scene.getEngine();
@@ -918,7 +833,8 @@ export class SceneLoader {
             progressHandler,
             errorHandler,
             disposeHandler,
-            pluginExtension
+            pluginExtension,
+            name
         );
     }
 
@@ -1045,7 +961,8 @@ export class SceneLoader {
         onSuccess: Nullable<(scene: Scene) => void> = null,
         onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
         onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
-        pluginExtension: Nullable<string> = null
+        pluginExtension: Nullable<string> = null,
+        name: string = ""
     ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
         if (!scene) {
             Logger.Error("No scene available to append to");
@@ -1136,7 +1053,8 @@ export class SceneLoader {
             progressHandler,
             errorHandler,
             disposeHandler,
-            pluginExtension
+            pluginExtension,
+            name
         );
     }
 
@@ -1191,7 +1109,8 @@ export class SceneLoader {
         onSuccess: Nullable<(assets: AssetContainer) => void> = null,
         onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
         onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
-        pluginExtension: Nullable<string> = null
+        pluginExtension: Nullable<string> = null,
+        name: string = ""
     ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
         if (!scene) {
             Logger.Error("No scene available to load asset container to");
@@ -1276,7 +1195,8 @@ export class SceneLoader {
             progressHandler,
             errorHandler,
             disposeHandler,
-            pluginExtension
+            pluginExtension,
+            name
         );
     }
 
