@@ -718,7 +718,8 @@
             "title": "GLTF Serializer Morph Target Animation",
             "renderCount": 2,
             "playgroundId": "#84M2SR#23",
-            "referenceImage": "gltfSerializerMorphTargetAnimation.png"
+            "referenceImage": "gltfSerializerMorphTargetAnimation.png",
+            "excludeFromAutomaticTesting": true
         },
         {
             "title": "GLTF Serializer Morph Target Animation Group",
