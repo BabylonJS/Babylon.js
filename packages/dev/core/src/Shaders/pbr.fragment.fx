@@ -253,6 +253,7 @@ void main(void) {
 
         anisotropicBlock(
             vAnisotropy,
+            roughness,
         #ifdef ANISOTROPIC_TEXTURE
             anisotropyMapData,
         #endif

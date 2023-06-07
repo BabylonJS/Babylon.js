@@ -18,7 +18,16 @@ declare type BaseTexture = import("../Materials/Textures/baseTexture").BaseTextu
 const __decoratorInitialStore = {};
 const __mergedStore = {};
 
-const _copySource = function <T>(creationFunction: () => T, source: T, instanciate: boolean): T {
+/** @internal */
+export interface CopySourceOptions {
+    /*
+     * if a texture is used in more than one channel (e.g diffuse and opacity),
+     * only clone it once and reuse it on the other channels. Default false
+     */
+    cloneTexturesOnlyOnce?: boolean;
+}
+
+const _copySource = function <T>(creationFunction: () => T, source: T, instanciate: boolean, options: CopySourceOptions = {}): T {
     const destination = creationFunction();
 
     // Tags
@@ -27,6 +36,9 @@ const _copySource = function <T>(creationFunction: () => T, source: T, instancia
     }
 
     const classStore = getMergedStore(destination);
+
+    // Map from source texture uniqueId to destination texture
+    const textureMap: Record<number, any> = {};
 
     // Properties
     for (const property in classStore) {
@@ -42,7 +54,12 @@ const _copySource = function <T>(creationFunction: () => T, source: T, instancia
                     (<any>destination)[property] = sourceProperty;
                     break;
                 case 1: // Texture
-                    (<any>destination)[property] = instanciate || sourceProperty.isRenderTarget ? sourceProperty : sourceProperty.clone();
+                    if (options.cloneTexturesOnlyOnce && textureMap[sourceProperty.uniqueId]) {
+                        (<any>destination)[property] = textureMap[sourceProperty.uniqueId];
+                    } else {
+                        (<any>destination)[property] = instanciate || sourceProperty.isRenderTarget ? sourceProperty : sourceProperty.clone();
+                        textureMap[sourceProperty.uniqueId] = (<any>destination)[property];
+                    }
                     break;
                 case 2: // Color3
                 case 3: // FresnelParameters
@@ -444,8 +461,8 @@ export class SerializationHelper {
      * @param source defines the source object
      * @returns the cloned object
      */
-    public static Clone<T>(creationFunction: () => T, source: T): T {
-        return _copySource(creationFunction, source, false);
+    public static Clone<T>(creationFunction: () => T, source: T, options: CopySourceOptions = {}): T {
+        return _copySource(creationFunction, source, false, options);
     }
 
     /**

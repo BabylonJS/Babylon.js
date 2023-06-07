@@ -357,6 +357,12 @@ export class Animatable {
                 if (!useGlobalSplice) {
                     this._scene._activeAnimatables.splice(index, 1);
                 }
+                const runtimeAnimations = this._runtimeAnimations;
+
+                for (let index = 0; index < runtimeAnimations.length; index++) {
+                    runtimeAnimations[index].dispose();
+                }
+
                 this._runtimeAnimations.length = 0;
 
                 this._raiseOnAnimationEnd();

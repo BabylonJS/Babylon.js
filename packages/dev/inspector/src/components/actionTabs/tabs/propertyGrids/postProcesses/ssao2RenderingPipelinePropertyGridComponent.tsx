@@ -29,7 +29,7 @@ export class SSAO2RenderingPipelinePropertyGridComponent extends React.Component
         const camera = renderPipeline.scene.activeCamera!;
 
         return (
-            <div className="pane">
+            <>
                 <CommonRenderingPipelinePropertyGridComponent
                     globalState={this.props.globalState}
                     lockObject={this.props.lockObject}
@@ -142,7 +142,7 @@ export class SSAO2RenderingPipelinePropertyGridComponent extends React.Component
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/serializers",
-    "version": "6.0.0",
+    "version": "6.6.1",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -18,14 +18,14 @@
         "postcompile": "build-tools -c add-js-to-es6"
     },
     "devDependencies": {
-        "@babylonjs/core": "^6.0.0",
+        "@babylonjs/core": "^6.6.1",
         "@dev/build-tools": "^1.0.0",
         "@lts/serializers": "^1.0.0",
-        "babylonjs-gltf2interface": "^6.0.0"
+        "babylonjs-gltf2interface": "^6.6.1"
     },
     "peerDependencies": {
-        "@babylonjs/core": "5.71.1 || ^6.0.0",
-        "babylonjs-gltf2interface": "5.71.1 || ^6.0.0"
+        "@babylonjs/core": "^6.0.0",
+        "babylonjs-gltf2interface": "^6.0.0"
     },
     "keywords": [
         "3D",

@@ -9,6 +9,8 @@ attribute vec3 normal;
 attribute vec4 color;
 #endif
 
+#include<helperFunctions>
+
 #include<bonesDeclaration>
 #include<bakedVertexAnimationDeclaration>
 
@@ -98,9 +100,21 @@ void main(void)
 	vec3 worldBinormal = normalize(xbin * normalizedNormal.x + ybin * normalizedNormal.y + zbin * normalizedNormal.z);
    	vec3 worldTangent = normalize(xtan * normalizedNormal.x + ytan * normalizedNormal.y + ztan * normalizedNormal.z);
 	   
-	worldTangent = (world * vec4(worldTangent, 0.0)).xyz;
-    worldBinormal = (world * vec4(worldBinormal, 0.0)).xyz;
-	vec3 worldNormal = (world * vec4(normalize(normal), 0.0)).xyz;
+	mat3 normalWorld = mat3(world);
+
+	#ifdef NONUNIFORMSCALING
+		normalWorld = transposeMat3(inverseMat3(normalWorld));
+	#endif
+
+	worldTangent = (normalWorld * worldTangent).xyz;
+    worldBinormal = (normalWorld * worldBinormal).xyz;
+	vec3 worldNormal = (normalWorld * normalize(normal)).xyz;
+
+	#ifdef NONUNIFORMSCALING
+		worldTangent = normalize(worldTangent);
+		worldBinormal = normalize(worldBinormal);
+		worldNormal = normalize(worldNormal);
+	#endif
 
 	tangentSpace[0] = worldTangent;
     tangentSpace[1] = worldBinormal;

@@ -178,6 +178,7 @@ export abstract class WebGPUCacheRenderPipeline {
             const topology = WebGPUCacheRenderPipeline._GetTopology(fillMode);
 
             this._setVertexState(effect); // to fill this.vertexBuffers with correct data
+            this._setTextureState(textureState);
 
             this._parameter.pipeline = this._createRenderPipeline(effect, topology, sampleCount);
 
@@ -838,7 +839,7 @@ export abstract class WebGPUCacheRenderPipeline {
             });
         }
 
-        webgpuPipelineContext.bindGroupLayouts = bindGroupLayouts;
+        webgpuPipelineContext.bindGroupLayouts[0] = bindGroupLayouts;
 
         return this._device.createPipelineLayout({ bindGroupLayouts });
     }
@@ -891,7 +892,7 @@ export abstract class WebGPUCacheRenderPipeline {
             });
         }
 
-        webgpuPipelineContext.bindGroupLayouts = bindGroupLayouts;
+        webgpuPipelineContext.bindGroupLayouts[this._textureState] = bindGroupLayouts;
 
         return this._device.createPipelineLayout({ bindGroupLayouts });
     }
@@ -1006,7 +1007,7 @@ export abstract class WebGPUCacheRenderPipeline {
         const depthStencilFormatHasStencil = this._webgpuDepthStencilFormat ? WebGPUTextureHelper.HasStencilAspect(this._webgpuDepthStencilFormat) : false;
 
         return this._device.createRenderPipeline({
-            label: `RenderPipeline_${colorStates[0]?.format ?? "nooutput"}_${this._webgpuDepthStencilFormat ?? "nodepth"}_samples${sampleCount}`,
+            label: `RenderPipeline_${colorStates[0]?.format ?? "nooutput"}_${this._webgpuDepthStencilFormat ?? "nodepth"}_samples${sampleCount}_textureState${this._textureState}`,
             layout: pipelineLayout,
             vertex: {
                 module: webgpuPipelineContext.stages!.vertexStage.module,

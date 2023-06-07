@@ -99,7 +99,7 @@ export class SceneInstrumentation implements IDisposable {
 
             this._onAfterActiveMeshesEvaluationObserver = this.scene.onAfterActiveMeshesEvaluationObservable.add(() => {
                 Tools.EndPerformanceCounter("Active meshes evaluation");
-                this._activeMeshesEvaluationTime.endMonitoring();
+                this._activeMeshesEvaluationTime.endMonitoring(false);
             });
         } else {
             this.scene.onBeforeActiveMeshesEvaluationObservable.remove(this._onBeforeActiveMeshesEvaluationObserver);
@@ -500,6 +500,14 @@ export class SceneInstrumentation implements IDisposable {
                 this._animationsTime.beginMonitoring();
             }
 
+            if (this._captureRenderTime) {
+                this._renderTime.fetchNewFrame();
+            }
+
+            if (this._captureCameraRenderTime) {
+                this._cameraRenderTime.fetchNewFrame();
+            }
+
             this.scene.getEngine()._drawCalls.fetchNewFrame();
         });
 
@@ -516,6 +524,25 @@ export class SceneInstrumentation implements IDisposable {
 
             if (this._captureInterFrameTime) {
                 this._interFrameTime.beginMonitoring();
+            }
+
+            if (this._captureActiveMeshesEvaluationTime) {
+                this._activeMeshesEvaluationTime.endFrame();
+            }
+            if (this._captureRenderTargetsRenderTime) {
+                this._renderTargetsRenderTime.endFrame();
+            }
+            if (this._captureParticlesRenderTime) {
+                this._particlesRenderTime.endFrame();
+            }
+            if (this._captureSpritesRenderTime) {
+                this._spritesRenderTime.endFrame();
+            }
+            if (this._captureRenderTime) {
+                this._renderTime.endFrame();
+            }
+            if (this._captureCameraRenderTime) {
+                this._cameraRenderTime.endFrame();
             }
         });
     }

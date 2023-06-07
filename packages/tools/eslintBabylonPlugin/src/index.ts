@@ -274,7 +274,9 @@ const plugin: IPlugin = {
             },
             create: (context: eslint.Rule.RuleContext) => {
                 const sourceCode: eslint.SourceCode = context.getSourceCode();
-                const checkCommentBlocks: (node: ESTree.MethodDefinition) => void = function (node: ESTree.MethodDefinition) {
+                const checkCommentBlocks: (node: (ESTree.PropertyDefinition | ESTree.MethodDefinition) & eslint.Rule.NodeParentExtension) => void = function (
+                    node: (ESTree.PropertyDefinition | ESTree.MethodDefinition) & eslint.Rule.NodeParentExtension
+                ) {
                     const text = sourceCode.getText(node);
                     // avoid private, protected and hidden public
                     if (text.includes("private ") || text.includes("protected ") || text.includes("public _")) {

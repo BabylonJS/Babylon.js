@@ -70,7 +70,8 @@ export class MeshUVSpaceRenderer {
                 },
                 {
                     attributes: ["position", "normal", "uv"],
-                    uniforms: ["world", "worldView", "worldViewProjection", "view", "projection"],
+                    uniforms: ["world", "projMatrix"],
+                    samplers: ["textureSampler"],
                     needAlphaBlending: true,
                 }
             );
@@ -128,7 +129,11 @@ export class MeshUVSpaceRenderer {
      * @returns true if the texture is ready to be used
      */
     public isReady(): boolean {
-        return MeshUVSpaceRenderer._GetShader(this._scene).isReady() && (this.texture?.isReady() ?? true);
+        if (!this.texture) {
+            this._createDiffuseRTT();
+        }
+
+        return MeshUVSpaceRenderer._IsRenderTargetTexture(this.texture) ? this.texture.isReadyForRendering() : this.texture.isReady();
     }
 
     /**

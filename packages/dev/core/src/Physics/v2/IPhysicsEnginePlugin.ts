@@ -362,6 +362,8 @@ export interface IPhysicsEnginePluginV2 {
     setCollisionCallbackEnabled(body: PhysicsBody, enabled: boolean, instanceIndex?: number): void;
     addConstraint(body: PhysicsBody, childBody: PhysicsBody, constraint: PhysicsConstraint, instanceIndex?: number, childInstanceIndex?: number): void;
     getCollisionObservable(body: PhysicsBody, instanceIndex?: number): Observable<IPhysicsCollisionEvent>;
+    setGravityFactor(body: PhysicsBody, factor: number, instanceIndex?: number): void;
+    getGravityFactor(body: PhysicsBody, instanceIndex?: number): number;
 
     // shape
     initShape(shape: PhysicsShape, type: PhysicsShapeType, options: PhysicsShapeParameters): void;

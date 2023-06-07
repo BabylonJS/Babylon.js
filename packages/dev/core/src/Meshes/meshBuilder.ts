@@ -21,6 +21,7 @@ import { CreateDecal } from "./Builders/decalBuilder";
 import { CreateCapsule } from "./Builders/capsuleBuilder";
 import { CreateGeodesic } from "./Builders/geodesicBuilder";
 import { CreateGoldberg } from "./Builders/goldbergBuilder";
+import { CreateText } from "./Builders/textBuilder";
 
 /**
  * Class containing static functions to help procedurally build meshes
@@ -54,4 +55,5 @@ export const MeshBuilder = {
     CreateGoldberg,
     CreateDecal,
     CreateCapsule,
+    CreateText,
 };

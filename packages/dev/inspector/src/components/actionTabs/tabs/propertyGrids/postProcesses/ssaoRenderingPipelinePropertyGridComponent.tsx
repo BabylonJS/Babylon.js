@@ -26,7 +26,7 @@ export class SSAORenderingPipelinePropertyGridComponent extends React.Component<
         const renderPipeline = this.props.renderPipeline;
 
         return (
-            <div className="pane">
+            <>
                 <CommonRenderingPipelinePropertyGridComponent
                     globalState={this.props.globalState}
                     lockObject={this.props.lockObject}
@@ -88,7 +88,7 @@ export class SSAORenderingPipelinePropertyGridComponent extends React.Component<
                         decimalCount={6}
                     />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

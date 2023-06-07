@@ -22,6 +22,7 @@ interface IControlTreeItemComponentProps {
     isHovered: boolean;
     isDragOver: boolean;
     dragOverLocation: DragOverLocation;
+    onRenamingStateChanged: (renaming: boolean) => void;
 }
 
 export class ControlTreeItemComponent extends React.Component<IControlTreeItemComponentProps, { isActive: boolean; isVisible: boolean; isRenaming: boolean }> {
@@ -72,7 +73,10 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
                     bracket={bracket}
                     onClick={() => this.props.onClick()}
                     onChange={(name) => this.onRename(name)}
-                    setRenaming={(renaming) => this.setState({ isRenaming: renaming })}
+                    setRenaming={(renaming) => {
+                        this.setState({ isRenaming: renaming });
+                        this.props.onRenamingStateChanged(renaming);
+                    }}
                     renaming={this.state.isRenaming}
                 />
                 {!draggingSelf && this.props.isDragOver && this.props.dragOverLocation == DragOverLocation.CENTER && control instanceof Container && (

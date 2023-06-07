@@ -9,9 +9,10 @@ import { Tools } from "./tools";
 import type { Nullable } from "../types";
 
 import { passPixelShader } from "../Shaders/pass.fragment";
+import { Scalar } from "../Maths/math.scalar";
 
 type DumpToolsEngine = {
-    canvas: HTMLCanvasElement;
+    canvas: HTMLCanvasElement | OffscreenCanvas;
     engine: ThinEngine;
     renderer: EffectRenderer;
     wrapper: EffectWrapper;
@@ -25,7 +26,7 @@ export class DumpTools {
 
     private static _CreateDumpRenderer(): DumpToolsEngine {
         if (!DumpTools._DumpToolsEngine) {
-            const canvas = document.createElement("canvas");
+            const canvas = new OffscreenCanvas(100, 100); // will be resized later
             const engine = new ThinEngine(canvas, false, {
                 preserveDrawingBuffer: true,
                 depth: false,
@@ -138,7 +139,7 @@ export class DumpTools {
             let n = data.length;
             while (n--) {
                 const v = data[n];
-                data2[n] = v < 0 ? 0 : v > 1 ? 1 : Math.round(v * 255);
+                data2[n] = Math.round(Scalar.Clamp(v) * 255);
             }
             data = data2;
         }

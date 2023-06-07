@@ -56,13 +56,19 @@ describe("PickingInfo", () => {
             expect(pickingInfo.getNormal(true)).toBeNull();
         });
 
-        it("should return null when no indices", () => {
+        it("should return normal when no indices", () => {
             const pickingInfo = new PickingInfo();
 
             box.getIndices = () => null;
             pickingInfo.pickedMesh = box;
+            pickingInfo.faceId = 0;
 
-            expect(pickingInfo.getNormal()).toBeNull();
+            const normalBox = pickingInfo.getNormal();
+
+            expect(normalBox).toBeInstanceOf(Vector3);
+            expect(normalBox!.x).toBeCloseTo(0);
+            expect(normalBox!.y).toBeCloseTo(0);
+            expect(normalBox!.z).toBeCloseTo(1);
         });
 
         it("should return normal when useVerticesNormals is true", () => {

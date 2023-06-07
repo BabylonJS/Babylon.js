@@ -40,7 +40,6 @@ import { NormalMaterial } from "materials/normal/normalMaterial";
 
 import "core/Physics/physicsEngineComponent";
 import "core/Physics/v1/physicsEngineComponent";
-import "core/Physics/v1/physicsEngineComponent";
 
 import { ParentPropertyGridComponent } from "../parentPropertyGridComponent";
 import { Tools } from "core/Misc/tools";
@@ -345,6 +344,13 @@ export class MeshPropertyGridComponent extends React.Component<
         return "Unknown";
     }
 
+    private _getIdForDisplay(id: any) {
+        if (typeof id === "string") {
+            return id;
+        }
+        return "[INVALID ID]";
+    }
+
     render() {
         const mesh = this.props.mesh;
         const scene = mesh.getScene();
@@ -402,7 +408,7 @@ export class MeshPropertyGridComponent extends React.Component<
             : [];
 
         return (
-            <div className="pane">
+            <>
                 <CustomPropertyGridComponent
                     globalState={this.props.globalState}
                     target={mesh}
@@ -410,7 +416,7 @@ export class MeshPropertyGridComponent extends React.Component<
                     onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                 />
                 <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
-                    <TextLineComponent label="ID" value={mesh.id} />
+                    <TextLineComponent label="ID" value={this._getIdForDisplay(mesh.id)} />
                     <TextInputLineComponent
                         lockObject={this.props.lockObject}
                         label="Name"
@@ -792,7 +798,7 @@ export class MeshPropertyGridComponent extends React.Component<
                         <CheckBoxLineComponent label="Display SkeletonMap" isSelected={() => displaySkeletonMap} onSelect={() => this.displaySkeletonMap()} />
                     )}
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

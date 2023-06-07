@@ -609,7 +609,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         }
     }
 
-    private _processSizeParameter(size: number | { width: number; height: number } | { ratio: number }): void {
+    protected _processSizeParameter(size: number | { width: number; height: number } | { ratio: number }, createRenderPassIds = true): void {
         if ((<{ ratio: number }>size).ratio) {
             this._sizeRatio = (<{ ratio: number }>size).ratio;
             const engine = this._getEngine()!;
@@ -621,7 +621,9 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             this._size = <number | { width: number; height: number; layers?: number }>size;
         }
 
-        this._createRenderPassId();
+        if (createRenderPassIds) {
+            this._createRenderPassId();
+        }
     }
 
     /**
@@ -835,7 +837,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             return;
         }
 
-        this._processSizeParameter(size);
+        this._processSizeParameter(size, false);
 
         if (wasCube) {
             this._renderTarget = scene.getEngine().createRenderTargetCubeTexture(this.getRenderSize(), this._renderTargetOptions);
@@ -936,7 +938,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                 scene.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix(true));
                 scene.activeCamera = camera;
             }
-            engine.setViewport(camera.viewport, this.getRenderWidth(), this.getRenderHeight());
+            engine.setViewport(camera.rigParent ? camera.rigParent.viewport : camera.viewport, this.getRenderWidth(), this.getRenderHeight());
         }
 
         this._defaultRenderListPrepared = false;

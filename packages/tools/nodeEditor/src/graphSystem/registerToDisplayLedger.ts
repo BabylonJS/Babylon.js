@@ -11,6 +11,8 @@ import { ConditionalDisplayManager } from "./display/conditionalDisplayManager";
 import { ImageSourceDisplayManager } from "./display/imageSourceDisplayManager";
 import { ElbowDisplayManager } from "./display/elbowDisplayManager";
 import { DisplayLedger } from "shared-ui-components/nodeGraphSystem/displayLedger";
+import { MeshAttributeExistsDisplayManager } from "./display/meshAttributeExistsDisplayManager";
+import { CurveDisplayManager } from "./display/curveDisplayManager";
 
 export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["InputBlock"] = InputDisplayManager;
@@ -37,4 +39,6 @@ export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["SubSurfaceBlock"] = PBRDisplayManager;
     DisplayLedger.RegisteredControls["ImageSourceBlock"] = ImageSourceDisplayManager;
     DisplayLedger.RegisteredControls["ElbowBlock"] = ElbowDisplayManager;
+    DisplayLedger.RegisteredControls["MeshAttributeExistsBlock"] = MeshAttributeExistsDisplayManager;
+    DisplayLedger.RegisteredControls["CurveBlock"] = CurveDisplayManager;
 };

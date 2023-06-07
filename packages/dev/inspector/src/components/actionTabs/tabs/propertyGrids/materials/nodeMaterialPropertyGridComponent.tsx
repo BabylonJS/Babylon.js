@@ -242,7 +242,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
         const material = this.props.material;
 
         return (
-            <div className="pane">
+            <>
                 <CommonMaterialPropertyGridComponent
                     globalState={this.props.globalState}
                     lockObject={this.props.lockObject}
@@ -255,7 +255,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
                 </LineContainerComponent>
                 {this.renderInputValues()}
                 {this.renderTextures()}
-            </div>
+            </>
         );
     }
 }

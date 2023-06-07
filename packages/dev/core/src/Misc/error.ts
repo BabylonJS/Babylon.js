@@ -50,7 +50,7 @@ export const ErrorCodes = {
 /**
  * Error code type
  */
-export type ErrorCodesType = typeof ErrorCodes[keyof typeof ErrorCodes];
+export type ErrorCodesType = (typeof ErrorCodes)[keyof typeof ErrorCodes];
 
 /**
  * Application runtime error
