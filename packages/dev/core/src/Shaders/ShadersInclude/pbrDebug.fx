@@ -128,6 +128,14 @@ if (vClipSpacePosition.x / vClipSpacePosition.w >= vDebugMode.x) {
         gl_FragColor.rgb = subSurfaceOut.transmittance;
     #elif DEBUGMODE == 70 && defined(SUBSURFACE) && defined(SS_REFRACTION)
         gl_FragColor.rgb = subSurfaceOut.refractionTransmittance;
+    #elif DEBUGMODE == 72
+        gl_FragColor.rgb = vec3(1.0-roughness); // TODO
+    #elif DEBUGMODE == 73
+        gl_FragColor.rgb = vAlbedoColor.rgb; // TODO
+    #elif DEBUGMODE == 74
+        gl_FragColor.rgb = vReflectivityColor.rgb; // TODO
+    #elif DEBUGMODE == 75
+        gl_FragColor.rgb = vEmissiveColor.rgb; //TODO
 // Misc
     #elif DEBUGMODE == 80 && defined(RADIANCEOCCLUSION)
         gl_FragColor.rgb = vec3(seo);
