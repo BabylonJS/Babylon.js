@@ -160,7 +160,7 @@ export interface ISceneLoaderPluginBase {
         onProgress?: (ev: ISceneLoaderProgressEvent) => void,
         useArrayBuffer?: boolean,
         onError?: (request?: WebRequest, exception?: LoadFileError) => void,
-        name?: string,
+        name?: string
     ): IFileRequest;
 
     /**
@@ -485,7 +485,7 @@ export class SceneLoader {
     }
 
     private static _FormatErrorMessage(fileInfo: IFileInfo, message?: string, exception?: any): string {
-        let fromLoad = fileInfo.rawData ? " binary data" : fileInfo.url;     
+        const fromLoad = fileInfo.rawData ? " binary data" : fileInfo.url;
         let errorMessage = "Unable to load from " + fromLoad;
 
         if (message) {
@@ -497,7 +497,8 @@ export class SceneLoader {
         return errorMessage;
     }
 
-    private static _LoadData(fileInfo: IFileInfo,
+    private static _LoadData(
+        fileInfo: IFileInfo,
         scene: Scene,
         onSuccess: (plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync, data: any, responseURL?: string) => void,
         onProgress: ((event: ISceneLoaderProgressEvent) => void) | undefined,
@@ -507,12 +508,12 @@ export class SceneLoader {
         name: string
     ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
         const directLoad = SceneLoader._GetDirectLoad(fileInfo.url);
-        
-        if(fileInfo.rawData && !pluginExtension) {
+
+        if (fileInfo.rawData && !pluginExtension) {
             throw "When using ArrayBufferView to load data the file extension must be provided.";
         }
 
-        if(fileInfo.rawData && pluginExtension === ".gltf") {
+        if (fileInfo.rawData && pluginExtension === ".gltf") {
             throw "GLTF is not supported when loading data from an ArrayBufferView";
         }
 
@@ -523,7 +524,7 @@ export class SceneLoader {
             : SceneLoader._GetPluginForFilename(fileInfo.url);
 
         let plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync;
-        
+
         if ((registeredPlugin.plugin as ISceneLoaderPluginFactory).createPlugin !== undefined) {
             plugin = (registeredPlugin.plugin as ISceneLoaderPluginFactory).createPlugin();
         } else {
@@ -593,8 +594,8 @@ export class SceneLoader {
             const errorCallback = (request?: WebRequest, exception?: LoadFileError) => {
                 onError(request?.statusText, exception);
             };
-            
-            if(!plugin.loadFile && fileInfo.rawData) {
+
+            if (!plugin.loadFile && fileInfo.rawData) {
                 throw "Plugin does not support loading ArrayBufferView.";
             }
 
@@ -643,7 +644,7 @@ export class SceneLoader {
             url = `file:${sceneFile.name}`;
             name = sceneFile.name;
             file = sceneFile;
-        } else if((sceneFilename as ArrayBufferView).buffer){
+        } else if ((sceneFilename as ArrayBufferView)) {
             url = "";
             name = "arrayBuffer";
             rawData = sceneFilename as ArrayBufferView;
@@ -732,7 +733,7 @@ export class SceneLoader {
         onSuccess: Nullable<SceneLoaderSuccessCallback> = null,
         onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
         onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
-        pluginExtension: Nullable<string> = null, 
+        pluginExtension: Nullable<string> = null,
         name: string = ""
     ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
         if (!scene) {
@@ -851,10 +852,11 @@ export class SceneLoader {
     public static ImportMeshAsync(
         meshNames: any,
         rootUrl: string,
-        sceneFilename: string | File| ArrayBufferView = "",
+        sceneFilename: string | File | ArrayBufferView = "",
         scene: Nullable<Scene> = EngineStore.LastCreatedScene,
         onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
-        pluginExtension: Nullable<string> = null
+        pluginExtension: Nullable<string> = null,
+        name: string = ""
     ): Promise<ISceneLoaderAsyncResult> {
         return new Promise((resolve, reject) => {
             SceneLoader.ImportMesh(
@@ -877,7 +879,8 @@ export class SceneLoader {
                 (scene, message, exception) => {
                     reject(exception || new Error(message));
                 },
-                pluginExtension
+                pluginExtension,
+                name
             );
         });
     }
@@ -895,19 +898,20 @@ export class SceneLoader {
      */
     public static Load(
         rootUrl: string,
-        sceneFilename: string | File = "",
+        sceneFilename: string | File | ArrayBufferView = "",
         engine: Nullable<Engine> = EngineStore.LastCreatedEngine,
         onSuccess: Nullable<(scene: Scene) => void> = null,
         onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
         onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
-        pluginExtension: Nullable<string> = null
+        pluginExtension: Nullable<string> = null,
+        name: string = ""
     ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
         if (!engine) {
             Tools.Error("No engine available");
             return null;
         }
 
-        return SceneLoader.Append(rootUrl, sceneFilename, new Scene(engine), onSuccess, onProgress, onError, pluginExtension);
+        return SceneLoader.Append(rootUrl, sceneFilename, new Scene(engine), onSuccess, onProgress, onError, pluginExtension, name);
     }
 
     /**
@@ -921,10 +925,11 @@ export class SceneLoader {
      */
     public static LoadAsync(
         rootUrl: string,
-        sceneFilename: string | File = "",
+        sceneFilename: string | File | ArrayBufferView = "",
         engine: Nullable<Engine> = EngineStore.LastCreatedEngine,
         onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
-        pluginExtension: Nullable<string> = null
+        pluginExtension: Nullable<string> = null,
+        name: string = ""
     ): Promise<Scene> {
         return new Promise((resolve, reject) => {
             SceneLoader.Load(
@@ -938,7 +943,8 @@ export class SceneLoader {
                 (scene, message, exception) => {
                     reject(exception || new Error(message));
                 },
-                pluginExtension
+                pluginExtension,
+                name
             );
         });
     }
@@ -956,7 +962,7 @@ export class SceneLoader {
      */
     public static Append(
         rootUrl: string,
-        sceneFilename: string | File = "",
+        sceneFilename: string | File | ArrayBufferView = "",
         scene: Nullable<Scene> = EngineStore.LastCreatedScene,
         onSuccess: Nullable<(scene: Scene) => void> = null,
         onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
@@ -1069,10 +1075,11 @@ export class SceneLoader {
      */
     public static AppendAsync(
         rootUrl: string,
-        sceneFilename: string | File = "",
+        sceneFilename: string | File | ArrayBufferView = "",
         scene: Nullable<Scene> = EngineStore.LastCreatedScene,
         onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
-        pluginExtension: Nullable<string> = null
+        pluginExtension: Nullable<string> = null,
+        name: string = ""
     ): Promise<Scene> {
         return new Promise((resolve, reject) => {
             SceneLoader.Append(
@@ -1086,7 +1093,8 @@ export class SceneLoader {
                 (scene, message, exception) => {
                     reject(exception || new Error(message));
                 },
-                pluginExtension
+                pluginExtension,
+                name
             );
         });
     }
@@ -1104,7 +1112,7 @@ export class SceneLoader {
      */
     public static LoadAssetContainer(
         rootUrl: string,
-        sceneFilename: string | File = "",
+        sceneFilename: string | File | ArrayBufferView = "",
         scene: Nullable<Scene> = EngineStore.LastCreatedScene,
         onSuccess: Nullable<(assets: AssetContainer) => void> = null,
         onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
