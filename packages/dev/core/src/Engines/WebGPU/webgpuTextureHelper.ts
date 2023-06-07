@@ -288,9 +288,7 @@ export const renderableTextureFormatToIndex: { [name: string]: number } = {
     "depth24plus-stencil8": 35,
     depth32float: 36,
 
-    "depth24unorm-stencil8": 37,
-
-    "depth32float-stencil8": 38,
+    "depth32float-stencil8": 37,
 };
 
 /** @internal */
@@ -317,11 +315,16 @@ export class WebGPUTextureHelper {
     //                         Initialization / Helpers
     //------------------------------------------------------------------------------
 
-    constructor(device: GPUDevice, glslang: any, tintWASM: Nullable<WebGPUTintWASM>, bufferManager: WebGPUBufferManager) {
+    constructor(device: GPUDevice, glslang: any, tintWASM: Nullable<WebGPUTintWASM>, bufferManager: WebGPUBufferManager, enabledExtensions: GPUFeatureName[]) {
         this._device = device;
         this._glslang = glslang;
         this._tintWASM = tintWASM;
         this._bufferManager = bufferManager;
+
+        if (enabledExtensions.indexOf(WebGPUConstants.FeatureName.RG11B10UFloatRenderable) !== -1) {
+            const keys = Object.keys(renderableTextureFormatToIndex);
+            renderableTextureFormatToIndex[WebGPUConstants.TextureFormat.RG11B10UFloat] = renderableTextureFormatToIndex[keys[keys.length - 1]] + 1;
+        }
 
         this._mipmapSampler = device.createSampler({ minFilter: WebGPUConstants.FilterMode.Linear });
         this._videoSampler = device.createSampler({ minFilter: WebGPUConstants.FilterMode.Linear });
@@ -974,9 +977,23 @@ export class WebGPUTextureHelper {
             case Constants.TEXTURETYPE_UNSIGNED_SHORT_5_6_5:
                 throw "TEXTURETYPE_UNSIGNED_SHORT_5_6_5 format not supported in WebGPU";
             case Constants.TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV:
-                throw "TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV format not supported in WebGPU";
+                switch (format) {
+                    case Constants.TEXTUREFORMAT_RGBA:
+                        return WebGPUConstants.TextureFormat.RG11B10UFloat;
+                    case Constants.TEXTUREFORMAT_RGBA_INTEGER:
+                        throw "TEXTUREFORMAT_RGBA_INTEGER format not supported in WebGPU when type is TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV";
+                    default:
+                        return WebGPUConstants.TextureFormat.RG11B10UFloat;
+                }
             case Constants.TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV:
-                throw "TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV format not supported in WebGPU";
+                switch (format) {
+                    case Constants.TEXTUREFORMAT_RGBA:
+                        return WebGPUConstants.TextureFormat.RGB9E5UFloat;
+                    case Constants.TEXTUREFORMAT_RGBA_INTEGER:
+                        throw "TEXTUREFORMAT_RGBA_INTEGER format not supported in WebGPU when type is TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV";
+                    default:
+                        return WebGPUConstants.TextureFormat.RGB9E5UFloat;
+                }
             case Constants.TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4:
                 throw "TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4 format not supported in WebGPU";
             case Constants.TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1:
@@ -1436,14 +1453,16 @@ export class WebGPUTextureHelper {
             depthOrArrayLayers: layerCount,
         };
 
+        const renderAttachmentFlag = renderableTextureFormatToIndex[format] ? WebGPUConstants.TextureUsage.RenderAttachment : 0;
         const isCompressedFormat = WebGPUTextureHelper.IsCompressedFormat(format);
         const mipLevelCount = hasMipmaps ? WebGPUTextureHelper.ComputeNumMipmapLevels(imageBitmap.width, imageBitmap.height) : 1;
         const usages = usage >= 0 ? usage : WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.CopyDst | WebGPUConstants.TextureUsage.TextureBinding;
-        additionalUsages |= hasMipmaps && !isCompressedFormat ? WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.RenderAttachment : 0;
+
+        additionalUsages |= hasMipmaps && !isCompressedFormat ? WebGPUConstants.TextureUsage.CopySrc | renderAttachmentFlag : 0;
 
         if (!isCompressedFormat && !is3D) {
             // we don't know in advance if the texture will be updated with copyExternalImageToTexture (which requires to have those flags), so we need to force the flags all the times
-            additionalUsages |= WebGPUConstants.TextureUsage.RenderAttachment | WebGPUConstants.TextureUsage.CopyDst;
+            additionalUsages |= renderAttachmentFlag | WebGPUConstants.TextureUsage.CopyDst;
         }
 
         const gpuTexture = this._device.createTexture({
@@ -1490,14 +1509,16 @@ export class WebGPUTextureHelper {
         const width = WebGPUTextureHelper.IsImageBitmapArray(imageBitmaps) ? imageBitmaps[0].width : imageBitmaps.width;
         const height = WebGPUTextureHelper.IsImageBitmapArray(imageBitmaps) ? imageBitmaps[0].height : imageBitmaps.height;
 
+        const renderAttachmentFlag = renderableTextureFormatToIndex[format] ? WebGPUConstants.TextureUsage.RenderAttachment : 0;
         const isCompressedFormat = WebGPUTextureHelper.IsCompressedFormat(format);
         const mipLevelCount = hasMipmaps ? WebGPUTextureHelper.ComputeNumMipmapLevels(width, height) : 1;
         const usages = usage >= 0 ? usage : WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.CopyDst | WebGPUConstants.TextureUsage.TextureBinding;
-        additionalUsages |= hasMipmaps && !isCompressedFormat ? WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.RenderAttachment : 0;
+
+        additionalUsages |= hasMipmaps && !isCompressedFormat ? WebGPUConstants.TextureUsage.CopySrc | renderAttachmentFlag : 0;
 
         if (!isCompressedFormat) {
             // we don't know in advance if the texture will be updated with copyExternalImageToTexture (which requires to have those flags), so we need to force the flags all the times
-            additionalUsages |= WebGPUConstants.TextureUsage.RenderAttachment | WebGPUConstants.TextureUsage.CopyDst;
+            additionalUsages |= renderAttachmentFlag | WebGPUConstants.TextureUsage.CopyDst;
         }
 
         const gpuTexture = this._device.createTexture({

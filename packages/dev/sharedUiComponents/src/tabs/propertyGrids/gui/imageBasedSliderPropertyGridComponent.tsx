@@ -24,7 +24,7 @@ export class ImageBasedSliderPropertyGridComponent extends React.Component<IImag
         const imageBasedSlider = this.props.imageBasedSlider;
 
         return (
-            <div className="pane">
+            <>
                 <CommonControlPropertyGridComponent
                     lockObject={this.props.lockObject}
                     control={imageBasedSlider}
@@ -85,7 +85,7 @@ export class ImageBasedSliderPropertyGridComponent extends React.Component<IImag
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

@@ -491,7 +491,7 @@ ThinEngine.prototype.createCubeTexture = function (
             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
             this._unpackFlipY(false);
 
-            const internalFormat = format ? this._getInternalFormat(format, texture._useSRGBBuffer) : texture._useSRGBBuffer ? gl.SRGB8_ALPHA8 : gl.RGBA;
+            const internalFormat = format ? this._getInternalFormat(format, texture._useSRGBBuffer) : texture._useSRGBBuffer ? this._glSRGBExtensionValues.SRGB8_ALPHA8 : gl.RGBA;
             let texelFormat = format ? this._getInternalFormat(format) : gl.RGBA;
 
             if (texture._useSRGBBuffer && this.webGLVersion === 1) {

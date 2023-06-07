@@ -8,6 +8,7 @@ import type { IPointerEvent, IUIEvent } from "core/Events";
 import type { Nullable } from "core/types";
 import type { ITestDeviceInputSystem} from "./testDeviceInputSystem";
 import { TestDeviceInputSystem } from "./testDeviceInputSystem";
+import { DeviceEventFactory } from "core/DeviceInput/eventFactory";
 
 jest.mock("core/DeviceInput/webDeviceInputSystem", () => {
     return {
@@ -221,5 +222,48 @@ describe("DeviceSourceManager", () => {
         deviceSourceManager3.dispose();
         expect(unregisterSpy).toBeCalledTimes(3);
         expect(disposeSpy).toBeCalledTimes(1);
+    });
+
+    it ("DeviceEventFactory can create proper pointer events", () => {
+        const deviceInputSystem = new TestDeviceInputSystem(
+            engine!,
+            () => {},
+            () => {},
+            () => {}
+        );
+
+        // Connect device and grab DeviceSource
+        deviceInputSystem.connectDevice(DeviceType.Mouse, 0, TestDeviceInputSystem.MAX_POINTER_INPUTS);
+
+        // Click down the three main mouse buttons
+        deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 1);
+        deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.MiddleClick, 1);
+        deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.RightClick, 1);
+
+        // Create a pointer event
+        const threeButtonsEvent = DeviceEventFactory.CreateDeviceEvent(DeviceType.Mouse, 0, PointerInput.Move, 1, deviceInputSystem) as IPointerEvent;
+
+        // Verify that the three buttons are pressed down
+        expect(threeButtonsEvent.buttons).toBe(7);
+
+        // Release middle button and verify that it's no longer pressed
+        deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.MiddleClick, 0);
+
+        // Create a pointer event
+        const twoButtonsEvent = DeviceEventFactory.CreateDeviceEvent(DeviceType.Mouse, 0, PointerInput.MiddleClick, 0, deviceInputSystem) as IPointerEvent;
+
+        // Verify that two buttons are pressed down and the middle is released
+        expect(twoButtonsEvent.buttons).toBe(3);
+        expect(twoButtonsEvent.button).toBe(1);
+
+        // Release the rest of the buttons
+        deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
+        deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.RightClick, 0);
+
+        // Create a pointer event
+        const noButtonsEvent = DeviceEventFactory.CreateDeviceEvent(DeviceType.Mouse, 0, PointerInput.Move, 1, deviceInputSystem) as IPointerEvent;
+
+        // Verify that no buttons are pressed down
+        expect(noButtonsEvent.buttons).toBe(0);
     });
 });

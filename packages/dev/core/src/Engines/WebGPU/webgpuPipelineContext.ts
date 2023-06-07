@@ -30,7 +30,8 @@ export class WebGPUPipelineContext implements IPipelineContext {
 
     public stages: Nullable<IWebGPURenderPipelineStageDescriptor>;
 
-    public bindGroupLayouts: GPUBindGroupLayout[];
+    // The field is indexed by textureState. See @WebGPUMaterialContext.textureState for more information.
+    public bindGroupLayouts: { [textureState: number]: GPUBindGroupLayout[] } = {};
 
     /**
      * Stores the left-over uniform buffer

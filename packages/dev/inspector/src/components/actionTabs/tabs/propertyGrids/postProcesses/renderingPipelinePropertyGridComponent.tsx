@@ -24,14 +24,12 @@ export class RenderingPipelinePropertyGridComponent extends React.Component<IRen
         const renderPipeline = this.props.renderPipeline;
 
         return (
-            <div className="pane">
-                <CommonRenderingPipelinePropertyGridComponent
-                    globalState={this.props.globalState}
-                    lockObject={this.props.lockObject}
-                    renderPipeline={renderPipeline}
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-            </div>
+            <CommonRenderingPipelinePropertyGridComponent
+                globalState={this.props.globalState}
+                lockObject={this.props.lockObject}
+                renderPipeline={renderPipeline}
+                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+            />
         );
     }
 }

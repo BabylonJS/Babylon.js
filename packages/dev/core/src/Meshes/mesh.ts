@@ -454,6 +454,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * Gets or sets a boolean indicating whether to render ignoring the active camera's max z setting. (false by default)
+     * You should not mix meshes that have this property set to true with meshes that have it set to false if they all write
+     * to the depth buffer, because the z-values are not comparable in the two cases and you will get rendering artifacts if you do.
+     * You can set the property to true for meshes that do not write to the depth buffer, or set the same value (either false or true) otherwise.
      * Note this will reduce performance when set to true.
      */
     public ignoreCameraMaxZ = false;
@@ -1271,13 +1274,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
                 const generator = key.value;
                 if (generator && (!generator.getShadowMap()?.renderList || (generator.getShadowMap()?.renderList && generator.getShadowMap()?.renderList?.indexOf(this) !== -1))) {
-                    if (generator.getShadowMap()) {
-                        engine.currentRenderPassId = generator.getShadowMap()!.renderPassId;
-                    }
-                    for (const subMesh of this.subMeshes) {
-                        if (!generator.isReady(subMesh, hardwareInstancedRendering, subMesh.getMaterial()?.needAlphaBlendingForMesh(this) ?? false)) {
-                            engine.currentRenderPassId = currentRenderPassId;
-                            return false;
+                    const shadowMap = generator.getShadowMap()!;
+                    const renderPassIds = shadowMap.renderPassIds ?? [engine.currentRenderPassId];
+                    for (let p = 0; p < renderPassIds.length; ++p) {
+                        engine.currentRenderPassId = renderPassIds[p];
+                        for (const subMesh of this.subMeshes) {
+                            if (!generator.isReady(subMesh, hardwareInstancedRendering, subMesh.getMaterial()?.needAlphaBlendingForMesh(this) ?? false)) {
+                                engine.currentRenderPassId = currentRenderPassId;
+                                return false;
+                            }
                         }
                     }
                     engine.currentRenderPassId = currentRenderPassId;

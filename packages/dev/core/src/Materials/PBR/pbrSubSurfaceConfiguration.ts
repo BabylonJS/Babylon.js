@@ -457,7 +457,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
                         defines.SS_GAMMAREFRACTION = refractionTexture.gammaSpace;
                         defines.SS_RGBDREFRACTION = refractionTexture.isRGBD;
                         defines.SS_LINEARSPECULARREFRACTION = refractionTexture.linearSpecularLOD;
-                        defines.SS_REFRACTIONMAP_OPPOSITEZ = refractionTexture.invertZ;
+                        defines.SS_REFRACTIONMAP_OPPOSITEZ = this._scene.useRightHandedSystem && refractionTexture.isCube ? !refractionTexture.invertZ : refractionTexture.invertZ;
                         defines.SS_LODINREFRACTIONALPHA = refractionTexture.lodLevelInAlpha;
                         defines.SS_LINKREFRACTIONTOTRANSPARENCY = this._linkRefractionWithTransparency;
                         defines.SS_ALBEDOFORREFRACTIONTINT = this.useAlbedoToTintRefraction;
@@ -522,7 +522,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
             }
 
             if (refractionTexture && MaterialFlags.RefractionTextureEnabled) {
-                uniformBuffer.updateMatrix("refractionMatrix", refractionTexture.getReflectionTextureMatrix());
+                uniformBuffer.updateMatrix("refractionMatrix", refractionTexture.getRefractionTextureMatrix());
 
                 let depth = 1.0;
                 if (!refractionTexture.isCube) {

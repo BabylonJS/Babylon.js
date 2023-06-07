@@ -3,7 +3,7 @@ import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { TransformNode } from "../Meshes/transformNode";
 import type { IParticleSystem } from "../Particles/IParticleSystem";
 import type { Skeleton } from "../Bones/skeleton";
-import { SceneLoader } from "../Loading/sceneLoader";
+import { SceneLoader, SceneLoaderAnimationGroupLoadingMode } from "../Loading/sceneLoader";
 import { Tools } from "./tools";
 import { Observable } from "./observable";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
@@ -12,9 +12,11 @@ import { CubeTexture } from "../Materials/Textures/cubeTexture";
 import { HDRCubeTexture } from "../Materials/Textures/hdrCubeTexture";
 import { EquiRectangularCubeTexture } from "../Materials/Textures/equiRectangularCubeTexture";
 import { Logger } from "../Misc/logger";
+import type { Animatable } from "../Animations/animatable";
 import type { AnimationGroup } from "../Animations/animationGroup";
 import type { AssetContainer } from "../assetContainer";
 import { EngineStore } from "../Engines/engineStore";
+import type { Nullable } from "../types";
 
 /**
  * Defines the list of states available for a task inside a AssetsManager
@@ -404,6 +406,95 @@ export class MeshAssetTask extends AbstractAssetTask {
                 this.loadedParticleSystems = particleSystems;
                 this.loadedSkeletons = skeletons;
                 this.loadedAnimationGroups = animationGroups;
+                onSuccess();
+            },
+            null,
+            (scene, message, exception) => {
+                onError(message, exception);
+            },
+            this.extension
+        );
+    }
+}
+
+/**
+ * Define a task used by AssetsManager to load animations
+ */
+export class AnimationAssetTask extends AbstractAssetTask {
+    /**
+     * Gets the list of loaded animation groups
+     */
+    public loadedAnimationGroups: Array<AnimationGroup>;
+    /**
+     * Gets the list of loaded animatables
+     */
+    public loadedAnimatables: Array<Animatable>;
+
+    /**
+     * Callback called when the task is successful
+     */
+    public onSuccess: (task: AnimationAssetTask) => void;
+
+    /**
+     * Callback called when the task is successful
+     */
+    public onError: (task: AnimationAssetTask, message?: string, exception?: any) => void;
+
+    /**
+     * Creates a new AnimationAssetTask
+     * @param name defines the name of the task
+     * @param rootUrl defines the root url to use as a base to load your meshes and associated resources
+     * @param filename defines the filename or File of the scene to load from
+     * @param targetConverter defines a function used to convert animation targets from loaded scene to current scene (default: search node by name)
+     */
+    constructor(
+        /**
+         * Defines the name of the task
+         */
+        public name: string,
+        /**
+         * Defines the root url to use as a base to load your meshes and associated resources
+         */
+        public rootUrl: string,
+        /**
+         * Defines the filename to load from
+         */
+        public filename: string | File,
+        /**
+         * Defines a function used to convert animation targets from loaded scene to current scene (default: search node by name)
+         */
+        public targetConverter?: Nullable<(target: any) => any>,
+        /**
+         * Defines the extension to use to load the scene (if not defined, ".babylon" will be used)
+         */
+        public extension?: string
+    ) {
+        super(name);
+    }
+
+    /**
+     * Execute the current task
+     * @param scene defines the scene where you want your assets to be loaded
+     * @param onSuccess is a callback called when the task is successfully executed
+     * @param onError is a callback called if an error occurs
+     */
+    public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
+        const startingIndexForNewAnimatables = scene.animatables.length;
+        const startingIndexForNewAnimationGroups = scene.animationGroups.length;
+        this.loadedAnimatables = [];
+        this.loadedAnimationGroups = [];
+
+        SceneLoader.ImportAnimations(
+            this.rootUrl,
+            this.filename,
+            scene,
+            false,
+            SceneLoaderAnimationGroupLoadingMode.NoSync,
+            this.targetConverter,
+            () => {
+                this.loadedAnimatables = scene.animatables.slice(startingIndexForNewAnimatables);
+                this.loadedAnimationGroups = scene.animationGroups.slice(startingIndexForNewAnimationGroups);
+
                 onSuccess();
             },
             null,

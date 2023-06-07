@@ -69,6 +69,48 @@ export class RectanglePropertyGridComponent extends React.Component<IRectanglePr
                         digits={2}
                     />
                 </div>
+                <div className="ge-divider quad">
+                    <FloatLineComponent
+                        lockObject={lockObject}
+                        label="X"
+                        target={proxy}
+                        propertyName="cornerRadiusX"
+                        unit={<UnitButton unit="PX" locked />}
+                        arrows
+                        min={0}
+                        digits={2}
+                    />
+                    <FloatLineComponent
+                        lockObject={lockObject}
+                        label="Y"
+                        target={proxy}
+                        propertyName="cornerRadiusY"
+                        unit={<UnitButton unit="PX" locked />}
+                        arrows
+                        min={0}
+                        digits={2}
+                    />
+                    <FloatLineComponent
+                        lockObject={lockObject}
+                        label="Z"
+                        target={proxy}
+                        propertyName="cornerRadiusZ"
+                        unit={<UnitButton unit="PX" locked />}
+                        arrows
+                        min={0}
+                        digits={2}
+                    />
+                    <FloatLineComponent
+                        lockObject={lockObject}
+                        label="W"
+                        target={proxy}
+                        propertyName="cornerRadiusW"
+                        unit={<UnitButton unit="PX" locked />}
+                        arrows
+                        min={0}
+                        digits={2}
+                    />
+                </div>
                 <ContainerPropertyGridComponent containers={rectangles} onPropertyChangedObservable={onPropertyChangedObservable} />
             </div>
         );

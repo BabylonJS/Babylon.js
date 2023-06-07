@@ -482,4 +482,13 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
             this._baseLayerWrapper.fixedFoveation = val;
         }
     }
+
+    /**
+     * Get the features enabled on the current session
+     * This is only available in-session!
+     * @see https://www.w3.org/TR/webxr/#dom-xrsession-enabledfeatures
+     */
+    public get enabledFeatures(): Nullable<string[]> {
+        return this.session?.enabledFeatures ?? null;
+    }
 }

@@ -136,6 +136,7 @@ export class DepthRenderer {
         this._depthMap.refreshRate = 1;
         this._depthMap.renderParticles = false;
         this._depthMap.renderList = null;
+        this._depthMap.noPrePassRenderer = true;
 
         // Camera to get depth map from to support multiple concurrent cameras
         this._depthMap.activeCamera = this._camera;

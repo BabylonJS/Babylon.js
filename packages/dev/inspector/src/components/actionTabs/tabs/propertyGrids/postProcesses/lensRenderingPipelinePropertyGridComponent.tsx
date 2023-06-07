@@ -27,7 +27,7 @@ export class LensRenderingPipelinePropertyGridComponent extends React.Component<
         const renderPipeline = this.props.renderPipeline;
 
         return (
-            <div className="pane">
+            <>
                 <CommonRenderingPipelinePropertyGridComponent
                     globalState={this.props.globalState}
                     lockObject={this.props.lockObject}
@@ -140,7 +140,7 @@ export class LensRenderingPipelinePropertyGridComponent extends React.Component<
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

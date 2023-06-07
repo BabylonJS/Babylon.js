@@ -25,7 +25,7 @@ export class InputTextPropertyGridComponent extends React.Component<IInputTextPr
         const inputText = this.props.inputText;
 
         return (
-            <div className="pane">
+            <>
                 <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={inputText} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 <LineContainerComponent title="INPUTTEXT">
                     <TextInputLineComponent
@@ -121,7 +121,7 @@ export class InputTextPropertyGridComponent extends React.Component<IInputTextPr
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

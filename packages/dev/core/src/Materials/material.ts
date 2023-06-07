@@ -203,12 +203,6 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      */
     public static OnEventObservable = new Observable<Material>();
 
-    static {
-        EngineStore.OnEnginesDisposedObservable.addOnce(() => {
-            Material.OnEventObservable.clear();
-        });
-    }
-
     /**
      * Custom callback helping to override the default shader used in the material.
      */
@@ -321,7 +315,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
 
         // Only call dirty when there is a state change (no alpha / alpha)
         if (oldValue === 1 || value === 1) {
-            this.markAsDirty(Material.MiscDirtyFlag);
+            this.markAsDirty(Material.MiscDirtyFlag + Material.PrePassDirtyFlag);
         }
     }
 

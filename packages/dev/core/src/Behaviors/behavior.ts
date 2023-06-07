@@ -8,7 +8,7 @@ export interface Behavior<T> {
     name: string;
 
     /**
-     * Function called when the behavior needs to be initialized (after attaching it to a target)
+     * Function called when the behavior needs to be initialized (before attaching it to a target)
      */
     init(): void;
     /**

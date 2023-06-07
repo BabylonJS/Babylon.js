@@ -31,7 +31,7 @@ export class PostProcessPropertyGridComponent extends React.Component<IPostProce
         const postProcess = this.props.postProcess;
 
         return (
-            <div className="pane">
+            <>
                 <CommonPostProcessPropertyGridComponent
                     globalState={this.props.globalState}
                     lockObject={this.props.lockObject}
@@ -43,7 +43,7 @@ export class PostProcessPropertyGridComponent extends React.Component<IPostProce
                         <ButtonLineComponent label="Node Material Editor" onClick={() => this.edit()} />
                     </LineContainerComponent>
                 )}
-            </div>
+            </>
         );
     }
 }

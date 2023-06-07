@@ -1235,10 +1235,10 @@ export class Engine extends ThinEngine {
     public setTextureFromPostProcess(channel: number, postProcess: Nullable<PostProcess>, name: string): void {
         let postProcessInput = null;
         if (postProcess) {
-            if (postProcess._textures.data[postProcess._currentRenderTextureInd]) {
-                postProcessInput = postProcess._textures.data[postProcess._currentRenderTextureInd];
-            } else if (postProcess._forcedOutputTexture) {
+            if (postProcess._forcedOutputTexture) {
                 postProcessInput = postProcess._forcedOutputTexture;
+            } else if (postProcess._textures.data[postProcess._currentRenderTextureInd]) {
+                postProcessInput = postProcess._textures.data[postProcess._currentRenderTextureInd];
             }
         }
 
@@ -1928,7 +1928,6 @@ export class Engine extends ThinEngine {
         // no more engines left in the engine store? Notify!
         if (!Engine.Instances.length) {
             EngineStore.OnEnginesDisposedObservable.notifyObservers(this);
-            EngineStore.OnEnginesDisposedObservable.clear();
         }
 
         // Observables

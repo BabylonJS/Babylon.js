@@ -25,7 +25,7 @@ export class RadioButtonPropertyGridComponent extends React.Component<IRadioButt
         const radioButtons = this.props.radioButtons;
 
         return (
-            <div className="pane">
+            <>
                 <CommonControlPropertyGridComponent
                     lockObject={this.props.lockObject}
                     controls={radioButtons}
@@ -60,7 +60,7 @@ export class RadioButtonPropertyGridComponent extends React.Component<IRadioButt
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </LineContainerComponent>
-            </div>
+            </>
         );
     }
 }

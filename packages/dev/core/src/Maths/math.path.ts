@@ -258,6 +258,128 @@ export class Path2 {
         }
         return this;
     }
+
+    /**
+     * Adds _numberOfSegments_ segments according to the quadratic curve definition to the current Path2.
+     * @param controlX control point x value
+     * @param controlY control point y value
+     * @param endX end point x value
+     * @param endY end point y value
+     * @param numberOfSegments (default: 36)
+     * @returns the updated Path2.
+     */
+    public addQuadraticCurveTo(controlX: number, controlY: number, endX: number, endY: number, numberOfSegments = 36): Path2 {
+        if (this.closed) {
+            return this;
+        }
+
+        const equation = (t: number, val0: number, val1: number, val2: number) => {
+            const res = (1.0 - t) * (1.0 - t) * val0 + 2.0 * t * (1.0 - t) * val1 + t * t * val2;
+            return res;
+        };
+        const startPoint = this._points[this._points.length - 1];
+        for (let i = 0; i <= numberOfSegments; i++) {
+            const step = i / numberOfSegments;
+            const x = equation(step, startPoint.x, controlX, endX);
+            const y = equation(step, startPoint.y, controlY, endY);
+            this.addLineTo(x, y);
+        }
+        return this;
+    }
+
+    /**
+     * Adds _numberOfSegments_ segments according to the bezier curve definition to the current Path2.
+     * @param originTangentX tangent vector at the origin point x value
+     * @param originTangentY tangent vector at the origin point y value
+     * @param destinationTangentX tangent vector at the destination point x value
+     * @param destinationTangentY tangent vector at the destination point y value
+     * @param endX end point x value
+     * @param endY end point y value
+     * @param numberOfSegments (default: 36)
+     * @returns the updated Path2.
+     */
+    public addBezierCurveTo(
+        originTangentX: number,
+        originTangentY: number,
+        destinationTangentX: number,
+        destinationTangentY: number,
+        endX: number,
+        endY: number,
+        numberOfSegments = 36
+    ): Path2 {
+        if (this.closed) {
+            return this;
+        }
+
+        const equation = (t: number, val0: number, val1: number, val2: number, val3: number) => {
+            const res = (1.0 - t) * (1.0 - t) * (1.0 - t) * val0 + 3.0 * t * (1.0 - t) * (1.0 - t) * val1 + 3.0 * t * t * (1.0 - t) * val2 + t * t * t * val3;
+            return res;
+        };
+        const startPoint = this._points[this._points.length - 1];
+        for (let i = 0; i <= numberOfSegments; i++) {
+            const step = i / numberOfSegments;
+            const x = equation(step, startPoint.x, originTangentX, destinationTangentX, endX);
+            const y = equation(step, startPoint.y, originTangentY, destinationTangentY, endY);
+            this.addLineTo(x, y);
+        }
+        return this;
+    }
+
+    /**
+     * Defines if a given point is inside the polygon defines by the path
+     * @param point defines the point to test
+     * @returns true if the point is inside
+     */
+    public isPointInside(point: Vector2) {
+        let isInside = false;
+        const count = this._points.length;
+        for (let p = count - 1, q = 0; q < count; p = q++) {
+            let edgeLow = this._points[p];
+            let edgeHigh = this._points[q];
+
+            let edgeDx = edgeHigh.x - edgeLow.x;
+            let edgeDy = edgeHigh.y - edgeLow.y;
+
+            if (Math.abs(edgeDy) > Number.EPSILON) {
+                // Not parallel
+                if (edgeDy < 0) {
+                    edgeLow = this._points[q];
+                    edgeDx = -edgeDx;
+                    edgeHigh = this._points[p];
+                    edgeDy = -edgeDy;
+                }
+
+                if (point.y < edgeLow.y || point.y > edgeHigh.y) {
+                    continue;
+                }
+
+                if (point.y === edgeLow.y && point.x === edgeLow.x) {
+                    return true;
+                } else {
+                    const perpEdge = edgeDy * (point.x - edgeLow.x) - edgeDx * (point.y - edgeLow.y);
+                    if (perpEdge === 0) {
+                        return true;
+                    }
+                    if (perpEdge < 0) {
+                        continue;
+                    }
+                    isInside = !isInside;
+                }
+            } else {
+                // parallel or collinear
+                if (point.y !== edgeLow.y) {
+                    continue;
+                }
+
+                if ((edgeHigh.x <= point.x && point.x <= edgeLow.x) || (edgeLow.x <= point.x && point.x <= edgeHigh.x)) {
+                    return true;
+                }
+            }
+        }
+
+        return isInside;
+    }
+
     /**
      * Closes the Path2.
      * @returns the Path2.
@@ -279,6 +401,21 @@ export class Path2 {
             result += firstPoint.subtract(lastPoint).length();
         }
         return result;
+    }
+
+    /**
+     * Gets the area of the polygon defined by the path
+     * @returns area value
+     */
+    public area(): number {
+        const n = this._points.length;
+        let value = 0.0;
+
+        for (let p = n - 1, q = 0; q < n; p = q++) {
+            value += this._points[p].x * this._points[q].y - this._points[q].x * this._points[p].y;
+        }
+
+        return value * 0.5;
     }
 
     /**

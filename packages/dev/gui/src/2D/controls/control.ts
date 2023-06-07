@@ -2406,6 +2406,8 @@ export class Control implements IAnimatable {
         serializationObject.name = this.name;
         serializationObject.className = this.getClassName();
 
+        // Call prepareFont to guarantee the font is properly set before serializing
+        this._prepareFont();
         if (this._font) {
             serializationObject.fontFamily = this._fontFamily;
             serializationObject.fontSize = this.fontSize;

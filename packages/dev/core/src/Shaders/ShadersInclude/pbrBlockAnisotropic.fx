@@ -13,6 +13,7 @@
     #define pbr_inline
     void anisotropicBlock(
         in vec3 vAnisotropy,
+        in float roughness,
     #ifdef ANISOTROPIC_TEXTURE
         in vec3 anisotropyMapData,
     #endif
@@ -27,9 +28,17 @@
 
         #ifdef ANISOTROPIC_TEXTURE
             anisotropy *= anisotropyMapData.b;
-            anisotropyDirection.rg *= anisotropyMapData.rg * 2.0 - 1.0;
+
             #if DEBUGMODE > 0
                 outParams.anisotropyMapData = anisotropyMapData;
+            #endif
+
+            anisotropyMapData.rg = anisotropyMapData.rg * 2.0 - 1.0;
+
+            #ifdef ANISOTROPIC_LEGACY
+                anisotropyDirection.rg *= anisotropyMapData.rg;
+            #else
+                anisotropyDirection.xy = mat2(anisotropyDirection.x, anisotropyDirection.y, -anisotropyDirection.y, anisotropyDirection.x) * normalize(anisotropyMapData.rg);
             #endif
         #endif
 
@@ -40,6 +49,6 @@
         outParams.anisotropy = anisotropy;
         outParams.anisotropicTangent = anisotropicTangent;
         outParams.anisotropicBitangent = anisotropicBitangent;
-        outParams.anisotropicNormal = getAnisotropicBentNormals(anisotropicTangent, anisotropicBitangent, normalW, viewDirectionW, anisotropy);
+        outParams.anisotropicNormal = getAnisotropicBentNormals(anisotropicTangent, anisotropicBitangent, normalW, viewDirectionW, anisotropy, roughness);
     }
 #endif
