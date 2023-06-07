@@ -1296,7 +1296,7 @@ export class ThinEngine {
             if (drawBuffersExtension !== null) {
                 this._caps.drawBuffersExtension = true;
                 this._gl.drawBuffers = drawBuffersExtension.drawBuffersWEBGL.bind(drawBuffersExtension);
-                this._gl.DRAW_FRAMEBUFFER = this._gl.FRAMEBUFFER;
+                (this._gl.DRAW_FRAMEBUFFER as any) = this._gl.FRAMEBUFFER;
 
                 for (let i = 0; i < 16; i++) {
                     (<any>this._gl)["COLOR_ATTACHMENT" + i + "_WEBGL"] = (<any>drawBuffersExtension)["COLOR_ATTACHMENT" + i + "_WEBGL"];
@@ -5621,7 +5621,7 @@ export class ThinEngine {
      * @internal
      */
     public _getInternalFormat(format: number, useSRGBBuffer = false): number {
-        let internalFormat = useSRGBBuffer ? this._glSRGBExtensionValues.SRGB8_ALPHA8 : this._gl.RGBA;
+        let internalFormat: GLenum = useSRGBBuffer ? this._glSRGBExtensionValues.SRGB8_ALPHA8 : this._gl.RGBA;
 
         switch (format) {
             case Constants.TEXTUREFORMAT_ALPHA:
