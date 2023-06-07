@@ -28,16 +28,17 @@
 
         #ifdef ANISOTROPIC_TEXTURE
             anisotropy *= anisotropyMapData.b;
+
+            #if DEBUGMODE > 0
+                outParams.anisotropyMapData = anisotropyMapData;
+            #endif
+
             anisotropyMapData.rg = anisotropyMapData.rg * 2.0 - 1.0;
 
             #ifdef ANISOTROPIC_LEGACY
                 anisotropyDirection.rg *= anisotropyMapData.rg;
             #else
                 anisotropyDirection.xy = mat2(anisotropyDirection.x, anisotropyDirection.y, -anisotropyDirection.y, anisotropyDirection.x) * normalize(anisotropyMapData.rg);
-            #endif
-
-            #if DEBUGMODE > 0
-                outParams.anisotropyMapData = anisotropyMapData;
             #endif
         #endif
 
