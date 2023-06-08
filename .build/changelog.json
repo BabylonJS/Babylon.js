@@ -1,6 +1,252 @@
 {
-    "fromTag": "6.5.1",
+    "fromTag": "6.6.1",
     "changelog": {
+        "6.7.0": [
+            {
+                "pr": "13909",
+                "title": "Stop baking LH to RH in glTF serializer",
+                "description": "Fixes #13891\r\n\r\nSee https://forum.babylonjs.com/t/glb-export-fails/40911\r\n\r\nWe used to try to bake the LH to RH conversion into the data. This change makes it such that it just puts a negative scale at the root instead. Doing the data conversion is too complex and probably isn't super beneficial to users.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_lights_punctual.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/EXT_mesh_gpu_instancing.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_lights_punctual.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFAnimation.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporterExtension.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFSerializer.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFUtilities.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfSerializerMorphTargetAnimation.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "glTF",
+                    "breaking change"
+                ]
+            },
+            {
+                "pr": "13943",
+                "title": "Tri-planar material: Add support for non uniform scaling",
+                "description": "See https://forum.babylonjs.com/t/scaling-box-without-scaling-texture/41410/6",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/materials/src/triPlanar/triPlanarMaterial.ts",
+                    "packages/dev/materials/src/triPlanar/triplanar.vertex.fx"
+                ],
+                "tags": [
+                    "materials",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13941",
+                "title": "Avoid crashes with bad name/id assignments",
+                "description": "Example PG: https://playground.babylonjs.com/#XMIQ95#2\r\nIf you try to open the Inspector in it, it crashes. This happens because an Object is assigned as a mesh's name/id, which wouldn't be valid in TS, but it can happen in JS. This PR adds some measures on the Inspector to avoid this crash.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/meshPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/parentPropertyGridComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "13942",
+                "title": "Fix Control item being draggable while renaming",
+                "description": "Also fix some slight font differences when renaming a Control.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/guiEditor/src/components/sceneExplorer/entities/gui/controlTreeItemComponent.tsx",
+                    "packages/tools/guiEditor/src/components/sceneExplorer/sceneExplorer.scss",
+                    "packages/tools/guiEditor/src/components/sceneExplorer/treeItemSelectableComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "gui editor"
+                ]
+            }
+        ],
+        "6.6.1": [
+            {
+                "pr": "13938",
+                "title": "Revert changes from PR 13927",
+                "description": "PR https://github.com/BabylonJS/Babylon.js/pull/13927 breaks interaction with utility layer and makes gizmo unusable.\r\nrevert changes until a fix is found.",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/DeviceInput/eventFactory.ts",
+                    "packages/dev/core/src/Inputs/scene.inputManager.ts",
+                    "packages/dev/core/test/unit/DeviceInput/babylon.deviceInput.test.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug",
+                    "inputs"
+                ]
+            },
+            {
+                "pr": "13937",
+                "title": "WebGPU: Add support for post processes written in WGSL",
+                "description": "See https://forum.babylonjs.com/t/webgpu-post-processing/41380",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/ShadersWGSL/postprocess.vertex.fx"
+                ],
+                "tags": [
+                    "new feature",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "13933",
+                "title": "Add anchor options for gizmos",
+                "description": "By default the gizmos are anchored at the origin of the attached node. This PR allows that the target position can also be set to the pivot point of the attached node (If it is an instance of `TransformNode`). This mainly increases the usability of the `RotationGizmo` since it will stay in place during the rotation if a custom pivot point was defined.\r\n\r\n**Tests:**\r\nI tested it for all Gizmos (position, rotation, scale, boundingBox) with different settings (`updateScale`, `updateGizmoPositionToMatchAttachedMesh`, custom mesh pivot). The only thing I noticed is that `BoundingBoxGizmo` does not work probably with a custom pivot point. However this is not related to this PR and I`ll create another bug report / PR for that.\r\n\r\n**Related Discussion:**\r\nhttps://forum.babylonjs.com/t/gizmo-location-with-setpivotpoint/41271/3",
+                "author": {
+                    "name": "MBecherKurz",
+                    "url": "https://github.com/MBecherKurz"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/gizmo.ts",
+                    "packages/dev/core/src/Gizmos/positionGizmo.ts",
+                    "packages/dev/core/src/Gizmos/rotationGizmo.ts",
+                    "packages/dev/core/src/Gizmos/scaleGizmo.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13927",
+                "title": "DeviceEventFactory: Modified event factory to provide correct value for buttons property",
+                "description": "There was an [issue](https://github.com/BabylonJS/Babylon.js/issues/13920) brought up where drag controls where not \"letting go\" when the mouse button was released.  This PR will now properly propagate this value based off of the MouseEvent standard.\r\n\r\nEdit: This also contains a little change to out pointer capture is being handled.  Basically, if the POINTERDOWN is skipped, the pointer capture bool is still set to true and if the POINTERUP is skipped and there are no buttons pressed, it should be released.",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/DeviceInput/eventFactory.ts",
+                    "packages/dev/core/src/Inputs/scene.inputManager.ts",
+                    "packages/dev/core/test/unit/DeviceInput/babylon.deviceInput.test.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug",
+                    "inputs"
+                ]
+            },
+            {
+                "pr": "13914",
+                "title": "Better handling of parented bodies",
+                "description": "This PR aims to improve the handling of physical bodies that have parents. For that, we have to decompose the transformation we get from Havok into the parent transformation and the child transformation. ~~A point to check is the stability of this decomposition, especially in very long parenting chains~~ edit: stability is good now!.\r\n\r\nThis PR will close #13862",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "physics"
+                ]
+            },
+            {
+                "pr": "13931",
+                "title": "fix anisotropic texture debug mode",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockAnisotropic.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "13930",
+                "title": "Fix conversion from % to px throwing error",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/gui-editor-gives-error-when-trying-to-switch-from-to-px-in-position-of-textblock/41304",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/guiEditor/src/diagram/coordinateHelper.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "gui editor"
+                ]
+            },
+            {
+                "pr": "13929",
+                "title": "Fix to instantiateModelsToScene",
+                "description": "Related: https://github.com/BabylonJS/Babylon.js/pull/13640#issuecomment-1532570652",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/assetContainer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "assets"
+                ]
+            },
+            {
+                "pr": "13928",
+                "title": "OBJ loader: add support for lines",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/loaders/src/OBJ/solidParser.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13926",
+                "title": "Correct description of Behavior.init",
+                "description": "There's discrepancy in the docs as to when `Behavior.init` is called in relation to `Behavior.attach`.\r\n\r\nhttps://doc.babylonjs.com/features/featuresDeepDive/behaviors says:\r\n\r\n>init(): This function will be called when a behavior needs to be initialized. This is **before** the attachment to a target.\r\n\r\nThe current typedoc says\r\n\r\n>Function called when the behavior needs to be initialized (**after** attaching it to a target)\r\n\r\nThe [source](https://github.com/BabylonJS/Babylon.js/blob/48abfa6cef5555c8316428c4915f448ecfe365ab/packages/dev/core/src/node.ts#L390) says init is called before attach:\r\n\r\n```\r\npublic addBehavior(behavior: Behavior<Node>, attachImmediately = false): Node {\r\n        const index = this._behaviors.indexOf(behavior);\r\n\r\n        if (index !== -1) {\r\n            return this;\r\n        }\r\n\r\n        behavior.init();\r\n        if (this._scene.isLoading && !attachImmediately) {\r\n            // We defer the attach when the scene will be loaded\r\n            this._scene.onDataLoadedObservable.addOnce(() => {\r\n                behavior.attach(this);\r\n            });\r\n        } else {\r\n            behavior.attach(this);\r\n        }\r\n        this._behaviors.push(behavior);\r\n\r\n        return this;\r\n    }\r\n```\r\n",
+                "author": {
+                    "name": "wmurphyrd",
+                    "url": "https://github.com/wmurphyrd"
+                },
+                "files": [
+                    "packages/dev/core/src/Behaviors/behavior.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
         "6.6.0": [
             {
                 "pr": "13925",
