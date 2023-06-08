@@ -129,7 +129,7 @@ if (vClipSpacePosition.x / vClipSpacePosition.w >= vDebugMode.x) {
     #elif DEBUGMODE == 70 && defined(SUBSURFACE) && defined(SS_REFRACTION)
         gl_FragColor.rgb = subSurfaceOut.refractionTransmittance;
     #elif DEBUGMODE == 72
-        gl_FragColor.rgb = vec3(microSurface); // TODO
+        gl_FragColor.rgb = vec3(microSurface);
     #elif DEBUGMODE == 73
         gl_FragColor.rgb = vAlbedoColor.rgb; // TODO
     #elif DEBUGMODE == 74
