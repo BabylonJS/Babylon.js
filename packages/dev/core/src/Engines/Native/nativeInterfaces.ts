@@ -230,6 +230,7 @@ interface INativeEngineConstructor {
     readonly COMMAND_CLEAR: NativeData;
     readonly COMMAND_SETSTENCIL: NativeData;
     readonly COMMAND_SETVIEWPORT: NativeData;
+    readonly COMMAND_SETSCISSOR: NativeData;
 }
 
 /** @internal */
