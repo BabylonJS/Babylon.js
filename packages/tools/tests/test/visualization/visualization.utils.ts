@@ -148,13 +148,6 @@ export const evaluateTests = async (engineType = "webgl2", testFileName = "confi
                 const screenshot = await page.screenshot();
 
                 const directory = path.resolve(__dirname, "../../../../../jest-screenshot-report");
-
-                try {
-                    fs.statSync(directory);
-                } catch (e) {
-                    fs.mkdirSync(directory, { recursive: true });
-                }
-
                 
                 // Test screenshot (also save this new screenshot if -u is set)
                 expect(screenshot).toMatchImageSnapshot({
