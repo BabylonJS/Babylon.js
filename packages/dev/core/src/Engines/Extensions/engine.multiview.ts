@@ -26,6 +26,22 @@ declare module "../../Engines/engine" {
          * @param multiviewTexture render target wrapper to bind
          */
         bindMultiviewFramebuffer(multiviewTexture: RenderTargetWrapper): void;
+
+        /**
+         * Creates a new Space Warp render target
+         * @param width defines the width of the texture
+         * @param height defines the height of the texture
+         * @param motionVectorTexture WebGLTexture from XRWebGLSubImage
+         * @param depthStencilTexture WebGLTexture from XRWebGLSubImage
+         * @returns the created Space Warp render target wrapper
+         */
+        createSpaceWarpRenderTargetTexture(width: number, height: number, motionVectorTexture: WebGLTexture, depthStencilTexture: WebGLTexture): RenderTargetWrapper;
+
+        /**
+         * Binds a Space Warp render target wrapper to be drawn to
+         * @param spaceWarpTexture render target wrapper to bind
+         */
+        bindSpaceWarpFramebuffer(spaceWarpTexture: RenderTargetWrapper): void;
     }
 }
 
@@ -87,6 +103,50 @@ Engine.prototype.bindMultiviewFramebuffer = function (_multiviewTexture: RenderT
         }
     } else {
         throw "Invalid multiview frame buffer";
+    }
+};
+
+Engine.prototype.createSpaceWarpRenderTargetTexture = function (width: number, height: number, motionVectorTexture: WebGLTexture, depthStencilTexture: WebGLTexture) {
+    const gl = this._gl;
+
+    if (!this.getCaps().multiview) {
+        throw new Error("Space Warp requires multiview");
+    }
+
+    const rtWrapper = this._createHardwareRenderTargetWrapper(false, false, { width, height }) as WebGLRenderTargetWrapper;
+
+    rtWrapper._framebuffer = gl.createFramebuffer();
+
+    const internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
+    internalTexture.width = width;
+    internalTexture.height = height;
+    internalTexture.isMultiview = true;
+
+    rtWrapper._colorTextureArray = motionVectorTexture;
+    rtWrapper._depthStencilTextureArray = depthStencilTexture;
+    rtWrapper._disposeOnlyFramebuffers = true;
+
+    internalTexture.isReady = true;
+
+    rtWrapper.setTextures(internalTexture);
+    rtWrapper._depthStencilTexture = internalTexture;
+
+    return rtWrapper;
+};
+
+Engine.prototype.bindSpaceWarpFramebuffer = function (_spaceWarpTexture: RenderTargetWrapper) {
+    const spaceWarpTexture = _spaceWarpTexture as WebGLRenderTargetWrapper;
+
+    const gl: any = this._gl;
+    const ext = this.getCaps().oculusMultiview || this.getCaps().multiview;
+
+    this.bindFramebuffer(spaceWarpTexture, undefined, undefined, undefined, true);
+    gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, spaceWarpTexture._framebuffer);
+    if (spaceWarpTexture._colorTextureArray && spaceWarpTexture._depthStencilTextureArray) {
+        ext.framebufferTextureMultiviewOVR(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, spaceWarpTexture._colorTextureArray, 0, 0, 2);
+        ext.framebufferTextureMultiviewOVR(gl.DRAW_FRAMEBUFFER, gl.DEPTH_ATTACHMENT, spaceWarpTexture._depthStencilTextureArray, 0, 0, 2);
+    } else {
+        throw "Invalid Space Warp framebuffer";
     }
 };
 

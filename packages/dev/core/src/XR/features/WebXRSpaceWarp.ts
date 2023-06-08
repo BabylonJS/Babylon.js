@@ -16,11 +16,7 @@ export class WebXRSpaceWarpRenderTargetTextureProvider implements IWebXRRenderTa
     protected _framebufferDimensions: Nullable<{ framebufferWidth: number; framebufferHeight: number }>;
     protected _engine: Engine;
 
-    constructor(
-        protected readonly _scene: Scene,
-        protected readonly _xrSessionManager: WebXRSessionManager,
-        protected readonly _xrWebGLBinding: XRWebGLBinding,
-    ) {
+    constructor(protected readonly _scene: Scene, protected readonly _xrSessionManager: WebXRSessionManager, protected readonly _xrWebGLBinding: XRWebGLBinding) {
         this._engine = _scene.getEngine();
     }
 
@@ -30,7 +26,7 @@ export class WebXRSpaceWarpRenderTargetTextureProvider implements IWebXRRenderTa
             throw new Error("For Space Warp, the base layer should be a WebXR Projection Layer.");
         }
         if (layerWrapper.layerType !== "XRProjectionLayer") {
-            throw new Error("For Space Warp, the base layer type should \"XRProjectionLayer\".");
+            throw new Error('For Space Warp, the base layer type should "XRProjectionLayer".');
         }
         const layer = layerWrapper.layer as XRProjectionLayer;
         return this._xrWebGLBinding.getViewSubImage(layer, view);
@@ -48,7 +44,7 @@ export class WebXRSpaceWarpRenderTargetTextureProvider implements IWebXRRenderTa
         height: number,
         framebuffer: Nullable<WebGLFramebuffer>,
         motionVectorTexture: WebGLTexture,
-        depthStencilTexture: WebGLTexture,
+        depthStencilTexture: WebGLTexture
     ): RenderTargetTexture {
         if (!this._engine) {
             throw new Error("Engine is disposed");
@@ -81,13 +77,7 @@ export class WebXRSpaceWarpRenderTargetTextureProvider implements IWebXRRenderTa
         const height = subImage.motionVectorTextureHeight!;
 
         if (!renderTargetTexture || lastSubImage?.textureWidth !== width || lastSubImage?.textureHeight != height) {
-            renderTargetTexture = this._createRenderTargetTexture(
-                width,
-                height,
-                null,
-                subImage.motionVectorTexture!,
-                subImage.depthStencilTexture!,
-            );
+            renderTargetTexture = this._createRenderTargetTexture(width, height, null, subImage.motionVectorTexture!, subImage.depthStencilTexture!);
             this._renderTargetTextures.set(view.eye, renderTargetTexture);
 
             this._framebufferDimensions = {
@@ -196,11 +186,13 @@ export class WebXRSpaceWarp extends WebXRAbstractFeature {
         this._xrSessionManager.scene._savePreviousTransformMatrix();
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public dependsOn: string[] = [WebXRFeatureName.LAYERS];
 
     public isCompatible(): boolean {
-        const engine = this._xrSessionManager.scene.getEngine();
-        return !!engine.getCaps().colorBufferHalfFloat;
+        return this._xrSessionManager.scene.getEngine().getCaps().colorBufferHalfFloat || false;
     }
 
     /**
@@ -216,15 +208,13 @@ export class WebXRSpaceWarp extends WebXRAbstractFeature {
             return;
         }
 
-        pose.views.forEach((view: XRView, i: number) => {
-            if (i == 0) {
-                if (this._renderTargetTexture) {
-                    this.spaceWarpRTTProvider!.accessMotionVector(view);
-                } else {
-                    this._renderTargetTexture = this.spaceWarpRTTProvider!.getRenderTargetTextureForView(view);
-                }
-            }
-        });
+        // TODO - can that be optimized?
+        const view = pose.views[0];
+        if (this._renderTargetTexture) {
+            this.spaceWarpRTTProvider!.accessMotionVector(view);
+        } else {
+            this._renderTargetTexture = this.spaceWarpRTTProvider!.getRenderTargetTextureForView(view);
+        }
     }
 }
 
