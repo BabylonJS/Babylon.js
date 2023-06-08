@@ -164,6 +164,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
         attributes.push("grl_previousAndSide");
         attributes.push("grl_nextAndCounters");
         attributes.push("grl_widths");
+        attributes.push("grl_colorPointers");
     }
 
     getSamplers(samplers: string[]) {
@@ -194,7 +195,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
             fragment: `
                 uniform vec4 grl_dashOptions;
                 uniform vec4 grl_colorMode_visibility_colorsWidth_useColors;
-                uniform vec3 grl_singleColor;                
+                uniform vec3 grl_singleColor;
                 `,
         };
     }
@@ -272,8 +273,10 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
                     attribute vec4 grl_nextAndCounters;
                     attribute float grl_widths;
                     attribute vec3 grl_offsets;
+                    attribute float grl_colorPointers;
 
                     varying float grlCounters;
+                    varying float grlColorPointer;
 
                     vec2 grlFix( vec4 i, float aspect ) {
                         vec2 res = i.xy / i.w;
@@ -290,6 +293,8 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
                 CUSTOM_VERTEX_MAIN_END: `
                     vec2 grlResolution = grl_resolution_lineWidth.xy;
                     float grlBaseWidth = grl_resolution_lineWidth.z;
+
+                    grlColorPointer = grl_colorPointers;
 
                     vec3 grlPrevious = grl_previousAndSide.xyz;
                     float grlSide = grl_previousAndSide.w;
@@ -328,8 +333,8 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
                     grlFinalPosition.xy += grlNormal.xy * grlSide;
                     gl_Position = grlFinalPosition;
 
-                  
-                    
+
+
                 `,
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 "!gl_Position\\=viewProjection\\*worldPos;": "//", // remove
@@ -343,6 +348,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 CUSTOM_FRAGMENT_DEFINITIONS: `
                     varying float grlCounters;
+                    varying float grlColorPointer;
                     uniform sampler2D grl_colors;
                 `,
                 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -375,7 +381,6 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
                         }
                     #else
                         if (grlUseColors == 1.) {
-                            // vec4 grlColor = texture2D(grl_colors, vec2(float(grlColorPointer)/(grlColorsWidth), 0.));
                             vec4 grlColor = texture2D(grl_colors, vec2(grlCounters, 0.), 0.);
                             if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_SET}.) {
                                 gl_FragColor = grlColor;
