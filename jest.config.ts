@@ -79,6 +79,6 @@ const createProject = (type: string) => {
 // Sync object
 const config: Config.InitialOptions = {
     projects: [createProject("unit"), createProject("visualization"), createProject("integration"), createProject("performance"), createProject("interactions")],
-    reporters: ["default", "jest-screenshot/reporter", "jest-junit"],
+    reporters: ["default", "./scripts/jest-imagediff-reporter", "jest-junit"],
 };
 export default config;
