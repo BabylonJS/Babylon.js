@@ -241,15 +241,13 @@ export class GreasedLineMesh extends Mesh {
 
     private _updateColorPointers() {
         let colorPointer = 0;
-        const colorPointers: number[] = [];
+        this._colorPointers  = [];
         this._points.forEach((p) => {
             for (let jj = 0; jj < p.length; jj += 3) {
-                colorPointers.push(colorPointer);
-                colorPointers.push(colorPointer++);
+                this._colorPointers.push(colorPointer);
+                this._colorPointers.push(colorPointer++);
             }
         });
-
-        this._colorPointers = colorPointers;
     }
 
     /**
