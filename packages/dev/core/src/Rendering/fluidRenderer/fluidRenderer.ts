@@ -16,8 +16,6 @@ import { FluidRenderingTargetRenderer } from "./fluidRenderingTargetRenderer";
 import { FluidRenderingObjectCustomParticles } from "./fluidRenderingObjectCustomParticles";
 import { FluidRenderingDepthTextureCopy } from "./fluidRenderingDepthTextureCopy";
 
-import "@babylonjs/core/Engines/Extensions/engine.transformFeedback";
-
 import "../../Shaders/fluidRenderingParticleDepth.vertex";
 import "../../Shaders/fluidRenderingParticleDepth.fragment";
 import "../../Shaders/fluidRenderingParticleThickness.vertex";
