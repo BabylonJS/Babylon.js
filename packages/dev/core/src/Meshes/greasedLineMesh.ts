@@ -57,7 +57,6 @@ export class GreasedLineMesh extends Mesh {
     private _colorPointers: number[];
     private _previousAndSide: number[];
     private _nextAndCounters: number[];
-    // private _widths: number[];
 
     private _indices: number[];
     private _uvs: number[];

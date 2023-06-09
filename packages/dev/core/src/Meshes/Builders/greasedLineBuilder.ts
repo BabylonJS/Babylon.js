@@ -111,7 +111,6 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
     if (!options.instance) {
         const initialGreasedLineOptions: GreasedLineMeshOptions = {
             points: allPoints,
-            // offsets: options.offsets,
             updatable: options.updatable,
             widths,
             lazy: options.lazy,

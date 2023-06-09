@@ -164,6 +164,10 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
         this._enable(true); // always enabled
     }
 
+    /**
+     * Get the shader attributes
+     * @param attributes array which will be filled with the attributes
+     */
     getAttributes(attributes: string[]) {
         attributes.push("grl_offsets");
         attributes.push("grl_previousAndSide");
@@ -172,16 +176,28 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
         attributes.push("grl_colorPointers");
     }
 
+    /**
+     * Get the shader samplers
+     * @param samplers
+     */
     getSamplers(samplers: string[]) {
         samplers.push("grl_colors");
     }
 
+    /**
+     * Get the shader textures
+     * @param activeTextures
+     */
     public getActiveTextures(activeTextures: BaseTexture[]): void {
         if (this._colorsTexture) {
             activeTextures.push(this._colorsTexture);
         }
     }
 
+    /**
+     * Get the shader uniforms
+     * @returns uniforms
+     */
     getUniforms() {
         const ubo = [
             { name: "grl_projection", size: 16, type: "mat4" },
@@ -211,6 +227,10 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
         return true;
     }
 
+    /**
+     * Bind the uniform buffer
+     * @param uniformBuffer
+     */
     bindForSubMesh(uniformBuffer: UniformBuffer) {
         const activeCamera = this._scene.activeCamera;
 
@@ -259,16 +279,31 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
         uniformBuffer.update();
     }
 
+    /**
+     * Prepare the defines
+     * @param defines
+     * @param _scene
+     * @param _mesh
+     */
     prepareDefines(defines: MaterialGreasedLineDefines, _scene: Scene, _mesh: AbstractMesh) {
         const options = this._options;
         defines.GREASED_LINE_HAS_COLOR = !!options.color;
         defines.GREASED_LINE_SIZE_ATTENUATION = options.sizeAttenuation ?? false;
     }
 
+    /**
+     * Get the class name
+     * @returns class name
+     */
     getClassName() {
         return GreasedLinePluginMaterial.GREASED_LINE_MATERIAL_NAME;
     }
 
+    /**
+     * Get shader code
+     * @param shaderType vertex/fragme
+     * @returns shader code
+     */
     getCustomCode(shaderType: string): Nullable<{ [pointName: string]: string }> {
         if (shaderType === "vertex") {
             return {
