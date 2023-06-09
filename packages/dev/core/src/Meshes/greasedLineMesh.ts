@@ -555,8 +555,6 @@ export class GreasedLineMesh extends Mesh {
         this.setVerticesBuffer(colorPointersBuffer.createVertexBuffer("grl_colorPointers", 0, 1));
         this._colorPointersBuffer = colorPointersBuffer;
 
-        console.log("colorPointers", this.name, this._colorPointers);
-
         if (this._offsets) {
             const offsetBuffer = new Buffer(engine, this._offsets, this._updatable, 3);
             this.setVerticesBuffer(offsetBuffer.createVertexBuffer("grl_offsets", 0, 3));
