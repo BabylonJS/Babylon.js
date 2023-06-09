@@ -134,7 +134,7 @@ if (vClipSpacePosition.x / vClipSpacePosition.w >= vDebugMode.x) {
         gl_FragColor.rgb = vAlbedoColor.rgb;
         #define DEBUGMODE_GAMMA
     #elif DEBUGMODE == 74 && !defined(METALLICWORKFLOW)
-        gl_FragColor.rgb = vReflectivityColor.rgb
+        gl_FragColor.rgb = vReflectivityColor.rgb;
         #define DEBUGMODE_GAMMA
     #elif DEBUGMODE == 75
         gl_FragColor.rgb = vEmissiveColor.rgb;
