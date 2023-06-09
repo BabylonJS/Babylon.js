@@ -195,7 +195,11 @@ export class GreasedLineMesh extends Mesh {
      * @param offsets offset table [x,y,z, x,y,z, ....]
      */
     public setOffsets(offsets: number[]) {
-        this._offsetsBuffer && this._offsetsBuffer.update(offsets);
+        if (!this._offsetsBuffer) {
+            this._createOffsetsBuffer(offsets)
+        } else {
+            this._offsetsBuffer && this._offsetsBuffer.update(offsets);
+        }
     }
 
     /**
@@ -555,10 +559,14 @@ export class GreasedLineMesh extends Mesh {
         this.setVerticesBuffer(colorPointersBuffer.createVertexBuffer("grl_colorPointers", 0, 1));
         this._colorPointersBuffer = colorPointersBuffer;
 
-        if (this._offsets) {
-            const offsetBuffer = new Buffer(engine, this._offsets, this._updatable, 3);
-            this.setVerticesBuffer(offsetBuffer.createVertexBuffer("grl_offsets", 0, 3));
-            this._offsetsBuffer = offsetBuffer;
-        }
+
+    }
+
+    private _createOffsetsBuffer(offsets: number[]) {
+        const engine = this._scene.getEngine();
+
+        const offsetBuffer = new Buffer(engine, offsets, this._updatable, 3);
+        this.setVerticesBuffer(offsetBuffer.createVertexBuffer("grl_offsets", 0, 3));
+        this._offsetsBuffer = offsetBuffer;
     }
 }
