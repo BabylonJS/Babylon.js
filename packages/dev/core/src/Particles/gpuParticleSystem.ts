@@ -34,7 +34,7 @@ declare type Scene = import("../scene").Scene;
 declare type Engine = import("../Engines/engine").Engine;
 declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
 
-import "@babylonjs/core/Engines/Extensions/engine.transformFeedback";
+import "../Engines/Extensions/engine.transformFeedback";
 
 import "../Shaders/gpuRenderParticles.fragment";
 import "../Shaders/gpuRenderParticles.vertex";
