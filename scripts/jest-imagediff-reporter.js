@@ -3,7 +3,7 @@ const path = require("path");
 
 const DIFF_DIRECTORY = path.join(__dirname, "..", "jest-screenshot-report");
 
-class OutdatedSnapshotReporter {
+class ImageDiffReporter {
     /* istanbul ignore next - test coverage in child process */
     onRunStart() {
         try {
@@ -47,4 +47,4 @@ class OutdatedSnapshotReporter {
     }
 }
 
-module.exports = OutdatedSnapshotReporter;
+module.exports = ImageDiffReporter;
