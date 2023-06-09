@@ -30,22 +30,28 @@ export interface IExportOptions {
     metadataSelector?(metadata: any): any;
 
     /**
-     * The sample rate to bake animation curves
+     * The sample rate to bake animation curves. Defaults to 1 / 60.
      */
     animationSampleRate?: number;
 
     /**
-     * Begin serialization without waiting for the scene to be ready
+     * Begin serialization without waiting for the scene to be ready. Defaults to false.
      */
     exportWithoutWaitingForScene?: boolean;
 
     /**
-     * Indicates if unused vertex uv attributes should be included in export
+     * Indicates if unused vertex uv attributes should be included in export. Defaults to false.
      */
     exportUnusedUVs?: boolean;
 
     /**
-     * Indicates if coordinate system swapping root nodes should be included in export
+     * Remove no-op root nodes when possible. Defaults to true.
+     */
+    removeNoopRootNodes?: boolean;
+
+    /**
+     * Indicates if coordinate system swapping root nodes should be included in export. Defaults to false.
+     * @deprecated Please use removeNoopRootNodes instead
      */
     includeCoordinateSystemConversionNodes?: boolean;
 }

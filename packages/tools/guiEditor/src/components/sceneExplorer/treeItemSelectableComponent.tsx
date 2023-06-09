@@ -31,6 +31,7 @@ export interface ITreeItemSelectableComponentState {
     isSelected: boolean;
     isHovered: boolean;
     dragOverLocation: DragOverLocation;
+    blockDrag: boolean;
 }
 
 export class TreeItemSelectableComponent extends React.Component<ITreeItemSelectableComponentProps, ITreeItemSelectableComponentState> {
@@ -52,6 +53,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
             dragOverLocation: DragOverLocation.NONE,
             isHovered: false,
             isSelected: this.props.selectedEntities.includes(this.props.entity),
+            blockDrag: false,
         };
 
         this._onSelectionChangedObservable = props.globalState.onSelectionChangedObservable.add(() => {
@@ -215,7 +217,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
                     onDragEnd={() => {
                         this.props.globalState.onDraggingEndObservable.notifyObservers();
                     }}
-                    draggable={entity.parent ? true : false}
+                    draggable={entity.parent && !this.state.blockDrag}
                     onDrop={(event) => {
                         this.drop();
                         event.preventDefault();
@@ -265,6 +267,9 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
                         isHovered={this.state.isHovered}
                         isDragOver={this.state.dragOver}
                         dragOverLocation={this.state.dragOverLocation}
+                        onRenamingStateChanged={(isRenaming) => {
+                            this.setState({ blockDrag: isRenaming });
+                        }}
                     />
                 </div>
 
