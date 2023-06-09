@@ -1630,6 +1630,22 @@
         {
             "title": "GUI for Mesh cloning",
             "playgroundId": "#ZUAPLL#2"
+        },
+        {
+            "title": "Glossiness Debug Mode",
+            "playgroundId": "#2FDQT5#2281"
+        },
+        {
+            "title": "Base Color Debug Mode",
+            "playgroundId": "#2FDQT5#2282"
+        },
+        {
+            "title": "Specular Color Debug Mode",
+            "playgroundId": "#Z1VL3V#508"
+        },
+        {
+            "title": "Emissive Color Debug Mode",
+            "playgroundId": "#2FDQT5#2284"
         }
     ]
 }
