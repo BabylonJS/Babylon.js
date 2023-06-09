@@ -264,9 +264,6 @@ export class GreasedLineMesh extends Mesh {
         this._initGreasedLine();
 
         let indiceOffset = 0;
-        // const { total } = GreasedLineMesh.GetPointsCountInfo(this._options.instance?._points ?? [])
-        // let colorPointer = total / 2;
-        const colorPointers: number[] = [];
 
         points.forEach((p) => {
             const positions: number[] = [];

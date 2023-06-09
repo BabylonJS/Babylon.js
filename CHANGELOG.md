@@ -1,5 +1,31 @@
 # Changelog
 
+## 6.7.0
+
+### Core
+
+- Stop baking LH to RH in glTF serializer - [_Breaking Change_] by [bghgary](https://github.com/bghgary) ([#13909](https://github.com/BabylonJS/Babylon.js/pull/13909))
+
+### GUI Editor
+
+- Fix Control item being draggable while renaming - [_Bug Fix_] by [carolhmj](https://github.com/carolhmj) ([#13942](https://github.com/BabylonJS/Babylon.js/pull/13942))
+
+### Inspector
+
+- Avoid crashes with bad name/id assignments - [_Bug Fix_] by [carolhmj](https://github.com/carolhmj) ([#13941](https://github.com/BabylonJS/Babylon.js/pull/13941))
+
+### Loaders
+
+- Stop baking LH to RH in glTF serializer - [_Breaking Change_] by [bghgary](https://github.com/bghgary) ([#13909](https://github.com/BabylonJS/Babylon.js/pull/13909))
+
+### Materials
+
+- Tri-planar material: Add support for non uniform scaling - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#13943](https://github.com/BabylonJS/Babylon.js/pull/13943))
+
+### Serializers
+
+- Stop baking LH to RH in glTF serializer - [_Breaking Change_] by [bghgary](https://github.com/bghgary) ([#13909](https://github.com/BabylonJS/Babylon.js/pull/13909))
+
 ## 6.6.1
 
 ### Core
