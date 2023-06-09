@@ -597,26 +597,26 @@ export class ShaderMaterial extends PushMaterial {
     }
 
     /**
-     * Adds or removes the specified shader define. Note if the active defines do change,
-     * the shader will be recompiled and this can be expensive.
-     * @param define the define string e.g., "OUTPUT_TO_SRGB"
-     * @param isEnabled true if the define should be enabled, false if it should be disabled
+     * Adds, removes, or replaces the specified shader define and value.
+     * * setShaderDefine("MY_DEFINE", true); // enables a boolean define
+     * * setShaderDefine("MY_DEFINE", "0.5"); // adds "#define MY_DEFINE 0.5" to the shader (or sets and replaces the value of any existing define with that name)
+     * * setShaderDefine("MY_DEFINE", false); // disables and removes the define
+     * Note if the active defines do change, the shader will be recompiled and this can be expensive.
+     * @param define the define name e.g., "OUTPUT_TO_SRGB" or "#define OUTPUT_TO_SRGB". If the define was passed into the constructor already, the version used should match that, and in either case, it should not include any appended value.
+     * @param value either the value of the define (e.g. a numerical value) or for booleans, true if the define should be enabled or false if it should be disabled
      * @returns the material itself allowing "fluent" like uniform updates
      */
-    public setDefine(define: string, isEnabled: boolean): ShaderMaterial {
-        // If the define is already present and it's being enabled, nothing to do.
-        // Similarly, if define isn't present and it's being disabled, there's nothing to do.
-        const existingDefineIdx = this.options.defines.indexOf(define);
-        const hasDefine = existingDefineIdx >= 0;
-        if ((isEnabled && hasDefine) || (!isEnabled && !hasDefine)) {
-            return this;
+    public setDefine(define: string, value: boolean | string): ShaderMaterial {
+        // First remove any existing define with this name.
+        const defineName = define.trimEnd() + " ";
+        const existingDefineIdx = this.options.defines.findIndex((x) => x === define || x.startsWith(defineName));
+        if (existingDefineIdx >= 0) {
+            this.options.defines.splice(existingDefineIdx, 1);
         }
 
-        // Otherwise, need to add a new define or remove an existing define.
-        if (isEnabled) {
-            this.options.defines.push(define);
-        } else {
-            this.options.defines.splice(existingDefineIdx, 1);
+        // Then add the new define value. (If it's a boolean value and false, don't add it.)
+        if (typeof value !== "boolean" || value) {
+            this.options.defines.push(defineName + value);
         }
 
         return this;
