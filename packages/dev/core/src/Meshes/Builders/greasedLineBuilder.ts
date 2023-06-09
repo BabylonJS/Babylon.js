@@ -3,7 +3,7 @@ import type { GreasedLineMaterialOptions } from "../../Materials/greasedLinePlug
 import { GreasedLineMeshColorMode, GreasedLineMeshMaterialType, GreasedLinePluginMaterial } from "../../Materials/greasedLinePluginMaterial";
 import { StandardMaterial } from "./../../Materials/standardMaterial";
 import { PBRMaterial } from "../../Materials/PBR/pbrMaterial";
-import type { Vector3 } from "../../Maths/math.vector";
+import { Vector3 } from "../../Maths/math.vector";
 import type { Nullable } from "../../types";
 import type { GreasedLineMeshOptions } from "../greasedLineMesh";
 import { GreasedLineMesh } from "../greasedLineMesh";
@@ -133,6 +133,7 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
                 width: materialOptions.width,
                 color: materialOptions.color,
                 colorMode: materialOptions.colorMode ?? GreasedLineMeshColorMode.COLOR_MODE_SET,
+                colorsSampling: materialOptions.colorsSampling
             };
 
             if (colors) {
@@ -157,6 +158,7 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
         } else {
             instance.setSegmentWidths(widths);
         }
+        instance.options.instance = instance
         instance.addPoints(allPoints);
     }
 

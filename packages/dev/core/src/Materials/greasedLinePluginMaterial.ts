@@ -67,6 +67,11 @@ export interface GreasedLineMaterialOptions {
      */
     useColors?: boolean;
     /**
+     * Sampling type of the colors texture
+     * Defaults to NEAREST_NEAREST.
+     */
+    colorsSampling?: number;
+    /**
      * If true, dashing is used.
      * Defaults to false.
      */
@@ -145,6 +150,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
 
         super(material, GreasedLinePluginMaterial.GREASED_LINE_MATERIAL_NAME, 200, defines);
 
+        this._options = options;
         this._engine = this._scene.getEngine();
 
         if (options.colors) {
@@ -153,7 +159,6 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
             GreasedLinePluginMaterial._PrepareEmptyColorsTexture(_scene);
         }
 
-        this._options = options;
         this.setDashArray(options.dashArray ?? 1); // calculate the _dashArray value
 
         this._enable(true); // always enabled
@@ -237,7 +242,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
         const colorModeVisibilityColorsWidthUseColors = TmpVectors.Vector4[1];
         colorModeVisibilityColorsWidthUseColors.x = this._options.colorMode ?? GreasedLineMeshColorMode.COLOR_MODE_SET;
         colorModeVisibilityColorsWidthUseColors.y = this._options.visibility ?? 1;
-        colorModeVisibilityColorsWidthUseColors.z = this._colorsTexture ? this._colorsTexture.getSize().width : 0;
+        colorModeVisibilityColorsWidthUseColors.z = this._colorsTexture ? this._colorsTexture.getSize().width  : 0;
         colorModeVisibilityColorsWidthUseColors.w = GreasedLinePluginMaterial._BooleanToNumber(this._options.useColors);
         uniformBuffer.updateVector4("grl_colorMode_visibility_colorsWidth_useColors", colorModeVisibilityColorsWidthUseColors);
 
@@ -381,7 +386,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
                         }
                     #else
                         if (grlUseColors == 1.) {
-                            vec4 grlColor = texture2D(grl_colors, vec2(grlCounters, 0.), 0.);
+                            vec4 grlColor = texture2D(grl_colors, vec2(grlColorPointer/grlColorsWidth, 0.), 0.);
                             if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_SET}.) {
                                 gl_FragColor = grlColor;
                             } else if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_ADD}.) {
@@ -431,7 +436,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
      */
     private _createColorsTexture(name: string, colors: Color3[]) {
         const colorsArray = GreasedLinePluginMaterial._Color3toRGBAUint8(colors);
-        this._colorsTexture = new RawTexture(colorsArray, colors.length, 1, Engine.TEXTUREFORMAT_RGBA, this._scene, false, true, RawTexture.NEAREST_NEAREST);
+        this._colorsTexture = new RawTexture(colorsArray, colors.length, 1, Engine.TEXTUREFORMAT_RGBA, this._scene, false, true, this._options.colorsSampling ?? RawTexture.NEAREST_NEAREST);
         this._colorsTexture.name = name;
     }
 

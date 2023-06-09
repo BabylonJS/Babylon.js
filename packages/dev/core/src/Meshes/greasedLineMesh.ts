@@ -144,6 +144,7 @@ export class GreasedLineMesh extends Mesh {
      */
     public updateLazy() {
         this.setPoints(this._points);
+        this._updateColorPointers();
         this._createVertexBuffers();
         this.refreshBoundingInfo();
 
@@ -214,7 +215,9 @@ export class GreasedLineMesh extends Mesh {
      * @param colorPointers arra of color pointer in the colors array. Oone pointer for every vertex is needed.
      */
     public setColorPointers(colorPointers: number[]) {
-        this._colorPointersBuffer && this._colorPointersBuffer.update(colorPointers);
+        if (!this._lazy) {
+            this._colorPointersBuffer && this._colorPointersBuffer.update(colorPointers);
+        }
     }
 
     /**
@@ -237,6 +240,19 @@ export class GreasedLineMesh extends Mesh {
         }
     }
 
+    private _updateColorPointers() {
+        let colorPointer = 0;
+        const colorPointers: number[] = [];
+        this._points.forEach((p) => {
+            for (let jj = 0; jj < p.length; jj += 3) {
+                colorPointers.push(colorPointer);
+                colorPointers.push(colorPointer++);
+            }
+        });
+
+        this._colorPointers = colorPointers;
+    }
+
     /**
      * Sets line points and rerenders the line.
      * @param points points table
@@ -248,7 +264,8 @@ export class GreasedLineMesh extends Mesh {
         this._initGreasedLine();
 
         let indiceOffset = 0;
-        let colorPointer = 0;
+        // const { total } = GreasedLineMesh.GetPointsCountInfo(this._options.instance?._points ?? [])
+        // let colorPointer = total / 2;
         const colorPointers: number[] = [];
 
         points.forEach((p) => {
@@ -264,8 +281,8 @@ export class GreasedLineMesh extends Mesh {
                 counters.push(c);
                 counters.push(c);
 
-                colorPointers.push(colorPointer++);
-                colorPointers.push(colorPointer++);
+                // colorPointers.push(colorPointer);
+                // colorPointers.push(colorPointer++);
 
                 if (jj < p.length - 3) {
                     const n = j * 2 + indiceOffset;
@@ -285,7 +302,7 @@ export class GreasedLineMesh extends Mesh {
 
             this._vertexPositions.push(...positions);
             this._indices.push(...indices);
-            this._colorPointers.push(...colorPointers);
+            // this._colorPointers.push(...colorPointers);
 
             for (let i = 0; i < side.length; i++) {
                 this._previousAndSide.push(previous[i * 3], previous[i * 3 + 1], previous[i * 3 + 2], side[i]);
@@ -295,6 +312,7 @@ export class GreasedLineMesh extends Mesh {
         });
 
         if (!this._lazy) {
+            this._updateColorPointers();
             this._createVertexBuffers();
             this.refreshBoundingInfo();
         }
@@ -543,7 +561,7 @@ export class GreasedLineMesh extends Mesh {
         this.setVerticesBuffer(colorPointersBuffer.createVertexBuffer("grl_colorPointers", 0, 1));
         this._colorPointersBuffer = colorPointersBuffer;
 
-        console.log(this._colorPointers)
+        console.log("colorPointers", this.name, this._colorPointers);
 
         if (this._offsets) {
             const offsetBuffer = new Buffer(engine, this._offsets, this._updatable, 3);
