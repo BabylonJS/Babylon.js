@@ -1,4 +1,3 @@
-import * as jestScreenshot from "jest-screenshot";
 import * as path from "path";
 import * as fs from "fs";
 import {
@@ -126,9 +125,7 @@ export const evaluateTests = async (engineType = "webgl2", testFileName = "confi
     // });
 
     test /*.concurrent*/
-        .each(
-            tests
-        )(
+        .each(tests)(
         "$title",
         async (test) => {
             log(`Running - ${test.title}`);
@@ -149,15 +146,18 @@ export const evaluateTests = async (engineType = "webgl2", testFileName = "confi
                 // Take screenshot
                 const screenshot = await page.screenshot();
 
-                jestScreenshot.setupJestScreenshot({
-                    pixelThresholdRelative: (test.errorRatio || 2.5) / 100,
-                });
+                const directory = path.resolve(__dirname, "../../../../../jest-screenshot-report");
+                
                 // Test screenshot (also save this new screenshot if -u is set)
                 expect(screenshot).toMatchImageSnapshot({
-                    path: path.resolve(
-                        __dirname,
-                        `./ReferenceImages/${useStandardTestList ? "" : testFileName}/${test.referenceImage ? test.referenceImage : test.title + ".png"}`
-                    ),
+                    customDiffConfig: {
+                        threshold: 0.1,
+                    },
+                    customSnapshotsDir: path.resolve(__dirname, `./ReferenceImages/${useStandardTestList ? "" : testFileName}/`),
+                    customSnapshotIdentifier: (test.referenceImage ? test.referenceImage : test.title).replace(".png", ""),
+                    failureThreshold: (test.errorRatio || 2.5) / 100,
+                    failureThresholdType: "percent",
+                    customDiffDir: directory,
                 });
             } finally {
                 // dispose the scene

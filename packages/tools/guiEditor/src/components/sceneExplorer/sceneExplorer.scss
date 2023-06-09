@@ -431,6 +431,9 @@
             cursor: pointer;
 
             .titleText {
+                font-family: "acumin-pro-condensed", sans-serif;
+                font-size: 16px;
+                border: unset;
                 white-space: nowrap;
                 text-overflow: ellipsis;
                 overflow: hidden;
