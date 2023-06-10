@@ -56,6 +56,25 @@ export class ShaderDefineExpression {
         return stack[stack.length - 1];
     }
 
+    /**
+     * Converts an infix expression to a postfix expression.
+     *
+     * This method is used to transform infix expressions, which are more human-readable,
+     * into postfix expressions, also known as Reverse Polish Notation (RPN), that can be
+     * evaluated more efficiently by a computer. The conversion is based on the operator
+     * priority defined in _OperatorPriority.
+     *
+     * The function employs a stack-based algorithm for the conversion and caches the result
+     * to improve performance. The cache keeps track of each converted expression's access time
+     * to manage the cache size and optimize memory usage. When the cache size exceeds a specified
+     * limit, the least recently accessed items in the cache are deleted.
+     *
+     * The cache mechanism is particularly helpful for shader compilation, where the same infix
+     * expressions might be encountered repeatedly, hence the caching can speed up the process.
+     *
+     * @param infix - The infix expression to be converted.
+     * @returns The postfix expression as an array of strings.
+     */
     public static infixToPostfix(infix: string): string[] {
         // Is infix already in cache
         const cacheItem = ShaderDefineExpression._InfixToPostfixCache.get(infix);
