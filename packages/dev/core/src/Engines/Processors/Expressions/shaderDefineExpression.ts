@@ -1,8 +1,28 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 /** @internal */
 export class ShaderDefineExpression {
+    /**
+     * Cache items count limit for the InfixToPostfix cache.
+     * It uses to improve the performance of the shader compilation.
+     * For details see PR: https://github.com/BabylonJS/Babylon.js/pull/13936
+     */
     static InfixToPostfixCacheLimitSize = 50000;
-    protected static _InfixToPostfixCache = new Map();
+
+    /**
+     * When the cache size is exceeded, a cache cleanup will be triggered
+     * and the cache will be reduced by the size specified
+     * in the InfixToPostfixCacheCleanupSize variable, removing entries
+     * that have not been accessed the longest.
+     */
+    static InfixToPostfixCacheCleanupSize = 25000;
+
+    protected static _InfixToPostfixCache: Map<
+        string,
+        {
+            accessTime: number;
+            result: string[];
+        }
+    > = new Map();
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public isTrue(preprocessors: { [key: string]: string }): boolean {
@@ -38,9 +58,10 @@ export class ShaderDefineExpression {
 
     public static infixToPostfix(infix: string): string[] {
         // Is infix already in cache
-        const existedResult = this._InfixToPostfixCache.get(infix);
-        if (existedResult) {
-            return existedResult;
+        const cacheItem = ShaderDefineExpression._InfixToPostfixCache.get(infix);
+        if (cacheItem) {
+            cacheItem.accessTime = Date.now();
+            return cacheItem.result;
         }
 
         // Is infix contain any operator
@@ -109,10 +130,24 @@ export class ShaderDefineExpression {
             }
         }
 
-        if (this._InfixToPostfixCache.size < this.InfixToPostfixCacheLimitSize) {
-            this._InfixToPostfixCache.set(infix, result);
+        // If the cache is at capacity, clear it before adding a new item
+        if (ShaderDefineExpression._InfixToPostfixCache.size >= ShaderDefineExpression.InfixToPostfixCacheLimitSize) {
+            ShaderDefineExpression.clearCache();
         }
 
+        // Add the new item to the cache, including the current time as the last access time
+        ShaderDefineExpression._InfixToPostfixCache.set(infix, { result, accessTime: Date.now() });
+
         return result;
+    }
+
+    private static clearCache(): void {
+        // Convert the cache to an array and sort by last access time
+        const sortedCache = Array.from(ShaderDefineExpression._InfixToPostfixCache.entries()).sort((a, b) => a[1].accessTime - b[1].accessTime);
+
+        // Remove the least recently accessed half of the cache
+        for (let i = 0; i < ShaderDefineExpression.InfixToPostfixCacheCleanupSize; i++) {
+            ShaderDefineExpression._InfixToPostfixCache.delete(sortedCache[i][0]);
+        }
     }
 }
