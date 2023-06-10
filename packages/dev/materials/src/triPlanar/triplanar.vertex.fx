@@ -106,15 +106,9 @@ void main(void)
 		normalWorld = transposeMat3(inverseMat3(normalWorld));
 	#endif
 
-	worldTangent = (normalWorld * worldTangent).xyz;
-    worldBinormal = (normalWorld * worldBinormal).xyz;
-	vec3 worldNormal = (normalWorld * normalize(normal)).xyz;
-
-	#ifdef NONUNIFORMSCALING
-		worldTangent = normalize(worldTangent);
-		worldBinormal = normalize(worldBinormal);
-		worldNormal = normalize(worldNormal);
-	#endif
+	worldTangent = normalize((normalWorld * worldTangent).xyz);
+    worldBinormal = normalize((normalWorld * worldBinormal).xyz);
+	vec3 worldNormal = normalize((normalWorld * normalize(normal)).xyz);
 
 	tangentSpace[0] = worldTangent;
     tangentSpace[1] = worldBinormal;
