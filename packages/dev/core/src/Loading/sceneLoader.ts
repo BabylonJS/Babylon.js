@@ -644,7 +644,7 @@ export class SceneLoader {
             url = `file:${sceneFile.name}`;
             name = sceneFile.name;
             file = sceneFile;
-        } else if ((sceneFilename as ArrayBufferView)) {
+        } else if (ArrayBuffer.isView(sceneFilename)) {
             url = "";
             name = "arrayBuffer";
             rawData = sceneFilename as ArrayBufferView;
