@@ -513,15 +513,15 @@ export class SceneLoader {
             throw "When using ArrayBufferView to load data the file extension must be provided.";
         }
 
-        if (fileInfo.rawData && pluginExtension === ".gltf") {
-            throw "GLTF is not supported when loading data from an ArrayBufferView";
-        }
-
         const registeredPlugin = pluginExtension
             ? SceneLoader._GetPluginForExtension(pluginExtension)
             : directLoad
             ? SceneLoader._GetPluginForDirectLoad(fileInfo.url)
             : SceneLoader._GetPluginForFilename(fileInfo.url);
+
+        if (fileInfo.rawData && !registeredPlugin.isBinary) {
+            throw "Loading from ArrayBufferView can not be used with plugins that don't support binary loading.";
+        }
 
         let plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync;
 
