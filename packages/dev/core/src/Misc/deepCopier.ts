@@ -9,7 +9,7 @@ const CloneValue = (source: any, destinationObject: any) => {
         return null;
     }
 
-    if (source.getClassName && source.getClassName() === "SubMesh") {
+    if (source.getClassName && (source.getClassName() === "SubMesh" || source.getClassName() === "PhysicsBody")) {
         return source.clone(destinationObject);
     } else if (source.clone) {
         return source.clone();
