@@ -156,12 +156,13 @@ export interface ISceneLoaderPluginBase {
     loadFile?(
         scene: Scene,
         fileOrUrl: File | string | ArrayBufferView,
+        rootUrl: string,
         onSuccess: (data: any, responseURL?: string) => void,
         onProgress?: (ev: ISceneLoaderProgressEvent) => void,
         useArrayBuffer?: boolean,
         onError?: (request?: WebRequest, exception?: LoadFileError) => void,
         name?: string
-    ): IFileRequest;
+    ): Nullable<IFileRequest>;
 
     /**
      * The callback that returns true if the data can be directly loaded.
@@ -600,7 +601,7 @@ export class SceneLoader {
             }
 
             request = plugin.loadFile
-                ? plugin.loadFile(scene, fileInfo.rawData || fileInfo.file || fileInfo.url, dataCallback, onProgress, useArrayBuffer, errorCallback, name)
+                ? plugin.loadFile(scene, fileInfo.rawData || fileInfo.file || fileInfo.url, fileInfo.rootUrl, dataCallback, onProgress, useArrayBuffer, errorCallback, name)
                 : scene._loadFile(fileInfo.file || fileInfo.url, dataCallback, onProgress, true, useArrayBuffer, errorCallback);
         };
 
