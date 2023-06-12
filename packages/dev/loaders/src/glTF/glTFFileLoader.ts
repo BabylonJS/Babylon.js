@@ -46,6 +46,18 @@ function readAsync(arrayBuffer: ArrayBuffer, byteOffset: number, byteLength: num
     }
 }
 
+function readViewAsync(arrayBufferView: ArrayBufferView, byteOffset: number, byteLength: number): Promise<Uint8Array> {
+    try {
+        if ((arrayBufferView as Uint8Array).byteOffset + byteLength > arrayBufferView.byteLength) {
+            throw new Error("Array length out of bounds.");
+        }
+
+        return Promise.resolve(new Uint8Array(arrayBufferView.buffer, (arrayBufferView as Uint8Array).byteOffset + byteOffset, byteLength));
+    } catch (e) {
+        return Promise.reject(e);
+    }
+}
+
 /**
  * Mode that determines the coordinate system to use.
  */
@@ -627,7 +639,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
                 scene,
                 fileOrUrl as File | string,
                 (data) => {
-                    this._validate(scene, data as ArrayBuffer, rootUrl, fileName);
+                    this._validate(scene, new Uint8Array(data as ArrayBuffer), rootUrl, fileName);
                     this._unpackBinaryAsync(
                         new DataReader({
                             readAsync: (byteOffset, byteLength) => readAsync(data as ArrayBuffer, byteOffset, byteLength),
@@ -649,7 +661,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
             scene,
             fileOrUrl as File | string,
             (data) => {
-                this._validate(scene, data, rootUrl, fileName);
+                this._validate(scene, new Uint8Array(data as ArrayBuffer), rootUrl, fileName);
                 onSuccess({ json: this._parseJson(data as string) });
             },
             useArrayBuffer,
@@ -668,12 +680,11 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         onError?: (request?: WebRequest, exception?: LoadFileError) => void,
         fileName?: string
     ): void {
-        const arrayBuffer = data.buffer.slice(data.byteOffset, data.byteLength);
-        this._validate(scene, arrayBuffer, rootUrl, fileName);
+        this._validate(scene, data, rootUrl, fileName);
         this._unpackBinaryAsync(
             new DataReader({
-                readAsync: (byteOffset, byteLength) => readAsync(arrayBuffer, byteOffset, byteLength),
-                byteLength: (data as ArrayBufferView).byteLength,
+                readAsync: (byteOffset, byteLength) => readViewAsync(data, byteOffset, byteLength),
+                byteLength: data.byteLength,
             })
         ).then(
             (loaderData) => {
@@ -795,7 +806,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         ) {
             const arrayBuffer = DecodeBase64UrlToBinary(data);
 
-            this._validate(scene, arrayBuffer);
+            this._validate(scene, new Uint8Array(arrayBuffer));
             return this._unpackBinaryAsync(
                 new DataReader({
                     readAsync: (byteOffset, byteLength) => readAsync(arrayBuffer, byteOffset, byteLength),
@@ -919,7 +930,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         });
     }
 
-    private _validate(scene: Scene, data: string | ArrayBuffer, rootUrl = "", fileName = ""): void {
+    private _validate(scene: Scene, data: string | ArrayBufferView, rootUrl = "", fileName = ""): void {
         if (!this.validate) {
             return;
         }
