@@ -667,7 +667,7 @@ export class SceneLoader {
             rootUrl: rootUrl,
             name: name,
             file: file,
-            rawData: rawData,
+            rawData,
         };
     }
 
