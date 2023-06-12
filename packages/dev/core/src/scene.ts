@@ -5284,7 +5284,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         onError?: (request?: WebRequest, exception?: LoadFileError) => void,
         onOpened?: (request: WebRequest) => void
     ): IFileRequest {
-        
         const request = LoadFile(fileOrUrl, onSuccess, onProgress, useOfflineSupport ? this.offlineProvider : undefined, useArrayBuffer, onError, onOpened);
         this._activeRequests.push(request);
         request.onCompleteObservable.add((request) => {
