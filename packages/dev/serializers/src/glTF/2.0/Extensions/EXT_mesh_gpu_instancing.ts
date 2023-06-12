@@ -41,12 +41,12 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
         return this._wasUsed;
     }
 
-    public postExportNodeAsync?(
+    public postExportNodeAsync(
         context: string,
         node: Nullable<INode>,
         babylonNode: Node,
-        nodeMap?: { [key: number]: number },
-        binaryWriter?: _BinaryWriter
+        nodeMap: { [key: number]: number },
+        binaryWriter: _BinaryWriter
     ): Promise<Nullable<INode>> {
         return new Promise((resolve) => {
             if (node && babylonNode instanceof Mesh) {

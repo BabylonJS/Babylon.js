@@ -22,7 +22,7 @@ export class ParentPropertyGridComponent extends React.Component<IParentProperty
         super(props);
     }
 
-    private _getNameForSorting(node: any) {
+    private _getNameForSortingAndDisplay(node: any) {
         return typeof node.name === "string" ? node.name : "no name";
     }
 
@@ -34,12 +34,12 @@ export class ParentPropertyGridComponent extends React.Component<IParentProperty
             .getNodes()
             .filter((n) => n !== node)
             .sort((a, b) => {
-                return this._getNameForSorting(a).localeCompare(this._getNameForSorting(b));
+                return this._getNameForSortingAndDisplay(a).localeCompare(this._getNameForSortingAndDisplay(b));
             });
 
         const nodeOptions = sortedNodes.map((m, i) => {
             return {
-                label: m.name || "no name",
+                label: this._getNameForSortingAndDisplay(m),
                 value: i,
             };
         });

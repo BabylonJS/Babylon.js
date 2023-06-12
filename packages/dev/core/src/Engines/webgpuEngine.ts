@@ -56,6 +56,8 @@ import { WebGPUSnapshotRendering } from "./WebGPU/webgpuSnapshotRendering";
 import type { WebGPUDataBuffer } from "../Meshes/WebGPU/webgpuDataBuffer";
 import type { WebGPURenderTargetWrapper } from "./WebGPU/webgpuRenderTargetWrapper";
 
+import "../ShadersWGSL/postprocess.vertex";
+
 declare function importScripts(...urls: string[]): void;
 
 declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;

@@ -220,6 +220,10 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
             { label: "ClearCoat NdotV", value: 68 },
             { label: "Transmittance", value: 69 },
             { label: "Refraction Transmittance", value: 70 },
+            { label: "Glossiness", value: 72 },
+            { label: "Base Color", value: 73 },
+            { label: "Specular Color", value: 74 },
+            { label: "Emissive Color", value: 75 },
             // Misc
             { label: "SEO", value: 80 },
             { label: "EHO", value: 81 },

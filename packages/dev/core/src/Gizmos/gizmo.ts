@@ -40,6 +40,16 @@ export interface GizmoAxisCache {
 }
 
 /**
+ * Anchor options where the Gizmo can be positioned in relation to its anchored node
+ */
+export enum GizmoAnchorPoint {
+    /** The origin of the attached node */
+    Origin,
+    /** The pivot point of the attached node*/
+    Pivot,
+}
+
+/**
  * Interface for basic gizmo
  */
 export interface IGizmo extends IDisposable {
@@ -69,6 +79,11 @@ export interface IGizmo extends IDisposable {
      * If set the gizmo's position will be updated to match the attached mesh each frame (Default: true)
      */
     updateGizmoPositionToMatchAttachedMesh: boolean;
+    /**
+     * Defines where the gizmo will be positioned if `updateGizmoPositionToMatchAttachedMesh` is enabled.
+     * (Default: GizmoAnchorPoint.Origin)
+     */
+    anchorPoint: GizmoAnchorPoint;
     /**
      * When set, the gizmo will always appear the same size no matter where the camera is (default: true)
      */
@@ -176,6 +191,7 @@ export class Gizmo implements IGizmo {
 
     protected _updateGizmoRotationToMatchAttachedMesh = true;
     protected _updateGizmoPositionToMatchAttachedMesh = true;
+    protected _anchorPoint = GizmoAnchorPoint.Origin;
     protected _updateScale = true;
 
     /**
@@ -196,6 +212,17 @@ export class Gizmo implements IGizmo {
     }
     public get updateGizmoPositionToMatchAttachedMesh() {
         return this._updateGizmoPositionToMatchAttachedMesh;
+    }
+
+    /**
+     * Defines where the gizmo will be positioned if `updateGizmoPositionToMatchAttachedMesh` is enabled.
+     * (Default: GizmoAnchorPoint.Origin)
+     */
+    public set anchorPoint(value: GizmoAnchorPoint) {
+        this._anchorPoint = value;
+    }
+    public get anchorPoint() {
+        return this._anchorPoint;
     }
     /**
      * When set, the gizmo will always appear the same size no matter where the camera is (default: true)
@@ -254,9 +281,14 @@ export class Gizmo implements IGizmo {
 
             // Position
             if (this.updateGizmoPositionToMatchAttachedMesh) {
-                const row = effectiveNode.getWorldMatrix().getRow(3);
-                const position = row ? row.toVector3() : new Vector3(0, 0, 0);
-                this._rootMesh.position.copyFrom(position);
+                if (this.anchorPoint == GizmoAnchorPoint.Pivot && (<TransformNode>effectiveNode).getAbsolutePivotPoint) {
+                    const position = (<TransformNode>effectiveNode).getAbsolutePivotPoint();
+                    this._rootMesh.position.copyFrom(position);
+                } else {
+                    const row = effectiveNode.getWorldMatrix().getRow(3);
+                    const position = row ? row.toVector3() : new Vector3(0, 0, 0);
+                    this._rootMesh.position.copyFrom(position);
+                }
             }
 
             // Rotation
