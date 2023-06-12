@@ -151,7 +151,7 @@ export class ShaderDefineExpression {
 
         // If the cache is at capacity, clear it before adding a new item
         if (ShaderDefineExpression._InfixToPostfixCache.size >= ShaderDefineExpression.InfixToPostfixCacheLimitSize) {
-            ShaderDefineExpression.clearCache();
+            ShaderDefineExpression.ClearCache();
         }
 
         // Add the new item to the cache, including the current time as the last access time
@@ -160,7 +160,7 @@ export class ShaderDefineExpression {
         return result;
     }
 
-    private static clearCache(): void {
+    private static ClearCache(): void {
         // Convert the cache to an array and sort by last access time
         const sortedCache = Array.from(ShaderDefineExpression._InfixToPostfixCache.entries()).sort((a, b) => a[1].accessTime - b[1].accessTime);
 
