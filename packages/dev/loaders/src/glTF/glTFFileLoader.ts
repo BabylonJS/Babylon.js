@@ -570,7 +570,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         name?: string
     ): IFileRequest {
 
-        if(fileOrUrl as ArrayBufferView)
+        if (ArrayBuffer.isView(fileOrUrl))
         {
             this._loadBinary(scene, fileOrUrl as ArrayBufferView, onSuccess, onError, name);
             
