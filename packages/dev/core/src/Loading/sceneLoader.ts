@@ -485,7 +485,7 @@ export class SceneLoader {
     }
 
     private static _FormatErrorMessage(fileInfo: IFileInfo, message?: string, exception?: any): string {
-        const fromLoad = fileInfo.rawData ? " binary data" : fileInfo.url;
+        const fromLoad = fileInfo.rawData ? "binary data" : fileInfo.url;
         let errorMessage = "Unable to load from " + fromLoad;
 
         if (message) {
