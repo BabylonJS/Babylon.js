@@ -1045,8 +1045,7 @@
         {
             "title": "GLB load from ArrayBuffer",
             "playgroundId": "#31UBR0#4",
-            "referenceImage": "glbArrayBufferViewLoad.png",
-            "renderCount": 10
+            "referenceImage": "glbArrayBufferViewLoad.png"
         },
         {
             "title": "KTX2 decoder test",
