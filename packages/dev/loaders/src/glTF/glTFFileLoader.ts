@@ -570,9 +570,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         onError?: (request?: WebRequest, exception?: LoadFileError) => void,
         name?: string
     ): Nullable<IFileRequest> {
-
-        if (ArrayBuffer.isView(fileOrUrl))
-        {
+        if (ArrayBuffer.isView(fileOrUrl)) {
             this._loadBinary(scene, fileOrUrl as ArrayBufferView, rootUrl, onSuccess, onError, name);
             return null;
         }
@@ -668,7 +666,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         rootUrl: string,
         onSuccess: (data: any, responseURL?: string) => void,
         onError?: (request?: WebRequest, exception?: LoadFileError) => void,
-        fileName?: string,
+        fileName?: string
     ): void {
         const arrayBuffer = data.buffer.slice(data.byteOffset, data.byteLength);
         this._validate(scene, arrayBuffer, rootUrl, fileName);
