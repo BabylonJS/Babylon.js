@@ -588,6 +588,16 @@ export class Control implements IAnimatable {
         this._markAsDirty();
     }
 
+    private _fixedRatio = 0;
+    public set fixedRatio(value: number) {
+        if (this._fixedRatio === value) {
+            return;
+        }
+
+        this._fixedRatio = value;
+        this._markAsDirty();
+    }
+
     /**
      * Gets or sets a fixed ratio for this control.
      * When different from 0, the ratio is used to compute the "second" dimension.
@@ -595,9 +605,27 @@ export class Control implements IAnimatable {
      * second dimension is computed as first dimension * fixedRatio
      */
     @serialize()
-    public fixedRatio = 0;
+    public get fixedRatio(): number {
+        return this._fixedRatio;
+    }
 
     protected _fixedRatioMasterIsWidth = true;
+    set fixedRatioMasterIsWidth(value: boolean) {
+        if (this._fixedRatioMasterIsWidth === value) {
+            return;
+        }
+        this._fixedRatioMasterIsWidth = value;
+        this._markAsDirty();
+    }
+
+    /**
+     * Gets or sets a boolean indicating that the fixed ratio is set on the width instead of the height. True by default.
+     * When the height of a control is set, this property is changed to false.
+     */
+    @serialize()
+    get fixedRatioMasterIsWidth(): boolean {
+        return this._fixedRatioMasterIsWidth;
+    }
 
     /**
      * Gets or sets control width
@@ -1882,11 +1910,11 @@ export class Control implements IAnimatable {
             this._currentMeasure.height *= this._height.getValue(this._host);
         }
 
-        if (this.fixedRatio !== 0) {
+        if (this._fixedRatio !== 0) {
             if (this._fixedRatioMasterIsWidth) {
-                this._currentMeasure.height = this._currentMeasure.width * this.fixedRatio;
+                this._currentMeasure.height = this._currentMeasure.width * this._fixedRatio;
             } else {
-                this._currentMeasure.width = this._currentMeasure.height * this.fixedRatio;
+                this._currentMeasure.width = this._currentMeasure.height * this._fixedRatio;
             }
         }
     }
@@ -2474,6 +2502,8 @@ export class Control implements IAnimatable {
                     );
             }
         }
+
+        this.fixedRatioMasterIsWidth = serializedObject.fixedRatioMasterIsWidth ?? this.fixedRatioMasterIsWidth;
     }
 
     /** Releases associated resources */
