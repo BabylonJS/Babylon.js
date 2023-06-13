@@ -132,6 +132,11 @@ export class ShaderMaterial extends PushMaterial {
     private _cachedWorldViewProjectionMatrix = new Matrix();
     private _multiview: boolean = false;
 
+    /**
+     * @internal
+     */
+    public _materialHelperNeedsPreviousMatrices: boolean = false;
+
     /** Define the Url to load snippets */
     public static SnippetUrl = Constants.SnippetUrl;
 
@@ -195,6 +200,13 @@ export class ShaderMaterial extends PushMaterial {
      */
     public get options(): IShaderMaterialOptions {
         return this._options;
+    }
+
+    /**
+     * is multiview set to true?
+     */
+    public get isMultiview(): boolean {
+        return this._multiview;
     }
 
     /**
@@ -306,7 +318,7 @@ export class ShaderMaterial extends PushMaterial {
      * Set a unsigned int in the shader.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
-     * @return the material itself allowing "fluent" like uniform updates
+     * @returns the material itself allowing "fluent" like uniform updates
      */
     public setUInt(name: string, value: number): ShaderMaterial {
         this._checkUniform(name);
@@ -668,7 +680,7 @@ export class ShaderMaterial extends PushMaterial {
 
         if (useInstances) {
             defines.push("#define INSTANCES");
-            MaterialHelper.PushAttributesForInstances(attribs);
+            MaterialHelper.PushAttributesForInstances(attribs, this._materialHelperNeedsPreviousMatrices);
             if (mesh?.hasThinInstances) {
                 defines.push("#define THIN_INSTANCES");
                 if (mesh && mesh.isVerticesDataPresent(VertexBuffer.ColorInstanceKind)) {

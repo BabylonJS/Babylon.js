@@ -5,11 +5,138 @@ import type { WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import type { Nullable } from "../../types";
 import type { IWebXRRenderTargetTextureProvider } from "../webXRRenderTargetTextureProvider";
-import type { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import type { Viewport } from "../../Maths/math.viewport";
 import type { Scene } from "../../scene";
-import { SpaceWarpRenderTarget } from "../../Materials/Textures/spaceWarpRenderTarget";
+import { Matrix } from "../../Maths/math.vector";
+import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
+import { Constants } from "../../Engines/constants";
+import { ShaderMaterial } from "../../Materials/shaderMaterial";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { Material } from "../../Materials/material";
 
+import "../../Shaders/velocity.fragment";
+import "../../Shaders/velocity.vertex";
+
+/**
+ * Used for Space Warp render targeting multiple views with a single draw call
+ * @see https://www.khronos.org/registry/webgl/extensions/OVR_multiview2/
+ */
+export class XRSpaceWarpRenderTarget extends RenderTargetTexture {
+    private _velocityMaterial: ShaderMaterial;
+    private _originalPairing: Array<[AbstractMesh, Nullable<Material>]> = [];
+    private _previousWorldMatrices: Array<Matrix> = [];
+    private _previousTransforms: Matrix[] = [Matrix.Identity(), Matrix.Identity()];
+
+    /**
+     * Creates a Space Warp render target
+     * @param motionVectorTexture WebGLTexture provided by WebGLSubImage
+     * @param depthStencilTexture WebGLTexture provided by WebGLSubImage
+     * @param scene scene used with the render target
+     * @param size the size of the render target (used for each view)
+     */
+    constructor(motionVectorTexture: WebGLTexture, depthStencilTexture: WebGLTexture, scene?: Scene, size: number | { width: number; height: number } | { ratio: number } = 512) {
+        super("spacewarp rtt", size, scene, false, true, Constants.TEXTURETYPE_HALF_FLOAT, false, undefined, false, false, true, undefined, true);
+        this._renderTarget = this.getScene()!
+            .getEngine()
+            .createSpaceWarpRenderTargetTexture(this.getRenderWidth(), this.getRenderHeight(), motionVectorTexture, depthStencilTexture);
+        this._texture = this._renderTarget.texture!;
+        this._texture.isMultiview = true;
+        this._texture.format = Constants.TEXTUREFORMAT_RGBA;
+
+        if (scene) {
+            this._velocityMaterial = new ShaderMaterial(
+                "velocity shader material", // human name
+                scene,
+                {
+                    vertex: "velocity",
+                    fragment: "velocity",
+                },
+                {
+                    uniforms: ["world", "previousWorld", "viewProjection", "viewProjectionR", "previousViewProjection", "previousViewProjectionR"],
+                }
+            );
+            this._velocityMaterial._materialHelperNeedsPreviousMatrices = true;
+            this._velocityMaterial.onBindObservable.add((mesh) => {
+                // mesh. getWorldMatrix can be incorrect under rare conditions (e.g. when using a effective mesh in the render function).
+                // If the case arise that will require changing it we will need to change the bind process in the material class to also provide the world matrix as a parameter
+                this._previousWorldMatrices[mesh.uniqueId] = this._previousWorldMatrices[mesh.uniqueId] || mesh.getWorldMatrix();
+                this._velocityMaterial.getEffect().setMatrix("previousWorld", this._previousWorldMatrices[mesh.uniqueId]);
+                this._previousWorldMatrices[mesh.uniqueId] = mesh.getWorldMatrix();
+                // now set the scene's previous matrix
+                this._velocityMaterial.getEffect().setMatrix("previousViewProjection", this._previousTransforms[0]);
+                // multiview for sure
+                this._velocityMaterial.getEffect().setMatrix("previousViewProjectionR", this._previousTransforms[1]);
+
+                // store the previous (current, to be exact) transforms
+                this._previousTransforms[0].copyFrom(scene.getTransformMatrix());
+                this._previousTransforms[1].copyFrom(scene._transformMatrixR);
+            });
+            this._velocityMaterial.freeze();
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public render(useCameraPostProcess: boolean = false, dumpForDebug: boolean = false): void {
+        // If I don't swap the material, then rendering doesn't turn black...
+        // So maybe it's weirdly the material that's messing things up?
+
+        // Since setting to StandardMaterial and swap back is fine... is it my ShaderMaterial?
+
+        // Swap to use velocity material
+        this._originalPairing.length = 0;
+        const scene = this.getScene();
+        let meshes;
+        if (scene && this._velocityMaterial /* && this._standardMaterial*/) {
+            meshes = scene.getActiveMeshes();
+            const velocityMaterial = this._velocityMaterial;
+            meshes.forEach((mesh) => {
+                this._originalPairing.push([mesh, mesh.material]);
+                mesh.material = velocityMaterial;
+            });
+        }
+
+        super.render(useCameraPostProcess, dumpForDebug);
+
+        // Restore original material
+        this._originalPairing.forEach((tuple) => {
+            tuple[0].material = tuple[1];
+        });
+    }
+
+    /**
+     * @internal
+     */
+    public _bindFrameBuffer() {
+        if (!this._renderTarget) {
+            return;
+        }
+        this.getScene()!.getEngine().bindSpaceWarpFramebuffer(this._renderTarget);
+    }
+
+    /**
+     * Gets the number of views the corresponding to the texture (eg. a SpaceWarpRenderTarget will have > 1)
+     * @returns the view count
+     */
+    public getViewCount() {
+        return 2;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public dispose(): void {
+        super.dispose();
+        this._velocityMaterial.dispose();
+        this._previousTransforms.length = 0;
+        this._previousWorldMatrices.length = 0;
+    }
+}
+
+/**
+ * WebXR Space Warp Render Target Texture Provider
+ */
 export class WebXRSpaceWarpRenderTargetTextureProvider implements IWebXRRenderTargetTextureProvider {
     protected _lastSubImages = new Map<XRView, XRWebGLSubImage>();
     protected _renderTargetTextures = new Map<XREye, RenderTargetTexture>();
@@ -53,7 +180,7 @@ export class WebXRSpaceWarpRenderTargetTextureProvider implements IWebXRRenderTa
         const textureSize = { width, height };
 
         // Create render target texture from the internal texture
-        const renderTargetTexture = new SpaceWarpRenderTarget(motionVectorTexture, depthStencilTexture, this._scene, textureSize);
+        const renderTargetTexture = new XRSpaceWarpRenderTarget(motionVectorTexture, depthStencilTexture, this._scene, textureSize);
         const renderTargetWrapper = renderTargetTexture.renderTarget as WebGLRenderTargetWrapper;
         if (framebuffer) {
             renderTargetWrapper._framebuffer = framebuffer;
@@ -91,6 +218,9 @@ export class WebXRSpaceWarpRenderTargetTextureProvider implements IWebXRRenderTa
         return renderTargetTexture;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public trySetViewportForView(viewport: Viewport, view: XRView): boolean {
         const subImage = this._lastSubImages.get(view) || this._getSubImageForView(view);
         if (subImage) {
@@ -100,6 +230,9 @@ export class WebXRSpaceWarpRenderTargetTextureProvider implements IWebXRRenderTa
         return false;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public accessMotionVector(view: XRView): void {
         const subImage = this._getSubImageForView(view);
         if (subImage) {
@@ -109,10 +242,16 @@ export class WebXRSpaceWarpRenderTargetTextureProvider implements IWebXRRenderTa
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public getRenderTargetTextureForEye(_eye: XREye): Nullable<RenderTargetTexture> {
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public getRenderTargetTextureForView(view: XRView): Nullable<RenderTargetTexture> {
         const subImage = this._getSubImageForView(view);
         if (subImage) {
@@ -121,6 +260,9 @@ export class WebXRSpaceWarpRenderTargetTextureProvider implements IWebXRRenderTa
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public dispose() {
         this._renderTargetTextures.forEach((rtt) => rtt.dispose());
         this._renderTargetTextures.clear();
@@ -142,14 +284,22 @@ export class WebXRSpaceWarp extends WebXRAbstractFeature {
      */
     public static readonly Version = 1;
 
+    /**
+     * The space warp provider
+     */
     public spaceWarpRTTProvider: Nullable<WebXRSpaceWarpRenderTargetTextureProvider>;
     private _glContext: WebGLRenderingContext | WebGL2RenderingContext;
     private _xrWebGLBinding: XRWebGLBinding;
     private _renderTargetTexture: Nullable<RenderTargetTexture>;
 
+    /**
+     * constructor for the space warp feature
+     * @param _xrSessionManager the xr session manager for this feature
+     */
     constructor(_xrSessionManager: WebXRSessionManager) {
         super(_xrSessionManager);
         this.xrNativeFeatureName = "space-warp";
+        this._xrSessionManager.scene.needsPreviousWorldMatrices = true;
     }
 
     /**
@@ -171,10 +321,6 @@ export class WebXRSpaceWarp extends WebXRAbstractFeature {
 
         this._xrSessionManager.scene.onAfterRenderObservable.add(this._onAfterRender.bind(this));
 
-        // TODO: Would there be a one frame delay if not set earlier?
-        // TODO: How can I set this earlier and not just when entering immersive?
-        this._xrSessionManager.scene.needsPreviousWorldMatrices = true;
-
         return true;
     }
 
@@ -182,8 +328,6 @@ export class WebXRSpaceWarp extends WebXRAbstractFeature {
         if (this.attached && this._renderTargetTexture) {
             this._renderTargetTexture.render(false, false);
         }
-
-        this._xrSessionManager.scene._savePreviousTransformMatrix();
     }
 
     /**
@@ -191,12 +335,15 @@ export class WebXRSpaceWarp extends WebXRAbstractFeature {
      */
     public dependsOn: string[] = [WebXRFeatureName.LAYERS];
 
+    /**
+     * {@inheritdoc}
+     */
     public isCompatible(): boolean {
         return this._xrSessionManager.scene.getEngine().getCaps().colorBufferHalfFloat || false;
     }
 
     /**
-     * Dispose this feature and all of the resources attached.
+     * {@inheritdoc}
      */
     public dispose(): void {
         super.dispose();
@@ -208,13 +355,9 @@ export class WebXRSpaceWarp extends WebXRAbstractFeature {
             return;
         }
 
-        // TODO - can that be optimized?
         const view = pose.views[0];
-        if (this._renderTargetTexture) {
-            this.spaceWarpRTTProvider!.accessMotionVector(view);
-        } else {
-            this._renderTargetTexture = this.spaceWarpRTTProvider!.getRenderTargetTextureForView(view);
-        }
+        this._renderTargetTexture = this._renderTargetTexture || this.spaceWarpRTTProvider!.getRenderTargetTextureForView(view);
+        this.spaceWarpRTTProvider!.accessMotionVector(view);
     }
 }
 
