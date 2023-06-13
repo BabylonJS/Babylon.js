@@ -1578,18 +1578,23 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /** Creates the node editor window. */
-    private _createNodeEditor() {
-        this.BJSNODEMATERIALEDITOR.NodeEditor.Show({
+    private _createNodeEditor(useSceneClearColor?: boolean) {
+        const nodeEditorConfig: any = {
             nodeMaterial: this,
-        });
+        };
+        if (useSceneClearColor) {
+            nodeEditorConfig["backgroundColor"] = this.getScene().clearColor;
+        }
+        this.BJSNODEMATERIALEDITOR.NodeEditor.Show(nodeEditorConfig);
     }
 
     /**
      * Launch the node material editor
      * @param config Define the configuration of the editor
+     * @param useSceneClearColor if the mesh preview on the editor should use the same as the scene's clear color
      * @returns a promise fulfilled when the node editor is visible
      */
-    public edit(config?: INodeMaterialEditorOptions): Promise<void> {
+    public edit(config?: INodeMaterialEditorOptions, useSceneClearColor?: boolean): Promise<void> {
         return new Promise((resolve) => {
             this.BJSNODEMATERIALEDITOR = this.BJSNODEMATERIALEDITOR || this._getGlobalNodeMaterialEditor();
             if (typeof this.BJSNODEMATERIALEDITOR == "undefined") {
@@ -1598,12 +1603,12 @@ export class NodeMaterial extends PushMaterial {
                 // Load editor and add it to the DOM
                 Tools.LoadScript(editorUrl, () => {
                     this.BJSNODEMATERIALEDITOR = this.BJSNODEMATERIALEDITOR || this._getGlobalNodeMaterialEditor();
-                    this._createNodeEditor();
+                    this._createNodeEditor(useSceneClearColor);
                     resolve();
                 });
             } else {
                 // Otherwise creates the editor
-                this._createNodeEditor();
+                this._createNodeEditor(useSceneClearColor);
                 resolve();
             }
         });
