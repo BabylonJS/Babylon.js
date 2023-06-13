@@ -49,7 +49,7 @@ export class MultiMaterial extends Material {
     constructor(name: string, scene?: Scene) {
         super(name, scene, true);
 
-        this.getScene().multiMaterials.push(this);
+        this.getScene().addMultiMaterial(this);
 
         this.subMaterials = new Array<Material>();
 
