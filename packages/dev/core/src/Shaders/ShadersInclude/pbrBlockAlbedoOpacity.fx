@@ -73,7 +73,7 @@ void albedoOpacityBlock(
     #endif
 
     #if !defined(SS_LINKREFRACTIONTOTRANSPARENCY) && !defined(ALPHAFRESNEL)
-        #ifdef ALPHATEST
+        #if defined(ALPHATEST) && DEBUGMODE == 0
             if (alpha < ALPHATESTVALUE)
                 discard;
 
