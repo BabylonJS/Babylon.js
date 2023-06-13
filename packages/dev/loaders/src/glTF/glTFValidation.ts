@@ -108,8 +108,8 @@ export class GLTFValidation {
         fileName: string,
         getExternalResource: (uri: string) => Promise<ArrayBuffer>
     ): Promise<GLTF2.IGLTFValidationResults> {
-        const dataCopy = ArrayBuffer.isView(data) ? (data as Uint8Array).slice().buffer : data as string;
-        
+        const dataCopy = ArrayBuffer.isView(data) ? (data as Uint8Array).slice().buffer : (data as string);
+
         if (typeof Worker === "function") {
             return new Promise((resolve, reject) => {
                 const workerContent = `${validateAsync}(${workerFunc})()`;
