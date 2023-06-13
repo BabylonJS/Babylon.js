@@ -233,6 +233,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
             { label: "Sheen Reflectance", value: 85 },
             { label: "Luminance Over Alpha", value: 86 },
             { label: "Alpha", value: 87 },
+            { label: "Albedo Alpha", value: 88 }
         ];
 
         const realTimeFilteringQualityOptions = [
