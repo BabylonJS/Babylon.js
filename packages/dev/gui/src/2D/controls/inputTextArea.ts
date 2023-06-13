@@ -103,7 +103,7 @@ export class InputTextArea extends InputText {
     }
 
     public set height(value: string | number) {
-        this._fixedRatioMasterIsWidth = false;
+        this.fixedRatioMasterIsWidth = false;
 
         if (this._height.toString(this._host) === value) {
             return;

@@ -609,7 +609,7 @@ export class Control implements IAnimatable {
         return this._fixedRatio;
     }
 
-    protected _fixedRatioMasterIsWidth = true;
+    private _fixedRatioMasterIsWidth = true;
     set fixedRatioMasterIsWidth(value: boolean) {
         if (this._fixedRatioMasterIsWidth === value) {
             return;
