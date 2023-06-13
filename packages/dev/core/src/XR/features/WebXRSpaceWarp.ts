@@ -18,8 +18,7 @@ import "../../Shaders/velocity.fragment";
 import "../../Shaders/velocity.vertex";
 
 /**
- * Used for Space Warp render targeting multiple views with a single draw call
- * @see https://www.khronos.org/registry/webgl/extensions/OVR_multiview2/
+ * Used for Space Warp render process
  */
 export class XRSpaceWarpRenderTarget extends RenderTargetTexture {
     private _velocityMaterial: ShaderMaterial;
