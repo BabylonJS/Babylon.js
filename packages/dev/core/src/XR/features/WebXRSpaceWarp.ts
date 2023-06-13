@@ -45,7 +45,7 @@ export class XRSpaceWarpRenderTarget extends RenderTargetTexture {
 
         if (scene) {
             this._velocityMaterial = new ShaderMaterial(
-                "velocity shader material", // human name
+                "velocity shader material",
                 scene,
                 {
                     vertex: "velocity",
@@ -79,27 +79,20 @@ export class XRSpaceWarpRenderTarget extends RenderTargetTexture {
      * {@inheritDoc}
      */
     public render(useCameraPostProcess: boolean = false, dumpForDebug: boolean = false): void {
-        // If I don't swap the material, then rendering doesn't turn black...
-        // So maybe it's weirdly the material that's messing things up?
-
-        // Since setting to StandardMaterial and swap back is fine... is it my ShaderMaterial?
-
         // Swap to use velocity material
         this._originalPairing.length = 0;
         const scene = this.getScene();
-        let meshes;
-        if (scene && this._velocityMaterial /* && this._standardMaterial*/) {
-            meshes = scene.getActiveMeshes();
-            const velocityMaterial = this._velocityMaterial;
-            meshes.forEach((mesh) => {
+        // set the velocity material to render the velocity RTT
+        if (scene && this._velocityMaterial) {
+            scene.getActiveMeshes().forEach((mesh) => {
                 this._originalPairing.push([mesh, mesh.material]);
-                mesh.material = velocityMaterial;
+                mesh.material = this._velocityMaterial;
             });
         }
 
         super.render(useCameraPostProcess, dumpForDebug);
 
-        // Restore original material
+        // Restore original materials
         this._originalPairing.forEach((tuple) => {
             tuple[0].material = tuple[1];
         });
@@ -231,7 +224,8 @@ export class WebXRSpaceWarpRenderTargetTextureProvider implements IWebXRRenderTa
     }
 
     /**
-     * {@inheritDoc}
+     * Access the motion vector (which will turn on Space Warp)
+     * @param view the view to access the motion vector texture for
      */
     public accessMotionVector(view: XRView): void {
         const subImage = this._getSubImageForView(view);
@@ -270,7 +264,7 @@ export class WebXRSpaceWarpRenderTargetTextureProvider implements IWebXRRenderTa
 }
 
 /**
- * Exposes the WebXR Space Warp API.
+ * the WebXR Space Warp feature.
  */
 export class WebXRSpaceWarp extends WebXRAbstractFeature {
     /**
@@ -355,6 +349,7 @@ export class WebXRSpaceWarp extends WebXRAbstractFeature {
             return;
         }
 
+        // get the first view to which we will create a texture (or update it)
         const view = pose.views[0];
         this._renderTargetTexture = this._renderTargetTexture || this.spaceWarpRTTProvider!.getRenderTargetTextureForView(view);
         this.spaceWarpRTTProvider!.accessMotionVector(view);
