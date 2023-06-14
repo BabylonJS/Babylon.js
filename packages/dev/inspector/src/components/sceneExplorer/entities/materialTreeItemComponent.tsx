@@ -24,7 +24,7 @@ export class MaterialTreeItemComponent extends React.Component<IMaterialTreeItem
                 <div
                     className="icon"
                     onClick={() => {
-                        (this.props.material as NodeMaterial).edit({ additionalConfig: { backgroundColor: this.props.material.getScene().clearColor } });
+                        (this.props.material as NodeMaterial).edit({ nodeEditorConfig: { backgroundColor: this.props.material.getScene().clearColor } });
                     }}
                     title="Node Material Editor"
                     color="white"

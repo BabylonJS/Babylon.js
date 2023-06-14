@@ -75,7 +75,7 @@ export interface INodeMaterialEditorOptions {
     /** Define the URL to load node editor script from */
     editorURL?: string;
     /** Additional configuration for the NME */
-    additionalConfig?: {
+    nodeEditorConfig?: {
         backgroundColor?: Color4;
     };
 }
@@ -1604,12 +1604,12 @@ export class NodeMaterial extends PushMaterial {
                 // Load editor and add it to the DOM
                 Tools.LoadScript(editorUrl, () => {
                     this.BJSNODEMATERIALEDITOR = this.BJSNODEMATERIALEDITOR || this._getGlobalNodeMaterialEditor();
-                    this._createNodeEditor(config?.additionalConfig);
+                    this._createNodeEditor(config?.nodeEditorConfig);
                     resolve();
                 });
             } else {
                 // Otherwise creates the editor
-                this._createNodeEditor(config?.additionalConfig);
+                this._createNodeEditor(config?.nodeEditorConfig);
                 resolve();
             }
         });

@@ -37,7 +37,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
     }
 
     edit() {
-        this.props.material.edit({ additionalConfig: { backgroundColor: this.props.material.getScene().clearColor } });
+        this.props.material.edit({ nodeEditorConfig: { backgroundColor: this.props.material.getScene().clearColor } });
     }
 
     renderTextures() {
