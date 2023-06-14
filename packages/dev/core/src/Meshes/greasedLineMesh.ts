@@ -1,6 +1,6 @@
 import type { Scene } from "../scene";
 import type { Matrix } from "../Maths/math.vector";
-import { TmpVectors, Vector3 } from "../Maths/math.vector";
+import { Vector3 } from "../Maths/math.vector";
 import { GreasedLinePluginMaterial } from "../Materials/greasedLinePluginMaterial";
 import { Mesh } from "./mesh";
 import type { Ray, TrianglePickingPredicate } from "../Culling/ray";
@@ -69,6 +69,11 @@ export class GreasedLineMesh extends Mesh {
 
     private _lazy = false;
     private _updatable = false;
+
+    private static _V_START = new Vector3();
+    private static _V_END = new Vector3();
+    private static _V_OFFSET_START = new Vector3();
+    private static _V_OFFSET_END = new Vector3();
 
     /**
      * Treshold used to pick the mesh
@@ -416,11 +421,6 @@ export class GreasedLineMesh extends Mesh {
             return;
         }
 
-        const vStart = TmpVectors.Vector3[0];
-        const vEnd = TmpVectors.Vector3[1];
-        const vOffsetStart = TmpVectors.Vector3[2];
-        const vOffsetEnd = TmpVectors.Vector3[3];
-
         const indices = this.getIndices();
         const positions = this.getVerticesData(VertexBuffer.PositionKind);
         const widths = this._options.widths;
@@ -435,21 +435,21 @@ export class GreasedLineMesh extends Mesh {
                 const a = indices[i];
                 const b = indices[i + 1];
 
-                vStart.fromArray(positions, a * 3);
-                vEnd.fromArray(positions, b * 3);
+                GreasedLineMesh._V_START.fromArray(positions, a * 3);
+                GreasedLineMesh._V_END.fromArray(positions, b * 3);
 
                 if (this._offsets) {
-                    vOffsetStart.fromArray(this._offsets, a * 3);
-                    vOffsetEnd.fromArray(this._offsets, b * 3);
-                    vStart.addInPlace(vOffsetStart);
-                    vStart.addInPlace(vOffsetEnd);
+                    GreasedLineMesh._V_OFFSET_START.fromArray(this._offsets, a * 3);
+                    GreasedLineMesh._V_OFFSET_END.fromArray(this._offsets, b * 3);
+                    GreasedLineMesh._V_START.addInPlace(GreasedLineMesh._V_OFFSET_START);
+                    GreasedLineMesh._V_END.addInPlace(GreasedLineMesh._V_OFFSET_END);
                 }
 
                 const iFloored = Math.floor(i / 3);
                 const width = widths[iFloored] !== undefined ? widths[iFloored] : 1;
                 const precision = this.intersectionThreshold + (lineWidth * width) / 2;
 
-                const distance = ray.intersectionSegment(vStart, vEnd, precision);
+                const distance = ray.intersectionSegment(GreasedLineMesh._V_START, GreasedLineMesh._V_END, precision);
                 if (distance !== -1) {
                     intersects.push({
                         distance: distance,

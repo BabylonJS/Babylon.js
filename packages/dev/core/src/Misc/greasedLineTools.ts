@@ -42,7 +42,7 @@ export class GreasedLineTools {
 
     /**
      * Gets the length of the line counting all it's segments length
-     * @param points array of line points
+     * @param data array of line points
      * @returns length of the line
      */
     public static GetLineLength(data: Vector3[] | number[]): number {

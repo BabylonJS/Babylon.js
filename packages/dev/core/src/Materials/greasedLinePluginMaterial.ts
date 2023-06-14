@@ -558,7 +558,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
      */
     public setDashCount(value: number) {
         this._options.dashCount = value;
-        this._dashArray = 1 / (value );
+        this._dashArray = 1 / value;
     }
 
     /**
