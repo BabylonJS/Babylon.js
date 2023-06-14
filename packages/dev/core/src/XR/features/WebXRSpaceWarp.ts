@@ -37,7 +37,8 @@ export class XRSpaceWarpRenderTarget extends RenderTargetTexture {
         super("spacewarp rtt", size, scene, false, true, Constants.TEXTURETYPE_HALF_FLOAT, false, undefined, false, false, true, undefined, true);
         this._renderTarget = this.getScene()!
             .getEngine()
-            .createSpaceWarpRenderTargetTexture(this.getRenderWidth(), this.getRenderHeight(), motionVectorTexture, depthStencilTexture);
+            .createMultiviewRenderTargetTexture(this.getRenderWidth(), this.getRenderHeight(), motionVectorTexture, depthStencilTexture);
+        (this._renderTarget as WebGLRenderTargetWrapper)._disposeOnlyFramebuffers = true;
         this._texture = this._renderTarget.texture!;
         this._texture.isMultiview = true;
         this._texture.format = Constants.TEXTUREFORMAT_RGBA;
