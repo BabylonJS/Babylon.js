@@ -171,13 +171,13 @@ export class GreasedLineTools {
 
     /**
      *
-     * @param position
-     * @param direction
-     * @param length
-     * @param widthUp
-     * @param widthDown
-     * @param widthStartUp
-     * @param widthStartDown
+     * @param position position of the arrow cap (mainly you want to create a triangle, set widthUp and widthDown to the same value and omit widthStartUp and widthStartDown)
+     * @param direction direction which the arrow points to
+     * @param length length (size) of the arrow cap itself
+     * @param widthUp the arrow width above the line
+     * @param widthDown the arrow width belove the line
+     * @param widthStartUp the arrow width at the start of the arrow above the line. In most scenarios this is 0.
+     * @param widthStartDown the arrow width at the start of the arrow below the line. In most scenarios this is 0.
      * @returns
      */
     public static GetArrowCap(position: Vector3, direction: Vector3, length: number, widthUp: number, widthDown: number, widthStartUp = 0, widthStartDown = 0) {

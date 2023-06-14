@@ -301,7 +301,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
 
     /**
      * Get shader code
-     * @param shaderType vertex/fragme
+     * @param shaderType vertex/fragment
      * @returns shader code
      */
     getCustomCode(shaderType: string): Nullable<{ [pointName: string]: string }> {
@@ -373,15 +373,11 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
                     grlFinalPosition.xy += grlNormal.xy * grlSide;
                     gl_Position = grlFinalPosition;
 
-
-
                 `,
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 "!gl_Position\\=viewProjection\\*worldPos;": "//", // remove
             };
         }
-
-        // ${this._material instanceof PBRMaterial ? "vNormal= grlNormal.xyz;vPositionW = vec3(grlFinalPosition);" : ""}
 
         if (shaderType === "fragment") {
             return {
