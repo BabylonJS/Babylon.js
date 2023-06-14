@@ -73,9 +73,11 @@ void albedoOpacityBlock(
     #endif
 
     #if !defined(SS_LINKREFRACTIONTOTRANSPARENCY) && !defined(ALPHAFRESNEL)
-        #ifdef ALPHATEST
-            if (alpha < ALPHATESTVALUE && DEBUGMODE != 88)
-                discard;
+        #ifdef ALPHATEST 
+            #if DEBUGMODE != 88
+                if (alpha < ALPHATESTVALUE)
+                    discard;
+            #endif
 
             #ifndef ALPHABLEND
                 // Prevent to blend with the canvas.
