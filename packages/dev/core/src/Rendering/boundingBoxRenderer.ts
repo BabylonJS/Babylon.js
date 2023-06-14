@@ -330,7 +330,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
                     engine.setDepthFunctionToGreaterOrEqual();
                 }
                 this._uniformBufferBack.bindToEffect(drawWrapperBack.effect!, "BoundingBoxRenderer");
-                this._uniformBufferBack.updateDirectColor4("color", this.backColor.toColor4());
+                this._uniformBufferBack.updateColor4("color", this.backColor, 1);
                 this._uniformBufferBack.updateMatrix("world", worldMatrix);
                 this._uniformBufferBack.updateMatrix("viewProjection", transformMatrix);
                 this._uniformBufferBack.update();
@@ -352,7 +352,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
                 engine.setDepthFunctionToLess();
             }
             this._uniformBufferFront.bindToEffect(drawWrapperFront.effect!, "BoundingBoxRenderer");
-            this._uniformBufferFront.updateDirectColor4("color", this.frontColor.toColor4());
+            this._uniformBufferFront.updateColor4("color", this.frontColor, 1);
             this._uniformBufferFront.updateMatrix("world", worldMatrix);
             this._uniformBufferFront.updateMatrix("viewProjection", transformMatrix);
             this._uniformBufferFront.update();
