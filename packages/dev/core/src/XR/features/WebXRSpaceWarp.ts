@@ -124,6 +124,7 @@ export class XRSpaceWarpRenderTarget extends RenderTargetTexture {
         this._velocityMaterial.dispose();
         this._previousTransforms.length = 0;
         this._previousWorldMatrices.length = 0;
+        this._originalPairing.length = 0;
     }
 }
 

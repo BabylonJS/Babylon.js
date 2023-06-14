@@ -50,7 +50,7 @@ class WebXRCompositionLayerRenderTargetTextureProvider extends WebXRLayerRenderT
         const colorTextureWidth = subImage.colorTextureWidth ?? subImage.textureWidth;
         const colorTextureHeight = subImage.colorTextureHeight ?? subImage.textureHeight;
 
-        if (!this._renderTargetTextures[eyeIndex] || lastSubImage?.textureWidth !== colorTextureWidth || lastSubImage?.textureHeight != colorTextureHeight) {
+        if (!this._renderTargetTextures[eyeIndex] || lastSubImage?.textureWidth !== colorTextureWidth || lastSubImage?.textureHeight !== colorTextureHeight) {
             let depthStencilTexture;
             const depthStencilTextureWidth = subImage.depthStencilTextureWidth ?? colorTextureWidth;
             const depthStencilTextureHeight = subImage.depthStencilTextureHeight ?? colorTextureHeight;
