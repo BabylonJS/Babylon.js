@@ -5026,7 +5026,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return new PickingInfo();
     }
 
-    /** Use the given ray to pick a mesh in the scene
+    /**
+     * Use the given ray to pick a mesh in the scene. A mesh triangle can be picked both from its front and back sides,
+     * irrespective of orientation.
      * @param ray The ray to use to pick meshes
      * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must have isPickable set to true
      * @param fastCheck defines if the first intersection will be used (and not the closest)
@@ -5038,7 +5040,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
-     * Launch a ray to try to pick a mesh in the scene
+     * Launch a ray to try to pick a mesh in the scene. A mesh triangle can be picked both from its front and back sides,
+     * irrespective of orientation.
      * @param x X position on screen
      * @param y Y position on screen
      * @param predicate Predicate function used to determine eligible meshes. Can be set to null. In this case, a mesh must be enabled, visible and with isPickable set to true
