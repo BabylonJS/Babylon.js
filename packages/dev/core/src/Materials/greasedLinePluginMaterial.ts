@@ -77,10 +77,10 @@ export interface GreasedLineMaterialOptions {
      */
     useDash?: boolean;
     /**
-     * @see GreasedLinePluginMaterial.setDashArray
+     * @see GreasedLinePluginMaterial.setDashCount
      * Defaults to 1.
      */
-    dashArray?: number;
+    dashCount?: number;
     /**
      * Defaults to 0.
      * @see GreasedLinePluginMaterial.setDashOffset
@@ -159,7 +159,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
             GreasedLinePluginMaterial._PrepareEmptyColorsTexture(_scene);
         }
 
-        this.setDashArray(options.dashArray ?? 1); // calculate the _dashArray value
+        this.setDashCount(options.dashCount ?? 1); // calculate the _dashArray value
 
         this._enable(true); // always enabled
     }
@@ -556,9 +556,9 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
      * Sets the dash array.
      * @param value dash array
      */
-    public setDashArray(value: number) {
-        this._options.dashArray = value;
-        this._dashArray = 1 / (value * 2);
+    public setDashCount(value: number) {
+        this._options.dashCount = value;
+        this._dashArray = 1 / (value );
     }
 
     /**

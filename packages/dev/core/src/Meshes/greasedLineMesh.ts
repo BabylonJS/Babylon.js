@@ -10,6 +10,7 @@ import { PickingInfo } from "../Collisions/pickingInfo";
 import type { Nullable } from "../types";
 import type { Node } from "../node";
 import { DeepCopier } from "../Misc/deepCopier";
+import { GreasedLineTools } from "core/Misc/greasedLineTools";
 
 export type GreasedLinePoints = Vector3[] | Vector3[][] | Float32Array | Float32Array[] | number[][];
 
@@ -196,7 +197,7 @@ export class GreasedLineMesh extends Mesh {
      */
     public setOffsets(offsets: number[]) {
         if (!this._offsetsBuffer) {
-            this._createOffsetsBuffer(offsets)
+            this._createOffsetsBuffer(offsets);
         } else {
             this._offsetsBuffer && this._offsetsBuffer.update(offsets);
         }
@@ -245,7 +246,7 @@ export class GreasedLineMesh extends Mesh {
 
     private _updateColorPointers() {
         let colorPointer = 0;
-        this._colorPointers  = [];
+        this._colorPointers = [];
         this._points.forEach((p) => {
             for (let jj = 0; jj < p.length; jj += 3) {
                 this._colorPointers.push(colorPointer);
@@ -267,20 +268,21 @@ export class GreasedLineMesh extends Mesh {
         let indiceOffset = 0;
 
         points.forEach((p) => {
-            const positions: number[] = [];
             const counters: number[] = [];
+            const positions: number[] = [];
             const indices: number[] = [];
 
+            const totalLength = GreasedLineTools.GetLineLength(p);
             for (let j = 0, jj = 0; jj < p.length; j++, jj += 3) {
-                const c = jj / p.length;
+
+                const partialLine = p.slice(0, jj + 3);
+                const partialLineLength = GreasedLineTools.GetLineLength(partialLine);
+                const c = partialLineLength / totalLength;
 
                 positions.push(p[jj], p[jj + 1], p[jj + 2]);
                 positions.push(p[jj], p[jj + 1], p[jj + 2]);
                 counters.push(c);
                 counters.push(c);
-
-                // colorPointers.push(colorPointer);
-                // colorPointers.push(colorPointer++);
 
                 if (jj < p.length - 3) {
                     const n = j * 2 + indiceOffset;
@@ -300,7 +302,6 @@ export class GreasedLineMesh extends Mesh {
 
             this._vertexPositions.push(...positions);
             this._indices.push(...indices);
-            // this._colorPointers.push(...colorPointers);
 
             for (let i = 0; i < side.length; i++) {
                 this._previousAndSide.push(previous[i * 3], previous[i * 3 + 1], previous[i * 3 + 2], side[i]);
@@ -308,6 +309,7 @@ export class GreasedLineMesh extends Mesh {
             }
             this._uvs.push(...uvs);
         });
+
 
         if (!this._lazy) {
             this._updateColorPointers();
@@ -558,8 +560,6 @@ export class GreasedLineMesh extends Mesh {
         const colorPointersBuffer = new Buffer(engine, this._colorPointers, this._updatable, 1);
         this.setVerticesBuffer(colorPointersBuffer.createVertexBuffer("grl_colorPointers", 0, 1));
         this._colorPointersBuffer = colorPointersBuffer;
-
-
     }
 
     private _createOffsetsBuffer(offsets: number[]) {

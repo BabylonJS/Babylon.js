@@ -1,4 +1,4 @@
-import { Curve3 } from './../Maths/math.path';
+import { Curve3 } from "./../Maths/math.path";
 import { VertexBuffer } from "./../Buffers/buffer";
 import { TmpVectors, Vector3 } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
@@ -45,7 +45,22 @@ export class GreasedLineTools {
      * @param points array of line points
      * @returns length of the line
      */
-    public static GetLineLength(points: Vector3[]): number {
+    public static GetLineLength(data: Vector3[] | number[]): number {
+        if (data.length === 0) {
+            return 0;
+        }
+
+        let points: Vector3[];
+        if (typeof data[0] === "number") {
+            points = [];
+            const numberData = <number[]>data;
+            for (let i = 0; i < data.length; i += 3) {
+                points.push(new Vector3(numberData[i], numberData[i + 1], numberData[i + 2]));
+            }
+        } else {
+            points = <Vector3[]>data;
+        }
+
         const tmp = TmpVectors.Vector3[0];
         let length = 0;
         for (let index = 0; index < points.length - 1; index++) {
@@ -166,7 +181,9 @@ export class GreasedLineTools {
      * @returns
      */
     public static GetBezierLinePoints(p0: Vector3, p1: Vector3, p2: Vector3, segments: number) {
-        return Curve3.CreateQuadraticBezier(p0, p1, p2, segments).getPoints().flatMap(v => [v.x, v.y, v.z]);
+        return Curve3.CreateQuadraticBezier(p0, p1, p2, segments)
+            .getPoints()
+            .flatMap((v) => [v.x, v.y, v.z]);
     }
 
     /**
@@ -189,5 +206,4 @@ export class GreasedLineTools {
             widths,
         };
     }
-
 }

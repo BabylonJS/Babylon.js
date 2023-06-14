@@ -121,7 +121,7 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
         if (materialOptions) {
             const initialMaterialOptions: GreasedLineMaterialOptions = {
                 materialType: materialOptions.materialType,
-                dashArray: materialOptions.dashArray,
+                dashCount: materialOptions.dashCount,
                 dashOffset: materialOptions.dashOffset,
                 dashRatio: materialOptions.dashRatio,
                 resolution: materialOptions.resolution,
