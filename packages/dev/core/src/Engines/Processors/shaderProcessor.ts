@@ -21,9 +21,14 @@ declare type ThinEngine = import("../thinEngine").ThinEngine;
 const regexSE = /defined\s*?\((.+?)\)/g;
 const regexSERevert = /defined\s*?\[(.+?)\]/g;
 const regexShaderInclude = /#include\s?<(.+)>(\((.*)\))*(\[(.*)\])*/g;
+const regexShaderDecl = /__decl__/;
+const regexLightX = /light\{X\}.(\w*)/g;
+const regexX = /\{X\}/g;
 
 /** @internal */
 export class ShaderProcessor {
+    private static _MoveCursorRegex = /(#ifdef)|(#else)|(#elif)|(#endif)|(#ifndef)|(#if)/;
+
     public static Initialize(options: ProcessingOptions): void {
         if (options.processor && options.processor.initializeShaders) {
             options.processor.initializeShaders(options.processingContext);
@@ -204,59 +209,62 @@ export class ShaderProcessor {
         while (cursor.canRead) {
             cursor.lineIndex++;
             const line = cursor.currentLine;
-            const keywords = /(#ifdef)|(#else)|(#elif)|(#endif)|(#ifndef)|(#if)/;
-            const matches = keywords.exec(line);
 
-            if (matches && matches.length) {
-                const keyword = matches[0];
+            if (line.indexOf("#") >= 0) {
+                const matches = ShaderProcessor._MoveCursorRegex.exec(line);
 
-                switch (keyword) {
-                    case "#ifdef": {
-                        const newRootNode = new ShaderCodeConditionNode();
-                        rootNode.children.push(newRootNode);
+                if (matches && matches.length) {
+                    const keyword = matches[0];
 
-                        const ifNode = this._BuildExpression(line, 6);
-                        newRootNode.children.push(ifNode);
-                        this._MoveCursorWithinIf(cursor, newRootNode, ifNode);
-                        break;
+                    switch (keyword) {
+                        case "#ifdef": {
+                            const newRootNode = new ShaderCodeConditionNode();
+                            rootNode.children.push(newRootNode);
+
+                            const ifNode = this._BuildExpression(line, 6);
+                            newRootNode.children.push(ifNode);
+                            this._MoveCursorWithinIf(cursor, newRootNode, ifNode);
+                            break;
+                        }
+                        case "#else":
+                        case "#elif":
+                            return true;
+                        case "#endif":
+                            return false;
+                        case "#ifndef": {
+                            const newRootNode = new ShaderCodeConditionNode();
+                            rootNode.children.push(newRootNode);
+
+                            const ifNode = this._BuildExpression(line, 7);
+                            newRootNode.children.push(ifNode);
+                            this._MoveCursorWithinIf(cursor, newRootNode, ifNode);
+                            break;
+                        }
+                        case "#if": {
+                            const newRootNode = new ShaderCodeConditionNode();
+                            const ifNode = this._BuildExpression(line, 3);
+                            rootNode.children.push(newRootNode);
+
+                            newRootNode.children.push(ifNode);
+                            this._MoveCursorWithinIf(cursor, newRootNode, ifNode);
+                            break;
+                        }
                     }
-                    case "#else":
-                    case "#elif":
-                        return true;
-                    case "#endif":
-                        return false;
-                    case "#ifndef": {
-                        const newRootNode = new ShaderCodeConditionNode();
-                        rootNode.children.push(newRootNode);
-
-                        const ifNode = this._BuildExpression(line, 7);
-                        newRootNode.children.push(ifNode);
-                        this._MoveCursorWithinIf(cursor, newRootNode, ifNode);
-                        break;
-                    }
-                    case "#if": {
-                        const newRootNode = new ShaderCodeConditionNode();
-                        const ifNode = this._BuildExpression(line, 3);
-                        rootNode.children.push(newRootNode);
-
-                        newRootNode.children.push(ifNode);
-                        this._MoveCursorWithinIf(cursor, newRootNode, ifNode);
-                        break;
-                    }
+                    continue;
                 }
-            } else {
-                const newNode = new ShaderCodeNode();
-                newNode.line = line;
-                rootNode.children.push(newNode);
+            }
 
-                // Detect additional defines
-                if (line[0] === "#" && line[1] === "d") {
-                    const split = line.replace(";", "").split(" ");
-                    newNode.additionalDefineKey = split[1];
+            const newNode = new ShaderCodeNode();
+            newNode.line = line;
+            rootNode.children.push(newNode);
 
-                    if (split.length === 3) {
-                        newNode.additionalDefineValue = split[2];
-                    }
+            // Detect additional defines
+            if (line[0] === "#" && line[1] === "d") {
+                const split = line.replace(";", "").split(" ");
+                newNode.additionalDefineKey = split[1];
+
+                if (split.length === 3) {
+                    newNode.additionalDefineValue = split[2];
                 }
             }
         }
@@ -365,20 +373,21 @@ export class ShaderProcessor {
     }
 
     private static _ProcessIncludes(sourceCode: string, options: ProcessingOptions, callback: (data: any) => void): void {
-        let match = regexShaderInclude.exec(sourceCode);
+        const matches = Array.from(sourceCode.matchAll(regexShaderInclude));
 
-        let returnValue = new String(sourceCode);
+        let returnValue = String(sourceCode);
+        let parts = [sourceCode];
+
         let keepProcessing = false;
 
-        while (match != null) {
+        for (const match of matches) {
             let includeFile = match[1];
 
             // Uniform declaration
             if (includeFile.indexOf("__decl__") !== -1) {
-                includeFile = includeFile.replace(/__decl__/, "");
+                includeFile = includeFile.replace(regexShaderDecl, "");
                 if (options.supportsUniformBuffers) {
-                    includeFile = includeFile.replace(/Vertex/, "Ubo");
-                    includeFile = includeFile.replace(/Fragment/, "Ubo");
+                    includeFile = includeFile.replace("Vertex", "Ubo").replace("Fragment", "Ubo");
                 }
                 includeFile = includeFile + "Declaration";
             }
@@ -414,25 +423,35 @@ export class ShaderProcessor {
                         for (let i = minIndex; i < maxIndex; i++) {
                             if (!options.supportsUniformBuffers) {
                                 // Ubo replacement
-                                sourceIncludeContent = sourceIncludeContent.replace(/light\{X\}.(\w*)/g, (str: string, p1: string) => {
+                                sourceIncludeContent = sourceIncludeContent.replace(regexLightX, (str: string, p1: string) => {
                                     return p1 + "{X}";
                                 });
                             }
-                            includeContent += sourceIncludeContent.replace(/\{X\}/g, i.toString()) + "\n";
+                            includeContent += sourceIncludeContent.replace(regexX, i.toString()) + "\n";
                         }
                     } else {
                         if (!options.supportsUniformBuffers) {
                             // Ubo replacement
-                            includeContent = includeContent.replace(/light\{X\}.(\w*)/g, (str: string, p1: string) => {
+                            includeContent = includeContent.replace(regexLightX, (str: string, p1: string) => {
                                 return p1 + "{X}";
                             });
                         }
-                        includeContent = includeContent.replace(/\{X\}/g, indexString);
+                        includeContent = includeContent.replace(regexX, indexString);
                     }
                 }
 
                 // Replace
-                returnValue = returnValue.replace(match[0], includeContent);
+                // Split all parts on match[0] and intersperse the parts with the include content
+                const newParts = [];
+                for (const part of parts) {
+                    const splitPart = part.split(match[0]);
+                    for (let i = 0; i < splitPart.length - 1; i++) {
+                        newParts.push(splitPart[i]);
+                        newParts.push(includeContent);
+                    }
+                    newParts.push(splitPart[splitPart.length - 1]);
+                }
+                parts = newParts;
 
                 keepProcessing = keepProcessing || includeContent.indexOf("#include<") >= 0 || includeContent.indexOf("#include <") >= 0;
             } else {
@@ -440,13 +459,13 @@ export class ShaderProcessor {
 
                 ShaderProcessor._FileToolsLoadFile(includeShaderUrl, (fileContent) => {
                     options.includesShadersStore[includeFile] = fileContent as string;
-                    this._ProcessIncludes(<string>returnValue, options, callback);
+                    this._ProcessIncludes(parts.join(""), options, callback);
                 });
                 return;
             }
-
-            match = regexShaderInclude.exec(sourceCode);
         }
+
+        returnValue = parts.join("");
 
         if (keepProcessing) {
             this._ProcessIncludes(returnValue.toString(), options, callback);

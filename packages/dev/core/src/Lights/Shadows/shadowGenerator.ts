@@ -928,6 +928,7 @@ export class ShadowGenerator implements IShadowGenerator {
         } else {
             this._shadowMap = new RenderTargetTexture(this._light.name + "_shadowMap", this._mapSize, this._scene, false, true, this._textureType, this._light.needCube());
         }
+        this._shadowMap.noPrePassRenderer = true;
     }
 
     protected _initializeShadowMap(): void {

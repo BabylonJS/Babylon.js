@@ -10,7 +10,7 @@ export interface ISearchBoxComponentProps {
 /**
  * The search box component.
  */
-export class SearchBoxComponent extends React.Component<ISearchBoxComponentProps, { isVisible: boolean; filter: string }> {
+export class SearchBoxComponent extends React.Component<ISearchBoxComponentProps, { isVisible: boolean; filter: string; selectedIndex: number }> {
     private _handleEscKey: (evt: KeyboardEvent) => void;
     private _targetX: number;
     private _targetY: number;
@@ -19,7 +19,7 @@ export class SearchBoxComponent extends React.Component<ISearchBoxComponentProps
     constructor(props: ISearchBoxComponentProps) {
         super(props);
 
-        this.state = { isVisible: false, filter: "" };
+        this.state = { isVisible: false, filter: "", selectedIndex: 0 };
 
         this._handleEscKey = (evt: KeyboardEvent) => {
             if (evt.key === "Escape") {
@@ -30,7 +30,7 @@ export class SearchBoxComponent extends React.Component<ISearchBoxComponentProps
         this.props.stateManager.onSearchBoxRequiredObservable.add((loc) => {
             this._targetX = loc.x;
             this._targetY = loc.y;
-            this.setState({ isVisible: true, filter: "" });
+            this.setState({ isVisible: true, filter: "", selectedIndex: 0 });
             this.props.stateManager.hostDocument!.addEventListener("keydown", this._handleEscKey);
         });
     }
@@ -59,7 +59,17 @@ export class SearchBoxComponent extends React.Component<ISearchBoxComponentProps
 
     onKeyDown(evt: React.KeyboardEvent) {
         if (evt.code === "Enter" && this._nodes.length > 0) {
-            this.onNewNodeRequested(this._nodes[0]);
+            this.onNewNodeRequested(this._nodes[this.state.selectedIndex]);
+            return;
+        }
+
+        if (evt.code === "ArrowDown" && this._nodes.length > 0) {
+            this.setState({ selectedIndex: Math.min(this.state.selectedIndex + 1, this._nodes.length - 1) });
+            return;
+        }
+
+        if (evt.code === "ArrowUp" && this._nodes.length > 0) {
+            this.setState({ selectedIndex: Math.max(this.state.selectedIndex - 1, 0) });
             return;
         }
     }
@@ -116,9 +126,13 @@ export class SearchBoxComponent extends React.Component<ISearchBoxComponentProps
                         tabIndex={0}
                     />
                     <div className="graph-search-box-list">
-                        {this._nodes.map((name) => {
+                        {this._nodes.map((name, i) => {
                             return (
-                                <div className="graph-search-box-list-item " onClick={() => this.onNewNodeRequested(name)} key={name}>
+                                <div
+                                    className={"graph-search-box-list-item " + (this.state.selectedIndex === i ? "selected " : "")}
+                                    onClick={() => this.onNewNodeRequested(name)}
+                                    key={name}
+                                >
                                     {NodeLedger.NameFormatter(name)}
                                 </div>
                             );

@@ -52,6 +52,7 @@ class TriPlanarMaterialDefines extends MaterialDefines {
     public INSTANCESCOLOR = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public SKIPFINALCOLORCLAMP = false;
+    public NONUNIFORMSCALING = false;
 
     constructor() {
         super();

@@ -2,6 +2,11 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "MeshBuilder.CreateText",
+            "playgroundId": "#6I2RMN#2",
+            "referenceImage": "createText.png"
+        },        
+        {
             "title": "Negative scaling with instances",
             "playgroundId": "#Z3YS9T#0",
             "referenceImage": "negative scaling with instances.png"
@@ -688,15 +693,30 @@
             "renderCount": 1
         },
         {
-            "title": "GLTF Serializer with Negative World Matrix",
-            "playgroundId": "#KX53VK#35",
+            "title": "GLTF Serializer with Negative World Matrix (left handed, once)",
+            "playgroundId": "#KX53VK#48",
             "referenceImage": "glTFSerializerNegativeWorldMatrix.png",
             "errorRatio": 1.1
         },
         {
-            "title": "GLTF Serializer with Negative World Matrix (Right Handed)",
-            "playgroundId": "#KX53VK#36",
-            "referenceImage": "glTFSerializerNegativeWorldMatrix_Right.png",
+            "title": "GLTF Serializer with Negative World Matrix (left handed, twice)",
+            "playgroundId": "#KX53VK#48",
+            "referenceImage": "glTFSerializerNegativeWorldMatrix.png",
+            "replace": "iterations = 1, iterations = 2",
+            "errorRatio": 1.1
+        },
+        {
+            "title": "GLTF Serializer with Negative World Matrix (right handed, once)",
+            "playgroundId": "#KX53VK#48",
+            "referenceImage": "glTFSerializerNegativeWorldMatrix.png",
+            "replace": "useRightHandedSystem = false, useRightHandedSystem = true",
+            "errorRatio": 1.1
+        },
+        {
+            "title": "GLTF Serializer with Negative World Matrix (left handed, twice)",
+            "playgroundId": "#KX53VK#48",
+            "referenceImage": "glTFSerializerNegativeWorldMatrix.png",
+            "replace": "useRightHandedSystem = false, useRightHandedSystem = true, iterations = 1, iterations = 2",
             "errorRatio": 1.1
         },
         {
@@ -712,7 +732,7 @@
         {
             "title": "GLTF Serializer Morph Target Animation",
             "renderCount": 2,
-            "playgroundId": "#84M2SR#23",
+            "playgroundId": "#84M2SR#107",
             "referenceImage": "gltfSerializerMorphTargetAnimation.png"
         },
         {
@@ -1610,6 +1630,22 @@
         {
             "title": "GUI for Mesh cloning",
             "playgroundId": "#ZUAPLL#2"
+        },
+        {
+            "title": "Glossiness Debug Mode",
+            "playgroundId": "#2FDQT5#2281"
+        },
+        {
+            "title": "Base Color Debug Mode",
+            "playgroundId": "#2FDQT5#2282"
+        },
+        {
+            "title": "Specular Color Debug Mode",
+            "playgroundId": "#Z1VL3V#508"
+        },
+        {
+            "title": "Emissive Color Debug Mode",
+            "playgroundId": "#2FDQT5#2284"
         }
     ]
 }

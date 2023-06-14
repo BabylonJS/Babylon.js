@@ -59,6 +59,11 @@
                 &:hover {
                     background: rgb(30, 30, 30);
                 }
+
+                &.selected {
+                    background: rgb(230, 230, 230);
+                    color: black;
+                }
             }
         }
     }

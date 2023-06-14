@@ -220,6 +220,10 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
             { label: "ClearCoat NdotV", value: 68 },
             { label: "Transmittance", value: 69 },
             { label: "Refraction Transmittance", value: 70 },
+            { label: "Glossiness", value: 72 },
+            { label: "Base Color", value: 73 },
+            { label: "Specular Color", value: 74 },
+            { label: "Emissive Color", value: 75 },
             // Misc
             { label: "SEO", value: 80 },
             { label: "EHO", value: 81 },
@@ -604,6 +608,13 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     />
                     {material.anisotropy.isEnabled && (
                         <div className="fragment">
+                            <CheckBoxLineComponent
+                                label="Legacy Mode"
+                                target={material.anisotropy}
+                                propertyName="legacy"
+                                onValueChanged={() => this.forceUpdate()}
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
                             <SliderLineComponent
                                 lockObject={this.props.lockObject}
                                 label="Intensity"

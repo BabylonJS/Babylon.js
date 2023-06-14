@@ -1930,12 +1930,19 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         let index: number;
         const engine = this.getEngine();
 
+        const currentRenderPassId = engine.currentRenderPassId;
+
+        engine.currentRenderPassId = this.activeCamera?.renderPassId ?? currentRenderPassId;
+
         let isReady = true;
 
         // Pending data
         if (this._pendingData.length > 0) {
             isReady = false;
         }
+
+        // Ensures that the pre-pass renderer is enabled if it is to be enabled.
+        this.prePassRenderer?.update();
 
         // Meshes
         if (checkRenderTargets) {
@@ -1998,21 +2005,12 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             }
         }
 
-        if (!isReady) {
-            return false;
-        }
-
-        // Effects
-        if (!engine.areAllEffectsReady()) {
-            return false;
-        }
-
         // Render targets
         if (checkRenderTargets) {
             for (index = 0; index < this._materialsRenderTargets.length; ++index) {
                 const rtt = this._materialsRenderTargets.data[index];
                 if (!rtt.isReadyForRendering()) {
-                    return false;
+                    isReady = false;
                 }
             }
         }
@@ -2022,7 +2020,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             const geometry = this.geometries[index];
 
             if (geometry.delayLoadState === Constants.DELAYLOADSTATE_LOADING) {
-                return false;
+                isReady = false;
             }
         }
 
@@ -2030,23 +2028,39 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         if (this.activeCameras && this.activeCameras.length > 0) {
             for (const camera of this.activeCameras) {
                 if (!camera.isReady(true)) {
-                    return false;
+                    isReady = false;
                 }
             }
         } else if (this.activeCamera) {
             if (!this.activeCamera.isReady(true)) {
-                return false;
+                isReady = false;
             }
         }
 
         // Particles
         for (const particleSystem of this.particleSystems) {
             if (!particleSystem.isReady()) {
-                return false;
+                isReady = false;
             }
         }
 
-        return true;
+        // Layers
+        if (this.layers) {
+            for (const layer of this.layers) {
+                if (!layer.isReady()) {
+                    isReady = false;
+                }
+            }
+        }
+
+        // Effects
+        if (!engine.areAllEffectsReady()) {
+            isReady = false;
+        }
+
+        engine.currentRenderPassId = currentRenderPassId;
+
+        return isReady;
     }
 
     /** Resets all cached information relative to material (including effect and visibility) */

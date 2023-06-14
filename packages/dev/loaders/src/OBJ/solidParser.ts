@@ -41,21 +41,27 @@ export class SolidParser {
 
     // Patterns
     /** Pattern used to detect a vertex */
-    public static VertexPattern = /v(\s+[\d|.|+|\-|e|E]+){3,7}/;
+    public static VertexPattern = /^v(\s+[\d|.|+|\-|e|E]+){3,7}/;
     /** Pattern used to detect a normal */
-    public static NormalPattern = /vn(\s+[\d|.|+|\-|e|E]+)( +[\d|.|+|\-|e|E]+)( +[\d|.|+|\-|e|E]+)/;
+    public static NormalPattern = /^vn(\s+[\d|.|+|\-|e|E]+)( +[\d|.|+|\-|e|E]+)( +[\d|.|+|\-|e|E]+)/;
     /** Pattern used to detect a UV set */
-    public static UVPattern = /vt(\s+[\d|.|+|\-|e|E]+)( +[\d|.|+|\-|e|E]+)/;
+    public static UVPattern = /^vt(\s+[\d|.|+|\-|e|E]+)( +[\d|.|+|\-|e|E]+)/;
     /** Pattern used to detect a first kind of face (f vertex vertex vertex) */
-    public static FacePattern1 = /f\s+(([\d]{1,}[\s]?){3,})+/;
+    public static FacePattern1 = /^f\s+(([\d]{1,}[\s]?){3,})+/;
     /** Pattern used to detect a second kind of face (f vertex/uvs vertex/uvs vertex/uvs) */
-    public static FacePattern2 = /f\s+((([\d]{1,}\/[\d]{1,}[\s]?){3,})+)/;
+    public static FacePattern2 = /^f\s+((([\d]{1,}\/[\d]{1,}[\s]?){3,})+)/;
     /** Pattern used to detect a third kind of face (f vertex/uvs/normal vertex/uvs/normal vertex/uvs/normal) */
-    public static FacePattern3 = /f\s+((([\d]{1,}\/[\d]{1,}\/[\d]{1,}[\s]?){3,})+)/;
+    public static FacePattern3 = /^f\s+((([\d]{1,}\/[\d]{1,}\/[\d]{1,}[\s]?){3,})+)/;
     /** Pattern used to detect a fourth kind of face (f vertex//normal vertex//normal vertex//normal)*/
-    public static FacePattern4 = /f\s+((([\d]{1,}\/\/[\d]{1,}[\s]?){3,})+)/;
+    public static FacePattern4 = /^f\s+((([\d]{1,}\/\/[\d]{1,}[\s]?){3,})+)/;
     /** Pattern used to detect a fifth kind of face (f -vertex/-uvs/-normal -vertex/-uvs/-normal -vertex/-uvs/-normal) */
-    public static FacePattern5 = /f\s+(((-[\d]{1,}\/-[\d]{1,}\/-[\d]{1,}[\s]?){3,})+)/;
+    public static FacePattern5 = /^f\s+(((-[\d]{1,}\/-[\d]{1,}\/-[\d]{1,}[\s]?){3,})+)/;
+    /** Pattern used to detect a line(l vertex vertex) */
+    public static LinePattern1 = /^l\s+(([\d]{1,}[\s]?){2,})+/;
+    /** Pattern used to detect a second kind of line (l vertex/uvs vertex/uvs) */
+    public static LinePattern2 = /^l\s+((([\d]{1,}\/[\d]{1,}[\s]?){2,})+)/;
+    /** Pattern used to detect a third kind of line (l vertex/uvs/normal vertex/uvs/normal) */
+    public static LinePattern3 = /^l\s+((([\d]{1,}\/[\d]{1,}\/[\d]{1,}[\s]?){2,})+)/;
 
     private _loadingOptions: OBJLoadingOptions;
     private _positions: Array<Vector3> = []; //values for the positions of vertices
@@ -282,7 +288,7 @@ export class SolidParser {
 
     /**
      * Create triangles and push the data for each polygon for the pattern 2
-     * In this pattern we get vertice positions and uvsu
+     * In this pattern we get vertice positions and uvs
      * @param face
      * @param v
      */
@@ -601,7 +607,43 @@ export class SolidParser {
                 );
 
                 // Define a mesh or an object
-                // Each time this keyword is analysed, create a new Object with all data for creating a babylonMesh
+                // Each time this keyword is analyzed, create a new Object with all data for creating a babylonMesh
+            } else if ((result = SolidParser.LinePattern1.exec(line)) !== null) {
+                //Value of result
+                //["l 1 2"]
+
+                //Set the data for this face
+                this._setDataForCurrentFaceWithPattern1(
+                    result[1].trim().split(" "), // ["1", "2"]
+                    0
+                );
+
+                // Define a mesh or an object
+                // Each time this keyword is analyzed, create a new Object with all data for creating a babylonMesh
+            } else if ((result = SolidParser.LinePattern2.exec(line)) !== null) {
+                //Value of result
+                //["l 1/1 2/2"]
+
+                //Set the data for this face
+                this._setDataForCurrentFaceWithPattern2(
+                    result[1].trim().split(" "), // ["1/1", "2/2"]
+                    0
+                );
+
+                // Define a mesh or an object
+                // Each time this keyword is analyzed, create a new Object with all data for creating a babylonMesh
+            } else if ((result = SolidParser.LinePattern3.exec(line)) !== null) {
+                //Value of result
+                //["l 1/1/1 2/2/2"]
+
+                //Set the data for this face
+                this._setDataForCurrentFaceWithPattern3(
+                    result[1].trim().split(" "), // ["1/1/1", "2/2/2"]
+                    0
+                );
+
+                // Define a mesh or an object
+                // Each time this keyword is analyzed, create a new Object with all data for creating a babylonMesh
             } else if (SolidParser.GroupDescriptor.test(line) || SolidParser.ObjectDescriptor.test(line)) {
                 // Create a new mesh corresponding to the name of the group.
                 // Definition of the mesh

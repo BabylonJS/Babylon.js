@@ -313,7 +313,7 @@ export class CoordinateHelper {
     ) {
         // make sure we are using the latest measures for the control
         const parentMeasure = CoordinateHelper.GetParentSizes(guiControl);
-        (guiControl as any)._processMeasures(parentMeasure, guiControl.host);
+        (guiControl as any)._processMeasures(parentMeasure, guiControl.host.getContext());
         for (const property of properties) {
             const initialValue = guiControl[property];
             guiControl[`_${property}`] = new ValueAndUnit(this.Round(guiControl[`${property}InPixels`]), ValueAndUnit.UNITMODE_PIXEL);

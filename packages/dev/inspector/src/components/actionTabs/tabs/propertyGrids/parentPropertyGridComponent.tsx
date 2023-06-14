@@ -22,6 +22,10 @@ export class ParentPropertyGridComponent extends React.Component<IParentProperty
         super(props);
     }
 
+    private _getNameForSortingAndDisplay(node: any) {
+        return typeof node.name === "string" ? node.name : "no name";
+    }
+
     render() {
         const node = this.props.node;
         const scene = node.getScene();
@@ -29,11 +33,13 @@ export class ParentPropertyGridComponent extends React.Component<IParentProperty
         const sortedNodes = scene
             .getNodes()
             .filter((n) => n !== node)
-            .sort((a, b) => (a.name || "no name").localeCompare(b.name || "no name"));
+            .sort((a, b) => {
+                return this._getNameForSortingAndDisplay(a).localeCompare(this._getNameForSortingAndDisplay(b));
+            });
 
         const nodeOptions = sortedNodes.map((m, i) => {
             return {
-                label: m.name || "no name",
+                label: this._getNameForSortingAndDisplay(m),
                 value: i,
             };
         });
@@ -57,7 +63,7 @@ export class ParentPropertyGridComponent extends React.Component<IParentProperty
                     noDirectUpdate={true}
                     onSelect={(value) => {
                         const nodeAsTransform = node as TransformNode;
-                        if (value < 0) {
+                        if (typeof value !== "number" || value < 0) {
                             if (nodeAsTransform.setParent) {
                                 nodeAsTransform.setParent(null);
                             } else {
