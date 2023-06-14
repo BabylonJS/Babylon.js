@@ -19,17 +19,23 @@ declare module "../../Engines/engine" {
          * @param height defines the height of the texture
          * @returns the created multiview render target wrapper
          */
-        createMultiviewRenderTargetTexture(width: number, height: number): RenderTargetWrapper;
+        createMultiviewRenderTargetTexture(width: number, height: number, colorTexture?: WebGLTexture, depthStencilTexture?: WebGLTexture): RenderTargetWrapper;
 
         /**
          * Binds a multiview render target wrapper to be drawn to
          * @param multiviewTexture render target wrapper to bind
          */
         bindMultiviewFramebuffer(multiviewTexture: RenderTargetWrapper): void;
+
+        /**
+         * Binds a Space Warp render target wrapper to be drawn to
+         * @param spaceWarpTexture render target wrapper to bind
+         */
+        bindSpaceWarpFramebuffer(spaceWarpTexture: RenderTargetWrapper): void;
     }
 }
 
-Engine.prototype.createMultiviewRenderTargetTexture = function (width: number, height: number) {
+Engine.prototype.createMultiviewRenderTargetTexture = function (width: number, height: number, colorTexture?: WebGLTexture, depthStencilTexture?: WebGLTexture) {
     const gl = this._gl;
 
     if (!this.getCaps().multiview) {
@@ -45,13 +51,21 @@ Engine.prototype.createMultiviewRenderTargetTexture = function (width: number, h
     internalTexture.height = height;
     internalTexture.isMultiview = true;
 
-    rtWrapper._colorTextureArray = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D_ARRAY, rtWrapper._colorTextureArray);
-    (gl as any).texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA8, width, height, 2);
+    if (!colorTexture) {
+        colorTexture = gl.createTexture() as WebGLTexture;
+        gl.bindTexture(gl.TEXTURE_2D_ARRAY, colorTexture);
+        (gl as any).texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA8, width, height, 2);
+    }
 
-    rtWrapper._depthStencilTextureArray = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D_ARRAY, rtWrapper._depthStencilTextureArray);
-    (gl as any).texStorage3D(gl.TEXTURE_2D_ARRAY, 1, (gl as any).DEPTH24_STENCIL8, width, height, 2);
+    rtWrapper._colorTextureArray = colorTexture;
+
+    if (!depthStencilTexture) {
+        depthStencilTexture = gl.createTexture() as WebGLTexture;
+        gl.bindTexture(gl.TEXTURE_2D_ARRAY, depthStencilTexture);
+        (gl as any).texStorage3D(gl.TEXTURE_2D_ARRAY, 1, (gl as any).DEPTH24_STENCIL8, width, height, 2);
+    }
+
+    rtWrapper._depthStencilTextureArray = depthStencilTexture;
 
     internalTexture.isReady = true;
 
@@ -87,6 +101,22 @@ Engine.prototype.bindMultiviewFramebuffer = function (_multiviewTexture: RenderT
         }
     } else {
         throw "Invalid multiview frame buffer";
+    }
+};
+
+Engine.prototype.bindSpaceWarpFramebuffer = function (_spaceWarpTexture: RenderTargetWrapper) {
+    const spaceWarpTexture = _spaceWarpTexture as WebGLRenderTargetWrapper;
+
+    const gl: any = this._gl;
+    const ext = this.getCaps().oculusMultiview || this.getCaps().multiview;
+
+    this.bindFramebuffer(spaceWarpTexture, undefined, undefined, undefined, true);
+    gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, spaceWarpTexture._framebuffer);
+    if (spaceWarpTexture._colorTextureArray && spaceWarpTexture._depthStencilTextureArray) {
+        ext.framebufferTextureMultiviewOVR(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, spaceWarpTexture._colorTextureArray, 0, 0, 2);
+        ext.framebufferTextureMultiviewOVR(gl.DRAW_FRAMEBUFFER, gl.DEPTH_ATTACHMENT, spaceWarpTexture._depthStencilTextureArray, 0, 0, 2);
+    } else {
+        throw new Error("Invalid Space Warp framebuffer");
     }
 };
 

@@ -9,14 +9,33 @@ import type { ThinEngine } from "../thinEngine";
 export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
     private _context: WebGLRenderingContext;
 
+    /**
+     * @internal
+     */
     public _framebuffer: Nullable<WebGLFramebuffer> = null;
+    /**
+     * @internal
+     */
     public _depthStencilBuffer: Nullable<WebGLRenderbuffer> = null;
     // eslint-disable-next-line @typescript-eslint/naming-convention
+    /**
+     * @internal
+     */
     public _MSAAFramebuffer: Nullable<WebGLFramebuffer> = null;
 
     // Multiview
+    /**
+     * @internal
+     */
     public _colorTextureArray: Nullable<WebGLTexture> = null;
+    /**
+     * @internal
+     */
     public _depthStencilTextureArray: Nullable<WebGLTexture> = null;
+    /**
+     * @internal
+     */
+    public _disposeOnlyFramebuffers = false;
 
     constructor(isMulti: boolean, isCube: boolean, size: TextureSize, engine: ThinEngine, context: WebGLRenderingContext) {
         super(isMulti, isCube, size, engine);
@@ -178,7 +197,7 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
         }
     }
 
-    public dispose(disposeOnlyFramebuffers = false): void {
+    public dispose(disposeOnlyFramebuffers = this._disposeOnlyFramebuffers): void {
         const gl = this._context;
 
         if (!disposeOnlyFramebuffers) {
