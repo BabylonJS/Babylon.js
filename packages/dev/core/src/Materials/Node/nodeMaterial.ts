@@ -74,8 +74,8 @@ declare let BABYLON: any;
 export interface INodeMaterialEditorOptions {
     /** Define the URL to load node editor script from */
     editorURL?: string;
-    /** If the scene's clear color should be used as the NME preview's clear color */
-    useSceneClearColor?: boolean;
+    /** Additional configuration for the NME */
+    additionalConfig?: any;
 }
 
 /** @internal */
@@ -1580,13 +1580,11 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /** Creates the node editor window. */
-    private _createNodeEditor(useSceneClearColor?: boolean) {
+    private _createNodeEditor(additionalConfig?: any) {
         const nodeEditorConfig: any = {
             nodeMaterial: this,
+            ...additionalConfig,
         };
-        if (useSceneClearColor) {
-            nodeEditorConfig["backgroundColor"] = this.getScene().clearColor;
-        }
         this.BJSNODEMATERIALEDITOR.NodeEditor.Show(nodeEditorConfig);
     }
 
@@ -1604,12 +1602,12 @@ export class NodeMaterial extends PushMaterial {
                 // Load editor and add it to the DOM
                 Tools.LoadScript(editorUrl, () => {
                     this.BJSNODEMATERIALEDITOR = this.BJSNODEMATERIALEDITOR || this._getGlobalNodeMaterialEditor();
-                    this._createNodeEditor(config?.useSceneClearColor);
+                    this._createNodeEditor(config?.additionalConfig);
                     resolve();
                 });
             } else {
                 // Otherwise creates the editor
-                this._createNodeEditor(config?.useSceneClearColor);
+                this._createNodeEditor(config?.additionalConfig);
                 resolve();
             }
         });
