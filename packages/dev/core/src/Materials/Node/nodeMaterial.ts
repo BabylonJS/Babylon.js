@@ -72,8 +72,10 @@ declare let BABYLON: any;
  * Interface used to configure the node material editor
  */
 export interface INodeMaterialEditorOptions {
-    /** Define the URl to load node editor script */
+    /** Define the URL to load node editor script from */
     editorURL?: string;
+    /** If the scene's clear color should be used as the NME preview's clear color */
+    useSceneClearColor?: boolean;
 }
 
 /** @internal */
@@ -1591,10 +1593,9 @@ export class NodeMaterial extends PushMaterial {
     /**
      * Launch the node material editor
      * @param config Define the configuration of the editor
-     * @param useSceneClearColor if the mesh preview on the editor should use the same as the scene's clear color
      * @returns a promise fulfilled when the node editor is visible
      */
-    public edit(config?: INodeMaterialEditorOptions, useSceneClearColor?: boolean): Promise<void> {
+    public edit(config?: INodeMaterialEditorOptions): Promise<void> {
         return new Promise((resolve) => {
             this.BJSNODEMATERIALEDITOR = this.BJSNODEMATERIALEDITOR || this._getGlobalNodeMaterialEditor();
             if (typeof this.BJSNODEMATERIALEDITOR == "undefined") {
@@ -1603,12 +1604,12 @@ export class NodeMaterial extends PushMaterial {
                 // Load editor and add it to the DOM
                 Tools.LoadScript(editorUrl, () => {
                     this.BJSNODEMATERIALEDITOR = this.BJSNODEMATERIALEDITOR || this._getGlobalNodeMaterialEditor();
-                    this._createNodeEditor(useSceneClearColor);
+                    this._createNodeEditor(config?.useSceneClearColor);
                     resolve();
                 });
             } else {
                 // Otherwise creates the editor
-                this._createNodeEditor(useSceneClearColor);
+                this._createNodeEditor(config?.useSceneClearColor);
                 resolve();
             }
         });
