@@ -75,7 +75,9 @@ export interface INodeMaterialEditorOptions {
     /** Define the URL to load node editor script from */
     editorURL?: string;
     /** Additional configuration for the NME */
-    additionalConfig?: any;
+    additionalConfig?: {
+        backgroundColor?: Color4;
+    };
 }
 
 /** @internal */
