@@ -1799,8 +1799,8 @@ export class ThinEngine {
                           width: this._renderingCanvas.width * this._hardwareScalingLevel,
                           height: this._renderingCanvas.height * this._hardwareScalingLevel,
                       };
-                width = this._renderingCanvas.clientWidth || boundingRect.width || this._renderingCanvas.width;
-                height = this._renderingCanvas.clientHeight || boundingRect.height || this._renderingCanvas.height;
+                width = this._renderingCanvas.clientWidth || boundingRect.width || this._renderingCanvas.width || 100;
+                height = this._renderingCanvas.clientHeight || boundingRect.height || this._renderingCanvas.height || 100;
             } else {
                 width = window.innerWidth;
                 height = window.innerHeight;
