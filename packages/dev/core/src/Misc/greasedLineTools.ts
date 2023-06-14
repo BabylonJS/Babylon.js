@@ -41,6 +41,19 @@ export class GreasedLineTools {
     }
 
     /**
+     * Converts number coordinates to Vector3s
+     * @param points number array of x, y, z, x, y z, ... coordinates
+     * @returns Vector3 array
+     */
+    public static ToVector3Array(points: number[]) {
+        const array: Vector3[] = [];
+        for (let i = 0; i < points.length; i += 3) {
+            array.push(new Vector3(points[i], points[i + 1], points[i + 2]));
+        }
+        return array;
+    }
+
+    /**
      * Gets the length of the line counting all it's segments length
      * @param data array of line points
      * @returns length of the line
@@ -52,11 +65,7 @@ export class GreasedLineTools {
 
         let points: Vector3[];
         if (typeof data[0] === "number") {
-            points = [];
-            const numberData = <number[]>data;
-            for (let i = 0; i < data.length; i += 3) {
-                points.push(new Vector3(numberData[i], numberData[i + 1], numberData[i + 2]));
-            }
+            points = GreasedLineTools.ToVector3Array(<number[]>data);
         } else {
             points = <Vector3[]>data;
         }
