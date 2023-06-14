@@ -427,9 +427,9 @@ export class Observable<T> {
      * Clear the list of observers
      */
     public clear(): void {
-        while(this._observers.length) {
+        while (this._observers.length) {
             const o = this._observers.pop();
-            if(o) {
+            if (o) {
                 o._remove = null;
             }
         }
