@@ -1792,7 +1792,7 @@ export class ThinEngine {
 
         if (IsWindowObjectExist() && IsDocumentAvailable()) {
             // make sure it is a Node object, and is a part of the document.
-            if (this._renderingCanvas && this._renderingCanvas.nodeType && document.body.contains(this._renderingCanvas)) {
+            if (this._renderingCanvas) {
                 const boundingRect = this._renderingCanvas.getBoundingClientRect
                     ? this._renderingCanvas.getBoundingClientRect()
                     : {
@@ -1800,11 +1800,8 @@ export class ThinEngine {
                           width: this._renderingCanvas.width * this._hardwareScalingLevel,
                           height: this._renderingCanvas.height * this._hardwareScalingLevel,
                       };
-                width = this._renderingCanvas.clientWidth || boundingRect.width;
-                height = this._renderingCanvas.clientHeight || boundingRect.height;
-            } else if (this._renderingCanvas) {
-                width = this._renderingCanvas.width;
-                height = this._renderingCanvas.height;
+                width = this._renderingCanvas.clientWidth || boundingRect.width || this._renderingCanvas.width || 100;
+                height = this._renderingCanvas.clientHeight || boundingRect.height || this._renderingCanvas.height || 100;
             } else {
                 width = window.innerWidth;
                 height = window.innerHeight;
