@@ -803,6 +803,24 @@ export class NativeEngine extends Engine {
         this._commandBufferEncoder.finishEncodingCommand();
     }
 
+    public enableScissor(x: number, y: number, width: number, height: number): void {
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETSCISSOR);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(x);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(y);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(width);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(height);
+        this._commandBufferEncoder.finishEncodingCommand();
+    }
+
+    public disableScissor() {
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETSCISSOR);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(0);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(0);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(0);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(0);
+        this._commandBufferEncoder.finishEncodingCommand();
+    }
+
     public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false, cullBackFaces?: boolean, stencil?: IStencilState, zOffsetUnits: number = 0): void {
         this._zOffset = zOffset;
         this._zOffsetUnits = zOffsetUnits;
