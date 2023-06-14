@@ -28,16 +28,6 @@ declare module "../../Engines/engine" {
         bindMultiviewFramebuffer(multiviewTexture: RenderTargetWrapper): void;
 
         /**
-         * Creates a new Space Warp render target
-         * @param width defines the width of the texture
-         * @param height defines the height of the texture
-         * @param motionVectorTexture WebGLTexture from XRWebGLSubImage
-         * @param depthStencilTexture WebGLTexture from XRWebGLSubImage
-         * @returns the created Space Warp render target wrapper
-         */
-        createSpaceWarpRenderTargetTexture(width: number, height: number, motionVectorTexture: WebGLTexture, depthStencilTexture: WebGLTexture): RenderTargetWrapper;
-
-        /**
          * Binds a Space Warp render target wrapper to be drawn to
          * @param spaceWarpTexture render target wrapper to bind
          */
@@ -113,12 +103,6 @@ Engine.prototype.bindMultiviewFramebuffer = function (_multiviewTexture: RenderT
     } else {
         throw "Invalid multiview frame buffer";
     }
-};
-
-Engine.prototype.createSpaceWarpRenderTargetTexture = function (width: number, height: number, motionVectorTexture: WebGLTexture, depthStencilTexture: WebGLTexture) {
-    const rtWrapper = this.createMultiviewRenderTargetTexture(width, height, motionVectorTexture, depthStencilTexture) as WebGLRenderTargetWrapper;
-    rtWrapper._disposeOnlyFramebuffers = true;
-    return rtWrapper;
 };
 
 Engine.prototype.bindSpaceWarpFramebuffer = function (_spaceWarpTexture: RenderTargetWrapper) {
