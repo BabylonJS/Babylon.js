@@ -926,10 +926,17 @@ declare abstract class XRSubImage implements XRSubImage {}
 
 interface XRWebGLSubImage extends XRSubImage {
     readonly colorTexture: WebGLTexture;
-    readonly depthStencilTexture: WebGLTexture;
+    readonly depthStencilTexture?: WebGLTexture;
+    readonly motionVectorTexture?: WebGLTexture;
     readonly imageIndex: number;
     readonly textureWidth: number;
     readonly textureHeight: number;
+    readonly colorTextureWidth?: number;
+    readonly colorTextureHeight?: number;
+    readonly depthStencilTextureWidth?: number;
+    readonly depthStencilTextureHeight?: number;
+    readonly motionVectorTextureWidth?: number;
+    readonly motionVectorTextureHeight?: number;
 }
 
 declare abstract class XRWebGLSubImage implements XRWebGLSubImage {}
