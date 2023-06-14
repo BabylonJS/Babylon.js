@@ -116,7 +116,7 @@ Engine.prototype.bindSpaceWarpFramebuffer = function (_spaceWarpTexture: RenderT
         ext.framebufferTextureMultiviewOVR(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, spaceWarpTexture._colorTextureArray, 0, 0, 2);
         ext.framebufferTextureMultiviewOVR(gl.DRAW_FRAMEBUFFER, gl.DEPTH_ATTACHMENT, spaceWarpTexture._depthStencilTextureArray, 0, 0, 2);
     } else {
-        throw "Invalid Space Warp framebuffer";
+        throw new Error("Invalid Space Warp framebuffer");
     }
 };
 
