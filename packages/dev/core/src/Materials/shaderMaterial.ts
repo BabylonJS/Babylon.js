@@ -130,12 +130,12 @@ export class ShaderMaterial extends PushMaterial {
     private _storageBuffers: { [name: string]: StorageBuffer } = {};
     private _cachedWorldViewMatrix = new Matrix();
     private _cachedWorldViewProjectionMatrix = new Matrix();
-    private _multiview: boolean = false;
+    private _multiview = false;
 
     /**
      * @internal
      */
-    public _materialHelperNeedsPreviousMatrices: boolean = false;
+    public _materialHelperNeedsPreviousMatrices = false;
 
     /** Define the Url to load snippets */
     public static SnippetUrl = Constants.SnippetUrl;
@@ -610,9 +610,9 @@ export class ShaderMaterial extends PushMaterial {
 
     /**
      * Adds, removes, or replaces the specified shader define and value.
-     * * setShaderDefine("MY_DEFINE", true); // enables a boolean define
-     * * setShaderDefine("MY_DEFINE", "0.5"); // adds "#define MY_DEFINE 0.5" to the shader (or sets and replaces the value of any existing define with that name)
-     * * setShaderDefine("MY_DEFINE", false); // disables and removes the define
+     * * setDefine("MY_DEFINE", true); // enables a boolean define
+     * * setDefine("MY_DEFINE", "0.5"); // adds "#define MY_DEFINE 0.5" to the shader (or sets and replaces the value of any existing define with that name)
+     * * setDefine("MY_DEFINE", false); // disables and removes the define
      * Note if the active defines do change, the shader will be recompiled and this can be expensive.
      * @param define the define name e.g., "OUTPUT_TO_SRGB" or "#define OUTPUT_TO_SRGB". If the define was passed into the constructor already, the version used should match that, and in either case, it should not include any appended value.
      * @param value either the value of the define (e.g. a numerical value) or for booleans, true if the define should be enabled or false if it should be disabled
@@ -1736,7 +1736,7 @@ export class ShaderMaterial extends PushMaterial {
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
      * @returns a promise that will resolve to the new ShaderMaterial
      */
-    public static ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, rootUrl: string = ""): Promise<ShaderMaterial> {
+    public static ParseFromFileAsync(name: Nullable<string>, url: string, scene: Scene, rootUrl = ""): Promise<ShaderMaterial> {
         return new Promise((resolve, reject) => {
             const request = new WebRequest();
             request.addEventListener("readystatechange", () => {
@@ -1768,7 +1768,7 @@ export class ShaderMaterial extends PushMaterial {
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
      * @returns a promise that will resolve to the new ShaderMaterial
      */
-    public static ParseFromSnippetAsync(snippetId: string, scene: Scene, rootUrl: string = ""): Promise<ShaderMaterial> {
+    public static ParseFromSnippetAsync(snippetId: string, scene: Scene, rootUrl = ""): Promise<ShaderMaterial> {
         return new Promise((resolve, reject) => {
             const request = new WebRequest();
             request.addEventListener("readystatechange", () => {
