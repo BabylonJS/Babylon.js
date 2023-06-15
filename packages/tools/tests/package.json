@@ -31,10 +31,10 @@
         "jest": "^27.4.7",
         "jest-puppeteer": "^6.0.3",
         "sass": "^1.62.1",
-        "puppeteer": "^13.1.2"
+        "puppeteer": "^20.5.0"
     },
     "optionalDependencies": {
-        "jest-screenshot": "^0.3.5"
+        "jest-image-snapshot": "^6.1.0"
     },
     "sideEffects": false
 }

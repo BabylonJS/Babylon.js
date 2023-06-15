@@ -2,7 +2,7 @@ import type { IBufferView, AccessorComponentType, IAccessor } from "babylonjs-gl
 import { AccessorType } from "babylonjs-gltf2interface";
 
 import type { FloatArray, Nullable } from "core/types";
-import type { Vector4, Quaternion } from "core/Maths/math.vector";
+import type { Vector4 } from "core/Maths/math.vector";
 import { Vector3 } from "core/Maths/math.vector";
 
 /**
@@ -75,15 +75,9 @@ export class _GLTFUtilities {
      * @param positions Positions array of a mesh
      * @param vertexStart Starting vertex offset to calculate min and max values
      * @param vertexCount Number of vertices to check for min and max values
-     * @param convertToRightHandedSystem
      * @returns min number array and max number array
      */
-    public static _CalculateMinMaxPositions(
-        positions: FloatArray,
-        vertexStart: number,
-        vertexCount: number,
-        convertToRightHandedSystem: boolean
-    ): { min: number[]; max: number[] } {
+    public static _CalculateMinMaxPositions(positions: FloatArray, vertexStart: number, vertexCount: number): { min: number[]; max: number[] } {
         const min = [Infinity, Infinity, Infinity];
         const max = [-Infinity, -Infinity, -Infinity];
         const positionStrideSize = 3;
@@ -96,9 +90,6 @@ export class _GLTFUtilities {
                 indexOffset = positionStrideSize * i;
 
                 position = Vector3.FromArray(positions, indexOffset);
-                if (convertToRightHandedSystem) {
-                    _GLTFUtilities._GetRightHandedPositionVector3FromRef(position);
-                }
                 vector = position.asArray();
 
                 for (let j = 0; j < positionStrideSize; ++j) {
@@ -114,92 +105,6 @@ export class _GLTFUtilities {
             }
         }
         return { min, max };
-    }
-
-    /**
-     * Converts a new right-handed Vector3
-     * @param vector vector3 array
-     * @returns right-handed Vector3
-     */
-    public static _GetRightHandedPositionVector3(vector: Vector3): Vector3 {
-        return new Vector3(vector.x, vector.y, -vector.z);
-    }
-
-    /**
-     * Converts a Vector3 to right-handed
-     * @param vector Vector3 to convert to right-handed
-     */
-    public static _GetRightHandedPositionVector3FromRef(vector: Vector3) {
-        vector.z *= -1;
-    }
-
-    /**
-     * Converts a three element number array to right-handed
-     * @param vector number array to convert to right-handed
-     */
-    public static _GetRightHandedPositionArray3FromRef(vector: number[]) {
-        vector[2] *= -1;
-    }
-
-    /**
-     * Converts a new right-handed Vector3
-     * @param vector vector3 array
-     * @returns right-handed Vector3
-     */
-    public static _GetRightHandedNormalVector3(vector: Vector3): Vector3 {
-        return new Vector3(vector.x, vector.y, -vector.z);
-    }
-
-    /**
-     * Converts a Vector3 to right-handed
-     * @param vector Vector3 to convert to right-handed
-     */
-    public static _GetRightHandedNormalVector3FromRef(vector: Vector3) {
-        vector.z *= -1;
-    }
-
-    /**
-     * Converts a three element number array to right-handed
-     * @param vector number array to convert to right-handed
-     */
-    public static _GetRightHandedNormalArray3FromRef(vector: number[]) {
-        vector[2] *= -1;
-    }
-
-    /**
-     * Converts a Vector4 to right-handed
-     * @param vector Vector4 to convert to right-handed
-     */
-    public static _GetRightHandedVector4FromRef(vector: Vector4) {
-        vector.z *= -1;
-        vector.w *= -1;
-    }
-
-    /**
-     * Converts a Vector4 to right-handed
-     * @param vector Vector4 to convert to right-handed
-     */
-    public static _GetRightHandedArray4FromRef(vector: number[]) {
-        vector[2] *= -1;
-        vector[3] *= -1;
-    }
-
-    /**
-     * Converts a Quaternion to right-handed
-     * @param quaternion Source quaternion to convert to right-handed
-     */
-    public static _GetRightHandedQuaternionFromRef(quaternion: Quaternion) {
-        quaternion.x *= -1;
-        quaternion.y *= -1;
-    }
-
-    /**
-     * Converts a Quaternion to right-handed
-     * @param quaternion Source quaternion to convert to right-handed
-     */
-    public static _GetRightHandedQuaternionArrayFromRef(quaternion: number[]) {
-        quaternion[0] *= -1;
-        quaternion[1] *= -1;
     }
 
     public static _NormalizeTangentFromRef(tangent: Vector4) {

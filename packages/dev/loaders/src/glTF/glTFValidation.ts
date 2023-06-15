@@ -103,11 +103,13 @@ export class GLTFValidation {
      * @returns A promise that resolves with the glTF validation results once complete
      */
     public static ValidateAsync(
-        data: string | ArrayBuffer,
+        data: string | ArrayBufferView,
         rootUrl: string,
         fileName: string,
         getExternalResource: (uri: string) => Promise<ArrayBuffer>
     ): Promise<GLTF2.IGLTFValidationResults> {
+        const dataCopy = ArrayBuffer.isView(data) ? (data as Uint8Array).slice().buffer : (data as string);
+
         if (typeof Worker === "function") {
             return new Promise((resolve, reject) => {
                 const workerContent = `${validateAsync}(${workerFunc})()`;
@@ -154,7 +156,7 @@ export class GLTFValidation {
                 worker.addEventListener("message", onMessage);
 
                 worker.postMessage({ id: "init", url: this.Configuration.url });
-                worker.postMessage({ id: "validate", data: data, rootUrl: rootUrl, fileName: fileName });
+                worker.postMessage({ id: "validate", data: dataCopy, rootUrl: rootUrl, fileName: fileName });
             });
         } else {
             if (!this._LoadScriptPromise) {
@@ -162,7 +164,7 @@ export class GLTFValidation {
             }
 
             return this._LoadScriptPromise.then(() => {
-                return validateAsync(data, rootUrl, fileName, getExternalResource);
+                return validateAsync(dataCopy, rootUrl, fileName, getExternalResource);
             });
         }
     }
