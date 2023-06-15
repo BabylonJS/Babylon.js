@@ -159,6 +159,8 @@ if (vClipSpacePosition.x / vClipSpacePosition.w >= vDebugMode.x) {
         gl_FragColor.rgb = vec3(luminanceOverAlpha);
     #elif DEBUGMODE == 87
         gl_FragColor.rgb = vec3(alpha);
+    #elif DEBUGMODE == 88 && defined(ALBEDO)
+        gl_FragColor.rgb = vec3(albedoTexture.a);
     #endif
 
     gl_FragColor.rgb *= vDebugMode.y;
