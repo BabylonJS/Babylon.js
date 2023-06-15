@@ -263,9 +263,9 @@ export class AnimationGroup implements IDisposable {
      * @param animation defines the animation we want to remove
      */
     public removeTargetedAnimation(animation: Animation) {
-        for(let index = this._targetedAnimations.length - 1; index > -1; index--){
+        for (let index = this._targetedAnimations.length - 1; index > -1; index--) {
             const targetedAnimation = this._targetedAnimations[index];
-            if(targetedAnimation.animation === animation){
+            if (targetedAnimation.animation === animation) {
                 this._targetedAnimations.splice(index, 1);
             }
         }
