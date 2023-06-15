@@ -656,9 +656,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
     // }
 
     /**
-     * WebGPU
-     * A minimum size texture for the colors sampler2D.
-     * WebGPU requires a bound texture if the sampler is defined in the shader.
+     * A minimum size texture for the colors sampler2D when there is no colors texture defined yet.
      * For fast switching using the useColors property without the need to use defines.
      * @param scene Scene
      */
