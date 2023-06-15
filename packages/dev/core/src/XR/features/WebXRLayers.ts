@@ -46,27 +46,36 @@ class WebXRCompositionLayerRenderTargetTextureProvider extends WebXRLayerRenderT
     protected _getRenderTargetForSubImage(subImage: XRWebGLSubImage, eye: XREye) {
         const lastSubImage = this._lastSubImages.get(eye);
         const eyeIndex = eye == "left" ? 0 : 1;
-        if (!this._renderTargetTextures[eyeIndex] || lastSubImage?.textureWidth !== subImage.textureWidth || lastSubImage?.textureHeight != subImage.textureHeight) {
+
+        const colorTextureWidth = subImage.colorTextureWidth ?? subImage.textureWidth;
+        const colorTextureHeight = subImage.colorTextureHeight ?? subImage.textureHeight;
+
+        if (!this._renderTargetTextures[eyeIndex] || lastSubImage?.textureWidth !== colorTextureWidth || lastSubImage?.textureHeight !== colorTextureHeight) {
+            let depthStencilTexture;
+            const depthStencilTextureWidth = subImage.depthStencilTextureWidth ?? colorTextureWidth;
+            const depthStencilTextureHeight = subImage.depthStencilTextureHeight ?? colorTextureHeight;
+            if (colorTextureWidth === depthStencilTextureWidth || colorTextureHeight === depthStencilTextureHeight) {
+                depthStencilTexture = subImage.depthStencilTexture;
+            }
+
             this._renderTargetTextures[eyeIndex] = this._createRenderTargetTexture(
-                subImage.textureWidth,
-                subImage.textureHeight,
+                colorTextureWidth,
+                colorTextureHeight,
                 null,
                 subImage.colorTexture,
-                subImage.depthStencilTexture,
+                depthStencilTexture,
                 this.layerWrapper.isMultiview
             );
 
             this._framebufferDimensions = {
-                framebufferWidth: subImage.textureWidth,
-                framebufferHeight: subImage.textureHeight,
+                framebufferWidth: colorTextureWidth,
+                framebufferHeight: colorTextureHeight,
             };
         }
 
         this._lastSubImages.set(eye, subImage);
-
         return this._renderTargetTextures[eyeIndex];
     }
-
     private _getSubImageForEye(eye: XREye): Nullable<XRWebGLSubImage> {
         const currentFrame = this._xrSessionManager.currentFrame;
         if (currentFrame) {
@@ -74,7 +83,6 @@ class WebXRCompositionLayerRenderTargetTextureProvider extends WebXRLayerRenderT
         }
         return null;
     }
-
     public getRenderTargetTextureForEye(eye: XREye): Nullable<RenderTargetTexture> {
         const subImage = this._getSubImageForEye(eye);
         if (subImage) {
@@ -82,14 +90,13 @@ class WebXRCompositionLayerRenderTargetTextureProvider extends WebXRLayerRenderT
         }
         return null;
     }
-
     public getRenderTargetTextureForView(view: XRView): Nullable<RenderTargetTexture> {
         return this.getRenderTargetTextureForEye(view.eye);
     }
 
     protected _setViewportForSubImage(viewport: Viewport, subImage: XRWebGLSubImage) {
-        const textureWidth = subImage.textureWidth;
-        const textureHeight = subImage.textureHeight;
+        const textureWidth = subImage.colorTextureWidth ?? subImage.textureWidth;
+        const textureHeight = subImage.colorTextureWidth ?? subImage.textureHeight;
         const xrViewport = subImage.viewport;
         viewport.x = xrViewport.x / textureWidth;
         viewport.y = xrViewport.y / textureHeight;
