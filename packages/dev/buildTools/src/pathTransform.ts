@@ -30,7 +30,7 @@ const getRelativePath = (computedPath: string, sourceFilename: string) => {
  * @param options
  * @param sourceFilename
  */
-const transformPackageLocation = (location: string, options: ITransformerOptions, sourceFilename?: string) => {
+export const transformPackageLocation = (location: string, options: ITransformerOptions, sourceFilename?: string) => {
     const directoryParts = location.split("/");
     const basePackage = directoryParts[0] === "@" ? `${directoryParts.shift()}/${directoryParts.shift()}` : directoryParts.shift();
     if (basePackage === "tslib" && sourceFilename) {
