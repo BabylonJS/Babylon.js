@@ -3,7 +3,7 @@ import type { GreasedLineMaterialOptions } from "../../Materials/greasedLinePlug
 import { GreasedLineMeshColorMode, GreasedLineMeshMaterialType, GreasedLinePluginMaterial } from "../../Materials/greasedLinePluginMaterial";
 import { StandardMaterial } from "./../../Materials/standardMaterial";
 import { PBRMaterial } from "../../Materials/PBR/pbrMaterial";
-import { Vector3 } from "../../Maths/math.vector";
+import type { Vector3 } from "../../Maths/math.vector";
 import type { Nullable } from "../../types";
 import type { GreasedLineMeshOptions } from "../greasedLineMesh";
 import { GreasedLineMesh } from "../greasedLineMesh";
@@ -132,7 +132,7 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
                 width: materialOptions.width,
                 color: materialOptions.color,
                 colorMode: materialOptions.colorMode ?? GreasedLineMeshColorMode.COLOR_MODE_SET,
-                colorsSampling: materialOptions.colorsSampling
+                colorsSampling: materialOptions.colorsSampling,
             };
 
             if (colors) {
@@ -157,7 +157,7 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
         } else {
             instance.setSegmentWidths(widths);
         }
-        instance.options.instance = instance
+        instance.options.instance = instance;
         instance.addPoints(allPoints);
     }
 
@@ -185,7 +185,7 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
  * @returns an array of x, y, z coordinates as numbers [x, y, z, x, y, z, x, y, z, ....]
  */
 export function Vector3ArrayToNumberArray(array: Vector3[]) {
-    return array instanceof Array<Vector3> ? (<Vector3[]>array).flatMap((v) => [v.x, v.y, v.z]) : array;
+    return array.flatMap((v) => [v.x, v.y, v.z]);
 }
 
 /**
