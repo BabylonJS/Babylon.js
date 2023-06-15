@@ -1625,6 +1625,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * @param from - The start point of the raycast.
      * @param to - The end point of the raycast.
      * @param result - The PhysicsRaycastResult object to store the result of the raycast.
+     * @param query - The raycast query options. See [[IRaycastQuery]] for more information.
      *
      * Performs a raycast. It takes in two points, from and to, and a PhysicsRaycastResult object to store the result of the raycast.
      * It then performs the raycast and stores the hit data in the PhysicsRaycastResult object.
