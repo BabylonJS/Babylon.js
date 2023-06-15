@@ -587,7 +587,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /**
-     * Gets or sets a boolean indicating that bone animations must be computed by the CPU (false by default)
+     * Gets or sets a boolean indicating that bone animations must be computed by the GPU (true by default)
      */
     public get computeBonesUsingShaders(): boolean {
         return this._internalAbstractMeshDataInfo._computeBonesUsingShaders;
