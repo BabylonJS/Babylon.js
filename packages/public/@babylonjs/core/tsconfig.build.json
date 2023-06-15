@@ -8,7 +8,7 @@
         "target": "ES2018",
         "importHelpers": true,
         "plugins": [
-            { "transform": "../../../dev/buildTools/src/pathTransform.ts", "buildType": "es6", "basePackage": "@babylonjs/core", "appendJS": true },
+            { "transform": "../../../dev/buildTools/dest/pathTransform.js", "buildType": "es6", "basePackage": "@babylonjs/core", "appendJS": true },
         ],
         "paths": {
             "core/*": ["lts/core/generated/*"],
