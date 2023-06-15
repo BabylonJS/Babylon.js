@@ -31,8 +31,8 @@ export enum GreasedLineMeshColorMode {
  */
 export interface GreasedLineMaterialOptions {
     /**
-     * Line width.
-     * Default to 0.1 if @see sizeAttenuation is false, or to 1 if it's true.
+     * Line width. If sizeAttenuation os false scene units will be used for width.
+     * Defaults to 0.1 if @see sizeAttenuation is false, or to 1 if it's true.
      */
     width?: number;
     /**
@@ -51,7 +51,7 @@ export interface GreasedLineMaterialOptions {
      */
     color?: Color3;
     /**
-     * Color mode of the line. Applient to all line segments.
+     * Color mode of the line. Applies to all line segments.
      * The pixel color from the material shader will be modified with the value of @see color using the colorMode.
      * Defaults to @see GreasedLineMeshColorMode.SET
      */
@@ -78,21 +78,26 @@ export interface GreasedLineMaterialOptions {
     useDash?: boolean;
     /**
      * @see GreasedLinePluginMaterial.setDashCount
+     * Number of dashes in the line.
      * Defaults to 1.
      */
     dashCount?: number;
     /**
+     * Offset of the dashes along the line. 0 to 1.
      * Defaults to 0.
      * @see GreasedLinePluginMaterial.setDashOffset
      */
     dashOffset?: number;
     /**
+     * Length of the dash. 0 to 1. 0.5 means half empty, half drawn.
      * Defaults to 0.5.
      * @see GreasedLinePluginMaterial.setDashRatio
      */
     dashRatio?: number;
     /**
-     * Defaults to 1.
+     * Sets the line length visibility.
+     * 0 - 0% of the line will be visible.
+     * 1 - 100% of the line will be visible.
      * @see GreasedLinePluginMaterial.setVisibility
      */
     visibility?: number;
