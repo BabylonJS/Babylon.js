@@ -1870,7 +1870,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /**
-     * Checks if the passed Ray intersects with the mesh
+     * Checks if the passed Ray intersects with the mesh. A mesh triangle can be picked both from its front and back sides,
+     * irrespective of orientation.
      * @param ray defines the ray to use. It should be in the mesh's LOCAL coordinate space.
      * @param fastCheck defines if fast mode (but less precise) must be used (false by default)
      * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected

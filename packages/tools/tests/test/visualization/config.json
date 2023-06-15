@@ -1058,6 +1058,11 @@
             "renderCount": 10
         },
         {
+            "title": "GLB load from ArrayBuffer",
+            "playgroundId": "#31UBR0#4",
+            "referenceImage": "glbArrayBufferViewLoad.png"
+        },
+        {
             "title": "KTX2 decoder test",
             "playgroundId": "#EIJH8L#27",
             "renderCount": 5,

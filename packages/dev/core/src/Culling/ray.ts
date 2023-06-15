@@ -293,7 +293,8 @@ export class Ray {
     }
 
     /**
-     * Checks if ray intersects a mesh. The ray is defined in WORLD space.
+     * Checks if ray intersects a mesh. The ray is defined in WORLD space. A mesh triangle can be picked both from its front and back sides,
+     * irrespective of orientation.
      * @param mesh the mesh to check
      * @param fastCheck defines if the first intersection will be used (and not the closest)
      * @param trianglePredicate defines an optional predicate used to select faces when a mesh intersection is detected

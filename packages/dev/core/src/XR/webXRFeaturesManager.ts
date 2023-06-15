@@ -140,6 +140,10 @@ export class WebXRFeatureName {
      * The name of the depth sensing feature
      */
     public static readonly DEPTH_SENSING = "xr-depth-sensing";
+    /**
+     * The name of the WebXR Space Warp feature
+     */
+    public static readonly SPACE_WARP = "xr-space-warp";
 }
 
 /**

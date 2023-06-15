@@ -28,6 +28,9 @@ interface IPBRMaterialPropertyGridComponentProps {
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
+/**
+ * @internal
+ */
 export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMaterialPropertyGridComponentProps> {
     private _onDebugSelectionChangeObservable = new Observable<TextureLinkLineComponent>();
     constructor(props: IPBRMaterialPropertyGridComponentProps) {
@@ -233,7 +236,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
             { label: "Sheen Reflectance", value: 85 },
             { label: "Luminance Over Alpha", value: 86 },
             { label: "Alpha", value: 87 },
-            { label: "Albedo Alpha", value: 88 }
+            { label: "Albedo Alpha", value: 88 },
         ];
 
         const realTimeFilteringQualityOptions = [
