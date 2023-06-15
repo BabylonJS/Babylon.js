@@ -30,7 +30,7 @@ const getRelativePath = (computedPath: string, sourceFilename: string) => {
  * @param options
  * @param sourceFilename
  */
-export const transformPackageLocation = (location: string, options: ITransformerOptions, sourceFilename?: string) => {
+const transformPackageLocation = (location: string, options: ITransformerOptions, sourceFilename?: string) => {
     const directoryParts = location.split("/");
     const basePackage = directoryParts[0] === "@" ? `${directoryParts.shift()}/${directoryParts.shift()}` : directoryParts.shift();
     if (basePackage === "tslib" && sourceFilename) {
@@ -74,13 +74,13 @@ export const transformPackageLocation = (location: string, options: ITransformer
     }
 };
 
-export type Transformer = Required<Pick<ts.CustomTransformers, "after" | "afterDeclarations">>;
-export type TransformerNode = ts.Bundle | ts.SourceFile;
+type Transformer = Required<Pick<ts.CustomTransformers, "after" | "afterDeclarations">>;
+type TransformerNode = ts.Bundle | ts.SourceFile;
 
 /**
  * Options to pass for the transform function
  */
-export interface ITransformerOptions {
+interface ITransformerOptions {
     /**
      * can be lts, esm, umd and es6
      */
@@ -129,7 +129,7 @@ function isImportCall(node: ts.Node): node is ts.CallExpression {
     return ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword;
 }
 
-export function transformerFactory<T extends TransformerNode>(context: ts.TransformationContext, options: ITransformerOptions): ts.Transformer<T> {
+function transformerFactory<T extends TransformerNode>(context: ts.TransformationContext, options: ITransformerOptions): ts.Transformer<T> {
     // const aliasResolver = new AliasResolver(context.getCompilerOptions());
     function transformSourceFile(sourceFile: ts.SourceFile) {
         function getResolvedPathNode(node: ts.StringLiteral) {
