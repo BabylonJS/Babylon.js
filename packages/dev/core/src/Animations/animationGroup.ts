@@ -259,6 +259,19 @@ export class AnimationGroup implements IDisposable {
     }
 
     /**
+     * Remove an animation from the group
+     * @param animation defines the animation we want to remove
+     */
+    public removeTargetedAnimation(animation: Animation) {
+        for(let index = this._targetedAnimations.length - 1; index > -1; index--){
+            const targetedAnimation = this._targetedAnimations[index];
+            if(targetedAnimation.animation === animation){
+                this._targetedAnimations.splice(index, 1);
+            }
+        }
+    }
+
+    /**
      * This function will normalize every animation in the group to make sure they all go from beginFrame to endFrame
      * It can add constant keys at begin or end
      * @param beginFrame defines the new begin frame for all animations or the smallest begin frame of all animations if null (defaults to null)
