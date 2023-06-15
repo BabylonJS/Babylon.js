@@ -66,7 +66,6 @@ uniform float time;
 // Water varyings
 varying vec3 vRefractionMapTexCoord;
 varying vec3 vReflectionMapTexCoord;
-varying vec3 vPosition;
 
 #include<clipPlaneFragmentDeclaration>
 #include<logDepthDeclaration>

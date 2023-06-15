@@ -12,6 +12,7 @@ import { NodeMaterialModes } from "core/Materials/Node/Enums/nodeMaterialModes";
 import { RegisterToDisplayManagers } from "./graphSystem/registerToDisplayLedger";
 import { RegisterToPropertyTabManagers } from "./graphSystem/registerToPropertyLedger";
 import { RegisterTypeLedger } from "./graphSystem/registerToTypeLedger";
+import type { Color4 } from "core/Maths/math.color";
 
 /**
  * Interface used to specify creation options for the node editor
@@ -21,6 +22,7 @@ export interface INodeEditorOptions {
     hostElement?: HTMLElement;
     customSave?: { label: string; action: (data: string) => Promise<void> };
     customLoadObservable?: Observable<any>;
+    backgroundColor?: Color4;
 }
 
 /**
@@ -60,6 +62,9 @@ export class NodeEditor {
         globalState.customSave = options.customSave;
         globalState.hostWindow = hostElement.ownerDocument!.defaultView!;
         globalState.stateManager.hostDocument = globalState.hostDocument;
+        if (options.backgroundColor) {
+            globalState.backgroundColor = options.backgroundColor;
+        }
 
         const graphEditor = React.createElement(GraphEditor, {
             globalState: globalState,

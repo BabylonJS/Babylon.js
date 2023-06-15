@@ -30,7 +30,7 @@
         "eslint-formatter-azure-devops": "^0.2.0",
         "eslint-plugin-import": "~2.26.0",
         "eslint-plugin-jest": "~26.5.3",
-        "eslint-plugin-jsdoc": "~39.3.2",
+        "eslint-plugin-jsdoc": "~46.2.6",
         "eslint-plugin-prettier": "~4.0.0",
         "eslint-plugin-tsdoc": "~0.2.14",
         "fs-extra": "^10.0.1",
@@ -95,7 +95,7 @@
         "start": "concurrently --kill-others -m 2 -n dev-watch,cdn-server \"npm run watch:dev:skip-compile\" \"npm run serve -w @tools/babylon-server\""
     },
     "engines": {
-        "node": ">=14.0.0 <20.0.0",
+        "node": ">=14.0.0 <21.0.0",
         "npm": ">=8.0.0"
     },
     "changelog": {

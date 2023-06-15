@@ -222,14 +222,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@6.5.0";
+        return "babylonjs@6.8.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "6.5.0";
+        return "6.8.0";
     }
 
     /**
@@ -1190,6 +1190,7 @@ export class ThinEngine {
             drawBuffersExtension: false,
             maxMSAASamples: 1,
             colorBufferFloat: !!(this._webGLVersion > 1 && this._gl.getExtension("EXT_color_buffer_float")),
+            colorBufferHalfFloat: !!(this._webGLVersion > 1 && this._gl.getExtension("EXT_color_buffer_half_float")),
             textureFloat: this._webGLVersion > 1 || this._gl.getExtension("OES_texture_float") ? true : false,
             textureHalfFloat: this._webGLVersion > 1 || this._gl.getExtension("OES_texture_half_float") ? true : false,
             textureHalfFloatRender: false,
@@ -1781,7 +1782,7 @@ export class ThinEngine {
         let width: number;
         let height: number;
 
-        // Requery hardware scaling level to handle zoomed-in resizing.
+        // Re-query hardware scaling level to handle zoomed-in resizing.
         if (this.adaptToDeviceRatio) {
             const devicePixelRatio = IsWindowObjectExist() ? window.devicePixelRatio || 1.0 : 1.0;
             const changeRatio = this._lastDevicePixelRatio / devicePixelRatio;
@@ -1789,7 +1790,8 @@ export class ThinEngine {
             this._hardwareScalingLevel *= changeRatio;
         }
 
-        if (IsWindowObjectExist()) {
+        if (IsWindowObjectExist() && IsDocumentAvailable()) {
+            // make sure it is a Node object, and is a part of the document.
             if (this._renderingCanvas) {
                 const boundingRect = this._renderingCanvas.getBoundingClientRect
                     ? this._renderingCanvas.getBoundingClientRect()
@@ -1798,8 +1800,8 @@ export class ThinEngine {
                           width: this._renderingCanvas.width * this._hardwareScalingLevel,
                           height: this._renderingCanvas.height * this._hardwareScalingLevel,
                       };
-                width = this._renderingCanvas.clientWidth || boundingRect.width;
-                height = this._renderingCanvas.clientHeight || boundingRect.height;
+                width = this._renderingCanvas.clientWidth || boundingRect.width || this._renderingCanvas.width || 100;
+                height = this._renderingCanvas.clientHeight || boundingRect.height || this._renderingCanvas.height || 100;
             } else {
                 width = window.innerWidth;
                 height = window.innerHeight;

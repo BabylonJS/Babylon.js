@@ -74,7 +74,9 @@ export class KHR_lights implements IGLTFLoaderExtension {
 
                 switch (light.type) {
                     case KHRLightsPunctual_LightType.DIRECTIONAL: {
-                        babylonLight = new DirectionalLight(name, Vector3.Backward(), this._loader.babylonScene);
+                        const babylonDirectionalLight = new DirectionalLight(name, Vector3.Backward(), this._loader.babylonScene);
+                        babylonDirectionalLight.position.setAll(0);
+                        babylonLight = babylonDirectionalLight;
                         break;
                     }
                     case KHRLightsPunctual_LightType.POINT: {

@@ -681,8 +681,6 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         // Graph
         const node = this.appendNode(nodeData);
 
-        node.addClassToVisual(nodeData.getClassName());
-
         // Links
         if (nodeData.inputs.length && recursion) {
             for (const input of nodeData.inputs) {
@@ -804,6 +802,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         const newNode = new GraphNode(nodeData, this.props.stateManager);
 
         newNode.appendVisual(this._graphCanvas, this);
+        newNode.addClassToVisual(nodeData.getClassName());
 
         this._nodes.push(newNode);
         this._nodeDataContentList.push(nodeData.data);

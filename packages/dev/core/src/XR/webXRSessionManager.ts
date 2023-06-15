@@ -376,6 +376,13 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
     }
 
     /**
+     * @internal
+     */
+    public _getBaseLayerWrapper(): Nullable<WebXRLayerWrapper> {
+        return this._baseLayerWrapper;
+    }
+
+    /**
      * Updates the render state of the session
      * @param state state to set
      */

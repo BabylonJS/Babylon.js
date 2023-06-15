@@ -40,6 +40,7 @@ import shadowOffsetXIcon from "shared-ui-components/imgs/shadowOffsetXIcon.svg";
 import colorIcon from "shared-ui-components/imgs/colorIcon.svg";
 import fillColorIcon from "shared-ui-components/imgs/fillColorIcon.svg";
 import linkedMeshOffsetIcon from "shared-ui-components/imgs/linkedMeshOffsetIcon.svg";
+import visibleIcon from "../../../../imgs/visibilityActiveIcon.svg";
 
 import hAlignCenterIcon from "shared-ui-components/imgs/hAlignCenterIcon.svg";
 import hAlignLeftIcon from "shared-ui-components/imgs/hAlignLeftIcon.svg";
@@ -73,6 +74,7 @@ type ControlProperty = keyof Control | "_paddingLeft" | "_paddingRight" | "_padd
 export class CommonControlPropertyGridComponent extends React.Component<ICommonControlPropertyGridComponentProps, ICommonControlPropertyGridComponentState> {
     private _onPropertyChangedObserver: Nullable<Observer<PropertyChangedEvent>> | undefined;
     private _onFontsParsedObserver: Nullable<Observer<void>> | undefined;
+    private _onControlVisibilityChangedObservers: Array<Nullable<Observer<boolean>>> = [];
 
     constructor(props: ICommonControlPropertyGridComponentProps) {
         super(props);
@@ -97,6 +99,10 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 control.metadata = {};
             }
             control.metadata._previousCenter = transformed;
+            const visibilityObserver = control.onIsVisibleChangedObservable.add(() => {
+                this.forceUpdate();
+            });
+            this._onControlVisibilityChangedObservers.push(visibilityObserver);
         }
         this._onFontsParsedObserver = this.props.onFontsParsedObservable?.add(() => {
             this._checkFontsInLayout();
@@ -228,6 +234,9 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         }
         if (this._onFontsParsedObserver) {
             this.props.onFontsParsedObservable?.remove(this._onFontsParsedObserver);
+        }
+        for (let i = 0; i < this._onControlVisibilityChangedObservers.length; i++) {
+            this.props.controls[i].onIsVisibleChangedObservable.remove(this._onControlVisibilityChangedObservers[i]);
         }
     }
 
@@ -590,6 +599,11 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         <hr className="ge" />
                     </>
                 )}
+                <TextLineComponent tooltip="" label="VISIBILITY" value=" " color="grey"></TextLineComponent>
+                <div className="ge-divider">
+                    <IconComponent icon={visibleIcon} label={"Visible"} />
+                    <CheckBoxLineComponent label="ISVISIBLE" target={proxy} propertyName="isVisible" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                </div>
                 <TextLineComponent tooltip="" label="TRANSFORMATION" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider double">
                     <IconComponent icon={scaleIcon} label={"Scale"} />

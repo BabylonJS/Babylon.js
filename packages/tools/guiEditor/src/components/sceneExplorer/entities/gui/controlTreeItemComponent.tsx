@@ -13,6 +13,8 @@ import visibilityNotActiveIcon from "../../../../imgs/visibilityNotActiveIcon.sv
 import visibilityActiveIcon from "../../../../imgs/visibilityActiveIcon.svg";
 import makeComponentIcon from "../../../../imgs/makeComponentIcon.svg";
 import makeChildOfContainerIcon from "../../../../imgs/makeChildOfContainerIcon.svg";
+import type { Observer } from "core/Misc/observable";
+import type { Nullable } from "core/types";
 
 interface IControlTreeItemComponentProps {
     control: Control;
@@ -22,15 +24,27 @@ interface IControlTreeItemComponentProps {
     isHovered: boolean;
     isDragOver: boolean;
     dragOverLocation: DragOverLocation;
+    onRenamingStateChanged: (renaming: boolean) => void;
 }
 
 export class ControlTreeItemComponent extends React.Component<IControlTreeItemComponentProps, { isActive: boolean; isVisible: boolean; isRenaming: boolean }> {
+    private _onIsVisibleChangedObserver: Nullable<Observer<boolean>>;
     constructor(props: IControlTreeItemComponentProps) {
         super(props);
 
         const control = this.props.control;
 
         this.state = { isActive: control.isHighlighted, isVisible: control.isVisible, isRenaming: false };
+
+        this._onIsVisibleChangedObserver = control.onIsVisibleChangedObservable.add((isVisible) => {
+            this.setState({ isVisible });
+        });
+    }
+
+    componentWillUnmount() {
+        if (this._onIsVisibleChangedObserver) {
+            this.props.control.onIsVisibleChangedObservable.remove(this._onIsVisibleChangedObserver);
+        }
     }
 
     highlight() {
@@ -72,7 +86,10 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
                     bracket={bracket}
                     onClick={() => this.props.onClick()}
                     onChange={(name) => this.onRename(name)}
-                    setRenaming={(renaming) => this.setState({ isRenaming: renaming })}
+                    setRenaming={(renaming) => {
+                        this.setState({ isRenaming: renaming });
+                        this.props.onRenamingStateChanged(renaming);
+                    }}
                     renaming={this.state.isRenaming}
                 />
                 {!draggingSelf && this.props.isDragOver && this.props.dragOverLocation == DragOverLocation.CENTER && control instanceof Container && (
@@ -87,7 +104,7 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
                         <div className="addComponent icon" onClick={() => this.highlight()} title="Add component (Not Implemented)">
                             <img src={makeComponentIcon} />
                         </div>
-                        <div className="visibility icon" onClick={() => this.switchVisibility()} title="Show/Hide control">
+                        <div className="visibility icon" onClick={() => this.switchVisibility()} title="Set isVisible">
                             <img src={this.state.isVisible ? visibilityActiveIcon : visibilityNotActiveIcon} />
                         </div>
                     </>
