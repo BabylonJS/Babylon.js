@@ -688,6 +688,7 @@ export class USDExport {
 
             return canvas;
         } else {
-            throw new Error("BAs
+            throw new Error("BABYLON.USDExport: No valid image data found. Unable to process texture.");
+        }
     }
 }
