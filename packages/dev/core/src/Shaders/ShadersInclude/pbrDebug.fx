@@ -163,13 +163,12 @@ if (vClipSpacePosition.x / vClipSpacePosition.w >= vDebugMode.x) {
         gl_FragColor.rgb = vec3(albedoTexture.a);
     // Does Not Exist
     #else
-        vec2 screenPosition = gl_FragCoord.xy / vec2(512., 512.);
-        float tiling = 50.;
-        float stripePos = mix(screenPosition.x, screenPosition.y, 0.5) * tiling;
-        float t = floor(fract(stripePos) + 0.5);
+        float stripeWidth = 30.;
+        float stripePos = floor((gl_FragCoord.x + gl_FragCoord.y) / stripeWidth);
+        float whichColor = mod(stripePos, 2.);
         vec3 color1 = vec3(.6,.2,.2);
         vec3 color2 = vec3(.3,.1,.1);
-        gl_FragColor.rgb = mix(color1, color2, t);
+        gl_FragColor.rgb = mix(color1, color2, whichColor);
     #endif
 
     gl_FragColor.rgb *= vDebugMode.y;
