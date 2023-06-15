@@ -279,7 +279,6 @@ export class GreasedLineMesh extends Mesh {
 
             const totalLength = GreasedLineTools.GetLineLength(p);
             for (let j = 0, jj = 0; jj < p.length; j++, jj += 3) {
-
                 const partialLine = p.slice(0, jj + 3);
                 const partialLineLength = GreasedLineTools.GetLineLength(partialLine);
                 const c = partialLineLength / totalLength;
@@ -314,7 +313,6 @@ export class GreasedLineMesh extends Mesh {
             }
             this._uvs.push(...uvs);
         });
-
 
         if (!this._lazy) {
             this._updateColorPointers();
