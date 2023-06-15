@@ -1,8 +1,8 @@
 import * as ts from "typescript";
 import * as path from "path";
 import * as fs from "fs";
-import type { BuildType, PublicPackageVariable } from "./packageMapping";
-import { getDevPackagesByBuildType, getPublicPackageName, isValidDevPackageName, declarationsOnlyPackages } from "./packageMapping";
+import type { BuildType, PublicPackageVariable } from "./packageMapping.js";
+import { getDevPackagesByBuildType, getPublicPackageName, isValidDevPackageName, declarationsOnlyPackages } from "./packageMapping.js";
 
 const addJS = (to: string, forceAppend?: boolean | string): string => (forceAppend && !to.endsWith(".js") ? to + (forceAppend === true ? ".js" : forceAppend) : to);
 
@@ -74,7 +74,6 @@ export const transformPackageLocation = (location: string, options: ITransformer
     }
 };
 
-type Transformer = Required<Pick<ts.CustomTransformers, "after" | "afterDeclarations">>;
 type TransformerNode = ts.Bundle | ts.SourceFile;
 
 /**
@@ -104,15 +103,12 @@ interface ITransformerOptions {
 
 // inspired by https://github.com/OniVe/ts-transform-paths
 
-export default function transformer(_program: ts.Program, options: ITransformerOptions): Transformer {
+export default function transformer(_program: ts.Program, options: ITransformerOptions) {
     function optionsFactory<T extends TransformerNode>(context: ts.TransformationContext): ts.Transformer<T> {
         return transformerFactory(context, options);
     }
 
-    return {
-        after: [optionsFactory],
-        afterDeclarations: [optionsFactory],
-    };
+    return optionsFactory;
 }
 
 function chainBundle<T extends ts.SourceFile | ts.Bundle>(transformSourceFile: (x: ts.SourceFile) => ts.SourceFile): (x: T) => T {

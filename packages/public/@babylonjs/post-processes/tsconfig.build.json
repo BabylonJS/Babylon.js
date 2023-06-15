@@ -7,7 +7,7 @@
         "declaration": true,
         "importHelpers": true,
         "target": "ES2018",
-        "plugins": [{ "transform": "../../../dev/buildTools/dest/pathTransform.js", "buildType": "es6", "basePackage": "@babylonjs/post-processes", "appendJS": true }],
+        "plugins": [{ "transform": "@dev/build-tools/dist/pathTransform.js", "buildType": "es6", "basePackage": "@babylonjs/post-processes", "appendJS": true }],
         "paths": {
             "core/*": ["lts/core/dist/*"],
             "post-processes/*": ["lts/postProcesses/generated/*"]

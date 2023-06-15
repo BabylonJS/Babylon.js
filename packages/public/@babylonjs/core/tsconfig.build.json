@@ -5,10 +5,10 @@
         "outDir": "./",
         "rootDir": "../../../lts/core/generated",
         "declaration": true,
-        "target": "ES2018",
+        "target": "ES2017",
         "importHelpers": true,
         "plugins": [
-            { "transform": "../../../dev/buildTools/dest/pathTransform.js", "buildType": "es6", "basePackage": "@babylonjs/core", "appendJS": true },
+            { "transform": "@dev/build-tools/dist/pathTransform.js", "buildType": "es6", "basePackage": "@babylonjs/core", "appendJS": true },
         ],
         "paths": {
             "core/*": ["lts/core/generated/*"],

@@ -1,9 +1,9 @@
 import * as fs from "fs";
-import * as glob from "glob";
+import glob from "glob";
 import * as path from "path";
-import type { UMDPackageName } from "./packageMapping";
-import { umdPackageMapping } from "./packageMapping";
-import { copyFile, findRootDirectory } from "./utils";
+import type { UMDPackageName } from "./packageMapping.js";
+import { umdPackageMapping } from "./packageMapping.js";
+import { copyFile, findRootDirectory } from "./utils.js";
 
 export const prepareSnapshot = () => {
     const baseDirectory = findRootDirectory();

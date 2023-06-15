@@ -7,7 +7,7 @@
         "declaration": true,
         "target": "ES2018",
         "importHelpers": true,
-        "plugins": [{ "transform": "../../../dev/buildTools/dest/pathTransform.js", "buildType": "es6", "basePackage": "@babylonjs/shared-ui-components", "appendJS": true }],
+        "plugins": [{ "transform": "@dev/build-tools/dist/pathTransform.js", "buildType": "es6", "basePackage": "@babylonjs/shared-ui-components", "appendJS": true }],
         "paths": {
             "core/*": ["lts/core/dist/*"],
             "gui/*": ["lts/gui/dist/*"],

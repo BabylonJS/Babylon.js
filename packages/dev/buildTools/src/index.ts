@@ -1,19 +1,19 @@
 #!/usr/bin/env node
-import { addJsExtensionsToCompiledFilesCommand } from "./addJSToCompiledFiles";
-// import { buildShaders } from "./buildShaders";
-import { generateDeclaration } from "./generateDeclaration";
-import { transformLtsCommand } from "./ltsTransformer";
-import { prepareES6Build } from "./prepareEs6Build";
-import { checkArgs, populateEnvironment } from "./utils";
-import { devWatch } from "./devWatcher";
-import { processAssets } from "./copyAssets";
-import { prepareSnapshot } from "./prepareSnapshot";
-import { umdPackageMapping } from "./packageMapping";
-import { updateEngineVersion } from "./updateEngineVersion";
-import { declarationsEs6 } from "./declarationsEs6";
+import { addJsExtensionsToCompiledFilesCommand } from "./addJSToCompiledFiles.js";
+// import { buildShaders } from "./buildShaders.js";
+import { generateDeclaration } from "./generateDeclaration.js";
+import { transformLtsCommand } from "./ltsTransformer.js";
+import { prepareES6Build } from "./prepareEs6Build.js";
+import { checkArgs, populateEnvironment } from "./utils.js";
+import { devWatch } from "./devWatcher.js";
+import { processAssets } from "./copyAssets.js";
+import { prepareSnapshot } from "./prepareSnapshot.js";
+import { umdPackageMapping } from "./packageMapping.js";
+import { updateEngineVersion } from "./updateEngineVersion.js";
+import { declarationsEs6 } from "./declarationsEs6.js";
 // public API
-import transformer from "./pathTransform";
-import * as webpackTools from "./webpackTools";
+import transformer from "./pathTransform.js";
+import * as webpackTools from "./webpackTools.js";
 
 runCommand();
 

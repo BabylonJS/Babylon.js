@@ -1,12 +1,12 @@
 import * as path from "path";
 import * as ts from "typescript";
 import * as fs from "fs";
-import * as glob from "glob";
+import glob from "glob";
 import * as chokidar from "chokidar";
 
-import { removeDir, checkDirectorySync, checkArgs, copyFile } from "./utils";
-import { transformPackageLocation } from "./pathTransform";
-import { getPackageMappingByDevName, getPublicPackageName, isValidDevPackageName } from "./packageMapping";
+import { removeDir, checkDirectorySync, checkArgs, copyFile } from "./utils.js";
+import { transformPackageLocation } from "./pathTransform.js";
+import { getPackageMappingByDevName, getPublicPackageName, isValidDevPackageName } from "./packageMapping.js";
 
 const printer = ts.createPrinter();
 

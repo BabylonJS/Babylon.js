@@ -1,4 +1,4 @@
-import { checkArgs, findRootDirectory } from "./utils";
+import { checkArgs, findRootDirectory } from "./utils.js";
 import { spawn } from "child_process";
 
 // npx build-tools -c dw -p "@lts/core,@lts/gui" -wd --lts
