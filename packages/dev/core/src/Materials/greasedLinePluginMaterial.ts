@@ -275,13 +275,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
             uniformBuffer.updateColor3("grl_singleColor", this._options.color ?? Color3.White());
         }
 
-        if (this._colorsTexture) {
-            uniformBuffer.setTexture("grl_colors", this._colorsTexture);
-        } else if (this._engine.isWebGPU) {
-            uniformBuffer.setTexture("grl_colors", GreasedLinePluginMaterial._EmptyColorsTexture);
-        }
-
-        uniformBuffer.update();
+        uniformBuffer.setTexture("grl_colors", this._colorsTexture ?? GreasedLinePluginMaterial._EmptyColorsTexture);
     }
 
     /**
