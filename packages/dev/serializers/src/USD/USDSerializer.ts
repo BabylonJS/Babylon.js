@@ -11,6 +11,21 @@ import { Nullable } from "core/types";
 import { strToU8, zipSync } from "fflate";
 import { Material } from "core/Materials/material";
 
+export interface IUSDExportOptions {
+    modelName?: string;
+    quickLookCompatible?: boolean;
+    ar?: IUSDArOptions;
+}
+
+interface IUSDArOptions {
+    anchoring: {
+        type: "plane" | "point";
+    };
+    planeAnchoring: {
+        alignment: "horizontal" | "vertical";
+    };
+}
+
 /**
  * Class for generating USD data from a Babylon scene.
  */
@@ -34,7 +49,7 @@ export class USDExport {
      * @param autoDownload automatically download the file.
      * @returns a promise with the data of the USDZ file.
      */
-    public static async ExportAsBinaryZip(scene: Scene, options: any = {}, autoDownload: boolean = true) {
+    public static async ExportAsBinaryZip(scene: Scene, options: IUSDExportOptions = {}, autoDownload: boolean = true) {
         options = {
             ar: {
                 anchoring: { type: "plane" },
@@ -51,19 +66,16 @@ export class USDExport {
         let output: Nullable<string> = USDExport._BuildHeader();
         output += USDExport._BuildSceneStart(options);
 
-        const materials: any = {};
-        const textures: any = {};
+        const materials: { [id: string]: Material } = {};
+        const textures: { [id: string]: Texture } = {};
 
-        let sharedMat: Nullable<PBRMaterial> = null;
+        let sharedMat: PBRMaterial = new PBRMaterial(`default.mat`, scene);
 
         scene.meshes
             .filter((mesh) => (mesh as any).geometry)
             .forEach((mesh) => {
                 //Add More Materials at somepoint
                 if (mesh.material === null) {
-                    if (sharedMat === null) {
-                        sharedMat = new PBRMaterial(`default.mat`, scene);
-                    }
                     mesh.material = sharedMat;
                 }
 
@@ -82,12 +94,14 @@ export class USDExport {
                         output += USDExport._BuildXform(mesh, mesh.material);
 
                         break;
+                    default:
+                        console.warn("USDExporter: Standard Material is not supported currently.");
+                        break;
                 }
             });
 
         if (scene.activeCameras?.length) {
             scene.activeCameras.forEach((camera) => {
-                console.log(camera);
                 output += USDExport._BuildCamera(camera);
             });
         } else if (scene.activeCamera) {
@@ -97,8 +111,6 @@ export class USDExport {
         output += USDExport._BuildSceneEnd();
 
         output += await USDExport._BuildMaterials(materials, textures, options.quickLookCompatible);
-
-        console.log(output);
 
         files[modelFileName] = strToU8(output);
 
@@ -141,6 +153,8 @@ export class USDExport {
             downloadButton.click();
             document.body.removeChild(downloadButton);
         }
+
+        sharedMat.dispose();
 
         return data;
     }
@@ -592,7 +606,7 @@ export class USDExport {
         if (material.isMetallicWorkflow()) {
             inputs.push(`${pad}float inputs:clearcoat = ${0.0}`);
             inputs.push(`${pad}float inputs:clearcoatRoughness = ${0.1}`);
-            inputs.push(`${pad}float inputs:ior = ${material.metallicF0Factor}`);
+            inputs.push(`${pad}float inputs:ior = ${material.subSurface?.indexOfRefraction ?? 1.5}`);
         }
 
         return `
@@ -628,7 +642,6 @@ export class USDExport {
     private static _BuildUSDFileAsString(dataToInsert: string) {
         let output = USDExport._BuildHeader();
         output += dataToInsert;
-        //output += USDExport.BuildFooter();
         return strToU8(output);
     }
 
@@ -649,7 +662,14 @@ export class USDExport {
                 resolve(image);
             };
             image.onerror = reject;
-            image.src = (texture.url ?? "").substring(5);
+
+            const dataBlobCheck = (texture.url ?? "").substring(0, 5);
+
+            if (dataBlobCheck === "data:") {
+                image.src = (texture.url ?? "").substring(5);
+            } else {
+                image.src = texture.url ?? "";
+            }
         });
     }
 
