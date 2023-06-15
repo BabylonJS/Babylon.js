@@ -12,7 +12,7 @@ import type { Node } from "../node";
 import { DeepCopier } from "../Misc/deepCopier";
 import { GreasedLineTools } from "core/Misc/greasedLineTools";
 
-export type GreasedLinePoints = Vector3[] | Vector3[][] | Float32Array | Float32Array[] | number[][];
+export type GreasedLinePoints = Vector3[] | Vector3[][] | Float32Array | Float32Array[] | number[][] | number[];
 
 /**
  * Options for creating a GreasedLineMesh
@@ -115,7 +115,9 @@ export class GreasedLineMesh extends Mesh {
      * @returns number[][] with x, y, z coordinates of the points, like [[x, y, z, x, y, z, ...], [x, y, z, ...]]
      */
     public static ConvertPoints(points: GreasedLinePoints): number[][] {
-        if (points.length && Array.isArray(points[0]) && typeof points[0][0] === "number") {
+        if (points.length && Array.isArray(points) && typeof points[0] === "number") {
+            return [<number[]>points];
+        } else if (points.length && Array.isArray(points[0]) && typeof points[0][0] === "number") {
             return <number[][]>points;
         } else if (points.length && !Array.isArray(points[0]) && points[0] instanceof Vector3) {
             const positions: number[] = [];

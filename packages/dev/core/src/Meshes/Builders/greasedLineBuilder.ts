@@ -98,7 +98,10 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
 
     options.widthDistribution = options.widthDistribution ?? GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_START;
 
-    materialOptions = materialOptions ?? {};
+    materialOptions = materialOptions ?? {
+        createAndAssignMaterial: true,
+        color: Color3.White(),
+    };
     materialOptions.colorDistribution = materialOptions?.colorDistribution ?? GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_START;
 
     const widths = CompleteGreasedLineWidthTable(length, options.widths ?? [], options.widthDistribution);
