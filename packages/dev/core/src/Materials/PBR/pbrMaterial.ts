@@ -8,6 +8,7 @@ import type { ColorCurves } from "../../Materials/colorCurves";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { PBRBaseMaterial } from "./pbrBaseMaterial";
 import { RegisterClass } from "../../Misc/typeStore";
+import { Material } from "../material";
 
 /**
  * The Physically based material of BJS.
@@ -789,13 +790,6 @@ export class PBRMaterial extends PBRBaseMaterial {
         const serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.PBRMaterial";
 
-        serializationObject.clearCoat = this.clearCoat.serialize();
-        serializationObject.anisotropy = this.anisotropy.serialize();
-        serializationObject.brdf = this.brdf.serialize();
-        serializationObject.sheen = this.sheen.serialize();
-        serializationObject.subSurface = this.subSurface.serialize();
-        serializationObject.iridescence = this.iridescence.serialize();
-
         return serializationObject;
     }
 
@@ -809,9 +803,14 @@ export class PBRMaterial extends PBRBaseMaterial {
      */
     public static Parse(source: any, scene: Scene, rootUrl: string): PBRMaterial {
         const material = SerializationHelper.Parse(() => new PBRMaterial(source.name, scene), source, scene, rootUrl);
+
         if (source.stencil) {
             material.stencil.parse(source.stencil, scene, rootUrl);
         }
+
+        Material._parsePlugins(source, material, scene, rootUrl);
+
+        // The code block below ensures backward compatibility with serialized materials before plugins are automatically serialized.
         if (source.clearCoat) {
             material.clearCoat.parse(source.clearCoat, scene, rootUrl);
         }
@@ -830,6 +829,7 @@ export class PBRMaterial extends PBRBaseMaterial {
         if (source.iridescence) {
             material.iridescence.parse(source.iridescence, scene, rootUrl);
         }
+
         return material;
     }
 }
