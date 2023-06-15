@@ -1,7 +1,7 @@
 import { checkArgs } from "./utils.js";
 import * as fs from "fs";
 import * as path from "path";
-import glob from "glob";
+import * as glob from "glob";
 
 export const declarationsEs6 = () => {
     const root = checkArgs(["--root", "-r"]) as string;

@@ -1,6 +1,6 @@
 // import * as mv from "mv";
 import * as path from "path";
-import glob from "glob";
+import * as glob from "glob";
 import * as fs from "fs-extra";
 import { checkArgs } from "./utils.js";
 

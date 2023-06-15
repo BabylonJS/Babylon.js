@@ -1,5 +1,5 @@
 import * as fs from "fs";
-import glob from "glob";
+import * as glob from "glob";
 import * as path from "path";
 import type { UMDPackageName } from "./packageMapping.js";
 import { umdPackageMapping } from "./packageMapping.js";

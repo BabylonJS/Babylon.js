@@ -1,7 +1,7 @@
 import * as path from "path";
 import * as ts from "typescript";
 import * as fs from "fs";
-import glob from "glob";
+import * as glob from "glob";
 import * as chokidar from "chokidar";
 
 import { removeDir, checkDirectorySync, checkArgs, copyFile } from "./utils.js";
