@@ -55,7 +55,7 @@ varying vec4 vColor;
 #include<logDepthDeclaration>
 
 // Water uniforms
-uniform mat4 worldReflectionViewProjection;
+uniform mat4 reflectionViewProjection;
 uniform vec2 windDirection;
 uniform float waveLength;
 uniform float time;
@@ -65,7 +65,6 @@ uniform float waveSpeed;
 uniform float waveCount;
 
 // Water varyings
-varying vec3 vPosition;
 varying vec3 vRefractionMapTexCoord;
 varying vec3 vReflectionMapTexCoord;
 
@@ -133,24 +132,29 @@ void main(void) {
 
 	float finalWaveCount = 1.0 / (waveCount * 0.5);
 
+#ifdef USE_WORLD_COORDINATES
+	vec3 p = worldPos.xyz;
+#else
 	vec3 p = position;
+#endif
 	float newY = (sin(((p.x / finalWaveCount) + time * waveSpeed)) * waveHeight * windDirection.x * 5.0)
 			   + (cos(((p.z / finalWaveCount) +  time * waveSpeed)) * waveHeight * windDirection.y * 5.0);
 	p.y += abs(newY);
 	
+#ifdef USE_WORLD_COORDINATES
+	gl_Position = viewProjection * vec4(p, 1.0);
+#else
 	gl_Position = viewProjection * finalWorld * vec4(p, 1.0);
+#endif
 
 #ifdef REFLECTION
-	worldPos = viewProjection * finalWorld * vec4(p, 1.0);
-	
 	// Water
-	vPosition = position;
 	
-	vRefractionMapTexCoord.x = 0.5 * (worldPos.w + worldPos.x);
-	vRefractionMapTexCoord.y = 0.5 * (worldPos.w + worldPos.y);
-	vRefractionMapTexCoord.z = worldPos.w;
+	vRefractionMapTexCoord.x = 0.5 * (gl_Position.w + gl_Position.x);
+	vRefractionMapTexCoord.y = 0.5 * (gl_Position.w + gl_Position.y);
+	vRefractionMapTexCoord.z = gl_Position.w;
 	
-	worldPos = worldReflectionViewProjection * vec4(position, 1.0);
+	worldPos = reflectionViewProjection * finalWorld * vec4(position, 1.0);
 	vReflectionMapTexCoord.x = 0.5 * (worldPos.w + worldPos.x);
 	vReflectionMapTexCoord.y = 0.5 * (worldPos.w + worldPos.y);
 	vReflectionMapTexCoord.z = worldPos.w;
