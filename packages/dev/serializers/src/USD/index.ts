@@ -1,1 +1,1 @@
-export * from './USDSerializer';
+export * from "./USDSerializer";
