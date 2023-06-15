@@ -1,5 +1,5 @@
 {
-    "fromTag": "6.6.1",
+    "fromTag": "6.7.0",
     "changelog": {
         "6.7.0": [
             {
@@ -78,6 +78,376 @@
                 "tags": [
                     "bug",
                     "gui editor"
+                ]
+            }
+        ],
+        "6.8.0": [
+            {
+                "pr": "13963",
+                "title": "Add some clarification about picking triangles from b…",
+                "description": "…oth sides.\r\n\r\nRelated forum issue: https://forum.babylonjs.com/t/ray-intersection-from-the-invisible-culled-side/41545/7?u=carolhmj",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/ray.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13962",
+                "title": "When opening NME from PG, use the PG's scene clear color",
+                "description": null,
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/nodeMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/entities/materialTreeItemComponent.tsx",
+                    "packages/tools/nodeEditor/src/nodeEditor.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "13964",
+                "title": "Allow removing an observer without knowing its observable",
+                "description": "Suggestion to add a remove function to the observer.\n\nThis implementation maintains back-compat, allows using either one of the functions to remove the observer. calling both functions would be a no-op for the 2nd call.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/observable.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13960",
+                "title": "Add NativeEngine enableScissor and disableScissor",
+                "description": "Adds `enableScissor` and `disableScissor` functions to the `NativeEngine` class so they can be implemented in BabylonNative. See PR https://github.com/BabylonJS/BabylonNative/pull/1243.\r\n\r\nThis change was tested against the current BabylonNative master branch to make sure it doesn't break when scissors are not being used. It was also tested against the BabylonNative PR implementing scissors https://github.com/BabylonJS/BabylonNative/pull/1243 to make sure all tests pass.\r\n\r\nBabylonNative was crashing before this change when scissors are being used, and with this change it still crashes but for a different reason. Because BabylonNative master was crashing before this PR and after it, no protocol version change is needed in `nativeEngine.ts`. Scissor behavior for the end user is the same as before.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13961",
+                "title": "Fix an issue with NME canvas resizing",
+                "description": "There is an issue with NME canvas resizing because the canvas belongs to a different document.\n\nThe following fix makes a few assumptions (that were fully tested in different scenarios):\n\n1) When a canvas is not attached to a document its width and height are 0,0\n2) when a canvas is not attached the user must define width and height OR use the default values\n3) An element doesn't have to belong to the document in which the js context is running. (NME case)\n\nThis playground can be used for testing, along with all NME playgrounds:\n#NZZAUD#7",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "13956",
+                "title": "Allows colour changes from bboxrenderer observers",
+                "description": "Uses the this.frontColor and this.backColor properties directly when drawing the bounding boxes to allow colour changes from onBeforeBoxRenderingObservable observers.\r\n\r\n",
+                "author": {
+                    "name": "aaloksg",
+                    "url": "https://github.com/aaloksg"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/boundingBoxRenderer.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13955",
+                "title": "First version of Space Warp support",
+                "description": "This PR contains the XR feature that enables space warp, a feature available in the oculus browser (behind a flag). The feature was suggested as an official WebXR feature - https://pr-preview.s3.amazonaws.com/cabanier/layers/pull/303.html#feature-descriptor-space-warp as part of the XR Layers spec.\n\n*Note* Code based on the initial version made by @dannysu\n\nCloses #13945",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.multiview.ts",
+                    "packages/dev/core/src/Engines/WebGL/webGLRenderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/engineCapabilities.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/LibDeclarations/webxr.d.ts",
+                    "packages/dev/core/src/Materials/shaderMaterial.ts",
+                    "packages/dev/core/src/Shaders/velocity.fragment.fx",
+                    "packages/dev/core/src/Shaders/velocity.vertex.fx",
+                    "packages/dev/core/src/XR/features/WebXRLayers.ts",
+                    "packages/dev/core/src/XR/features/WebXRSpaceWarp.ts",
+                    "packages/dev/core/src/XR/features/index.ts",
+                    "packages/dev/core/src/XR/webXRFeaturesManager.ts",
+                    "packages/dev/core/src/XR/webXRSessionManager.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13946",
+                "title": "Added ArrayBufferView to possible input types to load scene content.",
+                "description": "Added ArrayBufferView to be one of the accepted types in the SceneLoader import methods (ImportMesh, ImportMeshAsync, Load, LoadAsync, Append, AppendAsync and LoadAssetContainer). Now in addition to string and File those will also be able to receive ArrayBufferView. \r\n\r\nThis was required by Babylon Native for when model data is passed from C++ into JS by mapping native memory into ArrayBuffers. \r\n\r\nThis PR also adds a visualization test for loading a mesh directly from binary data. ",
+                "author": {
+                    "name": "SergioRZMasson",
+                    "url": "https://github.com/SergioRZMasson"
+                },
+                "files": [
+                    "packages/dev/core/src/Loading/sceneLoader.ts",
+                    "packages/dev/loaders/src/glTF/glTFFileLoader.ts",
+                    "packages/dev/loaders/src/glTF/glTFValidation.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/glbArrayBufferViewLoad.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "enhancement",
+                    "loaders",
+                    "breaking change"
+                ]
+            },
+            {
+                "pr": "13958",
+                "title": "Fix fixedRatioMasterIsWidth not being preserved on the GUI Editor",
+                "description": "Example PG: [#KEZ57F#1](https://playground.babylonjs.com/#KEZ57F#1)\r\nWhen opened:\r\n![image](https://github.com/BabylonJS/Babylon.js/assets/6002144/7bce726c-03d5-47d9-84da-3de4dad0de8b)\r\nIf you open the GUI Editor, it switches from fixed width ratio to fixed height:\r\n![image](https://github.com/BabylonJS/Babylon.js/assets/6002144/576d9595-78dd-4abe-aafe-21c4efb9456b)\r\n\r\nThis also exposes the property fixedRatioMasterIsWidth so the user can set it to their preference.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/control.ts",
+                    "packages/dev/gui/src/2D/controls/inputTextArea.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "gui",
+                    "gui editor"
+                ]
+            },
+            {
+                "pr": "13952",
+                "title": "Add isVisible property on the common control properties …",
+                "description": "…menu\r\n\r\nRelated forum issue: https://forum.babylonjs.com/t/gui-editor-text-not-displaying/41395/7\r\n\r\nAdds a isVisible property on the common control property menu, which has the same function as the one on the tree view:\r\n![image](https://github.com/BabylonJS/Babylon.js/assets/6002144/ebd15da5-b439-4a49-b97b-72224b0534ea)\r\n\r\n\r\n",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/guiEditor/src/components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent.tsx",
+                    "packages/tools/guiEditor/src/components/sceneExplorer/entities/gui/controlTreeItemComponent.tsx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "gui editor"
+                ]
+            },
+            {
+                "pr": "13957",
+                "title": "Use addFunction to add MultiMaterial to a scene",
+                "description": "The function `addMultiMaterial` is affected by the observer or the _blockEntityCollection variable. This needs to be taken into account.\r\n\r\nYou can see a similar case with the Material class.\r\nhttps://github.com/BabylonJS/Babylon.js/blob/master/packages/dev/core/src/Materials/material.ts#L922\r\n\r\n\r\nAnd this is the problematic code. Even if _blockEntityCollection is set, MultiMaterial will still be added to the scene.\r\nhttps://github.com/BabylonJS/Babylon.js/blob/master/packages/dev/loaders/src/glTF/1.0/glTFLoader.ts#L786",
+                "author": {
+                    "name": "noname0310",
+                    "url": "https://github.com/noname0310"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/multiMaterial.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13954",
+                "title": "Add same parameters from AbstractMesh.intersects to Ray.intersectsMesh",
+                "description": "This makes it easier for a user to chose which function suits them best\r\nRelated forum issue: https://forum.babylonjs.com/t/ray-intersection-from-the-invisible-culled-side/41545/6",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/ray.ts"
+                ],
+                "tags": [
+                    "enhancement"
+                ]
+            },
+            {
+                "pr": "13951",
+                "title": "Fix warning on copying a mesh with physics body",
+                "description": "We need to pass the transform node of the body when cloning it.\r\nRelated forum issue: https://forum.babylonjs.com/t/havoc-problems-with-parented-meshes/40584/18?u=carolhmj\r\nTest PG: https://playground.babylonjs.com/#Z8HTUN#396\r\nIn master, it displays these warnings:\r\n![image](https://github.com/BabylonJS/Babylon.js/assets/6002144/0e0688d0-d4da-40ed-9cf5-cee819c919eb)\r\n",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/deepCopier.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "physics"
+                ]
+            },
+            {
+                "pr": "13936",
+                "title": "Shader define expression optimization",
+                "description": "In my scene with 50+ shaders the ShaderDefineExpression.infixToPostfix was called 15 000–35 000 times while scene is loading. In average for one loading it takes 54.28ms for all calls and 34.39ms for first 15 000 calls.\r\nAfter optimized from this PR I achieve next result: 9.68ms for all calls and 7.09ms for first 15 000 calls.\r\n\r\nI made two simple changes:\r\n1. If `infix` does not contain operators, then it will not be modified, so we can return it as is.\r\n2. As I mention above this function called thousands times while scene loading. But the input string are not unique every time, in fact, in my case, it was only 168 unique infixes. So there is a reason to use memoization, because the result of this function deterministic and has no side effects as I can see.\r\nFor safety work with memory I add a limit for memoize cache as 50000 entries. In my case the 100 entries takes 6504 chars of memory, so with the basic interpolation it might be around 640 KB for 50 000 entries. As all we know, 640K ought to be enough for anybody :)\r\n\r\nSo, just with this two changes  performance of the function was boosted 5.6x times and for my middle (as I think now) scene it saves 45ms (or almost 3 frames) for loading.",
+                "author": {
+                    "name": "Dok11",
+                    "url": "https://github.com/Dok11"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Processors/Expressions/shaderDefineExpression.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13949",
+                "title": "Tri-planar material: Fix uniform scaling",
+                "description": "Follow-up to #13943, there was also a bug in the uniform scaling case, when the scaling is not 1.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/materials/src/triPlanar/triplanar.vertex.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "13948",
+                "title": "Fix FluidRenderer required side effects.",
+                "description": "https://forum.babylonjs.com/t/error-scene-enablefluidrenderer-is-not-a-function/41492/8",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/gpuParticleSystem.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13932",
+                "title": "Add function to ShaderMaterial for setting defines at run time",
+                "description": "Also cleaned up some linter warnings.\r\n\r\nPG demonstrating effect: https://playground.babylonjs.com/?snapshot=refs/pull/13932/merge#11GAIH#286 -- after 3 seconds the cube turns red due to defines changing.",
+                "author": {
+                    "name": "kircher1",
+                    "url": "https://github.com/kircher1"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/shaderMaterial.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13950",
+                "title": "Fix mtl loader being ignored",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/loaders/src/OBJ/solidParser.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13944",
+                "title": "update image diff framework and update to node 20",
+                "description": "This moves us away from jest-screenshot (that is using native-image-diff) to a different framework (using pixelmatch)\r\n\r\nThere are difference with the way the old framework deals with transparency and the way the new one does. Some other images had to be updated as well.\r\n\r\nThis PR also includes changes to the project's dependencies  to allow running the repo in a node 20 environment.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "jest.config.ts",
+                    "jest.visualization.setup.afterEnv.ts",
+                    "package-lock.json",
+                    "package.json",
+                    "packages/tools/babylonServer/public/empty.html",
+                    "packages/tools/tests/package.json",
+                    "packages/tools/tests/test/visualization/ReferenceImages/anisotropic.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/defaultPipeline.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfMaterialMetallicRoughness0.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfMaterialSpecularGlossiness0.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfMeshPrimitiveAttribute.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/prepass-ssao-default-pipeline.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/prepass-ssao-dof.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/prepass-ssao-glow-layer.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/prepass-ssao-instanced-bones.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/prepass-ssao-lod.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/prepass-ssao-on-off-pp.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/prepass-ssao-point-light.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/prepass-ssao-shadow-only.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/prepass-ssao-thin-instances.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/prepass-ssao-visibility.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/shadowOnlyMaterial.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/webp.png",
+                    "packages/tools/tests/test/visualization/visualization.utils.ts",
+                    "scripts/jest-imagediff-reporter.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13934",
+                "title": "Shader processor include optimization",
+                "description": "I have a pretty big scene (100+ meshed, 50+ shaders) in glb format, when it loaded the loop in the `ShaderProcessor._ProcessIncludes()` was called 4927 times, and takes 200.57 ms and each loop take 0.0407ms. This values bases on 30 runs.\r\nAfter performance optimzations I got next result — the loop calls 3955 times, takes 70.82ms for all calls and 0.0179ms per one loop.\r\n\r\n1. I make regex as a static fields to avoid builing it in runtime.\r\n2. Change string replaces from regex to regular string where it possible.\r\n3. Replace while loop to for-of to avoid uneccessary `.exec()` at end of while-loop.\r\n4. Replace very heavy string replace opertation to `parts.join(\"\")` (more then 2x boost here)\r\n5. Fix warning from `new String()`.\r\n\r\nEvery change puts in a single commit.\r\n\r\nFor future discussing - we also can change this part:\r\n```ts\r\nfor (let index = 0; index < splits.length; index += 2) {\r\n    const source = new RegExp(splits[index], \"g\");\r\n    const dest = splits[index + 1];\r\n    includeContent = includeContent.replace(source, dest);\r\n}\r\n```\r\n\r\nwith `.replaceAll` and save 5-7ms for all loading time (it would be 65ms for all calls in my case). But now I can't use it because `TS2550: Property 'replaceAll' does not exist on type 'string'. Do you need to change your target library? Try changing the 'lib' compiler option to 'es2021' or later.`",
+                "author": {
+                    "name": "Dok11",
+                    "url": "https://github.com/Dok11"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Processors/shaderProcessor.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13947",
+                "title": "Add glossiness, base color, specular color, and emissive color to material debug modes",
+                "description": "WIP\r\nAdding debug modes to represent a material's glossiness, base color, specular color, and emissive color.",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrDebug.fx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/pbrMaterialPropertyGridComponent.tsx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Base Color Debug Mode.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Emissive Color Debug Mode.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Glossiness Debug Mode.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Specular Color Debug Mode.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "new feature"
                 ]
             }
         ],
