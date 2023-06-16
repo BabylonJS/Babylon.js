@@ -81,14 +81,14 @@ export class GreasedLineTools {
     }
 
     /**
-     *
+     * Divides a segment into smaller segments.
      * A segment is a part of the line between it's two points.
      * @param point1 first point of the line
      * @param point2 second point of the line
      * @param segmentCount number of segments we want to have in the divided line
      * @returns
      */
-    public static SegmentizeTwoPointLine(point1: Vector3, point2: Vector3, segmentCount: number): Vector3[] {
+    public static SegmentizeSegmentByCount(point1: Vector3, point2: Vector3, segmentCount: number): Vector3[] {
         const dividedLinePoints: Vector3[] = [];
         const diff = point2.subtract(point1);
         const divisor = TmpVectors.Vector3[0];
@@ -107,18 +107,18 @@ export class GreasedLineTools {
     }
 
     /**
-     *
+     * Divides a line into segments.
      * A segment is a part of the line between it's two points.
      * @param what line points
      * @param segmentLength length of each segment of the resulting line (distance between two line points)
      * @returns line point
      */
-    public static SegmentizeLine(what: Vector3[] | { point1: Vector3; point2: Vector3; length: number }[], segmentLength: number): Vector3[] {
+    public static SegmentizeLineBySegmentLength(what: Vector3[] | { point1: Vector3; point2: Vector3; length: number }[], segmentLength: number): Vector3[] {
         const subLines = what[0] instanceof Vector3 ? GreasedLineTools.GetLineSegments(what as Vector3[]) : (what as { point1: Vector3; point2: Vector3; length: number }[]);
         const points: Vector3[] = [];
         subLines.forEach((s) => {
             if (s.length > segmentLength) {
-                const segments = GreasedLineTools.SegmentizeTwoPointLine(s.point1, s.point2, Math.ceil(s.length / segmentLength));
+                const segments = GreasedLineTools.SegmentizeSegmentByCount(s.point1, s.point2, Math.ceil(s.length / segmentLength));
                 segments.forEach((seg) => {
                     points.push(seg);
                 });
@@ -154,7 +154,7 @@ export class GreasedLineTools {
      * @param points line points
      * @returns
      */
-    public static GetMinMaxSubLineLength(points: Vector3[]): { min: number; max: number } {
+    public static GetMinMaxSegmentLength(points: Vector3[]): { min: number; max: number } {
         const subLines = GreasedLineTools.GetLineSegments(points);
         const sorted = subLines.sort((s) => s.length);
         return {

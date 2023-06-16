@@ -33,7 +33,7 @@ export enum GreasedLineMeshWidthDistribution {
  */
 export interface GreasedLineMaterialBuilderOptions extends GreasedLineMaterialOptions {
     /**
-     * If set to true a new material will created and a new material plugin will be attached
+     * If set to true a new material will be created and a new material plugin will be attached
      * to the material. The material will be set on the mesh. If the instance option is specified in the mesh options,
      * no material will be created/assigned.
      */
