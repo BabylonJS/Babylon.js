@@ -53,7 +53,7 @@ export interface GreasedLineMeshBuilderOptions extends GreasedLineMeshOptions {
      * Distribution of the widths if the width table contains fewer entries than needed
      * @see CompleteGreasedLineWidthTable
      */
-    widthDistribution?: GreasedLineMeshWidthDistribution;
+    widthsDistribution?: GreasedLineMeshWidthDistribution;
 }
 
 /**
@@ -96,7 +96,7 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
         });
     }
 
-    options.widthDistribution = options.widthDistribution ?? GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_START;
+    options.widthsDistribution = options.widthsDistribution ?? GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_START;
 
     materialOptions = materialOptions ?? {
         createAndAssignMaterial: true,
@@ -104,7 +104,7 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
     };
     materialOptions.colorsDistribution = materialOptions?.colorsDistribution ?? GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_START;
 
-    const widths = CompleteGreasedLineWidthTable(length, options.widths ?? [], options.widthDistribution);
+    const widths = CompleteGreasedLineWidthTable(length, options.widths ?? [], options.widthsDistribution);
 
     const colors = materialOptions?.colors
         ? CompleteGreasedLineColorTable(length, materialOptions.colors, materialOptions.colorsDistribution, materialOptions.color ?? Color3.White())
