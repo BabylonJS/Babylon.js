@@ -1767,7 +1767,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.y).toBe(8);
                 expect(result.z).toBe(10);
                 expect(result.w).toBe(12);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -1789,7 +1789,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.y).toBe(8);
                 expect(result.z).toBe(10);
                 expect(result.w).toBe(12);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -1797,7 +1797,7 @@ describe("Babylon Vector tests", () => {
             it("should return the vector as an array", () => {
                 const result = vector1.asArray();
                 expect(result).toEqual([1, 2, 3, 4]);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -1806,7 +1806,7 @@ describe("Babylon Vector tests", () => {
                 const result = vector1.clone();
                 expect(result).not.toBe(vector1);
                 expect(result).toEqual(vector1);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -1837,7 +1837,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.y).toBeCloseTo(0.333);
                 expect(result.z).toBeCloseTo(0.4286);
                 expect(result.w).toBeCloseTo(0.5);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -1859,7 +1859,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.y).toBeCloseTo(0.333);
                 expect(result.z).toBeCloseTo(0.4286);
                 expect(result.w).toBeCloseTo(0.5);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -1867,7 +1867,7 @@ describe("Babylon Vector tests", () => {
             it("should check if two vectors are equal", () => {
                 const result = vector1.equals(vector2);
                 expect(result).toBe(false);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -1875,7 +1875,7 @@ describe("Babylon Vector tests", () => {
             it("should check if the vector components are equal to the given floats", () => {
                 const result = vector1.equalsToFloats(1, 2, 3, 4);
                 expect(result).toBe(true);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -1883,7 +1883,7 @@ describe("Babylon Vector tests", () => {
             it("should check if two vectors are approximately equal within a given epsilon value", () => {
                 const result = vector1.equalsWithEpsilon(vector2, 0.01);
                 expect(result).toBe(false);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -1894,7 +1894,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.y).toBe(2);
                 expect(result.z).toBe(3);
                 expect(result.w).toBe(4);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -1905,7 +1905,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.y).toBe(0);
                 expect(result.z).toBe(0);
                 expect(result.w).toBe(0);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -1923,7 +1923,7 @@ describe("Babylon Vector tests", () => {
             it("should calculate the length (magnitude) of the vector", () => {
                 const result = vector1.length();
                 expect(result).toBeCloseTo(5.4772);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -1931,7 +1931,7 @@ describe("Babylon Vector tests", () => {
             it("should calculate the squared length (magnitude) of the vector", () => {
                 const result = vector1.lengthSquared();
                 expect(result).toBe(30);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -1962,7 +1962,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.y).toBe(12);
                 expect(result.z).toBe(21);
                 expect(result.w).toBe(32);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -1973,7 +1973,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.y).toBe(6);
                 expect(result.z).toBe(12);
                 expect(result.w).toBe(20);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -1995,7 +1995,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.y).toBe(12);
                 expect(result.z).toBe(21);
                 expect(result.w).toBe(32);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -2006,7 +2006,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.y).toBe(-2);
                 expect(result.z).toBe(-3);
                 expect(result.w).toBe(-4);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -2028,7 +2028,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.y).toBe(-2);
                 expect(result.z).toBe(-3);
                 expect(result.w).toBe(-4);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -2049,7 +2049,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.y).toBe(4);
                 expect(result.z).toBe(6);
                 expect(result.w).toBe(8);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -2061,7 +2061,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.y).toBe(4);
                 expect(result.z).toBe(6);
                 expect(result.w).toBe(8);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -2083,7 +2083,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.y).toBe(4);
                 expect(result.z).toBe(6);
                 expect(result.w).toBe(8);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -2114,7 +2114,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.y).toBe(-4);
                 expect(result.z).toBe(-4);
                 expect(result.w).toBe(-4);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -2125,7 +2125,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.y).toBe(0);
                 expect(result.z).toBe(0);
                 expect(result.w).toBe(0);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -2137,7 +2137,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.y).toBe(0);
                 expect(result.z).toBe(0);
                 expect(result.w).toBe(0);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -2159,7 +2159,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.y).toBe(-4);
                 expect(result.z).toBe(-4);
                 expect(result.w).toBe(-4);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -2177,7 +2177,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toBe(1);
                 expect(result.y).toBe(2);
                 expect(result.z).toBe(3);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -2188,7 +2188,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.y).toBe(4);
                 expect(result.z).toBe(5);
                 expect(result.w).toBe(6);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -2200,7 +2200,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.y).toBe(4);
                 expect(result.z).toBe(5);
                 expect(result.w).toBe(6);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -2208,7 +2208,7 @@ describe("Babylon Vector tests", () => {
             it("should calculate the distance between two vectors", () => {
                 const result = Vector4.Distance(vector1, vector2);
                 expect(result).toBeCloseTo(8);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -2216,7 +2216,7 @@ describe("Babylon Vector tests", () => {
             it("should calculate the squared distance between two vectors", () => {
                 const result = Vector4.DistanceSquared(vector1, vector2);
                 expect(result).toBe(64);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -2227,7 +2227,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.y).toBe(20);
                 expect(result.z).toBe(30);
                 expect(result.w).toBe(40);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -2239,7 +2239,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.y).toBe(20);
                 expect(result.z).toBe(30);
                 expect(result.w).toBe(40);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -2252,7 +2252,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.y).toBe(20);
                 expect(result.z).toBe(30);
                 expect(result.w).toBe(40);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -2264,7 +2264,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.y).toBe(20);
                 expect(result.z).toBe(30);
                 expect(result.w).toBe(40);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -2276,7 +2276,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.y).toBe(20);
                 expect(result.z).toBe(30);
                 expect(result.w).toBe(40);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -2287,7 +2287,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.y).toBe(6);
                 expect(result.z).toBe(7);
                 expect(result.w).toBe(8);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -2298,7 +2298,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.y).toBe(2);
                 expect(result.z).toBe(3);
                 expect(result.w).toBe(4);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -2309,7 +2309,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.y).toBeCloseTo(0.3651);
                 expect(result.z).toBeCloseTo(0.5477);
                 expect(result.w).toBeCloseTo(0.7303);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -2321,7 +2321,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.y).toBeCloseTo(0.3651);
                 expect(result.z).toBeCloseTo(0.5477);
                 expect(result.w).toBeCloseTo(0.7303);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -2336,7 +2336,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.z).toBeLessThanOrEqual(1);
                 expect(result.w).toBeGreaterThanOrEqual(0);
                 expect(result.w).toBeLessThanOrEqual(1);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -2347,7 +2347,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.y).toBe(2);
                 expect(result.z).toBe(3);
                 expect(result.w).toBe(1);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -2359,7 +2359,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.y).toBe(2);
                 expect(result.z).toBe(3);
                 expect(result.w).toBe(1);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -2371,7 +2371,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.y).toBe(2);
                 expect(result.z).toBe(3);
                 expect(result.w).toBe(1);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -2382,7 +2382,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.y).toBe(2);
                 expect(result.z).toBe(3);
                 expect(result.w).toBe(4);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -2394,7 +2394,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.y).toBe(2);
                 expect(result.z).toBe(3);
                 expect(result.w).toBe(4);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
 
@@ -2406,7 +2406,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.y).toBe(2);
                 expect(result.z).toBe(3);
                 expect(result.w).toBe(4);
-				shouldNotChange = true;
+                shouldNotChange = true;
             });
         });
     });
