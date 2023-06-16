@@ -2188,5 +2188,6 @@ describe("Babylon Vector tests", () => {
 			expect(result.w).toBe(4);
 		  });
 		});
+
 	});
 });
