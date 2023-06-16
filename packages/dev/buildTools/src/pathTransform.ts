@@ -163,7 +163,11 @@ function transformerFactory<T extends TransformerNode>(context: ts.Transformatio
              * - import * as x from 'path';
              * - import { x } from 'path';
              */
-            if (ts.isImportDeclaration(node) && ts.isStringLiteral(node.moduleSpecifier) && node.importClause && !ts.isTypeOnlyImportDeclaration(node.importClause)) {
+            if (
+                ts.isImportDeclaration(node) &&
+                ts.isStringLiteral(node.moduleSpecifier) &&
+                (!node.importClause || (node.importClause && !ts.isTypeOnlyImportDeclaration(node.importClause)))
+            ) {
                 return ts.visitEachChild(node, pathReplacer, context);
             }
 
