@@ -42,7 +42,7 @@ export interface GreasedLineMaterialBuilderOptions extends GreasedLineMaterialOp
      * Distribution of the colors if the color table contains fewer entries than needed
      * @see CompleteGreasedLineColorTable
      */
-    colorDistribution?: GreasedLineMeshColorDistribution;
+    colorsDistribution?: GreasedLineMeshColorDistribution;
 }
 
 /**
@@ -102,12 +102,12 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
         createAndAssignMaterial: true,
         color: Color3.White(),
     };
-    materialOptions.colorDistribution = materialOptions?.colorDistribution ?? GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_START;
+    materialOptions.colorsDistribution = materialOptions?.colorsDistribution ?? GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_START;
 
     const widths = CompleteGreasedLineWidthTable(length, options.widths ?? [], options.widthDistribution);
 
     const colors = materialOptions?.colors
-        ? CompleteGreasedLineColorTable(length, materialOptions.colors, materialOptions.colorDistribution, materialOptions.color ?? Color3.White())
+        ? CompleteGreasedLineColorTable(length, materialOptions.colors, materialOptions.colorsDistribution, materialOptions.color ?? Color3.White())
         : undefined;
 
     // create new mesh if instance is not defined
