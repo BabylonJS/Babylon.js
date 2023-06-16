@@ -72,8 +72,12 @@ declare let BABYLON: any;
  * Interface used to configure the node material editor
  */
 export interface INodeMaterialEditorOptions {
-    /** Define the URl to load node editor script */
+    /** Define the URL to load node editor script from */
     editorURL?: string;
+    /** Additional configuration for the NME */
+    nodeEditorConfig?: {
+        backgroundColor?: Color4;
+    };
 }
 
 /** @internal */
@@ -1578,10 +1582,12 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /** Creates the node editor window. */
-    private _createNodeEditor() {
-        this.BJSNODEMATERIALEDITOR.NodeEditor.Show({
+    private _createNodeEditor(additionalConfig?: any) {
+        const nodeEditorConfig: any = {
             nodeMaterial: this,
-        });
+            ...additionalConfig,
+        };
+        this.BJSNODEMATERIALEDITOR.NodeEditor.Show(nodeEditorConfig);
     }
 
     /**
@@ -1598,12 +1604,12 @@ export class NodeMaterial extends PushMaterial {
                 // Load editor and add it to the DOM
                 Tools.LoadScript(editorUrl, () => {
                     this.BJSNODEMATERIALEDITOR = this.BJSNODEMATERIALEDITOR || this._getGlobalNodeMaterialEditor();
-                    this._createNodeEditor();
+                    this._createNodeEditor(config?.nodeEditorConfig);
                     resolve();
                 });
             } else {
                 // Otherwise creates the editor
-                this._createNodeEditor();
+                this._createNodeEditor(config?.nodeEditorConfig);
                 resolve();
             }
         });

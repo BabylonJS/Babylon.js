@@ -1058,6 +1058,11 @@
             "renderCount": 10
         },
         {
+            "title": "GLB load from ArrayBuffer",
+            "playgroundId": "#31UBR0#4",
+            "referenceImage": "glbArrayBufferViewLoad.png"
+        },
+        {
             "title": "KTX2 decoder test",
             "playgroundId": "#EIJH8L#27",
             "renderCount": 5,
@@ -1632,20 +1637,8 @@
             "playgroundId": "#ZUAPLL#2"
         },
         {
-            "title": "Glossiness Debug Mode",
-            "playgroundId": "#2FDQT5#2281"
-        },
-        {
-            "title": "Base Color Debug Mode",
-            "playgroundId": "#2FDQT5#2282"
-        },
-        {
-            "title": "Specular Color Debug Mode",
-            "playgroundId": "#Z1VL3V#508"
-        },
-        {
-            "title": "Emissive Color Debug Mode",
-            "playgroundId": "#2FDQT5#2284"
+            "title": "PBR Debug Modes",
+            "playgroundId": "#2FDQT5#2300"
         }
     ]
 }

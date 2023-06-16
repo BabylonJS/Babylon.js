@@ -159,6 +159,16 @@ if (vClipSpacePosition.x / vClipSpacePosition.w >= vDebugMode.x) {
         gl_FragColor.rgb = vec3(luminanceOverAlpha);
     #elif DEBUGMODE == 87
         gl_FragColor.rgb = vec3(alpha);
+    #elif DEBUGMODE == 88 && defined(ALBEDO)
+        gl_FragColor.rgb = vec3(albedoTexture.a);
+    // Does Not Exist
+    #else
+        float stripeWidth = 30.;
+        float stripePos = floor((gl_FragCoord.x + gl_FragCoord.y) / stripeWidth);
+        float whichColor = mod(stripePos, 2.);
+        vec3 color1 = vec3(.6,.2,.2);
+        vec3 color2 = vec3(.3,.1,.1);
+        gl_FragColor.rgb = mix(color1, color2, whichColor);
     #endif
 
     gl_FragColor.rgb *= vDebugMode.y;
