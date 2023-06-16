@@ -9,9 +9,9 @@
     "devDependencies": {
         "@alex_neo/jest-expect-message": "~1.0.5",
         "@dev/build-tools": "^1.0.0",
-        "@nrwl/cli": "^14.3.5",
-        "@nrwl/tao": "^14.3.5",
-        "@nrwl/workspace": "^14.3.5",
+        "@nrwl/cli": "^15.9.3",
+        "@nrwl/tao": "^15.9.3",
+        "@nrwl/workspace": "^15.9.3",
         "@types/expect-puppeteer": "~5.0.3",
         "@types/fs-extra": "^9.0.13",
         "@types/jest": "~27.4.0",

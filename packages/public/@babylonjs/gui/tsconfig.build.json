@@ -8,11 +8,24 @@
         "target": "ES2018",
         "importHelpers": true,
         "plugins": [
-            { "transform": "@dev/build-tools/dist/pathTransform.js", "buildType": "es6", "basePackage": "@babylonjs/gui", "appendJS": true },
+            {
+                "transform": "@dev/build-tools/dist/pathTransform.js",
+                "after": true,
+                "buildType": "es6",
+                "basePackage": "@babylonjs/gui",
+                "appendJS": true
+            },
+            {
+                "transform": "@dev/build-tools/dist/pathTransform.js",
+                "afterDeclarations": true,
+                "buildType": "es6",
+                "basePackage": "@babylonjs/gui",
+                "appendJS": true
+            }
         ],
         "paths": {
             "core/*": ["lts/core/dist/*"],
-            "gui/*": ["lts/gui/generated/*"],
+            "gui/*": ["lts/gui/generated/*"]
         }
     },
 
