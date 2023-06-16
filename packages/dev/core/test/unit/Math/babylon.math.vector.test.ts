@@ -5,10 +5,21 @@ describe("Babylon Vector tests", () => {
     describe("Vector2", () => {
         let vector1: Vector2;
         let vector2: Vector2;
+        let shouldNotChange: boolean;
 
         beforeEach(() => {
             vector1 = new Vector2(1, 2);
             vector2 = new Vector2(3, 4);
+            shouldNotChange = false;
+        });
+
+        afterEach(() => {
+            if (shouldNotChange) {
+                expect(vector1.x).toBe(1);
+                expect(vector1.y).toBe(2);
+                expect(vector2.x).toBe(3);
+                expect(vector2.y).toBe(4);
+            }
         });
 
         describe("add", () => {
@@ -16,6 +27,7 @@ describe("Babylon Vector tests", () => {
                 const result = vector1.add(vector2);
                 expect(result.x).toBe(4);
                 expect(result.y).toBe(6);
+                shouldNotChange = true;
             });
         });
 
@@ -33,6 +45,7 @@ describe("Babylon Vector tests", () => {
                 vector1.addToRef(vector2, result);
                 expect(result.x).toBe(4);
                 expect(result.y).toBe(6);
+                shouldNotChange = true;
             });
         });
         describe("addVector3", () => {
@@ -41,6 +54,7 @@ describe("Babylon Vector tests", () => {
                 const result = vector1.addVector3(vector3);
                 expect(result.x).toBe(6);
                 expect(result.y).toBe(8);
+                shouldNotChange = true;
             });
         });
 
@@ -50,6 +64,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.length).toBe(2);
                 expect(result[0]).toBe(1);
                 expect(result[1]).toBe(2);
+                shouldNotChange = true;
             });
         });
 
@@ -59,6 +74,7 @@ describe("Babylon Vector tests", () => {
                 expect(cloned).not.toBe(vector1);
                 expect(cloned.x).toBe(vector1.x);
                 expect(cloned.y).toBe(vector1.y);
+                shouldNotChange = true;
             });
         });
 
@@ -83,6 +99,7 @@ describe("Babylon Vector tests", () => {
                 const result = vector1.divide(vector2);
                 expect(result.x).toBeCloseTo(1 / 3);
                 expect(result.y).toBeCloseTo(2 / 4);
+                shouldNotChange = true;
             });
         });
 
@@ -100,6 +117,7 @@ describe("Babylon Vector tests", () => {
                 vector1.divideToRef(vector2, result);
                 expect(result.x).toBeCloseTo(1 / 3);
                 expect(result.y).toBeCloseTo(2 / 4);
+                shouldNotChange = true;
             });
         });
 
@@ -107,6 +125,7 @@ describe("Babylon Vector tests", () => {
             it("should return true if the vector equals the given vector", () => {
                 const equals = vector1.equals(vector2);
                 expect(equals).toBe(false);
+                shouldNotChange = true;
             });
         });
 
@@ -114,6 +133,7 @@ describe("Babylon Vector tests", () => {
             it("should return true if the vector is approximately equal to the given vector within the epsilon range", () => {
                 const equals = vector1.equalsWithEpsilon(vector2, 0.01);
                 expect(equals).toBe(false);
+                shouldNotChange = true;
             });
         });
 
@@ -122,6 +142,7 @@ describe("Babylon Vector tests", () => {
                 const result = vector1.floor();
                 expect(result.x).toBe(1);
                 expect(result.y).toBe(2);
+                shouldNotChange = true;
             });
         });
 
@@ -130,6 +151,7 @@ describe("Babylon Vector tests", () => {
                 const result = vector1.fract();
                 expect(result.x).toBe(0);
                 expect(result.y).toBe(0);
+                shouldNotChange = true;
             });
         });
 
@@ -146,6 +168,7 @@ describe("Babylon Vector tests", () => {
             it("should return the length (magnitude) of the vector", () => {
                 const length = vector1.length();
                 expect(length).toBeCloseTo(Math.sqrt(1 * 1 + 2 * 2));
+                shouldNotChange = true;
             });
         });
 
@@ -153,6 +176,7 @@ describe("Babylon Vector tests", () => {
             it("should return the squared length of the vector", () => {
                 const lengthSquared = vector1.lengthSquared();
                 expect(lengthSquared).toBeCloseTo(1 * 1 + 2 * 2);
+                shouldNotChange = true;
             });
         });
 
@@ -161,6 +185,7 @@ describe("Babylon Vector tests", () => {
                 const result = vector1.multiply(vector2);
                 expect(result.x).toBe(3);
                 expect(result.y).toBe(8);
+                shouldNotChange = true;
             });
         });
 
@@ -169,6 +194,7 @@ describe("Babylon Vector tests", () => {
                 const result = vector1.multiplyByFloats(2, 3);
                 expect(result.x).toBe(2);
                 expect(result.y).toBe(6);
+                shouldNotChange = true;
             });
         });
 
@@ -186,6 +212,7 @@ describe("Babylon Vector tests", () => {
                 vector1.multiplyToRef(vector2, result);
                 expect(result.x).toBe(3);
                 expect(result.y).toBe(8);
+                shouldNotChange = true;
             });
         });
 
@@ -194,6 +221,7 @@ describe("Babylon Vector tests", () => {
                 const result = vector1.negate();
                 expect(result.x).toBe(-1);
                 expect(result.y).toBe(-2);
+                shouldNotChange = true;
             });
         });
 
@@ -211,6 +239,7 @@ describe("Babylon Vector tests", () => {
                 vector1.negateToRef(result);
                 expect(result.x).toBe(-1);
                 expect(result.y).toBe(-2);
+                shouldNotChange = true;
             });
         });
 
@@ -228,6 +257,7 @@ describe("Babylon Vector tests", () => {
                 vector1.rotateToRef(Math.PI / 2, result);
                 expect(result.x).toBeCloseTo(-2);
                 expect(result.y).toBeCloseTo(1);
+                shouldNotChange = true;
             });
         });
 
@@ -236,6 +266,7 @@ describe("Babylon Vector tests", () => {
                 const result = vector1.scale(2);
                 expect(result.x).toBe(2);
                 expect(result.y).toBe(4);
+                shouldNotChange = true;
             });
         });
 
@@ -245,6 +276,7 @@ describe("Babylon Vector tests", () => {
                 vector1.scaleAndAddToRef(2, result);
                 expect(result.x).toBe(2);
                 expect(result.y).toBe(4);
+                shouldNotChange = true;
             });
         });
 
@@ -262,6 +294,7 @@ describe("Babylon Vector tests", () => {
                 vector1.scaleToRef(2, result);
                 expect(result.x).toBe(2);
                 expect(result.y).toBe(4);
+                shouldNotChange = true;
             });
         });
 
@@ -278,6 +311,7 @@ describe("Babylon Vector tests", () => {
                 const result = vector1.subtract(vector2);
                 expect(result.x).toBe(-2);
                 expect(result.y).toBe(-2);
+                shouldNotChange = true;
             });
         });
 
@@ -295,6 +329,7 @@ describe("Babylon Vector tests", () => {
                 vector1.subtractToRef(vector2, result);
                 expect(result.x).toBe(-2);
                 expect(result.y).toBe(-2);
+                shouldNotChange = true;
             });
         });
 
@@ -317,6 +352,7 @@ describe("Babylon Vector tests", () => {
                 const result = Vector2.CatmullRom(p0, vector1, vector2, p3, 0.5);
                 expect(result.x).toBeCloseTo(1.5);
                 expect(result.y).toBeCloseTo(1.5);
+                shouldNotChange = true;
             });
         });
 
@@ -325,6 +361,7 @@ describe("Babylon Vector tests", () => {
                 const result = Vector2.Center(vector1, vector2);
                 expect(result.x).toBeCloseTo(2);
                 expect(result.y).toBeCloseTo(3);
+                shouldNotChange = true;
             });
         });
 
@@ -334,6 +371,7 @@ describe("Babylon Vector tests", () => {
                 Vector2.CenterToRef(vector1, vector2, result);
                 expect(result.x).toBeCloseTo(2);
                 expect(result.y).toBeCloseTo(3);
+                shouldNotChange = true;
             });
         });
 
@@ -344,6 +382,7 @@ describe("Babylon Vector tests", () => {
                 const result = Vector2.Clamp(vector1, min, max);
                 expect(result.x).toBe(1);
                 expect(result.y).toBe(2);
+                shouldNotChange = true;
             });
         });
 
@@ -351,6 +390,7 @@ describe("Babylon Vector tests", () => {
             it("should calculate the distance between two vectors", () => {
                 const distance = Vector2.Distance(vector1, vector2);
                 expect(distance).toBeCloseTo(Math.sqrt(8));
+                shouldNotChange = true;
             });
         });
 
@@ -360,7 +400,8 @@ describe("Babylon Vector tests", () => {
                 const segmentStart = new Vector2(0, 0);
                 const segmentEnd = new Vector2(10, 10);
                 const distance = Vector2.DistanceOfPointFromSegment(point, segmentStart, segmentEnd);
-                expect(distance).toBeCloseTo(0.7071067811865476 /* sqrt(2) */);
+                expect(distance).toBeCloseTo(0.7071067811865476 /* sqrt(2) / 2 */);
+                shouldNotChange = true;
             });
         });
 
@@ -368,6 +409,7 @@ describe("Babylon Vector tests", () => {
             it("should calculate the squared distance between two vectors", () => {
                 const distanceSquared = Vector2.DistanceSquared(vector1, vector2);
                 expect(distanceSquared).toBeCloseTo(8);
+                shouldNotChange = true;
             });
         });
 
@@ -375,6 +417,7 @@ describe("Babylon Vector tests", () => {
             it("should calculate the dot product of two vectors", () => {
                 const dotProduct = Vector2.Dot(vector1, vector2);
                 expect(dotProduct).toBe(11);
+                shouldNotChange = true;
             });
         });
 
@@ -384,6 +427,7 @@ describe("Babylon Vector tests", () => {
                 const result = Vector2.FromArray(array);
                 expect(result.x).toBe(5);
                 expect(result.y).toBe(6);
+                shouldNotChange = true;
             });
         });
 
@@ -394,6 +438,7 @@ describe("Babylon Vector tests", () => {
                 Vector2.FromArrayToRef(array, 0, result);
                 expect(result.x).toBe(5);
                 expect(result.y).toBe(6);
+                shouldNotChange = true;
             });
         });
 
@@ -404,6 +449,7 @@ describe("Babylon Vector tests", () => {
                 const result = Vector2.Hermite(vector1, tangent1, vector2, tangent2, 0.5);
                 expect(result.x).toBeCloseTo(1.75);
                 expect(result.y).toBeCloseTo(2.75);
+                shouldNotChange = true;
             });
         });
 
@@ -414,6 +460,7 @@ describe("Babylon Vector tests", () => {
                 const result = Vector2.Hermite1stDerivative(vector1, tangent1, vector2, tangent2, 0.5);
                 expect(result.x).toBeCloseTo(2);
                 expect(result.y).toBeCloseTo(2);
+                shouldNotChange = true;
             });
         });
 
@@ -425,6 +472,7 @@ describe("Babylon Vector tests", () => {
                 Vector2.Hermite1stDerivativeToRef(vector1, tangent1, vector2, tangent2, 0.5, result);
                 expect(result.x).toBeCloseTo(2);
                 expect(result.y).toBeCloseTo(2);
+                shouldNotChange = true;
             });
         });
 
@@ -433,6 +481,7 @@ describe("Babylon Vector tests", () => {
                 const result = Vector2.Lerp(vector1, vector2, 0.5);
                 expect(result.x).toBeCloseTo(2);
                 expect(result.y).toBeCloseTo(3);
+                shouldNotChange = true;
             });
         });
 
@@ -441,6 +490,7 @@ describe("Babylon Vector tests", () => {
                 const result = Vector2.Maximize(vector1, vector2);
                 expect(result.x).toBe(3);
                 expect(result.y).toBe(4);
+                shouldNotChange = true;
             });
         });
 
@@ -449,6 +499,7 @@ describe("Babylon Vector tests", () => {
                 const result = Vector2.Minimize(vector1, vector2);
                 expect(result.x).toBe(1);
                 expect(result.y).toBe(2);
+                shouldNotChange = true;
             });
         });
 
@@ -457,6 +508,7 @@ describe("Babylon Vector tests", () => {
                 const result = Vector2.Normalize(vector1);
                 const length = result.length();
                 expect(length).toBeCloseTo(1);
+                shouldNotChange = true;
             });
         });
 
@@ -466,6 +518,7 @@ describe("Babylon Vector tests", () => {
                 Vector2.NormalizeToRef(vector1, result);
                 const length = result.length();
                 expect(length).toBeCloseTo(1);
+                shouldNotChange = true;
             });
         });
 
@@ -476,6 +529,7 @@ describe("Babylon Vector tests", () => {
                 const isInside2 = Vector2.PointInTriangle(new Vector2(0.5, 0.5), vector1, vector2, p3);
                 expect(isInside1).toBe(true);
                 expect(isInside2).toBe(false);
+                shouldNotChange = true;
             });
         });
 
@@ -486,6 +540,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toBeLessThanOrEqual(1);
                 expect(result.y).toBeGreaterThanOrEqual(0);
                 expect(result.y).toBeLessThanOrEqual(1);
+                shouldNotChange = true;
             });
         });
 
@@ -495,6 +550,7 @@ describe("Babylon Vector tests", () => {
                 const result = Vector2.Transform(vector1, matrix);
                 expect(result.x).toBe(4);
                 expect(result.y).toBe(6);
+                shouldNotChange = true;
             });
         });
 
@@ -505,6 +561,7 @@ describe("Babylon Vector tests", () => {
                 Vector2.TransformToRef(vector1, matrix, result);
                 expect(result.x).toBe(4);
                 expect(result.y).toBe(6);
+                shouldNotChange = true;
             });
         });
     });
@@ -512,10 +569,23 @@ describe("Babylon Vector tests", () => {
     describe("Vector3", () => {
         let vector1: Vector3;
         let vector2: Vector3;
+        let shouldNotChange: boolean;
 
         beforeEach(() => {
             vector1 = new Vector3(1, 2, 3);
             vector2 = new Vector3(4, 5, 6);
+            shouldNotChange = false;
+        });
+
+        afterEach(() => {
+            if (shouldNotChange) {
+                expect(vector1.x).toBe(1);
+                expect(vector1.y).toBe(2);
+                expect(vector1.z).toBe(3);
+                expect(vector2.x).toBe(4);
+                expect(vector2.y).toBe(5);
+                expect(vector2.z).toBe(6);
+            }
         });
 
         describe("add", () => {
@@ -524,6 +594,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toEqual(5);
                 expect(result.y).toEqual(7);
                 expect(result.z).toEqual(9);
+                shouldNotChange = true;
             });
         });
 
@@ -552,16 +623,18 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toEqual(5);
                 expect(result.y).toEqual(7);
                 expect(result.z).toEqual(9);
+                shouldNotChange = true;
             });
         });
 
         describe("applyRotationQuaternion", () => {
             it("should apply rotation quaternion to the current vector", () => {
                 const quaternion = new Quaternion(0, 0, 0, 1);
-                vector1.applyRotationQuaternion(quaternion);
-                expect(vector1.x).toEqual(1);
-                expect(vector1.y).toEqual(2);
-                expect(vector1.z).toEqual(3);
+                const result = vector1.applyRotationQuaternion(quaternion);
+                expect(result.x).toEqual(1);
+                expect(result.y).toEqual(2);
+                expect(result.z).toEqual(3);
+                shouldNotChange = true;
             });
         });
 
@@ -583,6 +656,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toEqual(1);
                 expect(result.y).toEqual(2);
                 expect(result.z).toEqual(3);
+                shouldNotChange = true;
             });
         });
 
@@ -593,6 +667,7 @@ describe("Babylon Vector tests", () => {
                 expect(clone.y).toEqual(2);
                 expect(clone.z).toEqual(3);
                 expect(clone).not.toBe(vector1);
+                shouldNotChange = true;
             });
         });
 
@@ -620,6 +695,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toEqual(-3);
                 expect(result.y).toEqual(6);
                 expect(result.z).toEqual(-3);
+                shouldNotChange = true;
             });
         });
 
@@ -629,6 +705,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toEqual(0.25);
                 expect(result.y).toEqual(0.4);
                 expect(result.z).toEqual(0.5);
+                shouldNotChange = true;
             });
         });
 
@@ -648,6 +725,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toEqual(0.25);
                 expect(result.y).toEqual(0.4);
                 expect(result.z).toEqual(0.5);
+                shouldNotChange = true;
             });
         });
 
@@ -656,11 +734,13 @@ describe("Babylon Vector tests", () => {
                 const otherVector = new Vector3(1, 2, 3);
                 const result = vector1.equals(otherVector);
                 expect(result).toBe(true);
+                shouldNotChange = true;
             });
             it("should return false if the vector is not equal to another vector", () => {
                 const otherVector = new Vector3(4, 5, 6);
                 const result = vector1.equals(otherVector);
                 expect(result).toBe(false);
+                shouldNotChange = true;
             });
         });
 
@@ -668,11 +748,13 @@ describe("Babylon Vector tests", () => {
             it("should return true if the vector is equal to the provided floats", () => {
                 const result = vector1.equalsToFloats(1, 2, 3);
                 expect(result).toBe(true);
+                shouldNotChange = true;
             });
 
             it("should return false if the vector is not equal to the provided floats", () => {
                 const result = vector1.equalsToFloats(4, 5, 6);
                 expect(result).toBe(false);
+                shouldNotChange = true;
             });
         });
 
@@ -681,20 +763,23 @@ describe("Babylon Vector tests", () => {
                 const otherVector = new Vector3(1.01, 2.01, 3.01);
                 const result = vector1.equalsWithEpsilon(otherVector, 0.1);
                 expect(result).toBe(true);
+                shouldNotChange = true;
             });
 
             it("should return false if the vector is not approximately equal to another vector within the provided epsilon", () => {
                 const result = vector1.equalsWithEpsilon(vector2, 0.1);
                 expect(result).toBe(false);
+                shouldNotChange = true;
             });
         });
 
         describe("floor", () => {
             it("should set each component of the vector to the largest integer less than or equal to that component", () => {
-                vector1.floor();
-                expect(vector1.x).toEqual(1);
-                expect(vector1.y).toEqual(2);
-                expect(vector1.z).toEqual(3);
+                const result = vector1.floor();
+                expect(result.x).toEqual(1);
+                expect(result.y).toEqual(2);
+                expect(result.z).toEqual(3);
+                shouldNotChange = true;
             });
         });
 
@@ -704,6 +789,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toEqual(0);
                 expect(result.y).toEqual(0);
                 expect(result.z).toEqual(0);
+                shouldNotChange = true;
             });
         });
 
@@ -724,6 +810,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toBeCloseTo(0.6324555320336757 /* sqrt(2 / 5) */);
                 expect(result.y).toBeCloseTo(-3.1622776601683795 /* -sqrt(10) */);
                 expect(result.z).toBeCloseTo(1.8973665961010269 /* 3 * sqrt(2 / 5) */);
+                shouldNotChange = true;
             });
         });
 
@@ -731,11 +818,13 @@ describe("Babylon Vector tests", () => {
             it("should return true if the vector has non-uniform values within the provided epsilon", () => {
                 const result = vector1.isNonUniformWithinEpsilon(0.1);
                 expect(result).toBe(true);
+                shouldNotChange = true;
             });
 
-            it("should return false if the vector has uniform values within the provided epsilon", () => {
+            it("should return false if the vector does not have uniform values within the provided epsilon", () => {
                 const result = vector1.isNonUniformWithinEpsilon(2);
                 expect(result).toBe(false);
+                shouldNotChange = true;
             });
         });
 
@@ -743,6 +832,7 @@ describe("Babylon Vector tests", () => {
             it("should compute the length (magnitude) of the vector", () => {
                 const result = vector1.length();
                 expect(result).toBeCloseTo(3.7416573867739413 /* sqrt(14) */, 6);
+                shouldNotChange = true;
             });
         });
 
@@ -750,6 +840,7 @@ describe("Babylon Vector tests", () => {
             it("should compute the squared length of the vector", () => {
                 const result = vector1.lengthSquared();
                 expect(result).toEqual(14);
+                shouldNotChange = true;
             });
         });
 
@@ -795,6 +886,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toEqual(4);
                 expect(result.y).toEqual(10);
                 expect(result.z).toEqual(18);
+                shouldNotChange = true;
             });
         });
 
@@ -804,6 +896,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toEqual(4);
                 expect(result.y).toEqual(10);
                 expect(result.z).toEqual(18);
+                shouldNotChange = true;
             });
         });
 
@@ -823,6 +916,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toEqual(4);
                 expect(result.y).toEqual(10);
                 expect(result.z).toEqual(18);
+                shouldNotChange = true;
             });
         });
 
@@ -832,6 +926,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toEqual(-1);
                 expect(result.y).toEqual(-2);
                 expect(result.z).toEqual(-3);
+                shouldNotChange = true;
             });
         });
 
@@ -851,6 +946,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toEqual(-1);
                 expect(result.y).toEqual(-2);
                 expect(result.z).toEqual(-3);
+                shouldNotChange = true;
             });
         });
 
@@ -876,6 +972,7 @@ describe("Babylon Vector tests", () => {
                 const result = vector1.normalizeToNew();
                 const length = result.length();
                 expect(length).toBeCloseTo(1);
+                shouldNotChange = true;
             });
         });
 
@@ -885,6 +982,7 @@ describe("Babylon Vector tests", () => {
                 vector1.normalizeToRef(result);
                 const length = result.length();
                 expect(length).toBeCloseTo(1);
+                shouldNotChange = true;
             });
         });
 
@@ -946,6 +1044,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toEqual(1);
                 expect(result.y).toEqual(2);
                 expect(result.z).toEqual(3);
+                shouldNotChange = true;
             });
         });
 
@@ -957,6 +1056,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toEqual(1);
                 expect(result.y).toEqual(2);
                 expect(result.z).toEqual(3);
+                shouldNotChange = true;
             });
         });
 
@@ -966,15 +1066,18 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toEqual(2);
                 expect(result.y).toEqual(4);
                 expect(result.z).toEqual(6);
+                shouldNotChange = true;
             });
         });
 
         describe("scaleAndAddToRef", () => {
             it("should scale the vector by a scalar value and add it to another vector", () => {
-                vector1.scaleAndAddToRef(2, vector2);
-                expect(vector2.x).toEqual(6);
-                expect(vector2.y).toEqual(9);
-                expect(vector2.z).toEqual(12);
+                const result = new Vector3();
+                vector1.scaleAndAddToRef(2, result);
+                expect(result.x).toEqual(2);
+                expect(result.y).toEqual(4);
+                expect(result.z).toEqual(6);
+                shouldNotChange = true;
             });
         });
 
@@ -994,6 +1097,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toEqual(2);
                 expect(result.y).toEqual(4);
                 expect(result.z).toEqual(6);
+                shouldNotChange = true;
             });
         });
 
@@ -1021,6 +1125,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toEqual(-3);
                 expect(result.y).toEqual(-3);
                 expect(result.z).toEqual(-3);
+                shouldNotChange = true;
             });
 
             it("should subtract one vector from another vector (#2)", () => {
@@ -1028,15 +1133,17 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toEqual(3);
                 expect(result.y).toEqual(3);
                 expect(result.z).toEqual(3);
+                shouldNotChange = true;
             });
         });
 
         describe("subtractFromFloats", () => {
-            it("should subtract floats from a vector in place", () => {
+            it("should subtract floats from a vector", () => {
                 const result = vector1.subtractFromFloats(4, 5, 6);
                 expect(result.x).toEqual(-3);
                 expect(result.y).toEqual(-3);
                 expect(result.z).toEqual(-3);
+                shouldNotChange = true;
             });
         });
 
@@ -1047,6 +1154,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toEqual(-3);
                 expect(result.y).toEqual(-3);
                 expect(result.z).toEqual(-3);
+                shouldNotChange = true;
             });
         });
 
@@ -1073,6 +1181,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toEqual(-3);
                 expect(result.y).toEqual(-3);
                 expect(result.z).toEqual(-3);
+                shouldNotChange = true;
             });
 
             it("should subtract one vector from another vector and store the result in another vector (#2)", () => {
@@ -1081,6 +1190,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toEqual(3);
                 expect(result.y).toEqual(3);
                 expect(result.z).toEqual(3);
+                shouldNotChange = true;
             });
         });
 
@@ -1091,6 +1201,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.y).toBeCloseTo(-0.2061492260268777);
                 expect(result.z).toBeCloseTo(0.44443511344300074);
                 expect(result.w).toBeCloseTo(0.4359528440735657);
+                shouldNotChange = true;
             });
         });
 
@@ -1102,6 +1213,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toEqual(5.5);
                 expect(result.y).toEqual(6.5);
                 expect(result.z).toEqual(7.5);
+                shouldNotChange = true;
             });
         });
 
@@ -1111,6 +1223,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toEqual(2.5);
                 expect(result.y).toEqual(3.5);
                 expect(result.z).toEqual(4.5);
+                shouldNotChange = true;
             });
         });
 
@@ -1123,6 +1236,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toEqual(2.5);
                 expect(result.y).toEqual(3.5);
                 expect(result.z).toEqual(4.5);
+                shouldNotChange = true;
             });
         });
 
@@ -1135,6 +1249,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toEqual(1);
                 expect(result.y).toEqual(2);
                 expect(result.z).toEqual(3);
+                shouldNotChange = true;
             });
         });
 
@@ -1147,6 +1262,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toEqual(2);
                 expect(result.y).toEqual(5);
                 expect(result.z).toEqual(8);
+                shouldNotChange = true;
             });
         });
 
@@ -1160,6 +1276,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toEqual(2);
                 expect(result.y).toEqual(5);
                 expect(result.z).toEqual(8);
+                shouldNotChange = true;
             });
         });
 
@@ -1169,6 +1286,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toEqual(-3);
                 expect(result.y).toEqual(6);
                 expect(result.z).toEqual(-3);
+                shouldNotChange = true;
             });
         });
 
@@ -1179,6 +1297,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toEqual(-3);
                 expect(result.y).toEqual(6);
                 expect(result.z).toEqual(-3);
+                shouldNotChange = true;
             });
         });
 
@@ -1186,6 +1305,7 @@ describe("Babylon Vector tests", () => {
             it("should calculate the distance between two vectors", () => {
                 const result = Vector3.Distance(vector1, vector2);
                 expect(result).toBeCloseTo(5.196152422706632 /* 3 * sqrt(3) */);
+                shouldNotChange = true;
             });
         });
 
@@ -1193,6 +1313,7 @@ describe("Babylon Vector tests", () => {
             it("should calculate the squared distance between two vectors", () => {
                 const result = Vector3.DistanceSquared(vector1, vector2);
                 expect(result).toEqual(27);
+                shouldNotChange = true;
             });
         });
 
@@ -1200,6 +1321,7 @@ describe("Babylon Vector tests", () => {
             it("should calculate the dot product of two vectors", () => {
                 const result = Vector3.Dot(vector1, vector2);
                 expect(result).toEqual(32);
+                shouldNotChange = true;
             });
         });
 
@@ -1210,6 +1332,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toEqual(1);
                 expect(result.y).toEqual(2);
                 expect(result.z).toEqual(3);
+                shouldNotChange = true;
             });
         });
 
@@ -1221,6 +1344,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toEqual(1);
                 expect(result.y).toEqual(2);
                 expect(result.z).toEqual(3);
+                shouldNotChange = true;
             });
         });
 
@@ -1231,6 +1355,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toEqual(1);
                 expect(result.y).toEqual(2);
                 expect(result.z).toEqual(3);
+                shouldNotChange = true;
             });
         });
 
@@ -1245,6 +1370,7 @@ describe("Babylon Vector tests", () => {
                     expect(calculatedResult).toBeCloseTo(result, 8);
                 });
             });
+            shouldNotChange = true;
         });
 
         describe("GetClipFactor", () => {
@@ -1252,6 +1378,7 @@ describe("Babylon Vector tests", () => {
                 const axis = new Vector3(0, 1, 0);
                 const result = Vector3.GetClipFactor(vector1, vector2, axis, 1);
                 expect(result).toBeCloseTo(-1 / 3);
+                shouldNotChange = true;
             });
         });
 
@@ -1263,6 +1390,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toBeCloseTo(2.125);
                 expect(result.y).toBeCloseTo(3.125);
                 expect(result.z).toBeCloseTo(4.125);
+                shouldNotChange = true;
             });
         });
 
@@ -1274,6 +1402,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toBeCloseTo(0.25);
                 expect(result.y).toBeCloseTo(-0.25);
                 expect(result.z).toBeCloseTo(-0.75);
+                shouldNotChange = true;
             });
         });
 
@@ -1286,6 +1415,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toBeCloseTo(0.25);
                 expect(result.y).toBeCloseTo(-0.25);
                 expect(result.z).toBeCloseTo(-0.75);
+                shouldNotChange = true;
             });
         });
 
@@ -1295,6 +1425,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toBeCloseTo(2.5);
                 expect(result.y).toBeCloseTo(3.5);
                 expect(result.z).toBeCloseTo(4.5);
+                shouldNotChange = true;
             });
         });
 
@@ -1305,6 +1436,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toBeCloseTo(2.5);
                 expect(result.y).toBeCloseTo(3.5);
                 expect(result.z).toBeCloseTo(4.5);
+                shouldNotChange = true;
             });
         });
 
@@ -1314,6 +1446,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toEqual(4);
                 expect(result.y).toEqual(5);
                 expect(result.z).toEqual(6);
+                shouldNotChange = true;
             });
         });
 
@@ -1323,6 +1456,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toEqual(1);
                 expect(result.y).toEqual(2);
                 expect(result.z).toEqual(3);
+                shouldNotChange = true;
             });
         });
 
@@ -1332,6 +1466,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toBeCloseTo(0.26726, 5);
                 expect(result.y).toBeCloseTo(0.53452, 5);
                 expect(result.z).toBeCloseTo(0.80178, 5);
+                shouldNotChange = true;
             });
         });
 
@@ -1342,6 +1477,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toBeCloseTo(0.26726, 5);
                 expect(result.y).toBeCloseTo(0.53452, 5);
                 expect(result.z).toBeCloseTo(0.80178, 5);
+                shouldNotChange = true;
             });
         });
 
@@ -1351,6 +1487,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toBeCloseTo(0.9553166181245092);
                 expect(result.y).toBeCloseTo(0.7853981633974483);
                 expect(result.z).toEqual(0);
+                shouldNotChange = true;
             });
         });
 
@@ -1361,6 +1498,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toBeCloseTo(0.9553166181245092);
                 expect(result.y).toBeCloseTo(0.7853981633974483);
                 expect(result.z).toEqual(0);
+                shouldNotChange = true;
             });
         });
 
@@ -1370,6 +1508,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toEqual(100);
                 expect(result.y).toEqual(-50);
                 expect(result.z).toEqual(2);
+                shouldNotChange = true;
             });
         });
 
@@ -1380,6 +1519,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toBeCloseTo(128 / 77);
                 expect(result.y).toBeCloseTo(160 / 77);
                 expect(result.z).toBeCloseTo(192 / 77);
+                shouldNotChange = true;
             });
         });
 
@@ -1390,6 +1530,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toEqual(100);
                 expect(result.y).toEqual(-50);
                 expect(result.z).toEqual(2);
+                shouldNotChange = true;
             });
         });
 
@@ -1402,6 +1543,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.y).toBeLessThanOrEqual(1);
                 expect(result.z).toBeGreaterThanOrEqual(0);
                 expect(result.z).toBeLessThanOrEqual(1);
+                shouldNotChange = true;
             });
         });
 
@@ -1412,6 +1554,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toEqual(1);
                 expect(result.y).toEqual(-2);
                 expect(result.z).toEqual(3);
+                shouldNotChange = true;
             });
 
             it("can reflect off the plane defined by a normal", () => {
@@ -1422,6 +1565,7 @@ describe("Babylon Vector tests", () => {
                 const expected = new Vector3(-10, 10, 5);
 
                 expect(Vector3.Reflect(inDirection, normal)).toEqual(expected);
+                shouldNotChange = true;
             });
         });
 
@@ -1433,6 +1577,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toEqual(1);
                 expect(result.y).toEqual(-2);
                 expect(result.z).toEqual(3);
+                shouldNotChange = true;
             });
         });
 
@@ -1445,6 +1590,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toBeCloseTo(0);
                 expect(result.y).toBeCloseTo(Math.PI / 2);
                 expect(result.z).toBeCloseTo(Math.PI / 2);
+                shouldNotChange = true;
             });
         });
 
@@ -1458,6 +1604,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toBeCloseTo(0);
                 expect(result.y).toBeCloseTo(Math.PI / 2);
                 expect(result.z).toBeCloseTo(Math.PI / 2);
+                shouldNotChange = true;
             });
         });
 
@@ -1468,6 +1615,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toBeCloseTo(2.277191527654695);
                 expect(result.y).toBeCloseTo(3.4777320279108768);
                 expect(result.z).toBeCloseTo(4.678272528167059);
+                shouldNotChange = true;
             });
         });
 
@@ -1480,6 +1628,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toBeCloseTo(1.4547972045128181);
                 expect(result.y).toBeCloseTo(2.582259323554707);
                 expect(result.z).toBeCloseTo(3.709721442596596);
+                shouldNotChange = true;
             });
         });
 
@@ -1490,17 +1639,19 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toBeCloseTo(1);
                 expect(result.y).toBeCloseTo(-3);
                 expect(result.z).toBeCloseTo(2);
+                shouldNotChange = true;
             });
         });
 
         describe("TransformCoordinatesToRef", () => {
             it("should transform vector coordinates by a given matrix and store result in target vector", () => {
                 const transformation = Matrix.RotationX(Math.PI / 2);
-                const target = new Vector3();
-                Vector3.TransformCoordinatesToRef(vector1, transformation, target);
-                expect(target.x).toBeCloseTo(1);
-                expect(target.y).toBeCloseTo(-3);
-                expect(target.z).toBeCloseTo(2);
+                const result = new Vector3();
+                Vector3.TransformCoordinatesToRef(vector1, transformation, result);
+                expect(result.x).toBeCloseTo(1);
+                expect(result.y).toBeCloseTo(-3);
+                expect(result.z).toBeCloseTo(2);
+                shouldNotChange = true;
             });
         });
 
@@ -1511,17 +1662,19 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toBeCloseTo(1);
                 expect(result.y).toBeCloseTo(-3);
                 expect(result.z).toBeCloseTo(2);
+                shouldNotChange = true;
             });
         });
 
         describe("TransformNormalToRef", () => {
             it("should transform vector normal by a given matrix and store result in target vector", () => {
                 const transformation = Matrix.RotationX(Math.PI / 2);
-                const target = new Vector3();
-                Vector3.TransformNormalToRef(vector1, transformation, target);
-                expect(target.x).toBeCloseTo(1);
-                expect(target.y).toBeCloseTo(-3);
-                expect(target.z).toBeCloseTo(2);
+                const result = new Vector3();
+                Vector3.TransformNormalToRef(vector1, transformation, result);
+                expect(result.x).toBeCloseTo(1);
+                expect(result.y).toBeCloseTo(-3);
+                expect(result.z).toBeCloseTo(2);
+                shouldNotChange = true;
             });
         });
 
@@ -1535,6 +1688,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toBeCloseTo(0.06660001703257157);
                 expect(result.y).toBeCloseTo(-0.04974136462211895);
                 expect(result.z).toBeCloseTo(-10.050074196419953);
+                shouldNotChange = true;
             });
         });
 
@@ -1549,6 +1703,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toBeCloseTo(0.06660001703257157);
                 expect(result.y).toBeCloseTo(-0.04974136462211895);
                 expect(result.z).toBeCloseTo(-10.050074196419953);
+                shouldNotChange = true;
             });
         });
 
@@ -1561,6 +1716,7 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toBeCloseTo(-0.9975);
                 expect(result.y).toBeCloseTo(5);
                 expect(result.z).toBeCloseTo(-0.993333333333333);
+                shouldNotChange = true;
             });
         });
 
@@ -1575,546 +1731,604 @@ describe("Babylon Vector tests", () => {
                 expect(result.x).toBeCloseTo(0.06660001703257157);
                 expect(result.y).toBeCloseTo(-0.04974136462211895);
                 expect(result.z).toBeCloseTo(-10.050074196419953);
+                shouldNotChange = true;
             });
         });
     });
 
-	describe('Vector4', () => {
-		let vector1: Vector4;
-		let vector2: Vector4;
-	  
-		beforeEach(() => {
-		  vector1 = new Vector4(1, 2, 3, 4);
-		  vector2 = new Vector4(5, 6, 7, 8);
-		});
-	  
-		describe('add', () => {
-		  it('should add two vectors', () => {
-			const result = vector1.add(vector2);
-			expect(result.x).toBe(6);
-			expect(result.y).toBe(8);
-			expect(result.z).toBe(10);
-			expect(result.w).toBe(12);
-		  });
-		});
-	  
-		describe('addInPlace', () => {
-		  it('should add a vector in place', () => {
-			vector1.addInPlace(vector2);
-			expect(vector1.x).toBe(6);
-			expect(vector1.y).toBe(8);
-			expect(vector1.z).toBe(10);
-			expect(vector1.w).toBe(12);
-		  });
-		});
-	  
-		describe('addToRef', () => {
-		  it('should add two vectors and store the result in a target vector', () => {
-			const result = new Vector4();
-			vector1.addToRef(vector2, result);
-			expect(result.x).toBe(6);
-			expect(result.y).toBe(8);
-			expect(result.z).toBe(10);
-			expect(result.w).toBe(12);
-		  });
-		});
-	  
-		describe('asArray', () => {
-		  it('should return the vector as an array', () => {
-			const result = vector1.asArray();
-			expect(result).toEqual([1, 2, 3, 4]);
-		  });
-		});
-	  
-		describe('clone', () => {
-		  it('should create a copy of the vector', () => {
-			const result = vector1.clone();
-			expect(result).not.toBe(vector1);
-			expect(result).toEqual(vector1);
-		  });
-		});
-	  
-		describe('copyFrom', () => {
-		  it('should copy the values from another vector', () => {
-			vector1.copyFrom(vector2);
-			expect(vector1).toEqual(vector2);
-		  });
-		});
-	  
-		describe('copyFromFloats', () => {
-		  it('should set the vector values from individual floats', () => {
-			vector1.copyFromFloats(10, 20, 30, 40);
-			expect(vector1.x).toBe(10);
-			expect(vector1.y).toBe(20);
-			expect(vector1.z).toBe(30);
-			expect(vector1.w).toBe(40);
-		  });
-		});
-	  
-		describe('divide', () => {
-		  it('should divide a vector by another vector', () => {
-			const result = vector1.divide(vector2);
-			expect(result.x).toBeCloseTo(0.2);
-			expect(result.y).toBeCloseTo(0.333);
-			expect(result.z).toBeCloseTo(0.4286);
-			expect(result.w).toBeCloseTo(0.5);
-		  });
-		});
-	  
-		describe('divideInPlace', () => {
-		  it('should divide a vector by another vector in place', () => {
-			vector1.divideInPlace(vector2);
-			expect(vector1.x).toBeCloseTo(0.2);
-			expect(vector1.y).toBeCloseTo(0.333);
-			expect(vector1.z).toBeCloseTo(0.4286);
-			expect(vector1.w).toBeCloseTo(0.5);
-		  });
-		});
-	  
-		describe('divideToRef', () => {
-		  it('should divide a vector by another vector and store the result in a target vector', () => {
-			const result = new Vector4();
-			vector1.divideToRef(vector2, result);
-			expect(result.x).toBeCloseTo(0.2);
-			expect(result.y).toBeCloseTo(0.333);
-			expect(result.z).toBeCloseTo(0.4286);
-			expect(result.w).toBeCloseTo(0.5);
-		  });
-		});
-	  
-		describe('equals', () => {
-		  it('should check if two vectors are equal', () => {
-			const result = vector1.equals(vector2);
-			expect(result).toBe(false);
-		  });
-		});
-	  
-		describe('equalsToFloats', () => {
-		  it('should check if the vector components are equal to the given floats', () => {
-			const result = vector1.equalsToFloats(1, 2, 3, 4);
-			expect(result).toBe(true);
-		  });
-		});
-	  
-		describe('equalsWithEpsilon', () => {
-		  it('should check if two vectors are approximately equal within a given epsilon value', () => {
-			const result = vector1.equalsWithEpsilon(vector2, 0.01);
-			expect(result).toBe(false);
-		  });
-		});
-	  
-		describe('floor', () => {
-		  it('should set each component to the largest integer less than or equal to its current value', () => {
-			vector1.floor();
-			expect(vector1.x).toBe(1);
-			expect(vector1.y).toBe(2);
-			expect(vector1.z).toBe(3);
-			expect(vector1.w).toBe(4);
-		  });
-		});
-	  
-		describe('fract', () => {
-		  it('should calculate the fractional part of each component', () => {
-			const result = vector1.fract();
-			expect(result.x).toBe(0);
-			expect(result.y).toBe(0);
-			expect(result.z).toBe(0);
-			expect(result.w).toBe(0);
-		  });
-		});
-	  
-		describe('fromArray', () => {
-		  it('should set the vector components from an array', () => {
-			vector1.fromArray([10, 20, 30, 40]);
-			expect(vector1.x).toBe(10);
-			expect(vector1.y).toBe(20);
-			expect(vector1.z).toBe(30);
-			expect(vector1.w).toBe(40);
-		  });
-		});
-	  
-		describe('length', () => {
-		  it('should calculate the length (magnitude) of the vector', () => {
-			const result = vector1.length();
-			expect(result).toBeCloseTo(5.4772);
-		  });
-		});
-	  
-		describe('lengthSquared', () => {
-		  it('should calculate the squared length (magnitude) of the vector', () => {
-			const result = vector1.lengthSquared();
-			expect(result).toBe(30);
-		  });
-		});
-	  
-		describe('maximizeInPlace', () => {
-		  it('should set each component to the maximum value between the current value and the given vector', () => {
-			vector1.maximizeInPlace(vector2);
-			expect(vector1.x).toBe(5);
-			expect(vector1.y).toBe(6);
-			expect(vector1.z).toBe(7);
-			expect(vector1.w).toBe(8);
-		  });
-		});
-	  
-		describe('minimizeInPlace', () => {
-		  it('should set each component to the minimum value between the current value and the given vector', () => {
-			vector1.minimizeInPlace(vector2);
-			expect(vector1.x).toBe(1);
-			expect(vector1.y).toBe(2);
-			expect(vector1.z).toBe(3);
-			expect(vector1.w).toBe(4);
-		  });
-		});
-	  
-		describe('multiply', () => {
-		  it('should multiply two vectors', () => {
-			const result = vector1.multiply(vector2);
-			expect(result.x).toBe(5);
-			expect(result.y).toBe(12);
-			expect(result.z).toBe(21);
-			expect(result.w).toBe(32);
-		  });
-		});
-	  
-		describe('multiplyByFloats', () => {
-		  it('should multiply the vector by individual float values', () => {
-			const result = vector1.multiplyByFloats(2, 3, 4, 5);
-			expect(result.x).toBe(2);
-			expect(result.y).toBe(6);
-			expect(result.z).toBe(12);
-			expect(result.w).toBe(20);
-		  });
-		});
-	  
-		describe('multiplyInPlace', () => {
-		  it('should multiply the vector by another vector in place', () => {
-			vector1.multiplyInPlace(vector2);
-			expect(vector1.x).toBe(5);
-			expect(vector1.y).toBe(12);
-			expect(vector1.z).toBe(21);
-			expect(vector1.w).toBe(32);
-		  });
-		});
-	  
-		describe('multiplyToRef', () => {
-		  it('should multiply two vectors and store the result in a target vector', () => {
-			const result = new Vector4();
-			vector1.multiplyToRef(vector2, result);
-			expect(result.x).toBe(5);
-			expect(result.y).toBe(12);
-			expect(result.z).toBe(21);
-			expect(result.w).toBe(32);
-		  });
-		});
-	  
-		describe('negate', () => {
-		  it('should negate the vector', () => {
-			const result = vector1.negate();
-			expect(result.x).toBe(-1);
-			expect(result.y).toBe(-2);
-			expect(result.z).toBe(-3);
-			expect(result.w).toBe(-4);
-		  });
-		});
-	  
-		describe('negateInPlace', () => {
-		  it('should negate the vector in place', () => {
-			vector1.negateInPlace();
-			expect(vector1.x).toBe(-1);
-			expect(vector1.y).toBe(-2);
-			expect(vector1.z).toBe(-3);
-			expect(vector1.w).toBe(-4);
-		  });
-		});
-	  
-		describe('negateToRef', () => {
-		  it('should negate the vector and store the result in a target vector', () => {
-			const result = new Vector4();
-			vector1.negateToRef(result);
-			expect(result.x).toBe(-1);
-			expect(result.y).toBe(-2);
-			expect(result.z).toBe(-3);
-			expect(result.w).toBe(-4);
-		  });
-		});
-	  
-		describe('normalize', () => {
-		  it('should normalize the vector', () => {
-			vector1.normalize();
-			expect(vector1.x).toBeCloseTo(0.1826);
-			expect(vector1.y).toBeCloseTo(0.3651);
-			expect(vector1.z).toBeCloseTo(0.5477);
-			expect(vector1.w).toBeCloseTo(0.7303);
-		  });
-		});
-	  
-		describe('scale', () => {
-		  it('should scale the vector by a given value', () => {
-			const result = vector1.scale(2);
-			expect(result.x).toBe(2);
-			expect(result.y).toBe(4);
-			expect(result.z).toBe(6);
-			expect(result.w).toBe(8);
-		  });
-		});
-	  
-		describe('scaleAndAddToRef', () => {
-		  it('should scale the vector by a given value and add it to a target vector', () => {
-			const result = new Vector4();
-			vector1.scaleAndAddToRef(2, result);
-			expect(result.x).toBe(2);
-			expect(result.y).toBe(4);
-			expect(result.z).toBe(6);
-			expect(result.w).toBe(8);
-		  });
-		});
-	  
-		describe('scaleInPlace', () => {
-		  it('should scale the vector in place by a given value', () => {
-			vector1.scaleInPlace(2);
-			expect(vector1.x).toBe(2);
-			expect(vector1.y).toBe(4);
-			expect(vector1.z).toBe(6);
-			expect(vector1.w).toBe(8);
-		  });
-		});
-	  
-		describe('scaleToRef', () => {
-		  it('should scale the vector to a target vector by a given value', () => {
-			const result = new Vector4();
-			vector1.scaleToRef(2, result);
-			expect(result.x).toBe(2);
-			expect(result.y).toBe(4);
-			expect(result.z).toBe(6);
-			expect(result.w).toBe(8);
-		  });
-		});
-	  
-		describe('set', () => {
-		  it('should set the vector components', () => {
-			vector1.set(10, 20, 30, 40);
-			expect(vector1.x).toBe(10);
-			expect(vector1.y).toBe(20);
-			expect(vector1.z).toBe(30);
-			expect(vector1.w).toBe(40);
-		  });
-		});
-	  
-		describe('setAll', () => {
-		  it('should set all components to a given value', () => {
-			vector1.setAll(5);
-			expect(vector1.x).toBe(5);
-			expect(vector1.y).toBe(5);
-			expect(vector1.z).toBe(5);
-			expect(vector1.w).toBe(5);
-		  });
-		});
-	  
-		describe('subtract', () => {
-		  it('should subtract two vectors', () => {
-			const result = vector1.subtract(vector2);
-			expect(result.x).toBe(-4);
-			expect(result.y).toBe(-4);
-			expect(result.z).toBe(-4);
-			expect(result.w).toBe(-4);
-		  });
-		});
-	  
-		describe('subtractFromFloats', () => {
-		  it('should subtract individual float values from the vector components', () => {
-			const result = vector1.subtractFromFloats(1, 2, 3, 4);
-			expect(result.x).toBe(0);
-			expect(result.y).toBe(0);
-			expect(result.z).toBe(0);
-			expect(result.w).toBe(0);
-		  });
-		});
-	  
-		describe('subtractFromFloatsToRef', () => {
-		  it('should subtract individual float values from the vector components and store the result in a target vector', () => {
-			const result = new Vector4();
-			vector1.subtractFromFloatsToRef(1, 2, 3, 4, result);
-			expect(result.x).toBe(0);
-			expect(result.y).toBe(0);
-			expect(result.z).toBe(0);
-			expect(result.w).toBe(0);
-		  });
-		});
-	  
-		describe('subtractInPlace', () => {
-		  it('should subtract a vector from the current vector in place', () => {
-			vector1.subtractInPlace(vector2);
-			expect(vector1.x).toBe(-4);
-			expect(vector1.y).toBe(-4);
-			expect(vector1.z).toBe(-4);
-			expect(vector1.w).toBe(-4);
-		  });
-		});
-	  
-		describe('subtractToRef', () => {
-		  it('should subtract a vector from the current vector and store the result in a target vector', () => {
-			const result = new Vector4();
-			vector1.subtractToRef(vector2, result);
-			expect(result.x).toBe(-4);
-			expect(result.y).toBe(-4);
-			expect(result.z).toBe(-4);
-			expect(result.w).toBe(-4);
-		  });
-		});
-	  
-		describe('toArray', () => {
-		  it('should return an array with the vector components', () => {
-			const result: number[] = [];
-			vector1.toArray(result);
-			expect(result).toEqual([1, 2, 3, 4]);
-		  });
-		});
-	  
-		describe('toVector3', () => {
-		  it('should create a Vector3 with the vector components', () => {
-			const result = vector1.toVector3();
-			expect(result.x).toBe(1);
-			expect(result.y).toBe(2);
-			expect(result.z).toBe(3);
-		  });
-		});
-	  
-		describe('Center', () => {
-		  it('should set the vector with the center value between two vectors', () => {
-			const result = Vector4.Center(vector1, vector2);
-			expect(result.x).toBe(3);
-			expect(result.y).toBe(4);
-			expect(result.z).toBe(5);
-			expect(result.w).toBe(6);
-		  });
-		});
-	  
-		describe('CenterToRef', () => {
-		  it('should set a target vector with the center value between two vectors', () => {
-			const result = new Vector4();
-			Vector4.CenterToRef(vector1, vector2, result);
-			expect(result.x).toBe(3);
-			expect(result.y).toBe(4);
-			expect(result.z).toBe(5);
-			expect(result.w).toBe(6);
-		  });
-		});
-	  
-		describe('Distance', () => {
-		  it('should calculate the distance between two vectors', () => {
-			const result = Vector4.Distance(vector1, vector2);
-			expect(result).toBeCloseTo(8);
-		  });
-		});
-	  
-		describe('DistanceSquared', () => {
-		  it('should calculate the squared distance between two vectors', () => {
-			const result = Vector4.DistanceSquared(vector1, vector2);
-			expect(result).toBe(64);
-		  });
-		});
-	  
-		describe('FromArray', () => {
-		  it('should create a new Vector4 from an array', () => {
-			const result = Vector4.FromArray([10, 20, 30, 40]);
-			expect(result.x).toBe(10);
-			expect(result.y).toBe(20);
-			expect(result.z).toBe(30);
-			expect(result.w).toBe(40);
-		  });
-		});
-	  
-		describe('FromArrayToRef', () => {
-		  it('should create a new Vector4 from an array and store it in a target vector', () => {
-			const result = new Vector4();
-			Vector4.FromArrayToRef([10, 20, 30, 40], 0, result);
-			expect(result.x).toBe(10);
-			expect(result.y).toBe(20);
-			expect(result.z).toBe(30);
-			expect(result.w).toBe(40);
-		  });
-		});
-	  
-		describe('FromFloatArrayToRef', () => {
-		  it('should create a new Vector4 from a Float32Array and store it in a target vector', () => {
-			const floatArray = new Float32Array([10, 20, 30, 40]);
-			const result = new Vector4();
-			Vector4.FromFloatArrayToRef(floatArray, 0, result);
-			expect(result.x).toBe(10);
-			expect(result.y).toBe(20);
-			expect(result.z).toBe(30);
-			expect(result.w).toBe(40);
-		  });
-		});
-	  
-		describe('FromFloatsToRef', () => {
-		  it('should create a new Vector4 from individual float values and store it in a target vector', () => {
-			const result = new Vector4();
-			Vector4.FromFloatsToRef(10, 20, 30, 40, result);
-			expect(result.x).toBe(10);
-			expect(result.y).toBe(20);
-			expect(result.z).toBe(30);
-			expect(result.w).toBe(40);
-		  });
-		});
-	  
-		describe('FromVector3', () => {
-		  it('should create a new Vector4 from a Vector3 and set the w component to the provided value', () => {
-			const vector3 = new Vector3(10, 20, 30);
-			const result = Vector4.FromVector3(vector3, 40);
-			expect(result.x).toBe(10);
-			expect(result.y).toBe(20);
-			expect(result.z).toBe(30);
-			expect(result.w).toBe(40);
-		  });
-		});
-	  
-		describe('Maximize', () => {
-		  it('should set the vector with the maximum values between two vectors', () => {
-			const result = Vector4.Maximize(vector1, vector2);
-			expect(result.x).toBe(5);
-			expect(result.y).toBe(6);
-			expect(result.z).toBe(7);
-			expect(result.w).toBe(8);
-		  });
-		});
-	  
-		describe('Minimize', () => {
-		  it('should set the vector with the minimum values between two vectors', () => {
-			const result = Vector4.Minimize(vector1, vector2);
-			expect(result.x).toBe(1);
-			expect(result.y).toBe(2);
-			expect(result.z).toBe(3);
-			expect(result.w).toBe(4);
-		  });
-		});
-	  
-		describe('Normalize', () => {
-		  it('should normalize the vector', () => {
-			const result = Vector4.Normalize(vector1);
-			expect(result.x).toBeCloseTo(0.1826);
-			expect(result.y).toBeCloseTo(0.3651);
-			expect(result.z).toBeCloseTo(0.5477);
-			expect(result.w).toBeCloseTo(0.7303);
-		  });
-		});
-	  
-		describe('NormalizeToRef', () => {
-		  it('should normalize the vector and store the result in a target vector', () => {
-			const result = new Vector4();
-			Vector4.NormalizeToRef(vector1, result);
-			expect(result.x).toBeCloseTo(0.1826);
-			expect(result.y).toBeCloseTo(0.3651);
-			expect(result.z).toBeCloseTo(0.5477);
-			expect(result.w).toBeCloseTo(0.7303);
-		  });
-		});
-	  
-		describe('Random', () => {
-		  it('should set the vector with random values', () => {
-			const result = Vector4.Random();
-			expect(result.x).toBeGreaterThanOrEqual(0);
+    describe("Vector4", () => {
+        let vector1: Vector4;
+        let vector2: Vector4;
+        let shouldNotChange: boolean;
+
+        beforeEach(() => {
+            vector1 = new Vector4(1, 2, 3, 4);
+            vector2 = new Vector4(5, 6, 7, 8);
+            shouldNotChange = false;
+        });
+
+        afterEach(() => {
+            if (shouldNotChange) {
+                expect(vector1.x).toBe(1);
+                expect(vector1.y).toBe(2);
+                expect(vector1.z).toBe(3);
+                expect(vector1.w).toBe(4);
+                expect(vector2.x).toBe(5);
+                expect(vector2.y).toBe(6);
+                expect(vector2.z).toBe(7);
+                expect(vector2.w).toBe(8);
+            }
+        });
+
+        describe("add", () => {
+            it("should add two vectors", () => {
+                const result = vector1.add(vector2);
+                expect(result.x).toBe(6);
+                expect(result.y).toBe(8);
+                expect(result.z).toBe(10);
+                expect(result.w).toBe(12);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("addInPlace", () => {
+            it("should add a vector in place", () => {
+                vector1.addInPlace(vector2);
+                expect(vector1.x).toBe(6);
+                expect(vector1.y).toBe(8);
+                expect(vector1.z).toBe(10);
+                expect(vector1.w).toBe(12);
+            });
+        });
+
+        describe("addToRef", () => {
+            it("should add two vectors and store the result in a target vector", () => {
+                const result = new Vector4();
+                vector1.addToRef(vector2, result);
+                expect(result.x).toBe(6);
+                expect(result.y).toBe(8);
+                expect(result.z).toBe(10);
+                expect(result.w).toBe(12);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("asArray", () => {
+            it("should return the vector as an array", () => {
+                const result = vector1.asArray();
+                expect(result).toEqual([1, 2, 3, 4]);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("clone", () => {
+            it("should create a copy of the vector", () => {
+                const result = vector1.clone();
+                expect(result).not.toBe(vector1);
+                expect(result).toEqual(vector1);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("copyFrom", () => {
+            it("should copy the values from another vector", () => {
+                vector1.copyFrom(vector2);
+                expect(vector1.x).toBe(vector2.x);
+                expect(vector1.y).toBe(vector2.y);
+                expect(vector1.z).toBe(vector2.z);
+                expect(vector1.w).toBe(vector2.w);
+            });
+        });
+
+        describe("copyFromFloats", () => {
+            it("should set the vector values from individual floats", () => {
+                vector1.copyFromFloats(10, 20, 30, 40);
+                expect(vector1.x).toBe(10);
+                expect(vector1.y).toBe(20);
+                expect(vector1.z).toBe(30);
+                expect(vector1.w).toBe(40);
+            });
+        });
+
+        describe("divide", () => {
+            it("should divide a vector by another vector", () => {
+                const result = vector1.divide(vector2);
+                expect(result.x).toBeCloseTo(0.2);
+                expect(result.y).toBeCloseTo(0.333);
+                expect(result.z).toBeCloseTo(0.4286);
+                expect(result.w).toBeCloseTo(0.5);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("divideInPlace", () => {
+            it("should divide a vector by another vector in place", () => {
+                vector1.divideInPlace(vector2);
+                expect(vector1.x).toBeCloseTo(0.2);
+                expect(vector1.y).toBeCloseTo(0.333);
+                expect(vector1.z).toBeCloseTo(0.4286);
+                expect(vector1.w).toBeCloseTo(0.5);
+            });
+        });
+
+        describe("divideToRef", () => {
+            it("should divide a vector by another vector and store the result in a target vector", () => {
+                const result = new Vector4();
+                vector1.divideToRef(vector2, result);
+                expect(result.x).toBeCloseTo(0.2);
+                expect(result.y).toBeCloseTo(0.333);
+                expect(result.z).toBeCloseTo(0.4286);
+                expect(result.w).toBeCloseTo(0.5);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("equals", () => {
+            it("should check if two vectors are equal", () => {
+                const result = vector1.equals(vector2);
+                expect(result).toBe(false);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("equalsToFloats", () => {
+            it("should check if the vector components are equal to the given floats", () => {
+                const result = vector1.equalsToFloats(1, 2, 3, 4);
+                expect(result).toBe(true);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("equalsWithEpsilon", () => {
+            it("should check if two vectors are approximately equal within a given epsilon value", () => {
+                const result = vector1.equalsWithEpsilon(vector2, 0.01);
+                expect(result).toBe(false);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("floor", () => {
+            it("should set each component to the largest integer less than or equal to its current value", () => {
+                const result = vector1.floor();
+                expect(result.x).toBe(1);
+                expect(result.y).toBe(2);
+                expect(result.z).toBe(3);
+                expect(result.w).toBe(4);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("fract", () => {
+            it("should calculate the fractional part of each component", () => {
+                const result = vector1.fract();
+                expect(result.x).toBe(0);
+                expect(result.y).toBe(0);
+                expect(result.z).toBe(0);
+                expect(result.w).toBe(0);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("fromArray", () => {
+            it("should set the vector components from an array", () => {
+                vector1.fromArray([10, 20, 30, 40]);
+                expect(vector1.x).toBe(10);
+                expect(vector1.y).toBe(20);
+                expect(vector1.z).toBe(30);
+                expect(vector1.w).toBe(40);
+            });
+        });
+
+        describe("length", () => {
+            it("should calculate the length (magnitude) of the vector", () => {
+                const result = vector1.length();
+                expect(result).toBeCloseTo(5.4772);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("lengthSquared", () => {
+            it("should calculate the squared length (magnitude) of the vector", () => {
+                const result = vector1.lengthSquared();
+                expect(result).toBe(30);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("maximizeInPlace", () => {
+            it("should set each component to the maximum value between the current value and the given vector", () => {
+                vector1.maximizeInPlace(vector2);
+                expect(vector1.x).toBe(5);
+                expect(vector1.y).toBe(6);
+                expect(vector1.z).toBe(7);
+                expect(vector1.w).toBe(8);
+            });
+        });
+
+        describe("minimizeInPlace", () => {
+            it("should set each component to the minimum value between the current value and the given vector", () => {
+                vector1.minimizeInPlace(vector2);
+                expect(vector1.x).toBe(1);
+                expect(vector1.y).toBe(2);
+                expect(vector1.z).toBe(3);
+                expect(vector1.w).toBe(4);
+            });
+        });
+
+        describe("multiply", () => {
+            it("should multiply two vectors", () => {
+                const result = vector1.multiply(vector2);
+                expect(result.x).toBe(5);
+                expect(result.y).toBe(12);
+                expect(result.z).toBe(21);
+                expect(result.w).toBe(32);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("multiplyByFloats", () => {
+            it("should multiply the vector by individual float values", () => {
+                const result = vector1.multiplyByFloats(2, 3, 4, 5);
+                expect(result.x).toBe(2);
+                expect(result.y).toBe(6);
+                expect(result.z).toBe(12);
+                expect(result.w).toBe(20);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("multiplyInPlace", () => {
+            it("should multiply the vector by another vector in place", () => {
+                vector1.multiplyInPlace(vector2);
+                expect(vector1.x).toBe(5);
+                expect(vector1.y).toBe(12);
+                expect(vector1.z).toBe(21);
+                expect(vector1.w).toBe(32);
+            });
+        });
+
+        describe("multiplyToRef", () => {
+            it("should multiply two vectors and store the result in a target vector", () => {
+                const result = new Vector4();
+                vector1.multiplyToRef(vector2, result);
+                expect(result.x).toBe(5);
+                expect(result.y).toBe(12);
+                expect(result.z).toBe(21);
+                expect(result.w).toBe(32);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("negate", () => {
+            it("should negate the vector", () => {
+                const result = vector1.negate();
+                expect(result.x).toBe(-1);
+                expect(result.y).toBe(-2);
+                expect(result.z).toBe(-3);
+                expect(result.w).toBe(-4);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("negateInPlace", () => {
+            it("should negate the vector in place", () => {
+                vector1.negateInPlace();
+                expect(vector1.x).toBe(-1);
+                expect(vector1.y).toBe(-2);
+                expect(vector1.z).toBe(-3);
+                expect(vector1.w).toBe(-4);
+            });
+        });
+
+        describe("negateToRef", () => {
+            it("should negate the vector and store the result in a target vector", () => {
+                const result = new Vector4();
+                vector1.negateToRef(result);
+                expect(result.x).toBe(-1);
+                expect(result.y).toBe(-2);
+                expect(result.z).toBe(-3);
+                expect(result.w).toBe(-4);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("normalize", () => {
+            it("should normalize the vector", () => {
+                vector1.normalize();
+                expect(vector1.x).toBeCloseTo(0.1826);
+                expect(vector1.y).toBeCloseTo(0.3651);
+                expect(vector1.z).toBeCloseTo(0.5477);
+                expect(vector1.w).toBeCloseTo(0.7303);
+            });
+        });
+
+        describe("scale", () => {
+            it("should scale the vector by a given value", () => {
+                const result = vector1.scale(2);
+                expect(result.x).toBe(2);
+                expect(result.y).toBe(4);
+                expect(result.z).toBe(6);
+                expect(result.w).toBe(8);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("scaleAndAddToRef", () => {
+            it("should scale the vector by a given value and add it to a target vector", () => {
+                const result = new Vector4();
+                vector1.scaleAndAddToRef(2, result);
+                expect(result.x).toBe(2);
+                expect(result.y).toBe(4);
+                expect(result.z).toBe(6);
+                expect(result.w).toBe(8);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("scaleInPlace", () => {
+            it("should scale the vector in place by a given value", () => {
+                vector1.scaleInPlace(2);
+                expect(vector1.x).toBe(2);
+                expect(vector1.y).toBe(4);
+                expect(vector1.z).toBe(6);
+                expect(vector1.w).toBe(8);
+            });
+        });
+
+        describe("scaleToRef", () => {
+            it("should scale the vector to a target vector by a given value", () => {
+                const result = new Vector4();
+                vector1.scaleToRef(2, result);
+                expect(result.x).toBe(2);
+                expect(result.y).toBe(4);
+                expect(result.z).toBe(6);
+                expect(result.w).toBe(8);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("set", () => {
+            it("should set the vector components", () => {
+                vector1.set(10, 20, 30, 40);
+                expect(vector1.x).toBe(10);
+                expect(vector1.y).toBe(20);
+                expect(vector1.z).toBe(30);
+                expect(vector1.w).toBe(40);
+            });
+        });
+
+        describe("setAll", () => {
+            it("should set all components to a given value", () => {
+                vector1.setAll(5);
+                expect(vector1.x).toBe(5);
+                expect(vector1.y).toBe(5);
+                expect(vector1.z).toBe(5);
+                expect(vector1.w).toBe(5);
+            });
+        });
+
+        describe("subtract", () => {
+            it("should subtract two vectors", () => {
+                const result = vector1.subtract(vector2);
+                expect(result.x).toBe(-4);
+                expect(result.y).toBe(-4);
+                expect(result.z).toBe(-4);
+                expect(result.w).toBe(-4);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("subtractFromFloats", () => {
+            it("should subtract individual float values from the vector components", () => {
+                const result = vector1.subtractFromFloats(1, 2, 3, 4);
+                expect(result.x).toBe(0);
+                expect(result.y).toBe(0);
+                expect(result.z).toBe(0);
+                expect(result.w).toBe(0);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("subtractFromFloatsToRef", () => {
+            it("should subtract individual float values from the vector components and store the result in a target vector", () => {
+                const result = new Vector4();
+                vector1.subtractFromFloatsToRef(1, 2, 3, 4, result);
+                expect(result.x).toBe(0);
+                expect(result.y).toBe(0);
+                expect(result.z).toBe(0);
+                expect(result.w).toBe(0);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("subtractInPlace", () => {
+            it("should subtract a vector from the current vector in place", () => {
+                vector1.subtractInPlace(vector2);
+                expect(vector1.x).toBe(-4);
+                expect(vector1.y).toBe(-4);
+                expect(vector1.z).toBe(-4);
+                expect(vector1.w).toBe(-4);
+            });
+        });
+
+        describe("subtractToRef", () => {
+            it("should subtract a vector from the current vector and store the result in a target vector", () => {
+                const result = new Vector4();
+                vector1.subtractToRef(vector2, result);
+                expect(result.x).toBe(-4);
+                expect(result.y).toBe(-4);
+                expect(result.z).toBe(-4);
+                expect(result.w).toBe(-4);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("toArray", () => {
+            it("should return an array with the vector components", () => {
+                const result: number[] = [];
+                vector1.toArray(result);
+                expect(result).toEqual([1, 2, 3, 4]);
+            });
+        });
+
+        describe("toVector3", () => {
+            it("should create a Vector3 with the vector components", () => {
+                const result = vector1.toVector3();
+                expect(result.x).toBe(1);
+                expect(result.y).toBe(2);
+                expect(result.z).toBe(3);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("Center", () => {
+            it("should set the vector with the center value between two vectors", () => {
+                const result = Vector4.Center(vector1, vector2);
+                expect(result.x).toBe(3);
+                expect(result.y).toBe(4);
+                expect(result.z).toBe(5);
+                expect(result.w).toBe(6);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("CenterToRef", () => {
+            it("should set a target vector with the center value between two vectors", () => {
+                const result = new Vector4();
+                Vector4.CenterToRef(vector1, vector2, result);
+                expect(result.x).toBe(3);
+                expect(result.y).toBe(4);
+                expect(result.z).toBe(5);
+                expect(result.w).toBe(6);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("Distance", () => {
+            it("should calculate the distance between two vectors", () => {
+                const result = Vector4.Distance(vector1, vector2);
+                expect(result).toBeCloseTo(8);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("DistanceSquared", () => {
+            it("should calculate the squared distance between two vectors", () => {
+                const result = Vector4.DistanceSquared(vector1, vector2);
+                expect(result).toBe(64);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("FromArray", () => {
+            it("should create a new Vector4 from an array", () => {
+                const result = Vector4.FromArray([10, 20, 30, 40]);
+                expect(result.x).toBe(10);
+                expect(result.y).toBe(20);
+                expect(result.z).toBe(30);
+                expect(result.w).toBe(40);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("FromArrayToRef", () => {
+            it("should create a new Vector4 from an array and store it in a target vector", () => {
+                const result = new Vector4();
+                Vector4.FromArrayToRef([10, 20, 30, 40], 0, result);
+                expect(result.x).toBe(10);
+                expect(result.y).toBe(20);
+                expect(result.z).toBe(30);
+                expect(result.w).toBe(40);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("FromFloatArrayToRef", () => {
+            it("should create a new Vector4 from a Float32Array and store it in a target vector", () => {
+                const floatArray = new Float32Array([10, 20, 30, 40]);
+                const result = new Vector4();
+                Vector4.FromFloatArrayToRef(floatArray, 0, result);
+                expect(result.x).toBe(10);
+                expect(result.y).toBe(20);
+                expect(result.z).toBe(30);
+                expect(result.w).toBe(40);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("FromFloatsToRef", () => {
+            it("should create a new Vector4 from individual float values and store it in a target vector", () => {
+                const result = new Vector4();
+                Vector4.FromFloatsToRef(10, 20, 30, 40, result);
+                expect(result.x).toBe(10);
+                expect(result.y).toBe(20);
+                expect(result.z).toBe(30);
+                expect(result.w).toBe(40);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("FromVector3", () => {
+            it("should create a new Vector4 from a Vector3 and set the w component to the provided value", () => {
+                const vector3 = new Vector3(10, 20, 30);
+                const result = Vector4.FromVector3(vector3, 40);
+                expect(result.x).toBe(10);
+                expect(result.y).toBe(20);
+                expect(result.z).toBe(30);
+                expect(result.w).toBe(40);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("Maximize", () => {
+            it("should set the vector with the maximum values between two vectors", () => {
+                const result = Vector4.Maximize(vector1, vector2);
+                expect(result.x).toBe(5);
+                expect(result.y).toBe(6);
+                expect(result.z).toBe(7);
+                expect(result.w).toBe(8);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("Minimize", () => {
+            it("should set the vector with the minimum values between two vectors", () => {
+                const result = Vector4.Minimize(vector1, vector2);
+                expect(result.x).toBe(1);
+                expect(result.y).toBe(2);
+                expect(result.z).toBe(3);
+                expect(result.w).toBe(4);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("Normalize", () => {
+            it("should normalize the vector", () => {
+                const result = Vector4.Normalize(vector1);
+                expect(result.x).toBeCloseTo(0.1826);
+                expect(result.y).toBeCloseTo(0.3651);
+                expect(result.z).toBeCloseTo(0.5477);
+                expect(result.w).toBeCloseTo(0.7303);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("NormalizeToRef", () => {
+            it("should normalize the vector and store the result in a target vector", () => {
+                const result = new Vector4();
+                Vector4.NormalizeToRef(vector1, result);
+                expect(result.x).toBeCloseTo(0.1826);
+                expect(result.y).toBeCloseTo(0.3651);
+                expect(result.z).toBeCloseTo(0.5477);
+                expect(result.w).toBeCloseTo(0.7303);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("Random", () => {
+            it("should set the vector with random values", () => {
+                const result = Vector4.Random();
+                expect(result.x).toBeGreaterThanOrEqual(0);
                 expect(result.x).toBeLessThanOrEqual(1);
                 expect(result.y).toBeGreaterThanOrEqual(0);
                 expect(result.y).toBeLessThanOrEqual(1);
@@ -2122,72 +2336,78 @@ describe("Babylon Vector tests", () => {
                 expect(result.z).toBeLessThanOrEqual(1);
                 expect(result.w).toBeGreaterThanOrEqual(0);
                 expect(result.w).toBeLessThanOrEqual(1);
-		  });
-		});
-	  
-		describe('TransformCoordinates', () => {
-		  it('should transform the vector by a given transformation matrix and perspective divide', () => {
-			const result = Vector4.TransformCoordinates(vector1.toVector3(), Matrix.Identity());
-			expect(result.x).toBe(1);
-			expect(result.y).toBe(2);
-			expect(result.z).toBe(3);
-			expect(result.w).toBe(1);
-		  });
-		});
-	  
-		describe('TransformCoordinatesFromFloatsToRef', () => {
-		  it('should transform the vector by a given transformation matrix (provided as individual float values) and perspective divide, storing the result in a target vector', () => {
-			const result = new Vector4();
-			Vector4.TransformCoordinatesFromFloatsToRef(vector1.x, vector1.y, vector1.z, Matrix.Identity(), result);
-			expect(result.x).toBe(1);
-			expect(result.y).toBe(2);
-			expect(result.z).toBe(3);
-			expect(result.w).toBe(1);
-		  });
-		});
-	  
-		describe('TransformCoordinatesToRef', () => {
-		  it('should transform the vector by a given transformation matrix and perspective divide, storing the result in a target vector', () => {
-			const result = new Vector4();
-			Vector4.TransformCoordinatesToRef(vector1.toVector3(), Matrix.Identity(), result);
-			expect(result.x).toBe(1);
-			expect(result.y).toBe(2);
-			expect(result.z).toBe(3);
-			expect(result.w).toBe(1);
-		  });
-		});
-	  
-		describe('TransformNormal', () => {
-		  it('should transform the vector by a given transformation matrix without perspective divide', () => {
-			const result = Vector4.TransformNormal(vector1, Matrix.Identity());
-			expect(result.x).toBe(1);
-			expect(result.y).toBe(2);
-			expect(result.z).toBe(3);
-			expect(result.w).toBe(4);
-		  });
-		});
-	  
-		describe('TransformNormalFromFloatsToRef', () => {
-		  it('should transform the vector by a given transformation matrix (provided as individual float values) without perspective divide, storing the result in a target vector', () => {
-			const result = new Vector4();
-			Vector4.TransformNormalFromFloatsToRef(vector1.x, vector1.y, vector1.z, vector1.w, Matrix.Identity(), result);
-			expect(result.x).toBe(1);
-			expect(result.y).toBe(2);
-			expect(result.z).toBe(3);
-			expect(result.w).toBe(4);
-		  });
-		});
-	  
-		describe('TransformNormalToRef', () => {
-		  it('should transform the vector by a given transformation matrix without perspective divide, storing the result in a target vector', () => {
-			const result = new Vector4();
-			Vector4.TransformNormalToRef(vector1, Matrix.Identity(), result);
-			expect(result.x).toBe(1);
-			expect(result.y).toBe(2);
-			expect(result.z).toBe(3);
-			expect(result.w).toBe(4);
-		  });
-		});
+				shouldNotChange = true;
+            });
+        });
 
-	});
+        describe("TransformCoordinates", () => {
+            it("should transform the vector by a given transformation matrix and perspective divide", () => {
+                const result = Vector4.TransformCoordinates(vector1.toVector3(), Matrix.Identity());
+                expect(result.x).toBe(1);
+                expect(result.y).toBe(2);
+                expect(result.z).toBe(3);
+                expect(result.w).toBe(1);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("TransformCoordinatesFromFloatsToRef", () => {
+            it("should transform the vector by a given transformation matrix (provided as individual float values) and perspective divide, storing the result in a target vector", () => {
+                const result = new Vector4();
+                Vector4.TransformCoordinatesFromFloatsToRef(vector1.x, vector1.y, vector1.z, Matrix.Identity(), result);
+                expect(result.x).toBe(1);
+                expect(result.y).toBe(2);
+                expect(result.z).toBe(3);
+                expect(result.w).toBe(1);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("TransformCoordinatesToRef", () => {
+            it("should transform the vector by a given transformation matrix and perspective divide, storing the result in a target vector", () => {
+                const result = new Vector4();
+                Vector4.TransformCoordinatesToRef(vector1.toVector3(), Matrix.Identity(), result);
+                expect(result.x).toBe(1);
+                expect(result.y).toBe(2);
+                expect(result.z).toBe(3);
+                expect(result.w).toBe(1);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("TransformNormal", () => {
+            it("should transform the vector by a given transformation matrix without perspective divide", () => {
+                const result = Vector4.TransformNormal(vector1, Matrix.Identity());
+                expect(result.x).toBe(1);
+                expect(result.y).toBe(2);
+                expect(result.z).toBe(3);
+                expect(result.w).toBe(4);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("TransformNormalFromFloatsToRef", () => {
+            it("should transform the vector by a given transformation matrix (provided as individual float values) without perspective divide, storing the result in a target vector", () => {
+                const result = new Vector4();
+                Vector4.TransformNormalFromFloatsToRef(vector1.x, vector1.y, vector1.z, vector1.w, Matrix.Identity(), result);
+                expect(result.x).toBe(1);
+                expect(result.y).toBe(2);
+                expect(result.z).toBe(3);
+                expect(result.w).toBe(4);
+				shouldNotChange = true;
+            });
+        });
+
+        describe("TransformNormalToRef", () => {
+            it("should transform the vector by a given transformation matrix without perspective divide, storing the result in a target vector", () => {
+                const result = new Vector4();
+                Vector4.TransformNormalToRef(vector1, Matrix.Identity(), result);
+                expect(result.x).toBe(1);
+                expect(result.y).toBe(2);
+                expect(result.z).toBe(3);
+                expect(result.w).toBe(4);
+				shouldNotChange = true;
+            });
+        });
+    });
 });
