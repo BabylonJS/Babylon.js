@@ -59,6 +59,7 @@ class WaterMaterialDefines extends MaterialDefines implements IImageProcessingCo
     public FRESNELSEPARATE = false;
     public BUMPSUPERIMPOSE = false;
     public BUMPAFFECTSREFLECTION = false;
+    public USE_WORLD_COORDINATES = false;
 
     public IMAGEPROCESSING = false;
     public VIGNETTE = false;
@@ -198,6 +199,16 @@ export class WaterMaterial extends PushMaterial {
      */
     @serialize()
     public disableClipPlane: boolean = false;
+
+    /**
+     * Defines whether or not to use world coordinates for wave deformations.
+     * The default value is false, meaning that the deformation is applied in object (local) space.
+     * You will probably need to set it to true if you are using instances or thin instances for your water objects.
+     */
+    @serialize("useWorldCoordinatesForWaveDeformation")
+    private _useWorldCoordinatesForWaveDeformation = false;
+    @expandToProperty("_markAllSubMeshesAsMiscDirty")
+    public useWorldCoordinatesForWaveDeformation: boolean;
 
     protected _renderTargets = new SmartArray<RenderTargetTexture>(16);
 
@@ -361,17 +372,10 @@ export class WaterMaterial extends PushMaterial {
         MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
 
         if (defines._areMiscDirty) {
-            if (this._fresnelSeparate) {
-                defines.FRESNELSEPARATE = true;
-            }
-
-            if (this._bumpSuperimpose) {
-                defines.BUMPSUPERIMPOSE = true;
-            }
-
-            if (this._bumpAffectsReflection) {
-                defines.BUMPAFFECTSREFLECTION = true;
-            }
+            defines.FRESNELSEPARATE = this._fresnelSeparate;
+            defines.BUMPSUPERIMPOSE = this._bumpSuperimpose;
+            defines.BUMPAFFECTSREFLECTION = this._bumpAffectsReflection;
+            defines.USE_WORLD_COORDINATES = this._useWorldCoordinatesForWaveDeformation;
         }
 
         // Lights
@@ -466,7 +470,7 @@ export class WaterMaterial extends PushMaterial {
                 "logarithmicDepthConstant",
 
                 // Water
-                "worldReflectionViewProjection",
+                "reflectionViewProjection",
                 "windDirection",
                 "waveLength",
                 "time",
@@ -601,7 +605,7 @@ export class WaterMaterial extends PushMaterial {
             this._activeEffect.setTexture("reflectionSampler", this._reflectionRTT);
         }
 
-        const wrvp = this._mesh.getWorldMatrix().multiply(this._reflectionTransform).multiply(scene.getProjectionMatrix());
+        const wrvp = this._reflectionTransform.multiply(scene.getProjectionMatrix());
 
         // Add delta time. Prevent adding delta time if it hasn't changed.
         const deltaTime = scene.getEngine().getDeltaTime();
@@ -610,7 +614,7 @@ export class WaterMaterial extends PushMaterial {
             this._lastTime += this._lastDeltaTime;
         }
 
-        this._activeEffect.setMatrix("worldReflectionViewProjection", wrvp);
+        this._activeEffect.setMatrix("reflectionViewProjection", wrvp);
         this._activeEffect.setVector2("windDirection", this.windDirection);
         this._activeEffect.setFloat("waveLength", this.waveLength);
         this._activeEffect.setFloat("time", this._lastTime / 100000);

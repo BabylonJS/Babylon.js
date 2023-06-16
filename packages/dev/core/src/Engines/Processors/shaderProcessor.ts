@@ -101,7 +101,7 @@ export class ShaderProcessor {
             return new ShaderDefineIsDefinedOperator(match[1].trim(), expression[0] === "!");
         }
 
-        const operators = ["==", ">=", "<=", "<", ">"];
+        const operators = ["==", "!=", ">=", "<=", "<", ">"];
         let operator = "";
         let indexOperator = 0;
 

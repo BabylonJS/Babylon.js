@@ -33,6 +33,9 @@ export class ShaderDefineArithmeticOperator extends ShaderDefineExpression {
             case "==":
                 condition = left === right;
                 break;
+            case "!=":
+                condition = left !== right;
+                break;
         }
 
         return condition;
