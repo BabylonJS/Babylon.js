@@ -26,6 +26,11 @@ export enum GreasedLineMeshColorMode {
     COLOR_MODE_MULTIPLY = 2,
 }
 
+export enum GreasedLineMeshColorDistributionType {
+    COLOR_DISTRIBUTION_TYPE_SEGMENT = 0,
+    COLOR_DISTRIBUTION_TYPE_LINE = 1,
+}
+
 /**
  * Options for GreasedLineMaterial
  */
@@ -71,6 +76,12 @@ export interface GreasedLineMaterialOptions {
      * Defaults to NEAREST_NEAREST.
      */
     colorsSampling?: number;
+    /**
+     * The method used to distribute the colors along the line.
+     * You can use segment distribution when each segment will use on color from the color table.
+     * Or you can use line distribution when the colors are distributed evenly along the line ignoring the segments.
+     */
+    colorDistributionType?: GreasedLineMeshColorDistributionType;
     /**
      * If true, dashing is used.
      * Defaults to false.
@@ -122,6 +133,11 @@ export class MaterialGreasedLineDefines extends MaterialDefines {
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     GREASED_LINE_SIZE_ATTENUATION = false;
+    /**
+     * The type of color distribution is set to line this value equals to true.
+     */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    GREASED_LINE_COLOR_DISTRIBUTION_TYPE_LINE = false;
 }
 
 /**
@@ -152,6 +168,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
         const defines = new MaterialGreasedLineDefines();
         defines.GREASED_LINE_HAS_COLOR = !!options.color;
         defines.GREASED_LINE_SIZE_ATTENUATION = options.sizeAttenuation ?? false;
+        defines.GREASED_LINE_COLOR_DISTRIBUTION_TYPE_LINE = options.colorDistributionType === GreasedLineMeshColorDistributionType.COLOR_DISTRIBUTION_TYPE_LINE;
 
         super(material, GreasedLinePluginMaterial.GREASED_LINE_MATERIAL_NAME, 200, defines);
 
@@ -288,6 +305,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
         const options = this._options;
         defines.GREASED_LINE_HAS_COLOR = !!options.color;
         defines.GREASED_LINE_SIZE_ATTENUATION = options.sizeAttenuation ?? false;
+        defines.GREASED_LINE_COLOR_DISTRIBUTION_TYPE_LINE = options.colorDistributionType === GreasedLineMeshColorDistributionType.COLOR_DISTRIBUTION_TYPE_LINE;
     }
 
     /**
@@ -416,7 +434,11 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
                         }
                     #else
                         if (grlUseColors == 1.) {
-                            vec4 grlColor = texture2D(grl_colors, vec2(grlColorPointer/grlColorsWidth, 0.), 0.);
+                            #ifdef GREASED_LINE_COLOR_DISTRIBUTION_TYPE_LINE
+                                vec4 grlColor = texture2D(grl_colors, vec2(grlCounters, 0.), 0.);
+                            #else
+                                vec4 grlColor = texture2D(grl_colors, vec2(grlColorPointer/grlColorsWidth, 0.), 0.);
+                            #endif
                             if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_SET}.) {
                                 gl_FragColor = grlColor;
                             } else if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_ADD}.) {

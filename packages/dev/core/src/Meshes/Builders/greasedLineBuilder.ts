@@ -136,6 +136,7 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
                 color: materialOptions.color,
                 colorMode: materialOptions.colorMode ?? GreasedLineMeshColorMode.COLOR_MODE_SET,
                 colorsSampling: materialOptions.colorsSampling,
+                colorDistributionType: materialOptions.colorDistributionType
             };
 
             if (colors) {
