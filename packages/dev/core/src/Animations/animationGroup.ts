@@ -259,7 +259,7 @@ export class AnimationGroup implements IDisposable {
     }
 
     /**
-     * Remove an animation from the group
+     * Removes an animation from the group
      * @param animation defines the animation we want to remove
      */
     public removeTargetedAnimation(animation: Animation) {
