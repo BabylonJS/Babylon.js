@@ -385,7 +385,7 @@ export class GreasedLineMesh extends Mesh {
         skipBoundingInfo = false
     ): PickingInfo {
         const pickingInfo = new PickingInfo();
-        const intersections = this.getIntersections(ray, fastCheck, trianglePredicate, onlyBoundingInfo, worldToUse, skipBoundingInfo, true);
+        const intersections = this.findAllIntersections(ray, fastCheck, trianglePredicate, onlyBoundingInfo, worldToUse, skipBoundingInfo, true);
         if (intersections?.length === 1) {
             const intersection = intersections[0];
             pickingInfo.hit = true;
@@ -408,7 +408,7 @@ export class GreasedLineMesh extends Mesh {
      * @param firstOnly If true, the first and only intersection is immediatelly returned if found
      * @returns intersection(s)
      */
-    public getIntersections(
+    public findAllIntersections(
         ray: Ray,
         _fastCheck?: boolean,
         _trianglePredicate?: TrianglePickingPredicate,
