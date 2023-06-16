@@ -212,18 +212,22 @@ export const commonUMDWebpackConfiguration = (options: {
                         // webpack program
                         console.log("generating transformers...");
                         return {
-                            after: [transformer(_program, {
-                                basePackage: packageName,
-                                buildType: options.es6Mode ? "es6" : "umd",
-                                packageOnly: false,
-                                keepDev: true,
-                            })],
-                            afterDeclarations: [transformer(_program, {
-                                basePackage: packageName,
-                                buildType: options.es6Mode ? "es6" : "umd",
-                                packageOnly: false,
-                                keepDev: true,
-                            })],
+                            after: [
+                                transformer(_program, {
+                                    basePackage: packageName,
+                                    buildType: options.es6Mode ? "es6" : "umd",
+                                    packageOnly: false,
+                                    keepDev: true,
+                                }),
+                            ],
+                            afterDeclarations: [
+                                transformer(_program, {
+                                    basePackage: packageName,
+                                    buildType: options.es6Mode ? "es6" : "umd",
+                                    packageOnly: false,
+                                    keepDev: true,
+                                }),
+                            ],
                         };
                     },
                 },
