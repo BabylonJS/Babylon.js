@@ -42,7 +42,7 @@ export interface GreasedLineMaterialBuilderOptions extends GreasedLineMaterialOp
      * Distribution of the colors if the color table contains fewer entries than needed
      * @see CompleteGreasedLineColorTable
      */
-    colorsDistribution?: GreasedLineMeshColorDistribution;
+    colorDistribution?: GreasedLineMeshColorDistribution;
 }
 
 /**
@@ -53,7 +53,7 @@ export interface GreasedLineMeshBuilderOptions extends GreasedLineMeshOptions {
      * Distribution of the widths if the width table contains fewer entries than needed
      * @see CompleteGreasedLineWidthTable
      */
-    widthsDistribution?: GreasedLineMeshWidthDistribution;
+    widthDistribution?: GreasedLineMeshWidthDistribution;
 }
 
 /**
@@ -96,18 +96,18 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
         });
     }
 
-    options.widthsDistribution = options.widthsDistribution ?? GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_START;
+    options.widthDistribution = options.widthDistribution ?? GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_START;
 
     materialOptions = materialOptions ?? {
         createAndAssignMaterial: true,
         color: Color3.White(),
     };
-    materialOptions.colorsDistribution = materialOptions?.colorsDistribution ?? GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_START;
+    materialOptions.colorDistribution = materialOptions?.colorDistribution ?? GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_START;
 
-    const widths = CompleteGreasedLineWidthTable(length, options.widths ?? [], options.widthsDistribution);
+    const widths = CompleteGreasedLineWidthTable(length, options.widths ?? [], options.widthDistribution);
 
     const colors = materialOptions?.colors
-        ? CompleteGreasedLineColorTable(length, materialOptions.colors, materialOptions.colorsDistribution, materialOptions.color ?? Color3.White())
+        ? CompleteGreasedLineColorTable(length, materialOptions.colors, materialOptions.colorDistribution, materialOptions.color ?? Color3.White())
         : undefined;
 
     // create new mesh if instance is not defined
