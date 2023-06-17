@@ -679,9 +679,10 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
      * Parses a serialized objects
      * @param source serialized object
      * @param scene scene
-     * @param _rootUrl not used
+     * @param rootUrl root url for textures
      */
-    public parse(source: any, scene: Scene, _rootUrl: string): void {
+    public parse(source: any, scene: Scene, rootUrl: string): void {
+        super.parse(source, scene, rootUrl);
         this._options = <GreasedLineMaterialOptions>source.materialOptions;
 
         if (this._colorsTexture) [this._colorsTexture.dispose()];
