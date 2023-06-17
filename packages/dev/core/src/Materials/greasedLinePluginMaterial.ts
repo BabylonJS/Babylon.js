@@ -177,7 +177,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
 
         if (options.colors) {
             this._createColorsTexture(`${material.name}-colors-texture`, options.colors);
-        } else if (this._engine.isWebGPU) {
+        } else {
             GreasedLinePluginMaterial._PrepareEmptyColorsTexture(_scene);
         }
 
@@ -630,10 +630,10 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
      * Sets the color of the line. If set the whole line will be mixed with this color according to the colorMode option.
      * @param value color
      */
-    public setColor(value: Color3 | undefined) {
+    public setColor(value: Color3 | undefined, doNotMarkDirty = false) {
         if ((this._options.color === undefined && value !== undefined) || (this._options.color !== undefined && value === undefined)) {
             this._options.color = value;
-            this.markAllDefinesAsDirty();
+            !doNotMarkDirty && this.markAllDefinesAsDirty();
         } else {
             this._options.color = value;
         }
@@ -675,9 +675,36 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
         return serializationObject;
     }
 
-    // public parse(source: any, scene: Scene, rootUrl: string): void {
-    //     // const materialOptions = <GreasedLineMaterialOptions>source.materialOptions;
-    // }
+    /**
+     * Parses a serialized objects
+     * @param source serialized object
+     * @param scene scene
+     * @param _rootUrl not used
+     */
+    public parse(source: any, scene: Scene, _rootUrl: string): void {
+        this._options = <GreasedLineMaterialOptions>source.materialOptions;
+
+        if (this._colorsTexture) [this._colorsTexture.dispose()];
+
+        if (this._options.colors) {
+            this._createColorsTexture(`${this._material.name}-colors-texture`, this._options.colors);
+        } else {
+            GreasedLinePluginMaterial._PrepareEmptyColorsTexture(scene);
+        }
+
+        this.setColor(this._options.color, true);
+        this._options.colorMode && this.setColorMode(this._options.colorMode);
+        this._options.useColors && this.setUseColors(this._options.useColors);
+        this._options.visibility && this.setVisibility(this._options.visibility);
+        this._options.useDash && this.setUseDash(this._options.useDash);
+        this._options.dashCount && this.setDashCount(this._options.dashCount);
+        this._options.dashRatio && this.setDashRatio(this._options.dashRatio);
+        this._options.dashOffset && this.setDashOffset(this._options.dashOffset);
+        this._options.width && this.setWidth(this._options.width);
+        this._options.sizeAttenuation && this.setSizeAttenuation(this._options.sizeAttenuation);
+
+        this.markAllDefinesAsDirty();
+    }
 
     /**
      * A minimum size texture for the colors sampler2D when there is no colors texture defined yet.
