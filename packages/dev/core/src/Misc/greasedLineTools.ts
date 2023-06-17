@@ -140,7 +140,7 @@ export class GreasedLineTools {
      * @param segmentLength length of each segment of the resulting line (distance between two line points)
      * @returns line point
      */
-    public static SegmentizeLineBySegmentLength(what: Vector3[] | { point1: Vector3; point2: Vector3; length: number }[], segmentLength: number): Vector3[] {
+    public static SegmentizeLineBySegmentLength(what: Vector3[] | number[] | { point1: Vector3; point2: Vector3; length: number }[], segmentLength: number): Vector3[] {
         const subLines = what[0] instanceof Vector3 ? GreasedLineTools.GetLineSegments(what as Vector3[]) : (what as { point1: Vector3; point2: Vector3; length: number }[]);
         const points: Vector3[] = [];
         subLines.forEach((s) => {
@@ -157,6 +157,17 @@ export class GreasedLineTools {
         return points;
     }
 
+    /**
+     * Divides a line into segments.
+     * A segment is a part of the line between it's two points.
+     * @param what line points
+     * @param segmentCount number of segments
+     * @returns line point
+     */
+    public static SegmentizeLineBySegmentCount(what: Vector3[], segmentCount: number): Vector3[] {
+        const segmentLength = GreasedLineTools.GetLineLength(what) / segmentCount;
+        return GreasedLineTools.SegmentizeLineBySegmentLength(what, segmentLength);
+    }
     /**
      * Gets line segments.
      * A segment is a part of the line between it's two points.
