@@ -141,6 +141,9 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
 
             if (colors) {
                 initialMaterialOptions.colors = colors;
+            } else if (!materialOptions.color) {
+                // if we don't have a color table nor a color assign it a default white color
+                initialMaterialOptions.color = Color3.White();
             }
 
             if (materialOptions.createAndAssignMaterial) {
