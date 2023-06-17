@@ -56,11 +56,11 @@ export class GreasedLineTools {
     /**
      * Gets a number array from a Vector3 array.
      * You can you for example to convert your Vector3[] offsets to the required number[] for the offsets option.
-     * @param array Vector3 array
+     * @param points Vector3 array
      * @returns an array of x, y, z coordinates as numbers [x, y, z, x, y, z, x, y, z, ....]
      */
-    public static ToNumberArray(array: Vector3[]) {
-        return array.flatMap((v) => [v.x, v.y, v.z]);
+    public static ToNumberArray(points: Vector3[]) {
+        return points.flatMap((v) => [v.x, v.y, v.z]);
     }
 
     /**
