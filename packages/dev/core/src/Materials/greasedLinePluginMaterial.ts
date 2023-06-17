@@ -390,6 +390,8 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
                     grlFinalPosition.xy += grlNormal.xy * grlSide;
                     gl_Position = grlFinalPosition;
 
+                    vPositionW = vec3(grlFinalPosition);
+
                 `,
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 "!gl_Position\\=viewProjection\\*worldPos;": "//", // remove
