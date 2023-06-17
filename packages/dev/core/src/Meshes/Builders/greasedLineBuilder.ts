@@ -188,14 +188,14 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
  * Completes the width table/fills the missing entries. It means it creates a width entry for every point of the line mesh.
  * You can provide more points the widths when creating the mesh. This function will fill the empty entries.
  * The algorithm used to fill the empty entries can be
- * GreasedLineMeshWidthDistribution.REPEAT - the width table will be repeatedly copied to the empty values [wU, wL] = [wU, wL, wU, wL, wU, wL, wU, wL]
- * GreasedLineMeshWidthDistribution.EVEN - the width table will be evenly copied to the empty values [wU, wL] = [wU, wU, wU, wU, wL, wL, wL, wL]
+ * GreasedLineMeshWidthDistribution.REPEAT - the width table will be repeatedly copied to the empty values [wL, wU] = [wL, wU, wL, wU, wL, wU, wL, wU, ...]
+ * GreasedLineMeshWidthDistribution.EVEN - the width table will be evenly copied to the empty values [wL, wU] = [wL, wL, wL, wL, wU, wU, wU, wU]
  * GreasedLineMeshWidthDistribution.START - the width table will be copied at the start of the empty values
- * and rest will be filled width the default width upper and default width lower values [wU, wL] = [wU, wL, dwU, dwL, dwU, dwL, dwU, dwL]
+ * and rest will be filled width the default width upper and default width lower values [wU, wL] = [wL, wU, dwL, dwU, dwL, dwU, dwL, dwU]
  * GreasedLineMeshWidthDistribution.END - the width table will be copied at the end of the empty values
- * and rest will be filled width the default values [wU, wL] = [wU, wL, dwU, dwL, dwU, dwL, wU, wL]
+ * and rest will be filled width the default values [wL, wU] = [wL, wU, dwL, dwU, dwL, dwU, wL, wU]
  * @param pointCount number of points of the line mesh
- * @param widths array of widths [widthUpper, widhtLower, widthUpper, widthLower, ...]. Two widths (upper/lower) per point.
+ * @param widths array of widths [widhtLower, widthUpper, widthLower, widthUpper ...]. Two widths (lower/upper) per point.
  * @param widthsDistribution how to distribute widths if the widths array has fewer entries than pointCount
  * @param defaultWidthUpper the default value which will be used to fill empty width entries - upper width
  * @param defaultWidthLower the default value which will be used to fill empty width entries - lower width
