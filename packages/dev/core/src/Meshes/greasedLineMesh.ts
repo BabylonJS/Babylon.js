@@ -33,6 +33,11 @@ export interface GreasedLineMeshOptions {
      */
     instance?: GreasedLineMesh;
     /**
+     * You can manually set the color pointers so you can control which segment/part
+     * will use which color from the colors material option
+     */
+    colorPointers?: number[];
+    /**
      * If true, offsets and widths are updatable.
      * Defaults to false.
      */
@@ -90,7 +95,7 @@ export class GreasedLineMesh extends Mesh {
         this._indices = [];
         this._uvs = [];
         this._points = [];
-        this._colorPointers = [];
+        this._colorPointers = _options.colorPointers ?? [];
 
         this._previousAndSide = [];
         this._nextAndCounters = [];
@@ -151,7 +156,9 @@ export class GreasedLineMesh extends Mesh {
      */
     public updateLazy() {
         this.setPoints(this._points);
-        this._updateColorPointers();
+        if (!this._options.colorPointers) {
+            this._updateColorPointers();
+        }
         this._createVertexBuffers();
         this.refreshBoundingInfo();
 
@@ -223,7 +230,7 @@ export class GreasedLineMesh extends Mesh {
 
     /**
      * Sets the color pointer
-     * @param colorPointers arra of color pointer in the colors array. Oone pointer for every vertex is needed.
+     * @param colorPointers arra of color pointer in the colors array. One pointer for every vertex is needed.
      */
     public setColorPointers(colorPointers: number[]) {
         if (!this._lazy) {
@@ -317,7 +324,9 @@ export class GreasedLineMesh extends Mesh {
         });
 
         if (!this._lazy) {
-            this._updateColorPointers();
+            if (!this._options.colorPointers) {
+                this._updateColorPointers();
+            }
             this._createVertexBuffers();
             this.refreshBoundingInfo();
         }
