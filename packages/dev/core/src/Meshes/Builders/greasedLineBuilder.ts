@@ -35,11 +35,11 @@ export interface GreasedLineMaterialBuilderOptions extends GreasedLineMaterialOp
     /**
      * If set to true a new material will be created and a new material plugin will be attached
      * to the material. The material will be set on the mesh. If the instance option is specified in the mesh options,
-     * no material will be created/assigned.
+     * no material will be created/assigned. Defaults to true.
      */
     createAndAssignMaterial?: boolean;
     /**
-     * Distribution of the colors if the color table contains fewer entries than needed
+     * Distribution of the colors if the color table contains fewer entries than needed. Defaults to GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_START
      * @see CompleteGreasedLineColorTable
      */
     colorDistribution?: GreasedLineMeshColorDistribution;
@@ -50,7 +50,7 @@ export interface GreasedLineMaterialBuilderOptions extends GreasedLineMaterialOp
  */
 export interface GreasedLineMeshBuilderOptions extends GreasedLineMeshOptions {
     /**
-     * Distribution of the widths if the width table contains fewer entries than needed
+     * Distribution of the widths if the width table contains fewer entries than needed. Defaults to GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_START
      * @see CompleteGreasedLineWidthTable
      */
     widthDistribution?: GreasedLineMeshWidthDistribution;
@@ -99,9 +99,9 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
     options.widthDistribution = options.widthDistribution ?? GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_START;
 
     materialOptions = materialOptions ?? {
-        createAndAssignMaterial: true,
         color: Color3.White(),
     };
+    materialOptions.createAndAssignMaterial = materialOptions.createAndAssignMaterial ?? true;
     materialOptions.colorDistribution = materialOptions?.colorDistribution ?? GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_START;
 
     const widths = CompleteGreasedLineWidthTable(length, options.widths ?? [], options.widthDistribution);
