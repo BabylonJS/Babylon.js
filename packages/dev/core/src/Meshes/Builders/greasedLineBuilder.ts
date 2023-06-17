@@ -184,7 +184,6 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
     return instance;
 }
 
-
 /**
  * Completes the width table/fills the missing entries. It means it creates a width entry for every point of the line mesh.
  * You can provide more points the widths when creating the mesh. This function will fill the empty entries.
