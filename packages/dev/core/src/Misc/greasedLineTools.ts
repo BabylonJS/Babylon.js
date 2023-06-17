@@ -54,6 +54,33 @@ export class GreasedLineTools {
     }
 
     /**
+     * Gets a number array from a Vector3 array.
+     * You can you for example to convert your Vector3[] offsets to the required number[] for the offsets option.
+     * @param array Vector3 array
+     * @returns an array of x, y, z coordinates as numbers [x, y, z, x, y, z, x, y, z, ....]
+     */
+    public static ToNumberArray(array: Vector3[]) {
+        return array.flatMap((v) => [v.x, v.y, v.z]);
+    }
+
+    /**
+     * Calculates the sum of points of every line and the number of points in each line.
+     * This function is useful when you are drawing multiple lines in one mesh and you want
+     * to know the counts. For example for creating an offsets table.
+     * @param points point array
+     * @returns points count info
+     */
+    public static GetPointsCountInfo(points: number[][]): { total: number; counts: number[] } {
+        const counts = new Array(points.length);
+        let total = 0;
+        for (let n = points.length; n--; ) {
+            counts[n] = points[n].length / 3;
+            total += counts[n];
+        }
+        return { total, counts };
+    }
+
+    /**
      * Gets the length of the line counting all it's segments length
      * @param data array of line points
      * @returns length of the line

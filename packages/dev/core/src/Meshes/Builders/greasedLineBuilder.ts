@@ -3,7 +3,6 @@ import type { GreasedLineMaterialOptions } from "../../Materials/greasedLinePlug
 import { GreasedLineMeshColorMode, GreasedLineMeshMaterialType, GreasedLinePluginMaterial } from "../../Materials/greasedLinePluginMaterial";
 import { StandardMaterial } from "./../../Materials/standardMaterial";
 import { PBRMaterial } from "../../Materials/PBR/pbrMaterial";
-import type { Vector3 } from "../../Maths/math.vector";
 import type { Nullable } from "../../types";
 import type { GreasedLineMeshOptions } from "../greasedLineMesh";
 import { GreasedLineMesh } from "../greasedLineMesh";
@@ -185,15 +184,6 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
     return instance;
 }
 
-/**
- * Gets a number array from a Vector3 array.
- * You can you for example to convert your Vector3[] offsets to the required number[] for the offsets option.
- * @param array Vector3 array
- * @returns an array of x, y, z coordinates as numbers [x, y, z, x, y, z, x, y, z, ....]
- */
-export function Vector3ArrayToNumberArray(array: Vector3[]) {
-    return array.flatMap((v) => [v.x, v.y, v.z]);
-}
 
 /**
  * Completes the width table/fills the missing entries. It means it creates a width entry for every point of the line mesh.

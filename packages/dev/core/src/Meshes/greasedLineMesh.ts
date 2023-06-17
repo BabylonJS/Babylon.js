@@ -189,23 +189,6 @@ export class GreasedLineMesh extends Mesh {
     }
 
     /**
-     * Calculates the sum of points of every line and the number of points in each line.
-     * This function is useful when you are drawing multiple lines in one mesh and you want
-     * to know the counts. For example for creating an offsets table.
-     * @param points point array
-     * @returns points count info
-     */
-    public static GetPointsCountInfo(points: number[][]): { total: number; counts: number[] } {
-        const counts = new Array(points.length);
-        let total = 0;
-        for (let n = points.length; n--; ) {
-            counts[n] = points[n].length / 3;
-            total += counts[n];
-        }
-        return { total, counts };
-    }
-
-    /**
      * Sets point offets
      * @param offsets offset table [x,y,z, x,y,z, ....]
      */
