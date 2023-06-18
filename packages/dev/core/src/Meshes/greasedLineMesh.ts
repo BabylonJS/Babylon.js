@@ -38,6 +38,10 @@ export interface GreasedLineMeshOptions {
      */
     colorPointers?: number[];
     /**
+     * UVs for the mesh
+     */
+    uvs?: number[];
+    /**
      * If true, offsets and widths are updatable.
      * Defaults to false.
      */
@@ -226,7 +230,6 @@ export class GreasedLineMesh extends Mesh {
      */
     get greasedLineMaterial() {
         return <GreasedLinePluginMaterial>this.material?.pluginManager?.getPlugin(GreasedLinePluginMaterial.GREASED_LINE_MATERIAL_NAME);
-        return null;
     }
 
     /**
@@ -292,7 +295,7 @@ export class GreasedLineMesh extends Mesh {
             const previous: number[] = [];
             const next: number[] = [];
             const side: number[] = [];
-            const uvs: number[] = [];
+            let uvs: number[] = [];
 
             this._preprocess(positions, previous, next, side, uvs);
 
@@ -303,6 +306,8 @@ export class GreasedLineMesh extends Mesh {
                 this._previousAndSide.push(previous[i * 3], previous[i * 3 + 1], previous[i * 3 + 2], side[i]);
                 this._nextAndCounters.push(next[i * 3], next[i * 3 + 1], next[i * 3 + 2], counters[i]);
             }
+
+            uvs = this._options.uvs ?? uvs;
             this._uvs.push(...uvs);
         });
 
@@ -323,7 +328,7 @@ export class GreasedLineMesh extends Mesh {
      */
     public clone(name: string = `${this.name}-cloned`, newParent?: Nullable<Node>) {
         const lineOptions = {};
-        DeepCopier.DeepCopy(this._options, lineOptions);
+        DeepCopier.DeepCopy(this._options, lineOptions, ["instance"]);
 
         const cloned = new GreasedLineMesh(name, this._scene, <GreasedLineMeshOptions>lineOptions);
         if (newParent) {
@@ -499,8 +504,10 @@ export class GreasedLineMesh extends Mesh {
             side.push(-1);
 
             // uvs
-            uvs.push(j / (l - 1), 0);
-            uvs.push(j / (l - 1), 1);
+            if (!this._options.uvs) {
+                uvs.push(j / (l - 1), 0);
+                uvs.push(j / (l - 1), 1);
+            }
 
             if (j < l - 1) {
                 v = GreasedLineMesh._CopyV3(j, positions);
@@ -535,7 +542,7 @@ export class GreasedLineMesh extends Mesh {
         vertexData.positions = this._vertexPositions;
         vertexData.indices = this._indices;
         vertexData.uvs = this._uvs;
-        vertexData.applyToMesh(this, false);
+        vertexData.applyToMesh(this, this._options.updatable);
 
         const engine = this._scene.getEngine();
 

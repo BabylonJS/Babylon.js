@@ -1,4 +1,3 @@
-import { StandardMaterial } from "core/Materials/standardMaterial";
 import { Engine } from "../Engines/engine";
 import { RawTexture } from "./Textures/rawTexture";
 import { MaterialPluginBase } from "./materialPluginBase";
@@ -11,8 +10,6 @@ import type { Nullable } from "../types";
 import type { Material } from "./material";
 import { MaterialDefines } from "./materialDefines";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import { PBRMaterial } from "./PBR/pbrMaterial";
-import { DeepCopier } from "../Misc/deepCopier";
 import type { BaseTexture } from "./Textures/baseTexture";
 
 export enum GreasedLineMeshMaterialType {
@@ -646,23 +643,6 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
      */
     public setColorMode(value: GreasedLineMeshColorMode) {
         this._options.colorMode = value;
-    }
-
-    /**
-     * Clones the plugin material.
-     * @param name New name for the cloned plugin material.
-     * @returns The cloned plugin material.
-     */
-    public clone(name: string = `${this.name}-cloned`) {
-        const materialOptions = {};
-        DeepCopier.DeepCopy(this.getOptions(), materialOptions);
-
-        const material =
-            (<GreasedLineMaterialOptions>materialOptions).materialType === GreasedLineMeshMaterialType.MATERIAL_TYPE_PBR
-                ? new PBRMaterial(name, this._scene)
-                : new StandardMaterial(name, this._scene);
-        const pluginMaterial = new GreasedLinePluginMaterial(material, this._scene, materialOptions);
-        return pluginMaterial;
     }
 
     /**
