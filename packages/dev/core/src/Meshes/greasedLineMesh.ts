@@ -444,7 +444,7 @@ export class GreasedLineMesh extends Mesh {
 
                 const iFloored = Math.floor(i / 3);
                 const width = widths[iFloored] !== undefined ? widths[iFloored] : 1;
-                const precision = this.intersectionThreshold + (lineWidth * width) / 2;
+                const precision = this.intersectionThreshold * (lineWidth * width) / 2;
 
                 const distance = ray.intersectionSegment(GreasedLineMesh._V_START, GreasedLineMesh._V_END, precision);
                 if (distance !== -1) {

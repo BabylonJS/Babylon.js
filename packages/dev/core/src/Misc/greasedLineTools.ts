@@ -175,15 +175,15 @@ export class GreasedLineTools {
      * @returns segments information of the line segment including starting point, ending point and the distance between them
      */
     public static GetLineSegments(points: Vector3[]): { point1: Vector3; point2: Vector3; length: number }[] {
-        const subLines = [];
+        const segments = [];
         for (let index = 0; index < points.length - 1; index++) {
             const point1 = points[index];
             const point2 = points[index + 1];
             const length = point2.subtract(point1).length();
-            subLines.push({ point1, point2, length });
+            segments.push({ point1, point2, length });
         }
 
-        return subLines;
+        return segments;
     }
 
     /**
@@ -199,6 +199,36 @@ export class GreasedLineTools {
             min: sorted[0].length,
             max: sorted[sorted.length - 1].length,
         };
+    }
+
+    /**
+     * Finds the last visible position in world space of the line according to the visibility parameter
+     * @param lineSegments segments of the line
+     * @param lineLength total length of the line
+     * @param visbility normalized value of visibility
+     * @returns world space coordinate of the last visible piece of the line
+     */
+    public static GetPositionOnLineByVisibility(lineSegments: { point1: Vector3; point2: Vector3; length: number }[], lineLength: number, visbility: number) {
+        const lengthVisibilityRatio = lineLength * visbility;
+        let sumSegmentLengths = 0;
+        let segmentIndex = 0;
+
+        const lineSegmentsLength = lineSegments.length;
+        for (let i = 0; i < lineSegmentsLength; i++) {
+            if (lengthVisibilityRatio <= sumSegmentLengths + lineSegments[i].length) {
+                segmentIndex = i;
+                break;
+            }
+            sumSegmentLengths += lineSegments[i].length;
+        }
+
+        const s = (lengthVisibilityRatio - sumSegmentLengths) / lineSegments[segmentIndex].length;
+
+        lineSegments[segmentIndex].point2.subtractToRef(lineSegments[segmentIndex].point1, TmpVectors.Vector3[0]);
+        TmpVectors.Vector3[1] = TmpVectors.Vector3[0].multiplyByFloats(s, s, s);
+        TmpVectors.Vector3[1].addInPlace(lineSegments[segmentIndex].point1);
+
+        return TmpVectors.Vector3[1].clone();
     }
 
     /**
