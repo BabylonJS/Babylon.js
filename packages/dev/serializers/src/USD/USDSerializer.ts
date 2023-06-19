@@ -10,7 +10,7 @@ import { type TransformNode } from "core/Meshes/transformNode";
 import { type Scene } from "core/scene";
 import { type Nullable } from "core/types";
 import { strToU8, zipSync } from "fflate";
-import { Material } from "core/Materials/material";
+import { type Material } from "core/Materials/material";
 
 export interface IUSDExportOptions {
     modelName?: string;
