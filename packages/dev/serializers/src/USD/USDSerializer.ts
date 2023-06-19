@@ -3,11 +3,12 @@ import { Camera } from "core/Cameras/camera";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { Texture } from "core/Materials/Textures/texture";
 import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
-import { Color3, Matrix, Vector2 } from "core/Maths/math";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
-import { TransformNode } from "core/Meshes/transformNode";
-import { Scene } from "core/scene";
-import { Nullable } from "core/types";
+import { type Color3, type Matrix } from "core/Maths/math";
+import { Vector2 } from "core/Maths/math";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
+import { type TransformNode } from "core/Meshes/transformNode";
+import { type Scene } from "core/scene";
+import { type Nullable } from "core/types";
 import { strToU8, zipSync } from "fflate";
 import { Material } from "core/Materials/material";
 
@@ -69,7 +70,7 @@ export class USDExport {
         const materials: { [id: string]: Material } = {};
         const textures: { [id: string]: Texture } = {};
 
-        let sharedMat: PBRMaterial = new PBRMaterial(`default.mat`, scene);
+        const sharedMat: PBRMaterial = new PBRMaterial(`default.mat`, scene);
 
         scene.meshes
             .filter((mesh) => (mesh as any).geometry)
