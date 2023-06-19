@@ -279,7 +279,7 @@ export class MaterialPluginBase {
     }
 
     /**
-     * Serializes this clear coat configuration.
+     * Serializes this plugin configuration.
      * @returns - An object with the serialized config.
      */
     public serialize(): any {
@@ -287,7 +287,7 @@ export class MaterialPluginBase {
     }
 
     /**
-     * Parses a anisotropy Configuration from a serialized object.
+     * Parses a plugin configuration from a serialized object.
      * @param source - Serialized object.
      * @param scene Defines the scene we are parsing for
      * @param rootUrl Defines the rootUrl to load from
