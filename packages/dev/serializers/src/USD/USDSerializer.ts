@@ -650,9 +650,9 @@ export class USDExport {
      * @param texture can be a Texture or DynamicTexture
      * @returns a promise with the HTML Image Element or the DynamicTexture directly.
      */
-    private static async _TextureToImage(texture: Texture | DynamicTexture): Promise<HTMLImageElement> {
+    private static async _TextureToImage(texture: Texture | DynamicTexture): Promise<HTMLImageElement | DynamicTexture> {
         if (texture.getClassName() === "DynamicTexture") {
-            return texture as any;
+            return texture as DynamicTexture;
         }
 
         return new Promise((resolve, reject) => {
