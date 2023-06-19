@@ -323,6 +323,9 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
      * @returns The mesh under pointer or null if no mesh is under the pointer
      */
     public getMeshUnderPointer(controllerId: string): Nullable<AbstractMesh> {
+        if (typeof controllerId !== "string") {
+            Tools.Warn("[getMeshUnderPointer] controllerId is not of string type");
+        }
         if (this._controllers[controllerId]) {
             return this._controllers[controllerId].meshUnderPointer;
         } else {
