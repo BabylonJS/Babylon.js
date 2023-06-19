@@ -50,7 +50,7 @@ export class Tools {
      * default = false
      * @see CustomRequestHeaders
      */
-    public static UseCustomRequestHeaders: boolean = false;
+    public static UseCustomRequestHeaders = false;
 
     /**
      * Custom HTTP Request Headers to be sent with XMLHttpRequests
@@ -405,7 +405,7 @@ export class Tools {
      * @param useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
      * @returns a promise containing an ArrayBuffer corresponding to the loaded file
      */
-    public static LoadFileAsync(url: string, useArrayBuffer: boolean = true): Promise<ArrayBuffer | string> {
+    public static LoadFileAsync(url: string, useArrayBuffer = true): Promise<ArrayBuffer | string> {
         return new Promise((resolve, reject) => {
             FileToolsLoadFile(
                 url,
@@ -554,7 +554,7 @@ export class Tools {
      * @param decimals defines the number of decimals to use
      * @returns the formatted string
      */
-    public static Format(value: number, decimals: number = 2): string {
+    public static Format(value: number, decimals = 2): string {
         return value.toFixed(decimals);
     }
 
@@ -631,6 +631,7 @@ export class Tools {
      * @param successCallback defines the callback triggered once the data are available
      * @param mimeType defines the mime type of the result
      * @param fileName defines the filename to download. If present, the result will automatically be downloaded
+     * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
      * @returns a void promise
      */
     public static async DumpFramebuffer(
@@ -638,8 +639,9 @@ export class Tools {
         height: number,
         engine: Engine,
         successCallback?: (data: string) => void,
-        mimeType: string = "image/png",
-        fileName?: string
+        mimeType = "image/png",
+        fileName?: string,
+        quality?: number
     ) {
         throw _WarnImport("DumpTools");
     }
@@ -654,14 +656,14 @@ export class Tools {
      * @param fileName defines the filename to download. If present, the result will automatically be downloaded
      * @param invertY true to invert the picture in the Y dimension
      * @param toArrayBuffer true to convert the data to an ArrayBuffer (encoded as `mimeType`) instead of a base64 string
-     * @param quality defines the quality of the result
+     * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
      */
     public static DumpData(
         width: number,
         height: number,
         data: ArrayBufferView,
         successCallback?: (data: string | ArrayBuffer) => void,
-        mimeType: string = "image/png",
+        mimeType = "image/png",
         fileName?: string,
         invertY = false,
         toArrayBuffer = false,
@@ -679,14 +681,14 @@ export class Tools {
      * @param fileName defines the filename to download. If present, the result will automatically be downloaded
      * @param invertY true to invert the picture in the Y dimension
      * @param toArrayBuffer true to convert the data to an ArrayBuffer (encoded as `mimeType`) instead of a base64 string
-     * @param quality defines the quality of the result
+     * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
      * @returns a promise that resolve to the final data
      */
     public static DumpDataAsync(
         width: number,
         height: number,
         data: ArrayBufferView,
-        mimeType: string = "image/png",
+        mimeType = "image/png",
         fileName?: string,
         invertY = false,
         toArrayBuffer = false,
@@ -705,9 +707,9 @@ export class Tools {
      * @param canvas Defines the canvas to extract the data from (can be an offscreen canvas)
      * @param successCallback Defines the callback triggered once the data are available
      * @param mimeType Defines the mime type of the result
-     * @param quality defines the quality of the result
+     * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
      */
-    static ToBlob(canvas: HTMLCanvasElement | OffscreenCanvas, successCallback: (blob: Nullable<Blob>) => void, mimeType: string = "image/png", quality?: number): void {
+    static ToBlob(canvas: HTMLCanvasElement | OffscreenCanvas, successCallback: (blob: Nullable<Blob>) => void, mimeType = "image/png", quality?: number): void {
         // We need HTMLCanvasElement.toBlob for HD screenshots
         if (!Tools._IsOffScreenCanvas(canvas) && !canvas.toBlob) {
             //  low performance polyfill based on toDataURL (https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob)
@@ -783,12 +785,12 @@ export class Tools {
      * @param successCallback The callback which is triggered once the data is available. If `fileName` is defined, the callback will be invoked after the download occurs, and the `data` argument will be an empty string.
      * @param mimeType The mime type of the result.
      * @param fileName The name of the file to download. If defined, the result will automatically be downloaded. If not defined, and `successCallback` is also not defined, the result will automatically be downloaded with an auto-generated file name.
-     * @param quality The quality of the result. See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
+     * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
      */
     static EncodeScreenshotCanvasData(
         canvas: HTMLCanvasElement | OffscreenCanvas,
         successCallback?: (data: string) => void,
-        mimeType: string = "image/png",
+        mimeType = "image/png",
         fileName?: string,
         quality?: number
     ): void {
@@ -886,9 +888,19 @@ export class Tools {
      * src parameter of an <img> to display it
      * @param mimeType defines the MIME type of the screenshot image (default: image/png).
      * Check your browser for supported MIME types
+     * @param forceDownload force the system to download the image even if a successCallback is provided
+     * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public static CreateScreenshot(engine: Engine, camera: Camera, size: IScreenshotSize | number, successCallback?: (data: string) => void, mimeType: string = "image/png"): void {
+    public static CreateScreenshot(
+        engine: Engine,
+        camera: Camera,
+        size: IScreenshotSize | number,
+        successCallback?: (data: string) => void,
+        mimeType = "image/png",
+        forceDownload = false,
+        quality?: number
+    ): void {
         throw _WarnImport("ScreenshotTools");
     }
 
@@ -904,11 +916,12 @@ export class Tools {
      * rendering at a higher or lower resolution
      * @param mimeType defines the MIME type of the screenshot image (default: image/png).
      * Check your browser for supported MIME types
+     * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
      * @returns screenshot as a string of base64-encoded characters. This string can be assigned
      * to the src parameter of an <img> to display it
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public static CreateScreenshotAsync(engine: Engine, camera: Camera, size: IScreenshotSize | number, mimeType: string = "image/png"): Promise<string> {
+    public static CreateScreenshotAsync(engine: Engine, camera: Camera, size: IScreenshotSize | number, mimeType = "image/png", quality?: number): Promise<string> {
         throw _WarnImport("ScreenshotTools");
     }
 
@@ -930,6 +943,10 @@ export class Tools {
      * @param samples Texture samples (default: 1)
      * @param antialiasing Whether antialiasing should be turned on or not (default: false)
      * @param fileName A name for for the downloaded file.
+     * @param renderSprites Whether the sprites should be rendered or not (default: false)
+     * @param enableStencilBuffer Whether the stencil buffer should be enabled or not (default: false)
+     * @param useLayerMask if the camera's layer mask should be used to filter what should be rendered (default: true)
+     * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static CreateScreenshotUsingRenderTarget(
@@ -937,10 +954,14 @@ export class Tools {
         camera: Camera,
         size: IScreenshotSize | number,
         successCallback?: (data: string) => void,
-        mimeType: string = "image/png",
-        samples: number = 1,
-        antialiasing: boolean = false,
-        fileName?: string
+        mimeType = "image/png",
+        samples = 1,
+        antialiasing = false,
+        fileName?: string,
+        renderSprites = false,
+        enableStencilBuffer = false,
+        useLayerMask = true,
+        quality?: number
     ): void {
         throw _WarnImport("ScreenshotTools");
     }
@@ -961,6 +982,10 @@ export class Tools {
      * @param antialiasing Whether antialiasing should be turned on or not (default: false)
      * @param fileName A name for for the downloaded file.
      * @returns screenshot as a string of base64-encoded characters. This string can be assigned
+     * @param renderSprites Whether the sprites should be rendered or not (default: false)
+     * @param enableStencilBuffer Whether the stencil buffer should be enabled or not (default: false)
+     * @param useLayerMask if the camera's layer mask should be used to filter what should be rendered (default: true)
+     * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
      * to the src parameter of an <img> to display it
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -968,10 +993,14 @@ export class Tools {
         engine: Engine,
         camera: Camera,
         size: IScreenshotSize | number,
-        mimeType: string = "image/png",
-        samples: number = 1,
-        antialiasing: boolean = false,
-        fileName?: string
+        mimeType = "image/png",
+        samples = 1,
+        antialiasing = false,
+        fileName?: string,
+        renderSprites = false,
+        enableStencilBuffer = false,
+        useLayerMask = true,
+        quality?: number
     ): Promise<string> {
         throw _WarnImport("ScreenshotTools");
     }
@@ -1217,7 +1246,7 @@ export class Tools {
      * @param isType defines if the object is actually a type
      * @returns the name of the class, will be "object" for a custom data type not using the @className decorator
      */
-    public static GetClassName(object: any, isType: boolean = false): string {
+    public static GetClassName(object: any, isType = false): string {
         let name = null;
 
         if (!isType && object.getClassName) {
@@ -1259,7 +1288,7 @@ export class Tools {
      * @ignorenaming
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    public static getFullClassName(object: any, isType: boolean = false): Nullable<string> {
+    public static getFullClassName(object: any, isType = false): Nullable<string> {
         let className = null;
         let moduleName = null;
 
@@ -1349,7 +1378,7 @@ export class AsyncLoop {
         public iterations: number,
         func: (asyncLoop: AsyncLoop) => void,
         successCallback: () => void,
-        offset: number = 0
+        offset = 0
     ) {
         this.index = offset - 1;
         this._done = false;
@@ -1387,7 +1416,7 @@ export class AsyncLoop {
      * @param offset starting offset.
      * @returns the created async loop object
      */
-    public static Run(iterations: number, fn: (asyncLoop: AsyncLoop) => void, successCallback: () => void, offset: number = 0): AsyncLoop {
+    public static Run(iterations: number, fn: (asyncLoop: AsyncLoop) => void, successCallback: () => void, offset = 0): AsyncLoop {
         const loop = new AsyncLoop(iterations, fn, successCallback, offset);
 
         loop.executeNext();
@@ -1411,7 +1440,7 @@ export class AsyncLoop {
         fn: (iteration: number) => void,
         callback: () => void,
         breakFunction?: () => boolean,
-        timeout: number = 0
+        timeout = 0
     ): AsyncLoop {
         return AsyncLoop.Run(
             Math.ceil(iterations / syncedIterations),
