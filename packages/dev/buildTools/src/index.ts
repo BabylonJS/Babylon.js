@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 import { addJsExtensionsToCompiledFilesCommand } from "./addJSToCompiledFiles.js";
-// import { buildShaders } from "./buildShaders.js";
 import { generateDeclaration } from "./generateDeclaration.js";
 import { transformLtsCommand } from "./ltsTransformer.js";
 import { prepareES6Build } from "./prepareEs6Build.js";
