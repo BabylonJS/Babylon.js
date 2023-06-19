@@ -1375,6 +1375,23 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         return null;
     }
 
+    protected _clonePlugins(targetMaterial: Material, rootUrl: string) {
+        const serializationObject: any = {};
+
+        // Create plugins in targetMaterial in case they don't exist
+        this._serializePlugins(serializationObject);
+
+        Material._parsePlugins(serializationObject, targetMaterial, this._scene, rootUrl);
+
+        // Copy the properties of the current plugins to the cloned material's plugins
+        if (this.pluginManager) {
+            for (const plugin of this.pluginManager._plugins) {
+                const targetPlugin = targetMaterial.pluginManager!.getPlugin(plugin.name)!;
+                plugin.copyTo(targetPlugin);
+            }
+        }
+    }
+
     /**
      * Gets the meshes bound to the material
      * @returns an array of meshes bound to the material
