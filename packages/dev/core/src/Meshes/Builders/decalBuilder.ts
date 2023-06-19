@@ -359,16 +359,16 @@ export function CreateDecal(
         return clipResult;
     };
 
-    const sourceMeshAsMesh = sourceMesh as Mesh;
-    const matrixData = sourceMeshAsMesh._thinInstanceDataStorage.matrixData;
+    const sourceMeshAsMesh = sourceMesh instanceof Mesh ? sourceMesh : null;
+    const matrixData = sourceMeshAsMesh?._thinInstanceDataStorage.matrixData;
 
-    const numMatrices = sourceMeshAsMesh.thinInstanceCount || 1;
+    const numMatrices = sourceMeshAsMesh?.thinInstanceCount || 1;
     const thinInstanceMatrix = TmpVectors.Matrix[0];
 
     thinInstanceMatrix.copyFrom(Matrix.IdentityReadOnly);
 
     for (let m = 0; m < numMatrices; ++m) {
-        if (sourceMeshAsMesh.hasThinInstances && matrixData) {
+        if (sourceMeshAsMesh?.hasThinInstances && matrixData) {
             const ofst = m * 16;
 
             thinInstanceMatrix.setRowFromFloats(0, matrixData[ofst + 0], matrixData[ofst + 1], matrixData[ofst + 2], matrixData[ofst + 3]);
