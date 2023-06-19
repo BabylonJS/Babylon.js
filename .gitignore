@@ -1,4 +1,6 @@
 dist
+tmp
+temp
 .temp
 .tempChromeCanaryProfileForDebug
 .tempChromeProfileForDebug
