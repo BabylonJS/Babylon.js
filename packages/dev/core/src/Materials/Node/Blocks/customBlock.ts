@@ -6,6 +6,9 @@ import { RegisterClass } from "../../../Misc/typeStore";
 import type { Scene } from "../../../scene";
 import type { Nullable } from "../../../types";
 import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
+import { NodeMaterialConnectionPointDirection } from "../nodeMaterialBlockConnectionPoint";
+import { ImageSourceBlock } from "./Dual/imageSourceBlock";
+import { NodeMaterialConnectionPointCustomObject } from "../nodeMaterialConnectionPointCustomObject";
 
 /**
  * Custom block created from user-defined json
@@ -13,6 +16,7 @@ import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnection
 export class CustomBlock extends NodeMaterialBlock {
     private _options: any;
     private _code: string;
+    private _inputSamplers: string[];
 
     /**
      * Gets or sets the options for this custom block
@@ -77,7 +81,11 @@ export class CustomBlock extends NodeMaterialBlock {
             if (index > 0) {
                 state.compilationString += ", ";
             }
-            state.compilationString += input.associatedVariableName;
+            if (this._inputSamplers && this._inputSamplers.indexOf(input.name) !== -1) {
+                state.compilationString += (input.connectedPoint?.ownerBlock as ImageSourceBlock)?.samplerName ?? input.associatedVariableName;
+            } else {
+                state.compilationString += input.associatedVariableName;
+            }
             hasInput = true;
         });
 
@@ -123,7 +131,19 @@ export class CustomBlock extends NodeMaterialBlock {
 
         options.inParameters?.forEach((input: any, index: number) => {
             const type = (<any>NodeMaterialBlockConnectionPointTypes)[input.type];
-            this.registerInput(input.name, type);
+            if (input.type === "sampler2D" || input.type === "samplerCube") {
+                this._inputSamplers = this._inputSamplers || [];
+                this._inputSamplers.push(input.name);
+                this.registerInput(
+                    input.name,
+                    NodeMaterialBlockConnectionPointTypes.Object,
+                    true,
+                    NodeMaterialBlockTargets.VertexAndFragment,
+                    new NodeMaterialConnectionPointCustomObject(input.name, this, NodeMaterialConnectionPointDirection.Input, ImageSourceBlock, "ImageSourceBlock")
+                );
+            } else {
+                this.registerInput(input.name, type);
+            }
 
             Object.defineProperty(this, input.name, {
                 get: function () {
