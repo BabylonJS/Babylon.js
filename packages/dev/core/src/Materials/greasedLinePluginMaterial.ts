@@ -12,6 +12,7 @@ import { MaterialDefines } from "./materialDefines";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { BaseTexture } from "./Textures/baseTexture";
 import { DeepCopier } from "core/Misc/deepCopier";
+import { RegisterClass } from "../Misc/typeStore";
 
 export enum GreasedLineMeshMaterialType {
     MATERIAL_TYPE_STANDARD = 0,
@@ -702,3 +703,5 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
         }
     }
 }
+
+RegisterClass(`BABYLON.${GreasedLinePluginMaterial.GREASED_LINE_MATERIAL_NAME}`, GreasedLinePluginMaterial);
