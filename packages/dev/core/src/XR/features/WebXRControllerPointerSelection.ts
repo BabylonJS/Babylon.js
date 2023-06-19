@@ -319,15 +319,13 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
     /**
      * Will get the mesh under a specific pointer.
      * `scene.meshUnderPointer` will only return one mesh - either left or right.
-     * @param controllerId the controllerId to check
+     * @param controllerOrId the input source or controller id string to check
      * @returns The mesh under pointer or null if no mesh is under the pointer
      */
-    public getMeshUnderPointer(controllerId: string): Nullable<AbstractMesh> {
-        if (typeof controllerId !== "string") {
-            Tools.Warn("[getMeshUnderPointer] controllerId is not of string type");
-        }
-        if (this._controllers[controllerId]) {
-            return this._controllers[controllerId].meshUnderPointer;
+    public getMeshUnderPointer(controllerOrId: string | WebXRInputSource): Nullable<AbstractMesh> {
+        const id = typeof controllerOrId === "string" ? controllerOrId : controllerOrId.uniqueId;
+        if (this._controllers[id]) {
+            return this._controllers[id].meshUnderPointer;
         } else {
             return null;
         }
