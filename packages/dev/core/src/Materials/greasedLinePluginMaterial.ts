@@ -11,7 +11,7 @@ import type { Material } from "./material";
 import { MaterialDefines } from "./materialDefines";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { BaseTexture } from "./Textures/baseTexture";
-import { DeepCopier } from "..";
+import { DeepCopier } from "core/Misc/deepCopier";
 
 export enum GreasedLineMeshMaterialType {
     MATERIAL_TYPE_STANDARD = 0,
