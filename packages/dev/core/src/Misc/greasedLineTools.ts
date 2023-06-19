@@ -208,7 +208,7 @@ export class GreasedLineTools {
      * @param visbility normalized value of visibility
      * @returns world space coordinate of the last visible piece of the line
      */
-    public static GetPositionOnLineByVisibility(lineSegments: { point1: Vector3; point2: Vector3; length: number }[], lineLength: number, visbility: number) {
+    public static GetPositionOnLineByVisibility(lineSegments: { point1: Vector3; point2: Vector3; length: number }[], lineLength: number, visbility: number, localSpace = false) {
         const lengthVisibilityRatio = lineLength * visbility;
         let sumSegmentLengths = 0;
         let segmentIndex = 0;
@@ -226,7 +226,9 @@ export class GreasedLineTools {
 
         lineSegments[segmentIndex].point2.subtractToRef(lineSegments[segmentIndex].point1, TmpVectors.Vector3[0]);
         TmpVectors.Vector3[1] = TmpVectors.Vector3[0].multiplyByFloats(s, s, s);
-        TmpVectors.Vector3[1].addInPlace(lineSegments[segmentIndex].point1);
+        if (!localSpace) {
+            TmpVectors.Vector3[1].addInPlace(lineSegments[segmentIndex].point1);
+        }
 
         return TmpVectors.Vector3[1].clone();
     }
