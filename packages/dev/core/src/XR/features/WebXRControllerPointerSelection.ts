@@ -326,9 +326,6 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         if (this._controllers[controllerId]) {
             return this._controllers[controllerId].meshUnderPointer;
         } else {
-            if (typeof controllerId !== "string") {
-                Tools.Warn("[getMeshUnderPointer] controllerId is not of string type");
-            }
             return null;
         }
     }
