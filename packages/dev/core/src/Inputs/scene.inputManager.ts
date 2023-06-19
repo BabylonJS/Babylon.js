@@ -227,6 +227,9 @@ export class InputManager {
         this._setCursorAndPointerOverMesh(pickResult, evt, scene);
 
         for (const step of scene._pointerMoveStage) {
+            // If _pointerMoveState is defined, we have an active spriteManager and can't use Lazy Picking
+            // Therefore, we need to force a pick to update the pickResult
+            pickResult = pickResult || this._pickMove(evt);
             const isMeshPicked = pickResult?.pickedMesh ? true : false;
             pickResult = step.action(this._unTranslatedPointerX, this._unTranslatedPointerY, pickResult, isMeshPicked, canvas);
         }
@@ -791,7 +794,7 @@ export class InputManager {
                     (!scene.cameraToUseForPointers || (scene.cameraToUseForPointers.layerMask & mesh.layerMask) !== 0);
             }
 
-            const pickResult = scene._registeredActions > 0 ? this._pickMove(evt as IPointerEvent) : null;
+            const pickResult = scene._registeredActions > 0 || scene.constantlyUpdateMeshUnderPointer ? this._pickMove(evt as IPointerEvent) : null;
             this._processPointerMove(pickResult, evt as IPointerEvent);
         };
 
