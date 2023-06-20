@@ -1,5 +1,5 @@
-import { Curve3 } from "./../Maths/math.path";
-import { VertexBuffer } from "./../Buffers/buffer";
+import { Curve3 } from "../Maths/math.path";
+import { VertexBuffer } from "../Buffers/buffer";
 import { TmpVectors, Vector3 } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 

@@ -9,9 +9,9 @@ import { Color3 } from "../Maths/math.color";
 import type { Nullable } from "../types";
 import type { Material } from "./material";
 import { MaterialDefines } from "./materialDefines";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { BaseTexture } from "./Textures/baseTexture";
-import { DeepCopier } from "core/Misc/deepCopier";
+import { DeepCopier } from "../Misc/deepCopier";
 import { RegisterClass } from "../Misc/typeStore";
 
 export enum GreasedLineMeshMaterialType {
