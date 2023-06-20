@@ -2,11 +2,6 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
-            "title": "GreasedLine - basic",
-            "playgroundId": "#H1LRZ3#102",
-            "referenceImage": "greased-line-basic.png"
-        },
-        {
             "title": "MeshBuilder.CreateText",
             "playgroundId": "#6I2RMN#2",
             "referenceImage": "createText.png"
