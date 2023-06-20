@@ -1890,8 +1890,9 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         skipBoundingInfo = false
     ): PickingInfo {
         const pickingInfo = new PickingInfo();
+        const className = this.getClassName();
         const intersectionThreshold =
-            this.getClassName() === "InstancedLinesMesh" || this.getClassName() === "LinesMesh" || this.getClassName() === "GreasedLineMesh"
+            className === "InstancedLinesMesh" || className === "LinesMesh" || className === "GreasedLineMesh"
                 ? (this as any).intersectionThreshold
                 : 0;
         const boundingInfo = this.getBoundingInfo();
