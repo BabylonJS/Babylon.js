@@ -2,6 +2,11 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "GreasedLine - basic",
+            "playgroundId": "#H1LRZ3#103",
+            "referenceImage": "greased-line-basic.png"
+        },
+        {
             "title": "edge renderer and zOffset",
             "renderCount": 5,
             "playgroundId": "#3DBA8X#1"
