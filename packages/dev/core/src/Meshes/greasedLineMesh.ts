@@ -10,7 +10,7 @@ import { PickingInfo } from "../Collisions/pickingInfo";
 import type { Nullable } from "../types";
 import type { Node } from "../node";
 import { DeepCopier } from "../Misc/deepCopier";
-import { GreasedLineTools } from "core/Misc/greasedLineTools";
+import { GreasedLineTools } from "../Misc/greasedLineTools";
 
 export type GreasedLinePoints = Vector3[] | Vector3[][] | Float32Array | Float32Array[] | number[][] | number[];
 
