@@ -166,7 +166,7 @@ ThinEngine.prototype._createDepthStencilTexture = function (size: TextureSize, o
     rtWrapper._depthStencilTexture = internalTexture;
     rtWrapper._depthStencilTextureWithStencil = hasStencil;
 
-    let type = gl.UNSIGNED_INT;
+    let type: GLenum = gl.UNSIGNED_INT;
     if (internalTexture.format === Constants.TEXTUREFORMAT_DEPTH16) {
         type = gl.UNSIGNED_SHORT;
     } else if (internalTexture.format === Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 || internalTexture.format === Constants.TEXTUREFORMAT_DEPTH24_STENCIL8) {
@@ -177,7 +177,7 @@ ThinEngine.prototype._createDepthStencilTexture = function (size: TextureSize, o
         type = gl.FLOAT_32_UNSIGNED_INT_24_8_REV;
     }
 
-    const format = hasStencil ? gl.DEPTH_STENCIL : gl.DEPTH_COMPONENT;
+    const format: GLenum = hasStencil ? gl.DEPTH_STENCIL : gl.DEPTH_COMPONENT;
     let internalFormat = format;
     if (this.webGLVersion > 1) {
         if (internalTexture.format === Constants.TEXTUREFORMAT_DEPTH16) {

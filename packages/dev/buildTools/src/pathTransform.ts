@@ -1,8 +1,8 @@
 import * as ts from "typescript";
 import * as path from "path";
 import * as fs from "fs";
-import type { BuildType, PublicPackageVariable } from "./packageMapping";
-import { getDevPackagesByBuildType, getPublicPackageName, isValidDevPackageName, declarationsOnlyPackages } from "./packageMapping";
+import type { BuildType, PublicPackageVariable } from "./packageMapping.js";
+import { getDevPackagesByBuildType, getPublicPackageName, isValidDevPackageName, declarationsOnlyPackages } from "./packageMapping.js";
 
 const addJS = (to: string, forceAppend?: boolean | string): string => (forceAppend && !to.endsWith(".js") ? to + (forceAppend === true ? ".js" : forceAppend) : to);
 
@@ -74,13 +74,12 @@ export const transformPackageLocation = (location: string, options: ITransformer
     }
 };
 
-export type Transformer = Required<Pick<ts.CustomTransformers, "after" | "afterDeclarations">>;
-export type TransformerNode = ts.Bundle | ts.SourceFile;
+type TransformerNode = ts.Bundle | ts.SourceFile;
 
 /**
  * Options to pass for the transform function
  */
-export interface ITransformerOptions {
+interface ITransformerOptions {
     /**
      * can be lts, esm, umd and es6
      */
@@ -104,15 +103,12 @@ export interface ITransformerOptions {
 
 // inspired by https://github.com/OniVe/ts-transform-paths
 
-export default function transformer(_program: ts.Program, options: ITransformerOptions): Transformer {
+export default function transformer(_program: ts.Program, options: ITransformerOptions) {
     function optionsFactory<T extends TransformerNode>(context: ts.TransformationContext): ts.Transformer<T> {
         return transformerFactory(context, options);
     }
 
-    return {
-        after: [optionsFactory],
-        afterDeclarations: [optionsFactory],
-    };
+    return optionsFactory;
 }
 
 function chainBundle<T extends ts.SourceFile | ts.Bundle>(transformSourceFile: (x: ts.SourceFile) => ts.SourceFile): (x: T) => T {
@@ -129,7 +125,7 @@ function isImportCall(node: ts.Node): node is ts.CallExpression {
     return ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword;
 }
 
-export function transformerFactory<T extends TransformerNode>(context: ts.TransformationContext, options: ITransformerOptions): ts.Transformer<T> {
+function transformerFactory<T extends TransformerNode>(context: ts.TransformationContext, options: ITransformerOptions): ts.Transformer<T> {
     // const aliasResolver = new AliasResolver(context.getCompilerOptions());
     function transformSourceFile(sourceFile: ts.SourceFile) {
         function getResolvedPathNode(node: ts.StringLiteral) {
@@ -170,7 +166,6 @@ export function transformerFactory<T extends TransformerNode>(context: ts.Transf
             if (ts.isImportDeclaration(node) && ts.isStringLiteral(node.moduleSpecifier)) {
                 return ts.visitEachChild(node, pathReplacer, context);
             }
-
             /**
              * e.g.
              * - export { x } from 'path';

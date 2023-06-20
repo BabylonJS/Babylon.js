@@ -346,10 +346,10 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
         const depthTexture = new InternalTexture(this, InternalTextureSource.Depth);
 
         let depthTextureType = Constants.TEXTURETYPE_UNSIGNED_SHORT;
-        let glDepthTextureInternalFormat = gl.DEPTH_COMPONENT16;
-        let glDepthTextureFormat = gl.DEPTH_COMPONENT;
-        let glDepthTextureType = gl.UNSIGNED_SHORT;
-        let glDepthTextureAttachment = gl.DEPTH_ATTACHMENT;
+        let glDepthTextureInternalFormat: GLenum = gl.DEPTH_COMPONENT16;
+        let glDepthTextureFormat: GLenum = gl.DEPTH_COMPONENT;
+        let glDepthTextureType: GLenum = gl.UNSIGNED_SHORT;
+        let glDepthTextureAttachment: GLenum = gl.DEPTH_ATTACHMENT;
         if (this.webGLVersion < 2) {
             glDepthTextureInternalFormat = gl.DEPTH_COMPONENT;
         } else {

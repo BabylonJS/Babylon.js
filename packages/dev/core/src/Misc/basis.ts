@@ -238,7 +238,7 @@ export const TranscodeAsync = (data: ArrayBuffer | ArrayBufferView, config: Basi
  * @param engine the engine to bind the texture in
  */
 const BindTexture = (texture: InternalTexture, engine: Engine): void => {
-    let target = engine._gl?.TEXTURE_2D;
+    let target: GLenum = engine._gl?.TEXTURE_2D;
     if (texture.isCube) {
         target = engine._gl?.TEXTURE_CUBE_MAP;
     }
