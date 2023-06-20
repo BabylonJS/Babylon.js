@@ -11,6 +11,8 @@ import type { Material } from "./material";
 import { MaterialDefines } from "./materialDefines";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { BaseTexture } from "./Textures/baseTexture";
+import { DeepCopier } from "core/Misc/deepCopier";
+import { RegisterClass } from "../Misc/typeStore";
 
 export enum GreasedLineMeshMaterialType {
     MATERIAL_TYPE_STANDARD = 0,
@@ -144,7 +146,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
     /**
      * Plugin name
      */
-    public static readonly GREASED_LINE_MATERIAL_NAME = "GreasedLine";
+    public static readonly GREASED_LINE_MATERIAL_NAME = "GreasedLinePluginMaterial";
 
     private _colorsTexture?: RawTexture;
 
@@ -156,12 +158,9 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
 
     private static _EmptyColorsTexture: BaseTexture;
 
-    constructor(
-        material: Material,
-        private _scene: Scene,
+    constructor(material: Material, private _scene: Scene, options: GreasedLineMaterialOptions) {
+        options = options ?? {};
 
-        options: GreasedLineMaterialOptions
-    ) {
         const defines = new MaterialGreasedLineDefines();
         defines.GREASED_LINE_HAS_COLOR = !!options.color;
         defines.GREASED_LINE_SIZE_ATTENUATION = options.sizeAttenuation ?? false;
@@ -170,6 +169,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
         super(material, GreasedLinePluginMaterial.GREASED_LINE_MATERIAL_NAME, 200, defines);
 
         this._options = options;
+        this._scene = this._scene ?? material.getScene();
         this._engine = this._scene.getEngine();
 
         if (options.colors) {
@@ -651,7 +651,10 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
      */
     public serialize(): any {
         const serializationObject = super.serialize();
-        serializationObject.materialOptions = this._options;
+
+        serializationObject.materialOptions = {};
+        DeepCopier.DeepCopy(this._options, serializationObject.materialOptions);
+
         return serializationObject;
     }
 
@@ -665,7 +668,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
         super.parse(source, scene, rootUrl);
         this._options = <GreasedLineMaterialOptions>source.materialOptions;
 
-        if (this._colorsTexture) [this._colorsTexture.dispose()];
+        this._colorsTexture?.dispose();
 
         if (this._options.colors) {
             this._createColorsTexture(`${this._material.name}-colors-texture`, this._options.colors);
@@ -673,7 +676,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
             GreasedLinePluginMaterial._PrepareEmptyColorsTexture(scene);
         }
 
-        this.setColor(this._options.color, true);
+        this._options.color && this.setColor(this._options.color, true);
         this._options.colorMode && this.setColorMode(this._options.colorMode);
         this._options.useColors && this.setUseColors(this._options.useColors);
         this._options.visibility && this.setVisibility(this._options.visibility);
@@ -700,3 +703,5 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
         }
     }
 }
+
+RegisterClass(`BABYLON.${GreasedLinePluginMaterial.GREASED_LINE_MATERIAL_NAME}`, GreasedLinePluginMaterial);
