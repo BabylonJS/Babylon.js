@@ -308,21 +308,14 @@ export class VideoTexture extends Texture {
             const oldMuted = this.video.muted;
             this.video.muted = true;
             this.video.onplaying = () => {
-                const uploadAndPause = () => {
-                    this.video.onplaying = oldHandler;
-                    this._updateInternalTexture();
-                    if (!this._errorFound) {
-                        this.video.pause();
-                    }
-                    this.video.muted = oldMuted;
-                    if (this.onLoadObservable.hasObservers()) {
-                        this.onLoadObservable.notifyObservers(this);
-                    }
-                };
-                if (this.video.requestVideoFrameCallback) {
-                    this.video.requestVideoFrameCallback(uploadAndPause);
-                } else {
-                    uploadAndPause();
+                this.video.muted = oldMuted;
+                this.video.onplaying = oldHandler;
+                this._updateInternalTexture();
+                if (!this._errorFound) {
+                    this.video.pause();
+                }
+                if (this.onLoadObservable.hasObservers()) {
+                    this.onLoadObservable.notifyObservers(this);
                 }
             };
             this._handlePlay();
@@ -383,7 +376,7 @@ export class VideoTexture extends Texture {
         if (this._texture == null) {
             return;
         }
-        if (this.video.readyState < this.video.HAVE_ENOUGH_DATA) {
+        if (this.video.readyState < this.video.HAVE_CURRENT_DATA) {
             return;
         }
         if (this._displayingPosterTexture) {
