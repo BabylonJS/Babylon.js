@@ -2,10 +2,15 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "GreasedLine - basic",
+            "playgroundId": "#H1LRZ3#102",
+            "referenceImage": "greased-line-basic.png"
+        },
+        {
             "title": "MeshBuilder.CreateText",
             "playgroundId": "#6I2RMN#2",
             "referenceImage": "createText.png"
-        },        
+        },
         {
             "title": "Negative scaling with instances",
             "playgroundId": "#Z3YS9T#0",
@@ -1589,7 +1594,7 @@
             "excludeFromAutomaticTesting": true
         },
         {
-            "title": "Instantiate Hierarchy", 
+            "title": "Instantiate Hierarchy",
             "playgroundId": "#BET11L"
         },
         {
@@ -1604,7 +1609,7 @@
             "excludedEngines": ["webgl1"]
         },
         {
-            "title": "Decal Map", 
+            "title": "Decal Map",
             "playgroundId": "#9BVW2S#43"
         },
         {
