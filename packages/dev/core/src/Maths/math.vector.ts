@@ -4662,6 +4662,7 @@ export class Quaternion {
      * @param vecFrom defines the direction vector from which to rotate
      * @param vecTo defines the direction vector to which to rotate
      * @param result the quaternion to store the result
+     * @param epsilon defines the minimal dot value to define vecs as opposite. Default: `BABYLON.Epsilon`
      * @returns the updated quaternion
      */
     public static FromUnitVectorsToRef<T extends Quaternion>(vecFrom: DeepImmutable<Vector3>, vecTo: DeepImmutable<Vector3>, result: T, epsilon = Epsilon): T {
