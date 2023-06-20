@@ -1,4 +1,4 @@
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 
 /**
  * Class used to store configuration data associated with pointer picking
