@@ -470,6 +470,7 @@ export class ShaderProcessor {
                 return;
             }
         }
+        reusableMatches.length = 0;
 
         returnValue = parts.join("");
 
