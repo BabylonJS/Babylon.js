@@ -13,6 +13,8 @@ const CloneValue = (source: any, destinationObject: any) => {
         return source.clone(destinationObject);
     } else if (source.clone) {
         return source.clone();
+    } else if (Array.isArray(source)) {
+        return source.slice();
     }
     return null;
 };
@@ -66,7 +68,9 @@ export class DeepCopier {
 
             try {
                 if (typeOfSourceValue === "object") {
-                    if (sourceValue instanceof Array) {
+                    if (sourceValue instanceof Uint8Array) {
+                        destination[prop] = Uint8Array.from(sourceValue);
+                    } else if (sourceValue instanceof Array) {
                         destination[prop] = [];
 
                         if (sourceValue.length > 0) {

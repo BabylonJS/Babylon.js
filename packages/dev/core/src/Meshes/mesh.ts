@@ -3917,6 +3917,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     };
 
     /**
+     * @internal
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public static _GreasedLineMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
+        throw _WarnImport("GreasedLineMesh");
+    };
+
+    /**
      * Returns a new Mesh object parsed from the source provided.
      * @param parsedMesh is the source
      * @param scene defines the hosting scene
@@ -3932,6 +3940,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             mesh = Mesh._GroundMeshParser(parsedMesh, scene);
         } else if (parsedMesh.type && parsedMesh.type === "GoldbergMesh") {
             mesh = Mesh._GoldbergMeshParser(parsedMesh, scene);
+        } else if (parsedMesh.type && parsedMesh.type === "GreasedLineMesh") {
+            mesh = Mesh._GreasedLineMeshParser(parsedMesh, scene);
         } else {
             mesh = new Mesh(parsedMesh.name, scene);
         }
