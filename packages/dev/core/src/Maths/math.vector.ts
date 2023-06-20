@@ -4664,10 +4664,10 @@ export class Quaternion {
      * @param result the quaternion to store the result
      * @returns the updated quaternion
      */
-    public static FromUnitVectorsToRef<T extends Quaternion>(vecFrom: DeepImmutable<Vector3>, vecTo: DeepImmutable<Vector3>, result: T): T {
+    public static FromUnitVectorsToRef<T extends Quaternion>(vecFrom: DeepImmutable<Vector3>, vecTo: DeepImmutable<Vector3>, result: T, epsilon = Epsilon): T {
         const r = Vector3.Dot(vecFrom, vecTo) + 1;
 
-        if (r < Epsilon) {
+        if (r < epsilon) {
             if (Math.abs(vecFrom.x) > Math.abs(vecFrom.z)) {
                 result.set(-vecFrom.y, vecFrom.x, 0, 0);
             } else {
