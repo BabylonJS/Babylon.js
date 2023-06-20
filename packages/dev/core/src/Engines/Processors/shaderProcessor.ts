@@ -24,6 +24,7 @@ const regexShaderInclude = /#include\s?<(.+)>(\((.*)\))*(\[(.*)\])*/g;
 const regexShaderDecl = /__decl__/;
 const regexLightX = /light\{X\}.(\w*)/g;
 const regexX = /\{X\}/g;
+const reusableMatches: RegExpMatchArray[] = [];
 
 /** @internal */
 export class ShaderProcessor {
@@ -373,14 +374,19 @@ export class ShaderProcessor {
     }
 
     private static _ProcessIncludes(sourceCode: string, options: ProcessingOptions, callback: (data: any) => void): void {
-        const matches = Array.from(sourceCode.matchAll(regexShaderInclude));
+        reusableMatches.length = 0;
+        let match: RegExpMatchArray | null;
+        // stay back-compat to the old matchAll syntax
+        while ((match = regexShaderInclude.exec(sourceCode)) !== null) {
+            reusableMatches.push(match);
+        }
 
         let returnValue = String(sourceCode);
         let parts = [sourceCode];
 
         let keepProcessing = false;
 
-        for (const match of matches) {
+        for (const match of reusableMatches) {
             let includeFile = match[1];
 
             // Uniform declaration
@@ -464,6 +470,7 @@ export class ShaderProcessor {
                 return;
             }
         }
+        reusableMatches.length = 0;
 
         returnValue = parts.join("");
 
