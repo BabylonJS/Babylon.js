@@ -17,6 +17,7 @@ import { Scene } from "core/scene";
 import type { Nullable } from "core/types";
 import type { ITestDeviceInputSystem } from "./testDeviceInputSystem";
 import { TestDeviceInputSystem } from "./testDeviceInputSystem";
+import { SpriteManager } from "core/Sprites";
 
 // Add function to NullEngine to allow for getting the canvas rect properties
 NullEngine.prototype.getInputElementClientRect = function (): Nullable<DOMRect> {
@@ -782,5 +783,36 @@ describe("InputManager", () => {
         }
 
         expect(passedTest).toBe(true);
+    });
+
+    it("doesn't use lazy picking with SpriteManager", () => {
+        // This specific scenario is to test if the picking is working properly when there is a sprite manager
+        // and the constantlyUpdateMeshUnderPointer flag is set to true
+        expect.assertions(2);
+        let pickedTestMesh = null;
+
+        if (deviceInputSystem && scene && engine) {
+            // Create a SpriteManager to test if it affects the picking behavior
+            const spriteManager = new SpriteManager("name", "", 1, 1, scene);
+            MeshBuilder.CreateBox("box", { size: 5 }, scene);
+
+            // Set flag to constantly update the mesh that's under the pointer (not use lazy picking)
+            scene.constantlyUpdateMeshUnderPointer = true;
+            scene.onPointerObservable.add((pointerInfo) => {
+                const generateSpy = jest.spyOn(pointerInfo, "_generatePickInfo");
+                if (pointerInfo.pickInfo?.hit) {
+                    pickedTestMesh = pointerInfo.pickInfo.pickedMesh;
+                }
+                // We expect this to not be called at all as the picking should already be done by this point
+                expect(generateSpy).toBeCalledTimes(0);
+            });
+
+            // Set initial point
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Horizontal, 64, false);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Vertical, 64, false);
+            deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Move, 1);
+        }
+
+        expect(pickedTestMesh).not.toBe(null);
     });
 });
