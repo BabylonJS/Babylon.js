@@ -16,8 +16,6 @@ import { RuntimeError, ErrorCodes } from "../Misc/error";
 import type { Geometry } from "../Meshes/geometry";
 import type { Mesh } from "../Meshes/mesh";
 
-import type { PolyhedronData } from "./geodesicMesh";
-
 /**
  * Define an interface for all classes that will get and set the data on vertices
  */
