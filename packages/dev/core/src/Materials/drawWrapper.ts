@@ -2,9 +2,9 @@ import type { IDrawContext } from "../Engines/IDrawContext";
 import type { IMaterialContext } from "../Engines/IMaterialContext";
 import type { Nullable } from "../types";
 
-declare type ThinEngine = import("../Engines/thinEngine").ThinEngine;
-declare type Effect = import("./effect").Effect;
-declare type MaterialDefines = import("./materialDefines").MaterialDefines;
+import type { ThinEngine } from "../Engines/thinEngine";
+import type { Effect } from "./effect";
+import type { MaterialDefines } from "./materialDefines";
 
 /** @internal */
 export class DrawWrapper {

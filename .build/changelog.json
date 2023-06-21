@@ -1,83 +1,434 @@
 {
-    "fromTag": "6.7.0",
+    "fromTag": "6.8.0",
     "changelog": {
-        "6.7.0": [
+        "6.8.1": [
             {
-                "pr": "13909",
-                "title": "Stop baking LH to RH in glTF serializer",
-                "description": "Fixes #13891\r\n\r\nSee https://forum.babylonjs.com/t/glb-export-fails/40911\r\n\r\nWe used to try to bake the LH to RH conversion into the data. This change makes it such that it just puts a negative scale at the root instead. Doing the data conversion is too complex and probably isn't super beneficial to users.",
+                "pr": "13987",
+                "title": "Allow Add, Divide, Subtract and Multiply Node to use float as second …",
+                "description": "…operand",
                 "author": {
-                    "name": "bghgary",
-                    "url": "https://github.com/bghgary"
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
                 },
                 "files": [
-                    "packages/dev/core/src/Maths/math.vector.ts",
-                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_lights_punctual.ts",
-                    "packages/dev/serializers/src/glTF/2.0/Extensions/EXT_mesh_gpu_instancing.ts",
-                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_lights_punctual.ts",
-                    "packages/dev/serializers/src/glTF/2.0/glTFAnimation.ts",
-                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts",
-                    "packages/dev/serializers/src/glTF/2.0/glTFExporterExtension.ts",
-                    "packages/dev/serializers/src/glTF/2.0/glTFSerializer.ts",
-                    "packages/dev/serializers/src/glTF/2.0/glTFUtilities.ts",
-                    "packages/tools/tests/test/visualization/ReferenceImages/gltfSerializerMorphTargetAnimation.png",
-                    "packages/tools/tests/test/visualization/config.json"
+                    "packages/dev/core/src/Materials/Node/Blocks/addBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/divideBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/multiplyBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/subtractBlock.ts"
                 ],
                 "tags": [
-                    "glTF",
-                    "breaking change"
+                    "nme"
                 ]
             },
             {
-                "pr": "13943",
-                "title": "Tri-planar material: Add support for non uniform scaling",
-                "description": "See https://forum.babylonjs.com/t/scaling-box-without-scaling-texture/41410/6",
+                "pr": "13986",
+                "title": "use exec instead of matchAll while keeping structure",
+                "description": "Babylon native's js engine doesn't support matchAll (an ES2020 feature).\r\n\r\nInstead, I am recreating the same structure using `.exec`.\r\n\r\nPerformance-wise it is on-par and even faster (at least on my benchmarks. See here - https://jsbench.me/wblj4eghw5/1)\r\n\r\n![image](https://github.com/BabylonJS/Babylon.js/assets/1381702/66a7ed4b-4127-4ab6-9b22-137a03400cf1)\r\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Processors/shaderProcessor.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13840",
+                "title": "GreasedLine",
+                "description": "@RaananW Finally it's here!",
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/greasedLinePluginMaterial.ts",
+                    "packages/dev/core/src/Materials/index.ts",
+                    "packages/dev/core/src/Meshes/Builders/greasedLineBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/index.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.ts",
+                    "packages/dev/core/src/Meshes/greasedLineMesh.ts",
+                    "packages/dev/core/src/Meshes/index.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/Misc/deepCopier.ts",
+                    "packages/dev/core/src/Misc/greasedLineTools.ts",
+                    "packages/dev/core/src/Misc/index.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/greased-line-basic.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/webgpu/greased-line-basic.png",
+                    "packages/tools/tests/test/visualization/config.json",
+                    "packages/tools/tests/test/visualization/webgpu.json"
+                ],
+                "tags": [
+                    "rendering engine",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13983",
+                "title": "changeable epsilon for (typeof Quaternion).FromUnitVectorsToRef",
+                "description": "for my use case epsilon is to big, so right now I have to copy entire method and use 1e-7 epsilon which works fine for me\r\nI hope optional parameter for epsilon is fine",
+                "author": {
+                    "name": "nekochanoide",
+                    "url": "https://github.com/nekochanoide"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13975",
+                "title": "Typescript 5.1 For core",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/buildTools/package.json",
+                    "packages/dev/buildTools/src/addJSToCompiledFiles.ts",
+                    "packages/dev/buildTools/src/buildShaders.ts",
+                    "packages/dev/buildTools/src/copyAssets.ts",
+                    "packages/dev/buildTools/src/declarationsEs6.ts",
+                    "packages/dev/buildTools/src/devWatcher.ts",
+                    "packages/dev/buildTools/src/generateDeclaration.ts",
+                    "packages/dev/buildTools/src/index.ts",
+                    "packages/dev/buildTools/src/ltsTransformer.ts",
+                    "packages/dev/buildTools/src/packageMapping.ts",
+                    "packages/dev/buildTools/src/pathTransform.ts",
+                    "packages/dev/buildTools/src/prepareEs6Build.ts",
+                    "packages/dev/buildTools/src/prepareSnapshot.ts",
+                    "packages/dev/buildTools/src/updateEngineVersion.ts",
+                    "packages/dev/buildTools/src/webpackTools.ts",
+                    "packages/dev/core/src/Behaviors/Meshes/fadeInOutBehavior.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.multiRender.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.renderTarget.ts",
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Misc/basis.ts",
+                    "packages/dev/gui/package.json",
+                    "packages/dev/gui/src/2D/controls/colorpicker.ts",
+                    "packages/dev/inspector/package.json",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/meshPropertyGridComponent.tsx",
+                    "packages/dev/loaders/package.json",
+                    "packages/dev/loaders/src/glTF/1.0/glTFLoaderUtils.ts",
+                    "packages/dev/materials/package.json",
+                    "packages/dev/postProcesses/package.json",
+                    "packages/dev/proceduralTextures/package.json",
+                    "packages/dev/serializers/package.json",
+                    "packages/dev/sharedUiComponents/package.json",
+                    "packages/lts/core/package.json",
+                    "packages/lts/gui/package.json",
+                    "packages/lts/loaders/package.json",
+                    "packages/lts/materials/package.json",
+                    "packages/lts/postProcesses/package.json",
+                    "packages/lts/proceduralTextures/package.json",
+                    "packages/lts/serializers/package.json",
+                    "packages/public/@babylonjs/accessibility/package.json",
+                    "packages/public/@babylonjs/core/package.json",
+                    "packages/public/@babylonjs/core/tsconfig.build.json",
+                    "packages/public/@babylonjs/gui-editor/package.json",
+                    "packages/public/@babylonjs/gui/package.json",
+                    "packages/public/@babylonjs/gui/tsconfig.build.json",
+                    "packages/public/@babylonjs/inspector/package.json",
+                    "packages/public/@babylonjs/loaders/package.json",
+                    "packages/public/@babylonjs/loaders/tsconfig.build.json",
+                    "packages/public/@babylonjs/materials/package.json",
+                    "packages/public/@babylonjs/materials/tsconfig.build.json",
+                    "packages/public/@babylonjs/node-editor/package.json",
+                    "packages/public/@babylonjs/post-processes/package.json",
+                    "packages/public/@babylonjs/post-processes/tsconfig.build.json",
+                    "packages/public/@babylonjs/procedural-textures/package.json",
+                    "packages/public/@babylonjs/procedural-textures/tsconfig.build.json",
+                    "packages/public/@babylonjs/serializers/package.json",
+                    "packages/public/@babylonjs/serializers/tsconfig.build.json",
+                    "packages/public/@babylonjs/shared-ui-components/package.json",
+                    "packages/public/@babylonjs/shared-ui-components/tsconfig.build.json",
+                    "packages/public/@babylonjs/test-tools/package.json",
+                    "packages/public/@babylonjs/viewer/package.json",
+                    "packages/public/@babylonjs/viewer/tsconfig.build.json",
+                    "packages/public/babylonjs-viewer-assets/package.json",
+                    "packages/public/glTF2Interface/package.json",
+                    "packages/public/umd/babylonjs-accessibility/package.json",
+                    "packages/public/umd/babylonjs-gui-editor/package.json",
+                    "packages/public/umd/babylonjs-gui/package.json",
+                    "packages/public/umd/babylonjs-inspector/package.json",
+                    "packages/public/umd/babylonjs-ktx2decoder/package.json",
+                    "packages/public/umd/babylonjs-loaders/package.json",
+                    "packages/public/umd/babylonjs-materials/package.json",
+                    "packages/public/umd/babylonjs-node-editor/package.json",
+                    "packages/public/umd/babylonjs-post-process/package.json",
+                    "packages/public/umd/babylonjs-procedural-textures/package.json",
+                    "packages/public/umd/babylonjs-serializers/package.json",
+                    "packages/public/umd/babylonjs-viewer/package.json",
+                    "packages/public/umd/babylonjs/package.json",
+                    "packages/tools/accessibility/package.json",
+                    "packages/tools/babylonServer/package.json",
+                    "packages/tools/devHost/package.json",
+                    "packages/tools/eslintBabylonPlugin/src/index.ts",
+                    "packages/tools/guiEditor/package.json",
+                    "packages/tools/ktx2Decoder/package.json",
+                    "packages/tools/nodeEditor/package.json",
+                    "packages/tools/playground/package.json",
+                    "packages/tools/sandbox/package.json",
+                    "packages/tools/testTools/package.json",
+                    "packages/tools/tests/package.json",
+                    "packages/tools/viewer/package.json",
+                    "packages/tools/vsm/package.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13985",
+                "title": "VideoTexture: Revert changes",
+                "description": "See https://forum.babylonjs.com/t/videotextures-does-not-show-video-on-ios-after-cleaning-cache/41756/2\r\n\r\nThis PR reverts changes from #13843.",
                 "author": {
                     "name": "Popov72",
                     "url": "https://github.com/Popov72"
                 },
                 "files": [
-                    "packages/dev/materials/src/triPlanar/triPlanarMaterial.ts",
-                    "packages/dev/materials/src/triPlanar/triplanar.vertex.fx"
+                    "packages/dev/core/src/Materials/Textures/videoTexture.ts"
                 ],
                 "tags": [
-                    "materials",
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13982",
+                "title": "InputManager: Move-based Picking not working with SpriteManager and specific flag",
+                "description": "A user in the forum found an issue where having an active SpriteManager was interfering with picking being done when `scene.constantlyUpdateMeshUnderPointer` is set to true.  This PR makes two small changes.  First, because of how the SpriteManager works, lazy picking cannot be applied so if there's an active SpriteManager, lazy picking isn't used.  Second, if the `scene.constantlyUpdateMeshUnderPointer` is set to true, lazy picking will also be disabled as the mesh under the pointer will not be updated normally until the property is accessed.\r\n\r\nA test has also been added to verify that picking is done before the picking info is referenced under these specific circumstances.",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Inputs/scene.inputManager.ts",
+                    "packages/dev/core/test/unit/DeviceInput/babylon.inputManager.test.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inputs"
+                ]
+            },
+            {
+                "pr": "13980",
+                "title": "Add recast to downloadable playgrounds",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/playground/public/zipContent/index.html"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13971",
+                "title": "Update animationGroup.ts",
+                "description": "Adds a <code>AnimationGroup.removeTargetedAnimation();</code> method.\r\n\r\nUnsure if there should be a optional Target parameter..? ",
+                "author": {
+                    "name": "aWeirdo",
+                    "url": "https://github.com/aWeirdo"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animationGroup.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "animations"
+                ]
+            },
+            {
+                "pr": "13973",
+                "title": "Add Vector2/3/4 tests",
+                "description": "Also adds tmp and temp to .gitignore\r\n\r\nNote that this is to make debugging #13699 easier.",
+                "author": {
+                    "name": "dr-vortex",
+                    "url": "https://github.com/dr-vortex"
+                },
+                "files": [
+                    ".gitignore",
+                    "packages/dev/core/test/unit/Math/babylon.math.vector.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13974",
+                "title": "NME: Add support for sampler types to CustomBlock",
+                "description": "See https://forum.babylonjs.com/t/passing-texture-sampler-into-custom-block-nme/41647\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/customBlock.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "13976",
+                "title": "Decal: Fix crash when the mesh is an instanced mesh",
+                "description": "See https://forum.babylonjs.com/t/meshbuilder-createdecal-stopped-working-after-upgrading-to-v6-8-0-instanced-mesh/41665.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Builders/decalBuilder.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "13978",
+                "title": "Materials: Add support for plugins when cloning materials",
+                "description": "See https://forum.babylonjs.com/t/material-clone-doesnt-clone-all-material-plugins/41695",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrMaterial.ts",
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/Materials/materialPluginBase.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "13972",
+                "title": "Add parameter to control jpg/webp quality of screenshots",
+                "description": "The \"quality\" controls the lossyness of webp/jpeg screenshots. It doesn't affect pngs (since png is always lossless). The quality parameter was exposed through some of the screenshot-related APIs already, but not all, so I'm adding it on all of them to be consistent.\r\n\r\nI took the opportunity to cleanup redundant types used for default value parameters (e.g. `foo: boolean = false` --> `foo = false`). I hope that's ok!\r\n\r\nAlso fixed a typo in the docs from my previous PR.",
+                "author": {
+                    "name": "kircher1",
+                    "url": "https://github.com/kircher1"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/shaderMaterial.ts",
+                    "packages/dev/core/src/Misc/dumpTools.ts",
+                    "packages/dev/core/src/Misc/screenshotTools.ts",
+                    "packages/dev/core/src/Misc/tools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13969",
+                "title": "\"Does not exist\" view in PBR debug mode",
+                "description": "Working on a red line, \"does not exist\" shader that displays if the selected debug mode is not available.",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrDebug.fx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/PBR Debug Modes.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13970",
+                "title": "Material: Add serialization and parsing of material plugins",
+                "description": "Closes #13887.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrMaterial.ts",
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/Materials/materialPluginManager.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "13965",
+                "title": "Fix typo computeBonesUsingShaders default value",
+                "description": "the default value of `AbstractMesh.computeBonesUsingShaders` is true\r\n\r\nhttps://github.com/BabylonJS/Babylon.js/blob/master/packages/dev/core/src/Meshes/abstractMesh.ts#L96",
+                "author": {
+                    "name": "noname0310",
+                    "url": "https://github.com/noname0310"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13968",
+                "title": "Water material: Fix support for mesh instances",
+                "description": "See https://forum.babylonjs.com/t/water-material-fix/41609/5\r\n\r\nIt also fixes use of `bumpSuperimpose`, `fresnelSeparate` and `bumpAffectsReflection`, which were not reset when switching their state from `true` to `false`.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/materials/src/water/water.fragment.fx",
+                    "packages/dev/materials/src/water/water.vertex.fx",
+                    "packages/dev/materials/src/water/waterMaterial.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "13966",
+                "title": "Raycast filtering",
+                "description": "Will close https://github.com/BabylonJS/Babylon.js/issues/13795\r\n\r\nSee example PG: #PY59V9#4 - You can change the collideWith value to collide with either the front or back box.\r\n\r\nAn important note about the `triangleIndex` is that is only available for mesh shapes.\r\n",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/physicsRaycastResult.ts",
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts"
+                ],
+                "tags": [
+                    "physics",
                     "new feature"
                 ]
             },
             {
-                "pr": "13941",
-                "title": "Avoid crashes with bad name/id assignments",
-                "description": "Example PG: https://playground.babylonjs.com/#XMIQ95#2\r\nIf you try to open the Inspector in it, it crashes. This happens because an Object is assigned as a mesh's name/id, which wouldn't be valid in TS, but it can happen in JS. This PR adds some measures on the Inspector to avoid this crash.",
+                "pr": "13953",
+                "title": "Add debug mode to show albedo texture's alpha channel",
+                "description": "This mode will take the raw alpha value from the albedo texture, if available, and display it. \r\n\r\nHowever, I'm not sure if this is the kind of behavior that we'd want/expect from the debug mode... \r\nIf this new mode is used on a material with alpha masking, like the three rightmost panes below, the masked fragments will not display. They are discarded earlier in the shader-- I believe right [here](https://github.com/BabylonJS/Babylon.js/blob/b81ef81982febe1420e3624415f479faaa348bd4/packages/dev/core/src/Shaders/ShadersInclude/pbrBlockAlbedoOpacity.fx#L78) \r\n ![image](https://github.com/BabylonJS/Babylon.js/assets/91097647/6740032b-3022-4a4d-bf8e-90e8af6d657d)\r\nIf we remove the alpha masking, though, we can see the albedo texture's raw alpha value.\r\n![image](https://github.com/BabylonJS/Babylon.js/assets/91097647/96ae8693-de4f-44d3-ae83-793c00dd77d7)\r\n\r\n\r\nLeaving this as a draft for now :)",
                 "author": {
-                    "name": "carolhmj",
-                    "url": "https://github.com/carolhmj"
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
                 },
                 "files": [
-                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/meshPropertyGridComponent.tsx",
-                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/parentPropertyGridComponent.tsx"
+                    "packages/dev/core/src/Engines/Processors/Expressions/Operators/shaderDefineArithmeticOperator.ts",
+                    "packages/dev/core/src/Engines/Processors/shaderProcessor.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockAlbedoOpacity.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrDebug.fx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/pbrMaterialPropertyGridComponent.tsx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Base Color Debug Mode.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Emissive Color Debug Mode.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Glossiness Debug Mode.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/PBR Debug Modes.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Specular Color Debug Mode.png",
+                    "packages/tools/tests/test/visualization/config.json"
                 ],
                 "tags": [
-                    "bug",
-                    "inspector"
-                ]
-            },
-            {
-                "pr": "13942",
-                "title": "Fix Control item being draggable while renaming",
-                "description": "Also fix some slight font differences when renaming a Control.",
-                "author": {
-                    "name": "carolhmj",
-                    "url": "https://github.com/carolhmj"
-                },
-                "files": [
-                    "packages/tools/guiEditor/src/components/sceneExplorer/entities/gui/controlTreeItemComponent.tsx",
-                    "packages/tools/guiEditor/src/components/sceneExplorer/sceneExplorer.scss",
-                    "packages/tools/guiEditor/src/components/sceneExplorer/treeItemSelectableComponent.tsx"
-                ],
-                "tags": [
-                    "bug",
-                    "gui editor"
+                    "new feature"
                 ]
             }
         ],
@@ -448,6 +799,86 @@
                 ],
                 "tags": [
                     "new feature"
+                ]
+            }
+        ],
+        "6.7.0": [
+            {
+                "pr": "13909",
+                "title": "Stop baking LH to RH in glTF serializer",
+                "description": "Fixes #13891\r\n\r\nSee https://forum.babylonjs.com/t/glb-export-fails/40911\r\n\r\nWe used to try to bake the LH to RH conversion into the data. This change makes it such that it just puts a negative scale at the root instead. Doing the data conversion is too complex and probably isn't super beneficial to users.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_lights_punctual.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/EXT_mesh_gpu_instancing.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_lights_punctual.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFAnimation.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporterExtension.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFSerializer.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFUtilities.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfSerializerMorphTargetAnimation.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "glTF",
+                    "breaking change"
+                ]
+            },
+            {
+                "pr": "13943",
+                "title": "Tri-planar material: Add support for non uniform scaling",
+                "description": "See https://forum.babylonjs.com/t/scaling-box-without-scaling-texture/41410/6",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/materials/src/triPlanar/triPlanarMaterial.ts",
+                    "packages/dev/materials/src/triPlanar/triplanar.vertex.fx"
+                ],
+                "tags": [
+                    "materials",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "13941",
+                "title": "Avoid crashes with bad name/id assignments",
+                "description": "Example PG: https://playground.babylonjs.com/#XMIQ95#2\r\nIf you try to open the Inspector in it, it crashes. This happens because an Object is assigned as a mesh's name/id, which wouldn't be valid in TS, but it can happen in JS. This PR adds some measures on the Inspector to avoid this crash.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/meshPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/parentPropertyGridComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "13942",
+                "title": "Fix Control item being draggable while renaming",
+                "description": "Also fix some slight font differences when renaming a Control.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/guiEditor/src/components/sceneExplorer/entities/gui/controlTreeItemComponent.tsx",
+                    "packages/tools/guiEditor/src/components/sceneExplorer/sceneExplorer.scss",
+                    "packages/tools/guiEditor/src/components/sceneExplorer/treeItemSelectableComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "gui editor"
                 ]
             }
         ],

@@ -18,11 +18,11 @@ import { Frustum } from "../Maths/math.frustum";
 import type { Plane } from "../Maths/math.plane";
 import { Constants } from "../Engines/constants";
 
-declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
-declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
-declare type FreeCamera = import("./freeCamera").FreeCamera;
-declare type TargetCamera = import("./targetCamera").TargetCamera;
-declare type Ray = import("../Culling/ray").Ray;
+import type { PostProcess } from "../PostProcesses/postProcess";
+import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import type { FreeCamera } from "./freeCamera";
+import type { TargetCamera } from "./targetCamera";
+import type { Ray } from "../Culling/ray";
 
 /**
  * This is the base class of all the camera used in the application.

@@ -15,9 +15,8 @@ import type { AbstractActionManager } from "./Actions/abstractActionManager";
 import type { Camera } from "./Cameras/camera";
 import type { Light } from "./Lights/light";
 import type { Node } from "./node";
-
-declare type Animation = import("./Animations/animation").Animation;
-declare type PostProcess = import("./PostProcesses/postProcess").PostProcess;
+import type { PostProcess } from "./PostProcesses/postProcess";
+import type { Animation } from "./Animations/animation";
 
 /**
  * Defines how the parser contract is defined.

@@ -1,4 +1,4 @@
-declare type Effect = import("./effect").Effect;
+import type { Effect } from "./effect";
 
 /**
  * Interface used to define common properties for effect fallbacks

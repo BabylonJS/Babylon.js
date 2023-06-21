@@ -8,7 +8,7 @@ import type { ProcessingOptions } from "../Engines/Processors/shaderProcessingOp
 import { ShaderStore } from "../Engines/shaderStore";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
 
-declare type Engine = import("../Engines/engine").Engine;
+import type { Engine } from "../Engines/engine";
 
 /**
  * Options to be used when creating a compute effect.

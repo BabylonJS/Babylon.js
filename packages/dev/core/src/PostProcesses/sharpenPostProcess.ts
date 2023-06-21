@@ -9,8 +9,8 @@ import "../Shaders/sharpen.fragment";
 import { RegisterClass } from "../Misc/typeStore";
 import { serialize, SerializationHelper } from "../Misc/decorators";
 
-declare type Engine = import("../Engines/engine").Engine;
-declare type Scene = import("../scene").Scene;
+import type { Engine } from "../Engines/engine";
+import type { Scene } from "../scene";
 
 /**
  * The SharpenPostProcess applies a sharpen kernel to every pixel

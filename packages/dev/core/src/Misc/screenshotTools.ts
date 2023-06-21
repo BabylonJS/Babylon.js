@@ -11,7 +11,7 @@ import { DumpTools } from "./dumpTools";
 import type { Nullable } from "../types";
 import { ApplyPostProcess } from "./textureTools";
 
-declare type Engine = import("../Engines/engine").Engine;
+import type { Engine } from "../Engines/engine";
 
 let screenshotCanvas: Nullable<HTMLCanvasElement> = null;
 

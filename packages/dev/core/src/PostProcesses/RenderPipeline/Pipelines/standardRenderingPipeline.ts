@@ -23,7 +23,7 @@ import { RegisterClass } from "../../../Misc/typeStore";
 import { MotionBlurPostProcess } from "../../motionBlurPostProcess";
 import { ScreenSpaceReflectionPostProcess } from "../../screenSpaceReflectionPostProcess";
 
-declare type Animation = import("../../../Animations/animation").Animation;
+import type { Animation } from "../../../Animations/animation";
 
 import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
 

@@ -29,7 +29,7 @@ import { Tools } from "core/Misc/tools";
 
 import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
 
-declare type Animation = import("../../../Animations/animation").Animation;
+import type { Animation } from "../../../Animations/animation";
 
 /**
  * The default rendering pipeline can be added to a scene to apply common post processing effects such as anti-aliasing or depth of field.

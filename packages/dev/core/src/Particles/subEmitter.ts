@@ -3,9 +3,9 @@ import { _WarnImport } from "../Misc/devTools";
 import type { ThinEngine } from "../Engines/thinEngine";
 import { GetClass } from "../Misc/typeStore";
 
-declare type Scene = import("../scene").Scene;
-declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
-declare type ParticleSystem = import("../Particles/particleSystem").ParticleSystem;
+import type { Scene } from "../scene";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { ParticleSystem } from "../Particles/particleSystem";
 
 /**
  * Type of sub emitter

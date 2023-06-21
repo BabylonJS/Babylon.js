@@ -8,7 +8,7 @@ import "../Shaders/displayPass.fragment";
 import { RegisterClass } from "../Misc/typeStore";
 import { SerializationHelper } from "../Misc/decorators";
 
-declare type Scene = import("../scene").Scene;
+import type { Scene } from "../scene";
 
 /**
  * DisplayPassPostProcess which produces an output the same as it's input

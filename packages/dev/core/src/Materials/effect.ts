@@ -14,11 +14,11 @@ import type { IEffectFallbacks } from "./iEffectFallbacks";
 import { ShaderStore as EngineShaderStore } from "../Engines/shaderStore";
 import { ShaderLanguage } from "./shaderLanguage";
 
-declare type Engine = import("../Engines/engine").Engine;
-declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
-declare type ThinTexture = import("../Materials/Textures/thinTexture").ThinTexture;
-declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
-declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
+import type { Engine } from "../Engines/engine";
+import type { InternalTexture } from "../Materials/Textures/internalTexture";
+import type { ThinTexture } from "../Materials/Textures/thinTexture";
+import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import type { PostProcess } from "../PostProcesses/postProcess";
 
 /**
  * Options to be used when creating an effect.

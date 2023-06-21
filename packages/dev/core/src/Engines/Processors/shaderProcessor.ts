@@ -12,11 +12,11 @@ import type { ProcessingOptions } from "./shaderProcessingOptions";
 import { _WarnImport } from "../../Misc/devTools";
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
 
-declare type WebRequest = import("../../Misc/webRequest").WebRequest;
-declare type LoadFileError = import("../../Misc/fileTools").LoadFileError;
-declare type IOfflineProvider = import("../../Offline/IOfflineProvider").IOfflineProvider;
-declare type IFileRequest = import("../../Misc/fileRequest").IFileRequest;
-declare type ThinEngine = import("../thinEngine").ThinEngine;
+import type { WebRequest } from "../../Misc/webRequest";
+import type { LoadFileError } from "../../Misc/fileTools";
+import type { IOfflineProvider } from "../../Offline/IOfflineProvider";
+import type { IFileRequest } from "../../Misc/fileRequest";
+import type { ThinEngine } from "../thinEngine";
 
 const regexSE = /defined\s*?\((.+?)\)/g;
 const regexSERevert = /defined\s*?\[(.+?)\]/g;

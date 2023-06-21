@@ -6,7 +6,7 @@ import type { Engine } from "../../Engines/engine";
 import type { PostProcessRenderEffect } from "./postProcessRenderEffect";
 import type { IInspectable } from "../../Misc/iInspectable";
 
-declare type PrePassRenderer = import("../../Rendering/prePassRenderer").PrePassRenderer;
+import type { PrePassRenderer } from "../../Rendering/prePassRenderer";
 
 /**
  * PostProcessRenderPipeline

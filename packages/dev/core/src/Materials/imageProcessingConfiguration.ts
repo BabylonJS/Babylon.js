@@ -7,8 +7,8 @@ import { Color4 } from "../Maths/math.color";
 import { MaterialDefines } from "../Materials/materialDefines";
 import { ColorCurves } from "../Materials/colorCurves";
 
-declare type BaseTexture = import("../Materials/Textures/baseTexture").BaseTexture;
-declare type Effect = import("../Materials/effect").Effect;
+import type { BaseTexture } from "../Materials/Textures/baseTexture";
+import type { Effect } from "../Materials/effect";
 
 /**
  * Interface to follow in your material defines to integrate easily the

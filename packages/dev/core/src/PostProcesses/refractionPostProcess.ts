@@ -11,7 +11,7 @@ import { RegisterClass } from "../Misc/typeStore";
 import { SerializationHelper, serialize } from "../Misc/decorators";
 import type { Nullable } from "../types";
 
-declare type Scene = import("../scene").Scene;
+import type { Scene } from "../scene";
 
 /**
  * Post process which applies a refraction texture

@@ -13,7 +13,7 @@ import styles from "./graphFrame.modules.scss";
 import commonStyles from "./common.modules.scss";
 import { ClassNames } from "../components/classNames";
 
-declare type ISelectionChangedOptions = import("./interfaces/selectionChangedOptions").ISelectionChangedOptions;
+import type { ISelectionChangedOptions } from "./interfaces/selectionChangedOptions";
 
 enum ResizingDirection {
     Right,

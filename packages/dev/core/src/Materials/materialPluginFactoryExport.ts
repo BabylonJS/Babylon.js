@@ -10,7 +10,7 @@ import { PBRSheenConfiguration } from "./PBR/pbrSheenConfiguration";
 import { PBRSubSurfaceConfiguration } from "./PBR/pbrSubSurfaceConfiguration";
 import { StandardMaterial } from "./standardMaterial";
 
-declare type Material = import("./material").Material;
+import type { Material } from "./material";
 
 /**
  * Creates an instance of the anisotropic plugin

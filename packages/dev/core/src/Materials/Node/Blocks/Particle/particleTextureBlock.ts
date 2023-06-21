@@ -12,7 +12,7 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import { Texture } from "../../../Textures/texture";
 import type { Scene } from "../../../../scene";
 
-declare type NodeMaterial = import("../../nodeMaterial").NodeMaterial;
+import type { NodeMaterial } from "../../nodeMaterial";
 
 /**
  * Base block used for the particle texture

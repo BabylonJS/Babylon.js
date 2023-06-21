@@ -6,8 +6,8 @@ import type { TransformNode } from "../Meshes/transformNode";
 import { Node } from "../node";
 import { Space } from "../Maths/math.axis";
 
-declare type Animation = import("../Animations/animation").Animation;
-declare type AnimationPropertiesOverride = import("../Animations/animationPropertiesOverride").AnimationPropertiesOverride;
+import type { Animation } from "../Animations/animation";
+import type { AnimationPropertiesOverride } from "../Animations/animationPropertiesOverride";
 
 /**
  * Class used to store bone information

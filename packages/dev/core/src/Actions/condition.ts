@@ -1,7 +1,7 @@
 import { Action } from "./action";
 import { RegisterClass } from "../Misc/typeStore";
 
-declare type ActionManager = import("./actionManager").ActionManager;
+import type { ActionManager } from "./actionManager";
 
 /**
  * A Condition applied to an Action

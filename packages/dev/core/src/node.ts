@@ -13,12 +13,11 @@ import type { AbstractActionManager } from "./Actions/abstractActionManager";
 import type { IInspectable } from "./Misc/iInspectable";
 import type { AbstractScene } from "./abstractScene";
 import type { IAccessibilityTag } from "./IAccessibilityTag";
-
-declare type Animatable = import("./Animations/animatable").Animatable;
-declare type AnimationPropertiesOverride = import("./Animations/animationPropertiesOverride").AnimationPropertiesOverride;
-declare type Animation = import("./Animations/animation").Animation;
-declare type AnimationRange = import("./Animations/animationRange").AnimationRange;
-declare type AbstractMesh = import("./Meshes/abstractMesh").AbstractMesh;
+import type { AnimationRange } from "./Animations/animationRange";
+import type { AnimationPropertiesOverride } from "./Animations/animationPropertiesOverride";
+import type { AbstractMesh } from "./Meshes/abstractMesh";
+import type { Animation } from "./Animations/animation";
+import type { Animatable } from "./Animations/animatable";
 
 /**
  * Defines how a node can be built from a string name.

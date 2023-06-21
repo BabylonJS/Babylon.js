@@ -4,7 +4,7 @@ import type { Nullable } from "../../types";
 import type { UniformBufferEffectCommonAccessor } from "../../Materials/uniformBufferEffectCommonAccessor";
 import type { UniformBuffer } from "../../Materials/uniformBuffer";
 
-declare type Scene = import("../../scene").Scene;
+import type { Scene } from "../../scene";
 
 /**
  * Particle emitter represents a volume emitting particles.

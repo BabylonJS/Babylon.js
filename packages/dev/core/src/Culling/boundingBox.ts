@@ -7,7 +7,7 @@ import type { ICullable } from "./boundingInfo";
 import { Epsilon } from "../Maths/math.constants";
 import type { Plane } from "../Maths/math.plane";
 
-declare type DrawWrapper = import("../Materials/drawWrapper").DrawWrapper;
+import type { DrawWrapper } from "../Materials/drawWrapper";
 
 /**
  * Class used to store bounding box information

@@ -10,7 +10,7 @@ import "../Shaders/convolution.fragment";
 import { RegisterClass } from "../Misc/typeStore";
 import { serialize, SerializationHelper } from "../Misc/decorators";
 
-declare type Scene = import("../scene").Scene;
+import type { Scene } from "../scene";
 
 /**
  * The ConvolutionPostProcess applies a 3x3 kernel to every pixel of the

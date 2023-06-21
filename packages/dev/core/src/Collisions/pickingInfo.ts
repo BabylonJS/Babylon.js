@@ -5,7 +5,7 @@ import type { TransformNode } from "../Meshes/transformNode";
 import { VertexBuffer } from "../Buffers/buffer";
 import type { Sprite } from "../Sprites/sprite";
 
-declare type Ray = import("../Culling/ray").Ray;
+import type { Ray } from "../Culling/ray";
 
 /**
  * Information about the result of picking within a scene

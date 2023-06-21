@@ -4,9 +4,9 @@ import type { ICanvas, ICanvasRenderingContext } from "../../Engines/ICanvas";
 import type { HardwareTextureWrapper } from "./hardwareTextureWrapper";
 import { TextureSampler } from "./textureSampler";
 
-declare type ThinEngine = import("../../Engines/thinEngine").ThinEngine;
-declare type BaseTexture = import("../../Materials/Textures/baseTexture").BaseTexture;
-declare type SphericalPolynomial = import("../../Maths/sphericalPolynomial").SphericalPolynomial;
+import type { ThinEngine } from "../../Engines/thinEngine";
+import type { BaseTexture } from "../../Materials/Textures/baseTexture";
+import type { SphericalPolynomial } from "../../Maths/sphericalPolynomial";
 
 /**
  * Defines the source of the internal texture

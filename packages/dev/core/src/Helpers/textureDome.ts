@@ -10,7 +10,7 @@ import { Observable } from "../Misc/observable";
 import { Vector3 } from "../Maths/math.vector";
 import { Axis } from "../Maths/math";
 
-declare type Camera = import("../Cameras/camera").Camera;
+import type { Camera } from "../Cameras/camera";
 
 /**
  * Display a 360/180 degree texture on an approximately spherical surface, useful for VR applications or skyboxes.
