@@ -17,9 +17,9 @@ describe("safari", () => {
     });
 
     // Check if allowMouse logic for camera touch input is validating correctly
-    // PG: https://playground.babylonjs.com/#ITQ2NZ#9
+    // PG: https://playground.babylonjs.com/#ITQ2NZ#10
     it("check isMouseEvent", async () => {
-        await LoadPlayground(driver, "#ITQ2NZ#9", getGlobalConfig(), 1000);
+        await LoadPlayground(driver, "#ITQ2NZ#10", getGlobalConfig(), 1000);
         const el = await driver.findElement(By.id("babylon-canvas"));
 
         // With allowMouse = true, touch controls should move camera forward if isMouseEvent is true
