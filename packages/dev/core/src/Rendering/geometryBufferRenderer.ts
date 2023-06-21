@@ -444,7 +444,7 @@ export class GeometryBufferRenderer {
                         }
                     }
                     if (material.glossiness !== null) {
-                        defines.push("#define GLOSSINESSS");
+                        defines.push("#define GLOSSINESS");
                     }
                 } else if (material.getClassName() === "PBRMaterial") {
                     // if it is the bigger PBRMaterial
@@ -492,7 +492,7 @@ export class GeometryBufferRenderer {
                             defines.push("#define REFLECTIVITYCOLOR");
                         }
                         if (material.microSurface !== null) {
-                            defines.push("#define GLOSSINESSS");
+                            defines.push("#define GLOSSINESS");
                         }
                     }
                 } else if (material.getClassName() === "StandardMaterial") {
