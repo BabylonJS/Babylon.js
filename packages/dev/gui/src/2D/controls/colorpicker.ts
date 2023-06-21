@@ -1155,7 +1155,7 @@ export class ColorPicker extends Control {
                     hexVal.text = lastVal;
                 } else {
                     if (hexVal.text.length < 6) {
-                        const leadingZero: Number = 6 - hexVal.text.length;
+                        const leadingZero: number = 6 - hexVal.text.length;
                         for (let i = 0; i < leadingZero; i++) {
                             newHexValue = "0" + newHexValue;
                         }

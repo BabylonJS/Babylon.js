@@ -1,6 +1,6 @@
 import * as path from "path";
 import * as fs from "fs";
-import { findRootDirectory } from "./utils";
+import { findRootDirectory } from "./utils.js";
 
 export const updateEngineVersion = async () => {
     const baseDirectory = findRootDirectory();

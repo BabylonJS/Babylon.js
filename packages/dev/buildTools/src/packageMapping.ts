@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { kebabize } from "./utils";
+import { kebabize } from "./utils.js";
 
 export type BuildType = /*"lts" | */ "umd" | "esm" | "es6" | "namespace";
 const privatePackages: DevPackageName[] = ["shared-ui-components"];

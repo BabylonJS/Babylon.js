@@ -1,9 +1,9 @@
 import type ts from "typescript";
-import transformer from "./pathTransform";
-import type { BuildType, DevPackageName, UMDPackageName } from "./packageMapping";
-import { getPackageMappingByDevName, getPublicPackageName, isValidDevPackageName, umdPackageMapping } from "./packageMapping";
+import transformer from "./pathTransform.js";
+import type { BuildType, DevPackageName, UMDPackageName } from "./packageMapping.js";
+import { getPackageMappingByDevName, getPublicPackageName, isValidDevPackageName, umdPackageMapping } from "./packageMapping.js";
 import * as path from "path";
-import { camelize } from "./utils";
+import { camelize } from "./utils.js";
 import type { RuleSetRule, Configuration } from "webpack";
 
 export const externalsFunction = (excludePackages: string[] = [], type: BuildType = "umd") => {
@@ -211,12 +211,24 @@ export const commonUMDWebpackConfiguration = (options: {
                     getCustomTransformers: (_program: ts.Program) => {
                         // webpack program
                         console.log("generating transformers...");
-                        return transformer(_program, {
-                            basePackage: packageName,
-                            buildType: options.es6Mode ? "es6" : "umd",
-                            packageOnly: false,
-                            keepDev: true,
-                        });
+                        return {
+                            after: [
+                                transformer(_program, {
+                                    basePackage: packageName,
+                                    buildType: options.es6Mode ? "es6" : "umd",
+                                    packageOnly: false,
+                                    keepDev: true,
+                                }),
+                            ],
+                            afterDeclarations: [
+                                transformer(_program, {
+                                    basePackage: packageName,
+                                    buildType: options.es6Mode ? "es6" : "umd",
+                                    packageOnly: false,
+                                    keepDev: true,
+                                }),
+                            ],
+                        };
                     },
                 },
                 sideEffects: true,

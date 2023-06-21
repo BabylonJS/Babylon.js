@@ -183,7 +183,15 @@ function CreateShapePath(
     return { offsetX: glyph.ha * scale, shapePath: shapePath };
 }
 
-function CreateShapePaths(text: string, size: number, resolution: number, fontData: IFontData) {
+/**
+ * Creates shape paths from a text and font
+ * @param text the text
+ * @param size size of the font
+ * @param resolution resolution of the font
+ * @param fontData defines the font data (can be generated with http://gero3.github.io/facetype.js/)
+ * @returns array of ShapePath objects
+ */
+export function CreateTextShapePaths(text: string, size: number, resolution: number, fontData: IFontData) {
     const chars = Array.from(text);
     const scale = size / fontData.resolution;
     const line_height = (fontData.boundingBox.yMax - fontData.boundingBox.yMin + fontData.underlineThickness) * scale;
@@ -241,7 +249,7 @@ export function CreateText(
     earcutInjection = earcut
 ): Nullable<Mesh> {
     // First we need to generate the paths
-    const shapePaths = CreateShapePaths(text, options.size || 50, options.resolution || 8, fontData);
+    const shapePaths = CreateTextShapePaths(text, options.size || 50, options.resolution || 8, fontData);
 
     // And extrude them
     const meshes: Mesh[] = [];
