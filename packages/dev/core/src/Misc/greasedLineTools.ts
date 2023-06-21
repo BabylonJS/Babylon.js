@@ -2,6 +2,8 @@ import { Curve3 } from "../Maths/math.path";
 import { VertexBuffer } from "../Buffers/buffer";
 import { TmpVectors, Vector3 } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { IFontData } from "core/Meshes/Builders/textBuilder";
+import { CreateTextShapePaths } from "core/Meshes/Builders/textBuilder";
 
 /**
  * Tool functions for GreasedLine
@@ -284,5 +286,44 @@ export class GreasedLineTools {
             points,
             widths,
         };
+    }
+
+    /**
+     * Gets 3D positions of points from a text and font
+     * @param text Text
+     * @param size Size of the font
+     * @param resolution Resolution of the font
+     * @param fontData defines the font data (can be generated with http://gero3.github.io/facetype.js/)
+     * @param z z coordinate
+     * @param includeInner include the inner parts of the font in the result. Default true. If false, only the outlines will be returned.
+     * @returns number[] of 3D positions
+     */
+    public static GetPointsFromText(text: string, size: number, resolution: number, fontData: IFontData, z = 0, includeInner = true) {
+        const allPoints = [];
+        const shapePaths = CreateTextShapePaths(text, size, resolution, fontData);
+
+        for (const sp of shapePaths) {
+            for (const p of sp.paths) {
+                const points = [];
+                const points2d = p.getPoints();
+                for (const p2d of points2d) {
+                    points.push(p2d.x, p2d.y, z);
+                }
+                allPoints.push(points);
+            }
+
+            if (includeInner) {
+                for (const h of sp.holes) {
+                    const holes = [];
+                    const points2d = h.getPoints();
+                    for (const p2d of points2d) {
+                        holes.push(p2d.x, p2d.y, z);
+                    }
+                    allPoints.push(holes);
+                }
+            }
+        }
+
+        return allPoints;
     }
 }
