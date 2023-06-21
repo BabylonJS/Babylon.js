@@ -13,10 +13,10 @@ import { makeSyncFunction, runCoroutineSync } from "../Misc/coroutine";
 import type { ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
 import { RuntimeError, ErrorCodes } from "../Misc/error";
 
-declare type Geometry = import("../Meshes/geometry").Geometry;
-declare type Mesh = import("../Meshes/mesh").Mesh;
+import type { Geometry } from "../Meshes/geometry";
+import type { Mesh } from "../Meshes/mesh";
 
-declare type PolyhedronData = import("./geodesicMesh").PolyhedronData;
+import type { PolyhedronData } from "./geodesicMesh";
 
 /**
  * Define an interface for all classes that will get and set the data on vertices

@@ -2,7 +2,7 @@ import type { ShaderLanguage } from "../../Materials/shaderLanguage";
 import type { Nullable } from "../../types";
 import type { ShaderProcessingContext } from "./shaderProcessingOptions";
 
-declare type ThinEngine = import("../thinEngine").ThinEngine;
+import type { ThinEngine } from "../thinEngine";
 
 /** @internal */
 export interface IShaderProcessor {

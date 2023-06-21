@@ -6,7 +6,7 @@ import { WebGPUEngine } from "../../webgpuEngine";
 import type { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 import { Logger } from "../../../Misc/logger";
 
-declare type Scene = import("../../../scene").Scene;
+import type { Scene } from "../../../scene";
 
 WebGPUEngine.prototype.createRawTexture = function (
     data: Nullable<ArrayBufferView>,

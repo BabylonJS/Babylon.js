@@ -1,8 +1,8 @@
 import type { Nullable } from "../types";
 import type { IEffectFallbacks } from "./iEffectFallbacks";
 
-declare type Effect = import("./effect").Effect;
-declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
+import type { Effect } from "./effect";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 
 /**
  * EffectFallbacks can be used to add fallbacks (properties to disable) to certain properties when desired to improve performance.

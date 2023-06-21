@@ -11,7 +11,7 @@ import type { TransformNode } from "core/Meshes/transformNode";
 import type { Skeleton } from "core/Bones/skeleton";
 import { Scene } from "core/scene";
 
-declare type Node = import("core/node").Node;
+import type { Node } from "core/node";
 
 declare module "core/scene" {
     interface Scene {

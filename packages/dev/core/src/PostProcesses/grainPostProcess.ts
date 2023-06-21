@@ -10,7 +10,7 @@ import "../Shaders/grain.fragment";
 import { RegisterClass } from "../Misc/typeStore";
 import { serialize, SerializationHelper } from "../Misc/decorators";
 
-declare type Scene = import("../scene").Scene;
+import type { Scene } from "../scene";
 
 /**
  * The GrainPostProcess adds noise to the image at mid luminance levels

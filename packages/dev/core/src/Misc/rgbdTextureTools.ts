@@ -6,9 +6,9 @@ import type { Engine } from "../Engines/engine";
 import "../Engines/Extensions/engine.renderTarget";
 import { ApplyPostProcess } from "./textureTools";
 
-declare type Texture = import("../Materials/Textures/texture").Texture;
-declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
-declare type Scene = import("../scene").Scene;
+import type { Texture } from "../Materials/Textures/texture";
+import type { InternalTexture } from "../Materials/Textures/internalTexture";
+import type { Scene } from "../scene";
 
 /**
  * Class used to host RGBD texture specific utilities

@@ -12,7 +12,7 @@ import "../Shaders/fxaa.vertex";
 import { RegisterClass } from "../Misc/typeStore";
 import { SerializationHelper } from "../Misc/decorators";
 
-declare type Scene = import("../scene").Scene;
+import type { Scene } from "../scene";
 /**
  * Fxaa post process
  * @see https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/usePostProcesses#fxaa

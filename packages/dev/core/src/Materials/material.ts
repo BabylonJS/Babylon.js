@@ -47,10 +47,10 @@ import { MaterialPluginEvent } from "./materialPluginEvent";
 import type { ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
 import type { IClipPlanesHolder } from "../Misc/interfaces/iClipPlanesHolder";
 
-declare type PrePassRenderer = import("../Rendering/prePassRenderer").PrePassRenderer;
-declare type Mesh = import("../Meshes/mesh").Mesh;
-declare type Animation = import("../Animations/animation").Animation;
-declare type InstancedMesh = import("../Meshes/instancedMesh").InstancedMesh;
+import type { PrePassRenderer } from "../Rendering/prePassRenderer";
+import type { Mesh } from "../Meshes/mesh";
+import type { Animation } from "../Animations/animation";
+import type { InstancedMesh } from "../Meshes/instancedMesh";
 
 declare let BABYLON: any;
 

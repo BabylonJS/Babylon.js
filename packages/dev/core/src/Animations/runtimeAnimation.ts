@@ -5,7 +5,7 @@ import type { _IAnimationState } from "./animation";
 import { Animation } from "./animation";
 import type { AnimationEvent } from "./animationEvent";
 
-declare type Animatable = import("./animatable").Animatable;
+import type { Animatable } from "./animatable";
 
 import type { Scene } from "../scene";
 import type { IAnimationKey } from "./animationKey";

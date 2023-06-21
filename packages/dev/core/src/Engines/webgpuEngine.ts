@@ -60,9 +60,9 @@ import "../ShadersWGSL/postprocess.vertex";
 
 declare function importScripts(...urls: string[]): void;
 
-declare type VideoTexture = import("../Materials/Textures/videoTexture").VideoTexture;
-declare type RenderTargetTexture = import("../Materials/Textures/renderTargetTexture").RenderTargetTexture;
-declare type RenderTargetWrapper = import("./renderTargetWrapper").RenderTargetWrapper;
+import type { VideoTexture } from "../Materials/Textures/videoTexture";
+import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import type { RenderTargetWrapper } from "./renderTargetWrapper";
 
 const viewDescriptorSwapChainAntialiasing: GPUTextureViewDescriptor = {
     label: `TextureView_SwapChain_ResolveTarget`,

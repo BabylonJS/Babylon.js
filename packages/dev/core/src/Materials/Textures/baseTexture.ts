@@ -15,7 +15,7 @@ import type { ThinEngine } from "../../Engines/thinEngine";
 import { ThinTexture } from "./thinTexture";
 import type { AbstractScene } from "../../abstractScene";
 
-declare type Animation = import("../../Animations/animation").Animation;
+import type { Animation } from "../../Animations/animation";
 
 /**
  * Base class of all the textures in babylon.

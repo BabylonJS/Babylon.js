@@ -10,7 +10,7 @@ import "../Shaders/filter.fragment";
 import { RegisterClass } from "../Misc/typeStore";
 import { serializeAsMatrix, SerializationHelper } from "../Misc/decorators";
 
-declare type Scene = import("../scene").Scene;
+import type { Scene } from "../scene";
 
 /**
  * Applies a kernel filter to the image

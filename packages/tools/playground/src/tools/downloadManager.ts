@@ -1,7 +1,7 @@
 import { DynamicTexture, RawTexture } from "@dev/core";
 import type { GlobalState } from "../globalState";
-declare type Nullable<T> = import("@dev/core").Nullable<T>;
-declare type Engine = import("@dev/core").Engine;
+import type { Nullable<T> } from "@dev/core";
+import type { Engine } from "@dev/core";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare let JSZip: any;

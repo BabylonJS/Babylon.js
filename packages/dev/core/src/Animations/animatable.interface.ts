@@ -1,6 +1,6 @@
 import type { Nullable } from "../types";
 
-declare type Animation = import("./animation").Animation;
+import type { Animation } from "./animation";
 
 /**
  * Interface containing an array of animations

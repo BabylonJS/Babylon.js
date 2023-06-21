@@ -2,7 +2,7 @@ import type { OcclusionQuery } from "../../Extensions/engine.query";
 import { WebGPUEngine } from "../../webgpuEngine";
 import { WebGPURenderItemBeginOcclusionQuery, WebGPURenderItemEndOcclusionQuery } from "../webgpuBundleList";
 
-declare type PerfCounter = import("../../../Misc/perfCounter").PerfCounter;
+import type { PerfCounter } from "../../../Misc/perfCounter";
 
 WebGPUEngine.prototype.getGPUFrameTimeCounter = function (): PerfCounter {
     return this._timestampQuery.gpuFrameTimeCounter;

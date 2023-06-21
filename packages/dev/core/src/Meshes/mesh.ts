@@ -40,10 +40,10 @@ import type { TransformNode } from "./transformNode";
 import type { DrawWrapper } from "../Materials/drawWrapper";
 import type { PhysicsEngine as PhysicsEngineV1 } from "../Physics/v1/physicsEngine";
 
-declare type GoldbergMesh = import("./goldbergMesh").GoldbergMesh;
-declare type InstancedMesh = import("./instancedMesh").InstancedMesh;
-declare type IPhysicsEnabledObject = import("../Physics/v1/physicsImpostor").IPhysicsEnabledObject;
-declare type PhysicsImpostor = import("../Physics/v1/physicsImpostor").PhysicsImpostor;
+import type { GoldbergMesh } from "./goldbergMesh";
+import type { InstancedMesh } from "./instancedMesh";
+import type { IPhysicsEnabledObject } from "../Physics/v1/physicsImpostor";
+import type { PhysicsImpostor } from "../Physics/v1/physicsImpostor";
 
 /**
  * @internal

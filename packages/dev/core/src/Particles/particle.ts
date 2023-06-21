@@ -6,7 +6,7 @@ import type { ParticleSystem } from "./particleSystem";
 import type { SubEmitter } from "./subEmitter";
 import type { ColorGradient, FactorGradient } from "../Misc/gradients";
 
-declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 
 /**
  * A particle represents one of the element emitted by a particle system.

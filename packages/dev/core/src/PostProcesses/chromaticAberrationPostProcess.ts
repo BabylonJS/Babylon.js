@@ -11,7 +11,7 @@ import "../Shaders/chromaticAberration.fragment";
 import { RegisterClass } from "../Misc/typeStore";
 import { serialize, SerializationHelper } from "../Misc/decorators";
 
-declare type Scene = import("../scene").Scene;
+import type { Scene } from "../scene";
 
 /**
  * The ChromaticAberrationPostProcess separates the rgb channels in an image to produce chromatic distortion around the edges of the screen

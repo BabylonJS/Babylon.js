@@ -6,7 +6,7 @@ import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnect
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Immutable } from "../../../../types";
 
-declare type FragmentOutputBlock = import("../Fragment/fragmentOutputBlock").FragmentOutputBlock;
+import type { FragmentOutputBlock } from "../Fragment/fragmentOutputBlock";
 
 /**
  * Block used to output the vertex position

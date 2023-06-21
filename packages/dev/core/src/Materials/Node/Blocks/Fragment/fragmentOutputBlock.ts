@@ -10,9 +10,9 @@ import type { NodeMaterialDefines } from "../../nodeMaterial";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
 import { MaterialHelper } from "../../../materialHelper";
 
-declare type NodeMaterial = import("../../nodeMaterial").NodeMaterial;
-declare type Effect = import("../../../effect").Effect;
-declare type Mesh = import("../../../../Meshes/mesh").Mesh;
+import type { NodeMaterial } from "../../nodeMaterial";
+import type { Effect } from "../../../effect";
+import type { Mesh } from "../../../../Meshes/mesh";
 
 /**
  * Block used to output the final color

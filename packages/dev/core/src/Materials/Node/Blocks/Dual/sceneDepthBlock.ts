@@ -10,7 +10,7 @@ import type { InputBlock } from "../Input/inputBlock";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
 import type { Effect } from "../../../effect";
 
-declare type NodeMaterial = import("../../nodeMaterial").NodeMaterial;
+import type { NodeMaterial } from "../../nodeMaterial";
 
 /**
  * Block used to retrieve the depth (zbuffer) of the scene
