@@ -296,7 +296,7 @@ export class GreasedLineTools {
      * @param fontData defines the font data (can be generated with http://gero3.github.io/facetype.js/)
      * @param z z coordinate
      * @param includeInner include the inner parts of the font in the result. Default true. If false, only the outlines will be returned.
-     * @returns number[] of 3D positions
+     * @returns number[][] of 3D positions
      */
     public static GetPointsFromText(text: string, size: number, resolution: number, fontData: IFontData, z = 0, includeInner = true) {
         const allPoints = [];
