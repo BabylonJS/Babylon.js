@@ -462,7 +462,7 @@ export class MeshPropertyGridComponent extends React.Component<
                             propertyName="material"
                             noDirectUpdate={true}
                             onSelect={(value) => {
-                                if (value < 0) {
+                                if ((value as number) < 0) {
                                     mesh.material = null;
                                 } else {
                                     mesh.material = sortedMaterials[value as number];

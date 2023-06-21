@@ -101,7 +101,7 @@ function walkCompilerAstAndFindComments(node: ts.Node, indent: string, notFoundC
     // the same comment twice (e.g. for a MethodDeclaration and its PublicKeyword).
     if (isDeclarationKind(node.kind)) {
         let skip = false;
-        node.modifiers?.forEach((modifier) => {
+        ts.getModifiers(node as ts.HasModifiers)?.forEach((modifier) => {
             if (modifier.kind === ts.SyntaxKind.PrivateKeyword || modifier.kind === ts.SyntaxKind.ProtectedKeyword) {
                 skip = true;
             }

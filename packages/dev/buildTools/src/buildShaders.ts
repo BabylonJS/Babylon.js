@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-import { checkDirectorySync, checkArgs, getHashOfFile, getHashOfContent } from "./utils";
+import { checkDirectorySync, checkArgs, getHashOfFile, getHashOfContent } from "./utils.js";
 // import * as glob from "glob";
 // import * as chokidar from "chokidar";
 // import { DevPackageName } from "./packageMapping";
