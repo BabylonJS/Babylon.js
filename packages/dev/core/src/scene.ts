@@ -64,7 +64,7 @@ import { _ObserveArray } from "./Misc/arrayTools";
 import type { IAction } from "./Actions/action";
 import type { AnimationPropertiesOverride } from "./Animations/animationPropertiesOverride";
 import type { AnimationGroup } from "./Animations/animationGroup";
-import type { Skeleton, } from "./Bones/skeleton";
+import type { Skeleton } from "./Bones/skeleton";
 import type { Bone } from "./Bones/bone";
 import type { Camera } from "./Cameras/camera";
 import type { WebVRFreeCamera } from "./Cameras/VR/webVRCamera";

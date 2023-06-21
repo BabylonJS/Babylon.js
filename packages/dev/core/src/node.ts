@@ -19,7 +19,6 @@ import type { AbstractMesh } from "./Meshes/abstractMesh";
 import type { Animation } from "./Animations/animation";
 import type { Animatable } from "./Animations/animatable";
 
-
 /**
  * Defines how a node can be built from a string name.
  */
