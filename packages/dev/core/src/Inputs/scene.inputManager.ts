@@ -13,7 +13,7 @@ import type { IKeyboardEvent, IMouseEvent, IPointerEvent } from "../Events/devic
 import { DeviceSourceManager } from "../DeviceInput/InputDevices/deviceSourceManager";
 import { EngineStore } from "../Engines/engineStore";
 
-declare type Scene = import("../scene").Scene;
+import type { Scene } from "../scene";
 
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention

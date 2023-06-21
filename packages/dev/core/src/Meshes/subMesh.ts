@@ -13,14 +13,14 @@ import type { Plane } from "../Maths/math.plane";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import type { IMaterialContext } from "../Engines/IMaterialContext";
 
-declare type Collider = import("../Collisions/collider").Collider;
-declare type Material = import("../Materials/material").Material;
-declare type MaterialDefines = import("../Materials/materialDefines").MaterialDefines;
-declare type MultiMaterial = import("../Materials/multiMaterial").MultiMaterial;
-declare type AbstractMesh = import("./abstractMesh").AbstractMesh;
-declare type Mesh = import("./mesh").Mesh;
-declare type Ray = import("../Culling/ray").Ray;
-declare type TrianglePickingPredicate = import("../Culling/ray").TrianglePickingPredicate;
+import type { Collider } from "../Collisions/collider";
+import type { Material } from "../Materials/material";
+import type { MaterialDefines } from "../Materials/materialDefines";
+import type { MultiMaterial } from "../Materials/multiMaterial";
+import type { AbstractMesh } from "./abstractMesh";
+import type { Mesh } from "./mesh";
+import type { Ray } from "../Culling/ray";
+import type { TrianglePickingPredicate } from "../Culling/ray";
 
 /**
  * Defines a subdivision inside a mesh

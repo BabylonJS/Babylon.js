@@ -17,8 +17,8 @@ import "../Shaders/motionBlur.fragment";
 import { serialize, SerializationHelper } from "../Misc/decorators";
 import { RegisterClass } from "../Misc/typeStore";
 
-declare type Engine = import("../Engines/engine").Engine;
-declare type Scene = import("../scene").Scene;
+import type { Engine } from "../Engines/engine";
+import type { Scene } from "../scene";
 
 /**
  * The Motion Blur Post Process which blurs an image based on the objects velocity in scene.

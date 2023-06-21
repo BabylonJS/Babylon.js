@@ -11,7 +11,7 @@ import type { GUI3DManager } from "../gui3DManager";
 import { Vector3WithInfo } from "../vector3WithInfo";
 import type { Container3D } from "./container3D";
 
-declare type TouchButton3D = import("./touchButton3D").TouchButton3D;
+import type { TouchButton3D } from "./touchButton3D";
 
 /**
  * Class used as base class for controls

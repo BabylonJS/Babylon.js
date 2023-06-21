@@ -9,8 +9,8 @@ import "../../Engines/Extensions/engine.dynamicTexture";
 import "../../Engines/Extensions/engine.videoTexture";
 import "../../Engines/Extensions/engine.externalTexture";
 
-declare type ThinEngine = import("../../Engines/thinEngine").ThinEngine;
-declare type Scene = import("../../scene").Scene;
+import type { ThinEngine } from "../../Engines/thinEngine";
+import type { Scene } from "../../scene";
 
 /**
  * Defines the options related to the creation of an HtmlElementTexture

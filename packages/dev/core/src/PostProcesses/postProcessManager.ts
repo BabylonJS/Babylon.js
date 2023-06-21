@@ -6,7 +6,7 @@ import { Constants } from "../Engines/constants";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 
-declare type Scene = import("../scene").Scene;
+import type { Scene } from "../scene";
 
 /**
  * PostProcessManager is used to manage one or more post processes or post process pipelines

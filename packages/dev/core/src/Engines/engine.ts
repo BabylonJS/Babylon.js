@@ -28,8 +28,8 @@ import "./Extensions/engine.readTexture";
 import "./Extensions/engine.dynamicBuffer";
 import type { IAudioEngine } from "../Audio/Interfaces/IAudioEngine";
 
-declare type Material = import("../Materials/material").Material;
-declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
+import type { Material } from "../Materials/material";
+import type { PostProcess } from "../PostProcesses/postProcess";
 
 /**
  * Defines the interface used by display changed events

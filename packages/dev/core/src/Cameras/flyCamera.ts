@@ -11,7 +11,7 @@ import type { FlyCameraMouseInput } from "../Cameras/Inputs/flyCameraMouseInput"
 import type { FlyCameraKeyboardInput } from "../Cameras/Inputs/flyCameraKeyboardInput";
 import { Tools } from "../Misc/tools";
 
-declare type Collider = import("../Collisions/collider").Collider;
+import type { Collider } from "../Collisions/collider";
 
 /**
  * This is a flying camera, designed for 3D movement and rotation in all directions,

@@ -23,7 +23,7 @@ import { Engine } from "../../Engines/engine";
 import { _ObserveArray } from "../../Misc/arrayTools";
 import { DumpTools } from "../../Misc/dumpTools";
 
-declare type Material = import("../material").Material;
+import type { Material } from "../material";
 
 /**
  * Options for the RenderTargetTexture constructor

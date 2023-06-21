@@ -4,11 +4,11 @@ import type { ISpriteManager } from "../Sprites/spriteManager";
 import type { IParticleSystem } from "../Particles/IParticleSystem";
 import { RenderingGroup } from "./renderingGroup";
 
-declare type Scene = import("../scene").Scene;
-declare type Camera = import("../Cameras/camera").Camera;
-declare type Material = import("../Materials/material").Material;
-declare type SubMesh = import("../Meshes/subMesh").SubMesh;
-declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
+import type { Scene } from "../scene";
+import type { Camera } from "../Cameras/camera";
+import type { Material } from "../Materials/material";
+import type { SubMesh } from "../Meshes/subMesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 
 /**
  * Interface describing the different options available in the rendering manager

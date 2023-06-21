@@ -1,5 +1,5 @@
-declare type Scene = import("../../scene").Scene;
-declare type NodeMaterialBlock = import("./nodeMaterialBlock").NodeMaterialBlock;
+import type { Scene } from "../../scene";
+import type { NodeMaterialBlock } from "./nodeMaterialBlock";
 
 /**
  * Enum defining the type of properties that can be edited in the property pages in the NME

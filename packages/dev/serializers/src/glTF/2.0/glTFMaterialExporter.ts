@@ -17,10 +17,10 @@ import type { _Exporter } from "./glTFExporter";
 import { Constants } from "core/Engines/constants";
 import { DumpTools } from "core/Misc/dumpTools";
 
-declare type Material = import("core/Materials/material").Material;
-declare type StandardMaterial = import("core/Materials/standardMaterial").StandardMaterial;
-declare type PBRBaseMaterial = import("core/Materials/PBR/pbrBaseMaterial").PBRBaseMaterial;
-declare type PBRMaterial = import("core/Materials/PBR/pbrMaterial").PBRMaterial;
+import type { Material } from "core/Materials/material";
+import type { StandardMaterial } from "core/Materials/standardMaterial";
+import type { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
+import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 
 /**
  * Interface for storing specular glossiness factors

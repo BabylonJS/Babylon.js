@@ -10,7 +10,7 @@ import type { FreeCameraMouseInput } from "../Cameras/Inputs/freeCameraMouseInpu
 import type { FreeCameraKeyboardMoveInput } from "../Cameras/Inputs/freeCameraKeyboardMoveInput";
 import { Tools } from "../Misc/tools";
 
-declare type Collider = import("../Collisions/collider").Collider;
+import type { Collider } from "../Collisions/collider";
 
 /**
  * This represents a free type of camera. It can be useful in First Person Shooter game for instance.

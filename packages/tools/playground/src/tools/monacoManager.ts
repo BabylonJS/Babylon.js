@@ -11,8 +11,8 @@ import { CompilationError } from "../components/errorDisplayComponent";
 import { Observable } from "@dev/core";
 import { debounce } from "ts-debounce";
 
-declare type IStandaloneCodeEditor = import("monaco-editor/esm/vs/editor/editor.api").editor.IStandaloneCodeEditor;
-declare type IStandaloneEditorConstructionOptions = import("monaco-editor/esm/vs/editor/editor.api").editor.IStandaloneEditorConstructionOptions;
+import type { IStandaloneCodeEditor } from "monaco-editor/esm/vs/editor/editor.api";
+import type { IStandaloneEditorConstructionOptions } from "monaco-editor/esm/vs/editor/editor.api";
 
 //declare var monaco: any;
 

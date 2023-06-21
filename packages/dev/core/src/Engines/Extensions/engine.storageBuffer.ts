@@ -2,7 +2,7 @@ import { ThinEngine } from "../../Engines/thinEngine";
 import type { DataBuffer } from "../../Buffers/dataBuffer";
 import type { DataArray, Nullable } from "../../types";
 
-declare type StorageBuffer = import("../../Buffers/storageBuffer").StorageBuffer;
+import type { StorageBuffer } from "../../Buffers/storageBuffer";
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {

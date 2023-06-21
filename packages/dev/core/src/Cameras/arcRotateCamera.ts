@@ -18,7 +18,7 @@ import { ArcRotateCameraInputsManager } from "../Cameras/arcRotateCameraInputsMa
 import { Epsilon } from "../Maths/math.constants";
 import { Tools } from "../Misc/tools";
 
-declare type Collider = import("../Collisions/collider").Collider;
+import type { Collider } from "../Collisions/collider";
 
 Node.AddNodeConstructor("ArcRotateCamera", (name, scene) => {
     return () => new ArcRotateCamera(name, 0, 0, 1.0, Vector3.Zero(), scene);

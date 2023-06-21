@@ -7,13 +7,13 @@ import { _WarnImport } from "./devTools";
 import type { IAnimatable } from "../Animations/animatable.interface";
 import { Color4, Color3 } from "../Maths/math.color";
 
-declare type Scene = import("../scene").Scene;
-declare type Camera = import("../Cameras/camera").Camera;
+import type { Scene } from "../scene";
+import type { Camera } from "../Cameras/camera";
 
-declare type ImageProcessingConfiguration = import("../Materials/imageProcessingConfiguration").ImageProcessingConfiguration;
-declare type FresnelParameters = import("../Materials/fresnelParameters").FresnelParameters;
-declare type ColorCurves = import("../Materials/colorCurves").ColorCurves;
-declare type BaseTexture = import("../Materials/Textures/baseTexture").BaseTexture;
+import type { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
+import type { FresnelParameters } from "../Materials/fresnelParameters";
+import type { ColorCurves } from "../Materials/colorCurves";
+import type { BaseTexture } from "../Materials/Textures/baseTexture";
 
 const __decoratorInitialStore = {};
 const __mergedStore = {};

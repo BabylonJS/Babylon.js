@@ -13,8 +13,8 @@ import { EngineStore } from "../Engines/engineStore";
 import { RegisterClass } from "../Misc/typeStore";
 import { serialize, SerializationHelper } from "../Misc/decorators";
 
-declare type Engine = import("../Engines/engine").Engine;
-declare type Scene = import("../scene").Scene;
+import type { Engine } from "../Engines/engine";
+import type { Scene } from "../scene";
 
 /**
  * The Screen Space curvature effect can help highlighting ridge and valley of a model.

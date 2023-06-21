@@ -1,6 +1,6 @@
 import type { GraphFrame } from "../graphFrame";
 
-declare type FrameNodePort = import("../frameNodePort").FrameNodePort;
+import type { FrameNodePort } from "../frameNodePort";
 
 export type FramePortData = {
     frame: GraphFrame;

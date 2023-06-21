@@ -38,11 +38,11 @@ import { Axis } from "../Maths/math.axis";
 import type { IParticleSystem } from "../Particles/IParticleSystem";
 import { RegisterClass } from "../Misc/typeStore";
 
-declare type Ray = import("../Culling/ray").Ray;
-declare type Collider = import("../Collisions/collider").Collider;
-declare type TrianglePickingPredicate = import("../Culling/ray").TrianglePickingPredicate;
-declare type RenderingGroup = import("../Rendering/renderingGroup").RenderingGroup;
-declare type IEdgesRendererOptions = import("../Rendering/edgesRenderer").IEdgesRendererOptions;
+import type { Ray } from "../Culling/ray";
+import type { Collider } from "../Collisions/collider";
+import type { TrianglePickingPredicate } from "../Culling/ray";
+import type { RenderingGroup } from "../Rendering/renderingGroup";
+import type { IEdgesRendererOptions } from "../Rendering/edgesRenderer";
 
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention
