@@ -2,7 +2,7 @@ import { Utilities } from "./tools/utilities";
 import type { CompilationError } from "./components/errorDisplayComponent";
 import { Observable } from "@dev/core";
 
-import type { Nullable<T> } from "@dev/core";
+import type { Nullable } from "@dev/core";
 
 export enum EditionMode {
     Desktop,

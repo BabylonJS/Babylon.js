@@ -1,6 +1,6 @@
 import { DynamicTexture, RawTexture } from "@dev/core";
 import type { GlobalState } from "../globalState";
-import type { Nullable<T> } from "@dev/core";
+import type { Nullable } from "@dev/core";
 import type { Engine } from "@dev/core";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
