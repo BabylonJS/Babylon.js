@@ -36,7 +36,7 @@ export enum GreasedLineMeshColorMode {
 /**
  * Color distribution type of the @see colors.
  * {@link https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param/greased_line#colordistributiontype}
- * 
+ *
  */
 export enum GreasedLineMeshColorDistributionType {
     COLOR_DISTRIBUTION_TYPE_SEGMENT = 0,
