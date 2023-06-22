@@ -9,6 +9,10 @@ import { Effect } from "../effect";
 export class NodeMaterialBuildState {
     /** Gets or sets a boolean indicating if the current state can emit uniform buffers */
     public supportUniformBuffers = false;
+
+    /** Gets or sets a boolean indicating if the current state should support prepass */
+    public prePassCapable = false;
+
     /**
      * Gets the list of emitted attributes
      */
@@ -33,6 +37,10 @@ export class NodeMaterialBuildState {
      * Gets the list of emitted extensions
      */
     public extensions: { [key: string]: string } = {};
+    /**
+     * Gets the list of emitted prePass outputs - if using the prepass
+     */
+    public prePassOutput: { [key: string]: string } = {};
 
     /**
      * Gets the target of the compilation state
@@ -122,10 +130,20 @@ export class NodeMaterialBuildState {
         this.compilationString = "precision highp float;\r\n" + this.compilationString;
         this.compilationString = "#if defined(WEBGL2) || defines(WEBGPU)\r\nprecision highp sampler2DArray;\r\n#endif\r\n" + this.compilationString;
 
+        if (this.prePassCapable) {
+            let prePassDeclaration = "#if defined(PREPASS)\r\nlayout(location = 0) out highp vec4 glFragData[SCENE_MRT_COUNT];\r\nhighp vec4 gl_FragColor;\r\n"
+
+            for (const outputName in this.prePassOutput) {
+                prePassDeclaration = prePassDeclaration + this.prePassOutput[outputName] + "\r\n";
+            }
+            this.compilationString = prePassDeclaration + "#endif\r\n" + this.compilationString;
+        }
+
         for (const extensionName in this.extensions) {
             const extension = this.extensions[extensionName];
             this.compilationString = `\r\n${extension}\r\n${this.compilationString}`;
         }
+
 
         this._builtCompilationString = this.compilationString;
     }
@@ -233,6 +251,21 @@ export class NodeMaterialBuildState {
             extension = `#if ${define}\r\n${extension}\r\n#endif`;
         }
         this.extensions[name] = extension;
+    }
+
+    /**
+     * @internal
+     */
+    public _emitPrePassOutput(name: string, declaration: string, define: string = "") {
+        if (this.prePassOutput[name]) {
+            return;
+        }
+
+        if (define) {
+            declaration = `#if ${define}\r\n${declaration}\r\n#endif`;
+        }
+
+        this.prePassOutput[name] = declaration;
     }
 
     /**

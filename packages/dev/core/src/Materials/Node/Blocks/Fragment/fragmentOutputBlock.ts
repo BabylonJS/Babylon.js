@@ -49,6 +49,10 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
     @editableInPropertyPage("Use logarithmic depth", PropertyTypeForEdition.Boolean, "PROPERTIES")
     public useLogarithmicDepth = false;
 
+    /** Gets or sets a boolean indicating if the additional prepass outputs should be used */
+    @editableInPropertyPage("Turn on prepass outputs", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    public prePassCapable = false;
+
     /**
      * Gets the current class name
      * @returns the class name
@@ -114,6 +118,12 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         }
         this._linearDefineName = state._getFreeDefineName("CONVERTTOLINEAR");
         this._gammaDefineName = state._getFreeDefineName("CONVERTTOGAMMA");
+
+        if (state.prePassCapable) {
+            // if (this.depth) {
+                state._emitPrePassOutput('depth', 'varying highp vec3 vViewPos;', 'defined(PREPASS_DEPTH)');
+            // }
+        }
 
         const comments = `//${this.name}`;
         state._emitFunctionFromInclude("helperFunctions", comments);

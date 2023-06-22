@@ -92,6 +92,9 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
     public UV5 = false;
     public UV6 = false;
 
+    public PREPASS = false;
+    public SCENE_MRT_COUNT = 0;
+
     /** BONES */
     public NUM_BONE_INFLUENCERS = 0;
     public BonesPerMesh = 0;
@@ -705,9 +708,11 @@ export class NodeMaterial extends PushMaterial {
         // Compilation state
         this._vertexCompilationState = new NodeMaterialBuildState();
         this._vertexCompilationState.supportUniformBuffers = engine.supportsUniformBuffers;
+        this._vertexCompilationState.prePassCapable = this.isPrePassCapable;
         this._vertexCompilationState.target = NodeMaterialBlockTargets.Vertex;
         this._fragmentCompilationState = new NodeMaterialBuildState();
         this._fragmentCompilationState.supportUniformBuffers = engine.supportsUniformBuffers;
+        this._fragmentCompilationState.prePassCapable = this.isPrePassCapable;
         this._fragmentCompilationState.target = NodeMaterialBlockTargets.Fragment;
 
         // Shared data
@@ -827,9 +832,20 @@ export class NodeMaterial extends PushMaterial {
             uvChanged = uvChanged || defines["UV" + i] !== oldUV;
         }
 
+        // PrePass
+        const oit = this.needAlphaBlendingForMesh(mesh) && this.getScene().useOrderIndependentTransparency;
+        MaterialHelper.PrepareDefinesForPrePass(this.getScene(), defines, this.isPrePassCapable && !oit);
+
         if (oldNormal !== defines["NORMAL"] || oldTangent !== defines["TANGENT"] || oldColor !== defines["VERTEXCOLOR_NME"] || uvChanged) {
             defines.markAsAttributesDirty();
         }
+    }
+
+    /**
+     * Can this material render to prepass
+     */
+    public get isPrePassCapable(): boolean {
+        return (this.getBlockByPredicate((block) => block.getClassName() === 'FragmentOutputBlock') as FragmentOutputBlock)?.prePassCapable;
     }
 
     /**
