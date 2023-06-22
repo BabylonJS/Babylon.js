@@ -21,12 +21,12 @@ import type { AbstractScene } from "../abstractScene";
 import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
 
-declare type Scene = import("../scene").Scene;
-declare type InternalTexture = import("../Materials/Textures/internalTexture").InternalTexture;
-declare type WebVRFreeCamera = import("../Cameras/VR/webVRCamera").WebVRFreeCamera;
-declare type Animation = import("../Animations/animation").Animation;
-declare type PrePassRenderer = import("../Rendering/prePassRenderer").PrePassRenderer;
-declare type PrePassEffectConfiguration = import("../Rendering/prePassEffectConfiguration").PrePassEffectConfiguration;
+import type { Scene } from "../scene";
+import type { InternalTexture } from "../Materials/Textures/internalTexture";
+import type { WebVRFreeCamera } from "../Cameras/VR/webVRCamera";
+import type { Animation } from "../Animations/animation";
+import type { PrePassRenderer } from "../Rendering/prePassRenderer";
+import type { PrePassEffectConfiguration } from "../Rendering/prePassEffectConfiguration";
 
 /**
  * Allows for custom processing of the shader code used by a post process

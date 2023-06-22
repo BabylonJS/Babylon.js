@@ -20,8 +20,8 @@ import type { Observable } from "../Misc/observable";
 import type { VertexBuffer } from "../Buffers/buffer";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 
-declare type Animation = import("../Animations/animation").Animation;
-declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
+import type { Animation } from "../Animations/animation";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 
 /**
  * Interface representing a particle system in Babylon.js.

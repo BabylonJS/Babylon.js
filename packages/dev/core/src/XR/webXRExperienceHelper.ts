@@ -176,6 +176,7 @@ export class WebXRExperienceHelper implements IDisposable {
                 // reset the camera's position to the origin
                 this.camera.position.set(0, 0, 0);
                 this.camera.rotationQuaternion.set(0, 0, 0, 1);
+                this.onInitialXRPoseSetObservable.notifyObservers(this.camera);
             }
 
             this.sessionManager.onXRSessionEnded.addOnce(() => {

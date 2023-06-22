@@ -6,7 +6,7 @@ import { WebGPUEngine } from "../../webgpuEngine";
 import * as WebGPUConstants from "../webgpuConstants";
 import { Effect } from "../../../Materials/effect";
 
-declare type StorageBuffer = import("../../../Buffers/storageBuffer").StorageBuffer;
+import type { StorageBuffer } from "../../../Buffers/storageBuffer";
 
 declare module "../../../Materials/effect" {
     export interface Effect {

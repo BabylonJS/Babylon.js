@@ -4,17 +4,17 @@ import { MaterialPluginManager } from "./materialPluginManager";
 import type { SmartArray } from "../Misc/smartArray";
 import { Constants } from "../Engines/constants";
 
-declare type Engine = import("../Engines/engine").Engine;
-declare type Scene = import("../scene").Scene;
-declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
-declare type SubMesh = import("../Meshes/subMesh").SubMesh;
-declare type IAnimatable = import("../Animations/animatable.interface").IAnimatable;
-declare type UniformBuffer = import("./uniformBuffer").UniformBuffer;
-declare type EffectFallbacks = import("./effectFallbacks").EffectFallbacks;
-declare type MaterialDefines = import("./materialDefines").MaterialDefines;
-declare type Material = import("./material").Material;
-declare type BaseTexture = import("./Textures/baseTexture").BaseTexture;
-declare type RenderTargetTexture = import("./Textures/renderTargetTexture").RenderTargetTexture;
+import type { Engine } from "../Engines/engine";
+import type { Scene } from "../scene";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { SubMesh } from "../Meshes/subMesh";
+import type { IAnimatable } from "../Animations/animatable.interface";
+import type { UniformBuffer } from "./uniformBuffer";
+import type { EffectFallbacks } from "./effectFallbacks";
+import type { MaterialDefines } from "./materialDefines";
+import type { Material } from "./material";
+import type { BaseTexture } from "./Textures/baseTexture";
+import type { RenderTargetTexture } from "./Textures/renderTargetTexture";
 
 /**
  * Base class for material plugins.

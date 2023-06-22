@@ -17,8 +17,8 @@ import { Size } from "../Maths/math.size";
 import { WebRequest } from "../Misc/webRequest";
 import { Constants } from "../Engines/constants";
 
-declare type Animatable = import("./animatable").Animatable;
-declare type RuntimeAnimation = import("./runtimeAnimation").RuntimeAnimation;
+import type { Animatable } from "./animatable";
+import type { RuntimeAnimation } from "./runtimeAnimation";
 
 /**
  * @internal

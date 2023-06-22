@@ -20,9 +20,9 @@ import { MaterialPluginEvent } from "./materialPluginEvent";
 import type { Observer } from "core/Misc/observable";
 import { EngineStore } from "../Engines/engineStore";
 
-declare type Scene = import("../scene").Scene;
-declare type Engine = import("../Engines/engine").Engine;
-declare type MaterialPluginBase = import("./materialPluginBase").MaterialPluginBase;
+import type { Scene } from "../scene";
+import type { Engine } from "../Engines/engine";
+import type { MaterialPluginBase } from "./materialPluginBase";
 
 declare module "./material" {
     export interface Material {

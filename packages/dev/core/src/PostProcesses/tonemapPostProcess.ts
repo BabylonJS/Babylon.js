@@ -6,7 +6,7 @@ import { Constants } from "../Engines/constants";
 import "../Shaders/tonemap.fragment";
 import type { Nullable } from "../types";
 
-declare type Engine = import("../Engines/engine").Engine;
+import type { Engine } from "../Engines/engine";
 
 /** Defines operator used for tonemapping */
 export enum TonemappingOperator {

@@ -12,7 +12,7 @@ import { Texture } from "../../../Textures/texture";
 import type { Scene } from "../../../../scene";
 import type { InputBlock } from "../Input/inputBlock";
 
-declare type NodeMaterial = import("../../nodeMaterial").NodeMaterial;
+import type { NodeMaterial } from "../../nodeMaterial";
 
 /**
  * Base block used as input for post process

@@ -9,7 +9,7 @@ import type { Scene } from "../../scene";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { Logger } from "../../Misc/logger";
 
-declare type Material = import("../../Materials/material").Material;
+import type { Material } from "../../Materials/material";
 
 /**
  * Creates the VertexData of the LineSystem

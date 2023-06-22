@@ -5,7 +5,7 @@ import type { Condition } from "./condition";
 import { Constants } from "../Engines/constants";
 import { RegisterClass } from "../Misc/typeStore";
 
-declare type ActionEvent = import("./actionEvent").ActionEvent;
+import type { ActionEvent } from "./actionEvent";
 
 /**
  * This defines an action responsible to toggle a boolean once triggered.

@@ -8,7 +8,7 @@ import { BoundingBox } from "./boundingBox";
 import { BoundingSphere } from "./boundingSphere";
 import type { Plane } from "../Maths/math.plane";
 
-declare type Collider = import("../Collisions/collider").Collider;
+import type { Collider } from "../Collisions/collider";
 
 const _result0 = { min: 0, max: 0 };
 const _result1 = { min: 0, max: 0 };

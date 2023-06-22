@@ -46,10 +46,10 @@ import { MaterialHelper } from "../Materials/materialHelper";
 import "../Engines/Extensions/engine.alpha";
 import { addClipPlaneUniforms, prepareStringDefinesForClipPlanes, bindClipPlane } from "../Materials/clipPlaneMaterialHelper";
 
-declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
-declare type ProceduralTexture = import("../Materials/Textures/Procedurals/proceduralTexture").ProceduralTexture;
-declare type Scene = import("../scene").Scene;
-declare type Engine = import("../Engines/engine").Engine;
+import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
+import type { Scene } from "../scene";
+import type { Engine } from "../Engines/engine";
 
 /**
  * This represents a particle system in Babylon.

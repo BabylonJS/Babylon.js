@@ -28,7 +28,7 @@ import { Viewport } from "../Maths/math.viewport";
 import { RegisterClass } from "../Misc/typeStore";
 import type { Nullable } from "../types";
 
-declare type Engine = import("../Engines/engine").Engine;
+import type { Engine } from "../Engines/engine";
 
 /**
  *  Inspired by https://developer.nvidia.com/gpugems/gpugems3/part-ii-light-and-shadows/chapter-13-volumetric-light-scattering-post-process

@@ -23,7 +23,7 @@ import { EngineStore } from "../Engines/engineStore";
 import { Constants } from "../Engines/constants";
 import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
 
-declare type ExternalTexture = import("./Textures/externalTexture").ExternalTexture;
+import type { ExternalTexture } from "./Textures/externalTexture";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 

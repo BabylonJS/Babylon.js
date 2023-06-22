@@ -5,8 +5,8 @@ import { Utilities } from "../tools/utilities";
 import { DownloadManager } from "../tools/downloadManager";
 import { Engine, WebGPUEngine } from "@dev/core";
 
-declare type Nullable<T> = import("@dev/core").Nullable<T>;
-declare type Scene = import("@dev/core").Scene;
+import type { Nullable } from "@dev/core";
+import type { Scene } from "@dev/core";
 
 import "../scss/rendering.scss";
 

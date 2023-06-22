@@ -8,8 +8,8 @@ import { DrawWrapper } from "../Materials/drawWrapper";
 import type { ThinSprite } from "./thinSprite";
 import type { ISize } from "../Maths/math.size";
 
-declare type ThinTexture = import("../Materials/Textures/thinTexture").ThinTexture;
-declare type Scene = import("../scene").Scene;
+import type { ThinTexture } from "../Materials/Textures/thinTexture";
+import type { Scene } from "../scene";
 
 import "../Engines/Extensions/engine.alpha";
 import "../Engines/Extensions/engine.dynamicBuffer";

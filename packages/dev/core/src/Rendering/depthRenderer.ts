@@ -16,8 +16,8 @@ import "../Shaders/depth.vertex";
 import { _WarnImport } from "../Misc/devTools";
 import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
 
-declare type Material = import("../Materials/material").Material;
-declare type AbstractMesh = import("../Meshes/abstractMesh").AbstractMesh;
+import type { Material } from "../Materials/material";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 
 /**
  * This represents a depth renderer in Babylon.

@@ -5,12 +5,12 @@ import type { PickingInfo } from "./Collisions/pickingInfo";
 import type { AbstractScene } from "./abstractScene";
 import type { IPointerEvent } from "./Events/deviceInputEvents";
 
-declare type Mesh = import("./Meshes/mesh").Mesh;
-declare type Effect = import("./Materials/effect").Effect;
-declare type Camera = import("./Cameras/camera").Camera;
-declare type AbstractMesh = import("./Meshes/abstractMesh").AbstractMesh;
-declare type SubMesh = import("./Meshes/subMesh").SubMesh;
-declare type RenderTargetTexture = import("./Materials/Textures/renderTargetTexture").RenderTargetTexture;
+import type { Mesh } from "./Meshes/mesh";
+import type { Effect } from "./Materials/effect";
+import type { Camera } from "./Cameras/camera";
+import type { AbstractMesh } from "./Meshes/abstractMesh";
+import type { SubMesh } from "./Meshes/subMesh";
+import type { RenderTargetTexture } from "./Materials/Textures/renderTargetTexture";
 
 /**
  * Groups all the scene component constants in one place to ease maintenance.

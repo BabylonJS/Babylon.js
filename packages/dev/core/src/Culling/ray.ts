@@ -11,7 +11,7 @@ import { Camera } from "../Cameras/camera";
 import type { Plane } from "../Maths/math.plane";
 import { EngineStore } from "../Engines/engineStore";
 
-declare type Mesh = import("../Meshes/mesh").Mesh;
+import type { Mesh } from "../Meshes/mesh";
 
 /**
  * Class representing a ray with position and direction
