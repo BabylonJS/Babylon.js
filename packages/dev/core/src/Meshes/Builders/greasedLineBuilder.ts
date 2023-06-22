@@ -1,6 +1,6 @@
 import { Color3 } from "../../Maths/math.color";
 import type { GreasedLineMaterialOptions } from "../../Materials/greasedLinePluginMaterial";
-import { GreasedLineMeshColorMode, GreasedLineMeshMaterialType, GreasedLinePluginMaterial } from "../../Materials/greasedLinePluginMaterial";
+import { GreasedLineMeshMaterialType, GreasedLinePluginMaterial } from "../../Materials/greasedLinePluginMaterial";
 import { StandardMaterial } from "./../../Materials/standardMaterial";
 import { PBRMaterial } from "../../Materials/PBR/pbrMaterial";
 import type { Nullable } from "../../types";
@@ -9,6 +9,10 @@ import { GreasedLineMesh } from "../greasedLineMesh";
 import type { Scene } from "../../scene";
 import { EngineStore } from "../../Engines/engineStore";
 
+/**
+ * How are the colors distributed along the color table
+ * {@link https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param/greased_line#colors-and-colordistribution}
+ */
 export enum GreasedLineMeshColorDistribution {
     COLOR_DISTRIBUTION_NONE = 0,
     COLOR_DISTRIBUTION_REPEAT = 1,
@@ -18,6 +22,10 @@ export enum GreasedLineMeshColorDistribution {
     COLOR_DISTRIBUTION_START_END = 5,
 }
 
+/**
+ * How are the widths distributed along the width table
+ * {@link https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param/greased_line#widths-and-widthdistribution}
+ */
 export enum GreasedLineMeshWidthDistribution {
     WIDTH_DISTRIBUTION_NONE = 0,
     WIDTH_DISTRIBUTION_REPEAT = 1,
@@ -98,7 +106,7 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
     options.widthDistribution = options.widthDistribution ?? GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_START;
 
     materialOptions = materialOptions ?? {
-        color: Color3.White(),
+        color: GreasedLinePluginMaterial.DEFAULT_COLOR,
     };
     materialOptions.createAndAssignMaterial = materialOptions.createAndAssignMaterial ?? true;
     materialOptions.colorDistribution = materialOptions?.colorDistribution ?? GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_START;
@@ -133,17 +141,11 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
                 visibility: materialOptions.visibility,
                 width: materialOptions.width,
                 color: materialOptions.color,
-                colorMode: materialOptions.colorMode ?? GreasedLineMeshColorMode.COLOR_MODE_SET,
+                colorMode: materialOptions.colorMode,
                 colorsSampling: materialOptions.colorsSampling,
                 colorDistributionType: materialOptions.colorDistributionType,
+                colors,
             };
-
-            if (colors) {
-                initialMaterialOptions.colors = colors;
-            } else if (!materialOptions.color) {
-                // if we don't have a color table nor a color assign it a default white color
-                initialMaterialOptions.color = Color3.White();
-            }
 
             if (materialOptions.createAndAssignMaterial) {
                 const material = materialOptions.materialType === GreasedLineMeshMaterialType.MATERIAL_TYPE_PBR ? new PBRMaterial(name, scene) : new StandardMaterial(name, scene);
@@ -154,16 +156,17 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
     } else {
         // update the data on the mesh instance
         instance = options.instance;
-        const currentWidths = instance.options.widths;
+        const currentWidths = instance.widths;
 
         if (currentWidths) {
-            const newWidths = [...currentWidths];
-            newWidths.push(...widths);
-            instance.setSegmentWidths(newWidths);
+            const newWidths = currentWidths.slice();
+            for (const w of widths) {
+                newWidths.push(w);
+            }
+            instance.widths = newWidths;
         } else {
-            instance.setSegmentWidths(widths);
+            instance.widths = widths;
         }
-        instance.options.instance = instance;
         instance.addPoints(allPoints);
     }
 
@@ -172,7 +175,7 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
     if (colors && options.instance) {
         if (options.instance.material instanceof StandardMaterial || instance.material instanceof PBRMaterial) {
             if (options.instance.greasedLineMaterial) {
-                const currentColors = options.instance.greasedLineMaterial.getOptions().colors;
+                const currentColors = options.instance.greasedLineMaterial.colors;
                 if (currentColors) {
                     const newColors = currentColors.concat(colors);
                     options.instance.greasedLineMaterial.setColors(newColors, instance.isLazy());
@@ -392,3 +395,4 @@ export function CompleteGreasedLineColorTable(pointCount: number, colors: Color3
 
     return colorsData;
 }
+``;

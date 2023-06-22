@@ -3,28 +3,41 @@ import { RawTexture } from "./Textures/rawTexture";
 import { MaterialPluginBase } from "./materialPluginBase";
 import type { Scene } from "../scene";
 import type { UniformBuffer } from "./uniformBuffer";
-import type { Vector2 } from "../Maths/math.vector";
-import { TmpVectors } from "../Maths/math.vector";
+import { Vector2, TmpVectors } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
 import type { Nullable } from "../types";
 import type { Material } from "./material";
 import { MaterialDefines } from "./materialDefines";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { BaseTexture } from "./Textures/baseTexture";
-import { DeepCopier } from "../Misc/deepCopier";
+// import { DeepCopier } from "../Misc/deepCopier";
 import { RegisterClass } from "../Misc/typeStore";
+import { DeepCopier } from "core/Misc/deepCopier";
 
+/**
+ * Material types for GreasedLine
+ * {@link https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param/greased_line#materialtype}
+ */
 export enum GreasedLineMeshMaterialType {
     MATERIAL_TYPE_STANDARD = 0,
     MATERIAL_TYPE_PBR = 1,
 }
 
+/**
+ * Color blending mode of the @see GreasedLineMaterial and the base material
+ * {@link https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param/greased_line#colormode}
+ */
 export enum GreasedLineMeshColorMode {
     COLOR_MODE_SET = 0,
     COLOR_MODE_ADD = 1,
     COLOR_MODE_MULTIPLY = 2,
 }
 
+/**
+ * Color distribution type of the @see colors.
+ * {@link https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param/greased_line#colordistributiontype}
+ * 
+ */
 export enum GreasedLineMeshColorDistributionType {
     COLOR_DISTRIBUTION_TYPE_SEGMENT = 0,
     COLOR_DISTRIBUTION_TYPE_LINE = 1,
@@ -148,37 +161,72 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
      */
     public static readonly GREASED_LINE_MATERIAL_NAME = "GreasedLinePluginMaterial";
 
+    /**
+     * Default line color for newly created lines
+     */
+    public static DEFAULT_COLOR = Color3.White();
+    private static _EmptyColorsTexture: BaseTexture;
+
     private _colorsTexture?: RawTexture;
 
-    private _dashArray = 0;
+    private _visibility: number;
+    private _useDash: boolean;
+    private _dashCount: number;
+    private _dashRatio: number;
+    private _dashOffset: number;
+    private _dashArray: number;
+    private _width: number;
+    private _sizeAttenuation: boolean;
+    private _color: Color3 | undefined;
+    private _colorMode: GreasedLineMeshColorMode;
+    private _colors: Nullable<Color3[]> | undefined;
+    private _useColors: boolean;
+    private _colorDistributionType: GreasedLineMeshColorDistributionType;
+    private _colorsSampling: number;
+    private _resolution: Vector2;
 
     private _options: GreasedLineMaterialOptions;
 
     private _engine: Engine;
 
-    private static _EmptyColorsTexture: BaseTexture;
-
-    constructor(material: Material, private _scene: Scene, options: GreasedLineMaterialOptions) {
-        options = options ?? {};
+    constructor(material: Material, private _scene: Scene, options?: GreasedLineMaterialOptions) {
+        options = options || {
+            color: GreasedLinePluginMaterial.DEFAULT_COLOR,
+        };
 
         const defines = new MaterialGreasedLineDefines();
-        defines.GREASED_LINE_HAS_COLOR = !!options.color;
+        defines.GREASED_LINE_HAS_COLOR = !!options.color ?? false;
         defines.GREASED_LINE_SIZE_ATTENUATION = options.sizeAttenuation ?? false;
         defines.GREASED_LINE_COLOR_DISTRIBUTION_TYPE_LINE = options.colorDistributionType === GreasedLineMeshColorDistributionType.COLOR_DISTRIBUTION_TYPE_LINE;
-
         super(material, GreasedLinePluginMaterial.GREASED_LINE_MATERIAL_NAME, 200, defines);
 
         this._options = options;
+
         this._scene = this._scene ?? material.getScene();
         this._engine = this._scene.getEngine();
 
-        if (options.colors) {
-            this._createColorsTexture(`${material.name}-colors-texture`, options.colors);
+        this._visibility = options.visibility ?? 1;
+        this._useDash = options.useDash ?? false;
+        this._dashRatio = options.dashRatio ?? 0.5;
+        this._dashOffset = options.dashOffset ?? 0;
+        this._width = options.width ? options.width : this._sizeAttenuation ? 1 : 0.1;
+        this._sizeAttenuation = options.sizeAttenuation ?? false;
+        this._colorMode = options.colorMode ?? GreasedLineMeshColorMode.COLOR_MODE_SET;
+        this._color = options.color;
+        this._useColors = options.useColors ?? false;
+        this._colorDistributionType = options.colorDistributionType ?? GreasedLineMeshColorDistributionType.COLOR_DISTRIBUTION_TYPE_SEGMENT;
+        this._colorsSampling = options.colorsSampling ?? RawTexture.NEAREST_NEAREST;
+        this._resolution = options.resolution ?? new Vector2(this._engine.getRenderWidth(), this._engine.getRenderHeight());
+        this._colors = options.colors; // call the setter, to create the color texture
+
+        this.dashCount = options.dashCount ?? 1; // calculate the _dashArray value, call the setter
+
+        if (this._colors) {
+            this._createColorsTexture(`${material.name}-colors-texture`, this._colors);
         } else {
+            this._color = this._color ?? GreasedLinePluginMaterial.DEFAULT_COLOR;
             GreasedLinePluginMaterial._PrepareEmptyColorsTexture(_scene);
         }
-
-        this.setDashCount(options.dashCount ?? 1); // calculate the _dashArray value
 
         this._enable(true); // always enabled
     }
@@ -261,32 +309,27 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
         }
 
         const resolutionLineWidth = TmpVectors.Vector3[0];
-        if (this._options.resolution) {
-            resolutionLineWidth.x = this._options.resolution.x;
-            resolutionLineWidth.y = this._options.resolution.y;
-        } else {
-            resolutionLineWidth.x = this._engine.getRenderWidth();
-            resolutionLineWidth.y = this._engine.getRenderHeight();
-        }
-        resolutionLineWidth.z = this._options.width ? this._options.width : this._options.sizeAttenuation ? 1 : 0.1;
+        resolutionLineWidth.x = this._resolution.x;
+        resolutionLineWidth.y = this._resolution.y;
+        resolutionLineWidth.z = this._width;
         uniformBuffer.updateVector3("grl_resolution_lineWidth", resolutionLineWidth);
 
         const dashOptions = TmpVectors.Vector4[0];
-        dashOptions.x = GreasedLinePluginMaterial._BooleanToNumber(this._options.useDash);
-        dashOptions.y = this._dashArray ?? 0;
-        dashOptions.z = this._options.dashOffset ?? 0;
-        dashOptions.w = this._options.dashRatio ?? 0.5;
+        dashOptions.x = GreasedLinePluginMaterial._BooleanToNumber(this._useDash);
+        dashOptions.y = this._dashArray;
+        dashOptions.z = this._dashOffset;
+        dashOptions.w = this._dashRatio;
         uniformBuffer.updateVector4("grl_dashOptions", dashOptions);
 
         const colorModeVisibilityColorsWidthUseColors = TmpVectors.Vector4[1];
-        colorModeVisibilityColorsWidthUseColors.x = this._options.colorMode ?? GreasedLineMeshColorMode.COLOR_MODE_SET;
-        colorModeVisibilityColorsWidthUseColors.y = this._options.visibility ?? 1;
+        colorModeVisibilityColorsWidthUseColors.x = this._colorMode;
+        colorModeVisibilityColorsWidthUseColors.y = this._visibility;
         colorModeVisibilityColorsWidthUseColors.z = this._colorsTexture ? this._colorsTexture.getSize().width : 0;
-        colorModeVisibilityColorsWidthUseColors.w = GreasedLinePluginMaterial._BooleanToNumber(this._options.useColors);
+        colorModeVisibilityColorsWidthUseColors.w = GreasedLinePluginMaterial._BooleanToNumber(this._useColors);
         uniformBuffer.updateVector4("grl_colorMode_visibility_colorsWidth_useColors", colorModeVisibilityColorsWidthUseColors);
 
-        if (this._options.color) {
-            uniformBuffer.updateColor3("grl_singleColor", this._options.color ?? Color3.White());
+        if (this._color) {
+            uniformBuffer.updateColor3("grl_singleColor", this._color);
         }
 
         uniformBuffer.setTexture("grl_colors", this._colorsTexture ?? GreasedLinePluginMaterial._EmptyColorsTexture);
@@ -299,10 +342,9 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
      * @param _mesh
      */
     prepareDefines(defines: MaterialGreasedLineDefines, _scene: Scene, _mesh: AbstractMesh) {
-        const options = this._options;
-        defines.GREASED_LINE_HAS_COLOR = !!options.color;
-        defines.GREASED_LINE_SIZE_ATTENUATION = options.sizeAttenuation ?? false;
-        defines.GREASED_LINE_COLOR_DISTRIBUTION_TYPE_LINE = options.colorDistributionType === GreasedLineMeshColorDistributionType.COLOR_DISTRIBUTION_TYPE_LINE;
+        defines.GREASED_LINE_HAS_COLOR = !!this._color;
+        defines.GREASED_LINE_SIZE_ATTENUATION = this._sizeAttenuation ?? false;
+        defines.GREASED_LINE_COLOR_DISTRIBUTION_TYPE_LINE = this._colorDistributionType === GreasedLineMeshColorDistributionType.COLOR_DISTRIBUTION_TYPE_LINE;
     }
 
     /**
@@ -487,16 +529,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
      */
     private _createColorsTexture(name: string, colors: Color3[]) {
         const colorsArray = GreasedLinePluginMaterial._Color3toRGBAUint8(colors);
-        this._colorsTexture = new RawTexture(
-            colorsArray,
-            colors.length,
-            1,
-            Engine.TEXTUREFORMAT_RGBA,
-            this._scene,
-            false,
-            true,
-            this._options.colorsSampling ?? RawTexture.NEAREST_NEAREST
-        );
+        this._colorsTexture = new RawTexture(colorsArray, colors.length, 1, Engine.TEXTUREFORMAT_RGBA, this._scene, false, true, this._colorsSampling);
         this._colorsTexture.name = name;
     }
 
@@ -509,11 +542,32 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
     }
 
     /**
+     * Gets whether to use the colors option to colorize the line.
+     */
+    get useColors() {
+        return this._useColors;
+    }
+
+    /**
      * Sets whether to use the colors option to colorize the line.
      * @param value true if use the colors, otherwise false
      */
-    public setUseColors(value: boolean) {
-        this._options.useColors = value;
+    set useColors(value: boolean) {
+        this._useColors = value;
+    }
+
+    /**
+     * Returns the colors used to colorize the line
+     */
+    get colors() {
+        return this._colors;
+    }
+
+    /**
+     * Sets the colors used to colorize the line
+     */
+    set colors(value: Nullable<Color3[]> | undefined) {
+        this.setColors(value);
     }
 
     /**
@@ -523,15 +577,15 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
      * @param forceUpdate force creation of a new texture
      * @returns
      */
-    public setColors(colors: Nullable<Color3[]>, lazy = false, forceUpdate = false): void {
-        if (colors === null || colors.length === 0) {
+    public setColors(colors: Nullable<Color3[]> | undefined, lazy = false, forceUpdate = false): void {
+        const origColorsCount = this._colors?.length ?? 0;
+
+        this._colors = colors;
+
+        if (colors === null || colors === undefined || colors.length === 0) {
             this._colorsTexture?.dispose();
             return;
         }
-
-        const origColorsCount = this._options.colors?.length ?? 0;
-
-        this._options.colors = colors;
 
         if (lazy && !forceUpdate) {
             return;
@@ -550,17 +604,24 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
      * Updates the material. Use when material created in lazy mode.
      */
     public updateLazy() {
-        if (this._options.colors) {
-            this.setColors(this._options.colors, false, true);
+        if (this._colors) {
+            this.setColors(this._colors, false, true);
         }
     }
 
+    // /**
+    //  * Gets the plugin material options
+    //  * @returns the plugin material options @see GreasedLineMaterialOptions
+    //  */
+    // public getOptions(): GreasedLineMaterialOptions {
+    //     return this._options;
+    // }
+
     /**
-     * Gets the plugin material options
-     * @returns the plugin material options @see GreasedLineMaterialOptions
+     * Gets the visibility value
      */
-    public getOptions(): GreasedLineMaterialOptions {
-        return this._options;
+    get visibility() {
+        return this._visibility;
     }
 
     /**
@@ -569,58 +630,114 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
      * 1 - 100% of the line will be visible
      * @param value
      */
-    public setVisibility(value: number) {
-        this._options.visibility = value;
+    set visibility(value: number) {
+        this._visibility = value;
     }
 
     /**
-     * Turns on/off dashmode
+     * True if dash mode is enabled, false otherwise
+     */
+    get useDash() {
+        return this._useDash;
+    }
+
+    /**
+     * Turns on/off dash mode
      * @param value
      */
-    public setUseDash(value: boolean) {
-        this._options.useDash = value;
+    set useDash(value: boolean) {
+        this._useDash = value;
     }
 
     /**
-     * Sets the dash array.
-     * @param value dash array
+     * Gets the number of dashes in the line
      */
-    public setDashCount(value: number) {
-        this._options.dashCount = value;
+    get dashCount() {
+        return this._dashCount;
+    }
+    /**
+     * Sets the number of dashes in the line
+     * @param value dash
+     */
+    set dashCount(value: number) {
+        this._dashCount = value;
         this._dashArray = 1 / value;
     }
 
     /**
-     * Sets the dash ratio
-     * @param value dash length ratio 0..1 (0.5 = half empty, half drawn)
+     * Sets the dash ratio 0 to 1 (0.5 = half empty, half drawn)
      */
-    public setDashRatio(value: number) {
-        this._options.dashRatio = value;
+    get dashRatio() {
+        return this._dashRatio;
+    }
+
+    /**
+     * Sets the dash ratio
+     * @param value dash ratio 0 to 1 (0.5 = half empty, half drawn)
+     */
+    set dashRatio(value: number) {
+        this._dashRatio = value;
+    }
+
+    /**
+     * Get the dash offset
+     */
+    get dashOffset() {
+        return this._dashOffset;
     }
 
     /**
      * Sets the dash offset
      * @param value the dashes will be offset by this value
      */
-    public setDashOffset(value: number) {
-        this._options.dashOffset = value;
+    set dashOffset(value: number) {
+        this._dashOffset = value;
+    }
+
+    /**
+     * Gets line base width. At each point the line width is calculated by widths[pointIndex] * width
+     */
+    get width() {
+        return this._width;
     }
 
     /**
      * Sets line base width. At each point the line width is calculated by widths[pointIndex] * width
      * @param value base width
      */
-    public setWidth(value: number) {
-        this._options.width = value;
+    set width(value: number) {
+        this._width = value;
+    }
+
+    /**
+     * Gets the value of sizeAttenuation. False means 1 unit in width = 1 unit on scene, true means 1 unit in width is reduced on the screen to make better looking lines
+     */
+    get sizeAttenuation() {
+        return this._sizeAttenuation;
     }
 
     /**
      * Turn on/off attenuation of the width option and widths array.
      * @param value false means 1 unit in width = 1 unit on scene, true means 1 unit in width is reduced on the screen to make better looking lines
      */
-    public setSizeAttenuation(value: boolean) {
-        this._options.sizeAttenuation = value;
+    set sizeAttenuation(value: boolean) {
+        this._sizeAttenuation = value;
         this.markAllDefinesAsDirty();
+    }
+
+    /**
+     * Gets the color of the line
+     */
+    get color() {
+        return this.color;
+    }
+
+    /**
+     * Sets the color of the line
+     * @param value Color3 or undefined to clear the color. You need to clear the color if you use colors and useColors = true
+     */
+    set color(value: Color3 | undefined) {
+        this.setColor(value);
     }
 
     /**
@@ -628,12 +745,20 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
      * @param value color
      */
     public setColor(value: Color3 | undefined, doNotMarkDirty = false) {
-        if ((this._options.color === undefined && value !== undefined) || (this._options.color !== undefined && value === undefined)) {
-            this._options.color = value;
+        if ((this._color === undefined && value !== undefined) || (this._color !== undefined && value === undefined)) {
+            this._color = value;
             !doNotMarkDirty && this.markAllDefinesAsDirty();
         } else {
-            this._options.color = value;
+            this._color = value;
         }
+    }
+
+    /**
+     * Get the mixing mode of the color paramater.
+     * @see GreasedLineMeshColorMode
+     */
+    get colorMode() {
+        return this._colorMode;
     }
 
     /**
@@ -641,8 +766,8 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
      * @see GreasedLineMeshColorMode
      * @param value color mode
      */
-    public setColorMode(value: GreasedLineMeshColorMode) {
-        this._options.colorMode = value;
+    set colorMode(value: GreasedLineMeshColorMode) {
+        this._colorMode = value;
     }
 
     /**
@@ -677,15 +802,15 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
         }
 
         this._options.color && this.setColor(this._options.color, true);
-        this._options.colorMode && this.setColorMode(this._options.colorMode);
-        this._options.useColors && this.setUseColors(this._options.useColors);
-        this._options.visibility && this.setVisibility(this._options.visibility);
-        this._options.useDash && this.setUseDash(this._options.useDash);
-        this._options.dashCount && this.setDashCount(this._options.dashCount);
-        this._options.dashRatio && this.setDashRatio(this._options.dashRatio);
-        this._options.dashOffset && this.setDashOffset(this._options.dashOffset);
-        this._options.width && this.setWidth(this._options.width);
-        this._options.sizeAttenuation && this.setSizeAttenuation(this._options.sizeAttenuation);
+        this._options.colorMode && (this.colorMode = this._options.colorMode);
+        this._options.useColors && (this.useColors = this._options.useColors);
+        this._options.visibility && (this.visibility = this._options.visibility);
+        this._options.useDash && (this.useDash = this._options.useDash);
+        this._options.dashCount && (this.dashCount = this._options.dashCount);
+        this._options.dashRatio && (this.dashRatio = this._options.dashRatio);
+        this._options.dashOffset && (this.dashOffset = this._options.dashOffset);
+        this._options.width && (this.width = this._options.width);
+        this._options.sizeAttenuation && (this.sizeAttenuation = this._options.sizeAttenuation);
 
         this.markAllDefinesAsDirty();
     }
