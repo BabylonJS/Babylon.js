@@ -1,5 +1,5 @@
 import type { Vector3 } from "../Maths/math.vector";
-import type { PhysicsRaycastResult } from "./physicsRaycastResult";
+import type { PhysicsRaycastResult, IRaycastQuery } from "./physicsRaycastResult";
 import type { IPhysicsEnginePlugin as IPhysicsEnginePluginV1 } from "./v1/IPhysicsEnginePlugin";
 import type { IPhysicsEnginePluginV2 } from "./v2/IPhysicsEnginePlugin";
 
@@ -75,7 +75,7 @@ export interface IPhysicsEngine {
      * @param to when should the ray end?
      * @returns PhysicsRaycastResult
      */
-    raycast(from: Vector3, to: Vector3): PhysicsRaycastResult;
+    raycast(from: Vector3, to: Vector3, query?: IRaycastQuery): PhysicsRaycastResult;
 
     /**
      * Called by the scene. No need to call it.
