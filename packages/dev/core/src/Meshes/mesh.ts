@@ -3138,7 +3138,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         return this._convertToUnIndexedMesh(true);
     }
 
-
     /**
      * This method removes all the mesh indices and add new vertices (duplication) in order to unfold facets into buffers.
      * In other words, more vertices, no more indices and a single bigger VBO.
