@@ -11,6 +11,12 @@
 		#define v_VARYINGNAME_UV vMainUV5
 	#elif _DEFINENAME_DIRECTUV == 6
 		#define v_VARYINGNAME_UV vMainUV6
+	#elif _DEFINENAME_DIRECTUV == 7
+		#define v_VARYINGNAME_UV vMainUV7
+	#elif _DEFINENAME_DIRECTUV == 8
+		#define v_VARYINGNAME_UV vMainUV8
+	#elif _DEFINENAME_DIRECTUV == 9
+		#define v_VARYINGNAME_UV vMainUV9
 	#else
 		varying vec2 v_VARYINGNAME_UV;
 	#endif

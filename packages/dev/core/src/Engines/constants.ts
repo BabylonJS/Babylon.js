@@ -740,7 +740,7 @@ export class Constants {
     /**
      * Maximum number of uv sets supported
      */
-    public static readonly MAX_SUPPORTED_UV_SETS = 6;
+    public static readonly MAX_SUPPORTED_UV_SETS = 9;
 
     /**
      * GL constants

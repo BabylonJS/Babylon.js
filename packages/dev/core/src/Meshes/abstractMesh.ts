@@ -1165,6 +1165,9 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * * VertexBuffer.UV4Kind
      * * VertexBuffer.UV5Kind
      * * VertexBuffer.UV6Kind
+     * * VertexBuffer.UV7Kind
+     * * VertexBuffer.UV8Kind
+     * * VertexBuffer.UV9Kind
      * * VertexBuffer.ColorKind
      * * VertexBuffer.MatricesIndicesKind
      * * VertexBuffer.MatricesIndicesExtraKind
@@ -1191,6 +1194,9 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * * VertexBuffer.UV4Kind
      * * VertexBuffer.UV5Kind
      * * VertexBuffer.UV6Kind
+     * * VertexBuffer.UV7Kind
+     * * VertexBuffer.UV8Kind
+     * * VertexBuffer.UV9Kind
      * * VertexBuffer.ColorKind
      * * VertexBuffer.MatricesIndicesKind
      * * VertexBuffer.MatricesIndicesExtraKind

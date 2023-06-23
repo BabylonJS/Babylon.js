@@ -33,4 +33,22 @@
 		v_VARYINGNAME_UV = vec2(_MATRIXNAME_Matrix * vec4(uv6, 1.0, 0.0));
 	}
 #endif
+#ifdef UV7
+	else if (v_INFONAME_ == 6.)
+	{
+		v_VARYINGNAME_UV = vec2(_MATRIXNAME_Matrix * vec4(uv7, 1.0, 0.0));
+	}
+#endif
+#ifdef UV8
+	else if (v_INFONAME_ == 7.)
+	{
+		v_VARYINGNAME_UV = vec2(_MATRIXNAME_Matrix * vec4(uv8, 1.0, 0.0));
+	}
+#endif
+#ifdef UV9
+	else if (v_INFONAME_ == 8.)
+	{
+		v_VARYINGNAME_UV = vec2(_MATRIXNAME_Matrix * vec4(uv9, 1.0, 0.0));
+	}
+#endif
 #endif

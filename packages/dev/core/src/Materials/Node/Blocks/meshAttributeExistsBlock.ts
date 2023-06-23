@@ -20,6 +20,9 @@ export enum MeshAttributeExistsBlockTypes {
     UV4,
     UV5,
     UV6,
+    UV7,
+    UV8,
+    UV9,
 }
 
 /**
@@ -77,6 +80,15 @@ export class MeshAttributeExistsBlock extends NodeMaterialBlock {
                     case "uv6":
                         this.attributeType = MeshAttributeExistsBlockTypes.UV6;
                         break;
+                    case "uv7":
+                        this.attributeType = MeshAttributeExistsBlockTypes.UV7;
+                        break;
+                    case "uv8":
+                        this.attributeType = MeshAttributeExistsBlockTypes.UV8;
+                        break;
+                    case "uv9":
+                        this.attributeType = MeshAttributeExistsBlockTypes.UV9;
+                        break;
                 }
             } else if (sourceBlock instanceof MorphTargetsBlock) {
                 switch (this.input.connectedPoint?.name) {
@@ -118,6 +130,9 @@ export class MeshAttributeExistsBlock extends NodeMaterialBlock {
             { label: "UV4", value: MeshAttributeExistsBlockTypes.UV4 },
             { label: "UV5", value: MeshAttributeExistsBlockTypes.UV5 },
             { label: "UV6", value: MeshAttributeExistsBlockTypes.UV6 },
+            { label: "UV7", value: MeshAttributeExistsBlockTypes.UV7 },
+            { label: "UV8", value: MeshAttributeExistsBlockTypes.UV8 },
+            { label: "UV9", value: MeshAttributeExistsBlockTypes.UV9 },
         ],
     })
     public attributeType = MeshAttributeExistsBlockTypes.None;
@@ -174,6 +189,15 @@ export class MeshAttributeExistsBlock extends NodeMaterialBlock {
                 break;
             case MeshAttributeExistsBlockTypes.UV6:
                 attributeDefine = "UV6";
+                break;
+            case MeshAttributeExistsBlockTypes.UV7:
+                attributeDefine = "UV7";
+                break;
+            case MeshAttributeExistsBlockTypes.UV8:
+                attributeDefine = "UV8";
+                break;
+            case MeshAttributeExistsBlockTypes.UV9:
+                attributeDefine = "UV9";
                 break;
         }
 

@@ -1002,7 +1002,7 @@ export class ThinEngine {
         //     }
         // }
 
-        const versionToLog = `Babylon.js v${ThinEngine.Version}`;
+        const versionToLog = `ICON Babylon.js v${ThinEngine.Version}`;
         console.log(versionToLog + ` - ${this.description}`);
 
         // Check setAttribute in case of workers

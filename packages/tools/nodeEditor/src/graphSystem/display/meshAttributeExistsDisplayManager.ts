@@ -50,6 +50,15 @@ export class MeshAttributeExistsDisplayManager implements IDisplayManager {
             case MeshAttributeExistsBlockTypes.UV6:
                 attributeName = "UV6";
                 break;
+            case MeshAttributeExistsBlockTypes.UV7:
+                attributeName = "UV7";
+                break;
+            case MeshAttributeExistsBlockTypes.UV8:
+                attributeName = "UV8";
+                break;
+            case MeshAttributeExistsBlockTypes.UV9:
+                attributeName = "UV9";
+                break;
         }
 
         if (attributeName) {

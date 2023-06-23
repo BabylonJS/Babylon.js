@@ -50,6 +50,9 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public MAINUV4 = false;
     public MAINUV5 = false;
     public MAINUV6 = false;
+    public MAINUV7 = false;
+    public MAINUV8 = false;
+    public MAINUV9 = false;
     public DIFFUSE = false;
     public DIFFUSEDIRECTUV = 0;
     public BAKED_VERTEX_ANIMATION_TEXTURE = false;
@@ -94,6 +97,9 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public UV4 = false;
     public UV5 = false;
     public UV6 = false;
+    public UV7 = false;
+    public UV8 = false;
+    public UV9 = false;
     public VERTEXCOLOR = false;
     public VERTEXALPHA = false;
     public NUM_BONE_INFLUENCERS = 0;

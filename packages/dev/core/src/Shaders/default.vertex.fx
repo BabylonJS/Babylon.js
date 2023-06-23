@@ -27,7 +27,7 @@ attribute vec4 color;
 #include<instancesDeclaration>
 #include<prePassVertexDeclaration>
 
-#include<mainUVVaryingDeclaration>[1..7]
+#include<mainUVVaryingDeclaration>[1..10]
 
 #include<samplerVertexDeclaration>(_DEFINENAME_,DIFFUSE,_VARYINGNAME_,Diffuse)
 #include<samplerVertexDeclaration>(_DEFINENAME_,DETAIL,_VARYINGNAME_,Detail)

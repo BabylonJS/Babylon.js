@@ -91,6 +91,9 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
     public UV4 = false;
     public UV5 = false;
     public UV6 = false;
+    public UV7 = false;
+    public UV8 = false;
+    public UV9 = false;
 
     /** BONES */
     public NUM_BONE_INFLUENCERS = 0;

@@ -15,8 +15,8 @@ attribute vec4 tangent;
 #ifdef UV1
 attribute vec2 uv;
 #endif
-#include<uvAttributeDeclaration>[2..7]
-#include<mainUVVaryingDeclaration>[1..7]
+#include<uvAttributeDeclaration>[2..10]
+#include<mainUVVaryingDeclaration>[1..10]
 #ifdef VERTEXCOLOR
 attribute vec4 color;
 #endif

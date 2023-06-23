@@ -27,7 +27,7 @@ varying vec3 vNormalW;
 varying vec4 vColor;
 #endif
 
-#include<mainUVVaryingDeclaration>[1..7]
+#include<mainUVVaryingDeclaration>[1..10]
 
 // Helper functions
 #include<helperFunctions>

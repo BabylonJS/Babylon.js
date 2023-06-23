@@ -116,6 +116,9 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
             loadAttribute("TEXCOORD_3", VertexBuffer.UV4Kind);
             loadAttribute("TEXCOORD_4", VertexBuffer.UV5Kind);
             loadAttribute("TEXCOORD_5", VertexBuffer.UV6Kind);
+            loadAttribute("TEXCOORD_6", VertexBuffer.UV7Kind);
+            loadAttribute("TEXCOORD_7", VertexBuffer.UV8Kind);
+            loadAttribute("TEXCOORD_8", VertexBuffer.UV9Kind);
             loadAttribute("JOINTS_0", VertexBuffer.MatricesIndicesKind);
             loadAttribute("WEIGHTS_0", VertexBuffer.MatricesWeightsKind);
             loadAttribute("COLOR_0", VertexBuffer.ColorKind);

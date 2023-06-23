@@ -59,6 +59,9 @@ export interface IGetSetVerticesData {
      * - VertexBuffer.UV4Kind
      * - VertexBuffer.UV5Kind
      * - VertexBuffer.UV6Kind
+     * - VertexBuffer.UV7Kind
+     * - VertexBuffer.UV8Kind
+     * - VertexBuffer.UV9Kind
      * - VertexBuffer.ColorKind
      * - VertexBuffer.MatricesIndicesKind
      * - VertexBuffer.MatricesIndicesExtraKind
@@ -145,6 +148,21 @@ export class VertexData {
     public uvs6: Nullable<FloatArray>;
 
     /**
+     * A seventh array of u,v which maps a texture image onto each vertex  [...., u, v, .....]
+     */
+    public uvs7: Nullable<FloatArray>;
+
+    /**
+     * A eigth array of u,v which maps a texture image onto each vertex  [...., u, v, .....]
+     */
+    public uvs8: Nullable<FloatArray>;
+
+    /**
+     * A nineth array of u,v which maps a texture image onto each vertex  [...., u, v, .....]
+     */
+    public uvs9: Nullable<FloatArray>;
+
+    /**
      * An array of the r, g, b, a, color of each vertex  [...., r, g, b, a, .....]
      */
     public colors: Nullable<FloatArray>;
@@ -211,6 +229,15 @@ export class VertexData {
                 break;
             case VertexBuffer.UV6Kind:
                 this.uvs6 = data;
+                break;
+            case VertexBuffer.UV7Kind:
+                this.uvs7 = data;
+                break;
+            case VertexBuffer.UV8Kind:
+                this.uvs8 = data;
+                break;
+            case VertexBuffer.UV9Kind:
+                this.uvs9 = data;
                 break;
             case VertexBuffer.ColorKind:
                 this.colors = data;
@@ -343,6 +370,27 @@ export class VertexData {
             }
         }
 
+        if (this.uvs7) {
+            meshOrGeometry.setVerticesData(VertexBuffer.UV7Kind, this.uvs7, updatable);
+            if (isAsync) {
+                yield;
+            }
+        }
+
+        if (this.uvs8) {
+            meshOrGeometry.setVerticesData(VertexBuffer.UV8Kind, this.uvs8, updatable);
+            if (isAsync) {
+                yield;
+            }
+        }
+
+        if (this.uvs9) {
+            meshOrGeometry.setVerticesData(VertexBuffer.UV9Kind, this.uvs9, updatable);
+            if (isAsync) {
+                yield;
+            }
+        }
+
         if (this.colors) {
             meshOrGeometry.setVerticesData(VertexBuffer.ColorKind, this.colors, updatable);
             if (isAsync) {
@@ -425,6 +473,18 @@ export class VertexData {
 
         if (this.uvs6) {
             meshOrGeometry.updateVerticesData(VertexBuffer.UV6Kind, this.uvs6, updateExtends, makeItUnique);
+        }
+
+        if (this.uvs7) {
+            meshOrGeometry.updateVerticesData(VertexBuffer.UV7Kind, this.uvs7, updateExtends, makeItUnique);
+        }
+
+        if (this.uvs8) {
+            meshOrGeometry.updateVerticesData(VertexBuffer.UV8Kind, this.uvs8, updateExtends, makeItUnique);
+        }
+
+        if (this.uvs9) {
+            meshOrGeometry.updateVerticesData(VertexBuffer.UV9Kind, this.uvs9, updateExtends, makeItUnique);
         }
 
         if (this.colors) {
@@ -570,6 +630,9 @@ export class VertexData {
                 !this.uvs4 !== !other.uvs4 ||
                 !this.uvs5 !== !other.uvs5 ||
                 !this.uvs6 !== !other.uvs6 ||
+                !this.uvs7 !== !other.uvs7 ||
+                !this.uvs8 !== !other.uvs8 ||
+                !this.uvs9 !== !other.uvs9 ||
                 !this.colors !== !other.colors ||
                 !this.matricesIndices !== !other.matricesIndices ||
                 !this.matricesWeights !== !other.matricesWeights ||
@@ -705,6 +768,24 @@ export class VertexData {
             this.uvs6,
             transform,
             vertexDatas.map((other) => [other.vertexData.uvs6, other.transform])
+        );
+        this.uvs7 = VertexData._MergeElement(
+            VertexBuffer.UV7Kind,
+            this.uvs7,
+            transform,
+            vertexDatas.map((other) => [other.vertexData.uvs7, other.transform])
+        );
+        this.uvs8 = VertexData._MergeElement(
+            VertexBuffer.UV8Kind,
+            this.uvs8,
+            transform,
+            vertexDatas.map((other) => [other.vertexData.uvs8, other.transform])
+        );
+        this.uvs9 = VertexData._MergeElement(
+            VertexBuffer.UV9Kind,
+            this.uvs9,
+            transform,
+            vertexDatas.map((other) => [other.vertexData.uvs9, other.transform])
         );
         if (isAsync) {
             yield;
@@ -863,6 +944,15 @@ export class VertexData {
         if (this.uvs6) {
             validateElementCount(VertexBuffer.UV6Kind, this.uvs6);
         }
+        if (this.uvs7) {
+            validateElementCount(VertexBuffer.UV7Kind, this.uvs7);
+        }
+        if (this.uvs8) {
+            validateElementCount(VertexBuffer.UV8Kind, this.uvs8);
+        }
+        if (this.uvs9) {
+            validateElementCount(VertexBuffer.UV9Kind, this.uvs9);
+        }
         if (this.colors) {
             validateElementCount(VertexBuffer.ColorKind, this.colors);
         }
@@ -921,6 +1011,18 @@ export class VertexData {
 
         if (this.uvs6) {
             serializationObject.uvs6 = this.uvs6;
+        }
+
+        if (this.uvs7) {
+            serializationObject.uvs7 = this.uvs7;
+        }
+
+        if (this.uvs8) {
+            serializationObject.uvs8 = this.uvs8;
+        }
+
+        if (this.uvs9) {
+            serializationObject.uvs9 = this.uvs9;
         }
 
         if (this.colors) {
@@ -1010,6 +1112,18 @@ export class VertexData {
 
         if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.UV6Kind)) {
             result.uvs6 = meshOrGeometry.getVerticesData(VertexBuffer.UV6Kind, copyWhenShared, forceCopy);
+        }
+
+        if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.UV7Kind)) {
+            result.uvs7 = meshOrGeometry.getVerticesData(VertexBuffer.UV7Kind, copyWhenShared, forceCopy);
+        }
+
+        if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.UV8Kind)) {
+            result.uvs8 = meshOrGeometry.getVerticesData(VertexBuffer.UV8Kind, copyWhenShared, forceCopy);
+        }
+
+        if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.UV9Kind)) {
+            result.uvs9 = meshOrGeometry.getVerticesData(VertexBuffer.UV9Kind, copyWhenShared, forceCopy);
         }
 
         if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.ColorKind)) {
@@ -2019,6 +2133,24 @@ export class VertexData {
         const uv6s = parsedVertexData.uv6s;
         if (uv6s) {
             vertexData.set(uv6s, VertexBuffer.UV6Kind);
+        }
+
+        // uv7s
+        const uv7s = parsedVertexData.uv7s;
+        if (uv7s) {
+            vertexData.set(uv7s, VertexBuffer.UV7Kind);
+        }
+
+        // uv8s
+        const uv8s = parsedVertexData.uv8s;
+        if (uv8s) {
+            vertexData.set(uv8s, VertexBuffer.UV8Kind);
+        }
+
+        // uv9s
+        const uv9s = parsedVertexData.uv9s;
+        if (uv9s) {
+            vertexData.set(uv9s, VertexBuffer.UV9Kind);
         }
 
         // colors

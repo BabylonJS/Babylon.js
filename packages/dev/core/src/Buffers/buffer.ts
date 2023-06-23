@@ -664,6 +664,18 @@ export class VertexBuffer {
      */
     public static readonly UV6Kind = "uv6";
     /**
+     * Texture coordinates 7
+     */
+    public static readonly UV7Kind = "uv7";
+    /**
+     * Texture coordinates 8
+     */
+    public static readonly UV8Kind = "uv8";
+    /**
+     * Texture coordinates 9
+     */
+    public static readonly UV9Kind = "uv9";
+    /**
      * Colors
      */
     public static readonly ColorKind = "color";
@@ -701,6 +713,9 @@ export class VertexBuffer {
             case VertexBuffer.UV4Kind:
             case VertexBuffer.UV5Kind:
             case VertexBuffer.UV6Kind:
+            case VertexBuffer.UV7Kind:
+            case VertexBuffer.UV8Kind:
+            case VertexBuffer.UV9Kind:
                 return 2;
             case VertexBuffer.NormalKind:
             case VertexBuffer.PositionKind:

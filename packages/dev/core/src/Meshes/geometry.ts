@@ -1126,6 +1126,27 @@ export class Geometry implements IGetSetVerticesData {
             }
         }
 
+        if (this.isVerticesDataPresent(VertexBuffer.UV7Kind)) {
+            serializationObject.uv7s = this._toNumberArray(this.getVerticesData(VertexBuffer.UV7Kind));
+            if (this.isVertexBufferUpdatable(VertexBuffer.UV7Kind)) {
+                serializationObject.uv7s._updatable = true;
+            }
+        }
+
+        if (this.isVerticesDataPresent(VertexBuffer.UV8Kind)) {
+            serializationObject.uv8s = this._toNumberArray(this.getVerticesData(VertexBuffer.UV8Kind));
+            if (this.isVertexBufferUpdatable(VertexBuffer.UV8Kind)) {
+                serializationObject.uv8s._updatable = true;
+            }
+        }
+
+        if (this.isVerticesDataPresent(VertexBuffer.UV9Kind)) {
+            serializationObject.uv9s = this._toNumberArray(this.getVerticesData(VertexBuffer.UV9Kind));
+            if (this.isVertexBufferUpdatable(VertexBuffer.UV9Kind)) {
+                serializationObject.uv9s._updatable = true;
+            }
+        }
+
         if (this.isVerticesDataPresent(VertexBuffer.ColorKind)) {
             serializationObject.colors = this._toNumberArray(this.getVerticesData(VertexBuffer.ColorKind));
             if (this.isVertexBufferUpdatable(VertexBuffer.ColorKind)) {
@@ -1284,6 +1305,35 @@ export class Geometry implements IGetSetVerticesData {
                 mesh.setVerticesData(VertexBuffer.UV6Kind, uvs6Data, false);
             }
 
+            if (binaryInfo.uvs7AttrDesc && binaryInfo.uvs7AttrDesc.count > 0) {
+                const uvs7Data = new Float32Array(parsedGeometry, binaryInfo.uvs7AttrDesc.offset, binaryInfo.uvs7AttrDesc.count);
+                if (CompatibilityOptions.UseOpenGLOrientationForUV) {
+                    for (let index = 1; index < uvs7Data.length; index += 2) {
+                        uvs7Data[index] = 1 - uvs7Data[index];
+                    }
+                }
+                mesh.setVerticesData(VertexBuffer.UV7Kind, uvs7Data, false);
+            }
+
+            if (binaryInfo.uvs8AttrDesc && binaryInfo.uvs8AttrDesc.count > 0) {
+                const uvs8Data = new Float32Array(parsedGeometry, binaryInfo.uvs8AttrDesc.offset, binaryInfo.uvs8AttrDesc.count);
+                if (CompatibilityOptions.UseOpenGLOrientationForUV) {
+                    for (let index = 1; index < uvs8Data.length; index += 2) {
+                        uvs8Data[index] = 1 - uvs8Data[index];
+                    }
+                }
+                mesh.setVerticesData(VertexBuffer.UV8Kind, uvs8Data, false);
+            }
+
+            if (binaryInfo.uvs9AttrDesc && binaryInfo.uvs9AttrDesc.count > 0) {
+                const uvs9Data = new Float32Array(parsedGeometry, binaryInfo.uvs9AttrDesc.offset, binaryInfo.uvs9AttrDesc.count);
+                if (CompatibilityOptions.UseOpenGLOrientationForUV) {
+                    for (let index = 1; index < uvs9Data.length; index += 2) {
+                        uvs9Data[index] = 1 - uvs9Data[index];
+                    }
+                }
+                mesh.setVerticesData(VertexBuffer.UV9Kind, uvs9Data, false);
+            }
             if (binaryInfo.colorsAttrDesc && binaryInfo.colorsAttrDesc.count > 0) {
                 const colorsData = new Float32Array(parsedGeometry, binaryInfo.colorsAttrDesc.offset, binaryInfo.colorsAttrDesc.count);
                 mesh.setVerticesData(VertexBuffer.ColorKind, colorsData, false, binaryInfo.colorsAttrDesc.stride);
@@ -1370,6 +1420,18 @@ export class Geometry implements IGetSetVerticesData {
 
             if (parsedGeometry.uvs6) {
                 mesh.setVerticesData(VertexBuffer.UV6Kind, parsedGeometry.uvs6, parsedGeometry.uvs6._updatable);
+            }
+
+            if (parsedGeometry.uvs7) {
+                mesh.setVerticesData(VertexBuffer.UV7Kind, parsedGeometry.uvs7, parsedGeometry.uvs7._updatable);
+            }
+
+            if (parsedGeometry.uvs8) {
+                mesh.setVerticesData(VertexBuffer.UV8Kind, parsedGeometry.uvs8, parsedGeometry.uvs8._updatable);
+            }
+
+            if (parsedGeometry.uvs9) {
+                mesh.setVerticesData(VertexBuffer.UV9Kind, parsedGeometry.uvs9, parsedGeometry.uvs9._updatable);
             }
 
             if (parsedGeometry.colors) {
@@ -1572,6 +1634,18 @@ export class Geometry implements IGetSetVerticesData {
 
             if (parsedVertexData.hasUVs6) {
                 geometry._delayInfo.push(VertexBuffer.UV6Kind);
+            }
+
+            if (parsedVertexData.hasUVs7) {
+                geometry._delayInfo.push(VertexBuffer.UV7Kind);
+            }
+
+            if (parsedVertexData.hasUVs8) {
+                geometry._delayInfo.push(VertexBuffer.UV8Kind);
+            }
+
+            if (parsedVertexData.hasUVs9) {
+                geometry._delayInfo.push(VertexBuffer.UV9Kind);
             }
 
             if (parsedVertexData.hasColors) {

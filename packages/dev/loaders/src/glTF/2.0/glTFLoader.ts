@@ -75,6 +75,7 @@ import { BoundingInfo } from "core/Culling/boundingInfo";
 import type { AssetContainer } from "core/assetContainer";
 import type { AnimationPropertyInfo } from "./glTFLoaderAnimation";
 import { nodeAnimationData } from "./glTFLoaderAnimation";
+import { Constants } from "core/Engines";
 
 interface TypedArrayLike extends ArrayBufferView {
     readonly length: number;
@@ -1113,6 +1114,9 @@ export class GLTFLoader implements IGLTFLoader {
         loadAttribute("TEXCOORD_3", VertexBuffer.UV4Kind);
         loadAttribute("TEXCOORD_4", VertexBuffer.UV5Kind);
         loadAttribute("TEXCOORD_5", VertexBuffer.UV6Kind);
+        loadAttribute("TEXCOORD_6", VertexBuffer.UV6Kind);
+        loadAttribute("TEXCOORD_7", VertexBuffer.UV6Kind);
+        loadAttribute("TEXCOORD_8", VertexBuffer.UV6Kind);
         loadAttribute("JOINTS_0", VertexBuffer.MatricesIndicesKind);
         loadAttribute("WEIGHTS_0", VertexBuffer.MatricesWeightsKind);
         loadAttribute("JOINTS_1", VertexBuffer.MatricesIndicesExtraKind);
@@ -2282,7 +2286,7 @@ export class GLTFLoader implements IGLTFLoader {
 
         this.logOpen(`${context}`);
 
-        if (textureInfo.texCoord! >= 6) {
+        if (textureInfo.texCoord! >= Constants.MAX_SUPPORTED_UV_SETS) {
             throw new Error(`${context}/texCoord: Invalid value (${textureInfo.texCoord})`);
         }
 

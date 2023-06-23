@@ -135,6 +135,9 @@ export class NodeMaterialBuildStateSharedData {
         this.variableNames["uv4"] = 0;
         this.variableNames["uv5"] = 0;
         this.variableNames["uv6"] = 0;
+        this.variableNames["uv7"] = 0;
+        this.variableNames["uv8"] = 0;
+        this.variableNames["uv9"] = 0;
         this.variableNames["color"] = 0;
         this.variableNames["matricesIndices"] = 0;
         this.variableNames["matricesWeights"] = 0;
@@ -158,6 +161,8 @@ export class NodeMaterialBuildStateSharedData {
         this.defineNames["MAINUV5"] = 0;
         this.defineNames["MAINUV6"] = 0;
         this.defineNames["MAINUV7"] = 0;
+        this.defineNames["MAINUV8"] = 0;
+        this.defineNames["MAINUV9"] = 0;
     }
 
     /**

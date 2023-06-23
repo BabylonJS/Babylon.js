@@ -67,12 +67,18 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
     public MAINUV4 = false;
     public MAINUV5 = false;
     public MAINUV6 = false;
+    public MAINUV7 = false;
+    public MAINUV8 = false;
+    public MAINUV9 = false;
     public UV1 = false;
     public UV2 = false;
     public UV3 = false;
     public UV4 = false;
     public UV5 = false;
     public UV6 = false;
+    public UV7 = false;
+    public UV8 = false;
+    public UV9 = false;
 
     public ALBEDO = false;
     public GAMMAALBEDO = false;
