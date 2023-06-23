@@ -3000,88 +3000,26 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
-     * Modify the mesh to get a flat shading rendering.
-     * This means each mesh facet will then have its own normals. Usually new vertices are added in the mesh geometry to get this result.
-     * Warning : the mesh is really modified even if not set originally as updatable and, under the hood, a new VertexBuffer is allocated.
-     * @returns current mesh
+     * @internal
+     * @param indices 
+     * @param positions 
+     * @returns the flattened Normal data
      */
-    public convertToFlatShadedMesh(): Mesh {
-        const kinds = this.getVerticesDataKinds();
-        const vbs: { [key: string]: VertexBuffer } = {};
-        const data: { [key: string]: FloatArray } = {};
-        const newdata: { [key: string]: Array<number> } = {};
-        let updatableNormals = false;
-        let kindIndex: number;
-        let kind: string;
+    private _getFlattenedNormals(indices: IndicesArray, positions: FloatArray): Float32Array {
+        const normals = new Float32Array(indices.length * 3);
+        let normalsCount = 0;
 
-        for (kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
-            kind = kinds[kindIndex];
-            const vertexBuffer = <VertexBuffer>this.getVertexBuffer(kind);
+        // Decide if normals should be flipped
+        const flipNormalGeneration = this._scene.useRightHandedSystem
+            ? this.overrideMaterialSideOrientation === Constants.MATERIAL_CounterClockWiseSideOrientation
+            : this.overrideMaterialSideOrientation === Constants.MATERIAL_ClockWiseSideOrientation;
 
-            // Check data consistency
-            const vertexData = vertexBuffer.getData();
-            if (vertexData instanceof Array || vertexData instanceof Float32Array) {
-                if (vertexData.length === 0) {
-                    continue;
-                }
-            }
+        // Generate new normals
+        for (let index = 0; index < indices.length; index += 3) {
 
-            if (kind === VertexBuffer.NormalKind) {
-                updatableNormals = vertexBuffer.isUpdatable();
-                kinds.splice(kindIndex, 1);
-                kindIndex--;
-                continue;
-            }
-
-            vbs[kind] = vertexBuffer;
-            data[kind] = this.getVerticesData(kind)!;
-            newdata[kind] = [];
-        }
-
-        // Save previous submeshes
-        const previousSubmeshes = this.subMeshes.slice(0);
-
-        const indices = <IndicesArray>this.getIndices();
-        const totalIndices = this.getTotalIndices();
-
-        // Generating unique vertices per face
-        let index: number;
-        for (index = 0; index < totalIndices; index++) {
-            const vertexIndex = indices[index];
-
-            for (kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
-                kind = kinds[kindIndex];
-                if (!vbs[kind]) {
-                    continue;
-                }
-
-                const stride = vbs[kind].getStrideSize();
-
-                for (let offset = 0; offset < stride; offset++) {
-                    newdata[kind].push(data[kind][vertexIndex * stride + offset]);
-                }
-            }
-        }
-
-        // Updating faces & normal
-        const normals = [];
-        const positions = newdata[VertexBuffer.PositionKind];
-        const useRightHandedSystem = this.getScene().useRightHandedSystem;
-        let flipNormalGeneration: boolean;
-        if (useRightHandedSystem) {
-            flipNormalGeneration = this.overrideMaterialSideOrientation === Constants.MATERIAL_CounterClockWiseSideOrientation;
-        } else {
-            flipNormalGeneration = this.overrideMaterialSideOrientation === Constants.MATERIAL_ClockWiseSideOrientation;
-        }
-
-        for (index = 0; index < totalIndices; index += 3) {
-            indices[index] = index;
-            indices[index + 1] = index + 1;
-            indices[index + 2] = index + 2;
-
-            const p1 = Vector3.FromArray(positions, index * 3);
-            const p2 = Vector3.FromArray(positions, (index + 1) * 3);
-            const p3 = Vector3.FromArray(positions, (index + 2) * 3);
+            const p1 = Vector3.FromArray(positions, indices[index] * 3);
+            const p2 = Vector3.FromArray(positions, indices[index + 1] * 3);
+            const p3 = Vector3.FromArray(positions, indices[index + 2] * 3);
 
             const p1p2 = p1.subtract(p2);
             const p3p2 = p3.subtract(p2);
@@ -3093,36 +3031,115 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
             // Store same normals for every vertex
             for (let localIndex = 0; localIndex < 3; localIndex++) {
-                normals.push(normal.x);
-                normals.push(normal.y);
-                normals.push(normal.z);
+                normals[normalsCount++] = normal.x;
+                normals[normalsCount++] = normal.y;
+                normals[normalsCount++] = normal.z;
             }
         }
 
-        this.setIndices(indices);
-        this.setVerticesData(VertexBuffer.NormalKind, normals, updatableNormals);
+        return normals;
+    }
 
-        // Updating vertex buffers
-        for (kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
-            kind = kinds[kindIndex];
+    /**
+     * @internal
+     * @param flattenNormals 
+     * @returns the Mesh.
+     */
+    private _convertToUnIndexedMesh(flattenNormals = false, updateIndices = true): Mesh {
+        const kinds = this.getVerticesDataKinds();
+        const indices = this.getIndices()!;
+        const data: { [kind: string]: FloatArray } = {};
 
-            if (!newdata[kind]) {
-                continue;
+        const getDuplicatedVertices = (data: FloatArray, stride: number): Float32Array => {
+            const newData = new Float32Array(indices.length * stride);
+            let count = 0;
+            for (const vertexIndex of indices) {
+                for (let offset = 0; offset < stride; offset++) {
+                    newData[count++] = data[vertexIndex * stride + offset];
+                }
             }
+            return newData;
+        };
 
-            this.setVerticesData(kind, newdata[kind], vbs[kind].isUpdatable());
+        // Save previous submeshes
+        const previousSubmeshes = this.geometry ? this.subMeshes.slice(0) : [];
+
+        // Cache vertex data
+        for (const kind of kinds) {
+            data[kind] = this.getVerticesData(kind)!;
         }
 
-        // Updating submeshes
+        // Update vertex data
+        for (const kind of kinds) {
+            const vertexBuffer = this.getVertexBuffer(kind)!;
+            const stride = vertexBuffer.getStrideSize();
+
+            if (flattenNormals && kind === VertexBuffer.NormalKind) {
+                const normals = this._getFlattenedNormals(indices, data[VertexBuffer.PositionKind]);
+                this.setVerticesData(VertexBuffer.NormalKind, normals, vertexBuffer.isUpdatable(), stride);
+            } else {
+                this.setVerticesData(kind, getDuplicatedVertices(data[kind], stride), vertexBuffer.isUpdatable(), stride);
+            }
+        }
+
+        //Update morph targets
+        if (this.morphTargetManager) {
+            for (let targetIndex = 0; targetIndex < this.morphTargetManager.numTargets; targetIndex++) {
+                const target = this.morphTargetManager.getTarget(targetIndex);
+
+                const positions = target.getPositions()!;
+                target.setPositions(getDuplicatedVertices(positions, 3));
+
+                const normals = target.getNormals();
+                if (normals) {
+                   target.setNormals(flattenNormals ? this._getFlattenedNormals(indices, positions) : getDuplicatedVertices(normals, 3));
+                }
+
+                const tangents = target.getTangents();
+                if (tangents) {
+                    target.setTangents(getDuplicatedVertices(tangents, 3));
+                }
+
+                const uvs = target.getUVs();
+                if (uvs) {
+                    target.setUVs(getDuplicatedVertices(uvs, 2));
+                }
+            }
+            this.morphTargetManager.synchronize();
+        }
+
+        // Update indices 
+        if(updateIndices) {
+            let index: number;
+            for (index = 0; index < indices.length; index++) {
+                indices[index] = index;
+            }
+            this.setIndices(indices);
+        }
+
+        this._unIndexed = true;
+
+        // Update submeshes
         this.releaseSubMeshes();
-        for (let submeshIndex = 0; submeshIndex < previousSubmeshes.length; submeshIndex++) {
-            const previousOne = previousSubmeshes[submeshIndex];
+        for (const previousOne of previousSubmeshes) {
             SubMesh.AddToMesh(previousOne.materialIndex, previousOne.indexStart, previousOne.indexCount, previousOne.indexStart, previousOne.indexCount, this);
         }
 
         this.synchronizeInstances();
+
         return this;
     }
+
+    /**
+     * Modify the mesh to get a flat shading rendering.
+     * This means each mesh facet will then have its own normals. Usually new vertices are added in the mesh geometry to get this result.
+     * Warning : the mesh is really modified even if not set originally as updatable and, under the hood, a new VertexBuffer is allocated.
+     * @returns current mesh
+     */
+    public convertToFlatShadedMesh(): Mesh {
+        return this._convertToUnIndexedMesh(true);
+    }
+
 
     /**
      * This method removes all the mesh indices and add new vertices (duplication) in order to unfold facets into buffers.
@@ -3131,67 +3148,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns current mesh
      */
     public convertToUnIndexedMesh(): Mesh {
-        const kinds = this.getVerticesDataKinds();
-        const vbs: { [key: string]: VertexBuffer } = {};
-        const data: { [key: string]: FloatArray } = {};
-        const newdata: { [key: string]: Array<number> } = {};
-        let kindIndex: number;
-        let kind: string;
-        for (kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
-            kind = kinds[kindIndex];
-            const vertexBuffer = <VertexBuffer>this.getVertexBuffer(kind);
-            vbs[kind] = vertexBuffer;
-            data[kind] = <FloatArray>vbs[kind].getData();
-            newdata[kind] = [];
-        }
-
-        // Save previous submeshes
-        const previousSubmeshes = this.subMeshes.slice(0);
-
-        const indices = <IndicesArray>this.getIndices();
-        const totalIndices = this.getTotalIndices();
-
-        // Generating unique vertices per face
-        let index: number;
-        for (index = 0; index < totalIndices; index++) {
-            const vertexIndex = indices[index];
-
-            for (kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
-                kind = kinds[kindIndex];
-                const stride = vbs[kind].getStrideSize();
-
-                for (let offset = 0; offset < stride; offset++) {
-                    newdata[kind].push(data[kind][vertexIndex * stride + offset]);
-                }
-            }
-        }
-
-        // Updating indices
-        for (index = 0; index < totalIndices; index += 3) {
-            indices[index] = index;
-            indices[index + 1] = index + 1;
-            indices[index + 2] = index + 2;
-        }
-
-        this.setIndices(indices);
-
-        // Updating vertex buffers
-        for (kindIndex = 0; kindIndex < kinds.length; kindIndex++) {
-            kind = kinds[kindIndex];
-            this.setVerticesData(kind, newdata[kind], vbs[kind].isUpdatable(), vbs[kind].getStrideSize());
-        }
-
-        // Updating submeshes
-        this.releaseSubMeshes();
-        for (let submeshIndex = 0; submeshIndex < previousSubmeshes.length; submeshIndex++) {
-            const previousOne = previousSubmeshes[submeshIndex];
-            SubMesh.AddToMesh(previousOne.materialIndex, previousOne.indexStart, previousOne.indexCount, previousOne.indexStart, previousOne.indexCount, this);
-        }
-
-        this._unIndexed = true;
-
-        this.synchronizeInstances();
-        return this;
+        return this._convertToUnIndexedMesh();
     }
 
     /**
