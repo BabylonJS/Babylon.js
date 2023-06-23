@@ -753,6 +753,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
     }
 
+    /**
+     * Instantiate (when possible) or clone that node with its hierarchy
+     * @param newParent defines the new parent to use for the instance (or clone)
+     * @param options defines options to configure how copy is done
+     * @param options.doNotInstantiate defines if the model must be instantiated or just cloned
+     * @param onNewNodeCreated defines an option callback to call when a clone or an instance is created
+     * @returns an instance (or a clone) of the current node with its hierarchy
+     */
     public instantiateHierarchy(
         newParent: Nullable<TransformNode> = null,
         options?: { doNotInstantiate: boolean | ((node: TransformNode) => boolean) },
@@ -1204,6 +1212,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         return this._geometry.getIndices(copyWhenShared, forceCopy);
     }
 
+    /**
+     * Returns true if the mesh is blocked. Implemented by child classes.
+     * @returns a boolean
+     */
     public get isBlocked(): boolean {
         return this._masterMesh !== null && this._masterMesh !== undefined;
     }
@@ -3048,7 +3060,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         const indices = this.getIndices()!;
         const data: { [kind: string]: FloatArray } = {};
 
-        const getDuplicatedVertices = (data: FloatArray, stride: number): Float32Array => {
+        const separateVertices = (data: FloatArray, stride: number): Float32Array => {
             const newData = new Float32Array(indices.length * stride);
             let count = 0;
             for (const vertexIndex of indices) {
@@ -3076,7 +3088,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 const normals = this._getFlattenedNormals(indices, data[VertexBuffer.PositionKind]);
                 this.setVerticesData(VertexBuffer.NormalKind, normals, vertexBuffer.isUpdatable(), stride);
             } else {
-                this.setVerticesData(kind, getDuplicatedVertices(data[kind], stride), vertexBuffer.isUpdatable(), stride);
+                this.setVerticesData(kind, separateVertices(data[kind], stride), vertexBuffer.isUpdatable(), stride);
             }
         }
 
@@ -3086,21 +3098,21 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 const target = this.morphTargetManager.getTarget(targetIndex);
 
                 const positions = target.getPositions()!;
-                target.setPositions(getDuplicatedVertices(positions, 3));
+                target.setPositions(separateVertices(positions, 3));
 
                 const normals = target.getNormals();
                 if (normals) {
-                   target.setNormals(flattenNormals ? this._getFlattenedNormals(indices, positions) : getDuplicatedVertices(normals, 3));
+                   target.setNormals(flattenNormals ? this._getFlattenedNormals(indices, positions) : separateVertices(normals, 3));
                 }
 
                 const tangents = target.getTangents();
                 if (tangents) {
-                    target.setTangents(getDuplicatedVertices(tangents, 3));
+                    target.setTangents(separateVertices(tangents, 3));
                 }
 
                 const uvs = target.getUVs();
                 if (uvs) {
-                    target.setUVs(getDuplicatedVertices(uvs, 2));
+                    target.setUVs(separateVertices(uvs, 2));
                 }
             }
             this.morphTargetManager.synchronize();
