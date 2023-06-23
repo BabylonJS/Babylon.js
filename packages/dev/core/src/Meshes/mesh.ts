@@ -3107,7 +3107,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         // Update indices 
-        if(updateIndices) {
+        if (updateIndices) {
             let index: number;
             for (index = 0; index < indices.length; index++) {
                 indices[index] = index;
