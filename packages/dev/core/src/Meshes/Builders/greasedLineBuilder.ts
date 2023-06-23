@@ -1,4 +1,3 @@
-import { Color3 } from "../../Maths/math.color";
 import type { GreasedLineMaterialOptions } from "../../Materials/greasedLinePluginMaterial";
 import { GreasedLineMeshMaterialType, GreasedLinePluginMaterial } from "../../Materials/greasedLinePluginMaterial";
 import { StandardMaterial } from "./../../Materials/standardMaterial";
@@ -8,17 +7,36 @@ import type { GreasedLineMeshOptions } from "../greasedLineMesh";
 import { GreasedLineMesh } from "../greasedLineMesh";
 import type { Scene } from "../../scene";
 import { EngineStore } from "../../Engines/engineStore";
+import type { Color3 } from "core/Maths/math.color";
 
 /**
  * How are the colors distributed along the color table
  * {@link https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param/greased_line#colors-and-colordistribution}
  */
 export enum GreasedLineMeshColorDistribution {
+    /**
+     * Do no modify the color table
+     */
     COLOR_DISTRIBUTION_NONE = 0,
+    /**
+     * Repeat the colors until the color table is full
+     */
     COLOR_DISTRIBUTION_REPEAT = 1,
+    /**
+     * Distribute the colors evenly through the color table
+     */
     COLOR_DISTRIBUTION_EVEN = 2,
+    /**
+     * Put the colors to start of the color table a fill the rest with the default color
+     */
     COLOR_DISTRIBUTION_START = 3,
+    /**
+     * Put the colors to the end of the color table and fill the rest with the default color
+     */
     COLOR_DISTRIBUTION_END = 4,
+    /**
+     * Put the colors to start and to the end of the color table and fill the gap between with the default color
+     */
     COLOR_DISTRIBUTION_START_END = 5,
 }
 
@@ -27,11 +45,29 @@ export enum GreasedLineMeshColorDistribution {
  * {@link https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param/greased_line#widths-and-widthdistribution}
  */
 export enum GreasedLineMeshWidthDistribution {
+    /**
+     * Do no modify the width table
+     */
     WIDTH_DISTRIBUTION_NONE = 0,
+    /**
+     * Repeat the widths until the width table is full
+     */
     WIDTH_DISTRIBUTION_REPEAT = 1,
+    /**
+     * Distribute the widths evenly through the width table
+     */
     WIDTH_DISTRIBUTION_EVEN = 2,
+    /**
+     * Put the widths to start of the width table a fill the rest with the default width
+     */
     WIDTH_DISTRIBUTION_START = 3,
+    /**
+     * Put the widths to the end of the width table and fill the rest with the default width
+     */
     WIDTH_DISTRIBUTION_END = 4,
+    /**
+     * Put the widths to start and to the end of the width table and fill the gap between with the default width
+     */
     WIDTH_DISTRIBUTION_START_END = 5,
 }
 
@@ -114,7 +150,7 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
     const widths = CompleteGreasedLineWidthTable(length, options.widths ?? [], options.widthDistribution);
 
     const colors = materialOptions?.colors
-        ? CompleteGreasedLineColorTable(length, materialOptions.colors, materialOptions.colorDistribution, materialOptions.color ?? Color3.White())
+        ? CompleteGreasedLineColorTable(length, materialOptions.colors, materialOptions.colorDistribution, materialOptions.color ?? GreasedLinePluginMaterial.DEFAULT_COLOR)
         : undefined;
 
     // create new mesh if instance is not defined

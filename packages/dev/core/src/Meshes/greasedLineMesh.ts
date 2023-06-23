@@ -249,6 +249,15 @@ export class GreasedLineMesh extends Mesh {
     }
 
     /**
+     * Return copy the points.
+     */
+    get points() {
+        const pointsCopy: number[][] = [];
+        DeepCopier.DeepCopy(this._points, pointsCopy);
+        return pointsCopy;
+    }
+
+    /**
      * Adds new points to the line. It doesn't rerenders the line if in lazy mode.
      * @param points points table
      */
@@ -345,6 +354,18 @@ export class GreasedLineMesh extends Mesh {
         }
     }
 
+    private _createLineOptions() {
+        const lineOptions: GreasedLineMeshOptions = {
+            points: this._points,
+            colorPointers: this._colorPointers,
+            lazy: this._lazy,
+            updatable: this._updatable,
+            uvs: this._uvs,
+            widths: this._widths,
+        };
+        return lineOptions;
+    }
+
     /**
      * Clones the GreasedLineMesh.
      * @param name new line name
@@ -352,12 +373,11 @@ export class GreasedLineMesh extends Mesh {
      * @returns cloned line
      */
     public clone(name: string = `${this.name}-cloned`, newParent?: Nullable<Node>) {
-        const lineOptions: any = {};
-        DeepCopier.DeepCopy(this._options, lineOptions, ["instance"]);
-        lineOptions.widths = this.widths;
-        lineOptions.colorPointers = this.colorPointers;
+        const lineOptions = this._createLineOptions();
+        const deepCopiedLineOptions = {};
+        DeepCopier.DeepCopy(lineOptions, deepCopiedLineOptions, ["instance"]);
 
-        const cloned = new GreasedLineMesh(name, this._scene, <GreasedLineMeshOptions>lineOptions);
+        const cloned = new GreasedLineMesh(name, this._scene, <GreasedLineMeshOptions>deepCopiedLineOptions);
         if (newParent) {
             cloned.parent = newParent;
         }
@@ -374,7 +394,8 @@ export class GreasedLineMesh extends Mesh {
     public serialize(serializationObject: any): void {
         super.serialize(serializationObject);
         serializationObject.type = this.getClassName();
-        serializationObject.lineOptions = this._options;
+
+        serializationObject.lineOptions = this._createLineOptions();
     }
 
     /**
