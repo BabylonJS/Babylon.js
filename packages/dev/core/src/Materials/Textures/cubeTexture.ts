@@ -448,7 +448,7 @@ export class CubeTexture extends BaseTexture {
                     prefiltered = parsedTexture.prefiltered;
                 }
                 return new CubeTexture(
-                    rootUrl + parsedTexture.url,
+                    rootUrl + (parsedTexture.url ?? parsedTexture.name),
                     scene,
                     parsedTexture.extensions,
                     false,
