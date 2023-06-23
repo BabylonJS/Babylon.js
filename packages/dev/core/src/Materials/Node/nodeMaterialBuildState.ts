@@ -131,7 +131,7 @@ export class NodeMaterialBuildState {
         this.compilationString = "#if defined(WEBGL2) || defines(WEBGPU)\r\nprecision highp sampler2DArray;\r\n#endif\r\n" + this.compilationString;
 
         if (this.prePassCapable) {
-            let prePassDeclaration = "#if defined(PREPASS)\r\nlayout(location = 0) out highp vec4 glFragData[SCENE_MRT_COUNT];\r\nhighp vec4 gl_FragColor;\r\n"
+            let prePassDeclaration = "#if defined(PREPASS)\r\n"
 
             for (const outputName in this.prePassOutput) {
                 prePassDeclaration = prePassDeclaration + this.prePassOutput[outputName] + "\r\n";

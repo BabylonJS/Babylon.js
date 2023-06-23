@@ -61,6 +61,8 @@ import type { Material } from "../material";
 import { MaterialHelper } from "../materialHelper";
 import type { TriPlanarBlock } from "./Blocks/triPlanarBlock";
 import type { BiPlanarBlock } from "./Blocks/biPlanarBlock";
+import type { PrePassRenderer } from "core/Rendering";
+import { PrePassEffectConfiguration } from "core/Rendering/prePassEffectConfiguration";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -803,6 +805,11 @@ export class NodeMaterial extends PushMaterial {
                 defines.reset();
             }
         }
+
+        const prePassRenderer = this.getScene().prePassRenderer;
+        if (prePassRenderer) {
+            prePassRenderer.markAsDirty();
+        }
     }
 
     /**
@@ -845,7 +852,19 @@ export class NodeMaterial extends PushMaterial {
      * Can this material render to prepass
      */
     public get isPrePassCapable(): boolean {
-        return (this.getBlockByPredicate((block) => block.getClassName() === 'FragmentOutputBlock') as FragmentOutputBlock)?.prePassCapable;
+        return (this.getBlockByPredicate((block) => block.getClassName() === "FragmentOutputBlock") as FragmentOutputBlock)?.prePassCapable;
+    }
+
+    public get requiresPrePassTexture(): boolean {
+        // TODO
+        return !!this.getBlockByPredicate((block) => block.getClassName() === "PrePassInputBlock");
+    }
+
+    /**
+     * Sets the required values to the prepass renderer.
+     */
+    public setPrePassRenderer(_prePassRenderer: PrePassRenderer): boolean {
+        return this.isPrePassCapable || this.requiresPrePassTexture;
     }
 
     /**

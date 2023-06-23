@@ -663,6 +663,13 @@ export class PrePassRenderer {
         const cameraHasImageProcessing = this._hasImageProcessing(this._postProcessesSourceForThisPass);
         this._needsCompositionForThisPass = !cameraHasImageProcessing && !this.disableGammaTransform && this._needsImageProcessing() && !secondaryCamera;
 
+        // No post process or effect will compose
+        let disableGammaTransform = this.disableGammaTransform;
+        if (this._postProcessesSourceForThisPass.length === 0 && !this._effectsAlreadyCompose()) {
+            this._needsCompositionForThisPass = true;
+            disableGammaTransform = true;
+        }
+
         const firstCameraPP = this._getFirstPostProcess(this._postProcessesSourceForThisPass);
         const firstPrePassPP = prePassRenderTarget._beforeCompositionPostProcesses && prePassRenderTarget._beforeCompositionPostProcesses[0];
         let firstPP = null;
@@ -673,6 +680,10 @@ export class PrePassRenderer {
         // Create composition effect if needed
         if (this._needsCompositionForThisPass && !prePassRenderTarget.imageProcessingPostProcess) {
             prePassRenderTarget._createCompositionEffect();
+        }
+
+        if (prePassRenderTarget.imageProcessingPostProcess) {
+            prePassRenderTarget.imageProcessingPostProcess.fromLinearSpace = !disableGammaTransform;
         }
 
         // Setting the prePassRenderTarget as input texture of the first PP
@@ -721,6 +732,16 @@ export class PrePassRenderer {
     private _needsImageProcessing(): boolean {
         for (let i = 0; i < this._effectConfigurations.length; i++) {
             if (this._effectConfigurations[i].enabled && this._effectConfigurations[i].needsImageProcessing) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private _effectsAlreadyCompose(): boolean {
+        for (let i = 0; i < this._effectConfigurations.length; i++) {
+            if (this._effectConfigurations[i].enabled && this._effectConfigurations[i].effectAlreadyComposes) {
                 return true;
             }
         }

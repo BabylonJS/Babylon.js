@@ -94,6 +94,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         defines.setValue(this._linearDefineName, this.convertToLinearSpace, true);
         defines.setValue(this._gammaDefineName, this.convertToGammaSpace, true);
+        defines.markAsPrePassDirty();
     }
 
     public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
@@ -118,9 +119,10 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         }
         this._linearDefineName = state._getFreeDefineName("CONVERTTOLINEAR");
         this._gammaDefineName = state._getFreeDefineName("CONVERTTOGAMMA");
-
         if (state.prePassCapable) {
             // if (this.depth) {
+                state._emitPrePassOutput('extension', '#extension GL_EXT_draw_buffers : require\r\n');
+                state._emitPrePassOutput('declaration', 'layout(location = 0) out highp vec4 glFragData[SCENE_MRT_COUNT];\r\nhighp vec4 gl_FragColor;\r\n');
                 state._emitPrePassOutput('depth', 'varying highp vec3 vViewPos;', 'defined(PREPASS_DEPTH)');
             // }
         }
@@ -162,6 +164,17 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
             state.compilationString += `gl_FragDepthEXT = log2(vFragmentDepth) * logarithmicDepthConstant * 0.5;\r\n`;
         }
 
+        if (this.prePassCapable) {
+            state.compilationString += `#if defined(PREPASS)\r\n`;
+            state.compilationString += `gl_FragData[0] = gl_FragColor;\r\n`;
+            state.compilationString += `#endif\r\n`;
+            // if (this.depth) {
+                // state.compilationString += `#ifdef PREPASS_DEPTH\r\n`;
+                // state.compilationString += `gl_FragColor = vec4(vViewPos.z, fract(vViewPos.z * 255.0), 0.0, 1.0);\r\n`;
+                // state.compilationString += `#endif\r\n`;
+            // }
+        }
+
         return this;
     }
 
@@ -180,6 +193,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         serializationObject.convertToGammaSpace = this.convertToGammaSpace;
         serializationObject.convertToLinearSpace = this.convertToLinearSpace;
         serializationObject.useLogarithmicDepth = this.useLogarithmicDepth;
+        serializationObject.prePassCapable = this.prePassCapable;
 
         return serializationObject;
     }
@@ -190,6 +204,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         this.convertToGammaSpace = serializationObject.convertToGammaSpace;
         this.convertToLinearSpace = serializationObject.convertToLinearSpace;
         this.useLogarithmicDepth = serializationObject.useLogarithmicDepth ?? false;
+        this.prePassCapable = serializationObject.prePassCapable ?? false;
     }
 }
 
