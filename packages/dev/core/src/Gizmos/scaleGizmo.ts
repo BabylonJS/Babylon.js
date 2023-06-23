@@ -6,7 +6,7 @@ import { Vector3 } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { CreatePolyhedron } from "../Meshes/Builders/polyhedronBuilder";
-import type { GizmoAnchorPoint, GizmoAxisCache, IGizmo } from "./gizmo";
+import type { GizmoAnchorPoint, GizmoCoordinates, GizmoAxisCache, IGizmo } from "./gizmo";
 import { Gizmo } from "./gizmo";
 import type { IAxisScaleGizmo } from "./axisScaleGizmo";
 import { AxisScaleGizmo } from "./axisScaleGizmo";
@@ -258,6 +258,12 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
     }
     public get anchorPoint() {
         return this._anchorPoint;
+    }
+
+    public set coordinates(coordinates: GizmoCoordinates) {
+        [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo].forEach((gizmo) => {
+            gizmo.coordinates = coordinates;
+        });
     }
 
     /**

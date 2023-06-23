@@ -50,6 +50,14 @@ export enum GizmoAnchorPoint {
 }
 
 /**
+ * Coordinate system mode: Local or World. Defines how axis is aligned: either on world axis or transform local axis
+ */
+export enum GizmoCoordinates {
+    World,
+    Local,
+}
+
+/**
  * Interface for basic gizmo
  */
 export interface IGizmo extends IDisposable {
@@ -84,6 +92,12 @@ export interface IGizmo extends IDisposable {
      * (Default: GizmoAnchorPoint.Origin)
      */
     anchorPoint: GizmoAnchorPoint;
+
+    /**
+     * Set the coordinate system to use. By default it's local.
+     */
+    coordinates: GizmoCoordinates;
+
     /**
      * When set, the gizmo will always appear the same size no matter where the camera is (default: true)
      */
@@ -193,6 +207,7 @@ export class Gizmo implements IGizmo {
     protected _updateGizmoPositionToMatchAttachedMesh = true;
     protected _anchorPoint = GizmoAnchorPoint.Origin;
     protected _updateScale = true;
+    protected _coordinates = GizmoCoordinates.Local;
 
     /**
      * If set the gizmo's rotation will be updated to match the attached mesh each frame (Default: true)
@@ -224,6 +239,23 @@ export class Gizmo implements IGizmo {
     public get anchorPoint() {
         return this._anchorPoint;
     }
+
+    /**
+     * Set the coordinate system to use. By default it's local.
+     * But it's possible for a user to tweak so its local for translation and world for rotation.
+     * In that case, setting the coordinate system will change `updateGizmoRotationToMatchAttachedMesh` and `updateGizmoPositionToMatchAttachedMesh`
+     */
+    public set coordinates(coordinates: GizmoCoordinates) {
+        this._coordinates = coordinates;
+        const local = coordinates == GizmoCoordinates.Local;
+        this.updateGizmoRotationToMatchAttachedMesh = local;
+        this.updateGizmoPositionToMatchAttachedMesh = local;
+    }
+
+    public get coordinates() {
+        return this._coordinates;
+    }
+
     /**
      * When set, the gizmo will always appear the same size no matter where the camera is (default: true)
      */

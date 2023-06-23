@@ -7,7 +7,7 @@ import { Color3 } from "../Maths/math.color";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { Node } from "../node";
 import type { Mesh } from "../Meshes/mesh";
-import type { GizmoAnchorPoint, GizmoAxisCache, IGizmo } from "./gizmo";
+import type { GizmoAnchorPoint, GizmoCoordinates, GizmoAxisCache, IGizmo } from "./gizmo";
 import { Gizmo } from "./gizmo";
 import type { IAxisDragGizmo } from "./axisDragGizmo";
 import { AxisDragGizmo } from "./axisDragGizmo";
@@ -237,6 +237,12 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
     }
     public get anchorPoint() {
         return this._anchorPoint;
+    }
+
+    public set coordinates(coordinates: GizmoCoordinates) {
+        [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
+            gizmo.coordinates = coordinates;
+        });
     }
 
     public set updateScale(value: boolean) {

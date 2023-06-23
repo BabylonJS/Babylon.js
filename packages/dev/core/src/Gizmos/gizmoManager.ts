@@ -11,7 +11,7 @@ import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { Color3 } from "../Maths/math.color";
 import { SixDofDragBehavior } from "../Behaviors/Meshes/sixDofDragBehavior";
 import type { GizmoAxisCache, IGizmo } from "./gizmo";
-import { Gizmo } from "./gizmo";
+import { Gizmo, GizmoCoordinates } from "./gizmo";
 import type { IRotationGizmo } from "./rotationGizmo";
 import { RotationGizmo } from "./rotationGizmo";
 import type { IPositionGizmo } from "./positionGizmo";
@@ -56,6 +56,7 @@ export class GizmoManager implements IDisposable {
     protected _defaultKeepDepthUtilityLayer: UtilityLayerRenderer;
     protected _thickness: number = 1;
     protected _scaleRatio: number = 1;
+    protected _coordinates = GizmoCoordinates.Local;
 
     /** Node Caching for quick lookup */
     private _gizmoAxisCache: Map<Mesh, GizmoAxisCache> = new Map();
@@ -120,6 +121,18 @@ export class GizmoManager implements IDisposable {
         return this._scaleRatio;
     }
 
+    public set coordinates(coordinates: GizmoCoordinates) {
+        this._coordinates = coordinates;
+        [this.gizmos.positionGizmo, this.gizmos.rotationGizmo, this.gizmos.scaleGizmo].forEach((gizmo) => {
+            if (gizmo) {
+                gizmo.coordinates = coordinates;
+            }
+        });
+    }
+
+    public get coordinates(): GizmoCoordinates {
+        return this._coordinates;
+    }
     /**
      * Instantiates a gizmo manager
      * @param _scene the scene to overlay the gizmos on top of
