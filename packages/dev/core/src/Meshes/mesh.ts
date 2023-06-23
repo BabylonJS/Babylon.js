@@ -3010,9 +3010,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         let normalsCount = 0;
 
         // Decide if normals should be flipped
-        const flipNormalGeneration = this._scene.useRightHandedSystem
-            ? this.overrideMaterialSideOrientation === Constants.MATERIAL_CounterClockWiseSideOrientation
-            : this.overrideMaterialSideOrientation === Constants.MATERIAL_ClockWiseSideOrientation;
+        const flipNormalGeneration = this.overrideMaterialSideOrientation === (this._scene.useRightHandedSystem ? Constants.MATERIAL_CounterClockWiseSideOrientation : Constants.MATERIAL_ClockWiseSideOrientation);
 
         // Generate new normals
         for (let index = 0; index < indices.length; index += 3) {
