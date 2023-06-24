@@ -95,6 +95,8 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
     public UV6 = false;
 
     public PREPASS = false;
+    public PREPASS_DEPTH = false;
+    public PREPASS_DEPTH_INDEX = -1;
     public SCENE_MRT_COUNT = 0;
 
     /** BONES */
@@ -860,11 +862,47 @@ export class NodeMaterial extends PushMaterial {
         return !!this.getBlockByPredicate((block) => block.getClassName() === "PrePassInputBlock");
     }
 
+    public get prePassTextureOutputs(): number[] {
+        const fragmentOutputBlock = (this.getBlockByPredicate((block) => block.getClassName() === "FragmentOutputBlock") as FragmentOutputBlock);
+        const result = [] as number[];
+        if (!fragmentOutputBlock) {
+            return result;
+        }
+
+        if (fragmentOutputBlock.prePassCapable) {
+            result.push(Constants.PREPASS_COLOR_TEXTURE_TYPE);
+        }
+
+        if (fragmentOutputBlock.depth.isConnected) {
+            result.push(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
+        }
+
+        return result;
+    }
+
     /**
      * Sets the required values to the prepass renderer.
      */
     public setPrePassRenderer(_prePassRenderer: PrePassRenderer): boolean {
-        return this.isPrePassCapable || this.requiresPrePassTexture;
+        const prePassRenderer = this.getScene().prePassRenderer;
+        const prePassTextureOutputs = this.prePassTextureOutputs;
+
+        if (prePassRenderer && prePassTextureOutputs.length) {
+            let cfg = prePassRenderer.getEffectConfiguration("nodeMaterial");
+            if (!cfg) {
+                cfg = prePassRenderer.addEffectConfiguration({
+                    enabled: true,
+                    needsImageProcessing: false,
+                    name: "nodeMaterial",
+                    texturesRequired: []
+                });
+            }
+
+            cfg.texturesRequired = prePassTextureOutputs;
+            cfg.enabled = true;
+        }
+
+        return this.isPrePassCapable; // this.requiresPrePassTexture;
     }
 
     /**
@@ -1396,6 +1434,7 @@ export class NodeMaterial extends PushMaterial {
                     fallbacks: result.fallbacks,
                     onCompiled: this.onCompiled,
                     onError: this.onError,
+                    multiTarget: defines.PREPASS,
                     indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS },
                 },
                 engine

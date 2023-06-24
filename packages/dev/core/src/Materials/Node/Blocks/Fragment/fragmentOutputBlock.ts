@@ -31,6 +31,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         this.registerInput("rgba", NodeMaterialBlockConnectionPointTypes.Color4, true);
         this.registerInput("rgb", NodeMaterialBlockConnectionPointTypes.AutoDetect, true);
         this.registerInput("a", NodeMaterialBlockConnectionPointTypes.Float, true);
+        this.registerInput("depth", NodeMaterialBlockConnectionPointTypes.Float, true);
 
         this.rgb.addExcludedConnectionPointFromAllowedTypes(
             NodeMaterialBlockConnectionPointTypes.Color3 | NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Float
@@ -91,6 +92,14 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         return this._inputs[2];
     }
 
+    /**
+     * Gets the depth input component - only available if prepass outputs
+     * are turned on
+     */
+    public get depth(): NodeMaterialConnectionPoint {
+        return this._inputs[3];
+    }
+
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         defines.setValue(this._linearDefineName, this.convertToLinearSpace, true);
         defines.setValue(this._gammaDefineName, this.convertToGammaSpace, true);
@@ -109,6 +118,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         const rgba = this.rgba;
         const rgb = this.rgb;
         const a = this.a;
+        const depth = this.depth;
 
         state.sharedData.hints.needAlphaBlending = rgba.isConnected || a.isConnected;
         state.sharedData.blocksWithDefines.push(this);
@@ -123,7 +133,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
             // if (this.depth) {
                 state._emitPrePassOutput('extension', '#extension GL_EXT_draw_buffers : require\r\n');
                 state._emitPrePassOutput('declaration', 'layout(location = 0) out highp vec4 glFragData[SCENE_MRT_COUNT];\r\nhighp vec4 gl_FragColor;\r\n');
-                state._emitPrePassOutput('depth', 'varying highp vec3 vViewPos;', 'defined(PREPASS_DEPTH)');
+                // state._emitPrePassOutput('depth', 'varying highp vec3 vViewPos;', 'defined(PREPASS_DEPTH)');
             // }
         }
 
@@ -164,15 +174,18 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
             state.compilationString += `gl_FragDepthEXT = log2(vFragmentDepth) * logarithmicDepthConstant * 0.5;\r\n`;
         }
 
-        if (this.prePassCapable) {
+        if (state.prePassCapable) {
             state.compilationString += `#if defined(PREPASS)\r\n`;
             state.compilationString += `gl_FragData[0] = gl_FragColor;\r\n`;
+            state.compilationString += `#ifdef PREPASS_DEPTH\r\n`;
+            if (depth.connectedPoint) {
+                state.compilationString += ` gl_FragData[PREPASS_DEPTH_INDEX] = vec4(${depth.associatedVariableName}, 0.0, 0.0, 1.0);\r\n`;
+            } else {
+                // We have to write something on the depth output or it will raise a gl error
+                state.compilationString += ` gl_FragData[PREPASS_DEPTH_INDEX] = vec4(0.0, 0.0, 0.0, 0.0);\r\n`;
+            }
             state.compilationString += `#endif\r\n`;
-            // if (this.depth) {
-                // state.compilationString += `#ifdef PREPASS_DEPTH\r\n`;
-                // state.compilationString += `gl_FragColor = vec4(vViewPos.z, fract(vViewPos.z * 255.0), 0.0, 1.0);\r\n`;
-                // state.compilationString += `#endif\r\n`;
-            // }
+            state.compilationString += `#endif\r\n`;
         }
 
         return this;
@@ -183,6 +196,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         codeString += `${this._codeVariableName}.convertToGammaSpace = ${this.convertToGammaSpace};\r\n`;
         codeString += `${this._codeVariableName}.convertToLinearSpace = ${this.convertToLinearSpace};\r\n`;
         codeString += `${this._codeVariableName}.useLogarithmicDepth = ${this.useLogarithmicDepth};\r\n`;
+        codeString += `${this._codeVariableName}.prePassCapable = ${this.prePassCapable};\r\n`;
 
         return codeString;
     }
