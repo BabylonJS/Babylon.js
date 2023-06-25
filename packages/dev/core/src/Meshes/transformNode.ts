@@ -850,9 +850,9 @@ export class TransformNode extends Node {
         this._transformToBoneReferal = affectedTransformNode;
         this.parent = bone;
 
-        bone.getSkeleton().prepare();
+        bone.getSkeleton().prepare(); // make sure bone.getFinalMatrix() is up to date
 
-        if (bone.getWorldMatrix().determinant() < 0) {
+        if (bone.getFinalMatrix().determinant() < 0) {
             this.scalingDeterminant *= -1;
         }
         return this;
