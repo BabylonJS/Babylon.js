@@ -112,7 +112,7 @@ export class Bone extends Node {
         this._absoluteBindMatrix = new Matrix();
         this._absoluteInverseBindMatrix = new Matrix();
         this._finalMatrix = new Matrix();
-    
+
         skeleton.bones.push(this);
 
         this.setParent(parentBone, false);
