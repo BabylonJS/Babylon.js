@@ -18,7 +18,7 @@ import type { LightGizmo } from "core/Gizmos/lightGizmo";
 import type { CameraGizmo } from "core/Gizmos/cameraGizmo";
 import type { Camera } from "core/Cameras/camera";
 import { TmpVectors, Vector3 } from "core/Maths/math";
-import { GizmoCoordinates } from "core/Gizmos/gizmo";
+import { GizmoCoordinatesMode } from "core/Gizmos/gizmo";
 
 interface ISceneTreeItemComponentProps {
     scene: Scene;
@@ -153,7 +153,7 @@ export class SceneTreeItemComponent extends React.Component<
         const scene = this.props.scene;
         const manager: GizmoManager = scene.reservedDataStore.gizmoManager;
         // flip coordinate system
-        manager.coordinates = this.state.isInWorldCoodinatesMode ? GizmoCoordinates.Local : GizmoCoordinates.World;
+        manager.coordinatesMode = this.state.isInWorldCoodinatesMode ? GizmoCoordinatesMode.Local : GizmoCoordinatesMode.World;
         this.setState({ isInWorldCoodinatesMode: !this.state.isInWorldCoodinatesMode });
     }
     onPickingMode() {

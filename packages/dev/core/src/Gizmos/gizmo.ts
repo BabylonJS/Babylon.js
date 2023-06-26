@@ -50,9 +50,9 @@ export enum GizmoAnchorPoint {
 }
 
 /**
- * Coordinate system mode: Local or World. Defines how axis is aligned: either on world axis or transform local axis
+ * Coordinates mode: Local or World. Defines how axis is aligned: either on world axis or transform local axis
  */
-export enum GizmoCoordinates {
+export enum GizmoCoordinatesMode {
     World,
     Local,
 }
@@ -94,9 +94,9 @@ export interface IGizmo extends IDisposable {
     anchorPoint: GizmoAnchorPoint;
 
     /**
-     * Set the coordinate system to use. By default it's local.
+     * Set the coordinate mode to use. By default it's local.
      */
-    coordinates: GizmoCoordinates;
+    coordinatesMode: GizmoCoordinatesMode;
 
     /**
      * When set, the gizmo will always appear the same size no matter where the camera is (default: true)
@@ -207,7 +207,7 @@ export class Gizmo implements IGizmo {
     protected _updateGizmoPositionToMatchAttachedMesh = true;
     protected _anchorPoint = GizmoAnchorPoint.Origin;
     protected _updateScale = true;
-    protected _coordinates = GizmoCoordinates.Local;
+    protected _coordinatesMode = GizmoCoordinatesMode.Local;
 
     /**
      * If set the gizmo's rotation will be updated to match the attached mesh each frame (Default: true)
@@ -245,15 +245,15 @@ export class Gizmo implements IGizmo {
      * But it's possible for a user to tweak so its local for translation and world for rotation.
      * In that case, setting the coordinate system will change `updateGizmoRotationToMatchAttachedMesh` and `updateGizmoPositionToMatchAttachedMesh`
      */
-    public set coordinates(coordinates: GizmoCoordinates) {
-        this._coordinates = coordinates;
-        const local = coordinates == GizmoCoordinates.Local;
+    public set coordinatesMode(coordinatesMode: GizmoCoordinatesMode) {
+        this._coordinatesMode = coordinatesMode;
+        const local = coordinatesMode == GizmoCoordinatesMode.Local;
         this.updateGizmoRotationToMatchAttachedMesh = local;
         this.updateGizmoPositionToMatchAttachedMesh = local;
     }
 
-    public get coordinates() {
-        return this._coordinates;
+    public get coordinatesMode() {
+        return this._coordinatesMode;
     }
 
     /**
