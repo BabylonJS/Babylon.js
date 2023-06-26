@@ -462,8 +462,8 @@ export class Bone extends Node {
     /**
      * Update the bind (and optionally the local) matrix
      * @param bindMatrix defines the new matrix to set to the bind/local matrix, in local space
-     * @param updateAbsoluteBindMatrices defines if the absolute bind and absolute inverse bind matrices must be recomputed
-     * @param updateLocalMatrix defines if the local matrix should be updated
+     * @param updateAbsoluteBindMatrices defines if the absolute bind and absolute inverse bind matrices must be recomputed (default: true)
+     * @param updateLocalMatrix defines if the local matrix should also be updated with the matrix passed in parameter (default: true)
      */
     public updateMatrix(bindMatrix: Matrix, updateAbsoluteBindMatrices = true, updateLocalMatrix = true): void {
         this._bindMatrix.copyFrom(bindMatrix);
@@ -540,12 +540,12 @@ export class Bone extends Node {
         } else {
             let wm: Nullable<Matrix> = null;
 
-            //tNode.getWorldMatrix() needs to be called before skeleton.computeAbsoluteTransforms()
+            //tNode.getWorldMatrix() needs to be called before skeleton.computeAbsoluteMatrices()
             if (tNode) {
                 wm = tNode.getWorldMatrix();
             }
 
-            this._skeleton.computeAbsoluteTransforms();
+            this._skeleton.computeAbsoluteMatrices();
 
             const tmat = Bone._TmpMats[0];
             const tvec = Bone._TmpVecs[0];
@@ -690,7 +690,7 @@ export class Bone extends Node {
         }
 
         const rotMatInv = Bone._TmpMats[0];
-        if (!this._getNegativeRotationToRef(rotMatInv, tNode)) {
+        if (!this._getAbsoluteInverseMatrixUnscaledToRef(rotMatInv, tNode)) {
             return;
         }
 
@@ -732,7 +732,7 @@ export class Bone extends Node {
         }
 
         const rotMatInv = Bone._TmpMats[0];
-        if (!this._getNegativeRotationToRef(rotMatInv, tNode)) {
+        if (!this._getAbsoluteInverseMatrixUnscaledToRef(rotMatInv, tNode)) {
             return;
         }
 
@@ -770,7 +770,7 @@ export class Bone extends Node {
         }
 
         const rotMatInv = Bone._TmpMats[0];
-        if (!this._getNegativeRotationToRef(rotMatInv, tNode)) {
+        if (!this._getAbsoluteInverseMatrixUnscaledToRef(rotMatInv, tNode)) {
             return;
         }
 
@@ -797,7 +797,7 @@ export class Bone extends Node {
         }
 
         const rotMatInv = Bone._TmpMats[0];
-        if (!this._getNegativeRotationToRef(rotMatInv, tNode)) {
+        if (!this._getAbsoluteInverseMatrixUnscaledToRef(rotMatInv, tNode)) {
             return;
         }
 
@@ -821,9 +821,9 @@ export class Bone extends Node {
         if (parent && space == Space.WORLD) {
             if (tNode) {
                 parentScale.copyFrom(tNode.getWorldMatrix());
-                parent.getAbsoluteTransform().multiplyToRef(parentScale, parentScale);
+                parent.getAbsoluteMatrix().multiplyToRef(parentScale, parentScale);
             } else {
-                parentScale.copyFrom(parent.getAbsoluteTransform());
+                parentScale.copyFrom(parent.getAbsoluteMatrix());
             }
             parentScaleInv.copyFrom(parentScale);
             parentScaleInv.invert();
@@ -845,13 +845,13 @@ export class Bone extends Node {
 
         lmat.setTranslationFromFloats(lx, ly, lz);
 
-        this.computeAbsoluteTransforms();
+        this.computeAbsoluteMatrices();
         this._markAsDirtyAndDecompose();
     }
 
-    private _getNegativeRotationToRef(rotMatInv: Matrix, tNode?: TransformNode): boolean {
+    private _getAbsoluteInverseMatrixUnscaledToRef(rotMatInv: Matrix, tNode?: TransformNode): boolean {
         const scaleMatrix = Bone._TmpMats[2];
-        rotMatInv.copyFrom(this.getAbsoluteTransform());
+        rotMatInv.copyFrom(this.getAbsoluteMatrix());
 
         if (tNode) {
             rotMatInv.multiplyToRef(tNode.getWorldMatrix(), rotMatInv);
@@ -903,20 +903,20 @@ export class Bone extends Node {
         } else {
             let wm: Nullable<Matrix> = null;
 
-            //tNode.getWorldMatrix() needs to be called before skeleton.computeAbsoluteTransforms()
+            //tNode.getWorldMatrix() needs to be called before skeleton.computeAbsoluteMatrices()
             if (tNode) {
                 wm = tNode.getWorldMatrix();
             }
 
-            this._skeleton.computeAbsoluteTransforms();
+            this._skeleton.computeAbsoluteMatrices();
 
             let tmat = Bone._TmpMats[0];
 
             if (tNode && wm) {
-                tmat.copyFrom(this.getAbsoluteTransform());
+                tmat.copyFrom(this.getAbsoluteMatrix());
                 tmat.multiplyToRef(wm, tmat);
             } else {
-                tmat = this.getAbsoluteTransform();
+                tmat = this.getAbsoluteMatrix();
             }
 
             result.x = tmat.m[12];
@@ -948,9 +948,9 @@ export class Bone extends Node {
     }
 
     /**
-     * Compute the absolute transforms of this bone and its children
+     * Compute the absolute matrices of this bone and its children
      */
-    public computeAbsoluteTransforms(): void {
+    public computeAbsoluteMatrices(): void {
         this._compose();
 
         if (this.parent) {
@@ -969,8 +969,16 @@ export class Bone extends Node {
         const len = children.length;
 
         for (let i = 0; i < len; i++) {
-            children[i].computeAbsoluteTransforms();
+            children[i].computeAbsoluteMatrices();
         }
+    }
+
+    /**
+     * Compute the absolute matrices of this bone and its children
+     * @deprecated Please use computeAbsoluteMatrices instead
+     */
+    public computeAbsoluteTransforms(): void {
+        this.computeAbsoluteMatrices();
     }
 
     /**
@@ -996,16 +1004,16 @@ export class Bone extends Node {
     public getDirectionToRef(localAxis: Vector3, tNode: Nullable<TransformNode> = null, result: Vector3): void {
         let wm: Nullable<Matrix> = null;
 
-        //tNode.getWorldMatrix() needs to be called before skeleton.computeAbsoluteTransforms()
+        //tNode.getWorldMatrix() needs to be called before skeleton.computeAbsoluteMatrices()
         if (tNode) {
             wm = tNode.getWorldMatrix();
         }
 
-        this._skeleton.computeAbsoluteTransforms();
+        this._skeleton.computeAbsoluteMatrices();
 
         const mat = Bone._TmpMats[0];
 
-        mat.copyFrom(this.getAbsoluteTransform());
+        mat.copyFrom(this.getAbsoluteMatrix());
 
         if (tNode && wm) {
             mat.multiplyToRef(wm, mat);
@@ -1070,7 +1078,7 @@ export class Bone extends Node {
             result.copyFrom(this._localRotation);
         } else {
             const mat = Bone._TmpMats[0];
-            const amat = this.getAbsoluteTransform();
+            const amat = this.getAbsoluteMatrix();
 
             if (tNode) {
                 amat.multiplyToRef(tNode.getWorldMatrix(), mat);
@@ -1111,7 +1119,7 @@ export class Bone extends Node {
             this.getLocalMatrix().getRotationMatrixToRef(result);
         } else {
             const mat = Bone._TmpMats[0];
-            const amat = this.getAbsoluteTransform();
+            const amat = this.getAbsoluteMatrix();
 
             if (tNode) {
                 amat.multiplyToRef(tNode.getWorldMatrix(), mat);
@@ -1150,20 +1158,19 @@ export class Bone extends Node {
     public getAbsolutePositionFromLocalToRef(position: Vector3, tNode: Nullable<TransformNode> = null, result: Vector3): void {
         let wm: Nullable<Matrix> = null;
 
-        //tNode.getWorldMatrix() needs to be called before skeleton.computeAbsoluteTransforms()
+        //tNode.getWorldMatrix() needs to be called before skeleton.computeAbsoluteMatrices()
         if (tNode) {
             wm = tNode.getWorldMatrix();
         }
 
-        this._skeleton.computeAbsoluteTransforms();
+        this._skeleton.computeAbsoluteMatrices();
 
-        let tmat = Bone._TmpMats[0];
+        const tmat = Bone._TmpMats[0];
+
+        tmat.copyFrom(this.getAbsoluteMatrix());
 
         if (tNode && wm) {
-            tmat.copyFrom(this.getAbsoluteTransform());
             tmat.multiplyToRef(wm, tmat);
-        } else {
-            tmat = this.getAbsoluteTransform();
         }
 
         Vector3.TransformCoordinatesToRef(position, tmat, result);
@@ -1192,16 +1199,16 @@ export class Bone extends Node {
     public getLocalPositionFromAbsoluteToRef(position: Vector3, tNode: Nullable<TransformNode> = null, result: Vector3): void {
         let wm: Nullable<Matrix> = null;
 
-        //tNode.getWorldMatrix() needs to be called before skeleton.computeAbsoluteTransforms()
+        //tNode.getWorldMatrix() needs to be called before skeleton.computeAbsoluteMatrices()
         if (tNode) {
             wm = tNode.getWorldMatrix();
         }
 
-        this._skeleton.computeAbsoluteTransforms();
+        this._skeleton.computeAbsoluteMatrices();
 
         const tmat = Bone._TmpMats[0];
 
-        tmat.copyFrom(this.getAbsoluteTransform());
+        tmat.copyFrom(this.getAbsoluteMatrix());
 
         if (tNode && wm) {
             tmat.multiplyToRef(wm, tmat);
@@ -1213,9 +1220,9 @@ export class Bone extends Node {
     }
 
     /**
-     * Set the current local matrix as the restPose for this bone.
+     * Set the current local matrix as the restMatrix for this bone.
      */
     public setCurrentPoseAsRest(): void {
-        this.setRestPose(this.getLocalMatrix());
+        this.setRestMatrix(this.getLocalMatrix());
     }
 }

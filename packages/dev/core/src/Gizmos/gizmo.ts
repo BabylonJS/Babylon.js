@@ -437,13 +437,13 @@ export class Gizmo implements IGizmo {
             if (parent) {
                 const invParent = TmpVectors.Matrix[0];
                 const boneLocalMatrix = TmpVectors.Matrix[1];
-                parent.getWorldMatrix().invertToRef(invParent);
-                bone.getWorldMatrix().multiplyToRef(invParent, boneLocalMatrix);
+                parent.getFinalMatrix().invertToRef(invParent);
+                bone.getFinalMatrix().multiplyToRef(invParent, boneLocalMatrix);
                 const lmat = bone.getLocalMatrix();
                 lmat.copyFrom(boneLocalMatrix);
             } else {
                 const lmat = bone.getLocalMatrix();
-                lmat.copyFrom(bone.getWorldMatrix());
+                lmat.copyFrom(bone.getFinalMatrix());
             }
             bone.markAsDirty();
         } else {

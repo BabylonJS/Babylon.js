@@ -517,7 +517,7 @@ export class SkeletonViewer {
         }
 
         if (parentBone) {
-            tmat.multiplyToRef(parentBone.getAbsoluteTransform(), tmat);
+            tmat.multiplyToRef(parentBone.getAbsoluteMatrix(), tmat);
         }
 
         tmat.multiplyToRef(meshMat, tmat);
