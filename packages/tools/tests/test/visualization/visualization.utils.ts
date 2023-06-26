@@ -54,10 +54,7 @@ export const evaluateTests = async (engineType = "webgl2", testFileName = "confi
         }
     }
 
-    beforeAll(async () => {
-        if (logToFile) {
-            fs.writeFileSync(logPath, "", "utf8");
-        }
+    async function preparePageForTests() {
         page.on("console", async (msg) => {
             // serialize my args the way I want
             const args = await Promise.all(
@@ -81,30 +78,28 @@ export const evaluateTests = async (engineType = "webgl2", testFileName = "confi
             }
         });
         page.on("pageerror", ({ message }) => log(message)).on("requestfailed", (request) => log(`${request.failure().errorText} ${request.url()}`));
-        log("opening page");
+        log("preparing page");
         await page.setViewport({ width: 600, height: 400 });
         page.setDefaultTimeout(0);
         await page.goto(getGlobalConfig({ root: config.root }).baseUrl + `/empty.html`, {
             waitUntil: "load", // for chrome should be "networkidle0"
             timeout: 0,
         });
-        // await page.evaluate(ensurePageIsReady);
+        log("page ready");
+    }
 
-        log("page opened");
-        // await jestPuppeteer.debug();
-    });
-    afterAll(async () => {
-        await page.evaluate(() => {
-            window.engine && window.engine.dispose();
-            window.scene = null;
-            window.engine = null;
-        });
-        // await jestPuppeteer.debug();
-        // if (browser) await browser.close();
+    beforeAll(async () => {
+        if (process.env.RESET_BROWSER !== "true") {
+            await preparePageForTests();
+        }
     });
 
     beforeEach(async () => {
-        // prepare the engine, scene
+        if (process.env.RESET_BROWSER === "true") {
+            await jestPuppeteer.resetBrowser();
+            await preparePageForTests();
+        }
+
         await page.evaluate(() => {
             if (window.scene && window.scene.dispose) {
                 // run the dispose function here
@@ -119,7 +114,20 @@ export const evaluateTests = async (engineType = "webgl2", testFileName = "confi
         if (engineFlags.renderer) {
             log(engineFlags.renderer);
         }
+
+        log("engine ready");
     });
+
+    afterAll(async () => {
+        await page.evaluate(() => {
+            window.engine && window.engine.dispose();
+            window.scene = null;
+            window.engine = null;
+        });
+        // await jestPuppeteer.debug();
+        // if (browser) await browser.close();
+    });
+
     // afterEach(async () => {
     //     // cleanup, check heap size after each test
     // });
@@ -147,7 +155,7 @@ export const evaluateTests = async (engineType = "webgl2", testFileName = "confi
                 const screenshot = await page.screenshot();
 
                 const directory = path.resolve(__dirname, "../../../../../jest-screenshot-report");
-                
+
                 // Test screenshot (also save this new screenshot if -u is set)
                 expect(screenshot).toMatchImageSnapshot({
                     customDiffConfig: {
