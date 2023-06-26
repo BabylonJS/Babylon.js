@@ -331,13 +331,22 @@
                 }
             }
 
-            .refresh {
+            .coordinates {
                 grid-column: 8;
+                opacity: 0.6;
+
+                &.selected {
+                    opacity: 1;
+                }
+            }
+
+            .refresh {
+                grid-column: 9;
             }
 
             .extensions {
                 width: 20px;
-                grid-column: 9;
+                grid-column: 10;
             }
         }
 
