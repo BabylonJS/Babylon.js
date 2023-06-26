@@ -1644,6 +1644,10 @@
         {
             "title": "PBR Debug Modes",
             "playgroundId": "#2FDQT5#2300"
+        },
+        {
+            "title": "convertToFlatShadedMesh",
+            "playgroundId": "#UFDL9T#3"
         }
     ]
 }
