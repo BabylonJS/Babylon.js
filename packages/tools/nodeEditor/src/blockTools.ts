@@ -97,6 +97,7 @@ import { BiPlanarBlock } from "core/Materials/Node/Blocks/biPlanarBlock";
 import { MatrixDeterminantBlock } from "core/Materials/Node/Blocks/matrixDeterminantBlock";
 import { MatrixTransposeBlock } from "core/Materials/Node/Blocks/matrixTransposeBlock";
 import { CurveBlock } from "core/Materials/Node/Blocks/curveBlock";
+import { PrePassTextureBlock } from "core/Materials/Node/Blocks/Input/prePassTextureBlock";
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
@@ -139,6 +140,8 @@ export class BlockTools {
                 return new MorphTargetsBlock("MorphTargets");
             case "DiscardBlock":
                 return new DiscardBlock("Discard");
+            case "PrePassTextureBlock":
+                return new PrePassTextureBlock("PrePassTexture");
             case "ImageProcessingBlock":
                 return new ImageProcessingBlock("ImageProcessing");
             case "ColorMergerBlock":

@@ -62,7 +62,7 @@ import { MaterialHelper } from "../materialHelper";
 import type { TriPlanarBlock } from "./Blocks/triPlanarBlock";
 import type { BiPlanarBlock } from "./Blocks/biPlanarBlock";
 import type { PrePassRenderer } from "core/Rendering";
-import { PrePassEffectConfiguration } from "core/Rendering/prePassEffectConfiguration";
+import type { PrePassTextureBlock } from "./Blocks/Input/prePassTextureBlock";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -95,6 +95,10 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
     public UV6 = false;
 
     public PREPASS = false;
+    public PREPASS_NORMAL = false;
+    public PREPASS_NORMAL_INDEX = -1;
+    public PREPASS_POSITION = false;
+    public PREPASS_POSITION_INDEX = -1;
     public PREPASS_DEPTH = false;
     public PREPASS_DEPTH_INDEX = -1;
     public SCENE_MRT_COUNT = 0;
@@ -174,7 +178,8 @@ export type NodeMaterialTextureBlocks =
     | ParticleTextureBlock
     | ImageSourceBlock
     | TriPlanarBlock
-    | BiPlanarBlock;
+    | BiPlanarBlock
+    | PrePassTextureBlock;
 
 /**
  * Class used to create a node based material built by assembling shader blocks
@@ -857,13 +862,8 @@ export class NodeMaterial extends PushMaterial {
         return (this.getBlockByPredicate((block) => block.getClassName() === "FragmentOutputBlock") as FragmentOutputBlock)?.prePassCapable;
     }
 
-    public get requiresPrePassTexture(): boolean {
-        // TODO
-        return !!this.getBlockByPredicate((block) => block.getClassName() === "PrePassInputBlock");
-    }
-
     public get prePassTextureOutputs(): number[] {
-        const fragmentOutputBlock = (this.getBlockByPredicate((block) => block.getClassName() === "FragmentOutputBlock") as FragmentOutputBlock);
+        const fragmentOutputBlock = this.getBlockByPredicate((block) => block.getClassName() === "FragmentOutputBlock") as FragmentOutputBlock;
         const result = [] as number[];
         if (!fragmentOutputBlock) {
             return result;
@@ -877,6 +877,36 @@ export class NodeMaterial extends PushMaterial {
             result.push(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
         }
 
+        if (fragmentOutputBlock.worldNormal.isConnected) {
+            result.push(Constants.PREPASS_NORMAL_TEXTURE_TYPE);
+        }
+
+        if (fragmentOutputBlock.worldPosition.isConnected) {
+            result.push(Constants.PREPASS_POSITION_TEXTURE_TYPE);
+        }
+
+        return result;
+    }
+
+    /**
+     * Gets the list of prepass texture required
+     */
+    public get prePassTextureInputs(): number[] {
+        const prePassTextureBlocks = this.getAllTextureBlocks().filter((block) => block.getClassName() === "PrePassTextureBlock") as PrePassTextureBlock[];
+        const result = [] as number[];
+
+        for (const block of prePassTextureBlocks) {
+            if (block.color.isConnected && !result.includes(Constants.PREPASS_COLOR_TEXTURE_TYPE)) {
+                result.push(Constants.PREPASS_COLOR_TEXTURE_TYPE);
+            }
+            if (block.color.isConnected && !result.includes(Constants.PREPASS_DEPTH_TEXTURE_TYPE)) {
+                result.push(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
+            }
+            if (block.color.isConnected && !result.includes(Constants.PREPASS_NORMAL_TEXTURE_TYPE)) {
+                result.push(Constants.PREPASS_NORMAL_TEXTURE_TYPE);
+            }
+        }
+
         return result;
     }
 
@@ -885,24 +915,24 @@ export class NodeMaterial extends PushMaterial {
      */
     public setPrePassRenderer(_prePassRenderer: PrePassRenderer): boolean {
         const prePassRenderer = this.getScene().prePassRenderer;
-        const prePassTextureOutputs = this.prePassTextureOutputs;
+        const prePassTexturesRequired = this.prePassTextureInputs.concat(this.prePassTextureOutputs);
 
-        if (prePassRenderer && prePassTextureOutputs.length) {
+        if (prePassRenderer && prePassTexturesRequired.length) {
             let cfg = prePassRenderer.getEffectConfiguration("nodeMaterial");
             if (!cfg) {
                 cfg = prePassRenderer.addEffectConfiguration({
                     enabled: true,
                     needsImageProcessing: false,
                     name: "nodeMaterial",
-                    texturesRequired: []
+                    texturesRequired: [],
                 });
             }
 
-            cfg.texturesRequired = prePassTextureOutputs;
+            cfg.texturesRequired = prePassTexturesRequired;
             cfg.enabled = true;
         }
 
-        return this.isPrePassCapable; // this.requiresPrePassTexture;
+        return !!prePassTexturesRequired.length;
     }
 
     /**
