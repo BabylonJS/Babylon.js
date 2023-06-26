@@ -2465,8 +2465,8 @@ export class GLTFLoader implements IGLTFLoader {
      * @param pointer the JSON pointer
      */
     public static AddPointerMetadata(babylonObject: IWithMetadata, pointer: string): void {
-        babylonObject.metadata = babylonObject.metadata || {};
-        const metadata = (babylonObject._internalMetadata = babylonObject._internalMetadata || {});
+        babylonObject._internalMetadata = babylonObject._internalMetadata || {};
+        const metadata = (babylonObject.metadata = babylonObject.metadata || {});
         const gltf = (metadata.gltf = metadata.gltf || {});
         const pointers = (gltf.pointers = gltf.pointers || []);
         pointers.push(pointer);
