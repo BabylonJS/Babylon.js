@@ -1485,11 +1485,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 break;
             }
 
-            SubMesh.CreateFromIndices(0, offset, index === count - 1 ? totalIndices - offset : subdivisionSize, this);
+            SubMesh.CreateFromIndices(0, offset, index === count - 1 ? totalIndices - offset : subdivisionSize, this, undefined, false);
 
             offset += subdivisionSize;
         }
 
+        this.refreshBoundingInfo();
         this.synchronizeInstances();
     }
 
