@@ -40,11 +40,11 @@ export class Bone extends Node {
 
     private _skeleton: Skeleton;
     private _localMatrix: Matrix; // transformation of the bone, in local space
-    private _absoluteMatrix = new Matrix(); // transformation of the bone, in world space (relative to the skeleton root)
+    private _absoluteMatrix: Matrix; // transformation of the bone, in world space (relative to the skeleton root)
     private _bindMatrix: Matrix; // the bind matrix, in local space
-    private _absoluteBindMatrix: Matrix = new Matrix(); // the bind matrix, in world space (relative to the skeleton root)
-    private _absoluteInverseBindMatrix = new Matrix(); // the inverse of the bind matrix, in world space (relative to the skeleton root)
-    private _finalMatrix = new Matrix(); // the final matrix used to transform vertices of the mesh according to the bone, in world space (relative to the skeleton root). It is the multiplication of _absoluteInverseBindMatrix with _absoluteMatrix.
+    private _absoluteBindMatrix: Matrix; // the bind matrix, in world space (relative to the skeleton root)
+    private _absoluteInverseBindMatrix; // the inverse of the bind matrix, in world space (relative to the skeleton root)
+    private _finalMatrix; // the final matrix used to transform vertices of the mesh according to the bone, in world space (relative to the skeleton root). It is the multiplication of _absoluteInverseBindMatrix with _absoluteMatrix.
     private _restMatrix: Matrix; // a matrix for the exclusive use of the end user (not used internally by the framework), in local space
     private _scalingDeterminant = 1;
 
@@ -108,6 +108,11 @@ export class Bone extends Node {
         this._bindMatrix = bindMatrix ? bindMatrix : this._localMatrix.clone();
         this._index = index;
 
+        this._absoluteMatrix = new Matrix();
+        this._absoluteBindMatrix = new Matrix();
+        this._absoluteInverseBindMatrix = new Matrix();
+        this._finalMatrix = new Matrix();
+    
         skeleton.bones.push(this);
 
         this.setParent(parentBone, false);
