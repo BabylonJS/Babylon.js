@@ -3016,12 +3016,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         let normalsCount = 0;
 
         // Decide if normals should be flipped
-        const flipNormalGeneration =
-            this.overrideMaterialSideOrientation ===
-            (this._scene.useRightHandedSystem ? Constants.MATERIAL_CounterClockWiseSideOrientation : Constants.MATERIAL_ClockWiseSideOrientation);
+        const flipNormalGeneration = this.overrideMaterialSideOrientation === (this._scene.useRightHandedSystem ? Constants.MATERIAL_CounterClockWiseSideOrientation : Constants.MATERIAL_ClockWiseSideOrientation);
 
         // Generate new normals
         for (let index = 0; index < indices.length; index += 3) {
+
             const p1 = Vector3.FromArray(positions, indices[index] * 3);
             const p2 = Vector3.FromArray(positions, indices[index + 1] * 3);
             const p3 = Vector3.FromArray(positions, indices[index + 2] * 3);
@@ -3092,7 +3091,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
                 const normals = target.getNormals();
                 if (normals) {
-                    target.setNormals(flattenNormals ? this._getFlattenedNormals(indices, positions) : separateVertices(normals, 3));
+                   target.setNormals(flattenNormals ? this._getFlattenedNormals(indices, positions) : separateVertices(normals, 3));
                 }
 
                 const tangents = target.getTangents();
@@ -3108,9 +3107,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this.morphTargetManager.synchronize();
         }
 
-        // Update indices
+        // Update indices 
         if (updateIndices) {
-            //let index: number;
             for (let index = 0; index < indices.length; index++) {
                 indices[index] = index;
             }
