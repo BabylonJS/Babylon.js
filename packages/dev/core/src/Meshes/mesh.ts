@@ -753,14 +753,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
     }
 
-    /**
-     * Instantiate (when possible) or clone that node with its hierarchy
-     * @param newParent defines the new parent to use for the instance (or clone)
-     * @param options defines options to configure how copy is done
-     * @param options.doNotInstantiate defines if the model must be instantiated or just cloned
-     * @param onNewNodeCreated defines an option callback to call when a clone or an instance is created
-     * @returns an instance (or a clone) of the current node with its hierarchy
-     */
     public instantiateHierarchy(
         newParent: Nullable<TransformNode> = null,
         options?: { doNotInstantiate: boolean | ((node: TransformNode) => boolean) },
@@ -1212,10 +1204,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         return this._geometry.getIndices(copyWhenShared, forceCopy);
     }
 
-    /**
-     * Returns true if the mesh is blocked. Implemented by child classes.
-     * @returns a boolean
-     */
     public get isBlocked(): boolean {
         return this._masterMesh !== null && this._masterMesh !== undefined;
     }
@@ -3016,11 +3004,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         let normalsCount = 0;
 
         // Decide if normals should be flipped
-        const flipNormalGeneration = this.overrideMaterialSideOrientation === (this._scene.useRightHandedSystem ? Constants.MATERIAL_CounterClockWiseSideOrientation : Constants.MATERIAL_ClockWiseSideOrientation);
+        const flipNormalGeneration =
+            this.overrideMaterialSideOrientation ===
+            (this._scene.useRightHandedSystem ? Constants.MATERIAL_CounterClockWiseSideOrientation : Constants.MATERIAL_ClockWiseSideOrientation);
 
         // Generate new normals
         for (let index = 0; index < indices.length; index += 3) {
-
             const p1 = Vector3.FromArray(positions, indices[index] * 3);
             const p2 = Vector3.FromArray(positions, indices[index + 1] * 3);
             const p3 = Vector3.FromArray(positions, indices[index + 2] * 3);
@@ -3091,7 +3080,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
                 const normals = target.getNormals();
                 if (normals) {
-                   target.setNormals(flattenNormals ? this._getFlattenedNormals(indices, positions) : separateVertices(normals, 3));
+                    target.setNormals(flattenNormals ? this._getFlattenedNormals(indices, positions) : separateVertices(normals, 3));
                 }
 
                 const tangents = target.getTangents();
@@ -3107,7 +3096,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this.morphTargetManager.synchronize();
         }
 
-        // Update indices 
+        // Update indices
         if (updateIndices) {
             for (let index = 0; index < indices.length; index++) {
                 indices[index] = index;
