@@ -84,9 +84,9 @@ export class Bone extends Node {
      * @param name defines the bone name
      * @param skeleton defines the parent skeleton
      * @param parentBone defines the parent (can be null if the bone is the root)
-     * @param localMatrix defines the local matrix (default: Identity)
-     * @param restMatrix defines the rest matrix (default: Identity)
-     * @param bindMatrix defines the bind matrix (default: Identity)
+     * @param localMatrix defines the local matrix (default: identity)
+     * @param restMatrix defines the rest matrix (default: localMatrix)
+     * @param bindMatrix defines the bind matrix (default: localMatrix)
      * @param index defines index of the bone in the hierarchy (default: null)
      */
     constructor(
