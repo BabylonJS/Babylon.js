@@ -117,9 +117,7 @@ export class Bone extends Node {
 
         this.setParent(parentBone, false);
 
-        if (bindMatrix || localMatrix) {
-            this._updateAbsoluteBindMatrices();
-        }
+        this._updateAbsoluteBindMatrices();
     }
 
     /**
