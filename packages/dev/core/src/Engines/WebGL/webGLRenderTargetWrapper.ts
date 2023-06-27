@@ -43,7 +43,10 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
         this._context = context;
     }
 
-    protected _cloneRenderTargetWrapper(): Nullable<RenderTargetWrapper> {
+    /**
+     * @internal
+     */
+    public _cloneRenderTargetWrapper(): Nullable<RenderTargetWrapper> {
         let rtw: Nullable<RenderTargetWrapper> = null;
 
         if (this._colorTextureArray && this._depthStencilTextureArray) {

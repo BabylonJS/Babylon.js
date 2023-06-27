@@ -38,27 +38,47 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
      * @param target defines the target of that block (Vertex by default)
      * @param type defines the type of the input (can be set to NodeMaterialBlockConnectionPointTypes.AutoDetect)
      */
-    public constructor(name: string, target = NodeMaterialBlockTargets.Vertex) {
+    public constructor(name: string, target = NodeMaterialBlockTargets.VertexAndFragment) {
         super(name, target, false, true);
 
         this.registerOutput(
             "color",
             NodeMaterialBlockConnectionPointTypes.Object,
             NodeMaterialBlockTargets.VertexAndFragment,
-            // new NodeMaterialConnectionPointCustomObject("color", this, NodeMaterialConnectionPointDirection.Output, PrePassTextureBlock, "color")
+            new NodeMaterialConnectionPointCustomObject("color", this, NodeMaterialConnectionPointDirection.Output, ImageSourceBlock, "ImageSourceBlock")
         );
-        // this.registerOutput(
-        //     "depth",
-        //     NodeMaterialBlockConnectionPointTypes.Object,
-        //     NodeMaterialBlockTargets.VertexAndFragment,
-        //     new NodeMaterialConnectionPointCustomObject("depth", this, NodeMaterialConnectionPointDirection.Output, PrePassTextureBlock, "depth")
-        // );
-        // this.registerOutput(
-        //     "normal",
-        //     NodeMaterialBlockConnectionPointTypes.Object,
-        //     NodeMaterialBlockTargets.VertexAndFragment,
-        //     new NodeMaterialConnectionPointCustomObject("normal", this, NodeMaterialConnectionPointDirection.Output, ImageSourceBlock, "normal")
-        // );
+        this.registerOutput(
+            "depth",
+            NodeMaterialBlockConnectionPointTypes.Object,
+            NodeMaterialBlockTargets.VertexAndFragment,
+            new NodeMaterialConnectionPointCustomObject("depth", this, NodeMaterialConnectionPointDirection.Output, ImageSourceBlock, "ImageSourceBlock")
+        );
+        this.registerOutput(
+            "normal",
+            NodeMaterialBlockConnectionPointTypes.Object,
+            NodeMaterialBlockTargets.VertexAndFragment,
+            new NodeMaterialConnectionPointCustomObject("normal", this, NodeMaterialConnectionPointDirection.Output, ImageSourceBlock, "ImageSourceBlock")
+        );
+
+        this._outputs[0].displayName = "color";
+        this._outputs[1].displayName = "depth";
+        this._outputs[2].displayName = "normal";
+    }
+
+    public getSamplerName(output: NodeMaterialConnectionPoint): string {
+        if (output === this._outputs[0]) {
+            return this._colorSamplerName;
+        }
+
+        if (output === this._outputs[1]) {
+            return this._depthSamplerName;
+        }
+
+        if (output === this._outputs[2]) {
+            return this._normalSamplerName;
+        }
+
+        return "";
     }
 
     /**
@@ -148,9 +168,13 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
         }
 
         const sceneRT = prePassRenderer.getRenderTarget();
-        effect.setTexture("prepassColorSampler", sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_COLOR_TEXTURE_TYPE)]);
-        effect.setTexture("prepassDepthSampler", sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE)]);
-        effect.setTexture("prepassNormalSampler", sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_NORMAL_TEXTURE_TYPE)]);
+        if (!sceneRT.textures) {
+            return;
+        }
+
+        effect.setTexture(this._colorSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_COLOR_TEXTURE_TYPE)]);
+        effect.setTexture(this._depthSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE)]);
+        effect.setTexture(this._normalSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_NORMAL_TEXTURE_TYPE)]);
     }
 
     protected _dumpPropertiesCode() {

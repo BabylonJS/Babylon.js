@@ -160,6 +160,8 @@ export class PrePassRenderer {
      */
     public defaultRT: PrePassRenderTarget;
 
+    public noPrePassDefaultRT: PrePassRenderTarget;
+
     /**
      * Configuration for prepass effects
      */
@@ -585,8 +587,8 @@ export class PrePassRenderer {
 
     /**
      * Retrieves an effect configuration by name
-     * @param name 
-     * @returns 
+     * @param name
+     * @returns
      */
     public getEffectConfiguration(name: string): PrePassEffectConfiguration | null {
         for (let i = 0; i < this._effectConfigurations.length; i++) {
