@@ -7,7 +7,8 @@ import {
     PhysicsConstraintAxis,
     PhysicsConstraintAxisLimitMode,
 } from "../IPhysicsEnginePlugin";
-import type { PhysicsShapeParameters, IPhysicsEnginePluginV2, PhysicsMassProperties, IPhysicsCollisionEvent, IRaycastQuery } from "../IPhysicsEnginePlugin";
+import type { PhysicsShapeParameters, IPhysicsEnginePluginV2, PhysicsMassProperties, IPhysicsCollisionEvent } from "../IPhysicsEnginePlugin";
+import type { IRaycastQuery, PhysicsRaycastResult } from "../../physicsRaycastResult";
 import { Logger } from "../../../Misc/logger";
 import type { PhysicsBody } from "../physicsBody";
 import type { PhysicsConstraint, Physics6DoFConstraint } from "../physicsConstraint";
@@ -16,7 +17,6 @@ import { PhysicsMaterialCombineMode } from "../physicsMaterial";
 import { PhysicsShape } from "../physicsShape";
 import type { BoundingBox } from "../../../Culling/boundingBox";
 import type { TransformNode } from "../../../Meshes/transformNode";
-import type { PhysicsRaycastResult } from "../../physicsRaycastResult";
 import { Mesh } from "../../../Meshes/mesh";
 import type { Scene } from "../../../scene";
 import { VertexBuffer } from "../../../Buffers/buffer";

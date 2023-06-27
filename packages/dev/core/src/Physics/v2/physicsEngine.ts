@@ -2,6 +2,7 @@ import type { Nullable } from "../../types";
 import { Vector3 } from "../../Maths/math.vector";
 import type { IPhysicsEngine } from "../IPhysicsEngine";
 import type { IPhysicsEnginePluginV2 } from "./IPhysicsEnginePlugin";
+import type { IRaycastQuery } from "../physicsRaycastResult";
 import { PhysicsRaycastResult } from "../physicsRaycastResult";
 import { _WarnImport } from "../../Misc/devTools";
 import type { PhysicsBody } from "./physicsBody";
@@ -165,8 +166,8 @@ export class PhysicsEngine implements IPhysicsEngine {
      * @param to when should the ray end?
      * @param result resulting PhysicsRaycastResult
      */
-    public raycastToRef(from: Vector3, to: Vector3, result: PhysicsRaycastResult): void {
-        this._physicsPlugin.raycast(from, to, result);
+    public raycastToRef(from: Vector3, to: Vector3, result: PhysicsRaycastResult, query?: IRaycastQuery): void {
+        this._physicsPlugin.raycast(from, to, result, query);
     }
 
     /**
@@ -175,9 +176,9 @@ export class PhysicsEngine implements IPhysicsEngine {
      * @param to when should the ray end?
      * @returns PhysicsRaycastResult
      */
-    public raycast(from: Vector3, to: Vector3): PhysicsRaycastResult {
+    public raycast(from: Vector3, to: Vector3, query?: IRaycastQuery): PhysicsRaycastResult {
         const result = new PhysicsRaycastResult();
-        this._physicsPlugin.raycast(from, to, result);
+        this._physicsPlugin.raycast(from, to, result, query);
         return result;
     }
 }
