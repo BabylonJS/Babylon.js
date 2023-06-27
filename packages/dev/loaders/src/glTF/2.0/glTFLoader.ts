@@ -1413,11 +1413,11 @@ export class GLTFLoader implements IGLTFLoader {
 
             const babylonParentBone = babylonBone.getParent();
             if (babylonParentBone) {
-                baseMatrix.multiplyToRef(babylonParentBone.getInvertedAbsoluteTransform(), baseMatrix);
+                baseMatrix.multiplyToRef(babylonParentBone.getAbsoluteInverseBindMatrix(), baseMatrix);
             }
 
             babylonBone.updateMatrix(baseMatrix, false, false);
-            babylonBone._updateDifferenceMatrix(undefined, false);
+            babylonBone._updateAbsoluteBindMatrices(undefined, false);
         }
     }
 
