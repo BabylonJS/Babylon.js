@@ -11,6 +11,7 @@ import type { NodeMaterial } from "../../nodeMaterial";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { Constants } from "core/Engines";
 import type { Mesh } from "core/Meshes";
+import { ImageSourceBlock } from "../Dual";
 
 /**
  * Block used to expose an input value
@@ -37,19 +38,27 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
      * @param target defines the target of that block (Vertex by default)
      * @param type defines the type of the input (can be set to NodeMaterialBlockConnectionPointTypes.AutoDetect)
      */
-    public constructor(name: string, target = NodeMaterialBlockTargets.Vertex, type: NodeMaterialBlockConnectionPointTypes = NodeMaterialBlockConnectionPointTypes.AutoDetect) {
+    public constructor(name: string, target = NodeMaterialBlockTargets.Vertex) {
         super(name, target, false, true);
 
         this.registerOutput(
             "color",
             NodeMaterialBlockConnectionPointTypes.Object,
             NodeMaterialBlockTargets.VertexAndFragment,
-            new NodeMaterialConnectionPointCustomObject("color", this, NodeMaterialConnectionPointDirection.Output, PrePassTextureBlock, "PrePassTextureBlock")
+            // new NodeMaterialConnectionPointCustomObject("color", this, NodeMaterialConnectionPointDirection.Output, PrePassTextureBlock, "color")
         );
-
-        this.registerOutput("color", NodeMaterialBlockConnectionPointTypes.Object);
-        this.registerOutput("depth", NodeMaterialBlockConnectionPointTypes.Color4);
-        this.registerOutput("normal", NodeMaterialBlockConnectionPointTypes.Color4);
+        // this.registerOutput(
+        //     "depth",
+        //     NodeMaterialBlockConnectionPointTypes.Object,
+        //     NodeMaterialBlockTargets.VertexAndFragment,
+        //     new NodeMaterialConnectionPointCustomObject("depth", this, NodeMaterialConnectionPointDirection.Output, PrePassTextureBlock, "depth")
+        // );
+        // this.registerOutput(
+        //     "normal",
+        //     NodeMaterialBlockConnectionPointTypes.Object,
+        //     NodeMaterialBlockTargets.VertexAndFragment,
+        //     new NodeMaterialConnectionPointCustomObject("normal", this, NodeMaterialConnectionPointDirection.Output, ImageSourceBlock, "normal")
+        // );
     }
 
     /**
