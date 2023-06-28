@@ -8,9 +8,12 @@ import { Vector2 } from "core/Maths/math";
 import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { type TransformNode } from "core/Meshes/transformNode";
 import { type Scene } from "core/scene";
-import { type Nullable } from "core/types";
 import { strToU8, zipSync } from "fflate";
 import { type Material } from "core/Materials/material";
+import { Tools } from "core/Misc/tools";
+import { FloatArray } from "core/types";
+
+/* Converted from https://github.com/mrdoob/three.js/blob/dev/examples/jsm/exporters/USDZExporter.js by Pryme8 */
 
 export interface IUSDExportOptions {
     modelName?: string;
@@ -92,7 +95,16 @@ export class USDExport {
                             materials[mesh.material.uniqueId] = mesh.material;
                         }
 
+                        let originalScale = -1;
+                        if (mesh.parent?.name === "__root__") {
+                            originalScale = (mesh.parent as TransformNode).scaling.z;
+                        }
+
                         output += USDExport._BuildXform(mesh, mesh.material);
+
+                        if (mesh.parent?.name === "__root__") {
+                            (mesh.parent as TransformNode).scaling.z = originalScale;
+                        }
 
                         break;
                     default:
@@ -116,13 +128,15 @@ export class USDExport {
         files[modelFileName] = strToU8(output);
 
         for (const id in textures) {
-            const texture = textures[id] as Texture;
+            const texture = textures[id];
             const image = await USDExport._TextureToImage(texture);
             const canvas = USDExport._ImageToCanvas(image, texture.invertY);
-            const blob: Blob = await new Promise((resolve) => {
-                canvas.toBlob(resolve as any, "image/png", 1);
+            const blob: Blob | null = await new Promise((resolve: BlobCallback) => {
+                canvas.toBlob(resolve, "image/png", 1);
             });
-            files[`textures/Texture_${id}.png`] = new Uint8Array(await blob.arrayBuffer());
+            if (blob) {
+                files[`textures/Texture_${id}.png`] = new Uint8Array(await blob.arrayBuffer());
+            }
         }
 
         // 64 byte alignment
@@ -146,11 +160,7 @@ export class USDExport {
         const data = zipSync(files, { level: 0 });
 
         if (autoDownload) {
-            const downloadButton = document.createElement("a");
-            downloadButton.href = URL.createObjectURL(new Blob([data], { type: "application/octet-stream" }));
-            document.body.appendChild(downloadButton);
-            downloadButton.click();
-            document.body.removeChild(downloadButton);
+            Tools.Download(new Blob([data], { type: "application/octet-stream" }), `${options?.modelName || "model"}.usdz`);
         }
 
         sharedMat.dispose();
@@ -224,10 +234,10 @@ export class USDExport {
       {
         int[] faceVertexCounts = [${USDExport._BuildMeshVertexCount(count)}]
         int[] faceVertexIndices = [${USDExport._BuildMeshVertexIndices(mesh)}]
-        normal3f[] normals = [${USDExport._BuildVector3Array(normals as number[], normalCount)}] (
+        normal3f[] normals = [${USDExport._BuildVector3Array(normalCount, normals as number[])}] (
           interpolation = "vertex"
         )
-        point3f[] points = [${USDExport._BuildVector3Array(positions as number[], count)}]
+        point3f[] points = [${USDExport._BuildVector3Array(count, positions as number[])}]
     ${USDExport._BuildPrimVars(mesh)}
         uniform token subdivisionScheme = "none"
       }
@@ -251,7 +261,7 @@ export class USDExport {
         return array.join(", ");
     }
 
-    private static _BuildVector3Array(attribute: number[], count: number) {
+    private static _BuildVector3Array(count: number, attribute?: FloatArray) {
         if (attribute === undefined) {
             console.warn("USDExporter: Normals missing.");
             return Array(count / 3)
@@ -271,8 +281,8 @@ export class USDExport {
         return array.join(", ");
     }
 
-    private static _BuildVector2Array(attribute: number[], count: number) {
-        if (!attribute.length) {
+    private static _BuildVector2Array(count: number, attribute?: FloatArray) {
+        if (!attribute || !attribute.length) {
             console.warn("USDExporter: UVs missing.");
             return Array(count / 2)
                 .fill("(0, 0)")
@@ -293,24 +303,24 @@ export class USDExport {
         let output = "";
         const count = ((mesh.getVerticesData(VertexBuffer.PositionKind) ?? []).length / 3) * 2;
         const uvList = [
-            (mesh.getVerticesData(VertexBuffer.UVKind) as number[]) ?? [],
-            (mesh.getVerticesData(VertexBuffer.UV2Kind) as number[]) ?? [],
-            (mesh.getVerticesData(VertexBuffer.UV3Kind) as number[]) ?? [],
-            (mesh.getVerticesData(VertexBuffer.UV4Kind) as number[]) ?? [],
+            mesh.getVerticesData(VertexBuffer.UVKind) ?? [],
+            mesh.getVerticesData(VertexBuffer.UV2Kind) ?? [],
+            mesh.getVerticesData(VertexBuffer.UV3Kind) ?? [],
+            mesh.getVerticesData(VertexBuffer.UV4Kind) ?? [],
         ];
         uvList.forEach((uv, id) => {
-            if (uv?.length) {
+            if (uv.length) {
                 output += USDExport._BuildUV(uv, 0, count);
             }
         });
         return output;
     }
 
-    private static _BuildUV(uv: number[], id: number, count: number) {
+    private static _BuildUV(uv: FloatArray, id: number, count: number) {
         let output = "";
         if (uv?.length > 0) {
             output += `
-            texCoord2f[] primvars:st${id} = [${USDExport._BuildVector2Array(uv, count)}] (
+            texCoord2f[] primvars:st${id} = [${USDExport._BuildVector2Array(count, uv)}] (
                 interpolation = "vertex"
             )`;
         }
@@ -325,8 +335,6 @@ export class USDExport {
         }
         const mat = mesh.getWorldMatrix();
         const transform = USDExport._BuildMatrix(mat);
-
-        console.log(mat, mat.determinant());
 
         if (mat.determinant() < 0) {
             console.warn("BABYLON.USDExport: USDZ does not support negative scales", mesh);
@@ -361,8 +369,6 @@ export class USDExport {
         const mat = camera.getWorldMatrix();
 
         const transform = USDExport._BuildMatrix(mat);
-
-        console.log(mat, mat.determinant());
 
         if (mat.determinant() < 0) {
             console.warn("BABYLON.USDExport: USDZ does not support negative scales", camera);
@@ -568,15 +574,6 @@ export class USDExport {
             inputs.push(`${pad}normal3f inputs:normal.connect = </Materials/Material_${material.uniqueId}/Texture_${material.bumpTexture.uniqueId}_normal.outputs:rgb>`);
             samplers.push(buildTexture(material.bumpTexture as Texture, "normal"));
         }
-
-        // if (material.ambientTexture !== null) {
-        //   inputs.push(
-        //     `${pad}float inputs:occlusion.connect = </Materials/Material_${material.uniqueId}/Texture_${material.ambientTexture.uniqueId}_occlusion.outputs:r>`
-        //   );
-        //   samplers.push(
-        //     buildTexture(material.ambientTexture as Texture, "occlusion")
-        //   );
-        // }
 
         if (material.metallicTexture !== null) {
             const maps = await breakApartMetallicRoughnessAo(material.metallicTexture as Texture);
