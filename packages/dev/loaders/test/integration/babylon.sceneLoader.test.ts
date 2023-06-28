@@ -453,7 +453,7 @@ describe("Babylon Scene Loader", function () {
                 });
             }, materialNames);
 
-            expect(assertionData).toHaveLength(3);
+            expect(Object.keys(assertionData)).toHaveLength(3);
             materialNames.forEach((name) => {
                 expect(assertionData[name]).toEqual([name, name]);
             });
