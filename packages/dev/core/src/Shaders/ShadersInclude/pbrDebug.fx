@@ -73,6 +73,9 @@ if (vClipSpacePosition.x / vClipSpacePosition.w >= vDebugMode.x) {
         gl_FragColor.rgb = anisotropicOut.anisotropyMapData.rgb;
     #elif DEBUGMODE == 31 && defined(SUBSURFACE) && defined(SS_THICKNESSANDMASK_TEXTURE)
         gl_FragColor.rgb = subSurfaceOut.thicknessMap.rgb;
+    #elif DEBUGMODE == 32 && defined(BUMP)
+        gl_FragColor.rgb = texture2D(bumpSampler, vBumpUV).xyz;
+
 // Env
     #elif DEBUGMODE == 40 && defined(SS_REFRACTION)
         // Base color.
@@ -184,6 +187,5 @@ if (vClipSpacePosition.x / vClipSpacePosition.w >= vDebugMode.x) {
         gl_FragData[0] = toLinearSpace(gl_FragColor); // linear to cancel gamma transform in prepass
         gl_FragData[1] = vec4(0., 0., 0., 0.); // tag as no SSS
     #endif
-    return;
 }
 #endif
