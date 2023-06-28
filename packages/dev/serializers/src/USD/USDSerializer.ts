@@ -11,7 +11,7 @@ import { type Scene } from "core/scene";
 import { strToU8, zipSync } from "fflate";
 import { type Material } from "core/Materials/material";
 import { Tools } from "core/Misc/tools";
-import { FloatArray } from "core/types";
+import { type FloatArray } from "core/types";
 
 /* Converted from https://github.com/mrdoob/three.js/blob/dev/examples/jsm/exporters/USDZExporter.js by Pryme8 */
 
