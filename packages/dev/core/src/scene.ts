@@ -61,36 +61,35 @@ import type { IClipPlanesHolder } from "./Misc/interfaces/iClipPlanesHolder";
 import type { IPointerEvent } from "./Events/deviceInputEvents";
 import { LightConstants } from "./Lights/lightConstants";
 import { _ObserveArray } from "./Misc/arrayTools";
-
-declare type Ray = import("./Culling/ray").Ray;
-declare type TrianglePickingPredicate = import("./Culling/ray").TrianglePickingPredicate;
-declare type Animation = import("./Animations/animation").Animation;
-declare type Animatable = import("./Animations/animatable").Animatable;
-declare type AnimationGroup = import("./Animations/animationGroup").AnimationGroup;
-declare type AnimationPropertiesOverride = import("./Animations/animationPropertiesOverride").AnimationPropertiesOverride;
-declare type Collider = import("./Collisions/collider").Collider;
-declare type PostProcess = import("./PostProcesses/postProcess").PostProcess;
-declare type Material = import("./Materials/material").Material;
-declare type AbstractMesh = import("./Meshes/abstractMesh").AbstractMesh;
-declare type Light = import("./Lights/light").Light;
-declare type Camera = import("./Cameras/camera").Camera;
-declare type Texture = import("./Materials/Textures/texture").Texture;
-declare type MultiMaterial = import("./Materials/multiMaterial").MultiMaterial;
-declare type BaseTexture = import("./Materials/Textures/baseTexture").BaseTexture;
-declare type TransformNode = import("./Meshes/transformNode").TransformNode;
-declare type Skeleton = import("./Bones/skeleton").Skeleton;
-declare type Bone = import("./Bones/bone").Bone;
-declare type SubMesh = import("./Meshes/subMesh").SubMesh;
-declare type Mesh = import("./Meshes/mesh").Mesh;
-declare type Node = import("./node").Node;
-declare type Geometry = import("./Meshes/geometry").Geometry;
-declare type RenderTargetTexture = import("./Materials/Textures/renderTargetTexture").RenderTargetTexture;
-declare type MorphTargetManager = import("./Morph/morphTargetManager").MorphTargetManager;
-declare type Effect = import("./Materials/effect").Effect;
-declare type MorphTarget = import("./Morph/morphTarget").MorphTarget;
-declare type WebVRFreeCamera = import("./Cameras/VR/webVRCamera").WebVRFreeCamera;
-declare type PerformanceViewerCollector = import("./Misc/PerformanceViewer/performanceViewerCollector").PerformanceViewerCollector;
-declare type IAction = import("./Actions/action").IAction;
+import type { IAction } from "./Actions/action";
+import type { AnimationPropertiesOverride } from "./Animations/animationPropertiesOverride";
+import type { AnimationGroup } from "./Animations/animationGroup";
+import type { Skeleton } from "./Bones/skeleton";
+import type { Bone } from "./Bones/bone";
+import type { Camera } from "./Cameras/camera";
+import type { WebVRFreeCamera } from "./Cameras/VR/webVRCamera";
+import type { Collider } from "./Collisions";
+import type { Ray, TrianglePickingPredicate } from "./Culling/ray";
+import type { Light } from "./Lights/light";
+import type { PerformanceViewerCollector } from "./Misc/PerformanceViewer/performanceViewerCollector";
+import type { MorphTarget } from "./Morph/morphTarget";
+import type { MorphTargetManager } from "./Morph/morphTargetManager";
+import type { PostProcess } from "./PostProcesses/postProcess";
+import type { Material } from "./Materials/material";
+import type { BaseTexture } from "./Materials/Textures/baseTexture";
+import type { Geometry } from "./Meshes/geometry";
+import type { TransformNode } from "./Meshes/transformNode";
+import type { AbstractMesh } from "./Meshes/abstractMesh";
+import type { MultiMaterial } from "./Materials/multiMaterial";
+import type { Effect } from "./Materials/effect";
+import type { RenderTargetTexture } from "./Materials/Textures/renderTargetTexture";
+import type { Mesh } from "./Meshes/mesh";
+import type { SubMesh } from "./Meshes/subMesh";
+import type { Node } from "./node";
+import type { Animation } from "./Animations/animation";
+import type { Animatable } from "./Animations/animatable";
+import type { Texture } from "./Materials/Textures/texture";
+import { PointerPickingConfiguration } from "./Inputs/pointerPickingConfiguration";
 
 /**
  * Define an interface for all classes that will hold resources
@@ -750,34 +749,106 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public _registeredForLateAnimationBindings = new SmartArrayNoDuplicate<any>(256);
 
     // Pointers
+    private _pointerPickingConfiguration = new PointerPickingConfiguration();
+
     /**
      * Gets or sets a predicate used to select candidate meshes for a pointer down event
      */
-    public pointerDownPredicate: (Mesh: AbstractMesh) => boolean;
+    public get pointerDownPredicate() {
+        return this._pointerPickingConfiguration.pointerDownPredicate;
+    }
+
+    public set pointerDownPredicate(value) {
+        this._pointerPickingConfiguration.pointerDownPredicate = value;
+    }
+
     /**
      * Gets or sets a predicate used to select candidate meshes for a pointer up event
      */
-    public pointerUpPredicate: (Mesh: AbstractMesh) => boolean;
+    public get pointerUpPredicate() {
+        return this._pointerPickingConfiguration.pointerUpPredicate;
+    }
+
+    public set pointerUpPredicate(value) {
+        this._pointerPickingConfiguration.pointerUpPredicate = value;
+    }
 
     /**
      * Gets or sets a predicate used to select candidate meshes for a pointer move event
      */
-    public pointerMovePredicate: (Mesh: AbstractMesh) => boolean;
+    public get pointerMovePredicate() {
+        return this._pointerPickingConfiguration.pointerMovePredicate;
+    }
+
+    public set pointerMovePredicate(value) {
+        this._pointerPickingConfiguration.pointerMovePredicate = value;
+    }
+
+    /**
+     * Gets or sets a predicate used to select candidate meshes for a pointer down event
+     */
+    public get pointerDownFastCheck() {
+        return this._pointerPickingConfiguration.pointerDownFastCheck;
+    }
+
+    public set pointerDownFastCheck(value) {
+        this._pointerPickingConfiguration.pointerDownFastCheck = value;
+    }
+
+    /**
+     * Gets or sets a predicate used to select candidate meshes for a pointer up event
+     */
+    public get pointerUpFastCheck() {
+        return this._pointerPickingConfiguration.pointerUpFastCheck;
+    }
+
+    public set pointerUpFastCheck(value) {
+        this._pointerPickingConfiguration.pointerUpFastCheck = value;
+    }
+
+    /**
+     * Gets or sets a predicate used to select candidate meshes for a pointer move event
+     */
+    public get pointerMoveFastCheck() {
+        return this._pointerPickingConfiguration.pointerMoveFastCheck;
+    }
+
+    public set pointerMoveFastCheck(value) {
+        this._pointerPickingConfiguration.pointerMoveFastCheck = value;
+    }
 
     /**
      * Gets or sets a boolean indicating if the user want to entirely skip the picking phase when a pointer move event occurs.
      */
-    public skipPointerMovePicking = false;
+    public get skipPointerMovePicking() {
+        return this._pointerPickingConfiguration.skipPointerMovePicking;
+    }
+
+    public set skipPointerMovePicking(value) {
+        this._pointerPickingConfiguration.skipPointerMovePicking = value;
+    }
 
     /**
      * Gets or sets a boolean indicating if the user want to entirely skip the picking phase when a pointer down event occurs.
      */
-    public skipPointerDownPicking = false;
+    public get skipPointerDownPicking() {
+        return this._pointerPickingConfiguration.skipPointerDownPicking;
+    }
+
+    public set skipPointerDownPicking(value) {
+        this._pointerPickingConfiguration.skipPointerDownPicking = value;
+    }
 
     /**
      * Gets or sets a boolean indicating if the user want to entirely skip the picking phase when a pointer up event occurs.  Off by default.
      */
-    public skipPointerUpPicking = false;
+    public get skipPointerUpPicking() {
+        return this._pointerPickingConfiguration.skipPointerUpPicking;
+    }
+
+    public set skipPointerUpPicking(value) {
+        this._pointerPickingConfiguration.skipPointerUpPicking = value;
+    }
 
     /** Callback called when a pointer move is detected */
     public onPointerMove?: (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;

@@ -340,7 +340,9 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
                 } else {
                     // Rotate selected mesh quaternion over rotated axis
                     amountToRotate.toRotationMatrix(TmpVectors.Matrix[0]);
-                    TmpVectors.Matrix[0].multiplyToRef(this.attachedNode.getWorldMatrix(), this.attachedNode.getWorldMatrix());
+                    const translation = this.attachedNode.getWorldMatrix().getTranslation();
+                    this.attachedNode.getWorldMatrix().multiplyToRef(TmpVectors.Matrix[0], this.attachedNode.getWorldMatrix());
+                    this.attachedNode.getWorldMatrix().setTranslation(translation);
                 }
 
                 lastDragPosition.copyFrom(event.dragPlanePoint);

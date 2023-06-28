@@ -1,8 +1,8 @@
 import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
 
-declare type Engine = import("./engine").Engine;
-declare type Scene = import("../scene").Scene;
+import type { Engine } from "./engine";
+import type { Scene } from "../scene";
 
 /**
  * The engine store class is responsible to hold all the instances of Engine and Scene created

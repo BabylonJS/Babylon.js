@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/accessibility",
-    "version": "6.8.0",
+    "version": "6.9.0",
     "main": "dist/babylon.accessibility.max.js",
     "module": "dist/babylon.accessibility.max.js",
     "esnext": "dist/babylon.accessibility.max.js",
@@ -24,12 +24,10 @@
         "@types/react-dom": ">=16.0.9"
     },
     "devDependencies": {
-        "@babylonjs/core": "^6.8.0",
-        "@babylonjs/gui": "^6.8.0",
+        "@babylonjs/core": "^6.9.0",
+        "@babylonjs/gui": "^6.9.0",
         "react": "^17.0.2",
-        "react-dom": "^17.0.2",
-        "rimraf": "^3.0.2",
-        "typescript": "^4.4.4"
+        "react-dom": "^17.0.2"
     },
     "keywords": [
         "3D",

@@ -10,7 +10,7 @@ import "../Shaders/passCube.fragment";
 import { RegisterClass } from "../Misc/typeStore";
 import { SerializationHelper } from "../Misc/decorators";
 
-declare type Scene = import("../scene").Scene;
+import type { Scene } from "../scene";
 
 /**
  * PassPostProcess which produces an output the same as it's input

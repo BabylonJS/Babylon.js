@@ -7,7 +7,7 @@ import { GizmoManager } from "core/Gizmos/gizmoManager";
 import type { Scene } from "core/scene";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSyncAlt, faImage, faCrosshairs, faArrowsAlt, faCompress, faRedoAlt, faVectorSquare } from "@fortawesome/free-solid-svg-icons";
+import { faSyncAlt, faImage, faCrosshairs, faArrowsAlt, faCompress, faRedoAlt, faVectorSquare, faLocationDot } from "@fortawesome/free-solid-svg-icons";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
 
@@ -18,6 +18,7 @@ import type { LightGizmo } from "core/Gizmos/lightGizmo";
 import type { CameraGizmo } from "core/Gizmos/cameraGizmo";
 import type { Camera } from "core/Cameras/camera";
 import { TmpVectors, Vector3 } from "core/Maths/math";
+import { GizmoCoordinatesMode } from "core/Gizmos/gizmo";
 
 interface ISceneTreeItemComponentProps {
     scene: Scene;
@@ -29,7 +30,10 @@ interface ISceneTreeItemComponentProps {
     globalState: GlobalState;
 }
 
-export class SceneTreeItemComponent extends React.Component<ISceneTreeItemComponentProps, { isSelected: boolean; isInPickingMode: boolean; gizmoMode: number }> {
+export class SceneTreeItemComponent extends React.Component<
+    ISceneTreeItemComponentProps,
+    { isSelected: boolean; isInPickingMode: boolean; gizmoMode: number; isInWorldCoodinatesMode: boolean }
+> {
     private _gizmoLayerOnPointerObserver: Nullable<Observer<PointerInfo>>;
     private _onPointerObserver: Nullable<Observer<PointerInfo>>;
     private _onSelectionChangeObserver: Nullable<Observer<any>>;
@@ -59,7 +63,7 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
             manager.enableAutoPicking = false;
         }
 
-        this.state = { isSelected: false, isInPickingMode: false, gizmoMode: gizmoMode };
+        this.state = { isSelected: false, isInPickingMode: false, gizmoMode: gizmoMode, isInWorldCoodinatesMode: false };
     }
 
     shouldComponentUpdate(nextProps: ISceneTreeItemComponentProps, nextState: { isSelected: boolean; isInPickingMode: boolean }) {
@@ -145,6 +149,13 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
         this.props.onSelectionChangedObservable.notifyObservers(scene);
     }
 
+    onCoordinatesMode() {
+        const scene = this.props.scene;
+        const manager: GizmoManager = scene.reservedDataStore.gizmoManager;
+        // flip coordinate system
+        manager.coordinatesMode = this.state.isInWorldCoodinatesMode ? GizmoCoordinatesMode.Local : GizmoCoordinatesMode.World;
+        this.setState({ isInWorldCoodinatesMode: !this.state.isInWorldCoodinatesMode });
+    }
     onPickingMode() {
         const scene = this.props.scene;
 
@@ -454,6 +465,13 @@ export class SceneTreeItemComponent extends React.Component<ISceneTreeItemCompon
                         title="Turn picking mode on/off"
                     >
                         <FontAwesomeIcon icon={faCrosshairs} />
+                    </div>
+                    <div
+                        className={this.state.isInWorldCoodinatesMode ? "coordinates selected icon" : "coordinates icon"}
+                        onClick={() => this.onCoordinatesMode()}
+                        title="Switch between world and local coordinates"
+                    >
+                        <FontAwesomeIcon icon={faLocationDot} />
                     </div>
                     <div className="refresh icon" onClick={() => this.props.onRefresh()} title="Refresh the explorer">
                         <FontAwesomeIcon icon={faSyncAlt} />

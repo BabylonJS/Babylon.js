@@ -31,7 +31,7 @@ import { RandomGUID } from "core/Misc/guid";
 import { GetClass } from "core/Misc/typeStore";
 import { DecodeBase64ToBinary } from "core/Misc/stringTools";
 
-declare type StandardMaterial = import("core/Materials/standardMaterial").StandardMaterial;
+import type { StandardMaterial } from "core/Materials/standardMaterial";
 
 /**
  * Class used to create texture to support 2D GUI elements

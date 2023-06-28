@@ -2,7 +2,7 @@
 import type { ISize } from "../Maths/math.size";
 import type { Nullable } from "../types";
 
-declare type BaseTexture = import("../Materials/Textures/baseTexture").BaseTexture;
+import type { BaseTexture } from "../Materials/Textures/baseTexture";
 
 /**
  * Transform some pixel data to a base64 string

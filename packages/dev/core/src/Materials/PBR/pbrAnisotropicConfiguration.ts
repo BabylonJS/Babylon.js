@@ -13,9 +13,9 @@ import { MaterialPluginBase } from "../materialPluginBase";
 import { Constants } from "../../Engines/constants";
 import { MaterialDefines } from "../materialDefines";
 
-declare type Scene = import("../../scene").Scene;
-declare type AbstractMesh = import("../../Meshes/abstractMesh").AbstractMesh;
-declare type PBRBaseMaterial = import("./pbrBaseMaterial").PBRBaseMaterial;
+import type { Scene } from "../../scene";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { PBRBaseMaterial } from "./pbrBaseMaterial";
 
 /**
  * @internal

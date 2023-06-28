@@ -10,7 +10,7 @@ import type { FreeCameraMouseInput } from "../Cameras/Inputs/freeCameraMouseInpu
 import type { FreeCameraKeyboardMoveInput } from "../Cameras/Inputs/freeCameraKeyboardMoveInput";
 import { Tools } from "../Misc/tools";
 
-declare type Collider = import("../Collisions/collider").Collider;
+import type { Collider } from "../Collisions/collider";
 
 /**
  * This represents a free type of camera. It can be useful in First Person Shooter game for instance.
@@ -406,6 +406,20 @@ export class FreeCamera extends TargetCamera {
         this.inputs.checkInputs();
 
         super._checkInputs();
+    }
+
+    /**
+     * Enable movement without a user input. This allows gravity to always be applied.
+     */
+    public set needMoveForGravity(value: boolean) {
+        this._needMoveForGravity = value;
+    }
+
+    /**
+     * When true, gravity is applied whether there is user input or not.
+     */
+    public get needMoveForGravity(): boolean {
+        return this._needMoveForGravity;
     }
 
     /** @internal */

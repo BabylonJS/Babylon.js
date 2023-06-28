@@ -3,7 +3,7 @@ import type { Nullable } from "../../types";
 import type { IShaderProcessor } from "../Processors/iShaderProcessor";
 import type { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 
-declare type ThinEngine = import("../thinEngine").ThinEngine;
+import type { ThinEngine } from "../thinEngine";
 
 /** @internal */
 export class WebGLShaderProcessor implements IShaderProcessor {

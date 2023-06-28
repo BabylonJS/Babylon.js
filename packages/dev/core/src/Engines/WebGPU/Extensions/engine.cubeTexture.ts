@@ -4,7 +4,7 @@ import { Constants } from "../../constants";
 import type { DepthTextureCreationOptions } from "../../../Materials/Textures/textureCreationOptions";
 import { WebGPUEngine } from "../../webgpuEngine";
 
-declare type Scene = import("../../../scene").Scene;
+import type { Scene } from "../../../scene";
 
 WebGPUEngine.prototype._createDepthStencilCubeTexture = function (size: number, options: DepthTextureCreationOptions): InternalTexture {
     const internalTexture = new InternalTexture(this, InternalTextureSource.DepthStencil);

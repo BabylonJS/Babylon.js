@@ -21,7 +21,7 @@ import type { AbstractScene } from "../abstractScene";
 import { EngineStore } from "../Engines/engineStore";
 import { CompatibilityOptions } from "../Compat/compatibilityOptions";
 
-declare type Mesh = import("../Meshes/mesh").Mesh;
+import type { Mesh } from "../Meshes/mesh";
 
 /**
  * Class used to store geometry data (vertex buffers + index buffer)

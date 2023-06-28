@@ -64,3 +64,4 @@ export * from "./error";
 export * from "./observableCoroutine";
 export * from "./copyTextureToTexture";
 export * from "./dumpTools";
+export * from "./greasedLineTools";

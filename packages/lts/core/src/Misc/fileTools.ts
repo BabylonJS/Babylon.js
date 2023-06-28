@@ -16,9 +16,9 @@ import type { WebRequest } from "core/Misc/webRequest";
 import type { IOfflineProvider } from "core/Offline/IOfflineProvider";
 import type { Nullable } from "core/types";
 
-declare type LoadFileError = import("core/Misc/fileTools").LoadFileError;
-declare type ReadFileError = import("core/Misc/fileTools").ReadFileError;
-declare type RequestFileError = import("core/Misc/fileTools").RequestFileError;
+import type { LoadFileError } from "core/Misc/fileTools";
+import type { ReadFileError } from "core/Misc/fileTools";
+import type { RequestFileError } from "core/Misc/fileTools";
 
 /**
  * FileTools defined as any.

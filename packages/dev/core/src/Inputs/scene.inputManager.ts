@@ -13,7 +13,7 @@ import type { IKeyboardEvent, IMouseEvent, IPointerEvent } from "../Events/devic
 import { DeviceSourceManager } from "../DeviceInput/InputDevices/deviceSourceManager";
 import { EngineStore } from "../Engines/engineStore";
 
-declare type Scene = import("../scene").Scene;
+import type { Scene } from "../scene";
 
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -227,6 +227,9 @@ export class InputManager {
         this._setCursorAndPointerOverMesh(pickResult, evt, scene);
 
         for (const step of scene._pointerMoveStage) {
+            // If _pointerMoveState is defined, we have an active spriteManager and can't use Lazy Picking
+            // Therefore, we need to force a pick to update the pickResult
+            pickResult = pickResult || this._pickMove(evt);
             const isMeshPicked = pickResult?.pickedMesh ? true : false;
             pickResult = step.action(this._unTranslatedPointerX, this._unTranslatedPointerY, pickResult, isMeshPicked, canvas);
         }
@@ -306,7 +309,7 @@ export class InputManager {
             this._unTranslatedPointerX,
             this._unTranslatedPointerY,
             scene.pointerMovePredicate,
-            false,
+            scene.pointerMoveFastCheck,
             scene.cameraToUseForPointers,
             scene.pointerMoveTrianglePredicate
         );
@@ -583,7 +586,7 @@ export class InputManager {
                 const pickResult =
                     scene.skipPointerUpPicking || (scene._registeredActions === 0 && !this._checkForPicking() && !scene.onPointerUp)
                         ? null
-                        : scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerUpPredicate, false, scene.cameraToUseForPointers);
+                        : scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerUpPredicate, scene.pointerUpFastCheck, scene.cameraToUseForPointers);
                 this._currentPickResult = pickResult;
                 if (pickResult) {
                     act = pickResult.hit && pickResult.pickedMesh ? pickResult.pickedMesh._getActionManagerForTrigger() : null;
@@ -791,7 +794,7 @@ export class InputManager {
                     (!scene.cameraToUseForPointers || (scene.cameraToUseForPointers.layerMask & mesh.layerMask) !== 0);
             }
 
-            const pickResult = scene._registeredActions > 0 ? this._pickMove(evt as IPointerEvent) : null;
+            const pickResult = scene._registeredActions > 0 || scene.constantlyUpdateMeshUnderPointer ? this._pickMove(evt as IPointerEvent) : null;
             this._processPointerMove(pickResult, evt as IPointerEvent);
         };
 
@@ -873,7 +876,13 @@ export class InputManager {
             if (scene.skipPointerDownPicking || (scene._registeredActions === 0 && !this._checkForPicking() && !scene.onPointerDown)) {
                 pickResult = new PickingInfo();
             } else {
-                pickResult = scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerDownPredicate, false, scene.cameraToUseForPointers);
+                pickResult = scene.pick(
+                    this._unTranslatedPointerX,
+                    this._unTranslatedPointerY,
+                    scene.pointerDownPredicate,
+                    scene.pointerDownFastCheck,
+                    scene.cameraToUseForPointers
+                );
             }
 
             this._processPointerDown(pickResult, evt);

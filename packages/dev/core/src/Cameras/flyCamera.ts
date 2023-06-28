@@ -11,7 +11,7 @@ import type { FlyCameraMouseInput } from "../Cameras/Inputs/flyCameraMouseInput"
 import type { FlyCameraKeyboardInput } from "../Cameras/Inputs/flyCameraKeyboardInput";
 import { Tools } from "../Misc/tools";
 
-declare type Collider = import("../Collisions/collider").Collider;
+import type { Collider } from "../Collisions/collider";
 
 /**
  * This is a flying camera, designed for 3D movement and rotation in all directions,
@@ -381,6 +381,20 @@ export class FlyCamera extends TargetCamera {
         this.inputs.checkInputs();
 
         super._checkInputs();
+    }
+
+    /**
+     * Enable movement without a user input. This allows gravity to always be applied.
+     */
+    public set needMoveForGravity(value: boolean) {
+        this._needMoveForGravity = value;
+    }
+
+    /**
+     * When true, gravity is applied whether there is user input or not.
+     */
+    public get needMoveForGravity(): boolean {
+        return this._needMoveForGravity;
     }
 
     /** @internal */

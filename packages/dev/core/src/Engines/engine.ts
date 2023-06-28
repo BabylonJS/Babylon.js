@@ -28,8 +28,8 @@ import "./Extensions/engine.readTexture";
 import "./Extensions/engine.dynamicBuffer";
 import type { IAudioEngine } from "../Audio/Interfaces/IAudioEngine";
 
-declare type Material = import("../Materials/material").Material;
-declare type PostProcess = import("../PostProcesses/postProcess").PostProcess;
+import type { Material } from "../Materials/material";
+import type { PostProcess } from "../PostProcesses/postProcess";
 
 /**
  * Defines the interface used by display changed events
@@ -1720,7 +1720,7 @@ export class Engine extends ThinEngine {
         this._bindTextureDirectly(bindTarget, texture, true);
         this._unpackFlipY(texture.invertY);
 
-        let target = gl.TEXTURE_2D;
+        let target: GLenum = gl.TEXTURE_2D;
         if (texture.isCube) {
             target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex;
         }

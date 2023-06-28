@@ -1,9 +1,9 @@
 import * as glob from "glob";
 import * as path from "path";
-import { copyFile, checkArgs } from "./utils";
+import { copyFile, checkArgs } from "./utils.js";
 import * as chokidar from "chokidar";
-import type { DevPackageName } from "./packageMapping";
-import { buildShader } from "./buildShaders";
+import type { DevPackageName } from "./packageMapping.js";
+import { buildShader } from "./buildShaders.js";
 
 const processFile = (file: string, options: { isCore?: boolean; basePackageName?: DevPackageName; pathPrefix?: string; outputDir?: string } = {}) => {
     if (!options.outputDir) {

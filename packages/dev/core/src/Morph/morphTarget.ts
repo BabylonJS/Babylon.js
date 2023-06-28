@@ -9,7 +9,7 @@ import type { AnimationPropertiesOverride } from "../Animations/animationPropert
 import { serialize, SerializationHelper } from "../Misc/decorators";
 import { GetClass } from "../Misc/typeStore";
 
-declare type Animation = import("../Animations/animation").Animation;
+import type { Animation } from "../Animations/animation";
 
 /**
  * Defines a target to use with MorphTargetManager

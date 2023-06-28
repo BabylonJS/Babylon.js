@@ -14,7 +14,7 @@ import "../Shaders/kernelBlur.vertex";
 import { RegisterClass } from "../Misc/typeStore";
 import { serialize, serializeAsVector2, SerializationHelper } from "../Misc/decorators";
 
-declare type Scene = import("../scene").Scene;
+import type { Scene } from "../scene";
 
 /**
  * The Blur Post Process which blurs an image based on a kernel and direction.

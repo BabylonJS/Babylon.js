@@ -12,11 +12,11 @@ import type { ProcessingOptions } from "./shaderProcessingOptions";
 import { _WarnImport } from "../../Misc/devTools";
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
 
-declare type WebRequest = import("../../Misc/webRequest").WebRequest;
-declare type LoadFileError = import("../../Misc/fileTools").LoadFileError;
-declare type IOfflineProvider = import("../../Offline/IOfflineProvider").IOfflineProvider;
-declare type IFileRequest = import("../../Misc/fileRequest").IFileRequest;
-declare type ThinEngine = import("../thinEngine").ThinEngine;
+import type { WebRequest } from "../../Misc/webRequest";
+import type { LoadFileError } from "../../Misc/fileTools";
+import type { IOfflineProvider } from "../../Offline/IOfflineProvider";
+import type { IFileRequest } from "../../Misc/fileRequest";
+import type { ThinEngine } from "../thinEngine";
 
 const regexSE = /defined\s*?\((.+?)\)/g;
 const regexSERevert = /defined\s*?\[(.+?)\]/g;
@@ -24,6 +24,7 @@ const regexShaderInclude = /#include\s?<(.+)>(\((.*)\))*(\[(.*)\])*/g;
 const regexShaderDecl = /__decl__/;
 const regexLightX = /light\{X\}.(\w*)/g;
 const regexX = /\{X\}/g;
+const reusableMatches: RegExpMatchArray[] = [];
 
 /** @internal */
 export class ShaderProcessor {
@@ -373,14 +374,19 @@ export class ShaderProcessor {
     }
 
     private static _ProcessIncludes(sourceCode: string, options: ProcessingOptions, callback: (data: any) => void): void {
-        const matches = Array.from(sourceCode.matchAll(regexShaderInclude));
+        reusableMatches.length = 0;
+        let match: RegExpMatchArray | null;
+        // stay back-compat to the old matchAll syntax
+        while ((match = regexShaderInclude.exec(sourceCode)) !== null) {
+            reusableMatches.push(match);
+        }
 
         let returnValue = String(sourceCode);
         let parts = [sourceCode];
 
         let keepProcessing = false;
 
-        for (const match of matches) {
+        for (const match of reusableMatches) {
             let includeFile = match[1];
 
             // Uniform declaration
@@ -464,6 +470,7 @@ export class ShaderProcessor {
                 return;
             }
         }
+        reusableMatches.length = 0;
 
         returnValue = parts.join("");
 

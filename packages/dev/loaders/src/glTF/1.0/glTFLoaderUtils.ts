@@ -142,8 +142,9 @@ export class GLTFUtils {
     /**
      * Returns the texture filter mode giving a mode value
      * @param mode the filter mode value
+     * @returns the filter mode (TODO - needs to be a type?)
      */
-    public static GetTextureFilterMode(mode: number): ETextureFilterType {
+    public static GetTextureFilterMode(mode: number): number {
         switch (mode) {
             case ETextureFilterType.LINEAR:
             case ETextureFilterType.LINEAR_MIPMAP_NEAREST:

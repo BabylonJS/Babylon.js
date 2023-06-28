@@ -15,7 +15,7 @@ import { RegisterClass } from "../Misc/typeStore";
 import "../Shaders/gpuUpdateParticles.fragment";
 import "../Shaders/gpuUpdateParticles.vertex";
 
-declare type Engine = import("../Engines/engine").Engine;
+import type { Engine } from "../Engines/engine";
 
 /** @internal */
 export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {

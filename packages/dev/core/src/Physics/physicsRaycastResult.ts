@@ -2,6 +2,17 @@ import { Vector3 } from "../Maths/math.vector";
 import type { PhysicsBody } from "./v2/physicsBody";
 
 /**
+ * Interface for query parameters in the raycast function.
+ * @see the "Collision Filtering" section in https://github.com/eoineoineoin/glTF/tree/MSFT_RigidBodies/extensions/2.0/Vendor/MSFT_collision_primitives
+ */
+export interface IRaycastQuery {
+    /** Membership mask */
+    membership?: number;
+    /** CollideWith mask */
+    collideWith?: number;
+}
+
+/**
  * Holds the data for the raycast result
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
  */

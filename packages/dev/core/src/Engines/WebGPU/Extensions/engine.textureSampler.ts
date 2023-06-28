@@ -2,7 +2,7 @@ import { WebGPUEngine } from "../../webgpuEngine";
 import type { Nullable } from "../../../types";
 import { Effect } from "../../../Materials/effect";
 
-declare type TextureSampler = import("../../../Materials/Textures/textureSampler").TextureSampler;
+import type { TextureSampler } from "../../../Materials/Textures/textureSampler";
 
 declare module "../../../Materials/effect" {
     export interface Effect {

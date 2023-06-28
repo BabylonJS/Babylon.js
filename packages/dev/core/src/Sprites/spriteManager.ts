@@ -18,7 +18,7 @@ import type { ISize } from "../Maths/math.size";
 import { EngineStore } from "../Engines/engineStore";
 import { Constants } from "../Engines/constants";
 
-declare type Ray = import("../Culling/ray").Ray;
+import type { Ray } from "../Culling/ray";
 
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Reflect
 declare const Reflect: any;

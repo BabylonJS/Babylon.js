@@ -7,7 +7,7 @@ import { Observable } from "../Misc/observable";
 import type { IAnimatable } from "../Animations/animatable.interface";
 import { ThinSprite } from "./thinSprite";
 
-declare type Animation = import("../Animations/animation").Animation;
+import type { Animation } from "../Animations/animation";
 
 /**
  * Class used to represent a sprite

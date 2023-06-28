@@ -4,7 +4,7 @@ import type { PickingInfo } from "../Collisions/pickingInfo";
 import type { IMouseEvent, IPointerEvent } from "./deviceInputEvents";
 import type { InputManager } from "../Inputs/scene.inputManager";
 
-declare type Ray = import("../Culling/ray").Ray;
+import type { Ray } from "../Culling/ray";
 
 /**
  * Gather the list of pointer event types as constants.

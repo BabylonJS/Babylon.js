@@ -11,13 +11,12 @@ import { CompilationError } from "../components/errorDisplayComponent";
 import { Observable } from "@dev/core";
 import { debounce } from "ts-debounce";
 
-declare type IStandaloneCodeEditor = import("monaco-editor/esm/vs/editor/editor.api").editor.IStandaloneCodeEditor;
-declare type IStandaloneEditorConstructionOptions = import("monaco-editor/esm/vs/editor/editor.api").editor.IStandaloneEditorConstructionOptions;
+import type { editor } from "monaco-editor/esm/vs/editor/editor.api";
 
 //declare var monaco: any;
 
 export class MonacoManager {
-    private _editor: IStandaloneCodeEditor;
+    private _editor: editor.IStandaloneCodeEditor;
     private _definitionWorker: Worker;
     private _tagCandidates: { name: string; tagName: string }[];
     private _hostElement: HTMLDivElement;
@@ -189,7 +188,7 @@ class Playground {
             this._editor.dispose();
         }
 
-        const editorOptions: IStandaloneEditorConstructionOptions = {
+        const editorOptions: editor.IStandaloneEditorConstructionOptions = {
             value: "",
             language: this.globalState.language === "JS" ? "javascript" : "typescript",
             lineNumbers: "on",

@@ -2,7 +2,7 @@ import { Texture } from "./texture";
 import { Constants } from "../../Engines/constants";
 import "../../Engines/Extensions/engine.rawTexture";
 
-declare type Scene = import("../../scene").Scene;
+import type { Scene } from "../../scene";
 
 /**
  * Class used to store 2D array textures containing user data

@@ -138,7 +138,7 @@ export class BoneIKController {
 
         const bonePos = bone.getPosition();
 
-        if (bone.getAbsoluteTransform().determinant() > 0) {
+        if (bone.getAbsoluteMatrix().determinant() > 0) {
             this._rightHandedSystem = true;
             this._bendAxis.x = 0;
             this._bendAxis.y = 0;

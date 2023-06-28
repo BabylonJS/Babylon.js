@@ -12,8 +12,8 @@ import { ScreenSpaceReflectionsConfiguration } from "../Rendering/screenSpaceRef
 import "../Shaders/screenSpaceReflection.fragment";
 import { RegisterClass } from "../Misc/typeStore";
 
-declare type Engine = import("../Engines/engine").Engine;
-declare type Scene = import("../scene").Scene;
+import type { Engine } from "../Engines/engine";
+import type { Scene } from "../scene";
 
 /**
  * The ScreenSpaceReflectionPostProcess performs realtime reflections using only and only the available informations on the screen (positions and normals).
