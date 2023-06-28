@@ -64,7 +64,7 @@ export class USDExport {
         const modelFileName = `${options?.modelName || "model"}.usda`;
         files[modelFileName] = null;
 
-        let output: Nullable<string> = USDExport._BuildHeader();
+        let output: string = USDExport._BuildHeader();
         output += USDExport._BuildSceneStart(options);
 
         const materials: { [id: string]: Material } = {};
@@ -114,8 +114,6 @@ export class USDExport {
         output += await USDExport._BuildMaterials(materials, textures, options.quickLookCompatible);
 
         files[modelFileName] = strToU8(output);
-
-        output = null;
 
         for (const id in textures) {
             const texture = textures[id] as Texture;
@@ -605,8 +603,8 @@ export class USDExport {
         }
 
         if (material.isMetallicWorkflow()) {
-            inputs.push(`${pad}float inputs:clearcoat = ${0.0}`);
-            inputs.push(`${pad}float inputs:clearcoatRoughness = ${0.1}`);
+            inputs.push(`${pad}float inputs:clearcoat = ${material.clearCoat.isEnabled ? 1.0 : 0.0}`);
+            inputs.push(`${pad}float inputs:clearcoatRoughness = ${material.clearCoat.isEnabled ? material.clearCoat.intensity : 0.0}`);
             inputs.push(`${pad}float inputs:ior = ${material.subSurface?.indexOfRefraction ?? 1.5}`);
         }
 
