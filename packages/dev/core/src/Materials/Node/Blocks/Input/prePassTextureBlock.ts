@@ -167,10 +167,11 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
             return;
         }
 
-        const sceneRT = prePassRenderer.getRenderTarget();
+        const sceneRT = prePassRenderer.defaultRT;
         if (!sceneRT.textures) {
             return;
         }
+        prePassRenderer.defaultRT.level = 1;
 
         effect.setTexture(this._colorSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_COLOR_TEXTURE_TYPE)]);
         effect.setTexture(this._depthSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE)]);

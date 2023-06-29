@@ -71,6 +71,10 @@ export class TextureBlock extends NodeMaterialBlock {
         }
     }
 
+    private get _isSourcePrePass() {
+        return this._imageSource && !(this._imageSource as ImageSourceBlock).samplerName;
+    }
+
     /**
      * Gets the sampler name associated with this texture
      */
@@ -376,6 +380,10 @@ export class TextureBlock extends NodeMaterialBlock {
     }
 
     public isReady() {
+        if (this._isSourcePrePass) {
+            return true;
+        }
+
         if (this.texture && !this.texture.isReadyOrNotBlocking()) {
             return false;
         }
@@ -384,6 +392,10 @@ export class TextureBlock extends NodeMaterialBlock {
     }
 
     public bind(effect: Effect) {
+        if (this._isSourcePrePass) {
+            effect.setFloat(this._textureInfoName, 1);
+        }
+
         if (!this.texture) {
             return;
         }

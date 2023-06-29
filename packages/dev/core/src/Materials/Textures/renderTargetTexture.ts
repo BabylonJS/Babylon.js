@@ -304,7 +304,6 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     protected _renderTargetOptions: RenderTargetCreationOptions;
     private _canRescale = true;
     protected _renderTarget: Nullable<RenderTargetWrapper> = null;
-    protected _readRenderTarget: Nullable<RenderTargetWrapper> = null;
     /**
      * Current render pass id of the render target texture. Note it can change over the rendering as there's a separate id for each face of a cube / each layer of an array layer!
      */

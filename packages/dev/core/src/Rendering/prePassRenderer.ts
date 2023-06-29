@@ -195,7 +195,7 @@ export class PrePassRenderer {
      * associated with the scene.
      */
     public get currentRTisSceneRT(): boolean {
-        return this._currentTarget === this.defaultRT;
+        return this._currentTarget === this.defaultRT || this._currentTarget === this.noPrePassDefaultRT;
     }
 
     private _geometryBuffer: Nullable<GeometryBufferRenderer>;
@@ -278,7 +278,8 @@ export class PrePassRenderer {
         }
 
         PrePassRenderer._SceneComponentInitialization(this._scene);
-        this.defaultRT = this._createRenderTarget("sceneprePassRT", null);
+        this.defaultRT = this._createRenderTarget("scenePrePassRT", null);
+        this.noPrePassDefaultRT = this._createRenderTarget("sceneNoPrePassRT", null);
         this._currentTarget = this.defaultRT;
     }
 
@@ -328,12 +329,24 @@ export class PrePassRenderer {
 
         if (this.enabled && this._currentTarget.enabled) {
             if (effect._multiTarget && isPrePassCapable && !excluded) {
+                // Drawing to several textures
+                if (this.currentRTisSceneRT && this._currentTarget !== this.defaultRT) {
+                    this._setRenderTarget(this.defaultRT);
+                    this._bindFrameBuffer();
+                }
                 this._engine.bindAttachments(this._multiRenderAttachments);
             } else {
-                if (this._engine._currentRenderTarget) {
-                    this._engine.bindAttachments(this._defaultAttachments);
+                // We are only drawing to 1 texture
+                if (this.currentRTisSceneRT && this._currentTarget !== this.noPrePassDefaultRT) {
+                    this._setRenderTarget(this.noPrePassDefaultRT);
+                    this._bindFrameBuffer();
+                    this._engine.restoreSingleAttachmentForRenderTarget();
                 } else {
-                    this._engine.restoreSingleAttachment();
+                    if (this._engine._currentRenderTarget) {
+                        this._engine.bindAttachments(this._defaultAttachments);
+                    } else {
+                        this._engine.restoreSingleAttachment();
+                    }
                 }
 
                 if (this._geometryBuffer && this.currentRTisSceneRT && !excluded) {
@@ -530,7 +543,7 @@ export class PrePassRenderer {
      */
     public _clear() {
         if (this._enabled && this._currentTarget.enabled) {
-            this._bindFrameBuffer(this._currentTarget);
+            this._bindFrameBuffer();
 
             // Clearing other attachment with 0 on all other attachments
             this._engine.bindAttachments(this._clearAttachments);
@@ -545,7 +558,7 @@ export class PrePassRenderer {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private _bindFrameBuffer(prePassRenderTarget: PrePassRenderTarget) {
+    private _bindFrameBuffer() {
         if (this._enabled && this._currentTarget.enabled) {
             this._currentTarget._checkSize();
             const internalTexture = this._currentTarget.renderTarget;
@@ -600,6 +613,15 @@ export class PrePassRenderer {
         return null;
     }
 
+    private _prepareSceneRenderTargets() {
+        if (this.mrtCount === 0) {
+            return;
+        }
+        this.noPrePassDefaultRT.updateCount(1, { types: [this._mrtTypes[0]], formats: [this._mrtFormats[0]] });
+        this.noPrePassDefaultRT.setInternalTexture(this.defaultRT.textures[0]._texture!, 0, false);
+        // this.defaultRT.renderTarget?._shareDepth(this.noPrePassDefaultRT.renderTarget!);
+    }
+
     private _enable() {
         const previousMrtCount = this.mrtCount;
 
@@ -635,6 +657,7 @@ export class PrePassRenderer {
         this._reinitializeAttachments();
         this._setEnabled(true);
         this._updateGeometryBufferLayout();
+        this._prepareSceneRenderTargets();
     }
 
     private _disable() {
@@ -712,7 +735,7 @@ export class PrePassRenderer {
             firstPP = firstCameraPP;
         }
 
-        this._bindFrameBuffer(prePassRenderTarget);
+        this._bindFrameBuffer();
         this._linkInternalTexture(prePassRenderTarget, firstPP);
     }
 
