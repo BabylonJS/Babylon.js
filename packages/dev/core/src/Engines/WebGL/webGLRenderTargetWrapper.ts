@@ -4,6 +4,7 @@ import type { Nullable } from "../../types";
 import type { Engine } from "../engine";
 import { RenderTargetWrapper } from "../renderTargetWrapper";
 import type { ThinEngine } from "../thinEngine";
+import { WebGLHardwareTexture } from "./webGLHardwareTexture";
 
 /** @internal */
 export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
@@ -87,7 +88,7 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
             gl.deleteRenderbuffer(renderTarget._depthStencilBuffer);
         }
         renderTarget._depthStencilBuffer = depthbuffer;
-        const attachment = renderTarget._generateStencilBuffer ? gl.DEPTH_STENCIL_ATTACHMENT : gl.DEPTH_ATTACHMENT;       
+        const attachment = renderTarget._generateStencilBuffer ? gl.DEPTH_STENCIL_ATTACHMENT : gl.DEPTH_ATTACHMENT;
         this._engine._bindUnboundFramebuffer(framebuffer);
         gl.framebufferRenderbuffer(gl.FRAMEBUFFER, attachment, gl.RENDERBUFFER, depthbuffer);
         this._engine._bindUnboundFramebuffer(null);
@@ -105,7 +106,9 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
             return;
         }
 
-        const framebuffer = this._framebuffer;
+        const mSAARenderBuffer = (texture._hardwareTexture as WebGLHardwareTexture).mSAARenderBuffer;
+        const msaa = !!this._MSAAFramebuffer && mSAARenderBuffer;
+        const framebuffer = msaa ? this._MSAAFramebuffer : this._framebuffer;
 
         const currentFB = this._engine._currentFramebuffer;
         this._engine._bindUnboundFramebuffer(framebuffer);
@@ -123,7 +126,11 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
                 faceIndexOrLayer = faceIndexOrLayer ?? this.faceIndices?.[attachmentIndex] ?? 0;
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndexOrLayer, texture._hardwareTexture.underlyingResource, lodLevel);
             } else {
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, gl.TEXTURE_2D, texture._hardwareTexture.underlyingResource, lodLevel);
+                if (msaa) {
+                    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, attachment, gl.RENDERBUFFER, mSAARenderBuffer);
+                } else {
+                    gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, gl.TEXTURE_2D, texture._hardwareTexture.underlyingResource, lodLevel);
+                }
             }
         } else {
             // Default behavior (WebGL)

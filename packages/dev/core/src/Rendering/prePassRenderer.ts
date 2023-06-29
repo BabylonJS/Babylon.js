@@ -77,7 +77,9 @@ export class PrePassRenderer {
     }
 
     public set samples(n: number) {
+        this.noPrePassDefaultRT.samples = n;
         this.defaultRT.samples = n;
+        this._syncPrePassRT();
     }
 
     private _useSpecificClearForDepthTexture = false;

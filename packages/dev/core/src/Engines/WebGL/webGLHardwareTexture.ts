@@ -52,6 +52,10 @@ export class WebGLHardwareTexture implements HardwareTextureWrapper {
         }
     }
 
+    public get mSAARenderBuffer() {
+        return this._MSAARenderBuffers ? this._MSAARenderBuffers[0] : null;
+    }
+
     public release() {
         this.releaseMSAARenderBuffers();
 
