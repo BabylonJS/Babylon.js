@@ -1,5 +1,5 @@
 {
-    "fromTag": "6.8.1",
+    "fromTag": "6.9.0",
     "changelog": {
         "6.9.0": [
             {
@@ -186,6 +186,178 @@
                 "files": [
                     "packages/dev/core/src/Meshes/Builders/textBuilder.ts",
                     "packages/dev/core/src/Misc/greasedLineTools.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "6.10.0": [
+            {
+                "pr": "14007",
+                "title": "Refactoring of the Bone class",
+                "description": "It's mainly a reworking of the names, to make things a little clearer for the developer/end-user.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Bones/bone.ts",
+                    "packages/dev/core/src/Bones/boneIKController.ts",
+                    "packages/dev/core/src/Bones/skeleton.ts",
+                    "packages/dev/core/src/Debug/skeletonViewer.ts",
+                    "packages/dev/core/src/Gizmos/gizmo.ts",
+                    "packages/dev/core/src/Meshes/transformNode.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "bones"
+                ]
+            },
+            {
+                "pr": "13998",
+                "title": "Add raycast filtering to physics engine interface",
+                "description": "So you can do: \r\n```javascript\r\nphysicsEngine.raycastToRef(from, to, result, query);\r\n```\r\n\r\nInstead of having to access the Havok Plugin.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/IPhysicsEngine.ts",
+                    "packages/dev/core/src/Physics/physicsRaycastResult.ts",
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsEngine.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "physics"
+                ]
+            },
+            {
+                "pr": "14002",
+                "title": "Improve convertToUnIndexedMesh and convertToFlatShadedMesh vertex data handling with support for morph targets",
+                "description": "Both convertToUnIndexedMesh() and convertToFlatShadedMesh() appear to be doing similar things, so I created a private function, _convertToUnIndexedMesh(), to be used by both.\r\n\r\n_convertToUnIndexedMesh() has a flag to decide if normals should be flattened, as should be the case for flat shading. \r\nI also added logic to accomodate morph targets, if they're available in the mesh.",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/convertToFlatShadedMesh.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "enhancement",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14006",
+                "title": "needMoveForGravity public access",
+                "description": "followup https://forum.babylonjs.com/t/gravity-not-working/41931/3",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/flyCamera.ts",
+                    "packages/dev/core/src/Cameras/freeCamera.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "physics"
+                ]
+            },
+            {
+                "pr": "13999",
+                "title": "Optimized mesh.subdivide function by delaying the BB refresh to once …",
+                "description": "Optimized mesh.subdivide function by delaying the BB refresh to once the subdivision is finished. \r\nPreviously, copying entire mesh data inside the loop made the algorithm time scale with the number of subdivisions. \r\nThis is no longer the case. 100+ times faster on a multi-million vertex mesh. ",
+                "author": {
+                    "name": "JonathanIcon",
+                    "url": "https://github.com/JonathanIcon"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14005",
+                "title": "Allow customizing vis-tests further",
+                "description": "Visualization tests for WebGPU on Linux require a few new configuration flags, otherwise they sometimes fail.\n\nThis PR adds the following:\n\n* Set custom flags as an environment variable\n* set the browser context as env variable\n* ask to reset the entire browser PER TEST. This is important to make sure the entire context changes per test (avoiding any leaks or state errors)\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "jest-puppeteer.config.js",
+                    "packages/tools/tests/test/visualization/visualization.utils.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14001",
+                "title": "Gizmo+inspector world/local coordinates switch",
+                "description": "related to https://github.com/BabylonJS/Babylon.js/pull/13939\r\nAdd the ability to change coordinate system world/local for gizmos.\r\nAlso add that switch to the inspector \r\n@PatrickRyanMS Let me know if you have a more suitable icon that this one:\r\n![image](https://github.com/BabylonJS/Babylon.js/assets/1312968/548364db-5c5a-4126-ba76-53d1d72f50ee)\r\n\r\n",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/gizmo.ts",
+                    "packages/dev/core/src/Gizmos/gizmoManager.ts",
+                    "packages/dev/core/src/Gizmos/planeRotationGizmo.ts",
+                    "packages/dev/core/src/Gizmos/positionGizmo.ts",
+                    "packages/dev/core/src/Gizmos/rotationGizmo.ts",
+                    "packages/dev/core/src/Gizmos/scaleGizmo.ts",
+                    "packages/dev/inspector/src/components/sceneExplorer/entities/sceneTreeItemComponent.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/sceneExplorer.scss"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13996",
+                "title": "CubeTexture: Fix parsing when name has been overwritten",
+                "description": "See https://forum.babylonjs.com/t/pbrmaterial-clone-has-stopped-working-in-my-scene-just-now-or-a-few-hours-ago/41805/9\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/cubeTexture.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "13988",
+                "title": "Input manager :  PointerEvent pick with boundingBox",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Inputs/pointerPickingConfiguration.ts",
+                    "packages/dev/core/src/Inputs/scene.inputManager.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13995",
+                "title": "docs: improve EnvironmentHelper docstring",
+                "description": "minor improvement of the `EnvironmentHelper` docstring",
+                "author": {
+                    "name": "yedpodtrzitko",
+                    "url": "https://github.com/yedpodtrzitko"
+                },
+                "files": [
+                    "packages/dev/core/src/Helpers/environmentHelper.ts"
                 ],
                 "tags": []
             }
