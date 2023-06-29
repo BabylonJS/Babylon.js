@@ -1,5 +1,6 @@
 import { evaluateDisposeEngine, evaluateCreateScene, evaluateInitEngine, getGlobalConfig, logPageErrors } from "@tools/test-tools";
 import type { GLTFFileLoader } from "loaders/glTF";
+import { glbBase64, gltfBase64, gltfRaw, objBase64, objRaw, stlAsciiBase64, stlAsciiRaw, stlBinaryBase64 } from "./testData";
 
 declare const BABYLON: typeof import("core/index") & typeof import("loaders/index");
 
@@ -757,6 +758,401 @@ describe("Babylon Scene Loader", function () {
             expect(assertionData["materialGltfMetadata"]).toBe(true);
             expect(assertionData["materialExtras"]).toBe(true);
             expect(assertionData["materialExtrasKind"]).toBe("materialProp");
+        });
+    });
+    describe("#OBJ", () => {
+        it("should load a tetrahedron (without colors)", async () => {
+            const fileContents = `
+                g tetrahedron
+
+                v 1.00 1.00 1.00 0.666 0 0
+                v 2.00 1.00 1.00 0.666 0 0
+                v 1.00 2.00 1.00 0.666 0 0
+                v 1.00 1.00 2.00 0.666 0 0
+
+                f 1 3 2
+                f 1 4 3
+                f 1 2 4
+                f 2 3 4
+            `;
+
+            const assertionData = await page.evaluate((fileContents) => {
+                return BABYLON.SceneLoader.LoadAssetContainerAsync("", "data:" + fileContents, window.scene, () => {}, ".obj").then((container) => {
+                    const tetrahedron = container.meshes[0];
+
+                    const positions = tetrahedron.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+                    const colors = tetrahedron.getVerticesData(BABYLON.VertexBuffer.ColorKind);
+                    return {
+                        positions,
+                        colors,
+                        meshesLength: container.meshes.length,
+                    };
+                });
+            }, fileContents);
+
+            expect(assertionData["positions"]).toEqual([1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 2]);
+            expect(assertionData["colors"]).toBeNull();
+            expect(assertionData["meshesLength"]).toBe(1);
+        });
+
+        it("should parse leniently allowing extra spaces with vertex definitions", async () => {
+            const fileContents = `
+                g tetrahedron
+
+                v  1.00 1.00 1.00 0.666 0 0
+                v  2.00 1.00 1.00 0.666 0 0
+                v  1.00 2.00 1.00 0.666 0 0
+                v  1.00 1.00 2.00 0.666 0 0
+                # ^
+                # └── allow extra spaces before position/color
+
+                f 1 3 2
+                f 1 4 3
+                f 1 2 4
+                f 2 3 4
+            `;
+
+            const assertionData = await page.evaluate((fileContents) => {
+                return BABYLON.SceneLoader.LoadAssetContainerAsync("", "data:" + fileContents, window.scene, () => {}, ".obj").then((container) => {
+                    const tetrahedron = container.meshes[0];
+
+                    const positions = tetrahedron.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+                    return {
+                        positions,
+                        meshesLength: container.meshes.length,
+                    };
+                });
+            }, fileContents);
+
+            expect(assertionData["positions"]).toEqual([1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 2]);
+            expect(assertionData["meshesLength"]).toBe(1);
+        });
+    });
+
+    describe("#AssetContainer", () => {
+        it("should be loaded from BoomBox GLTF", async () => {
+            const assertionData = await page.evaluate(() => {
+                return BABYLON.SceneLoader.LoadAssetContainerAsync("https://assets.babylonjs.com/meshes/BoomBox/", "BoomBox.gltf", window.scene).then((container) => {
+                    return {
+                        meshesLength: container.meshes.length,
+                    };
+                });
+            });
+            expect(assertionData["meshesLength"]).toBe(2);
+        });
+        it("should be adding and removing objects from scene", async () => {
+            const assertionData = await page.evaluate(() => {
+                const scene = window.scene!;
+                const camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
+                new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), scene);
+                BABYLON.MeshBuilder.CreateSphere("sphere1", { segments: 16, diameter: 2 }, scene);
+                BABYLON.MeshBuilder.CreateGround("ground1", { width: 6, height: 6, subdivisions: 2 }, scene);
+
+                // Move all the assets from the scene into a container
+                const container = new BABYLON.AssetContainer(scene);
+                const keepAssets = new BABYLON.KeepAssets();
+                keepAssets.cameras.push(camera);
+                container.moveAllFromScene(keepAssets);
+                const beforeAddAllToScene = {
+                    cameras: scene.cameras.length,
+                    meshes: scene.meshes.length,
+                    lights: scene.lights.length,
+                    containerCameras: container.cameras.length,
+                    containerMeshes: container.meshes.length,
+                    containerLights: container.lights.length,
+                };
+                container.addAllToScene();
+                const afterAddAllToScene = {
+                    cameras: scene.cameras.length,
+                    meshes: scene.meshes.length,
+                    lights: scene.lights.length,
+                };
+                container.removeAllFromScene();
+                const afterRemoveAllFromScene = {
+                    cameras: scene.cameras.length,
+                    meshes: scene.meshes.length,
+                    lights: scene.lights.length,
+                };
+
+                return {
+                    beforeAddAllToScene,
+                    afterAddAllToScene,
+                    afterRemoveAllFromScene,
+                };
+            });
+
+            expect(assertionData["beforeAddAllToScene"]).toEqual({
+                cameras: 1,
+                meshes: 0,
+                lights: 0,
+                containerCameras: 0,
+                containerMeshes: 2,
+                containerLights: 1,
+            });
+
+            expect(assertionData["afterAddAllToScene"]).toEqual({
+                cameras: 1,
+                meshes: 2,
+                lights: 1,
+            });
+
+            expect(assertionData["afterRemoveAllFromScene"]).toEqual({
+                cameras: 1,
+                meshes: 0,
+                lights: 0,
+            });
+        });
+    });
+
+    describe("#ArgumentPermutations", () => {
+        it("Typical", async () => {
+            const assertionData = await page.evaluate(() => {
+                return BABYLON.SceneLoader.LoadAsync("https://playground.babylonjs.com/scenes/Box/", "Box.gltf").then(() => true);
+            });
+            expect(assertionData).toBe(true);
+        });
+
+        it("Single url", async () => {
+            const assertionData = await page.evaluate(() => {
+                return BABYLON.SceneLoader.LoadAsync("https://playground.babylonjs.com/scenes/Box/Box.gltf").then(() => true);
+            });
+            expect(assertionData).toBe(true);
+        });
+
+        it("Direct load", async () => {
+            const assertionData = await page.evaluate(() => {
+                return BABYLON.Tools.LoadFileAsync("https://playground.babylonjs.com/scenes/Box/Box.gltf", false)
+                    .then((gltf) => {
+                        return BABYLON.SceneLoader.LoadAsync("https://playground.babylonjs.com/scenes/Box/", `data:${gltf}`);
+                    })
+                    .then(() => true);
+            });
+            expect(assertionData).toBe(true);
+        });
+
+        it("Files input", async () => {
+            const assertionData = await page.evaluate(() => {
+                return Promise.all([
+                    BABYLON.Tools.LoadFileAsync("https://playground.babylonjs.com/scenes/Box/Box.gltf", true),
+                    BABYLON.Tools.LoadFileAsync("https://playground.babylonjs.com/scenes/Box/Box.bin", true),
+                ])
+                    .then(([gltf, bin]) => {
+                        BABYLON.FilesInput.FilesToLoad["box.gltf"] = new File([gltf], "Box.gltf");
+                        BABYLON.FilesInput.FilesToLoad["box.bin"] = new File([bin], "Box.bin");
+                        return BABYLON.SceneLoader.LoadAsync("file:", "Box.gltf");
+                    })
+                    .then(() => true);
+            });
+            expect(assertionData).toBe(true);
+        });
+
+        it("File object", async () => {
+            const assertionData = await page.evaluate(() => {
+                return BABYLON.Tools.LoadFileAsync("https://playground.babylonjs.com/scenes/BoomBox.glb")
+                    .then((glb) => {
+                        return BABYLON.SceneLoader.LoadAsync("", new File([glb], "BoomBox.glb"));
+                    })
+                    .then(() => true);
+            });
+            expect(assertionData).toBe(true);
+        });
+
+        it("File url (Babylon Native)", async () => {
+            const assertionData = await page.evaluate(() => {
+                const urlRedirects = {
+                    "file:///Box.gltf": "https://playground.babylonjs.com/scenes/Box/Box.gltf",
+                    "file:///Box.bin": "https://playground.babylonjs.com/scenes/Box/Box.bin",
+                };
+                const oldPreprocessUrl = BABYLON.Tools.PreprocessUrl;
+                BABYLON.Tools.PreprocessUrl = (url) => urlRedirects[url as keyof typeof urlRedirects] || url;
+                const resetPreprocessUrl = () => (BABYLON.Tools.PreprocessUrl = oldPreprocessUrl);
+                return BABYLON.SceneLoader.LoadAsync("file:///", "Box.gltf")
+                    .then(resetPreprocessUrl, resetPreprocessUrl)
+                    .then(() => true);
+            });
+            expect(assertionData).toBe(true);
+        });
+    });
+
+    describe("#DirectLoad", () => {
+        it("should load a raw obj with no mime type", async () => {
+            const assertionData = await page.evaluate((data) => {
+                return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:${data}`, window.scene, undefined, ".obj").then((result) => {
+                    return {
+                        meshes: result.meshes.length,
+                        vertices: result.meshes[0].getTotalVertices(),
+                    };
+                });
+            }, objRaw);
+            expect(assertionData).toEqual({
+                meshes: 1,
+                vertices: 4,
+            });
+        });
+
+        it("should load a base64 encoded obj with no mime type", async () => {
+            const assertionData = await page.evaluate((data) => {
+                return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:;base64,${data}`, window.scene, undefined, ".obj").then((result) => {
+                    return {
+                        meshes: result.meshes.length,
+                        vertices: result.meshes[0].getTotalVertices(),
+                    };
+                });
+            }, objBase64);
+            expect(assertionData).toEqual({
+                meshes: 1,
+                vertices: 4,
+            });
+        });
+
+        it("should load a base64 encoded obj with a valid mime type", async () => {
+            const assertionData = await page.evaluate((data) => {
+                return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:model/obj;base64,${data}`, window.scene, undefined, ".obj").then((result) => {
+                    return {
+                        meshes: result.meshes.length,
+                        vertices: result.meshes[0].getTotalVertices(),
+                    };
+                });
+            }, objBase64);
+            expect(assertionData).toEqual({
+                meshes: 1,
+                vertices: 4,
+            });
+        });
+
+        it("should load a base64 encoded obj with an invalid mime type", async () => {
+            const assertionData = await page.evaluate((data) => {
+                return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:foo/bar;base64,${data}`, window.scene, undefined, ".obj").then((result) => {
+                    return {
+                        meshes: result.meshes.length,
+                        vertices: result.meshes[0].getTotalVertices(),
+                    };
+                });
+            }, objBase64);
+            expect(assertionData).toEqual({
+                meshes: 1,
+                vertices: 4,
+            });
+        });
+
+        it("should direct load a glTF file without specifying a pluginExtension", async () => {
+            const assertionData = await page.evaluate((data) => {
+                return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:${data}`, window.scene).then((result) => {
+                    return {
+                        meshes: result.meshes.length,
+                        vertices: result.meshes[1].getTotalVertices(),
+                    };
+                });
+            }, gltfRaw);
+            expect(assertionData).toEqual({
+                meshes: 2,
+                vertices: 3,
+            });
+        });
+
+        it("should direct load a base64 encoded glTF file", async () => {
+            const assertionData = await page.evaluate((data) => {
+                return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:;base64,${data}`, window.scene, undefined, ".gltf").then((result) => {
+                    return {
+                        meshes: result.meshes.length,
+                        vertices: result.meshes[1].getTotalVertices(),
+                    };
+                });
+            }, gltfBase64);
+            expect(assertionData).toEqual({
+                meshes: 2,
+                vertices: 3,
+            });
+        });
+
+        it("should direct load a base64 encoded glb with a valid mime type and no pluginExtension", async () => {
+            const assertionData = await page.evaluate((data) => {
+                return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:model/gltf-binary;base64,${data}`, window.scene, undefined).then((result) => {
+                    return {
+                        meshes: result.meshes.length,
+                        vertices: result.meshes[1].getTotalVertices(),
+                    };
+                });
+            }, glbBase64);
+            expect(assertionData).toEqual({
+                meshes: 2,
+                vertices: 24,
+            });
+        });
+
+        it("should direct load a base64 encoded glb with an invalid mime type and pluginExtension specified", async () => {
+            const assertionData = await page.evaluate((data) => {
+                return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:image/jpg;base64,${data}`, window.scene, undefined, ".glb").then((result) => {
+                    return {
+                        meshes: result.meshes.length,
+                        vertices: result.meshes[1].getTotalVertices(),
+                    };
+                });
+            }, glbBase64);
+            expect(assertionData).toEqual({
+                meshes: 2,
+                vertices: 24,
+            });
+        });
+
+        it("should direct load an incorrectly formatted base64 encoded glb (backcompat)", async () => {
+            const assertionData = await page.evaluate((data) => {
+                return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:base64,${data}`, window.scene).then((result) => {
+                    return {
+                        meshes: result.meshes.length,
+                        vertices: result.meshes[1].getTotalVertices(),
+                    };
+                });
+            }, glbBase64);
+            expect(assertionData).toEqual({
+                meshes: 2,
+                vertices: 24,
+            });
+        });
+
+        it("should direct load an ascii stl file", async () => {
+            const assertionData = await page.evaluate((data) => {
+                return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:${data}`, window.scene, undefined, ".stl").then((result) => {
+                    return {
+                        meshes: result.meshes.length,
+                        vertices: result.meshes[0].getTotalVertices(),
+                    };
+                });
+            }, stlAsciiRaw);
+            expect(assertionData).toEqual({
+                meshes: 1,
+                vertices: 3,
+            });
+        });
+
+        it("should direct load a base64 encoded ascii stl file", async () => {
+            const assertionData = await page.evaluate((data) => {
+                return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:;base64,${data}`, window.scene, undefined, ".stl").then((result) => {
+                    return {
+                        meshes: result.meshes.length,
+                        vertices: result.meshes[0].getTotalVertices(),
+                    };
+                });
+            }, stlAsciiBase64);
+            expect(assertionData).toEqual({
+                meshes: 1,
+                vertices: 3,
+            });
+        });
+
+        it("should direct load a base64 encoded binary stl file", async () => {
+            const assertionData = await page.evaluate((data) => {
+                return BABYLON.SceneLoader.ImportMeshAsync("", "", `data:;base64,${data}`, window.scene, undefined, ".stl").then((result) => {
+                    return {
+                        meshes: result.meshes.length,
+                        vertices: result.meshes[0].getTotalVertices(),
+                    };
+                });
+            }, stlBinaryBase64);
+            expect(assertionData).toEqual({
+                meshes: 1,
+                vertices: 3,
+            });
         });
     });
 });
