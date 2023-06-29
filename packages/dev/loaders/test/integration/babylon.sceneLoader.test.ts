@@ -525,16 +525,12 @@ describe("Babylon Scene Loader", function () {
                             (extension as any).onMaterialLODsLoadedObservable.add((indexLOD: number) => {
                                 data["indexLOD"] = indexLOD;
                                 data[`setRequestHeaderCalls.${indexLOD}`] = setRequestHeaderCalls.slice();
-                                // expect(setRequestHeaderCalls, "setRequestHeaderCalls").to.have.ordered.members(expectedSetRequestHeaderCalls.slice(0, 3 + indexLOD));
                             });
                         }
                     });
                     promises.push(
                         (loader as GLTFFileLoader).whenCompleteAsync().then(() => {
                             data["setRequestHeaderCalls2"] = setRequestHeaderCalls.slice();
-                            // expect(setRequestHeaderCalls, "setRequestHeaderCalls").to.have.ordered.members(expectedSetRequestHeaderCalls);
-                            // setRequestHeaderStub.restore();
-                            // getResponseHeaderStub.restore();
                         })
                     );
                 });
@@ -545,7 +541,6 @@ describe("Babylon Scene Loader", function () {
                     return Promise.all(promises).then(() => {
                         return data;
                     });
-                    // expect(setRequestHeaderCalls, "setRequestHeaderCalls").to.have.ordered.members(expectedSetRequestHeaderCalls.slice(0, 3));
                 });
             });
             const maxIdx = assertionData["indexLOD"];
