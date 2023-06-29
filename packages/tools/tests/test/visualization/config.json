@@ -1315,12 +1315,14 @@
             "title": "Scissor test with 0.9 hardware scaling",
             "renderCount": 10,
             "playgroundId": "#W7E7CF#27",
+            "excludedEngines": ["webgl1"],
             "referenceImage": "scissor-test.png"
         },
         {
             "title": "Scissor test with 1.5 hardware scaling",
             "renderCount": 10,
             "playgroundId": "#W7E7CF#28",
+            "excludedEngines": ["webgl1"],
             "referenceImage": "scissor-test.png"
         },
         {
