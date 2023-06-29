@@ -408,6 +408,20 @@ export class FreeCamera extends TargetCamera {
         super._checkInputs();
     }
 
+    /**
+     * Enable movement without a user input. This allows gravity to always be applied.
+     */
+    public set needMoveForGravity(value: boolean) {
+        this._needMoveForGravity = value;
+    }
+
+    /**
+     * When true, gravity is applied whether there is user input or not.
+     */
+    public get needMoveForGravity(): boolean {
+        return this._needMoveForGravity;
+    }
+
     /** @internal */
     public _decideIfNeedsToMove(): boolean {
         return this._needMoveForGravity || Math.abs(this.cameraDirection.x) > 0 || Math.abs(this.cameraDirection.y) > 0 || Math.abs(this.cameraDirection.z) > 0;

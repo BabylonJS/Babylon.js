@@ -6,7 +6,7 @@ import { Vector3 } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { CreatePolyhedron } from "../Meshes/Builders/polyhedronBuilder";
-import type { GizmoAnchorPoint, GizmoAxisCache, IGizmo } from "./gizmo";
+import type { GizmoAnchorPoint, GizmoCoordinatesMode, GizmoAxisCache, IGizmo } from "./gizmo";
 import { Gizmo } from "./gizmo";
 import type { IAxisScaleGizmo } from "./axisScaleGizmo";
 import { AxisScaleGizmo } from "./axisScaleGizmo";
@@ -258,6 +258,17 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
     }
     public get anchorPoint() {
         return this._anchorPoint;
+    }
+
+    /**
+     * Set the coordinate system to use. By default it's local.
+     * But it's possible for a user to tweak so its local for translation and world for rotation.
+     * In that case, setting the coordinate system will change `updateGizmoRotationToMatchAttachedMesh` and `updateGizmoPositionToMatchAttachedMesh`
+     */
+    public set coordinatesMode(coordinatesMode: GizmoCoordinatesMode) {
+        [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo].forEach((gizmo) => {
+            gizmo.coordinatesMode = coordinatesMode;
+        });
     }
 
     /**
