@@ -619,7 +619,7 @@ export class PrePassRenderer {
         }
         this.noPrePassDefaultRT.updateCount(1, { types: [this._mrtTypes[0]], formats: [this._mrtFormats[0]] });
         this.noPrePassDefaultRT.setInternalTexture(this.defaultRT.textures[0]._texture!, 0, false);
-        // this.defaultRT.renderTarget?._shareDepth(this.noPrePassDefaultRT.renderTarget!);
+        this.defaultRT.renderTarget?._shareDepth(this.noPrePassDefaultRT.renderTarget!);
     }
 
     private _enable() {
