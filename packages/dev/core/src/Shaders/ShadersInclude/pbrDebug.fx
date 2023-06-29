@@ -74,7 +74,7 @@ if (vClipSpacePosition.x / vClipSpacePosition.w >= vDebugMode.x) {
     #elif DEBUGMODE == 31 && defined(SUBSURFACE) && defined(SS_THICKNESSANDMASK_TEXTURE)
         gl_FragColor.rgb = subSurfaceOut.thicknessMap.rgb;
     #elif DEBUGMODE == 32 && defined(BUMP)
-        gl_FragColor.rgb = texture2D(bumpSampler, vBumpUV).xyz;
+        gl_FragColor.rgb = texture2D(bumpSampler, vBumpUV).rgb;
 
 // Env
     #elif DEBUGMODE == 40 && defined(SS_REFRACTION)
