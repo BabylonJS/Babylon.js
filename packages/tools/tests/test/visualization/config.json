@@ -1300,11 +1300,38 @@
             "referenceImage": "prepass-ssao-msaa.png"
         },
         {
+            "title": "Multi camera rendering with scissors",
+            "playgroundId": "#1LK70I#35",
+            "referenceImage": "multiCameraRenderingWithScissors.png"
+        },
+        {
             "title": "Scissor test",
             "renderCount": 10,
             "playgroundId": "#W7E7CF#12",
             "excludedEngines": ["webgl1"],
             "referenceImage": "scissor-test.png"
+        },
+        {
+            "title": "Scissor test with 0.9 hardware scaling",
+            "renderCount": 10,
+            "playgroundId": "#W7E7CF#27",
+            "referenceImage": "scissor-test.png"
+        },
+        {
+            "title": "Scissor test with 1.5 hardware scaling",
+            "renderCount": 10,
+            "playgroundId": "#W7E7CF#28",
+            "referenceImage": "scissor-test.png"
+        },
+        {
+            "title": "Scissor test with negative x and y",
+            "playgroundId": "#3L5BCD#2",
+            "referenceImage": "scissorTestNegativeXandY.png"
+        },
+        {
+            "title": "Scissor test with out of bounds width and height",
+            "playgroundId": "#3L5BCD#3",
+            "referenceImage": "scissorTestOobWidthAndHeight.png"
         },
         {
             "title": "Refraction local cube map STD",
