@@ -302,7 +302,11 @@ export class RenderTargetWrapper {
         this.dispose(true);
     }
 
-    protected _cloneRenderTargetWrapper(): Nullable<RenderTargetWrapper> {
+    /**
+     *
+     * @internal
+     */
+    public _cloneRenderTargetWrapper(): Nullable<RenderTargetWrapper> {
         let rtw: Nullable<RenderTargetWrapper> = null;
 
         if (this._isMulti) {

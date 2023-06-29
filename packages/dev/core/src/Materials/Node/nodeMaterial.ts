@@ -220,7 +220,8 @@ export class NodeMaterial extends PushMaterial {
             block.getClassName() === "ParticleTextureBlock" ||
             block.getClassName() === "ImageSourceBlock" ||
             block.getClassName() === "TriPlanarBlock" ||
-            block.getClassName() === "BiPlanarBlock"
+            block.getClassName() === "BiPlanarBlock" ||
+            block.getClassName() === "PrePassTextureBlock"
         );
     }
 
@@ -848,7 +849,7 @@ export class NodeMaterial extends PushMaterial {
 
         // PrePass
         const oit = this.needAlphaBlendingForMesh(mesh) && this.getScene().useOrderIndependentTransparency;
-        MaterialHelper.PrepareDefinesForPrePass(this.getScene(), defines, this.isPrePassCapable && !oit);
+        MaterialHelper.PrepareDefinesForPrePass(this.getScene(), defines, this.isPrePassCapable && !oit && !this.prePassTextureInputs.length);
 
         if (oldNormal !== defines["NORMAL"] || oldTangent !== defines["TANGENT"] || oldColor !== defines["VERTEXCOLOR_NME"] || uvChanged) {
             defines.markAsAttributesDirty();
@@ -868,21 +869,25 @@ export class NodeMaterial extends PushMaterial {
         if (!fragmentOutputBlock) {
             return result;
         }
+        // Cannot write to prepass if we read from prepass
+        if (this.prePassTextureInputs.length) {
+            return result;
+        }
 
         if (fragmentOutputBlock.prePassCapable) {
             result.push(Constants.PREPASS_COLOR_TEXTURE_TYPE);
-        }
 
-        if (fragmentOutputBlock.depth.isConnected) {
-            result.push(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
-        }
+            if (fragmentOutputBlock.depth.isConnected) {
+                result.push(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
+            }
 
-        if (fragmentOutputBlock.worldNormal.isConnected) {
-            result.push(Constants.PREPASS_NORMAL_TEXTURE_TYPE);
-        }
+            if (fragmentOutputBlock.worldNormal.isConnected) {
+                result.push(Constants.PREPASS_NORMAL_TEXTURE_TYPE);
+            }
 
-        if (fragmentOutputBlock.worldPosition.isConnected) {
-            result.push(Constants.PREPASS_POSITION_TEXTURE_TYPE);
+            if (fragmentOutputBlock.worldPosition.isConnected) {
+                result.push(Constants.PREPASS_POSITION_TEXTURE_TYPE);
+            }
         }
 
         return result;
@@ -899,10 +904,10 @@ export class NodeMaterial extends PushMaterial {
             if (block.color.isConnected && !result.includes(Constants.PREPASS_COLOR_TEXTURE_TYPE)) {
                 result.push(Constants.PREPASS_COLOR_TEXTURE_TYPE);
             }
-            if (block.color.isConnected && !result.includes(Constants.PREPASS_DEPTH_TEXTURE_TYPE)) {
+            if (block.depth.isConnected && !result.includes(Constants.PREPASS_DEPTH_TEXTURE_TYPE)) {
                 result.push(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
             }
-            if (block.color.isConnected && !result.includes(Constants.PREPASS_NORMAL_TEXTURE_TYPE)) {
+            if (block.normal.isConnected && !result.includes(Constants.PREPASS_NORMAL_TEXTURE_TYPE)) {
                 result.push(Constants.PREPASS_NORMAL_TEXTURE_TYPE);
             }
         }

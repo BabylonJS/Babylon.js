@@ -342,8 +342,23 @@ export class MultiRenderTarget extends RenderTargetTexture {
         }
     }
 
+    /**
+     * @internal
+     */
+    public _createReadBuffer(): void {
+        // TODO : remove
+        return;
+        // if (this._readRenderTarget) {
+        //     this._readRenderTarget.dispose(true);
+        // }
+        // if (!this._readRenderTarget && this._renderTarget) {
+        //     this._readRenderTarget = this._renderTarget._cloneRenderTargetWrapper();
+        // }
+    }
+
     private _createInternalTextures(): void {
         this._renderTarget = this._getEngine()!.createMultipleRenderTarget(this._size, this._multiRenderTargetOptions, !this._drawOnlyOnFirstAttachmentByDefault);
+        this._createReadBuffer();
         this._texture = this._renderTarget.texture;
     }
 
