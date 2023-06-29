@@ -6,6 +6,7 @@ import { Constants } from "../../Engines/constants";
 
 import "../../Engines/Extensions/engine.multiRender";
 import type { InternalTexture } from "./internalTexture";
+import { Observable } from "core/Misc";
 
 /**
  * Creation options of the multi render target texture.
@@ -98,6 +99,8 @@ export class MultiRenderTarget extends RenderTargetTexture {
     private _count: number;
     private _drawOnlyOnFirstAttachmentByDefault: boolean;
     private _textureNames?: string[];
+
+    public onRebuildObservable = new Observable<void>();
 
     /**
      * Get if draw buffers are currently supported by the used hardware and browser.
@@ -340,25 +343,12 @@ export class MultiRenderTarget extends RenderTargetTexture {
         if (this.samples !== 1) {
             this._renderTarget!.setSamples(this.samples, !this._drawOnlyOnFirstAttachmentByDefault, true);
         }
+
+        this.onRebuildObservable.notifyObservers();
     }
 
-    /**
-     * @internal
-     */
-    public _createReadBuffer(): void {
-        // TODO : remove
-        return;
-        // if (this._readRenderTarget) {
-        //     this._readRenderTarget.dispose(true);
-        // }
-        // if (!this._readRenderTarget && this._renderTarget) {
-        //     this._readRenderTarget = this._renderTarget._cloneRenderTargetWrapper();
-        // }
-    }
-
-    private _createInternalTextures(): void {
+    private _createInternalTextures(): void  {
         this._renderTarget = this._getEngine()!.createMultipleRenderTarget(this._size, this._multiRenderTargetOptions, !this._drawOnlyOnFirstAttachmentByDefault);
-        this._createReadBuffer();
         this._texture = this._renderTarget.texture;
     }
 
@@ -560,6 +550,8 @@ export class MultiRenderTarget extends RenderTargetTexture {
             this._texture = null;
         }
         super.dispose();
+
+        this.onRebuildObservable.clear();
     }
 
     /**

@@ -5044,6 +5044,18 @@ export class ThinEngine {
         }
     }
 
+    public _swapTextureInRenderTargetWrappers(oldTexture: InternalTexture, newTexture: InternalTexture): void {
+        for (const rtWrapper of this._renderTargetWrapperCache) {
+            const internalTextureArray = rtWrapper.textures || [rtWrapper.texture]
+            for (let i = 0; i < internalTextureArray.length; i++) {
+                if (internalTextureArray[i] === oldTexture) {
+                    rtWrapper.setTexture(newTexture, i, false);
+                }
+            }
+
+        }
+    }
+
     protected _deleteTexture(texture: Nullable<WebGLTexture>): void {
         if (texture) {
             this._gl.deleteTexture(texture);

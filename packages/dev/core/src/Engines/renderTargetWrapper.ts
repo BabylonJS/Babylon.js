@@ -198,11 +198,16 @@ export class RenderTargetWrapper {
         if (!this._textures) {
             this._textures = [];
         }
+        if (this._textures[index] === texture) {
+            return;
+        }
+
         if (this._textures[index] && disposePrevious) {
             this._textures[index].dispose();
         }
 
         this._textures[index] = texture;
+        texture.incrementReferences();
     }
 
     /**
@@ -289,6 +294,8 @@ export class RenderTargetWrapper {
             renderTarget._depthStencilTexture = this._depthStencilTexture;
             this._depthStencilTexture.incrementReferences();
         }
+
+        this._size = renderTarget._size;
     }
 
     /**

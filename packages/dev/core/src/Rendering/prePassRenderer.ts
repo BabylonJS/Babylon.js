@@ -160,6 +160,11 @@ export class PrePassRenderer {
      */
     public defaultRT: PrePassRenderTarget;
 
+    /**
+     * A render target with only the color texture inside.
+     * This is used to render materials that need to read from other prepass textures
+     * because of the WebGL limitation: Can't write on a texture that is alread read in the shader
+     */
     public noPrePassDefaultRT: PrePassRenderTarget;
 
     /**
@@ -278,8 +283,10 @@ export class PrePassRenderer {
         }
 
         PrePassRenderer._SceneComponentInitialization(this._scene);
-        this.defaultRT = this._createRenderTarget("scenePrePassRT", null);
         this.noPrePassDefaultRT = this._createRenderTarget("sceneNoPrePassRT", null);
+        this.defaultRT = this._createRenderTarget("scenePrePassRT", null);
+
+        this.defaultRT.onRebuildObservable.add(() => this._syncPrePassRT());
         this._currentTarget = this.defaultRT;
     }
 
@@ -560,7 +567,9 @@ export class PrePassRenderer {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _bindFrameBuffer() {
         if (this._enabled && this._currentTarget.enabled) {
-            this._currentTarget._checkSize();
+            if (this._currentTarget !== this.noPrePassDefaultRT) {
+                this._currentTarget._checkSize();
+            }
             const internalTexture = this._currentTarget.renderTarget;
             if (internalTexture) {
                 this._engine.bindFramebuffer(internalTexture);
@@ -613,13 +622,20 @@ export class PrePassRenderer {
         return null;
     }
 
-    private _prepareSceneRenderTargets() {
+    /**
+     * Keeps the sync between the noPrePassDefaultRT and the defaultRT
+     * @returns 
+     */
+    private _syncPrePassRT() {
         if (this.mrtCount === 0) {
             return;
         }
-        this.noPrePassDefaultRT.updateCount(1, { types: [this._mrtTypes[0]], formats: [this._mrtFormats[0]] });
-        this.noPrePassDefaultRT.setInternalTexture(this.defaultRT.textures[0]._texture!, 0, false);
-        this.defaultRT.renderTarget?._shareDepth(this.noPrePassDefaultRT.renderTarget!);
+        const needsInit = this.noPrePassDefaultRT.count !== 1;
+        if (needsInit) {
+            this.noPrePassDefaultRT.updateCount(1, { types: [this._mrtTypes[0]], formats: [this._mrtFormats[0]] });
+        }
+        this.noPrePassDefaultRT.setInternalTexture(this.defaultRT.renderTarget!.textures![0], 0, true);
+        this.defaultRT.renderTarget!._shareDepth(this.noPrePassDefaultRT.renderTarget!);
     }
 
     private _enable() {
@@ -657,7 +673,6 @@ export class PrePassRenderer {
         this._reinitializeAttachments();
         this._setEnabled(true);
         this._updateGeometryBufferLayout();
-        this._prepareSceneRenderTargets();
     }
 
     private _disable() {
