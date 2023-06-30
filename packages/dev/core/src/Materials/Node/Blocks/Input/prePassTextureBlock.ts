@@ -178,4 +178,3 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
 }
 
 RegisterClass("BABYLON.PrePassTextureBlock", PrePassTextureBlock);
-
