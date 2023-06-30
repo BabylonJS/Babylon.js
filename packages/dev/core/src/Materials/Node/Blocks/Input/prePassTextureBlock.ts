@@ -9,7 +9,7 @@ import type { NodeMaterial } from "../../nodeMaterial";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { Constants } from "../../../../Engines/constants";
 import type { Mesh } from "../../../../Meshes/mesh";
-import { ImageSourceBlock } from "../Dual";
+import { ImageSourceBlock } from "../Dual/imageSourceBlock";
 
 /**
  * Block used to expose an input value
