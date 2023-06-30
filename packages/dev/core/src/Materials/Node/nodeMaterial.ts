@@ -61,7 +61,7 @@ import type { Material } from "../material";
 import { MaterialHelper } from "../materialHelper";
 import type { TriPlanarBlock } from "./Blocks/triPlanarBlock";
 import type { BiPlanarBlock } from "./Blocks/biPlanarBlock";
-import type { PrePassRenderer } from "core/Rendering";
+import type { PrePassRenderer } from "../../Rendering/prePassRenderer";
 import type { PrePassTextureBlock } from "./Blocks/Input/prePassTextureBlock";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };

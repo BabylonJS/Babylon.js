@@ -6,7 +6,7 @@ import { Constants } from "../../Engines/constants";
 
 import "../../Engines/Extensions/engine.multiRender";
 import type { InternalTexture } from "./internalTexture";
-import { Observable } from "core/Misc";
+import { Observable } from "core/Misc/observable";
 
 /**
  * Creation options of the multi render target texture.
