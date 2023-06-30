@@ -150,11 +150,8 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         this._linearDefineName = state._getFreeDefineName("CONVERTTOLINEAR");
         this._gammaDefineName = state._getFreeDefineName("CONVERTTOGAMMA");
         if (state.prePassCapable) {
-            // if (this.depth) {
             state._emitPrePassOutput("extension", "#extension GL_EXT_draw_buffers : require\r\n");
             state._emitPrePassOutput("declaration", "layout(location = 0) out highp vec4 glFragData[SCENE_MRT_COUNT];\r\nhighp vec4 gl_FragColor;\r\n");
-            // state._emitPrePassOutput('depth', 'varying highp vec3 vViewPos;', 'defined(PREPASS_DEPTH)');
-            // }
         }
 
         const comments = `//${this.name}`;
@@ -209,7 +206,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
             if (worldPosition.connectedPoint) {
                 state.compilationString += ` gl_FragData[PREPASS_POSITION_INDEX] = vec4(${worldPosition.associatedVariableName}, 1.0);\r\n`;
             } else {
-                // We have to write something on the depth output or it will raise a gl error
+                // We have to write something on the position output or it will raise a gl error
                 state.compilationString += ` gl_FragData[PREPASS_POSITION_INDEX] = vec4(0.0, 0.0, 0.0, 0.0);\r\n`;
             }
             state.compilationString += `#endif\r\n`;
@@ -217,7 +214,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
             if (worldNormal.connectedPoint) {
                 state.compilationString += ` gl_FragData[PREPASS_NORMAL_INDEX] = vec4(${worldNormal.associatedVariableName}, 1.0);\r\n`;
             } else {
-                // We have to write something on the depth output or it will raise a gl error
+                // We have to write something on the normal output or it will raise a gl error
                 state.compilationString += ` gl_FragData[PREPASS_NORMAL_INDEX] = vec4(0.0, 0.0, 0.0, 0.0);\r\n`;
             }
             state.compilationString += `#endif\r\n`;

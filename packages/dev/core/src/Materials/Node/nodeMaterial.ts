@@ -869,7 +869,7 @@ export class NodeMaterial extends PushMaterial {
         if (!fragmentOutputBlock) {
             return result;
         }
-        // Cannot write to prepass if we read from prepass
+        // Cannot write to prepass if we alread read from prepass
         if (this.prePassTextureInputs.length) {
             return result;
         }
@@ -901,8 +901,8 @@ export class NodeMaterial extends PushMaterial {
         const result = [] as number[];
 
         for (const block of prePassTextureBlocks) {
-            if (block.color.isConnected && !result.includes(Constants.PREPASS_COLOR_TEXTURE_TYPE)) {
-                result.push(Constants.PREPASS_COLOR_TEXTURE_TYPE);
+            if (block.position.isConnected && !result.includes(Constants.PREPASS_POSITION_TEXTURE_TYPE)) {
+                result.push(Constants.PREPASS_POSITION_TEXTURE_TYPE);
             }
             if (block.depth.isConnected && !result.includes(Constants.PREPASS_DEPTH_TEXTURE_TYPE)) {
                 result.push(Constants.PREPASS_DEPTH_TEXTURE_TYPE);

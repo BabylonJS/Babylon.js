@@ -246,7 +246,6 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
 
     rtWrapper._framebuffer = framebuffer;
     rtWrapper._depthStencilBuffer = depthStencilBuffer;
-    rtWrapper._depthStencilTextureWithStencil = useStencilTexture;
     rtWrapper._generateDepthBuffer = !generateDepthTexture && generateDepthBuffer;
     rtWrapper._generateStencilBuffer = !useStencilTexture && generateStencilBuffer;
     rtWrapper._attachments = attachments;

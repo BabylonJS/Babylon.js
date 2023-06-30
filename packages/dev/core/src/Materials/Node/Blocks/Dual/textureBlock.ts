@@ -19,7 +19,7 @@ import "../../../../Shaders/ShadersInclude/helperFunctions";
 import { ImageSourceBlock } from "./imageSourceBlock";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { EngineStore } from "../../../../Engines/engineStore";
-import { PrePassTextureBlock } from "../Input";
+import type { PrePassTextureBlock } from "../Input";
 
 /**
  * Block used to read a texture from a sampler

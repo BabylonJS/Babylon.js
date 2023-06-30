@@ -17,7 +17,7 @@ import { ImageSourceBlock } from "../Dual";
  * Block used to expose an input value
  */
 export class PrePassTextureBlock extends NodeMaterialBlock {
-    private _colorSamplerName: string;
+    private _positionSamplerName: string;
     private _depthSamplerName: string;
     private _normalSamplerName: string;
 
@@ -42,10 +42,10 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
         super(name, target, false, true);
 
         this.registerOutput(
-            "color",
+            "position",
             NodeMaterialBlockConnectionPointTypes.Object,
             NodeMaterialBlockTargets.VertexAndFragment,
-            new NodeMaterialConnectionPointCustomObject("color", this, NodeMaterialConnectionPointDirection.Output, ImageSourceBlock, "ImageSourceBlock")
+            new NodeMaterialConnectionPointCustomObject("position", this, NodeMaterialConnectionPointDirection.Output, ImageSourceBlock, "ImageSourceBlock")
         );
         this.registerOutput(
             "depth",
@@ -60,14 +60,14 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
             new NodeMaterialConnectionPointCustomObject("normal", this, NodeMaterialConnectionPointDirection.Output, ImageSourceBlock, "ImageSourceBlock")
         );
 
-        this._outputs[0].displayName = "color";
+        this._outputs[0].displayName = "position";
         this._outputs[1].displayName = "depth";
         this._outputs[2].displayName = "normal";
     }
 
     public getSamplerName(output: NodeMaterialConnectionPoint): string {
         if (output === this._outputs[0]) {
-            return this._colorSamplerName;
+            return this._positionSamplerName;
         }
 
         if (output === this._outputs[1]) {
@@ -82,9 +82,9 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the color texture
+     * Gets the position texture
      */
-    public get color(): NodeMaterialConnectionPoint {
+    public get position(): NodeMaterialConnectionPoint {
         return this._outputs[0];
     }
 
@@ -96,7 +96,7 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the color texture
+     * Gets the normal texture
      */
     public get normal(): NodeMaterialConnectionPoint {
         return this._outputs[2];
@@ -105,8 +105,8 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
     /**
      * Gets the sampler name associated with this image source
      */
-    public get colorSamplerName(): string {
-        return this._colorSamplerName;
+    public get positionSamplerName(): string {
+        return this._positionSamplerName;
     }
 
     /**
@@ -134,12 +134,12 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
         super._buildBlock(state);
 
         if (state.target === NodeMaterialBlockTargets.Vertex) {
-            this._colorSamplerName = "prepassColorSampler";
+            this._positionSamplerName = "prepassPositionSampler";
             this._depthSamplerName = "prepassDepthSampler";
             this._normalSamplerName = "prepassNormalSampler";
 
             // Unique sampler names for every prepasstexture block
-            state.sharedData.variableNames.prepassColorSampler = 0;
+            state.sharedData.variableNames.prepassPositionSampler = 0;
             state.sharedData.variableNames.prepassDepthSampler = 0;
             state.sharedData.variableNames.prepassNormalSampler = 0;
 
@@ -149,7 +149,7 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
             state.sharedData.bindableBlocks.push(this);
         }
 
-        state._emit2DSampler(this._colorSamplerName);
+        state._emit2DSampler(this._positionSamplerName);
         state._emit2DSampler(this._depthSamplerName);
         state._emit2DSampler(this._normalSamplerName);
 
@@ -173,23 +173,9 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
         }
         prePassRenderer.defaultRT.level = 1;
 
-        effect.setTexture(this._colorSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_COLOR_TEXTURE_TYPE)]);
+        effect.setTexture(this._positionSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_POSITION_TEXTURE_TYPE)]);
         effect.setTexture(this._depthSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE)]);
         effect.setTexture(this._normalSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_NORMAL_TEXTURE_TYPE)]);
-    }
-
-    protected _dumpPropertiesCode() {
-        return super._dumpPropertiesCode();
-    }
-
-    public serialize(): any {
-        const serializationObject = super.serialize();
-
-        return serializationObject;
-    }
-
-    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
-        super._deserialize(serializationObject, scene, rootUrl);
     }
 }
 
