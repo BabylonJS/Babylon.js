@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
 import type { Effect } from "../../../../Materials/effect";
@@ -8,8 +7,8 @@ import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { NodeMaterial } from "../../nodeMaterial";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
-import { Constants } from "core/Engines";
-import type { Mesh } from "core/Meshes";
+import { Constants } from "../../../../Engines/constants";
+import type { Mesh } from "../../../../Meshes/mesh";
 import { ImageSourceBlock } from "../Dual";
 
 /**
