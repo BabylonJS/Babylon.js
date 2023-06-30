@@ -4,7 +4,7 @@ import type { Nullable } from "../../types";
 import type { Engine } from "../engine";
 import { RenderTargetWrapper } from "../renderTargetWrapper";
 import type { ThinEngine } from "../thinEngine";
-import { WebGLHardwareTexture } from "./webGLHardwareTexture";
+import type { WebGLHardwareTexture } from "./webGLHardwareTexture";
 
 /** @internal */
 export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
