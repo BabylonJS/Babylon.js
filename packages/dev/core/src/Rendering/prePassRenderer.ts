@@ -626,7 +626,7 @@ export class PrePassRenderer {
 
     /**
      * Keeps the sync between the noPrePassDefaultRT and the defaultRT
-     * @returns 
+     * @returns
      */
     private _syncPrePassRT() {
         if (this.mrtCount === 0) {

@@ -347,7 +347,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
         this.onRebuildObservable.notifyObservers();
     }
 
-    private _createInternalTextures(): void  {
+    private _createInternalTextures(): void {
         this._renderTarget = this._getEngine()!.createMultipleRenderTarget(this._size, this._multiRenderTargetOptions, !this._drawOnlyOnFirstAttachmentByDefault);
         this._texture = this._renderTarget.texture;
     }

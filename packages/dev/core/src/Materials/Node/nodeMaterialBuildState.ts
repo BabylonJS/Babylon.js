@@ -131,7 +131,7 @@ export class NodeMaterialBuildState {
         this.compilationString = "#if defined(WEBGL2) || defines(WEBGPU)\r\nprecision highp sampler2DArray;\r\n#endif\r\n" + this.compilationString;
 
         if (this.prePassCapable) {
-            let prePassDeclaration = "#if defined(PREPASS)\r\n"
+            let prePassDeclaration = "#if defined(PREPASS)\r\n";
 
             for (const outputName in this.prePassOutput) {
                 prePassDeclaration = prePassDeclaration + this.prePassOutput[outputName] + "\r\n";
@@ -143,7 +143,6 @@ export class NodeMaterialBuildState {
             const extension = this.extensions[extensionName];
             this.compilationString = `\r\n${extension}\r\n${this.compilationString}`;
         }
-
 
         this._builtCompilationString = this.compilationString;
     }
