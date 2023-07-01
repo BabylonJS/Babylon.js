@@ -429,20 +429,20 @@ export class MorphTargetManager implements IDisposable {
 
                         offset += 4;
 
-                        if (normals) {
+                        if (this._supportsNormals && normals) {
                             data[offset] = normals[vertex * 3];
                             data[offset + 1] = normals[vertex * 3 + 1];
                             data[offset + 2] = normals[vertex * 3 + 2];
                             offset += 4;
                         }
 
-                        if (uvs) {
+                        if (this._supportsUVs && uvs) {
                             data[offset] = uvs[vertex * 2];
                             data[offset + 1] = uvs[vertex * 2 + 1];
                             offset += 4;
                         }
 
-                        if (tangents) {
+                        if (this._supportsTangents && tangents) {
                             data[offset] = tangents[vertex * 3];
                             data[offset + 1] = tangents[vertex * 3 + 1];
                             data[offset + 2] = tangents[vertex * 3 + 2];
