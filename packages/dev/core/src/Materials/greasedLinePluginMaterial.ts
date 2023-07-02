@@ -762,7 +762,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
 
     /**
      * Sets the resolution
-     * @param resolution resolution of the screen for GreasedLine
+     * @param value resolution of the screen for GreasedLine
      */
     set resolution(value: Vector2) {
         this._aspect = value.x / value.y;
