@@ -225,7 +225,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
     /**
      * The type of sampling of the colors texture. The values are the same when using with textures.
      */
-    public _colorsSampling: number;
+    public colorsSampling: number;
 
     private _useDash: boolean;
     private _dashCount: number;
@@ -266,7 +266,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
         this._color = options.color;
         this.useColors = options.useColors ?? false;
         this._colorsDistributionType = options.colorDistributionType ?? GreasedLineMeshColorDistributionType.COLOR_DISTRIBUTION_TYPE_SEGMENT;
-        this._colorsSampling = options.colorsSampling ?? RawTexture.NEAREST_NEAREST;
+        this.colorsSampling = options.colorsSampling ?? RawTexture.NEAREST_NEAREST;
         this._colors = options.colors;
 
         this.dashCount = options.dashCount ?? 1; // calculate the _dashArray value, call the setter
@@ -580,7 +580,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
      */
     private _createColorsTexture(name: string, colors: Color3[]) {
         const colorsArray = GreasedLinePluginMaterial._Color3toRGBAUint8(colors);
-        this._colorsTexture = new RawTexture(colorsArray, colors.length, 1, Engine.TEXTUREFORMAT_RGBA, this._scene, false, true, this._colorsSampling);
+        this._colorsTexture = new RawTexture(colorsArray, colors.length, 1, Engine.TEXTUREFORMAT_RGBA, this._scene, false, true, this.colorsSampling);
         this._colorsTexture.name = name;
     }
 
@@ -779,7 +779,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
         const greasedLineMaterialOptions: GreasedLineMaterialOptions = {
             color: this._color,
             colorDistributionType: this._colorsDistributionType,
-            colorsSampling: this._colorsSampling,
+            colorsSampling: this.colorsSampling,
             colorMode: this._colorMode,
             colors: this._colors,
             dashCount: this._dashCount,
