@@ -895,6 +895,7 @@ export class PrePassRenderer {
 
         if (enablePrePass) {
             this._setRenderTargetEnabled(this.defaultRT, true);
+            this._setRenderTargetEnabled(this.noPrePassDefaultRT, true);
         }
 
         let postProcesses;
