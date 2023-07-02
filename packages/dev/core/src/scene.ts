@@ -89,6 +89,7 @@ import type { Node } from "./node";
 import type { Animation } from "./Animations/animation";
 import type { Animatable } from "./Animations/animatable";
 import type { Texture } from "./Materials/Textures/texture";
+import { PointerPickingConfiguration } from "./Inputs/pointerPickingConfiguration";
 
 /**
  * Define an interface for all classes that will hold resources
@@ -748,34 +749,106 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public _registeredForLateAnimationBindings = new SmartArrayNoDuplicate<any>(256);
 
     // Pointers
+    private _pointerPickingConfiguration = new PointerPickingConfiguration();
+
     /**
      * Gets or sets a predicate used to select candidate meshes for a pointer down event
      */
-    public pointerDownPredicate: (Mesh: AbstractMesh) => boolean;
+    public get pointerDownPredicate() {
+        return this._pointerPickingConfiguration.pointerDownPredicate;
+    }
+
+    public set pointerDownPredicate(value) {
+        this._pointerPickingConfiguration.pointerDownPredicate = value;
+    }
+
     /**
      * Gets or sets a predicate used to select candidate meshes for a pointer up event
      */
-    public pointerUpPredicate: (Mesh: AbstractMesh) => boolean;
+    public get pointerUpPredicate() {
+        return this._pointerPickingConfiguration.pointerUpPredicate;
+    }
+
+    public set pointerUpPredicate(value) {
+        this._pointerPickingConfiguration.pointerUpPredicate = value;
+    }
 
     /**
      * Gets or sets a predicate used to select candidate meshes for a pointer move event
      */
-    public pointerMovePredicate: (Mesh: AbstractMesh) => boolean;
+    public get pointerMovePredicate() {
+        return this._pointerPickingConfiguration.pointerMovePredicate;
+    }
+
+    public set pointerMovePredicate(value) {
+        this._pointerPickingConfiguration.pointerMovePredicate = value;
+    }
+
+    /**
+     * Gets or sets a predicate used to select candidate meshes for a pointer down event
+     */
+    public get pointerDownFastCheck() {
+        return this._pointerPickingConfiguration.pointerDownFastCheck;
+    }
+
+    public set pointerDownFastCheck(value) {
+        this._pointerPickingConfiguration.pointerDownFastCheck = value;
+    }
+
+    /**
+     * Gets or sets a predicate used to select candidate meshes for a pointer up event
+     */
+    public get pointerUpFastCheck() {
+        return this._pointerPickingConfiguration.pointerUpFastCheck;
+    }
+
+    public set pointerUpFastCheck(value) {
+        this._pointerPickingConfiguration.pointerUpFastCheck = value;
+    }
+
+    /**
+     * Gets or sets a predicate used to select candidate meshes for a pointer move event
+     */
+    public get pointerMoveFastCheck() {
+        return this._pointerPickingConfiguration.pointerMoveFastCheck;
+    }
+
+    public set pointerMoveFastCheck(value) {
+        this._pointerPickingConfiguration.pointerMoveFastCheck = value;
+    }
 
     /**
      * Gets or sets a boolean indicating if the user want to entirely skip the picking phase when a pointer move event occurs.
      */
-    public skipPointerMovePicking = false;
+    public get skipPointerMovePicking() {
+        return this._pointerPickingConfiguration.skipPointerMovePicking;
+    }
+
+    public set skipPointerMovePicking(value) {
+        this._pointerPickingConfiguration.skipPointerMovePicking = value;
+    }
 
     /**
      * Gets or sets a boolean indicating if the user want to entirely skip the picking phase when a pointer down event occurs.
      */
-    public skipPointerDownPicking = false;
+    public get skipPointerDownPicking() {
+        return this._pointerPickingConfiguration.skipPointerDownPicking;
+    }
+
+    public set skipPointerDownPicking(value) {
+        this._pointerPickingConfiguration.skipPointerDownPicking = value;
+    }
 
     /**
      * Gets or sets a boolean indicating if the user want to entirely skip the picking phase when a pointer up event occurs.  Off by default.
      */
-    public skipPointerUpPicking = false;
+    public get skipPointerUpPicking() {
+        return this._pointerPickingConfiguration.skipPointerUpPicking;
+    }
+
+    public set skipPointerUpPicking(value) {
+        this._pointerPickingConfiguration.skipPointerUpPicking = value;
+    }
 
     /** Callback called when a pointer move is detected */
     public onPointerMove?: (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;

@@ -517,7 +517,7 @@ export class SkeletonViewer {
         }
 
         if (parentBone) {
-            tmat.multiplyToRef(parentBone.getAbsoluteTransform(), tmat);
+            tmat.multiplyToRef(parentBone.getAbsoluteMatrix(), tmat);
         }
 
         tmat.multiplyToRef(meshMat, tmat);
@@ -634,7 +634,7 @@ export class SkeletonViewer {
             }
 
             if (this.autoUpdateBonesMatrices) {
-                this.skeleton.computeAbsoluteTransforms();
+                this.skeleton.computeAbsoluteMatrices();
             }
 
             let longestBoneLength = Number.NEGATIVE_INFINITY;
@@ -872,7 +872,7 @@ export class SkeletonViewer {
         }
 
         if (this.autoUpdateBonesMatrices) {
-            this.skeleton.computeAbsoluteTransforms();
+            this.skeleton.computeAbsoluteMatrices();
         }
 
         if (this.skeleton.bones[0].length === undefined) {

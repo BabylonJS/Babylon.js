@@ -309,7 +309,7 @@ export class InputManager {
             this._unTranslatedPointerX,
             this._unTranslatedPointerY,
             scene.pointerMovePredicate,
-            false,
+            scene.pointerMoveFastCheck,
             scene.cameraToUseForPointers,
             scene.pointerMoveTrianglePredicate
         );
@@ -586,7 +586,7 @@ export class InputManager {
                 const pickResult =
                     scene.skipPointerUpPicking || (scene._registeredActions === 0 && !this._checkForPicking() && !scene.onPointerUp)
                         ? null
-                        : scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerUpPredicate, false, scene.cameraToUseForPointers);
+                        : scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerUpPredicate, scene.pointerUpFastCheck, scene.cameraToUseForPointers);
                 this._currentPickResult = pickResult;
                 if (pickResult) {
                     act = pickResult.hit && pickResult.pickedMesh ? pickResult.pickedMesh._getActionManagerForTrigger() : null;
@@ -876,7 +876,13 @@ export class InputManager {
             if (scene.skipPointerDownPicking || (scene._registeredActions === 0 && !this._checkForPicking() && !scene.onPointerDown)) {
                 pickResult = new PickingInfo();
             } else {
-                pickResult = scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerDownPredicate, false, scene.cameraToUseForPointers);
+                pickResult = scene.pick(
+                    this._unTranslatedPointerX,
+                    this._unTranslatedPointerY,
+                    scene.pointerDownPredicate,
+                    scene.pointerDownFastCheck,
+                    scene.cameraToUseForPointers
+                );
             }
 
             this._processPointerDown(pickResult, evt);

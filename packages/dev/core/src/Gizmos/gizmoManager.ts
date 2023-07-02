@@ -11,7 +11,7 @@ import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import { Color3 } from "../Maths/math.color";
 import { SixDofDragBehavior } from "../Behaviors/Meshes/sixDofDragBehavior";
 import type { GizmoAxisCache, IGizmo } from "./gizmo";
-import { Gizmo } from "./gizmo";
+import { Gizmo, GizmoCoordinatesMode } from "./gizmo";
 import type { IRotationGizmo } from "./rotationGizmo";
 import { RotationGizmo } from "./rotationGizmo";
 import type { IPositionGizmo } from "./positionGizmo";
@@ -56,6 +56,7 @@ export class GizmoManager implements IDisposable {
     protected _defaultKeepDepthUtilityLayer: UtilityLayerRenderer;
     protected _thickness: number = 1;
     protected _scaleRatio: number = 1;
+    protected _coordinatesMode = GizmoCoordinatesMode.Local;
 
     /** Node Caching for quick lookup */
     private _gizmoAxisCache: Map<Mesh, GizmoAxisCache> = new Map();
@@ -120,6 +121,23 @@ export class GizmoManager implements IDisposable {
         return this._scaleRatio;
     }
 
+    /**
+     * Set the coordinate system to use. By default it's local.
+     * But it's possible for a user to tweak so its local for translation and world for rotation.
+     * In that case, setting the coordinate system will change `updateGizmoRotationToMatchAttachedMesh` and `updateGizmoPositionToMatchAttachedMesh`
+     */
+    public set coordinatesMode(coordinatesMode: GizmoCoordinatesMode) {
+        this._coordinatesMode = coordinatesMode;
+        [this.gizmos.positionGizmo, this.gizmos.rotationGizmo, this.gizmos.scaleGizmo].forEach((gizmo) => {
+            if (gizmo) {
+                gizmo.coordinatesMode = coordinatesMode;
+            }
+        });
+    }
+
+    public get coordinatesMode(): GizmoCoordinatesMode {
+        return this._coordinatesMode;
+    }
     /**
      * Instantiates a gizmo manager
      * @param _scene the scene to overlay the gizmos on top of
