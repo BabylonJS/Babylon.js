@@ -3,7 +3,7 @@
 
     "compilerOptions": {
         "outDir": "./",
-        "rootDir": "../../../dev/sharedUiComponents/src",
+        "rootDir": "../../../lts/gui/src",
         "declaration": true,
         "target": "ES2018",
         "importHelpers": true,
@@ -12,23 +12,22 @@
                 "transform": "@dev/build-tools/dist/pathTransform.js",
                 "after": true,
                 "buildType": "es6",
-                "basePackage": "@babylonjs/shared-ui-components",
+                "basePackage": "@babylonjs/gui",
                 "appendJS": true
             },
             {
                 "transform": "@dev/build-tools/dist/pathTransform.js",
                 "afterDeclarations": true,
                 "buildType": "es6",
-                "basePackage": "@babylonjs/shared-ui-components",
+                "basePackage": "@babylonjs/gui",
                 "appendJS": true
             }
         ],
         "paths": {
             "core/*": ["dev/core/dist/*"],
-            "gui/*": ["dev/gui/dist/*"],
-            "shared-ui-components/*": ["dev/sharedUiComponents/src/*"]
+            "gui/*": ["dev/gui/dist/*"]
         }
     },
 
-    "include": ["../../../dev/sharedUiComponents/src/**/*"]
+    "include": ["../../../lts/gui/src/**/*"]
 }

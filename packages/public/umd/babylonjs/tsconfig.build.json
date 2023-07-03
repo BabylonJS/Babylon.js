@@ -6,7 +6,8 @@
         "rootDir": "./src",
         "declaration": false,
         "paths": {
-            "core/*": ["lts/core/dist/*"],
+            "core/*": ["dev/core/dist/*"],
+            "@lts/core/*": ["lts/core/dist/*"],
         }
     },
     "references": [

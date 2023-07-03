@@ -1,3 +1,3 @@
-import * as materials from "materials/legacy/legacy-water";
+import * as materials from "@lts/materials/legacy/legacy-water";
 export { materials };
 export default materials;

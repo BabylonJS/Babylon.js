@@ -1,3 +1,3 @@
-import * as materials from "materials/legacy/legacy-custom";
+import * as materials from "@lts/materials/legacy/legacy-custom";
 export { materials };
 export default materials;

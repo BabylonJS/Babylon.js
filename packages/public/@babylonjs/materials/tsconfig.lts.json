@@ -3,32 +3,31 @@
 
     "compilerOptions": {
         "outDir": "./",
-        "rootDir": "../../../dev/sharedUiComponents/src",
+        "rootDir": "../../../lts/materials/src",
         "declaration": true,
         "target": "ES2018",
         "importHelpers": true,
         "plugins": [
             {
                 "transform": "@dev/build-tools/dist/pathTransform.js",
-                "after": true,
+                "afterDeclarations": true,
                 "buildType": "es6",
-                "basePackage": "@babylonjs/shared-ui-components",
-                "appendJS": true
+                "basePackage": "@babylonjs/materials",
+                "appendJS": true,
             },
             {
                 "transform": "@dev/build-tools/dist/pathTransform.js",
-                "afterDeclarations": true,
+                "after": true,
                 "buildType": "es6",
-                "basePackage": "@babylonjs/shared-ui-components",
-                "appendJS": true
+                "basePackage": "@babylonjs/materials",
+                "appendJS": true,
             }
         ],
         "paths": {
             "core/*": ["dev/core/dist/*"],
-            "gui/*": ["dev/gui/dist/*"],
-            "shared-ui-components/*": ["dev/sharedUiComponents/src/*"]
+            "materials/*": ["dev/materials/dist/*"]
         }
     },
 
-    "include": ["../../../dev/sharedUiComponents/src/**/*"]
+    "include": ["../../../lts/materials/src/**/*"]
 }

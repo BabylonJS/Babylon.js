@@ -6,7 +6,8 @@
         "rootDir": "./src",
         "declaration": false,
         "paths": {
-            "post-processes/*": ["lts/postProcesses/dist/*"],
+            "post-processes/*": ["dev/postProcesses/dist/*"],
+            "@lts/post-processes/*": ["lts/postProcesses/dist/*"],
         }
     },
     "include": ["./src/**/*"]

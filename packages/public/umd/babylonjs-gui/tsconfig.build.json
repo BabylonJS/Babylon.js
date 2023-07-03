@@ -6,7 +6,8 @@
         "rootDir": "./src",
         "declaration": false,
         "paths": {
-            "gui/*": ["lts/gui/dist/*"],
+            "gui/*": ["dev/gui/dist/*"],
+            "@lts/gui/*": ["lts/gui/dist/*"],
         }
     },
     "include": ["./src/**/*"]

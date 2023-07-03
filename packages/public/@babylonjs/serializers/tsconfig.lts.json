@@ -3,32 +3,31 @@
 
     "compilerOptions": {
         "outDir": "./",
-        "rootDir": "../../../dev/sharedUiComponents/src",
+        "rootDir": "../../../lts/serializers/src",
         "declaration": true,
-        "target": "ES2018",
         "importHelpers": true,
+        "target": "ES2018",
         "plugins": [
             {
                 "transform": "@dev/build-tools/dist/pathTransform.js",
                 "after": true,
                 "buildType": "es6",
-                "basePackage": "@babylonjs/shared-ui-components",
+                "basePackage": "@babylonjs/serializers",
                 "appendJS": true
             },
             {
                 "transform": "@dev/build-tools/dist/pathTransform.js",
                 "afterDeclarations": true,
                 "buildType": "es6",
-                "basePackage": "@babylonjs/shared-ui-components",
+                "basePackage": "@babylonjs/serializers",
                 "appendJS": true
             }
         ],
         "paths": {
             "core/*": ["dev/core/dist/*"],
-            "gui/*": ["dev/gui/dist/*"],
-            "shared-ui-components/*": ["dev/sharedUiComponents/src/*"]
+            "serializers/*": ["dev/serializers/dist/*"]
         }
     },
 
-    "include": ["../../../dev/sharedUiComponents/src/**/*"]
+    "include": ["../../../lts/serializers/src/**/*"]
 }

@@ -6,7 +6,8 @@
         "rootDir": "./src",
         "declaration": false,
         "paths": {
-            "materials/*": ["lts/materials/dist/*"],
+            "materials/*": ["dev/materials/dist/*"],
+            "@lts/materials/*": ["lts/materials/dist/*"],
         }
     },
     "include": ["./src/**/*"]
