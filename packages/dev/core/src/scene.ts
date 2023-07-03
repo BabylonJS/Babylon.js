@@ -5491,3 +5491,5 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         throw _WarnImport("performanceViewerSceneExtension");
     }
 }
+
+export * from "./scene.deprecated";

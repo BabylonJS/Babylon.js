@@ -4721,3 +4721,5 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 }
 
 RegisterClass("BABYLON.Mesh", Mesh);
+
+export * from "./mesh.deprecated";

@@ -753,3 +753,5 @@ const initSideEffects = () => {
 };
 
 initSideEffects();
+
+export * from "./fileTools.deprecated";
