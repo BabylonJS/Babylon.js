@@ -126,6 +126,9 @@ export class PhysicsRaycastResult {
         this._hitNormalWorld.setAll(0);
         this._hitPointWorld.setAll(0);
         this._triangleIndex = -1;
+
+        this.body = undefined;
+        this.bodyIndex = undefined;
     }
 }
 
