@@ -608,6 +608,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     "hasThinInstances",
                     "cloneMeshMap",
                     "hasBoundingInfo",
+                    "physicsBody",
+                    "physicsImpostor",
                 ],
                 ["_poseMatrix"]
             );
