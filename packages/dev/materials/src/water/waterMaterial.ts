@@ -296,6 +296,22 @@ export class WaterMaterial extends PushMaterial {
         }
     }
 
+    public removeFromRenderList(node: any): void {
+        if (this._refractionRTT && this._refractionRTT.renderList) {
+            const idx = this._refractionRTT.renderList.indexOf(node);
+            if (idx !== -1) {
+                this._refractionRTT.renderList.splice(idx, 1);
+            }
+        }
+
+        if (this._reflectionRTT && this._reflectionRTT.renderList) {
+            const idx = this._reflectionRTT.renderList.indexOf(node);
+            if (idx !== -1) {
+                this._reflectionRTT.renderList.splice(idx, 1);
+            }
+        }
+    }
+
     public enableRenderTargets(enable: boolean): void {
         const refreshRate = enable ? 1 : 0;
 
