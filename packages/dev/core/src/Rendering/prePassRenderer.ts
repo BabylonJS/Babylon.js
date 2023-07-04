@@ -180,6 +180,10 @@ export class PrePassRenderer {
      * associated with that render target. Otherwise, it returns the scene default PrePassRenderTarget
      */
     public getRenderTarget(): PrePassRenderTarget {
+        if (this._currentTarget === this.noPrePassDefaultRT) {
+            return this.defaultRT;
+        }
+
         return this._currentTarget;
     }
 
@@ -720,9 +724,9 @@ export class PrePassRenderer {
         const cameraHasImageProcessing = this._hasImageProcessing(this._postProcessesSourceForThisPass);
         this._needsCompositionForThisPass = !cameraHasImageProcessing && !this.disableGammaTransform && this._needsImageProcessing() && !secondaryCamera;
 
-        // No post process or effect will compose
+        // If we have no composition at all on the main camera, we need to add it
         let disableGammaTransform = this.disableGammaTransform;
-        if (this._postProcessesSourceForThisPass.length === 0 && !this._effectsAlreadyCompose()) {
+        if (this._postProcessesSourceForThisPass.length === 0 && !this._effectsAlreadyCompose() && !secondaryCamera) {
             this._needsCompositionForThisPass = true;
             disableGammaTransform = true;
         }
@@ -737,6 +741,9 @@ export class PrePassRenderer {
         // Create composition effect if needed
         if (this._needsCompositionForThisPass && !prePassRenderTarget.imageProcessingPostProcess) {
             prePassRenderTarget._createCompositionEffect();
+            if (prePassRenderTarget === this.defaultRT) {
+                this.noPrePassDefaultRT.imageProcessingPostProcess = prePassRenderTarget.imageProcessingPostProcess;
+            }
         }
 
         if (prePassRenderTarget.imageProcessingPostProcess) {
