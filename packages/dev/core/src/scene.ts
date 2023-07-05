@@ -68,7 +68,7 @@ import type { Skeleton } from "./Bones/skeleton";
 import type { Bone } from "./Bones/bone";
 import type { Camera } from "./Cameras/camera";
 import type { WebVRFreeCamera } from "./Cameras/VR/webVRCamera";
-import type { Collider } from "./Collisions";
+import type { Collider } from "./Collisions/collider";
 import type { Ray, TrianglePickingPredicate } from "./Culling/ray";
 import type { Light } from "./Lights/light";
 import type { PerformanceViewerCollector } from "./Misc/PerformanceViewer/performanceViewerCollector";
