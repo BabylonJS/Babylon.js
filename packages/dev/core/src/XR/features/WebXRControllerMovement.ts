@@ -153,6 +153,7 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
     private _tmpRotationMatrix: Matrix = Matrix.Identity();
     private _tmpTranslationDirection: Vector3 = new Vector3();
     private _tmpMovementTranslation: Vector3 = new Vector3();
+    private _tempCacheQuaternion: Quaternion = new Quaternion();
 
     /**
      * The module's name
@@ -389,12 +390,15 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
             const rotationY = deltaMillis * 0.001 * this._featureContext.rotationSpeed * this._movementState.rotateX * (this._xrSessionManager.scene.useRightHandedSystem ? -1 : 1);
 
             if (this._featureContext.movementOrientationFollowsViewerPose === true) {
-                this._xrInput.xrCamera.cameraRotation.y += rotationY;
+                Quaternion.RotationYawPitchRollToRef(rotationY, 0, 0, this._tempCacheQuaternion);
+                this._xrInput.xrCamera.rotationQuaternion.multiplyToRef(this._tempCacheQuaternion, this._movementDirection);
                 this._movementDirection = this._xrInput.xrCamera.rotationQuaternion.multiply(Quaternion.RotationYawPitchRoll(rotationY, 0, 0));
             } else {
                 // movement orientation direction does not affect camera.  We use rotation speed multiplier
                 // otherwise need to implement inertia and constraints for same feel as TargetCamera.
-                this._movementDirection.multiplyInPlace(Quaternion.RotationYawPitchRoll(rotationY * 3.0, 0, 0));
+
+                Quaternion.RotationYawPitchRollToRef(rotationY * 3.0, 0, 0, this._tempCacheQuaternion);
+                this._movementDirection.multiplyInPlace(this._tempCacheQuaternion);
             }
         } else if (this._featureContext.movementOrientationFollowsViewerPose === true) {
             this._movementDirection.copyFrom(this._xrInput.xrCamera.rotationQuaternion);
