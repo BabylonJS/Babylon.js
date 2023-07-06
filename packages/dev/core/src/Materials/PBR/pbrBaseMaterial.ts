@@ -247,6 +247,8 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
 
     public UNLIT = false;
 
+    public DECAL_AFTER_DETAIL = false;
+
     public DEBUGMODE = 0;
 
     /**
@@ -820,6 +822,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * If set to true, no lighting calculations will be applied.
      */
     private _unlit = false;
+
+    /**
+     * If sets to true, the decal map will be applied after the detail map. Else, it is applied before (default: false)
+     */
+    private _applyDecalMapAfterDetailMap = false;
 
     private _debugMode = 0;
     /**
@@ -1846,7 +1853,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 this.pointsCloud,
                 this.fogEnabled,
                 this._shouldTurnAlphaTestOn(mesh) || this._forceAlphaTest,
-                defines
+                defines,
+                this._applyDecalMapAfterDetailMap
             );
             defines.UNLIT = this._unlit || ((this.pointsCloud || this.wireframe) && !mesh.isVerticesDataPresent(VertexBuffer.NormalKind));
             defines.DEBUGMODE = this._debugMode;
