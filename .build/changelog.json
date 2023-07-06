@@ -1,6 +1,420 @@
 {
-    "fromTag": "6.9.0",
+    "fromTag": "6.10.0",
     "changelog": {
+        "6.11.0": [
+            {
+                "pr": "14018",
+                "title": "Transform LTS to support ESM transformations",
+                "description": "This PR moves deprecated functions back to dev (as LTS was not really used).\nIt provides a starting point for LTS to be the place where es modules are put back together as classes for the es6 and umd packages (which consume LTS as their source).\n\nA side effect of that is that the build time SHOULD be a little faster, as we skip one step (transforming the LTS packages).",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/pathTransform.ts",
+                    "packages/dev/core/src/Meshes/Builders/boxBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/capsuleBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/cylinderBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/decalBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/discBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/goldbergBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/groundBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/hemisphereBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/icoSphereBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/latheBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/linesBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/planeBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/polygonBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/polyhedronBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/ribbonBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/shapeBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/sphereBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/torusBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/torusKnotBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/tubeBuilder.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/Misc/fileTools.ts",
+                    "packages/dev/core/src/scene.ts",
+                    "packages/lts/core/package.json",
+                    "packages/lts/core/src/Meshes/mesh.ts",
+                    "packages/lts/core/src/Misc/fileTools.ts",
+                    "packages/lts/core/src/scene.ts",
+                    "packages/lts/core/tsconfig.build.json",
+                    "packages/lts/gui/package.json",
+                    "packages/lts/gui/tsconfig.build.json",
+                    "packages/lts/loaders/package.json",
+                    "packages/lts/loaders/tsconfig.build.json",
+                    "packages/lts/materials/package.json",
+                    "packages/lts/materials/tsconfig.build.json",
+                    "packages/lts/postProcesses/package.json",
+                    "packages/lts/postProcesses/tsconfig.build.json",
+                    "packages/lts/proceduralTextures/package.json",
+                    "packages/lts/proceduralTextures/tsconfig.build.json",
+                    "packages/lts/serializers/package.json",
+                    "packages/lts/serializers/tsconfig.build.json",
+                    "packages/public/@babylonjs/core/package.json",
+                    "packages/public/@babylonjs/core/tsconfig.build.json",
+                    "packages/public/@babylonjs/core/tsconfig.lts.json",
+                    "packages/public/@babylonjs/core/watcher.cjs",
+                    "packages/public/@babylonjs/gui/package.json",
+                    "packages/public/@babylonjs/gui/tsconfig.build.json",
+                    "packages/public/@babylonjs/gui/tsconfig.lts.json",
+                    "packages/public/@babylonjs/loaders/package.json",
+                    "packages/public/@babylonjs/loaders/tsconfig.build.json",
+                    "packages/public/@babylonjs/loaders/tsconfig.lts.json",
+                    "packages/public/@babylonjs/materials/package.json",
+                    "packages/public/@babylonjs/materials/tsconfig.build.json",
+                    "packages/public/@babylonjs/materials/tsconfig.lts.json",
+                    "packages/public/@babylonjs/post-processes/package.json",
+                    "packages/public/@babylonjs/post-processes/tsconfig.build.json",
+                    "packages/public/@babylonjs/post-processes/tsconfig.lts.json",
+                    "packages/public/@babylonjs/procedural-textures/package.json",
+                    "packages/public/@babylonjs/procedural-textures/tsconfig.build.json",
+                    "packages/public/@babylonjs/procedural-textures/tsconfig.lts.json",
+                    "packages/public/@babylonjs/serializers/package.json",
+                    "packages/public/@babylonjs/serializers/tsconfig.build.json",
+                    "packages/public/@babylonjs/serializers/tsconfig.lts.json",
+                    "packages/public/@babylonjs/shared-ui-components/tsconfig.build.json",
+                    "packages/public/umd/babylonjs-gui/config.json",
+                    "packages/public/umd/babylonjs-gui/src/index.ts",
+                    "packages/public/umd/babylonjs-gui/tsconfig.build.json",
+                    "packages/public/umd/babylonjs-gui/tsconfig.json",
+                    "packages/public/umd/babylonjs-gui/webpack.config.js",
+                    "packages/public/umd/babylonjs-loaders/config.json",
+                    "packages/public/umd/babylonjs-loaders/src/glTF1FileLoader.ts",
+                    "packages/public/umd/babylonjs-loaders/src/glTF2FileLoader.ts",
+                    "packages/public/umd/babylonjs-loaders/src/glTFFileLoader.ts",
+                    "packages/public/umd/babylonjs-loaders/src/index.ts",
+                    "packages/public/umd/babylonjs-loaders/src/objFileLoader.ts",
+                    "packages/public/umd/babylonjs-loaders/src/stlFileLoader.ts",
+                    "packages/public/umd/babylonjs-loaders/tsconfig.build.json",
+                    "packages/public/umd/babylonjs-loaders/tsconfig.json",
+                    "packages/public/umd/babylonjs-loaders/webpack.config.js",
+                    "packages/public/umd/babylonjs-materials/config.json",
+                    "packages/public/umd/babylonjs-materials/src/cell.ts",
+                    "packages/public/umd/babylonjs-materials/src/custom.ts",
+                    "packages/public/umd/babylonjs-materials/src/fire.ts",
+                    "packages/public/umd/babylonjs-materials/src/fur.ts",
+                    "packages/public/umd/babylonjs-materials/src/gradient.ts",
+                    "packages/public/umd/babylonjs-materials/src/grid.ts",
+                    "packages/public/umd/babylonjs-materials/src/index.ts",
+                    "packages/public/umd/babylonjs-materials/src/lava.ts",
+                    "packages/public/umd/babylonjs-materials/src/mix.ts",
+                    "packages/public/umd/babylonjs-materials/src/normal.ts",
+                    "packages/public/umd/babylonjs-materials/src/shadowOnly.ts",
+                    "packages/public/umd/babylonjs-materials/src/simple.ts",
+                    "packages/public/umd/babylonjs-materials/src/sky.ts",
+                    "packages/public/umd/babylonjs-materials/src/terrain.ts",
+                    "packages/public/umd/babylonjs-materials/src/triPlanar.ts",
+                    "packages/public/umd/babylonjs-materials/src/water.ts",
+                    "packages/public/umd/babylonjs-materials/tsconfig.build.json",
+                    "packages/public/umd/babylonjs-materials/tsconfig.json",
+                    "packages/public/umd/babylonjs-materials/webpack.config.js",
+                    "packages/public/umd/babylonjs-post-process/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14023",
+                "title": "Water material: Add removeFromRenderList method",
+                "description": "See https://forum.babylonjs.com/t/remove-mesh-from-watermaterial-and-mirrortexture/42146\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/materials/src/water/waterMaterial.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "14022",
+                "title": "Reset body and body index on PhysicsRaycastResult",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/physicsraycastresult-reset-does-not-reset-body-property/42135/",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/physicsRaycastResult.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "physics"
+                ]
+            },
+            {
+                "pr": "14021",
+                "title": "Engine: Fix crash when disposing effect or engine while shader compiled in parallel",
+                "description": "See https://forum.babylonjs.com/t/spritepackedmanager-cleanup-issue/42121",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGL/webGLPipelineContext.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14019",
+                "title": "Avoid cloning physics body twice and set body properties when cloning",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/launching-ball-with-havok-physics/42124/",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "physics"
+                ]
+            },
+            {
+                "pr": "14017",
+                "title": "MorphTargetManager: Fix creation of texture when partial support for morph types",
+                "description": "See https://forum.babylonjs.com/t/morphtargetmanager-has-uniform-binding-problem/41995/11",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Morph/morphTargetManager.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14015",
+                "title": "Preparations For GPU Testing",
+                "description": "This PR is a (hopefully) final preparation for webgpu testing.\n\nThis adds further configuration flags that can be adjusted using the CI. On top of that, prepass tests (and 2 other unrelated tests) were excluded from webgpu testing.\n\nSome tests fail on WebGPU/Ubuntu. The reason is unclear (As they don't fail on windows) and will be investigated in the future.\n\nUntil then it should be possible to run the webgpu tests on a remote chrome using this config file.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/tests/test/visualization/config.json",
+                    "packages/tools/tests/test/visualization/visualization.utils.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14011",
+                "title": "Add bump map debug mode and remove extraneous return",
+                "description": "Removing the return at the end of pbrDebug.fx so that CUSTOM_FRAGMENT_MAIN_END can be reached in pbr.fragment.fx.\r\n\r\nAlso: could I add in a debug mode to see bump maps? It would make my project look a little cleaner, and it seems we have debug modes for other maps anyway :)",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrDebug.fx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/pbrMaterialPropertyGridComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14013",
+                "title": "Add scissor validation tests",
+                "description": "I added new scissor validation tests in BabylonNative. See https://github.com/BabylonJS/BabylonNative/pull/1243.\r\n\r\nThis change adds the same scissor validation tests to Babylon.js.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/tools/tests/test/visualization/ReferenceImages/multiCameraRenderingWithScissors.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/scissorTestNegativeXandY.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/scissorTestOobWidthAndHeight.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
+        "6.10.0": [
+            {
+                "pr": "14007",
+                "title": "Refactoring of the Bone class",
+                "description": "It's mainly a reworking of the names, to make things a little clearer for the developer/end-user.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Bones/bone.ts",
+                    "packages/dev/core/src/Bones/boneIKController.ts",
+                    "packages/dev/core/src/Bones/skeleton.ts",
+                    "packages/dev/core/src/Debug/skeletonViewer.ts",
+                    "packages/dev/core/src/Gizmos/gizmo.ts",
+                    "packages/dev/core/src/Meshes/transformNode.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "bones"
+                ]
+            },
+            {
+                "pr": "13998",
+                "title": "Add raycast filtering to physics engine interface",
+                "description": "So you can do: \r\n```javascript\r\nphysicsEngine.raycastToRef(from, to, result, query);\r\n```\r\n\r\nInstead of having to access the Havok Plugin.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/IPhysicsEngine.ts",
+                    "packages/dev/core/src/Physics/physicsRaycastResult.ts",
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsEngine.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "physics"
+                ]
+            },
+            {
+                "pr": "14002",
+                "title": "Improve convertToUnIndexedMesh and convertToFlatShadedMesh vertex data handling with support for morph targets",
+                "description": "Both convertToUnIndexedMesh() and convertToFlatShadedMesh() appear to be doing similar things, so I created a private function, _convertToUnIndexedMesh(), to be used by both.\r\n\r\n_convertToUnIndexedMesh() has a flag to decide if normals should be flattened, as should be the case for flat shading. \r\nI also added logic to accomodate morph targets, if they're available in the mesh.",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/convertToFlatShadedMesh.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "enhancement",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14006",
+                "title": "needMoveForGravity public access",
+                "description": "followup https://forum.babylonjs.com/t/gravity-not-working/41931/3",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/flyCamera.ts",
+                    "packages/dev/core/src/Cameras/freeCamera.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "physics"
+                ]
+            },
+            {
+                "pr": "13999",
+                "title": "Optimized mesh.subdivide function by delaying the BB refresh to once …",
+                "description": "Optimized mesh.subdivide function by delaying the BB refresh to once the subdivision is finished. \r\nPreviously, copying entire mesh data inside the loop made the algorithm time scale with the number of subdivisions. \r\nThis is no longer the case. 100+ times faster on a multi-million vertex mesh. ",
+                "author": {
+                    "name": "JonathanIcon",
+                    "url": "https://github.com/JonathanIcon"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14005",
+                "title": "Allow customizing vis-tests further",
+                "description": "Visualization tests for WebGPU on Linux require a few new configuration flags, otherwise they sometimes fail.\n\nThis PR adds the following:\n\n* Set custom flags as an environment variable\n* set the browser context as env variable\n* ask to reset the entire browser PER TEST. This is important to make sure the entire context changes per test (avoiding any leaks or state errors)\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "jest-puppeteer.config.js",
+                    "packages/tools/tests/test/visualization/visualization.utils.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14001",
+                "title": "Gizmo+inspector world/local coordinates switch",
+                "description": "related to https://github.com/BabylonJS/Babylon.js/pull/13939\r\nAdd the ability to change coordinate system world/local for gizmos.\r\nAlso add that switch to the inspector \r\n@PatrickRyanMS Let me know if you have a more suitable icon that this one:\r\n![image](https://github.com/BabylonJS/Babylon.js/assets/1312968/548364db-5c5a-4126-ba76-53d1d72f50ee)\r\n\r\n",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/gizmo.ts",
+                    "packages/dev/core/src/Gizmos/gizmoManager.ts",
+                    "packages/dev/core/src/Gizmos/planeRotationGizmo.ts",
+                    "packages/dev/core/src/Gizmos/positionGizmo.ts",
+                    "packages/dev/core/src/Gizmos/rotationGizmo.ts",
+                    "packages/dev/core/src/Gizmos/scaleGizmo.ts",
+                    "packages/dev/inspector/src/components/sceneExplorer/entities/sceneTreeItemComponent.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/sceneExplorer.scss"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13996",
+                "title": "CubeTexture: Fix parsing when name has been overwritten",
+                "description": "See https://forum.babylonjs.com/t/pbrmaterial-clone-has-stopped-working-in-my-scene-just-now-or-a-few-hours-ago/41805/9\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/cubeTexture.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "13988",
+                "title": "Input manager :  PointerEvent pick with boundingBox",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Inputs/pointerPickingConfiguration.ts",
+                    "packages/dev/core/src/Inputs/scene.inputManager.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "13995",
+                "title": "docs: improve EnvironmentHelper docstring",
+                "description": "minor improvement of the `EnvironmentHelper` docstring",
+                "author": {
+                    "name": "yedpodtrzitko",
+                    "url": "https://github.com/yedpodtrzitko"
+                },
+                "files": [
+                    "packages/dev/core/src/Helpers/environmentHelper.ts"
+                ],
+                "tags": []
+            }
+        ],
         "6.9.0": [
             {
                 "pr": "13994",
@@ -186,178 +600,6 @@
                 "files": [
                     "packages/dev/core/src/Meshes/Builders/textBuilder.ts",
                     "packages/dev/core/src/Misc/greasedLineTools.ts"
-                ],
-                "tags": []
-            }
-        ],
-        "6.10.0": [
-            {
-                "pr": "14007",
-                "title": "Refactoring of the Bone class",
-                "description": "It's mainly a reworking of the names, to make things a little clearer for the developer/end-user.",
-                "author": {
-                    "name": "Popov72",
-                    "url": "https://github.com/Popov72"
-                },
-                "files": [
-                    "packages/dev/core/src/Bones/bone.ts",
-                    "packages/dev/core/src/Bones/boneIKController.ts",
-                    "packages/dev/core/src/Bones/skeleton.ts",
-                    "packages/dev/core/src/Debug/skeletonViewer.ts",
-                    "packages/dev/core/src/Gizmos/gizmo.ts",
-                    "packages/dev/core/src/Meshes/transformNode.ts",
-                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts"
-                ],
-                "tags": [
-                    "enhancement",
-                    "bones"
-                ]
-            },
-            {
-                "pr": "13998",
-                "title": "Add raycast filtering to physics engine interface",
-                "description": "So you can do: \r\n```javascript\r\nphysicsEngine.raycastToRef(from, to, result, query);\r\n```\r\n\r\nInstead of having to access the Havok Plugin.",
-                "author": {
-                    "name": "carolhmj",
-                    "url": "https://github.com/carolhmj"
-                },
-                "files": [
-                    "packages/dev/core/src/Physics/IPhysicsEngine.ts",
-                    "packages/dev/core/src/Physics/physicsRaycastResult.ts",
-                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
-                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
-                    "packages/dev/core/src/Physics/v2/physicsEngine.ts"
-                ],
-                "tags": [
-                    "enhancement",
-                    "physics"
-                ]
-            },
-            {
-                "pr": "14002",
-                "title": "Improve convertToUnIndexedMesh and convertToFlatShadedMesh vertex data handling with support for morph targets",
-                "description": "Both convertToUnIndexedMesh() and convertToFlatShadedMesh() appear to be doing similar things, so I created a private function, _convertToUnIndexedMesh(), to be used by both.\r\n\r\n_convertToUnIndexedMesh() has a flag to decide if normals should be flattened, as should be the case for flat shading. \r\nI also added logic to accomodate morph targets, if they're available in the mesh.",
-                "author": {
-                    "name": "alexchuber",
-                    "url": "https://github.com/alexchuber"
-                },
-                "files": [
-                    "packages/dev/core/src/Meshes/mesh.ts",
-                    "packages/tools/tests/test/visualization/ReferenceImages/convertToFlatShadedMesh.png",
-                    "packages/tools/tests/test/visualization/config.json"
-                ],
-                "tags": [
-                    "enhancement",
-                    "new feature"
-                ]
-            },
-            {
-                "pr": "14006",
-                "title": "needMoveForGravity public access",
-                "description": "followup https://forum.babylonjs.com/t/gravity-not-working/41931/3",
-                "author": {
-                    "name": "CedricGuillemet",
-                    "url": "https://github.com/CedricGuillemet"
-                },
-                "files": [
-                    "packages/dev/core/src/Cameras/flyCamera.ts",
-                    "packages/dev/core/src/Cameras/freeCamera.ts"
-                ],
-                "tags": [
-                    "enhancement",
-                    "physics"
-                ]
-            },
-            {
-                "pr": "13999",
-                "title": "Optimized mesh.subdivide function by delaying the BB refresh to once …",
-                "description": "Optimized mesh.subdivide function by delaying the BB refresh to once the subdivision is finished. \r\nPreviously, copying entire mesh data inside the loop made the algorithm time scale with the number of subdivisions. \r\nThis is no longer the case. 100+ times faster on a multi-million vertex mesh. ",
-                "author": {
-                    "name": "JonathanIcon",
-                    "url": "https://github.com/JonathanIcon"
-                },
-                "files": [
-                    "packages/dev/core/src/Meshes/mesh.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "14005",
-                "title": "Allow customizing vis-tests further",
-                "description": "Visualization tests for WebGPU on Linux require a few new configuration flags, otherwise they sometimes fail.\n\nThis PR adds the following:\n\n* Set custom flags as an environment variable\n* set the browser context as env variable\n* ask to reset the entire browser PER TEST. This is important to make sure the entire context changes per test (avoiding any leaks or state errors)\n",
-                "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
-                },
-                "files": [
-                    "jest-puppeteer.config.js",
-                    "packages/tools/tests/test/visualization/visualization.utils.ts"
-                ],
-                "tags": [
-                    "skip changelog"
-                ]
-            },
-            {
-                "pr": "14001",
-                "title": "Gizmo+inspector world/local coordinates switch",
-                "description": "related to https://github.com/BabylonJS/Babylon.js/pull/13939\r\nAdd the ability to change coordinate system world/local for gizmos.\r\nAlso add that switch to the inspector \r\n@PatrickRyanMS Let me know if you have a more suitable icon that this one:\r\n![image](https://github.com/BabylonJS/Babylon.js/assets/1312968/548364db-5c5a-4126-ba76-53d1d72f50ee)\r\n\r\n",
-                "author": {
-                    "name": "CedricGuillemet",
-                    "url": "https://github.com/CedricGuillemet"
-                },
-                "files": [
-                    "packages/dev/core/src/Gizmos/gizmo.ts",
-                    "packages/dev/core/src/Gizmos/gizmoManager.ts",
-                    "packages/dev/core/src/Gizmos/planeRotationGizmo.ts",
-                    "packages/dev/core/src/Gizmos/positionGizmo.ts",
-                    "packages/dev/core/src/Gizmos/rotationGizmo.ts",
-                    "packages/dev/core/src/Gizmos/scaleGizmo.ts",
-                    "packages/dev/inspector/src/components/sceneExplorer/entities/sceneTreeItemComponent.tsx",
-                    "packages/dev/inspector/src/components/sceneExplorer/sceneExplorer.scss"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "13996",
-                "title": "CubeTexture: Fix parsing when name has been overwritten",
-                "description": "See https://forum.babylonjs.com/t/pbrmaterial-clone-has-stopped-working-in-my-scene-just-now-or-a-few-hours-ago/41805/9\r\n",
-                "author": {
-                    "name": "Popov72",
-                    "url": "https://github.com/Popov72"
-                },
-                "files": [
-                    "packages/dev/core/src/Materials/Textures/cubeTexture.ts"
-                ],
-                "tags": [
-                    "bug",
-                    "texture"
-                ]
-            },
-            {
-                "pr": "13988",
-                "title": "Input manager :  PointerEvent pick with boundingBox",
-                "description": null,
-                "author": {
-                    "name": "deltakosh",
-                    "url": "https://github.com/deltakosh"
-                },
-                "files": [
-                    "packages/dev/core/src/Inputs/pointerPickingConfiguration.ts",
-                    "packages/dev/core/src/Inputs/scene.inputManager.ts",
-                    "packages/dev/core/src/scene.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "13995",
-                "title": "docs: improve EnvironmentHelper docstring",
-                "description": "minor improvement of the `EnvironmentHelper` docstring",
-                "author": {
-                    "name": "yedpodtrzitko",
-                    "url": "https://github.com/yedpodtrzitko"
-                },
-                "files": [
-                    "packages/dev/core/src/Helpers/environmentHelper.ts"
                 ],
                 "tags": []
             }
