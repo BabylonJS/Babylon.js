@@ -6,7 +6,8 @@
         "rootDir": "./src",
         "declaration": false,
         "paths": {
-            "procedural-textures/*": ["lts/proceduralTextures/dist/*"],
+            "procedural-textures/*": ["dev/proceduralTextures/dist/*"],
+            "@lts/procedural-textures/*": ["lts/proceduralTextures/dist/*"],
         }
     },
     "include": ["./src/**/*"]

@@ -23,6 +23,10 @@ module.exports = (env) => {
             triPlanar: "./src/triPlanar.ts",
             water: "./src/water.ts",
         },
+        alias: {
+            materials: path.resolve(__dirname, "../../../dev/materials/dist"),
+            "@lts/materials": path.resolve(__dirname, "../../../lts/materials/dist"),
+        },
         overrideFilename: (pathData) => {
             return pathData.chunk.name === "materials" ? `babylonjs.[name]${env.production ? ".min" : ""}.js` : `babylon.[name]Material${env.production ? ".min" : ""}.js`;
         },

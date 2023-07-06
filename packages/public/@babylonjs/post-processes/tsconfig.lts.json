@@ -3,32 +3,31 @@
 
     "compilerOptions": {
         "outDir": "./",
-        "rootDir": "../../../dev/sharedUiComponents/src",
+        "rootDir": "../../../lts/postProcesses/src",
         "declaration": true,
-        "target": "ES2018",
         "importHelpers": true,
+        "target": "ES2018",
         "plugins": [
             {
                 "transform": "@dev/build-tools/dist/pathTransform.js",
                 "after": true,
                 "buildType": "es6",
-                "basePackage": "@babylonjs/shared-ui-components",
+                "basePackage": "@babylonjs/post-processes",
                 "appendJS": true
             },
             {
                 "transform": "@dev/build-tools/dist/pathTransform.js",
                 "afterDeclarations": true,
                 "buildType": "es6",
-                "basePackage": "@babylonjs/shared-ui-components",
+                "basePackage": "@babylonjs/post-processes",
                 "appendJS": true
             }
         ],
         "paths": {
             "core/*": ["dev/core/dist/*"],
-            "gui/*": ["dev/gui/dist/*"],
-            "shared-ui-components/*": ["dev/sharedUiComponents/src/*"]
+            "post-processes/*": ["dev/postProcesses/dist/*"]
         }
     },
 
-    "include": ["../../../dev/sharedUiComponents/src/**/*"]
+    "include": ["../../../lts/postProcesses/src/**/*"]
 }

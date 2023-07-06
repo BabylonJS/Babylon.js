@@ -1,5 +1,5 @@
 {
-    "declarationLibs": ["@lts/post-processes"],
+    "declarationLibs": ["@dev/post-process", "@lts/post-processes"],
     "devPackageName": "post-processes",
     "filename": "babylonjs.postProcess.module.d.ts",
     "outputDirectory": "./"

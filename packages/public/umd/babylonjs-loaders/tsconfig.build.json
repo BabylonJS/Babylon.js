@@ -6,7 +6,8 @@
         "rootDir": "./src",
         "declaration": false,
         "paths": {
-            "loaders/*": ["lts/loaders/dist/*"],
+            "loaders/*": ["dev/loaders/dist/*"],
+            "@lts/loaders/*": ["lts/loaders/dist/*"],
         }
     },
     "include": ["./src/**/*"]

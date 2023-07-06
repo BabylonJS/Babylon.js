@@ -3,7 +3,8 @@
 
     "compilerOptions": {
         "paths": {
-            "procedural-textures/*": ["lts/proceduralTextures/generated/*"],
+            "procedural-textures/*": ["dev/proceduralTextures/src/*"],
+            "@lts/procedural-textures/*": ["lts/proceduralTextures/src/*"],
         }
     },
 }

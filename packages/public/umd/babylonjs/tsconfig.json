@@ -3,7 +3,8 @@
 
     "compilerOptions": {
         "paths": {
-            "core/*": ["lts/core/generated/*"],
+            "core/*": ["dev/core/dist/*"],
+            "@lts/core/*": ["lts/core/dist/*"],
         }
     },
 }

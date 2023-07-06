@@ -3,7 +3,7 @@
 
     "compilerOptions": {
         "outDir": "./",
-        "rootDir": "../../../lts/gui/generated",
+        "rootDir": "../../../dev/gui/src",
         "declaration": true,
         "target": "ES2018",
         "importHelpers": true,
@@ -24,10 +24,10 @@
             }
         ],
         "paths": {
-            "core/*": ["lts/core/dist/*"],
-            "gui/*": ["lts/gui/generated/*"]
+            "core/*": ["dev/core/dist/*"],
+            "gui/*": ["dev/gui/src/*"]
         }
     },
 
-    "include": ["../../../lts/gui/generated/**/*"]
+    "include": ["../../../dev/gui/src/**/*"]
 }

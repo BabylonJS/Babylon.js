@@ -5,10 +5,10 @@
         "composite": true,
         "target": "es5",
         "outDir": "./dist",
-        "rootDir": "./generated",
+        "rootDir": "./src",
         "paths": {
-            "core/*": ["lts/core/dist/*"],
-            "materials/*": ["lts/materials/generated/*"]
+            "core/*": ["dev/core/dist/*"],
+            "materials/*": ["dev/materials/dist/*"]
         }
     },
 
@@ -18,5 +18,5 @@
         }
     ],
 
-    "include": ["./generated/**/*"]
+    "include": ["./src/**/*"]
 }

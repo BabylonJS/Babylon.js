@@ -6,12 +6,13 @@ import { getDevPackagesByBuildType, getPublicPackageName, isValidDevPackageName,
 
 const addJS = (to: string, forceAppend?: boolean | string): string => (forceAppend && !to.endsWith(".js") ? to + (forceAppend === true ? ".js" : forceAppend) : to);
 
+// This function was adjusted for generated/src process
 const getPathForComputed = (computedPath: string, sourceFilename: string) => {
     let p = computedPath;
-    const generatedIndex = sourceFilename.indexOf("generated");
+    const generatedIndex = sourceFilename.indexOf("src");
     const srcIndex = sourceFilename.indexOf("src");
     if (generatedIndex !== -1) {
-        p = sourceFilename.substring(0, generatedIndex) + "generated/" + p;
+        p = sourceFilename.substring(0, generatedIndex) + "src/" + p;
     } else if (srcIndex !== -1) {
         p = p.substring(0, srcIndex) + "src/" + p;
     }

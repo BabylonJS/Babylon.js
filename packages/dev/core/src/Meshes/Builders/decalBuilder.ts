@@ -538,7 +538,7 @@ export const DecalBuilder = {
     CreateDecal,
 };
 
-(Mesh as any).CreateDecal = (name: string, sourceMesh: AbstractMesh, position: Vector3, normal: Vector3, size: Vector3, angle: number): Mesh => {
+Mesh.CreateDecal = (name: string, sourceMesh: AbstractMesh, position: Vector3, normal: Vector3, size: Vector3, angle: number): Mesh => {
     const options = {
         position,
         normal,

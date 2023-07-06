@@ -11,6 +11,10 @@ module.exports = (env) => {
             obj: "./src/obj.ts",
             stl: "./src/stl.ts",
         },
+        alias: {
+            serializers: path.resolve(__dirname, "../../../dev/serializers/dist"),
+            "@lts/serializers": path.resolve(__dirname, "../../../lts/serializers/dist"),
+        },
         overrideFilename: (pathData) => {
             return pathData.chunk.name === "serializers" ? `babylonjs.[name]${env.production ? ".min" : ""}.js` : `babylon.[name]Serializer${env.production ? ".min" : ""}.js`;
         },

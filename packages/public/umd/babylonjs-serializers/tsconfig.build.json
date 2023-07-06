@@ -6,7 +6,8 @@
         "rootDir": "./src",
         "declaration": false,
         "paths": {
-            "serializers/*": ["lts/serializers/dist/*"],
+            "serializers/*": ["dev/serializers/dist/*"],
+            "@lts/serializers/*": ["lts/serializers/dist/*"],
         }
     },
     "include": ["./src/**/*"]
