@@ -3,12 +3,14 @@
 
     "compilerOptions": {
         "outDir": "./dist",
-        "rootDir": "./src",
+        "target": "ES5",
+        "rootDir": "../../../",
         "declaration": false,
         "paths": {
+            "core/*": ["dev/core/dist/*"],
             "materials/*": ["dev/materials/dist/*"],
             "@lts/materials/*": ["lts/materials/dist/*"],
         }
     },
-    "include": ["./src/**/*"]
+    "include": ["./src/**/*", "../../../dev/materials/src/**/*", "../../../lts/materials/src/**/*"]
 }

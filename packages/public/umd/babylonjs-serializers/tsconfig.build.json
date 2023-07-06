@@ -3,12 +3,13 @@
 
     "compilerOptions": {
         "outDir": "./dist",
-        "rootDir": "./src",
+        "rootDir": "../../../",
         "declaration": false,
         "paths": {
-            "serializers/*": ["dev/serializers/dist/*"],
-            "@lts/serializers/*": ["lts/serializers/dist/*"],
+            "core/*": ["dev/core/dist/*"],
+            "serializers/*": ["dev/serializers/src/*"],
+            "@lts/serializers/*": ["lts/serializers/src/*"],
         }
     },
-    "include": ["./src/**/*"]
+    "include": ["./src/**/*", "../../../dev/serializers/src/**/*", "../../../lts/serializers/src/**/*"]
 }

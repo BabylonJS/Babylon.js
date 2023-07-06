@@ -3,12 +3,15 @@
 
     "compilerOptions": {
         "outDir": "./dist",
-        "rootDir": "./src",
+        "target": "ES5",
+        "rootDir": "../../../",
         "declaration": false,
         "paths": {
-            "loaders/*": ["dev/loaders/dist/*"],
-            "@lts/loaders/*": ["lts/loaders/dist/*"],
+            "core/*": ["dev/core/dist/*"],
+            "loaders/*": ["dev/loaders/src/*"],
+            "@lts/loaders/*": ["lts/loaders/src/*"],
+
         }
     },
-    "include": ["./src/**/*"]
+    "include": ["./src/**/*", "../../../dev/loaders/src/**/*", "../../../lts/loaders/src/**/*"]
 }
