@@ -108,7 +108,7 @@ export const LatheBuilder = {
     CreateLathe,
 };
 
-(Mesh as any).CreateLathe = (name: string, shape: Vector3[], radius: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh => {
+Mesh.CreateLathe = (name: string, shape: Vector3[], radius: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh => {
     const options = {
         shape: shape,
         radius: radius,

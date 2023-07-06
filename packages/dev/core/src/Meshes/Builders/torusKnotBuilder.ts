@@ -196,7 +196,7 @@ export const TorusKnotBuilder = {
 
 VertexData.CreateTorusKnot = CreateTorusKnotVertexData;
 
-(Mesh as any).CreateTorusKnot = (
+Mesh.CreateTorusKnot = (
     name: string,
     radius: number,
     tube: number,
