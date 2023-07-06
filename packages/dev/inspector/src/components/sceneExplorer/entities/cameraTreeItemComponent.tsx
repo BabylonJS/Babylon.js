@@ -34,8 +34,11 @@ export class CameraTreeItemComponent extends React.Component<ICameraTreeItemComp
         const camera = this.props.camera;
         const scene = camera.getScene();
 
+        const previousActiveCamera = scene.activeCamera;
         scene.activeCamera = camera;
         camera.attachControl(true);
+
+        this.props.globalState.onPropertyChangedObservable.notifyObservers({ object: scene, property: "activeCamera", value: camera, initialValue: previousActiveCamera });
 
         this.setState({ isActive: true });
     }
