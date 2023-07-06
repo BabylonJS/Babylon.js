@@ -5,6 +5,7 @@
         "outDir": "./dist",
         "rootDir": "../../../",
         "declaration": false,
+        "importHelpers": true,
         "paths": {
             "core/*": ["dev/core/dist/*"],
             "post-processes/*": ["dev/postProcesses/src/*"],

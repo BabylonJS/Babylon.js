@@ -6,6 +6,7 @@
         "target": "ES5",
         "rootDir": "../../../",
         "declaration": false,
+        "importHelpers": true,
         "paths": {
             "core/*": ["dev/core/dist/*"],
             "loaders/*": ["dev/loaders/src/*"],

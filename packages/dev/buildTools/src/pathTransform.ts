@@ -34,7 +34,7 @@ const getRelativePath = (computedPath: string, sourceFilename: string) => {
 export const transformPackageLocation = (location: string, options: ITransformerOptions, sourceFilename?: string) => {
     const directoryParts = location.split("/");
     const basePackage = directoryParts[0] === "@" ? `${directoryParts.shift()}/${directoryParts.shift()}` : directoryParts.shift();
-    if (basePackage === "tslib" && sourceFilename) {
+    if (basePackage === "tslib" && sourceFilename && options.buildType === "es6") {
         let computedPath = "./tslib.es6.js";
         const result = getPathForComputed(computedPath, sourceFilename);
         if (options.basePackage === "@babylonjs/core") {

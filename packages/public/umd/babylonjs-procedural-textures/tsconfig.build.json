@@ -5,6 +5,7 @@
         "outDir": "./dist",
         "rootDir": "../../../",
         "declaration": false,
+        "importHelpers": true,
         "paths": {
             "core/*": ["dev/core/dist/*"],
             "procedural-textures/*": ["dev/proceduralTextures/src/*"],
