@@ -16,7 +16,6 @@
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
-        "@lts/core": "1.0.0",
         "source-map-loader": "^4.0.0",
         "ts-loader": "^9.2.6",
         "webpack": "^5.73.0",

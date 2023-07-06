@@ -10,8 +10,8 @@ module.exports = (env) => {
         outputPath: path.resolve(__dirname),
         maxMode: true,
         alias: {
-            core: path.resolve(__dirname, "../../../dev/core/dist"),
-            "@lts/core": path.resolve(__dirname, "../../../lts/core/dist"),
+            core: path.resolve(__dirname, "../../../dev/core/src"),
+            "@lts/core": path.resolve(__dirname, "../../../lts/core/src"),
         },
     });
     return commonConfig;

@@ -3,12 +3,14 @@
 
     "compilerOptions": {
         "outDir": "./dist",
-        "rootDir": "./src",
+        "rootDir": "../../../",
         "declaration": false,
+        "importHelpers": true,
         "paths": {
-            "post-processes/*": ["dev/postProcesses/dist/*"],
-            "@lts/post-processes/*": ["lts/postProcesses/dist/*"],
+            "core/*": ["dev/core/dist/*"],
+            "post-processes/*": ["dev/postProcesses/src/*"],
+            "@lts/post-processes/*": ["lts/postProcesses/src/*"]
         }
     },
-    "include": ["./src/**/*"]
+    "include": ["./src/**/*", "../../../dev/postProcesses/src/**/*", "../../../lts/postProcesses/src/**/*"]
 }
