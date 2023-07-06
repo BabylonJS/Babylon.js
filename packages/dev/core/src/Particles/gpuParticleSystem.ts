@@ -1276,7 +1276,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             attributeNamesOrOptions.push("initialDirection");
         }
 
-        if (!isBillboardStretched) {
+        if (isBillboardStretched) {
             attributeNamesOrOptions.push("direction");
         }
 
