@@ -3134,6 +3134,9 @@ export class ThinEngine {
      */
     public _isRenderingStateCompiled(pipelineContext: IPipelineContext): boolean {
         const webGLPipelineContext = pipelineContext as WebGLPipelineContext;
+        if (this._isDisposed || webGLPipelineContext._isDisposed) {
+            return false;
+        }
         if (this._gl.getProgramParameter(webGLPipelineContext.program!, this._caps.parallelShaderCompile!.COMPLETION_STATUS_KHR)) {
             this._finalizePipelineContext(webGLPipelineContext);
             return true;
