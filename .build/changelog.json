@@ -1,6 +1,108 @@
 {
-    "fromTag": "6.10.0",
+    "fromTag": "6.11.0",
     "changelog": {
+        "6.11.1": [
+            {
+                "pr": "14029",
+                "title": "UMD - compile from source, force es5",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/pathTransform.ts",
+                    "packages/public/@babylonjs/core/package.json",
+                    "packages/public/umd/babylonjs-loaders/package.json",
+                    "packages/public/umd/babylonjs-loaders/tsconfig.build.json",
+                    "packages/public/umd/babylonjs-loaders/webpack.config.js",
+                    "packages/public/umd/babylonjs-materials/package.json",
+                    "packages/public/umd/babylonjs-materials/tsconfig.build.json",
+                    "packages/public/umd/babylonjs-materials/webpack.config.js",
+                    "packages/public/umd/babylonjs-post-process/package.json",
+                    "packages/public/umd/babylonjs-post-process/tsconfig.build.json",
+                    "packages/public/umd/babylonjs-post-process/webpack.config.js",
+                    "packages/public/umd/babylonjs-procedural-textures/package.json",
+                    "packages/public/umd/babylonjs-procedural-textures/tsconfig.build.json",
+                    "packages/public/umd/babylonjs-procedural-textures/webpack.config.js",
+                    "packages/public/umd/babylonjs-serializers/package.json",
+                    "packages/public/umd/babylonjs-serializers/tsconfig.build.json",
+                    "packages/public/umd/babylonjs-serializers/webpack.config.js",
+                    "packages/public/umd/babylonjs/package.json",
+                    "packages/public/umd/babylonjs/tsconfig.build.json",
+                    "packages/public/umd/babylonjs/webpack.config.js"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13997",
+                "title": "getter/setter aproach",
+                "description": "getter/setter aproach, added meshestolines predicate, added default color, added jdocs, {...arrays) to for loops because of stack size exceeded error (@Popov72  you were right that it might happen - as I started to convert big meshes to lines it has happened 👍🏻 )",
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/greasedLinePluginMaterial.ts",
+                    "packages/dev/core/src/Meshes/Builders/greasedLineBuilder.ts",
+                    "packages/dev/core/src/Meshes/greasedLineMesh.ts",
+                    "packages/dev/core/src/Misc/greasedLineTools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14028",
+                "title": "When changing relevant properties on the Camera, Light an…",
+                "description": "…d Mesh tree items, call onPropertyChangedObservable\r\n\r\nRelated forum issue: https://forum.babylonjs.com/t/debuglayer-onpropertychangedobservable-not-firing-when-enabling-disabling-lights/42184",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/sceneExplorer/entities/cameraTreeItemComponent.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/entities/lightTreeItemComponent.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/entities/meshTreeItemComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "14027",
+                "title": "Picking: Fix ray picking when using reverse depth buffer",
+                "description": "See https://forum.babylonjs.com/t/use-reverse-depth-buffer-picking-to-always-return-to-the-distant-mesh/41495",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/ray.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "picking"
+                ]
+            },
+            {
+                "pr": "14026",
+                "title": "GPU Particle systems: Fix BILLBOARDMODE_STRETCHED",
+                "description": "See https://forum.babylonjs.com/t/gpu-particles-disappeared-with-billboardmode-stretched/42199",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/gpuParticleSystem.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "particles"
+                ]
+            }
+        ],
         "6.11.0": [
             {
                 "pr": "14018",

@@ -30,6 +30,12 @@ export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponen
     showBoundingBox(): void {
         const mesh = this.props.mesh;
         mesh.showBoundingBox = !this.state.isBoundingBoxEnabled;
+        this.props.globalState.onPropertyChangedObservable.notifyObservers({
+            object: mesh,
+            property: "showBoundingBox",
+            value: mesh.showBoundingBox,
+            initialValue: !mesh.showBoundingBox,
+        });
         this.setState({ isBoundingBoxEnabled: !this.state.isBoundingBoxEnabled });
     }
 
@@ -37,6 +43,7 @@ export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponen
         const newState = !this.state.isVisible;
         this.setState({ isVisible: newState });
         this.props.mesh.isVisible = newState;
+        this.props.globalState.onPropertyChangedObservable.notifyObservers({ object: this.props.mesh, property: "isVisible", value: newState, initialValue: !newState });
     }
 
     // mesh.name can fail the type check when we're in javascript, so

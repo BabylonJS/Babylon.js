@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-loaders",
-    "version": "6.11.0",
+    "version": "6.11.1",
     "main": "babylonjs.loaders.js",
     "types": "babylonjs.loaders.module.d.ts",
     "files": [
@@ -14,12 +14,12 @@
         "clean": "rimraf dist && rimraf babylon*.*"
     },
     "dependencies": {
-        "babylonjs": "^6.11.0",
-        "babylonjs-gltf2interface": "^6.11.0"
+        "babylonjs": "^6.11.1",
+        "babylonjs-gltf2interface": "^6.11.1"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
-        "@lts/loaders": "1.0.0",
+        "@dev/core": "1.0.0",
         "source-map-loader": "^4.0.0",
         "ts-loader": "^9.2.6",
         "webpack": "^5.73.0",
