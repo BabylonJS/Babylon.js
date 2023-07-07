@@ -54,28 +54,43 @@ export enum MeshDebugMode {
  */
 export interface MeshDebugOptions {
     /**
-     * Whether the mesh debug visualization multiply with the final color underneath.
+     * Whether the mesh debug visualization should multiply with any PBR debug colors underneath.
      * Defaults to true.
      */
-    multiplyColors?: boolean;
+    multiplyDebug?: boolean;
     /**
-     * Whether the material should display white instead of its albedo/diffuse.
-     * Defaults to false.
+     * Default diffuse color of the visualization.
+     * Defaults to (1.0, 1.0, 1.0).
      */
-    defaultToWhite?: boolean;
+    shadedDiffuseColor?: Vector3;
+    /**
+     * Default specular color of the visualization.
+     * Defaults to (0.8, 0.8, 0.8).
+     */
+    shadedSpecularColor?: Vector3;
+    /**
+     * How dark the shading of the visualization is.
+     * Defaults to 10.
+     */
+    shadedSpecularPower?: number;
     /**
      * Width of edge lines in TRIANGLES and VERTICES modes.
      * Defaults to 0.7.
      */
     wireframeThickness?: number;
     /**
-     * Color of edge lines in TRIANGLES and VERTICES modes, and color of dots in VERTICES mode.
+     * Color of edge lines in TRIANGLES mode, and color of dots in VERTICES mode.
      * Defaults to (0.0, 0.0, 0.0).
      */
-    wireframeColor?: Vector3;
+    wireframeColor1?: Vector3;
+    /**
+     * Color of edge lines in VERTICES modes.
+     * Defaults to (0.9, 0.9, 0.9).
+     */
+    wireframeColor2?: Vector3;
     /**
      * Radius of dots drawn over vertices in VERTICES mode.
-     * Defaults to 1.2. //TODO
+     * Defaults to 1.2.
      */
     vertexRadius?: number;
     /**
@@ -87,12 +102,12 @@ export interface MeshDebugOptions {
      * 1st color of checkerboard grid in UV1 or UV2 modes.
      * Defaults to (1.0, 1.0, 1.0).
      */
-    uvOddTileColor?: Vector3;
+    uvColor1?: Vector3;
     /**
      * 2nd color of checkerboard grid in UV1 or UV2 modes.
      * Defaults to (0.5, 0.5, 0.5).
      */
-    uvEvenTileColor?: Vector3;
+    uvColor2?: Vector3;
     /**
      * Identifying color of this material in MATERIALIDS mode.
      * Defaults to a randomly-generated color.
@@ -103,8 +118,7 @@ export interface MeshDebugOptions {
 /** @internal */
 export class MeshDebugDefines extends MaterialDefines {
     MODE: MeshDebugMode = MeshDebugMode.NONE;
-    MULTIPLYCOLORS: boolean = true;
-    DEFAULTTOWHITE: boolean = false;
+    MULTIPLYDEBUG: boolean = true;
 }
 
 /**
@@ -151,19 +165,21 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
         options = options ?? {};
 
         const defines = new MeshDebugDefines();
-        defines.MULTIPLYCOLORS = options.multiplyColors ?? defines.MULTIPLYCOLORS;
-        defines.DEFAULTTOWHITE = options.defaultToWhite ?? defines.DEFAULTTOWHITE;
+        defines.MULTIPLYDEBUG = options.multiplyDebug ?? defines.MULTIPLYDEBUG;
         super(material, "MeshDebug", 200, defines);
 
-        options.multiplyColors = defines.MULTIPLYCOLORS;
-        options.defaultToWhite = defines.DEFAULTTOWHITE;
+        options.multiplyDebug = defines.MULTIPLYDEBUG;
+        options.shadedDiffuseColor = options.shadedDiffuseColor ?? new Vector3(1, 1, 1);
+        options.shadedSpecularColor = options.shadedSpecularColor ?? new Vector3(0.8, 0.8, 0.8);
+        options.shadedSpecularPower = options.shadedSpecularPower ?? 10;
         options.wireframeThickness = options.wireframeThickness ?? 0.7;
-        options.wireframeColor = options.wireframeColor ?? new Vector3(0, 0, 0);
+        options.wireframeColor1 = options.wireframeColor1 ?? new Vector3(0, 0, 0);
+        options.wireframeColor2 = options.wireframeColor2 ?? new Vector3(0.9, 0.9, 0.9);
         options.vertexRadius = options.vertexRadius ?? 1.2;
         options.uvScale = options.uvScale ?? 20;
-        options.uvOddTileColor = options.uvOddTileColor ?? new Vector3(1, 1, 1);
-        options.uvEvenTileColor = options.uvEvenTileColor ?? new Vector3(0.5, 0.5, 0.5);
-        options.materialColor = options.materialColor ?? this._generateRandColor();
+        options.uvColor1 = options.uvColor1 ?? new Vector3(1, 1, 1);
+        options.uvColor2 = options.uvColor2 ?? new Vector3(0.5, 0.5, 0.5);
+        options.materialColor = options.materialColor ?? this._getRandomColor();
         this._options = options;
 
         this._enable(this._isEnabled);
@@ -188,8 +204,7 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
             Logger.Warn("For best results with VERTICES or TRIANGLES mode, please use MeshDebugPluginMaterial.tripleTriangles() on mesh.", 1);
         }
         defines.MODE = this._mode;
-        defines.MULTIPLYCOLORS = this._options.multiplyColors!;
-        defines.DEFAULTTOWHITE = this._options.defaultToWhite!;
+        defines.MULTIPLYDEBUG = this._options.multiplyDebug!;
     }
 
     /**
@@ -207,25 +222,34 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
     public getUniforms() {
         return {
             ubo: [
+                { name: "shadedDiffuseColor", size: 3, type: "vec3" },
+                { name: "shadedSpecularColor", size: 3, type: "vec3" },
+                { name: "shadedSpecularPower", size: 1, type: "float" },
                 { name: "wireframeThickness", size: 1, type: "float" },
-                { name: "wireframeColor", size: 3, type: "vec3" },
+                { name: "wireframeColor1", size: 3, type: "vec3" },
+                { name: "wireframeColor2", size: 3, type: "vec3" },
                 { name: "vertexRadius", size: 1, type: "float" },
                 { name: "uvScale", size: 1, type: "float" },
-                { name: "uvOddTileColor", size: 3, type: "vec3" },
-                { name: "uvEvenTileColor", size: 3, type: "vec3" },
+                { name: "uvColor1", size: 3, type: "vec3" },
+                { name: "uvColor2", size: 3, type: "vec3" },
                 { name: "materialColor", size: 3, type: "vec3" },
             ],
             fragment: `
+                uniform vec3 shadedDiffuseColor;
+                uniform vec3 shadedSpecularColor;
+                uniform float shadedSpecularPower;
+
                 #if MODE == 1 || MODE == 2
                     uniform float wireframeThickness;
-                    uniform vec3 wireframeColor;
+                    uniform vec3 wireframeColor1;
                 #endif
                 #if MODE == 2
                     uniform float vertexRadius;
+                    uniform vec3 wireframeColor2;
                 #elif MODE == 3 || MODE == 4
                     uniform float uvScale;
-                    uniform vec3 uvOddTileColor;
-                    uniform vec3 uvEvenTileColor;
+                    uniform vec3 uvColor1;
+                    uniform vec3 uvColor2;
                 #elif MODE == 6
                     uniform vec3 materialColor;
                 #endif
@@ -239,12 +263,16 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
      */
     public bindForSubMesh(uniformBuffer: UniformBuffer): void {
         if (this._isEnabled) {
+            uniformBuffer.updateVector3("shadedDiffuseColor", this._options.shadedDiffuseColor!);
+            uniformBuffer.updateVector3("shadedSpecularColor", this._options.shadedSpecularColor!);
+            uniformBuffer.updateFloat("shadedSpecularPower", this._options.shadedSpecularPower!);
             uniformBuffer.updateFloat("wireframeThickness", this._options.wireframeThickness!);
-            uniformBuffer.updateVector3("wireframeColor", this._options.wireframeColor!);
+            uniformBuffer.updateVector3("wireframeColor1", this._options.wireframeColor1!);
+            uniformBuffer.updateVector3("wireframeColor2", this._options.wireframeColor2!);
             uniformBuffer.updateFloat("vertexRadius", this._options.vertexRadius!);
             uniformBuffer.updateFloat("uvScale", this._options.uvScale!);
-            uniformBuffer.updateVector3("uvOddTileColor", this._options.uvOddTileColor!);
-            uniformBuffer.updateVector3("uvEvenTileColor", this._options.uvEvenTileColor!);
+            uniformBuffer.updateVector3("uvColor1", this._options.uvColor1!);
+            uniformBuffer.updateVector3("uvColor2", this._options.uvColor2!);
             uniformBuffer.updateVector3("materialColor", this._options.materialColor!);
         }
     }
@@ -283,9 +311,23 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
               }
             : {
                   CUSTOM_FRAGMENT_DEFINITIONS: `
+                #define PI 3.1415926535897932384626433832795
+
                 varying vec3 vBarycentric;
                 flat varying vec3 vVertexWorldPos;
                 flat varying float vPass;
+
+                vec3 applyShading(vec3 color) {
+                    vec3 N = vNormalW.xyz;
+                    vec3 L = normalize(vEyePosition.xyz - vPositionW.xyz);
+                    vec3 H = normalize(L + L);
+                    float LdotN = clamp(dot(L,N), 0., 1.);
+                    float HdotN = clamp(dot(H,N), 0., 1.);
+                    float specTerm = pow(HdotN, shadedSpecularPower);
+                    color *= vec3(1.) * (LdotN / PI);
+                    color += shadedSpecularColor * (specTerm / PI);
+                    return color;
+                }
 
                 #if MODE == 1 || MODE == 2
                     float edgeFactor() {
@@ -313,57 +355,46 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
                     }
                 #endif
             `,
-                  // Channels that need lighting effects
-                  // TODO:    Setting surfaceAlbedo is incorrect.
-                  //          First, it's only available in PBR materials.
-                  //          Second, it gets processed and changed in the
-                  //              reflectivity block of PBR materials, which
-                  //              changes it depending on the metallicness of it.
-                  CUSTOM_FRAGMENT_BEFORE_LIGHTS: `
-                vec3 featureColor = surfaceAlbedo;
-                
-                #if defined(DEFAULTTOWHITE)
-                    vec3 featureColor = vec3(1.,1.,1.);
-                #endif
+                  CUSTOM_FRAGMENT_MAIN_END: `
+                vec3 featureColor = shadedDiffuseColor;
 
                 #if MODE == 1
-                    featureColor = mix(wireframeColor, featureColor, edgeFactor());
+                    featureColor = mix(wireframeColor1, featureColor, edgeFactor());
                 #elif MODE == 2
                     float cornerFactor = cornerFactor();
                     if (vPass == 0. && cornerFactor == 1.) discard;
-                    vec3 grayColor = vec3(.9,.9,.9);
-                    featureColor = mix(grayColor, featureColor, edgeFactor());
-                    featureColor *= mix(wireframeColor, featureColor, cornerFactor);
+                    featureColor = mix(wireframeColor2, featureColor, edgeFactor());
+                    featureColor *= mix(wireframeColor1, featureColor, cornerFactor);
                 #elif MODE == 3 && defined(UV1)
-                    featureColor = mix(uvOddTileColor, uvEvenTileColor, checkerboardFactor(vMainUV1));
+                    featureColor = mix(uvColor1, uvColor2, checkerboardFactor(vMainUV1));
                 #elif MODE == 4 && defined(UV2)
-                    featureColor = mix(uvOddTileColor, uvEvenTileColor, checkerboardFactor(vMainUV2));
+                    featureColor = mix(uvColor1, uvColor2, checkerboardFactor(vMainUV2));
                 #elif MODE == 5 && defined(VERTEXCOLOR)
                     featureColor = vColor.rgb;
                 #elif MODE == 6
                     featureColor = materialColor;
                 #endif
 
-                surfaceAlbedo = featureColor;
-            `,
-                  CUSTOM_FRAGMENT_MAIN_END: `
-                #if DEBUGMODE > 0 && defined(MULTIPLYCOLORS)
+                #if DEBUGMODE == 0
+                    #if MODE != 5
+                        gl_FragColor = vec4(applyShading(featureColor), 1.);
+                    #else
+                        gl_FragColor = vec4(featureColor, 1.);
+                    #endif
+                #elif defined(MULTIPLYDEBUG)
                     gl_FragColor *= vec4(featureColor, 1.);
-                #elif MODE == 5
-                    gl_FragColor = vec4(featureColor, 1.); 
                 #endif
             `,
               };
     }
 
     /**
-     * Generate a random color and apply the golden angle
-     * See https://martin.ankerl.com/2009/12/09/how-to-create-random-colors-programmatically/
+     * Generate a random color
      * @returns Random RGB color as a Vector3
      */
-    private _generateRandColor(): Vector3 {
-        const hue: number = (Math.random() + 0.618033988749895) % 1;
-        const color: Color3 = Color3.FromHSV(hue * 360, 0.95, 0.99);
+    private _getRandomColor(): Vector3 {
+        const hue: number = Math.random() * 360;
+        const color: Color3 = Color3.FromHSV(hue, 0.95, 0.99);
         return Vector3.FromArray(color.asArray());
     }
 
