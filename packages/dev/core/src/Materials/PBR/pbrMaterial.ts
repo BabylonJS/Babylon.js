@@ -621,6 +621,13 @@ export class PBRMaterial extends PBRBaseMaterial {
     public unlit = false;
 
     /**
+     * If sets to true, the decal map will be applied after the detail map. Else, it is applied before (default: false)
+     */
+    @serialize()
+    @expandToProperty("_markAllSubMeshesAsMiscDirty")
+    public applyDecalMapAfterDetailMap = false;
+
+    /**
      * Gets the image processing configuration used either in this material.
      */
     public get imageProcessingConfiguration(): ImageProcessingConfiguration {
