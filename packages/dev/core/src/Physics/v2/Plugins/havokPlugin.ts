@@ -18,6 +18,7 @@ import { PhysicsShape } from "../physicsShape";
 import type { BoundingBox } from "../../../Culling/boundingBox";
 import type { TransformNode } from "../../../Meshes/transformNode";
 import { Mesh } from "../../../Meshes/mesh";
+import { InstancedMesh } from "../../../Meshes/instancedMesh";
 import type { Scene } from "../../../scene";
 import { VertexBuffer } from "../../../Buffers/buffer";
 import { ArrayTools } from "../../../Misc/arrayTools";
@@ -52,18 +53,51 @@ class MeshAccumulator {
      * have a physics impostor. This is useful for creating a physics engine
      * that accurately reflects the mesh and its children.
      */
-    public addMesh(mesh: Mesh, includeChildren: boolean): void {
-        const indexOffset = this._vertices.length;
-        // Force absoluteScaling to be computed
+    public addNodeMeshes(mesh: TransformNode, includeChildren: boolean): void {
+        // Force absoluteScaling to be computed; we're going to use that to bake
+        // the scale of any parent nodes into this shape, as physics engines
+        // usually use rigid transforms, so can't handle arbitrary scale.
         mesh.computeWorldMatrix(true);
-        const shapeFromBody = TmpVectors.Matrix[0];
-        Matrix.ScalingToRef(mesh.absoluteScaling.x, mesh.absoluteScaling.y, mesh.absoluteScaling.z, shapeFromBody);
+        const rootScaled = TmpVectors.Matrix[0];
+        Matrix.ScalingToRef(mesh.absoluteScaling.x, mesh.absoluteScaling.y, mesh.absoluteScaling.z, rootScaled);
 
+        if (mesh instanceof Mesh) {
+            this.addMesh(mesh, rootScaled);
+        } else if (mesh instanceof InstancedMesh) {
+            this.addMesh(mesh.sourceMesh, rootScaled);
+        }
+
+        if (includeChildren) {
+            var worldToRoot = TmpVectors.Matrix[1];
+            mesh.computeWorldMatrix().invertToRef(worldToRoot);
+            var worldToRootScaled = TmpVectors.Matrix[2];
+            worldToRoot.multiplyToRef(rootScaled, worldToRootScaled);
+
+            const children = mesh.getChildMeshes(false);
+            //  Ignore any children which have a physics body.
+            //  Other plugin implementations do not have this check, which appears to be
+            //  a bug, as otherwise, the mesh will have a duplicate collider
+            children.filter((m: any) => !m.physicsBody).forEach((m: TransformNode) => {
+                var childToWorld = m.computeWorldMatrix();
+                var childToRootScaled = TmpVectors.Matrix[3];
+                childToWorld.multiplyToRef(worldToRootScaled, childToRootScaled);
+
+                if (m instanceof Mesh) {
+                    this.addMesh(m, childToRootScaled);
+                } else if (m instanceof InstancedMesh) {
+                    this.addMesh(m.sourceMesh, childToRootScaled);
+                }
+            });
+        }
+    }
+
+    private addMesh(mesh: Mesh, meshToRoot: Matrix): void {
         const vertexData = mesh.getVerticesData(VertexBuffer.PositionKind) || [];
         const numVerts = vertexData.length / 3;
+        const indexOffset = this._vertices.length;
         for (let v = 0; v < numVerts; v++) {
             const pos = new Vector3(vertexData[v * 3 + 0], vertexData[v * 3 + 1], vertexData[v * 3 + 2]);
-            this._vertices.push(Vector3.TransformCoordinates(pos, shapeFromBody));
+            this._vertices.push(Vector3.TransformCoordinates(pos, meshToRoot));
         }
 
         if (this._collectIndices) {
@@ -82,14 +116,6 @@ class MeshAccumulator {
                     }
                 }
             }
-        }
-
-        if (includeChildren) {
-            const children = mesh.getChildMeshes(false);
-            //  Ignore any children which have a physics body.
-            //  Other plugin implementations do not have this check, which appears to be
-            //  a bug, as otherwise, the mesh will have a duplicate collider
-            children.filter((m: any) => !m.physicsBody).forEach((m: any) => this.addMesh(m, includeChildren));
         }
     }
 
@@ -1074,7 +1100,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                         const includeChildMeshes = !!options.includeChildMeshes;
                         const needIndices = type != PhysicsShapeType.CONVEX_HULL;
                         const accum = new MeshAccumulator(mesh, needIndices, mesh?.getScene());
-                        accum.addMesh(mesh, includeChildMeshes);
+                        accum.addNodeMeshes(mesh, includeChildMeshes);
 
                         const positions = accum.getVertices(this._hknp);
                         const numVec3s = positions.length / 3;
