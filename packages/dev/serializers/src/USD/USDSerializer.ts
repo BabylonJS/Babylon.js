@@ -12,8 +12,9 @@ import { strToU8, zipSync } from "fflate";
 import { type Material } from "core/Materials/material";
 import { Tools } from "core/Misc/tools";
 import { type FloatArray } from "core/types";
+import { isNoopNode } from "serializers/glTF/2.0/glTFExporter";
 
-/* Converted from https://github.com/mrdoob/three.js/blob/dev/examples/jsm/exporters/USDZExporter.js by Pryme8 */
+/* Converted from https://github.com/mrdoob/three.js/blob/dev/examples/jsm/exporters/USDZExporter.js */
 
 export interface IUSDExportOptions {
     modelName?: string;
@@ -78,12 +79,9 @@ export class USDExport {
         scene.meshes
             .filter((mesh) => (mesh as any).geometry)
             .forEach((mesh) => {
-                //Add More Materials at somepoint
-                if (mesh.material === null) {
-                    mesh.material = sharedMat;
-                }
+                const material = mesh.material ?? sharedMat;
 
-                switch (mesh.material.getClassName()) {
+                switch (material.getClassName()) {
                     case "PBRMaterial":
                         const geometryFileName = "geometries/Geometry_" + mesh.uniqueId + ".usda";
                         if (!(geometryFileName in files)) {
@@ -91,24 +89,24 @@ export class USDExport {
                             files[geometryFileName] = USDExport._BuildUSDFileAsString(meshObject);
                         }
 
-                        if (!(mesh.material.uniqueId in materials)) {
-                            materials[mesh.material.uniqueId] = mesh.material;
+                        if (!(material.uniqueId in materials)) {
+                            materials[material.uniqueId] = material;
                         }
 
-                        let originalScale = -1;
-                        if (mesh.parent?.name === "__root__") {
-                            originalScale = (mesh.parent as TransformNode).scaling.z;
+                        let noopNode: boolean = false;
+                        if (mesh.parent && isNoopNode(mesh.parent, false)) {
+                            (mesh.parent as TransformNode).scaling.z = 1;
                         }
 
-                        output += USDExport._BuildXform(mesh, mesh.material);
+                        output += USDExport._BuildXform(mesh, material);
 
-                        if (mesh.parent?.name === "__root__") {
-                            (mesh.parent as TransformNode).scaling.z = originalScale;
+                        if (noopNode) {
+                            (mesh.parent as TransformNode).scaling.z = -1;
                         }
 
                         break;
                     default:
-                        console.warn("USDExporter: Standard Material is not supported currently.");
+                        Tools.Warn("USDExporter: Standard Material is not supported currently.");
                         break;
                 }
             });
@@ -225,7 +223,6 @@ export class USDExport {
     private static _BuildMesh(mesh: AbstractMesh) {
         const positions = mesh.getVerticesData(VertexBuffer.PositionKind) ?? [];
         const count = positions?.length ?? 0;
-        //Need to support no normals.
         const normals = mesh.getVerticesData(VertexBuffer.NormalKind) ?? [];
         const normalCount = normals?.length ?? 0;
 
@@ -263,7 +260,7 @@ export class USDExport {
 
     private static _BuildVector3Array(count: number, attribute?: FloatArray) {
         if (attribute === undefined) {
-            console.warn("USDExporter: Normals missing.");
+            Tools.Warn("USDExporter: Normals missing.");
             return Array(count / 3)
                 .fill("(0, 0, 0)")
                 .join(", ");
@@ -283,7 +280,7 @@ export class USDExport {
 
     private static _BuildVector2Array(count: number, attribute?: FloatArray) {
         if (!attribute || !attribute.length) {
-            console.warn("USDExporter: UVs missing.");
+            Tools.Warn("USDExporter: UVs missing.");
             return Array(count / 2)
                 .fill("(0, 0)")
                 .join(", ");
@@ -330,14 +327,11 @@ export class USDExport {
 
     private static _BuildXform(mesh: AbstractMesh, material: Material) {
         const name = "Object_" + mesh.uniqueId;
-        if (mesh.parent?.name === "__root__") {
-            (mesh.parent as TransformNode).scaling.z = 1;
-        }
         const mat = mesh.getWorldMatrix();
         const transform = USDExport._BuildMatrix(mat);
 
         if (mat.determinant() < 0) {
-            console.warn("BABYLON.USDExport: USDZ does not support negative scales", mesh);
+            Tools.Warn(`USDExport: USDZ does not support negative scales on nodes: ${mesh.name}`);
         }
 
         return `def Xform "${name}" (
@@ -371,7 +365,7 @@ export class USDExport {
         const transform = USDExport._BuildMatrix(mat);
 
         if (mat.determinant() < 0) {
-            console.warn("BABYLON.USDExport: USDZ does not support negative scales", camera);
+            Tools.Warn(`USDExport: USDZ does not support negative scales on camera: ${camera.name}`);
         }
 
         if (camera.mode === Camera.ORTHOGRAPHIC_CAMERA) {
@@ -422,19 +416,11 @@ export class USDExport {
         const material = _material as PBRMaterial;
         const scene = material.getScene();
 
-        const getChannelIndex = (channel: string) => {
-            switch (channel) {
-                case "r":
-                    return 0;
-                case "g":
-                    return 1;
-                case "b":
-                    return 2;
-                case "a":
-                    return 3;
-                default:
-                    return 0;
-            }
+        const channelIndexMap: { [key: string]: number } = {
+            r: 0,
+            g: 1,
+            b: 2,
+            a: 3,
         };
 
         async function createDynamicTextureFromChannel(texture: Texture, channel: string) {
@@ -445,7 +431,7 @@ export class USDExport {
             const count = texture.getSize().width * texture.getSize().height * 4;
 
             for (let i = 0; i < count; i += 4) {
-                const value = channel === "r" ? 255 - img[i + getChannelIndex(channel)] : img[i + getChannelIndex(channel)];
+                const value = channel === "r" ? 255 - img[i + channelIndexMap[channel]] : img[i + channelIndexMap[channel]];
                 data.data[i] = value;
                 data.data[i + 1] = value;
                 data.data[i + 2] = value;
@@ -482,7 +468,7 @@ export class USDExport {
 
             const repeat = new Vector2(texture.wrapU === Texture.CLAMP_ADDRESSMODE ? 0 : 1, texture.wrapV === Texture.CLAMP_ADDRESSMODE ? 0 : 1);
             const offset = new Vector2(texture.uOffset, texture.vOffset);
-            const rotation = 0; /*TODO, remember what value this is*/
+            const rotation = texture.wAng ?? 0;
 
             // rotation is around the wrong point. after rotation we need to shift offset again so that we're rotating around the right spot
             const xRotationOffset = Math.sin(rotation);
@@ -543,7 +529,7 @@ export class USDExport {
         }
 
         if (!material.cullBackFaces) {
-            console.warn("BABYLON.USDExport: USDZ does not support double sided materials", material);
+            Tools.Warn(`USDExport: USDZ does not support double sided materials, target mat: ${material.name}`);
         }
 
         if (material.albedoTexture !== null) {
@@ -699,12 +685,12 @@ export class USDExport {
                 }
                 context.drawImage(image, 0, 0, canvas.width, canvas.height);
             } else {
-                throw new Error("BABYLON.USDExport: No valid canvas context. Unable to process texture.");
+                throw new Error("USDExport: No valid canvas context. Unable to process texture.");
             }
 
             return canvas;
         } else {
-            throw new Error("BABYLON.USDExport: No valid image data found. Unable to process texture.");
+            throw new Error("USDExport: No valid image data found. Unable to process texture.");
         }
     }
 }

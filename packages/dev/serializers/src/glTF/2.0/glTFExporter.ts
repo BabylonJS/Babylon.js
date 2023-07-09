@@ -52,7 +52,7 @@ import { MultiMaterial } from "core/Materials/multiMaterial";
 // Matrix that converts handedness on the X-axis.
 const convertHandednessMatrix = Matrix.Compose(new Vector3(-1, 1, 1), Quaternion.Identity(), Vector3.Zero());
 
-function isNoopNode(node: Node, useRightHandedSystem: boolean): boolean {
+export function isNoopNode(node: Node, useRightHandedSystem: boolean): boolean {
     if (!(node instanceof TransformNode)) {
         return false;
     }
