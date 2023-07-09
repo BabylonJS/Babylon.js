@@ -3,7 +3,7 @@
 
     "compilerOptions": {
         "outDir": "./",
-        "rootDir": "../../../lts/postProcesses/generated",
+        "rootDir": "../../../dev/postProcesses/src",
         "declaration": true,
         "importHelpers": true,
         "target": "ES2018",
@@ -24,10 +24,10 @@
             }
         ],
         "paths": {
-            "core/*": ["lts/core/dist/*"],
-            "post-processes/*": ["lts/postProcesses/generated/*"]
+            "core/*": ["dev/core/dist/*"],
+            "post-processes/*": ["dev/postProcesses/src/*"]
         }
     },
 
-    "include": ["../../../lts/postProcesses/generated/**/*"]
+    "include": ["../../../dev/postProcesses/src/**/*"]
 }

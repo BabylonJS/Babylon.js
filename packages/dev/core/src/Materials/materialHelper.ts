@@ -87,6 +87,7 @@ export class MaterialHelper {
      * @param fogEnabled defines if fog has to be turned on
      * @param alphaTest defines if alpha testing has to be turned on
      * @param defines defines the current list of defines
+     * @param applyDecalAfterDetail Defines if the decal is applied after or before the detail
      */
     public static PrepareDefinesForMisc(
         mesh: AbstractMesh,
@@ -95,7 +96,8 @@ export class MaterialHelper {
         pointsCloud: boolean,
         fogEnabled: boolean,
         alphaTest: boolean,
-        defines: any
+        defines: any,
+        applyDecalAfterDetail: boolean = false
     ): void {
         if (defines._areMiscDirty) {
             defines["LOGARITHMICDEPTH"] = useLogarithmicDepth;
@@ -103,6 +105,7 @@ export class MaterialHelper {
             defines["FOG"] = fogEnabled && this.GetFogState(mesh, scene);
             defines["NONUNIFORMSCALING"] = mesh.nonUniformScaling;
             defines["ALPHATEST"] = alphaTest;
+            defines["DECAL_AFTER_DETAIL"] = applyDecalAfterDetail;
         }
     }
 

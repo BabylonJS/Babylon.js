@@ -12,18 +12,25 @@ import {
 /**
  * @param engineType name of the engine (webgl1, webgl2, webgpu)
  * @param testFileName name of the .json file (without the .json extension) containing the tests
+ * @param debug if true, the browser will be launched in debug mode
+ * @param debugWait if true, the browser will wait on the browser in which it is running
+ * @param logToConsole if true, the logs will be output to the console
+ * @param logToFile if true, the logs will be output to a file
  */
 export const evaluateTests = async (engineType = "webgl2", testFileName = "config", debug = false, debugWait = false, logToConsole = true, logToFile = false) => {
-    // jest doesn't support cutstom CLI variables
-    // const engineType = buildTools.checkArgs("--engine", false, true) || "webgl2";
-    // const debug = buildTools.checkArgs("--debug", true);
-    // const configPath = buildTools.checkArgs("--config", false, true) || "../config.json";
-
-    jest.retryTimes(3);
+    jest.retryTimes(2);
 
     debug = process.env.DEBUG === "true" || debug;
 
-    const configPath = process.env.CONFIG || path.resolve(__dirname, testFileName + ".json");
+    if (process.env.TEST_FILENAME) {
+        testFileName = process.env.TEST_FILENAME;
+    }
+
+    if (process.env.LOG_TO_CONSOLE) {
+        logToConsole = process.env.LOG_TO_CONSOLE === "true";
+    }
+
+    const configPath = process.env.CONFIG_PATH || path.resolve(__dirname, testFileName + ".json");
     const useStandardTestList = testFileName === "config";
     // load the config
     const rawJsonData = fs.readFileSync(configPath, "utf8");
@@ -32,8 +39,14 @@ export const evaluateTests = async (engineType = "webgl2", testFileName = "confi
 
     const logPath = path.resolve(__dirname, `${testFileName}_${engineType}_log.txt`);
 
+    const excludeRegexArray = process.env.EXCLUDE_REGEX_ARRAY ? process.env.EXCLUDE_REGEX_ARRAY.split(",") : [];
+
     const tests: any[] = config.tests.filter((test: any) => {
-        return !(test.excludeFromAutomaticTesting || (test.excludedEngines && test.excludedEngines.includes(engineType)));
+        const externallyExcluded = excludeRegexArray.some((regex) => {
+            const re = new RegExp(regex, "i");
+            return re.test(test.title);
+        });
+        return !(externallyExcluded || test.excludeFromAutomaticTesting || (test.excludedEngines && test.excludedEngines.includes(engineType)));
     });
 
     // 2% error rate

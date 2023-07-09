@@ -200,6 +200,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
             { label: "Sheen Map", value: 29 },
             { label: "Anisotropic Map", value: 30 },
             { label: "Thickness Map", value: 31 },
+            { label: "Bump Map", value: 32 },
             // Env
             { label: "Env Refraction", value: 40 },
             { label: "Env Reflection", value: 41 },

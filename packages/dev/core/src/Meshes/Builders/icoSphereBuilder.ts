@@ -452,10 +452,6 @@ export const IcoSphereBuilder = {
 
 VertexData.CreateIcoSphere = CreateIcoSphereVertexData;
 
-(Mesh as any).CreateIcoSphere = (
-    name: string,
-    options: { radius?: number; flat?: boolean; subdivisions?: number; sideOrientation?: number; updatable?: boolean },
-    scene: Scene
-): Mesh => {
+Mesh.CreateIcoSphere = (name: string, options: { radius?: number; flat?: boolean; subdivisions?: number; sideOrientation?: number; updatable?: boolean }, scene: Scene): Mesh => {
     return CreateIcoSphere(name, options, scene);
 };

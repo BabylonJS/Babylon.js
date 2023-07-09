@@ -1,3 +1,3 @@
-import * as materials from "materials/legacy/legacy-terrain";
+import * as materials from "@lts/materials/legacy/legacy-terrain";
 export { materials };
 export default materials;

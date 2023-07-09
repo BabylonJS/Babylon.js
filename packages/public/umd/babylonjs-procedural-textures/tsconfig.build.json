@@ -3,11 +3,14 @@
 
     "compilerOptions": {
         "outDir": "./dist",
-        "rootDir": "./src",
+        "rootDir": "../../../",
         "declaration": false,
+        "importHelpers": true,
         "paths": {
-            "procedural-textures/*": ["lts/proceduralTextures/dist/*"],
+            "core/*": ["dev/core/dist/*"],
+            "procedural-textures/*": ["dev/proceduralTextures/src/*"],
+            "@lts/procedural-textures/*": ["lts/proceduralTextures/src/*"]
         }
     },
-    "include": ["./src/**/*"]
+    "include": ["./src/**/*", "../../../dev/proceduralTextures/src/**/*", "../../../lts/proceduralTextures/src/**/*"]
 }

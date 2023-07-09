@@ -260,7 +260,8 @@
         {
             "title": "ShadowOnlyMaterial",
             "playgroundId": "#1KF7V1#18",
-            "referenceImage": "shadowOnlyMaterial.png"
+            "referenceImage": "shadowOnlyMaterial.png",
+            "excludedEngines": ["webgpu"]
         },
         {
             "title": "Gizmos",
@@ -1135,7 +1136,7 @@
             "title": "Prepass SSAO + particles",
             "renderCount": 50,
             "playgroundId": "#65MUMZ#47",
-            "excludedEngines": ["webgl1"],
+            "excludedEngines": ["webgl1", "webgpu"],
             "referenceImage": "prepass-ssao-particles.png"
         },
         {
@@ -1149,155 +1150,160 @@
             "title": "Prepass SSAO + instanced bones",
             "renderCount": 50,
             "playgroundId": "#0K8EYN#197",
-            "excludedEngines": ["webgl1"],
+            "excludedEngines": ["webgl1", "webgpu"],
             "referenceImage": "prepass-ssao-instanced-bones.png"
         },
         {
             "title": "Prepass SSAO + depth of field",
             "renderCount": 10,
             "playgroundId": "#8F5HYV#16",
-            "excludedEngines": ["webgl1"],
+            "excludedEngines": ["webgl1", "webgpu"],
             "referenceImage": "prepass-ssao-dof.png"
         },
         {
             "title": "Prepass + mirror, without postprocess",
             "renderCount": 10,
             "playgroundId": "#PIZ1GK#1084",
-            "excludedEngines": ["webgl1"],
+            "excludedEngines": ["webgl1", "webgpu"],
             "referenceImage": "prepass-mirror-without-pp.png"
         },
         {
             "title": "Prepass + mirror, with postprocesses",
             "renderCount": 10,
             "playgroundId": "#PIZ1GK#1085",
-            "excludedEngines": ["webgl1"],
+            "excludedEngines": ["webgl1", "webgpu"],
             "referenceImage": "prepass-mirror-with-pp.png"
         },
         {
             "title": "Prepass SSAO + sprites",
             "renderCount": 10,
             "playgroundId": "#9RI8CG#187",
-            "excludedEngines": ["webgl1"],
+            "excludedEngines": ["webgl1", "webgpu"],
             "referenceImage": "prepass-ssao-sprites.png"
         },
         {
             "title": "Prepass SSAO + glow layer",
             "renderCount": 30,
             "playgroundId": "#LRFB2D#263",
-            "excludedEngines": ["webgl1"],
+            "excludedEngines": ["webgl1", "webgpu"],
             "referenceImage": "prepass-ssao-glow-layer.png"
         },
         {
             "title": "Prepass SSAO + bounding box renderer",
             "renderCount": 10,
             "playgroundId": "#4F33I3#35",
-            "excludedEngines": ["webgl1"],
+            "excludedEngines": ["webgl1", "webgpu"],
             "referenceImage": "prepass-ssao-bbr.png"
         },
         {
             "title": "Prepass SSAO + line edges renderer",
             "renderCount": 10,
             "playgroundId": "#T90MQ4#3",
-            "excludedEngines": ["webgl1"],
+            "excludedEngines": ["webgl1", "webgpu"],
             "referenceImage": "prepass-ssao-line-edges.png"
         },
         {
             "title": "Prepass SSAO + B&W post process",
             "renderCount": 10,
             "playgroundId": "#N55Q2M#8",
-            "excludedEngines": ["webgl1"],
+            "excludedEngines": ["webgl1", "webgpu"],
             "referenceImage": "prepass-ssao-b-and-w.png"
         },
         {
             "title": "Prepass SSAO + clip planes",
             "renderCount": 10,
             "playgroundId": "#Y6W087#71",
-            "excludedEngines": ["webgl1"],
+            "excludedEngines": ["webgl1", "webgpu"],
             "referenceImage": "prepass-ssao-clip-planes.png"
         },
         {
             "title": "Prepass SSAO + GUI",
             "renderCount": 10,
             "playgroundId": "#LLVZ90#4",
-            "excludedEngines": ["webgl1"],
+            "excludedEngines": ["webgl1", "webgpu"],
             "referenceImage": "prepass-ssao-gui.png"
         },
         {
             "title": "Prepass SSAO + LOD",
             "renderCount": 10,
             "playgroundId": "#FFMFW5#29",
-            "excludedEngines": ["webgl1"],
+            "excludedEngines": ["webgl1", "webgpu"],
             "referenceImage": "prepass-ssao-lod.png"
         },
         {
             "title": "Prepass SSAO + shadow only",
             "renderCount": 10,
             "playgroundId": "#1KF7V1#55",
-            "excludedEngines": ["webgl1"],
+            "excludedEngines": ["webgl1", "webgpu"],
             "referenceImage": "prepass-ssao-shadow-only.png"
         },
         {
             "title": "Prepass SSAO + highlight layer",
             "renderCount": 10,
             "playgroundId": "#1KUJ0A#416",
-            "excludedEngines": ["webgl1"],
+            "excludedEngines": ["webgl1", "webgpu"],
             "referenceImage": "prepass-ssao-highlight-layer.png"
         },
         {
             "title": "Prepass SSAO + point light",
             "renderCount": 10,
             "playgroundId": "#XDNVAY#6",
-            "excludedEngines": ["webgl1"],
+            "excludedEngines": ["webgl1", "webgpu"],
             "referenceImage": "prepass-ssao-point-light.png"
         },
         {
             "title": "Prepass SSAO + on/off post-process",
             "renderCount": 10,
             "playgroundId": "#1VI6WV#20",
-            "excludedEngines": ["webgl1"],
+            "excludedEngines": ["webgl1", "webgpu"],
             "referenceImage": "prepass-ssao-on-off-pp.png"
         },
         {
             "title": "Prepass SSAO + thin instances",
             "renderCount": 10,
             "playgroundId": "#V1JE4Z#25",
-            "excludedEngines": ["webgl1"],
+            "excludedEngines": ["webgl1", "webgpu"],
             "referenceImage": "prepass-ssao-thin-instances.png"
         },
         {
             "title": "Prepass SSAO + depth renderer",
             "renderCount": 10,
             "playgroundId": "#3HPMAA#1",
-            "excludedEngines": ["webgl1"],
+            "excludedEngines": ["webgl1", "webgpu"],
             "referenceImage": "prepass-ssao-depth-renderer.png"
         },
         {
             "title": "Prepass SSAO + visibility",
             "renderCount": 30,
             "playgroundId": "#PXC9CF#4",
-            "excludedEngines": ["webgl1"],
+            "excludedEngines": ["webgl1", "webgpu"],
             "referenceImage": "prepass-ssao-visibility.png"
         },
         {
             "title": "Prepass SSAO + default pipeline",
             "renderCount": 10,
             "playgroundId": "#NAW8EA#7",
-            "excludedEngines": ["webgl1"],
+            "excludedEngines": ["webgl1", "webgpu"],
             "referenceImage": "prepass-ssao-default-pipeline.png"
         },
         {
             "title": "Prepass MBlur + Lens",
             "renderCount": 10,
             "playgroundId": "#ZEB7H6#23",
-            "excludedEngines": ["webgl1"],
+            "excludedEngines": ["webgl1", "webgpu"],
             "referenceImage": "prepass-mb-lens.png"
         },
         {
             "title": "Prepass SSAO + MSAA",
             "renderCount": 10,
             "playgroundId": "#12MKMN#7",
-            "excludedEngines": ["webgl1"],
+            "excludedEngines": ["webgl1", "webgpu"],
             "referenceImage": "prepass-ssao-msaa.png"
+        },
+        {
+            "title": "Multi camera rendering with scissors",
+            "playgroundId": "#1LK70I#35",
+            "referenceImage": "multiCameraRenderingWithScissors.png"
         },
         {
             "title": "Scissor test",
@@ -1305,6 +1311,30 @@
             "playgroundId": "#W7E7CF#12",
             "excludedEngines": ["webgl1"],
             "referenceImage": "scissor-test.png"
+        },
+        {
+            "title": "Scissor test with 0.9 hardware scaling",
+            "renderCount": 10,
+            "playgroundId": "#W7E7CF#27",
+            "excludedEngines": ["webgl1"],
+            "referenceImage": "scissor-test.png"
+        },
+        {
+            "title": "Scissor test with 1.5 hardware scaling",
+            "renderCount": 10,
+            "playgroundId": "#W7E7CF#28",
+            "excludedEngines": ["webgl1"],
+            "referenceImage": "scissor-test.png"
+        },
+        {
+            "title": "Scissor test with negative x and y",
+            "playgroundId": "#3L5BCD#2",
+            "referenceImage": "scissorTestNegativeXandY.png"
+        },
+        {
+            "title": "Scissor test with out of bounds width and height",
+            "playgroundId": "#3L5BCD#3",
+            "referenceImage": "scissorTestOobWidthAndHeight.png"
         },
         {
             "title": "Refraction local cube map STD",
@@ -1431,7 +1461,7 @@
             "title": "Order independent transparency",
             "renderCount": 5,
             "playgroundId": "#1PLV5Z#104",
-            "excludedEngines": ["webgl1"],
+            "excludedEngines": ["webgl1", "webgpu"],
             "referenceImage": "oit.png"
         },
         {

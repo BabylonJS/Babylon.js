@@ -197,6 +197,8 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public IS_REFRACTION_LINEAR = false;
     public EXPOSURE = false;
 
+    public DECAL_AFTER_DETAIL = false;
+
     /**
      * Initializes the Standard Material defines.
      * @param externalProperties The external properties
@@ -563,6 +565,14 @@ export class StandardMaterial extends PushMaterial {
      */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public twoSidedLighting: boolean;
+
+    @serialize("applyDecalMapAfterDetailMap")
+    private _applyDecalMapAfterDetailMap = false;
+    /**
+     * If sets to true, the decal map will be applied after the detail map. Else, it is applied before (default: false)
+     */
+    @expandToProperty("_markAllSubMeshesAsMiscDirty")
+    public applyDecalMapAfterDetailMap: boolean;
 
     /**
      * Default configuration related to image processing available in the standard Material.
@@ -1179,7 +1189,8 @@ export class StandardMaterial extends PushMaterial {
             this.pointsCloud,
             this.fogEnabled,
             this._shouldTurnAlphaTestOn(mesh) || this._forceAlphaTest,
-            defines
+            defines,
+            this._applyDecalMapAfterDetailMap
         );
 
         // Values that need to be evaluated on every frame

@@ -24,8 +24,8 @@
             }
         ],
         "paths": {
-            "core/*": ["lts/core/dist/*"],
-            "gui/*": ["lts/gui/dist/*"],
+            "core/*": ["dev/core/dist/*"],
+            "gui/*": ["dev/gui/dist/*"],
             "shared-ui-components/*": ["dev/sharedUiComponents/src/*"]
         }
     },

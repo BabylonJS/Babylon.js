@@ -1,3 +1,3 @@
-import * as serializers from "serializers/legacy/legacy-glTF2Serializer";
+import * as serializers from "@lts/serializers/legacy/legacy-glTF2Serializer";
 export { serializers };
 export default serializers;
