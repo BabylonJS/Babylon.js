@@ -62,9 +62,9 @@ class MeshAccumulator {
         Matrix.ScalingToRef(mesh.absoluteScaling.x, mesh.absoluteScaling.y, mesh.absoluteScaling.z, rootScaled);
 
         if (mesh instanceof Mesh) {
-            this.addMesh(mesh, rootScaled);
+            this._addMesh(mesh, rootScaled);
         } else if (mesh instanceof InstancedMesh) {
-            this.addMesh(mesh.sourceMesh, rootScaled);
+            this._addMesh(mesh.sourceMesh, rootScaled);
         }
 
         if (includeChildren) {
