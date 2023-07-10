@@ -12,6 +12,7 @@ import type { Mesh } from "core/Meshes/mesh";
 import { Logger } from "core/Misc/logger";
 import { expandToProperty, serialize } from "core/Misc/decorators";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import { DeepCopier } from "core/Misc/deepCopier";
 
 /**
  * Supported visualizations of MeshDebugPluginMaterial
@@ -399,6 +400,33 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
                 #endif
             `,
               };
+    }
+
+    /**
+     * Serializes this plugin material
+     * @returns serializationObjec
+     */
+    public serialize(): any {
+        const serializationObject = super.serialize();
+
+        serializationObject.materialOptions = {};
+        DeepCopier.DeepCopy(this._options, serializationObject.materialOptions);
+
+        return serializationObject;
+    }
+
+    /**
+     * Parses a serialized object
+     * @param serObj serialized object
+     * @param scene scene
+     * @param rootUrl root url for textures
+     */
+    public parse(serObj: any, scene: Scene, rootUrl: string): void {
+        super.parse(serObj, scene, rootUrl);
+
+        this._options = <MeshDebugOptions>serObj.materialOptions;
+        
+        this.markAllDefinesAsDirty();
     }
 
     /**
