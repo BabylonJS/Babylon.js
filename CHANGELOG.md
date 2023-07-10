@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.11.2
+
+### Core
+
+- Material: Adds a property to define the relative order in which decals and detailed maps are rendered - by [Popov72](https://github.com/Popov72) ([#14025](https://github.com/BabylonJS/Babylon.js/pull/14025))
+
 ## 6.11.1
 
 ### Core
