@@ -77,21 +77,23 @@ class MeshAccumulator {
             //  Ignore any children which have a physics body.
             //  Other plugin implementations do not have this check, which appears to be
             //  a bug, as otherwise, the mesh will have a duplicate collider
-            children.filter((m: any) => !m.physicsBody).forEach((m: TransformNode) => {
-                const childToWorld = m.computeWorldMatrix();
-                const childToRootScaled = TmpVectors.Matrix[3];
-                childToWorld.multiplyToRef(worldToRootScaled, childToRootScaled);
+            children
+                .filter((m: any) => !m.physicsBody)
+                .forEach((m: TransformNode) => {
+                    const childToWorld = m.computeWorldMatrix();
+                    const childToRootScaled = TmpVectors.Matrix[3];
+                    childToWorld.multiplyToRef(worldToRootScaled, childToRootScaled);
 
-                if (m instanceof Mesh) {
-                    this.addMesh(m, childToRootScaled);
-                } else if (m instanceof InstancedMesh) {
-                    this.addMesh(m.sourceMesh, childToRootScaled);
-                }
-            });
+                    if (m instanceof Mesh) {
+                        this._addMesh(m, childToRootScaled);
+                    } else if (m instanceof InstancedMesh) {
+                        this._addMesh(m.sourceMesh, childToRootScaled);
+                    }
+                });
         }
     }
 
-    private addMesh(mesh: Mesh, meshToRoot: Matrix): void {
+    private _addMesh(mesh: Mesh, meshToRoot: Matrix): void {
         const vertexData = mesh.getVerticesData(VertexBuffer.PositionKind) || [];
         const numVerts = vertexData.length / 3;
         const indexOffset = this._vertices.length;
@@ -1210,7 +1212,9 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * Adds a child shape to the given shape.
      * @param shape - The parent shape.
      * @param newChild - The child shape to add.
-     * @param childTransform - The transform of the child shape relative to the parent shape.
+     * @param translation - The relative translation of the child from the parent shape
+     * @param rotation - The relative rotation of the child from the parent shape
+     * @param scale - The relative scale scale of the child from the parent shaep
      *
      */
     public addChild(shape: PhysicsShape, newChild: PhysicsShape, translation?: Vector3, rotation?: Quaternion, scale?: Vector3): void {
@@ -1246,14 +1250,14 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     /**
      * Calculates the bounding box of a given physics shape.
      *
-     * @param shape - The physics shape to calculate the bounding box for.
+     * @param _shape - The physics shape to calculate the bounding box for.
      * @returns The calculated bounding box.
      *
      * This method is useful for physics engines as it allows to calculate the
      * boundaries of a given shape. Knowing the boundaries of a shape is important
      * for collision detection and other physics calculations.
      */
-    public getBoundingBox(shape: PhysicsShape): BoundingBox {
+    public getBoundingBox(_shape: PhysicsShape): BoundingBox {
         return {} as BoundingBox;
     }
 
