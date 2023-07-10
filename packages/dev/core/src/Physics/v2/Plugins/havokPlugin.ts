@@ -68,9 +68,9 @@ class MeshAccumulator {
         }
 
         if (includeChildren) {
-            var worldToRoot = TmpVectors.Matrix[1];
+            const worldToRoot = TmpVectors.Matrix[1];
             mesh.computeWorldMatrix().invertToRef(worldToRoot);
-            var worldToRootScaled = TmpVectors.Matrix[2];
+            const worldToRootScaled = TmpVectors.Matrix[2];
             worldToRoot.multiplyToRef(rootScaled, worldToRootScaled);
 
             const children = mesh.getChildMeshes(false);
@@ -78,8 +78,8 @@ class MeshAccumulator {
             //  Other plugin implementations do not have this check, which appears to be
             //  a bug, as otherwise, the mesh will have a duplicate collider
             children.filter((m: any) => !m.physicsBody).forEach((m: TransformNode) => {
-                var childToWorld = m.computeWorldMatrix();
-                var childToRootScaled = TmpVectors.Matrix[3];
+                const childToWorld = m.computeWorldMatrix();
+                const childToRootScaled = TmpVectors.Matrix[3];
                 childToWorld.multiplyToRef(worldToRootScaled, childToRootScaled);
 
                 if (m instanceof Mesh) {
