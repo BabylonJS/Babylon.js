@@ -1661,8 +1661,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         if (this._accumulatedCount > 1) {
             const intPart = this._accumulatedCount | 0;
             this._accumulatedCount -= intPart;
-            this._currentActiveCount = Math.min(this._activeCount, this._currentActiveCount + intPart);
+            this._currentActiveCount += intPart;
         }
+
+        this._currentActiveCount = Math.min(this._activeCount, this._currentActiveCount);
 
         if (!this._currentActiveCount) {
             return 0;
