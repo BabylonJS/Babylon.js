@@ -347,7 +347,7 @@ export class FreeCamera extends TargetCamera {
     /**
      * @internal
      */
-    public _collideWithWorld(displacement: Vector3): void {
+    public _collideWithWorld(displacement: Vector3, defferOnly?: boolean): void {
         let globalPosition: Vector3;
 
         if (this.parent) {
@@ -376,28 +376,39 @@ export class FreeCamera extends TargetCamera {
             actualDisplacement = displacement.add(this.getScene().gravity);
         }
 
-        coordinator.getNewPosition(this._oldPosition, actualDisplacement, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
+        coordinator.getNewPosition(
+            this._oldPosition,
+            actualDisplacement,
+            this._collider,
+            3,
+            null,
+            (_collisionId: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh> = null) => {
+                const updatePosition = (newPos: Vector3) => {
+                    this._newPosition.copyFrom(newPos);
+
+                    this._newPosition.subtractToRef(this._oldPosition, this._diffPosition);
+
+                    if (this._diffPosition.length() > Engine.CollisionsEpsilon) {
+                        this.position.addToRef(this._diffPosition, this._deferredPositionUpdate);
+                        if (!defferOnly) {
+                            this.position.copyFrom(this._deferredPositionUpdate);
+                            if (this.onCollide && collidedMesh) {
+                                this.onCollide(collidedMesh);
+                            }
+                        } else {
+                            this._deferredUpdated = true;
+                        }
+                    }
+                };
+
+                updatePosition(newPosition);
+            },
+            this.uniqueId
+        );
     }
 
-    private _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh> = null) => {
-        const updatePosition = (newPos: Vector3) => {
-            this._newPosition.copyFrom(newPos);
-
-            this._newPosition.subtractToRef(this._oldPosition, this._diffPosition);
-
-            if (this._diffPosition.length() > Engine.CollisionsEpsilon) {
-                this.position.addInPlace(this._diffPosition);
-                if (this.onCollide && collidedMesh) {
-                    this.onCollide(collidedMesh);
-                }
-            }
-        };
-
-        updatePosition(newPosition);
-    };
-
     /** @internal */
-    public _checkInputs(): void {
+    public _checkInputs(defferOnly?: boolean): void {
         if (!this._localDirection) {
             this._localDirection = Vector3.Zero();
             this._transformedDirection = Vector3.Zero();
@@ -405,7 +416,7 @@ export class FreeCamera extends TargetCamera {
 
         this.inputs.checkInputs();
 
-        super._checkInputs();
+        super._checkInputs(defferOnly);
     }
 
     /**
@@ -428,11 +439,11 @@ export class FreeCamera extends TargetCamera {
     }
 
     /** @internal */
-    public _updatePosition(): void {
+    public _updatePosition(defferOnly?: boolean): void {
         if (this.checkCollisions && this.getScene().collisionsEnabled) {
-            this._collideWithWorld(this.cameraDirection);
+            this._collideWithWorld(this.cameraDirection, defferOnly);
         } else {
-            super._updatePosition();
+            super._updatePosition(defferOnly);
         }
     }
 

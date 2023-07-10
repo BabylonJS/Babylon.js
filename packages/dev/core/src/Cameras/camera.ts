@@ -685,7 +685,7 @@ export class Camera extends Node {
     }
 
     /** @internal */
-    public _checkInputs(): void {
+    public _checkInputs(_defferOnly?: boolean): void {
         this.onAfterCheckInputsObservable.notifyObservers(this);
     }
 

@@ -7,7 +7,6 @@ import type { WebXRSessionManager } from "./webXRSessionManager";
 import { Viewport } from "../Maths/math.viewport";
 import { Observable } from "../Misc/observable";
 import { WebXRTrackingState } from "./webXRTypes";
-import { Epsilon } from "core/Maths/math.constants";
 
 /**
  * WebXR Camera which holds the views for the xrSession
@@ -83,7 +82,7 @@ export class WebXRCamera extends FreeCamera {
 
                 if (this._deferredUpdated) {
                     this.position.copyFrom(this._deferredPositionUpdate);
-                    this.rotationQuaternion.copyFrom(this._deferredRotationUpdate);
+                    this.rotationQuaternion.copyFrom(this._deferredRotationQuaternionUpdate);
                 }
 
                 this._updateReferenceSpace();
@@ -177,96 +176,8 @@ export class WebXRCamera extends FreeCamera {
         Quaternion.FromEulerAnglesToRef(tmpVector.x, yRotation, tmpVector.z, this.rotationQuaternion);
     }
 
-    private _deferredPositionUpdate = new Vector3();
-    private _deferredRotationUpdate = new Quaternion();
-    private _tmpRotation: Vector3 = Vector3.Zero();
-    private _deferredUpdated = false;
-
-    public _updatePosition(): void {
-        if (this.parent) {
-            this.parent.getWorldMatrix().invertToRef(TmpVectors.Matrix[0]);
-            Vector3.TransformNormalToRef(this.cameraDirection, TmpVectors.Matrix[0], TmpVectors.Vector3[0]);
-            this._deferredPositionUpdate.addInPlace(TmpVectors.Vector3[0]);
-            return;
-        }
-        this._deferredPositionUpdate.addInPlace(this.cameraDirection);
-    }
-
     public _checkInputs(): void {
-        if (!this._localDirection) {
-            this._localDirection = Vector3.Zero();
-            this._transformedDirection = Vector3.Zero();
-        }
-
-        this.inputs.checkInputs();
-        this._deferredUpdated = false;
-        this._deferredPositionUpdate.copyFrom(this.position);
-        this._deferredRotationUpdate.copyFrom(this.rotationQuaternion);
-        const directionMultiplier = this.invertRotation ? -this.inverseRotationSpeed : 1.0;
-        const needToMove = this._decideIfNeedsToMove();
-        const needToRotate = Math.abs(this.cameraRotation.x) > 0 || Math.abs(this.cameraRotation.y) > 0;
-
-        // Move
-        if (needToMove) {
-            this._updatePosition();
-            this._deferredUpdated = true;
-        }
-
-        // Rotate
-        if (needToRotate) {
-            //rotate, if quaternion is set and rotation was used
-            this.rotationQuaternion.toEulerAnglesToRef(this._tmpRotation);
-
-            this._tmpRotation.x += this.cameraRotation.x * directionMultiplier;
-            this._tmpRotation.y += this.cameraRotation.y * directionMultiplier;
-
-            // Apply constraints
-            if (!this.noRotationConstraint) {
-                const limit = 1.570796;
-
-                if (this._tmpRotation.x > limit) {
-                    this._tmpRotation.x = limit;
-                }
-                if (this._tmpRotation.x < -limit) {
-                    this._tmpRotation.x = -limit;
-                }
-            }
-
-            const len = this._tmpRotation.lengthSquared();
-            if (len) {
-                Quaternion.RotationYawPitchRollToRef(this._tmpRotation.y, this._tmpRotation.x, this._tmpRotation.z, this._deferredRotationUpdate);
-                this._deferredUpdated = true;
-            }
-        }
-
-        // Inertia
-        if (needToMove) {
-            if (Math.abs(this.cameraDirection.x) < this.speed * Epsilon) {
-                this.cameraDirection.x = 0;
-            }
-
-            if (Math.abs(this.cameraDirection.y) < this.speed * Epsilon) {
-                this.cameraDirection.y = 0;
-            }
-
-            if (Math.abs(this.cameraDirection.z) < this.speed * Epsilon) {
-                this.cameraDirection.z = 0;
-            }
-
-            this.cameraDirection.scaleInPlace(this.inertia);
-        }
-        if (needToRotate) {
-            if (Math.abs(this.cameraRotation.x) < this.speed * Epsilon) {
-                this.cameraRotation.x = 0;
-            }
-
-            if (Math.abs(this.cameraRotation.y) < this.speed * Epsilon) {
-                this.cameraRotation.y = 0;
-            }
-            this.cameraRotation.scaleInPlace(this.inertia);
-        }
-
-        this.onAfterCheckInputsObservable.notifyObservers(this);
+        super._checkInputs(true);
     }
 
     public dispose() {

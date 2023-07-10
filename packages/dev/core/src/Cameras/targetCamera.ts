@@ -96,6 +96,11 @@ export class TargetCamera extends Camera {
     /** @internal */
     public _transformedReferencePoint = Vector3.Zero();
 
+    protected _deferredPositionUpdate = new Vector3();
+    protected _deferredRotationQuaternionUpdate = new Quaternion();
+    protected _deferredRotationUpdate = new Vector3();
+    protected _deferredUpdated = false;
+
     /** @internal */
     public _reset: () => void;
 
@@ -313,54 +318,88 @@ export class TargetCamera extends Camera {
     }
 
     /** @internal */
-    public _updatePosition(): void {
+    public _updatePosition(defferOnly?: boolean): void {
         if (this.parent) {
             this.parent.getWorldMatrix().invertToRef(TmpVectors.Matrix[0]);
             Vector3.TransformNormalToRef(this.cameraDirection, TmpVectors.Matrix[0], TmpVectors.Vector3[0]);
-            this.position.addInPlace(TmpVectors.Vector3[0]);
+            this._deferredPositionUpdate.addInPlace(TmpVectors.Vector3[0]);
+            if (!defferOnly) {
+                this.position.copyFrom(this._deferredPositionUpdate);
+            } else {
+                this._deferredUpdated = true;
+            }
             return;
         }
-        this.position.addInPlace(this.cameraDirection);
+        this._deferredPositionUpdate.addInPlace(this.cameraDirection);
+        if (!defferOnly) {
+            this.position.copyFrom(this.cameraDirection);
+        } else {
+            this._deferredUpdated = true;
+        }
     }
 
     /** @internal */
-    public _checkInputs(): void {
+    public _checkInputs(defferOnly?: boolean): void {
         const directionMultiplier = this.invertRotation ? -this.inverseRotationSpeed : 1.0;
         const needToMove = this._decideIfNeedsToMove();
-        const needToRotate = Math.abs(this.cameraRotation.x) > 0 || Math.abs(this.cameraRotation.y) > 0;
+        const needToRotate = this.cameraRotation.x || this.cameraRotation.y;
+
+        this._deferredUpdated = false;
+        this._deferredRotationUpdate.copyFrom(this.rotation);
+        this._deferredPositionUpdate.copyFrom(this.position);
+        if (this.rotationQuaternion) {
+            this._deferredRotationQuaternionUpdate.copyFrom(this.rotationQuaternion);
+        }
 
         // Move
         if (needToMove) {
-            this._updatePosition();
+            this._updatePosition(defferOnly);
         }
 
         // Rotate
         if (needToRotate) {
+            console.log("rotate");
             //rotate, if quaternion is set and rotation was used
             if (this.rotationQuaternion) {
-                this.rotationQuaternion.toEulerAnglesToRef(this.rotation);
+                this.rotationQuaternion.toEulerAnglesToRef(this._deferredRotationUpdate);
             }
 
-            this.rotation.x += this.cameraRotation.x * directionMultiplier;
-            this.rotation.y += this.cameraRotation.y * directionMultiplier;
+            this._deferredRotationUpdate.x += this.cameraRotation.x * directionMultiplier;
+            this._deferredRotationUpdate.y += this.cameraRotation.y * directionMultiplier;
 
             // Apply constraints
             if (!this.noRotationConstraint) {
                 const limit = 1.570796;
 
-                if (this.rotation.x > limit) {
-                    this.rotation.x = limit;
+                if (this._deferredRotationUpdate.x > limit) {
+                    this._deferredRotationUpdate.x = limit;
                 }
-                if (this.rotation.x < -limit) {
-                    this.rotation.x = -limit;
+                if (this._deferredRotationUpdate.x < -limit) {
+                    this._deferredRotationUpdate.x = -limit;
                 }
+            }
+
+            if (!defferOnly) {
+                this.rotation.copyFrom(this._deferredRotationUpdate);
+            } else {
+                this._deferredUpdated = true;
             }
 
             //rotate, if quaternion is set and rotation was used
             if (this.rotationQuaternion) {
-                const len = this.rotation.lengthSquared();
+                const len = this._deferredRotationUpdate.lengthSquared();
                 if (len) {
-                    Quaternion.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this.rotationQuaternion);
+                    Quaternion.RotationYawPitchRollToRef(
+                        this._deferredRotationUpdate.y,
+                        this._deferredRotationUpdate.x,
+                        this._deferredRotationUpdate.z,
+                        this._deferredRotationQuaternionUpdate
+                    );
+                    if (!defferOnly) {
+                        this.rotationQuaternion.copyFrom(this._deferredRotationQuaternionUpdate);
+                    } else {
+                        this._deferredUpdated = true;
+                    }
                 }
             }
         }
@@ -392,7 +431,7 @@ export class TargetCamera extends Camera {
             this.cameraRotation.scaleInPlace(this.inertia);
         }
 
-        super._checkInputs();
+        super._checkInputs(defferOnly);
     }
 
     protected _updateCameraRotationMatrix() {
