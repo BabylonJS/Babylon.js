@@ -144,11 +144,11 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @deprecated Please use maxActiveParticleCount instead.
      */
     public get activeParticleCount(): number {
-        return this._maxActiveParticleCount;
+        return this.maxActiveParticleCount;
     }
 
     public set activeParticleCount(value: number) {
-        this._maxActiveParticleCount = Math.min(value, this._capacity);
+        this.maxActiveParticleCount = value;
     }
 
     private _preWarmDone = false;
