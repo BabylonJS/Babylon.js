@@ -12,18 +12,25 @@ import {
 /**
  * @param engineType name of the engine (webgl1, webgl2, webgpu)
  * @param testFileName name of the .json file (without the .json extension) containing the tests
+ * @param debug if true, the browser will be launched in debug mode
+ * @param debugWait if true, the browser will wait on the browser in which it is running
+ * @param logToConsole if true, the logs will be output to the console
+ * @param logToFile if true, the logs will be output to a file
  */
 export const evaluateTests = async (engineType = "webgl2", testFileName = "config", debug = false, debugWait = false, logToConsole = true, logToFile = false) => {
-    // jest doesn't support cutstom CLI variables
-    // const engineType = buildTools.checkArgs("--engine", false, true) || "webgl2";
-    // const debug = buildTools.checkArgs("--debug", true);
-    // const configPath = buildTools.checkArgs("--config", false, true) || "../config.json";
-
-    jest.retryTimes(3);
+    jest.retryTimes(2);
 
     debug = process.env.DEBUG === "true" || debug;
 
-    const configPath = process.env.CONFIG || path.resolve(__dirname, testFileName + ".json");
+    if (process.env.TEST_FILENAME) {
+        testFileName = process.env.TEST_FILENAME;
+    }
+
+    if (process.env.LOG_TO_CONSOLE) {
+        logToConsole = process.env.LOG_TO_CONSOLE === "true";
+    }
+
+    const configPath = process.env.CONFIG_PATH || path.resolve(__dirname, testFileName + ".json");
     const useStandardTestList = testFileName === "config";
     // load the config
     const rawJsonData = fs.readFileSync(configPath, "utf8");
@@ -32,8 +39,14 @@ export const evaluateTests = async (engineType = "webgl2", testFileName = "confi
 
     const logPath = path.resolve(__dirname, `${testFileName}_${engineType}_log.txt`);
 
+    const excludeRegexArray = process.env.EXCLUDE_REGEX_ARRAY ? process.env.EXCLUDE_REGEX_ARRAY.split(",") : [];
+
     const tests: any[] = config.tests.filter((test: any) => {
-        return !(test.excludeFromAutomaticTesting || (test.excludedEngines && test.excludedEngines.includes(engineType)));
+        const externallyExcluded = excludeRegexArray.some((regex) => {
+            const re = new RegExp(regex, "i");
+            return re.test(test.title);
+        });
+        return !(externallyExcluded || test.excludeFromAutomaticTesting || (test.excludedEngines && test.excludedEngines.includes(engineType)));
     });
 
     // 2% error rate
@@ -54,10 +67,7 @@ export const evaluateTests = async (engineType = "webgl2", testFileName = "confi
         }
     }
 
-    beforeAll(async () => {
-        if (logToFile) {
-            fs.writeFileSync(logPath, "", "utf8");
-        }
+    async function preparePageForTests() {
         page.on("console", async (msg) => {
             // serialize my args the way I want
             const args = await Promise.all(
@@ -81,30 +91,28 @@ export const evaluateTests = async (engineType = "webgl2", testFileName = "confi
             }
         });
         page.on("pageerror", ({ message }) => log(message)).on("requestfailed", (request) => log(`${request.failure().errorText} ${request.url()}`));
-        log("opening page");
+        log("preparing page");
         await page.setViewport({ width: 600, height: 400 });
         page.setDefaultTimeout(0);
         await page.goto(getGlobalConfig({ root: config.root }).baseUrl + `/empty.html`, {
             waitUntil: "load", // for chrome should be "networkidle0"
             timeout: 0,
         });
-        // await page.evaluate(ensurePageIsReady);
+        log("page ready");
+    }
 
-        log("page opened");
-        // await jestPuppeteer.debug();
-    });
-    afterAll(async () => {
-        await page.evaluate(() => {
-            window.engine && window.engine.dispose();
-            window.scene = null;
-            window.engine = null;
-        });
-        // await jestPuppeteer.debug();
-        // if (browser) await browser.close();
+    beforeAll(async () => {
+        if (process.env.RESET_BROWSER !== "true") {
+            await preparePageForTests();
+        }
     });
 
     beforeEach(async () => {
-        // prepare the engine, scene
+        if (process.env.RESET_BROWSER === "true") {
+            await jestPuppeteer.resetBrowser();
+            await preparePageForTests();
+        }
+
         await page.evaluate(() => {
             if (window.scene && window.scene.dispose) {
                 // run the dispose function here
@@ -119,7 +127,20 @@ export const evaluateTests = async (engineType = "webgl2", testFileName = "confi
         if (engineFlags.renderer) {
             log(engineFlags.renderer);
         }
+
+        log("engine ready");
     });
+
+    afterAll(async () => {
+        await page.evaluate(() => {
+            window.engine && window.engine.dispose();
+            window.scene = null;
+            window.engine = null;
+        });
+        // await jestPuppeteer.debug();
+        // if (browser) await browser.close();
+    });
+
     // afterEach(async () => {
     //     // cleanup, check heap size after each test
     // });
@@ -147,7 +168,7 @@ export const evaluateTests = async (engineType = "webgl2", testFileName = "confi
                 const screenshot = await page.screenshot();
 
                 const directory = path.resolve(__dirname, "../../../../../jest-screenshot-report");
-                
+
                 // Test screenshot (also save this new screenshot if -u is set)
                 expect(screenshot).toMatchImageSnapshot({
                     customDiffConfig: {

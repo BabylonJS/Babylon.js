@@ -459,7 +459,7 @@ export const RibbonBuilder = {
 
 VertexData.CreateRibbon = CreateRibbonVertexData;
 
-(Mesh as any).CreateRibbon = (
+Mesh.CreateRibbon = (
     name: string,
     pathArray: Vector3[][],
     closeArray: boolean = false,

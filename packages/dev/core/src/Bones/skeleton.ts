@@ -482,18 +482,18 @@ export class Skeleton implements IAnimatable {
             const parentBone = bone.getParent();
 
             if (parentBone) {
-                bone.getLocalMatrix().multiplyToRef(parentBone.getWorldMatrix(), bone.getWorldMatrix());
+                bone.getLocalMatrix().multiplyToRef(parentBone.getFinalMatrix(), bone.getFinalMatrix());
             } else {
                 if (initialSkinMatrix) {
-                    bone.getLocalMatrix().multiplyToRef(initialSkinMatrix, bone.getWorldMatrix());
+                    bone.getLocalMatrix().multiplyToRef(initialSkinMatrix, bone.getFinalMatrix());
                 } else {
-                    bone.getWorldMatrix().copyFrom(bone.getLocalMatrix());
+                    bone.getFinalMatrix().copyFrom(bone.getLocalMatrix());
                 }
             }
 
             if (bone._index !== -1) {
                 const mappedIndex = bone._index === null ? index : bone._index;
-                bone.getInvertedAbsoluteTransform().multiplyToArray(bone.getWorldMatrix(), targetMatrix, mappedIndex * 16);
+                bone.getAbsoluteInverseBindMatrix().multiplyToArray(bone.getFinalMatrix(), targetMatrix, mappedIndex * 16);
             }
         }
 
@@ -540,9 +540,9 @@ export class Skeleton implements IAnimatable {
                     // Prepare bones
                     for (const bone of this.bones) {
                         if (!bone.getParent()) {
-                            const matrix = bone.getBaseMatrix();
+                            const matrix = bone.getBindMatrix();
                             matrix.multiplyToRef(poseMatrix, TmpVectors.Matrix[1]);
-                            bone._updateDifferenceMatrix(TmpVectors.Matrix[1]);
+                            bone._updateAbsoluteBindMatrices(TmpVectors.Matrix[1]);
                         }
                     }
 
@@ -646,7 +646,7 @@ export class Skeleton implements IAnimatable {
                 parentBone = result.bones[parentIndex];
             }
 
-            const bone = new Bone(source.name, result, parentBone, source.getBaseMatrix().clone(), source.getRestPose().clone());
+            const bone = new Bone(source.name, result, parentBone, source.getBindMatrix().clone(), source.getRestMatrix().clone());
             bone._index = source._index;
 
             if (source._linkedTransformNode) {
@@ -739,8 +739,8 @@ export class Skeleton implements IAnimatable {
                 index: bone.getIndex(),
                 name: bone.name,
                 id: bone.id,
-                matrix: bone.getBaseMatrix().toArray(),
-                rest: bone.getRestPose().toArray(),
+                matrix: bone.getBindMatrix().toArray(),
+                rest: bone.getRestMatrix().toArray(),
                 linkedTransformNodeId: bone.getTransformNode()?.id,
             };
 
@@ -835,14 +835,23 @@ export class Skeleton implements IAnimatable {
     }
 
     /**
-     * Compute all node absolute transforms
+     * Compute all node absolute matrices
      * @param forceUpdate defines if computation must be done even if cache is up to date
      */
-    public computeAbsoluteTransforms(forceUpdate = false): void {
+    public computeAbsoluteMatrices(forceUpdate = false): void {
         if (this._absoluteTransformIsDirty || forceUpdate) {
-            this.bones[0].computeAbsoluteTransforms();
+            this.bones[0].computeAbsoluteMatrices();
             this._absoluteTransformIsDirty = false;
         }
+    }
+
+    /**
+     * Compute all node absolute matrices
+     * @param forceUpdate defines if computation must be done even if cache is up to date
+     * @deprecated Please use computeAbsoluteMatrices instead
+     */
+    public computeAbsoluteTransforms(forceUpdate = false): void {
+        this.computeAbsoluteMatrices(forceUpdate);
     }
 
     /**

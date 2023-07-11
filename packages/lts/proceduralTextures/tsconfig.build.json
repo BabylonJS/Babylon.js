@@ -5,10 +5,10 @@
         "composite": true,
         "target": "es5",
         "outDir": "./dist",
-        "rootDir": "./generated",
+        "rootDir": "./src",
         "paths": {
-            "core/*": ["lts/core/dist/*"],
-            "procedural-textures/*": ["lts/proceduralTextures/generated/*"]
+            "core/*": ["dev/core/dist/*"],
+            "procedural-textures/*": ["dev/proceduralTextures/dist/*"]
         }
     },
 
@@ -18,5 +18,5 @@
         }
     ],
 
-    "include": ["./generated/**/*"]
+    "include": ["./src/**/*"]
 }

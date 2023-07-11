@@ -131,6 +131,9 @@ export class PhysicsBody {
     public clone(transformNode: TransformNode): PhysicsBody {
         const clonedBody = new PhysicsBody(transformNode, this.getMotionType(), this.startAsleep, this.transformNode.getScene());
         clonedBody.shape = this.shape;
+        clonedBody.setMassProperties(this.getMassProperties());
+        clonedBody.setLinearDamping(this.getLinearDamping());
+        clonedBody.setAngularDamping(this.getAngularDamping());
         return clonedBody;
     }
 

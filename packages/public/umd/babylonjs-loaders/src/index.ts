@@ -1,3 +1,3 @@
-import * as loaders from "loaders/legacy/legacy";
+import * as loaders from "@lts/loaders/legacy/legacy";
 export { loaders };
 export default loaders;

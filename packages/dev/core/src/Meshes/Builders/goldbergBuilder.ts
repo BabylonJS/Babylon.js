@@ -189,5 +189,3 @@ export function CreateGoldberg(name: string, options: GoldbergCreationOption, sc
 
     return goldberg;
 }
-
-(Mesh as any).CreateGoldberg = CreateGoldberg;
