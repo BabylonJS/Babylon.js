@@ -370,8 +370,8 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
 
         const resolutionLineWidth = TmpVectors.Vector4[0];
         resolutionLineWidth.x = this._aspect;
-        resolutionLineWidth.y = this._resolution.x
-        resolutionLineWidth.z = this._resolution.y
+        resolutionLineWidth.y = this._resolution.x;
+        resolutionLineWidth.z = this._resolution.y;
         resolutionLineWidth.w = this.width;
         uniformBuffer.updateVector4("grl_aspect_resolution_lineWidth", resolutionLineWidth);
 
