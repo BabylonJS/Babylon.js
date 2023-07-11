@@ -133,6 +133,11 @@ export interface IHighlightLayerOptions {
      * The type of the main texture. Default: TEXTURETYPE_UNSIGNED_INT
      */
     mainTextureType: number;
+
+    /**
+     * Whether or not to generate a stencil buffer. Default: false
+     */
+    generateStencilBuffer: boolean;
 }
 
 /**
@@ -305,6 +310,7 @@ export class HighlightLayer extends EffectLayer {
             camera: null,
             renderingGroupId: -1,
             mainTextureType: Constants.TEXTURETYPE_UNSIGNED_INT,
+            generateStencilBuffer: false,
             ...options,
         };
 
@@ -316,6 +322,7 @@ export class HighlightLayer extends EffectLayer {
             mainTextureRatio: this._options.mainTextureRatio,
             renderingGroupId: this._options.renderingGroupId,
             mainTextureType: this._options.mainTextureType,
+            generateStencilBuffer: this._options.generateStencilBuffer,
         });
 
         // Do not render as long as no meshes have been added
