@@ -1,3 +1,3 @@
-import * as materials from "materials/legacy/legacy-grid";
+import * as materials from "@lts/materials/legacy/legacy-grid";
 export { materials };
 export default materials;

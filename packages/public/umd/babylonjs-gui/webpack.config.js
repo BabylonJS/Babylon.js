@@ -7,6 +7,10 @@ module.exports = (env) => {
         devPackageName: "gui",
         namespace: "BABYLON.GUI",
         outputPath: path.resolve(__dirname),
+        alias: {
+            gui: path.resolve(__dirname, "../../../dev/gui/src"),
+            "@lts/gui": path.resolve(__dirname, "../../../lts/gui/src"),
+        },
     });
     return commonConfig;
 };

@@ -1,3 +1,3 @@
-import * as postProcess from "post-processes/legacy/legacy-digitalRain";
+import * as postProcess from "@lts/post-processes/legacy/legacy-digitalRain";
 export { postProcess };
 export default postProcess;

@@ -1,5 +1,5 @@
 import type { Vector3, Quaternion } from "../../Maths/math.vector";
-import type { PhysicsRaycastResult } from "../physicsRaycastResult";
+import type { IRaycastQuery, PhysicsRaycastResult } from "../physicsRaycastResult";
 import type { PhysicsBody } from "./physicsBody";
 import type { PhysicsShape } from "./physicsShape";
 import type { PhysicsConstraint } from "./physicsConstraint";
@@ -308,17 +308,6 @@ export enum PhysicsMotionType {
     DYNAMIC,
 }
 
-/**
- * Interface for query parameters in the raycast function.
- * @see the "Collision Filtering" section in https://github.com/eoineoineoin/glTF/tree/MSFT_RigidBodies/extensions/2.0/Vendor/MSFT_collision_primitives
- */
-export interface IRaycastQuery {
-    /** Membership mask */
-    membership?: number;
-    /** CollideWith mask */
-    collideWith?: number;
-}
-
 /** @internal */
 export interface IPhysicsEnginePluginV2 {
     /**
@@ -414,7 +403,7 @@ export interface IPhysicsEnginePluginV2 {
     disposeConstraint(constraint: PhysicsConstraint): void;
 
     // raycast
-    raycast(from: Vector3, to: Vector3, result: PhysicsRaycastResult): void;
+    raycast(from: Vector3, to: Vector3, result: PhysicsRaycastResult, query?: IRaycastQuery): void;
 
     dispose(): void;
 }

@@ -7,7 +7,8 @@ import {
     PhysicsConstraintAxis,
     PhysicsConstraintAxisLimitMode,
 } from "../IPhysicsEnginePlugin";
-import type { PhysicsShapeParameters, IPhysicsEnginePluginV2, PhysicsMassProperties, IPhysicsCollisionEvent, IRaycastQuery } from "../IPhysicsEnginePlugin";
+import type { PhysicsShapeParameters, IPhysicsEnginePluginV2, PhysicsMassProperties, IPhysicsCollisionEvent } from "../IPhysicsEnginePlugin";
+import type { IRaycastQuery, PhysicsRaycastResult } from "../../physicsRaycastResult";
 import { Logger } from "../../../Misc/logger";
 import type { PhysicsBody } from "../physicsBody";
 import type { PhysicsConstraint, Physics6DoFConstraint } from "../physicsConstraint";
@@ -16,7 +17,6 @@ import { PhysicsMaterialCombineMode } from "../physicsMaterial";
 import { PhysicsShape } from "../physicsShape";
 import type { BoundingBox } from "../../../Culling/boundingBox";
 import type { TransformNode } from "../../../Meshes/transformNode";
-import type { PhysicsRaycastResult } from "../../physicsRaycastResult";
 import { Mesh } from "../../../Meshes/mesh";
 import type { Scene } from "../../../scene";
 import { VertexBuffer } from "../../../Buffers/buffer";
@@ -24,6 +24,18 @@ import { ArrayTools } from "../../../Misc/arrayTools";
 import { Observable } from "../../../Misc/observable";
 import type { Nullable } from "../../../types";
 declare let HK: any;
+
+/**
+ * Helper to keep a reference to plugin memory.
+ * Used to avoid https://github.com/emscripten-core/emscripten/issues/7294
+ * @internal
+ */
+interface PluginMemoryRef {
+    /** The offset from the beginning of the plugin's heap */
+    offset: number;
+    /** The number of identically-sized objects the buffer contains */
+    numObjects: number;
+}
 
 class MeshAccumulator {
     /**
@@ -101,7 +113,7 @@ class MeshAccumulator {
      * freeBuffer() on the returned array once you have finished with it, in order to free the
      * memory inside the plugin..
      */
-    public getVertices(plugin: any): Float32Array {
+    public getVertices(plugin: any): PluginMemoryRef {
         const nFloats = this._vertices.length * 3;
         const bytesPerFloat = 4;
         const nBytes = nFloats * bytesPerFloat;
@@ -114,11 +126,11 @@ class MeshAccumulator {
             ret[i * 3 + 2] = this._vertices[i].z;
         }
 
-        return ret;
+        return { offset: bufferBegin, numObjects: nFloats };
     }
 
-    public freeBuffer(plugin: any, arr: Float32Array | Int32Array) {
-        plugin._free(arr.byteOffset);
+    public freeBuffer(plugin: any, arr: PluginMemoryRef) {
+        plugin._free(arr.offset);
     }
 
     /**
@@ -128,7 +140,7 @@ class MeshAccumulator {
      * of the triangle positions, where a single triangle is defined by three indices. You must call
      * freeBuffer() on this array once you have finished with it, to free the memory inside the plugin..
      */
-    public getTriangles(plugin: any): Int32Array {
+    public getTriangles(plugin: any): PluginMemoryRef {
         const bytesPerInt = 4;
         const nBytes = this._indices.length * bytesPerInt;
         const bufferBegin = plugin._malloc(nBytes);
@@ -137,7 +149,7 @@ class MeshAccumulator {
             ret[i] = this._indices[i];
         }
 
-        return ret;
+        return { offset: bufferBegin, numObjects: this._indices.length };
     }
 
     private _isRightHanded: boolean;
@@ -1077,14 +1089,14 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                         accum.addMesh(mesh, includeChildMeshes);
 
                         const positions = accum.getVertices(this._hknp);
-                        const numVec3s = positions.length / 3;
+                        const numVec3s = positions.numObjects / 3;
 
                         if (type == PhysicsShapeType.CONVEX_HULL) {
-                            shape._pluginData = this._hknp.HP_Shape_CreateConvexHull(positions.byteOffset, numVec3s)[1];
+                            shape._pluginData = this._hknp.HP_Shape_CreateConvexHull(positions.offset, numVec3s)[1];
                         } else {
                             const triangles = accum.getTriangles(this._hknp);
-                            const numTriangles = triangles.length / 3;
-                            shape._pluginData = this._hknp.HP_Shape_CreateMesh(positions.byteOffset, numVec3s, triangles.byteOffset, numTriangles)[1];
+                            const numTriangles = triangles.numObjects / 3;
+                            shape._pluginData = this._hknp.HP_Shape_CreateMesh(positions.offset, numVec3s, triangles.offset, numTriangles)[1];
                             accum.freeBuffer(this._hknp, triangles);
                         }
                         accum.freeBuffer(this._hknp, positions);

@@ -11,6 +11,10 @@ module.exports = (env) => {
             asciiArt: "./src/asciiArt.ts",
             digitalRain: "./src/digitalRain.ts",
         },
+        alias: {
+            "post-processes": path.resolve(__dirname, "../../../dev/postProcesses/src"),
+            "@lts/post-processes": path.resolve(__dirname, "../../../lts/postProcesses/src"),
+        },
         overrideFilename: (pathData) => {
             return pathData.chunk.name === "postProcess" ? `babylonjs.[name]${env.production ? ".min" : ""}.js` : `babylon.[name]PostProcess${env.production ? ".min" : ""}.js`;
         },

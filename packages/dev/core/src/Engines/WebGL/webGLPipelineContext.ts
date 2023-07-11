@@ -23,6 +23,9 @@ export class WebGLPipelineContext implements IPipelineContext {
     public programLinkError: Nullable<string> = null;
     public programValidationError: Nullable<string> = null;
 
+    /** @internal */
+    public _isDisposed = false;
+
     public get isAsync() {
         return this.isParallelCompiled;
     }
@@ -90,6 +93,7 @@ export class WebGLPipelineContext implements IPipelineContext {
      **/
     public dispose() {
         this._uniforms = {};
+        this._isDisposed = true;
     }
 
     /**
