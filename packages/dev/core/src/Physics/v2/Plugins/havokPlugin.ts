@@ -7,7 +7,7 @@ import {
     PhysicsConstraintAxis,
     PhysicsConstraintAxisLimitMode,
 } from "../IPhysicsEnginePlugin";
-import type { PhysicsShapeParameters, IPhysicsEnginePluginV2, PhysicsMassProperties, IPhysicsCollisionEvent } from "../IPhysicsEnginePlugin";
+import { PhysicsShapeParameters, IPhysicsEnginePluginV2, PhysicsMassProperties, IPhysicsCollisionEvent, PhysicsCollisionEventType } from "../IPhysicsEnginePlugin";
 import type { IRaycastQuery, PhysicsRaycastResult } from "../../physicsRaycastResult";
 import { Logger } from "../../../Misc/logger";
 import type { PhysicsBody } from "../physicsBody";
@@ -177,10 +177,10 @@ class ContactPoint {
 }
 
 class CollisionEvent {
-    //public eventType: number = 0; //0,1
     public contactOnA: ContactPoint = new ContactPoint(); //1
     public contactOnB: ContactPoint = new ContactPoint();
     public impulseApplied: number = 0;
+    public type: number = 0;
 
     static readToRef(buffer: any, offset: number, eventOut: CollisionEvent) {
         const intBuf = new Int32Array(buffer, offset);
@@ -194,6 +194,8 @@ class CollisionEvent {
         eventOut.contactOnB.position.set(floatBuf[offB + 8], floatBuf[offB + 9], floatBuf[offB + 10]);
         eventOut.contactOnB.normal.set(floatBuf[offB + 11], floatBuf[offB + 12], floatBuf[offB + 13]);
         eventOut.impulseApplied = floatBuf[offB + 13 + 3];
+        eventOut.type = intBuf[0];
+        console.log("event type", eventOut.type);
     }
 }
 
@@ -1706,6 +1708,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                 distance: distance,
                 impulse: event.impulseApplied,
                 normal: event.contactOnA.normal,
+                type: this._nativeCollisionValueToCollisionType(event.type),
             };
             this.onCollisionObservable.notifyObservers(collisionInfo);
 
@@ -1836,5 +1839,18 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             case PhysicsConstraintAxisLimitMode.LOCKED:
                 return this._hknp.ConstraintAxisLimitMode.LOCKED;
         }
+    }
+
+    private _nativeCollisionValueToCollisionType(type: number): PhysicsCollisionEventType {
+        switch (type) {
+            case this._hknp.EventType.COLLISION_STARTED.value:
+                return PhysicsCollisionEventType.COLLISION_STARTED;
+            case this._hknp.EventType.COLLISION_FINISHED.value:
+                return PhysicsCollisionEventType.COLLISION_FINISHED;
+            case this._hknp.EventType.COLLISION_CONTINUED.value:
+                return PhysicsCollisionEventType.COLLISION_CONTINUED;
+        }
+
+        return PhysicsCollisionEventType.COLLISION_STARTED;
     }
 }

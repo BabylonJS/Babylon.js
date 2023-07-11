@@ -126,6 +126,12 @@ export enum PhysicsConstraintMotorType {
     POSITION,
 }
 
+export enum PhysicsCollisionEventType {
+    COLLISION_STARTED = "started",
+    COLLISION_CONTINUED = "continued",
+    COLLISION_FINISHED = "finished",
+}
+
 /**
  * Collision object that is the parameter when notification for collision fires.
  */
@@ -162,6 +168,10 @@ export interface IPhysicsCollisionEvent {
      * Collision world normal direction
      */
     normal: Nullable<Vector3>;
+    /**
+     * Event type
+     */
+    type: PhysicsCollisionEventType;
 }
 
 /**
