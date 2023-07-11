@@ -63,14 +63,15 @@ Mesh._GreasedLineMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
  */
 export class GreasedLineMesh extends Mesh {
     private _vertexPositions: number[];
-    private _offsets?: number[];
-    private _colorPointers: number[];
     private _previousAndSide: number[];
     private _nextAndCounters: number[];
 
     private _indices: number[];
     private _uvs: number[];
     private _points: number[][];
+    private _offsets: number[];
+    private _colorPointers: number[];
+    private _widths: number[];
 
     private _offsetsBuffer?: Buffer;
     private _widthsBuffer?: Buffer;
@@ -100,10 +101,10 @@ export class GreasedLineMesh extends Mesh {
         this._uvs = [];
         this._points = [];
         this._colorPointers = _options.colorPointers ?? [];
+        this._widths = _options.widths ?? new Array(_options.points.length).fill(1);
 
         this._previousAndSide = [];
         this._nextAndCounters = [];
-        _options.widths = _options.widths ?? new Array(_options.points.length).fill(1);
 
         if (_options.points) {
             this.addPoints(GreasedLineMesh.ConvertPoints(_options.points));
@@ -185,18 +186,18 @@ export class GreasedLineMesh extends Mesh {
     }
 
     /**
-     *
-     * @returns options of the line
+     * Return the the points offsets
      */
-    get options(): GreasedLineMeshOptions {
-        return this._options;
+    get offsets() {
+        return this._offsets;
     }
 
     /**
-     * Sets point offets
+     * Sets point offests
      * @param offsets offset table [x,y,z, x,y,z, ....]
      */
-    public setOffsets(offsets: number[]) {
+    set offsets(offsets: number[]) {
+        this._offsets = offsets;
         if (!this._offsetsBuffer) {
             this._createOffsetsBuffer(offsets);
         } else {
@@ -205,21 +206,36 @@ export class GreasedLineMesh extends Mesh {
     }
 
     /**
-     * Sets widths at each line point
-     * @param widths width table [widthUpper,widthLower, widthUpper,widthLower, ...]
+     * Gets widths at each line point like [widthLower, widthUpper, widthLower, widthUpper, ...]
      */
-    public setSegmentWidths(widths: number[]) {
-        this._options.widths = widths;
+    get widths() {
+        return this._widths;
+    }
+
+    /**
+     * Sets widths at each line point
+     * @param widths width table [widthLower, widthUpper, widthLower, widthUpper ...]
+     */
+    set widths(widths: number[]) {
+        this._widths = widths;
         if (!this._lazy) {
             this._widthsBuffer && this._widthsBuffer.update(widths);
         }
     }
 
     /**
-     * Sets the color pointer
-     * @param colorPointers arra of color pointer in the colors array. One pointer for every vertex is needed.
+     * Gets the color pointer. Each vertex need a color pointer. These color pointers points to the colors in the color table @see colors
      */
-    public setColorPointers(colorPointers: number[]) {
+    get colorPointers() {
+        return this._colorPointers;
+    }
+
+    /**
+     * Sets the color pointer
+     * @param colorPointers array of color pointer in the colors array. One pointer for every vertex is needed.
+     */
+    set colorPointers(colorPointers: number[]) {
+        this._colorPointers = colorPointers;
         if (!this._lazy) {
             this._colorPointersBuffer && this._colorPointersBuffer.update(colorPointers);
         }
@@ -233,12 +249,23 @@ export class GreasedLineMesh extends Mesh {
     }
 
     /**
+     * Return copy the points.
+     */
+    get points() {
+        const pointsCopy: number[][] = [];
+        DeepCopier.DeepCopy(this._points, pointsCopy);
+        return pointsCopy;
+    }
+
+    /**
      * Adds new points to the line. It doesn't rerenders the line if in lazy mode.
      * @param points points table
      */
     public addPoints(points: number[][]) {
-        const numberPoints = points;
-        this._points.push(...numberPoints);
+        for (const p of points) {
+            this._points.push(p);
+        }
+
         if (!this._lazy) {
             this.setPoints(this._points);
         }
@@ -299,8 +326,13 @@ export class GreasedLineMesh extends Mesh {
 
             this._preprocess(positions, previous, next, side, uvs);
 
-            this._vertexPositions.push(...positions);
-            this._indices.push(...indices);
+            for (const vp of positions) {
+                this._vertexPositions.push(vp);
+            }
+
+            for (const i of indices) {
+                this._indices.push(i);
+            }
 
             for (let i = 0; i < side.length; i++) {
                 this._previousAndSide.push(previous[i * 3], previous[i * 3 + 1], previous[i * 3 + 2], side[i]);
@@ -308,7 +340,9 @@ export class GreasedLineMesh extends Mesh {
             }
 
             uvs = this._options.uvs ?? uvs;
-            this._uvs.push(...uvs);
+            for (const uv of uvs) {
+                this._uvs.push(uv);
+            }
         });
 
         if (!this._lazy) {
@@ -320,6 +354,18 @@ export class GreasedLineMesh extends Mesh {
         }
     }
 
+    private _createLineOptions() {
+        const lineOptions: GreasedLineMeshOptions = {
+            points: this._points,
+            colorPointers: this._colorPointers,
+            lazy: this._lazy,
+            updatable: this._updatable,
+            uvs: this._uvs,
+            widths: this._widths,
+        };
+        return lineOptions;
+    }
+
     /**
      * Clones the GreasedLineMesh.
      * @param name new line name
@@ -327,10 +373,11 @@ export class GreasedLineMesh extends Mesh {
      * @returns cloned line
      */
     public clone(name: string = `${this.name}-cloned`, newParent?: Nullable<Node>) {
-        const lineOptions = {};
-        DeepCopier.DeepCopy(this._options, lineOptions, ["instance"]);
+        const lineOptions = this._createLineOptions();
+        const deepCopiedLineOptions = {};
+        DeepCopier.DeepCopy(lineOptions, deepCopiedLineOptions, ["instance"]);
 
-        const cloned = new GreasedLineMesh(name, this._scene, <GreasedLineMeshOptions>lineOptions);
+        const cloned = new GreasedLineMesh(name, this._scene, <GreasedLineMeshOptions>deepCopiedLineOptions);
         if (newParent) {
             cloned.parent = newParent;
         }
@@ -347,7 +394,8 @@ export class GreasedLineMesh extends Mesh {
     public serialize(serializationObject: any): void {
         super.serialize(serializationObject);
         serializationObject.type = this.getClassName();
-        serializationObject.lineOptions = this._options;
+
+        serializationObject.lineOptions = this._createLineOptions();
     }
 
     /**
@@ -420,9 +468,9 @@ export class GreasedLineMesh extends Mesh {
 
         const indices = this.getIndices();
         const positions = this.getVerticesData(VertexBuffer.PositionKind);
-        const widths = this._options.widths;
+        const widths = this._widths;
 
-        const lineWidth = this.greasedLineMaterial?.getOptions().width ?? 1;
+        const lineWidth = this.greasedLineMaterial?.width ?? 1;
 
         const intersects = [];
         if (indices && positions && widths) {
@@ -552,7 +600,7 @@ export class GreasedLineMesh extends Mesh {
         const nextAndCountersBuffer = new Buffer(engine, this._nextAndCounters, false, 4);
         this.setVerticesBuffer(nextAndCountersBuffer.createVertexBuffer("grl_nextAndCounters", 0, 4));
 
-        const widthBuffer = new Buffer(engine, this._options.widths!, this._updatable, 1);
+        const widthBuffer = new Buffer(engine, this._widths, this._updatable, 1);
         this.setVerticesBuffer(widthBuffer.createVertexBuffer("grl_widths", 0, 1));
         this._widthsBuffer = widthBuffer;
 

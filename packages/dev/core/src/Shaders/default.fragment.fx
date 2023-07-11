@@ -145,7 +145,7 @@ void main(void) {
 	baseColor.rgb *= vDiffuseInfos.y;
 #endif
 
-#ifdef DECAL
+#if defined(DECAL) && !defined(DECAL_AFTER_DETAIL)
 	vec4 decalColor = texture2D(decalSampler, vDecalUV + uvOffset);
 	#include<decalFragment>(surfaceAlbedo, baseColor, GAMMADECAL, _GAMMADECAL_NOTUSED_)
 #endif
@@ -158,6 +158,11 @@ void main(void) {
 
 #ifdef DETAIL
     baseColor.rgb = baseColor.rgb * 2.0 * mix(0.5, detailColor.r, vDetailInfos.y);
+#endif
+
+#if defined(DECAL) && defined(DECAL_AFTER_DETAIL)
+	vec4 decalColor = texture2D(decalSampler, vDecalUV + uvOffset);
+	#include<decalFragment>(surfaceAlbedo, baseColor, GAMMADECAL, _GAMMADECAL_NOTUSED_)
 #endif
 
 #define CUSTOM_FRAGMENT_UPDATE_DIFFUSE

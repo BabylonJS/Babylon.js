@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-gui",
-    "version": "6.11.0",
+    "version": "6.11.2",
     "main": "babylon.gui.js",
     "types": "babylon.gui.module.d.ts",
     "files": [
@@ -11,10 +11,11 @@
         "build:dev": "webpack --env development",
         "build:prod": "webpack --env production",
         "build:declaration": "build-tools -c pud --config ./config.json",
-        "clean": "rimraf dist && rimraf babylon*.*"
+        "clean": "rimraf dist && rimraf babylon*.*",
+        "test:escheck": "es-check es6 ./babylon.gui.js"
     },
     "dependencies": {
-        "babylonjs": "^6.11.0"
+        "babylonjs": "^6.11.2"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
@@ -43,3 +44,4 @@
         "url": "https://github.com/BabylonJS/Babylon.js/issues"
     }
 }
+
