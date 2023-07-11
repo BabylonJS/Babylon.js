@@ -600,7 +600,7 @@ export class SkeletonViewer {
         }
 
         this._getAbsoluteBindPoseToRef(bone.getParent(), matrix);
-        bone.getBaseMatrix().multiplyToRef(matrix, matrix);
+        bone.getBindMatrix().multiplyToRef(matrix, matrix);
         return;
     }
 
