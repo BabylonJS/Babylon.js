@@ -100,6 +100,7 @@ export class TargetCamera extends Camera {
     protected _deferredRotationQuaternionUpdate = new Quaternion();
     protected _deferredRotationUpdate = new Vector3();
     protected _deferredUpdated = false;
+    protected _deferOnly: boolean = false;
 
     /** @internal */
     public _reset: () => void;
@@ -318,12 +319,12 @@ export class TargetCamera extends Camera {
     }
 
     /** @internal */
-    public _updatePosition(defferOnly?: boolean): void {
+    public _updatePosition(): void {
         if (this.parent) {
             this.parent.getWorldMatrix().invertToRef(TmpVectors.Matrix[0]);
             Vector3.TransformNormalToRef(this.cameraDirection, TmpVectors.Matrix[0], TmpVectors.Vector3[0]);
             this._deferredPositionUpdate.addInPlace(TmpVectors.Vector3[0]);
-            if (!defferOnly) {
+            if (!this._deferOnly) {
                 this.position.copyFrom(this._deferredPositionUpdate);
             } else {
                 this._deferredUpdated = true;
@@ -331,7 +332,7 @@ export class TargetCamera extends Camera {
             return;
         }
         this._deferredPositionUpdate.addInPlace(this.cameraDirection);
-        if (!defferOnly) {
+        if (!this._deferOnly) {
             this.position.copyFrom(this.cameraDirection);
         } else {
             this._deferredUpdated = true;
@@ -339,7 +340,7 @@ export class TargetCamera extends Camera {
     }
 
     /** @internal */
-    public _checkInputs(defferOnly?: boolean): void {
+    public _checkInputs(): void {
         const directionMultiplier = this.invertRotation ? -this.inverseRotationSpeed : 1.0;
         const needToMove = this._decideIfNeedsToMove();
         const needToRotate = this.cameraRotation.x || this.cameraRotation.y;
@@ -353,12 +354,11 @@ export class TargetCamera extends Camera {
 
         // Move
         if (needToMove) {
-            this._updatePosition(defferOnly);
+            this._updatePosition();
         }
 
         // Rotate
         if (needToRotate) {
-            console.log("rotate");
             //rotate, if quaternion is set and rotation was used
             if (this.rotationQuaternion) {
                 this.rotationQuaternion.toEulerAnglesToRef(this._deferredRotationUpdate);
@@ -379,7 +379,7 @@ export class TargetCamera extends Camera {
                 }
             }
 
-            if (!defferOnly) {
+            if (!this._deferOnly) {
                 this.rotation.copyFrom(this._deferredRotationUpdate);
             } else {
                 this._deferredUpdated = true;
@@ -395,7 +395,7 @@ export class TargetCamera extends Camera {
                         this._deferredRotationUpdate.z,
                         this._deferredRotationQuaternionUpdate
                     );
-                    if (!defferOnly) {
+                    if (!this._deferOnly) {
                         this.rotationQuaternion.copyFrom(this._deferredRotationQuaternionUpdate);
                     } else {
                         this._deferredUpdated = true;
@@ -431,7 +431,7 @@ export class TargetCamera extends Camera {
             this.cameraRotation.scaleInPlace(this.inertia);
         }
 
-        super._checkInputs(defferOnly);
+        super._checkInputs();
     }
 
     protected _updateCameraRotationMatrix() {

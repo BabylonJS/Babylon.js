@@ -64,6 +64,7 @@ export class WebXRCamera extends FreeCamera {
         this._updateNumberOfRigCameras(1);
         // freeze projection matrix, which will be copied later
         this.freezeProjectionMatrix();
+        this._deferOnly = true;
 
         this._xrSessionManager.onXRSessionInit.add(() => {
             this._referencedPosition.copyFromFloats(0, 0, 0);
@@ -174,10 +175,6 @@ export class WebXRCamera extends FreeCamera {
         const yRotation = Math.atan2(tmpVector.x, tmpVector.z);
         this.rotationQuaternion.toEulerAnglesToRef(tmpVector);
         Quaternion.FromEulerAnglesToRef(tmpVector.x, yRotation, tmpVector.z, this.rotationQuaternion);
-    }
-
-    public _checkInputs(): void {
-        super._checkInputs(true);
     }
 
     public dispose() {
