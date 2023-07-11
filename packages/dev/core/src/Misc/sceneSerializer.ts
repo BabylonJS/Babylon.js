@@ -44,8 +44,7 @@ const SerializeMesh = (mesh: Mesh, serializationScene: any): any => {
 };
 
 const FinalizeSingleNode = (node: Node, serializationObject: any) => {
-    // Mesh, GroundMesh, etc...
-    if (node.getClassName().indexOf("Mesh") !== -1) {
+    if (node.getClassName() === "Mesh" || node.getClassName() === "GroundMesh") {
         const mesh = node as Mesh;
         //only works if the mesh is already loaded
         if (mesh.delayLoadState === Constants.DELAYLOADSTATE_LOADED || mesh.delayLoadState === Constants.DELAYLOADSTATE_NONE) {
@@ -411,7 +410,7 @@ export class SceneSerializer {
             for (let i = 0; i < toSerialize.length; ++i) {
                 if (withChildren) {
                     toSerialize[i].getDescendants().forEach((node: Node) => {
-                        if (toSerialize.indexOf(node) < 0 && !(node as any).doNotSerialize) {
+                        if (toSerialize.indexOf(node) < 0 && !node.doNotSerialize) {
                             toSerialize.push(node);
                         }
                     });
