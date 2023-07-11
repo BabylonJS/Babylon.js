@@ -23,12 +23,12 @@ export enum MeshDebugMode {
     NONE = -1,
     /**
      * A wireframe of the mesh
-     * NOTE: For this mode to work correctly, convertToUnIndexedMesh() or MeshDebugPluginMaterial.prepareMeshForTrianglesAndVerticesMode() must first be called on mesh.
+     * NOTE: For this mode to work correctly, convertToUnIndexedMesh() or MeshDebugPluginMaterial.PrepareMeshForTrianglesAndVerticesMode() must first be called on mesh.
      */
     TRIANGLES = 0,
     /**
      * A wireframe of the mesh, with points drawn over vertices
-     * NOTE: For this mode to work correctly, MeshDebugPluginMaterial.prepareMeshForTrianglesAndVerticesMode() must first be called on mesh.
+     * NOTE: For this mode to work correctly, MeshDebugPluginMaterial.PrepareMeshForTrianglesAndVerticesMode() must first be called on mesh.
      */
     TRIANGLES_VERTICES = 1,
     /**
@@ -49,7 +49,7 @@ export enum MeshDebugMode {
     MATERIALIDS = 5,
     /**
      * Points drawn over vertices of mesh
-     * NOTE: For this mode to work correctly, MeshDebugPluginMaterial.prepareMeshForTrianglesAndVerticesMode() must first be called on mesh.
+     * NOTE: For this mode to work correctly, MeshDebugPluginMaterial.PrepareMeshForTrianglesAndVerticesMode() must first be called on mesh.
      */
     VERTICES = 6,
 }
@@ -216,7 +216,7 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
      */
     public prepareDefines(defines: MeshDebugDefines, scene: Scene, mesh: AbstractMesh) {
         if ((this._mode == MeshDebugMode.VERTICES || this._mode == MeshDebugMode.TRIANGLES || this._mode == MeshDebugMode.TRIANGLES_VERTICES) && !mesh.isVerticesDataPresent("dbg_initialPass")) {
-            Logger.Warn("For best results with TRIANGLES, TRIANGLES_VERTICES, or VERTICES modes, please use MeshDebugPluginMaterial.prepareMeshForTrianglesAndVerticesMode() on mesh.", 1);
+            Logger.Warn("For best results with TRIANGLES, TRIANGLES_VERTICES, or VERTICES modes, please use MeshDebugPluginMaterial.PrepareMeshForTrianglesAndVerticesMode() on mesh.", 1);
         }
         defines.DBG_MODE = this._mode!;
         defines.DBG_MULTIPLYDEBUG = this._options.multiplyDebug!;
@@ -463,7 +463,7 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
      * @param returnRollback whether or not to return a function that reverts mesh to its initial state. Default: false.
      * @returns a rollback function if `returnRollback` is true, otherwise an empty function.
      */
-    public static prepareMeshForTrianglesAndVerticesMode(mesh: Mesh, returnRollback: boolean = false): () => void {
+    public static PrepareMeshForTrianglesAndVerticesMode(mesh: Mesh, returnRollback: boolean = false): () => void {
         let rollback = () => {};
 
         if (mesh.getTotalIndices() == 0) return rollback;
