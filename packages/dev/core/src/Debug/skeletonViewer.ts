@@ -656,7 +656,7 @@ export class SkeletonViewer {
 
                 bone.children.forEach((bc) => {
                     const childAbsoluteBindPoseTransform: Matrix = new Matrix();
-                    bc.getBaseMatrix().multiplyToRef(boneAbsoluteBindPoseTransform, childAbsoluteBindPoseTransform);
+                    bc.getLocalMatrix().multiplyToRef(boneAbsoluteBindPoseTransform, childAbsoluteBindPoseTransform);
                     const childPoint = new Vector3();
                     childAbsoluteBindPoseTransform.decompose(undefined, undefined, childPoint);
                     const distanceFromParent = Vector3.Distance(anchorPoint, childPoint);
