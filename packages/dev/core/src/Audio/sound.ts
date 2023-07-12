@@ -10,6 +10,8 @@ import { Logger } from "../Misc/logger";
 import { _WarnImport } from "../Misc/devTools";
 import type { ISoundOptions } from "./Interfaces/ISoundOptions";
 import { EngineStore } from "../Engines/engineStore";
+import type { IAudioEngine } from "./Interfaces/IAudioEngine";
+import { Observer } from "../Misc/observable";
 
 /**
  * Defines a sound that can be played in the application.
@@ -164,6 +166,8 @@ export class Sound {
     private _urlType: "Unknown" | "String" | "Array" | "ArrayBuffer" | "MediaStream" | "AudioBuffer" | "MediaElement" = "Unknown";
     private _length?: number;
     private _offset?: number;
+    private _tryToPlayTimeout?: Nullable<NodeJS.Timeout>;
+    private _audioUnlockedObserver?: Nullable<Observer<IAudioEngine>>;
 
     /**
      * @internal
@@ -430,6 +434,15 @@ export class Sound {
             if (this._connectedTransformNode && this._registerFunc) {
                 this._connectedTransformNode.unregisterAfterWorldMatrixUpdate(this._registerFunc);
                 this._connectedTransformNode = null;
+            }
+
+            if (this._tryToPlayTimeout) {
+                clearTimeout(this._tryToPlayTimeout);
+                this._tryToPlayTimeout = null;
+            }
+            if (this._audioUnlockedObserver) {
+                Engine.audioEngine.onAudioUnlockedObservable.remove(this._audioUnlockedObserver);
+                this._audioUnlockedObserver = null;
             }
         }
     }
@@ -793,7 +806,7 @@ export class Sound {
                                         // Waiting for the audio engine to be unlocked by user click on unmute
                                         Engine.audioEngine?.lock();
                                         if (this.loop || this.autoplay) {
-                                            Engine.audioEngine?.onAudioUnlockedObservable.addOnce(() => {
+                                            this._audioUnlockedObserver = Engine.audioEngine?.onAudioUnlockedObservable.addOnce(() => {
                                                 tryToPlay();
                                             });
                                         }
@@ -801,7 +814,7 @@ export class Sound {
                                 }
                             } else {
                                 if (this.loop || this.autoplay) {
-                                    Engine.audioEngine?.onAudioUnlockedObservable.addOnce(() => {
+                                    this._audioUnlockedObserver = Engine.audioEngine?.onAudioUnlockedObservable.addOnce(() => {
                                         tryToPlay();
                                     });
                                 }
@@ -848,13 +861,13 @@ export class Sound {
 
                     if (Engine.audioEngine?.audioContext.state === "suspended") {
                         // Wait a bit for FF as context seems late to be ready.
-                        setTimeout(() => {
+                        this._tryToPlayTimeout = setTimeout(() => {
                             if (Engine.audioEngine?.audioContext!.state === "suspended") {
                                 // Automatic playback failed.
                                 // Waiting for the audio engine to be unlocked by user click on unmute
                                 Engine.audioEngine.lock();
                                 if (this.loop || this.autoplay) {
-                                    Engine.audioEngine.onAudioUnlockedObservable.addOnce(() => {
+                                    this._audioUnlockedObserver = Engine.audioEngine.onAudioUnlockedObservable.addOnce(() => {
                                         tryToPlay();
                                     });
                                 }
@@ -891,6 +904,14 @@ export class Sound {
      */
     public stop(time?: number): void {
         if (this.isPlaying) {
+            if (this._tryToPlayTimeout) {
+                clearTimeout(this._tryToPlayTimeout);
+                this._tryToPlayTimeout = null;
+            }
+            if (this._audioUnlockedObserver) {
+                Engine.audioEngine?.onAudioUnlockedObservable.remove(this._audioUnlockedObserver);
+                this._audioUnlockedObserver = null;
+            }
             if (this._streaming) {
                 if (this._htmlAudioElement) {
                     this._htmlAudioElement.pause();
@@ -930,6 +951,14 @@ export class Sound {
      */
     public pause(): void {
         if (this.isPlaying) {
+            if (this._tryToPlayTimeout) {
+                clearTimeout(this._tryToPlayTimeout);
+                this._tryToPlayTimeout = null;
+            }
+            if (this._audioUnlockedObserver) {
+                Engine.audioEngine?.onAudioUnlockedObservable.remove(this._audioUnlockedObserver);
+                this._audioUnlockedObserver = null;
+            }
             if (this._streaming) {
                 if (this._htmlAudioElement) {
                     this._htmlAudioElement.pause();
