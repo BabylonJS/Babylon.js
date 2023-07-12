@@ -600,4 +600,13 @@ describe("Sound", () => {
 
         expect(sound.isPlaying).toBe(true);
     });
+
+    it("sets isPlaying to false when stopped while audio context is suspended", () => {
+        mockedAudioContext.state = "suspended";
+
+        const sound = new Sound("test", AudioSample.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, { autoplay: true });
+        sound.stop();
+
+        expect(sound.isPlaying).toBe(false);
+    });
 });
