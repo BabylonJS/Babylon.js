@@ -39,14 +39,14 @@ export class ShaderCodeCursor {
             }
 
             // Work with semicolon in the line
-            const semicolonIndex = line.indexOf(";");
+            const semicolonIndex = trimmedLine.indexOf(";");
 
             if (semicolonIndex === -1) {
                 // No semicolon in the line
                 this._lines.push(trimmedLine);
-            } else if (semicolonIndex === line.length - 1 || semicolonIndex === trimmedLine.length - 1) {
+            } else if (semicolonIndex === trimmedLine.length - 1) {
                 // Semicolon at the end of the line
-                this._lines.push(line);
+                this._lines.push(trimmedLine);
             } else {
                 // Semicolon in the middle of the line
                 const split = line.split(";");
