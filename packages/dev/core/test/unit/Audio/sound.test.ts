@@ -590,4 +590,14 @@ describe("Sound", () => {
 
         expect(onended.mock.calls.length).toBe(0);
     });
+
+    // For historical reasons, a sound's `isPlaying` property is set to `true` when it is constructed with the autoplay
+    // option set, even if the audio context state is suspended.
+    it("sets isPlaying to true when constructed with autoplay option set while audio context is suspended", () => {
+        mockedAudioContext.state = "suspended";
+
+        const sound = new Sound("test", AudioSample.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, { autoplay: true });
+
+        expect(sound.isPlaying).toBe(true);
+    });
 });
