@@ -1,49 +1,59 @@
 import { evaluatePrepareScene, getGlobalConfig, checkPerformanceOfScene } from "@tools/test-tools";
+import * as path from "path";
+import * as fs from "fs";
 
-const framesToRender = 2000;
-const numberOfPasses = 10;
-const acceptedThreshold = 0.05; // 5% compensation
+const defaultFramesToRender = process.env.PERF_FRAMES_TO_RENDER ? +process.env.PERF_FRAMES_TO_RENDER : 2000;
+const defaultNumberOfPasses = process.env.PERF_NUMBER_OF_PASSES ? +process.env.PERF_NUMBER_OF_PASSES : 10;
+const acceptedThreshold = process.env.PERF_THRESHOLD ? +process.env.PERF_THRESHOLD : 5; // 5% compensation
 
-const playgrounds = ["#WIR77Z", "#2AH4YH", "#YEZPVT", "#6HWS9M#28", "#XCPP9Y#1", "#XZ0TH6", "#JU1DZP", "#7V0Y1I#1523", "#6FBD14#2004", "#KQV9SA", "#7CBW04"];
+const configPath = process.env.CONFIG_PATH || path.resolve(__dirname, "perfTests.json");
+const rawJsonData = fs.readFileSync(configPath, "utf8");
+// console.log(data);
+const config = JSON.parse(rawJsonData.replace(/^\uFEFF/, ""));
+
+const testAgainst = process.env.PERF_TEST_AGAINST ? process.env.PERF_TEST_AGAINST.split(",") : ["https://cdn.babylonjs.com"];
 
 // IN TESTS
 // declare const BABYLON: typeof import("core/index");
 
 describe("Playground Memory Leaks", () => {
-    jest.setTimeout(40000);
-
     // eslint-disable-next-line jest/expect-expect
-    test.each(playgrounds)(
-        "Performance for playground %s",
-        async (playgroundId) => {
+    test.each(config)(
+        "Performance for playground $playground",
+        async (testScenario) => {
+            const playgroundId = testScenario.playground;
+            const passes = testScenario.passes || defaultNumberOfPasses;
+            const framesToRender = testScenario.frames || defaultFramesToRender;
             const globalConfig = getGlobalConfig();
-            const stable = await checkPerformanceOfScene(
-                page,
-                getGlobalConfig().baseUrl,
-                "stable",
-                evaluatePrepareScene,
-                numberOfPasses,
-                framesToRender,
-                {
-                    playgroundId,
-                },
-                globalConfig
-            );
             const dev = await checkPerformanceOfScene(
                 page,
-                getGlobalConfig().baseUrl,
+                globalConfig.baseUrl,
                 "dev",
                 evaluatePrepareScene,
-                numberOfPasses,
+                passes,
                 framesToRender,
                 {
                     playgroundId,
                 },
                 globalConfig
             );
-            console.log(`Performance - scene: stable: ${stable}ms, dev: ${dev}ms`);
-            expect(dev / stable, `Dev: ${dev}ms, Stable: ${stable}ms`).toBeLessThanOrEqual(1 + acceptedThreshold);
+            for (let i = 0; i < testAgainst.length; i++) {
+                const against = await checkPerformanceOfScene(
+                    page,
+                    testAgainst[i],
+                    "dev",
+                    evaluatePrepareScene,
+                    passes,
+                    framesToRender,
+                    {
+                        playgroundId,
+                    },
+                    globalConfig
+                );
+                console.log(`Performance - PG ${testScenario.playground}: ${testAgainst[i]}: ${against}ms, dev: ${dev}ms`);
+                expect(dev / against, `Dev: ${dev}ms, Stable: ${against}ms`).toBeLessThanOrEqual(1 + acceptedThreshold / 100);
+            }
         },
-        40000
+        config.timeout || 40000
     );
 });

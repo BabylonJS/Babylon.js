@@ -1,0 +1,8 @@
+[
+    { "playground": "#WIR77Z" },
+    { "playground": "#6LAAR2" },
+    { "playground": "#PIZ1GK#1116", "frames": 500, "passes": 8, "timeout": 60000 },
+    { "playground": "#6HWS9M#28", "frames": 500, "passes": 8, "timeout": 60000 },
+    { "playground": "#XCPP9Y#1", "frames": 500, "passes": 8, "timeout": 60000 },
+    { "playground": "#L92PHY#217", "frames": 500, "passes": 8, "timeout": 60000 }
+]
