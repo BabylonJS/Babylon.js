@@ -364,7 +364,7 @@ describe("InputManager", () => {
                 eventData.skipOnPointerObservable = true;
             }, PointerEventTypes.POINTERDOWN);
 
-            // Expect to get just an UP
+            // Expect nothing because we skipped the DOWN and no capture was made
             deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 1);
             deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
 
@@ -419,10 +419,10 @@ describe("InputManager", () => {
         }
 
         expect(downCt).toBe(12);
-        expect(upCt).toBe(11);
+        expect(upCt).toBe(10);
         expect(moveCt).toBe(5);
         expect(pickCt).toBe(1);
-        expect(tapCt).toBe(4);
+        expect(tapCt).toBe(3);
         expect(dblTapCt).toBe(3);
     });
 
