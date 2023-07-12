@@ -44,7 +44,7 @@ const SerializeMesh = (mesh: Mesh, serializationScene: any): any => {
 };
 
 const FinalizeSingleNode = (node: Node, serializationObject: any) => {
-    if (node.getClassName() === "Mesh" || node.getClassName() === "GroundMesh") {
+    if ((node as Mesh)._isMesh) {
         const mesh = node as Mesh;
         //only works if the mesh is already loaded
         if (mesh.delayLoadState === Constants.DELAYLOADSTATE_LOADED || mesh.delayLoadState === Constants.DELAYLOADSTATE_NONE) {
