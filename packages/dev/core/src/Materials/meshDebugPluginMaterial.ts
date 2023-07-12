@@ -7,11 +7,110 @@ import { MaterialDefines } from "./materialDefines";
 import type { PBRBaseMaterial } from "./PBR/pbrBaseMaterial";
 import type { StandardMaterial } from "./standardMaterial";
 import { RegisterClass } from "../Misc/typeStore";
-import { Color3, Vector3, Vector4 } from "core/Maths/math";
+import { Color3, Vector3 } from "core/Maths/math";
 import type { Mesh } from "core/Meshes/mesh";
 import { Logger } from "core/Misc/logger";
 import { expandToProperty, serialize } from "core/Misc/decorators";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
+
+const vertexDefinitions = 
+`attribute float dbg_initialPass;
+
+varying vec3 dbg_vBarycentric;
+flat varying vec3 dbg_vVertexWorldPos;
+flat varying float dbg_vPass;`;
+
+const vertexMainEnd =
+`float dbg_vertexIndex = mod(float(gl_VertexID), 3.);
+
+if (dbg_vertexIndex == 0.0) { 
+    dbg_vBarycentric = vec3(1.,0.,0.); 
+}
+else if (dbg_vertexIndex == 1.0) { 
+    dbg_vBarycentric = vec3(0.,1.,0.); 
+}
+else { 
+    dbg_vBarycentric = vec3(0.,0.,1.); 
+}
+
+dbg_vVertexWorldPos = vPositionW;
+dbg_vPass = dbg_initialPass;`;
+
+const fragmentDefinitions =
+`varying vec3 dbg_vBarycentric;
+flat varying vec3 dbg_vVertexWorldPos;
+flat varying float dbg_vPass;
+
+vec3 dbg_applyShading(vec3 color) {
+    vec3 N = vNormalW.xyz;
+    vec3 L = normalize(vEyePosition.xyz - vPositionW.xyz);
+    vec3 H = normalize(L + L);
+    float LdotN = clamp(dot(L,N), 0., 1.);
+    float HdotN = clamp(dot(H,N), 0., 1.);
+    float specTerm = pow(HdotN, dbg_shadedSpecularColorPower.w);
+    color *= (LdotN / PI);
+    color += dbg_shadedSpecularColorPower.rgb * (specTerm / PI);
+    return color;
+}
+
+#if DBG_MODE == 1 || DBG_MODE == 3
+    float dbg_edgeFactor() {
+        vec3 d = fwidth(dbg_vBarycentric);
+        vec3 a3 = smoothstep(vec3(0.), d * dbg_thicknessRadiusScale.x, dbg_vBarycentric);
+        return min(min(a3.x, a3.y), a3.z);
+    }
+#endif
+
+#if DBG_MODE == 2 || DBG_MODE == 3
+    float dbg_cornerFactor() {
+        vec3 worldPos = vPositionW;
+        float dist = length(worldPos - dbg_vVertexWorldPos);
+        float camDist = length(worldPos - vEyePosition.xyz);
+        float d = sqrt(camDist) * .001;
+        return smoothstep((dbg_thicknessRadiusScale.y * d), ((dbg_thicknessRadiusScale.y * 1.01) * d), dist);
+    }
+#endif
+
+#if (DBG_MODE == 4 && defined(UV1)) || (DBG_MODE == 5 && defined(UV2))
+    float dbg_checkerboardFactor(vec2 uv) {
+        vec2 f = fract(uv * dbg_thicknessRadiusScale.z);
+        f -= .5;
+        return (f.x * f.y) > 0. ? 1. : 0.;
+    }
+#endif`;
+
+const fragmentMainEnd =
+`vec3 dbg_color = dbg_shadedDiffuseColor;
+
+#if DBG_MODE == 1
+    dbg_color = mix(dbg_wireframeTrianglesColor, dbg_color, dbg_edgeFactor());
+#elif DBG_MODE == 2 || DBG_MODE == 3
+    float dbg_cornerFactor = dbg_cornerFactor();
+    if (dbg_vPass == 0. && dbg_cornerFactor == 1.) discard;
+    dbg_color = mix(dbg_vertexColor, dbg_color, dbg_cornerFactor);
+    #if DBG_MODE == 3
+        dbg_color *= mix(dbg_wireframeVerticesColor, dbg_color, dbg_edgeFactor());
+    #endif
+#elif DBG_MODE == 4 && defined(UV1)
+    dbg_color = mix(dbg_uvPrimaryColor, dbg_uvSecondaryColor, dbg_checkerboardFactor(vMainUV1));
+#elif DBG_MODE == 5 && defined(UV2)
+    dbg_color = mix(dbg_uvPrimaryColor, dbg_uvSecondaryColor, dbg_checkerboardFactor(vMainUV2));
+#elif DBG_MODE == 6 && defined(VERTEXCOLOR)
+    dbg_color = vColor.rgb;
+#elif DBG_MODE == 7
+    dbg_color = dbg_materialColor;
+#endif
+
+#if defined(DBG_MULTIPLY)
+    gl_FragColor *= vec4(dbg_color, 1.);
+#else
+    #if DBG_MODE != 6
+        gl_FragColor = vec4(dbg_applyShading(dbg_color), 1.);
+    #else
+        gl_FragColor = vec4(dbg_color, 1.);
+    #endif                
+#endif`;
+
 
 /**
  * Supported visualizations of MeshDebugPluginMaterial
@@ -20,38 +119,38 @@ export enum MeshDebugMode {
     /**
      * Material without any mesh debug visualization
      */
-    NONE = -1,
+    NONE = 0,
     /**
      * A wireframe of the mesh
      * NOTE: For this mode to work correctly, convertToUnIndexedMesh() or MeshDebugPluginMaterial.PrepareMeshForTrianglesAndVerticesMode() must first be called on mesh.
      */
-    TRIANGLES = 0,
-    /**
-     * A wireframe of the mesh, with points drawn over vertices
-     * NOTE: For this mode to work correctly, MeshDebugPluginMaterial.PrepareMeshForTrianglesAndVerticesMode() must first be called on mesh.
-     */
-    TRIANGLES_VERTICES = 1,
-    /**
-     * A checkerboard grid of the mesh's UV set 0
-     */
-    UV0 = 2,
-    /**
-     * A checkerboard grid of the mesh's UV set 1
-     */
-    UV1 = 3,
-    /**
-     * The mesh's vertex colors displayed as the primary texture
-     */
-    VERTEXCOLORS = 4,
-    /**
-     * An arbitrary, distinguishable color to identify the material
-     */
-    MATERIALIDS = 5,
+    TRIANGLES = 1,
     /**
      * Points drawn over vertices of mesh
      * NOTE: For this mode to work correctly, MeshDebugPluginMaterial.PrepareMeshForTrianglesAndVerticesMode() must first be called on mesh.
      */
-    VERTICES = 6,
+    VERTICES = 2,
+    /**
+     * A wireframe of the mesh, with points drawn over vertices
+     * NOTE: For this mode to work correctly, MeshDebugPluginMaterial.PrepareMeshForTrianglesAndVerticesMode() must first be called on mesh.
+     */
+    TRIANGLES_VERTICES = 3,
+    /**
+     * A checkerboard grid of the mesh's UV set 0
+     */
+    UV0 = 4,
+    /**
+     * A checkerboard grid of the mesh's UV set 1
+     */
+    UV1 = 5,
+    /**
+     * The mesh's vertex colors displayed as the primary texture
+     */
+    VERTEXCOLORS = 6,
+    /**
+     * An arbitrary, distinguishable color to identify the material
+     */
+    MATERIALIDS = 7,
 }
 
 /**
@@ -59,22 +158,27 @@ export enum MeshDebugMode {
  */
 export interface MeshDebugOptions {
     /**
-     * Whether the mesh debug visualization should multiply with any PBR debug colors underneath.
+     * The mesh debug visualization.
+     * Defaults to NONE.
+     */
+    mode?: MeshDebugMode;
+    /**
+     * Whether the mesh debug visualization should multiply with color underneath.
      * Defaults to true.
      */
-    multiplyDebug?: boolean;
+    multiply?: boolean;
     /**
-     * Default diffuse color of the visualization.
+     * Diffuse color used to shade the mesh.
      * Defaults to (1.0, 1.0, 1.0).
      */
     shadedDiffuseColor?: Vector3;
     /**
-     * Default specular color of the visualization.
+     * Specular color used to shade the mesh.
      * Defaults to (0.8, 0.8, 0.8).
      */
     shadedSpecularColor?: Vector3;
     /**
-     * How dark the shading of the visualization is.
+     * Specular power used to shade the mesh.
      * Defaults to 10.
      */
     shadedSpecularPower?: number;
@@ -84,15 +188,20 @@ export interface MeshDebugOptions {
      */
     wireframeThickness?: number;
     /**
-     * Color of edge lines in TRIANGLES mode, and color of dots in TRIANGLES_VERTICES and VERTICES mode.
+     * Color of edge lines in TRIANGLES mode.
      * Defaults to (0.0, 0.0, 0.0).
      */
-    wireframeColor1?: Vector3;
+    wireframeTrianglesColor?: Vector3;
     /**
      * Color of edge lines in TRIANGLES_VERTICES modes.
      * Defaults to (0.8, 0.8, 0.8).
      */
-    wireframeColor2?: Vector3;
+    wireframeVerticesColor?: Vector3;
+    /**
+     * Color of vertices in TRIANGLES_VERTICES and VERTICES mode.
+     * Defaults to (0.0, 0.0, 0.0).
+     */
+    vertexColor?: Vector3;
     /**
      * Radius of dots drawn over vertices in TRIANGLE_VERTICES and VERTICES mode.
      * Defaults to 1.2.
@@ -107,28 +216,23 @@ export interface MeshDebugOptions {
      * 1st color of checkerboard grid in UV1 or UV2 modes.
      * Defaults to (1.0, 1.0, 1.0).
      */
-    uvColor1?: Vector3;
+    uvPrimaryColor?: Vector3;
     /**
      * 2nd color of checkerboard grid in UV1 or UV2 modes.
      * Defaults to (0.5, 0.5, 0.5).
      */
-    uvColor2?: Vector3;
+    uvSecondaryColor?: Vector3;
     /**
      * Identifying color of this material in MATERIALIDS mode.
      * Defaults to a randomly-generated color.
      */
     materialColor?: Vector3;
-    /**
-     * Multiplicand for the square root of the camera distance in TRIANGLES_VERTICES and VERTICES mode.
-     * Defaults to .001
-     */
-    distanceScale?: number;
 }
 
 /** @internal */
-export class MeshDebugDefines extends MaterialDefines {
+class MeshDebugDefines extends MaterialDefines {
     DBG_MODE: MeshDebugMode = MeshDebugMode.NONE;
-    DBG_MULTIPLYDEBUG: boolean = true;
+    DBG_MULTIPLY: boolean = true;
 }
 
 /**
@@ -136,33 +240,33 @@ export class MeshDebugDefines extends MaterialDefines {
  * List of available visualizations can be found in MeshDebugMode enum.
  */
 export class MeshDebugPluginMaterial extends MaterialPluginBase {
-    private _isEnabled: boolean = true;
-    /**
-     * Whether the plugin is enabled or disabled.
-     * Defaults to true.
-     */
-    @serialize()
-    @expandToProperty("_markAllDefinesAsDirty")
-    public isEnabled: boolean = true;
 
     private _mode: MeshDebugMode = MeshDebugMode.NONE;
     /**
-     * Current mesh debug mode.
+     * Current mesh debug visualization.
      * Defaults to NONE.
      */
     @serialize()
     @expandToProperty("_markAllDefinesAsDirty")
     public mode: MeshDebugMode = MeshDebugMode.NONE;
 
+    private _multiply: boolean = true;
+    /**
+     * Whether the mesh debug visualization multiplies with colors underneath. 
+     * Defaults to true.
+     */
+    @serialize()
+    @expandToProperty("_markAllDefinesAsDirty")
+    public multiply: boolean = true;
+
     /**
      * Options for the plugin.
-     * See MeshDebugOptions enum for defaults.
+     * See MeshDebugOptions interface for defaults.
      */
-    private _options: MeshDebugOptions = {};
+    private _options: Required<MeshDebugOptions>;
 
     /** @internal */
     public _markAllDefinesAsDirty(): void {
-        this._enable(this._isEnabled);
         this.markAllDefinesAsDirty();
     }
 
@@ -175,29 +279,30 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
         options = options ?? {};
 
         const defines = new MeshDebugDefines();
-        defines.DBG_MULTIPLYDEBUG = options.multiplyDebug ?? defines.DBG_MULTIPLYDEBUG;
-        super(material, "MeshDebug", 200, defines);
-
-        const defaults: MeshDebugOptions = {
-            multiplyDebug: defines.DBG_MULTIPLYDEBUG,
+        defines.DBG_MODE = options.mode ?? defines.DBG_MODE;
+        defines.DBG_MULTIPLY = options.multiply ?? defines.DBG_MULTIPLY;
+        super(material, "MeshDebug", 200, defines, true, true);
+        
+        const defaults: Required<MeshDebugOptions> = {
+            mode: defines.DBG_MODE,
+            multiply: defines.DBG_MULTIPLY,
             shadedDiffuseColor: new Vector3(1, 1, 1),
             shadedSpecularColor: new Vector3(0.8, 0.8, 0.8),
             shadedSpecularPower: 10,
             wireframeThickness: 0.7,
-            wireframeColor1: new Vector3(0, 0, 0),
-            wireframeColor2: new Vector3(0.8, 0.8, 0.8),
+            wireframeTrianglesColor: new Vector3(0, 0, 0),
+            wireframeVerticesColor: new Vector3(0.8, 0.8, 0.8),
+            vertexColor: new Vector3(0, 0, 0),
             vertexRadius: 1.2,
             uvScale: 20,
-            uvColor1: new Vector3(1, 1, 1),
-            uvColor2: new Vector3(0.5, 0.5, 0.5),
+            uvPrimaryColor: new Vector3(1, 1, 1),
+            uvSecondaryColor: new Vector3(0.5, 0.5, 0.5),
             materialColor: this._getRandomColor(),
-            distanceScale: 0.001
         }
-       
+
         this._options = {...defaults, ...options};
         this._mode = defines.DBG_MODE;
-
-        this._enable(this._isEnabled);
+        this._multiply = defines.DBG_MULTIPLY;
     }
 
     /**
@@ -218,8 +323,8 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
         if ((this._mode == MeshDebugMode.VERTICES || this._mode == MeshDebugMode.TRIANGLES || this._mode == MeshDebugMode.TRIANGLES_VERTICES) && !mesh.isVerticesDataPresent("dbg_initialPass")) {
             Logger.Warn("For best results with TRIANGLES, TRIANGLES_VERTICES, or VERTICES modes, please use MeshDebugPluginMaterial.PrepareMeshForTrianglesAndVerticesMode() on mesh.", 1);
         }
-        defines.DBG_MODE = this._mode!;
-        defines.DBG_MULTIPLYDEBUG = this._options.multiplyDebug!;
+        defines.DBG_MODE = this._mode;
+        defines.DBG_MULTIPLY = this._multiply;
     }
 
     /**
@@ -239,26 +344,30 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
             ubo: [
                 { name: "dbg_shadedDiffuseColor", size: 3, type: "vec3" },
                 { name: "dbg_shadedSpecularColorPower", size: 4, type: "vec4" }, // shadedSpecularColor, shadedSpecularPower
-                { name: "dbg_thicknessRadiusUvDistance", size: 4, type: "vec4" }, // wireframeThickness, vertexRadius, uvScale, and distanceScale
-                { name: "dbg_wireframeColor1", size: 3, type: "vec3" },
-                { name: "dbg_wireframeColor2", size: 3, type: "vec3" },
-                { name: "dbg_uvColor1", size: 3, type: "vec3" },
-                { name: "dbg_uvColor2", size: 3, type: "vec3" },
+                { name: "dbg_thicknessRadiusScale", size: 3, type: "vec3" }, // wireframeThickness, vertexRadius, uvScale
+                { name: "dbg_wireframeTrianglesColor", size: 3, type: "vec3" },
+                { name: "dbg_wireframeVerticesColor", size: 3, type: "vec3" },
+                { name: "dbg_vertexColor", size: 3, type: "vec3"},
+                { name: "dbg_uvPrimaryColor", size: 3, type: "vec3" },
+                { name: "dbg_uvSecondaryColor", size: 3, type: "vec3" },
                 { name: "dbg_materialColor", size: 3, type: "vec3" },
             ],
             fragment: `
                 uniform vec3 dbg_shadedDiffuseColor;
                 uniform vec4 dbg_shadedSpecularColorPower;
-                uniform vec4 dbg_thicknessRadiusUvDistance;
+                uniform vec3 dbg_thicknessRadiusScale;
 
-                #if DBG_MODE == 0 || DBG_MODE == 1
-                    uniform vec3 dbg_wireframeColor1;
+                #if DBG_MODE == 1 || DBG_MODE == 2
+                    uniform vec3 dbg_vertexColor;
                 #endif
-                #if DBG_MODE == 1
-                    uniform vec3 dbg_wireframeColor2;
+
+                #if DBG_MODE == 0
+                    uniform vec3 dbg_wireframeTrianglesColor;
+                #elif DBG_MODE == 1
+                    uniform vec3 dbg_wireframeVerticesColor;
                 #elif DBG_MODE == 2 || DBG_MODE == 3
-                    uniform vec3 dbg_uvColor1;
-                    uniform vec3 dbg_uvColor2;
+                    uniform vec3 dbg_uvPrimaryColor;
+                    uniform vec3 dbg_uvSecondaryColor;
                 #elif DBG_MODE == 5
                     uniform vec3 dbg_materialColor;
                 #endif
@@ -271,16 +380,15 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
      * @param uniformBuffer Uniform buffer
      */
     public bindForSubMesh(uniformBuffer: UniformBuffer): void {
-        if (this._isEnabled) {
-            uniformBuffer.updateVector3("dbg_shadedDiffuseColor", this._options.shadedDiffuseColor!);
-            uniformBuffer.updateFloat4("dbg_shadedSpecularColorPower", this._options.shadedSpecularColor!.x, this._options.shadedSpecularColor!.y, this._options.shadedSpecularColor!.z, this._options.shadedSpecularPower!);
-            uniformBuffer.updateFloat4("dbg_thicknessRadiusUvDistance", this._options.wireframeThickness!, this._options.vertexRadius!, this._options.uvScale!, this._options.distanceScale!);
-            uniformBuffer.updateVector3("dbg_wireframeColor1", this._options.wireframeColor1!);
-            uniformBuffer.updateVector3("dbg_wireframeColor2", this._options.wireframeColor2!);
-            uniformBuffer.updateVector3("dbg_uvColor1", this._options.uvColor1!);
-            uniformBuffer.updateVector3("dbg_uvColor2", this._options.uvColor2!);
-            uniformBuffer.updateVector3("dbg_materialColor", this._options.materialColor!);
-        }
+        uniformBuffer.updateVector3("dbg_shadedDiffuseColor", this._options.shadedDiffuseColor);
+        uniformBuffer.updateFloat4("dbg_shadedSpecularColorPower", this._options.shadedSpecularColor.x, this._options.shadedSpecularColor.y, this._options.shadedSpecularColor.z, this._options.shadedSpecularPower);
+        uniformBuffer.updateFloat3("dbg_thicknessRadiusScale", this._options.wireframeThickness, this._options.vertexRadius, this._options.uvScale);
+        uniformBuffer.updateVector3("dbg_wireframeTrianglesColor", this._options.wireframeTrianglesColor);
+        uniformBuffer.updateVector3("dbg_wireframeVerticesColor", this._options.wireframeVerticesColor);
+        uniformBuffer.updateVector3("dbg_vertexColor", this._options.vertexColor);
+        uniformBuffer.updateVector3("dbg_uvPrimaryColor", this._options.uvPrimaryColor);
+        uniformBuffer.updateVector3("dbg_uvSecondaryColor", this._options.uvSecondaryColor);
+        uniformBuffer.updateVector3("dbg_materialColor", this._options.materialColor);
     }
 
     /**
@@ -291,107 +399,13 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
     public getCustomCode(shaderType: string): Nullable<{ [pointName: string]: string }> {
         return shaderType === "vertex"
             ? {
-                CUSTOM_VERTEX_DEFINITIONS: `
-                attribute float dbg_initialPass;
-
-                varying vec3 dbg_vBarycentric;
-                flat varying vec3 dbg_vVertexWorldPos;
-                flat varying float dbg_vPass;
-            `,
-                CUSTOM_VERTEX_MAIN_END: `
-                float dbg_vertexIndex = mod(float(gl_VertexID), 3.);
-
-                if (dbg_vertexIndex == 0.0) { 
-                    dbg_vBarycentric = vec3(1.,0.,0.); 
-                }
-                else if (dbg_vertexIndex == 1.0) { 
-                    dbg_vBarycentric = vec3(0.,1.,0.); 
-                }
-                else { 
-                    dbg_vBarycentric = vec3(0.,0.,1.); 
-                }
-
-                dbg_vVertexWorldPos = vPositionW;
-                dbg_vPass = dbg_initialPass;
-            `,
-              }
+                CUSTOM_VERTEX_DEFINITIONS: vertexDefinitions,
+                CUSTOM_VERTEX_MAIN_END: vertexMainEnd,
+            }
             : {
-                CUSTOM_FRAGMENT_DEFINITIONS: `
-                varying vec3 dbg_vBarycentric;
-                flat varying vec3 dbg_vVertexWorldPos;
-                flat varying float dbg_vPass;
-
-                vec3 dbg_applyShading(vec3 color) {
-                    vec3 N = vNormalW.xyz;
-                    vec3 L = normalize(vEyePosition.xyz - vPositionW.xyz);
-                    vec3 H = normalize(L + L);
-                    float LdotN = clamp(dot(L,N), 0., 1.);
-                    float HdotN = clamp(dot(H,N), 0., 1.);
-                    float specTerm = pow(HdotN, dbg_shadedSpecularColorPower.w);
-                    color *= (LdotN / PI);
-                    color += dbg_shadedSpecularColorPower.rgb * (specTerm / PI);
-                    return color;
-                }
-
-                #if DBG_MODE == 0 || DBG_MODE == 1
-                    float dbg_edgeFactor() {
-                        vec3 d = fwidth(dbg_vBarycentric);
-                        vec3 a3 = smoothstep(vec3(0.), d * dbg_thicknessRadiusUvDistance.x, dbg_vBarycentric);
-                        return min(min(a3.x, a3.y), a3.z);
-                    }
-                #endif
-
-                #if DBG_MODE == 1 || DBG_MODE == 6
-                    float dbg_cornerFactor() {
-                        vec3 worldPos = vPositionW;
-                        float dist = length(worldPos - dbg_vVertexWorldPos);
-                        float camDist = length(worldPos - vEyePosition.xyz);
-                        float d = sqrt(camDist) * dbg_thicknessRadiusUvDistance.w;
-                        return smoothstep((dbg_thicknessRadiusUvDistance.y * d), ((dbg_thicknessRadiusUvDistance.y * 1.01) * d), dist);
-                    }
-                #endif
-
-                #if (DBG_MODE == 2 && defined(UV1)) || (DBG_MODE == 3 && defined(UV2))
-                    float dbg_checkerboardFactor(vec2 uv) {
-                        vec2 f = fract(uv * dbg_thicknessRadiusUvDistance.z);
-                        f -= .5;
-                        return (f.x * f.y) > 0. ? 1. : 0.;
-                    }
-                #endif
-            `,
-                CUSTOM_FRAGMENT_MAIN_END: `
-                vec3 dbg_color = dbg_shadedDiffuseColor;
-
-                #if DBG_MODE == 0
-                    dbg_color = mix(dbg_wireframeColor1, dbg_color, dbg_edgeFactor());
-                #elif DBG_MODE == 1 || DBG_MODE == 6
-                    float dbg_cornerFactor = dbg_cornerFactor();
-                    if (dbg_vPass == 0. && dbg_cornerFactor == 1.) discard;
-                    dbg_color = mix(dbg_wireframeColor1, dbg_color, dbg_cornerFactor);
-                    #if DBG_MODE == 1
-                        dbg_color *= mix(dbg_wireframeColor2, dbg_color, dbg_edgeFactor());
-                    #endif
-                #elif DBG_MODE == 2 && defined(UV1)
-                    dbg_color = mix(dbg_uvColor1, dbg_uvColor2, dbg_checkerboardFactor(vMainUV1));
-                #elif DBG_MODE == 3 && defined(UV2)
-                    dbg_color = mix(dbg_uvColor1, dbg_uvColor2, dbg_checkerboardFactor(vMainUV2));
-                #elif DBG_MODE == 4 && defined(VERTEXCOLOR)
-                    dbg_color = vColor.rgb;
-                #elif DBG_MODE == 5
-                    dbg_color = dbg_materialColor;
-                #endif
-
-                #if !defined(DEBUGMODE) || DEBUGMODE == 0 
-                    #if DBG_MODE != 4
-                        gl_FragColor = vec4(dbg_applyShading(dbg_color), 1.);
-                    #else
-                        gl_FragColor = vec4(dbg_color, 1.);
-                    #endif
-                #elif defined(DBG_MULTIPLYDEBUG)
-                    gl_FragColor *= vec4(dbg_color, 1.);
-                #endif
-            `,
-              };
+                CUSTOM_FRAGMENT_DEFINITIONS: fragmentDefinitions,
+                CUSTOM_FRAGMENT_MAIN_END: fragmentMainEnd,
+            };
     }
 
     /**
@@ -401,19 +415,18 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
     public serialize(): any {
         const serializationObject = super.serialize();
 
-        serializationObject.multiplyDebug = this._options.multiplyDebug;
-        serializationObject.shadedDiffuseColor = this._options.shadedDiffuseColor!.asArray();
-        serializationObject.shadedSpecularColor = this._options.shadedSpecularColor!.asArray();
+        serializationObject.shadedDiffuseColor = this._options.shadedDiffuseColor.asArray();
+        serializationObject.shadedSpecularColor = this._options.shadedSpecularColor.asArray();
         serializationObject.shadedSpecularPower = this._options.shadedSpecularPower;
         serializationObject.wireframeThickness = this._options.wireframeThickness;
-        serializationObject.wireframeColor1 = this._options.wireframeColor1!.asArray();
-        serializationObject.wireframeColor2 = this._options.wireframeColor2!.asArray();
+        serializationObject.wireframeTrianglesColor = this._options.wireframeTrianglesColor.asArray();
+        serializationObject.wireframeVerticesColor = this._options.wireframeVerticesColor.asArray();
+        serializationObject.vertexColor = this._options.vertexColor.asArray();
         serializationObject.vertexRadius = this._options.vertexRadius;
         serializationObject.uvScale = this._options.uvScale;
-        serializationObject.uvColor1 = this._options.uvColor1!.asArray();
-        serializationObject.uvColor2 = this._options.uvColor2!.asArray();
-        serializationObject.materialColor = this._options.materialColor!.asArray();
-        serializationObject.distanceScale = this._options.distanceScale;
+        serializationObject.uvPrimaryColor = this._options.uvPrimaryColor.asArray();
+        serializationObject.uvSecondaryColor = this._options.uvSecondaryColor.asArray();
+        serializationObject.materialColor = this._options.materialColor.asArray();
 
         return serializationObject;
     }
@@ -427,19 +440,20 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
     public parse(serializationObject: any, scene: Scene, rootUrl: string): void {
         super.parse(serializationObject, scene, rootUrl);
 
-        this._options.multiplyDebug = serializationObject.multiplyDebug;
+        this._options.mode = serializationObject.mode;
+        this._options.multiply = serializationObject.multiply;
         this._options.shadedDiffuseColor = Vector3.FromArray(serializationObject.shadedDiffuseColor);
         this._options.shadedSpecularColor = Vector3.FromArray(serializationObject.shadedSpecularColor);
         this._options.shadedSpecularPower = serializationObject.shadedSpecularPower;
         this._options.wireframeThickness = serializationObject.wireframeThickness;
-        this._options.wireframeColor1 = Vector3.FromArray(serializationObject.wireframeColor1);
-        this._options.wireframeColor2 = Vector3.FromArray(serializationObject.wireframeColor2);
+        this._options.wireframeTrianglesColor = Vector3.FromArray(serializationObject.wireframeTrianglesColor);
+        this._options.wireframeVerticesColor = Vector3.FromArray(serializationObject.wireframeVerticesColor);
+        this._options.vertexColor = Vector3.FromArray(serializationObject.vertexColor);
         this._options.vertexRadius = serializationObject.vertexRadius;
         this._options.uvScale = serializationObject.uvScale;
-        this._options.uvColor1 = Vector3.FromArray(serializationObject.uvColor1);
-        this._options.uvColor2 = Vector3.FromArray(serializationObject.uvColor2);
+        this._options.uvPrimaryColor = Vector3.FromArray(serializationObject.uvPrimaryColor);
+        this._options.uvSecondaryColor = Vector3.FromArray(serializationObject.uvSecondaryColor);
         this._options.materialColor = Vector3.FromArray(serializationObject.materialColor);
-        this._options.distanceScale = serializationObject.distanceScale;
         
         this.markAllDefinesAsDirty();
     }
@@ -503,8 +517,9 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
         }
         mesh.setIndices(indices.concat(newIndices2));
 
-        const totalVertices = mesh.getTotalVertices() / 2;
-        const pass = new Array(totalVertices).fill(1).concat(new Array(totalVertices).fill(0));
+        const num = mesh.getTotalVertices();
+        const mid = num / 2;
+        const pass = new Array(num).fill(1,0,mid).fill(0,mid,num);
         mesh.setVerticesData("dbg_initialPass", pass, false, 1);
 
         return rollback;
