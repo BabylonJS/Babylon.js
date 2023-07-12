@@ -3873,6 +3873,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     };
 
     /**
+     * @internal
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public static _TrailMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
+        throw _WarnImport("TrailMesh");
+    };
+
+    /**
      * Returns a new Mesh object parsed from the source provided.
      * @param parsedMesh is the source
      * @param scene defines the hosting scene
@@ -3890,6 +3898,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             mesh = Mesh._GoldbergMeshParser(parsedMesh, scene);
         } else if (parsedMesh.type && parsedMesh.type === "GreasedLineMesh") {
             mesh = Mesh._GreasedLineMeshParser(parsedMesh, scene);
+        } else if (parsedMesh.type && parsedMesh.type === "TrailMesh") {
+            mesh = Mesh._TrailMeshParser(parsedMesh, scene);
         } else {
             mesh = new Mesh(parsedMesh.name, scene);
         }
