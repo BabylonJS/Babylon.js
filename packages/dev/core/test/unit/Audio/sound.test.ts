@@ -64,8 +64,8 @@ class AudioSample {
 
 AudioSample.Add("silence, 1 second, 1 channel, 48000 kHz", 1, 48000, new Float32Array(48000));
 
-let mockedAudioContext: any;
-let mockedBufferSource: any;
+let mockedAudioContext: any = null;
+let mockedBufferSource: any = null;
 
 const incrementCurrentTime = (seconds: number) => {
     mockedAudioContext.currentTime += seconds;
@@ -90,7 +90,7 @@ window.AudioContext = jest.fn().mockName("AudioContext").mockImplementation(() =
                     mockedBufferSource._startTime = mockedAudioContext.currentTime;
                 }),
                 stop: jest.fn().mockName("stop").mockImplementation(() => {
-                    mockedBufferSource.onended();
+                    mockedBufferSource?.onended();
                 }),
                 buffer: {},
                 loop: false,
@@ -125,6 +125,10 @@ window.AudioContext = jest.fn().mockName("AudioContext").mockImplementation(() =
         }),
         decodeAudioData: jest.fn().mockName("decodeAudioData").mockImplementation((data: ArrayBuffer, success: (buffer: AudioBuffer) => void) => {
             success(AudioSample.GetAudioBuffer(data));
+        }),
+        resume: jest.fn().mockName("resume").mockImplementation(() => {
+            mockedAudioContext.state = "running";
+            return Promise.resolve();
         })
     };
     return mockedAudioContext;
@@ -153,6 +157,8 @@ describe("Sound", () => {
     });
 
     afterEach(() => {
+        mockedAudioContext = null;
+        mockedBufferSource = null;
         scene?.dispose();
         engine?.dispose();
     });
@@ -608,5 +614,24 @@ describe("Sound", () => {
         sound.stop();
 
         expect(sound.isPlaying).toBe(false);
+    });
+
+    it("does not autoplay when stopped and audio context is resumed", () => {
+        mockedAudioContext.state = "suspended";
+
+        Engine.audioEngine?.onAudioUnlockedObservable.clear();
+
+        const sound = new Sound(expect.getState().currentTestName, AudioSample.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, { autoplay: true });
+        // Wait for the sound to double-check the "suspended" audio context state.
+        jest.advanceTimersByTime(500);
+        sound.stop();
+        Engine.audioEngine!.unlock();
+
+        // Wait for the audio engine _resumeAudioContext() function to resolve.
+        return Promise.resolve().then(() => {
+            // The sound creates a buffer source when it starts, so make sure it did start by making sure no buffer
+            // source was created.
+            expect(mockedBufferSource).toBe(null);
+        });
     });
 });
