@@ -848,20 +848,15 @@ export class InputManager {
             this._startingPointerTime = Date.now();
 
             // PreObservable support
-            /*if (this._checkPrePointerObservable(null, evt, PointerEventTypes.POINTERDOWN)) {
+            if (this._checkPrePointerObservable(null, evt, PointerEventTypes.POINTERDOWN)) {
                 return;
-            }*/
+            }
 
             if (!scene.cameraToUseForPointers && !scene.activeCamera) {
                 return;
             }
 
             this._pointerCaptures[evt.pointerId] = true;
-
-            // PreObservable support
-            if (this._checkPrePointerObservable(null, evt, PointerEventTypes.POINTERDOWN)) {
-                return;
-            }
 
             if (!scene.pointerDownPredicate) {
                 scene.pointerDownPredicate = (mesh: AbstractMesh): boolean => {
