@@ -7,7 +7,7 @@ import { MaterialDefines } from "./materialDefines";
 import type { PBRBaseMaterial } from "./PBR/pbrBaseMaterial";
 import type { StandardMaterial } from "./standardMaterial";
 import { RegisterClass } from "../Misc/typeStore";
-import { Color3, Vector3 } from "core/Maths/math";
+import { Vector3 } from "core/Maths/math";
 import type { Mesh } from "core/Meshes/mesh";
 import { Logger } from "core/Misc/logger";
 import { expandToProperty, serialize } from "core/Misc/decorators";
@@ -111,6 +111,40 @@ const fragmentMainEnd =
     #endif                
 #endif`;
 
+const materialIdColors = [
+    new Vector3(.98, .26, .38),
+    new Vector3(.47, .75, .3),
+    new Vector3(0, .26, .77),
+    new Vector3(.97, .6, .76),
+    new Vector3(.19, .63, .78),
+    new Vector3(.98, .80, .60),
+    new Vector3(.65, .43, .15),
+    new Vector3(.15, .47, .22),
+    new Vector3(.67, .71, .86),
+    new Vector3(.09, .46, .56),
+    new Vector3(.80, .98, .02),
+    new Vector3(.39, .29, .13),
+    new Vector3(.53, .63, .06),
+    new Vector3(.95, .96, .41),
+    new Vector3(1., .72, .94),
+    new Vector3(.63, .08, .31),
+    new Vector3(.66, .96, .95),
+    new Vector3(.22, .14, .19),
+    new Vector3(.14, .65, .59),
+    new Vector3(.93, 1, .68),
+    new Vector3(.93, .14, .44),
+    new Vector3(.47, .86, .67),
+    new Vector3(.85, .07, .78),
+    new Vector3(.53, .64, .98),
+    new Vector3(.43, .37, .56),
+    new Vector3(.71, .65, .25),
+    new Vector3(.66, .19, .01),
+    new Vector3(.94, .53, .12),
+    new Vector3(.41, .44, .44),
+    new Vector3(.24, .71, .96),
+    new Vector3(.57, .28, .56),
+    new Vector3(.44, .98, .42)
+];
 
 /**
  * Supported visualizations of MeshDebugPluginMaterial
@@ -223,10 +257,10 @@ export interface MeshDebugOptions {
      */
     uvSecondaryColor?: Vector3;
     /**
-     * Identifying color of this material in MATERIALIDS mode.
-     * Defaults to a randomly-generated color.
+     * Color palette to use for MATERIALIDS mode.
+     * Defaults to materialIdColors table.
      */
-    materialColor?: Vector3;
+    materialColorTable?: Array<Vector3>;
 }
 
 /** @internal */
@@ -240,6 +274,10 @@ class MeshDebugDefines extends MaterialDefines {
  * List of available visualizations can be found in MeshDebugMode enum.
  */
 export class MeshDebugPluginMaterial extends MaterialPluginBase {
+
+    private static _pluginCount = 0;
+
+    private _pluginIndex: number;
 
     private _mode: MeshDebugMode = MeshDebugMode.NONE;
     /**
@@ -297,12 +335,13 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
             uvScale: 20,
             uvPrimaryColor: new Vector3(1, 1, 1),
             uvSecondaryColor: new Vector3(0.5, 0.5, 0.5),
-            materialColor: this._getRandomColor(),
+            materialColorTable: materialIdColors,
         }
-
-        this._options = {...defaults, ...options};
+        
         this._mode = defines.DBG_MODE;
         this._multiply = defines.DBG_MULTIPLY;
+        this._options = {...defaults, ...options};
+        this._pluginIndex = MeshDebugPluginMaterial._pluginCount++;
     }
 
     /**
@@ -388,7 +427,7 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
         uniformBuffer.updateVector3("dbg_vertexColor", this._options.vertexColor);
         uniformBuffer.updateVector3("dbg_uvPrimaryColor", this._options.uvPrimaryColor);
         uniformBuffer.updateVector3("dbg_uvSecondaryColor", this._options.uvSecondaryColor);
-        uniformBuffer.updateVector3("dbg_materialColor", this._options.materialColor);
+        uniformBuffer.updateVector3("dbg_materialColor", this._options.materialColorTable[this._pluginIndex % this._options.materialColorTable.length],);
     }
 
     /**
@@ -426,7 +465,7 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
         serializationObject.uvScale = this._options.uvScale;
         serializationObject.uvPrimaryColor = this._options.uvPrimaryColor.asArray();
         serializationObject.uvSecondaryColor = this._options.uvSecondaryColor.asArray();
-        serializationObject.materialColor = this._options.materialColor.asArray();
+        serializationObject.materialColorTable = this._options.materialColorTable;
 
         return serializationObject;
     }
@@ -453,19 +492,9 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
         this._options.uvScale = serializationObject.uvScale;
         this._options.uvPrimaryColor = Vector3.FromArray(serializationObject.uvPrimaryColor);
         this._options.uvSecondaryColor = Vector3.FromArray(serializationObject.uvSecondaryColor);
-        this._options.materialColor = Vector3.FromArray(serializationObject.materialColor);
+        this._options.materialColorTable = serializationObject.materialColorTable;
         
         this.markAllDefinesAsDirty();
-    }
-
-    /**
-     * Generate a random color
-     * @returns Random RGB color as a Vector3
-     */
-    private _getRandomColor(): Vector3 {
-        const hue: number = Math.random() * 360;
-        const color: Color3 = Color3.FromHSV(hue, 0.95, 0.99);
-        return Vector3.FromArray(color.asArray());
     }
 
     /**
