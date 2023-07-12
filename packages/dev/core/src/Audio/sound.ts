@@ -915,6 +915,8 @@ export class Sound {
                     this._onended();
                 };
                 this._soundSource.stop(stopTime);
+            } else {
+                this.isPlaying = false;
             }
         } else if (this.isPaused) {
             this.isPaused = false;
