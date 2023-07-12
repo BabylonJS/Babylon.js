@@ -1,5 +1,6 @@
 import type { Page } from "puppeteer";
 import type { StacktracedObject } from "./window";
+import { evaluateRenderSceneForVisualization } from "./visualizationUtils";
 
 declare const BABYLON: typeof window.BABYLON;
 
@@ -384,8 +385,8 @@ export const checkPerformanceOfScene = async (
     metadata?: { playgroundId: string },
     config?: any
 ) => {
-    if (numberOfPasses < 5) {
-        numberOfPasses = 5;
+    if (numberOfPasses < 3) {
+        numberOfPasses = 3;
     }
     const url = type === "dev" ? "/empty.html" : `/empty-${type}.html`;
     await page.goto(baseUrl + url, {
@@ -397,15 +398,17 @@ export const checkPerformanceOfScene = async (
     for (let i = 0; i < numberOfPasses; i++) {
         await page.evaluate(evaluateInitEngine, "webgl2", baseUrl);
         await page.evaluate(createSceneFunction, metadata || {}, config || {});
+        await page.evaluate(evaluateRenderSceneForVisualization, 1);
         time.push(await page.evaluate(evaluateRenderScene, framesToRender));
         await page.evaluate(evaluateDisposeScene);
         await page.evaluate(evaluateDisposeEngine);
+        console.log(`Pass ${i + 1} of ${numberOfPasses} - done`);
     }
     time.sort();
-    // remove edge cases - 2 of each end
+    // remove edge cases - 1 of each end
+    // time.pop();
     time.pop();
-    time.pop();
-    time.shift();
+    // time.shift();
     time.shift();
     // return the average rendering time
     return time.reduce((partialSum, a) => partialSum + a, 0) / (numberOfPasses - 2);

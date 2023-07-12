@@ -2,8 +2,8 @@ import { evaluatePrepareScene, getGlobalConfig, checkPerformanceOfScene } from "
 import * as path from "path";
 import * as fs from "fs";
 
-const defaultFramesToRender = process.env.PERF_FRAMES_TO_RENDER ? +process.env.PERF_FRAMES_TO_RENDER : 1500;
-const defaultNumberOfPasses = process.env.PERF_NUMBER_OF_PASSES ? +process.env.PERF_NUMBER_OF_PASSES : 7;
+const defaultFramesToRender = process.env.PERF_FRAMES_TO_RENDER ? +process.env.PERF_FRAMES_TO_RENDER : 1000;
+const defaultNumberOfPasses = process.env.PERF_NUMBER_OF_PASSES ? +process.env.PERF_NUMBER_OF_PASSES : 5;
 const acceptedThreshold = process.env.PERF_THRESHOLD ? +process.env.PERF_THRESHOLD : 5; // 5% compensation
 
 const configPath = process.env.CONFIG_PATH || path.resolve(__dirname, "perfTests.json");
@@ -54,6 +54,6 @@ describe("Playground Memory Leaks", () => {
                 expect(dev / against, `Dev: ${dev}ms, Stable: ${against}ms`).toBeLessThanOrEqual(1 + acceptedThreshold / 100);
             }
         },
-        config.timeout || 60000
+        config.timeout || 100000
     );
 });

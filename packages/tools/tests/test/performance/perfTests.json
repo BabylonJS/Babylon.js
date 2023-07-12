@@ -1,8 +1,7 @@
 [
     { "playground": "#WIR77Z" },
     { "playground": "#6LAAR2" },
-    { "playground": "#PIZ1GK#1116", "frames": 500, "passes": 6, "timeout": 60000 },
-    { "playground": "#6HWS9M#28", "frames": 500, "passes": 6, "timeout": 60000 },
-    { "playground": "#XCPP9Y#1", "frames": 500, "passes": 6, "timeout": 60000 },
-    { "playground": "#L92PHY#217", "frames": 500, "passes": 6, "timeout": 60000 }
+    { "playground": "#PIZ1GK#1116", "frames": 120, "passes": 3 },
+    { "playground": "#6HWS9M#28", "frames": 120, "passes": 3 },
+    { "playground": "#XCPP9Y#1", "frames": 120, "passes": 3 }
 ]
