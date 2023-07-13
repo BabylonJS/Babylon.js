@@ -567,7 +567,7 @@ export class Sound {
         }
 
         const wasPlaying = this.isPlaying;
-        this.stop();
+        this.pause();
 
         this._soundPanner?.disconnect();
         this._inputAudioNode = this._soundGain;
