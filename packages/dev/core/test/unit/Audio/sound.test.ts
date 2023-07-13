@@ -64,6 +64,34 @@ class AudioSample {
 
 AudioSample.Add("silence, 1 second, 1 channel, 48000 kHz", 1, 48000, new Float32Array(48000));
 
+class AudioNodeMock {
+    public connect(destination: any) {
+        this._destination = destination;
+    }
+
+    public disconnect() {
+        this._destination = null;
+    }
+
+    public get destination() {
+        return this._destination;
+    }
+
+    private _destination: any = null;
+}
+
+class GainNodeMock extends AudioNodeMock {
+    get gain() {
+        return {
+            value: 1.0
+        }
+    }
+}
+
+class PannerNodeMock extends AudioNodeMock {
+
+}
+
 let mockedAudioContext: any = null;
 let mockedBufferSource: any = null;
 
@@ -109,19 +137,10 @@ window.AudioContext = jest.fn().mockName("AudioContext").mockImplementation(() =
             // 1) from AudioEngine._initializeAudioContext() to create the master gain.
             // 2) from Sound constructor.
             // 3) from main SoundTrack._initializeSoundTrackAudioGraph().
-            return {
-                connect: jest.fn().mockName("connect"),
-                disconnect: jest.fn().mockName("disconnect"),
-                gain: {
-                    value: 1
-                }
-            };
+            return new GainNodeMock;
         }),
         createPanner: jest.fn().mockName("createPanner").mockImplementation(() => {
-            return {
-                connect: jest.fn().mockName("connect"),
-                disconnect: jest.fn().mockName("disconnect")
-            }
+            return new PannerNodeMock;
         }),
         decodeAudioData: jest.fn().mockName("decodeAudioData").mockImplementation((data: ArrayBuffer, success: (buffer: AudioBuffer) => void) => {
             success(AudioSample.GetAudioBuffer(data));
