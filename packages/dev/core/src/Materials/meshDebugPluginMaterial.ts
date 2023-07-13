@@ -7,10 +7,10 @@ import { MaterialDefines } from "./materialDefines";
 import type { PBRBaseMaterial } from "./PBR/pbrBaseMaterial";
 import type { StandardMaterial } from "./standardMaterial";
 import { RegisterClass } from "../Misc/typeStore";
-import { Vector3 } from "core/Maths/math";
+import { Color3 } from "core/Maths/math";
 import type { Mesh } from "core/Meshes/mesh";
 import { Logger } from "core/Misc/logger";
-import { expandToProperty, serialize } from "core/Misc/decorators";
+import { expandToProperty, serialize, serializeAsColor3 } from "core/Misc/decorators";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 
 const vertexDefinitions = 
@@ -111,42 +111,39 @@ const fragmentMainEnd =
     #endif                
 #endif`;
 
-/**
- * Default color palette used for MATERIALIDS mode.
- */
-const materialIdColors = [
-    new Vector3(.98, .26, .38),
-    new Vector3(.47, .75, .3),
-    new Vector3(0, .26, .77),
-    new Vector3(.97, .6, .76),
-    new Vector3(.19, .63, .78),
-    new Vector3(.98, .80, .60),
-    new Vector3(.65, .43, .15),
-    new Vector3(.15, .47, .22),
-    new Vector3(.67, .71, .86),
-    new Vector3(.09, .46, .56),
-    new Vector3(.80, .98, .02),
-    new Vector3(.39, .29, .13),
-    new Vector3(.53, .63, .06),
-    new Vector3(.95, .96, .41),
-    new Vector3(1., .72, .94),
-    new Vector3(.63, .08, .31),
-    new Vector3(.66, .96, .95),
-    new Vector3(.22, .14, .19),
-    new Vector3(.14, .65, .59),
-    new Vector3(.93, 1, .68),
-    new Vector3(.93, .14, .44),
-    new Vector3(.47, .86, .67),
-    new Vector3(.85, .07, .78),
-    new Vector3(.53, .64, .98),
-    new Vector3(.43, .37, .56),
-    new Vector3(.71, .65, .25),
-    new Vector3(.66, .19, .01),
-    new Vector3(.94, .53, .12),
-    new Vector3(.41, .44, .44),
-    new Vector3(.24, .71, .96),
-    new Vector3(.57, .28, .56),
-    new Vector3(.44, .98, .42)
+const defaultMaterialColors = [
+    new Color3(.98, .26, .38),
+    new Color3(.47, .75, .3),
+    new Color3(0, .26, .77),
+    new Color3(.97, .6, .76),
+    new Color3(.19, .63, .78),
+    new Color3(.98, .80, .60),
+    new Color3(.65, .43, .15),
+    new Color3(.15, .47, .22),
+    new Color3(.67, .71, .86),
+    new Color3(.09, .46, .56),
+    new Color3(.80, .98, .02),
+    new Color3(.39, .29, .13),
+    new Color3(.53, .63, .06),
+    new Color3(.95, .96, .41),
+    new Color3(1., .72, .94),
+    new Color3(.63, .08, .31),
+    new Color3(.66, .96, .95),
+    new Color3(.22, .14, .19),
+    new Color3(.14, .65, .59),
+    new Color3(.93, 1, .68),
+    new Color3(.93, .14, .44),
+    new Color3(.47, .86, .67),
+    new Color3(.85, .07, .78),
+    new Color3(.53, .64, .98),
+    new Color3(.43, .37, .56),
+    new Color3(.71, .65, .25),
+    new Color3(.66, .19, .01),
+    new Color3(.94, .53, .12),
+    new Color3(.41, .44, .44),
+    new Color3(.24, .71, .96),
+    new Color3(.57, .28, .56),
+    new Color3(.44, .98, .42)
 ];
 
 /**
@@ -208,12 +205,12 @@ export interface MeshDebugOptions {
      * Diffuse color used to shade the mesh.
      * Defaults to (1.0, 1.0, 1.0).
      */
-    shadedDiffuseColor?: Vector3;
+    shadedDiffuseColor?: Color3;
     /**
      * Specular color used to shade the mesh.
      * Defaults to (0.8, 0.8, 0.8).
      */
-    shadedSpecularColor?: Vector3;
+    shadedSpecularColor?: Color3;
     /**
      * Specular power used to shade the mesh.
      * Defaults to 10.
@@ -228,17 +225,17 @@ export interface MeshDebugOptions {
      * Color of edge lines in TRIANGLES mode.
      * Defaults to (0.0, 0.0, 0.0).
      */
-    wireframeTrianglesColor?: Vector3;
+    wireframeTrianglesColor?: Color3;
     /**
      * Color of edge lines in TRIANGLES_VERTICES modes.
      * Defaults to (0.8, 0.8, 0.8).
      */
-    wireframeVerticesColor?: Vector3;
+    wireframeVerticesColor?: Color3;
     /**
      * Color of vertices in TRIANGLES_VERTICES and VERTICES mode.
      * Defaults to (0.0, 0.0, 0.0).
      */
-    vertexColor?: Vector3;
+    vertexColor?: Color3;
     /**
      * Radius of dots drawn over vertices in TRIANGLE_VERTICES and VERTICES mode.
      * Defaults to 1.2.
@@ -253,17 +250,12 @@ export interface MeshDebugOptions {
      * 1st color of checkerboard grid in UV1 or UV2 modes.
      * Defaults to (1.0, 1.0, 1.0).
      */
-    uvPrimaryColor?: Vector3;
+    uvPrimaryColor?: Color3;
     /**
      * 2nd color of checkerboard grid in UV1 or UV2 modes.
      * Defaults to (0.5, 0.5, 0.5).
      */
-    uvSecondaryColor?: Vector3;
-    /**
-     * Color palette to use for MATERIALIDS mode.
-     * Defaults to materialIdColors table.
-     */
-    materialColorTable?: Array<Vector3>;
+    uvSecondaryColor?: Color3;
 }
 
 /** @internal */
@@ -285,19 +277,25 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
     private static _pluginCount: number = 0;
 
     /**
-     * Index of this instance of the plugin.
-     * Based on pluginCount at time of instantiation.
-    */
-    @serialize()
-    private _pluginIndex: number;
-
+     * Color palette used for MATERIALIDS mode.
+     * Defaults to `defaultMaterialColors`
+     */
+    public static materialColors: Color3[] = defaultMaterialColors;
+    
     /**
      * Options for the plugin.
      * See MeshDebugOptions interface for defaults.
     */
-   private _options: Required<MeshDebugOptions>;
+    private _options: Required<MeshDebugOptions>;
+
+    /**
+    * Material ID color of this plugin instance.
+    * Taken from index `_pluginCount` of `materialIdColors` at time of instantiation.
+    */
+    @serializeAsColor3()
+    private _materialColor: Color3;
    
-   private _mode: MeshDebugMode = MeshDebugMode.NONE;
+    private _mode: MeshDebugMode = MeshDebugMode.NONE;
     /**
      * Current mesh debug visualization.
      * Defaults to NONE.
@@ -336,24 +334,23 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
         const defaults: Required<MeshDebugOptions> = {
             mode: defines.DBG_MODE,
             multiply: defines.DBG_MULTIPLY,
-            shadedDiffuseColor: new Vector3(1, 1, 1),
-            shadedSpecularColor: new Vector3(0.8, 0.8, 0.8),
+            shadedDiffuseColor: new Color3(1, 1, 1),
+            shadedSpecularColor: new Color3(0.8, 0.8, 0.8),
             shadedSpecularPower: 10,
             wireframeThickness: 0.7,
-            wireframeTrianglesColor: new Vector3(0, 0, 0),
-            wireframeVerticesColor: new Vector3(0.8, 0.8, 0.8),
-            vertexColor: new Vector3(0, 0, 0),
+            wireframeTrianglesColor: new Color3(0, 0, 0),
+            wireframeVerticesColor: new Color3(0.8, 0.8, 0.8),
+            vertexColor: new Color3(0, 0, 0),
             vertexRadius: 1.2,
             uvScale: 20,
-            uvPrimaryColor: new Vector3(1, 1, 1),
-            uvSecondaryColor: new Vector3(0.5, 0.5, 0.5),
-            materialColorTable: materialIdColors,
+            uvPrimaryColor: new Color3(1, 1, 1),
+            uvSecondaryColor: new Color3(0.5, 0.5, 0.5),
         }
         
         this._mode = defines.DBG_MODE;
         this._multiply = defines.DBG_MULTIPLY;
         this._options = {...defaults, ...options};
-        this._pluginIndex = MeshDebugPluginMaterial._pluginCount++;
+        this._materialColor = MeshDebugPluginMaterial.materialColors[MeshDebugPluginMaterial._pluginCount++ % MeshDebugPluginMaterial.materialColors.length];
     }
 
     /**
@@ -431,15 +428,15 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
      * @param uniformBuffer Uniform buffer
      */
     public bindForSubMesh(uniformBuffer: UniformBuffer): void {
-        uniformBuffer.updateVector3("dbg_shadedDiffuseColor", this._options.shadedDiffuseColor);
-        uniformBuffer.updateFloat4("dbg_shadedSpecularColorPower", this._options.shadedSpecularColor.x, this._options.shadedSpecularColor.y, this._options.shadedSpecularColor.z, this._options.shadedSpecularPower);
+        uniformBuffer.updateFloat3("dbg_shadedDiffuseColor", this._options.shadedDiffuseColor.r, this._options.shadedDiffuseColor.g, this._options.shadedDiffuseColor.b);
+        uniformBuffer.updateFloat4("dbg_shadedSpecularColorPower", this._options.shadedSpecularColor.r, this._options.shadedSpecularColor.g, this._options.shadedSpecularColor.b, this._options.shadedSpecularPower);
         uniformBuffer.updateFloat3("dbg_thicknessRadiusScale", this._options.wireframeThickness, this._options.vertexRadius, this._options.uvScale);
-        uniformBuffer.updateVector3("dbg_wireframeTrianglesColor", this._options.wireframeTrianglesColor);
-        uniformBuffer.updateVector3("dbg_wireframeVerticesColor", this._options.wireframeVerticesColor);
-        uniformBuffer.updateVector3("dbg_vertexColor", this._options.vertexColor);
-        uniformBuffer.updateVector3("dbg_uvPrimaryColor", this._options.uvPrimaryColor);
-        uniformBuffer.updateVector3("dbg_uvSecondaryColor", this._options.uvSecondaryColor);
-        uniformBuffer.updateVector3("dbg_materialColor", this._options.materialColorTable[this._pluginIndex % this._options.materialColorTable.length],);
+        uniformBuffer.updateFloat3("dbg_wireframeTrianglesColor", this._options.wireframeTrianglesColor.r, this._options.wireframeTrianglesColor.g, this._options.wireframeTrianglesColor.b);
+        uniformBuffer.updateFloat3("dbg_wireframeVerticesColor", this._options.wireframeVerticesColor.r, this._options.wireframeVerticesColor.g, this._options.wireframeVerticesColor.b);
+        uniformBuffer.updateFloat3("dbg_vertexColor", this._options.vertexColor.r, this._options.vertexColor.g, this._options.vertexColor.b);
+        uniformBuffer.updateFloat3("dbg_uvPrimaryColor", this._options.uvPrimaryColor.r, this._options.uvPrimaryColor.g, this._options.uvPrimaryColor.b);
+        uniformBuffer.updateFloat3("dbg_uvSecondaryColor", this._options.uvSecondaryColor.r, this._options.uvSecondaryColor.g, this._options.uvSecondaryColor.b);
+        uniformBuffer.updateFloat3("dbg_materialColor", this._materialColor.r, this._materialColor.g, this._materialColor.b);
     }
 
     /**
@@ -477,10 +474,6 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
         serializationObject.uvScale = this._options.uvScale;
         serializationObject.uvPrimaryColor = this._options.uvPrimaryColor.asArray();
         serializationObject.uvSecondaryColor = this._options.uvSecondaryColor.asArray();
-        serializationObject.materialColorTable = [];
-        for (const color of this._options.materialColorTable) {
-            serializationObject.materialColorTable.push(color.asArray());
-        }
 
         return serializationObject;
     }
@@ -496,22 +489,18 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
 
         this._options.mode = serializationObject.mode;
         this._options.multiply = serializationObject.multiply;
-        this._options.shadedDiffuseColor = Vector3.FromArray(serializationObject.shadedDiffuseColor);
-        this._options.shadedSpecularColor = Vector3.FromArray(serializationObject.shadedSpecularColor);
+        this._options.shadedDiffuseColor = Color3.FromArray(serializationObject.shadedDiffuseColor);
+        this._options.shadedSpecularColor = Color3.FromArray(serializationObject.shadedSpecularColor);
         this._options.shadedSpecularPower = serializationObject.shadedSpecularPower;
         this._options.wireframeThickness = serializationObject.wireframeThickness;
-        this._options.wireframeTrianglesColor = Vector3.FromArray(serializationObject.wireframeTrianglesColor);
-        this._options.wireframeVerticesColor = Vector3.FromArray(serializationObject.wireframeVerticesColor);
-        this._options.vertexColor = Vector3.FromArray(serializationObject.vertexColor);
+        this._options.wireframeTrianglesColor = Color3.FromArray(serializationObject.wireframeTrianglesColor);
+        this._options.wireframeVerticesColor = Color3.FromArray(serializationObject.wireframeVerticesColor);
+        this._options.vertexColor = Color3.FromArray(serializationObject.vertexColor);
         this._options.vertexRadius = serializationObject.vertexRadius;
         this._options.uvScale = serializationObject.uvScale;
-        this._options.uvPrimaryColor = Vector3.FromArray(serializationObject.uvPrimaryColor);
-        this._options.uvSecondaryColor = Vector3.FromArray(serializationObject.uvSecondaryColor);
-        this._options.materialColorTable = [];
-        for (const color of serializationObject.materialColorTable) {
-            this._options.materialColorTable.push(Vector3.FromArray(color));
-        }
-        
+        this._options.uvPrimaryColor = Color3.FromArray(serializationObject.uvPrimaryColor);
+        this._options.uvSecondaryColor = Color3.FromArray(serializationObject.uvSecondaryColor);
+
         this.markAllDefinesAsDirty();
     }
 
@@ -520,6 +509,7 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
      */
     public static Reset(): void {
         this._pluginCount = 0;
+        this.materialColors = defaultMaterialColors;
     }
 
     /**
