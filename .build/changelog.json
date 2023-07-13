@@ -1,26 +1,21 @@
 {
-    "fromTag": "6.11.2",
+    "fromTag": "6.12.0",
     "changelog": {
-        "6.11.2": [
+        "6.12.1": [
             {
-                "pr": "14025",
-                "title": "Material: Adds a property to define the relative order in which decals and detailed maps are rendered",
-                "description": "See https://forum.babylonjs.com/t/how-to-render-decal-map-on-top-of-detail-map-or-control-the-render-order-on-a-material-and-its-various-map-properties/42165\r\n\r\nFixes #14024 ",
+                "pr": "14047",
+                "title": "Fix sound pileup issue",
+                "description": "Sounds created with the `loop` or `autoplay` options set while the audio engine is locked are started automatically when the audio engine is unlocked. If the newly created sound is stopped before the audio engine is unlocked, then the sound still plays when the audio engine is unlocked. This is unexpected. Stopped sounds should not play when the audio engine is unlocked.\r\n\r\nThis change fixes the issue by clearing the 500 ms timeout used for double-checking the audio context state and removing the observer added to `AudioEngine.onAudioUnlockedObservable` when the sound stops, pauses, gets played again without being stopped, or when it gets disposed.\r\n\r\nReported on forum https://forum.babylonjs.com/t/sound-pileup-in-chrome/42266.\r\nTested on Edge browser with playground https://playground.babylonjs.com/#0CNZFE#21.",
                 "author": {
-                    "name": "Popov72",
-                    "url": "https://github.com/Popov72"
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
                 },
                 "files": [
-                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
-                    "packages/dev/core/src/Materials/PBR/pbrMaterial.ts",
-                    "packages/dev/core/src/Materials/materialHelper.ts",
-                    "packages/dev/core/src/Materials/standardMaterial.ts",
-                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockAlbedoOpacity.fx",
-                    "packages/dev/core/src/Shaders/default.fragment.fx"
+                    "packages/dev/core/src/Audio/sound.ts",
+                    "packages/dev/core/test/unit/Audio/sound.test.ts"
                 ],
                 "tags": [
-                    "enhancement",
-                    "materials"
+                    "bug"
                 ]
             }
         ],
@@ -264,6 +259,29 @@
                     "packages/tools/tests/test/visualization/config.json"
                 ],
                 "tags": []
+            }
+        ],
+        "6.11.2": [
+            {
+                "pr": "14025",
+                "title": "Material: Adds a property to define the relative order in which decals and detailed maps are rendered",
+                "description": "See https://forum.babylonjs.com/t/how-to-render-decal-map-on-top-of-detail-map-or-control-the-render-order-on-a-material-and-its-various-map-properties/42165\r\n\r\nFixes #14024 ",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrMaterial.ts",
+                    "packages/dev/core/src/Materials/materialHelper.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockAlbedoOpacity.fx",
+                    "packages/dev/core/src/Shaders/default.fragment.fx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "materials"
+                ]
             }
         ],
         "6.11.1": [

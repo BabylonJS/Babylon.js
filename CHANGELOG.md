@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.12.1
+
+### Core
+
+- Fix sound pileup issue - [_Bug Fix_] by [docEdub](https://github.com/docEdub) ([#14047](https://github.com/BabylonJS/Babylon.js/pull/14047))
+
 ## 6.12.0
 
 ### Core
