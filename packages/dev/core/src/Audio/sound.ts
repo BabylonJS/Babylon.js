@@ -436,14 +436,7 @@ export class Sound {
                 this._connectedTransformNode = null;
             }
 
-            if (this._tryToPlayTimeout) {
-                clearTimeout(this._tryToPlayTimeout);
-                this._tryToPlayTimeout = null;
-            }
-            if (this._audioUnlockedObserver) {
-                Engine.audioEngine.onAudioUnlockedObservable.remove(this._audioUnlockedObserver);
-                this._audioUnlockedObserver = null;
-            }
+            this._clearTimeoutsAndObservers();
         }
     }
 
@@ -755,17 +748,10 @@ export class Sound {
      * @param length (optional) Sound duration (in seconds)
      */
     public play(time?: number, offset?: number, length?: number): void {
-        if (this._tryToPlayTimeout) {
-            clearTimeout(this._tryToPlayTimeout);
-            this._tryToPlayTimeout = null;
-        }
-        if (this._audioUnlockedObserver) {
-            Engine.audioEngine?.onAudioUnlockedObservable.remove(this._audioUnlockedObserver);
-            this._audioUnlockedObserver = null;
-        }
-
         if (this._isReadyToPlay && this._scene.audioEnabled && Engine.audioEngine?.audioContext) {
             try {
+                this._clearTimeoutsAndObservers();
+
                 let startTime = time ? Engine.audioEngine?.audioContext.currentTime + time : Engine.audioEngine?.audioContext.currentTime;
                 if (!this._soundSource || !this._streamingSource) {
                     if (this._spatialSound && this._soundPanner) {
@@ -913,14 +899,7 @@ export class Sound {
      */
     public stop(time?: number): void {
         if (this.isPlaying) {
-            if (this._tryToPlayTimeout) {
-                clearTimeout(this._tryToPlayTimeout);
-                this._tryToPlayTimeout = null;
-            }
-            if (this._audioUnlockedObserver) {
-                Engine.audioEngine?.onAudioUnlockedObservable.remove(this._audioUnlockedObserver);
-                this._audioUnlockedObserver = null;
-            }
+            this._clearTimeoutsAndObservers();
             if (this._streaming) {
                 if (this._htmlAudioElement) {
                     this._htmlAudioElement.pause();
@@ -960,14 +939,7 @@ export class Sound {
      */
     public pause(): void {
         if (this.isPlaying) {
-            if (this._tryToPlayTimeout) {
-                clearTimeout(this._tryToPlayTimeout);
-                this._tryToPlayTimeout = null;
-            }
-            if (this._audioUnlockedObserver) {
-                Engine.audioEngine?.onAudioUnlockedObservable.remove(this._audioUnlockedObserver);
-                this._audioUnlockedObserver = null;
-            }
+            this._clearTimeoutsAndObservers();
             if (this._streaming) {
                 if (this._htmlAudioElement) {
                     this._htmlAudioElement.pause();
@@ -1289,5 +1261,16 @@ export class Sound {
             this.isPaused = false;
         }
         this._offset = value;
+    }
+
+    private _clearTimeoutsAndObservers() {
+        if (this._tryToPlayTimeout) {
+            clearTimeout(this._tryToPlayTimeout);
+            this._tryToPlayTimeout = null;
+        }
+        if (this._audioUnlockedObserver) {
+            Engine.audioEngine?.onAudioUnlockedObservable.remove(this._audioUnlockedObserver);
+            this._audioUnlockedObserver = null;
+        }
     }
 }

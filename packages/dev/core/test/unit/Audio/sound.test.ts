@@ -134,8 +134,16 @@ window.AudioContext = jest.fn().mockName("AudioContext").mockImplementation(() =
     return mockedAudioContext;
 });
 
+const waitForAudioContextSuspendedDoubleCheck = () => {
+    jest.advanceTimersByTime(500);
+};
+
 const soundWasStarted = () => {
     return mockedBufferSource !== null;
+};
+
+const whenAudioContextResumes = (callback: () => void) => {
+    return Promise.resolve().then(callback);
 };
 
 // Required for timers (eg. setTimeout) to work
@@ -619,7 +627,7 @@ describe("Sound", () => {
         expect(sound.isPlaying).toBe(false);
     });
 
-    it("does not autoplay after 500 ms when stopped and audio context is resumed", () => {
+    it("does not autoplay after 500 ms when stopped before audio context is resumed", () => {
         mockedAudioContext.state = "suspended";
         const sound = new Sound(expect.getState().currentTestName, AudioSample.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, { autoplay: true });
 
@@ -630,33 +638,29 @@ describe("Sound", () => {
         expect(soundWasStarted()).toBe(false);
     });
 
-    it("does not autoplay when stopped before audio context is resumed", () => {
+    it("does not autoplay when stopped before audio engine is unlocked", () => {
         mockedAudioContext.state = "suspended";
         const sound = new Sound(expect.getState().currentTestName, AudioSample.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, { autoplay: true });
         
-        // Wait for the sound to double-check the "suspended" audio context state.
-        jest.advanceTimersByTime(500);
+        waitForAudioContextSuspendedDoubleCheck();
         sound.stop();
         Engine.audioEngine!.unlock();
 
-        // Wait for the audio engine _resumeAudioContext() function to resolve.
-        return Promise.resolve().then(() => {
+        return whenAudioContextResumes(() => {
             expect(soundWasStarted()).toBe(false);
         });
     });
 
-    it("does not autoplay when played and stopped before audio context is resumed", () => {
+    it("does not autoplay when played and stopped before audio engine is unlocked", () => {
         mockedAudioContext.state = "suspended";
         const sound = new Sound(expect.getState().currentTestName, AudioSample.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, { autoplay: true });
     
         sound.play();
-        // Wait for the sound to double-check the "suspended" audio context state.
-        jest.advanceTimersByTime(500);
+        waitForAudioContextSuspendedDoubleCheck();
         sound.stop();
         Engine.audioEngine!.unlock();
 
-        // Wait for the audio engine _resumeAudioContext() function to resolve.
-        return Promise.resolve().then(() => {
+        return whenAudioContextResumes(() => {
             expect(soundWasStarted()).toBe(false);
         });
     });
