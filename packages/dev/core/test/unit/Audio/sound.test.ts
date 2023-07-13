@@ -744,4 +744,22 @@ describe("Sound", () => {
 
         expect(mockedBufferSource.destination).toBeInstanceOf(PannerNodeMock);
     });
+
+    it("connects to gain node when unspatialized via property", () => {
+        const sound = new Sound(expect.getState().currentTestName, AudioSample.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, { spatialSound: true });
+        sound.spatialSound = false;
+
+        sound.play();
+
+        expect(mockedBufferSource.destination).toBeInstanceOf(GainNodeMock);
+    });
+
+    it("connects to gain node when unspatialized via updateOptions", () => {
+        const sound = new Sound(expect.getState().currentTestName, AudioSample.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, { spatialSound: true });
+        sound.updateOptions({ spatialSound: false });
+
+        sound.play();
+
+        expect(mockedBufferSource.destination).toBeInstanceOf(GainNodeMock);
+    });
 });
