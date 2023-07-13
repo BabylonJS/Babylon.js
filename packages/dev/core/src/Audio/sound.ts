@@ -11,7 +11,7 @@ import { _WarnImport } from "../Misc/devTools";
 import type { ISoundOptions } from "./Interfaces/ISoundOptions";
 import { EngineStore } from "../Engines/engineStore";
 import type { IAudioEngine } from "./Interfaces/IAudioEngine";
-import { Observer } from "../Misc/observable";
+import type { Observer } from "../Misc/observable";
 
 /**
  * Defines a sound that can be played in the application.
