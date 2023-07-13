@@ -64,6 +64,16 @@ class AudioSample {
 
 AudioSample.Add("silence, 1 second, 1 channel, 48000 kHz", 1, 48000, new Float32Array(48000));
 
+class AudioParamMock {
+    public cancelScheduledValues = jest.fn().mockName("cancelScheduledValues");
+    public exponentialRampToValueAtTime = jest.fn().mockName("exponentialRampToValueAtTime");
+    public linearRampToValueAtTime = jest.fn().mockName("linearRampToValueAtTime");
+    public setTargetAtTime = jest.fn().mockName("setTargetAtTime");
+    public setValueAtTime = jest.fn().mockName("setValueAtTime");
+    public setValueCurveAtTime = jest.fn().mockName("setValueCurveAtTime");
+    public value = 0;
+}
+
 class AudioNodeMock {
     public connect(destination: any) {
         this._destination = destination;
@@ -80,16 +90,41 @@ class AudioNodeMock {
     private _destination: any = null;
 }
 
+class AudioBufferSourceNodeMock extends AudioNodeMock {
+    onended = () => void 0;
+
+    start = jest.fn().mockName("start").mockImplementation(() => {
+        mockedBufferSource.startTime = mockedAudioContext.currentTime;
+    });
+
+    stop = jest.fn().mockName("stop").mockImplementation(() => {
+        mockedBufferSource?.onended();
+    });
+
+    buffer = {};
+    loop = false;
+    loopEnd = 0;
+    loopStart = 0;
+    playbackRate = {
+        value: 1
+    };
+
+    startTime = 0
+}
+
 class GainNodeMock extends AudioNodeMock {
-    get gain() {
-        return {
-            value: 1.0
-        }
-    }
+    gain = new AudioParamMock;
 }
 
 class PannerNodeMock extends AudioNodeMock {
+    positionX = new AudioParamMock;
+    positionY = new AudioParamMock;
+    positionZ = new AudioParamMock;
+    coneInnerAngle = new AudioParamMock;
+    coneOuterAngle = new AudioParamMock;
+    coneOuterGain = new AudioParamMock;
 
+    setOrientation = jest.fn().mockName("setOrientation");
 }
 
 let mockedAudioContext: any = null;
@@ -97,7 +132,7 @@ let mockedBufferSource: any = null;
 
 const incrementCurrentTime = (seconds: number) => {
     mockedAudioContext.currentTime += seconds;
-    if (mockedBufferSource._startTime + mockedBufferSource.buffer.duration <= mockedAudioContext.currentTime) {
+    if (mockedBufferSource.startTime + mockedBufferSource.buffer.duration <= mockedAudioContext.currentTime) {
         mockedBufferSource.stop();
     }
 }
@@ -110,26 +145,7 @@ window.AudioContext = jest.fn().mockName("AudioContext").mockImplementation(() =
         currentTime: 0,
         state: "running",
         createBufferSource: jest.fn().mockName("createBufferSource").mockImplementation(() => {
-            mockedBufferSource = {
-                connect: jest.fn().mockName("connect"),
-                disconnect: jest.fn().mockName("disconnect"),
-                onended: () => void 0,
-                start: jest.fn().mockName("start").mockImplementation(() => {
-                    mockedBufferSource._startTime = mockedAudioContext.currentTime;
-                }),
-                stop: jest.fn().mockName("stop").mockImplementation(() => {
-                    mockedBufferSource?.onended();
-                }),
-                buffer: {},
-                loop: false,
-                loopEnd: 0,
-                loopStart: 0,
-                playbackRate: {
-                    value: 1
-                },
-
-                _startTime: 0
-            };
+            mockedBufferSource = new AudioBufferSourceNodeMock;
             return mockedBufferSource;
         }),
         createGain: jest.fn().mockName("createGain").mockImplementation(() => {
@@ -693,5 +709,39 @@ describe("Sound", () => {
         return whenAudioContextResumes(() => {
             expect(soundWasStarted()).toBe(false);
         });
+    });
+
+    it("connects to gain node when not spatialized via constructor", () => {
+        const sound = new Sound(expect.getState().currentTestName, AudioSample.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, { spatialSound: false });
+
+        sound.play();
+
+        expect(mockedBufferSource.destination).toBeInstanceOf(GainNodeMock);
+    });
+
+    it("connects to panner node when spatialized via constructor", () => {
+        const sound = new Sound(expect.getState().currentTestName, AudioSample.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, { spatialSound: true });
+
+        sound.play();
+
+        expect(mockedBufferSource.destination).toBeInstanceOf(PannerNodeMock);
+    });
+
+    it("connects to panner node when spatialized via property", () => {
+        const sound = new Sound(expect.getState().currentTestName, AudioSample.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, { spatialSound: false });
+        sound.spatialSound = true;
+
+        sound.play();
+
+        expect(mockedBufferSource.destination).toBeInstanceOf(PannerNodeMock);
+    });
+
+    it("connects to panner node when spatialized via options", () => {
+        const sound = new Sound(expect.getState().currentTestName, AudioSample.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, { spatialSound: false });
+        sound.updateOptions({ spatialSound: true });
+
+        sound.play();
+
+        expect(mockedBufferSource.destination).toBeInstanceOf(PannerNodeMock);
     });
 });
