@@ -518,7 +518,7 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
     /**
      * Resets static variables of the plugin to their original state
      */
-    public static reset(): void {
+    public static Reset(): void {
         this._pluginCount = 0;
     }
 
