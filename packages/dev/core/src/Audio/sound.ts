@@ -123,16 +123,25 @@ export class Sound {
     public get spatialSound(): boolean {
         return this._spatialSound;
     }
+    
     /**
      * Does this sound enables spatial sound.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic#creating-a-spatial-3d-sound
      */
     public set spatialSound(newValue: boolean) {
-        this._spatialSound = newValue;
-        if (this._spatialSound && Engine.audioEngine?.canUseWebAudio && Engine.audioEngine.audioContext) {
-            this._createSpatialParameters();
+        if (newValue == this._spatialSound) {
+            return;
+        }
+
+        if (newValue) {
+            this._spatialSound = newValue;
+            this._updateSpatialParameters();
+        }
+        else {
+            this._disableSpatialSound();
         }
     }
+
     private _spatialSound: boolean = false;
     private _panningModel: string = "equalpower";
     private _playbackRate: number = 1;
@@ -510,7 +519,7 @@ export class Sound {
             this.distanceModel = options.distanceModel ?? this.distanceModel;
             this._playbackRate = options.playbackRate ?? this._playbackRate;
             this._length = options.length ?? undefined;
-            this._spatialSound = options.spatialSound ?? this._spatialSound;
+            this.spatialSound = options.spatialSound ?? this._spatialSound;
             this._setOffset(options.offset ?? undefined);
             this.setVolume(options.volume ?? this._volume);
             this._updateSpatialParameters();
@@ -552,27 +561,45 @@ export class Sound {
         }
     }
 
+    private _disableSpatialSound() {
+        if (!this._spatialSound) {
+            return;
+        }
+
+        const wasPlaying = this.isPlaying;
+        this.stop();
+
+        this._soundPanner?.disconnect();
+        this._inputAudioNode = this._soundGain;
+        this._spatialSound = false;
+
+        if (wasPlaying) {
+            this.play();
+        }
+    }
+
     private _updateSpatialParameters() {
-        if (this._spatialSound) {
-            if (this._soundPanner) {
-                if (this.useCustomAttenuation) {
-                    // Tricks to disable in a way embedded Web Audio attenuation
-                    this._soundPanner.distanceModel = "linear";
-                    this._soundPanner.maxDistance = Number.MAX_VALUE;
-                    this._soundPanner.refDistance = 1;
-                    this._soundPanner.rolloffFactor = 1;
-                    this._soundPanner.panningModel = this._panningModel as any;
-                } else {
-                    this._soundPanner.distanceModel = this.distanceModel as any;
-                    this._soundPanner.maxDistance = this.maxDistance;
-                    this._soundPanner.refDistance = this.refDistance;
-                    this._soundPanner.rolloffFactor = this.rolloffFactor;
-                    this._soundPanner.panningModel = this._panningModel as any;
-                }
+        if (!this._spatialSound) {
+            return;
+        }
+        if (this._soundPanner) {
+            if (this.useCustomAttenuation) {
+                // Tricks to disable in a way embedded Web Audio attenuation
+                this._soundPanner.distanceModel = "linear";
+                this._soundPanner.maxDistance = Number.MAX_VALUE;
+                this._soundPanner.refDistance = 1;
+                this._soundPanner.rolloffFactor = 1;
+                this._soundPanner.panningModel = this._panningModel as any;
+            } else {
+                this._soundPanner.distanceModel = this.distanceModel as any;
+                this._soundPanner.maxDistance = this.maxDistance;
+                this._soundPanner.refDistance = this.refDistance;
+                this._soundPanner.rolloffFactor = this.rolloffFactor;
+                this._soundPanner.panningModel = this._panningModel as any;
             }
-            else {
-                this._createSpatialParameters();
-            }
+        }
+        else {
+            this._createSpatialParameters();
         }
     }
 
