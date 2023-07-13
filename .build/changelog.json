@@ -1,6 +1,271 @@
 {
-    "fromTag": "6.11.1",
+    "fromTag": "6.11.2",
     "changelog": {
+        "6.11.2": [
+            {
+                "pr": "14025",
+                "title": "Material: Adds a property to define the relative order in which decals and detailed maps are rendered",
+                "description": "See https://forum.babylonjs.com/t/how-to-render-decal-map-on-top-of-detail-map-or-control-the-render-order-on-a-material-and-its-various-map-properties/42165\r\n\r\nFixes #14024 ",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrMaterial.ts",
+                    "packages/dev/core/src/Materials/materialHelper.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockAlbedoOpacity.fx",
+                    "packages/dev/core/src/Shaders/default.fragment.fx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "materials"
+                ]
+            }
+        ],
+        "6.12.0": [
+            {
+                "pr": "14041",
+                "title": "Fix SerializeMesh method to account for non-mesh ob…",
+                "description": "…jects in the hierarchy.\r\n\r\nForum issue: https://forum.babylonjs.com/t/serializemesh-is-not-keeping-parent-child-hierarchy/42302\r\n\r\nAlso added a unit and vis test.\r\n\r\nEDIT: Also fix TrailMesh serialization and parsing. Currently, the mesh's type is not kept in the process: https://playground.babylonjs.com/#40E17W#3",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/Meshes/trailMesh.ts",
+                    "packages/dev/core/src/Misc/sceneSerializer.ts",
+                    "packages/dev/core/src/scene.ts",
+                    "packages/dev/core/test/unit/Meshes/babylon.positionAndRotation.test.ts",
+                    "packages/dev/core/test/unit/Scene/babylon.sceneSerializer.test.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/SerializeMesh with hierarchy.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug",
+                    "exporters"
+                ]
+            },
+            {
+                "pr": "14037",
+                "title": "Input transformation should be applied during the XR loop",
+                "description": "When using the standard input system (i.e. changing cameraDirection and cameraRotation) the transformation changes instantly, but in XR, due to the way we change the camera transformation (during the XR loop) this has to be applied deferred.\n\nThe initial solution was to change the XR camera only, but this required repeating a lot of code because of the inheritence architecture.\n\nThis way we maintain back-compat while allowing \"deferred\" updating the camera's transformation based on inputs.\n\nFixes #14016\nPG to test - #m1kgcr",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/freeCamera.ts",
+                    "packages/dev/core/src/Cameras/targetCamera.ts",
+                    "packages/dev/core/src/XR/features/WebXRControllerMovement.ts",
+                    "packages/dev/core/src/XR/webXRCamera.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "VR/AR/XR"
+                ]
+            },
+            {
+                "pr": "13935",
+                "title": "ShaderCodeCursor. Optimization of lines parsing",
+                "description": "I notices that `set lines` takes 19.29ms for 68 calls while my scene initializaion, so I add some checks to avoid process heavy operations like `trim` and `split` on the string. As a result, in my case this function take 9.45ms for same 68 calls. And it still works as before, of course, but faster :)\r\n\r\nP.S. Results of my measurements:\r\n```\r\ndefault:\r\n\r\n{count: 68, avg: 0.342647, max: 1.500000, allTime: 23.299999}\r\n{count: 68, avg: 0.267647, max: 1.300000, allTime: 18.199999}\r\n{count: 68, avg: 0.282352, max: 1.299999, allTime: 19.200000}\r\n{count: 68, avg: 0.294117, max: 1.200000, allTime: 19.999999}\r\n{count: 68, avg: 0.330882, max: 1.700000, allTime: 22.500000}\r\n{count: 68, avg: 0.326470, max: 4.500000, allTime: 22.199999}\r\n{count: 68, avg: 0.276470, max: 1.100000, allTime: 18.799998}\r\n{count: 68, avg: 0.255882, max: 0.799999, allTime: 17.400000}\r\n{count: 68, avg: 0.263235, max: 1.200000, allTime: 17.900000}\r\n{count: 68, avg: 0.260294, max: 0.899999, allTime: 17.699999}\r\n{count: 68, avg: 0.269117, max: 1.000000, allTime: 18.299999}\r\n{count: 68, avg: 0.280882, max: 1.099999, allTime: 19.099999}\r\n{count: 68, avg: 0.260294, max: 0.900000, allTime: 17.700000}\r\n{count: 68, avg: 0.263235, max: 0.900000, allTime: 17.899999}\r\n\r\navg allTime: 19.29ms\r\n\r\n-------------------------------------------------------------\r\n\r\nafter optimization:\r\n\r\n{count: 68, avg: 0.195588, max: 3.000000, allTime: 13.299999}\r\n{count: 68, avg: 0.138235, max: 1.000000, allTime:  9.399999}\r\n{count: 68, avg: 0.180882, max: 2.000000, allTime: 12.300000}\r\n{count: 68, avg: 0.155882, max: 1.400000, allTime: 10.600000}\r\n{count: 68, avg: 0.151470, max: 0.900000, allTime: 10.299999}\r\n{count: 68, avg: 0.145588, max: 1.599999, allTime:  9.899999}\r\n{count: 68, avg: 0.120588, max: 0.699999, allTime:  8.199999}\r\n{count: 68, avg: 0.122058, max: 0.700000, allTime:  8.299999}\r\n{count: 68, avg: 0.117647, max: 0.700000, allTime:  8.000000}\r\n{count: 68, avg: 0.123529, max: 0.799999, allTime:  8.400000}\r\n{count: 68, avg: 0.135294, max: 0.800000, allTime:  9.200000}\r\n{count: 68, avg: 0.141176, max: 0.700000, allTime:  9.600000}\r\n{count: 68, avg: 0.138235, max: 1.000000, allTime:  9.400000}\r\n{count: 68, avg: 0.133823, max: 0.799999, allTime:  9.099999}\r\n{count: 68, avg: 0.117647, max: 0.600000, allTime:  8.000000}\r\n{count: 68, avg: 0.150000, max: 1.899999, allTime: 10.200000}\r\n{count: 68, avg: 0.114705, max: 0.900000, allTime:  7.799999}\r\n{count: 68, avg: 0.135294, max: 0.700000, allTime:  9.199999}\r\n{count: 68, avg: 0.123529, max: 0.700000, allTime:  8.399999}\r\n{count: 68, avg: 0.138235, max: 0.699999, allTime:  9.400000}\r\n\r\navg allTime: 9.45ms\r\n```",
+                "author": {
+                    "name": "Dok11",
+                    "url": "https://github.com/Dok11"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Processors/shaderCodeCursor.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14046",
+                "title": "Effect layer stencil",
+                "description": "This change allows `GlowLayer` to be used with stenciling.\r\n\r\nhttps://forum.babylonjs.com/t/42331",
+                "author": {
+                    "name": "kv-bh",
+                    "url": "https://github.com/kv-bh"
+                },
+                "files": [
+                    "packages/dev/core/src/Layers/effectLayer.ts",
+                    "packages/dev/core/src/Layers/glowLayer.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14039",
+                "title": "Skeleton viewer bug",
+                "description": "Bug: https://codesandbox.io/s/jovial-jasper-5d36rr \r\nFrom the example, it can be seen that the calculation of the bones is incorrect.\r\nUse getLocalMatrix instead\r\n```\r\nbone.children.forEach((bc) => {\r\n    const childAbsoluteBindPoseTransform: Matrix = new Matrix();\r\n    bc.getLocalMatrix().multiplyToRef(boneAbsoluteBindPoseTransform, childAbsoluteBindPoseTransform);\r\n   ...\r\n})\r\n```",
+                "author": {
+                    "name": "newbeea",
+                    "url": "https://github.com/newbeea"
+                },
+                "files": [
+                    "packages/dev/core/src/Debug/skeletonViewer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14043",
+                "title": "DeviceEventFactory: Modified event factory to provide correct value for buttons property (part deux)",
+                "description": "This PR is a fix to https://github.com/BabylonJS/Babylon.js/pull/13927.  It addresses some of the logic changes but also re-adds support for buttons in Native pointer events.",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/DeviceInput/eventFactory.ts",
+                    "packages/dev/core/src/Inputs/scene.inputManager.ts",
+                    "packages/dev/core/test/unit/DeviceInput/babylon.deviceInput.test.ts",
+                    "packages/dev/core/test/unit/DeviceInput/babylon.inputManager.test.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14045",
+                "title": "Bump semver from 5.7.1 to 5.7.2",
+                "description": "Bumps [semver](https://github.com/npm/node-semver) from 5.7.1 to 5.7.2.\n<details>\n<summary>Release notes</summary>\n<p><em>Sourced from <a href=\"https://github.com/npm/node-semver/releases\">semver's releases</a>.</em></p>\n<blockquote>\n<h2>v5.7.2</h2>\n<h2><a href=\"https://github.com/npm/node-semver/compare/v5.7.1...v5.7.2\">5.7.2</a> (2023-07-10)</h2>\n<h3>Bug Fixes</h3>\n<ul>\n<li><a href=\"https://github.com/npm/node-semver/commit/2f8fd41487acf380194579ecb6f8b1bbfe116be0\"><code>2f8fd41</code></a> <a href=\"https://redirect.github.com/npm/node-semver/pull/585\">#585</a> better handling of whitespace (<a href=\"https://redirect.github.com/npm/node-semver/issues/585\">#585</a>) (<a href=\"https://github.com/joaomoreno\"><code>@​joaomoreno</code></a>, <a href=\"https://github.com/lukekarrys\"><code>@​lukekarrys</code></a>)</li>\n</ul>\n</blockquote>\n</details>\n<details>\n<summary>Changelog</summary>\n<p><em>Sourced from <a href=\"https://github.com/npm/node-semver/blob/v5.7.2/CHANGELOG.md\">semver's changelog</a>.</em></p>\n<blockquote>\n<h2><a href=\"https://github.com/npm/node-semver/compare/v5.7.1...v5.7.2\">5.7.2</a> (2023-07-10)</h2>\n<h3>Bug Fixes</h3>\n<ul>\n<li><a href=\"https://github.com/npm/node-semver/commit/2f8fd41487acf380194579ecb6f8b1bbfe116be0\"><code>2f8fd41</code></a> <a href=\"https://redirect.github.com/npm/node-semver/pull/585\">#585</a> better handling of whitespace (<a href=\"https://redirect.github.com/npm/node-semver/issues/585\">#585</a>) (<a href=\"https://github.com/joaomoreno\"><code>@​joaomoreno</code></a>, <a href=\"https://github.com/lukekarrys\"><code>@​lukekarrys</code></a>)</li>\n</ul>\n<h2>5.7</h2>\n<ul>\n<li>Add <code>minVersion</code> method</li>\n</ul>\n<h2>5.6</h2>\n<ul>\n<li>Move boolean <code>loose</code> param to an options object, with\nbackwards-compatibility protection.</li>\n<li>Add ability to opt out of special prerelease version handling with\nthe <code>includePrerelease</code> option flag.</li>\n</ul>\n<h2>5.5</h2>\n<ul>\n<li>Add version coercion capabilities</li>\n</ul>\n<h2>5.4</h2>\n<ul>\n<li>Add intersection checking</li>\n</ul>\n<h2>5.3</h2>\n<ul>\n<li>Add <code>minSatisfying</code> method</li>\n</ul>\n<h2>5.2</h2>\n<ul>\n<li>Add <code>prerelease(v)</code> that returns prerelease components</li>\n</ul>\n<h2>5.1</h2>\n<ul>\n<li>Add Backus-Naur for ranges</li>\n<li>Remove excessively cute inspection methods</li>\n</ul>\n<h2>5.0</h2>\n<ul>\n<li>Remove AMD/Browserified build artifacts</li>\n<li>Fix ltr and gtr when using the <code>*</code> range</li>\n<li>Fix for range <code>*</code> with a prerelease identifier</li>\n</ul>\n</blockquote>\n</details>\n<details>\n<summary>Commits</summary>\n<ul>\n<li><a href=\"https://github.com/npm/node-semver/commit/f8cc313550691a50d9662d8c94f0c033717efd7d\"><code>f8cc313</code></a> chore: release 5.7.2</li>\n<li><a href=\"https://github.com/npm/node-semver/commit/2f8fd41487acf380194579ecb6f8b1bbfe116be0\"><code>2f8fd41</code></a> fix: better handling of whitespace (<a href=\"https://redirect.github.com/npm/node-semver/issues/585\">#585</a>)</li>\n<li><a href=\"https://github.com/npm/node-semver/commit/deb5ad51bf58868fa243c1683775305fe9e0e365\"><code>deb5ad5</code></a> chore: <code>@​npmcli/template-oss</code><a href=\"https://github.com/4\"><code>@​4</code></a>.16.0</li>\n<li>See full diff in <a href=\"https://github.com/npm/node-semver/compare/v5.7.1...v5.7.2\">compare view</a></li>\n</ul>\n</details>\n<details>\n<summary>Maintainer changes</summary>\n<p>This version was pushed to npm by <a href=\"https://www.npmjs.com/~lukekarrys\">lukekarrys</a>, a new releaser for semver since your current version.</p>\n</details>\n<br />\n\n\n[![Dependabot compatibility score](https://dependabot-badges.githubapp.com/badges/compatibility_score?dependency-name=semver&package-manager=npm_and_yarn&previous-version=5.7.1&new-version=5.7.2)](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-compatibility-scores)\n\nDependabot will resolve any conflicts with this PR as long as you don't alter it yourself. You can also trigger a rebase manually by commenting `@dependabot rebase`.\n\n[//]: # (dependabot-automerge-start)\n[//]: # (dependabot-automerge-end)\n\n---\n\n<details>\n<summary>Dependabot commands and options</summary>\n<br />\n\nYou can trigger Dependabot actions by commenting on this PR:\n- `@dependabot rebase` will rebase this PR\n- `@dependabot recreate` will recreate this PR, overwriting any edits that have been made to it\n- `@dependabot merge` will merge this PR after your CI passes on it\n- `@dependabot squash and merge` will squash and merge this PR after your CI passes on it\n- `@dependabot cancel merge` will cancel a previously requested merge and block automerging\n- `@dependabot reopen` will reopen this PR if it is closed\n- `@dependabot close` will close this PR and stop Dependabot recreating it. You can achieve the same result by closing it manually\n- `@dependabot ignore this major version` will close this PR and stop Dependabot creating any more for this major version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this minor version` will close this PR and stop Dependabot creating any more for this minor version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this dependency` will close this PR and stop Dependabot creating any more for this dependency (unless you reopen the PR or upgrade to it yourself)\nYou can disable automated security fix PRs for this repo from the [Security Alerts page](https://github.com/BabylonJS/Babylon.js/network/alerts).\n\n</details>",
+                "author": {
+                    "name": "dependabot[bot]",
+                    "url": "https://github.com/apps/dependabot"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": [
+                    "dependencies"
+                ]
+            },
+            {
+                "pr": "14031",
+                "title": "GRL - resolution added",
+                "description": "resolution was removed and aspect was introduced to save one divide operation in the shader, however when GREASED_LINE_SIZE_ATTENUATION is true, the vec2 resolution is needed. float aspect, vec2 resolution and float width are now packed into one vec4 attribute.",
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/greasedLinePluginMaterial.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14030",
+                "title": "Fixes for includeChildMeshes:true when constructing physics shapes",
+                "description": "Allows MESH and CONVEX_HULL shapes to be constructed from TransformNode or InstancedMesh instances and  correctly account for transform of children when includeChildMeshes is set to true.\r\n\r\nDiscussed this with @carolhmj - there were a couple of failure cases or unexpected behaviour when building physics shapes.\r\n\r\nHere's an example of one of the failure cases (check the console logs): https://playground.babylonjs.com/#5BJIYA#3 - this loads a glTF file which contains a mesh with multiple materials. The loader will create a single TransformNode with two Mesh children - one for each material.  If a user tries to build a physics shape from the \"Cube\" object (which is a glTF mesh, but a Babylon TransformNode) they'll hit the failure cases in the console.log()s. Similarly, if the mesh was instanced multiple times, the old code previously tried to use an `InstancedMesh` instance as if it were a `Mesh`, which would raise an exception accessing an undefined property (`Mesh.getVerticesData`)\r\n\r\nThis change allows a user to create a single physics shape from this scene construct. I've also tested this with some additional playground scenes, which @carolhmj linked me to:\r\n\r\nhttps://playground.babylonjs.com/#5BJIYA#4\r\nhttps://playground.babylonjs.com/#K7TJIG#363\r\nhttps://playground.babylonjs.com/#9T64J6\r\nhttps://playground.babylonjs.com/#R9DTZ0#16\r\n\r\nAnd made a new variant of one, which tests this includeChildMeshes functionality in the complicated \"Buggy\" asset:\r\nhttps://playground.babylonjs.com/#K7TJIG#371\r\n\r\nSince I can imagine that this case of constructing a single physics shape from a whole branch of the scene hierarchy is useful, it would probably also be nice to expose the includeChildMeshes property to the PhysicsShapeMesh and PhysicsShapeConvexHull constructors, without having to require users use the PhysicsShape base class.",
+                "author": {
+                    "name": "eoineoineoin",
+                    "url": "https://github.com/eoineoineoin"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14012",
+                "title": "Add the missing loaders tests",
+                "description": "And cleaning up the old ones",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "jest.config.ts",
+                    "packages/dev/core/test/unit/Loading/babylon.sceneLoader.tests.temp",
+                    "packages/dev/loaders/test/integration/babylon.sceneLoader.test.ts",
+                    "packages/dev/loaders/test/integration/testData.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14040",
+                "title": "Fix for invalidated TypedArray objects preventing mesh construction",
+                "description": "Fix failure to create mesh shapes when plugin memory needed to be reallocated.\r\n\r\nUnderlying issue is described in https://github.com/emscripten-core/emscripten/issues/7294 but what we were doing was:\r\n\r\n1. malloc() memory in plugin for vertex data\r\n2. Construct a Float32Array to view that data\r\n3. malloc() memory in plugin for index data\r\n4. Construct an Int32Array to view that data\r\n\r\nIssue is that at step 3, if the malloc() requires the plugin to expand the underlying storage, the Float32Array that we constructed in step 2 will be silently (!) invalidated and we'll pass a nullptr into the plugin for vertex data, which will result in no mesh shape being created.",
+                "author": {
+                    "name": "eoineoineoin",
+                    "url": "https://github.com/eoineoineoin"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "physics"
+                ]
+            },
+            {
+                "pr": "14038",
+                "title": "Performance tests preparations to run on the server",
+                "description": "I ran a few tests on the new server instance. performance tests seem to be running quite stable. \nThis changes the perf-tests to support the dev version and the latest stable version. Current threshold is 5% but it will be configurable in the future. \n\nThese tests should only run on the new GPU instance, otherwise they are not stable (even locally). \n\nOnce merged I will run a few tests with the CI and will turn these tests on as optional until we decide they are stable enough.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/tests/test/performance/playgrounds.test.ts",
+                    "packages/tools/tests/test/performance/scene.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14036",
+                "title": "GPU particle systems: Fix current active count",
+                "description": "See https://forum.babylonjs.com/t/gpuparticlesystem-is-still-updating-with-activeparticlecount-and-emitrate-are-0/42284",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/gpuParticleSystem.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "particles"
+                ]
+            },
+            {
+                "pr": "14035",
+                "title": "adding es check to umd packages",
+                "description": "UMD packages have long been es5-oriented, yet have incorporated es6 features like arrow functions. This checks the UMD packages against es6 and not es5, as it will fail because of the arrow functions.\n\nThis test is important for babylon native, which uses those packages, and does support es6 (but not more than that ATM)\n\nThis test will be added to the build process after merging it.\n\nSmall note - also fixing the missing es5 target in serializers.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/public/umd/babylonjs-gui/package.json",
+                    "packages/public/umd/babylonjs-loaders/package.json",
+                    "packages/public/umd/babylonjs-materials/package.json",
+                    "packages/public/umd/babylonjs-post-process/package.json",
+                    "packages/public/umd/babylonjs-procedural-textures/package.json",
+                    "packages/public/umd/babylonjs-serializers/package.json",
+                    "packages/public/umd/babylonjs-serializers/tsconfig.build.json",
+                    "packages/public/umd/babylonjs/package.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14032",
+                "title": "bring back the webgpu tests",
+                "description": "Those tests fail on linux but are fine on windows.\n\nI will remove them as part of the CI configuration instead of removing them here",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            }
+        ],
         "6.11.1": [
             {
                 "pr": "14029",
@@ -100,29 +365,6 @@
                 "tags": [
                     "bug",
                     "particles"
-                ]
-            }
-        ],
-        "6.11.2": [
-            {
-                "pr": "14025",
-                "title": "Material: Adds a property to define the relative order in which decals and detailed maps are rendered",
-                "description": "See https://forum.babylonjs.com/t/how-to-render-decal-map-on-top-of-detail-map-or-control-the-render-order-on-a-material-and-its-various-map-properties/42165\r\n\r\nFixes #14024 ",
-                "author": {
-                    "name": "Popov72",
-                    "url": "https://github.com/Popov72"
-                },
-                "files": [
-                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
-                    "packages/dev/core/src/Materials/PBR/pbrMaterial.ts",
-                    "packages/dev/core/src/Materials/materialHelper.ts",
-                    "packages/dev/core/src/Materials/standardMaterial.ts",
-                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockAlbedoOpacity.fx",
-                    "packages/dev/core/src/Shaders/default.fragment.fx"
-                ],
-                "tags": [
-                    "enhancement",
-                    "materials"
                 ]
             }
         ],

@@ -83,7 +83,7 @@
         "test:integration": "jest --selectProjects=integration --runInBand && npm run test -w @tools/memory-leak-tests",
         "test:performance": "jest --selectProjects=performance --runInBand",
         "test:interactions": "jest --selectProjects=interactions --runInBand",
-        "test:escheck" : "nx run-many --target=test:escheck --parallel --maxParallel=6",
+        "test:escheck": "nx run-many --target=test:escheck --parallel --maxParallel=6",
         "prepare": "ts-patch install -s && npm run build:tools && npm i @dev/build-tools -D && npm run build:assets && npm run build:test-tools",
         "clean": "npx nx run-many --target=clean --all && npm run build:tools",
         "format": "npm run format:check && npm run format:fix",
