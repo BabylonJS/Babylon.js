@@ -134,6 +134,10 @@ window.AudioContext = jest.fn().mockName("AudioContext").mockImplementation(() =
     return mockedAudioContext;
 });
 
+const soundWasStarted = () => {
+    return mockedBufferSource !== null;
+};
+
 // Required for timers (eg. setTimeout) to work
 jest.useFakeTimers();
 
@@ -601,7 +605,6 @@ describe("Sound", () => {
     // option set, even if the audio context state is suspended.
     it("sets isPlaying to true when constructed with autoplay option set while audio context is suspended", () => {
         mockedAudioContext.state = "suspended";
-
         const sound = new Sound(expect.getState().currentTestName, AudioSample.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, { autoplay: true });
 
         expect(sound.isPlaying).toBe(true);
@@ -609,8 +612,8 @@ describe("Sound", () => {
 
     it("sets isPlaying to false when stopped while audio context is suspended", () => {
         mockedAudioContext.state = "suspended";
-
         const sound = new Sound(expect.getState().currentTestName, AudioSample.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, { autoplay: true });
+
         sound.stop();
 
         expect(sound.isPlaying).toBe(false);
@@ -619,7 +622,6 @@ describe("Sound", () => {
     it("does not autoplay when stopped and audio context is resumed", () => {
         mockedAudioContext.state = "suspended";
 
-        Engine.audioEngine?.onAudioUnlockedObservable.clear();
 
         const sound = new Sound(expect.getState().currentTestName, AudioSample.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, { autoplay: true });
         // Wait for the sound to double-check the "suspended" audio context state.
@@ -629,9 +631,7 @@ describe("Sound", () => {
 
         // Wait for the audio engine _resumeAudioContext() function to resolve.
         return Promise.resolve().then(() => {
-            // The sound creates a buffer source when it starts, so make sure it did start by making sure no buffer
-            // source was created.
-            expect(mockedBufferSource).toBe(null);
+            expect(soundWasStarted()).toBe(false);
         });
     });
 });
