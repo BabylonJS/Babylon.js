@@ -619,11 +619,37 @@ describe("Sound", () => {
         expect(sound.isPlaying).toBe(false);
     });
 
-    it("does not autoplay when stopped and audio context is resumed", () => {
+    it("does not autoplay after 500 ms when stopped and audio context is resumed", () => {
         mockedAudioContext.state = "suspended";
-
-
         const sound = new Sound(expect.getState().currentTestName, AudioSample.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, { autoplay: true });
+
+        sound.stop();
+        mockedAudioContext.state = "running";
+        jest.advanceTimersByTime(500);
+
+        expect(soundWasStarted()).toBe(false);
+    });
+
+    it("does not autoplay when stopped before audio context is resumed", () => {
+        mockedAudioContext.state = "suspended";
+        const sound = new Sound(expect.getState().currentTestName, AudioSample.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, { autoplay: true });
+        
+        // Wait for the sound to double-check the "suspended" audio context state.
+        jest.advanceTimersByTime(500);
+        sound.stop();
+        Engine.audioEngine!.unlock();
+
+        // Wait for the audio engine _resumeAudioContext() function to resolve.
+        return Promise.resolve().then(() => {
+            expect(soundWasStarted()).toBe(false);
+        });
+    });
+
+    it("does not autoplay when played and stopped before audio context is resumed", () => {
+        mockedAudioContext.state = "suspended";
+        const sound = new Sound(expect.getState().currentTestName, AudioSample.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, { autoplay: true });
+    
+        sound.play();
         // Wait for the sound to double-check the "suspended" audio context state.
         jest.advanceTimersByTime(500);
         sound.stop();
