@@ -736,7 +736,7 @@ describe("Sound", () => {
         expect(mockedBufferSource.destination).toBeInstanceOf(PannerNodeMock);
     });
 
-    it("connects to panner node when spatialized via options", () => {
+    it("connects to panner node when spatialized via updateOptions", () => {
         const sound = new Sound(expect.getState().currentTestName, AudioSample.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, { spatialSound: false });
         sound.updateOptions({ spatialSound: true });
 
