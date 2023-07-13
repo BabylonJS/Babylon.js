@@ -111,6 +111,9 @@ const fragmentMainEnd =
     #endif                
 #endif`;
 
+/**
+ * Default color palette used for MATERIALIDS mode.
+ */
 const materialIdColors = [
     new Vector3(.98, .26, .38),
     new Vector3(.47, .75, .3),
@@ -275,11 +278,26 @@ class MeshDebugDefines extends MaterialDefines {
  */
 export class MeshDebugPluginMaterial extends MaterialPluginBase {
 
-    private static _pluginCount = 0;
+    /**
+     * Total number of instances of the plugin.
+     * Starts at 0.
+    */
+    private static _pluginCount: number = 0;
 
+    /**
+     * Index of this instance of the plugin.
+     * Based on pluginCount at time of instantiation.
+    */
+    @serialize()
     private _pluginIndex: number;
 
-    private _mode: MeshDebugMode = MeshDebugMode.NONE;
+    /**
+     * Options for the plugin.
+     * See MeshDebugOptions interface for defaults.
+    */
+   private _options: Required<MeshDebugOptions>;
+   
+   private _mode: MeshDebugMode = MeshDebugMode.NONE;
     /**
      * Current mesh debug visualization.
      * Defaults to NONE.
@@ -297,14 +315,8 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
     @expandToProperty("_markAllDefinesAsDirty")
     public multiply: boolean = true;
 
-    /**
-     * Options for the plugin.
-     * See MeshDebugOptions interface for defaults.
-     */
-    private _options: Required<MeshDebugOptions>;
-
     /** @internal */
-    public _markAllDefinesAsDirty(): void {
+    protected _markAllDefinesAsDirty(): void {
         this.markAllDefinesAsDirty();
     }
 
@@ -465,7 +477,10 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
         serializationObject.uvScale = this._options.uvScale;
         serializationObject.uvPrimaryColor = this._options.uvPrimaryColor.asArray();
         serializationObject.uvSecondaryColor = this._options.uvSecondaryColor.asArray();
-        serializationObject.materialColorTable = this._options.materialColorTable;
+        serializationObject.materialColorTable = [];
+        for (const color of this._options.materialColorTable) {
+            serializationObject.materialColorTable.push(color.asArray());
+        }
 
         return serializationObject;
     }
@@ -492,9 +507,19 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
         this._options.uvScale = serializationObject.uvScale;
         this._options.uvPrimaryColor = Vector3.FromArray(serializationObject.uvPrimaryColor);
         this._options.uvSecondaryColor = Vector3.FromArray(serializationObject.uvSecondaryColor);
-        this._options.materialColorTable = serializationObject.materialColorTable;
+        this._options.materialColorTable = [];
+        for (const color of serializationObject.materialColorTable) {
+            this._options.materialColorTable.push(Vector3.FromArray(color));
+        }
         
         this.markAllDefinesAsDirty();
+    }
+
+    /**
+     * Resets static variables of the plugin to their original state
+     */
+    public static reset(): void {
+        this._pluginCount = 0;
     }
 
     /**
