@@ -755,6 +755,15 @@ export class Sound {
      * @param length (optional) Sound duration (in seconds)
      */
     public play(time?: number, offset?: number, length?: number): void {
+        if (this._tryToPlayTimeout) {
+            clearTimeout(this._tryToPlayTimeout);
+            this._tryToPlayTimeout = null;
+        }
+        if (this._audioUnlockedObserver) {
+            Engine.audioEngine?.onAudioUnlockedObservable.remove(this._audioUnlockedObserver);
+            this._audioUnlockedObserver = null;
+        }
+
         if (this._isReadyToPlay && this._scene.audioEnabled && Engine.audioEngine?.audioContext) {
             try {
                 let startTime = time ? Engine.audioEngine?.audioContext.currentTime + time : Engine.audioEngine?.audioContext.currentTime;
