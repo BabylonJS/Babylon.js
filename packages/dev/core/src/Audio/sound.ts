@@ -166,7 +166,7 @@ export class Sound {
     private _urlType: "Unknown" | "String" | "Array" | "ArrayBuffer" | "MediaStream" | "AudioBuffer" | "MediaElement" = "Unknown";
     private _length?: number;
     private _offset?: number;
-    private _tryToPlayTimeout?: Nullable<NodeJS.Timeout>;
+    private _tryToPlayTimeout: Nullable<NodeJS.Timeout>;
     private _audioUnlockedObserver?: Nullable<Observer<IAudioEngine>>;
 
     /**
