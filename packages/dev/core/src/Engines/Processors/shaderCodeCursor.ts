@@ -68,7 +68,6 @@ export class ShaderCodeCursor {
                     }
 
                     this._lines.push(subLine + (index !== split.length - 1 ? ";" : ""));
-                    console.log(subLine + (index !== split.length - 1 ? ";" : ""));
                 }
             }
         }
