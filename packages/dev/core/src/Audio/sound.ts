@@ -133,12 +133,19 @@ export class Sound {
             return;
         }
 
+        const wasPlaying = this.isPlaying;
+        this.pause();
+
         if (newValue) {
             this._spatialSound = newValue;
             this._updateSpatialParameters();
         }
         else {
             this._disableSpatialSound();
+        }
+
+        if (wasPlaying) {
+            this.play();
         }
     }
 
@@ -565,17 +572,10 @@ export class Sound {
         if (!this._spatialSound) {
             return;
         }
-
-        const wasPlaying = this.isPlaying;
-        this.pause();
-
-        this._soundPanner?.disconnect();
         this._inputAudioNode = this._soundGain;
+        this._soundPanner?.disconnect();
+        this._soundPanner = null;
         this._spatialSound = false;
-
-        if (wasPlaying) {
-            this.play();
-        }
     }
 
     private _updateSpatialParameters() {
