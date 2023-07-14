@@ -123,7 +123,7 @@ export class Sound {
     public get spatialSound(): boolean {
         return this._spatialSound;
     }
-    
+
     /**
      * Does this sound enables spatial sound.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic#creating-a-spatial-3d-sound
@@ -139,8 +139,7 @@ export class Sound {
         if (newValue) {
             this._spatialSound = newValue;
             this._updateSpatialParameters();
-        }
-        else {
+        } else {
             this._disableSpatialSound();
         }
 
@@ -597,8 +596,7 @@ export class Sound {
                 this._soundPanner.rolloffFactor = this.rolloffFactor;
                 this._soundPanner.panningModel = this._panningModel as any;
             }
-        }
-        else {
+        } else {
             this._createSpatialParameters();
         }
     }
