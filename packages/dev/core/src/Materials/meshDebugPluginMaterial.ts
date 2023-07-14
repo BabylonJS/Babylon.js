@@ -20,7 +20,7 @@ varying vec3 dbg_vBarycentric;
 flat varying vec3 dbg_vVertexWorldPos;
 flat varying float dbg_vPass;`;
 
-const vertexMainEnd =
+const vertexMainEnd = 
 `float dbg_vertexIndex = mod(float(gl_VertexID), 3.);
 
 if (dbg_vertexIndex == 0.0) { 
@@ -36,7 +36,27 @@ else {
 dbg_vVertexWorldPos = vPositionW;
 dbg_vPass = dbg_initialPass;`;
 
-const fragmentDefinitions =
+const fragmentUniforms = 
+`uniform vec3 dbg_shadedDiffuseColor;
+uniform vec4 dbg_shadedSpecularColorPower;
+uniform vec3 dbg_thicknessRadiusScale;
+
+#if DBG_MODE == 1 || DBG_MODE == 2
+    uniform vec3 dbg_vertexColor;
+#endif
+
+#if DBG_MODE == 0
+    uniform vec3 dbg_wireframeTrianglesColor;
+#elif DBG_MODE == 1
+    uniform vec3 dbg_wireframeVerticesColor;
+#elif DBG_MODE == 2 || DBG_MODE == 3
+    uniform vec3 dbg_uvPrimaryColor;
+    uniform vec3 dbg_uvSecondaryColor;
+#elif DBG_MODE == 5
+    uniform vec3 dbg_materialColor;
+#endif`;
+
+const fragmentDefinitions = 
 `varying vec3 dbg_vBarycentric;
 flat varying vec3 dbg_vVertexWorldPos;
 flat varying float dbg_vPass;
@@ -79,7 +99,7 @@ vec3 dbg_applyShading(vec3 color) {
     }
 #endif`;
 
-const fragmentMainEnd =
+const fragmentMainEnd = 
 `vec3 dbg_color = dbg_shadedDiffuseColor;
 
 #if DBG_MODE == 1
@@ -112,38 +132,38 @@ const fragmentMainEnd =
 #endif`;
 
 const defaultMaterialColors = [
-    new Color3(.98, .26, .38),
-    new Color3(.47, .75, .3),
-    new Color3(0, .26, .77),
-    new Color3(.97, .6, .76),
-    new Color3(.19, .63, .78),
-    new Color3(.98, .80, .60),
-    new Color3(.65, .43, .15),
-    new Color3(.15, .47, .22),
-    new Color3(.67, .71, .86),
-    new Color3(.09, .46, .56),
-    new Color3(.80, .98, .02),
-    new Color3(.39, .29, .13),
-    new Color3(.53, .63, .06),
-    new Color3(.95, .96, .41),
-    new Color3(1., .72, .94),
-    new Color3(.63, .08, .31),
-    new Color3(.66, .96, .95),
-    new Color3(.22, .14, .19),
-    new Color3(.14, .65, .59),
-    new Color3(.93, 1, .68),
-    new Color3(.93, .14, .44),
-    new Color3(.47, .86, .67),
-    new Color3(.85, .07, .78),
-    new Color3(.53, .64, .98),
-    new Color3(.43, .37, .56),
-    new Color3(.71, .65, .25),
-    new Color3(.66, .19, .01),
-    new Color3(.94, .53, .12),
-    new Color3(.41, .44, .44),
-    new Color3(.24, .71, .96),
-    new Color3(.57, .28, .56),
-    new Color3(.44, .98, .42)
+    new Color3(0.98, 0.26, 0.38),
+    new Color3(0.47, 0.75, 0.3),
+    new Color3(0, 0.26, 0.77),
+    new Color3(0.97, 0.6, 0.76),
+    new Color3(0.19, 0.63, 0.78),
+    new Color3(0.98, 0.8, 0.6),
+    new Color3(0.65, 0.43, 0.15),
+    new Color3(0.15, 0.47, 0.22),
+    new Color3(0.67, 0.71, 0.86),
+    new Color3(0.09, 0.46, 0.56),
+    new Color3(0.8, 0.98, 0.02),
+    new Color3(0.39, 0.29, 0.13),
+    new Color3(0.53, 0.63, 0.06),
+    new Color3(0.95, 0.96, 0.41),
+    new Color3(1, 0.72, 0.94),
+    new Color3(0.63, 0.08, 0.31),
+    new Color3(0.66, 0.96, 0.95),
+    new Color3(0.22, 0.14, 0.19),
+    new Color3(0.14, 0.65, 0.59),
+    new Color3(0.93, 1, 0.68),
+    new Color3(0.93, 0.14, 0.44),
+    new Color3(0.47, 0.86, 0.67),
+    new Color3(0.85, 0.07, 0.78),
+    new Color3(0.53, 0.64, 0.98),
+    new Color3(0.43, 0.37, 0.56),
+    new Color3(0.71, 0.65, 0.25),
+    new Color3(0.66, 0.19, 0.01),
+    new Color3(0.94, 0.53, 0.12),
+    new Color3(0.41, 0.44, 0.44),
+    new Color3(0.24, 0.71, 0.96),
+    new Color3(0.57, 0.28, 0.56),
+    new Color3(0.44, 0.98, 0.42),
 ];
 
 /**
@@ -269,32 +289,31 @@ class MeshDebugDefines extends MaterialDefines {
  * List of available visualizations can be found in MeshDebugMode enum.
  */
 export class MeshDebugPluginMaterial extends MaterialPluginBase {
-
     /**
      * Total number of instances of the plugin.
      * Starts at 0.
-    */
-    private static _pluginCount: number = 0;
+     */
+    private static _PluginCount: number = 0;
 
     /**
      * Color palette used for MATERIALIDS mode.
      * Defaults to `defaultMaterialColors`
      */
-    public static materialColors: Color3[] = defaultMaterialColors;
-    
+    public static MaterialColors: Color3[] = defaultMaterialColors;
+
     /**
      * Options for the plugin.
      * See MeshDebugOptions interface for defaults.
-    */
+     */
     private _options: Required<MeshDebugOptions>;
 
     /**
-    * Material ID color of this plugin instance.
-    * Taken from index `_pluginCount` of `materialIdColors` at time of instantiation.
-    */
+     * Material ID color of this plugin instance.
+     * Taken from index `_PluginCount` of `MaterialColors` at time of instantiation.
+     */
     @serializeAsColor3()
     private _materialColor: Color3;
-   
+
     private _mode: MeshDebugMode = MeshDebugMode.NONE;
     /**
      * Current mesh debug visualization.
@@ -306,7 +325,7 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
 
     private _multiply: boolean = true;
     /**
-     * Whether the mesh debug visualization multiplies with colors underneath. 
+     * Whether the mesh debug visualization multiplies with colors underneath.
      * Defaults to true.
      */
     @serialize()
@@ -330,7 +349,7 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
         defines.DBG_MODE = options.mode ?? defines.DBG_MODE;
         defines.DBG_MULTIPLY = options.multiply ?? defines.DBG_MULTIPLY;
         super(material, "MeshDebug", 200, defines, true, true);
-        
+
         const defaults: Required<MeshDebugOptions> = {
             mode: defines.DBG_MODE,
             multiply: defines.DBG_MULTIPLY,
@@ -345,12 +364,12 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
             uvScale: 20,
             uvPrimaryColor: new Color3(1, 1, 1),
             uvSecondaryColor: new Color3(0.5, 0.5, 0.5),
-        }
-        
+        };
+
         this._mode = defines.DBG_MODE;
         this._multiply = defines.DBG_MULTIPLY;
-        this._options = {...defaults, ...options};
-        this._materialColor = MeshDebugPluginMaterial.materialColors[MeshDebugPluginMaterial._pluginCount++ % MeshDebugPluginMaterial.materialColors.length];
+        this._options = { ...defaults, ...options };
+        this._materialColor = MeshDebugPluginMaterial.MaterialColors[MeshDebugPluginMaterial._PluginCount++ % MeshDebugPluginMaterial.MaterialColors.length];
     }
 
     /**
@@ -368,7 +387,8 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
      * @param _mesh Mesh associated with material
      */
     public prepareDefines(defines: MeshDebugDefines, scene: Scene, mesh: AbstractMesh) {
-        if ((this._mode == MeshDebugMode.VERTICES || this._mode == MeshDebugMode.TRIANGLES || this._mode == MeshDebugMode.TRIANGLES_VERTICES) && !mesh.isVerticesDataPresent("dbg_initialPass")) {
+        if ((this._mode == MeshDebugMode.VERTICES || this._mode == MeshDebugMode.TRIANGLES || this._mode == MeshDebugMode.TRIANGLES_VERTICES) &&
+            !mesh.isVerticesDataPresent("dbg_initialPass")) {
             Logger.Warn("For best results with TRIANGLES, TRIANGLES_VERTICES, or VERTICES modes, please use MeshDebugPluginMaterial.PrepareMeshForTrianglesAndVerticesMode() on mesh.", 1);
         }
         defines.DBG_MODE = this._mode;
@@ -395,31 +415,12 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
                 { name: "dbg_thicknessRadiusScale", size: 3, type: "vec3" }, // wireframeThickness, vertexRadius, uvScale
                 { name: "dbg_wireframeTrianglesColor", size: 3, type: "vec3" },
                 { name: "dbg_wireframeVerticesColor", size: 3, type: "vec3" },
-                { name: "dbg_vertexColor", size: 3, type: "vec3"},
+                { name: "dbg_vertexColor", size: 3, type: "vec3" },
                 { name: "dbg_uvPrimaryColor", size: 3, type: "vec3" },
                 { name: "dbg_uvSecondaryColor", size: 3, type: "vec3" },
                 { name: "dbg_materialColor", size: 3, type: "vec3" },
             ],
-            fragment: `
-                uniform vec3 dbg_shadedDiffuseColor;
-                uniform vec4 dbg_shadedSpecularColorPower;
-                uniform vec3 dbg_thicknessRadiusScale;
-
-                #if DBG_MODE == 1 || DBG_MODE == 2
-                    uniform vec3 dbg_vertexColor;
-                #endif
-
-                #if DBG_MODE == 0
-                    uniform vec3 dbg_wireframeTrianglesColor;
-                #elif DBG_MODE == 1
-                    uniform vec3 dbg_wireframeVerticesColor;
-                #elif DBG_MODE == 2 || DBG_MODE == 3
-                    uniform vec3 dbg_uvPrimaryColor;
-                    uniform vec3 dbg_uvSecondaryColor;
-                #elif DBG_MODE == 5
-                    uniform vec3 dbg_materialColor;
-                #endif
-            `,
+            fragment: fragmentUniforms,
         };
     }
 
@@ -431,12 +432,12 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
         uniformBuffer.updateFloat3("dbg_shadedDiffuseColor", this._options.shadedDiffuseColor.r, this._options.shadedDiffuseColor.g, this._options.shadedDiffuseColor.b);
         uniformBuffer.updateFloat4("dbg_shadedSpecularColorPower", this._options.shadedSpecularColor.r, this._options.shadedSpecularColor.g, this._options.shadedSpecularColor.b, this._options.shadedSpecularPower);
         uniformBuffer.updateFloat3("dbg_thicknessRadiusScale", this._options.wireframeThickness, this._options.vertexRadius, this._options.uvScale);
-        uniformBuffer.updateFloat3("dbg_wireframeTrianglesColor", this._options.wireframeTrianglesColor.r, this._options.wireframeTrianglesColor.g, this._options.wireframeTrianglesColor.b);
-        uniformBuffer.updateFloat3("dbg_wireframeVerticesColor", this._options.wireframeVerticesColor.r, this._options.wireframeVerticesColor.g, this._options.wireframeVerticesColor.b);
-        uniformBuffer.updateFloat3("dbg_vertexColor", this._options.vertexColor.r, this._options.vertexColor.g, this._options.vertexColor.b);
-        uniformBuffer.updateFloat3("dbg_uvPrimaryColor", this._options.uvPrimaryColor.r, this._options.uvPrimaryColor.g, this._options.uvPrimaryColor.b);
-        uniformBuffer.updateFloat3("dbg_uvSecondaryColor", this._options.uvSecondaryColor.r, this._options.uvSecondaryColor.g, this._options.uvSecondaryColor.b);
-        uniformBuffer.updateFloat3("dbg_materialColor", this._materialColor.r, this._materialColor.g, this._materialColor.b);
+        uniformBuffer.updateColor3("dbg_wireframeTrianglesColor", this._options.wireframeTrianglesColor);
+        uniformBuffer.updateColor3("dbg_wireframeVerticesColor", this._options.wireframeVerticesColor);
+        uniformBuffer.updateColor3("dbg_vertexColor", this._options.vertexColor);
+        uniformBuffer.updateColor3("dbg_uvPrimaryColor", this._options.uvPrimaryColor);
+        uniformBuffer.updateColor3("dbg_uvSecondaryColor", this._options.uvSecondaryColor);
+        uniformBuffer.updateColor3("dbg_materialColor", this._materialColor);
     }
 
     /**
@@ -447,13 +448,13 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
     public getCustomCode(shaderType: string): Nullable<{ [pointName: string]: string }> {
         return shaderType === "vertex"
             ? {
-                CUSTOM_VERTEX_DEFINITIONS: vertexDefinitions,
-                CUSTOM_VERTEX_MAIN_END: vertexMainEnd,
-            }
+                  CUSTOM_VERTEX_DEFINITIONS: vertexDefinitions,
+                  CUSTOM_VERTEX_MAIN_END: vertexMainEnd,
+              }
             : {
-                CUSTOM_FRAGMENT_DEFINITIONS: fragmentDefinitions,
-                CUSTOM_FRAGMENT_MAIN_END: fragmentMainEnd,
-            };
+                  CUSTOM_FRAGMENT_DEFINITIONS: fragmentDefinitions,
+                  CUSTOM_FRAGMENT_MAIN_END: fragmentMainEnd,
+              };
     }
 
     /**
@@ -508,8 +509,8 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
      * Resets static variables of the plugin to their original state
      */
     public static Reset(): void {
-        this._pluginCount = 0;
-        this.materialColors = defaultMaterialColors;
+        this._PluginCount = 0;
+        this.MaterialColors = defaultMaterialColors;
     }
 
     /**
@@ -525,22 +526,22 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
         let rollback = () => {};
 
         if (mesh.getTotalIndices() == 0) return rollback;
-        
+
         if (returnRollback) {
             const kinds = mesh.getVerticesDataKinds();
             const indices = mesh.getIndices()!;
             const data: { [kind: string]: FloatArray } = {};
-            for(const kind of kinds) {
+            for (const kind of kinds) {
                 data[kind] = mesh.getVerticesData(kind)!;
             }
 
-            rollback = function() {
+            rollback = function () {
                 mesh.setIndices(indices);
-                for(const kind of kinds) {
+                for (const kind of kinds) {
                     mesh.setVerticesData(kind, data[kind]);
                 }
                 mesh.removeVerticesData("dbg_initialPass");
-            }
+            };
         }
 
         let indices = Array.from(mesh.getIndices()!);
@@ -563,7 +564,7 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
 
         const num = mesh.getTotalVertices();
         const mid = num / 2;
-        const pass = new Array(num).fill(1,0,mid).fill(0,mid,num);
+        const pass = new Array(num).fill(1, 0, mid).fill(0, mid, num);
         mesh.setVerticesData("dbg_initialPass", pass, false, 1);
 
         return rollback;
