@@ -1,6 +1,25 @@
 {
-    "fromTag": "6.12.0",
+    "fromTag": "6.12.1",
     "changelog": {
+        "6.12.2": [
+            {
+                "pr": "14049",
+                "title": "Shaders: Fix shader parsing",
+                "description": "See https://forum.babylonjs.com/t/app-that-worked-for-months-using-nme-materials-suddenly-hangs-with-shader-errors/42441/8\r\n\r\nThe problem is a bug in `PerturbNormal` (that does not remove a \";\" in some injected shader code), but which was hidden by the way we parsed the shader code before #13935.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Processors/shaderCodeCursor.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/perturbNormalBlock.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            }
+        ],
         "6.12.1": [
             {
                 "pr": "14047",
