@@ -1678,6 +1678,10 @@
         {
             "title": "convertToFlatShadedMesh",
             "playgroundId": "#UFDL9T#4"
+        },
+        {
+            "title": "MeshDebugPluginMaterial",
+            "playgroundId": "#TFDNZI"
         }
     ]
 }
