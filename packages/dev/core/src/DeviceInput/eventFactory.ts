@@ -76,6 +76,15 @@ export class DeviceEventFactory {
             evt.pointerType = "touch";
         }
 
+        let buttons = 0;
+
+        // Populate buttons property with current state of all mouse buttons
+        // Uses values found on: https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/buttons
+        buttons += deviceInputSystem.pollInput(deviceType, deviceSlot, PointerInput.LeftClick);
+        buttons += deviceInputSystem.pollInput(deviceType, deviceSlot, PointerInput.RightClick) * 2;
+        buttons += deviceInputSystem.pollInput(deviceType, deviceSlot, PointerInput.MiddleClick) * 4;
+        evt.buttons = buttons;
+
         if (inputIndex === PointerInput.Move) {
             evt.type = "pointermove";
         } else if (inputIndex >= PointerInput.LeftClick && inputIndex <= PointerInput.RightClick) {

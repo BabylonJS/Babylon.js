@@ -222,14 +222,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@6.10.0";
+        return "babylonjs@6.12.1";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "6.10.0";
+        return "6.12.1";
     }
 
     /**
@@ -3134,6 +3134,9 @@ export class ThinEngine {
      */
     public _isRenderingStateCompiled(pipelineContext: IPipelineContext): boolean {
         const webGLPipelineContext = pipelineContext as WebGLPipelineContext;
+        if (this._isDisposed || webGLPipelineContext._isDisposed) {
+            return false;
+        }
         if (this._gl.getProgramParameter(webGLPipelineContext.program!, this._caps.parallelShaderCompile!.COMPLETION_STATUS_KHR)) {
             this._finalizePipelineContext(webGLPipelineContext);
             return true;

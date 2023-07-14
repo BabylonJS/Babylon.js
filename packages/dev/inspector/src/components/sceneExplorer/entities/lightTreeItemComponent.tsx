@@ -29,6 +29,7 @@ export class LightTreeItemComponent extends React.Component<ILightTreeItemCompon
         const light = this.props.light;
 
         light.setEnabled(!light.isEnabled());
+        this.props.globalState.onPropertyChangedObservable.notifyObservers({ object: light, property: "isEnabled", value: light.isEnabled(), initialValue: !light.isEnabled() });
 
         this.setState({ isEnabled: light.isEnabled() });
     }

@@ -1,3 +1,3 @@
-import * as proceduralTextures from "procedural-textures/legacy/legacy";
+import * as proceduralTextures from "@lts/procedural-textures/legacy/legacy";
 export { proceduralTextures };
 export default proceduralTextures;

@@ -3,15 +3,15 @@
 
     "compilerOptions": {
         "outDir": "./dist",
-        "rootDir": "./src",
+        "target": "ES5",
+        "rootDir": "../../../",
         "declaration": false,
+        "importHelpers": true,
         "paths": {
-            "core/*": ["lts/core/dist/*"],
+            "core/*": ["dev/core/src/*"],
+            "@lts/core/*": ["lts/core/src/*"]
         }
     },
-    "references": [
-        { "path": "../../../lts/core/tsconfig.build.json" }
-    ],
 
-    "include": ["./src/**/*"]
+    "include": ["./src/**/*", "../../../dev/core/src/**/*", "../../../lts/core/src/**/*"]
 }

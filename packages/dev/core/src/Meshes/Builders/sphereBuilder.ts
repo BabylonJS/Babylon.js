@@ -194,7 +194,7 @@ export const SphereBuilder = {
 
 VertexData.CreateSphere = CreateSphereVertexData;
 
-(Mesh as any).CreateSphere = (name: string, segments: number, diameter: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh => {
+Mesh.CreateSphere = (name: string, segments: number, diameter: number, scene?: Scene, updatable?: boolean, sideOrientation?: number): Mesh => {
     const options = {
         segments: segments,
         diameterX: diameter,

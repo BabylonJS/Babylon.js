@@ -64,6 +64,7 @@ export class WebXRCamera extends FreeCamera {
         this._updateNumberOfRigCameras(1);
         // freeze projection matrix, which will be copied later
         this.freezeProjectionMatrix();
+        this._deferOnly = true;
 
         this._xrSessionManager.onXRSessionInit.add(() => {
             this._referencedPosition.copyFromFloats(0, 0, 0);
@@ -79,6 +80,12 @@ export class WebXRCamera extends FreeCamera {
                 if (this._firstFrame) {
                     this._updateFromXRSession();
                 }
+
+                if (this._deferredUpdated) {
+                    this.position.copyFrom(this._deferredPositionUpdate);
+                    this.rotationQuaternion.copyFrom(this._deferredRotationQuaternionUpdate);
+                }
+
                 this._updateReferenceSpace();
                 this._updateFromXRSession();
             },

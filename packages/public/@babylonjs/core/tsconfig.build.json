@@ -3,7 +3,7 @@
 
     "compilerOptions": {
         "outDir": "./",
-        "rootDir": "../../../lts/core/generated",
+        "rootDir": "../../../dev/core/src",
         "declaration": true,
         "target": "ES2017",
         "importHelpers": true,
@@ -24,9 +24,10 @@
             }
         ],
         "paths": {
-            "core/*": ["lts/core/generated/*"]
+            "core/*": ["dev/core/src/*"],
+            "@lts/core/*": ["lts/core/src/*"],
         }
     },
 
-    "include": ["../../../lts/core/generated/**/*"]
+    "include": ["../../../dev/core/src/**/*"]
 }
