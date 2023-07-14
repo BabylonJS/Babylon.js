@@ -762,4 +762,14 @@ describe("Sound", () => {
 
         expect(mockedBufferSource.destination).toBeInstanceOf(GainNodeMock);
     });
+
+    it("connects to panner node when spatialSound property is set to false before being set to true while playing", () => {
+        const sound = new Sound(expect.getState().currentTestName, AudioSample.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, { spatialSound: true });
+        
+        sound.play();
+        sound.spatialSound = false;
+        sound.spatialSound = true;
+
+        expect(mockedBufferSource.destination).toBeInstanceOf(PannerNodeMock);
+    });
 });
