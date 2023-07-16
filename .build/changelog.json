@@ -1,6 +1,40 @@
 {
-    "fromTag": "6.12.1",
+    "fromTag": "6.12.2",
     "changelog": {
+        "6.12.3": [
+            {
+                "pr": "14050",
+                "title": "Fix regression from 14037",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/freeCamera.ts",
+                    "packages/dev/core/src/Cameras/targetCamera.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14048",
+                "title": "Fix setting spatial sound option to false",
+                "description": "When sounds have the `spatialSound` option set to `true`, setting it to `false` does not disable spatial sound. This change fixes the issue. This change also gets setting the `spatialSound` option working when using the `Sound.updateOptions` function.\r\n\r\nReported on forum: https://forum.babylonjs.com/t/what-is-the-expected-behavior-when-i-detach-sound-from-a-mesh/42315\r\n\r\nTested on Chrome browser with playground https://playground.babylonjs.com/#2AH4YH#81.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/Audio/sound.ts",
+                    "packages/dev/core/test/unit/Audio/sound.test.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            }
+        ],
         "6.12.2": [
             {
                 "pr": "14049",

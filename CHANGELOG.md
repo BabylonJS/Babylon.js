@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.12.3
+
+### Core
+
+- Fix setting spatial sound option to false - [_Bug Fix_] by [docEdub](https://github.com/docEdub) ([#14048](https://github.com/BabylonJS/Babylon.js/pull/14048))
+
 ## 6.12.2
 
 ### Core
