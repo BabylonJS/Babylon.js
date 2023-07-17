@@ -9,6 +9,7 @@ import { EngineStore } from "../Engines/engineStore";
 
 import type { AbstractScene } from "../abstractScene";
 import { Tags } from "../Misc/tags";
+import { Constants } from "core/Engines/constants";
 
 /**
  * This class defines the direct association between an animation and a target
@@ -59,6 +60,16 @@ export class AnimationGroup implements IDisposable {
     private _speedRatio = 1;
     private _loopAnimation = false;
     private _isAdditive = false;
+    private _playOrder = 0;
+
+    /** Order of play so that the animatables of this animation group are played before all other animatables */
+    public static readonly PLAYORDER_FIRST = Constants.ANIMATABLE_PLAYORDER_FIRST;
+
+    /** Order of play so that the animatables of this animation group are played after all other animatables */
+    public static readonly PLAYORDER_LAST = Constants.ANIMATABLE_PLAYORDER_LAST;
+
+    /** */
+    public static EnableAutomaticPlayOrderSorting = false;
 
     /** @internal */
     public _parentContainer: Nullable<AbstractScene> = null;
@@ -216,18 +227,46 @@ export class AnimationGroup implements IDisposable {
     }
 
     /**
+     * Gets or sets the order of play of the animation group (default: 0)
+     */
+    public get playOrder() {
+        return this._playOrder;
+    }
+
+    public set playOrder(value: number) {
+        if (this._playOrder === value) {
+            return;
+        }
+
+        this._playOrder = value;
+
+        if (this._animatables.length > 0) {
+            for (let i = 0; i < this._animatables.length; i++) {
+                this._animatables[i].playOrder = this._playOrder;
+            }
+
+            if (AnimationGroup.EnableAutomaticPlayOrderSorting) {
+                this._scene.sortActiveAnimatables();
+            }
+        }
+    }
+
+    /**
      * Instantiates a new Animation Group.
      * This helps managing several animations at once.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/groupAnimations
      * @param name Defines the name of the group
      * @param scene Defines the scene the group belongs to
+     * @param playOrder Defines the order of play of the animation group (default is 0)
      */
     public constructor(
         /** The name of the animation group */
         public name: string,
-        scene: Nullable<Scene> = null
+        scene: Nullable<Scene> = null,
+        playOrder = 0
     ) {
         this._scene = scene || EngineStore.LastCreatedScene!;
+        this._playOrder = playOrder;
         this.uniqueId = this._scene.getUniqueId();
 
         this._scene.addAnimationGroup(this);
@@ -375,6 +414,7 @@ export class AnimationGroup implements IDisposable {
                 undefined,
                 isAdditive !== undefined ? isAdditive : this._isAdditive
             );
+            animatable.playOrder = this._playOrder;
             animatable.onAnimationEnd = () => {
                 this.onAnimationEndObservable.notifyObservers(targetedAnimation);
                 this._checkAnimationGroupEnded(animatable);
@@ -382,6 +422,10 @@ export class AnimationGroup implements IDisposable {
 
             this._processLoop(animatable, targetedAnimation, index);
             this._animatables.push(animatable);
+        }
+
+        if (AnimationGroup.EnableAutomaticPlayOrderSorting) {
+            this._scene.sortActiveAnimatables();
         }
 
         this._speedRatio = speedRatio;

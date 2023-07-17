@@ -8,6 +8,7 @@ import { Matrix, Quaternion, Vector3, TmpVectors } from "../Maths/math.vector";
 import { PrecisionDate } from "../Misc/precisionDate";
 import { Bone } from "../Bones/bone";
 import type { Node } from "../node";
+import { Constants } from "core/Engines/constants";
 
 /**
  * Class used to store an actual running animation
@@ -25,6 +26,12 @@ export class Animatable {
     private _syncRoot: Nullable<Animatable> = null;
     private _frameToSyncFromJump: Nullable<number> = null;
     private _goToFrame: Nullable<number> = null;
+
+    /** Order of play so that this animatable is played before all other animatables */
+    public static readonly PLAYORDER_FIRST = Constants.ANIMATABLE_PLAYORDER_FIRST;
+
+    /** Order of play so that this animatable is played after all other animatables */
+    public static readonly PLAYORDER_LAST = Constants.ANIMATABLE_PLAYORDER_LAST;
 
     /**
      * Gets or sets a boolean indicating if the animatable must be disposed and removed at the end of the animation.
@@ -117,6 +124,7 @@ export class Animatable {
      * @param animations defines a group of animation to add to the new Animatable
      * @param onAnimationLoop defines a callback to call when animation loops
      * @param isAdditive defines whether the animation should be evaluated additively
+     * @param playOrder defines the order in which this animatable should be processed in the list of active animatables (default: 0)
      */
     constructor(
         scene: Scene,
@@ -135,7 +143,9 @@ export class Animatable {
         /** defines a callback to call when animation loops */
         public onAnimationLoop?: Nullable<() => void>,
         /** defines whether the animation should be evaluated additively */
-        public isAdditive: boolean = false
+        public isAdditive: boolean = false,
+        /** defines the order in which this animatable should be processed in the list of active animatables (default: 0) */
+        public playOrder = 0
     ) {
         this._scene = scene;
         if (animations) {
@@ -490,6 +500,11 @@ declare module "../scene" {
         _processLateAnimationBindings(): void;
 
         /**
+         * Sort active animatables based on their playOrder property
+         */
+        sortActiveAnimatables(): void;
+
+        /**
          * Will start the animation sequence of a given target
          * @param target defines the target
          * @param from defines from which frame should animation start
@@ -691,6 +706,12 @@ Scene.prototype._animate = function (): void {
 
     // Late animation bindings
     this._processLateAnimationBindings();
+};
+
+Scene.prototype.sortActiveAnimatables = function (): void {
+    this._activeAnimatables.sort((a, b) => {
+        return a.playOrder - b.playOrder;
+    });
 };
 
 Scene.prototype.beginWeightedAnimation = function (
