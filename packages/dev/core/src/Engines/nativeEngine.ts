@@ -257,7 +257,7 @@ export class NativeEngine extends Engine {
             supportOcclusionQuery: false,
             canUseTimestampForTimerQuery: false,
             blendMinMax: false,
-            maxMSAASamples: 1,
+            maxMSAASamples: 16,
             canUseGLInstanceID: true,
             canUseGLVertexID: true,
             supportComputeShaders: false,
@@ -1864,7 +1864,7 @@ export class NativeEngine extends Engine {
         const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
         const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
 
-        const framebuffer = this._engine.createFrameBuffer(texture._hardwareTexture!.underlyingResource, width, height, true, true);
+        const framebuffer = this._engine.createFrameBuffer(texture._hardwareTexture!.underlyingResource, width, height, true, true, 1);
         nativeRTWrapper._framebufferDepthStencil = framebuffer;
         return texture;
     }
@@ -2138,7 +2138,7 @@ export class NativeEngine extends Engine {
         const nativeTexture = texture._hardwareTexture!.underlyingResource;
         const nativeTextureFormat = this._getNativeTextureFormat(format, type);
         // REVIEW: We are always setting the renderTarget flag as we don't know whether the texture will be used as a render target.
-        this._engine.initializeTexture(nativeTexture, width, height, generateMipMaps, nativeTextureFormat, true, useSRGBBuffer);
+        this._engine.initializeTexture(nativeTexture, width, height, generateMipMaps, nativeTextureFormat, true, useSRGBBuffer, samples);
         this._setTextureSampling(nativeTexture, this._getNativeSamplingMode(samplingMode));
 
         texture._useSRGBBuffer = useSRGBBuffer;
@@ -2185,28 +2185,22 @@ export class NativeEngine extends Engine {
             width,
             height,
             generateStencilBuffer,
-            generateDepthBuffer
+            generateDepthBuffer,
+            samples
         );
 
         rtWrapper._framebuffer = framebuffer;
         rtWrapper._generateDepthBuffer = generateDepthBuffer;
         rtWrapper._generateStencilBuffer = generateStencilBuffer;
+        rtWrapper._samples = samples;
 
         rtWrapper.setTextures(texture);
-
-        this.updateRenderTargetTextureSampleCount(rtWrapper, samples);
 
         return rtWrapper;
     }
 
-    // This function is being added for the sole purpose of overriding the ThinEngine version.  The reason
-    // for this is that the ThinEngine version of this function uses a WebGL2RenderingContext, which is not
-    // available in Babylon Native.  The return value is just a hard-coded value that is not used anywhere
-    // in Babylon Native's code.  This is effectively a hack/workaround so that Babylon Native doesn't crash
-    // This function should be updated once the maxMSAASamples is updated as well.
     public updateRenderTargetTextureSampleCount(rtWrapper: RenderTargetWrapper, samples: number): number {
-        // TODO: Implement this function once the maxMSAASamples is updated.
-        return 1;
+        throw new Error("Updating render target sample count is not currently supported");
     }
 
     public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {
