@@ -36,18 +36,18 @@ const fragmentUniforms = `uniform vec3 dbg_shadedDiffuseColor;
 uniform vec4 dbg_shadedSpecularColorPower;
 uniform vec3 dbg_thicknessRadiusScale;
 
-#if DBG_MODE == 1 || DBG_MODE == 2
+#if DBG_MODE == 2 || DBG_MODE == 3
     uniform vec3 dbg_vertexColor;
 #endif
 
-#if DBG_MODE == 0
+#if DBG_MODE == 1
     uniform vec3 dbg_wireframeTrianglesColor;
-#elif DBG_MODE == 1
+#elif DBG_MODE == 3
     uniform vec3 dbg_wireframeVerticesColor;
-#elif DBG_MODE == 2 || DBG_MODE == 3
+#elif DBG_MODE == 4 || DBG_MODE == 5
     uniform vec3 dbg_uvPrimaryColor;
     uniform vec3 dbg_uvSecondaryColor;
-#elif DBG_MODE == 5
+#elif DBG_MODE == 7
     uniform vec3 dbg_materialColor;
 #endif`;
 
