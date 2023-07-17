@@ -59,6 +59,7 @@ export class AnimationGroup implements IDisposable {
     private _speedRatio = 1;
     private _loopAnimation = false;
     private _isAdditive = false;
+    private _weight = -1;
 
     /** @internal */
     public _parentContainer: Nullable<AbstractScene> = null;
@@ -195,6 +196,22 @@ export class AnimationGroup implements IDisposable {
     }
 
     /**
+     * Gets or sets the weight to apply to all animations of the group
+     */
+    public get weight(): number {
+        return this._weight;
+    }
+
+    public set weight(value: number) {
+        if (this._weight === value) {
+            return;
+        }
+
+        this._weight = value;
+        this.setWeightForAllAnimatables(this._weight);
+    }
+
+    /**
      * Gets the targeted animations for this animation group
      */
     public get targetedAnimations(): Array<TargetedAnimation> {
@@ -221,13 +238,16 @@ export class AnimationGroup implements IDisposable {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/groupAnimations
      * @param name Defines the name of the group
      * @param scene Defines the scene the group belongs to
+     * @param weight Defines the weight to use for animations in the group (-1.0 by default, meaning "no weight")
      */
     public constructor(
         /** The name of the animation group */
         public name: string,
-        scene: Nullable<Scene> = null
+        scene: Nullable<Scene> = null,
+        weight = -1
     ) {
         this._scene = scene || EngineStore.LastCreatedScene!;
+        this._weight = weight;
         this.uniqueId = this._scene.getUniqueId();
 
         this._scene.addAnimationGroup(this);
@@ -375,6 +395,7 @@ export class AnimationGroup implements IDisposable {
                 undefined,
                 isAdditive !== undefined ? isAdditive : this._isAdditive
             );
+            animatable.weight = this._weight;
             animatable.onAnimationEnd = () => {
                 this.onAnimationEndObservable.notifyObservers(targetedAnimation);
                 this._checkAnimationGroupEnded(animatable);
@@ -508,6 +529,10 @@ export class AnimationGroup implements IDisposable {
 
     /**
      * Set animation weight for all animatables
+     * 
+     * @since
+     *  You can pass the weight to the AnimationGroup constructor, or use the weight property to set it after the group has been created,
+     *  making it easier to define the overall animation weight than calling setWeightForAllAnimatables() after the animation group has been started
      * @param weight defines the weight to use
      * @returns the animationGroup
      * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#animation-weights
