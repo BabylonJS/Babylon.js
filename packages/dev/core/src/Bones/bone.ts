@@ -68,12 +68,13 @@ export class Bone extends Node {
 
     /** @internal */
     set _matrix(value: Matrix) {
-        this._needToCompose = false; // in case there was a pending compose
-
         // skip if the matrices are the same
-        if (value.updateFlag === this._localMatrix.updateFlag) {
+        if (value.updateFlag === this._localMatrix.updateFlag && !this._needToCompose) {
+            this._needToCompose = false; // in case there was a pending compose
             return;
         }
+
+        this._needToCompose = false; // in case there was a pending compose
 
         this._localMatrix.copyFrom(value);
         this._markAsDirtyAndDecompose();
