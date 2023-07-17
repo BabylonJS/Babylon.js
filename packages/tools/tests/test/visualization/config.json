@@ -1684,7 +1684,8 @@
         },
         {
             "title": "MeshDebugPluginMaterial",
-            "playgroundId": "#TFDNZI"
+            "playgroundId": "#TFDNZI#2",
+            "excludedEngines": ["webgl1"]
         }
     ]
 }
