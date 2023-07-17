@@ -70,7 +70,6 @@ export class Bone extends Node {
     set _matrix(value: Matrix) {
         // skip if the matrices are the same
         if (value.updateFlag === this._localMatrix.updateFlag && !this._needToCompose) {
-            this._needToCompose = false; // in case there was a pending compose
             return;
         }
 
