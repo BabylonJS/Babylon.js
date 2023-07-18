@@ -3,7 +3,8 @@
 
     "compilerOptions": {
         "paths": {
-            "loaders/*": ["lts/loaders/generated/*"],
+            "loaders/*": ["dev/loaders/dist/*"],
+            "@lts/loaders/*": ["lts/loaders/dist/*"],
         }
     },
 }

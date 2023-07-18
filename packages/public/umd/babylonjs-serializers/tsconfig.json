@@ -3,7 +3,8 @@
 
     "compilerOptions": {
         "paths": {
-            "serializers/*": ["lts/serializers/generated/*"],
+            "serializers/*": ["dev/serializers/src/*"],
+            "@lts/serializers/*": ["lts/serializers/src/*"],
         }
     },
 }

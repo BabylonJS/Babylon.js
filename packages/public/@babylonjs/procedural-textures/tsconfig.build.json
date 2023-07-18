@@ -3,7 +3,7 @@
 
     "compilerOptions": {
         "outDir": "./",
-        "rootDir": "../../../lts/proceduralTextures/generated",
+        "rootDir": "../../../dev/proceduralTextures/src",
         "declaration": true,
         "importHelpers": true,
         "target": "ES2018",
@@ -22,8 +22,12 @@
                 "basePackage": "@babylonjs/procedural-textures",
                 "appendJS": true
             }
-        ]
+        ],
+        "paths": {
+            "core/*": ["dev/core/dist/*"],
+            "procedural-textures/*": ["dev/proceduralTextures/src/*"]
+        }
     },
 
-    "include": ["../../../lts/proceduralTextures/generated/**/*"]
+    "include": ["../../../dev/proceduralTextures/src/**/*"]
 }

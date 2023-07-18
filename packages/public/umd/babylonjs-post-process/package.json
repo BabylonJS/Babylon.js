@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-post-process",
-    "version": "6.10.0",
+    "version": "6.12.3",
     "main": "babylonjs.postProcess.min.js",
     "types": "babylonjs.postProcess.module.d.ts",
     "files": [
@@ -11,14 +11,15 @@
         "build:dev": "webpack --env development",
         "build:prod": "webpack --env production",
         "build:declaration": "build-tools -c pud --config ./config.json",
-        "clean": "rimraf dist && rimraf babylon*.*"
+        "clean": "rimraf dist && rimraf babylon*.*",
+        "test:escheck": "es-check es6 ./babylonjs.postProcess.js"
     },
     "dependencies": {
-        "babylonjs": "^6.10.0"
+        "babylonjs": "^6.12.3"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
-        "@lts/post-processes": "1.0.0",
+        "@dev/core": "1.0.0",
         "source-map-loader": "^4.0.0",
         "ts-loader": "^9.2.6",
         "webpack": "^5.73.0",

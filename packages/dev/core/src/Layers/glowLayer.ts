@@ -97,6 +97,11 @@ export interface IGlowLayerOptions {
      * The type of the main texture. Default: TEXTURETYPE_UNSIGNED_INT
      */
     mainTextureType: number;
+
+    /**
+     * Whether or not to generate a stencil buffer. Default: false
+     */
+    generateStencilBuffer: boolean;
 }
 
 /**
@@ -209,6 +214,7 @@ export class GlowLayer extends EffectLayer {
             ldrMerge: false,
             alphaBlendingMode: Constants.ALPHA_ADD,
             mainTextureType: Constants.TEXTURETYPE_UNSIGNED_INT,
+            generateStencilBuffer: false,
             ...options,
         };
 
@@ -220,6 +226,7 @@ export class GlowLayer extends EffectLayer {
             mainTextureRatio: this._options.mainTextureRatio,
             renderingGroupId: this._options.renderingGroupId,
             mainTextureType: this._options.mainTextureType,
+            generateStencilBuffer: this._options.generateStencilBuffer,
         });
     }
 

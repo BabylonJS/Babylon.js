@@ -3,7 +3,7 @@
 
     "compilerOptions": {
         "outDir": "./",
-        "rootDir": "../../../lts/serializers/generated",
+        "rootDir": "../../../dev/serializers/src",
         "declaration": true,
         "importHelpers": true,
         "target": "ES2018",
@@ -25,5 +25,5 @@
         ]
     },
 
-    "include": ["../../../lts/serializers/generated/**/*"]
+    "include": ["../../../dev/serializers/src/**/*"]
 }

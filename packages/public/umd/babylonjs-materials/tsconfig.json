@@ -3,7 +3,8 @@
 
     "compilerOptions": {
         "paths": {
-            "materials/*": ["lts/materials/generated/*"],
+            "materials/*": ["dev/materials/src/*"],
+            "@lts/materials/*": ["lts/materials/src/*"],
         }
     },
 }

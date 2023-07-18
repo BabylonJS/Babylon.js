@@ -15,6 +15,11 @@ export class ShaderCodeCursor {
         this._lines.length = 0;
 
         for (const line of value) {
+            // Skip empty lines
+            if (!line || line === "\r") {
+                continue;
+            }
+
             // Prevent removing line break in macros.
             if (line[0] === "#") {
                 this._lines.push(line);
@@ -22,22 +27,48 @@ export class ShaderCodeCursor {
             }
 
             // Do not split single line comments
-            if (line.trim().startsWith("//")) {
+            const trimmedLine = line.trim();
+
+            if (!trimmedLine) {
+                continue;
+            }
+
+            if (trimmedLine.startsWith("//")) {
                 this._lines.push(line);
                 continue;
             }
 
-            const split = line.split(";");
+            // Work with semicolon in the line
+            const semicolonIndex = trimmedLine.indexOf(";");
 
-            for (let index = 0; index < split.length; index++) {
-                let subLine = split[index];
-                subLine = subLine.trim();
-
-                if (!subLine) {
-                    continue;
+            if (semicolonIndex === -1) {
+                // No semicolon in the line
+                this._lines.push(trimmedLine);
+            } else if (semicolonIndex === trimmedLine.length - 1) {
+                // Single semicolon at the end of the line
+                // If trimmedLine == ";", we must not push, to be backward compatible with the old code!
+                if (trimmedLine.length > 1) {
+                    this._lines.push(trimmedLine);
                 }
+            } else {
+                // Semicolon in the middle of the line
+                const split = line.split(";");
 
-                this._lines.push(subLine + (index !== split.length - 1 ? ";" : ""));
+                for (let index = 0; index < split.length; index++) {
+                    let subLine = split[index];
+
+                    if (!subLine) {
+                        continue;
+                    }
+
+                    subLine = subLine.trim();
+
+                    if (!subLine) {
+                        continue;
+                    }
+
+                    this._lines.push(subLine + (index !== split.length - 1 ? ";" : ""));
+                }
             }
         }
     }
