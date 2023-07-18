@@ -1686,6 +1686,14 @@
             "title": "MeshDebugPluginMaterial",
             "playgroundId": "#TFDNZI#2",
             "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "SerializeScene and ImportMesh with string skeletonIds",
+            "playgroundId": "#D4ZZ8#430"
+        },
+        {
+            "title": "SerializeScene and ImportMesh with MorphTargetManager",
+            "playgroundId": "#HPV2TZ#378"
         }
     ]
 }

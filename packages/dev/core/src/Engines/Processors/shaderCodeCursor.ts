@@ -45,8 +45,11 @@ export class ShaderCodeCursor {
                 // No semicolon in the line
                 this._lines.push(trimmedLine);
             } else if (semicolonIndex === trimmedLine.length - 1) {
-                // Semicolon at the end of the line
-                this._lines.push(trimmedLine);
+                // Single semicolon at the end of the line
+                // If trimmedLine == ";", we must not push, to be backward compatible with the old code!
+                if (trimmedLine.length > 1) {
+                    this._lines.push(trimmedLine);
+                }
             } else {
                 // Semicolon in the middle of the line
                 const split = line.split(";");

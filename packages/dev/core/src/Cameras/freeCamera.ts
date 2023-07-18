@@ -386,14 +386,14 @@ export class FreeCamera extends TargetCamera {
 
         if (this._diffPosition.length() > Engine.CollisionsEpsilon) {
             this.position.addToRef(this._diffPosition, this._deferredPositionUpdate);
-            // call onCollide, if defined. Note that in case of deferred update, the actual position change might happen in the next frame.
-            if (this.onCollide && collidedMesh) {
-                this.onCollide(collidedMesh);
-            }
             if (!this._deferOnly) {
                 this.position.copyFrom(this._deferredPositionUpdate);
             } else {
                 this._deferredUpdated = true;
+            }
+            // call onCollide, if defined. Note that in case of deferred update, the actual position change might happen in the next frame.
+            if (this.onCollide && collidedMesh) {
+                this.onCollide(collidedMesh);
             }
         }
     };
