@@ -78,7 +78,14 @@ export interface INativeEngine {
     createImageBitmap(data: ArrayBufferView | IImage): ImageBitmap;
     resizeImageBitmap(image: ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array;
 
-    createFrameBuffer(texture: Nullable<NativeTexture>, width: number, height: number, generateStencilBuffer: boolean, generateDepthBuffer: boolean, samples: number): NativeFramebuffer;
+    createFrameBuffer(
+        texture: Nullable<NativeTexture>,
+        width: number,
+        height: number,
+        generateStencilBuffer: boolean,
+        generateDepthBuffer: boolean,
+        samples: number
+    ): NativeFramebuffer;
 
     getRenderWidth(): number;
     getRenderHeight(): number;
