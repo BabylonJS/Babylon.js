@@ -28,29 +28,21 @@ export class DumpTools {
         if (!DumpTools._DumpToolsEngine) {
             let canvas: HTMLCanvasElement | OffscreenCanvas = new OffscreenCanvas(100, 100); // will be resized later
             let engine: Nullable<ThinEngine> = null;
+            const options = {
+                preserveDrawingBuffer: true,
+                depth: false,
+                stencil: false,
+                alpha: true,
+                premultipliedAlpha: false,
+                antialias: false,
+                failIfMajorPerformanceCaveat: false,
+            };
             try {
-                engine = new ThinEngine(canvas, false, {
-                    preserveDrawingBuffer: true,
-                    depth: false,
-                    stencil: false,
-                    alpha: true,
-                    premultipliedAlpha: false,
-                    antialias: false,
-                    failIfMajorPerformanceCaveat: false,
-                });
-            } catch (e) {}
-            if (!engine) {
+                engine = new ThinEngine(canvas, false, options);
+            } catch (e) {
                 // The browser does not support WebGL context in OffscreenCanvas, fallback on a regular canvas
                 canvas = document.createElement("canvas");
-                engine = new ThinEngine(canvas, false, {
-                    preserveDrawingBuffer: true,
-                    depth: false,
-                    stencil: false,
-                    alpha: true,
-                    premultipliedAlpha: false,
-                    antialias: false,
-                    failIfMajorPerformanceCaveat: false,
-                });
+                engine = new ThinEngine(canvas, false, options);
             }
             engine.getCaps().parallelShaderCompile = undefined;
             const renderer = new EffectRenderer(engine);
