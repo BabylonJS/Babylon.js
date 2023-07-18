@@ -26,16 +26,32 @@ export class DumpTools {
 
     private static _CreateDumpRenderer(): DumpToolsEngine {
         if (!DumpTools._DumpToolsEngine) {
-            const canvas = new OffscreenCanvas(100, 100); // will be resized later
-            const engine = new ThinEngine(canvas, false, {
-                preserveDrawingBuffer: true,
-                depth: false,
-                stencil: false,
-                alpha: true,
-                premultipliedAlpha: false,
-                antialias: false,
-                failIfMajorPerformanceCaveat: false,
-            });
+            let canvas: HTMLCanvasElement | OffscreenCanvas = new OffscreenCanvas(100, 100); // will be resized later
+            let engine: Nullable<ThinEngine> = null;
+            try {
+                engine = new ThinEngine(canvas, false, {
+                    preserveDrawingBuffer: true,
+                    depth: false,
+                    stencil: false,
+                    alpha: true,
+                    premultipliedAlpha: false,
+                    antialias: false,
+                    failIfMajorPerformanceCaveat: false,
+                });
+            } catch (e) {}
+            if (!engine) {
+                // The browser does not support WebGL context in OffscreenCanvas, fallback on a regular canvas
+                canvas = document.createElement("canvas");
+                engine = new ThinEngine(canvas, false, {
+                    preserveDrawingBuffer: true,
+                    depth: false,
+                    stencil: false,
+                    alpha: true,
+                    premultipliedAlpha: false,
+                    antialias: false,
+                    failIfMajorPerformanceCaveat: false,
+                });
+            }
             engine.getCaps().parallelShaderCompile = undefined;
             const renderer = new EffectRenderer(engine);
             const wrapper = new EffectWrapper({
