@@ -216,6 +216,57 @@ export class AnimationGroup implements IDisposable {
     }
 
     /**
+     * Merge the array of animation groups into a new animation group
+     * @param animationGroups List of animation groups to merge
+     * @param disposeSource If true, animation groups will be disposed after being merged (default: true)
+     * @param normalize If true, animation groups will be normalized before being merged, so that all animations have the same "from" and "to" frame (default: false)
+     * @param weight Weight for the new animation group. If not provided, it will inherit the weight from the first animation group of the array
+     * @returns
+     */
+    public static MergeAnimationGroups(animationGroups: Array<AnimationGroup>, disposeSource = true, normalize = false, weight?: number): Nullable<AnimationGroup> {
+        if (animationGroups.length === 0) {
+            return null;
+        }
+
+        let beginFrame = Number.MAX_VALUE;
+        let endFrame = Number.MIN_VALUE;
+
+        if (normalize) {
+            for (const animationGroup of animationGroups) {
+                if (animationGroup.from < beginFrame) {
+                    beginFrame = animationGroup.from;
+                }
+
+                if (animationGroup.to > endFrame) {
+                    endFrame = animationGroup.to;
+                }
+            }
+        }
+
+        /*if (weight === undefined) {
+            weight = animationGroups[0].weight;
+        }*/
+
+        const mergedAnimationGroup = new AnimationGroup(animationGroups[0].name + "_merged", animationGroups[0]._scene /*, weight*/);
+
+        for (const animationGroup of animationGroups) {
+            if (normalize) {
+                animationGroup.normalize(beginFrame, endFrame);
+            }
+
+            for (const targetedAnimation of animationGroup.targetedAnimations) {
+                mergedAnimationGroup.addTargetedAnimation(targetedAnimation.animation, targetedAnimation.target);
+            }
+
+            if (disposeSource) {
+                animationGroup.dispose();
+            }
+        }
+
+        return mergedAnimationGroup;
+    }
+
+    /**
      * Instantiates a new Animation Group.
      * This helps managing several animations at once.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/groupAnimations
