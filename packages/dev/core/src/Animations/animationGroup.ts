@@ -68,9 +68,6 @@ export class AnimationGroup implements IDisposable {
     /** Order of play so that the animatables of this animation group are played after all other animatables */
     public static readonly PLAYORDER_LAST = Constants.ANIMATABLE_PLAYORDER_LAST;
 
-    /** Enables automatic sorting of animation groups according to play order (default: false) */
-    public static EnableAutomaticPlayOrderSorting = false;
-
     /** @internal */
     public _parentContainer: Nullable<AbstractScene> = null;
 
@@ -245,9 +242,7 @@ export class AnimationGroup implements IDisposable {
                 this._animatables[i].playOrder = this._playOrder;
             }
 
-            if (AnimationGroup.EnableAutomaticPlayOrderSorting) {
-                this._scene.sortActiveAnimatables();
-            }
+            this._scene.sortActiveAnimatables();
         }
     }
 
@@ -424,9 +419,7 @@ export class AnimationGroup implements IDisposable {
             this._animatables.push(animatable);
         }
 
-        if (AnimationGroup.EnableAutomaticPlayOrderSorting) {
-            this._scene.sortActiveAnimatables();
-        }
+        this._scene.sortActiveAnimatables();
 
         this._speedRatio = speedRatio;
 
