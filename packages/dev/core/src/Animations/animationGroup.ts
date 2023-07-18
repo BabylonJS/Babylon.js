@@ -62,12 +62,6 @@ export class AnimationGroup implements IDisposable {
     private _isAdditive = false;
     private _playOrder = 0;
 
-    /** Order of play so that the animatables of this animation group are played before all other animatables */
-    public static readonly PLAYORDER_FIRST = Constants.ANIMATABLE_PLAYORDER_FIRST;
-
-    /** Order of play so that the animatables of this animation group are played after all other animatables */
-    public static readonly PLAYORDER_LAST = Constants.ANIMATABLE_PLAYORDER_LAST;
-
     /** @internal */
     public _parentContainer: Nullable<AbstractScene> = null;
 

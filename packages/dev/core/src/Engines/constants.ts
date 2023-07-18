@@ -785,10 +785,4 @@ export class Constants {
 
     /** URL to the snippet server. Points to the public snippet server by default */
     public static SnippetUrl = "https://snippet.babylonjs.com";
-
-    /** Order of play so that the animatable is played before all other animatables */
-    public static readonly ANIMATABLE_PLAYORDER_FIRST = Number.MIN_VALUE;
-
-    /** Order of play so that the animatable is played after all other animatables */
-    public static readonly ANIMATABLE_PLAYORDER_LAST = Number.MAX_VALUE;
 }

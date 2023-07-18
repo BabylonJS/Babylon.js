@@ -27,12 +27,6 @@ export class Animatable {
     private _frameToSyncFromJump: Nullable<number> = null;
     private _goToFrame: Nullable<number> = null;
 
-    /** Order of play so that this animatable is played before all other animatables */
-    public static readonly PLAYORDER_FIRST = Constants.ANIMATABLE_PLAYORDER_FIRST;
-
-    /** Order of play so that this animatable is played after all other animatables */
-    public static readonly PLAYORDER_LAST = Constants.ANIMATABLE_PLAYORDER_LAST;
-
     /**
      * Gets or sets a boolean indicating if the animatable must be disposed and removed at the end of the animation.
      * This will only apply for non looping animation (default is true)
