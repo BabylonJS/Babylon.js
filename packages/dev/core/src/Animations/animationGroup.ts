@@ -529,7 +529,7 @@ export class AnimationGroup implements IDisposable {
 
     /**
      * Set animation weight for all animatables
-     * 
+     *
      * @since
      *  You can pass the weight to the AnimationGroup constructor, or use the weight property to set it after the group has been created,
      *  making it easier to define the overall animation weight than calling setWeightForAllAnimatables() after the animation group has been started
