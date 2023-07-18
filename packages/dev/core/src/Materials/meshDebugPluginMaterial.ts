@@ -13,12 +13,15 @@ import { Logger } from "core/Misc/logger";
 import { expandToProperty, serialize, serializeAsColor3 } from "core/Misc/decorators";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 
-const vertexDefinitions = `attribute float dbg_initialPass;
+const vertexDefinitions = `#if defined(DBG_ENABLED)
+attribute float dbg_initialPass;
 varying vec3 dbg_vBarycentric;
 flat varying vec3 dbg_vVertexWorldPos;
-flat varying float dbg_vPass;`;
+flat varying float dbg_vPass;
+#endif`;
 
-const vertexMainEnd = `float dbg_vertexIndex = mod(float(gl_VertexID), 3.);
+const vertexMainEnd = `#if defined(DBG_ENABLED)
+float dbg_vertexIndex = mod(float(gl_VertexID), 3.);
 if (dbg_vertexIndex == 0.0) { 
     dbg_vBarycentric = vec3(1.,0.,0.); 
 }
@@ -30,9 +33,11 @@ else {
 }
 
 dbg_vVertexWorldPos = vPositionW;
-dbg_vPass = dbg_initialPass;`;
+dbg_vPass = dbg_initialPass;
+#endif`;
 
-const fragmentUniforms = `uniform vec3 dbg_shadedDiffuseColor;
+const fragmentUniforms = `#if defined(DBG_ENABLED)
+uniform vec3 dbg_shadedDiffuseColor;
 uniform vec4 dbg_shadedSpecularColorPower;
 uniform vec3 dbg_thicknessRadiusScale;
 
@@ -49,23 +54,27 @@ uniform vec3 dbg_thicknessRadiusScale;
     uniform vec3 dbg_uvSecondaryColor;
 #elif DBG_MODE == 7
     uniform vec3 dbg_materialColor;
+#endif
 #endif`;
 
-const fragmentDefinitions = `varying vec3 dbg_vBarycentric;
+const fragmentDefinitions = `#if defined(DBG_ENABLED)
+varying vec3 dbg_vBarycentric;
 flat varying vec3 dbg_vVertexWorldPos;
 flat varying float dbg_vPass;
 
-vec3 dbg_applyShading(vec3 color) {
-    vec3 N = vNormalW.xyz;
-    vec3 L = normalize(vEyePosition.xyz - vPositionW.xyz);
-    vec3 H = normalize(L + L);
-    float LdotN = clamp(dot(L,N), 0., 1.);
-    float HdotN = clamp(dot(H,N), 0., 1.);
-    float specTerm = pow(HdotN, dbg_shadedSpecularColorPower.w);
-    color *= (LdotN / PI);
-    color += dbg_shadedSpecularColorPower.rgb * (specTerm / PI);
-    return color;
-}
+#if !defined(DBG_MULTIPLY)
+    vec3 dbg_applyShading(vec3 color) {
+        vec3 N = vNormalW.xyz;
+        vec3 L = normalize(vEyePosition.xyz - vPositionW.xyz);
+        vec3 H = normalize(L + L);
+        float LdotN = clamp(dot(L,N), 0., 1.);
+        float HdotN = clamp(dot(H,N), 0., 1.);
+        float specTerm = pow(HdotN, dbg_shadedSpecularColorPower.w);
+        color *= (LdotN / PI);
+        color += dbg_shadedSpecularColorPower.rgb * (specTerm / PI);
+        return color;
+    }
+#endif
 
 #if DBG_MODE == 1 || DBG_MODE == 3
     float dbg_edgeFactor() {
@@ -91,9 +100,11 @@ vec3 dbg_applyShading(vec3 color) {
         f -= .5;
         return (f.x * f.y) > 0. ? 1. : 0.;
     }
+#endif
 #endif`;
 
-const fragmentMainEnd = `vec3 dbg_color = dbg_shadedDiffuseColor;
+const fragmentMainEnd = `#if defined(DBG_ENABLED)
+vec3 dbg_color = dbg_shadedDiffuseColor;
 #if DBG_MODE == 1
     dbg_color = mix(dbg_wireframeTrianglesColor, dbg_color, dbg_edgeFactor());
 #elif DBG_MODE == 2 || DBG_MODE == 3
@@ -121,6 +132,7 @@ const fragmentMainEnd = `vec3 dbg_color = dbg_shadedDiffuseColor;
     #else
         gl_FragColor = vec4(dbg_color, 1.);
     #endif                
+#endif
 #endif`;
 
 const defaultMaterialColors = [
@@ -282,6 +294,11 @@ class MeshDebugDefines extends MaterialDefines {
      * Defaults to true.
      */
     DBG_MULTIPLY: boolean = true;
+    /**
+     * Whether the mesh debug plugin is enabled in the material.
+     * Defaults to true.
+     */
+    DBG_ENABLED: boolean = true;
 }
 
 /**
@@ -314,6 +331,15 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
     @serializeAsColor3()
     private _materialColor: Color3;
 
+    private _isEnabled = true;
+    /**
+     * Whether the mesh debug plugin is enabled in the material.
+     * Defaults to true.
+     */
+    @serialize()
+    @expandToProperty("_markAllDefinesAsDirty")
+    public isEnabled = true;
+
     private _mode: MeshDebugMode = MeshDebugMode.NONE;
     /**
      * Current mesh debug visualization.
@@ -334,6 +360,7 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
 
     /** @internal */
     protected _markAllDefinesAsDirty(): void {
+        this._enable(this._isEnabled);
         this.markAllDefinesAsDirty();
     }
 
@@ -370,6 +397,10 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
         this._multiply = defines.DBG_MULTIPLY;
         this._options = { ...defaults, ...options };
         this._materialColor = MeshDebugPluginMaterial.MaterialColors[MeshDebugPluginMaterial._PluginCount++ % MeshDebugPluginMaterial.MaterialColors.length];
+
+        if (material.getScene().getEngine().webGLVersion == 1) {
+            Logger.Error("MeshDebugPluginMaterial is not supported on WebGL 1.0.");
+        }
     }
 
     /**
@@ -396,8 +427,10 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
                 1
             );
         }
+
         defines.DBG_MODE = this._mode;
         defines.DBG_MULTIPLY = this._multiply;
+        defines.DBG_ENABLED = this._isEnabled;
     }
 
     /**
@@ -434,6 +467,9 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
      * @param uniformBuffer Uniform buffer
      */
     public bindForSubMesh(uniformBuffer: UniformBuffer): void {
+        if (!this._isEnabled) {
+            return;
+        }
         uniformBuffer.updateFloat3("dbg_shadedDiffuseColor", this._options.shadedDiffuseColor.r, this._options.shadedDiffuseColor.g, this._options.shadedDiffuseColor.b);
         uniformBuffer.updateFloat4(
             "dbg_shadedSpecularColorPower",
