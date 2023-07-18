@@ -1856,7 +1856,9 @@ export class NativeEngine extends Engine {
     }
 
     public _createDepthStencilTexture(size: TextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
-        // TODO: options?
+        // TODO: handle other options?
+        const generateStencil = options.generateStencil || false;
+        const samples = options.samples || 1;
 
         const nativeRTWrapper = rtWrapper as NativeRenderTargetWrapper;
         const texture = new InternalTexture(this, InternalTextureSource.DepthStencil);
@@ -1864,7 +1866,7 @@ export class NativeEngine extends Engine {
         const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
         const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
 
-        const framebuffer = this._engine.createFrameBuffer(texture._hardwareTexture!.underlyingResource, width, height, true, true, 1);
+        const framebuffer = this._engine.createFrameBuffer(texture._hardwareTexture!.underlyingResource, width, height, generateStencil, true, samples);
         nativeRTWrapper._framebufferDepthStencil = framebuffer;
         return texture;
     }
