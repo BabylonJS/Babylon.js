@@ -331,14 +331,12 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
     @serializeAsColor3()
     private _materialColor: Color3;
 
-    private _isEnabled = true;
     /**
      * Whether the mesh debug plugin is enabled in the material.
-     * Defaults to true.
+     * Defaults to true in constructor.
      */
     @serialize()
-    @expandToProperty("_markAllDefinesAsDirty")
-    public isEnabled = true;
+    private _isEnabled = false;
 
     private _mode: MeshDebugMode = MeshDebugMode.NONE;
     /**
@@ -397,10 +395,7 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
         this._multiply = defines.DBG_MULTIPLY;
         this._options = { ...defaults, ...options };
         this._materialColor = MeshDebugPluginMaterial.MaterialColors[MeshDebugPluginMaterial._PluginCount++ % MeshDebugPluginMaterial.MaterialColors.length];
-
-        if (material.getScene().getEngine().webGLVersion == 1) {
-            Logger.Error("MeshDebugPluginMaterial is not supported on WebGL 1.0.");
-        }
+        this.isEnabled = true;
     }
 
     /**
@@ -409,6 +404,29 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
      */
     public getClassName() {
         return "MeshDebugPluginMaterial";
+    }
+
+    /**
+     * Gets whether the mesh debug plugin is enabled in the material.
+     */
+    public get isEnabled(): boolean {
+        return this._isEnabled;
+    }
+    /**
+     * Sets whether the mesh debug plugin is enabled in the material.
+     * @param value enabled
+     */
+    public set isEnabled(value: boolean) {
+        if (this._isEnabled === value) {
+            return;
+        }
+        if (this._material.getScene().getEngine().webGLVersion == 1) {
+            Logger.Error("MeshDebugPluginMaterial is not supported on WebGL 1.0.");
+            this._isEnabled = false;
+            return;
+        }
+        this._isEnabled = value;
+        this._markAllDefinesAsDirty();
     }
 
     /**
