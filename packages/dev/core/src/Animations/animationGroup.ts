@@ -60,6 +60,7 @@ export class AnimationGroup implements IDisposable {
     private _loopAnimation = false;
     private _isAdditive = false;
     private _weight = -1;
+    private _playOrder = 0;
 
     /** @internal */
     public _parentContainer: Nullable<AbstractScene> = null;
@@ -233,21 +234,47 @@ export class AnimationGroup implements IDisposable {
     }
 
     /**
+     * Gets or sets the order of play of the animation group (default: 0)
+     */
+    public get playOrder() {
+        return this._playOrder;
+    }
+
+    public set playOrder(value: number) {
+        if (this._playOrder === value) {
+            return;
+        }
+
+        this._playOrder = value;
+
+        if (this._animatables.length > 0) {
+            for (let i = 0; i < this._animatables.length; i++) {
+                this._animatables[i].playOrder = this._playOrder;
+            }
+
+            this._scene.sortActiveAnimatables();
+        }
+    }
+
+    /**
      * Instantiates a new Animation Group.
      * This helps managing several animations at once.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/groupAnimations
      * @param name Defines the name of the group
      * @param scene Defines the scene the group belongs to
      * @param weight Defines the weight to use for animations in the group (-1.0 by default, meaning "no weight")
+     * @param playOrder Defines the order of play of the animation group (default is 0)
      */
     public constructor(
         /** The name of the animation group */
         public name: string,
         scene: Nullable<Scene> = null,
-        weight = -1
+        weight = -1,
+        playOrder = 0
     ) {
         this._scene = scene || EngineStore.LastCreatedScene!;
         this._weight = weight;
+        this._playOrder = playOrder;
         this.uniqueId = this._scene.getUniqueId();
 
         this._scene.addAnimationGroup(this);
@@ -396,6 +423,7 @@ export class AnimationGroup implements IDisposable {
                 isAdditive !== undefined ? isAdditive : this._isAdditive
             );
             animatable.weight = this._weight;
+            animatable.playOrder = this._playOrder;
             animatable.onAnimationEnd = () => {
                 this.onAnimationEndObservable.notifyObservers(targetedAnimation);
                 this._checkAnimationGroupEnded(animatable);
@@ -404,6 +432,8 @@ export class AnimationGroup implements IDisposable {
             this._processLoop(animatable, targetedAnimation, index);
             this._animatables.push(animatable);
         }
+
+        this._scene.sortActiveAnimatables();
 
         this._speedRatio = speedRatio;
 
