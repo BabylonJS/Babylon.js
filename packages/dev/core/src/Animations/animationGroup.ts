@@ -262,7 +262,7 @@ export class AnimationGroup implements IDisposable {
      * @param disposeSource If true, animation groups will be disposed after being merged (default: true)
      * @param normalize If true, animation groups will be normalized before being merged, so that all animations have the same "from" and "to" frame (default: false)
      * @param weight Weight for the new animation group. If not provided, it will inherit the weight from the first animation group of the array
-     * @returns
+     * @returns The new animation group or null if no animation groups were passed
      */
     public static MergeAnimationGroups(animationGroups: Array<AnimationGroup>, disposeSource = true, normalize = false, weight?: number): Nullable<AnimationGroup> {
         if (animationGroups.length === 0) {
