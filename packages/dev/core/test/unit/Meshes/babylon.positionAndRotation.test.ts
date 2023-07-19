@@ -1,4 +1,5 @@
-import { Engine, NullEngine } from "core/Engines";
+import type { Engine } from "core/Engines";
+import { NullEngine } from "core/Engines";
 import { Vector3, Quaternion } from "core/Maths";
 import { AbstractMesh } from "core/Meshes";
 import { Scene } from "core/scene";

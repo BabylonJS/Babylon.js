@@ -380,20 +380,22 @@ export class FreeCamera extends TargetCamera {
     }
 
     private _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh> = null) => {
-        const updatePosition = (newPos: Vector3) => {
-            this._newPosition.copyFrom(newPos);
+        this._newPosition.copyFrom(newPosition);
 
-            this._newPosition.subtractToRef(this._oldPosition, this._diffPosition);
+        this._newPosition.subtractToRef(this._oldPosition, this._diffPosition);
 
-            if (this._diffPosition.length() > Engine.CollisionsEpsilon) {
-                this.position.addInPlace(this._diffPosition);
-                if (this.onCollide && collidedMesh) {
-                    this.onCollide(collidedMesh);
-                }
+        if (this._diffPosition.length() > Engine.CollisionsEpsilon) {
+            this.position.addToRef(this._diffPosition, this._deferredPositionUpdate);
+            if (!this._deferOnly) {
+                this.position.copyFrom(this._deferredPositionUpdate);
+            } else {
+                this._deferredUpdated = true;
             }
-        };
-
-        updatePosition(newPosition);
+            // call onCollide, if defined. Note that in case of deferred update, the actual position change might happen in the next frame.
+            if (this.onCollide && collidedMesh) {
+                this.onCollide(collidedMesh);
+            }
+        }
     };
 
     /** @internal */

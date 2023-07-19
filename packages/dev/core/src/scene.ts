@@ -3418,6 +3418,21 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     /**
+     * Gets a the last transform node using a given Id
+     * @param id defines the Id to search for
+     * @returns the found mesh or null if not found at all.
+     */
+    public getLastTransformNodeById(id: string): Nullable<TransformNode> {
+        for (let index = this.transformNodes.length - 1; index >= 0; index--) {
+            if (this.transformNodes[index].id === id) {
+                return this.transformNodes[index];
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Gets a the last added node (Mesh, Camera, Light) using a given Id
      * @param id defines the Id to search for
      * @returns the found node or null if not found at all

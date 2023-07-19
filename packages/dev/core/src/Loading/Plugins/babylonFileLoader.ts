@@ -740,7 +740,13 @@ SceneLoader.RegisterPlugin({
                         }
 
                         // Skeleton ?
-                        if (parsedMesh.skeletonId > -1 && parsedData.skeletons !== undefined && parsedData.skeletons !== null) {
+                        if (
+                            parsedMesh.skeletonId !== null &&
+                            parsedMesh.skeletonId !== undefined &&
+                            parsedData.skeletonId !== -1 &&
+                            parsedData.skeletons !== undefined &&
+                            parsedData.skeletons !== null
+                        ) {
                             const skeletonAlreadyLoaded = loadedSkeletonsIds.indexOf(parsedMesh.skeletonId) > -1;
                             if (!skeletonAlreadyLoaded) {
                                 for (let skeletonIndex = 0, skeletonCache = parsedData.skeletons.length; skeletonIndex < skeletonCache; skeletonIndex++) {

@@ -1,6 +1,6 @@
 {
     "name": "babylonjs",
-    "version": "6.11.2",
+    "version": "6.12.4",
     "main": "babylon.js",
     "types": "babylon.module.d.ts",
     "files": [
@@ -41,4 +41,3 @@
         "url": "https://github.com/BabylonJS/Babylon.js/issues"
     }
 }
-

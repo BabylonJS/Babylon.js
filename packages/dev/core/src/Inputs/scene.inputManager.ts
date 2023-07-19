@@ -916,6 +916,12 @@ export class InputManager {
                                 this._isSwiping = false;
                                 this._swipeButtonPressed = -1;
                             }
+
+                            // If we're going to skip the POINTERUP, we need to reset the pointer capture
+                            if (evt.buttons === 0) {
+                                this._pointerCaptures[evt.pointerId] = false;
+                            }
+
                             return;
                         }
                         if (!clickInfo.hasSwiped) {
