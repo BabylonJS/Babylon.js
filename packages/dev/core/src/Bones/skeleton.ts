@@ -1,6 +1,6 @@
 import { Bone } from "./bone";
 import { Observable } from "../Misc/observable";
-import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
+import { Vector3, Matrix } from "../Maths/math.vector";
 import type { Scene } from "../scene";
 import type { Nullable } from "../types";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
@@ -30,10 +30,6 @@ export class Skeleton implements IAnimatable {
      * Defines an estimate of the dimension of the skeleton at rest
      */
     public dimensionsAtRest: Vector3;
-    /**
-     * Defines a boolean indicating if the root matrix is provided by meshes or by the current skeleton (this is the default value)
-     */
-    public needInitialSkinMatrix = false;
 
     /**
      * Gets the list of animations attached to this skeleton
@@ -44,10 +40,8 @@ export class Skeleton implements IAnimatable {
     private _isDirty = true;
     private _transformMatrices: Float32Array;
     private _transformMatrixTexture: Nullable<RawTexture>;
-    private _meshesWithPoseMatrix = new Array<AbstractMesh>();
     private _animatables: IAnimatable[];
     private _identity = Matrix.Identity();
-    private _synchronizedWithMesh: AbstractMesh;
 
     private _ranges: { [name: string]: Nullable<AnimationRange> } = {};
 
@@ -173,18 +167,10 @@ export class Skeleton implements IAnimatable {
     // Members
     /**
      * Gets the list of transform matrices to send to shaders (one matrix per bone)
-     * @param mesh defines the mesh to use to get the root matrix (if needInitialSkinMatrix === true)
+     * @param _mesh @deprecated not used anymore
      * @returns a Float32Array containing matrices data
      */
-    public getTransformMatrices(mesh: AbstractMesh): Float32Array {
-        if (this.needInitialSkinMatrix) {
-            if (!mesh._bonesTransformMatrices) {
-                this.prepare();
-            }
-
-            return mesh._bonesTransformMatrices!;
-        }
-
+    public getTransformMatrices(_mesh?: AbstractMesh): Float32Array {
         if (!this._transformMatrices || this._isDirty) {
             this.prepare();
         }
@@ -194,14 +180,10 @@ export class Skeleton implements IAnimatable {
 
     /**
      * Gets the list of transform matrices to send to shaders inside a texture (one matrix per bone)
-     * @param mesh defines the mesh to use to get the root matrix (if needInitialSkinMatrix === true)
+     * @param _mesh @deprecated not used anymore
      * @returns a raw texture containing the data
      */
-    public getTransformMatrixTexture(mesh: AbstractMesh): Nullable<RawTexture> {
-        if (this.needInitialSkinMatrix && mesh._transformMatrixTexture) {
-            return mesh._transformMatrixTexture;
-        }
-
+    public getTransformMatrixTexture(_mesh?: AbstractMesh): Nullable<RawTexture> {
         return this._transformMatrixTexture;
     }
 
@@ -455,24 +437,6 @@ export class Skeleton implements IAnimatable {
         this._absoluteTransformIsDirty = true;
     }
 
-    /**
-     * @internal
-     */
-    public _registerMeshWithPoseMatrix(mesh: AbstractMesh): void {
-        this._meshesWithPoseMatrix.push(mesh);
-    }
-
-    /**
-     * @internal
-     */
-    public _unregisterMeshWithPoseMatrix(mesh: AbstractMesh): void {
-        const index = this._meshesWithPoseMatrix.indexOf(mesh);
-
-        if (index > -1) {
-            this._meshesWithPoseMatrix.splice(index, 1);
-        }
-    }
-
     private _computeTransformMatrices(targetMatrix: Float32Array, initialSkinMatrix: Nullable<Matrix>): void {
         this.onBeforeComputeObservable.notifyObservers(this);
 
@@ -520,90 +484,35 @@ export class Skeleton implements IAnimatable {
             }
         }
 
-        if (this.needInitialSkinMatrix) {
-            for (const mesh of this._meshesWithPoseMatrix) {
-                const poseMatrix = mesh.getPoseMatrix();
+        if (!this._isDirty) {
+            return;
+        }
 
-                let needsUpdate = this._isDirty;
-                if (!mesh._bonesTransformMatrices || mesh._bonesTransformMatrices.length !== 16 * (this.bones.length + 1)) {
-                    mesh._bonesTransformMatrices = new Float32Array(16 * (this.bones.length + 1));
-                    needsUpdate = true;
+        if (!this._transformMatrices || this._transformMatrices.length !== 16 * (this.bones.length + 1)) {
+            this._transformMatrices = new Float32Array(16 * (this.bones.length + 1));
+
+            if (this.isUsingTextureForMatrices) {
+                if (this._transformMatrixTexture) {
+                    this._transformMatrixTexture.dispose();
                 }
 
-                if (!needsUpdate) {
-                    continue;
-                }
-
-                if (this._synchronizedWithMesh !== mesh) {
-                    this._synchronizedWithMesh = mesh;
-
-                    // Prepare bones
-                    for (const bone of this.bones) {
-                        if (!bone.getParent()) {
-                            const matrix = bone.getBindMatrix();
-                            matrix.multiplyToRef(poseMatrix, TmpVectors.Matrix[1]);
-                            bone._updateAbsoluteBindMatrices(TmpVectors.Matrix[1]);
-                        }
-                    }
-
-                    if (this.isUsingTextureForMatrices) {
-                        const textureWidth = (this.bones.length + 1) * 4;
-                        if (!mesh._transformMatrixTexture || mesh._transformMatrixTexture.getSize().width !== textureWidth) {
-                            if (mesh._transformMatrixTexture) {
-                                mesh._transformMatrixTexture.dispose();
-                            }
-
-                            mesh._transformMatrixTexture = RawTexture.CreateRGBATexture(
-                                mesh._bonesTransformMatrices,
-                                (this.bones.length + 1) * 4,
-                                1,
-                                this._scene,
-                                false,
-                                false,
-                                Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-                                Constants.TEXTURETYPE_FLOAT
-                            );
-                        }
-                    }
-                }
-
-                this._computeTransformMatrices(mesh._bonesTransformMatrices, poseMatrix);
-
-                if (this.isUsingTextureForMatrices && mesh._transformMatrixTexture) {
-                    mesh._transformMatrixTexture.update(mesh._bonesTransformMatrices);
-                }
+                this._transformMatrixTexture = RawTexture.CreateRGBATexture(
+                    this._transformMatrices,
+                    (this.bones.length + 1) * 4,
+                    1,
+                    this._scene,
+                    false,
+                    false,
+                    Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                    Constants.TEXTURETYPE_FLOAT
+                );
             }
-        } else {
-            if (!this._isDirty) {
-                return;
-            }
+        }
 
-            if (!this._transformMatrices || this._transformMatrices.length !== 16 * (this.bones.length + 1)) {
-                this._transformMatrices = new Float32Array(16 * (this.bones.length + 1));
+        this._computeTransformMatrices(this._transformMatrices, null);
 
-                if (this.isUsingTextureForMatrices) {
-                    if (this._transformMatrixTexture) {
-                        this._transformMatrixTexture.dispose();
-                    }
-
-                    this._transformMatrixTexture = RawTexture.CreateRGBATexture(
-                        this._transformMatrices,
-                        (this.bones.length + 1) * 4,
-                        1,
-                        this._scene,
-                        false,
-                        false,
-                        Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-                        Constants.TEXTURETYPE_FLOAT
-                    );
-                }
-            }
-
-            this._computeTransformMatrices(this._transformMatrices, null);
-
-            if (this.isUsingTextureForMatrices && this._transformMatrixTexture) {
-                this._transformMatrixTexture.update(this._transformMatrices);
-            }
+        if (this.isUsingTextureForMatrices && this._transformMatrixTexture) {
+            this._transformMatrixTexture.update(this._transformMatrices);
         }
 
         this._isDirty = false;
@@ -633,8 +542,6 @@ export class Skeleton implements IAnimatable {
      */
     public clone(name: string, id?: string): Skeleton {
         const result = new Skeleton(name, id || name, this._scene);
-
-        result.needInitialSkinMatrix = this.needInitialSkinMatrix;
 
         for (let index = 0; index < this.bones.length; index++) {
             const source = this.bones[index];
@@ -690,8 +597,6 @@ export class Skeleton implements IAnimatable {
      * Releases all resources associated with the current skeleton
      */
     public dispose() {
-        this._meshesWithPoseMatrix.length = 0;
-
         // Animations
         this.getScene().stopAnimation(this);
 
@@ -727,8 +632,6 @@ export class Skeleton implements IAnimatable {
         }
 
         serializationObject.bones = [];
-
-        serializationObject.needInitialSkinMatrix = this.needInitialSkinMatrix;
 
         for (let index = 0; index < this.bones.length; index++) {
             const bone = this.bones[index];
@@ -787,8 +690,6 @@ export class Skeleton implements IAnimatable {
         if (parsedSkeleton.dimensionsAtRest) {
             skeleton.dimensionsAtRest = Vector3.FromArray(parsedSkeleton.dimensionsAtRest);
         }
-
-        skeleton.needInitialSkinMatrix = parsedSkeleton.needInitialSkinMatrix;
 
         let index: number;
         for (index = 0; index < parsedSkeleton.bones.length; index++) {
@@ -852,20 +753,6 @@ export class Skeleton implements IAnimatable {
      */
     public computeAbsoluteTransforms(forceUpdate = false): void {
         this.computeAbsoluteMatrices(forceUpdate);
-    }
-
-    /**
-     * Gets the root pose matrix
-     * @returns a matrix
-     */
-    public getPoseMatrix(): Nullable<Matrix> {
-        let poseMatrix: Nullable<Matrix> = null;
-
-        if (this._meshesWithPoseMatrix.length > 0) {
-            poseMatrix = this._meshesWithPoseMatrix[0].getPoseMatrix();
-        }
-
-        return poseMatrix;
     }
 
     /**

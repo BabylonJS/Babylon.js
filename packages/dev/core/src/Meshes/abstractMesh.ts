@@ -29,7 +29,6 @@ import type { AbstractActionManager } from "../Actions/abstractActionManager";
 import { UniformBuffer } from "../Materials/uniformBuffer";
 import { _MeshCollisionData } from "../Collisions/meshCollisionData";
 import { _WarnImport } from "../Misc/devTools";
-import type { RawTexture } from "../Materials/Textures/rawTexture";
 import { extractMinAndMax } from "../Maths/math.functions";
 import { Color3, Color4 } from "../Maths/math.color";
 import { Epsilon } from "../Maths/math.constants";
@@ -797,31 +796,12 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         freezeWorldMatrix: null,
     };
 
-    /** @internal */
-    public _bonesTransformMatrices: Nullable<Float32Array> = null;
-
-    /** @internal */
-    public _transformMatrixTexture: Nullable<RawTexture> = null;
-
     /**
      * Gets or sets a skeleton to apply skinning transformations
      * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/bonesSkeletons
      */
     public set skeleton(value: Nullable<Skeleton>) {
-        const skeleton = this._internalAbstractMeshDataInfo._skeleton;
-        if (skeleton && skeleton.needInitialSkinMatrix) {
-            skeleton._unregisterMeshWithPoseMatrix(this);
-        }
-
-        if (value && value.needInitialSkinMatrix) {
-            value._registerMeshWithPoseMatrix(this);
-        }
-
         this._internalAbstractMeshDataInfo._skeleton = value;
-
-        if (!this._internalAbstractMeshDataInfo._skeleton) {
-            this._bonesTransformMatrices = null;
-        }
 
         this._markSubMeshesAsAttributesDirty();
     }
@@ -2054,11 +2034,6 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
         // Skeleton
         this._internalAbstractMeshDataInfo._skeleton = null;
-
-        if (this._transformMatrixTexture) {
-            this._transformMatrixTexture.dispose();
-            this._transformMatrixTexture = null;
-        }
 
         // Intersections in progress
         for (index = 0; index < this._intersectionsInProgress.length; index++) {

@@ -960,12 +960,6 @@ export class Bone extends Node {
             this._localMatrix.multiplyToRef(this.parent._absoluteMatrix, this._absoluteMatrix);
         } else {
             this._absoluteMatrix.copyFrom(this._localMatrix);
-
-            const poseMatrix = this._skeleton.getPoseMatrix();
-
-            if (poseMatrix) {
-                this._absoluteMatrix.multiplyToRef(poseMatrix, this._absoluteMatrix);
-            }
         }
 
         const children = this.children;
