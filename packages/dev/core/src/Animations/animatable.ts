@@ -8,7 +8,6 @@ import { Matrix, Quaternion, Vector3, TmpVectors } from "../Maths/math.vector";
 import { PrecisionDate } from "../Misc/precisionDate";
 import { Bone } from "../Bones/bone";
 import type { Node } from "../node";
-import { Constants } from "core/Engines/constants";
 
 /**
  * Class used to store an actual running animation
