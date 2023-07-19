@@ -253,6 +253,23 @@ export class DynamicTexture extends Texture {
         return (canvas as HTMLCanvasElement).toDataURL !== undefined;
     }
 
+    /**
+     * Dispose the texture and release its associated resources.
+     */
+    public dispose(): void {
+        super.dispose();
+        // _context and _canvas are typically destroyed by the GC
+        // But for Native with V8, compared to Chakra and JSC, these objects are destroyed way too late.
+        // This results in resources being kept alive for too long and, still on Native, as resources
+        // are limited, creating a new one can fail.
+        // TLDR: making an explicit dipose here to free resources for Native
+        if (this._context && this._context.dispose) {
+            this._context.dispose();
+        }
+        if (this._canvas && this._canvas.dispose) {
+            this._canvas.dispose();
+        }
+    }
     /** @internal */
     public _rebuild(): void {
         this.update();

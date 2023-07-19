@@ -26,6 +26,10 @@ export interface ICanvas {
      * @returns string containing the requested data URI.
      */
     toDataURL(mime: string): string;
+    /**
+     * Native: explicit destruction of resources so native doesn't have to rely on JS engine GC.
+     */
+    dispose?(): void;
 }
 
 /**
@@ -415,4 +419,9 @@ export interface ICanvasRenderingContext {
      * @param f Vertical translation (moving).
      */
     setTransform(a: number, b: number, c: number, d: number, e: number, f: number): void;
+
+    /**
+     * Native: explicit destruction of resources so native doesn't have to rely on JS engine GC.
+     */
+    dispose?(): void;
 }
