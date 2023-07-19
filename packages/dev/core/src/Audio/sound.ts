@@ -123,16 +123,31 @@ export class Sound {
     public get spatialSound(): boolean {
         return this._spatialSound;
     }
+
     /**
      * Does this sound enables spatial sound.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic#creating-a-spatial-3d-sound
      */
     public set spatialSound(newValue: boolean) {
-        this._spatialSound = newValue;
-        if (this._spatialSound && Engine.audioEngine?.canUseWebAudio && Engine.audioEngine.audioContext) {
-            this._createSpatialParameters();
+        if (newValue == this._spatialSound) {
+            return;
+        }
+
+        const wasPlaying = this.isPlaying;
+        this.pause();
+
+        if (newValue) {
+            this._spatialSound = newValue;
+            this._updateSpatialParameters();
+        } else {
+            this._disableSpatialSound();
+        }
+
+        if (wasPlaying) {
+            this.play();
         }
     }
+
     private _spatialSound: boolean = false;
     private _panningModel: string = "equalpower";
     private _playbackRate: number = 1;
@@ -510,6 +525,7 @@ export class Sound {
             this.distanceModel = options.distanceModel ?? this.distanceModel;
             this._playbackRate = options.playbackRate ?? this._playbackRate;
             this._length = options.length ?? undefined;
+            this.spatialSound = options.spatialSound ?? this._spatialSound;
             this._setOffset(options.offset ?? undefined);
             this.setVolume(options.volume ?? this._volume);
             this._updateSpatialParameters();
@@ -551,8 +567,21 @@ export class Sound {
         }
     }
 
+    private _disableSpatialSound() {
+        if (!this._spatialSound) {
+            return;
+        }
+        this._inputAudioNode = this._soundGain;
+        this._soundPanner?.disconnect();
+        this._soundPanner = null;
+        this._spatialSound = false;
+    }
+
     private _updateSpatialParameters() {
-        if (this._spatialSound && this._soundPanner) {
+        if (!this._spatialSound) {
+            return;
+        }
+        if (this._soundPanner) {
             if (this.useCustomAttenuation) {
                 // Tricks to disable in a way embedded Web Audio attenuation
                 this._soundPanner.distanceModel = "linear";
@@ -567,6 +596,8 @@ export class Sound {
                 this._soundPanner.rolloffFactor = this.rolloffFactor;
                 this._soundPanner.panningModel = this._panningModel as any;
             }
+        } else {
+            this._createSpatialParameters();
         }
     }
 

@@ -1,6 +1,59 @@
 {
-    "fromTag": "6.12.0",
+    "fromTag": "6.12.2",
     "changelog": {
+        "6.12.3": [
+            {
+                "pr": "14050",
+                "title": "Fix regression from 14037",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/freeCamera.ts",
+                    "packages/dev/core/src/Cameras/targetCamera.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14048",
+                "title": "Fix setting spatial sound option to false",
+                "description": "When sounds have the `spatialSound` option set to `true`, setting it to `false` does not disable spatial sound. This change fixes the issue. This change also gets setting the `spatialSound` option working when using the `Sound.updateOptions` function.\r\n\r\nReported on forum: https://forum.babylonjs.com/t/what-is-the-expected-behavior-when-i-detach-sound-from-a-mesh/42315\r\n\r\nTested on Chrome browser with playground https://playground.babylonjs.com/#2AH4YH#81.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/Audio/sound.ts",
+                    "packages/dev/core/test/unit/Audio/sound.test.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            }
+        ],
+        "6.12.2": [
+            {
+                "pr": "14049",
+                "title": "Shaders: Fix shader parsing",
+                "description": "See https://forum.babylonjs.com/t/app-that-worked-for-months-using-nme-materials-suddenly-hangs-with-shader-errors/42441/8\r\n\r\nThe problem is a bug in `PerturbNormal` (that does not remove a \";\" in some injected shader code), but which was hidden by the way we parsed the shader code before #13935.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Processors/shaderCodeCursor.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/perturbNormalBlock.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            }
+        ],
         "6.12.1": [
             {
                 "pr": "14047",

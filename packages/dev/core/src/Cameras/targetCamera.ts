@@ -333,7 +333,7 @@ export class TargetCamera extends Camera {
         }
         this._deferredPositionUpdate.addInPlace(this.cameraDirection);
         if (!this._deferOnly) {
-            this.position.copyFrom(this.cameraDirection);
+            this.position.copyFrom(this._deferredPositionUpdate);
         } else {
             this._deferredUpdated = true;
         }
