@@ -1,5 +1,5 @@
 {
-    "fromTag": "6.12.2",
+    "fromTag": "6.12.3",
     "changelog": {
         "6.12.3": [
             {
@@ -32,6 +32,126 @@
                 ],
                 "tags": [
                     "bug"
+                ]
+            }
+        ],
+        "6.12.4": [
+            {
+                "pr": "14020",
+                "title": "Add new Material Plugin for various mesh debug visualizations",
+                "description": "This material plugin could help users visualize different properties of a mesh: its UV sets, edges, vertices, vertex colors, and the mesh's material index (only practical if this plugin is applied to multiple materials).",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/index.ts",
+                    "packages/dev/core/src/Materials/meshDebugPluginMaterial.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/MeshDebugPluginMaterial.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14057",
+                "title": "Animations: Add a weight property to AnimationGroup",
+                "description": "Animation groups can already be blended by calling `AnimationGroup.setWeightForAllAnimatables(weight)` but this is a bit cumbersome, because animatables are not created until `AnimationGroup.start` is called. So, every time you stop and restart an animation group, you have to call `AnimationGroup.setWeightForAllAnimatables(weight)` if you want to set a blend weight.\r\n\r\nThis PR adds a new `weight` property that you can set at any time, as well as the ability to pass the weight as a parameter at construction time.\r\n\r\nCloses #https://github.com/BabylonJS/ThePirateCove/issues/540\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animationGroup.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "animations"
+                ]
+            },
+            {
+                "pr": "14058",
+                "title": "Fix invalidateRect of a Rectangle Control with thickness",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/gui-btn-add-pointerupanimation-event/42500\r\n\r\nAnother example PG: https://playground.babylonjs.com/#JUG11I#7\r\n\r\n",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/control.ts",
+                    "packages/dev/gui/src/2D/controls/rectangle.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "gui"
+                ]
+            },
+            {
+                "pr": "14059",
+                "title": "Screenshot tools: Fallback on regular canvas if offscreen canvas not supported",
+                "description": "See https://forum.babylonjs.com/t/safari-create-screenshot-using-render-target-broken/42512/8\r\n\r\n~~Please wait for comments from the author of the thread to make sure the fix works before merging it!~~ Can be merged!",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/dumpTools.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14054",
+                "title": "Fix loading skeletons using ImportMesh when the skeleton id is not a number.",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/serializing-a-scene-and-importing-back-using-importmesh-data-jsonscene-losing-skeletons-and-animationgroups/42437\r\n\r\nExample scene: https://playground.babylonjs.com/#D4ZZ8#428\r\n\r\nI also added a vis test for serializing the mesh with a MorphTargetManager, but it wasn't necessary changing the check because when that is serialized, it uses the uniqueId which is always a number.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Loading/Plugins/babylonFileLoader.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/SerializeScene and ImportMesh with MorphTargetManager.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/SerializeScene and ImportMesh with string skeletonIds.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug",
+                    "loaders"
+                ]
+            },
+            {
+                "pr": "14051",
+                "title": "fix `Bone.returnToRest()`, `Bone.updateMatrix()` does not work properly",
+                "description": "Hello first let me explain the bug I found.\r\n\r\n- The `Bone.returnToRest()` method performs `this._matrix = this._restMatrix;` when there is no `_linkedTransformNode`.\r\nhttps://github.com/BabylonJS/Babylon.js/blob/master/packages/dev/core/src/Bones/bone.ts#L322\r\n\r\n- And the 'rest matrix' is compared to the 'local matrix', and if the two are the same, the matrix update is canceled.\r\nhttps://github.com/BabylonJS/Babylon.js/blob/master/packages/dev/core/src/Bones/bone.ts#L70-L80\r\n\r\nHowever, if the local matrix needs to be composed (which means the local matrix is out of date), comparing the local matrix with the pose matrix is problematic.\r\n\r\nHere's the specific code that causes the bug.\r\n```typescript\r\n// First, call returnToRest to make the localMatrix and restMetrix the same.\r\nbone.returnToRest();\r\n\r\n// then executes code that can replace the values of _localPosition, _localRotation, or _localScaling.\r\n// The local matrix is now out of date and requires a compose.\r\nbone.setPosition(new Vector3(1, 2, 3), Space.LOCAL);\r\n\r\n// Then the _localPosition_ has changed, but the localMatrix and restMatrix are still the same,\r\n// so this code does not work properly.\r\nbone.returnToRest();\r\n```\r\n\r\nTo solve this problem, you can check the equality comparison with _needToCompose. (May not be the best way)\r\nSo this is what the modified code looks like this:\r\n```typescript\r\nset _matrix(value: Matrix) {\r\n    // skip if the matrices are the same\r\n    if (value.updateFlag === this._localMatrix.updateFlag && !this._needToCompose) {\r\n        this._needToCompose = false; // in case there was a pending compose\r\n        return;\r\n    }\r\n\r\n    this._needToCompose = false; // in case there was a pending compose\r\n\r\n    this._localMatrix.copyFrom(value);\r\n    this._markAsDirtyAndDecompose();\r\n}\r\n```\r\n\r\nThe method `Bone.updateMatrix` also has the same problem because it uses the `_matrix` property.\r\n\r\nI would like to mention someone who I think would be knowledgeable about this issue. If I mention someone incorrectly, I apologize in advance.\r\n@Popov72 ",
+                "author": {
+                    "name": "noname0310",
+                    "url": "https://github.com/noname0310"
+                },
+                "files": [
+                    "packages/dev/core/src/Bones/bone.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "animations"
+                ]
+            },
+            {
+                "pr": "14053",
+                "title": "ParticleSystem: Fix update function when particle array is not internal array",
+                "description": "See https://forum.babylonjs.com/t/cannot-read-properties-of-undefined-reading-copyto-of-particle-system/42502",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/particleSystem.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "particles"
                 ]
             }
         ],

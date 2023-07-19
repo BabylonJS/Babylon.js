@@ -26,8 +26,9 @@ export class DumpTools {
 
     private static _CreateDumpRenderer(): DumpToolsEngine {
         if (!DumpTools._DumpToolsEngine) {
-            const canvas = new OffscreenCanvas(100, 100); // will be resized later
-            const engine = new ThinEngine(canvas, false, {
+            let canvas: HTMLCanvasElement | OffscreenCanvas = new OffscreenCanvas(100, 100); // will be resized later
+            let engine: Nullable<ThinEngine> = null;
+            const options = {
                 preserveDrawingBuffer: true,
                 depth: false,
                 stencil: false,
@@ -35,7 +36,14 @@ export class DumpTools {
                 premultipliedAlpha: false,
                 antialias: false,
                 failIfMajorPerformanceCaveat: false,
-            });
+            };
+            try {
+                engine = new ThinEngine(canvas, false, options);
+            } catch (e) {
+                // The browser does not support WebGL context in OffscreenCanvas, fallback on a regular canvas
+                canvas = document.createElement("canvas");
+                engine = new ThinEngine(canvas, false, options);
+            }
             engine.getCaps().parallelShaderCompile = undefined;
             const renderer = new EffectRenderer(engine);
             const wrapper = new EffectWrapper({

@@ -1605,12 +1605,12 @@ export class Control implements IAnimatable {
     }
 
     /** @internal */
-    protected _computeAdditionnalOffsetX() {
+    protected _computeAdditionalOffsetX() {
         return 0;
     }
 
     /** @internal */
-    protected _computeAdditionnalOffsetY() {
+    protected _computeAdditionalOffsetY() {
         return 0;
     }
 
@@ -1635,8 +1635,8 @@ export class Control implements IAnimatable {
             const topShadowOffset = Math.min(Math.min(shadowOffsetY, 0) - shadowBlur * 2, 0);
             const bottomShadowOffset = Math.max(Math.max(shadowOffsetY, 0) + shadowBlur * 2, 0);
 
-            const offsetX = this._computeAdditionnalOffsetX();
-            const offsetY = this._computeAdditionnalOffsetY();
+            const offsetX = this._computeAdditionalOffsetX();
+            const offsetY = this._computeAdditionalOffsetY();
 
             this.host.invalidateRect(
                 Math.floor(this._tmpMeasureA.left + leftShadowOffset - offsetX),
