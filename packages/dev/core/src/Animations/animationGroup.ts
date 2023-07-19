@@ -269,6 +269,8 @@ export class AnimationGroup implements IDisposable {
             return null;
         }
 
+        weight = weight ?? animationGroups[0].weight;
+
         let beginFrame = Number.MAX_VALUE;
         let endFrame = Number.MIN_VALUE;
 
@@ -282,10 +284,6 @@ export class AnimationGroup implements IDisposable {
                     endFrame = animationGroup.to;
                 }
             }
-        }
-
-        if (weight === undefined) {
-            weight = animationGroups[0].weight;
         }
 
         const mergedAnimationGroup = new AnimationGroup(animationGroups[0].name + "_merged", animationGroups[0]._scene, weight);
