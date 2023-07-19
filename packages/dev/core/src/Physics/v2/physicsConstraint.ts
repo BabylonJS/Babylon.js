@@ -134,8 +134,13 @@ export class Physics6DoFLimit {
      * Corresponds to a distance in meters for linear axes, an angle in radians for angular axes.
      */
     maxLimit?: number;
-
+    /**
+     * The stiffness of the constraint.
+     */
     stiffness?: number;
+    /**
+     * A constraint parameter that specifies damping.
+     */
     damping?: number;
 }
 
