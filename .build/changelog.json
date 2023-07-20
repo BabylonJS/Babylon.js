@@ -1,37 +1,86 @@
 {
-    "fromTag": "6.12.3",
+    "fromTag": "6.12.5",
     "changelog": {
-        "6.12.3": [
+        "6.13.0": [
             {
-                "pr": "14050",
-                "title": "Fix regression from 14037",
-                "description": null,
+                "pr": "14065",
+                "title": "FreeCameraMouseInput: Reset Active pointerId when detaching controls",
+                "description": "A user in the forum found an issue where the camera controls stopped working after an animation started.  It was determined the issue was caused by the controls being detached before the `pointerup` event was handled.  A line was added to make sure the the tracked active pointerid was being reset when the controls were no longer active so that input could begin to be received again.\r\n\r\nA test has also been added to check for this scenario\r\n\r\nForum Link: https://forum.babylonjs.com/t/mesh-actionmanager-camera-control-bug/42292",
                 "author": {
-                    "name": "sebavan",
-                    "url": "https://github.com/sebavan"
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
                 },
                 "files": [
-                    "packages/dev/core/src/Cameras/freeCamera.ts",
-                    "packages/dev/core/src/Cameras/targetCamera.ts"
+                    "packages/dev/core/src/Cameras/Inputs/freeCameraMouseInput.ts",
+                    "packages/dev/core/test/unit/DeviceInput/babylon.inputManager.test.ts"
                 ],
                 "tags": [
-                    "skip changelog"
+                    "bug",
+                    "inputs"
                 ]
             },
             {
-                "pr": "14048",
-                "title": "Fix setting spatial sound option to false",
-                "description": "When sounds have the `spatialSound` option set to `true`, setting it to `false` does not disable spatial sound. This change fixes the issue. This change also gets setting the `spatialSound` option working when using the `Sound.updateOptions` function.\r\n\r\nReported on forum: https://forum.babylonjs.com/t/what-is-the-expected-behavior-when-i-detach-sound-from-a-mesh/42315\r\n\r\nTested on Chrome browser with playground https://playground.babylonjs.com/#2AH4YH#81.",
+                "pr": "14062",
+                "title": "AnimationGroup: Add MergeAnimationGroups method",
+                "description": "Closes #12895",
                 "author": {
-                    "name": "docEdub",
-                    "url": "https://github.com/docEdub"
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
                 },
                 "files": [
-                    "packages/dev/core/src/Audio/sound.ts",
-                    "packages/dev/core/test/unit/Audio/sound.test.ts"
+                    "packages/dev/core/src/Animations/animationGroup.ts"
                 ],
                 "tags": [
-                    "bug"
+                    "animations",
+                    "new feature"
+                ]
+            }
+        ],
+        "6.12.5": [
+            {
+                "pr": "14055",
+                "title": "Basic native support of MSAA for render targets",
+                "description": "This change covers the basic case of passing in a sample count for render targets. It does not handle changing the sample count after initialization or multitargets.\r\n\r\nThis is just the JS changes. Additional native changes are needed for MSAA to work with render targets, but it does not require a protocol version update.\r\n\r\nSee https://forum.babylonjs.com/t/nativeengine-render-target-texture-not-working-with-msaa/42329.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14052",
+                "title": "Animations: Add support for animatable and animation group ordering",
+                "description": "This PR adds a `playOrder` property to `Animatable` / `AnimationGroup` (that of `AnimationGroup` is simply passed to `Animatable`).\r\n\r\nThis allows the user to define a specific processing order for animatables, which is necessary when you want certain animations in one animatable / animation group to take precedence over other animations.\r\n\r\nI've added a global switch to sort the list of active animables, as people may not want to suffer the performance penalty if they don't need this feature.\r\n\r\nLet's discuss whether this is something we want/if we want it with this implementation (~~which makes it a draft for now~~).\r\n\r\nCloses #BabylonJS/ThePirateCove#538",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animatable.ts",
+                    "packages/dev/core/src/Animations/animationGroup.ts"
+                ],
+                "tags": [
+                    "animations",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14060",
+                "title": "Bump word-wrap from 1.2.3 to 1.2.4",
+                "description": "Bumps [word-wrap](https://github.com/jonschlinkert/word-wrap) from 1.2.3 to 1.2.4.\n<details>\n<summary>Release notes</summary>\n<p><em>Sourced from <a href=\"https://github.com/jonschlinkert/word-wrap/releases\">word-wrap's releases</a>.</em></p>\n<blockquote>\n<h2>1.2.4</h2>\n<h2>What's Changed</h2>\n<ul>\n<li>Remove default indent by <a href=\"https://github.com/mohd-akram\"><code>@​mohd-akram</code></a> in <a href=\"https://redirect.github.com/jonschlinkert/word-wrap/pull/24\">jonschlinkert/word-wrap#24</a></li>\n<li>🔒fix: CVE 2023 26115 (2) by <a href=\"https://github.com/OlafConijn\"><code>@​OlafConijn</code></a> in <a href=\"https://redirect.github.com/jonschlinkert/word-wrap/pull/41\">jonschlinkert/word-wrap#41</a></li>\n<li>:lock: fix: CVE-2023-26115 by <a href=\"https://github.com/aashutoshrathi\"><code>@​aashutoshrathi</code></a> in <a href=\"https://redirect.github.com/jonschlinkert/word-wrap/pull/33\">jonschlinkert/word-wrap#33</a></li>\n<li>chore: publish workflow by <a href=\"https://github.com/OlafConijn\"><code>@​OlafConijn</code></a> in <a href=\"https://redirect.github.com/jonschlinkert/word-wrap/pull/42\">jonschlinkert/word-wrap#42</a></li>\n</ul>\n<h2>New Contributors</h2>\n<ul>\n<li><a href=\"https://github.com/mohd-akram\"><code>@​mohd-akram</code></a> made their first contribution in <a href=\"https://redirect.github.com/jonschlinkert/word-wrap/pull/24\">jonschlinkert/word-wrap#24</a></li>\n<li><a href=\"https://github.com/OlafConijn\"><code>@​OlafConijn</code></a> made their first contribution in <a href=\"https://redirect.github.com/jonschlinkert/word-wrap/pull/41\">jonschlinkert/word-wrap#41</a></li>\n<li><a href=\"https://github.com/aashutoshrathi\"><code>@​aashutoshrathi</code></a> made their first contribution in <a href=\"https://redirect.github.com/jonschlinkert/word-wrap/pull/33\">jonschlinkert/word-wrap#33</a></li>\n</ul>\n<p><strong>Full Changelog</strong>: <a href=\"https://github.com/jonschlinkert/word-wrap/compare/1.2.3...1.2.4\">https://github.com/jonschlinkert/word-wrap/compare/1.2.3...1.2.4</a></p>\n</blockquote>\n</details>\n<details>\n<summary>Commits</summary>\n<ul>\n<li><a href=\"https://github.com/jonschlinkert/word-wrap/commit/f64b188c7261d26b99e1e2075d6b12f21798e83a\"><code>f64b188</code></a> run verb to generate README</li>\n<li><a href=\"https://github.com/jonschlinkert/word-wrap/commit/03ea08256ba0c8e8b02b1b304f0f5bd2b1863207\"><code>03ea082</code></a> Merge pull request <a href=\"https://redirect.github.com/jonschlinkert/word-wrap/issues/42\">#42</a> from jonschlinkert/chore/publish-workflow</li>\n<li><a href=\"https://github.com/jonschlinkert/word-wrap/commit/420dce9a2412b21881202b73a3c34f0edc53cb2e\"><code>420dce9</code></a> Merge pull request <a href=\"https://redirect.github.com/jonschlinkert/word-wrap/issues/41\">#41</a> from jonschlinkert/fix/CVE-2023-26115-2</li>\n<li><a href=\"https://github.com/jonschlinkert/word-wrap/commit/bfa694edf55bb84ff84512f13da6d68bf7593f06\"><code>bfa694e</code></a> Update .github/workflows/publish.yml</li>\n<li><a href=\"https://github.com/jonschlinkert/word-wrap/commit/ace0b3c78f81aaf43040bab3bc91d3c5546d3fd2\"><code>ace0b3c</code></a> chore: bump version to 1.2.4</li>\n<li><a href=\"https://github.com/jonschlinkert/word-wrap/commit/6fd727594676f3e1b196b08a320908bec2f4ca02\"><code>6fd7275</code></a> chore: add publish workflow</li>\n<li><a href=\"https://github.com/jonschlinkert/word-wrap/commit/30d6daf60fce429f5f559252fa86ee78200652c4\"><code>30d6daf</code></a> chore: fix test</li>\n<li><a href=\"https://github.com/jonschlinkert/word-wrap/commit/655929cabea6299dddf3b4a21fc3713fca701b48\"><code>655929c</code></a> chore: remove package-lock</li>\n<li><a href=\"https://github.com/jonschlinkert/word-wrap/commit/49e08bbc32a84da5d79e6b7e0fa74ff6217f6d81\"><code>49e08bb</code></a> chore: added an additional testcase</li>\n<li><a href=\"https://github.com/jonschlinkert/word-wrap/commit/9f626935f3fac6ec0f3c4b26baea4eb9740d9645\"><code>9f62693</code></a> fix: cve 2023-26115</li>\n<li>Additional commits viewable in <a href=\"https://github.com/jonschlinkert/word-wrap/compare/1.2.3...1.2.4\">compare view</a></li>\n</ul>\n</details>\n<br />\n\n\n[![Dependabot compatibility score](https://dependabot-badges.githubapp.com/badges/compatibility_score?dependency-name=word-wrap&package-manager=npm_and_yarn&previous-version=1.2.3&new-version=1.2.4)](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-compatibility-scores)\n\nDependabot will resolve any conflicts with this PR as long as you don't alter it yourself. You can also trigger a rebase manually by commenting `@dependabot rebase`.\n\n[//]: # (dependabot-automerge-start)\n[//]: # (dependabot-automerge-end)\n\n---\n\n<details>\n<summary>Dependabot commands and options</summary>\n<br />\n\nYou can trigger Dependabot actions by commenting on this PR:\n- `@dependabot rebase` will rebase this PR\n- `@dependabot recreate` will recreate this PR, overwriting any edits that have been made to it\n- `@dependabot merge` will merge this PR after your CI passes on it\n- `@dependabot squash and merge` will squash and merge this PR after your CI passes on it\n- `@dependabot cancel merge` will cancel a previously requested merge and block automerging\n- `@dependabot reopen` will reopen this PR if it is closed\n- `@dependabot close` will close this PR and stop Dependabot recreating it. You can achieve the same result by closing it manually\n- `@dependabot ignore this major version` will close this PR and stop Dependabot creating any more for this major version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this minor version` will close this PR and stop Dependabot creating any more for this minor version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this dependency` will close this PR and stop Dependabot creating any more for this dependency (unless you reopen the PR or upgrade to it yourself)\nYou can disable automated security fix PRs for this repo from the [Security Alerts page](https://github.com/BabylonJS/Babylon.js/network/alerts).\n\n</details>",
+                "author": {
+                    "name": "dependabot[bot]",
+                    "url": "https://github.com/apps/dependabot"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": [
+                    "dependencies"
                 ]
             }
         ],
@@ -152,6 +201,40 @@
                 "tags": [
                     "bug",
                     "particles"
+                ]
+            }
+        ],
+        "6.12.3": [
+            {
+                "pr": "14050",
+                "title": "Fix regression from 14037",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/freeCamera.ts",
+                    "packages/dev/core/src/Cameras/targetCamera.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14048",
+                "title": "Fix setting spatial sound option to false",
+                "description": "When sounds have the `spatialSound` option set to `true`, setting it to `false` does not disable spatial sound. This change fixes the issue. This change also gets setting the `spatialSound` option working when using the `Sound.updateOptions` function.\r\n\r\nReported on forum: https://forum.babylonjs.com/t/what-is-the-expected-behavior-when-i-detach-sound-from-a-mesh/42315\r\n\r\nTested on Chrome browser with playground https://playground.babylonjs.com/#2AH4YH#81.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/Audio/sound.ts",
+                    "packages/dev/core/test/unit/Audio/sound.test.ts"
+                ],
+                "tags": [
+                    "bug"
                 ]
             }
         ],

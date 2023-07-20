@@ -44,7 +44,7 @@ export interface INativeEngine {
     getAttributes(shaderProgram: NativeProgram, attributeNames: string[]): number[];
 
     createTexture(): NativeTexture;
-    initializeTexture(texture: NativeTexture, width: number, height: number, hasMips: boolean, format: number, renderTarget: boolean, srgb: boolean): void;
+    initializeTexture(texture: NativeTexture, width: number, height: number, hasMips: boolean, format: number, renderTarget: boolean, srgb: boolean, samples: number): void;
     loadTexture(texture: NativeTexture, data: ArrayBufferView, generateMips: boolean, invertY: boolean, srgb: boolean, onSuccess: () => void, onError: () => void): void;
     loadRawTexture(texture: NativeTexture, data: ArrayBufferView, width: number, height: number, format: number, generateMips: boolean, invertY: boolean): void;
     loadRawTexture2DArray(
@@ -78,7 +78,14 @@ export interface INativeEngine {
     createImageBitmap(data: ArrayBufferView | IImage): ImageBitmap;
     resizeImageBitmap(image: ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array;
 
-    createFrameBuffer(texture: Nullable<NativeTexture>, width: number, height: number, generateStencilBuffer: boolean, generateDepthBuffer: boolean): NativeFramebuffer;
+    createFrameBuffer(
+        texture: Nullable<NativeTexture>,
+        width: number,
+        height: number,
+        generateStencilBuffer: boolean,
+        generateDepthBuffer: boolean,
+        samples: number
+    ): NativeFramebuffer;
 
     getRenderWidth(): number;
     getRenderHeight(): number;
