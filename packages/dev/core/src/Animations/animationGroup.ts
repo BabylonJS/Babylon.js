@@ -257,6 +257,27 @@ export class AnimationGroup implements IDisposable {
     }
 
     /**
+     * Allows the animations of the animation group to blend with current running animations
+     * Note: this method should be called after all targeted animations have been added to the group
+     * @param blendingSpeed defines the blending speed to use
+     */
+    public enableBlending(blendingSpeed: number) {
+        for (let i = 0; i < this._targetedAnimations.length; ++i) {
+            this._targetedAnimations[i].animation.enableBlending = true;
+            this._targetedAnimations[i].animation.blendingSpeed = blendingSpeed;
+        }
+    }
+
+    /**
+     * Disable animation blending
+     */
+    public disableBlending() {
+        for (let i = 0; i < this._targetedAnimations.length; ++i) {
+            this._targetedAnimations[i].animation.enableBlending = false;
+        }
+    }
+
+    /**
      * Instantiates a new Animation Group.
      * This helps managing several animations at once.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/groupAnimations
